@@ -3,8 +3,7 @@
 
 The openHAB KNX binding allows to connect to [KNX Home Automation](http://www.knx.org/) installations. Switching lights on and off, activating your roller shutters or changing room temperatures are only some examples.
 
-To access your KNX bus you either need an KNX IP gateway (like e.g. the [Gira KNX IP Router]
-(http://www.gira.com/en/gebaeudetechnik/systeme/knx-eib_system/knx-produkte/systemgeraete/knx-ip-router.html)) or a PC running [EIBD](http://www.auto.tuwien.ac.at/~mkoegler/index.php/eibd) (free open source component that enables communication with the KNX bus).
+To access your KNX bus you either need an KNX IP gateway (like e.g. the [Gira KNX IP Router](http://www.gira.com/en/gebaeudetechnik/systeme/knx-eib_system/knx-produkte/systemgeraete/knx-ip-router.html)) or a PC running [KNXD](https://github.com/knxd/knxd) (free open source component that enables communication with the KNX bus), which is the successor of the no longer maintained [EIBD](http://www.auto.tuwien.ac.at/~mkoegler/index.php/eibd).
 
 ## Supported Things
 
