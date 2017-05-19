@@ -76,7 +76,7 @@ import tuwien.auto.calimero.exception.KNXIllegalArgumentException;
 public class KNXCoreTypeMapper implements KNXTypeMapper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KNXCoreTypeMapper.class);
-
+  
     private static final String TIME_DAY_FORMAT = new String("EEE, HH:mm:ss");
     private static final String DATE_FORMAT = new String("yyyy-MM-dd");
 
@@ -93,7 +93,6 @@ public class KNXCoreTypeMapper implements KNXTypeMapper {
     private static Map<Class<? extends Type>, String> defaultDptMap;
 
     static {
-
         @SuppressWarnings("unused")
         final List<Class<?>> xlators = Arrays.<Class<?>> asList(DPTXlator1BitControlled.class,
                 DPTXlator2ByteFloat.class, DPTXlator2ByteUnsigned.class, DPTXlator3BitControlled.class,
