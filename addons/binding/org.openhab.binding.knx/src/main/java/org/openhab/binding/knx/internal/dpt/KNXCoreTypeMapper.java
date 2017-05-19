@@ -66,22 +66,22 @@ import tuwien.auto.calimero.exception.KNXIllegalArgumentException;
  */
 public class KNXCoreTypeMapper implements KNXTypeMapper {
 
-    static private final Logger logger = LoggerFactory.getLogger(KNXCoreTypeMapper.class);
+    private static final Logger logger = LoggerFactory.getLogger(KNXCoreTypeMapper.class);
 
     // TODO: Isn't is bad to use SimpleDateFormat?
-    // private final static SimpleDateFormat TIME_DAY_FORMATTER = new SimpleDateFormat("EEE, HH:mm:ss", Locale.US);
-    // private final static SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat("HH:mm:ss", Locale.US);
-    // private final static SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd");
-    // private final static SimpleDateFormat FULL_DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    // private static final SimpleDateFormat TIME_DAY_FORMATTER = new SimpleDateFormat("EEE, HH:mm:ss", Locale.US);
+    // private static final SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat("HH:mm:ss", Locale.US);
+    // private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd");
+    // private static final SimpleDateFormat FULL_DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
-    static private final String TIME_DAY_FORMAT = new String("EEE, HH:mm:ss");
-    static private final String DATE_FORMAT = new String("yyyy-MM-dd");
+    private static final String TIME_DAY_FORMAT = new String("EEE, HH:mm:ss");
+    private static final String DATE_FORMAT = new String("yyyy-MM-dd");
 
     /** stores the openHAB type class for all (supported) KNX datapoint types */
-    static private Map<String, Class<? extends Type>> dptTypeMap;
+    private static Map<String, Class<? extends Type>> dptTypeMap;
 
     /** stores the default KNX DPT to use for each openHAB type */
-    static private Map<Class<? extends Type>, String> defaultDptMap;
+    private static Map<Class<? extends Type>, String> defaultDptMap;
 
     static {
         dptTypeMap = new HashMap<String, Class<? extends Type>>();
@@ -518,7 +518,7 @@ public class KNXCoreTypeMapper implements KNXTypeMapper {
      * @param dptId the datapoint type id
      * @return the openHAB type (command or state) class or {@code null} if the datapoint type id is not supported.
      */
-    static public Class<? extends Type> toTypeClass(String dptId) {
+    public static Class<? extends Type> toTypeClass(String dptId) {
         return dptTypeMap.get(dptId);
     }
 
@@ -528,7 +528,7 @@ public class KNXCoreTypeMapper implements KNXTypeMapper {
      * @param typeClass the openHAB type class
      * @return the datapoint type id
      */
-    static public String toDPTid(Class<? extends Type> typeClass) {
+    public static String toDPTid(Class<? extends Type> typeClass) {
         return defaultDptMap.get(typeClass);
     }
 
@@ -586,7 +586,7 @@ public class KNXCoreTypeMapper implements KNXTypeMapper {
      * @throws IllegalArgumentException if none of the datapoint types DPT_DATE or
      *             DPT_TIMEOFDAY has been used.
      */
-    static private String formatDateTime(DateTimeType dateType, String dpt) {
+    private static String formatDateTime(DateTimeType dateType, String dpt) {
         if (DPTXlatorDate.DPT_DATE.getID().equals(dpt)) {
             return dateType.format("%tF");
         } else if (DPTXlatorTime.DPT_TIMEOFDAY.getID().equals(dpt)) {
