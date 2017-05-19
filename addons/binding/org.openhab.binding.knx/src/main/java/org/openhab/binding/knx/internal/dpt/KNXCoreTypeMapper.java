@@ -373,8 +373,7 @@ public class KNXCoreTypeMapper implements KNXTypeMapper {
          */
         dptMainTypeMap.put(16, StringType.class);
         /** Exceptions Datapoint Types "String", Main number 16 */
-        dptTypeMap.put(DPTXlatorString.DPT_STRING_8859_1.getID(), StringType.class);
-        dptTypeMap.put(DPTXlatorString.DPT_STRING_ASCII.getID(), StringType.class);
+        // Example: dptTypeMap.put(DPTXlatorString.DPT_STRING_ASCII.getID(), StringType.class);
 
         /**
          * MainType: 17
