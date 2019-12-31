@@ -1,0 +1,357 @@
+package org.openhab.io.homekit;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.core.thing.Channel;
+import org.openhab.core.thing.Thing;
+import org.openhab.core.thing.ThingTypeUID;
+import org.openhab.core.thing.type.ChannelTypeUID;
+import org.openhab.io.homekit.api.Accessory;
+import org.openhab.io.homekit.api.AccessoryServer;
+import org.openhab.io.homekit.api.Characteristic;
+import org.openhab.io.homekit.api.HomekitFactory;
+import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.library.accessory.ThingAccessory;
+import org.openhab.io.homekit.library.service.ThingService;
+import org.openhab.io.homekit.util.UUID5;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public abstract class BaseHomekitFactory implements HomekitFactory {
+
+    protected static final Logger logger = LoggerFactory.getLogger(BaseHomekitFactory.class);
+
+    protected HomekitServiceTracker<@NonNull HomekitCommunicationManager> communicationManagerTracker;
+
+    HashMap<ThingTypeUID, Class<? extends Accessory>> thingTypeAccessoryClassMapper = new HashMap<ThingTypeUID, Class<? extends Accessory>>();
+    HashMap<ThingTypeUID, HashSet<String>> thingTypeServiceTypesMapper = new HashMap<ThingTypeUID, @NonNull HashSet<String>>();
+    HashMap<ChannelTypeUID, HashSet<String>> channelTypeCharacteristicTypesMapper = new HashMap<ChannelTypeUID, @NonNull HashSet<String>>();
+    HashMap<String, Class<? extends Service>> serviceTypeServiceClassMapper = new HashMap<String, Class<@NonNull ? extends Service>>();
+    HashMap<String, Class<? extends Characteristic<?>>> characteristicTypeCharacteristicClassMapper = new HashMap<String, Class<@NonNull ? extends Characteristic<?>>>();
+
+    public BaseHomekitFactory() {
+        communicationManagerTracker = HomekitServiceTracker.supply(HomekitCommunicationManager.class, getClass());
+    }
+
+    @Override
+    public boolean supportsThingType(@NonNull ThingTypeUID thingTypeUID) {
+        return thingTypeServiceTypesMapper.containsKey(thingTypeUID);
+    }
+
+    @Override
+    public ThingTypeUID @NonNull [] getSupportedThingTypes() {
+        return thingTypeServiceTypesMapper.keySet().toArray(new ThingTypeUID[0]);
+    }
+
+    @Override
+    public boolean supportsServiceType(@NonNull String serviceType) {
+        return serviceTypeServiceClassMapper.containsKey(serviceType);
+    }
+
+    @Override
+    public boolean supportsCharacteristicsType(@NonNull String characteristicsType) {
+        return characteristicTypeCharacteristicClassMapper.containsKey(characteristicsType);
+    }
+
+    @Override
+    public @Nullable Accessory createAccessory(@NonNull Thing thing, @NonNull AccessoryServer server) throws Exception {
+
+        ThingTypeUID thingType = thing.getThingTypeUID();
+
+        Class<? extends Accessory> accessoryClass = thingTypeAccessoryClassMapper.get(thingType);
+
+        if (accessoryClass == null) {
+            accessoryClass = ThingAccessory.class;
+        }
+
+        Accessory accessory = createAccessory(accessoryClass, server, server.getInstanceId(), true);
+
+        if (accessory != null && (accessory instanceof ThingAccessory)) {
+            ThingAccessory thingAccessory = (ThingAccessory) accessory;
+            thingAccessory.setThingUID(thing.getUID());
+            logger.info("Linked Thing {} to Accessory {} of Type {}", thing.getUID(), accessory.getUID(),
+                    accessory.getClass().getSimpleName());
+
+            HashSet<String> serviceTypes = thingTypeServiceTypesMapper.get(thingType);
+            for (String serviceType : serviceTypes) {
+                if (thingAccessory.getService(serviceType) == null && thingAccessory.isExtensible()) {
+                    thingAccessory
+                            .addService(createService(serviceType, thingAccessory, true, thingAccessory.getLabel()));
+                }
+
+                Service service = thingAccessory.getService(serviceType);
+
+                if (service != null) {
+                    for (Channel channel : thing.getChannels()) {
+                        HashSet<String> characteristicTypes = channelTypeCharacteristicTypesMapper
+                                .get(channel.getChannelTypeUID());
+
+                        for (String characteristicType : characteristicTypes) {
+                            if (service.getCharacteristic(characteristicType) == null && service.isExtensible()) {
+                                service.addCharacteristic(createCharacteristic(characteristicType, service));
+                            }
+
+                            Characteristic<?> characteristic = service.getCharacteristic(characteristicType);
+                            if (characteristic != null) {
+                                characteristic.setChannelUID(channel.getUID());
+                                logger.debug("Linked Channel {} to Characteristic {} of Type {}", channel.getUID(),
+                                        characteristic.getUID(), characteristic.getClass().getSimpleName());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return accessory;
+    }
+
+    @Override
+    public @Nullable Accessory createAccessory(Class<? extends Accessory> accessoryClass, AccessoryServer server,
+            long instanceId, boolean extend) {
+        try {
+            Accessory accessory = accessoryClass
+                    .getConstructor(HomekitCommunicationManager.class, AccessoryServer.class, long.class, boolean.class)
+                    .newInstance(communicationManagerTracker.get(), server, instanceId, extend);
+            logger.debug("Created an Accessory {} of Type {}, with instanceId {}", accessory.getUID(),
+                    accessory.getClass().getSimpleName(), accessory.getId());
+            return accessory;
+        } catch (NoSuchMethodException e) {
+            logger.warn(
+                    "Accessory {} is missing a valid constructor of type (HomekitCommunicationManager.class, AccessoryServer.class, long.class, boolean.class)",
+                    accessoryClass.getSimpleName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    @Override
+    public @Nullable Service createService(@NonNull String serviceType, @NonNull Accessory accessory, long instanceId,
+            boolean extend, @NonNull String serviceName) {
+        Class<? extends Service> serviceClass = serviceTypeServiceClassMapper.get(serviceType);
+        if (serviceClass != null) {
+            try {
+                Service service = serviceClass
+                        .getConstructor(HomekitCommunicationManager.class, Accessory.class, long.class, boolean.class,
+                                String.class)
+                        .newInstance(communicationManagerTracker.get(), accessory, instanceId, extend, serviceName);
+                logger.debug(
+                        "Created a Service {} of Type {} (HAP Type {}, Name {}) for Accessory {} of Type {}, with instanceId {}",
+                        service.getUID(), service.getClass().getSimpleName(), service.getInstanceType(), serviceName,
+                        accessory.getUID(), accessory.getClass().getSimpleName(), service.getId());
+                return service;
+            } catch (NoSuchMethodException e) {
+                logger.warn(
+                        "Service {} is missing a valid constructor of type (HomekitCommunicationManager.class, Accessory.class, long.class, boolean.class, String.class))",
+                        serviceClass.getSimpleName());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public @Nullable Service createService(@NonNull String serviceType, @NonNull Accessory accessory, boolean extend,
+            @NonNull String serviceName) {
+        Class<? extends Service> serviceClass = serviceTypeServiceClassMapper.get(serviceType);
+        if (serviceClass != null) {
+            return createService(serviceType, accessory, accessory.getInstanceId(), extend, serviceName);
+        }
+
+        return null;
+    }
+
+    @Override
+    public @Nullable Service createService(@NonNull String serviceType, @NonNull Accessory accessory, long instanceId,
+            boolean extend) {
+        Class<? extends Service> serviceClass = serviceTypeServiceClassMapper.get(serviceType);
+        if (serviceClass != null) {
+            return createService(serviceType, accessory, instanceId, extend, serviceClass.getSimpleName());
+        }
+
+        return null;
+    }
+
+    @Override
+    public @Nullable Characteristic<?> createCharacteristic(@NonNull String characteristicsType,
+            @NonNull Service service, long instanceId) {
+        Class<? extends Characteristic<?>> characteristicsClass = characteristicTypeCharacteristicClassMapper
+                .get(characteristicsType);
+        if (characteristicsClass != null) {
+            try {
+
+                Characteristic<?> characteristic = characteristicsClass
+                        .getConstructor(HomekitCommunicationManager.class, Service.class, long.class)
+                        .newInstance(communicationManagerTracker.get(), service, instanceId);
+                logger.debug(
+                        "Created a Characteristic {} of Type {} (HAP Type {}) for Service {} of Type {}, with instanceId {}",
+                        characteristic.getUID(), characteristic.getClass().getSimpleName(),
+                        characteristic.getInstanceType(), service.getUID(), service.getClass().getSimpleName(),
+                        characteristic.getId());
+                return characteristic;
+            } catch (NoSuchMethodException e) {
+                logger.warn(
+                        "Characteristic {} is missing a valid constructor of type (HomekitCommunicationManager.class, Service.class, long.class)",
+                        characteristicsClass.getSimpleName());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public @Nullable Characteristic<?> createCharacteristic(@NonNull String characteristicsType,
+            @NonNull Service service) {
+        Class<? extends Characteristic<?>> characteristicsClass = characteristicTypeCharacteristicClassMapper
+                .get(characteristicsType);
+        if (characteristicsClass != null) {
+            return createCharacteristic(characteristicsType, service, service.getAccessory().getInstanceId());
+        }
+        return null;
+    }
+
+    @Override
+    public void addAccessory(@NonNull ThingTypeUID thingType,
+            @NonNull Class<? extends @NonNull Accessory> accessoryClass) {
+        thingTypeAccessoryClassMapper.put(thingType, accessoryClass);
+    }
+
+    @Override
+    public void addService(@NonNull ThingTypeUID type) {
+        addService(type, ThingService.class);
+    }
+
+    @Override
+    public void addService(@NonNull ThingTypeUID thingType, @NonNull Class<@NonNull ? extends Service> serviceClass) {
+
+        String serviceType = UUID5.fromNamespaceAndString(UUID5.NAMESPACE_SERVICE, serviceClass.getName()).toString();
+        try {
+            Method method = serviceClass.getMethod("getType");
+            Object o = method.invoke(null);
+            serviceType = (String) o;
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
+            // No Op - we revert back to the previously generated type
+        } catch (NoSuchMethodException e) {
+            logger.warn("{} does not define a getType() method", serviceClass.getName());
+        }
+
+        addService(thingType, serviceType);
+        addService(serviceType, serviceClass);
+    }
+
+    @Override
+    public void addService(@NonNull Class<@NonNull ? extends Service> serviceClass) {
+
+        String serviceType = UUID5.fromNamespaceAndString(UUID5.NAMESPACE_SERVICE, serviceClass.getName()).toString();
+        try {
+            Method method = serviceClass.getMethod("getType");
+            Object o = method.invoke(null);
+            serviceType = (String) o;
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
+            // No Op - we revert back to the previously generated type
+        } catch (NoSuchMethodException e) {
+            logger.warn("{} does not define a getType() method", serviceClass.getName());
+        }
+
+        addService(serviceType, serviceClass);
+    }
+
+    @Override
+    public void addService(@NonNull ThingTypeUID thingType, @NonNull String serviceType) {
+        HashSet<String> currentTypes = thingTypeServiceTypesMapper.get(thingType);
+        if (currentTypes == null) {
+            currentTypes = new HashSet<String>();
+        }
+        currentTypes.add(serviceType);
+        thingTypeServiceTypesMapper.put(thingType, currentTypes);
+    }
+
+    @Override
+    public void addService(@NonNull String serviceType, @NonNull Class<@NonNull ? extends Service> serviceClass) {
+        serviceTypeServiceClassMapper.put(serviceType, serviceClass);
+    }
+
+    @Override
+    public void addCharacteristic(@NonNull ChannelTypeUID channelType,
+            @NonNull Class<@NonNull ? extends Characteristic<?>> characteristicClass) {
+
+        String characteristicType = UUID5
+                .fromNamespaceAndString(UUID5.NAMESPACE_CHARACTERISTIC, characteristicClass.getName()).toString();
+        try {
+            Method method = characteristicClass.getMethod("getType");
+            Object o = method.invoke(null);
+            characteristicType = (String) o;
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
+            // No Op - we revert back to the previously generated type
+        } catch (NoSuchMethodException e) {
+            logger.warn("{} does not define a getType() method", characteristicClass.getName());
+        }
+
+        addCharacteristic(channelType, characteristicType);
+        addCharacteristic(characteristicType, characteristicClass);
+    }
+
+    @Override
+    public void addCharacteristic(@NonNull Class<@NonNull ? extends Characteristic<?>> characteristicClass) {
+
+        String characteristicType = UUID5
+                .fromNamespaceAndString(UUID5.NAMESPACE_CHARACTERISTIC, characteristicClass.getName()).toString();
+        try {
+            Method method = characteristicClass.getMethod("getType");
+            Object o = method.invoke(null);
+            characteristicType = (String) o;
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
+            // No Op - we revert back to the previously generated type
+        } catch (NoSuchMethodException e) {
+            logger.warn("{} does not define a getType() method", characteristicClass.getName());
+        }
+
+        addCharacteristic(characteristicType, characteristicClass);
+    }
+
+    @Override
+    public void addCharacteristic(@NonNull ChannelTypeUID channelType, @NonNull String characteristicType) {
+        HashSet<String> currentTypes = channelTypeCharacteristicTypesMapper.get(channelType);
+        if (currentTypes == null) {
+            currentTypes = new HashSet<String>();
+        }
+        currentTypes.add(characteristicType);
+        channelTypeCharacteristicTypesMapper.put(channelType, currentTypes);
+    }
+
+    @Override
+    public void addCharacteristic(@NonNull String characateristicUID,
+            @NonNull Class<@NonNull ? extends Characteristic<?>> characteristicClass) {
+        characteristicTypeCharacteristicClassMapper.put(characateristicUID, characteristicClass);
+    }
+
+    @Override
+    public HashSet<String> getCharacteristicTypes(@Nullable ChannelTypeUID channelType) {
+        return channelTypeCharacteristicTypesMapper.get(channelType);
+    }
+
+    @Override
+    public Set<String> getSupportedCharacteristicTypes() {
+        return characteristicTypeCharacteristicClassMapper.values().stream().map(c -> c.getSimpleName())
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<String> getSupportedServiceTypes() {
+        return serviceTypeServiceClassMapper.values().stream().map(c -> c.getSimpleName()).collect(Collectors.toSet());
+    }
+
+}

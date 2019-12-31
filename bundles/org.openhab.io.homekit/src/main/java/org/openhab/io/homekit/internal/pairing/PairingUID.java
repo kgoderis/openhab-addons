@@ -1,0 +1,40 @@
+package org.openhab.io.homekit.internal.pairing;
+
+import java.util.List;
+
+import org.openhab.core.thing.UID;
+
+public class PairingUID extends UID {
+
+    // accessory pairing id : client pairing id
+
+    @Override
+    protected int getMinimalNumberOfSegments() {
+        return 2;
+    }
+
+    /**
+     * Instantiates a new thing UID.
+     *
+     * @param accessoryPairingId the accessory/server pairing id
+     * @param clientPairingId the controller/client pairing id
+     */
+    public PairingUID(String accessoryPairingId, String clientPairingId) {
+        super(accessoryPairingId, clientPairingId);
+    }
+
+    /**
+     * Returns the id.
+     *
+     * @return id the id
+     */
+    public String getId() {
+        List<String> segments = getAllSegments();
+        return segments.get(segments.size() - 1);
+    }
+
+    public String getAccessoryPairingId() {
+        return getSegment(0);
+    }
+
+}
