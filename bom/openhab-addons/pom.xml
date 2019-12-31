@@ -16,6 +16,11 @@
   <name>openHAB Add-ons :: BOM :: openHAB Add-ons</name>
 
   <dependencies>
+      <dependency>
+        <groupId>org.openhab.addons.bundles</groupId>
+        <artifactId>org.openhab.io.homekit</artifactId>
+        <version>${project.version}</version>
+    </dependency>
   </dependencies>
 
 </project>
