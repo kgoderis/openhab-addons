@@ -23,7 +23,8 @@ import org.openhab.io.homekit.crypto.ChachaDecoder;
 import org.openhab.io.homekit.crypto.ChachaEncoder;
 import org.openhab.io.homekit.crypto.EdsaSigner;
 import org.openhab.io.homekit.crypto.EdsaVerifier;
-import org.openhab.io.homekit.internal.servlet.HomekitSRP6ServerSession.State;
+import org.openhab.io.homekit.internal.servlet.HomekitServerSRP6Session.State;
+import org.openhab.io.homekit.util.Byte;
 import org.openhab.io.homekit.util.Error;
 import org.openhab.io.homekit.util.Message;
 import org.openhab.io.homekit.util.TypeLengthValue;
@@ -52,7 +53,7 @@ public class PairSetupServlet extends BaseServlet {
     protected static final String IDENTIFIER = "Pair-Setup";
 
     protected final SRP6CryptoParams config = new SRP6CryptoParams(N_3072, G, "SHA-512");
-    private byte[] hkdf_enc_key;
+    protected byte[] sessionKey;
 
     public PairSetupServlet() {
     }
@@ -92,13 +93,13 @@ public class PairSetupServlet extends BaseServlet {
     protected void doStage1(HttpServletRequest request, HttpServletResponse response, byte[] body)
             throws ServletException, IOException {
         logger.info("Stage 1 : Start");
-        logger.info("Stage 1 : Received Body {}", byteToHexString(body));
+        logger.info("Stage 1 : Received Body {}", Byte.byteToHexString(body));
 
         HttpSession session = request.getSession();
-        HomekitSRP6ServerSession SRP6Session = (HomekitSRP6ServerSession) session.getAttribute("SRP6Session");
+        HomekitServerSRP6Session SRP6Session = (HomekitServerSRP6Session) session.getAttribute("SRP6Session");
 
         if (SRP6Session == null) {
-            SRP6Session = new HomekitSRP6ServerSession(config);
+            SRP6Session = new HomekitServerSRP6Session(config);
             SRP6Session.setClientEvidenceRoutine(new ClientEvidenceRoutineImpl());
             SRP6Session.setServerEvidenceRoutine(new ServerEvidenceRoutineImpl());
             session.setAttribute("SRP6Session", SRP6Session);
@@ -113,7 +114,7 @@ public class PairSetupServlet extends BaseServlet {
             verifierGenerator.setXRoutine(new XRoutineWithUserIdentity());
             BigInteger verifier = verifierGenerator.generateVerifier(server.getSalt(), IDENTIFIER,
                     server.getSetupCode());
-            logger.info("Stage 1 : Verifier is {} ", byteToHexString(bigIntegerToUnsignedByteArray(verifier)));
+            logger.info("Stage 1 : Verifier is {} ", Byte.byteToHexString(bigIntegerToUnsignedByteArray(verifier)));
 
             Encoder encoder = TypeLengthValue.getEncoder();
             encoder.add(Message.STATE, (short) 0x02);
@@ -137,10 +138,10 @@ public class PairSetupServlet extends BaseServlet {
             throws ServletException, IOException {
 
         logger.info("Stage 2 : Start");
-        logger.info("Stage 2 : Received Body {}", byteToHexString(body));
+        logger.info("Stage 2 : Received Body {}", Byte.byteToHexString(body));
 
         HttpSession session = request.getSession();
-        HomekitSRP6ServerSession SRP6Session = (HomekitSRP6ServerSession) session.getAttribute("SRP6Session");
+        HomekitServerSRP6Session SRP6Session = (HomekitServerSRP6Session) session.getAttribute("SRP6Session");
 
         if (SRP6Session == null) {
             logger.info("Stage 2 : Responding {}", HttpServletResponse.SC_UNAUTHORIZED);
@@ -154,7 +155,7 @@ public class PairSetupServlet extends BaseServlet {
                 BigInteger proof = null;
                 Encoder encoder = TypeLengthValue.getEncoder();
                 try {
-                    proof = SRP6Session.step2(getA(body), getM1(body));
+                    proof = SRP6Session.step2(getPublicKey(body), getProof(body));
                     encoder.add(Message.STATE, (short) 0x04);
                     encoder.add(Message.PROOF, proof);
 
@@ -181,10 +182,10 @@ public class PairSetupServlet extends BaseServlet {
             throws ServletException, IOException {
 
         logger.info("Stage 3 : Start");
-        logger.info("Stage 3 : Received Body {}", byteToHexString(body));
+        logger.info("Stage 3 : Received Body {}", Byte.byteToHexString(body));
 
         HttpSession session = request.getSession();
-        HomekitSRP6ServerSession SRP6Session = (HomekitSRP6ServerSession) session.getAttribute("SRP6Session");
+        HomekitServerSRP6Session SRP6Session = (HomekitServerSRP6Session) session.getAttribute("SRP6Session");
 
         if (SRP6Session == null) {
             logger.info("Stage 3 : Responding {}", HttpServletResponse.SC_UNAUTHORIZED);
@@ -194,42 +195,40 @@ public class PairSetupServlet extends BaseServlet {
             MessageDigest digest = SRP6Session.getCryptoParams().getMessageDigestInstance();
             BigInteger S = SRP6Session.getSessionKey(false);
             byte[] sBytes = bigIntegerToUnsignedByteArray(S);
-            logger.info("Stage 3 : Session Key is {}", byteToHexString(sBytes));
+            logger.info("Stage 3 : SRP Session Key is {}", Byte.byteToHexString(sBytes));
             byte[] sharedSecret = digest.digest(sBytes);
-            logger.info("Stage 3 : Shared Secret is {}", byteToHexString(sharedSecret));
+            logger.info("Stage 3 : Shared Secret is {}", Byte.byteToHexString(sharedSecret));
 
             HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA512Digest());
             hkdf.init(new HKDFParameters(sharedSecret, "Pair-Setup-Encrypt-Salt".getBytes(StandardCharsets.UTF_8),
                     "Pair-Setup-Encrypt-Info".getBytes(StandardCharsets.UTF_8)));
-            byte[] clientDeviceX = hkdf_enc_key = new byte[32];
-            hkdf.generateBytes(clientDeviceX, 0, 32);
-            logger.info("Stage 3 : Client Device X is {}", byteToHexString(clientDeviceX));
+            sessionKey = new byte[32];
+            hkdf.generateBytes(sessionKey, 0, 32);
+            logger.info("Stage 3 : Session Key is {}", Byte.byteToHexString(sessionKey));
 
-            ChachaDecoder chachaDecoder = new ChachaDecoder(clientDeviceX, "PS-Msg05".getBytes(StandardCharsets.UTF_8));
+            ChachaDecoder chachaDecoder = new ChachaDecoder(sessionKey, "PS-Msg05".getBytes(StandardCharsets.UTF_8));
             byte[] plaintext = chachaDecoder.decodeCiphertext(getAuthTagData(body), getMessageData(body));
-            logger.info("Stage 3 : Cipher is {}", byteToHexString(plaintext));
+            logger.info("Stage 3 : Plaintext is {}", Byte.byteToHexString(plaintext));
 
             DecodeResult d = TypeLengthValue.decode(plaintext);
             byte[] clientPairingIdentifier = d.getBytes(Message.IDENTIFIER);
-            logger.info("Stage 3 : Client Pairing Id is {}", byteToHexString(clientPairingIdentifier));
+            logger.info("Stage 3 : Client Pairing Id is {}", Byte.byteToHexString(clientPairingIdentifier));
 
             byte[] clientLongtermPublicKey = d.getBytes(Message.PUBLIC_KEY);
-            logger.info("Stage 3 : Client Long Term Public Key is {}", byteToHexString(clientLongtermPublicKey));
+            logger.info("Stage 3 : Client Long Term Public Key is {}", Byte.byteToHexString(clientLongtermPublicKey));
 
             byte[] clientSignature = d.getBytes(Message.SIGNATURE);
-            logger.info("Stage 3 : Client Signature is {}", byteToHexString(clientSignature));
+            logger.info("Stage 3 : Client Signature is {}", Byte.byteToHexString(clientSignature));
 
             hkdf = new HKDFBytesGenerator(new SHA512Digest());
             hkdf.init(
                     new HKDFParameters(sharedSecret, "Pair-Setup-Controller-Sign-Salt".getBytes(StandardCharsets.UTF_8),
                             "Pair-Setup-Controller-Sign-Info".getBytes(StandardCharsets.UTF_8)));
-            clientDeviceX = new byte[32];
+            byte[] clientDeviceX = new byte[32];
             hkdf.generateBytes(clientDeviceX, 0, 32);
 
-            byte[] clientDeviceInfo = org.openhab.io.homekit.util.Byte.joinBytes(clientDeviceX, clientPairingIdentifier,
-                    clientLongtermPublicKey);
-
-            logger.info("Stage 3 : Client Device Info is {}", byteToHexString(clientDeviceInfo));
+            byte[] clientDeviceInfo = Byte.joinBytes(clientDeviceX, clientPairingIdentifier, clientLongtermPublicKey);
+            logger.info("Stage 3 : Client Device Info is {}", Byte.byteToHexString(clientDeviceInfo));
 
             Encoder encoder = TypeLengthValue.getEncoder();
 
@@ -274,14 +273,14 @@ public class PairSetupServlet extends BaseServlet {
                         "Pair-Setup-Accessory-Sign-Info".getBytes(StandardCharsets.UTF_8)));
                 byte[] accessoryDeviceX = new byte[32];
                 hkdf.generateBytes(accessoryDeviceX, 0, 32);
-                logger.info("Stage 3 : Accessory Device X is {}", byteToHexString(accessoryDeviceX));
+                logger.info("Stage 3 : Accessory Device X is {}", Byte.byteToHexString(accessoryDeviceX));
 
-                logger.info("Stage 3 : Server Private Key is {}", byteToHexString(server.getPrivateKey()));
+                logger.info("Stage 3 : Server Private Key is {}", Byte.byteToHexString(server.getPrivateKey()));
                 EdsaSigner signer = new EdsaSigner(server.getPrivateKey());
 
-                byte[] accessoryInfo = org.openhab.io.homekit.util.Byte.joinBytes(accessoryDeviceX,
+                byte[] accessoryInfo = Byte.joinBytes(accessoryDeviceX,
                         server.getPairingId().getBytes(StandardCharsets.UTF_8), signer.getPublicKey());
-                logger.info("Stage 3 : Accessory Device Info is {}", byteToHexString(accessoryInfo));
+                logger.info("Stage 3 : Accessory Device Info is {}", Byte.byteToHexString(accessoryInfo));
 
                 byte[] accessorySignature = null;
                 try {
@@ -296,7 +295,7 @@ public class PairSetupServlet extends BaseServlet {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-                logger.info("Stage 3 : Accessory Signature is {}", byteToHexString(accessorySignature));
+                logger.info("Stage 3 : Accessory Signature is {}", Byte.byteToHexString(accessorySignature));
 
                 logger.info("Stage 3 : Server Pairing Id is {}", server.getPairingId());
                 encoder.add(Message.IDENTIFIER, server.getPairingId().getBytes(StandardCharsets.UTF_8));
@@ -305,7 +304,7 @@ public class PairSetupServlet extends BaseServlet {
 
                 plaintext = encoder.toByteArray();
 
-                ChachaEncoder chachaEncoder = new ChachaEncoder(hkdf_enc_key,
+                ChachaEncoder chachaEncoder = new ChachaEncoder(sessionKey,
                         "PS-Msg06".getBytes(StandardCharsets.UTF_8));
                 byte[] ciphertext = chachaEncoder.encodeCiphertext(plaintext);
 
@@ -404,12 +403,12 @@ public class PairSetupServlet extends BaseServlet {
         }
     }
 
-    protected BigInteger getA(byte[] content) throws IOException {
+    protected BigInteger getPublicKey(byte[] content) throws IOException {
         DecodeResult d = TypeLengthValue.decode(content);
         return d.getBigInt(Message.PUBLIC_KEY);
     }
 
-    protected BigInteger getM1(byte[] content) throws IOException {
+    protected BigInteger getProof(byte[] content) throws IOException {
         DecodeResult d = TypeLengthValue.decode(content);
         return d.getBigInt(Message.PROOF);
     }

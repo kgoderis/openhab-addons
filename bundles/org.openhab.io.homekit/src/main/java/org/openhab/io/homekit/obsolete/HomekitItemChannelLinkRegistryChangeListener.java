@@ -1,3 +1,4 @@
+package org.openhab.io.homekit.obsolete;
 // package org.openhab.io.homekit;
 //
 // import java.util.concurrent.Executors;

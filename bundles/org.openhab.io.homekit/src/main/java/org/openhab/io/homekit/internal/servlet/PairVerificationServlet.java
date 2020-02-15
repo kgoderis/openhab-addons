@@ -22,6 +22,7 @@ import org.openhab.io.homekit.crypto.ChachaEncoder;
 import org.openhab.io.homekit.crypto.EdsaSigner;
 import org.openhab.io.homekit.crypto.EdsaVerifier;
 import org.openhab.io.homekit.obsolete.PairVerificationStageOneHandler;
+import org.openhab.io.homekit.util.Byte;
 import org.openhab.io.homekit.util.Error;
 import org.openhab.io.homekit.util.Message;
 import org.openhab.io.homekit.util.TypeLengthValue;
@@ -73,35 +74,35 @@ public class PairVerificationServlet extends BaseServlet {
             throws ServletException, IOException {
 
         logger.info("Stage 1 : Start");
-        logger.info("Stage 1 : Received Body {}", byteToHexString(body));
+        logger.info("Stage 1 : Received Body {}", Byte.byteToHexString(body));
 
         HttpSession session = request.getSession();
 
         byte[] clientPublicKey = getClientPublicKey(body);
         session.setAttribute("clientPublicKey", clientPublicKey);
-        logger.info("Stage 1 : Client Public Key is {}", byteToHexString(clientPublicKey));
+        logger.info("Stage 1 : Client Public Key is {}", Byte.byteToHexString(clientPublicKey));
 
         byte[] accessoryPublicKey = new byte[32];
         byte[] accessoryPrivateKey = new byte[32];
         getSecureRandom().nextBytes(accessoryPrivateKey);
         Curve25519.keygen(accessoryPublicKey, null, accessoryPrivateKey);
         session.setAttribute("accessoryPublicKey", accessoryPublicKey);
-        logger.info("Stage 1 : Accessory Public Key is {}", byteToHexString(accessoryPublicKey));
-        logger.info("Stage 1 : Accessory Private Key is {}", byteToHexString(accessoryPrivateKey));
+        logger.info("Stage 1 : Accessory Public Key is {}", Byte.byteToHexString(accessoryPublicKey));
+        logger.info("Stage 1 : Accessory Private Key is {}", Byte.byteToHexString(accessoryPrivateKey));
 
         byte[] sharedSecret = new byte[32];
         Curve25519.curve(sharedSecret, accessoryPrivateKey, clientPublicKey);
         session.setAttribute("sharedSecret", sharedSecret);
-        logger.info("Stage 1 : Shared Secret is {}", byteToHexString(sharedSecret));
+        logger.info("Stage 1 : Shared Secret is {}", Byte.byteToHexString(sharedSecret));
 
         logger.info("Stage 1 : Accessory Pairing Id is {}", server.getPairingId());
         byte[] accessoryInfo = org.openhab.io.homekit.util.Byte.joinBytes(accessoryPublicKey,
                 server.getPairingId().getBytes(StandardCharsets.UTF_8), clientPublicKey);
-        logger.info("Stage 1 : Accessory Info is {}", byteToHexString(accessoryInfo));
+        logger.info("Stage 1 : Accessory Info is {}", Byte.byteToHexString(accessoryInfo));
 
         byte[] accessorySignature = null;
         try {
-            logger.info("Stage 1 : Accessory Private Key is {}", byteToHexString(server.getPrivateKey()));
+            logger.info("Stage 1 : Accessory Private Key is {}", Byte.byteToHexString(server.getPrivateKey()));
             accessorySignature = new EdsaSigner(server.getPrivateKey()).sign(accessoryInfo);
         } catch (InvalidKeyException e) {
             // TODO Auto-generated catch block
@@ -119,7 +120,7 @@ public class PairVerificationServlet extends BaseServlet {
         logger.info("Stage 1 : Accessory Pairing Id is {}", server.getPairingId());
         encoder.add(Message.IDENTIFIER, server.getPairingId().getBytes(StandardCharsets.UTF_8));
 
-        logger.info("Stage 1 : Accessory Signature is {}", byteToHexString(accessorySignature));
+        logger.info("Stage 1 : Accessory Signature is {}", Byte.byteToHexString(accessorySignature));
         encoder.add(Message.SIGNATURE, accessorySignature);
         byte[] plaintext = encoder.toByteArray();
 
@@ -129,7 +130,7 @@ public class PairVerificationServlet extends BaseServlet {
         byte[] sessionKey = new byte[32];
         hkdf.generateBytes(sessionKey, 0, 32);
         session.setAttribute("sessionKey", sessionKey);
-        logger.info("Stage 1 : Session Key is {}", byteToHexString(sessionKey));
+        logger.info("Stage 1 : Session Key is {}", Byte.byteToHexString(sessionKey));
 
         ChachaEncoder chacha = new ChachaEncoder(sessionKey, "PV-Msg02".getBytes(StandardCharsets.UTF_8));
         byte[] ciphertext = chacha.encodeCiphertext(plaintext);
@@ -155,20 +156,20 @@ public class PairVerificationServlet extends BaseServlet {
         try {
             boolean isError = false;
             logger.info("Stage 2 : Start");
-            logger.info("Stage 2 : Received Body {}", byteToHexString(body));
+            logger.info("Stage 2 : Received Body {}", Byte.byteToHexString(body));
 
             HttpSession session = request.getSession();
             byte[] sessionKey = (byte[]) session.getAttribute("sessionKey");
-            logger.info("Stage 2 : Get Session Key {} from Session", byteToHexString(sessionKey));
+            logger.info("Stage 2 : Get Session Key {} from Session", Byte.byteToHexString(sessionKey));
 
             byte[] clientPublicKey = (byte[]) session.getAttribute("clientPublicKey");
-            logger.info("Stage 2 : Get Client Public Key {} from Session", byteToHexString(clientPublicKey));
+            logger.info("Stage 2 : Get Client Public Key {} from Session", Byte.byteToHexString(clientPublicKey));
 
             byte[] accessoryPublicKey = (byte[]) session.getAttribute("accessoryPublicKey");
-            logger.info("Stage 2 : Get Accessory Public Key {} from Session", byteToHexString(accessoryPublicKey));
+            logger.info("Stage 2 : Get Accessory Public Key {} from Session", Byte.byteToHexString(accessoryPublicKey));
 
             byte[] sharedSecret = (byte[]) session.getAttribute("sharedSecret");
-            logger.info("Stage 2 : Get Shared Secret {} from Session", byteToHexString(sharedSecret));
+            logger.info("Stage 2 : Get Shared Secret {} from Session", Byte.byteToHexString(sharedSecret));
 
             Encoder encoder = TypeLengthValue.getEncoder();
 
@@ -189,10 +190,10 @@ public class PairVerificationServlet extends BaseServlet {
                 DecodeResult d = TypeLengthValue.decode(plaintext);
 
                 clientPairingId = d.getBytes(Message.IDENTIFIER);
-                logger.info("Stage 2 : Client Pairing Id is {}", byteToHexString(clientPairingId));
+                logger.info("Stage 2 : Client Pairing Id is {}", Byte.byteToHexString(clientPairingId));
 
                 clientSignature = d.getBytes(Message.SIGNATURE);
-                logger.info("Stage 2 : Client Signature is {}", byteToHexString(clientSignature));
+                logger.info("Stage 2 : Client Signature is {}", Byte.byteToHexString(clientSignature));
 
                 clientLongtermPublicKey = server
                         .getPairingPublicKey(new String(clientPairingId, StandardCharsets.UTF_8));
@@ -202,7 +203,7 @@ public class PairVerificationServlet extends BaseServlet {
                     logger.warn("Stage 2 : Unknown Pairing {}", new String(clientPairingId, StandardCharsets.UTF_8));
                 } else {
                     logger.info("Stage 2 : Client Long Term Public Key is {}",
-                            byteToHexString(clientLongtermPublicKey));
+                            Byte.byteToHexString(clientLongtermPublicKey));
                 }
             }
 
@@ -231,12 +232,12 @@ public class PairVerificationServlet extends BaseServlet {
                 session.setAttribute("Control-Write-Encryption-Key",
                         createKey("Control-Write-Encryption-Key", sharedSecret));
                 logger.info("Stage 2 : Write Key is {}",
-                        byteToHexString((byte[]) session.getAttribute("Control-Write-Encryption-Key")));
+                        Byte.byteToHexString((byte[]) session.getAttribute("Control-Write-Encryption-Key")));
 
                 session.setAttribute("Control-Read-Encryption-Key",
                         createKey("Control-Read-Encryption-Key", sharedSecret));
                 logger.info("Stage 2 : Read Key is {}",
-                        byteToHexString((byte[]) session.getAttribute("Control-Read-Encryption-Key")));
+                        Byte.byteToHexString((byte[]) session.getAttribute("Control-Read-Encryption-Key")));
 
                 request.setAttribute("HomekitEncryptionEnabled", true);
             }

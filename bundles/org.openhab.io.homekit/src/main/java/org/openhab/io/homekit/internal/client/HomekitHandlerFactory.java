@@ -23,6 +23,8 @@ import org.openhab.core.thing.binding.BaseThingHandlerFactory;
 import org.openhab.core.thing.binding.ThingHandler;
 import org.openhab.core.thing.binding.ThingHandlerFactory;
 import org.osgi.service.component.annotations.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The {@link HomekitHandlerFactory} is responsible for creating things and thing
@@ -31,8 +33,10 @@ import org.osgi.service.component.annotations.Component;
  * @author Karel Goderis - Initial contribution
  */
 @NonNullByDefault
-@Component(configurationPid = "binding.homekit", service = ThingHandlerFactory.class)
+@Component(configurationPid = "io.homekit", service = ThingHandlerFactory.class)
 public class HomekitHandlerFactory extends BaseThingHandlerFactory {
+
+    private final Logger logger = LoggerFactory.getLogger(HomekitHandlerFactory.class);
 
     private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections
             .singleton(HomekitBindingConstants.THING_TYPE_ACCESSORY);
@@ -46,9 +50,15 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
     protected @Nullable ThingHandler createHandler(Thing thing) {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
-        if (HomekitBindingConstants.THING_TYPE_ACCESSORY.equals(thingTypeUID)) {
-            return new HomekitHandler(thing);
+        if (HomekitBindingConstants.THING_TYPE_BRIDGE.equals(thingTypeUID)) {
+            return new HomekitBridgeHandler(thing);
         }
+
+        if (HomekitBindingConstants.THING_TYPE_ACCESSORY.equals(thingTypeUID)) {
+            return new HomekitAccessoryHandler(thing);
+        }
+
+        logger.debug("Unsupported thing {}.", thing.getThingTypeUID());
 
         return null;
     }

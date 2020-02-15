@@ -60,12 +60,4 @@ public abstract class BaseServlet extends HttpServlet {
         return array;
     }
 
-    protected static String byteToHexString(byte[] input) {
-        StringBuilder sb = new StringBuilder();
-        for (byte b : input) {
-            sb.append(String.format("%02X ", b));
-        }
-        return sb.toString();
-    }
-
 }

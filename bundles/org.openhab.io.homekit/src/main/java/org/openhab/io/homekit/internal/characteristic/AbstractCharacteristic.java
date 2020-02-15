@@ -9,8 +9,6 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
-import org.eclipse.jdt.annotation.NonNull;
-import org.openhab.core.items.Item;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.types.State;
 import org.openhab.core.types.UnDefType;
@@ -114,7 +112,7 @@ public abstract class AbstractCharacteristic<T> implements Characteristic<T> {
         ChannelUID uid = getChannelUID();
 
         if (uid != null) {
-            State state = manager.getValue(uid);
+            State state = manager.getState(uid);
 
             if (state != UnDefType.UNDEF) {
                 return convert(state);
@@ -129,7 +127,7 @@ public abstract class AbstractCharacteristic<T> implements Characteristic<T> {
     @Override
     public void setValue(T value) throws Exception {
         if (isWritable) {
-            manager.setValue(getChannelUID(), convert(value));
+            manager.stateUpdated(getChannelUID(), convert(value));
         } else {
             throw new Exception("Can not modify a readonly characteristic");
         }
@@ -137,7 +135,7 @@ public abstract class AbstractCharacteristic<T> implements Characteristic<T> {
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @throws Exception
      */
     @Override
@@ -304,14 +302,14 @@ public abstract class AbstractCharacteristic<T> implements Characteristic<T> {
         }
     }
 
-    @Override
-    public void stateChanged(@NonNull Item item, @NonNull State oldState, @NonNull State newState) {
-        logger.debug("State Changed {} : {} -> {}", item.getName(), oldState, newState);
-        manager.setValue(getUID(), toEventJson(convert(newState)));
-    }
-
-    @Override
-    public void stateUpdated(@NonNull Item item, @NonNull State state) {
-        // No Op - We do not want to flood the network per Apple HAP Spec guidelines
-    }
+    // @Override
+    // public void stateChanged(@NonNull Item item, @NonNull State oldState, @NonNull State newState) {
+    // logger.debug("State Changed {} : {} -> {}", item.getName(), oldState, newState);
+    // manager.handleUpdate(getUID(), toEventJson(convert(newState)));
+    // }
+    //
+    // @Override
+    // public void stateUpdated(@NonNull Item item, @NonNull State state) {
+    // // No Op - We do not want to flood the network per Apple HAP Spec guidelines
+    // }
 }

@@ -44,7 +44,7 @@ import com.nimbusds.srp6.URoutineContext;
  *
  * @author Vladimir Dzhuvinov
  */
-public class HomekitSRP6ServerSession extends SRP6Session {
+public class HomekitServerSRP6Session extends SRP6Session {
 
     /** Enumerates the states of a server-side SRP-6a authentication session. */
     public static enum State {
@@ -91,7 +91,7 @@ public class HomekitSRP6ServerSession extends SRP6Session {
      *            counterparty (server or client) fails to respond within the specified time the session will
      *            be closed. If zero timeouts are disabled.
      */
-    public HomekitSRP6ServerSession(final SRP6CryptoParams config, final int timeout) {
+    public HomekitServerSRP6Session(final SRP6CryptoParams config, final int timeout) {
 
         super(timeout);
 
@@ -118,7 +118,7 @@ public class HomekitSRP6ServerSession extends SRP6Session {
      *
      * @param config The SRP-6a crypto parameters configuration. Must not be {@code null}.
      */
-    public HomekitSRP6ServerSession(final SRP6CryptoParams config) {
+    public HomekitServerSRP6Session(final SRP6CryptoParams config) {
 
         this(config, 0);
     }
@@ -171,6 +171,7 @@ public class HomekitSRP6ServerSession extends SRP6Session {
         k = SRP6Routines.computeK(digest, config.N, config.g);
         digest.reset();
 
+        // Line below is different from standard implementation
         b = generatePrivateValue(config.N, random);
         digest.reset();
 

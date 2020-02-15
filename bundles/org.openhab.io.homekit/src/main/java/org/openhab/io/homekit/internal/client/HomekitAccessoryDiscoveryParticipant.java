@@ -15,7 +15,12 @@ import org.openhab.core.config.discovery.DiscoveryResultBuilder;
 import org.openhab.core.config.discovery.mdns.MDNSDiscoveryParticipant;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.ThingUID;
+import org.openhab.io.homekit.api.AccessoryServer;
+import org.openhab.io.homekit.api.AccessoryServerRegistry;
+import org.openhab.io.homekit.internal.server.AccessoryServerUID;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +31,11 @@ public class HomekitAccessoryDiscoveryParticipant implements MDNSDiscoveryPartic
 
     private static final String HAP_SERVICE_TYPE = "_hap._tcp.local.";
 
-    public HomekitAccessoryDiscoveryParticipant() {
+    private final AccessoryServerRegistry accessoryServerRegistry;
+
+    @Activate
+    public HomekitAccessoryDiscoveryParticipant(@Reference AccessoryServerRegistry accessoryServerRegistry) {
+        this.accessoryServerRegistry = accessoryServerRegistry;
     }
 
     @Override
@@ -42,22 +51,35 @@ public class HomekitAccessoryDiscoveryParticipant implements MDNSDiscoveryPartic
     @Override
     public @Nullable DiscoveryResult createResult(@NonNull ServiceInfo service) {
         if (service.getApplication().contains("hap")) {
-            ThingUID uid = getThingUID(service);
 
-            Enumeration<String> propertiesList = service.getPropertyNames();
-            while (propertiesList.hasMoreElements()) {
-                String element = propertiesList.nextElement();
-                String value = service.getPropertyString(element);
-                // process element
-                logger.debug("Property {} {}", element, value);
-            }
+            String id = service.getPropertyString("id");
+            if (id != null) {
+                AccessoryServer accessoryServer = accessoryServerRegistry
+                        .get(new AccessoryServerUID("BridgeAccessoryServer", id.replace(":", "")));
 
-            if (uid != null) {
-                String hostAddress = service.getName() + "." + service.getDomain() + ".";
-                Map<String, Object> properties = new HashMap<>(2);
-                // properties.put(DigitalSTROMBindingConstants.HOST, hostAddress);
-                return DiscoveryResultBuilder.create(uid).withProperties(properties)
-                        .withRepresentationProperty(uid.getId()).withLabel("digitalSTROM-Server").build();
+                if (accessoryServer != null) {
+                    logger.debug("Skipping service info associated with an openHAB Accessory Server {}",
+                            accessoryServer.getUID());
+                } else {
+                    ThingUID uid = getThingUID(service);
+
+                    if (uid != null) {
+                        Enumeration<String> serviceProperties = service.getPropertyNames();
+                        Map<String, Object> properties = new HashMap<>();
+
+                        properties.put("ip.addresses", service.getHostAddresses());
+                        properties.put("port", service.getPort());
+
+                        while (serviceProperties.hasMoreElements()) {
+                            String element = serviceProperties.nextElement();
+                            String value = service.getPropertyString(element);
+                            properties.put(element, value);
+                        }
+
+                        return DiscoveryResultBuilder.create(uid).withProperties(properties)
+                                .withRepresentationProperty(uid.getId()).withLabel("Homekit Accessory").build();
+                    }
+                }
             }
         }
         return null;
@@ -65,8 +87,19 @@ public class HomekitAccessoryDiscoveryParticipant implements MDNSDiscoveryPartic
 
     @Override
     public @Nullable ThingUID getThingUID(@NonNull ServiceInfo service) {
-        // TODO Auto-generated method stub
+        if (service.getApplication().contains("hap") && service.getPropertyString("id") != null) {
+
+            String category = service.getPropertyString("ci");
+            String id = service.getPropertyString("id").replace(":", "");
+
+            if (category.equals("2")) {
+                return new ThingUID(HomekitBindingConstants.THING_TYPE_BRIDGE, id);
+
+            } else {
+                return new ThingUID(HomekitBindingConstants.THING_TYPE_ACCESSORY, id);
+            }
+        }
+
         return null;
     }
-
 }

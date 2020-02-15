@@ -24,9 +24,10 @@ import org.openhab.core.thing.ThingTypeUID;
 @NonNullByDefault
 public class HomekitBindingConstants {
 
-    private static final String BINDING_ID = "homekit";
+    public static final String BINDING_ID = "homekit";
 
     // List of all Thing Type UIDs
+    public static final ThingTypeUID THING_TYPE_BRIDGE = new ThingTypeUID(BINDING_ID, "bridge");
     public static final ThingTypeUID THING_TYPE_ACCESSORY = new ThingTypeUID(BINDING_ID, "accessory");
 
     // List of all Channel ids

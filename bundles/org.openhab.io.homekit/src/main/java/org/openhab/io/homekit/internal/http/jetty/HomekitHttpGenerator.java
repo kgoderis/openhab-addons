@@ -59,25 +59,6 @@ public class HomekitHttpGenerator extends HttpGenerator {
                 }
             }, 0);
 
-    // // states
-    // public enum State {
-    // START,
-    // COMMITTED,
-    // COMPLETING,
-    // COMPLETING_1XX,
-    // END
-    // }
-    //
-    // public enum Result {
-    // NEED_CHUNK,
-    // NEED_INFO,
-    // NEED_HEADER,
-    // FLUSH,
-    // CONTINUE,
-    // SHUTDOWN_OUT,
-    // DONE
-    // }
-
     // other statics
     public static final int CHUNK_SIZE = 12;
 

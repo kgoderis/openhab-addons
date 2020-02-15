@@ -23,6 +23,7 @@ import org.openhab.io.homekit.api.AccessoryRegistry;
 import org.openhab.io.homekit.api.AccessoryServer;
 import org.openhab.io.homekit.api.AccessoryServerRegistry;
 import org.openhab.io.homekit.api.HomekitFactory;
+import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
 import org.openhab.io.homekit.library.accessory.ThingAccessory;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -132,6 +133,10 @@ public class HomekitThingRegistryChangeListener implements ThingRegistryChangeLi
     @Override
     public void added(@NonNull Thing thing) {
         if (!initialized) {
+            return;
+        }
+
+        if (thing.getUID().getBindingId() == HomekitBindingConstants.BINDING_ID) {
             return;
         }
 

@@ -41,7 +41,7 @@ public class BrightnessCharacteristic extends IntegerCharacteristic {
     @Override
     protected State convert(Integer value) {
 
-        State state = manager.getValue(getChannelUID());
+        State state = manager.getState(getChannelUID());
 
         if (state instanceof HSBType) {
             return new HSBType(((HSBType) state).getHue(), ((HSBType) state).getSaturation(), new PercentType(value));

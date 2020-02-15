@@ -14,8 +14,8 @@ import javax.servlet.http.HttpSession;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.server.Request;
 import org.openhab.io.homekit.api.AccessoryServer;
-import org.openhab.io.homekit.internal.servlet.HomekitSRP6ServerSession;
-import org.openhab.io.homekit.internal.servlet.HomekitSRP6ServerSession.State;
+import org.openhab.io.homekit.internal.servlet.HomekitServerSRP6Session;
+import org.openhab.io.homekit.internal.servlet.HomekitServerSRP6Session.State;
 import org.openhab.io.homekit.util.Message;
 import org.openhab.io.homekit.util.TypeLengthValue;
 import org.openhab.io.homekit.util.TypeLengthValue.Encoder;
@@ -44,10 +44,10 @@ public class PairSetupStageOneHandler extends PairSetupHandler {
             logger.info("Starting pair for " + server.getId());
 
             HttpSession session = request.getSession();
-            HomekitSRP6ServerSession SRP6Session = (HomekitSRP6ServerSession) session.getAttribute("SRP6Session");
+            HomekitServerSRP6Session SRP6Session = (HomekitServerSRP6Session) session.getAttribute("SRP6Session");
 
             if (SRP6Session == null) {
-                SRP6Session = new HomekitSRP6ServerSession(config);
+                SRP6Session = new HomekitServerSRP6Session(config);
                 SRP6Session.setClientEvidenceRoutine(new ClientEvidenceRoutineImpl());
                 SRP6Session.setServerEvidenceRoutine(new ServerEvidenceRoutineImpl());
                 session.setAttribute("SRP6Session", SRP6Session);

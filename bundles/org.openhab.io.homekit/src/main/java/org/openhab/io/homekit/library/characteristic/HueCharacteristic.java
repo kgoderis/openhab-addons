@@ -39,7 +39,7 @@ public class HueCharacteristic extends FloatCharacteristic {
     @Override
     protected State convert(Double value) {
 
-        State state = manager.getValue(getChannelUID());
+        State state = manager.getState(getChannelUID());
 
         if (state instanceof HSBType) {
             return new HSBType(new DecimalType(value), ((HSBType) state).getSaturation(),

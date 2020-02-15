@@ -34,6 +34,7 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
     private static final String CMD_ACCESSORY = "accessory";
     private static final String CMD_PAIRING = "pairing";
 
+    private static final String SUBCMD_ADD = "add";
     private static final String SUBCMD_LIST = "list";
     private static final String SUBCMD_SHOW = "show";
     private static final String SUBCMD_CLEAR = "clear";
@@ -125,6 +126,9 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         if (args.length > 1) {
             String actionCommand = args[1];
             switch (actionCommand) {
+                case SUBCMD_ADD:
+                    addPairing(args, console);
+                    break;
                 case SUBCMD_CLEAR:
                     clearHomekitPairings(console);
                     break;
@@ -192,6 +196,16 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
             console.println("Cleared homekit pairings");
         } catch (Exception e) {
             logger.warn("Could not clear homekit pairings", e);
+        }
+    }
+
+    private void addPairing(String[] args, Console console) {
+        if (args.length > 3) {
+            String accessory = args[2];
+            String setupCode = args[3];
+
+        } else {
+            printUsage(console);
         }
     }
 }

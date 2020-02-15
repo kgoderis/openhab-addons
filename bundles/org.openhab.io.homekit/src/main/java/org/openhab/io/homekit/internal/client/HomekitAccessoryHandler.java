@@ -12,7 +12,7 @@
  */
 package org.openhab.io.homekit.internal.client;
 
-import static org.openhab.io.homekit.internal.client.HomekitBindingConstants.*;
+import static org.openhab.io.homekit.internal.client.HomekitBindingConstants.CHANNEL_1;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -26,19 +26,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link HomekitHandler} is responsible for handling commands, which are
+ * The {@link HomekitAccessoryHandler} is responsible for handling commands, which are
  * sent to one of the channels.
  *
  * @author Karel Goderis - Initial contribution
  */
 @NonNullByDefault
-public class HomekitHandler extends BaseThingHandler {
+public class HomekitAccessoryHandler extends BaseThingHandler {
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryHandler.class);
 
     private @Nullable HomekitConfiguration config;
+    private @Nullable HomekitClient homekitClient;
 
-    public HomekitHandler(Thing thing) {
+    public HomekitAccessoryHandler(Thing thing) {
         super(thing);
     }
 
@@ -94,5 +95,8 @@ public class HomekitHandler extends BaseThingHandler {
         // Add a description to give user information to understand why thing does not work as expected. E.g.
         // updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
         // "Can not access device as username and/or password are invalid");
+
+        homekitClient = new HomekitClient();
+
     }
 }

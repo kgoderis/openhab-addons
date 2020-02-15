@@ -23,7 +23,7 @@ import org.openhab.io.homekit.crypto.ChachaDecoder;
 import org.openhab.io.homekit.crypto.ChachaEncoder;
 import org.openhab.io.homekit.crypto.EdsaSigner;
 import org.openhab.io.homekit.crypto.EdsaVerifier;
-import org.openhab.io.homekit.internal.servlet.HomekitSRP6ServerSession;
+import org.openhab.io.homekit.internal.servlet.HomekitServerSRP6Session;
 import org.openhab.io.homekit.util.Error;
 import org.openhab.io.homekit.util.Message;
 import org.openhab.io.homekit.util.TypeLengthValue;
@@ -46,7 +46,7 @@ public class PairSetupStageThreeHandler extends PairSetupHandler {
 
         if (getStage(body) == 3) {
             HttpSession session = request.getSession();
-            HomekitSRP6ServerSession SRP6Session = (HomekitSRP6ServerSession) session.getAttribute("SRP6Session");
+            HomekitServerSRP6Session SRP6Session = (HomekitServerSRP6Session) session.getAttribute("SRP6Session");
 
             if (SRP6Session == null) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
