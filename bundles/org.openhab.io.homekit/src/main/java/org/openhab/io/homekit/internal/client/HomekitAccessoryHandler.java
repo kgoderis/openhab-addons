@@ -14,6 +14,12 @@ package org.openhab.io.homekit.internal.client;
 
 import static org.openhab.io.homekit.internal.client.HomekitBindingConstants.CHANNEL_1;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.thing.ChannelUID;
@@ -22,6 +28,7 @@ import org.openhab.core.thing.ThingStatus;
 import org.openhab.core.thing.binding.BaseThingHandler;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.RefreshType;
+import org.openhab.io.homekit.api.PairingRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,11 +43,13 @@ public class HomekitAccessoryHandler extends BaseThingHandler {
 
     private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryHandler.class);
 
-    private @Nullable HomekitConfiguration config;
+    private @Nullable HomekitAccessoryConfiguration config;
     private @Nullable HomekitClient homekitClient;
+    private final PairingRegistry pairingRegistry;
 
-    public HomekitAccessoryHandler(Thing thing) {
+    public HomekitAccessoryHandler(Thing thing, PairingRegistry pairingRegistry) {
         super(thing);
+        this.pairingRegistry = pairingRegistry;
     }
 
     @Override
@@ -62,7 +71,9 @@ public class HomekitAccessoryHandler extends BaseThingHandler {
     @Override
     public void initialize() {
         // logger.debug("Start initializing!");
-        config = getConfigAs(HomekitConfiguration.class);
+        config = getConfigAs(HomekitAccessoryConfiguration.class);
+
+        Map<String, String> props = getThing().getProperties();
 
         // TODO: Initialize the handler.
         // The framework requires you to return from this method quickly. Also, before leaving this method a thing
@@ -79,13 +90,86 @@ public class HomekitAccessoryHandler extends BaseThingHandler {
 
         // Example for background initialization:
         scheduler.execute(() -> {
-            boolean thingReachable = true; // <background task with long running initialization here>
-            // when done do:
-            if (thingReachable) {
-                updateStatus(ThingStatus.ONLINE);
-            } else {
-                updateStatus(ThingStatus.OFFLINE);
+
+            try {
+
+                byte[] clientPairingId = null;
+                try {
+                    clientPairingId = props.get(HomekitAccessoryConfiguration.CLIENT_PAIRING_ID)
+                            .getBytes(StandardCharsets.UTF_8);
+                } catch (Exception e) {
+                }
+
+                byte[] clientLongtermSecretKey = null;
+                try {
+                    clientLongtermSecretKey = props.get(HomekitAccessoryConfiguration.CLIENT_LTSK)
+                            .getBytes(StandardCharsets.UTF_8);
+                } catch (Exception e) {
+                }
+
+                byte[] accessoryPairingId = null;
+                try {
+                    accessoryPairingId = props.get(HomekitAccessoryConfiguration.ACCESSORY_PAIRING_ID)
+                            .getBytes(StandardCharsets.UTF_8);
+                } catch (Exception e) {
+                }
+
+                if (clientPairingId != null && accessoryPairingId != null && accessoryPairingId != null) {
+
+                    try {
+                        homekitClient = new HomekitClient(
+                                InetAddress.getByName(props.get(HomekitAccessoryConfiguration.HOST_ADDRESS)),
+                                Integer.parseInt(props.get(HomekitAccessoryConfiguration.PORT)), clientPairingId,
+                                clientLongtermSecretKey, "572-95-036", pairingRegistry);
+                    } catch (UnknownHostException e1) {
+                        // TODO Auto-generated catch block
+                        e1.printStackTrace();
+                    }
+
+                    homekitClient.PairVerify();
+
+                } else {
+
+                    try {
+                        homekitClient = new HomekitClient(
+                                InetAddress.getByName(props.get(HomekitAccessoryConfiguration.HOST_ADDRESS)),
+                                Integer.parseInt(props.get(HomekitAccessoryConfiguration.PORT)), "572-95-036",
+                                pairingRegistry);
+                    } catch (UnknownHostException e1) {
+                        // TODO Auto-generated catch block
+                        e1.printStackTrace();
+                    }
+
+                    homekitClient.PairSetup();
+
+                    logger.debug("PairSetup done");
+                    logger.debug("Check is Paired {}", homekitClient.isPaired());
+
+                    if (homekitClient.isPaired()) {
+                        Map<String, String> properties = editProperties();
+                        properties.put(HomekitAccessoryConfiguration.CLIENT_PAIRING_ID,
+                                new String(homekitClient.getPairingId(), StandardCharsets.UTF_8));
+                        properties.put(HomekitAccessoryConfiguration.CLIENT_LTSK,
+                                new String(homekitClient.getLongTermSecretKey(), StandardCharsets.UTF_8));
+                        properties.put(HomekitAccessoryConfiguration.ACCESSORY_PAIRING_ID,
+                                new String(homekitClient.getAccessoryPairingId(), StandardCharsets.UTF_8));
+                        this.updateProperties(properties);
+
+                        homekitClient.PairVerify();
+                    }
+                }
+
+                if (homekitClient.isPairVerified()) {
+                    updateStatus(ThingStatus.ONLINE);
+                } else {
+                    updateStatus(ThingStatus.OFFLINE);
+                }
+
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
+
         });
 
         // logger.debug("Finished initializing!");
@@ -96,7 +180,13 @@ public class HomekitAccessoryHandler extends BaseThingHandler {
         // updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
         // "Can not access device as username and/or password are invalid");
 
-        homekitClient = new HomekitClient();
+        // try {
+        // homekitClient.PairSetup();
+        // } catch (IOException e) {
+        // // TODO Auto-generated catch block
+        // e.printStackTrace();
+        // }
 
     }
+
 }

@@ -12,7 +12,7 @@ import org.openhab.io.homekit.internal.http.jetty.HomekitHttpClientTransportOver
 
 public class HomekitBridgeHandler extends BaseBridgeHandler {
 
-    private @Nullable HomekitConfiguration config;
+    private @Nullable HomekitAccessoryConfiguration config;
     private @Nullable HttpClient httpClient;
 
     public HomekitBridgeHandler(Bridge bridge) {
@@ -29,7 +29,7 @@ public class HomekitBridgeHandler extends BaseBridgeHandler {
     @Override
     public void initialize() {
         // logger.debug("Start initializing!");
-        config = getConfigAs(HomekitConfiguration.class);
+        config = getConfigAs(HomekitAccessoryConfiguration.class);
 
         // TODO: Initialize the handler.
         // The framework requires you to return from this method quickly. Also, before leaving this method a thing

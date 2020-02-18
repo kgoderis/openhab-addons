@@ -68,9 +68,9 @@ public class PairSetupServlet extends BaseServlet {
 
         try {
             byte[] body = IOUtils.toByteArray(request.getInputStream());
-            short stage = getStage(body);
+            short state = getState(body);
 
-            switch (stage) {
+            switch (state) {
                 case 1: {
                     doStage1(request, response, body);
                     break;
@@ -259,10 +259,9 @@ public class PairSetupServlet extends BaseServlet {
                 response.getOutputStream().flush();
                 logger.info("Stage 3 : Flushed");
             } else {
-                logger.info("Stage 3 : Adding pairing to Accessory Server");
+                logger.info("Stage 3 : Adding pairing for Accessory Server");
                 try {
-                    server.addPairing(new String(clientPairingIdentifier, StandardCharsets.UTF_8),
-                            clientLongtermPublicKey);
+                    server.addPairing(clientPairingIdentifier, clientLongtermPublicKey);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -278,8 +277,7 @@ public class PairSetupServlet extends BaseServlet {
                 logger.info("Stage 3 : Server Private Key is {}", Byte.byteToHexString(server.getPrivateKey()));
                 EdsaSigner signer = new EdsaSigner(server.getPrivateKey());
 
-                byte[] accessoryInfo = Byte.joinBytes(accessoryDeviceX,
-                        server.getPairingId().getBytes(StandardCharsets.UTF_8), signer.getPublicKey());
+                byte[] accessoryInfo = Byte.joinBytes(accessoryDeviceX, server.getPairingId(), signer.getPublicKey());
                 logger.info("Stage 3 : Accessory Device Info is {}", Byte.byteToHexString(accessoryInfo));
 
                 byte[] accessorySignature = null;
@@ -298,7 +296,7 @@ public class PairSetupServlet extends BaseServlet {
                 logger.info("Stage 3 : Accessory Signature is {}", Byte.byteToHexString(accessorySignature));
 
                 logger.info("Stage 3 : Server Pairing Id is {}", server.getPairingId());
-                encoder.add(Message.IDENTIFIER, server.getPairingId().getBytes(StandardCharsets.UTF_8));
+                encoder.add(Message.IDENTIFIER, server.getPairingId());
                 encoder.add(Message.PUBLIC_KEY, signer.getPublicKey());
                 encoder.add(Message.SIGNATURE, accessorySignature);
 

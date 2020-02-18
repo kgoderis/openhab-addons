@@ -2,6 +2,7 @@ package org.openhab.io.homekit.internal.server;
 
 import java.math.BigInteger;
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.SecureRandom;
 import java.util.Arrays;
@@ -81,7 +82,7 @@ public class BridgeAccessoryServerFactoryImpl implements AccessoryServerFactory 
 
     @Override
     public @Nullable AccessoryServer createServer(@NonNull String factoryType, InetAddress localAddress, int port,
-            String id, BigInteger salt, byte[] privateKey, int configurationIndex) {
+            byte[] id, BigInteger salt, byte[] privateKey, int configurationIndex) {
 
         if (Arrays.stream(getSupportedServerTypes()).anyMatch(factoryType::equals)) {
             BridgeAccessoryServer newBridge = null;
@@ -124,11 +125,11 @@ public class BridgeAccessoryServerFactoryImpl implements AccessoryServerFactory 
     }
 
     @Override
-    public String generatePairingId() {
+    public byte[] generatePairingId() {
         int byte1 = ((secureRandom.nextInt(255) + 1) | 2) & 0xFE; // Unicast locally administered MAC;
-        return Integer.toHexString(byte1).toUpperCase() + ":" + Stream.generate(() -> secureRandom.nextInt(255) + 1)
-                .limit(5).map(i -> Integer.toHexString(i).toUpperCase()).collect(Collectors.joining(":"));
-        // return Integer.toHexString(byte1) + Stream.generate(() -> secureRandom.nextInt(255) + 1).limit(5)
-        // .map(i -> Integer.toHexString(i)).collect(Collectors.joining(""));
+        return (Integer.toHexString(byte1).toUpperCase() + ":"
+                + Stream.generate(() -> secureRandom.nextInt(255) + 1).limit(5)
+                        .map(i -> Integer.toHexString(i).toUpperCase()).collect(Collectors.joining(":")))
+                                .getBytes(StandardCharsets.UTF_8);
     }
 }

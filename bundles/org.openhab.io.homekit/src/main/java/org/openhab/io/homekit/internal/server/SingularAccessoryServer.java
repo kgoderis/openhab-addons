@@ -21,7 +21,7 @@ import org.openhab.io.homekit.api.PairingRegistry;
  */
 public class SingularAccessoryServer extends AbstractAccessoryServer {
 
-    public SingularAccessoryServer(InetAddress localAddress, int port, String pairingId, BigInteger salt,
+    public SingularAccessoryServer(InetAddress localAddress, int port, byte[] pairingId, BigInteger salt,
             byte[] privateKey, MDNSService mdnsService, AccessoryRegistry accessoryRegistry,
             PairingRegistry pairingRegistry, NotificationRegistry notificationRegistry,
             HomekitCommunicationManager manager, SafeCaller safeCaller) throws InvalidAlgorithmParameterException {

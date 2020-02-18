@@ -32,7 +32,7 @@ public abstract class BaseServlet extends HttpServlet {
         }
     }
 
-    protected short getStage(byte[] content) throws IOException {
+    protected short getState(byte[] content) throws IOException {
         DecodeResult d = TypeLengthValue.decode(content);
         return d.getByte(Message.STATE);
     }

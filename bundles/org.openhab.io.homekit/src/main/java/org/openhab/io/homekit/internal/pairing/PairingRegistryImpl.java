@@ -12,6 +12,7 @@
  */
 package org.openhab.io.homekit.internal.pairing;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
@@ -24,6 +25,7 @@ import org.openhab.core.service.ReadyService;
 import org.openhab.io.homekit.api.Pairing;
 import org.openhab.io.homekit.api.PairingProvider;
 import org.openhab.io.homekit.api.PairingRegistry;
+import org.openhab.io.homekit.util.Byte;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -85,8 +87,8 @@ public class PairingRegistryImpl extends AbstractRegistry<Pairing, PairingUID, P
     }
 
     @Override
-    public Collection<Pairing> get(String pairingId) {
-        return getAll().stream().filter(p -> p.getUID().getAccessoryPairingId() == pairingId)
+    public Collection<Pairing> get(byte[] pairingId) {
+        return getAll().stream().filter(p -> Arrays.equals(p.getUID().getAccessoryPairingId(), pairingId))
                 .collect(Collectors.toList());
     }
 
@@ -125,7 +127,7 @@ public class PairingRegistryImpl extends AbstractRegistry<Pairing, PairingUID, P
         if (accessoryServerRegistryReady && managedPairingProviderReady) {
             for (Pairing aPairing : getAll()) {
                 logger.debug("Pairing {} with Public Key {} is available in the Pairing Registry", aPairing.getUID(),
-                        aPairing.getClientLongtermPublicKey());
+                        Byte.byteToHexString(aPairing.getDestinationLongtermPublicKey()));
             }
 
             logger.warn("Marking the Pairing Registry as ready");

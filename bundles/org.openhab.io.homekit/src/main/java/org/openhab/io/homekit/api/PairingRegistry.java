@@ -22,5 +22,5 @@ public interface PairingRegistry extends Registry<Pairing, PairingUID> {
      * @param pairingId the pairing id of the accessory
      * @return list of HomekitPairing for a given accessory pairing id or an empty list if no HomekitPairing was found
      */
-    Collection<Pairing> get(String pairingId);
+    Collection<Pairing> get(byte[] pairingId);
 }

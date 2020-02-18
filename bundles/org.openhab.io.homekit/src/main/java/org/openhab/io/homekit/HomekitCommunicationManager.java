@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -19,7 +20,9 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.AbstractUID;
 import org.openhab.core.common.SafeCaller;
+import org.openhab.core.common.ThreadPoolManager;
 import org.openhab.core.common.registry.RegistryChangeListener;
+import org.openhab.core.config.core.Configuration;
 import org.openhab.core.events.Event;
 import org.openhab.core.events.EventFilter;
 import org.openhab.core.events.EventPublisher;
@@ -42,14 +45,12 @@ import org.openhab.core.thing.ThingRegistry;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.events.ChannelTriggeredEvent;
 import org.openhab.core.thing.events.ThingEventFactory;
-import org.openhab.core.thing.internal.ProfileContextImpl;
-import org.openhab.core.thing.internal.link.ItemChannelLinkConfigDescriptionProvider;
-import org.openhab.core.thing.internal.profiles.SystemProfileFactory;
 import org.openhab.core.thing.link.ItemChannelLink;
 import org.openhab.core.thing.link.ItemChannelLinkRegistry;
 import org.openhab.core.thing.profiles.Profile;
 import org.openhab.core.thing.profiles.ProfileAdvisor;
 import org.openhab.core.thing.profiles.ProfileCallback;
+import org.openhab.core.thing.profiles.ProfileContext;
 import org.openhab.core.thing.profiles.ProfileFactory;
 import org.openhab.core.thing.profiles.ProfileTypeUID;
 import org.openhab.core.thing.profiles.StateProfile;
@@ -83,6 +84,7 @@ public class HomekitCommunicationManager implements EventSubscriber, RegistryCha
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitCommunicationManager.class);
 
+    public static final String PARAM_PROFILE = "profile";
     public static final long THINGHANDLER_EVENT_TIMEOUT = TimeUnit.SECONDS.toMillis(30);
 
     private static final Set<String> SUBSCRIBED_EVENT_TYPES = Collections.unmodifiableSet(
@@ -96,7 +98,8 @@ public class HomekitCommunicationManager implements EventSubscriber, RegistryCha
     private final AccessoryServerRegistry accessoryServerRegistry;
     private final NotificationRegistry notificationRegistry;
     private final SafeCaller safeCaller;
-    private final SystemProfileFactory defaultProfileFactory;
+    // TODO : Discuss making SystemProfileFacgtory public
+    // private final SystemProfileFactory defaultProfileFactory;
     private final ChannelTypeRegistry channelTypeRegistry;
 
     // link UID -> profile
@@ -116,7 +119,7 @@ public class HomekitCommunicationManager implements EventSubscriber, RegistryCha
             @Reference ItemStateConverter itemStateConverter, @Reference EventPublisher eventPublisher,
             @Reference AccessoryServerRegistry accessoryServerRegistry,
             @Reference NotificationRegistry notificationRegistry, @Reference SafeCaller safeCaller,
-            @Reference SystemProfileFactory defaultProfileFactory, @Reference ChannelTypeRegistry channelTypeRegistry) {
+            @Reference ChannelTypeRegistry channelTypeRegistry) {
         this.thingRegistry = thingRegistry;
         this.itemRegistry = itemRegistry;
         this.itemChannelLinkRegistry = itemChannelLinkRegistry;
@@ -125,7 +128,7 @@ public class HomekitCommunicationManager implements EventSubscriber, RegistryCha
         this.accessoryServerRegistry = accessoryServerRegistry;
         this.notificationRegistry = notificationRegistry;
         this.safeCaller = safeCaller;
-        this.defaultProfileFactory = defaultProfileFactory;
+        // this.defaultProfileFactory = defaultProfileFactory;
         this.channelTypeRegistry = channelTypeRegistry;
     }
 
@@ -184,7 +187,7 @@ public class HomekitCommunicationManager implements EventSubscriber, RegistryCha
         }
     }
 
-    private @Nullable Thing getThing(ThingUID thingUID) {
+    public @Nullable Thing getThing(ThingUID thingUID) {
         return thingRegistry.get(thingUID);
     }
 
@@ -222,11 +225,11 @@ public class HomekitCommunicationManager implements EventSubscriber, RegistryCha
             // ask advisors
             profileTypeUID = getAdvice(link, item, channel);
 
-            if (profileTypeUID == null) {
-                // ask default advisor
-                logger.trace("No profile advisor found for link {}, falling back to the defaults", link);
-                profileTypeUID = defaultProfileFactory.getSuggestedProfileTypeUID(channel, item.getType());
-            }
+            // if (profileTypeUID == null) {
+            // // ask default advisor
+            // logger.trace("No profile advisor found for link {}, falling back to the defaults", link);
+            // profileTypeUID = defaultProfileFactory.getSuggestedProfileTypeUID(channel, item.getType());
+            // }
         }
         return profileTypeUID;
     }
@@ -243,8 +246,7 @@ public class HomekitCommunicationManager implements EventSubscriber, RegistryCha
     }
 
     private @Nullable ProfileTypeUID getConfiguredProfileTypeUID(ItemChannelLink link) {
-        String profileName = (String) link.getConfiguration()
-                .get(ItemChannelLinkConfigDescriptionProvider.PARAM_PROFILE);
+        String profileName = (String) link.getConfiguration().get(PARAM_PROFILE);
         if (profileName != null && !profileName.trim().isEmpty()) {
             profileName = normalizeProfileName(profileName);
             return new ProfileTypeUID(profileName);
@@ -261,11 +263,11 @@ public class HomekitCommunicationManager implements EventSubscriber, RegistryCha
 
     private @Nullable Profile getProfileFromFactories(ProfileTypeUID profileTypeUID, ItemChannelLink link,
             ProfileCallback callback) {
-        ProfileContextImpl context = new ProfileContextImpl(link.getConfiguration());
-        if (supportsProfileTypeUID(defaultProfileFactory, profileTypeUID)) {
-            logger.trace("using the default ProfileFactory to create profile '{}'", profileTypeUID);
-            return defaultProfileFactory.createProfile(profileTypeUID, callback, context);
-        }
+        HomekitProfileContextImpl context = new HomekitProfileContextImpl(link.getConfiguration());
+        // if (supportsProfileTypeUID(defaultProfileFactory, profileTypeUID)) {
+        // logger.trace("using the default ProfileFactory to create profile '{}'", profileTypeUID);
+        // return defaultProfileFactory.createProfile(profileTypeUID, callback, context);
+        // }
         for (Entry<ProfileFactory, Set<String>> entry : profileFactories.entrySet()) {
             ProfileFactory factory = entry.getKey();
             if (supportsProfileTypeUID(factory, profileTypeUID)) {
@@ -863,6 +865,26 @@ public class HomekitCommunicationManager implements EventSubscriber, RegistryCha
         }
     }
 
+    public class HomekitProfileContextImpl implements ProfileContext {
+
+        private static final String THREAD_POOL_NAME = "profiles";
+        private final Configuration configuration;
+
+        public HomekitProfileContextImpl(Configuration configuration) {
+            this.configuration = configuration;
+        }
+
+        @Override
+        public Configuration getConfiguration() {
+            return configuration;
+        }
+
+        @Override
+        public ScheduledExecutorService getExecutorService() {
+            return ThreadPoolManager.getScheduledPool(THREAD_POOL_NAME);
+        }
+
+    }
     // public void stateUpdated(ChannelUID channelUID, State state) {
     // itemChannelLinkRegistry.getLinks(channelUID).forEach(link -> {
     // final Item item = itemRegistry.get(link.getItemName());

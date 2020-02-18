@@ -14,15 +14,22 @@ package org.openhab.io.homekit.internal.client;
 
 import java.util.Collections;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.core.thing.Bridge;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.binding.BaseThingHandlerFactory;
 import org.openhab.core.thing.binding.ThingHandler;
 import org.openhab.core.thing.binding.ThingHandlerFactory;
+import org.openhab.io.homekit.api.PairingRegistry;
+import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,8 +45,17 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
 
     private final Logger logger = LoggerFactory.getLogger(HomekitHandlerFactory.class);
 
-    private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections
-            .singleton(HomekitBindingConstants.THING_TYPE_ACCESSORY);
+    private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections.unmodifiableSet(
+            Stream.of(HomekitBindingConstants.THING_TYPE_BRIDGE, HomekitBindingConstants.THING_TYPE_ACCESSORY)
+                    .collect(Collectors.toSet()));
+
+    protected final PairingRegistry pairingRegistry;
+
+    @Activate
+    public HomekitHandlerFactory(ComponentContext componentContext, @Reference PairingRegistry pairingRegistry) {
+        super.activate(componentContext);
+        this.pairingRegistry = pairingRegistry;
+    }
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -51,11 +67,11 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
         if (HomekitBindingConstants.THING_TYPE_BRIDGE.equals(thingTypeUID)) {
-            return new HomekitBridgeHandler(thing);
+            return new HomekitBridgeHandler((Bridge) thing);
         }
 
         if (HomekitBindingConstants.THING_TYPE_ACCESSORY.equals(thingTypeUID)) {
-            return new HomekitAccessoryHandler(thing);
+            return new HomekitAccessoryHandler(thing, pairingRegistry);
         }
 
         logger.debug("Unsupported thing {}.", thing.getThingTypeUID());

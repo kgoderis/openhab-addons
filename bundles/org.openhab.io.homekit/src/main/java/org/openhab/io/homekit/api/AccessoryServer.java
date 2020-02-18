@@ -102,7 +102,7 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
      *            iOS.
      * @param clientPublicKey the client's public key.
      */
-    void addPairing(String clientPairingId, byte[] clientPublicKey);
+    void addPairing(byte[] clientPairingId, byte[] clientPublicKey);
 
     /**
      * Remove an existing pairing. Subsequent calls to {@link #getPairingPublicKey(String)} for this pairing id return
@@ -110,7 +110,7 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
      *
      * @param clientPairingId the clientPairingId to delete
      */
-    void removePairing(String clientPairingId);
+    void removePairing(byte[] clientPairingId);
 
     /**
      * When an already paired client is re-connecting, the public key returned by this
@@ -120,7 +120,7 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
      * @param clientPairingId the client pairing id of the client to retrieve the public key for.
      * @return the previously stored public key for this client.
      */
-    byte @Nullable [] getPairingPublicKey(String clientPairingId);
+    byte @Nullable [] getPairingPublicKey(byte[] clientPairingId);
 
     /**
      * When the Accessory Server has been paired, the homekit server advertises whether the
@@ -146,7 +146,7 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
 
     void removeChangeListener(AccessoryServerChangeListener listener);
 
-    String getPairingId();
+    byte[] getPairingId();
 
     HomekitCommunicationManager getCommunicationManager();
 

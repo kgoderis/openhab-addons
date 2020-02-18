@@ -2,6 +2,7 @@ package org.openhab.io.homekit.internal.server;
 
 import java.math.BigInteger;
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.SecureRandom;
 import java.util.Collection;
@@ -69,7 +70,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
 
     private final InetAddress localAddress;
     private final int port;
-    private final String pairingIdentifier;
+    private final byte[] pairingIdentifier;
     private final BigInteger salt;
     private final byte[] privateKey;
     private String setupCode;
@@ -82,7 +83,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
 
     private final Collection<AccessoryServerChangeListener> listeners = new CopyOnWriteArraySet<>();
 
-    public AbstractAccessoryServer(InetAddress localAddress, int port, String pairingId, BigInteger salt,
+    public AbstractAccessoryServer(InetAddress localAddress, int port, byte[] pairingId, BigInteger salt,
             byte[] privateKey, MDNSService mdnsService, AccessoryRegistry accessoryRegistry,
             PairingRegistry pairingRegistry, NotificationRegistry notificationRegistry,
             HomekitCommunicationManager manager, SafeCaller safeCaller) throws InvalidAlgorithmParameterException {
@@ -213,14 +214,15 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     }
 
     @Override
-    public void addPairing(@NonNull String clientPairingId, byte @NonNull [] clientPublicKey) {
+    public void addPairing(byte @NonNull [] clientPairingId, byte @NonNull [] clientPublicKey) {
         try {
-            Pairing newPairing = new PairingImpl(getId(), clientPairingId, clientPublicKey);
+            Pairing newPairing = new PairingImpl(getPairingId(), clientPairingId, clientPublicKey);
             Pairing oldPairing = pairingRegistry.remove(newPairing.getUID());
 
             if (oldPairing != null) {
                 logger.debug("Removed Pairing of Server {} with Client {} and Public Key {}", getId(),
-                        oldPairing.getClientPairingId(), Byte.byteToHexString(oldPairing.getClientLongtermPublicKey()));
+                        oldPairing.getDestinationPairingId(),
+                        Byte.byteToHexString(oldPairing.getDestinationLongtermPublicKey()));
             }
 
             pairingRegistry.add(newPairing);
@@ -234,9 +236,9 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     }
 
     @Override
-    public void removePairing(@NonNull String clientPairingId) {
-        pairingRegistry.remove(new PairingUID(getId(), clientPairingId));
-        if (pairingRegistry.get(getId()).isEmpty()) {
+    public void removePairing(byte @NonNull [] clientPairingId) {
+        pairingRegistry.remove(new PairingUID(getPairingId(), clientPairingId));
+        if (pairingRegistry.get(getPairingId()).isEmpty()) {
             hasBeenPaired = false;
             advertise();
         }
@@ -328,6 +330,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
         return instanceIdPool;
     }
 
+    // TODO : Remove address depedency everywhere, bind to all local interfaces
     @Override
     public InetAddress getLocalAddress() {
         return localAddress;
@@ -340,11 +343,11 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
 
     @Override
     public String getId() {
-        return pairingIdentifier.replace(":", "");
+        return (new String(pairingIdentifier, StandardCharsets.UTF_8)).replace(":", "");
     }
 
     @Override
-    public String getPairingId() {
+    public byte[] getPairingId() {
         return pairingIdentifier;
     }
 
@@ -403,7 +406,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
         // Device ID (”5.4 Device ID” (page 31)) of the accessory. The Device ID must be formatted as
         // ”XX:XX:XX:XX:XX:XX”, where ”XX” is a hexadecimal string representing a byte. Required.
         // This value is also used as the accessoryʼs Pairing Identifier.
-        props.put("id", getPairingId());
+        props.put("id", (new String(getPairingId(), StandardCharsets.UTF_8)));
 
         // Model name of the accessory (e.g. ”Device1,1”). Required.
         props.put("md", getClass().getSimpleName());
@@ -456,9 +459,9 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     }
 
     @Override
-    public byte[] getPairingPublicKey(@NonNull String clientPairingId) {
-        Pairing hp = pairingRegistry.get(new PairingUID(getId(), clientPairingId));
-        return hp != null ? hp.getClientLongtermPublicKey() : null;
+    public byte[] getPairingPublicKey(byte @NonNull [] clientPairingId) {
+        Pairing hp = pairingRegistry.get(new PairingUID(getPairingId(), clientPairingId));
+        return hp != null ? hp.getDestinationLongtermPublicKey() : null;
     }
 
     private String generateSetupCode() {

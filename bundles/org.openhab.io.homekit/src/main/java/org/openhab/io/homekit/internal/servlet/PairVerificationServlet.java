@@ -53,7 +53,7 @@ public class PairVerificationServlet extends BaseServlet {
 
         try {
             byte[] body = IOUtils.toByteArray(request.getInputStream());
-            short stage = getStage(body);
+            short stage = getState(body);
 
             switch (stage) {
                 case 1: {
@@ -96,8 +96,8 @@ public class PairVerificationServlet extends BaseServlet {
         logger.info("Stage 1 : Shared Secret is {}", Byte.byteToHexString(sharedSecret));
 
         logger.info("Stage 1 : Accessory Pairing Id is {}", server.getPairingId());
-        byte[] accessoryInfo = org.openhab.io.homekit.util.Byte.joinBytes(accessoryPublicKey,
-                server.getPairingId().getBytes(StandardCharsets.UTF_8), clientPublicKey);
+        byte[] accessoryInfo = org.openhab.io.homekit.util.Byte.joinBytes(accessoryPublicKey, server.getPairingId(),
+                clientPublicKey);
         logger.info("Stage 1 : Accessory Info is {}", Byte.byteToHexString(accessoryInfo));
 
         byte[] accessorySignature = null;
@@ -118,7 +118,7 @@ public class PairVerificationServlet extends BaseServlet {
         Encoder encoder = TypeLengthValue.getEncoder();
 
         logger.info("Stage 1 : Accessory Pairing Id is {}", server.getPairingId());
-        encoder.add(Message.IDENTIFIER, server.getPairingId().getBytes(StandardCharsets.UTF_8));
+        encoder.add(Message.IDENTIFIER, server.getPairingId());
 
         logger.info("Stage 1 : Accessory Signature is {}", Byte.byteToHexString(accessorySignature));
         encoder.add(Message.SIGNATURE, accessorySignature);
@@ -143,8 +143,6 @@ public class PairVerificationServlet extends BaseServlet {
         logger.info("Stage 1 : End");
         response.setContentType("application/pairing+tlv8");
         response.setContentLengthLong(encoder.toByteArray().length);
-        // response.addHeader(HttpHeader.CONNECTION.asString(), HttpHeader.KEEP_AL IVE.asString());
-
         response.setStatus(HttpServletResponse.SC_OK);
         response.getOutputStream().write(encoder.toByteArray());
         response.getOutputStream().flush();
@@ -195,9 +193,7 @@ public class PairVerificationServlet extends BaseServlet {
                 clientSignature = d.getBytes(Message.SIGNATURE);
                 logger.info("Stage 2 : Client Signature is {}", Byte.byteToHexString(clientSignature));
 
-                clientLongtermPublicKey = server
-                        .getPairingPublicKey(new String(clientPairingId, StandardCharsets.UTF_8));
-
+                clientLongtermPublicKey = server.getPairingPublicKey(clientPairingId);
                 if (clientLongtermPublicKey == null) {
                     isError = true;
                     logger.warn("Stage 2 : Unknown Pairing {}", new String(clientPairingId, StandardCharsets.UTF_8));
@@ -208,8 +204,7 @@ public class PairVerificationServlet extends BaseServlet {
             }
 
             if (!isError) {
-                byte[] clientDeviceInfo = org.openhab.io.homekit.util.Byte.joinBytes(clientPublicKey, clientPairingId,
-                        accessoryPublicKey);
+                byte[] clientDeviceInfo = Byte.joinBytes(clientPublicKey, clientPairingId, accessoryPublicKey);
 
                 try {
                     boolean signatureVerification = new EdsaVerifier(clientLongtermPublicKey).verify(clientDeviceInfo,

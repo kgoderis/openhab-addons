@@ -1,10 +1,11 @@
 package org.openhab.io.homekit.internal.client;
 
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.jmdns.ServiceInfo;
 
@@ -40,7 +41,8 @@ public class HomekitAccessoryDiscoveryParticipant implements MDNSDiscoveryPartic
 
     @Override
     public @NonNull Set<@NonNull ThingTypeUID> getSupportedThingTypeUIDs() {
-        return Collections.singleton(HomekitBindingConstants.THING_TYPE_ACCESSORY);
+        return Stream.of(HomekitBindingConstants.THING_TYPE_ACCESSORY, HomekitBindingConstants.THING_TYPE_BRIDGE)
+                .collect(Collectors.toSet());
     }
 
     @Override
@@ -67,8 +69,8 @@ public class HomekitAccessoryDiscoveryParticipant implements MDNSDiscoveryPartic
                         Enumeration<String> serviceProperties = service.getPropertyNames();
                         Map<String, Object> properties = new HashMap<>();
 
-                        properties.put("ip.addresses", service.getHostAddresses());
-                        properties.put("port", service.getPort());
+                        properties.put(HomekitAccessoryConfiguration.HOST_ADDRESS, service.getHostAddresses()[0]);
+                        properties.put(HomekitAccessoryConfiguration.PORT, service.getPort());
 
                         while (serviceProperties.hasMoreElements()) {
                             String element = serviceProperties.nextElement();
@@ -76,8 +78,16 @@ public class HomekitAccessoryDiscoveryParticipant implements MDNSDiscoveryPartic
                             properties.put(element, value);
                         }
 
-                        return DiscoveryResultBuilder.create(uid).withProperties(properties)
-                                .withRepresentationProperty(uid.getId()).withLabel("Homekit Accessory").build();
+                        String category = service.getPropertyString("ci");
+                        if (category.equals("2")) {
+                            return DiscoveryResultBuilder.create(uid).withProperties(properties)
+                                    .withThingType(HomekitBindingConstants.THING_TYPE_BRIDGE)
+                                    .withRepresentationProperty(uid.getId()).withLabel("Homekit Accessory").build();
+                        } else {
+                            return DiscoveryResultBuilder.create(uid).withProperties(properties)
+                                    .withThingType(HomekitBindingConstants.THING_TYPE_ACCESSORY)
+                                    .withRepresentationProperty(uid.getId()).withLabel("Homekit Accessory").build();
+                        }
                     }
                 }
             }
@@ -94,7 +104,6 @@ public class HomekitAccessoryDiscoveryParticipant implements MDNSDiscoveryPartic
 
             if (category.equals("2")) {
                 return new ThingUID(HomekitBindingConstants.THING_TYPE_BRIDGE, id);
-
             } else {
                 return new ThingUID(HomekitBindingConstants.THING_TYPE_ACCESSORY, id);
             }

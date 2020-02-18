@@ -136,7 +136,7 @@ public class HomekitThingRegistryChangeListener implements ThingRegistryChangeLi
             return;
         }
 
-        if (thing.getUID().getBindingId() == HomekitBindingConstants.BINDING_ID) {
+        if (HomekitBindingConstants.BINDING_ID.equals(thing.getUID().getBindingId())) {
             return;
         }
 

@@ -1,7 +1,6 @@
 package org.openhab.io.homekit.internal.servlet;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -10,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.http.HttpHeader;
 import org.openhab.io.homekit.api.AccessoryServer;
+import org.openhab.io.homekit.util.Byte;
 import org.openhab.io.homekit.util.Message;
 import org.openhab.io.homekit.util.Method;
 import org.openhab.io.homekit.util.TypeLengthValue;
@@ -62,7 +62,7 @@ public class PairingServlet extends BaseServlet {
     protected void doAddPairing(HttpServletRequest request, HttpServletResponse response, byte[] body)
             throws ServletException, IOException {
         logger.info("doAddPairing : Start");
-        logger.info("doAddPairing : Received Body {}", byteToHexString(body));
+        logger.info("doAddPairing : Received Body {}", Byte.byteToHexString(body));
 
         DecodeResult d = TypeLengthValue.decode(body);
 
@@ -70,8 +70,7 @@ public class PairingServlet extends BaseServlet {
         byte[] additionalControllerLTPK = d.getBytes(Message.PUBLIC_KEY);
         byte[] additionalControllerPermissions = d.getBytes(Message.PERSMISSIONS);
 
-        server.addPairing(new String(additionalControllerPairingIdentifier, StandardCharsets.UTF_8),
-                additionalControllerLTPK);
+        server.addPairing(additionalControllerPairingIdentifier, additionalControllerLTPK);
 
         Encoder encoder = TypeLengthValue.getEncoder();
         encoder.add(Message.STATE, (short) 2);
@@ -90,13 +89,12 @@ public class PairingServlet extends BaseServlet {
     protected void doRemovePairing(HttpServletRequest request, HttpServletResponse response, byte[] body)
             throws ServletException, IOException {
         logger.info("doRemovePairing : Start");
-        logger.info("doRemovePairing : Received Body {}", byteToHexString(body));
+        logger.info("doRemovePairing : Received Body {}", Byte.byteToHexString(body));
 
         DecodeResult d = TypeLengthValue.decode(body);
 
         byte[] removedControllerPairingIdentifier = d.getBytes(Message.IDENTIFIER);
-
-        server.removePairing(new String(removedControllerPairingIdentifier, StandardCharsets.UTF_8));
+        server.removePairing(removedControllerPairingIdentifier);
 
         Encoder encoder = TypeLengthValue.getEncoder();
         encoder.add(Message.STATE, (short) 2);
@@ -115,7 +113,7 @@ public class PairingServlet extends BaseServlet {
     protected void doListPairing(HttpServletRequest request, HttpServletResponse response, byte[] body)
             throws ServletException, IOException {
         logger.info("doListPairing : Start");
-        logger.info("doListPairing : Received Body {}", byteToHexString(body));
+        logger.info("doListPairing : Received Body {}", Byte.byteToHexString(body));
         logger.info("doListPairing : End");
     }
 }

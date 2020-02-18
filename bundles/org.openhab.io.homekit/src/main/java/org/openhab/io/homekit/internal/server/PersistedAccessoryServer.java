@@ -25,11 +25,11 @@ public class PersistedAccessoryServer {
         configurationIndex = "";
     }
 
-    public PersistedAccessoryServer(@NonNull InetAddress localAddress, int port, String id, BigInteger salt,
+    public PersistedAccessoryServer(@NonNull InetAddress localAddress, int port, byte[] pairingId, BigInteger salt,
             byte[] privateKey, int configurationIndex) {
         this.localAddress = localAddress.getHostAddress();
         this.port = Integer.toString(port);
-        this.pairingIdentifier = id;
+        this.pairingIdentifier = Base64.getEncoder().encodeToString(pairingId);
         this.salt = salt.toString();
         this.privateKey = Base64.getEncoder().encodeToString(privateKey);
         this.configurationIndex = Integer.toString(configurationIndex);
@@ -47,8 +47,8 @@ public class PersistedAccessoryServer {
         return Integer.parseInt(port);
     }
 
-    public String getPairingIdentifier() {
-        return pairingIdentifier;
+    public byte[] getPairingIdentifier() {
+        return Base64.getDecoder().decode(pairingIdentifier);
     }
 
     public BigInteger getSalt() {

@@ -33,7 +33,7 @@ public interface AccessoryServerFactory {
      *         is known.
      */
     @Nullable
-    AccessoryServer createServer(String factoryType, InetAddress localAddress, int port, String pairingId,
+    AccessoryServer createServer(String factoryType, InetAddress localAddress, int port, byte[] pairingId,
             BigInteger salt, byte[] privateKey, int configurationIndex);
 
     /**
@@ -67,5 +67,5 @@ public interface AccessoryServerFactory {
      *
      * @return the generated pairing id
      */
-    String generatePairingId();
+    byte[] generatePairingId();
 }

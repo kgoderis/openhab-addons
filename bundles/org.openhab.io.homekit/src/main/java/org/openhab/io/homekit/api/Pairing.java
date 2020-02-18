@@ -7,9 +7,9 @@ import org.openhab.io.homekit.internal.pairing.PairingUID;
 @NonNullByDefault
 public interface Pairing extends Identifiable<PairingUID> {
 
-    public String getAccessoryPairingId();
+    public byte[] getSourcePairingId();
 
-    public String getClientPairingId();
+    public byte[] getDestinationPairingId();
 
-    public byte[] getClientLongtermPublicKey();
+    public byte[] getDestinationLongtermPublicKey();
 }
