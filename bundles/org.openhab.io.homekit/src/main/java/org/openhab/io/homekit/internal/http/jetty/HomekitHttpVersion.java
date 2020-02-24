@@ -12,7 +12,7 @@ public enum HomekitHttpVersion {
     HTTP_1_0("HTTP/1.0", 10),
     HTTP_1_1("HTTP/1.1", 11),
     HTTP_2("HTTP/2.0", 20),
-    EVENT_1_0("EVENT/1.0", 11);
+    EVENT_1_0("EVENT/1.0", 30);
 
     public static final Trie<HomekitHttpVersion> CACHE = new ArrayTrie<HomekitHttpVersion>();
 
@@ -22,9 +22,10 @@ public enum HomekitHttpVersion {
         }
     }
 
-    public static HttpVersion get(String version) {
-        HomekitHttpVersion httpversion = CACHE.get(version);
-        return httpversion != null ? HttpVersion.fromVersion(httpversion.getVersion()) : null;
+    public static HomekitHttpVersion get(String version) {
+        // HomekitHttpVersion httpversion = CACHE.get(version);
+        // return httpversion != null ? HttpVersion.fromVersion(httpversion.getVersion()) : null;
+        return CACHE.get(version);
     }
 
     /**
@@ -35,7 +36,7 @@ public enum HomekitHttpVersion {
      * @param limit The first non valid index
      * @return An HttpMethod if a match or null if no easy match.
      */
-    public static HttpVersion lookAheadGet(byte[] bytes, int position, int limit) {
+    public static HomekitHttpVersion lookAheadGet(byte[] bytes, int position, int limit) {
         int length = limit - position;
         if (length < 9) {
             return null;
@@ -51,16 +52,16 @@ public enum HomekitHttpVersion {
                 case '1':
                     switch (bytes[position + 7]) {
                         case '0':
-                            return HttpVersion.HTTP_1_0;
+                            return HomekitHttpVersion.HTTP_1_0;
                         case '1':
-                            return HttpVersion.HTTP_1_1;
+                            return HomekitHttpVersion.HTTP_1_1;
                         default:
                             return null;
                     }
                 case '2':
                     switch (bytes[position + 7]) {
                         case '0':
-                            return HttpVersion.HTTP_2;
+                            return HomekitHttpVersion.HTTP_2;
                         default:
                             return null;
                     }
@@ -72,14 +73,17 @@ public enum HomekitHttpVersion {
         if (bytes[position + 5] == '/' && bytes[position + 7] == '.'
                 && Character.isWhitespace((char) bytes[position + 9])
                 && ((bytes[position] == 'E' && bytes[position + 1] == 'V' && bytes[position + 2] == 'E'
-                        && bytes[position + 3] == 'N' && bytes[position + 3] == 'T')
+                        && bytes[position + 3] == 'N' && bytes[position + 4] == 'T')
                         || (bytes[position] == 'e' && bytes[position + 1] == 'v' && bytes[position + 2] == 'e'
                                 && bytes[position + 3] == 'n') && bytes[position + 4] == 't')) {
             switch (bytes[position + 6]) {
-                case '1': {
-                    return HttpVersion.HTTP_1_1;
-                }
-
+                case '1':
+                    switch (bytes[position + 8]) {
+                        case '0':
+                            return HomekitHttpVersion.EVENT_1_0;
+                        default:
+                            return null;
+                    }
                 default:
                     return null;
             }
@@ -94,7 +98,7 @@ public enum HomekitHttpVersion {
      * @param buffer buffer containing ISO-8859-1 characters
      * @return An HttpVersion if a match or null if no easy match.
      */
-    public static HttpVersion lookAheadGet(ByteBuffer buffer) {
+    public static HomekitHttpVersion lookAheadGet(ByteBuffer buffer) {
         if (buffer.hasArray()) {
             return lookAheadGet(buffer.array(), buffer.arrayOffset() + buffer.position(),
                     buffer.arrayOffset() + buffer.limit());
@@ -145,17 +149,44 @@ public enum HomekitHttpVersion {
      * @param version the String to convert to enum constant
      * @return the enum constant or null if version unknown
      */
-    public static HttpVersion fromString(String version) {
-        HomekitHttpVersion httpversion = CACHE.get(version);
-        return httpversion != null ? HttpVersion.fromVersion(httpversion.getVersion()) : null;
+    public static HomekitHttpVersion fromString(String version) {
+        // HomekitHttpVersion httpversion = CACHE.get(version);
+        // return httpversion != null ? HttpVersion.fromVersion(httpversion.getVersion()) : null;
+        return CACHE.get(version);
     }
 
-    public static HttpVersion fromVersion(int version) {
-        return HttpVersion.fromVersion(version);
+    public static HomekitHttpVersion fromVersion(int version) {
+        switch (version) {
+            case 9:
+                return HomekitHttpVersion.HTTP_0_9;
+            case 10:
+                return HomekitHttpVersion.HTTP_1_0;
+            case 11:
+                return HomekitHttpVersion.HTTP_1_1;
+            case 20:
+                return HomekitHttpVersion.HTTP_2;
+            case 30:
+                return HomekitHttpVersion.EVENT_1_0;
+            default:
+                throw new IllegalArgumentException();
+        }
     }
 
-    public static HttpVersion getBest(ByteBuffer buffer, int i, int remaining) {
-        HomekitHttpVersion httpversion = CACHE.getBest(buffer, i, remaining);
-        return httpversion != null ? HttpVersion.fromVersion(httpversion.getVersion()) : null;
+    public static HomekitHttpVersion getBest(ByteBuffer buffer, int i, int remaining) {
+        // HomekitHttpVersion httpversion = CACHE.getBest(buffer, i, remaining);
+        // return httpversion != null ? HttpVersion.fromVersion(httpversion.getVersion()) : null;
+        return CACHE.getBest(buffer, i, remaining);
+    }
+
+    public static HttpVersion convert(HomekitHttpVersion version) {
+        int versionNumber = version.getVersion();
+        switch (versionNumber) {
+            case 30: {
+                return HttpVersion.fromVersion(11);
+            }
+            default: {
+                return HttpVersion.fromVersion(versionNumber);
+            }
+        }
     }
 }

@@ -17,7 +17,7 @@ import static org.openhab.io.homekit.internal.client.HomekitBindingConstants.CHA
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -29,6 +29,7 @@ import org.openhab.core.thing.binding.BaseThingHandler;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.RefreshType;
 import org.openhab.io.homekit.api.PairingRegistry;
+import org.openhab.io.homekit.util.Byte;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,7 +71,7 @@ public class HomekitAccessoryHandler extends BaseThingHandler {
 
     @Override
     public void initialize() {
-        // logger.debug("Start initializing!");
+        // logger.info("Start initializing!");
         config = getConfigAs(HomekitAccessoryConfiguration.class);
 
         Map<String, String> props = getThing().getProperties();
@@ -95,26 +96,31 @@ public class HomekitAccessoryHandler extends BaseThingHandler {
 
                 byte[] clientPairingId = null;
                 try {
-                    clientPairingId = props.get(HomekitAccessoryConfiguration.CLIENT_PAIRING_ID)
-                            .getBytes(StandardCharsets.UTF_8);
+                    clientPairingId = Base64.getDecoder()
+                            .decode(props.get(HomekitAccessoryConfiguration.CLIENT_PAIRING_ID));
+                    logger.info("Setting handler Pairing Id to {}", Byte.byteToHexString(clientPairingId));
                 } catch (Exception e) {
                 }
 
                 byte[] clientLongtermSecretKey = null;
                 try {
-                    clientLongtermSecretKey = props.get(HomekitAccessoryConfiguration.CLIENT_LTSK)
-                            .getBytes(StandardCharsets.UTF_8);
+                    clientLongtermSecretKey = Base64.getDecoder()
+                            .decode(props.get(HomekitAccessoryConfiguration.CLIENT_LTSK));
+                    logger.info("Setting handler client LTSK to {}", Byte.byteToHexString(clientLongtermSecretKey));
                 } catch (Exception e) {
                 }
 
                 byte[] accessoryPairingId = null;
                 try {
-                    accessoryPairingId = props.get(HomekitAccessoryConfiguration.ACCESSORY_PAIRING_ID)
-                            .getBytes(StandardCharsets.UTF_8);
+                    accessoryPairingId = Base64.getDecoder()
+                            .decode(props.get(HomekitAccessoryConfiguration.ACCESSORY_PAIRING_ID));
+                    logger.info("Setting handler accessory pairing Id to {}", Byte.byteToHexString(accessoryPairingId));
                 } catch (Exception e) {
                 }
 
-                if (clientPairingId != null && accessoryPairingId != null && accessoryPairingId != null) {
+                if (clientPairingId != null && clientLongtermSecretKey != null && accessoryPairingId != null) {
+
+                    logger.info("Doing a normal pair verify");
 
                     try {
                         homekitClient = new HomekitClient(
@@ -126,9 +132,11 @@ public class HomekitAccessoryHandler extends BaseThingHandler {
                         e1.printStackTrace();
                     }
 
-                    homekitClient.PairVerify();
+                    homekitClient.pairVerify();
 
                 } else {
+
+                    logger.info("Doing a setup followed by a verify");
 
                     try {
                         homekitClient = new HomekitClient(
@@ -140,22 +148,23 @@ public class HomekitAccessoryHandler extends BaseThingHandler {
                         e1.printStackTrace();
                     }
 
-                    homekitClient.PairSetup();
+                    homekitClient.pairSetup();
 
-                    logger.debug("PairSetup done");
-                    logger.debug("Check is Paired {}", homekitClient.isPaired());
+                    logger.info("PairSetup done");
 
                     if (homekitClient.isPaired()) {
                         Map<String, String> properties = editProperties();
                         properties.put(HomekitAccessoryConfiguration.CLIENT_PAIRING_ID,
-                                new String(homekitClient.getPairingId(), StandardCharsets.UTF_8));
+                                Base64.getEncoder().encodeToString(homekitClient.getPairingId()));
+                        logger.info("Storing LTSK in config {}",
+                                Byte.byteToHexString(homekitClient.getLongTermSecretKey()));
                         properties.put(HomekitAccessoryConfiguration.CLIENT_LTSK,
-                                new String(homekitClient.getLongTermSecretKey(), StandardCharsets.UTF_8));
+                                Base64.getEncoder().encodeToString(homekitClient.getLongTermSecretKey()));
                         properties.put(HomekitAccessoryConfiguration.ACCESSORY_PAIRING_ID,
-                                new String(homekitClient.getAccessoryPairingId(), StandardCharsets.UTF_8));
+                                Base64.getEncoder().encodeToString(homekitClient.getAccessoryPairingId()));
                         this.updateProperties(properties);
 
-                        homekitClient.PairVerify();
+                        homekitClient.pairVerify();
                     }
                 }
 
@@ -172,7 +181,7 @@ public class HomekitAccessoryHandler extends BaseThingHandler {
 
         });
 
-        // logger.debug("Finished initializing!");
+        // logger.info("Finished initializing!");
 
         // Note: When initialization can NOT be done set the status with more details for further
         // analysis. See also class ThingStatusDetail for all available status details.

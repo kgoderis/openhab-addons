@@ -42,25 +42,25 @@ public class DecryptedHomekitEndPoint implements EndPoint {
     private long inboundSequenceCount = 0;
     private long outboundSequenceCount = 0;
 
-    private final byte[] readKey;
-    private final byte[] writeKey;
+    private final byte[] encryptionKey;
+    private final byte[] decryptionKey;
 
     private final EndPoint encryptedEndPoint;
 
     public DecryptedHomekitEndPoint(EndPoint encryptedEndpoint, Executor executor, ByteBufferPool byteBufferPool,
-            boolean useDirectBuffers, byte[] readKey, byte[] writeKey) {
+            boolean useDirectBuffers, byte[] encryptionKey, byte[] decryptionKey) {
         this.encryptedEndPoint = encryptedEndpoint;
         this.bufferPool = byteBufferPool;
         this.useDirectBuffers = useDirectBuffers;
         this.executor = executor;
-        this.readKey = readKey;
-        this.writeKey = writeKey;
+        this.encryptionKey = encryptionKey;
+        this.decryptionKey = decryptionKey;
 
         if (logger.isTraceEnabled()) {
-            logger.trace("[{}] DecryptedHomekitEndPoint : Setting WriteKey {}", getRemoteAddress().toString(),
-                    Byte.byteToHexString(this.writeKey));
-            logger.trace("[{}] DecryptedHomekitEndPoint : Setting ReadKey {}", getRemoteAddress().toString(),
-                    Byte.byteToHexString(this.readKey));
+            logger.trace("[{}] DecryptedHomekitEndPoint : Setting Encryption Key {}", getRemoteAddress().toString(),
+                    Byte.byteToHexString(this.decryptionKey));
+            logger.trace("[{}] DecryptedHomekitEndPoint : Setting Decryption Key {}", getRemoteAddress().toString(),
+                    Byte.byteToHexString(this.encryptionKey));
 
         }
     }
@@ -167,12 +167,12 @@ public class DecryptedHomekitEndPoint implements EndPoint {
                         if (encryptedInputBuffer.hasRemaining()) {
 
                             if (logger.isTraceEnabled()) {
-                                Byte.logBytes(logger, "Fill", getRemoteAddress().toString(), encryptedInputBuffer);
+                                Byte.logBuffer(logger, "Fill", getRemoteAddress().toString(), encryptedInputBuffer);
                             }
 
                             encryptedInputBufferUnderflown = false;
                             SequenceBuffer sBuffer = HomekitEncryptionEngine.decryptBuffer(decryptedInputBuffer,
-                                    encryptedInputBuffer, writeKey, inboundSequenceCount);
+                                    encryptedInputBuffer, decryptionKey, inboundSequenceCount);
                             decryptedInputBuffer = sBuffer.buffer;
                             inboundSequenceCount = sBuffer.sequenceNumber;
 
@@ -211,7 +211,7 @@ public class DecryptedHomekitEndPoint implements EndPoint {
                     }
 
                     if (logger.isTraceEnabled()) {
-                        Byte.logBytes(logger, "Decrypt", getRemoteAddress().toString(), buffer);
+                        Byte.logBuffer(logger, "Decrypt", getRemoteAddress().toString(), buffer);
                     }
 
                     if (logger.isTraceEnabled()) {
@@ -285,11 +285,11 @@ public class DecryptedHomekitEndPoint implements EndPoint {
                         }
 
                         if (logger.isTraceEnabled()) {
-                            Byte.logBytes(logger, "Flush", getRemoteAddress().toString(), flushBuffer);
+                            Byte.logBuffer(logger, "Flush", getRemoteAddress().toString(), flushBuffer);
                         }
 
                         SequenceBuffer sBuffer = HomekitEncryptionEngine.encryptBuffer(encryptedOutputBuffer,
-                                flushBuffer, readKey, outboundSequenceCount);
+                                flushBuffer, encryptionKey, outboundSequenceCount);
                         encryptedOutputBuffer = sBuffer.buffer;
                         outboundSequenceCount = sBuffer.sequenceNumber;
 

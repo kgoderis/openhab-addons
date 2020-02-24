@@ -171,7 +171,7 @@ public class HomekitHttpParser {
     private volatile boolean _eof;
     private HttpMethod _method;
     private String _methodString;
-    private HttpVersion _version;
+    private HomekitHttpVersion _version;
     private Utf8StringBuilder _uri = new Utf8StringBuilder(INITIAL_URI_LENGTH); // Tune?
     private EndOfContent _endOfContent;
     private boolean _hasContentLength;
@@ -765,7 +765,7 @@ public class HomekitHttpParser {
                                 setState(State.REQUEST_VERSION);
 
                                 // try quick look ahead for HTTP Version
-                                HttpVersion version;
+                                HomekitHttpVersion version;
                                 if (buffer.position() > 0 && buffer.hasArray()) {
                                     version = HomekitHttpVersion.lookAheadGet(buffer.array(),
                                             buffer.arrayOffset() + buffer.position() - 1,
@@ -836,7 +836,8 @@ public class HomekitHttpParser {
 
                             setState(State.HEADER);
 
-                            _requestHandler.startRequest(_methodString, _uri.toString(), _version);
+                            _requestHandler.startRequest(_methodString, _uri.toString(),
+                                    HomekitHttpVersion.convert(_version));
                             continue;
 
                         case ALPHA:
@@ -893,7 +894,7 @@ public class HomekitHttpParser {
             throw new BadMessageException(HttpStatus.BAD_REQUEST_400, "Unknown Version");
         }
 
-        if (_version.getVersion() < 10 || _version.getVersion() > 20) {
+        if (_version.getVersion() < 10 || _version.getVersion() > 30) {
             throw new BadMessageException(HttpStatus.BAD_REQUEST_400, "Bad Version");
         }
     }
@@ -1115,7 +1116,7 @@ public class HomekitHttpParser {
                             }
 
                             // Was there a required host header?
-                            if (!_host && _version == HttpVersion.HTTP_1_1 && _requestHandler != null) {
+                            if (!_host && _version == HomekitHttpVersion.HTTP_1_1 && _requestHandler != null) {
                                 throw new BadMessageException(HttpStatus.BAD_REQUEST_400, "No Host");
                             }
 
@@ -1880,7 +1881,7 @@ public class HomekitHttpParser {
          * @param reason the response reason phrase
          * @return true if handling parsing should return
          */
-        boolean startResponse(HttpVersion version, int status, String reason);
+        boolean startResponse(HomekitHttpVersion version, int status, String reason);
     }
 
     public interface ComplianceHandler extends HttpHandler {

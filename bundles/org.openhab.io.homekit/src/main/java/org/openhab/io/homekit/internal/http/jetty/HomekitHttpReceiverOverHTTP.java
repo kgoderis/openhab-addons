@@ -9,7 +9,6 @@ import org.eclipse.jetty.client.http.HttpChannelOverHTTP;
 import org.eclipse.jetty.client.http.HttpReceiverOverHTTP;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http.HttpStatus;
-import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.io.ByteBufferPool;
 import org.eclipse.jetty.io.EndPoint;
 import org.eclipse.jetty.util.BufferUtil;
@@ -19,6 +18,7 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
     private ByteBuffer buffer;
     private boolean shutdown;
     private boolean complete;
+    private HomekitHttpVersion version;
 
     public HomekitHttpReceiverOverHTTP(HttpChannelOverHTTP channel) {
         super(channel);
@@ -189,7 +189,7 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
     // }
 
     @Override
-    public boolean startResponse(HttpVersion version, int status, String reason) {
+    public boolean startResponse(HomekitHttpVersion version, int status, String reason) {
         HttpExchange exchange = getHttpExchange();
         if (exchange == null) {
             return false;
@@ -198,7 +198,11 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
         String method = exchange.getRequest().getMethod();
         parser.setHeadResponse(
                 HttpMethod.HEAD.is(method) || (HttpMethod.CONNECT.is(method) && status == HttpStatus.OK_200));
-        exchange.getResponse().version(version).status(status).reason(reason);
+        exchange.getResponse().version(HomekitHttpVersion.convert(version)).status(status).reason(reason);
+
+        if (version == HomekitHttpVersion.EVENT_1_0) {
+            exchange.getResponse().getHeaders().add("X-HOMEKIT-EVENT", "True");
+        }
 
         return !responseBegin(exchange);
     }
@@ -341,4 +345,5 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
         // TODO Auto-generated method stub
         super.badMessage(status, reason);
     }
+
 }

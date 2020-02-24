@@ -55,7 +55,7 @@ public class Byte {
         return sb.toString();
     }
 
-    public static void logBytes(Logger logger, String label, String remote, ByteBuffer buf) throws IOException {
+    public static void logBuffer(Logger logger, String label, String remote, ByteBuffer buf) throws IOException {
         if (buf.hasRemaining()) {
             try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
                 ByteBuffer buffer = buf.asReadOnlyBuffer();
