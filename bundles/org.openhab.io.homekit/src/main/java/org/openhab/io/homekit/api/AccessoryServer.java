@@ -69,17 +69,17 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
      *
      * @return the list of HomekitAccessories.
      */
-    Collection<Accessory> getAccessories();
+    Collection<ManagedAccessory> getAccessories();
 
     @Nullable
-    Accessory getAccessory(int instanceId);
+    ManagedAccessory getAccessory(int instanceId);
 
     @Nullable
-    Accessory getAccessory(Class<? extends Accessory> accessoryClass);
+    ManagedAccessory getAccessory(Class<? extends ManagedAccessory> accessoryClass);
 
-    void addAccessory(Accessory accessory);
+    void addAccessory(ManagedAccessory accessory);
 
-    void removeAccessory(Accessory accessory);
+    void removeAccessory(ManagedAccessory accessory);
 
     /**
      * Accessory Instance IDs are assigned from the same number pool that is global across entire
@@ -134,9 +134,9 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
         return false;
     }
 
-    void addNotification(Characteristic<?> characteristic, HttpConnection connection);
+    void addNotification(ManagedCharacteristic<?> characteristic, HttpConnection connection);
 
-    void removeNotification(Characteristic<?> characteristic);
+    void removeNotification(ManagedCharacteristic<?> characteristic);
 
     InetAddress getLocalAddress();
 

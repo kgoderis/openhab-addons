@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.http.HttpHeader;
-import org.openhab.io.homekit.api.Accessory;
+import org.openhab.io.homekit.api.ManagedAccessory;
 import org.openhab.io.homekit.api.AccessoryServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,7 @@ public class AccessoryServlet extends BaseServlet {
 
         JsonArrayBuilder accessories = Json.createArrayBuilder();
 
-        for (Accessory accessory : server.getAccessories()) {
+        for (ManagedAccessory accessory : server.getAccessories()) {
             accessories.add(accessory.toReducedJson());
         }
 

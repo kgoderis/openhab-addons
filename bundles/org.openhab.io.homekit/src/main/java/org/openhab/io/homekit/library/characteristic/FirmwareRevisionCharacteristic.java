@@ -2,13 +2,13 @@ package org.openhab.io.homekit.library.characteristic;
 
 import org.openhab.core.OpenHAB;
 import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.api.ManagedService;
 import org.openhab.io.homekit.internal.characteristic.ReadOnlyStringCharacteristic;
 
 public class FirmwareRevisionCharacteristic extends ReadOnlyStringCharacteristic {
 
-    public FirmwareRevisionCharacteristic(HomekitCommunicationManager manager, Service service, long instanceId)
-            throws Exception {
+    public FirmwareRevisionCharacteristic(HomekitCommunicationManager manager, ManagedService service,
+            long instanceId) {
         super(manager, service, instanceId, "Firmware revision", OpenHAB.getVersion());
     }
 

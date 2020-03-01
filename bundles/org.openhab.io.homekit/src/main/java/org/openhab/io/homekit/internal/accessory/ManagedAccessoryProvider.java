@@ -28,13 +28,15 @@ import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingRegistry;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.Accessory;
 import org.openhab.io.homekit.api.AccessoryProvider;
 import org.openhab.io.homekit.api.AccessoryRegistry;
 import org.openhab.io.homekit.api.AccessoryServer;
 import org.openhab.io.homekit.api.AccessoryServerRegistry;
 import org.openhab.io.homekit.api.Characteristic;
 import org.openhab.io.homekit.api.HomekitFactory;
+import org.openhab.io.homekit.api.ManagedAccessory;
+import org.openhab.io.homekit.api.ManagedCharacteristic;
+import org.openhab.io.homekit.api.ManagedService;
 import org.openhab.io.homekit.api.Service;
 import org.openhab.io.homekit.internal.server.AccessoryServerUID;
 import org.openhab.io.homekit.internal.server.BridgeAccessoryServer;
@@ -51,14 +53,16 @@ import org.slf4j.LoggerFactory;
 
 /**
  * {@link ManagedAccessoryProvider} is an OSGi service, that allows to add or remove Accessories at runtime by calling
- * {@link ManagedAccessoryProvider#addAccessory(Accessory)} or
- * {@link ManagedAccessoryProvider#removeAccessory(Accessory)}. An added Accessory is automatically exposed to the
+ * {@link ManagedAccessoryProvider#addAccessory(ManagedAccessory)} or
+ * {@link ManagedAccessoryProvider#removeAccessory(ManagedAccessory)}. An added Accessory is automatically exposed to
+ * the
  * {@link AccessoryRegistry}. Persistence of added Accessories is handled by a {@link StorageService}. Accessories are
  * being restored using the given {@link HomekitFactory}s.
  *
  **/
 @Component(immediate = true, service = { AccessoryProvider.class, ManagedAccessoryProvider.class })
-public class ManagedAccessoryProvider extends AbstractManagedProvider<Accessory, AccessoryUID, PersistedAccessory>
+public class ManagedAccessoryProvider
+        extends AbstractManagedProvider<ManagedAccessory, AccessoryUID, PersistedAccessory>
         implements AccessoryProvider, ReadyService.ReadyTracker {
 
     private final Logger logger = LoggerFactory.getLogger(ManagedAccessoryProvider.class);
@@ -132,7 +136,7 @@ public class ManagedAccessoryProvider extends AbstractManagedProvider<Accessory,
 
     @Override
     protected String getStorageName() {
-        return Accessory.class.getName();
+        return ManagedAccessory.class.getName();
     }
 
     @Override
@@ -141,7 +145,7 @@ public class ManagedAccessoryProvider extends AbstractManagedProvider<Accessory,
     }
 
     @Override
-    protected Accessory toElement(@NonNull String key, @NonNull PersistedAccessory persistableElement) {
+    protected ManagedAccessory toElement(@NonNull String key, @NonNull PersistedAccessory persistableElement) {
 
         try {
             JsonReader jsonReader = Json.createReader(new StringReader(persistableElement.getJson()));
@@ -151,7 +155,7 @@ public class ManagedAccessoryProvider extends AbstractManagedProvider<Accessory,
             AccessoryServer server = accessoryServerRegistry.get(new AccessoryServerUID(
                     BridgeAccessoryServer.class.getSimpleName(), persistableElement.getServerId()));
 
-            Accessory accessory = null;
+            ManagedAccessory accessory = null;
 
             if (server != null) {
 
@@ -169,7 +173,7 @@ public class ManagedAccessoryProvider extends AbstractManagedProvider<Accessory,
                 }
 
                 try {
-                    accessory = (Accessory) clazz.getConstructor(HomekitCommunicationManager.class,
+                    accessory = (ManagedAccessory) clazz.getConstructor(HomekitCommunicationManager.class,
                             AccessoryServer.class, long.class, boolean.class)
                             .newInstance(homekitCommunicationManager, server, aid, false);
                 } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
@@ -192,7 +196,7 @@ public class ManagedAccessoryProvider extends AbstractManagedProvider<Accessory,
                                     .filter(f -> f.supportsServiceType(serviceType)).findFirst().orElse(null);
 
                             if (factory != null) {
-                                Service newService = factory.createService(serviceType, accessory, iid, false);
+                                ManagedService newService = factory.createService(serviceType, accessory, iid, false);
 
                                 if (newService != null) {
                                     accessory.addService(newService);
@@ -211,7 +215,7 @@ public class ManagedAccessoryProvider extends AbstractManagedProvider<Accessory,
                                                     .findFirst().orElse(null);
 
                                             if (factory != null) {
-                                                Characteristic<?> newCharacteristic = factory
+                                                ManagedCharacteristic<?> newCharacteristic = factory
                                                         .createCharacteristic(characteristicType, newService, iid);
                                                 if (newCharacteristic != null) {
                                                     newService.addCharacteristic(newCharacteristic);
@@ -229,7 +233,8 @@ public class ManagedAccessoryProvider extends AbstractManagedProvider<Accessory,
                                                 logger.info(
                                                         "Service {} of Type {} already holds Characteristic {} of Type {}",
                                                         newService.getUID(), newService.getClass().getSimpleName(),
-                                                        newService.getCharacteristic(characteristicType).getUID(),
+                                                        ((ManagedCharacteristic<?>) newService
+                                                                .getCharacteristic(characteristicType)).getUID(),
                                                         newService.getCharacteristic(characteristicType).getClass()
                                                                 .getSimpleName());
                                             }
@@ -246,7 +251,7 @@ public class ManagedAccessoryProvider extends AbstractManagedProvider<Accessory,
                             if (accessory.getService(serviceType) != null) {
                                 logger.info("Accessory {} of Type {} already holds Service {} of Type {}",
                                         accessory.getUID(), accessory.getClass().getSimpleName(),
-                                        accessory.getService(serviceType).getUID(),
+                                        ((ManagedService) accessory.getService(serviceType)).getUID(),
                                         accessory.getService(serviceType).getClass().getSimpleName());
                             }
                         }
@@ -271,14 +276,15 @@ public class ManagedAccessoryProvider extends AbstractManagedProvider<Accessory,
                                             .getCharacteristicTypes(channel.getChannelTypeUID());
 
                                     for (Service aService : accessory.getServices()) {
-                                        for (Characteristic<?> aCharacteristic : aService.getCharacteristics()) {
+                                        for (Characteristic aCharacteristic : aService.getCharacteristics()) {
                                             for (String aCharacteristicType : characteristicTypes) {
                                                 if (aCharacteristic.isType(aCharacteristicType)) {
-                                                    aCharacteristic.setChannelUID(channel.getUID());
+                                                    ((ManagedCharacteristic<?>) aCharacteristic)
+                                                            .setChannelUID(channel.getUID());
                                                     logger.debug(
                                                             "Linked Channel {} ({}) to Characteristic {} of Type {}",
                                                             channel.getUID(), channel.getLabel(),
-                                                            aCharacteristic.getUID(),
+                                                            ((ManagedCharacteristic<?>) aCharacteristic).getUID(),
                                                             aCharacteristic.getClass().getSimpleName());
                                                 }
                                             }
@@ -318,7 +324,7 @@ public class ManagedAccessoryProvider extends AbstractManagedProvider<Accessory,
     }
 
     @Override
-    protected PersistedAccessory toPersistableElement(Accessory element) {
+    protected PersistedAccessory toPersistableElement(ManagedAccessory element) {
 
         String thingUID = "";
         if (element instanceof ThingAccessory) {

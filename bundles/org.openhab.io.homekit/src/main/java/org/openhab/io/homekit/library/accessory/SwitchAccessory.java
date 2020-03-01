@@ -7,15 +7,15 @@ import org.openhab.io.homekit.library.service.SwitchService;
 
 public class SwitchAccessory extends ThingAccessory {
 
-    public SwitchAccessory(HomekitCommunicationManager manager, AccessoryServer server, long instanceId, boolean extend)
-            throws Exception {
+    public SwitchAccessory(HomekitCommunicationManager manager, AccessoryServer server, long instanceId,
+            boolean extend) {
         super(manager, server, instanceId, extend);
     }
 
     @Override
-    public void addServices() throws Exception {
+    public void addServices() {
         super.addServices();
-        addService(new SwitchService(manager, this, this.getInstanceId(), true, getLabel()));
+        addService(new SwitchService(getManager(), this, this.getInstanceId(), true, getLabel()));
     }
 
     @Override

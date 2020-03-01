@@ -21,7 +21,7 @@ import org.openhab.core.common.registry.Provider;
 import org.openhab.core.service.ReadyMarker;
 import org.openhab.core.service.ReadyMarkerFilter;
 import org.openhab.core.service.ReadyService;
-import org.openhab.io.homekit.api.Accessory;
+import org.openhab.io.homekit.api.ManagedAccessory;
 import org.openhab.io.homekit.api.AccessoryProvider;
 import org.openhab.io.homekit.api.AccessoryRegistry;
 import org.osgi.framework.BundleContext;
@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
  */
 @NonNullByDefault
 @Component(immediate = true, service = AccessoryRegistry.class)
-public class AccessoryRegistryImpl extends AbstractRegistry<Accessory, AccessoryUID, AccessoryProvider>
+public class AccessoryRegistryImpl extends AbstractRegistry<ManagedAccessory, AccessoryUID, AccessoryProvider>
         implements AccessoryRegistry, ReadyService.ReadyTracker {
 
     private final Logger logger = LoggerFactory.getLogger(AccessoryRegistry.class);
@@ -83,24 +83,24 @@ public class AccessoryRegistryImpl extends AbstractRegistry<Accessory, Accessory
     }
 
     @Override
-    public Collection<Accessory> get(String serverId) {
+    public Collection<ManagedAccessory> get(String serverId) {
         return getAll().stream().filter(a -> a.getServer().getId().equals(serverId)).collect(Collectors.toList());
     }
 
     @Override
-    public void added(Provider<Accessory> provider, Accessory element) {
+    public void added(Provider<ManagedAccessory> provider, ManagedAccessory element) {
         super.added(provider, element);
         element.getServer().advertise();
     }
 
     @Override
-    public void removed(Provider<Accessory> provider, Accessory element) {
+    public void removed(Provider<ManagedAccessory> provider, ManagedAccessory element) {
         super.removed(provider, element);
         element.getServer().advertise();
     }
 
     @Override
-    public void updated(Provider<Accessory> provider, Accessory oldElement, Accessory element) {
+    public void updated(Provider<ManagedAccessory> provider, ManagedAccessory oldElement, ManagedAccessory element) {
         super.updated(provider, oldElement, element);
         element.getServer().advertise();
     }
@@ -120,7 +120,7 @@ public class AccessoryRegistryImpl extends AbstractRegistry<Accessory, Accessory
     }
 
     @Override
-    protected void addProvider(Provider<Accessory> provider) {
+    protected void addProvider(Provider<ManagedAccessory> provider) {
         // if (provider instanceof ManagedAccessoryProvider) {
         // // Skip, only do this when we get a readyMarker
         // logger.warn("Delaying adding the Managed Accessory Provider");
@@ -141,10 +141,10 @@ public class AccessoryRegistryImpl extends AbstractRegistry<Accessory, Accessory
         }
     }
 
-    public synchronized void addProviderWithReadyMarker(Provider<Accessory> provider) {
+    public synchronized void addProviderWithReadyMarker(Provider<ManagedAccessory> provider) {
         super.addProvider(provider);
 
-        for (Accessory accessory : getAll()) {
+        for (ManagedAccessory accessory : getAll()) {
             logger.debug("Accessory {} is available in the Accessory Registry", accessory.getUID());
         }
 

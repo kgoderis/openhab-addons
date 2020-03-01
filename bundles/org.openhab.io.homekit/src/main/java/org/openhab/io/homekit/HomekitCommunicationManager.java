@@ -63,10 +63,11 @@ import org.openhab.core.types.State;
 import org.openhab.core.types.Type;
 import org.openhab.core.types.UnDefType;
 import org.openhab.core.types.util.UnitUtils;
-import org.openhab.io.homekit.api.Accessory;
 import org.openhab.io.homekit.api.AccessoryServer;
 import org.openhab.io.homekit.api.AccessoryServerRegistry;
 import org.openhab.io.homekit.api.Characteristic;
+import org.openhab.io.homekit.api.ManagedAccessory;
+import org.openhab.io.homekit.api.ManagedCharacteristic;
 import org.openhab.io.homekit.api.Notification;
 import org.openhab.io.homekit.api.NotificationRegistry;
 import org.openhab.io.homekit.api.Service;
@@ -771,15 +772,17 @@ public class HomekitCommunicationManager implements EventSubscriber, RegistryCha
         @Override
         public void handleUpdate(State state) {
             for (AccessoryServer server : accessoryServerRegistry.getAll()) {
-                for (Accessory accessory : server.getAccessories()) {
+                for (ManagedAccessory accessory : server.getAccessories()) {
                     for (Service service : accessory.getServices()) {
-                        for (Characteristic<?> characteristic : service.getCharacteristics()) {
-                            if (link.getLinkedUID().equals(characteristic.getChannelUID())) {
-                                Notification notification = notificationRegistry
-                                        .get(new NotificationUID(characteristic.getUID().toString()));
+                        for (Characteristic characteristic : service.getCharacteristics()) {
+                            if (link.getLinkedUID()
+                                    .equals(((ManagedCharacteristic<?>) characteristic).getChannelUID())) {
+                                Notification notification = notificationRegistry.get(new NotificationUID(
+                                        ((ManagedCharacteristic<?>) characteristic).getUID().toString()));
 
                                 if (notification != null) {
-                                    notification.publish(characteristic.toEventJson(state));
+                                    notification
+                                            .publish(((ManagedCharacteristic<?>) characteristic).toEventJson(state));
                                 }
                             }
                         }

@@ -1,12 +1,12 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.api.ManagedService;
 import org.openhab.io.homekit.internal.characteristic.IntegerCharacteristic;
 
 public class CurrentPositionCharacteristic extends IntegerCharacteristic {
 
-    public CurrentPositionCharacteristic(HomekitCommunicationManager manager, Service service, long instanceId) {
+    public CurrentPositionCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId) {
         super(manager, service, instanceId, false, true, true, "Current position of an accessory", 0, 100, "%");
     }
 

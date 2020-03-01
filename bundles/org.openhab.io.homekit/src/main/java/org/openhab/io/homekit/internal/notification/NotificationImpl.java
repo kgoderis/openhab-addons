@@ -21,7 +21,8 @@ import org.eclipse.jetty.http.MetaData;
 import org.eclipse.jetty.io.Connection;
 import org.eclipse.jetty.server.HttpConnection;
 import org.eclipse.jetty.util.FutureCallback;
-import org.openhab.io.homekit.api.Characteristic;
+import org.openhab.io.homekit.api.ManagedAccessory;
+import org.openhab.io.homekit.api.ManagedCharacteristic;
 import org.openhab.io.homekit.api.Notification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,20 +47,21 @@ public class NotificationImpl implements Notification {
     // after receiving the deregister request from the controller.
 
     @SuppressWarnings("rawtypes")
-    Characteristic characteristic;
+    ManagedCharacteristic characteristic;
     HttpConnection connection;
     List<JsonObject> notifications = Collections.synchronizedList(new LinkedList<JsonObject>());
 
     boolean batchMode = false;
 
-    public NotificationImpl(@SuppressWarnings("rawtypes") Characteristic characteristic, HttpConnection connection) {
+    public NotificationImpl(@SuppressWarnings("rawtypes") ManagedCharacteristic characteristic,
+            HttpConnection connection) {
         this.characteristic = characteristic;
         this.connection = connection;
     }
 
     @Override
     public NotificationUID getUID() {
-        return new NotificationUID(characteristic.getService().getAccessory().getServer().getId(),
+        return new NotificationUID(((ManagedAccessory) characteristic.getService().getAccessory()).getServer().getId(),
                 characteristic.getService().getAccessory().getId(), characteristic.getService().getId(),
                 characteristic.getId());
     }
@@ -135,7 +137,7 @@ public class NotificationImpl implements Notification {
     }
 
     @Override
-    public Characteristic<?> getCharacteristic() {
+    public ManagedCharacteristic<?> getCharacteristic() {
         return characteristic;
     }
 }

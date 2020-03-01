@@ -25,11 +25,11 @@ import org.openhab.core.common.SafeCaller;
 import org.openhab.core.io.transport.mdns.MDNSService;
 import org.openhab.core.io.transport.mdns.ServiceDescription;
 import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.Accessory;
+import org.openhab.io.homekit.api.ManagedAccessory;
 import org.openhab.io.homekit.api.AccessoryRegistry;
 import org.openhab.io.homekit.api.AccessoryServer;
 import org.openhab.io.homekit.api.AccessoryServerChangeListener;
-import org.openhab.io.homekit.api.Characteristic;
+import org.openhab.io.homekit.api.ManagedCharacteristic;
 import org.openhab.io.homekit.api.Notification;
 import org.openhab.io.homekit.api.NotificationRegistry;
 import org.openhab.io.homekit.api.Pairing;
@@ -245,21 +245,21 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     }
 
     @Override
-    public Collection<Accessory> getAccessories() {
+    public Collection<ManagedAccessory> getAccessories() {
         return Collections.unmodifiableList(accessoryRegistry.get(getId()).stream()
                 .sorted((o1, o2) -> new Long(o1.getId()).compareTo(new Long(o2.getId()))).collect(Collectors.toList()));
     }
 
     @Override
-    public @Nullable Accessory getAccessory(int instanceId) {
+    public @Nullable ManagedAccessory getAccessory(int instanceId) {
         AccessoryUID id = new AccessoryUID(getId(), Integer.toString(instanceId));
         return accessoryRegistry.get(id);
     }
 
     @Override
-    public @Nullable Accessory getAccessory(Class<? extends Accessory> accessoryClass) {
-        Collection<Accessory> accessories = accessoryRegistry.get(getId());
-        for (Accessory accessory : accessories) {
+    public @Nullable ManagedAccessory getAccessory(Class<? extends ManagedAccessory> accessoryClass) {
+        Collection<ManagedAccessory> accessories = accessoryRegistry.get(getId());
+        for (ManagedAccessory accessory : accessories) {
             if (accessory.getClass() == accessoryClass) {
                 return accessory;
             }
@@ -268,7 +268,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     }
 
     @Override
-    public void addAccessory(Accessory accessory) {
+    public void addAccessory(ManagedAccessory accessory) {
         logger.debug("Adding Accessory {} of Type {} to Accessory Server {}", accessory.getUID(),
                 accessory.getClass().getSimpleName(), this.getUID());
         if (accessory.getId() <= 1 && !(accessory instanceof BridgeAccessory)) {
@@ -285,13 +285,13 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     }
 
     @Override
-    public void removeAccessory(Accessory accessory) {
+    public void removeAccessory(ManagedAccessory accessory) {
         accessoryRegistry.remove(accessory.getUID());
         advertise();
     }
 
     @Override
-    public void addNotification(Characteristic<?> characteristic, HttpConnection connection) {
+    public void addNotification(ManagedCharacteristic<?> characteristic, HttpConnection connection) {
         Notification notification = new NotificationImpl(characteristic, connection);
 
         logger.debug("addNotification {} {}", notification.getUID(), connection.toString());
@@ -308,7 +308,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     }
 
     @Override
-    public void removeNotification(Characteristic<?> characteristic) {
+    public void removeNotification(ManagedCharacteristic<?> characteristic) {
         notificationRegistry.remove(new NotificationUID(getId(), characteristic.getService().getAccessory().getId(),
                 characteristic.getService().getId(), characteristic.getId()));
         characteristic.setEventsEnabled(false);

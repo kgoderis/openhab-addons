@@ -1,6 +1,14 @@
 package org.openhab.io.homekit.internal.client;
 
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringReader;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.URI;
@@ -12,12 +20,31 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.SignatureException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonNumber;
+import javax.json.JsonObject;
+import javax.json.JsonString;
+import javax.json.JsonValue;
+import javax.json.JsonValue.ValueType;
 
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
@@ -26,17 +53,20 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.ProtocolHandlers;
+import org.eclipse.jetty.client.api.Destination;
 import org.eclipse.jetty.client.api.Result;
 import org.eclipse.jetty.client.util.BufferingResponseListener;
 import org.eclipse.jetty.client.util.BytesContentProvider;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
+import org.openhab.io.homekit.api.Accessory;
 import org.openhab.io.homekit.api.Pairing;
 import org.openhab.io.homekit.api.PairingRegistry;
 import org.openhab.io.homekit.crypto.ChachaDecoder;
 import org.openhab.io.homekit.crypto.ChachaEncoder;
 import org.openhab.io.homekit.crypto.EdsaSigner;
 import org.openhab.io.homekit.crypto.EdsaVerifier;
+import org.openhab.io.homekit.internal.accessory.GenericAccessory;
 import org.openhab.io.homekit.internal.http.jetty.HomekitHttpClientTransportOverHTTP;
 import org.openhab.io.homekit.internal.http.jetty.HomekitHttpDestinationOverHTTP;
 import org.openhab.io.homekit.internal.http.jetty.HomekitProtocolHandler;
@@ -69,6 +99,7 @@ public class HomekitClient {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitClient.class);
 
+    private static final String HTTP_SCHEME = "http";
     private static final BigInteger N_3072 = new BigInteger(
             "5809605995369958062791915965639201402176612226902900533702900882779736177890990861472094774477339581147373410185646378328043729800750470098210924487866935059164371588168047540943981644516632755067501626434556398193186628990071248660819361205119793693985433297036118232914410171876807536457391277857011849897410207519105333355801121109356897459426271845471397952675959440793493071628394122780510124618488232602464649876850458861245784240929258426287699705312584509625419513463605155428017165714465363094021609290561084025893662561222573202082865797821865270991145082200656978177192827024538990239969175546190770645685893438011714430426409338676314743571154537142031573004276428701433036381801705308659830751190352946025482059931306571004727362479688415574702596946457770284148435989129632853918392117997472632693078113129886487399347796982772784615865232621289656944284216824611318709764535152507354116344703769998514148343807");
     private static final BigInteger G = BigInteger.valueOf(5);
@@ -97,13 +128,13 @@ public class HomekitClient {
     private final PairingRegistry pairingRegistry;
 
     public HomekitClient(InetAddress ipv4Address, int port, byte[] clientPairingIdentifier,
-            byte[] clientLongtermSecretKey, String setupCode, PairingRegistry pairingRegistry) {
+            byte[] clientLongtermSecretKey, PairingRegistry pairingRegistry) {
         super();
         this.address = ipv4Address;
         this.port = port;
         this.clientPairingIdentifier = clientPairingIdentifier;
         this.clientLongtermSecretKey = clientLongtermSecretKey;
-        this.setupCode = setupCode;
+        this.setupCode = null;
         this.isPaired = false;
         this.isPairVerified = false;
         this.pairingRegistry = pairingRegistry;
@@ -121,10 +152,12 @@ public class HomekitClient {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+
+        // TODO Check registry if paired. If so, do pair verify
     }
 
-    public HomekitClient(InetAddress ipv4Address, int port, String setupCode, PairingRegistry pairingRegistry) {
-        this(ipv4Address, port, generatePairingId(), generatePrivateKey(), setupCode, pairingRegistry);
+    public HomekitClient(InetAddress ipv4Address, int port, PairingRegistry pairingRegistry) {
+        this(ipv4Address, port, generatePairingId(), generatePrivateKey(), pairingRegistry);
     }
 
     public String getSetupCode() {
@@ -136,6 +169,7 @@ public class HomekitClient {
     }
 
     public boolean isPaired() {
+        // TODO Verify against pairingregistry instead
         return isPaired;
     }
 
@@ -159,7 +193,24 @@ public class HomekitClient {
         return accessoryPublicKey;
     }
 
+    public boolean isSecure() {
+        if (httpClient != null && address != null && port != 0) {
+            Destination destination = httpClient.getDestination(HTTP_SCHEME, address.getHostAddress(), port);
+
+            if (destination instanceof HomekitHttpDestinationOverHTTP) {
+                return ((HomekitHttpDestinationOverHTTP) destination).hasEncryptionKeys();
+            }
+        }
+
+        return false;
+    }
+
     public void pairSetup() throws IOException {
+
+        if (setupCode == null) {
+            logger.warn("Unable to pair with {}:{} because no setup code is set", address.getHostAddress(), port);
+            return;
+        }
 
         sessionKey = null;
         sharedSecret = null;
@@ -169,6 +220,7 @@ public class HomekitClient {
         clientPrivateKey = null;
 
         isPaired = false;
+        isPairVerified = false;
 
         StageResult stageResult = null;
 
@@ -213,7 +265,7 @@ public class HomekitClient {
         }
     }
 
-    public void pairVerify() throws IOException {
+    public boolean pairVerify() {
 
         sessionKey = null;
         sharedSecret = null;
@@ -230,20 +282,20 @@ public class HomekitClient {
             byte[] payload = doPairVerifyStage0();
             Future<StageResult> stageFuture = sendPairVerifyStage(payload);
             stageResult = stageFuture.get();
-        } catch (InterruptedException | ExecutionException e1) {
-            e1.printStackTrace();
-            return;
+        } catch (InterruptedException | ExecutionException | IOException e) {
+            e.printStackTrace();
+            return false;
         } catch (HomekitException e) {
-            return;
+            return false;
         }
 
         try {
             byte[] payload = doPairVerifyStage1(stageResult);
             Future<StageResult> stageFuture = sendPairVerifyStage(payload);
             stageResult = stageFuture.get();
-        } catch (InterruptedException | ExecutionException e1) {
-            e1.printStackTrace();
-            return;
+        } catch (InterruptedException | ExecutionException | IOException e) {
+            e.printStackTrace();
+            return false;
         } catch (HomekitException e) {
             Encoder encoder = TypeLengthValue.getEncoder();
             encoder.add(Message.STATE, (short) 0x03);
@@ -256,14 +308,66 @@ public class HomekitClient {
                 // TODO Auto-generated catch block
                 e1.printStackTrace();
             }
-            return;
+            return false;
         }
 
         try {
             byte[] payload = doPairVerifyStage2(stageResult);
             isPairVerified = true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
         } catch (HomekitException e) {
-            return;
+            return false;
+        }
+
+        return true;
+    }
+
+    public void pairRemove() throws HomekitException, IOException {
+        if (isPaired() && isPairVerified() && isSecure()) {
+            Encoder encoder = TypeLengthValue.getEncoder();
+            encoder.add(Message.STATE, (short) 0x01);
+            encoder.add(Message.METHOD, Method.REMOVE_PAIRING.getKey());
+            try {
+                encoder.add(Message.IDENTIFIER, getPairingId());
+            } catch (IOException e) {
+                throw e;
+            }
+
+            Future<StageResult> stageFuture;
+            StageResult stageResult = null;
+            try {
+                stageFuture = sendPairing(encoder.toByteArray());
+                stageResult = stageFuture.get();
+            } catch (InterruptedException | ExecutionException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+
+            short state = stageResult.decodeResult.getByte(Message.STATE);
+            if (state != 2) {
+                throw new HomekitException("Wrong STATE");
+            }
+
+            if (stageResult.decodeResult.getBytes(Message.ERROR) != null) {
+                logger.warn("Pairing was not removed by the Accessory");
+            } else {
+                isPaired = false;
+                isPairVerified = false;
+
+                if (accessoryPairingIdentifier != null) {
+                    Pairing oldPairing = pairingRegistry
+                            .remove(new PairingUID(clientPairingIdentifier, accessoryPairingIdentifier));
+
+                    if (oldPairing != null) {
+                        logger.info("Removed Pairing of Client {} with Accessory {} and Public Key {}",
+                                Byte.byteToHexString(clientPairingIdentifier),
+                                Byte.byteToHexString(oldPairing.getDestinationPairingId()),
+                                Byte.byteToHexString(oldPairing.getDestinationLongtermPublicKey()));
+                    }
+                }
+            }
         }
     }
 
@@ -446,7 +550,7 @@ public class HomekitClient {
     }
 
     protected byte[] doPairVerifyStage0() throws IOException, HomekitException {
-        logger.info("Verifiy Stage 0 : Start");
+        logger.info("Verify Stage 0 : Start");
 
         clientPublicKey = new byte[32];
         clientPrivateKey = new byte[32];
@@ -457,13 +561,13 @@ public class HomekitClient {
         encoder.add(Message.STATE, (short) 0x01);
         encoder.add(Message.PUBLIC_KEY, clientPublicKey);
 
-        logger.info("Verifiy Stage 0 : End");
+        logger.info("Verify Stage 0 : End");
 
         return encoder.toByteArray();
     }
 
     protected byte[] doPairVerifyStage1(StageResult stageResult) throws IOException, HomekitException {
-        logger.info("Verifiy Stage 1 : Start");
+        logger.info("Verify Stage 1 : Start");
 
         short state = stageResult.decodeResult.getByte(Message.STATE);
         if (state != 2) {
@@ -471,7 +575,7 @@ public class HomekitClient {
         }
 
         accessoryPublicKey = stageResult.decodeResult.getBytes(Message.PUBLIC_KEY);
-        logger.info("Verifiy Stage 1 : Accessory Public Key is {}", Byte.byteToHexString(accessoryPublicKey));
+        logger.info("Verify Stage 1 : Accessory Public Key is {}", Byte.byteToHexString(accessoryPublicKey));
 
         byte[] messageData = new byte[stageResult.decodeResult.getLength(Message.ENCRYPTED_DATA) - 16];
         stageResult.decodeResult.getBytes(Message.ENCRYPTED_DATA, messageData, 0);
@@ -480,22 +584,22 @@ public class HomekitClient {
 
         sharedSecret = new byte[32];
         Curve25519.curve(sharedSecret, clientPrivateKey, accessoryPublicKey);
-        logger.info("Verifiy Stage 1 : Shared Secret is {}", Byte.byteToHexString(sharedSecret));
+        logger.info("Verify Stage 1 : Shared Secret is {}", Byte.byteToHexString(sharedSecret));
 
         HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA512Digest());
         hkdf.init(new HKDFParameters(sharedSecret, "Pair-Verify-Encrypt-Salt".getBytes(StandardCharsets.UTF_8),
                 "Pair-Verify-Encrypt-Info".getBytes(StandardCharsets.UTF_8)));
         byte[] sessionKey = new byte[32];
         hkdf.generateBytes(sessionKey, 0, 32);
-        logger.info("Verifiy Stage 1 : Session Key is {}", Byte.byteToHexString(sessionKey));
+        logger.info("Verify Stage 1 : Session Key is {}", Byte.byteToHexString(sessionKey));
 
         byte[] plaintext = null;
         ChachaDecoder chachaDecoder = new ChachaDecoder(sessionKey, "PV-Msg02".getBytes(StandardCharsets.UTF_8));
         try {
             plaintext = chachaDecoder.decodeCiphertext(authTagData, messageData);
-            logger.info("Verifiy Stage 1 : Plaintext is {}", Byte.byteToHexString(plaintext));
+            logger.info("Verify Stage 1 : Plaintext is {}", Byte.byteToHexString(plaintext));
         } catch (Exception e) {
-            logger.warn("Verifiy Stage 1 : Unable to decode the ciphertext");
+            logger.warn("Verify Stage 1 : Unable to decode the ciphertext");
             e.printStackTrace();
             throw new HomekitException("Ciphertext decoding failed");
         }
@@ -505,9 +609,9 @@ public class HomekitClient {
 
         DecodeResult d = TypeLengthValue.decode(plaintext);
         accessoryPairingIdentifier = d.getBytes(Message.IDENTIFIER);
-        logger.info("Verifiy Stage 1 : Accessory Pairing Id is {}", Byte.byteToHexString(accessoryPairingIdentifier));
+        logger.info("Verify Stage 1 : Accessory Pairing Id is {}", Byte.byteToHexString(accessoryPairingIdentifier));
         accessorySignature = d.getBytes(Message.SIGNATURE);
-        logger.info("Verifiy Stage 1 : Accessory Signature is {}", Byte.byteToHexString(accessorySignature));
+        logger.info("Verify Stage 1 : Accessory Signature is {}", Byte.byteToHexString(accessorySignature));
 
         accessoryPairing = pairingRegistry.get(new PairingUID(clientPairingIdentifier, accessoryPairingIdentifier));
 
@@ -534,7 +638,7 @@ public class HomekitClient {
 
         byte[] clientSignature = null;
         try {
-            logger.info("Verifiy Stage 1 : Client Long Term Secret Key is {}",
+            logger.info("Verify Stage 1 : Client Long Term Secret Key is {}",
                     Byte.byteToHexString(clientLongtermSecretKey));
             clientSignature = new EdsaSigner(clientLongtermSecretKey).sign(clientDeviceInfo);
         } catch (InvalidKeyException e) {
@@ -549,9 +653,9 @@ public class HomekitClient {
         }
 
         Encoder encoder = TypeLengthValue.getEncoder();
-        logger.info("Verifiy Stage 1 : Client Pairing Id is {}", Byte.byteToHexString(clientPairingIdentifier));
+        logger.info("Verify Stage 1 : Client Pairing Id is {}", Byte.byteToHexString(clientPairingIdentifier));
         encoder.add(Message.IDENTIFIER, clientPairingIdentifier);
-        logger.info("Verifiy Stage 1 : Client Signature is {}", Byte.byteToHexString(clientSignature));
+        logger.info("Verify Stage 1 : Client Signature is {}", Byte.byteToHexString(clientSignature));
         encoder.add(Message.SIGNATURE, clientSignature);
         plaintext = encoder.toByteArray();
 
@@ -562,13 +666,13 @@ public class HomekitClient {
         encoder.add(Message.STATE, (short) 0x03);
         encoder.add(Message.ENCRYPTED_DATA, ciphertext);
 
-        logger.info("Verifiy Stage 1 : End");
+        logger.info("Verify Stage 1 : End");
 
         return encoder.toByteArray();
     }
 
     protected byte[] doPairVerifyStage2(StageResult stageResult) throws IOException, HomekitException {
-        logger.info("Verifiy Stage 2 : Start");
+        logger.info("Verify Stage 2 : Start");
 
         short state = stageResult.decodeResult.getByte(Message.STATE);
         if (state != 4) {
@@ -576,18 +680,18 @@ public class HomekitClient {
         }
 
         byte[] writeKey = createKey("Control-Write-Encryption-Key", sharedSecret);
-        logger.info("Verifiy Stage 2 : Write Key is {}", Byte.byteToHexString(writeKey));
+        logger.info("Verify Stage 2 : Write Key is {}", Byte.byteToHexString(writeKey));
 
         byte[] readKey = createKey("Control-Read-Encryption-Key", sharedSecret);
-        logger.info("Verifiy Stage 2 : Read Key is {}", Byte.byteToHexString(readKey));
+        logger.info("Verify Stage 2 : Read Key is {}", Byte.byteToHexString(readKey));
 
         HomekitHttpDestinationOverHTTP destination = (HomekitHttpDestinationOverHTTP) httpClient.getDestination(
                 stageResult.result.getRequest().getScheme(), stageResult.result.getRequest().getHost(),
                 stageResult.result.getRequest().getPort());
-        logger.info("Verifiy Stage 2 : Setting the keys on destination ", destination.toString());
+        logger.info("Verify Stage 2 : Setting the keys on destination ", destination.toString());
         destination.setEncryptionKeys(readKey, writeKey);
 
-        logger.info("Verifiy Stage 2 : End");
+        logger.info("Verify Stage 2 : End");
 
         return null;
     }
@@ -598,6 +702,10 @@ public class HomekitClient {
 
     protected Future<StageResult> sendPairVerifyStage(byte[] request) throws InterruptedException {
         return sendStage(request, "/pair-verify");
+    }
+
+    protected Future<StageResult> sendPairing(byte[] request) throws InterruptedException {
+        return sendStage(request, "/pairings");
     }
 
     protected Future<StageResult> sendStage(byte[] request, String url) throws InterruptedException {
@@ -637,6 +745,32 @@ public class HomekitClient {
                             } catch (IOException e) {
                                 SRP6Session = null;
                             }
+                        }
+                    }
+                });
+
+        return completableFuture;
+    }
+
+    protected Future<ContentResult> getContent(String url) throws InterruptedException {
+
+        URI uri = null;
+        try {
+            uri = new URI("http", null, address.getHostAddress(), port, url, null, null);
+        } catch (URISyntaxException e1) {
+            e1.printStackTrace();
+        }
+
+        CompletableFuture<ContentResult> completableFuture = new CompletableFuture<>();
+
+        httpClient.newRequest(uri.toString()).method(HttpMethod.GET)
+                .send(new BufferingResponseListener(8 * 1024 * 1024) {
+                    @Override
+                    public void onComplete(Result result) {
+                        if (!result.isFailed()) {
+                            byte[] body = getContent();
+                            ContentResult stageResult = new ContentResult(body, result);
+                            completableFuture.complete(stageResult);
                         }
                     }
                 });
@@ -787,7 +921,6 @@ public class HomekitClient {
     }
 
     protected class StageResult {
-
         public StageResult(DecodeResult decodeResult, Result result) {
             this.decodeResult = decodeResult;
             this.result = result;
@@ -795,6 +928,176 @@ public class HomekitClient {
 
         public DecodeResult decodeResult;
         public Result result;
+    }
+
+    protected class ContentResult {
+        public ContentResult(byte[] body, Result result) {
+            this.body = body;
+            this.result = result;
+        }
+
+        public byte[] body;
+        public Result result;
+    }
+
+    public Collection<Accessory> getAccessories() {
+        Collection<Accessory> result = new HashSet<Accessory>();
+
+        if (isPaired() && isPairVerified() && isSecure()) {
+
+            Future<ContentResult> contentFuture;
+            ContentResult contentResult = null;
+            try {
+                contentFuture = getContent("/accessories");
+                contentResult = contentFuture.get();
+            } catch (InterruptedException | ExecutionException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+            if (contentResult.result.getResponse().getStatus() == 200) {
+                JsonArray accessories = Json.createReader(new ByteArrayInputStream(contentResult.body)).readObject()
+                        .getJsonArray("accessories");
+                for (JsonValue value : accessories) {
+                    result.add(new GenericAccessory(value));
+                }
+            }
+        }
+
+        return result;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T fromJson(String json, Class<T> beanClass) {
+        JsonValue value = Json.createReader(new StringReader(json)).read();
+        return (T) decode(value, beanClass);
+    }
+
+    private static Object decode(JsonValue jsonValue, Type targetType) {
+        if (jsonValue.getValueType() == ValueType.NULL) {
+            return null;
+        } else if (jsonValue.getValueType() == ValueType.TRUE || jsonValue.getValueType() == ValueType.FALSE) {
+            return decodeBoolean(jsonValue, targetType);
+        } else if (jsonValue instanceof JsonNumber) {
+            return decodeNumber((JsonNumber) jsonValue, targetType);
+        } else if (jsonValue instanceof JsonString) {
+            return decodeString((JsonString) jsonValue, targetType);
+        } else if (jsonValue instanceof JsonArray) {
+            return decodeArray((JsonArray) jsonValue, targetType);
+        } else if (jsonValue instanceof JsonObject) {
+            return decodeObject((JsonObject) jsonValue, targetType);
+        } else {
+            throw new UnsupportedOperationException("Unsupported json value: " + jsonValue);
+        }
+    }
+
+    private static Object decodeBoolean(JsonValue jsonValue, Type targetType) {
+        if (targetType == boolean.class || targetType == Boolean.class) {
+            return Boolean.valueOf(jsonValue.toString());
+        } else {
+            throw new UnsupportedOperationException("Unsupported boolean type: " + targetType);
+        }
+    }
+
+    private static Object decodeNumber(JsonNumber jsonNumber, Type targetType) {
+        if (targetType == int.class || targetType == Integer.class) {
+            return jsonNumber.intValue();
+        } else if (targetType == long.class || targetType == Long.class) {
+            return jsonNumber.longValue();
+        } else {
+            throw new UnsupportedOperationException("Unsupported number type: " + targetType);
+        }
+    }
+
+    private static Object decodeString(JsonString jsonString, Type targetType) {
+        if (targetType == String.class) {
+            return jsonString.getString();
+        } else if (targetType == Date.class) {
+            try {
+                return new SimpleDateFormat("MMM dd, yyyy H:mm:ss a", Locale.ENGLISH).parse(jsonString.getString()); // This
+                                                                                                                     // is
+                                                                                                                     // default
+                                                                                                                     // Gson
+                                                                                                                     // format.
+                                                                                                                     // Alter
+                                                                                                                     // if
+                                                                                                                     // necessary.
+            } catch (ParseException e) {
+                throw new UnsupportedOperationException("Unsupported date format: " + jsonString.getString());
+            }
+        } else {
+            throw new UnsupportedOperationException("Unsupported string type: " + targetType);
+        }
+    }
+
+    private static Object decodeArray(JsonArray jsonArray, Type targetType) {
+        Class<?> targetClass = (Class<?>) ((targetType instanceof ParameterizedType)
+                ? ((ParameterizedType) targetType).getRawType()
+                : targetType);
+
+        if (List.class.isAssignableFrom(targetClass)) {
+            Class<?> elementClass = (Class<?>) ((ParameterizedType) targetType).getActualTypeArguments()[0];
+            List<Object> list = new ArrayList<>();
+
+            for (JsonValue item : jsonArray) {
+                list.add(decode(item, elementClass));
+            }
+
+            return list;
+        } else if (targetClass.isArray()) {
+            Class<?> elementClass = targetClass.getComponentType();
+            Object array = Array.newInstance(elementClass, jsonArray.size());
+
+            for (int i = 0; i < jsonArray.size(); i++) {
+                Array.set(array, i, decode(jsonArray.get(i), elementClass));
+            }
+
+            return array;
+        } else {
+            throw new UnsupportedOperationException("Unsupported array type: " + targetClass);
+        }
+    }
+
+    private static Object decodeObject(JsonObject object, Type targetType) {
+        Class<?> targetClass = (Class<?>) ((targetType instanceof ParameterizedType)
+                ? ((ParameterizedType) targetType).getRawType()
+                : targetType);
+
+        if (Map.class.isAssignableFrom(targetClass)) {
+            Class<?> valueClass = (Class<?>) ((ParameterizedType) targetType).getActualTypeArguments()[1];
+            Map<String, Object> map = new LinkedHashMap<>();
+
+            for (Entry<String, JsonValue> entry : object.entrySet()) {
+                map.put(entry.getKey(), decode(entry.getValue(), valueClass));
+            }
+
+            return map;
+        } else {
+            try {
+                Constructor[] ctors = targetClass.getDeclaredConstructors();
+                Constructor ctor = null;
+                for (int i = 0; i < ctors.length; i++) {
+                    ctor = ctors[i];
+                    if (ctor.getGenericParameterTypes().length == 0) {
+                        break;
+                    }
+                }
+
+                // Object bean = targetClass.newInstance(); Constructor.newInstance(targetClass);
+                Object bean = ctor.newInstance(targetClass);
+
+                for (PropertyDescriptor property : Introspector.getBeanInfo(targetClass).getPropertyDescriptors()) {
+                    if (property.getWriteMethod() != null && object.containsKey(property.getName())) {
+                        property.getWriteMethod().invoke(bean, decode(object.get(property.getName()),
+                                property.getWriteMethod().getGenericParameterTypes()[0]));
+                    }
+                }
+
+                return bean;
+            } catch (Exception e) {
+                throw new UnsupportedOperationException("Unsupported object type: " + targetClass, e);
+            }
+        }
     }
 
 }

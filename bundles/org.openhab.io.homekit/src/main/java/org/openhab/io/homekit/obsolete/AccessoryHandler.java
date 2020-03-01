@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.server.Request;
-import org.openhab.io.homekit.api.Accessory;
+import org.openhab.io.homekit.api.ManagedAccessory;
 import org.openhab.io.homekit.api.AccessoryServer;
 
 public class AccessoryHandler extends BaseHandler {
@@ -26,7 +26,7 @@ public class AccessoryHandler extends BaseHandler {
 
         JsonArrayBuilder accessories = Json.createArrayBuilder();
 
-        for (Accessory accessory : server.getAccessories()) {
+        for (ManagedAccessory accessory : server.getAccessories()) {
             accessories.add(accessory.toJson());
         }
 

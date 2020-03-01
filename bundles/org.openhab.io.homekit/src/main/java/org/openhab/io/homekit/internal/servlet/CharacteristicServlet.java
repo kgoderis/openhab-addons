@@ -19,9 +19,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.server.HttpConnection;
-import org.openhab.io.homekit.api.Accessory;
 import org.openhab.io.homekit.api.AccessoryServer;
-import org.openhab.io.homekit.api.Characteristic;
+import org.openhab.io.homekit.api.ManagedAccessory;
+import org.openhab.io.homekit.api.ManagedCharacteristic;
 import org.openhab.io.homekit.api.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,12 +66,13 @@ public class CharacteristicServlet extends BaseServlet {
             int aid = Integer.parseInt(parts[0]);
             int iid = Integer.parseInt(parts[1]);
 
-            Accessory theAccessory = server.getAccessory(aid);
+            ManagedAccessory theAccessory = server.getAccessory(aid);
             if (theAccessory != null) {
                 Collection<Service> services = theAccessory.getServices();
 
                 for (Service aService : services) {
-                    Characteristic<?> characteristic = aService.getCharacteristic(iid);
+                    ManagedCharacteristic<?> characteristic = (ManagedCharacteristic<?>) aService
+                            .getCharacteristic(iid);
                     if (characteristic != null) {
                         characteristics
                                 .add(characteristic.toJson(includeMeta, includePermissions, includeType, includeEvent));
@@ -114,12 +115,13 @@ public class CharacteristicServlet extends BaseServlet {
                     int aid = characteristicWriteObject.getInt("aid");
                     int iid = characteristicWriteObject.getInt("iid");
 
-                    Accessory theAccessory = server.getAccessory(aid);
+                    ManagedAccessory theAccessory = server.getAccessory(aid);
                     if (theAccessory != null) {
                         Collection<Service> services = theAccessory.getServices();
 
                         for (Service aService : services) {
-                            Characteristic<?> characteristic = aService.getCharacteristic(iid);
+                            ManagedCharacteristic<?> characteristic = (ManagedCharacteristic<?>) aService
+                                    .getCharacteristic(iid);
                             if (characteristic != null) {
                                 if (characteristicWriteObject.containsKey("value")) {
                                     characteristic.setValue(characteristicWriteObject.get("value"));

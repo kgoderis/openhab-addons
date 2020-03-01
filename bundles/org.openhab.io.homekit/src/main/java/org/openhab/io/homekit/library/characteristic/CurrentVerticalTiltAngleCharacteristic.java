@@ -1,12 +1,12 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.api.ManagedService;
 import org.openhab.io.homekit.internal.characteristic.IntegerCharacteristic;
 
 public class CurrentVerticalTiltAngleCharacteristic extends IntegerCharacteristic {
 
-    public CurrentVerticalTiltAngleCharacteristic(HomekitCommunicationManager manager, Service service,
+    public CurrentVerticalTiltAngleCharacteristic(HomekitCommunicationManager manager, ManagedService service,
             long instanceId) {
         super(manager, service, instanceId, false, true, true, "The current angle of vertical slats", -90, 90,
                 "arcdegrees");

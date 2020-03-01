@@ -23,7 +23,7 @@ import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.type.ChannelTypeUID;
 
 /**
- * The {@link HomekitFactory} is responsible for creating {@link Accessory}s based on {@link Thing}s. Therefore the
+ * The {@link HomekitFactory} is responsible for creating {@link ManagedAccessory}s based on {@link Thing}s. Therefore the
  * factory must be registered as OSGi service.
  *
  * @author Karel Goderis - Initial contribution
@@ -44,7 +44,7 @@ public interface HomekitFactory {
     boolean supportsCharacteristicsType(String type);
 
     /**
-     * Creates a new {@link Accessory} instance.
+     * Creates a new {@link ManagedAccessory} instance.
      * <p>
      * This method is only called if the {@link HomekitFactory} supports the type of the given thing.
      * <p>
@@ -55,46 +55,46 @@ public interface HomekitFactory {
      * @throws IllegalStateException if the handler instance could not be created
      */
     @Nullable
-    Accessory createAccessory(Thing thing, AccessoryServer server) throws Exception;
+    ManagedAccessory createAccessory(Thing thing, AccessoryServer server) throws Exception;
 
     @Nullable
-    Accessory createAccessory(Class<? extends Accessory> accessoryClass, AccessoryServer server, long instanceId,
+    ManagedAccessory createAccessory(Class<? extends ManagedAccessory> accessoryClass, AccessoryServer server, long instanceId,
             boolean extend);
 
     @Nullable
-    Service createService(String serviceType, Accessory accessory, boolean extend, String serviceName);
+    ManagedService createService(String serviceType, ManagedAccessory accessory, boolean extend, String serviceName);
 
     @Nullable
-    Service createService(String serviceType, Accessory accessory, long instanceId, boolean extend, String serviceName);
+    ManagedService createService(String serviceType, ManagedAccessory accessory, long instanceId, boolean extend, String serviceName);
 
     @Nullable
-    Service createService(String serviceType, Accessory accessory, long instanceId, boolean extend);
+    ManagedService createService(String serviceType, ManagedAccessory accessory, long instanceId, boolean extend);
 
     @Nullable
-    Characteristic<?> createCharacteristic(String characteristicsType, Service service);
+    ManagedCharacteristic<?> createCharacteristic(String characteristicsType, ManagedService service);
 
     @Nullable
-    Characteristic<?> createCharacteristic(String characteristicsType, Service service, long instanceId);
+    ManagedCharacteristic<?> createCharacteristic(String characteristicsType, ManagedService service, long instanceId);
 
-    void addAccessory(ThingTypeUID type, Class<? extends Accessory> accessoryClass);
+    void addAccessory(ThingTypeUID type, Class<? extends ManagedAccessory> accessoryClass);
 
     void addService(ThingTypeUID type);
 
     void addService(ThingTypeUID type, String serviceType);
 
-    void addService(ThingTypeUID type, Class<? extends Service> serviceClass);
+    void addService(ThingTypeUID type, Class<? extends ManagedService> serviceClass);
 
-    void addService(String serviceType, Class<? extends Service> serviceClass);
+    void addService(String serviceType, Class<? extends ManagedService> serviceClass);
 
-    void addService(Class<@NonNull ? extends Service> serviceClass);
+    void addService(Class<@NonNull ? extends ManagedService> serviceClass);
 
     void addCharacteristic(ChannelTypeUID type, String characateristicType);
 
-    void addCharacteristic(ChannelTypeUID type, Class<@NonNull ? extends Characteristic<?>> characteristicClass);
+    void addCharacteristic(ChannelTypeUID type, Class<@NonNull ? extends ManagedCharacteristic<?>> characteristicClass);
 
-    void addCharacteristic(String characateristicType, Class<? extends Characteristic<?>> characteristicClass);
+    void addCharacteristic(String characateristicType, Class<? extends ManagedCharacteristic<?>> characteristicClass);
 
-    void addCharacteristic(Class<@NonNull ? extends Characteristic<?>> characteristicClass);
+    void addCharacteristic(Class<@NonNull ? extends ManagedCharacteristic<?>> characteristicClass);
 
     HashSet<String> getCharacteristicTypes(@Nullable ChannelTypeUID type);
 

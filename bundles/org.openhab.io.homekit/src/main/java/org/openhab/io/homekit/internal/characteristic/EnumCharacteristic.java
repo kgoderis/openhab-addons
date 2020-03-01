@@ -7,18 +7,18 @@ import javax.json.JsonValue;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.api.ManagedService;
 
 /**
  * * Characteristic that exposes an Enum value. Enums are represented as an Integer value in the
  * Homekit protocol, and classes extending this one must handle the static mapping to an Integer
  * value.
  **/
-public abstract class EnumCharacteristic extends AbstractCharacteristic<Integer> {
+public abstract class EnumCharacteristic extends AbstractManagedCharacteristic<Integer> {
 
     private final int maxValue;
 
-    public EnumCharacteristic(HomekitCommunicationManager manager, Service service, long instanceId, boolean isWritable,
+    public EnumCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId, boolean isWritable,
             boolean isReadable, boolean hasEvents, String description, int maxValue) {
         super(manager, service, instanceId, "int", isWritable, isReadable, hasEvents, description);
         this.maxValue = maxValue;

@@ -1,8 +1,5 @@
 package org.openhab.io.homekit.internal.characteristic;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -13,27 +10,18 @@ import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.types.State;
 import org.openhab.core.types.UnDefType;
 import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.Characteristic;
-import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.api.ManagedAccessory;
+import org.openhab.io.homekit.api.ManagedCharacteristic;
+import org.openhab.io.homekit.api.ManagedService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractCharacteristic<T> implements Characteristic<T> {
+public abstract class AbstractManagedCharacteristic<T> extends GenericCharacteristic
+        implements ManagedCharacteristic<T> {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractCharacteristic.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractManagedCharacteristic.class);
 
     protected final HomekitCommunicationManager manager;
-
-    private final Service service;
-    private final long instanceId;
-    // private final String shortType;
-    private final String format;
-    private final boolean isWritable;
-    private final boolean isReadable;
-    private final boolean hasEvents;
-    private boolean hasEventsEnabled;
-    private final String description;
-
     private ChannelUID channelUID;
 
     /**
@@ -47,59 +35,29 @@ public abstract class AbstractCharacteristic<T> implements Characteristic<T> {
      * @param isReadable indicates whether the value can be retrieved.
      * @param description a description of the characteristic to be passed to the consuming device.
      */
-    public AbstractCharacteristic(HomekitCommunicationManager manager, Service service, long instanceId, String format,
-            boolean isWritable, boolean isReadable, boolean hasEvents, String description) {
-        super();
+    public AbstractManagedCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId,
+            String format, boolean isWritable, boolean isReadable, boolean hasEvents, String description) {
+        super(service, instanceId, format, isWritable, isReadable, hasEvents, description);
 
         if (manager == null || format == null || description == null) {
-            throw new NullPointerException();
+            throw new IllegalArgumentException();
         }
 
         this.manager = manager;
-        this.service = service;
-        this.instanceId = instanceId;
-        // this.shortType = getType().replaceAll("^0*([0-9a-fA-F]+)-0000-1000-8000-0026BB765291$", "$1");
-        this.format = format;
-        this.isWritable = isWritable;
-        this.isReadable = isReadable;
-        this.hasEvents = hasEvents;
-        this.description = description;
-
-        this.hasEventsEnabled = false;
     }
 
     @Override
     public CharacteristicUID getUID() {
-        return new CharacteristicUID(service.getAccessory().getServer().getId(), service.getAccessory().getId(),
-                service.getId(), instanceId);
-    }
-
-    @Override
-    public long getId() {
-        return instanceId;
-    }
-
-    @Override
-    public boolean isType(String aType) {
-        return getInstanceType().equals(aType);
+        return new CharacteristicUID(((ManagedAccessory) getService().getAccessory()).getServer().getId(),
+                getService().getAccessory().getId(), getService().getId(), getId());
     }
 
     @Override
     public abstract String getInstanceType();
 
     @Override
-    public Service getService() {
-        return service;
-    }
-
-    @Override
     public ChannelUID getChannelUID() {
         return channelUID;
-    }
-
-    @Override
-    public void setEventsEnabled(boolean value) {
-        this.hasEventsEnabled = value;
     }
 
     @Override
@@ -126,7 +84,7 @@ public abstract class AbstractCharacteristic<T> implements Characteristic<T> {
 
     @Override
     public void setValue(T value) throws Exception {
-        if (isWritable) {
+        if (isWritable()) {
             manager.stateUpdated(getChannelUID(), convert(value));
         } else {
             throw new Exception("Can not modify a readonly characteristic");
@@ -140,7 +98,7 @@ public abstract class AbstractCharacteristic<T> implements Characteristic<T> {
      */
     @Override
     public final void setValue(JsonValue jsonValue) throws Exception {
-        if (isWritable) {
+        if (isWritable()) {
             try {
                 this.setValue(convert(jsonValue));
             } catch (Exception e) {
@@ -151,17 +109,18 @@ public abstract class AbstractCharacteristic<T> implements Characteristic<T> {
         }
     }
 
+    @Override
     protected JsonObject toJson(boolean aid, boolean iid, boolean type, boolean shortType, boolean perms,
             boolean format, boolean ev, boolean description, boolean addValue) {
 
         JsonObjectBuilder builder = Json.createObjectBuilder();
 
         if (aid) {
-            builder.add("aid", service.getAccessory().getId());
+            builder.add("aid", getService().getAccessory().getId());
         }
 
         if (iid) {
-            builder.add("iid", this.instanceId);
+            builder.add("iid", this.getId());
         }
 
         if (type) {
@@ -175,13 +134,13 @@ public abstract class AbstractCharacteristic<T> implements Characteristic<T> {
 
         if (perms) {
             JsonArrayBuilder permissions = Json.createArrayBuilder();
-            if (isWritable) {
+            if (isWritable()) {
                 permissions.add("pw");
             }
-            if (isReadable) {
+            if (isReadable()) {
                 permissions.add("pr");
             }
-            if (hasEvents) {
+            if (isHasEvents()) {
                 permissions.add("ev");
             }
 
@@ -189,15 +148,15 @@ public abstract class AbstractCharacteristic<T> implements Characteristic<T> {
         }
 
         if (format) {
-            builder.add("format", this.format);
+            builder.add("format", this.getFormat());
         }
 
         if (ev) {
-            builder.add("ev", this.hasEventsEnabled);
+            builder.add("ev", this.isEventsEnabled());
         }
 
         if (description) {
-            builder.add("description", this.description);
+            builder.add("description", this.getDescription());
         }
 
         JsonObject jsonObject = builder.build();
@@ -268,48 +227,4 @@ public abstract class AbstractCharacteristic<T> implements Characteristic<T> {
      * @return a sensible default value.
      */
     protected abstract T getDefault();
-
-    protected JsonObject enrich(JsonObject source, String key, Object value) {
-        JsonObjectBuilder builder = Json.createObjectBuilder();
-        addValue(builder, key, value);
-        source.entrySet().forEach(e -> builder.add(e.getKey(), e.getValue()));
-        return builder.build();
-    }
-
-    protected void addValue(JsonObjectBuilder builder, String name, Object value) {
-        if (value instanceof Boolean) {
-            builder.add(name, (Boolean) value);
-        } else if (value instanceof Double) {
-            builder.add(name, (Double) value);
-        } else if (value instanceof Integer) {
-            builder.add(name, (Integer) value);
-        } else if (value instanceof Long) {
-            builder.add(name, (Long) value);
-        } else if (value instanceof BigInteger) {
-            builder.add(name, (BigInteger) value);
-        } else if (value instanceof BigDecimal) {
-            builder.add(name, (BigDecimal) value);
-        } else if (value instanceof JsonValue) {
-            builder.add(name, (JsonValue) value);
-        } else if (value instanceof JsonObjectBuilder) {
-            builder.add(name, (JsonObjectBuilder) value);
-        } else if (value instanceof JsonArrayBuilder) {
-            builder.add(name, (JsonArrayBuilder) value);
-        } else if (value == null) {
-            // builder.addNull(name);
-        } else {
-            builder.add(name, value.toString());
-        }
-    }
-
-    // @Override
-    // public void stateChanged(@NonNull Item item, @NonNull State oldState, @NonNull State newState) {
-    // logger.debug("State Changed {} : {} -> {}", item.getName(), oldState, newState);
-    // manager.handleUpdate(getUID(), toEventJson(convert(newState)));
-    // }
-    //
-    // @Override
-    // public void stateUpdated(@NonNull Item item, @NonNull State state) {
-    // // No Op - We do not want to flood the network per Apple HAP Spec guidelines
-    // }
 }

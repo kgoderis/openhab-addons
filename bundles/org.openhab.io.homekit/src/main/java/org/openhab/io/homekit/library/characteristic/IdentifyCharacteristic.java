@@ -1,13 +1,13 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.api.ManagedAccessory;
+import org.openhab.io.homekit.api.ManagedService;
 import org.openhab.io.homekit.internal.characteristic.WriteOnlyBooleanCharacteristic;
 
 public class IdentifyCharacteristic extends WriteOnlyBooleanCharacteristic {
 
-    public IdentifyCharacteristic(HomekitCommunicationManager manager, Service service, long instanceId)
-            throws Exception {
+    public IdentifyCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId) {
         super(manager, service, instanceId, "Identifies the accessory via a physical action on the accessory");
     }
 
@@ -23,7 +23,7 @@ public class IdentifyCharacteristic extends WriteOnlyBooleanCharacteristic {
     @Override
     public void setValue(Boolean value) throws Exception {
         if (value) {
-            getService().getAccessory().identify();
+            ((ManagedAccessory) getService().getAccessory()).identify();
         }
     }
 

@@ -4,12 +4,12 @@ import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.HSBType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.api.ManagedService;
 import org.openhab.io.homekit.internal.characteristic.FloatCharacteristic;
 
 public class HueCharacteristic extends FloatCharacteristic {
 
-    public HueCharacteristic(HomekitCommunicationManager manager, Service service, long instanceId) {
+    public HueCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId) {
         super(manager, service, instanceId, true, true, true, "Adjust hue of a light", 0, 360, 1, "arcdegrees");
     }
 

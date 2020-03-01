@@ -10,19 +10,19 @@ import javax.json.JsonValue;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.api.ManagedService;
 
 /**
  * @author Karel Goderis - Initial Contribution
  *
  */
-public abstract class ReadOnlyStringCharacteristic extends AbstractCharacteristic<String> {
+public abstract class ReadOnlyStringCharacteristic extends AbstractManagedCharacteristic<String> {
 
     private static final int MAX_LEN = 255;
 
     private String value;
 
-    public ReadOnlyStringCharacteristic(HomekitCommunicationManager manager, Service service, long instanceId,
+    public ReadOnlyStringCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId,
             String description, String value) {
         super(manager, service, instanceId, "string", false, true, false, description);
         this.value = value;

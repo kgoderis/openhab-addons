@@ -4,7 +4,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.api.ManagedService;
 import org.openhab.io.homekit.internal.characteristic.BooleanCharacteristic;
 
 /**
@@ -13,7 +13,7 @@ import org.openhab.io.homekit.internal.characteristic.BooleanCharacteristic;
  */
 public class HoldPositionCharacteristic extends BooleanCharacteristic {
 
-    public HoldPositionCharacteristic(HomekitCommunicationManager manager, Service service, long instanceId) {
+    public HoldPositionCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId) {
         super(manager, service, instanceId, true, false, false, "Stop at the current position");
     }
 

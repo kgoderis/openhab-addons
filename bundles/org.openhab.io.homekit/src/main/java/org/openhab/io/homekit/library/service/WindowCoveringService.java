@@ -2,8 +2,8 @@ package org.openhab.io.homekit.library.service;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.Accessory;
-import org.openhab.io.homekit.internal.service.AbstractService;
+import org.openhab.io.homekit.api.ManagedAccessory;
+import org.openhab.io.homekit.internal.service.AbstractManagedService;
 import org.openhab.io.homekit.library.characteristic.CurrentHorizontalTiltAngleCharacteristic;
 import org.openhab.io.homekit.library.characteristic.CurrentPositionCharacteristic;
 import org.openhab.io.homekit.library.characteristic.CurrentVerticalTiltAngleCharacteristic;
@@ -14,29 +14,34 @@ import org.openhab.io.homekit.library.characteristic.TargetHorizontalTiltAngleCh
 import org.openhab.io.homekit.library.characteristic.TargetPositionCharacteristic;
 import org.openhab.io.homekit.library.characteristic.TargetVerticalTiltAngleCharacteristic;
 
-public class WindowCoveringService extends AbstractService {
+public class WindowCoveringService extends AbstractManagedService {
 
-    public WindowCoveringService(HomekitCommunicationManager manager, Accessory accessory, long instanceId,
+    public WindowCoveringService(HomekitCommunicationManager manager, ManagedAccessory accessory, long instanceId,
             boolean extend, @NonNull String serviceName) throws Exception {
         super(manager, accessory, instanceId, extend, serviceName);
     }
 
     @Override
-    public void addCharacteristics() throws Exception {
+    public void addCharacteristics() {
         super.addCharacteristics();
-        addCharacteristic(new TargetPositionCharacteristic(manager, this, this.getAccessory().getInstanceId()));
-        addCharacteristic(new CurrentPositionCharacteristic(manager, this, this.getAccessory().getInstanceId()));
-        addCharacteristic(new PositionStateCharacteristic(manager, this, this.getAccessory().getInstanceId()));
-        addCharacteristic(new HoldPositionCharacteristic(manager, this, this.getAccessory().getInstanceId()));
-        addCharacteristic(
-                new CurrentHorizontalTiltAngleCharacteristic(manager, this, this.getAccessory().getInstanceId()));
-        addCharacteristic(
-                new TargetHorizontalTiltAngleCharacteristic(manager, this, this.getAccessory().getInstanceId()));
-        addCharacteristic(
-                new CurrentVerticalTiltAngleCharacteristic(manager, this, this.getAccessory().getInstanceId()));
-        addCharacteristic(
-                new TargetVerticalTiltAngleCharacteristic(manager, this, this.getAccessory().getInstanceId()));
-        addCharacteristic(new ObstructionDetectedCharacteristic(manager, this, this.getAccessory().getInstanceId()));
+        addCharacteristic(new TargetPositionCharacteristic(getManager(), this,
+                ((ManagedAccessory) getAccessory()).getInstanceId()));
+        addCharacteristic(new CurrentPositionCharacteristic(getManager(), this,
+                ((ManagedAccessory) getAccessory()).getInstanceId()));
+        addCharacteristic(new PositionStateCharacteristic(getManager(), this,
+                ((ManagedAccessory) getAccessory()).getInstanceId()));
+        addCharacteristic(new HoldPositionCharacteristic(getManager(), this,
+                ((ManagedAccessory) getAccessory()).getInstanceId()));
+        addCharacteristic(new CurrentHorizontalTiltAngleCharacteristic(getManager(), this,
+                ((ManagedAccessory) getAccessory()).getInstanceId()));
+        addCharacteristic(new TargetHorizontalTiltAngleCharacteristic(getManager(), this,
+                ((ManagedAccessory) getAccessory()).getInstanceId()));
+        addCharacteristic(new CurrentVerticalTiltAngleCharacteristic(getManager(), this,
+                ((ManagedAccessory) getAccessory()).getInstanceId()));
+        addCharacteristic(new TargetVerticalTiltAngleCharacteristic(getManager(), this,
+                ((ManagedAccessory) getAccessory()).getInstanceId()));
+        addCharacteristic(new ObstructionDetectedCharacteristic(getManager(), this,
+                ((ManagedAccessory) getAccessory()).getInstanceId()));
     }
 
     @Override

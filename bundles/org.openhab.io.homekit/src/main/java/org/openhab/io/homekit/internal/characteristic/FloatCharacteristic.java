@@ -7,16 +7,16 @@ import javax.json.JsonValue;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.api.ManagedService;
 
-public abstract class FloatCharacteristic extends AbstractCharacteristic<Double> {
+public abstract class FloatCharacteristic extends AbstractManagedCharacteristic<Double> {
 
     private final double minValue;
     private final double maxValue;
     private final double minStep;
     private final String unit;
 
-    public FloatCharacteristic(HomekitCommunicationManager manager, Service service, long instanceId,
+    public FloatCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId,
             boolean isWritable, boolean isReadable, boolean hasEvents, String description, double minValue,
             double maxValue, double minStep, String unit) {
         super(manager, service, instanceId, "float", isWritable, isReadable, hasEvents, description);

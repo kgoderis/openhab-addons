@@ -9,10 +9,12 @@ import org.openhab.core.io.console.Console;
 import org.openhab.core.io.console.extensions.AbstractConsoleCommandExtension;
 import org.openhab.core.io.console.extensions.ConsoleCommandExtension;
 import org.openhab.core.thing.ThingRegistry;
-import org.openhab.io.homekit.api.Accessory;
 import org.openhab.io.homekit.api.AccessoryRegistry;
 import org.openhab.io.homekit.api.AccessoryServerRegistry;
 import org.openhab.io.homekit.api.Characteristic;
+import org.openhab.io.homekit.api.ManagedAccessory;
+import org.openhab.io.homekit.api.ManagedCharacteristic;
+import org.openhab.io.homekit.api.ManagedService;
 import org.openhab.io.homekit.api.NotificationRegistry;
 import org.openhab.io.homekit.api.Service;
 import org.openhab.io.homekit.library.accessory.ThingAccessory;
@@ -127,7 +129,18 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
             String actionCommand = args[1];
             switch (actionCommand) {
                 case SUBCMD_ADD:
-                    addPairing(args, console);
+                    if (args.length > 3) {
+                        try {
+                            String thingUID = args[2];
+                            String setupCode = args[3];
+                            addPairing(thingUID, setupCode, console);
+                        } catch (IllegalArgumentException e) {
+                            console.println("'" + args[1] + "' is no valid thing UID.");
+                        }
+                    } else {
+                        console.println("<thingUID> <setupCode> are required as arguments");
+                        printUsage(console);
+                    }
                     break;
                 case SUBCMD_CLEAR:
                     clearHomekitPairings(console);
@@ -150,14 +163,14 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
     }
 
     private void printAccessories(Console console) {
-        Collection<Accessory> accessories = accessoryRegistry.getAll();
+        Collection<ManagedAccessory> accessories = accessoryRegistry.getAll();
 
         if (accessories.isEmpty()) {
             console.println("No accessories found.");
         }
 
-        for (Iterator<Accessory> iter = accessories.iterator(); iter.hasNext();) {
-            Accessory accessory = iter.next();
+        for (Iterator<ManagedAccessory> iter = accessories.iterator(); iter.hasNext();) {
+            ManagedAccessory accessory = iter.next();
 
             if (accessory instanceof ThingAccessory) {
                 console.println(String.format("Accessory %s (Type=%s, Label=%s, Thing=%s)",
@@ -168,17 +181,19 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
                         accessory.getClass().getSimpleName(), accessory.getLabel()));
             }
             for (Service service : accessory.getServices()) {
-                console.println(String.format("     Service %s (Type=%s, HAP=%s, Name=%s)", service.getUID().toString(),
-                        service.getClass().getSimpleName(), service.getInstanceType(), service.getName()));
-                for (Characteristic<?> characteristic : service.getCharacteristics()) {
-                    if (characteristic.getChannelUID() != null) {
+                console.println(String.format("     Service %s (Type=%s, HAP=%s, Name=%s)",
+                        ((ManagedService) service).getUID().toString(), service.getClass().getSimpleName(),
+                        service.getInstanceType(), ((ManagedService) service).getName()));
+                for (Characteristic characteristic : service.getCharacteristics()) {
+                    if (((ManagedCharacteristic<?>) characteristic).getChannelUID() != null) {
                         console.println(String.format("         Characteristic %s (Type=%s, HAP=%s, Channel=%s)",
-                                characteristic.getUID().toString(), characteristic.getClass().getSimpleName(),
-                                characteristic.getInstanceType(), characteristic.getChannelUID()));
+                                ((ManagedCharacteristic<?>) characteristic).getUID().toString(),
+                                characteristic.getClass().getSimpleName(), characteristic.getInstanceType(),
+                                ((ManagedCharacteristic<?>) characteristic).getChannelUID()));
                     } else {
                         console.println(String.format("         Characteristic %s (Type=%s, HAP=%s)",
-                                characteristic.getUID().toString(), characteristic.getClass().getSimpleName(),
-                                characteristic.getInstanceType()));
+                                ((ManagedCharacteristic<?>) characteristic).getUID().toString(),
+                                characteristic.getClass().getSimpleName(), characteristic.getInstanceType()));
                     }
                 }
             }
@@ -199,13 +214,32 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         }
     }
 
-    private void addPairing(String[] args, Console console) {
-        if (args.length > 3) {
-            String accessory = args[2];
-            String setupCode = args[3];
+    private void addPairing(String thingUID, String setupCode, Console console) {
 
-        } else {
-            printUsage(console);
-        }
     }
+
+    // private MaxCubeBridgeHandler getHandler(String thingId) {
+    // MaxCubeBridgeHandler handler = null;
+    // try {
+    // ThingUID bridgeUID = new ThingUID(thingId);
+    // Thing thing = thingRegistry.get(bridgeUID);
+    // if ((thing != null) && (thing.getHandler() != null)
+    // && (thing.getHandler() instanceof MaxCubeBridgeHandler)) {
+    // handler = (MaxCubeBridgeHandler) thing.getHandler();
+    // }
+    // } catch (Exception e) {
+    // handler = null;
+    // }
+    // return handler;
+    // }
+    //
+    // private List<Thing> findDevices(Set<ThingTypeUID> deviceTypes) {
+    // List<Thing> devs = new ArrayList<Thing>();
+    // for (Thing thing : thingRegistry.getAll()) {
+    // if (deviceTypes.contains(thing.getThingTypeUID())) {
+    // devs.add(thing);
+    // }
+    // }
+    // return devs;
+    // }
 }

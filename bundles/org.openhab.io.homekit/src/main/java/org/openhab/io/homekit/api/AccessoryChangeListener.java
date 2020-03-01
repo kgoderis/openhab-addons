@@ -12,6 +12,6 @@ import org.openhab.core.common.registry.RegistryChangeListener;
  *
  * @see AccessoryRegistry
  */
-public interface AccessoryChangeListener extends RegistryChangeListener<Accessory> {
+public interface AccessoryChangeListener extends RegistryChangeListener<ManagedAccessory> {
 
 }

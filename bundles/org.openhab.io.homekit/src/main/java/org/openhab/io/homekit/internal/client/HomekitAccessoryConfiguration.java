@@ -11,6 +11,7 @@ public class HomekitAccessoryConfiguration {
     public static final String CLIENT_PAIRING_ID = "clientPairingId";
     public static final String CLIENT_LTSK = "clientLongTermSecretKey";
     public static final String ACCESSORY_PAIRING_ID = "accessoryPairingId";
+    public static final String SETUP_CODE = "setupCode";
 
     public String hostAddress;
     // public InetAddress[] ipv6Addresses;

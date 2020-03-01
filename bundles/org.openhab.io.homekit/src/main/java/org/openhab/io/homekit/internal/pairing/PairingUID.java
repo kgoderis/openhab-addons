@@ -17,16 +17,16 @@ public class PairingUID extends UID {
     /**
      * Instantiates a new thing UID.
      *
-     * @param accessoryPairingId the accessory/server pairing id
-     * @param clientPairingId the controller/client pairing id
+     * @param sourcePairingId the accessory/server pairing id
+     * @param destinationPairingId the controller/client pairing id
      */
     // public PairingUID(String accessoryPairingId, String clientPairingId) {
     // super(accessoryPairingId, clientPairingId);
     // }
 
-    public PairingUID(byte[] accessoryPairingId, byte[] clientPairingId) {
-        super(Base64.getEncoder().withoutPadding().encodeToString(accessoryPairingId),
-                Base64.getEncoder().withoutPadding().encodeToString(clientPairingId));
+    public PairingUID(byte[] sourcePairingId, byte[] destinationPairingId) {
+        super(Base64.getEncoder().withoutPadding().encodeToString(sourcePairingId),
+                Base64.getEncoder().withoutPadding().encodeToString(destinationPairingId));
     }
 
     /**

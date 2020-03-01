@@ -7,15 +7,15 @@ import javax.json.JsonValue;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.api.ManagedService;
 
-public abstract class IntegerCharacteristic extends AbstractCharacteristic<Integer> {
+public abstract class IntegerCharacteristic extends AbstractManagedCharacteristic<Integer> {
 
     private final int minValue;
     private final int maxValue;
     private final String unit;
 
-    public IntegerCharacteristic(HomekitCommunicationManager manager, Service service, long instanceId,
+    public IntegerCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId,
             boolean isWritable, boolean isReadable, boolean hasEvents, String description, int minValue, int maxValue,
             String unit) {
         super(manager, service, instanceId, "int", isWritable, isReadable, hasEvents, description);

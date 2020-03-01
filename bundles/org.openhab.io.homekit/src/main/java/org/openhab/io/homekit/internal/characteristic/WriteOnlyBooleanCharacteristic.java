@@ -10,15 +10,15 @@ import javax.json.JsonValue.ValueType;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.api.ManagedService;
 
 /**
  * @author Karel Goderis - Initial Contribution
  *
  */
-public abstract class WriteOnlyBooleanCharacteristic extends AbstractCharacteristic<Boolean> {
+public abstract class WriteOnlyBooleanCharacteristic extends AbstractManagedCharacteristic<Boolean> {
 
-    public WriteOnlyBooleanCharacteristic(HomekitCommunicationManager manager, Service service, long instanceId,
+    public WriteOnlyBooleanCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId,
             String description) {
         super(manager, service, instanceId, "bool", true, false, false, description);
     }

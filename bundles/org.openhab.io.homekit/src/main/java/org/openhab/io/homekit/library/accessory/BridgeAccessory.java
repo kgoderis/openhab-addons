@@ -3,9 +3,9 @@ package org.openhab.io.homekit.library.accessory;
 import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.io.homekit.HomekitCommunicationManager;
 import org.openhab.io.homekit.api.AccessoryServer;
-import org.openhab.io.homekit.internal.accessory.AbstractAccessory;
+import org.openhab.io.homekit.internal.accessory.AbstractManagedAccessory;
 
-public class BridgeAccessory extends AbstractAccessory {
+public class BridgeAccessory extends AbstractManagedAccessory {
 
     public BridgeAccessory(HomekitCommunicationManager manager, AccessoryServer server, long instanceId, boolean extend)
             throws Exception {
@@ -13,7 +13,7 @@ public class BridgeAccessory extends AbstractAccessory {
     }
 
     @Override
-    public void addServices() throws Exception {
+    public void addServices() {
         super.addServices();
         // addService(new HAPProtocolInformationService(manager, this, this.getInstanceId(), true, getLabel()));
     }

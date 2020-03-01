@@ -4,6 +4,6 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.Provider;
 
 @NonNullByDefault
-public interface AccessoryProvider extends Provider<Accessory> {
+public interface AccessoryProvider extends Provider<ManagedAccessory> {
 
 }

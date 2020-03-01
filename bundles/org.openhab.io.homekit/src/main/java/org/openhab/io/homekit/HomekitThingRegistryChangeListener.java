@@ -18,7 +18,7 @@ import org.openhab.core.service.ReadyService;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingRegistry;
 import org.openhab.core.thing.ThingRegistryChangeListener;
-import org.openhab.io.homekit.api.Accessory;
+import org.openhab.io.homekit.api.ManagedAccessory;
 import org.openhab.io.homekit.api.AccessoryRegistry;
 import org.openhab.io.homekit.api.AccessoryServer;
 import org.openhab.io.homekit.api.AccessoryServerRegistry;
@@ -141,8 +141,8 @@ public class HomekitThingRegistryChangeListener implements ThingRegistryChangeLi
         }
 
         boolean accessoryExists = false;
-        Accessory foundAccessory = null;
-        for (Accessory accessory : accessoryRegistry.getAll()) {
+        ManagedAccessory foundAccessory = null;
+        for (ManagedAccessory accessory : accessoryRegistry.getAll()) {
             if (accessory instanceof ThingAccessory) {
                 if (((ThingAccessory) accessory).getThingUID() != null) {
                     if (((ThingAccessory) accessory).getThingUID().toString().equals(thing.getUID().toString())) {
@@ -161,7 +161,7 @@ public class HomekitThingRegistryChangeListener implements ThingRegistryChangeLi
 
             if (factory != null) {
                 if (server != null) {
-                    Accessory accessory;
+                    ManagedAccessory accessory;
                     try {
                         accessory = factory.createAccessory(thing, server);
                         if (accessory != null) {
@@ -190,7 +190,7 @@ public class HomekitThingRegistryChangeListener implements ThingRegistryChangeLi
             return;
         }
 
-        for (Accessory accessory : accessoryRegistry.getAll()) {
+        for (ManagedAccessory accessory : accessoryRegistry.getAll()) {
             if (accessory instanceof ThingAccessory) {
                 if (((ThingAccessory) accessory).getThingUID().toString().equals(thing.getUID().toString())) {
                     AccessoryServer server = accessory.getServer();

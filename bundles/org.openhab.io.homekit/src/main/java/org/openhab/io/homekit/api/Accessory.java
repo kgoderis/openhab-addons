@@ -6,8 +6,6 @@ import javax.json.JsonObject;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.core.common.registry.Identifiable;
-import org.openhab.io.homekit.internal.accessory.AccessoryUID;
 
 /**
  * Base interface for all \. You can implement this interface directly, but most
@@ -17,7 +15,7 @@ import org.openhab.io.homekit.internal.accessory.AccessoryUID;
  * @author Andy Lintner
  */
 @NonNullByDefault
-public interface Accessory extends Identifiable<AccessoryUID> {
+public interface Accessory {
 
     /**
      * Accessory Instance IDs are assigned from the same number pool that is global across entire
@@ -28,55 +26,20 @@ public interface Accessory extends Identifiable<AccessoryUID> {
      */
     long getId();
 
-    AccessoryServer getServer();
+    void addService(Service service);
+
+    @Nullable
+    Service getService(String serviceType);
 
     /**
-     * Characteristic Instance IDs are assigned from the same number pool that is unique within each
-     * Accessory object. For example, if the first Characteristic object has an Instance ID of “1”, then
-     * no other Characteristic object can have an Instance ID of “1” within the parent Accessory object.
-     * After a firmware update, Characteristic types that remain unchanged must retain their previous instance
-     * IDs, newly added Characteristic must not reuse Instance IDs from Characteristics that were removed
-     * in the firmware update.
+     * Accessory should list one of its Services as the primary Service. The primary Service
+     * must match the primary function of the Accessory and must also match with the accessory category. An
+     * Accessory must expose only one primary Service from its list of available Services
      *
-     * @return the next available unique identifier for a characteristic
+     * @return the primary Services.
      */
-    long getInstanceId();
-
-    long getCurrentInstanceId();
-
-    /**
-     * Returns a label to display
-     *
-     * @return the label.
-     */
-    String getLabel();
-
-    /**
-     * Returns a serial number
-     *
-     * @return the serial number, or null.
-     */
-    String getSerialNumber();
-
-    /**
-     * Returns a model name
-     *
-     * @return the model name, or null.
-     */
-    String getModel();
-
-    /**
-     * Returns a manufacturer name
-     *
-     * @return the manufacturer, or null.
-     */
-    String getManufacturer();
-
-    /**
-     * Performs an operation that can be used to identify the accessory. This action can be performed
-     * without pairing.
-     */
-    void identify();
+    @Nullable
+    Service getPrimaryService();
 
     /**
      * The collection of Services this single Accessory supports. Services are the primary way to
@@ -99,21 +62,6 @@ public interface Accessory extends Identifiable<AccessoryUID> {
     Collection<Service> getServices();
 
     /**
-     * Accessory should list one of its Services as the primary Service. The primary Service
-     * must match the primary function of the Accessory and must also match with the accessory category. An
-     * Accessory must expose only one primary Service from its list of available Services
-     *
-     * @return the primary Services.
-     */
-    @Nullable
-    Service getPrimaryService();
-
-    void addService(Service service);
-
-    @Nullable
-    Service getService(String serviceType);
-
-    /**
      * Creates the JSON representation of the Accessory, in accordance with the Homekit Accessory
      * Protocol.
      *
@@ -122,9 +70,5 @@ public interface Accessory extends Identifiable<AccessoryUID> {
     JsonObject toJson();
 
     JsonObject toReducedJson();
-
-    void addServices() throws Exception;
-
-    boolean isExtensible();
 
 }

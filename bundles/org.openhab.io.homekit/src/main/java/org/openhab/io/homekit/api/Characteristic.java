@@ -1,12 +1,6 @@
 package org.openhab.io.homekit.api;
 
 import javax.json.JsonObject;
-import javax.json.JsonValue;
-
-import org.openhab.core.common.registry.Identifiable;
-import org.openhab.core.thing.ChannelUID;
-import org.openhab.core.types.State;
-import org.openhab.io.homekit.internal.characteristic.CharacteristicUID;
 
 /**
  * Interface for the Characteristics provided by a Service.
@@ -17,7 +11,7 @@ import org.openhab.io.homekit.internal.characteristic.CharacteristicUID;
  *
  * @author Andy Lintner
  */
-public interface Characteristic<T> extends Identifiable<CharacteristicUID> {
+public interface Characteristic {
 
     /**
      * Characteristic Instance IDs are assigned from the same number pool that is unique within each
@@ -31,15 +25,11 @@ public interface Characteristic<T> extends Identifiable<CharacteristicUID> {
      */
     long getId();
 
+    Service getService();
+
     boolean isType(String aType);
 
     String getInstanceType();
-
-    Service getService();
-
-    void setChannelUID(ChannelUID channelUID);
-
-    ChannelUID getChannelUID();
 
     /**
      * Services may specify the Characteristics that are to be hidden
@@ -48,29 +38,9 @@ public interface Characteristic<T> extends Identifiable<CharacteristicUID> {
      */
     boolean isHidden();
 
-    /**
-     * Retrieves the current value of the characteristic // could come from openHAB
-     *
-     * @return a the current value.
-     */
+    void setEventsEnabled(boolean value);
 
-    T getValue() throws Exception;
-
-    /**
-     * Update the characteristic value using a new value
-     *
-     * @param value the new value to set.
-     * @throws Exception if the value cannot be set.
-     */
-    void setValue(T value) throws Exception;
-
-    /**
-     * Update the characteristic value using a new value that is encoded as a JsonValue
-     *
-     * @param jsonValue the JSON serialized value to set.
-     * @throws Exception
-     */
-    void setValue(JsonValue jsonValue) throws Exception;
+    JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType, boolean includeEvent);
 
     /**
      * Creates the JSON representation of the Characteristic, in accordance with the Homekit Accessory
@@ -90,9 +60,4 @@ public interface Characteristic<T> extends Identifiable<CharacteristicUID> {
      */
     JsonObject toEventJson();
 
-    JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType, boolean includeEvent);
-
-    void setEventsEnabled(boolean value);
-
-    JsonObject toEventJson(State state);
 }

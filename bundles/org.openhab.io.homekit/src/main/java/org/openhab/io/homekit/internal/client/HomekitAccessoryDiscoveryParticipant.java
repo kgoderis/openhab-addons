@@ -78,16 +78,20 @@ public class HomekitAccessoryDiscoveryParticipant implements MDNSDiscoveryPartic
                             properties.put(element, value);
                         }
 
-                        String category = service.getPropertyString("ci");
-                        if (category.equals("2")) {
-                            return DiscoveryResultBuilder.create(uid).withProperties(properties)
-                                    .withThingType(HomekitBindingConstants.THING_TYPE_BRIDGE)
-                                    .withRepresentationProperty(uid.getId()).withLabel("Homekit Accessory").build();
-                        } else {
-                            return DiscoveryResultBuilder.create(uid).withProperties(properties)
-                                    .withThingType(HomekitBindingConstants.THING_TYPE_ACCESSORY)
-                                    .withRepresentationProperty(uid.getId()).withLabel("Homekit Accessory").build();
-                        }
+                        // String category = service.getPropertyString("ci");
+                        // if (category.equals("2")) {
+                        // return DiscoveryResultBuilder.create(uid).withProperties(properties)
+                        // .withThingType(HomekitBindingConstants.THING_TYPE_BRIDGE)
+                        // .withRepresentationProperty(uid.getId()).withLabel("Homekit Accessory").build();
+                        // } else {
+                        // return DiscoveryResultBuilder.create(uid).withProperties(properties)
+                        // .withThingType(HomekitBindingConstants.THING_TYPE_ACCESSORY)
+                        // .withRepresentationProperty(uid.getId()).withLabel("Homekit Accessory").build();
+                        // }
+
+                        return DiscoveryResultBuilder.create(uid).withProperties(properties)
+                                .withThingType(HomekitBindingConstants.THING_TYPE_BRIDGE)
+                                .withRepresentationProperty(uid.getId()).withLabel("Homekit Accessory Bridge").build();
                     }
                 }
             }
@@ -102,11 +106,14 @@ public class HomekitAccessoryDiscoveryParticipant implements MDNSDiscoveryPartic
             String category = service.getPropertyString("ci");
             String id = service.getPropertyString("id").replace(":", "");
 
-            if (category.equals("2")) {
-                return new ThingUID(HomekitBindingConstants.THING_TYPE_BRIDGE, id);
-            } else {
-                return new ThingUID(HomekitBindingConstants.THING_TYPE_ACCESSORY, id);
-            }
+            // if (category.equals("2")) {
+            // return new ThingUID(HomekitBindingConstants.THING_TYPE_BRIDGE, id);
+            // } else {
+            // return new ThingUID(HomekitBindingConstants.THING_TYPE_ACCESSORY, id);
+            // }
+
+            return new ThingUID(HomekitBindingConstants.THING_TYPE_BRIDGE, id);
+
         }
 
         return null;

@@ -5,27 +5,27 @@ import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.io.homekit.HomekitCommunicationManager;
 import org.openhab.io.homekit.api.AccessoryServer;
-import org.openhab.io.homekit.api.Characteristic;
+import org.openhab.io.homekit.api.ManagedCharacteristic;
 import org.openhab.io.homekit.api.Service;
-import org.openhab.io.homekit.internal.accessory.AbstractAccessory;
+import org.openhab.io.homekit.internal.accessory.AbstractManagedAccessory;
 import org.openhab.io.homekit.library.characteristic.NameCharacteristic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ThingAccessory extends AbstractAccessory {
+public class ThingAccessory extends AbstractManagedAccessory {
 
     protected static final Logger logger = LoggerFactory.getLogger(ThingAccessory.class);
 
     private ThingUID thingUID;
 
-    public ThingAccessory(HomekitCommunicationManager manager, AccessoryServer server, long instanceId, boolean extend)
-            throws Exception {
+    public ThingAccessory(HomekitCommunicationManager manager, AccessoryServer server, long instanceId,
+            boolean extend) {
         super(manager, server, instanceId, extend);
     }
 
     @Override
     public @NonNull String getLabel() {
-        Thing theThing = manager.getThing(thingUID);
+        Thing theThing = getManager().getThing(thingUID);
         if (theThing != null) {
             String label = theThing.getLabel();
             String location = theThing.getLocation();
@@ -57,7 +57,8 @@ public class ThingAccessory extends AbstractAccessory {
         this.thingUID = thingUID;
 
         for (Service aService : getServices()) {
-            Characteristic<?> nc = aService.getCharacteristic(NameCharacteristic.getType());
+            ManagedCharacteristic<?> nc = (ManagedCharacteristic<?>) aService
+                    .getCharacteristic(NameCharacteristic.getType());
             if (nc != null) {
                 logger.debug("setThingUID - Setting name of {} to {}", nc.getUID(), getLabel());
                 ((NameCharacteristic) nc).setReadOnlyValue(getLabel());
