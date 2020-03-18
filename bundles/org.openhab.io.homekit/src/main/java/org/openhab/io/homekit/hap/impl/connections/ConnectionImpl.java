@@ -139,8 +139,8 @@ class ConnectionImpl implements HomekitClientConnection {
 
     private byte[] decrypt(byte[] msg) {
 
-        LOGGER.debug("Decrypting Key {}", org.openhab.io.homekit.util.Byte.byteToHexString(readKey));
-        LOGGER.debug("Decrypting Content {}", org.openhab.io.homekit.util.Byte.byteToHexString(msg));
+        LOGGER.debug("Decrypting Key {}", org.openhab.io.homekit.util.Byte.toHexString(readKey));
+        LOGGER.debug("Decrypting Content {}", org.openhab.io.homekit.util.Byte.toHexString(msg));
         byte[] mac = new byte[16];
         byte[] ciphertext = new byte[msg.length - 16];
         System.arraycopy(msg, 0, ciphertext, 0, msg.length - 16);
@@ -152,8 +152,8 @@ class ConnectionImpl implements HomekitClientConnection {
             byte[] nonce = Pack.longToLittleEndian(inboundBinaryMessageCount++);
             return new ChachaDecoder(readKey, nonce).decodeCiphertext(mac, additionalData, ciphertext);
         } catch (IOException e) {
-            LOGGER.error("Decrypt : Exception while decrypting {} with key {}", Byte.byteToHexString(msg),
-                    Byte.byteToHexString(readKey));
+            LOGGER.error("Decrypt : Exception while decrypting {} with key {}", Byte.toHexString(msg),
+                    Byte.toHexString(readKey));
             if (e instanceof org.bouncycastle.crypto.tls.TlsFatalAlert) {
                 LOGGER.error("Description is {}",
                         ((org.bouncycastle.crypto.tls.TlsFatalAlert) e).getAlertDescription());

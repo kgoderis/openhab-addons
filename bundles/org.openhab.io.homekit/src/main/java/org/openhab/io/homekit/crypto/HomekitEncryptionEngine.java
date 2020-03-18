@@ -35,7 +35,7 @@ public class HomekitEncryptionEngine {
 
         logger.trace("DecryptBuffer : cipherTextBuffer = {}", BufferUtil.toDetailString(cipherTextBuffer));
         logger.trace("DecryptBuffer : decryptedBuffer = {}", BufferUtil.toDetailString(decryptedBuffer));
-        logger.trace("DecryptBuffer : key = {}", Byte.byteToHexString(writeKey));
+        logger.trace("DecryptBuffer : key = {}", Byte.toHexString(writeKey));
         logger.trace("DecryptBuffer : sequenceNumber = {}", sequenceNumber);
 
         int currentPosition = cipherTextBuffer.position();
@@ -83,7 +83,7 @@ public class HomekitEncryptionEngine {
 
         logger.trace("EncryptBuffer : Input = {}", BufferUtil.toDetailString(plainTextBuffer));
         logger.trace("EncryptBuffer : Output = {}", BufferUtil.toDetailString(encryptedBuffer));
-        logger.trace("EncryptBuffer : Key = {}", Byte.byteToHexString(readKey));
+        logger.trace("EncryptBuffer : Key = {}", Byte.toHexString(readKey));
         logger.trace("EncryptBuffer : sequenceNumber = {}", sequenceNumber);
 
         long currentSequenceNumber = sequenceNumber;
@@ -129,8 +129,8 @@ public class HomekitEncryptionEngine {
     }
 
     private static byte[] decrypt(byte[] msg, byte[] key, long sequenceNumber) {
-        logger.trace("Decrypt : key {}", org.openhab.io.homekit.util.Byte.byteToHexString(key));
-        logger.trace("Decrypt : content {}", org.openhab.io.homekit.util.Byte.byteToHexString(msg));
+        logger.trace("Decrypt : key {}", org.openhab.io.homekit.util.Byte.toHexString(key));
+        logger.trace("Decrypt : content {}", org.openhab.io.homekit.util.Byte.toHexString(msg));
         logger.trace("Decrypt : sequence {}", sequenceNumber);
 
         byte[] mac = new byte[16];

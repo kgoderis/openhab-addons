@@ -47,7 +47,7 @@ public class Byte {
         }
     }
 
-    public static String byteToHexString(byte[] input) {
+    public static String toHexString(byte[] input) {
         StringBuilder sb = new StringBuilder();
         for (byte b : input) {
             sb.append(String.format("%02X ", b));

@@ -1,5 +1,9 @@
 package org.openhab.io.homekit.util;
 
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+
 public enum Error {
     RESERVED(0),
     UNKNOWN(1),
@@ -12,6 +16,14 @@ public enum Error {
 
     private final short key;
 
+    private static final Map<Short, Error> lookup = new HashMap<Short, Error>();
+
+    static {
+        for (Error s : EnumSet.allOf(Error.class)) {
+            lookup.put(s.getKey(), s);
+        }
+    }
+
     Error(short key) {
         this.key = key;
     }
@@ -22,5 +34,9 @@ public enum Error {
 
     public short getKey() {
         return key;
+    }
+
+    public static Error get(short code) {
+        return lookup.get(code);
     }
 }

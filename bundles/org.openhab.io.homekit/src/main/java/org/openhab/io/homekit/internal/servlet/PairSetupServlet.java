@@ -93,7 +93,7 @@ public class PairSetupServlet extends BaseServlet {
     protected void doStage1(HttpServletRequest request, HttpServletResponse response, byte[] body)
             throws ServletException, IOException {
         logger.info("Stage 1 : Start");
-        logger.info("Stage 1 : Received Body {}", Byte.byteToHexString(body));
+        logger.info("Stage 1 : Received Body {}", Byte.toHexString(body));
 
         HttpSession session = request.getSession();
         HomekitServerSRP6Session SRP6Session = (HomekitServerSRP6Session) session.getAttribute("SRP6Session");
@@ -114,7 +114,7 @@ public class PairSetupServlet extends BaseServlet {
             verifierGenerator.setXRoutine(new XRoutineWithUserIdentity());
             BigInteger verifier = verifierGenerator.generateVerifier(server.getSalt(), IDENTIFIER,
                     server.getSetupCode());
-            logger.info("Stage 1 : Verifier is {} ", Byte.byteToHexString(bigIntegerToUnsignedByteArray(verifier)));
+            logger.info("Stage 1 : Verifier is {} ", Byte.toHexString(bigIntegerToUnsignedByteArray(verifier)));
 
             Encoder encoder = TypeLengthValue.getEncoder();
             encoder.add(Message.STATE, (short) 0x02);
@@ -138,7 +138,7 @@ public class PairSetupServlet extends BaseServlet {
             throws ServletException, IOException {
 
         logger.info("Stage 2 : Start");
-        logger.info("Stage 2 : Received Body {}", Byte.byteToHexString(body));
+        logger.info("Stage 2 : Received Body {}", Byte.toHexString(body));
 
         HttpSession session = request.getSession();
         HomekitServerSRP6Session SRP6Session = (HomekitServerSRP6Session) session.getAttribute("SRP6Session");
@@ -182,7 +182,7 @@ public class PairSetupServlet extends BaseServlet {
             throws ServletException, IOException {
 
         logger.info("Stage 3 : Start");
-        logger.info("Stage 3 : Received Body {}", Byte.byteToHexString(body));
+        logger.info("Stage 3 : Received Body {}", Byte.toHexString(body));
 
         HttpSession session = request.getSession();
         HomekitServerSRP6Session SRP6Session = (HomekitServerSRP6Session) session.getAttribute("SRP6Session");
@@ -195,30 +195,30 @@ public class PairSetupServlet extends BaseServlet {
             MessageDigest digest = SRP6Session.getCryptoParams().getMessageDigestInstance();
             BigInteger S = SRP6Session.getSessionKey(false);
             byte[] sBytes = bigIntegerToUnsignedByteArray(S);
-            logger.info("Stage 3 : SRP Session Key is {}", Byte.byteToHexString(sBytes));
+            logger.info("Stage 3 : SRP Session Key is {}", Byte.toHexString(sBytes));
             byte[] sharedSecret = digest.digest(sBytes);
-            logger.info("Stage 3 : Shared Secret is {}", Byte.byteToHexString(sharedSecret));
+            logger.info("Stage 3 : Shared Secret is {}", Byte.toHexString(sharedSecret));
 
             HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA512Digest());
             hkdf.init(new HKDFParameters(sharedSecret, "Pair-Setup-Encrypt-Salt".getBytes(StandardCharsets.UTF_8),
                     "Pair-Setup-Encrypt-Info".getBytes(StandardCharsets.UTF_8)));
             sessionKey = new byte[32];
             hkdf.generateBytes(sessionKey, 0, 32);
-            logger.info("Stage 3 : Session Key is {}", Byte.byteToHexString(sessionKey));
+            logger.info("Stage 3 : Session Key is {}", Byte.toHexString(sessionKey));
 
             ChachaDecoder chachaDecoder = new ChachaDecoder(sessionKey, "PS-Msg05".getBytes(StandardCharsets.UTF_8));
             byte[] plaintext = chachaDecoder.decodeCiphertext(getAuthTagData(body), getMessageData(body));
-            logger.info("Stage 3 : Plaintext is {}", Byte.byteToHexString(plaintext));
+            logger.info("Stage 3 : Plaintext is {}", Byte.toHexString(plaintext));
 
             DecodeResult d = TypeLengthValue.decode(plaintext);
             byte[] clientPairingIdentifier = d.getBytes(Message.IDENTIFIER);
-            logger.info("Stage 3 : Client Pairing Id is {}", Byte.byteToHexString(clientPairingIdentifier));
+            logger.info("Stage 3 : Client Pairing Id is {}", Byte.toHexString(clientPairingIdentifier));
 
             byte[] clientLongtermPublicKey = d.getBytes(Message.PUBLIC_KEY);
-            logger.info("Stage 3 : Client Long Term Public Key is {}", Byte.byteToHexString(clientLongtermPublicKey));
+            logger.info("Stage 3 : Client Long Term Public Key is {}", Byte.toHexString(clientLongtermPublicKey));
 
             byte[] clientSignature = d.getBytes(Message.SIGNATURE);
-            logger.info("Stage 3 : Client Signature is {}", Byte.byteToHexString(clientSignature));
+            logger.info("Stage 3 : Client Signature is {}", Byte.toHexString(clientSignature));
 
             hkdf = new HKDFBytesGenerator(new SHA512Digest());
             hkdf.init(
@@ -228,7 +228,7 @@ public class PairSetupServlet extends BaseServlet {
             hkdf.generateBytes(clientDeviceX, 0, 32);
 
             byte[] clientDeviceInfo = Byte.joinBytes(clientDeviceX, clientPairingIdentifier, clientLongtermPublicKey);
-            logger.info("Stage 3 : Client Device Info is {}", Byte.byteToHexString(clientDeviceInfo));
+            logger.info("Stage 3 : Client Device Info is {}", Byte.toHexString(clientDeviceInfo));
 
             Encoder encoder = TypeLengthValue.getEncoder();
 
@@ -272,13 +272,13 @@ public class PairSetupServlet extends BaseServlet {
                         "Pair-Setup-Accessory-Sign-Info".getBytes(StandardCharsets.UTF_8)));
                 byte[] accessoryDeviceX = new byte[32];
                 hkdf.generateBytes(accessoryDeviceX, 0, 32);
-                logger.info("Stage 3 : Accessory Device X is {}", Byte.byteToHexString(accessoryDeviceX));
+                logger.info("Stage 3 : Accessory Device X is {}", Byte.toHexString(accessoryDeviceX));
 
-                logger.info("Stage 3 : Server Private Key is {}", Byte.byteToHexString(server.getPrivateKey()));
+                logger.info("Stage 3 : Server Private Key is {}", Byte.toHexString(server.getPrivateKey()));
                 EdsaSigner signer = new EdsaSigner(server.getPrivateKey());
 
                 byte[] accessoryInfo = Byte.joinBytes(accessoryDeviceX, server.getPairingId(), signer.getPublicKey());
-                logger.info("Stage 3 : Accessory Device Info is {}", Byte.byteToHexString(accessoryInfo));
+                logger.info("Stage 3 : Accessory Device Info is {}", Byte.toHexString(accessoryInfo));
 
                 byte[] accessorySignature = null;
                 try {
@@ -293,7 +293,7 @@ public class PairSetupServlet extends BaseServlet {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-                logger.info("Stage 3 : Accessory Signature is {}", Byte.byteToHexString(accessorySignature));
+                logger.info("Stage 3 : Accessory Signature is {}", Byte.toHexString(accessorySignature));
 
                 logger.info("Stage 3 : Server Pairing Id is {}", server.getPairingId());
                 encoder.add(Message.IDENTIFIER, server.getPairingId());

@@ -26,6 +26,11 @@ public class HomekitBindingConstants {
 
     public static final String BINDING_ID = "homekit";
 
+    public static final String DEVICE_ID = "id";
+    public static final String CONFIGURATION_NUMBER_SHARP = "c#";
+
+    public static final String CONFIGURATION_URI = "binding:homekit:bridge";
+
     // List of all Thing Type UIDs
     public static final ThingTypeUID THING_TYPE_BRIDGE = new ThingTypeUID(BINDING_ID, "bridge");
     public static final ThingTypeUID THING_TYPE_ACCESSORY = new ThingTypeUID(BINDING_ID, "accessory");

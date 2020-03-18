@@ -62,7 +62,7 @@ public class PairingServlet extends BaseServlet {
     protected void doAddPairing(HttpServletRequest request, HttpServletResponse response, byte[] body)
             throws ServletException, IOException {
         logger.info("doAddPairing : Start");
-        logger.info("doAddPairing : Received Body {}", Byte.byteToHexString(body));
+        logger.info("doAddPairing : Received Body {}", Byte.toHexString(body));
 
         DecodeResult d = TypeLengthValue.decode(body);
 
@@ -89,7 +89,7 @@ public class PairingServlet extends BaseServlet {
     protected void doRemovePairing(HttpServletRequest request, HttpServletResponse response, byte[] body)
             throws ServletException, IOException {
         logger.info("doRemovePairing : Start");
-        logger.info("doRemovePairing : Received Body {}", Byte.byteToHexString(body));
+        logger.info("doRemovePairing : Received Body {}", Byte.toHexString(body));
 
         DecodeResult d = TypeLengthValue.decode(body);
 
@@ -113,7 +113,7 @@ public class PairingServlet extends BaseServlet {
     protected void doListPairing(HttpServletRequest request, HttpServletResponse response, byte[] body)
             throws ServletException, IOException {
         logger.info("doListPairing : Start");
-        logger.info("doListPairing : Received Body {}", Byte.byteToHexString(body));
+        logger.info("doListPairing : Received Body {}", Byte.toHexString(body));
         logger.info("doListPairing : End");
     }
 }

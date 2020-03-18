@@ -222,13 +222,13 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
             if (oldPairing != null) {
                 logger.debug("Removed Pairing of Server {} with Client {} and Public Key {}", getId(),
                         oldPairing.getDestinationPairingId(),
-                        Byte.byteToHexString(oldPairing.getDestinationLongtermPublicKey()));
+                        Byte.toHexString(oldPairing.getDestinationLongtermPublicKey()));
             }
 
             pairingRegistry.add(newPairing);
             hasBeenPaired = true;
             logger.debug("Paired Server {} with Client {} and Public Key {}", getId(), clientPairingId,
-                    Byte.byteToHexString(clientPublicKey));
+                    Byte.toHexString(clientPublicKey));
             advertise();
         } catch (Exception e) {
             e.printStackTrace();

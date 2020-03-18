@@ -22,7 +22,9 @@ import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.core.config.core.Configuration;
 import org.openhab.core.config.discovery.DiscoveryService;
+import org.openhab.core.config.discovery.mdns.MDNSDiscoveryParticipant;
 import org.openhab.core.thing.Bridge;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingTypeUID;
@@ -51,11 +53,13 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
 
     private final Logger logger = LoggerFactory.getLogger(HomekitHandlerFactory.class);
 
-    private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections.unmodifiableSet(
-            Stream.of(HomekitBindingConstants.THING_TYPE_BRIDGE, HomekitBindingConstants.THING_TYPE_ACCESSORY)
-                    .collect(Collectors.toSet()));
+    public static final Set<ThingTypeUID> SUPPORTED_THING_TYPES = Collections.unmodifiableSet(Stream
+            .of(HomekitAccessoryHandler.SUPPORTED_THING_TYPES.stream(),
+                    HomekitAccessoryBridgeHandler.SUPPORTED_THING_TYPES.stream())
+            .flatMap(i -> i).collect(Collectors.toSet()));
 
     private final Map<ThingUID, @Nullable ServiceRegistration<?>> discoveryServiceRegs = new HashMap<>();
+    private final Map<ThingUID, @Nullable ServiceRegistration<?>> mdnsServiceRegs = new HashMap<>();
     protected final PairingRegistry pairingRegistry;
 
     @Activate
@@ -66,7 +70,20 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
-        return SUPPORTED_THING_TYPES_UIDS.contains(thingTypeUID);
+        return SUPPORTED_THING_TYPES.contains(thingTypeUID);
+    }
+
+    @Override
+    public @Nullable Thing createThing(ThingTypeUID thingTypeUID, Configuration configuration,
+            @Nullable ThingUID thingUID, @Nullable ThingUID bridgeUID) {
+        if (HomekitAccessoryBridgeHandler.SUPPORTED_THING_TYPES.contains(thingTypeUID)) {
+            return super.createThing(thingTypeUID, configuration, thingUID, null);
+        } else if (HomekitAccessoryHandler.SUPPORTED_THING_TYPES.contains(thingTypeUID)) {
+            return super.createThing(thingTypeUID, configuration, thingUID, bridgeUID);
+        }
+
+        throw new IllegalArgumentException(
+                "The thing type " + thingTypeUID + " is not supported by the Homekit binding");
     }
 
     @Override
@@ -74,37 +91,52 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
         if (HomekitBindingConstants.THING_TYPE_BRIDGE.equals(thingTypeUID)) {
-            HomekitBridgeHandler handler = new HomekitBridgeHandler((Bridge) thing, pairingRegistry);
+            HomekitAccessoryBridgeHandler handler = new HomekitAccessoryBridgeHandler((Bridge) thing, pairingRegistry);
             registerHomekitDiscoveryService(handler);
+            registerHomekitMDNSParticipant(handler);
+            return handler;
         }
 
         if (HomekitBindingConstants.THING_TYPE_ACCESSORY.equals(thingTypeUID)) {
             return new HomekitAccessoryHandler(thing);
         }
 
-        logger.debug("Unsupported thing {}.", thing.getThingTypeUID());
+        logger.debug("Unsupported thing {}", thing.getThingTypeUID());
 
         return null;
     }
 
-    private synchronized void registerHomekitDiscoveryService(HomekitBridgeHandler bridgeHandler) {
-        HomekitBridgeDiscoveryService discoveryService = new HomekitBridgeDiscoveryService(bridgeHandler);
+    private synchronized void registerHomekitDiscoveryService(HomekitAccessoryBridgeHandler bridgeHandler) {
+        HomekitAccessoryBridgeDiscoveryService discoveryService = new HomekitAccessoryBridgeDiscoveryService(bridgeHandler);
         discoveryService.activate();
         this.discoveryServiceRegs.put(bridgeHandler.getThing().getUID(), bundleContext
                 .registerService(DiscoveryService.class.getName(), discoveryService, new Hashtable<String, Object>()));
     }
 
+    private synchronized void registerHomekitMDNSParticipant(HomekitAccessoryBridgeHandler bridgeHandler) {
+        HomekitAccessoryBridgeParticipant mdnsParticipant = new HomekitAccessoryBridgeParticipant(bridgeHandler);
+        this.mdnsServiceRegs.put(bridgeHandler.getThing().getUID(), bundleContext.registerService(
+                MDNSDiscoveryParticipant.class.getName(), mdnsParticipant, new Hashtable<String, Object>()));
+    }
+
     @Override
     protected synchronized void removeHandler(ThingHandler thingHandler) {
-        if (thingHandler instanceof HomekitBridgeHandler) {
+        if (thingHandler instanceof HomekitAccessoryBridgeHandler) {
             ServiceRegistration<?> serviceReg = this.discoveryServiceRegs.remove(thingHandler.getThing().getUID());
             if (serviceReg != null) {
-                HomekitBridgeDiscoveryService service = (HomekitBridgeDiscoveryService) bundleContext
+                HomekitAccessoryBridgeDiscoveryService service = (HomekitAccessoryBridgeDiscoveryService) bundleContext
                         .getService(serviceReg.getReference());
                 serviceReg.unregister();
                 if (service != null) {
                     service.deactivate();
                 }
+            }
+
+            serviceReg = this.mdnsServiceRegs.remove(thingHandler.getThing().getUID());
+            if (serviceReg != null) {
+                HomekitAccessoryBridgeParticipant service = (HomekitAccessoryBridgeParticipant) bundleContext
+                        .getService(serviceReg.getReference());
+                serviceReg.unregister();
             }
         }
     }

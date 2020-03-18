@@ -19,7 +19,7 @@ public class TypeLengthValue {
     }
 
     public static DecodeResult decode(byte[] content) throws IOException {
-        logger.trace("Decoding {}", Byte.byteToHexString(content));
+        logger.trace("Decoding {}", Byte.toHexString(content));
         DecodeResult ret = new DecodeResult();
         ByteArrayInputStream bais = new ByteArrayInputStream(content);
         while (bais.available() > 0) {
@@ -28,7 +28,7 @@ public class TypeLengthValue {
             byte[] part = new byte[length];
             bais.read(part);
             ret.add(type, part);
-            logger.trace("Decoded T {} L {} V {}", Message.get(type).name(), length, Byte.byteToHexString(part));
+            logger.trace("Decoded T {} L {} V {}", Message.get(type).name(), length, Byte.toHexString(part));
         }
         return ret;
     }
@@ -69,7 +69,7 @@ public class TypeLengthValue {
                 baos.write(type.getKey());
                 baos.write(toWrite);
                 Byte.copyStream(bais, baos, toWrite);
-                logger.trace("Encoded T {} L {} V {}", type.name(), toWrite, Byte.byteToHexString(bytes));
+                logger.trace("Encoded T {} L {} V {}", type.name(), toWrite, Byte.toHexString(bytes));
             }
         }
 

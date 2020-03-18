@@ -8,7 +8,10 @@ import java.util.List;
 import org.openhab.core.io.console.Console;
 import org.openhab.core.io.console.extensions.AbstractConsoleCommandExtension;
 import org.openhab.core.io.console.extensions.ConsoleCommandExtension;
+import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingRegistry;
+import org.openhab.core.thing.ThingUID;
+import org.openhab.core.thing.binding.ThingHandler;
 import org.openhab.io.homekit.api.AccessoryRegistry;
 import org.openhab.io.homekit.api.AccessoryServerRegistry;
 import org.openhab.io.homekit.api.Characteristic;
@@ -17,6 +20,7 @@ import org.openhab.io.homekit.api.ManagedCharacteristic;
 import org.openhab.io.homekit.api.ManagedService;
 import org.openhab.io.homekit.api.NotificationRegistry;
 import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.internal.client.HomekitAccessoryBridgeHandler;
 import org.openhab.io.homekit.library.accessory.ThingAccessory;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -215,6 +219,24 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
     }
 
     private void addPairing(String thingUID, String setupCode, Console console) {
+        ThingUID theThingUID = new ThingUID(thingUID);
+        Thing theThing = thingRegistry.get(theThingUID);
+
+        if (theThing != null) {
+            ThingHandler theHandler = theThing.getHandler();
+            if (theHandler != null) {
+                if (theHandler instanceof HomekitAccessoryBridgeHandler) {
+                    ((HomekitAccessoryBridgeHandler) theHandler).pair(setupCode);
+                } else {
+                    logger.warn("Thing '{}' is not asociated with an Accessory Bridge, and can not be paired",
+                            thingUID);
+                }
+            } else {
+                logger.warn("Thing '{}' does not have a ThingHandler", thingUID);
+            }
+        } else {
+            logger.warn("Thing '{}' does not exist", thingUID);
+        }
 
     }
 

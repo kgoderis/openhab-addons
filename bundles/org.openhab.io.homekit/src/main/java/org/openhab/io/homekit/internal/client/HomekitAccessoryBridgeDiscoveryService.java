@@ -16,19 +16,20 @@ import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.io.homekit.api.Accessory;
 import org.openhab.io.homekit.api.Characteristic;
+import org.openhab.io.homekit.api.Service;
 
-public class HomekitBridgeDiscoveryService extends AbstractDiscoveryService implements HomekitStatusListener {
+public class HomekitAccessoryBridgeDiscoveryService extends AbstractDiscoveryService implements HomekitStatusListener {
 
     public static final Set<ThingTypeUID> SUPPORTED_THING_TYPES = Collections.unmodifiableSet(Stream
             .of(HomekitAccessoryHandler.SUPPORTED_THING_TYPES.stream(),
-                    HomekitBridgeAccessoryHandler.SUPPORTED_THING_TYPES.stream())
+                    HomekitAccessoryBridgeHandler.SUPPORTED_THING_TYPES.stream())
             .flatMap(i -> i).collect(Collectors.toSet()));
 
     private static final int SEARCH_TIME = 10;
 
-    private final HomekitBridgeHandler homekitBridgeHandler;
+    private final HomekitAccessoryBridgeHandler homekitBridgeHandler;
 
-    public HomekitBridgeDiscoveryService(HomekitBridgeHandler homekitBridgeHandler) {
+    public HomekitAccessoryBridgeDiscoveryService(HomekitAccessoryBridgeHandler homekitBridgeHandler) {
         super(SEARCH_TIME);
         this.homekitBridgeHandler = homekitBridgeHandler;
     }
@@ -60,9 +61,9 @@ public class HomekitBridgeDiscoveryService extends AbstractDiscoveryService impl
     }
 
     @Override
-    public void onAccessoryRemoved(@Nullable Bridge bridge, @NonNull Accessory accessory) {
+    public void onAccessoryRemoved(Bridge bridge, Accessory accessory) {
         if (accessory.getId() == 1) {
-            String id = bridge.getBridgeUID().getId().replace(":", "");
+            String id = bridge.getUID().getId().replace(":", "");
             ThingUID uid = new ThingUID(HomekitBindingConstants.THING_TYPE_BRIDGE, id);
             thingRemoved(uid);
         } else {
@@ -73,14 +74,15 @@ public class HomekitBridgeDiscoveryService extends AbstractDiscoveryService impl
     }
 
     @Override
-    public void onAccessoryAdded(@Nullable Bridge bridge, @NonNull Accessory accessory) {
+    public void onAccessoryAdded(Bridge bridge, Accessory accessory) {
         if (accessory.getId() == 1) {
-            String id = bridge.getBridgeUID().getId().replace(":", "");
+            String id = bridge.getUID().getId().replace(":", "");
             ThingUID uid = new ThingUID(HomekitBindingConstants.THING_TYPE_BRIDGE, id);
 
             DiscoveryResult discoveryResult = DiscoveryResultBuilder.create(uid)
-                    .withThingType(HomekitBindingConstants.THING_TYPE_BRIDGE).withRepresentationProperty(uid.getId())
-                    .withLabel("Homekit Accessory Bridge").build();
+                    .withThingType(HomekitBindingConstants.THING_TYPE_BRIDGE)
+                    .withRepresentationProperty(HomekitBindingConstants.DEVICE_ID).withLabel("Homekit Accessory Bridge")
+                    .build();
 
             thingDiscovered(discoveryResult);
         } else {
@@ -88,8 +90,9 @@ public class HomekitBridgeDiscoveryService extends AbstractDiscoveryService impl
                     String.valueOf(accessory.getId()));
 
             DiscoveryResult discoveryResult = DiscoveryResultBuilder.create(uid)
-                    .withThingType(HomekitBindingConstants.THING_TYPE_BRIDGE).withRepresentationProperty(uid.getId())
-                    .withLabel("Homekit Accessory").build();
+                    .withThingType(HomekitBindingConstants.THING_TYPE_BRIDGE)
+                    .withRepresentationProperty(HomekitBindingConstants.DEVICE_ID).withLabel("Homekit Accessory")
+                    .build();
 
             thingDiscovered(discoveryResult);
         }
@@ -109,6 +112,18 @@ public class HomekitBridgeDiscoveryService extends AbstractDiscoveryService impl
 
     @Override
     public void onCharacteristicStateChanged(@Nullable Bridge bridge, @NonNull Characteristic characteristic) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void onServiceAdded(@Nullable Bridge bridge, @NonNull Service service) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void onServiceRemoved(@Nullable Bridge bridge, @NonNull Service service) {
         // TODO Auto-generated method stub
 
     }
