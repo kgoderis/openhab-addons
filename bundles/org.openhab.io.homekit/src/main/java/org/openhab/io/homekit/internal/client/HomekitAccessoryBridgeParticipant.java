@@ -39,7 +39,8 @@ public class HomekitAccessoryBridgeParticipant implements MDNSDiscoveryParticipa
 
     @Override
     public @Nullable DiscoveryResult createResult(@NonNull ServiceInfo service) {
-        if (homekitBridgeHandler.getAccessoryPairingId().equals(service.getPropertyString("id"))) {
+        String accessoryPairingId = homekitBridgeHandler.getAccessoryPairingId();
+        if (accessoryPairingId != null && accessoryPairingId.equals(service.getPropertyString("id"))) {
             int configurationNumber = Integer.parseInt(service.getPropertyString("c#"));
             int lastConfigurationNumber = homekitBridgeHandler.getConfigurationNumber();
 

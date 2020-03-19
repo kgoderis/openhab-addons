@@ -64,14 +64,16 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler {
     }
 
     public int getConfigurationNumber() {
-        return (int) getThing().getConfiguration().get(HomekitAccessoryConfiguration.CONFIGURATION_NUMBER);
+        return Integer.parseInt(
+                (String) getThing().getConfiguration().get(HomekitAccessoryConfiguration.CONFIGURATION_NUMBER));
     }
 
     public String getAccessoryPairingId() {
-        return (String) getThing().getConfiguration().get(HomekitAccessoryConfiguration.ACCESSORY_PAIRING_ID);
+        return new String(Base64.getDecoder().decode(
+                (String) getThing().getConfiguration().get(HomekitAccessoryConfiguration.ACCESSORY_PAIRING_ID)));
     }
 
-    public void updateDestination(InetAddress host, int portNumber) {
+    public void updateDestination(String host, int portNumber) {
         // Map<String, String> properties = editProperties();
         // properties.put(HomekitAccessoryConfiguration.HOST_ADDRESS, hostName);
         // properties.put(HomekitAccessoryConfiguration.PORT, String.valueOf(portNumber));
@@ -137,7 +139,7 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler {
                             new String(clientPairingId));
 
                     // try {
-                    homekitClient = new HomekitClient(config.host, config.port, clientPairingId,
+                    homekitClient = new HomekitClient(InetAddress.getByName(config.host), config.port, clientPairingId,
                             clientLongtermSecretKey, accessoryPairingId, pairingRegistry);
                     // } catch (UnknownHostException e1) {
                     // // TODO Auto-generated catch block
@@ -145,7 +147,7 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler {
                     // }
                 } else {
                     // try {
-                    homekitClient = new HomekitClient(config.host, config.port, pairingRegistry);
+                    homekitClient = new HomekitClient(InetAddress.getByName(config.host), config.port, pairingRegistry);
 
                     logger.info("'{}' : Creating a Homekit client using a newly generated Id '{}'", getThing().getUID(),
                             new String(homekitClient.getPairingId()));
@@ -246,11 +248,11 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler {
             homekitClient.setSetupCode(setupCode);
             try {
                 if (homekitClient.isPaired()) {
-                    logger.info("'{}' : Removing an existing pairing for the Homekit Accessory", getThing().getUID());
+                    logger.info("'{}' : Removing an existing pairing with the Homekit Accessory", getThing().getUID());
                     homekitClient.pairRemove();
                 }
 
-                logger.info("'{}' : Setting up a new pairing for the Homekit Accessory", getThing().getUID());
+                logger.info("'{}' : Setting up a new pairing with the Homekit Accessory", getThing().getUID());
                 homekitClient.pairSetup();
 
                 if (homekitClient.isPaired()) {
@@ -282,7 +284,7 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler {
                         homekitClient.pairRemove();
                     }
                 } else {
-                    logger.warn("'{}' : Pairing the Homekit Accessory failed", getThing().getUID());
+                    logger.warn("'{}' : Pairing with the Homekit Accessory failed", getThing().getUID());
                 }
 
                 if (homekitClient.isPairVerified()) {

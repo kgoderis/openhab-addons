@@ -1,7 +1,5 @@
 package org.openhab.io.homekit.internal.client;
 
-import java.net.InetAddress;
-
 public class HomekitAccessoryConfiguration {
 
     /**
@@ -15,11 +13,11 @@ public class HomekitAccessoryConfiguration {
     public static final String SETUP_CODE = "setupCode";
     public static final String CONFIGURATION_NUMBER = "configurationNumber";
 
-    public InetAddress host;
+    public String host;
     public int port;
-    public byte[] clientPairingId;
-    public byte[] clientLongTermSecrectKey;
-    public byte[] accessoryPairingId;
+    public String clientPairingId;
+    public String clientLongTermSecrectKey;
+    public String accessoryPairingId;
     public String setupCode;
     public int configurationNumber;
 

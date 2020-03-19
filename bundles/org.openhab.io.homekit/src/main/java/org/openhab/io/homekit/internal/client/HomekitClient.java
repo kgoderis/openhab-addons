@@ -224,6 +224,7 @@ public class HomekitClient {
         isPairVerified = false;
 
         StageResult stageResult = null;
+        int failedStage = 0;
 
         try {
             byte[] payload = doPairSetupStage0();
@@ -267,16 +268,34 @@ public class HomekitClient {
                         return;
                     }
                 } else {
-                    logger.warn("'{}' : Pair setup failed at Stage 2 : {}", new String(clientPairingIdentifier),
-                            stageResult.message);
+                    failedStage = 2;
                 }
             } else {
-                logger.warn("'{}' : Pair setup failed at Stage 1 : {}", new String(clientPairingIdentifier),
-                        stageResult.message);
+                failedStage = 1;
             }
         } else {
-            logger.warn("'{}' : Pair setup failed at Stage 0 : {}", new String(clientPairingIdentifier),
-                    stageResult.message);
+            failedStage = 0;
+        }
+
+        if (stageResult.isFailure()) {
+            if (stageResult.error != null) {
+                switch (stageResult.error) {
+                    case UNAVAILABLE: {
+                        logger.warn(
+                                "'{}' : Pair setup failed because the Homekit Accessory is not available for pairing, e.g. it is already paired to another Homekit Controller",
+                                new String(clientPairingIdentifier));
+                        break;
+                    }
+                    default: {
+                        logger.warn(
+                                "'{}' : Pair setup failed because of a Homekit Automation Protocol Error at stage {} : {}",
+                                new String(clientPairingIdentifier), failedStage, stageResult.error.toString());
+                    }
+                }
+            } else {
+                logger.warn("'{}' : Pair setup failed at Stage {} : {}", new String(clientPairingIdentifier),
+                        failedStage, stageResult.message);
+            }
         }
 
     }
@@ -294,6 +313,7 @@ public class HomekitClient {
         isPairVerified = false;
 
         StageResult stageResult = null;
+        int failedStage = 0;
 
         try {
             byte[] payload = doPairVerifyStage0();
@@ -340,12 +360,29 @@ public class HomekitClient {
                     return false;
                 }
             } else {
-                logger.warn("'{}' : Pair verify failed at Stage 1 : {}", new String(clientPairingIdentifier),
-                        stageResult.message);
+                failedStage = 1;
             }
         } else {
-            logger.warn("'{}' : Pair verify failed at Stage 0 : {}", new String(clientPairingIdentifier),
-                    stageResult.message);
+            failedStage = 0;
+        }
+
+        if (stageResult.isFailure()) {
+            if (stageResult.error != null) {
+                switch (stageResult.error) {
+                    case UNAVAILABLE: {
+                        logger.warn(
+                                "'{}' : Pair verify failed because the Homekit Accessory is not available for pairing, e.g. it is already paired to another Homekit Controller");
+                    }
+                    default: {
+                        logger.warn(
+                                "'{}' : Pair verify failed because of a Homekit Automation Protocol Error at stage {} : {}",
+                                failedStage, new String(clientPairingIdentifier), stageResult.error.toString());
+                    }
+                }
+            } else {
+                logger.warn("'{}' : Pair setup failed at Stage {} : {}", failedStage,
+                        new String(clientPairingIdentifier), stageResult.message);
+            }
         }
 
         return !stageResult.isFailure();
@@ -815,6 +852,8 @@ public class HomekitClient {
 
                                 if (d.getBytes(Message.ERROR) != null) {
                                     SRP6Session = null;
+                                    StageResult stageResult = new StageResult(Error.get(d.getByte(Message.ERROR)));
+                                    completableFuture.complete(stageResult);
                                     return;
                                 }
 
@@ -1004,13 +1043,18 @@ public class HomekitClient {
             this.message = message;
         }
 
+        public StageResult(Error error) {
+            this.error = error;
+        }
+
         public boolean isFailure() {
-            return message != null;
+            return message != null || error != null;
         }
 
         public DecodeResult decodeResult;
         public Result result;
         public String message;
+        public Error error;
     }
 
     protected class ContentResult {

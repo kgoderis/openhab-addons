@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.internal.client;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
@@ -66,32 +67,48 @@ public class HomekitDiscoveryListener implements DiscoveryListener {
             if (thing.isPresent()) {
                 Thing theThing = thing.get();
 
-                InetAddress currentHost = (InetAddress) theThing.getConfiguration()
-                        .get(HomekitAccessoryConfiguration.HOST);
-                int currentPort = (int) theThing.getConfiguration().get(HomekitAccessoryConfiguration.PORT);
+                InetAddress currentHost = null;
+                InetAddress discoveredHost = null;
+                try {
+                    currentHost = InetAddress
+                            .getByName((String) theThing.getConfiguration().get(HomekitAccessoryConfiguration.HOST));
+                    discoveredHost = InetAddress
+                            .getByName((String) result.getProperties().get(HomekitAccessoryConfiguration.HOST));
+                } catch (UnknownHostException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
 
-                if (!currentHost.equals(result.getProperties().get(HomekitAccessoryConfiguration.HOST))
-                        || currentPort != Integer
-                                .parseInt((String) result.getProperties().get(HomekitAccessoryConfiguration.PORT))) {
-                    logger.info("'{}' : The Homekit Accessory's destination changed from {}:{} to {}:{}",
-                            theThing.getUID(), currentHost, currentPort,
-                            result.getProperties().get(HomekitAccessoryConfiguration.HOST),
-                            result.getProperties().get(HomekitAccessoryConfiguration.PORT));
+                int currentPort = Integer
+                        .parseInt((String) theThing.getConfiguration().get(HomekitAccessoryConfiguration.PORT));
+                int discoveredPort = (int) result.getProperties().get(HomekitAccessoryConfiguration.PORT);
 
-                    ThingHandler thingHandler = theThing.getHandler();
+                try {
+                    if (currentHost != null && !currentHost.equals(discoveredHost) || currentPort != discoveredPort) {
+                        logger.info("'{}' : The Homekit Accessory's destination changed from {}:{} to {}:{}",
+                                theThing.getUID(), currentHost, currentPort,
+                                result.getProperties().get(HomekitAccessoryConfiguration.HOST),
+                                result.getProperties().get(HomekitAccessoryConfiguration.PORT));
 
-                    if (thingHandler instanceof HomekitAccessoryBridgeHandler) {
-                        ((HomekitAccessoryBridgeHandler) thingHandler).updateDestination(
-                                (InetAddress) result.getProperties().get(HomekitAccessoryConfiguration.HOST),
-                                (int) result.getProperties().get(HomekitAccessoryConfiguration.PORT));
+                        ThingHandler thingHandler = theThing.getHandler();
+
+                        if (thingHandler instanceof HomekitAccessoryBridgeHandler) {
+                            ((HomekitAccessoryBridgeHandler) thingHandler).updateDestination(
+                                    ((InetAddress) result.getProperties().get(HomekitAccessoryConfiguration.HOST))
+                                            .getHostAddress(),
+                                    (int) result.getProperties().get(HomekitAccessoryConfiguration.PORT));
+                        }
+
+                        // Map<String, String> properties = theThing.getProperties();
+                        // properties.put(HomekitAccessoryConfiguration.HOST_ADDRESS,
+                        // (String) result.getProperties().get(HomekitAccessoryConfiguration.HOST_ADDRESS));
+                        // properties.put(HomekitAccessoryConfiguration.PORT,
+                        // (String) result.getProperties().get(HomekitAccessoryConfiguration.PORT));
+                        // theThing.setProperties(properties);
                     }
-
-                    // Map<String, String> properties = theThing.getProperties();
-                    // properties.put(HomekitAccessoryConfiguration.HOST_ADDRESS,
-                    // (String) result.getProperties().get(HomekitAccessoryConfiguration.HOST_ADDRESS));
-                    // properties.put(HomekitAccessoryConfiguration.PORT,
-                    // (String) result.getProperties().get(HomekitAccessoryConfiguration.PORT));
-                    // theThing.setProperties(properties);
+                } catch (NumberFormatException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
                 }
             }
         }

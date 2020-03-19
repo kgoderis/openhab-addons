@@ -24,23 +24,23 @@ public class HomekitConfigDescriptionProvider implements ConfigDescriptionProvid
     public @NonNull Collection<@NonNull ConfigDescription> getConfigDescriptions(@Nullable Locale locale) {
         try {
 
+            ConfigDescriptionParameterBuilder hostParameterBuilder = ConfigDescriptionParameterBuilder
+                    .create(HomekitAccessoryConfiguration.HOST, Type.TEXT).withContext("thing");
+
+            ConfigDescriptionParameterBuilder portParameterBuilder = ConfigDescriptionParameterBuilder
+                    .create(HomekitAccessoryConfiguration.PORT, Type.TEXT).withContext("thing");
+
             ConfigDescriptionParameterBuilder clientIdParameterBuilder = ConfigDescriptionParameterBuilder
                     .create(HomekitAccessoryConfiguration.CLIENT_PAIRING_ID, Type.TEXT).withContext("thing");
 
             ConfigDescriptionParameterBuilder clientLTSKParameterBuilder = ConfigDescriptionParameterBuilder
                     .create(HomekitAccessoryConfiguration.CLIENT_LTSK, Type.TEXT).withContext("thing");
 
-            ConfigDescriptionParameterBuilder configurationNumberBuilder = ConfigDescriptionParameterBuilder
-                    .create(HomekitAccessoryConfiguration.CONFIGURATION_NUMBER, Type.TEXT).withContext("thing");
-
             ConfigDescriptionParameterBuilder idParameterBuilder = ConfigDescriptionParameterBuilder
                     .create(HomekitAccessoryConfiguration.ACCESSORY_PAIRING_ID, Type.TEXT).withContext("thing");
 
-            ConfigDescriptionParameterBuilder hostParameterBuilder = ConfigDescriptionParameterBuilder
-                    .create(HomekitAccessoryConfiguration.HOST, Type.TEXT).withContext("thing");
-
-            ConfigDescriptionParameterBuilder portParameterBuilder = ConfigDescriptionParameterBuilder
-                    .create(HomekitAccessoryConfiguration.PORT, Type.TEXT).withContext("thing");
+            ConfigDescriptionParameterBuilder configurationNumberBuilder = ConfigDescriptionParameterBuilder
+                    .create(HomekitAccessoryConfiguration.CONFIGURATION_NUMBER, Type.TEXT).withContext("thing");
 
             ConfigDescriptionBuilder builder = ConfigDescriptionBuilder
                     .create(new URI(HomekitBindingConstants.CONFIGURATION_URI))

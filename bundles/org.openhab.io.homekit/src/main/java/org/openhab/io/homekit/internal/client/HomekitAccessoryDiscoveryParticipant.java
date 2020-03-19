@@ -1,5 +1,7 @@
 package org.openhab.io.homekit.internal.client;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -84,16 +86,19 @@ public class HomekitAccessoryDiscoveryParticipant implements MDNSDiscoveryPartic
                                         "IPv6 and MDNS dot no match well on MacOS - see  https://medium.com/@quelgar/java-sockets-broken-for-ipv6-on-mac-5aae72f06b21");
                             }
                             if (service.getInet4Addresses().length > 0) {
-                                properties.put(HomekitAccessoryConfiguration.HOST, service.getInet4Addresses()[0]);
+                                properties.put(HomekitAccessoryConfiguration.HOST,
+                                        service.getInet4Addresses()[0].getHostAddress());
                             }
                         } else {
                             if (networkAddressService.isUseIPv6()) {
                                 if (service.getInet6Addresses().length > 0) {
-                                    properties.put(HomekitAccessoryConfiguration.HOST, service.getInet6Addresses()[0]);
+                                    properties.put(HomekitAccessoryConfiguration.HOST,
+                                            service.getInet6Addresses()[0].getHostAddress());
                                 }
                             } else {
                                 if (service.getInet4Addresses().length > 0) {
-                                    properties.put(HomekitAccessoryConfiguration.HOST, service.getInet4Addresses()[0]);
+                                    properties.put(HomekitAccessoryConfiguration.HOST,
+                                            service.getInet4Addresses()[0].getHostAddress());
                                 }
                             }
                         }
@@ -115,6 +120,12 @@ public class HomekitAccessoryDiscoveryParticipant implements MDNSDiscoveryPartic
                             if (element.equals(HomekitBindingConstants.CONFIGURATION_NUMBER_SHARP)) {
                                 properties.put(HomekitAccessoryConfiguration.CONFIGURATION_NUMBER, value);
                             }
+
+                            if (element.equals(HomekitBindingConstants.DEVICE_ID)) {
+                                properties.put(HomekitAccessoryConfiguration.ACCESSORY_PAIRING_ID,
+                                        Base64.getEncoder().encodeToString(value.getBytes(StandardCharsets.UTF_8)));
+                            }
+
                         }
 
                         return DiscoveryResultBuilder.create(uid).withProperties(properties)
