@@ -74,11 +74,6 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler {
     }
 
     public void updateDestination(String host, int portNumber) {
-        // Map<String, String> properties = editProperties();
-        // properties.put(HomekitAccessoryConfiguration.HOST_ADDRESS, hostName);
-        // properties.put(HomekitAccessoryConfiguration.PORT, String.valueOf(portNumber));
-        // updateProperties(properties);
-
         Configuration config = editConfiguration();
         config.put(HomekitAccessoryConfiguration.HOST, host);
         config.put(HomekitAccessoryConfiguration.PORT, portNumber);
@@ -138,26 +133,14 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler {
                     logger.info("'{}' : Creating a Homekit client using an existing Id '{}'", getThing().getUID(),
                             new String(clientPairingId));
 
-                    // try {
                     homekitClient = new HomekitClient(InetAddress.getByName(config.host), config.port, clientPairingId,
                             clientLongtermSecretKey, accessoryPairingId, pairingRegistry);
-                    // } catch (UnknownHostException e1) {
-                    // // TODO Auto-generated catch block
-                    // e1.printStackTrace();
-                    // }
+
                 } else {
-                    // try {
                     homekitClient = new HomekitClient(InetAddress.getByName(config.host), config.port, pairingRegistry);
 
                     logger.info("'{}' : Creating a Homekit client using a newly generated Id '{}'", getThing().getUID(),
                             new String(homekitClient.getPairingId()));
-
-                    // Map<String, String> properties = editProperties();
-                    // properties.put(HomekitAccessoryConfiguration.CLIENT_PAIRING_ID,
-                    // Base64.getEncoder().encodeToString(homekitClient.getPairingId()));
-                    // properties.put(HomekitAccessoryConfiguration.CLIENT_LTSK,
-                    // Base64.getEncoder().encodeToString(homekitClient.getLongTermSecretKey()));
-                    // this.updateProperties(properties);
 
                     Configuration config = editConfiguration();
                     config.put(HomekitAccessoryConfiguration.CLIENT_PAIRING_ID,
@@ -165,16 +148,9 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler {
                     config.put(HomekitAccessoryConfiguration.CLIENT_LTSK,
                             Base64.getEncoder().encodeToString(homekitClient.getLongTermSecretKey()));
                     updateConfiguration(config);
-
-                    // } catch (UnknownHostException e1) {
-                    // // TODO Auto-generated catch block
-                    // e1.printStackTrace();
-                    // }
                 }
 
                 if (homekitClient != null) {
-                    // String setupCode = props.get(HomekitAccessoryConfiguration.SETUP_CODE);
-
                     if (config.setupCode != null) {
                         if (!homekitClient.isPaired()) {
                             logger.info("'{}' : Pairing the Homekit Accessory using an existing Setup Code",
