@@ -151,6 +151,15 @@ public class HomekitClient {
         }
     }
 
+    public void dispose() {
+        try {
+            httpClient.stop();
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
     public HomekitClient(InetAddress inetAddress, int port, PairingRegistry pairingRegistry) {
         this(inetAddress, port, generatePairingId(), generatePrivateKey(), null, pairingRegistry);
     }
@@ -858,7 +867,7 @@ public class HomekitClient {
                                 }
 
                                 short state = d.getByte(Message.STATE);
-                                logger.info("'{}' : Received State {}", state, new String(clientPairingIdentifier));
+                                logger.info("'{}' : Received State {}", new String(clientPairingIdentifier), state);
 
                                 StageResult stageResult = new StageResult(d, result);
                                 completableFuture.complete(stageResult);

@@ -124,7 +124,7 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler {
 
                 byte[] clientLongtermSecretKey = null;
                 try {
-                    clientLongtermSecretKey = Base64.getDecoder().decode(config.clientLongTermSecrectKey);
+                    clientLongtermSecretKey = Base64.getDecoder().decode(config.clientLongTermSecretKey);
                 } catch (Exception e) {
                 }
 
@@ -188,34 +188,8 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler {
                                 getThing().getUID());
                     }
 
-                    if (homekitClient.isPaired() && !homekitClient.isPairVerified()) {
-                        logger.info("'{}' : Verifying the Homekit Accessory pairing", getThing().getUID());
-
-                        homekitClient.pairVerify();
-
-                        if (!homekitClient.isPairVerified()) {
-                            logger.warn(
-                                    "'{}' : Verification of the Homekit Accessory pairing failed. Removing the pairing",
-                                    getThing().getUID());
-                            homekitClient.pairRemove();
-                        } else {
-                            logger.info("'{}' : Verification of the Homekit Accessory pairing is successfull",
-                                    getThing().getUID());
-                        }
-                    } else {
-                        logger.info(
-                                "'{}' : Verification of the Homekit Accessory pairing failed because it is {} paired and the pairing was {} verified before",
-                                getThing().getUID(), homekitClient.isPaired() ? "already" : "not",
-                                homekitClient.isPairVerified() ? "already" : "not");
-                    }
+                    pairVerify();
                 }
-
-                if (homekitClient != null && homekitClient.isPairVerified()) {
-                    updateStatus(ThingStatus.ONLINE);
-                } else {
-                    updateStatus(ThingStatus.OFFLINE);
-                }
-
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -231,71 +205,91 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler {
 
     }
 
+    @Override
+    public void dispose() {
+        if (homekitClient != null) {
+            homekitClient.dispose();
+        }
+
+        super.dispose();
+    }
+
     public void pair(String setupCode) {
         if (homekitClient != null) {
-
             logger.info("'{}' : Pairing the Homekit Accessory using Setup Code {}", getThing().getUID(), setupCode);
-
-            // Map<String, String> properties = editProperties();
-            // // TODO use PairingUID instead
-            // properties.put(HomekitAccessoryConfiguration.SETUP_CODE, setupCode);
-            // this.updateProperties(properties);
 
             Configuration config = editConfiguration();
             config.put(HomekitAccessoryConfiguration.SETUP_CODE, setupCode);
             updateConfiguration(config);
 
             homekitClient.setSetupCode(setupCode);
-            try {
-                if (homekitClient.isPaired()) {
-                    logger.info("'{}' : Removing an existing pairing with the Homekit Accessory", getThing().getUID());
+
+            if (homekitClient.isPaired()) {
+                logger.info("'{}' : Removing an existing pairing with the Homekit Accessory", getThing().getUID());
+                try {
                     homekitClient.pairRemove();
+                } catch (HomekitException | IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
                 }
+                updateStatus(ThingStatus.OFFLINE);
+            }
 
-                logger.info("'{}' : Setting up a new pairing with the Homekit Accessory", getThing().getUID());
+            logger.info("'{}' : Setting up a new pairing with the Homekit Accessory", getThing().getUID());
+            try {
                 homekitClient.pairSetup();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
 
-                if (homekitClient.isPaired()) {
-                    // properties = editProperties();
-                    // // TODO use PairingUID instead
-                    // properties.put(HomekitAccessoryConfiguration.CLIENT_PAIRING_ID,
-                    // Base64.getEncoder().encodeToString(homekitClient.getPairingId()));
-                    // properties.put(HomekitAccessoryConfiguration.CLIENT_LTSK,
-                    // Base64.getEncoder().encodeToString(homekitClient.getLongTermSecretKey()));
-                    // properties.put(HomekitAccessoryConfiguration.ACCESSORY_PAIRING_ID,
-                    // Base64.getEncoder().encodeToString(homekitClient.getAccessoryPairingId()));
-                    // this.updateProperties(properties);
+            if (homekitClient.isPaired()) {
+                config = editConfiguration();
+                config.put(HomekitAccessoryConfiguration.CLIENT_PAIRING_ID,
+                        Base64.getEncoder().encodeToString(homekitClient.getPairingId()));
+                config.put(HomekitAccessoryConfiguration.CLIENT_LTSK,
+                        Base64.getEncoder().encodeToString(homekitClient.getLongTermSecretKey()));
+                config.put(HomekitAccessoryConfiguration.ACCESSORY_PAIRING_ID,
+                        Base64.getEncoder().encodeToString(homekitClient.getAccessoryPairingId()));
+                updateConfiguration(config);
+            } else {
+                updateStatus(ThingStatus.OFFLINE);
+                logger.warn("'{}' : Pairing with the Homekit Accessory failed", getThing().getUID());
+            }
 
-                    config = editConfiguration();
-                    config.put(HomekitAccessoryConfiguration.CLIENT_PAIRING_ID,
-                            Base64.getEncoder().encodeToString(homekitClient.getPairingId()));
-                    config.put(HomekitAccessoryConfiguration.CLIENT_LTSK,
-                            Base64.getEncoder().encodeToString(homekitClient.getLongTermSecretKey()));
-                    config.put(HomekitAccessoryConfiguration.ACCESSORY_PAIRING_ID,
-                            Base64.getEncoder().encodeToString(homekitClient.getAccessoryPairingId()));
-                    updateConfiguration(config);
+        }
+    }
 
-                    logger.info("'{}' : Verifying the Homekit Accessory pairing", getThing().getUID());
-                    homekitClient.pairVerify();
+    public void pairVerify() {
+        if (homekitClient != null) {
+            if (homekitClient.isPaired() && !homekitClient.isPairVerified()) {
+                logger.info("'{}' : Verifying the Homekit Accessory pairing", getThing().getUID());
 
-                    if (!homekitClient.isPairVerified()) {
-                        logger.warn("'{}' : Verification of the Homekit Accessory pairing failed. Removing the pairing",
-                                getThing().getUID());
-                        homekitClient.pairRemove();
-                    }
-                } else {
-                    logger.warn("'{}' : Pairing with the Homekit Accessory failed", getThing().getUID());
-                }
+                homekitClient.pairVerify();
 
                 if (homekitClient.isPairVerified()) {
                     updateStatus(ThingStatus.ONLINE);
+                    logger.info("'{}' : Verification of the Homekit Accessory pairing is successfull",
+                            getThing().getUID());
                 } else {
+                    logger.warn("'{}' : Verification of the Homekit Accessory pairing failed. Removing the pairing",
+                            getThing().getUID());
+                    try {
+                        homekitClient.pairRemove();
+                    } catch (HomekitException | IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
                     updateStatus(ThingStatus.OFFLINE);
                 }
-
-            } catch (IOException | HomekitException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+            } else {
+                logger.info(
+                        "'{}' : Verification of the Homekit Accessory pairing failed because it is {} paired and/or the pairing was {} verified before",
+                        getThing().getUID(), homekitClient.isPaired() ? "already" : "not",
+                        homekitClient.isPairVerified() ? "already" : "not");
+                if (!homekitClient.isPaired()) {
+                    updateStatus(ThingStatus.OFFLINE);
+                }
             }
         }
     }

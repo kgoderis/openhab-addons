@@ -16,7 +16,7 @@ public class HomekitAccessoryConfiguration {
     public String host;
     public int port;
     public String clientPairingId;
-    public String clientLongTermSecrectKey;
+    public String clientLongTermSecretKey;
     public String accessoryPairingId;
     public String setupCode;
     public int configurationNumber;

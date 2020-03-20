@@ -227,6 +227,7 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
             if (theHandler != null) {
                 if (theHandler instanceof HomekitAccessoryBridgeHandler) {
                     ((HomekitAccessoryBridgeHandler) theHandler).pair(setupCode);
+                    ((HomekitAccessoryBridgeHandler) theHandler).pairVerify();
                 } else {
                     logger.warn("Thing '{}' is not asociated with an Accessory Bridge, and can not be paired",
                             thingUID);
