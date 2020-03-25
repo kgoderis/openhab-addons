@@ -53,6 +53,12 @@ public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
     }
 
     // @Override
+    // public void onClose() {
+    // super.onClose();
+    // getEndPoint().onClose();
+    // }
+
+    // @Override
     // public void onOpen() {
     // super.onOpen();
     // fillInterested();

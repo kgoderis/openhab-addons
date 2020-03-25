@@ -368,6 +368,7 @@ public class DecryptedHomekitEndPoint implements EndPoint {
     @Override
     public void fillInterested(Callback callback) throws ReadPendingException {
         encryptedEndPoint.fillInterested(callback);
+        // TODO Verify we need this in the server implementation.
     }
 
     @Override

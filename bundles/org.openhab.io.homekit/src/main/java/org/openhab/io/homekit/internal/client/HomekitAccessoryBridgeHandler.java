@@ -78,6 +78,7 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler {
         config.put(HomekitAccessoryConfiguration.HOST, host);
         config.put(HomekitAccessoryConfiguration.PORT, portNumber);
         updateConfiguration(config);
+        initialize();
     }
 
     @Override
@@ -110,6 +111,10 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler {
         scheduler.execute(() -> {
 
             try {
+
+                if (homekitClient != null) {
+                    homekitClient.dispose();
+                }
 
                 byte[] clientPairingId = null;
                 try {

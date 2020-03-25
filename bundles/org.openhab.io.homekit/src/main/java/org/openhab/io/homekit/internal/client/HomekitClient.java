@@ -140,6 +140,8 @@ public class HomekitClient {
 
         this.httpClient = new HttpClient(new HomekitHttpClientTransportOverHTTP(), null);
 
+        // TODO : Detect when the remote end closes the connection -> Thing should go offline
+
         try {
             httpClient.start();
             ProtocolHandlers handlers = httpClient.getProtocolHandlers();
@@ -818,6 +820,7 @@ public class HomekitClient {
         logger.info("'{}' : Verify Stage 2 : Setting the keys on destination ", new String(clientPairingIdentifier),
                 destination.toString());
         destination.setEncryptionKeys(readKey, writeKey);
+        // destination.secure();
 
         logger.info("'{}' : Verify Stage 2 : End", new String(clientPairingIdentifier));
 
@@ -902,6 +905,10 @@ public class HomekitClient {
                         if (!result.isFailed()) {
                             byte[] body = getContent();
                             ContentResult stageResult = new ContentResult(body, result);
+                            completableFuture.complete(stageResult);
+                        } else {
+                            ContentResult stageResult = new ContentResult(
+                                    result.getResponseFailure().getMessage().getBytes(), result);
                             completableFuture.complete(stageResult);
                         }
                     }
@@ -1072,8 +1079,13 @@ public class HomekitClient {
             this.result = result;
         }
 
+        public ContentResult(String message) {
+            this.message = message;
+        }
+
         public byte[] body;
         public Result result;
+        public String message;
     }
 
     public Collection<Accessory> getAccessories() {

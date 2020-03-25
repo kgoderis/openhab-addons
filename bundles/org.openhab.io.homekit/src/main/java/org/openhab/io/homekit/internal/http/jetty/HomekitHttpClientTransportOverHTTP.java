@@ -18,7 +18,7 @@ public class HomekitHttpClientTransportOverHTTP extends HttpClientTransportOverH
     protected HttpConnectionOverHTTP newHttpConnection(EndPoint endPoint, HttpDestination destination,
             Promise<Connection> promise) {
 
-        logger.debug("[{}] Creating a new connection for Endpoint {} for destination {}",
+        logger.info("[{}] Creating a new connection for Endpoint {} for destination {}",
                 endPoint.getRemoteAddress().toString(), endPoint.toString(), destination.toString());
 
         if (destination instanceof HomekitHttpDestinationOverHTTP
@@ -36,8 +36,8 @@ public class HomekitHttpClientTransportOverHTTP extends HttpClientTransportOverH
             return appConnection;
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("[{}] There are no encryption keys set", endPoint.getRemoteAddress().toString());
+        if (logger.isInfoEnabled()) {
+            logger.info("[{}] There are no encryption keys set", endPoint.getRemoteAddress().toString());
         }
 
         return new HomekitHttpConnectionOverHTTP(endPoint, destination, promise);

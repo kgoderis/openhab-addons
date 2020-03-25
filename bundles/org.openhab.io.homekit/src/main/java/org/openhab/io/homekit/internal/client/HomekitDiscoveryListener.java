@@ -17,6 +17,9 @@ import org.openhab.core.config.discovery.DiscoveryService;
 import org.openhab.core.config.discovery.DiscoveryServiceRegistry;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingRegistry;
+import org.openhab.core.thing.ThingStatus;
+import org.openhab.core.thing.ThingStatusDetail;
+import org.openhab.core.thing.ThingStatusInfo;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.ThingHandler;
@@ -67,6 +70,11 @@ public class HomekitDiscoveryListener implements DiscoveryListener {
             if (thing.isPresent()) {
                 Thing theThing = thing.get();
 
+                if (theThing.getStatus() == ThingStatus.OFFLINE) {
+                    theThing.setStatusInfo(new ThingStatusInfo(ThingStatus.UNKNOWN,
+                            ThingStatusDetail.CONFIGURATION_PENDING, "Homekit Accessory is discovered"));
+                }
+
                 InetAddress currentHost = null;
                 InetAddress discoveredHost = null;
                 try {
@@ -98,13 +106,6 @@ public class HomekitDiscoveryListener implements DiscoveryListener {
                                             .getHostAddress(),
                                     (int) result.getProperties().get(HomekitAccessoryConfiguration.PORT));
                         }
-
-                        // Map<String, String> properties = theThing.getProperties();
-                        // properties.put(HomekitAccessoryConfiguration.HOST_ADDRESS,
-                        // (String) result.getProperties().get(HomekitAccessoryConfiguration.HOST_ADDRESS));
-                        // properties.put(HomekitAccessoryConfiguration.PORT,
-                        // (String) result.getProperties().get(HomekitAccessoryConfiguration.PORT));
-                        // theThing.setProperties(properties);
                     }
                 } catch (NumberFormatException e) {
                     // TODO Auto-generated catch block
@@ -116,7 +117,11 @@ public class HomekitDiscoveryListener implements DiscoveryListener {
 
     @Override
     public void thingRemoved(@NonNull DiscoveryService source, @NonNull ThingUID thingUID) {
-        logger.info("thingRemoved");
+        Thing thing = thingRegistry.get(thingUID);
+        if (thing != null) {
+            thing.setStatusInfo(new ThingStatusInfo(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
+                    "The Homekit Accessory can not be discovered"));
+        }
     }
 
     @Override

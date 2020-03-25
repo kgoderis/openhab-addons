@@ -38,12 +38,15 @@ public class HomekitAccessoryDiscoveryParticipant implements MDNSDiscoveryPartic
 
     private final AccessoryServerRegistry accessoryServerRegistry;
     private final NetworkAddressService networkAddressService;
+    private final Map<String, ThingUID> cachedServices;
 
     @Activate
     public HomekitAccessoryDiscoveryParticipant(@Reference AccessoryServerRegistry accessoryServerRegistry,
             @Reference NetworkAddressService networkAddressService) {
         this.accessoryServerRegistry = accessoryServerRegistry;
         this.networkAddressService = networkAddressService;
+
+        this.cachedServices = new HashMap<String, ThingUID>();
     }
 
     @Override
@@ -58,7 +61,11 @@ public class HomekitAccessoryDiscoveryParticipant implements MDNSDiscoveryPartic
 
     @Override
     public @Nullable DiscoveryResult createResult(@NonNull ServiceInfo service) {
-        if (service.getApplication().contains("hap")) {
+
+        logger.info("Discovery of {}:{} {} ({})",
+                service.getHostAddresses().length > 0 ? service.getHostAddresses()[0] : "N/A'", service.getPort(),
+                service.getName(), service.hasData());
+        if (service.hasData() && service.getApplication().contains("hap") && service.getPort() != 0) {
 
             String id = service.getPropertyString("id");
             if (id != null) {
@@ -128,11 +135,24 @@ public class HomekitAccessoryDiscoveryParticipant implements MDNSDiscoveryPartic
 
                         }
 
+                        logger.warn("Adding {} to the service cache", service.getQualifiedName());
+                        cachedServices.put(service.getQualifiedName(), uid);
+
                         return DiscoveryResultBuilder.create(uid).withProperties(properties)
                                 .withRepresentationProperty(HomekitBindingConstants.DEVICE_ID)
                                 .withLabel("Homekit Accessory Bridge").build();
                     }
                 }
+            }
+        } else {
+            if (service.getPort() == 0) {
+                logger.warn("Skipping a service with port = 0");
+            }
+            if (!service.hasData()) {
+                logger.warn("Skipping a service without service data");
+            }
+            if (!service.getApplication().contains("hap")) {
+                logger.warn("Skipping a service unrelated to the Homekit Accessory Protocol");
             }
         }
         return null;
@@ -140,9 +160,17 @@ public class HomekitAccessoryDiscoveryParticipant implements MDNSDiscoveryPartic
 
     @Override
     public @Nullable ThingUID getThingUID(@NonNull ServiceInfo service) {
-        if (service.getApplication().contains("hap") && service.getPropertyString("id") != null) {
-            String id = service.getPropertyString("id").replace(":", "");
-            return new ThingUID(HomekitBindingConstants.THING_TYPE_BRIDGE, id);
+        if (service.hasData()) {
+            if (service.getApplication().contains("hap") && service.getPropertyString("id") != null) {
+                String id = service.getPropertyString("id").replace(":", "");
+                return new ThingUID(HomekitBindingConstants.THING_TYPE_BRIDGE, id);
+            }
+        } else {
+            if (service.getApplication().contains("hap") && cachedServices.containsKey(service.getQualifiedName())) {
+                logger.warn("Removing {} from the service cache", service.getQualifiedName());
+                ThingUID thingUID = cachedServices.remove(service.getQualifiedName());
+                return thingUID;
+            }
         }
 
         return null;
