@@ -12,17 +12,31 @@ import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.io.ByteBufferPool;
 import org.eclipse.jetty.io.EndPoint;
 import org.eclipse.jetty.util.BufferUtil;
+import org.openhab.io.homekit.crypto.HomekitEncryptionEngine;
+import org.openhab.io.homekit.crypto.HomekitEncryptionEngine.SequenceBuffer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements HomekitHttpParser.ResponseHandler {
+
+    protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpReceiverOverHTTP.class);
+
     private final HomekitHttpParser parser;
-    private ByteBuffer buffer;
+    private final HttpClient httpClient;
     private boolean shutdown;
     private boolean complete;
     private HomekitHttpVersion version;
 
+    private byte[] decryptionKey;
+    private long inboundSequenceCount = 0;
+    private ByteBuffer decryptedInputBuffer;
+    private ByteBuffer encryptedInputBuffer;
+    private ByteBuffer encryptedOutputBuffer;
+
     public HomekitHttpReceiverOverHTTP(HttpChannelOverHTTP channel) {
         super(channel);
-        parser = new HomekitHttpParser(this, -1, channel.getHttpDestination().getHttpClient().getHttpCompliance());
+        httpClient = channel.getHttpDestination().getHttpClient();
+        parser = new HomekitHttpParser(this, -1, httpClient.getHttpCompliance());
     }
 
     @Override
@@ -36,24 +50,10 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
 
     @Override
     protected ByteBuffer getResponseBuffer() {
-        return buffer;
+        return decryptedInputBuffer;
     }
 
-    @Override
-    public void receive() {
-        if (buffer == null) {
-            acquireBuffer();
-        }
-        process();
-    }
-
-    private void acquireBuffer() {
-        HttpClient client = getHttpDestination().getHttpClient();
-        ByteBufferPool bufferPool = client.getByteBufferPool();
-        buffer = bufferPool.acquire(client.getResponseBufferSize(), true);
-    }
-
-    private void releaseBuffer() {
+    private void releaseBuffer(ByteBuffer buffer) {
         if (buffer == null) {
             throw new IllegalStateException();
         }
@@ -63,20 +63,20 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
         HttpClient client = getHttpDestination().getHttpClient();
         ByteBufferPool bufferPool = client.getByteBufferPool();
         bufferPool.release(buffer);
-        buffer = null;
     }
 
     @Override
     protected ByteBuffer onUpgradeFrom() {
-        if (BufferUtil.hasContent(buffer)) {
-            ByteBuffer upgradeBuffer = ByteBuffer.allocate(buffer.remaining());
-            upgradeBuffer.put(buffer).flip();
+        if (BufferUtil.hasContent(decryptedInputBuffer)) {
+            ByteBuffer upgradeBuffer = ByteBuffer.allocate(decryptedInputBuffer.remaining());
+            upgradeBuffer.put(decryptedInputBuffer).flip();
             return upgradeBuffer;
         }
         return null;
     }
 
-    private void process() {
+    @Override
+    public void receive() {
         try {
             HomekitHttpConnectionOverHTTP connection = getHttpConnection();
             EndPoint endPoint = connection.getEndPoint();
@@ -85,20 +85,106 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
 
                 // Connection may be closed or upgraded in a parser callback.
                 if (connection.isClosed() || upgraded) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("{} {}", connection, upgraded ? "upgraded" : "closed");
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("{} {}", connection, upgraded ? "upgraded" : "closed");
                     }
-                    releaseBuffer();
+                    releaseBuffer(decryptedInputBuffer);
                     return;
                 }
 
-                if (parse()) {
-                    return;
+                ByteBufferPool bufferPool = httpClient.getByteBufferPool();
+
+                if (decryptedInputBuffer == null) {
+                    decryptedInputBuffer = bufferPool.acquire(httpClient.getResponseBufferSize(), true);
+                } else {
+                    BufferUtil.compact(decryptedInputBuffer);
+                    // BufferUtil.flipToFill(decryptedInputBuffer);
                 }
 
-                int read = endPoint.fill(buffer);
+                if (logger.isTraceEnabled()) {
+                    logger.trace("[{}] Receive : Start : decryptedInputBuffer={}",
+                            endPoint.getRemoteAddress().toString(), BufferUtil.toDetailString(decryptedInputBuffer));
+                }
+
+                // if (parse()) {
+                // return;
+                // }
+
+                int read = 0;
+
+                if (!hasDecryptionKey()) {
+
+                    if (logger.isTraceEnabled()) {
+                        logger.trace("[{}] Receive : Before fill : decryptedInputBuffer={}",
+                                endPoint.getRemoteAddress().toString(),
+                                BufferUtil.toDetailString(decryptedInputBuffer));
+                    }
+
+                    read = endPoint.fill(decryptedInputBuffer);
+                } else {
+
+                    if (encryptedInputBuffer == null) {
+                        encryptedInputBuffer = bufferPool.acquire(httpClient.getResponseBufferSize(), true);
+                    } else {
+                        BufferUtil.compact(encryptedInputBuffer);
+                        BufferUtil.flipToFill(encryptedInputBuffer);
+                    }
+
+                    if (logger.isTraceEnabled()) {
+                        logger.trace("[{}] Receive : Before fill : encryptedInputBuffer={}, decryptedInputBuffer={}",
+                                endPoint.getRemoteAddress().toString(), BufferUtil.toDetailString(encryptedInputBuffer),
+                                BufferUtil.toDetailString(decryptedInputBuffer));
+                    }
+
+                    int netFilled = endPoint.fill(encryptedInputBuffer);
+                    if (logger.isTraceEnabled()) {
+                        logger.trace("[{}] Receive : Read {} bytes into {} from the endpoint {}",
+                                endPoint.getRemoteAddress().toString(), netFilled,
+                                BufferUtil.toDetailString(encryptedInputBuffer), endPoint.toString());
+                    }
+
+                    if (encryptedInputBuffer.hasRemaining()) {
+
+                        if (logger.isTraceEnabled()) {
+                            logger.trace(
+                                    "[{}] Receive : Before decryption : encryptedInputBuffer={}, decryptedInputBuffer={}",
+                                    endPoint.getRemoteAddress().toString(),
+                                    BufferUtil.toDetailString(encryptedInputBuffer),
+                                    BufferUtil.toDetailString(decryptedInputBuffer));
+                        }
+
+                        SequenceBuffer sBuffer = HomekitEncryptionEngine.decryptBuffer(decryptedInputBuffer,
+                                encryptedInputBuffer, decryptionKey, inboundSequenceCount);
+
+                        if (logger.isTraceEnabled()) {
+                            logger.trace(
+                                    "[{}] Receive : After decryption : encryptedInputBuffer={}, decryptedInputBuffer={}, sBuffer={}}",
+                                    endPoint.getRemoteAddress().toString(),
+                                    BufferUtil.toDetailString(encryptedInputBuffer),
+                                    BufferUtil.toDetailString(decryptedInputBuffer),
+                                    BufferUtil.toDetailString(sBuffer.buffer));
+                        }
+
+                        // read = BufferUtil.append(decryptedInputBuffer, sBuffer.buffer);
+                        decryptedInputBuffer = sBuffer.buffer;
+                        inboundSequenceCount = sBuffer.sequenceNumber;
+
+                        if (logger.isTraceEnabled()) {
+                            logger.trace(
+                                    "[{}] Receive : Before parsing : encryptedInputBuffer={}, decryptedInputBuffer={}",
+                                    endPoint.getRemoteAddress().toString(),
+                                    BufferUtil.toDetailString(encryptedInputBuffer),
+                                    BufferUtil.toDetailString(decryptedInputBuffer));
+                        }
+
+                    } else {
+                        read = netFilled;
+                    }
+                }
+
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Read {} bytes {} from {}", read, BufferUtil.toDetailString(buffer), endPoint);
+                    LOG.debug("Read {} bytes {} from {}", read, BufferUtil.toDetailString(decryptedInputBuffer),
+                            endPoint);
                 }
 
                 if (read > 0) {
@@ -107,11 +193,17 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
                         return;
                     }
                 } else if (read == 0) {
-                    releaseBuffer();
+                    if (decryptedInputBuffer.hasRemaining()) {
+                        if (parse()) {
+                            return;
+                        }
+                    }
+                    releaseBuffer(decryptedInputBuffer);
                     fillInterested();
                     return;
                 } else {
-                    releaseBuffer();
+                    releaseBuffer(decryptedInputBuffer);
+                    releaseBuffer(encryptedInputBuffer);
                     shutdown();
                     return;
                 }
@@ -120,9 +212,9 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
             if (LOG.isDebugEnabled()) {
                 LOG.debug(x);
             }
-            BufferUtil.clear(buffer);
-            if (buffer != null) {
-                releaseBuffer();
+            BufferUtil.clear(decryptedInputBuffer);
+            if (decryptedInputBuffer != null) {
+                releaseBuffer(decryptedInputBuffer);
             }
             failAndClose(x);
         }
@@ -135,23 +227,24 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
      */
     private boolean parse() {
         while (true) {
-            boolean handle = parser.parseNext(buffer);
+            boolean handle = parser.parseNext(decryptedInputBuffer);
             boolean complete = this.complete;
             this.complete = false;
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Parsed {}, remaining {} {}", handle, buffer.remaining(), parser);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Parsed {}, remaining {} {}", handle, decryptedInputBuffer.remaining(), parser);
             }
             if (handle) {
                 return true;
             }
-            if (!buffer.hasRemaining()) {
+            if (!decryptedInputBuffer.hasRemaining()) {
                 return false;
             }
             if (complete) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Discarding unexpected content after response: {}", BufferUtil.toDetailString(buffer));
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Discarding unexpected content after response: {}",
+                            BufferUtil.toDetailString(decryptedInputBuffer));
                 }
-                BufferUtil.clear(buffer);
+                BufferUtil.clear(decryptedInputBuffer);
                 return false;
             }
         }
@@ -182,12 +275,6 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
         return shutdown;
     }
 
-    // @Override
-    // public int getHeaderCacheSize() {
-    // // TODO get from configuration
-    // return 4096;
-    // }
-
     @Override
     public boolean startResponse(HomekitHttpVersion version, int status, String reason) {
         HttpExchange exchange = getHttpExchange();
@@ -206,68 +293,6 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
 
         return !responseBegin(exchange);
     }
-
-    // @Override
-    // public void parsedHeader(HttpField field) {
-    // HttpExchange exchange = getHttpExchange();
-    // if (exchange == null) {
-    // return;
-    // }
-    //
-    // responseHeader(exchange, field);
-    // }
-
-    // @Override
-    // public boolean headerComplete() {
-    // HttpExchange exchange = getHttpExchange();
-    // if (exchange == null) {
-    // return false;
-    // }
-    //
-    // return !responseHeaders(exchange);
-    // }
-
-    // @Override
-    // public boolean content(ByteBuffer buffer) {
-    // HttpExchange exchange = getHttpExchange();
-    // if (exchange == null) {
-    // return false;
-    // }
-    //
-    // CompletableCallback callback = new CompletableCallback() {
-    // @Override
-    // public void resume() {
-    // if (LOG.isDebugEnabled()) {
-    // LOG.debug("Content consumed asynchronously, resuming processing");
-    // }
-    // process();
-    // }
-    //
-    // @Override
-    // public void abort(Throwable x) {
-    // failAndClose(x);
-    // }
-    // };
-    // // Do not short circuit these calls.
-    // boolean proceed = responseContent(exchange, buffer, callback);
-    // boolean async = callback.tryComplete();
-    // return !proceed || async;
-    // }
-
-    // @Override
-    // public boolean contentComplete() {
-    // return false;
-    // }
-
-    // @Override
-    // public void parsedTrailer(HttpField trailer) {
-    // HttpExchange exchange = getHttpExchange();
-    // if (exchange == null) {
-    // return;
-    // }
-    //
-    // exchange.getResponse().trailer(trailer);
-    // }
 
     @Override
     public boolean messageComplete() {
@@ -293,28 +318,6 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
 
         return HttpMethod.CONNECT.is(exchange.getRequest().getMethod()) && status == HttpStatus.OK_200;
     }
-    //
-    // @Override
-    // public void earlyEOF() {
-    // HttpExchange exchange = getHttpExchange();
-    // HttpConnectionOverHTTP connection = getHttpConnection();
-    // if (exchange == null) {
-    // connection.close();
-    // } else {
-    // failAndClose(new EOFException(String.valueOf(connection)));
-    // }
-    // }
-
-    // @Override
-    // public void badMessage(BadMessageException failure) {
-    // HttpExchange exchange = getHttpExchange();
-    // if (exchange != null) {
-    // HttpResponse response = exchange.getResponse();
-    // response.status(failure.getCode()).reason(failure.getReason());
-    // failAndClose(new HttpResponseException("HTTP protocol violation: bad response on " + getHttpConnection(),
-    // response, failure));
-    // }
-    // }
 
     @Override
     protected void reset() {
@@ -334,16 +337,26 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
         }
     }
 
-    // @Override
-    // public String toString() {
-    // return String.format("%s[%s]", super.toString(), parser);
-    // }
-
     @SuppressWarnings("deprecation")
     @Override
     public void badMessage(int status, String reason) {
         // TODO Auto-generated method stub
         super.badMessage(status, reason);
+    }
+
+    public void setDecryptionKey(byte[] decryptionKey) {
+        this.decryptionKey = decryptionKey;
+
+        logger.info("Setting Decryption Key on {}", this);
+
+    }
+
+    public boolean hasDecryptionKey() {
+        return (decryptionKey != null);
+    }
+
+    public byte[] getDecryptionKey() {
+        return decryptionKey;
     }
 
 }

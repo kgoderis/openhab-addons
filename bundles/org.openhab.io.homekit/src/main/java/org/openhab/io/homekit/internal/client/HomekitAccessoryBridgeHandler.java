@@ -170,6 +170,8 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler {
                     }
 
                     pairVerify();
+
+                    populateThing();
                 }
             } catch (Exception e) {
                 // TODO Auto-generated catch block

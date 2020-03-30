@@ -21,26 +21,31 @@ public class HomekitHttpClientTransportOverHTTP extends HttpClientTransportOverH
         logger.info("[{}] Creating a new connection for Endpoint {} for destination {}",
                 endPoint.getRemoteAddress().toString(), endPoint.toString(), destination.toString());
 
+        HomekitHttpConnectionOverHTTP newConnection = new HomekitHttpConnectionOverHTTP(endPoint, destination, promise);
+
         if (destination instanceof HomekitHttpDestinationOverHTTP
                 && ((HomekitHttpDestinationOverHTTP) destination).hasEncryptionKeys()) {
-            DecryptedHomekitEndPoint appEndPoint = new DecryptedHomekitEndPoint(endPoint, getHttpClient().getExecutor(),
-                    getHttpClient().getByteBufferPool(), true,
-                    ((HomekitHttpDestinationOverHTTP) destination).getEncryptionKey(),
-                    ((HomekitHttpDestinationOverHTTP) destination).getDecryptionKey());
-
-            HomekitHttpConnectionOverHTTP appConnection = new HomekitHttpConnectionOverHTTP(appEndPoint, destination,
-                    promise);
+            // DecryptedHomekitEndPoint appEndPoint = new DecryptedHomekitEndPoint(endPoint,
+            // getHttpClient().getExecutor(),
+            // getHttpClient().getByteBufferPool(), true,
+            // ((HomekitHttpDestinationOverHTTP) destination).getEncryptionKey(),
+            // ((HomekitHttpDestinationOverHTTP) destination).getDecryptionKey());
+            //
+            // HomekitHttpConnectionOverHTTP appConnection = new HomekitHttpConnectionOverHTTP(endPoint, destination,
+            // promise);
+            logger.info("[{}] Setting the encryption keys on connection {} for destination {}",
+                    endPoint.getRemoteAddress().toString(), newConnection.toString(), destination.toString());
+            newConnection.setEncryptionKeys(((HomekitHttpDestinationOverHTTP) destination).getDecryptionKey(),
+                    ((HomekitHttpDestinationOverHTTP) destination).getEncryptionKey());
             // appConnection.setUpgradable(false);
-            appEndPoint.setConnection(appConnection);
-
-            return appConnection;
+            // appEndPoint.setConnection(appConnection);
+        } else {
+            if (logger.isInfoEnabled()) {
+                logger.info("[{}] There are no encryption keys set", endPoint.getRemoteAddress().toString());
+            }
         }
 
-        if (logger.isInfoEnabled()) {
-            logger.info("[{}] There are no encryption keys set", endPoint.getRemoteAddress().toString());
-        }
-
-        return new HomekitHttpConnectionOverHTTP(endPoint, destination, promise);
+        return newConnection;
     }
 
     @Override
