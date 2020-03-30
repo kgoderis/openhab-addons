@@ -89,22 +89,11 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
                         logger.debug("{} {}", connection, upgraded ? "upgraded" : "closed");
                     }
                     releaseBuffer(decryptedInputBuffer);
+                    decryptedInputBuffer = null;
                     return;
                 }
 
                 ByteBufferPool bufferPool = httpClient.getByteBufferPool();
-
-                if (decryptedInputBuffer == null) {
-                    decryptedInputBuffer = bufferPool.acquire(httpClient.getResponseBufferSize(), true);
-                } else {
-                    BufferUtil.compact(decryptedInputBuffer);
-                    // BufferUtil.flipToFill(decryptedInputBuffer);
-                }
-
-                if (logger.isTraceEnabled()) {
-                    logger.trace("[{}] Receive : Start : decryptedInputBuffer={}",
-                            endPoint.getRemoteAddress().toString(), BufferUtil.toDetailString(decryptedInputBuffer));
-                }
 
                 // if (parse()) {
                 // return;
@@ -113,6 +102,20 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
                 int read = 0;
 
                 if (!hasDecryptionKey()) {
+
+                    if (decryptedInputBuffer == null) {
+                        decryptedInputBuffer = bufferPool.acquire(httpClient.getResponseBufferSize(), true);
+                        BufferUtil.clear(decryptedInputBuffer);
+                    } else {
+                        BufferUtil.compact(decryptedInputBuffer);
+                        // BufferUtil.flipToFill(decryptedInputBuffer);
+                    }
+
+                    if (logger.isTraceEnabled()) {
+                        logger.trace("[{}] Receive : Start : decryptedInputBuffer={}",
+                                endPoint.getRemoteAddress().toString(),
+                                BufferUtil.toDetailString(decryptedInputBuffer));
+                    }
 
                     if (logger.isTraceEnabled()) {
                         logger.trace("[{}] Receive : Before fill : decryptedInputBuffer={}",
@@ -123,8 +126,17 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
                     read = endPoint.fill(decryptedInputBuffer);
                 } else {
 
+                    if (decryptedInputBuffer == null) {
+                        decryptedInputBuffer = bufferPool.acquire(httpClient.getResponseBufferSize(), true);
+                        BufferUtil.clear(decryptedInputBuffer);
+                    } else {
+                        BufferUtil.compact(decryptedInputBuffer);
+                        BufferUtil.flipToFill(decryptedInputBuffer);
+                    }
+
                     if (encryptedInputBuffer == null) {
                         encryptedInputBuffer = bufferPool.acquire(httpClient.getResponseBufferSize(), true);
+                        BufferUtil.clear(encryptedInputBuffer);
                     } else {
                         BufferUtil.compact(encryptedInputBuffer);
                         BufferUtil.flipToFill(encryptedInputBuffer);
@@ -153,8 +165,10 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
                                     BufferUtil.toDetailString(decryptedInputBuffer));
                         }
 
+                        int position = decryptedInputBuffer.position();
                         SequenceBuffer sBuffer = HomekitEncryptionEngine.decryptBuffer(decryptedInputBuffer,
                                 encryptedInputBuffer, decryptionKey, inboundSequenceCount);
+                        BufferUtil.flipToFlush(decryptedInputBuffer, position);
 
                         if (logger.isTraceEnabled()) {
                             logger.trace(
@@ -166,7 +180,7 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
                         }
 
                         // read = BufferUtil.append(decryptedInputBuffer, sBuffer.buffer);
-                        decryptedInputBuffer = sBuffer.buffer;
+                        // decryptedInputBuffer = sBuffer.buffer;
                         inboundSequenceCount = sBuffer.sequenceNumber;
 
                         if (logger.isTraceEnabled()) {
@@ -199,11 +213,14 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
                         }
                     }
                     releaseBuffer(decryptedInputBuffer);
+                    decryptedInputBuffer = null;
                     fillInterested();
                     return;
                 } else {
                     releaseBuffer(decryptedInputBuffer);
+                    decryptedInputBuffer = null;
                     releaseBuffer(encryptedInputBuffer);
+                    encryptedInputBuffer = null;
                     shutdown();
                     return;
                 }
@@ -215,6 +232,7 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
             BufferUtil.clear(decryptedInputBuffer);
             if (decryptedInputBuffer != null) {
                 releaseBuffer(decryptedInputBuffer);
+                decryptedInputBuffer = null;
             }
             failAndClose(x);
         }
@@ -348,7 +366,6 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
         this.decryptionKey = decryptionKey;
 
         logger.info("Setting Decryption Key on {}", this);
-
     }
 
     public boolean hasDecryptionKey() {
