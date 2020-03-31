@@ -17,6 +17,9 @@ import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.binding.ThingTypeProvider;
 import org.openhab.core.thing.type.ThingType;
 import org.openhab.core.thing.type.ThingTypeBuilder;
+import org.openhab.io.homekit.internal.handler.HomekitAccessoryBridgeHandler;
+import org.openhab.io.homekit.internal.handler.HomekitAccessoryHandler;
+import org.openhab.io.homekit.internal.handler.StandAloneHomekitAccessoryHandler;
 import org.osgi.service.component.annotations.Component;
 
 @NonNullByDefault
@@ -25,6 +28,7 @@ public class HomekitThingTypeProvider implements ThingTypeProvider {
 
     public static final Set<ThingTypeUID> SUPPORTED_THING_TYPES = Collections.unmodifiableSet(Stream
             .of(HomekitAccessoryHandler.SUPPORTED_THING_TYPES.stream(),
+                    StandAloneHomekitAccessoryHandler.SUPPORTED_THING_TYPES.stream(),
                     HomekitAccessoryBridgeHandler.SUPPORTED_THING_TYPES.stream())
             .flatMap(i -> i).collect(Collectors.toSet()));
 
@@ -66,6 +70,20 @@ public class HomekitThingTypeProvider implements ThingTypeProvider {
                 try {
                     builder = ThingTypeBuilder
                             .instance(HomekitBindingConstants.THING_TYPE_ACCESSORY, "Homekit Accessory")
+                            .withRepresentationProperty(HomekitBindingConstants.DEVICE_ID)
+                            .withConfigDescriptionURI(new URI(HomekitBindingConstants.CONFIGURATION_URI));
+                    return builder.build();
+                } catch (URISyntaxException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+
+            if (thingTypeUID.equals(HomekitBindingConstants.THING_TYPE_STANDALONE_ACCESSORY)) {
+                ThingTypeBuilder builder;
+                try {
+                    builder = ThingTypeBuilder
+                            .instance(HomekitBindingConstants.THING_TYPE_ACCESSORY, "Homekit StandAlone Accessory")
                             .withRepresentationProperty(HomekitBindingConstants.DEVICE_ID)
                             .withConfigDescriptionURI(new URI(HomekitBindingConstants.CONFIGURATION_URI));
                     return builder.build();

@@ -10,23 +10,21 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.io.homekit.internal.client;
+package org.openhab.io.homekit.internal.handler;
 
 import static org.openhab.io.homekit.internal.client.HomekitBindingConstants.CHANNEL_1;
 
-import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingStatus;
-import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.binding.BaseThingHandler;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.RefreshType;
+import org.openhab.io.homekit.internal.client.HomekitAccessoryConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,16 +35,13 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  */
 @NonNullByDefault
-public class HomekitAccessoryHandler extends BaseThingHandler {
+public abstract class AbstractHomekitAccessoryHandler extends BaseThingHandler {
 
-    public static final Set<ThingTypeUID> SUPPORTED_THING_TYPES = Collections
-            .singleton(HomekitBindingConstants.THING_TYPE_ACCESSORY);
-
-    private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(AbstractHomekitAccessoryHandler.class);
 
     private @Nullable HomekitAccessoryConfiguration config;
 
-    public HomekitAccessoryHandler(Thing thing) {
+    public AbstractHomekitAccessoryHandler(Thing thing) {
         super(thing);
     }
 

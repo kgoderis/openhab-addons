@@ -33,6 +33,9 @@ import org.openhab.core.thing.binding.BaseThingHandlerFactory;
 import org.openhab.core.thing.binding.ThingHandler;
 import org.openhab.core.thing.binding.ThingHandlerFactory;
 import org.openhab.io.homekit.api.PairingRegistry;
+import org.openhab.io.homekit.internal.handler.HomekitAccessoryBridgeHandler;
+import org.openhab.io.homekit.internal.handler.HomekitAccessoryHandler;
+import org.openhab.io.homekit.internal.handler.StandAloneHomekitAccessoryHandler;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
@@ -55,6 +58,7 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
 
     public static final Set<ThingTypeUID> SUPPORTED_THING_TYPES = Collections.unmodifiableSet(Stream
             .of(HomekitAccessoryHandler.SUPPORTED_THING_TYPES.stream(),
+                    StandAloneHomekitAccessoryHandler.SUPPORTED_THING_TYPES.stream(),
                     HomekitAccessoryBridgeHandler.SUPPORTED_THING_TYPES.stream())
             .flatMap(i -> i).collect(Collectors.toSet()));
 
@@ -80,6 +84,8 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
             return super.createThing(thingTypeUID, configuration, thingUID, null);
         } else if (HomekitAccessoryHandler.SUPPORTED_THING_TYPES.contains(thingTypeUID)) {
             return super.createThing(thingTypeUID, configuration, thingUID, bridgeUID);
+        } else if (StandAloneHomekitAccessoryHandler.SUPPORTED_THING_TYPES.contains(thingTypeUID)) {
+            return super.createThing(thingTypeUID, configuration, thingUID, bridgeUID);
         }
 
         throw new IllegalArgumentException(
@@ -101,21 +107,29 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
             return new HomekitAccessoryHandler(thing);
         }
 
+        if (HomekitBindingConstants.THING_TYPE_STANDALONE_ACCESSORY.equals(thingTypeUID)) {
+            StandAloneHomekitAccessoryHandler handler = new StandAloneHomekitAccessoryHandler(thing, pairingRegistry);
+            registerHomekitMDNSParticipant(handler);
+            return handler;
+        }
+
         logger.debug("Unsupported thing {}", thing.getThingTypeUID());
 
         return null;
     }
 
     private synchronized void registerHomekitDiscoveryService(HomekitAccessoryBridgeHandler bridgeHandler) {
-        HomekitAccessoryBridgeDiscoveryService discoveryService = new HomekitAccessoryBridgeDiscoveryService(bridgeHandler);
+        HomekitAccessoryBridgeDiscoveryService discoveryService = new HomekitAccessoryBridgeDiscoveryService(
+                bridgeHandler);
         discoveryService.activate();
         this.discoveryServiceRegs.put(bridgeHandler.getThing().getUID(), bundleContext
                 .registerService(DiscoveryService.class.getName(), discoveryService, new Hashtable<String, Object>()));
     }
 
-    private synchronized void registerHomekitMDNSParticipant(HomekitAccessoryBridgeHandler bridgeHandler) {
-        HomekitAccessoryBridgeParticipant mdnsParticipant = new HomekitAccessoryBridgeParticipant(bridgeHandler);
-        this.mdnsServiceRegs.put(bridgeHandler.getThing().getUID(), bundleContext.registerService(
+    private synchronized void registerHomekitMDNSParticipant(HomekitAccessoryProtocolParticipant participant) {
+        HomekitAccessoryConfigurationChangeParticipant mdnsParticipant = new HomekitAccessoryConfigurationChangeParticipant(
+                participant);
+        this.mdnsServiceRegs.put(((ThingHandler) participant).getThing().getUID(), bundleContext.registerService(
                 MDNSDiscoveryParticipant.class.getName(), mdnsParticipant, new Hashtable<String, Object>()));
     }
 
@@ -131,10 +145,12 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
                     service.deactivate();
                 }
             }
+        }
 
-            serviceReg = this.mdnsServiceRegs.remove(thingHandler.getThing().getUID());
+        if (thingHandler instanceof HomekitAccessoryProtocolParticipant) {
+            ServiceRegistration<?> serviceReg = this.mdnsServiceRegs.remove(thingHandler.getThing().getUID());
             if (serviceReg != null) {
-                HomekitAccessoryBridgeParticipant service = (HomekitAccessoryBridgeParticipant) bundleContext
+                HomekitAccessoryConfigurationChangeParticipant service = (HomekitAccessoryConfigurationChangeParticipant) bundleContext
                         .getService(serviceReg.getReference());
                 serviceReg.unregister();
             }

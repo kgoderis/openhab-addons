@@ -17,8 +17,14 @@ import org.openhab.core.thing.ThingUID;
 import org.openhab.io.homekit.api.Accessory;
 import org.openhab.io.homekit.api.Characteristic;
 import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.internal.handler.HomekitAccessoryBridgeHandler;
+import org.openhab.io.homekit.internal.handler.HomekitAccessoryHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HomekitAccessoryBridgeDiscoveryService extends AbstractDiscoveryService implements HomekitStatusListener {
+
+    private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryBridgeDiscoveryService.class);
 
     public static final Set<ThingTypeUID> SUPPORTED_THING_TYPES = Collections.unmodifiableSet(Stream
             .of(HomekitAccessoryHandler.SUPPORTED_THING_TYPES.stream(),
@@ -63,12 +69,14 @@ public class HomekitAccessoryBridgeDiscoveryService extends AbstractDiscoverySer
     @Override
     public void onAccessoryRemoved(Bridge bridge, Accessory accessory) {
         if (accessory.getId() == 1) {
-            String id = bridge.getUID().getId().replace(":", "");
-            ThingUID uid = new ThingUID(HomekitBindingConstants.THING_TYPE_BRIDGE, id);
-            thingRemoved(uid);
+            // String id = bridge.getUID().getId().replace(":", "");
+            // ThingUID uid = new ThingUID(HomekitBindingConstants.THING_TYPE_BRIDGE, id);
+            // thingRemoved(uid);
         } else {
-            ThingUID uid = new ThingUID(HomekitBindingConstants.THING_TYPE_ACCESSORY, bridge.getBridgeUID(),
+            ThingUID uid = new ThingUID(HomekitBindingConstants.THING_TYPE_ACCESSORY, bridge.getUID(),
                     String.valueOf(accessory.getId()));
+            logger.info("Accessory {} was removed. The affiliated Thing {} will equally be removed", accessory.getId(),
+                    uid);
             thingRemoved(uid);
         }
     }
@@ -76,23 +84,25 @@ public class HomekitAccessoryBridgeDiscoveryService extends AbstractDiscoverySer
     @Override
     public void onAccessoryAdded(Bridge bridge, Accessory accessory) {
         if (accessory.getId() == 1) {
-            String id = bridge.getUID().getId().replace(":", "");
-            ThingUID uid = new ThingUID(HomekitBindingConstants.THING_TYPE_BRIDGE, id);
-
-            DiscoveryResult discoveryResult = DiscoveryResultBuilder.create(uid)
-                    .withThingType(HomekitBindingConstants.THING_TYPE_BRIDGE)
-                    .withRepresentationProperty(HomekitBindingConstants.DEVICE_ID).withLabel("Homekit Accessory Bridge")
-                    .build();
-
-            thingDiscovered(discoveryResult);
+            // String id = bridge.getUID().getId().replace(":", "");
+            // ThingUID uid = new ThingUID(HomekitBindingConstants.THING_TYPE_BRIDGE, id);
+            //
+            // DiscoveryResult discoveryResult = DiscoveryResultBuilder.create(uid)
+            // .withThingType(HomekitBindingConstants.THING_TYPE_BRIDGE)
+            // .withRepresentationProperty(HomekitBindingConstants.DEVICE_ID).withLabel("Homekit Accessory Bridge")
+            // .build();
+            //
+            // thingDiscovered(discoveryResult);
         } else {
-            ThingUID uid = new ThingUID(HomekitBindingConstants.THING_TYPE_ACCESSORY, bridge.getBridgeUID(),
+            ThingUID uid = new ThingUID(HomekitBindingConstants.THING_TYPE_ACCESSORY, bridge.getUID(),
                     String.valueOf(accessory.getId()));
 
             DiscoveryResult discoveryResult = DiscoveryResultBuilder.create(uid)
-                    .withThingType(HomekitBindingConstants.THING_TYPE_BRIDGE)
-                    .withRepresentationProperty(HomekitBindingConstants.DEVICE_ID).withLabel("Homekit Accessory")
-                    .build();
+                    .withThingType(HomekitBindingConstants.THING_TYPE_BRIDGE).withBridge(bridge.getUID())
+                    .withLabel("Homekit Accessory").build();
+
+            logger.info("Accessory {} was added. A Discovery result for Thing {} will be reported", accessory.getId(),
+                    uid);
 
             thingDiscovered(discoveryResult);
         }

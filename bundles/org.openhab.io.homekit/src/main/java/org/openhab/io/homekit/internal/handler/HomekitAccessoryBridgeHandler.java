@@ -1,4 +1,4 @@
-package org.openhab.io.homekit.internal.client;
+package org.openhab.io.homekit.internal.handler;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -15,22 +14,25 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.config.core.Configuration;
 import org.openhab.core.thing.Bridge;
-import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.ThingStatus;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.binding.BaseBridgeHandler;
-import org.openhab.core.thing.binding.builder.ChannelBuilder;
-import org.openhab.core.thing.binding.builder.ThingBuilder;
 import org.openhab.core.types.Command;
 import org.openhab.io.homekit.api.Accessory;
 import org.openhab.io.homekit.api.Characteristic;
 import org.openhab.io.homekit.api.PairingRegistry;
 import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.internal.client.HomekitAccessoryConfiguration;
+import org.openhab.io.homekit.internal.client.HomekitAccessoryProtocolParticipant;
+import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
+import org.openhab.io.homekit.internal.client.HomekitClient;
+import org.openhab.io.homekit.internal.client.HomekitException;
+import org.openhab.io.homekit.internal.client.HomekitStatusListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler {
+public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements HomekitAccessoryProtocolParticipant {
 
     private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryBridgeHandler.class);
 
@@ -43,7 +45,6 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler {
     private @Nullable HomekitAccessoryConfiguration config;
     private HomekitClient homekitClient;
     private final PairingRegistry pairingRegistry;
-    private boolean isMultiAccessoryBridge = false;
 
     private final List<HomekitStatusListener> homekitStatusListeners = new CopyOnWriteArrayList<>();
     Collection<Accessory> lastAccessories;
@@ -57,22 +58,28 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler {
     public void handleCommand(@NonNull ChannelUID channelUID, @NonNull Command command) {
     }
 
+    @Override
     public void updateConfigurationNumber(int configurationNumber) {
         Configuration config = editConfiguration();
         config.put(HomekitAccessoryConfiguration.CONFIGURATION_NUMBER, configurationNumber);
         updateConfiguration(config);
+
+        startSearch();
     }
 
+    @Override
     public int getConfigurationNumber() {
         return Integer.parseInt(
                 (String) getThing().getConfiguration().get(HomekitAccessoryConfiguration.CONFIGURATION_NUMBER));
     }
 
+    @Override
     public String getAccessoryPairingId() {
         return new String(Base64.getDecoder().decode(
                 (String) getThing().getConfiguration().get(HomekitAccessoryConfiguration.ACCESSORY_PAIRING_ID)));
     }
 
+    @Override
     public void updateDestination(String host, int portNumber) {
         Configuration config = editConfiguration();
         config.put(HomekitAccessoryConfiguration.HOST, host);
@@ -85,13 +92,6 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler {
     public void initialize() {
         // logger.debug("Start initializing!");
         config = getConfigAs(HomekitAccessoryConfiguration.class);
-
-        Map<String, String> props = getThing().getProperties();
-        String category = props.get("ci");
-        if (category.equals("2")) {
-            isMultiAccessoryBridge = true;
-        }
-
         lastAccessories = new HashSet<Accessory>();
 
         // TODO: Initialize the handler.
@@ -169,9 +169,13 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler {
                                 getThing().getUID());
                     }
 
-                    pairVerify();
+                    if (homekitClient.isPaired()) {
+                        pairVerify();
+                    }
 
-                    populateThing();
+                    if (homekitClient.isPairVerified()) {
+                        startSearch();
+                    }
                 }
             } catch (Exception e) {
                 // TODO Auto-generated catch block
@@ -277,46 +281,6 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler {
         }
     }
 
-    public void populateThing() {
-        Collection<Accessory> accessories = homekitClient.getAccessories();
-
-        for (Accessory accessory : accessories) {
-            for (Service service : accessory.getServices()) {
-                for (Characteristic characteristic : service.getCharacteristics()) {
-                    logger.info("Verifying A/S/C {}/{}/{} of type {} ", accessory.getId(), service.getId(),
-                            characteristic.getId(), characteristic.getClass().getSimpleName());
-                    String tempUID = accessory.getId() + ":" + service.getId() + ":" + characteristic.getId();
-
-                    Channel associatedChannel = null;
-                    for (Channel aChannel : getThing().getChannels()) {
-                        String assoaciatedCharacteristicUID = aChannel.getProperties().get("homekit.characteristic");
-
-                        if (assoaciatedCharacteristicUID != null && assoaciatedCharacteristicUID.equals(tempUID)) {
-                            associatedChannel = aChannel;
-                            break;
-                        }
-                    }
-
-                    if (associatedChannel == null) {
-
-                        // Define channelUID
-
-                        // Define accepted Item type
-
-                        ThingBuilder thingBuilder = editThing();
-                        Channel channel = ChannelBuilder.create(new ChannelUID("bindingId:type:thingId:1"), "String")
-                                .build();
-                        thingBuilder.withChannel(channel);
-                        updateThing(thingBuilder.build());
-                    } else {
-                        logger.info("A/S/C {}/{}/{} is already associated with Channel {}", accessory.getId(),
-                                service.getId(), characteristic.getId(), associatedChannel.getUID());
-                    }
-                }
-            }
-        }
-    }
-
     public void startSearch() {
         Collection<Accessory> accessories = homekitClient.getAccessories();
 
@@ -392,7 +356,7 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler {
                     break;
                 }
             }
-            if (!isRemoved) {
+            if (isRemoved) {
                 notifyHomekitStatusListeners(existingAccessory, STATE_REMOVED);
             }
         }
@@ -413,7 +377,7 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler {
                         }
                     }
                 }
-                if (!isRemoved) {
+                if (isRemoved) {
                     notifyHomekitStatusListeners(existingService, STATE_REMOVED);
                 }
             }
@@ -441,7 +405,7 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler {
                             }
                         }
                     }
-                    if (!isRemoved) {
+                    if (isRemoved) {
                         notifyHomekitStatusListeners(existingCharacteristic, STATE_REMOVED);
                     }
                 }

@@ -14,17 +14,18 @@ import org.openhab.core.thing.ThingUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HomekitAccessoryBridgeParticipant implements MDNSDiscoveryParticipant {
+public class HomekitAccessoryConfigurationChangeParticipant implements MDNSDiscoveryParticipant {
 
     private static final String HAP_SERVICE_TYPE = "_hap._tcp.local.";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryBridgeParticipant.class);
+    private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryConfigurationChangeParticipant.class);
 
-    private final HomekitAccessoryBridgeHandler homekitBridgeHandler;
+    private final HomekitAccessoryProtocolParticipant homekitParticipant;
     int lastConfigurationNumber;
 
-    public HomekitAccessoryBridgeParticipant(@NonNull HomekitAccessoryBridgeHandler homekitBridgeHandler) {
-        this.homekitBridgeHandler = homekitBridgeHandler;
+    public HomekitAccessoryConfigurationChangeParticipant(
+            @NonNull HomekitAccessoryProtocolParticipant homekitParticipant) {
+        this.homekitParticipant = homekitParticipant;
     }
 
     @Override
@@ -39,17 +40,14 @@ public class HomekitAccessoryBridgeParticipant implements MDNSDiscoveryParticipa
 
     @Override
     public @Nullable DiscoveryResult createResult(@NonNull ServiceInfo service) {
-        String accessoryPairingId = homekitBridgeHandler.getAccessoryPairingId();
+        String accessoryPairingId = homekitParticipant.getAccessoryPairingId();
         if (accessoryPairingId != null && accessoryPairingId.equals(service.getPropertyString("id"))) {
             int configurationNumber = Integer.parseInt(service.getPropertyString("c#"));
-            int lastConfigurationNumber = homekitBridgeHandler.getConfigurationNumber();
+            int lastConfigurationNumber = homekitParticipant.getConfigurationNumber();
 
             if (configurationNumber > lastConfigurationNumber
                     || (configurationNumber >= 1 && lastConfigurationNumber == 65535)) {
-                logger.info("The Homekit Configuration Number of {} got bumped from {} to {}",
-                        homekitBridgeHandler.getThing().getUID(), lastConfigurationNumber, configurationNumber);
-                homekitBridgeHandler.updateConfigurationNumber(configurationNumber);
-                homekitBridgeHandler.startSearch();
+                homekitParticipant.updateConfigurationNumber(configurationNumber);
             }
         }
 

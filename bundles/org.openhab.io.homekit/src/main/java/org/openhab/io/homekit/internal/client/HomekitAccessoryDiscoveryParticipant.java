@@ -62,9 +62,9 @@ public class HomekitAccessoryDiscoveryParticipant implements MDNSDiscoveryPartic
     @Override
     public @Nullable DiscoveryResult createResult(@NonNull ServiceInfo service) {
 
-        logger.info("Discovery of {}:{} {} ({})",
-                service.getHostAddresses().length > 0 ? service.getHostAddresses()[0] : "N/A'", service.getPort(),
-                service.getName(), service.hasData());
+        // logger.info("Discovery of {}:{} {} ({})",
+        // service.getHostAddresses().length > 0 ? service.getHostAddresses()[0] : "N/A'", service.getPort(),
+        // service.getName(), service.hasData());
         if (service.hasData() && service.getApplication().contains("hap") && service.getPort() != 0) {
 
             String id = service.getPropertyString("id");
@@ -135,25 +135,32 @@ public class HomekitAccessoryDiscoveryParticipant implements MDNSDiscoveryPartic
 
                         }
 
-                        logger.warn("Adding {} to the service cache", service.getQualifiedName());
+                        // logger.warn("Adding {} to the service cache", service.getQualifiedName());
                         cachedServices.put(service.getQualifiedName(), uid);
 
-                        return DiscoveryResultBuilder.create(uid).withProperties(properties)
-                                .withRepresentationProperty(HomekitBindingConstants.DEVICE_ID)
-                                .withLabel("Homekit Accessory Bridge").build();
+                        DiscoveryResultBuilder builder = DiscoveryResultBuilder.create(uid).withProperties(properties)
+                                .withRepresentationProperty(HomekitBindingConstants.DEVICE_ID);
+
+                        String category = service.getPropertyString("ci");
+
+                        if (category.equals("2")) {
+                            return builder.withLabel("Homekit Accessory Bridge").build();
+                        } else {
+                            return builder.withLabel("Homekit StandAlone Accessory").build();
+                        }
                     }
                 }
             }
         } else {
-            if (service.getPort() == 0) {
-                logger.warn("Skipping a service with port = 0");
-            }
-            if (!service.hasData()) {
-                logger.warn("Skipping a service without service data");
-            }
-            if (!service.getApplication().contains("hap")) {
-                logger.warn("Skipping a service unrelated to the Homekit Accessory Protocol");
-            }
+            // if (service.getPort() == 0) {
+            // logger.warn("Skipping a service with port = 0");
+            // }
+            // if (!service.hasData()) {
+            // logger.warn("Skipping a service without service data");
+            // }
+            // if (!service.getApplication().contains("hap")) {
+            // logger.warn("Skipping a service unrelated to the Homekit Accessory Protocol");
+            // }
         }
         return null;
     }
@@ -161,9 +168,15 @@ public class HomekitAccessoryDiscoveryParticipant implements MDNSDiscoveryPartic
     @Override
     public @Nullable ThingUID getThingUID(@NonNull ServiceInfo service) {
         if (service.hasData()) {
-            if (service.getApplication().contains("hap") && service.getPropertyString("id") != null) {
+            if (service.getApplication().contains("hap") && service.getPropertyString("id") != null
+                    && service.getPropertyString("ci") != null) {
                 String id = service.getPropertyString("id").replace(":", "");
-                return new ThingUID(HomekitBindingConstants.THING_TYPE_BRIDGE, id);
+
+                if (service.getPropertyString("ci").contentEquals("2")) {
+                    return new ThingUID(HomekitBindingConstants.THING_TYPE_BRIDGE, id);
+                } else {
+                    return new ThingUID(HomekitBindingConstants.THING_TYPE_STANDALONE_ACCESSORY, id);
+                }
             }
         } else {
             if (service.getApplication().contains("hap") && cachedServices.containsKey(service.getQualifiedName())) {

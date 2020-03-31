@@ -25,6 +25,7 @@ import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.ThingHandler;
 import org.openhab.core.thing.type.ThingType;
 import org.openhab.core.thing.type.ThingTypeRegistry;
+import org.openhab.io.homekit.internal.handler.HomekitAccessoryBridgeHandler;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -101,7 +102,7 @@ public class HomekitDiscoveryListener implements DiscoveryListener {
                         ThingHandler thingHandler = theThing.getHandler();
 
                         if (thingHandler instanceof HomekitAccessoryBridgeHandler) {
-                            ((HomekitAccessoryBridgeHandler) thingHandler).updateDestination(
+                            ((HomekitAccessoryProtocolParticipant) thingHandler).updateDestination(
                                     ((InetAddress) result.getProperties().get(HomekitAccessoryConfiguration.HOST))
                                             .getHostAddress(),
                                     (int) result.getProperties().get(HomekitAccessoryConfiguration.PORT));

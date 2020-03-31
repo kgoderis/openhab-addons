@@ -34,6 +34,7 @@ public class HomekitBindingConstants {
     // List of all Thing Type UIDs
     public static final ThingTypeUID THING_TYPE_BRIDGE = new ThingTypeUID(BINDING_ID, "bridge");
     public static final ThingTypeUID THING_TYPE_ACCESSORY = new ThingTypeUID(BINDING_ID, "accessory");
+    public static final ThingTypeUID THING_TYPE_STANDALONE_ACCESSORY = new ThingTypeUID(BINDING_ID, "standalone");
 
     // List of all Channel ids
     public static final String CHANNEL_1 = "channel1";

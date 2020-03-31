@@ -36,6 +36,7 @@ public class GenericService implements Service {
     public GenericService(Accessory accessory, JsonValue value) {
         this.accessory = accessory;
         this.instanceId = ((JsonObject) value).getInt("iid");
+        this.type = ((JsonObject) value).getString("type");
 
         JsonArray characteristicsArray = ((JsonObject) value).getJsonArray("characteristics");
         for (JsonValue characteristicValue : characteristicsArray) {

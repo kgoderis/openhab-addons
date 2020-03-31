@@ -139,7 +139,7 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
                         BufferUtil.clear(encryptedInputBuffer);
                     } else {
                         BufferUtil.compact(encryptedInputBuffer);
-                        BufferUtil.flipToFill(encryptedInputBuffer);
+                        // BufferUtil.flipToFill(encryptedInputBuffer);
                     }
 
                     if (logger.isTraceEnabled()) {

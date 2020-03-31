@@ -1103,6 +1103,8 @@ public class HomekitClient {
                 e.printStackTrace();
             }
 
+            logger.info("'{}' : Received {}", new String(clientPairingIdentifier), new String(contentResult.body));
+
             if (contentResult.result.getResponse().getStatus() == 200) {
                 JsonArray accessories = Json.createReader(new ByteArrayInputStream(contentResult.body)).readObject()
                         .getJsonArray("accessories");

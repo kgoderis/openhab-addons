@@ -37,8 +37,18 @@ public class GenericCharacteristic implements Characteristic {
         this.instanceId = ((JsonObject) value).getInt("iid");
         this.type = ((JsonObject) value).getString("type");
         this.format = ((JsonObject) value).getString("format");
-        this.description = ((JsonObject) value).getString("description");
-        this.hasEventsEnabled = ((JsonObject) value).getBoolean("ev");
+
+        if (((JsonObject) value).containsKey("description")) {
+            this.description = ((JsonObject) value).getString("description");
+        } else {
+            this.description = "";
+        }
+
+        if (((JsonObject) value).containsKey("ev")) {
+            this.hasEventsEnabled = ((JsonObject) value).getBoolean("ev");
+        } else {
+            this.hasEventsEnabled = false;
+        }
 
         JsonArray permissionsArray = ((JsonObject) value).getJsonArray("perms");
 

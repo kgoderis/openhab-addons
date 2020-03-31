@@ -20,7 +20,7 @@ import org.openhab.io.homekit.api.ManagedCharacteristic;
 import org.openhab.io.homekit.api.ManagedService;
 import org.openhab.io.homekit.api.NotificationRegistry;
 import org.openhab.io.homekit.api.Service;
-import org.openhab.io.homekit.internal.client.HomekitAccessoryBridgeHandler;
+import org.openhab.io.homekit.internal.handler.HomekitAccessoryBridgeHandler;
 import org.openhab.io.homekit.library.accessory.ThingAccessory;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
