@@ -83,7 +83,8 @@ public class HomekitThingTypeProvider implements ThingTypeProvider {
                 ThingTypeBuilder builder;
                 try {
                     builder = ThingTypeBuilder
-                            .instance(HomekitBindingConstants.THING_TYPE_ACCESSORY, "Homekit StandAlone Accessory")
+                            .instance(HomekitBindingConstants.THING_TYPE_STANDALONE_ACCESSORY,
+                                    "Homekit StandAlone Accessory")
                             .withRepresentationProperty(HomekitBindingConstants.DEVICE_ID)
                             .withConfigDescriptionURI(new URI(HomekitBindingConstants.CONFIGURATION_URI));
                     return builder.build();

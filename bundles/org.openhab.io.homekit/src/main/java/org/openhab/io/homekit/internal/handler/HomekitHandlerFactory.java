@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.io.homekit.internal.client;
+package org.openhab.io.homekit.internal.handler;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,9 +33,11 @@ import org.openhab.core.thing.binding.BaseThingHandlerFactory;
 import org.openhab.core.thing.binding.ThingHandler;
 import org.openhab.core.thing.binding.ThingHandlerFactory;
 import org.openhab.io.homekit.api.PairingRegistry;
-import org.openhab.io.homekit.internal.handler.HomekitAccessoryBridgeHandler;
-import org.openhab.io.homekit.internal.handler.HomekitAccessoryHandler;
-import org.openhab.io.homekit.internal.handler.StandAloneHomekitAccessoryHandler;
+import org.openhab.io.homekit.internal.client.HomekitAccessoryBridgeDiscoveryService;
+import org.openhab.io.homekit.internal.client.HomekitAccessoryConfigurationChangeParticipant;
+import org.openhab.io.homekit.internal.client.HomekitAccessoryProtocolParticipant;
+import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
@@ -65,12 +67,24 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
     private final Map<ThingUID, @Nullable ServiceRegistration<?>> discoveryServiceRegs = new HashMap<>();
     private final Map<ThingUID, @Nullable ServiceRegistration<?>> mdnsServiceRegs = new HashMap<>();
     protected final PairingRegistry pairingRegistry;
+    protected final @NonNullByDefault({}) BundleContext bundleContext;
 
     @Activate
     public HomekitHandlerFactory(ComponentContext componentContext, @Reference PairingRegistry pairingRegistry) {
         super.activate(componentContext);
+        this.bundleContext = componentContext.getBundleContext();
         this.pairingRegistry = pairingRegistry;
     }
+    //
+    // @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
+    // protected void addHomekitFactory(HomekitFactory factory) {
+    // homekitFactories.add(factory);
+    // logger.info("Added a HomeKit Factory for Thing Types {}", Arrays.toString(factory.getSupportedThingTypes()));
+    // }
+    //
+    // protected void removeHomekitFactory(HomekitFactory factory) {
+    // homekitFactories.remove(factory);
+    // }
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -108,7 +122,8 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
         }
 
         if (HomekitBindingConstants.THING_TYPE_STANDALONE_ACCESSORY.equals(thingTypeUID)) {
-            StandAloneHomekitAccessoryHandler handler = new StandAloneHomekitAccessoryHandler(thing, pairingRegistry);
+            StandAloneHomekitAccessoryHandler handler = new StandAloneHomekitAccessoryHandler(thing, pairingRegistry,
+                    bundleContext);
             registerHomekitMDNSParticipant(handler);
             return handler;
         }
@@ -156,4 +171,5 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
             }
         }
     }
+
 }

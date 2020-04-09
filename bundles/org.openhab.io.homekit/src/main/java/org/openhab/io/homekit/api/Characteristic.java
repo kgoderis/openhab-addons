@@ -60,4 +60,8 @@ public interface Characteristic {
      */
     JsonObject toEventJson();
 
+    // String getAcceptedItemType();
+    //
+    // ChannelTypeUID getChannelTypeUID();
+
 }

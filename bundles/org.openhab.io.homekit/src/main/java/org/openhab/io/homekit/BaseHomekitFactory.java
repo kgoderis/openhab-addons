@@ -186,10 +186,10 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     }
 
     @Override
-    public @Nullable ManagedCharacteristic<?> createCharacteristic(@NonNull String characteristicsType,
+    public @Nullable ManagedCharacteristic<?> createCharacteristic(@NonNull String characteristicType,
             @NonNull ManagedService service, long instanceId) {
         Class<? extends ManagedCharacteristic<?>> characteristicsClass = characteristicTypeCharacteristicClassMapper
-                .get(characteristicsType);
+                .get(characteristicType);
         if (characteristicsClass != null) {
             try {
 
@@ -215,12 +215,12 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     }
 
     @Override
-    public @Nullable ManagedCharacteristic<?> createCharacteristic(@NonNull String characteristicsType,
+    public @Nullable ManagedCharacteristic<?> createCharacteristic(@NonNull String characteristicType,
             @NonNull ManagedService service) {
         Class<? extends ManagedCharacteristic<?>> characteristicsClass = characteristicTypeCharacteristicClassMapper
-                .get(characteristicsType);
+                .get(characteristicType);
         if (characteristicsClass != null) {
-            return createCharacteristic(characteristicsType, service,
+            return createCharacteristic(characteristicType, service,
                     ((ManagedAccessory) service.getAccessory()).getInstanceId());
         }
         return null;
@@ -348,15 +348,73 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
         return channelTypeCharacteristicTypesMapper.get(channelType);
     }
 
+    // @Override
+    // public Set<String> getSupportedCharacteristicTypes() {
+    // return characteristicTypeCharacteristicClassMapper.values().stream().map(c -> c.getSimpleName())
+    // .collect(Collectors.toSet());
+    // }
+
     @Override
     public Set<String> getSupportedCharacteristicTypes() {
-        return characteristicTypeCharacteristicClassMapper.values().stream().map(c -> c.getSimpleName())
-                .collect(Collectors.toSet());
+        Set<String> result = new HashSet<String>();
+        for (Class<? extends ManagedCharacteristic<?>> characteristicClass : characteristicTypeCharacteristicClassMapper
+                .values()) {
+            try {
+
+                Method method = characteristicClass.getMethod("getType");
+                result.add((String) method.invoke(null));
+            } catch (NoSuchMethodException e) {
+                logger.warn("Characteristic {} is missing the method getAcceptedItemType()",
+                        characteristicClass.getSimpleName());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return result;
     }
 
     @Override
     public Set<String> getSupportedServiceTypes() {
-        return serviceTypeServiceClassMapper.values().stream().map(c -> c.getSimpleName()).collect(Collectors.toSet());
+        return serviceTypeServiceClassMapper.values().stream().map(s -> s.getSimpleName()).collect(Collectors.toSet());
+    }
+
+    @Override
+    public String getCharacteristicAcceptedItemType(@NonNull String characteristicType) {
+        Class<? extends ManagedCharacteristic<?>> characteristicClass = characteristicTypeCharacteristicClassMapper
+                .get(characteristicType);
+        if (characteristicClass != null) {
+            try {
+                Method method = characteristicClass.getMethod("getAcceptedItemType");
+                return (String) method.invoke(null, null);
+            } catch (NoSuchMethodException e) {
+                logger.warn("Characteristic {} is missing the method getAcceptedItemType()",
+                        characteristicClass.getSimpleName());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public @Nullable ChannelTypeUID getChannelTypeUID(@NonNull String characteristicType) {
+        Class<? extends ManagedCharacteristic<?>> characteristicClass = characteristicTypeCharacteristicClassMapper
+                .get(characteristicType);
+        if (characteristicClass != null) {
+            try {
+                Method method = characteristicClass.getMethod("getChannelTypeUID");
+                return (ChannelTypeUID) method.invoke(null);
+            } catch (NoSuchMethodException e) {
+                logger.warn("Characteristic {} is missing the method getChannelTypeUID()",
+                        characteristicClass.getSimpleName());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return null;
     }
 
 }

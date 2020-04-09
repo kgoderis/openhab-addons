@@ -7,6 +7,7 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 
+import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.HomekitCommunicationManager;
@@ -87,6 +88,10 @@ public abstract class ReadOnlyStringCharacteristic extends AbstractManagedCharac
     @Override
     protected State convert(String value) {
         return StringType.valueOf(value);
+    }
+
+    public static String getAcceptedItemType() {
+        return CoreItemFactory.STRING;
     }
 
 }

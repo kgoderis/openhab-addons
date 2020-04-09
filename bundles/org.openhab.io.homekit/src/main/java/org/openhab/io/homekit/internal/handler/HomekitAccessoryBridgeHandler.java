@@ -201,6 +201,7 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
         super.dispose();
     }
 
+    @Override
     public void pair(String setupCode) {
         if (homekitClient != null) {
             logger.info("'{}' : Pairing the Homekit Accessory using Setup Code {}", getThing().getUID(), setupCode);
@@ -247,6 +248,7 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
         }
     }
 
+    @Override
     public void pairVerify() {
         if (homekitClient != null) {
             if (homekitClient.isPaired() && !homekitClient.isPairVerified()) {

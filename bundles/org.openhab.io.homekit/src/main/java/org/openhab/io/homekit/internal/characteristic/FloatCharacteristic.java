@@ -4,6 +4,7 @@ import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.HomekitCommunicationManager;
@@ -83,6 +84,10 @@ public abstract class FloatCharacteristic extends AbstractManagedCharacteristic<
     @Override
     protected Double getDefault() {
         return minValue;
+    }
+
+    public static String getAcceptedItemType() {
+        return CoreItemFactory.NUMBER;
     }
 
 }

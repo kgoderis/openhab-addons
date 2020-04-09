@@ -10,4 +10,8 @@ public interface HomekitAccessoryProtocolParticipant {
 
     void updateDestination(String host, int portNumber);
 
+    void pair(String setupCode);
+
+    void pairVerify();
+
 }

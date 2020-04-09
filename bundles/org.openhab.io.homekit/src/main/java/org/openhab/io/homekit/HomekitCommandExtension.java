@@ -20,7 +20,9 @@ import org.openhab.io.homekit.api.ManagedCharacteristic;
 import org.openhab.io.homekit.api.ManagedService;
 import org.openhab.io.homekit.api.NotificationRegistry;
 import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.internal.client.HomekitAccessoryProtocolParticipant;
 import org.openhab.io.homekit.internal.handler.HomekitAccessoryBridgeHandler;
+import org.openhab.io.homekit.internal.handler.StandAloneHomekitAccessoryHandler;
 import org.openhab.io.homekit.library.accessory.ThingAccessory;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -225,12 +227,17 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         if (theThing != null) {
             ThingHandler theHandler = theThing.getHandler();
             if (theHandler != null) {
-                if (theHandler instanceof HomekitAccessoryBridgeHandler) {
-                    ((HomekitAccessoryBridgeHandler) theHandler).pair(setupCode);
-                    ((HomekitAccessoryBridgeHandler) theHandler).pairVerify();
+                if (theHandler instanceof HomekitAccessoryProtocolParticipant) {
+                    ((HomekitAccessoryProtocolParticipant) theHandler).pair(setupCode);
+                    ((HomekitAccessoryProtocolParticipant) theHandler).pairVerify();
+                    if (theHandler instanceof HomekitAccessoryBridgeHandler) {
+                        ((HomekitAccessoryBridgeHandler) theHandler).startSearch();
+                    }
+                    if (theHandler instanceof StandAloneHomekitAccessoryHandler) {
+                        ((StandAloneHomekitAccessoryHandler) theHandler).configureThing();
+                    }
                 } else {
-                    logger.warn("Thing '{}' is not asociated with an Accessory Bridge, and can not be paired",
-                            thingUID);
+                    logger.warn("Thing '{}' can not be paired", thingUID);
                 }
             } else {
                 logger.warn("Thing '{}' does not have a ThingHandler", thingUID);

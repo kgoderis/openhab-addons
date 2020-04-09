@@ -11,8 +11,11 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 
+import org.openhab.core.library.CoreItemFactory;
+import org.openhab.core.thing.type.ChannelTypeUID;
 import org.openhab.io.homekit.api.Characteristic;
 import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,7 +95,11 @@ public class GenericCharacteristic implements Characteristic {
 
     @Override
     public String getInstanceType() {
-        return type;
+        if (type.length() == 2) {
+            return String.format("%0" + (8 - type.length()) + "d%s", 0, type) + "-0000-1000-8000-0026BB765291";
+        } else {
+            return type;
+        }
     }
 
     @Override
@@ -260,6 +267,14 @@ public class GenericCharacteristic implements Characteristic {
         } else {
             builder.add(name, value.toString());
         }
+    }
+
+    public static String getAcceptedItemType() {
+        return CoreItemFactory.STRING;
+    }
+
+    public static ChannelTypeUID getChannelTypeUID() {
+        return new ChannelTypeUID(HomekitBindingConstants.BINDING_ID, "generic");
     }
 
 }

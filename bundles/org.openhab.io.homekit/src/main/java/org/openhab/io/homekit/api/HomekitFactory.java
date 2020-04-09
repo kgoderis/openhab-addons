@@ -23,7 +23,8 @@ import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.type.ChannelTypeUID;
 
 /**
- * The {@link HomekitFactory} is responsible for creating {@link ManagedAccessory}s based on {@link Thing}s. Therefore the
+ * The {@link HomekitFactory} is responsible for creating {@link ManagedAccessory}s based on {@link Thing}s. Therefore
+ * the
  * factory must be registered as OSGi service.
  *
  * @author Karel Goderis - Initial contribution
@@ -58,14 +59,15 @@ public interface HomekitFactory {
     ManagedAccessory createAccessory(Thing thing, AccessoryServer server) throws Exception;
 
     @Nullable
-    ManagedAccessory createAccessory(Class<? extends ManagedAccessory> accessoryClass, AccessoryServer server, long instanceId,
-            boolean extend);
+    ManagedAccessory createAccessory(Class<? extends ManagedAccessory> accessoryClass, AccessoryServer server,
+            long instanceId, boolean extend);
 
     @Nullable
     ManagedService createService(String serviceType, ManagedAccessory accessory, boolean extend, String serviceName);
 
     @Nullable
-    ManagedService createService(String serviceType, ManagedAccessory accessory, long instanceId, boolean extend, String serviceName);
+    ManagedService createService(String serviceType, ManagedAccessory accessory, long instanceId, boolean extend,
+            String serviceName);
 
     @Nullable
     ManagedService createService(String serviceType, ManagedAccessory accessory, long instanceId, boolean extend);
@@ -103,5 +105,11 @@ public interface HomekitFactory {
     Set<String> getSupportedServiceTypes();
 
     Set<String> getSupportedCharacteristicTypes();
+
+    @Nullable
+    String getCharacteristicAcceptedItemType(String characteristicType);
+
+    @Nullable
+    ChannelTypeUID getChannelTypeUID(String characteristicType);
 
 }

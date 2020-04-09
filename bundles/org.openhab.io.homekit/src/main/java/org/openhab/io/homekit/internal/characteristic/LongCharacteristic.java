@@ -4,6 +4,7 @@ import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.HomekitCommunicationManager;
@@ -15,8 +16,9 @@ public abstract class LongCharacteristic extends AbstractManagedCharacteristic<L
     private final long maxValue;
     private final long minStep;
 
-    public LongCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId, boolean isWritable,
-            boolean isReadable, boolean hasEvents, String description, long minValue, long maxValue, long minStep) {
+    public LongCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId,
+            boolean isWritable, boolean isReadable, boolean hasEvents, String description, long minValue, long maxValue,
+            long minStep) {
         super(manager, service, instanceId, "uint32", isWritable, isReadable, hasEvents, description);
         this.minValue = minValue;
         this.maxValue = maxValue;
@@ -77,6 +79,10 @@ public abstract class LongCharacteristic extends AbstractManagedCharacteristic<L
     @Override
     protected Long getDefault() {
         return minValue;
+    }
+
+    public static String getAcceptedItemType() {
+        return CoreItemFactory.NUMBER;
     }
 
 }

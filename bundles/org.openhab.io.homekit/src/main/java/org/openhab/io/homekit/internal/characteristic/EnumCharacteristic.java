@@ -4,6 +4,7 @@ import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.HomekitCommunicationManager;
@@ -18,8 +19,8 @@ public abstract class EnumCharacteristic extends AbstractManagedCharacteristic<I
 
     private final int maxValue;
 
-    public EnumCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId, boolean isWritable,
-            boolean isReadable, boolean hasEvents, String description, int maxValue) {
+    public EnumCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId,
+            boolean isWritable, boolean isReadable, boolean hasEvents, String description, int maxValue) {
         super(manager, service, instanceId, "int", isWritable, isReadable, hasEvents, description);
         this.maxValue = maxValue;
     }
@@ -86,6 +87,10 @@ public abstract class EnumCharacteristic extends AbstractManagedCharacteristic<I
     @Override
     protected Integer getDefault() {
         return 0;
+    }
+
+    public static String getAcceptedItemType() {
+        return CoreItemFactory.STRING;
     }
 
 }

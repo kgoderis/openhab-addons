@@ -2,11 +2,14 @@ package org.openhab.io.homekit.internal.handler;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.config.core.Configuration;
 import org.openhab.core.thing.Channel;
@@ -16,8 +19,10 @@ import org.openhab.core.thing.ThingStatus;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.core.thing.binding.builder.ThingBuilder;
+import org.openhab.core.thing.type.ChannelTypeUID;
 import org.openhab.io.homekit.api.Accessory;
 import org.openhab.io.homekit.api.Characteristic;
+import org.openhab.io.homekit.api.HomekitFactory;
 import org.openhab.io.homekit.api.PairingRegistry;
 import org.openhab.io.homekit.api.Service;
 import org.openhab.io.homekit.internal.client.HomekitAccessoryConfiguration;
@@ -25,6 +30,8 @@ import org.openhab.io.homekit.internal.client.HomekitAccessoryProtocolParticipan
 import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
 import org.openhab.io.homekit.internal.client.HomekitClient;
 import org.openhab.io.homekit.internal.client.HomekitException;
+import org.osgi.framework.BundleContext;
+import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,10 +46,18 @@ public class StandAloneHomekitAccessoryHandler extends AbstractHomekitAccessoryH
     private @Nullable HomekitAccessoryConfiguration config;
     private HomekitClient homekitClient;
     private final PairingRegistry pairingRegistry;
+    protected final @NonNullByDefault({}) BundleContext bundleContext;
+    // private Collection<HomekitFactory> homekitFactories = new CopyOnWriteArrayList<>();
+    private @NonNullByDefault({}) ServiceTracker<HomekitFactory, HomekitFactory> homekitFactoryRegistryServiceTracker;
 
-    public StandAloneHomekitAccessoryHandler(Thing thing, PairingRegistry pairingRegistry) {
+    public StandAloneHomekitAccessoryHandler(Thing thing, PairingRegistry pairingRegistry, BundleContext context) {
         super(thing);
         this.pairingRegistry = pairingRegistry;
+        this.bundleContext = context;
+
+        homekitFactoryRegistryServiceTracker = new ServiceTracker<>(bundleContext, HomekitFactory.class.getName(),
+                null);
+        homekitFactoryRegistryServiceTracker.open();
     }
 
     @Override
@@ -161,7 +176,7 @@ public class StandAloneHomekitAccessoryHandler extends AbstractHomekitAccessoryH
                     }
 
                     if (homekitClient.isPairVerified()) {
-                        populateThing();
+                        configureThing();
                     }
                 }
             } catch (Exception e) {
@@ -185,9 +200,12 @@ public class StandAloneHomekitAccessoryHandler extends AbstractHomekitAccessoryH
             homekitClient.dispose();
         }
 
+        homekitFactoryRegistryServiceTracker.close();
+
         super.dispose();
     }
 
+    @Override
     public void pair(String setupCode) {
         if (homekitClient != null) {
             logger.info("'{}' : Pairing the Homekit Accessory using Setup Code {}", getThing().getUID(), setupCode);
@@ -234,6 +252,7 @@ public class StandAloneHomekitAccessoryHandler extends AbstractHomekitAccessoryH
         }
     }
 
+    @Override
     public void pairVerify() {
         if (homekitClient != null) {
             if (homekitClient.isPaired() && !homekitClient.isPairVerified()) {
@@ -268,8 +287,22 @@ public class StandAloneHomekitAccessoryHandler extends AbstractHomekitAccessoryH
         }
     }
 
-    public void populateThing() {
+    protected HomekitFactory getHomekitFactory(String instanceType) {
+        for (HomekitFactory factory : homekitFactoryRegistryServiceTracker.getServices(new HomekitFactory[0])) {
+            for (String type : factory.getSupportedCharacteristicTypes()) {
+                if (type.equals(instanceType)) {
+                    return factory;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public void configureThing() {
         Collection<Accessory> accessories = homekitClient.getAccessories();
+
+        List<Channel> channels = new ArrayList<>(thing.getChannels());
 
         for (Accessory accessory : accessories) {
             for (Service service : accessory.getServices()) {
@@ -280,6 +313,7 @@ public class StandAloneHomekitAccessoryHandler extends AbstractHomekitAccessoryH
                                     "$1"),
                             characteristic.getInstanceType()
                                     .replaceAll("^0*([0-9a-fA-F]+)-0000-1000-8000-0026BB765291$", "$1"));
+
                     String tempUID = accessory.getId() + ":" + service.getId() + ":" + characteristic.getId();
 
                     Channel associatedChannel = null;
@@ -293,18 +327,22 @@ public class StandAloneHomekitAccessoryHandler extends AbstractHomekitAccessoryH
                     }
 
                     if (associatedChannel == null) {
+                        HomekitFactory factory = getHomekitFactory(characteristic.getInstanceType());
 
-                        // Define channelUID
+                        if (factory != null) {
+                            String acceptedType = factory
+                                    .getCharacteristicAcceptedItemType(characteristic.getInstanceType());
+                            ChannelTypeUID channelTypeUID = factory.getChannelTypeUID(characteristic.getInstanceType());
 
-                        // Define accepted Item type
+                            Channel channel = ChannelBuilder
+                                    .create(new ChannelUID(getThing().getUID(), String.valueOf(characteristic.getId())),
+                                            acceptedType)
+                                    .withLabel("label").withType(channelTypeUID).build();
 
-                        ThingBuilder thingBuilder = editThing();
-                        Channel channel = ChannelBuilder
-                                .create(new ChannelUID(getThing().getUID(), String.valueOf(characteristic.getId())),
-                                        "String")
-                                .build();
-                        thingBuilder.withChannel(channel);
-                        updateThing(thingBuilder.build());
+                            channels.removeIf(c -> c.getUID().getId().equals(channel.getUID().getId()));
+                            channels.add(channel);
+                        }
+
                     } else {
                         logger.info("A/S/C {}/{}/{} is already associated with Channel {}", accessory.getId(),
                                 service.getId(), characteristic.getId(), associatedChannel.getUID());
@@ -312,6 +350,11 @@ public class StandAloneHomekitAccessoryHandler extends AbstractHomekitAccessoryH
                 }
             }
         }
+
+        ThingBuilder thingBuilder = editThing();
+        thingBuilder.withChannels(channels);
+
+        updateThing(thingBuilder.build());
     }
 
 }

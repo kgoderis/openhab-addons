@@ -7,6 +7,7 @@ import javax.json.JsonNumber;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 
+import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.HomekitCommunicationManager;
@@ -62,5 +63,9 @@ public abstract class WriteOnlyBooleanCharacteristic extends AbstractManagedChar
     @Override
     protected State convert(Boolean value) {
         return value ? OnOffType.ON : OnOffType.OFF;
+    }
+
+    public static String getAcceptedItemType() {
+        return CoreItemFactory.SWITCH;
     }
 }
