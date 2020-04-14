@@ -18,12 +18,10 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -35,8 +33,6 @@ import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -60,18 +56,21 @@ import org.eclipse.jetty.client.util.BytesContentProvider;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
 import org.openhab.io.homekit.api.Accessory;
+import org.openhab.io.homekit.api.AccessoryRegistry;
+import org.openhab.io.homekit.api.NotificationRegistry;
 import org.openhab.io.homekit.api.Pairing;
 import org.openhab.io.homekit.api.PairingRegistry;
 import org.openhab.io.homekit.crypto.ChachaDecoder;
 import org.openhab.io.homekit.crypto.ChachaEncoder;
 import org.openhab.io.homekit.crypto.EdsaSigner;
 import org.openhab.io.homekit.crypto.EdsaVerifier;
+import org.openhab.io.homekit.crypto.HomekitEncryptionEngine;
 import org.openhab.io.homekit.internal.accessory.GenericAccessory;
 import org.openhab.io.homekit.internal.http.jetty.HomekitHttpClientTransportOverHTTP;
 import org.openhab.io.homekit.internal.http.jetty.HomekitHttpDestinationOverHTTP;
 import org.openhab.io.homekit.internal.http.jetty.HomekitProtocolHandler;
-import org.openhab.io.homekit.internal.pairing.PairingImpl;
-import org.openhab.io.homekit.internal.pairing.PairingUID;
+import org.openhab.io.homekit.internal.server.AbstractAccessoryServer;
+import org.openhab.io.homekit.internal.server.AccessoryServerUID;
 import org.openhab.io.homekit.util.Byte;
 import org.openhab.io.homekit.util.Error;
 import org.openhab.io.homekit.util.Message;
@@ -82,61 +81,52 @@ import org.openhab.io.homekit.util.TypeLengthValue.Encoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nimbusds.srp6.ClientEvidenceRoutine;
 import com.nimbusds.srp6.SRP6ClientCredentials;
-import com.nimbusds.srp6.SRP6ClientEvidenceContext;
-import com.nimbusds.srp6.SRP6CryptoParams;
 import com.nimbusds.srp6.SRP6Exception;
-import com.nimbusds.srp6.SRP6ServerEvidenceContext;
-import com.nimbusds.srp6.ServerEvidenceRoutine;
 import com.nimbusds.srp6.XRoutineWithUserIdentity;
 
 import djb.Curve25519;
-import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
-import net.i2p.crypto.eddsa.spec.EdDSAParameterSpec;
 
-public class HomekitClient {
+public class RemoteAccessoryServer extends AbstractAccessoryServer {
 
-    protected static final Logger logger = LoggerFactory.getLogger(HomekitClient.class);
+    protected static final Logger logger = LoggerFactory.getLogger(RemoteAccessoryServer.class);
 
     private static final String HTTP_SCHEME = "http";
-    private static final BigInteger N_3072 = new BigInteger(
-            "5809605995369958062791915965639201402176612226902900533702900882779736177890990861472094774477339581147373410185646378328043729800750470098210924487866935059164371588168047540943981644516632755067501626434556398193186628990071248660819361205119793693985433297036118232914410171876807536457391277857011849897410207519105333355801121109356897459426271845471397952675959440793493071628394122780510124618488232602464649876850458861245784240929258426287699705312584509625419513463605155428017165714465363094021609290561084025893662561222573202082865797821865270991145082200656978177192827024538990239969175546190770645685893438011714430426409338676314743571154537142031573004276428701433036381801705308659830751190352946025482059931306571004727362479688415574702596946457770284148435989129632853918392117997472632693078113129886487399347796982772784615865232621289656944284216824611318709764535152507354116344703769998514148343807");
-    private static final BigInteger G = BigInteger.valueOf(5);
-    private static volatile SecureRandom secureRandom = new SecureRandom();
-    private HomekitClientSRP6Session SRP6Session;
-    private final SRP6CryptoParams config = new SRP6CryptoParams(N_3072, G, "SHA-512");
 
-    private byte[] clientPairingIdentifier;
-    private byte[] clientLongtermSecretKey;
+    // private static volatile SecureRandom secureRandom = new SecureRandom();
+    private HomekitClientSRP6Session SRP6Session;
+
+    // private byte[] getPairingId();
+    // private byte[] secretKey;
 
     private byte[] sessionKey;
     private byte[] sharedSecret;
-    private byte[] accessoryPairingIdentifier;
-    private byte[] accessoryPublicKey;
+    // private byte[] destinationPairingIdentifier;
+    // private byte[] destinationPublicKey;
     private byte[] clientPublicKey;
     private byte[] clientPrivateKey;
 
-    private InetAddress address;
-    private int port;
+    // private InetAddress address;
+    // private int port;
 
     private @Nullable HttpClient httpClient;
-    private String setupCode;
+    // private String setupCode;
     private boolean isPairVerified;
 
-    private final PairingRegistry pairingRegistry;
+    // private final PairingRegistry pairingRegistry;
 
-    public HomekitClient(InetAddress ipv4Address, int port, byte[] clientPairingIdentifier,
-            byte[] clientLongtermSecretKey, byte[] accessoryPairingId, PairingRegistry pairingRegistry) {
-        super();
-        this.address = ipv4Address;
-        this.port = port;
-        this.clientPairingIdentifier = clientPairingIdentifier;
-        this.clientLongtermSecretKey = clientLongtermSecretKey;
-        this.accessoryPairingIdentifier = accessoryPairingId;
+    public RemoteAccessoryServer(InetAddress address, int port, byte[] pairingIdentifier, byte[] secretKey,
+            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry,
+            NotificationRegistry notificationRegistry) {
+        super(address, port, pairingIdentifier, secretKey, accessoryRegistry, pairingRegistry, notificationRegistry);
+        // this.address = address;
+        // this.port = port;
+        // this.getPairingId() = getPairingId();
+        // this.secretKey = secretKey;
+        // this.destinationPairingIdentifier = accessoryPairingId;
         this.setupCode = null;
         this.isPairVerified = false;
-        this.pairingRegistry = pairingRegistry;
+        // this.pairingRegistry = pairingRegistry;
 
         this.httpClient = new HttpClient(new HomekitHttpClientTransportOverHTTP(), null);
 
@@ -162,46 +152,48 @@ public class HomekitClient {
         }
     }
 
-    public HomekitClient(InetAddress inetAddress, int port, PairingRegistry pairingRegistry) {
-        this(inetAddress, port, generatePairingId(), generatePrivateKey(), null, pairingRegistry);
+    public RemoteAccessoryServer(InetAddress address, int port, AccessoryRegistry accessoryRegistry,
+            PairingRegistry pairingRegistry, NotificationRegistry notificationRegistry) {
+        this(address, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry,
+                notificationRegistry);
     }
 
-    public String getSetupCode() {
-        return setupCode;
+    @Override
+    public @NonNull AccessoryServerUID getUID() {
+        return new AccessoryServerUID("Remote", getId());
     }
 
-    public void setSetupCode(String setupCode) {
-        this.setupCode = setupCode;
-    }
-
-    public boolean isPaired() {
-        if (clientPairingIdentifier != null && accessoryPairingIdentifier != null) {
-            PairingUID pairingUID = new PairingUID(clientPairingIdentifier, accessoryPairingIdentifier);
-            return pairingRegistry.get(pairingUID) != null ? true : false;
-        }
-
-        return false;
-    }
+    // @Override
+    // public boolean isPaired() {
+    // if (getPairingId() != null && destinationPairingIdentifier != null) {
+    // PairingUID pairingUID = new PairingUID(getPairingId(), destinationPairingIdentifier);
+    // return pairingRegistry.get(pairingUID) != null ? true : false;
+    // }
+    //
+    // return false;
+    // }
 
     public boolean isPairVerified() {
         return isPairVerified;
     }
 
-    public byte[] getPairingId() {
-        return clientPairingIdentifier;
-    }
+    // @Override
+    // public byte[] getPairingId() {
+    // return getPairingId();
+    // }
 
-    public byte[] getLongTermSecretKey() {
-        return clientLongtermSecretKey;
-    }
+    // @Override
+    // public byte[] getSecretKey() {
+    // return secretKey;
+    // }
+    //
+    // public byte[] getDestinationPairingId() {
+    // return destinationPairingIdentifier;
+    // }
 
-    public byte[] getAccessoryPairingId() {
-        return accessoryPairingIdentifier;
-    }
-
-    public byte[] getAccessoryPublicKey() {
-        return accessoryPublicKey;
-    }
+    // public byte[] getDestinationPublicKey() {
+    // return destinationPublicKey;
+    // }
 
     public boolean isSecure() {
         if (httpClient != null && address != null && port != 0) {
@@ -217,18 +209,18 @@ public class HomekitClient {
 
     public void pairSetup() throws IOException {
 
-        logger.info("'{}' : Pair setup", new String(clientPairingIdentifier));
+        logger.info("'{}' : Pair setup", new String(getPairingId()));
 
         if (setupCode == null) {
-            logger.warn("'{}' : Unable to pair with {}:{} because no setup code is set",
-                    new String(clientPairingIdentifier), address.getHostAddress(), port);
+            logger.warn("'{}' : Unable to pair with {}:{} because no setup code is set", new String(getPairingId()),
+                    address.getHostAddress(), port);
             return;
         }
 
         sessionKey = null;
         sharedSecret = null;
-        accessoryPairingIdentifier = null;
-        accessoryPublicKey = null;
+        // destinationPairingIdentifier = null;
+        // destinationPublicKey = null;
         clientPublicKey = null;
         clientPrivateKey = null;
 
@@ -294,18 +286,18 @@ public class HomekitClient {
                     case UNAVAILABLE: {
                         logger.warn(
                                 "'{}' : Pair setup failed because the Homekit Accessory is not available for pairing, e.g. it is already paired to another Homekit Controller",
-                                new String(clientPairingIdentifier));
+                                new String(getPairingId()));
                         break;
                     }
                     default: {
                         logger.warn(
                                 "'{}' : Pair setup failed because of a Homekit Automation Protocol Error at stage {} : {}",
-                                new String(clientPairingIdentifier), failedStage, stageResult.error.toString());
+                                new String(getPairingId()), failedStage, stageResult.error.toString());
                     }
                 }
             } else {
-                logger.warn("'{}' : Pair setup failed at Stage {} : {}", new String(clientPairingIdentifier),
-                        failedStage, stageResult.message);
+                logger.warn("'{}' : Pair setup failed at Stage {} : {}", new String(getPairingId()), failedStage,
+                        stageResult.message);
             }
         }
 
@@ -313,11 +305,11 @@ public class HomekitClient {
 
     public boolean pairVerify() {
 
-        logger.info("'{}' : Pair verify", new String(clientPairingIdentifier));
+        logger.info("'{}' : Pair verify", new String(getPairingId()));
 
         sessionKey = null;
         sharedSecret = null;
-        accessoryPublicKey = null;
+        // destinationPublicKey = null;
         clientPublicKey = null;
         clientPrivateKey = null;
 
@@ -387,12 +379,12 @@ public class HomekitClient {
                     default: {
                         logger.warn(
                                 "'{}' : Pair verify failed because of a Homekit Automation Protocol Error at stage {} : {}",
-                                failedStage, new String(clientPairingIdentifier), stageResult.error.toString());
+                                failedStage, new String(getPairingId()), stageResult.error.toString());
                     }
                 }
             } else {
-                logger.warn("'{}' : Pair setup failed at Stage {} : {}", failedStage,
-                        new String(clientPairingIdentifier), stageResult.message);
+                logger.warn("'{}' : Pair setup failed at Stage {} : {}", failedStage, new String(getPairingId()),
+                        stageResult.message);
             }
         }
 
@@ -428,37 +420,24 @@ public class HomekitClient {
 
                 if (stageResult.decodeResult.getBytes(Message.ERROR) != null) {
                     logger.warn("'{}' : The Homekit Accessory failed to remove the pairing : {}",
-                            new String(clientPairingIdentifier),
+                            new String(getPairingId()),
                             Error.get(stageResult.decodeResult.getByte(Message.ERROR)).toString());
                 } else {
-                    logger.warn("'{}' : The Homekit Accessory removed the pairing",
-                            new String(clientPairingIdentifier));
+                    logger.warn("'{}' : The Homekit Accessory removed the pairing", new String(getPairingId()));
 
                     isPairVerified = false;
                 }
             } else {
                 logger.warn(
                         "'{}' : The Homekit Accessory pairing can not be removed because it is {} paired verified and the connection is {}secured",
-                        new String(clientPairingIdentifier), isPairVerified() ? "already" : "not",
-                        isSecure() ? "" : "not ");
+                        new String(getPairingId()), isPairVerified() ? "already" : "not", isSecure() ? "" : "not ");
             }
 
-            if (accessoryPairingIdentifier != null) {
-                Pairing oldPairing = pairingRegistry
-                        .remove(new PairingUID(clientPairingIdentifier, accessoryPairingIdentifier));
-
-                if (oldPairing != null) {
-                    logger.info(
-                            "'{}' : Removed pairing for Homekit Accessory '{}' and Public Key {} from the Pairing Registry",
-                            new String(clientPairingIdentifier), new String(oldPairing.getDestinationPairingId()),
-                            Byte.toHexString(oldPairing.getDestinationLongtermPublicKey()));
-                } else {
-                    logger.warn("'{}' : The Pairing Registry does not contain a pairing for Homekit Accessory '{}'",
-                            new String(clientPairingIdentifier), new String(accessoryPairingIdentifier));
-                }
+            if (isPaired()) {
+                removePairing(destinationPairingIdentifier);
             } else {
                 logger.warn("'{}' : The pairing identifier for the Homekit Accessory is not set",
-                        new String(clientPairingIdentifier));
+                        new String(getPairingId()));
             }
         }
 
@@ -473,7 +452,7 @@ public class HomekitClient {
     }
 
     protected byte[] doPairSetupStage1(StageResult stageResult) throws IOException, HomekitException {
-        logger.info("'{}' : Setup Stage 1 : Start", new String(clientPairingIdentifier));
+        logger.info("'{}' : Setup Stage 1 : Start", new String(getPairingId()));
 
         short state = stageResult.decodeResult.getByte(Message.STATE);
         if (state != 2) {
@@ -481,17 +460,17 @@ public class HomekitClient {
         }
 
         BigInteger publicKey = stageResult.decodeResult.getBigInt(Message.PUBLIC_KEY);
-        logger.info("'{}' : Setup Stage 1 : Public Key is {}", new String(clientPairingIdentifier),
+        logger.info("'{}' : Setup Stage 1 : Public Key is {}", new String(getPairingId()),
                 Byte.toHexString(Byte.toByteArray(publicKey)));
 
         BigInteger salt = stageResult.decodeResult.getBigInt(Message.SALT);
-        logger.info("'{}' : Setup Stage 1 : Salt is {}", new String(clientPairingIdentifier),
+        logger.info("'{}' : Setup Stage 1 : Salt is {}", new String(getPairingId()),
                 Byte.toHexString(Byte.toByteArray(salt)));
 
         if (SRP6Session == null) {
             SRP6Session = new HomekitClientSRP6Session();
-            SRP6Session.setClientEvidenceRoutine(new ClientEvidenceRoutineImpl());
-            SRP6Session.setServerEvidenceRoutine(new ServerEvidenceRoutineImpl());
+            SRP6Session.setClientEvidenceRoutine(new HomekitEncryptionEngine.ClientEvidenceRoutineImpl());
+            SRP6Session.setServerEvidenceRoutine(new HomekitEncryptionEngine.ServerEvidenceRoutineImpl());
             SRP6Session.setXRoutine(new XRoutineWithUserIdentity());
         }
 
@@ -499,18 +478,18 @@ public class HomekitClient {
 
         SRP6ClientCredentials clientCredentials = null;
         try {
-            clientCredentials = SRP6Session.step2(config, salt, publicKey);
+            clientCredentials = SRP6Session.step2(HomekitEncryptionEngine.SRP6Params, salt, publicKey);
         } catch (SRP6Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
         BigInteger clientPublicKey = clientCredentials.A;
-        logger.info("'{}' : Setup Stage 1 : Client Public Key is {}", new String(clientPairingIdentifier),
+        logger.info("'{}' : Setup Stage 1 : Client Public Key is {}", new String(getPairingId()),
                 Byte.toHexString(Byte.toByteArray(clientPublicKey)));
 
         BigInteger clientProof = clientCredentials.M1;
-        logger.info("'{}' : Setup Stage 1 : Client Proof is {}", new String(clientPairingIdentifier),
+        logger.info("'{}' : Setup Stage 1 : Client Proof is {}", new String(getPairingId()),
                 Byte.toHexString(Byte.toByteArray(clientProof)));
 
         Encoder encoder = TypeLengthValue.getEncoder();
@@ -523,7 +502,7 @@ public class HomekitClient {
     }
 
     protected byte[] doPairSetupStage2(StageResult stageResult) throws IOException, HomekitException {
-        logger.info("'{}' : Setup Stage 2 : Start", new String(clientPairingIdentifier));
+        logger.info("'{}' : Setup Stage 2 : Start", new String(getPairingId()));
 
         short state = stageResult.decodeResult.getByte(Message.STATE);
         if (state != 4) {
@@ -541,10 +520,10 @@ public class HomekitClient {
         MessageDigest digest = SRP6Session.getCryptoParams().getMessageDigestInstance();
         BigInteger S = SRP6Session.getSessionKey(false);
         byte[] sBytes = Byte.toByteArray(S);
-        logger.info("'{}' : Setup Stage 2 : SRP Session Key is {}", new String(clientPairingIdentifier),
+        logger.info("'{}' : Setup Stage 2 : SRP Session Key is {}", new String(getPairingId()),
                 Byte.toHexString(sBytes));
         sharedSecret = digest.digest(sBytes);
-        logger.info("'{}' : Setup Stage 2 : Shared Secret is {}", new String(clientPairingIdentifier),
+        logger.info("'{}' : Setup Stage 2 : Shared Secret is {}", new String(getPairingId()),
                 Byte.toHexString(sharedSecret));
 
         HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA512Digest());
@@ -552,7 +531,7 @@ public class HomekitClient {
                 "Pair-Setup-Encrypt-Info".getBytes(StandardCharsets.UTF_8)));
         sessionKey = new byte[32];
         hkdf.generateBytes(sessionKey, 0, 32);
-        logger.info("'{}' : Setup Stage 2 : Session Key is {}", new String(clientPairingIdentifier),
+        logger.info("'{}' : Setup Stage 2 : Session Key is {}", new String(getPairingId()),
                 Byte.toHexString(sessionKey));
 
         hkdf = new HKDFBytesGenerator(new SHA512Digest());
@@ -560,12 +539,12 @@ public class HomekitClient {
                 "Pair-Setup-Controller-Sign-Info".getBytes(StandardCharsets.UTF_8)));
         byte[] clientDeviceX = new byte[32];
         hkdf.generateBytes(clientDeviceX, 0, 32);
-        logger.info("'{}' : Setup Stage 2 : Client Device X is {}", new String(clientPairingIdentifier),
+        logger.info("'{}' : Setup Stage 2 : Client Device X is {}", new String(getPairingId()),
                 Byte.toHexString(clientDeviceX));
 
-        EdsaSigner signer = new EdsaSigner(clientLongtermSecretKey);
+        EdsaSigner signer = new EdsaSigner(secretKey);
         byte[] clientLongtermPublicKey = signer.getPublicKey();
-        byte[] clientDeviceInfo = Byte.joinBytes(clientDeviceX, clientPairingIdentifier, clientLongtermPublicKey);
+        byte[] clientDeviceInfo = Byte.joinBytes(clientDeviceX, getPairingId(), clientLongtermPublicKey);
         byte[] clientSignature = null;
         try {
             clientSignature = signer.sign(clientDeviceInfo);
@@ -579,13 +558,13 @@ public class HomekitClient {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        logger.info("'{}' : Setup Stage 2 : Client Long Term Pubic Key is {}", new String(clientPairingIdentifier),
+        logger.info("'{}' : Setup Stage 2 : Client Long Term Pubic Key is {}", new String(getPairingId()),
                 Byte.toHexString(clientLongtermPublicKey));
-        logger.info("'{}' : Setup Stage 2 : Client Signature X is {}", new String(clientPairingIdentifier),
+        logger.info("'{}' : Setup Stage 2 : Client Signature X is {}", new String(getPairingId()),
                 Byte.toHexString(clientSignature));
 
         Encoder encoder = TypeLengthValue.getEncoder();
-        encoder.add(Message.IDENTIFIER, clientPairingIdentifier);
+        encoder.add(Message.IDENTIFIER, getPairingId());
         encoder.add(Message.PUBLIC_KEY, clientLongtermPublicKey);
         encoder.add(Message.SIGNATURE, clientSignature);
 
@@ -595,13 +574,13 @@ public class HomekitClient {
         encoder = TypeLengthValue.getEncoder();
         encoder.add(Message.STATE, (short) 0x05);
         encoder.add(Message.ENCRYPTED_DATA, ciphertext);
-        logger.info("'{}' : Setup Stage 2 : End", new String(clientPairingIdentifier));
+        logger.info("'{}' : Setup Stage 2 : End", new String(getPairingId()));
 
         return encoder.toByteArray();
     }
 
     protected byte[] doPairSetupStage3(StageResult stageResult) throws IOException, HomekitException {
-        logger.info("'{}' : Setup Stage 3 : Start", new String(clientPairingIdentifier));
+        logger.info("'{}' : Setup Stage 3 : Start", new String(getPairingId()));
 
         short state = stageResult.decodeResult.getByte(Message.STATE);
         if (state != 6) {
@@ -615,18 +594,17 @@ public class HomekitClient {
 
         ChachaDecoder chachaDecoder = new ChachaDecoder(sessionKey, "PS-Msg06".getBytes(StandardCharsets.UTF_8));
         byte[] plaintext = chachaDecoder.decodeCiphertext(authTagData, messageData);
-        logger.info("'{}' : Setup Stage 3 : Plaintext is {}", new String(clientPairingIdentifier),
-                Byte.toHexString(plaintext));
+        logger.info("'{}' : Setup Stage 3 : Plaintext is {}", new String(getPairingId()), Byte.toHexString(plaintext));
 
         DecodeResult d = TypeLengthValue.decode(plaintext);
-        accessoryPairingIdentifier = d.getBytes(Message.IDENTIFIER);
-        logger.info("'{}' : Setup Stage 3 : Accessory Pairing Id is {}", new String(clientPairingIdentifier),
-                Byte.toHexString(accessoryPairingIdentifier));
-        accessoryPublicKey = d.getBytes(Message.PUBLIC_KEY);
-        logger.info("'{}' : Setup Stage 3 : Accessory Long Term Public Key is {}", new String(clientPairingIdentifier),
-                Byte.toHexString(accessoryPublicKey));
+        byte[] destinationPairingIdentifier = d.getBytes(Message.IDENTIFIER);
+        logger.info("'{}' : Setup Stage 3 : Accessory Pairing Id is {}", new String(getPairingId()),
+                Byte.toHexString(destinationPairingIdentifier));
+        byte[] destinationPublicKey = d.getBytes(Message.PUBLIC_KEY);
+        logger.info("'{}' : Setup Stage 3 : Accessory Long Term Public Key is {}", new String(getPairingId()),
+                Byte.toHexString(destinationPublicKey));
         byte[] accessorySignature = d.getBytes(Message.SIGNATURE);
-        logger.info("'{}' : Setup Stage 3 : Accessory Signature is {}", new String(clientPairingIdentifier),
+        logger.info("'{}' : Setup Stage 3 : Accessory Signature is {}", new String(getPairingId()),
                 Byte.toHexString(accessorySignature));
 
         HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA512Digest());
@@ -635,54 +613,55 @@ public class HomekitClient {
         byte[] accessoryDeviceX = new byte[32];
         hkdf.generateBytes(accessoryDeviceX, 0, 32);
 
-        byte[] accessoryDeviceInfo = Byte.joinBytes(accessoryDeviceX, accessoryPairingIdentifier, accessoryPublicKey);
-        logger.info("'{}' : Setup Stage 3 : Accessory Device Info is {}", new String(clientPairingIdentifier),
+        byte[] accessoryDeviceInfo = Byte.joinBytes(accessoryDeviceX, destinationPairingIdentifier,
+                destinationPublicKey);
+        logger.info("'{}' : Setup Stage 3 : Accessory Device Info is {}", new String(getPairingId()),
                 Byte.toHexString(accessoryDeviceInfo));
 
         try {
-            if (!new EdsaVerifier(accessoryPublicKey).verify(accessoryDeviceInfo, accessorySignature)) {
+            if (!new EdsaVerifier(destinationPublicKey).verify(accessoryDeviceInfo, accessorySignature)) {
                 throw new HomekitException("Signature verification failed");
             }
         } catch (Exception e1) {
             throw new HomekitException("Signature verification failed");
         }
 
-        addPairing(accessoryPairingIdentifier, accessoryPublicKey);
+        addPairing(destinationPairingIdentifier, destinationPublicKey);
         SRP6Session = null;
 
-        logger.info("'{}' : Setup Stage 3 : End", new String(clientPairingIdentifier));
+        logger.info("'{}' : Setup Stage 3 : End", new String(getPairingId()));
 
         return null;
     }
 
     protected byte[] doPairVerifyStage0() throws IOException, HomekitException {
-        logger.info("'{}' : Verify Stage 0 : Start", new String(clientPairingIdentifier));
+        logger.info("'{}' : Verify Stage 0 : Start", new String(getPairingId()));
 
         clientPublicKey = new byte[32];
         clientPrivateKey = new byte[32];
-        secureRandom.nextBytes(clientPrivateKey);
+        HomekitEncryptionEngine.getSecureRandom().nextBytes(clientPrivateKey);
         Curve25519.keygen(clientPublicKey, null, clientPrivateKey);
 
         Encoder encoder = TypeLengthValue.getEncoder();
         encoder.add(Message.STATE, (short) 0x01);
         encoder.add(Message.PUBLIC_KEY, clientPublicKey);
 
-        logger.info("'{}' : Verify Stage 0 : End", new String(clientPairingIdentifier));
+        logger.info("'{}' : Verify Stage 0 : End", new String(getPairingId()));
 
         return encoder.toByteArray();
     }
 
     protected byte[] doPairVerifyStage1(StageResult stageResult) throws IOException, HomekitException {
-        logger.info("'{}' : Verify Stage 1 : Start", new String(clientPairingIdentifier));
+        logger.info("'{}' : Verify Stage 1 : Start", new String(getPairingId()));
 
         short state = stageResult.decodeResult.getByte(Message.STATE);
         if (state != 2) {
             throw new HomekitException("Wrong STATE");
         }
 
-        accessoryPublicKey = stageResult.decodeResult.getBytes(Message.PUBLIC_KEY);
-        logger.info("'{}' : Verify Stage 1 : Accessory Public Key is {}", new String(clientPairingIdentifier),
-                Byte.toHexString(accessoryPublicKey));
+        byte[] destinationPublicKey = stageResult.decodeResult.getBytes(Message.PUBLIC_KEY);
+        logger.info("'{}' : Verify Stage 1 : Accessory Public Key is {}", new String(getPairingId()),
+                Byte.toHexString(destinationPublicKey));
 
         byte[] messageData = new byte[stageResult.decodeResult.getLength(Message.ENCRYPTED_DATA) - 16];
         stageResult.decodeResult.getBytes(Message.ENCRYPTED_DATA, messageData, 0);
@@ -690,8 +669,8 @@ public class HomekitClient {
         stageResult.decodeResult.getBytes(Message.ENCRYPTED_DATA, authTagData, messageData.length);
 
         sharedSecret = new byte[32];
-        Curve25519.curve(sharedSecret, clientPrivateKey, accessoryPublicKey);
-        logger.info("'{}' : Verify Stage 1 : Shared Secret is {}", new String(clientPairingIdentifier),
+        Curve25519.curve(sharedSecret, clientPrivateKey, destinationPublicKey);
+        logger.info("'{}' : Verify Stage 1 : Shared Secret is {}", new String(getPairingId()),
                 Byte.toHexString(sharedSecret));
 
         HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA512Digest());
@@ -699,14 +678,14 @@ public class HomekitClient {
                 "Pair-Verify-Encrypt-Info".getBytes(StandardCharsets.UTF_8)));
         byte[] sessionKey = new byte[32];
         hkdf.generateBytes(sessionKey, 0, 32);
-        logger.info("'{}' : Verify Stage 1 : Session Key is {}", new String(clientPairingIdentifier),
+        logger.info("'{}' : Verify Stage 1 : Session Key is {}", new String(getPairingId()),
                 Byte.toHexString(sessionKey));
 
         byte[] plaintext = null;
         ChachaDecoder chachaDecoder = new ChachaDecoder(sessionKey, "PV-Msg02".getBytes(StandardCharsets.UTF_8));
         try {
             plaintext = chachaDecoder.decodeCiphertext(authTagData, messageData);
-            logger.info("'{}' : Verify Stage 1 : Plaintext is {}", new String(clientPairingIdentifier),
+            logger.info("'{}' : Verify Stage 1 : Plaintext is {}", new String(getPairingId()),
                     Byte.toHexString(plaintext));
         } catch (Exception e) {
             logger.warn("'{}' : Verify Stage 1 : Unable to decode the ciphertext");
@@ -718,39 +697,40 @@ public class HomekitClient {
         byte[] accessorySignature = null;
 
         DecodeResult d = TypeLengthValue.decode(plaintext);
-        byte[] remoteAccessoryPairingIdentifier = d.getBytes(Message.IDENTIFIER);
-        if (accessoryPairingIdentifier != null) {
-            if (!Arrays.equals(remoteAccessoryPairingIdentifier, accessoryPairingIdentifier)) {
-                logger.warn(
-                        "'{}' : Verify Stage 1 : The Accessory reports an pairing identifier that differs from what we have",
-                        new String(clientPairingIdentifier));
-                throw new HomekitException("Invalid pairing identifier");
-            }
-        } else {
-            accessoryPairingIdentifier = remoteAccessoryPairingIdentifier;
-        }
+        byte[] destinationPairingIdentifier = d.getBytes(Message.IDENTIFIER);
+        // byte[] remoteAccessoryPairingIdentifier = d.getBytes(Message.IDENTIFIER);
+        // if (isPaired()) {
+        // if (!Arrays.equals(remoteAccessoryPairingIdentifier, destinationPairingIdentifier)) {
+        // logger.warn(
+        // "'{}' : Verify Stage 1 : The Accessory reports an pairing identifier that differs from what we have",
+        // new String(getPairingId()));
+        // throw new HomekitException("Invalid pairing identifier");
+        // }
+        // } else {
+        // destinationPairingIdentifier = remoteAccessoryPairingIdentifier;
+        // }
 
-        logger.info("'{}' : Verify Stage 1 : Accessory Pairing Id is {}", new String(clientPairingIdentifier),
-                Byte.toHexString(accessoryPairingIdentifier));
+        logger.info("'{}' : Verify Stage 1 : Accessory Pairing Id is {}", new String(getPairingId()),
+                Byte.toHexString(destinationPairingIdentifier));
         accessorySignature = d.getBytes(Message.SIGNATURE);
-        logger.info("'{}' : Verify Stage 1 : Accessory Signature is {}", new String(clientPairingIdentifier),
+        logger.info("'{}' : Verify Stage 1 : Accessory Signature is {}", new String(getPairingId()),
                 Byte.toHexString(accessorySignature));
 
-        accessoryPairing = pairingRegistry.get(new PairingUID(clientPairingIdentifier, accessoryPairingIdentifier));
+        // accessoryPairing = pairingRegistry.get(new PairingUID(getPairingId(), destinationPairingIdentifier));
+        accessoryPairing = getPairing(destinationPairingIdentifier);
 
-        if (accessoryPairing == null)
-
-        {
-            throw new HomekitException("Adding pairing to registry failed");
+        if (accessoryPairing == null) {
+            throw new HomekitException("Accessory is not paired");
         } else {
-            logger.info("'{}' : Fetched the Pairing {} : {}", new String(clientPairingIdentifier),
-                    accessoryPairing.getUID(), Byte.toHexString(accessoryPairing.getDestinationLongtermPublicKey()));
+            logger.info("'{}' : Fetched the Pairing {} : {}", new String(getPairingId()), accessoryPairing.getUID(),
+                    Byte.toHexString(accessoryPairing.getDestinationPublicKey()));
         }
 
-        byte[] accessoryDeviceInfo = Byte.joinBytes(accessoryPublicKey, accessoryPairingIdentifier, clientPublicKey);
+        byte[] accessoryDeviceInfo = Byte.joinBytes(destinationPublicKey, destinationPairingIdentifier,
+                clientPublicKey);
 
         try {
-            boolean signatureVerification = new EdsaVerifier(accessoryPairing.getDestinationLongtermPublicKey())
+            boolean signatureVerification = new EdsaVerifier(accessoryPairing.getDestinationPublicKey())
                     .verify(accessoryDeviceInfo, accessorySignature);
             if (!signatureVerification) {
                 throw new HomekitException("Signature verification failed");
@@ -759,13 +739,13 @@ public class HomekitClient {
             throw new HomekitException("Signature verification failed");
         }
 
-        byte[] clientDeviceInfo = Byte.joinBytes(clientPublicKey, clientPairingIdentifier, accessoryPublicKey);
+        byte[] clientDeviceInfo = Byte.joinBytes(clientPublicKey, getPairingId(), destinationPublicKey);
 
         byte[] clientSignature = null;
         try {
-            logger.info("'{}' : Verify Stage 1 : Client Long Term Secret Key is {}",
-                    new String(clientPairingIdentifier), Byte.toHexString(clientLongtermSecretKey));
-            clientSignature = new EdsaSigner(clientLongtermSecretKey).sign(clientDeviceInfo);
+            logger.info("'{}' : Verify Stage 1 : Client Long Term Secret Key is {}", new String(getPairingId()),
+                    Byte.toHexString(secretKey));
+            clientSignature = new EdsaSigner(secretKey).sign(clientDeviceInfo);
         } catch (InvalidKeyException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -778,10 +758,10 @@ public class HomekitClient {
         }
 
         Encoder encoder = TypeLengthValue.getEncoder();
-        logger.info("'{}' : Verify Stage 1 : Client Pairing Id is {}", new String(clientPairingIdentifier),
-                Byte.toHexString(clientPairingIdentifier));
-        encoder.add(Message.IDENTIFIER, clientPairingIdentifier);
-        logger.info("'{}' : Verify Stage 1 : Client Signature is {}", new String(clientPairingIdentifier),
+        logger.info("'{}' : Verify Stage 1 : Client Pairing Id is {}", new String(getPairingId()),
+                Byte.toHexString(getPairingId()));
+        encoder.add(Message.IDENTIFIER, getPairingId());
+        logger.info("'{}' : Verify Stage 1 : Client Signature is {}", new String(getPairingId()),
                 Byte.toHexString(clientSignature));
         encoder.add(Message.SIGNATURE, clientSignature);
         plaintext = encoder.toByteArray();
@@ -793,36 +773,34 @@ public class HomekitClient {
         encoder.add(Message.STATE, (short) 0x03);
         encoder.add(Message.ENCRYPTED_DATA, ciphertext);
 
-        logger.info("'{}' : Verify Stage 1 : End", new String(clientPairingIdentifier));
+        logger.info("'{}' : Verify Stage 1 : End", new String(getPairingId()));
 
         return encoder.toByteArray();
     }
 
     protected byte[] doPairVerifyStage2(StageResult stageResult) throws IOException, HomekitException {
-        logger.info("'{}' : Verify Stage 2 : Start", new String(clientPairingIdentifier));
+        logger.info("'{}' : Verify Stage 2 : Start", new String(getPairingId()));
 
         short state = stageResult.decodeResult.getByte(Message.STATE);
         if (state != 4) {
             throw new HomekitException("Wrong STATE");
         }
 
-        byte[] writeKey = createKey("Control-Write-Encryption-Key", sharedSecret);
-        logger.info("'{}' : Verify Stage 2 : Write Key is {}", new String(clientPairingIdentifier),
-                Byte.toHexString(writeKey));
+        byte[] writeKey = HomekitEncryptionEngine.createKey("Control-Write-Encryption-Key", sharedSecret);
+        logger.info("'{}' : Verify Stage 2 : Write Key is {}", new String(getPairingId()), Byte.toHexString(writeKey));
 
-        byte[] readKey = createKey("Control-Read-Encryption-Key", sharedSecret);
-        logger.info("'{}' : Verify Stage 2 : Read Key is {}", new String(clientPairingIdentifier),
-                Byte.toHexString(readKey));
+        byte[] readKey = HomekitEncryptionEngine.createKey("Control-Read-Encryption-Key", sharedSecret);
+        logger.info("'{}' : Verify Stage 2 : Read Key is {}", new String(getPairingId()), Byte.toHexString(readKey));
 
         HomekitHttpDestinationOverHTTP destination = (HomekitHttpDestinationOverHTTP) httpClient.getDestination(
                 stageResult.result.getRequest().getScheme(), stageResult.result.getRequest().getHost(),
                 stageResult.result.getRequest().getPort());
-        logger.info("'{}' : Verify Stage 2 : Setting the keys on destination ", new String(clientPairingIdentifier),
+        logger.info("'{}' : Verify Stage 2 : Setting the keys on destination ", new String(getPairingId()),
                 destination.toString());
         destination.setEncryptionKeys(readKey, writeKey);
         // destination.secure();
 
-        logger.info("'{}' : Verify Stage 2 : End", new String(clientPairingIdentifier));
+        logger.info("'{}' : Verify Stage 2 : End", new String(getPairingId()));
 
         return null;
     }
@@ -870,7 +848,7 @@ public class HomekitClient {
                                 }
 
                                 short state = d.getByte(Message.STATE);
-                                logger.info("'{}' : Received State {}", new String(clientPairingIdentifier), state);
+                                logger.info("'{}' : Received State {}", new String(getPairingId()), state);
 
                                 StageResult stageResult = new StageResult(d, result);
                                 completableFuture.complete(stageResult);
@@ -917,131 +895,10 @@ public class HomekitClient {
         return completableFuture;
     }
 
-    class ClientEvidenceRoutineImpl implements ClientEvidenceRoutine {
-
-        public ClientEvidenceRoutineImpl() {
-        }
-
-        /**
-         * Calculates M1 according to the following formula:
-         *
-         * <p>
-         * M1 = H(H(N) xor H(g) || H(username) || s || A || B || H(S))
-         */
-        @Override
-        public BigInteger computeClientEvidence(SRP6CryptoParams cryptoParams, SRP6ClientEvidenceContext ctx) {
-
-            MessageDigest digest;
-            try {
-                digest = MessageDigest.getInstance(cryptoParams.H);
-            } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException("Could not locate requested algorithm", e);
-            }
-            digest.update(Byte.toByteArray(cryptoParams.N));
-            byte[] hN = digest.digest();
-
-            digest.update(Byte.toByteArray(cryptoParams.g));
-            byte[] hg = digest.digest();
-
-            byte[] hNhg = xor(hN, hg);
-
-            digest.update(ctx.userID.getBytes(StandardCharsets.UTF_8));
-            byte[] hu = digest.digest();
-
-            digest.update(Byte.toByteArray(ctx.S));
-            byte[] hS = digest.digest();
-
-            digest.update(hNhg);
-            digest.update(hu);
-            digest.update(Byte.toByteArray(ctx.s));
-            digest.update(Byte.toByteArray(ctx.A));
-            digest.update(Byte.toByteArray(ctx.B));
-            digest.update(hS);
-            BigInteger ret = new BigInteger(1, digest.digest());
-            return ret;
-        }
-
-        private byte[] xor(byte[] b1, byte[] b2) {
-            byte[] result = new byte[b1.length];
-            for (int i = 0; i < b1.length; i++) {
-                result[i] = (byte) (b1[i] ^ b2[i]);
-            }
-            return result;
-        }
-    }
-
-    class ServerEvidenceRoutineImpl implements ServerEvidenceRoutine {
-
-        @Override
-        public BigInteger computeServerEvidence(SRP6CryptoParams cryptoParams, SRP6ServerEvidenceContext ctx) {
-
-            MessageDigest digest;
-            try {
-                digest = MessageDigest.getInstance(cryptoParams.H);
-            } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException("Could not locate requested algorithm", e);
-            }
-
-            byte[] hS = digest.digest(Byte.toByteArray(ctx.S));
-
-            digest.update(Byte.toByteArray(ctx.A));
-            digest.update(Byte.toByteArray(ctx.M1));
-            digest.update(hS);
-
-            return new BigInteger(1, digest.digest());
-        }
-
-    }
-
-    public static byte[] generatePrivateKey() {
-        EdDSAParameterSpec spec = EdDSANamedCurveTable.getByName("ed25519-sha-512");
-        byte[] seed = new byte[spec.getCurve().getField().getb() / 8];
-        secureRandom.nextBytes(seed);
-        return seed;
-    }
-
-    public static byte[] generatePairingId() {
-        int byte1 = ((secureRandom.nextInt(255) + 1) | 2) & 0xFE; // Unicast locally administered MAC;
-        return (Integer.toHexString(byte1).toUpperCase() + ":"
-                + Stream.generate(() -> secureRandom.nextInt(255) + 1).limit(5)
-                        .map(i -> Integer.toHexString(i).toUpperCase()).collect(Collectors.joining(":")))
-                                .getBytes(StandardCharsets.UTF_8);
-    }
-
-    private byte[] createKey(String info, byte[] sharedSecret) {
-        HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA512Digest());
-        hkdf.init(new HKDFParameters(sharedSecret, "Control-Salt".getBytes(StandardCharsets.UTF_8),
-                info.getBytes(StandardCharsets.UTF_8)));
-        byte[] key = new byte[32];
-        hkdf.generateBytes(key, 0, 32);
-        return key;
-    }
-
-    public void addPairing(byte @NonNull [] accessoryPairingId, byte @NonNull [] accessoryPublicKey) {
-        try {
-            Pairing newPairing = new PairingImpl(clientPairingIdentifier, accessoryPairingId, accessoryPublicKey);
-            Pairing oldPairing = pairingRegistry.remove(newPairing.getUID());
-
-            if (oldPairing != null) {
-                logger.info("'{}' : Removed Pairing of Client {} with Accessory {} and Public Key {}",
-                        new String(clientPairingIdentifier), Byte.toHexString(clientPairingIdentifier),
-                        Byte.toHexString(oldPairing.getDestinationPairingId()),
-                        Byte.toHexString(oldPairing.getDestinationLongtermPublicKey()));
-            }
-
-            pairingRegistry.add(newPairing);
-            logger.info("'{}' : Paired Server {} with Client {} and Public Key {}", new String(clientPairingIdentifier),
-                    Byte.toHexString(clientPairingIdentifier), Byte.toHexString(accessoryPairingId),
-                    Byte.toHexString(accessoryPublicKey));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     public void handleEvent(byte[] body) {
 
         try {
-            Byte.logBuffer(logger, "handleEvent", Byte.toHexString(clientPairingIdentifier), ByteBuffer.wrap(body));
+            Byte.logBuffer(logger, "handleEvent", Byte.toHexString(getPairingId()), ByteBuffer.wrap(body));
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -1088,6 +945,7 @@ public class HomekitClient {
         public String message;
     }
 
+    @Override
     public Collection<Accessory> getAccessories() {
         Collection<Accessory> result = new HashSet<Accessory>();
 
@@ -1103,7 +961,7 @@ public class HomekitClient {
                 e.printStackTrace();
             }
 
-            logger.info("'{}' : Received {}", new String(clientPairingIdentifier), new String(contentResult.body));
+            logger.info("'{}' : Received {}", new String(getPairingId()), new String(contentResult.body));
 
             if (contentResult.result.getResponse().getStatus() == 200) {
                 JsonArray accessories = Json.createReader(new ByteArrayInputStream(contentResult.body)).readObject()

@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.security.SignatureException;
 
 import javax.servlet.ServletException;
@@ -21,7 +20,7 @@ import org.openhab.io.homekit.crypto.ChachaDecoder;
 import org.openhab.io.homekit.crypto.ChachaEncoder;
 import org.openhab.io.homekit.crypto.EdsaSigner;
 import org.openhab.io.homekit.crypto.EdsaVerifier;
-import org.openhab.io.homekit.obsolete.PairVerificationStageOneHandler;
+import org.openhab.io.homekit.crypto.HomekitEncryptionEngine;
 import org.openhab.io.homekit.util.Byte;
 import org.openhab.io.homekit.util.Error;
 import org.openhab.io.homekit.util.Message;
@@ -37,8 +36,6 @@ import djb.Curve25519;
 public class PairVerificationServlet extends BaseServlet {
 
     protected static final Logger logger = LoggerFactory.getLogger(PairVerificationServlet.class);
-
-    private static volatile SecureRandom secureRandom;
 
     public PairVerificationServlet() {
     }
@@ -84,7 +81,7 @@ public class PairVerificationServlet extends BaseServlet {
 
         byte[] accessoryPublicKey = new byte[32];
         byte[] accessoryPrivateKey = new byte[32];
-        getSecureRandom().nextBytes(accessoryPrivateKey);
+        HomekitEncryptionEngine.getSecureRandom().nextBytes(accessoryPrivateKey);
         Curve25519.keygen(accessoryPublicKey, null, accessoryPrivateKey);
         session.setAttribute("accessoryPublicKey", accessoryPublicKey);
         logger.info("Stage 1 : Accessory Public Key is {}", Byte.toHexString(accessoryPublicKey));
@@ -102,8 +99,8 @@ public class PairVerificationServlet extends BaseServlet {
 
         byte[] accessorySignature = null;
         try {
-            logger.info("Stage 1 : Accessory Private Key is {}", Byte.toHexString(server.getPrivateKey()));
-            accessorySignature = new EdsaSigner(server.getPrivateKey()).sign(accessoryInfo);
+            logger.info("Stage 1 : Accessory Private Key is {}", Byte.toHexString(server.getSecretKey()));
+            accessorySignature = new EdsaSigner(server.getSecretKey()).sign(accessoryInfo);
         } catch (InvalidKeyException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -193,7 +190,7 @@ public class PairVerificationServlet extends BaseServlet {
                 clientSignature = d.getBytes(Message.SIGNATURE);
                 logger.info("Stage 2 : Client Signature is {}", Byte.toHexString(clientSignature));
 
-                clientLongtermPublicKey = server.getPairingPublicKey(clientPairingId);
+                clientLongtermPublicKey = server.getDestinationPublicKey(clientPairingId);
                 if (clientLongtermPublicKey == null) {
                     isError = true;
                     logger.warn("Stage 2 : Unknown Pairing {}", new String(clientPairingId, StandardCharsets.UTF_8));
@@ -225,12 +222,12 @@ public class PairVerificationServlet extends BaseServlet {
                 logger.info("Stage 2 : Completed pair verification");
 
                 session.setAttribute("Control-Write-Encryption-Key",
-                        createKey("Control-Write-Encryption-Key", sharedSecret));
+                        HomekitEncryptionEngine.createKey("Control-Write-Encryption-Key", sharedSecret));
                 logger.info("Stage 2 : Write Key is {}",
                         Byte.toHexString((byte[]) session.getAttribute("Control-Write-Encryption-Key")));
 
                 session.setAttribute("Control-Read-Encryption-Key",
-                        createKey("Control-Read-Encryption-Key", sharedSecret));
+                        HomekitEncryptionEngine.createKey("Control-Read-Encryption-Key", sharedSecret));
                 logger.info("Stage 2 : Read Key is {}",
                         Byte.toHexString((byte[]) session.getAttribute("Control-Read-Encryption-Key")));
 
@@ -263,24 +260,13 @@ public class PairVerificationServlet extends BaseServlet {
         return d.getBytes(Message.PUBLIC_KEY);
     }
 
-    private byte[] createKey(String info, byte[] sharedSecret) {
-        HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA512Digest());
-        hkdf.init(new HKDFParameters(sharedSecret, "Control-Salt".getBytes(StandardCharsets.UTF_8),
-                info.getBytes(StandardCharsets.UTF_8)));
-        byte[] key = new byte[32];
-        hkdf.generateBytes(key, 0, 32);
-        return key;
-    }
-
-    private static SecureRandom getSecureRandom() {
-        if (secureRandom == null) {
-            synchronized (PairVerificationStageOneHandler.class) {
-                if (secureRandom == null) {
-                    secureRandom = new SecureRandom();
-                }
-            }
-        }
-        return secureRandom;
-    }
+    // private byte[] createKey(String info, byte[] sharedSecret) {
+    // HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA512Digest());
+    // hkdf.init(new HKDFParameters(sharedSecret, "Control-Salt".getBytes(StandardCharsets.UTF_8),
+    // info.getBytes(StandardCharsets.UTF_8)));
+    // byte[] key = new byte[32];
+    // hkdf.generateBytes(key, 0, 32);
+    // return key;
+    // }
 
 }

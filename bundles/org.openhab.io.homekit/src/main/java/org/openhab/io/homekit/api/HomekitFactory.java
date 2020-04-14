@@ -112,4 +112,10 @@ public interface HomekitFactory {
     @Nullable
     ChannelTypeUID getChannelTypeUID(String characteristicType);
 
+    @Nullable
+    Class<? extends Service> getService(String characteristicType);
+
+    @Nullable
+    Class<? extends Characteristic> getCharacteristic(String serviceType);
+
 }

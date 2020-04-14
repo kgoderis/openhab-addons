@@ -7,6 +7,8 @@ import org.eclipse.jetty.io.Connection;
 import org.openhab.core.common.registry.Identifiable;
 import org.openhab.io.homekit.internal.notification.NotificationUID;
 
+//TODO Manage Connection from client.api and from server.api
+
 @NonNullByDefault
 public interface Notification extends Identifiable<NotificationUID> {
 

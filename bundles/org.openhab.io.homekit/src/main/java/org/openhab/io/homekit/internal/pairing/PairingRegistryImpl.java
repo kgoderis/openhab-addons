@@ -127,7 +127,7 @@ public class PairingRegistryImpl extends AbstractRegistry<Pairing, PairingUID, P
         if (accessoryServerRegistryReady && managedPairingProviderReady) {
             for (Pairing aPairing : getAll()) {
                 logger.debug("Pairing {} with Public Key {} is available in the Pairing Registry", aPairing.getUID(),
-                        Byte.toHexString(aPairing.getDestinationLongtermPublicKey()));
+                        Byte.toHexString(aPairing.getDestinationPublicKey()));
             }
 
             logger.warn("Marking the Pairing Registry as ready");

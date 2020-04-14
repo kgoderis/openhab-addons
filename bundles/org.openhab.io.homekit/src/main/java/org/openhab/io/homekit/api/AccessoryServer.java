@@ -1,14 +1,11 @@
 package org.openhab.io.homekit.api;
 
-import java.math.BigInteger;
 import java.net.InetAddress;
 import java.util.Collection;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.jetty.server.HttpConnection;
 import org.openhab.core.common.registry.Identifiable;
-import org.openhab.io.homekit.HomekitCommunicationManager;
 import org.openhab.io.homekit.internal.server.AccessoryServerUID;
 
 /**
@@ -36,28 +33,14 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
      */
     String getSetupCode();
 
-    /**
-     * The salt that will be used when hashing the setup code to send to the client.
-     *
-     * @return the salt.
-     */
-    BigInteger getSalt();
+    void setSetupCode(String setupCode);
 
     /**
      * The private key used during pairing and message encryption.
      *
      * @return the private key.
      */
-    byte[] getPrivateKey();
-
-    int getConfigurationIndex();
-
-    /**
-     * Every Accessory must support a manufacturer-defined mechanism to restore itself to a “factory reset” state where
-     * all pairing information is erased and restored to factory default settings. This mechanism should be easily
-     * accessible to a user, e.g. a physical button or a reset code.
-     */
-    void factoryReset();
+    byte[] getSecretKey();
 
     /**
      * An Accessory object represents a physical accessory on an AccessoryServer. For example, a
@@ -81,46 +64,34 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
 
     void removeAccessory(ManagedAccessory accessory);
 
-    /**
-     * Accessory Instance IDs are assigned from the same number pool that is global across entire
-     * AccessoryServer. For example, if the first Accessory object has an Instance ID of “1”, then no
-     * other Accessory object can have an Instance ID of “1” within the AccessoryServer.
-     *
-     * @return the next available unique identifier for to be used by an accessory
-     */
-    long getInstanceId();
+    InetAddress getAddress();
 
-    // long getCurrentInstanceId();
+    int getPort();
 
-    void advertise();
+    void addChangeListener(AccessoryServerChangeListener listener);
+
+    void removeChangeListener(AccessoryServerChangeListener listener);
+
+    byte[] getPairingId();
 
     /**
      * During the pairing process one should store the pairing id and public key in a persistent manner so that
-     * the public key can later be retrieved using {@link #getPairingPublicKey(String)}.
+     * the public key can later be retrieved using {@link #getDestinationPublicKey(String)}.
      *
-     * @param clientPairingId the client's pairing id. The value will not be meaningful to anything but
+     * @param destinationPairingId the client's pairing id. The value will not be meaningful to anything but
      *            iOS.
-     * @param clientPublicKey the client's public key.
+     * @param destinationPublicKey the client's public key.
      */
-    void addPairing(byte[] clientPairingId, byte[] clientPublicKey);
+    void addPairing(byte[] destinationPairingId, byte[] destinationPublicKey);
 
     /**
-     * Remove an existing pairing. Subsequent calls to {@link #getPairingPublicKey(String)} for this pairing id return
+     * Remove an existing pairing. Subsequent calls to {@link #getDestinationPublicKey(String)} for this pairing id
+     * return
      * null.
      *
-     * @param clientPairingId the clientPairingId to delete
+     * @param destinationPairingId the clientPairingId to delete
      */
-    void removePairing(byte[] clientPairingId);
-
-    /**
-     * When an already paired client is re-connecting, the public key returned by this
-     * method will be compared with the signature of the pair verification request to validate the
-     * client.
-     *
-     * @param clientPairingId the client pairing id of the client to retrieve the public key for.
-     * @return the previously stored public key for this client.
-     */
-    byte @Nullable [] getPairingPublicKey(byte[] clientPairingId);
+    void removePairing(byte[] destinationPairingId);
 
     /**
      * When the Accessory Server has been paired, the homekit server advertises whether the
@@ -134,20 +105,16 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
         return false;
     }
 
-    void addNotification(ManagedCharacteristic<?> characteristic, HttpConnection connection);
+    @Nullable
+    Pairing getPairing(byte[] destinationPairingId);
 
-    void removeNotification(ManagedCharacteristic<?> characteristic);
-
-    InetAddress getLocalAddress();
-
-    int getPort();
-
-    void addChangeListener(AccessoryServerChangeListener listener);
-
-    void removeChangeListener(AccessoryServerChangeListener listener);
-
-    byte[] getPairingId();
-
-    HomekitCommunicationManager getCommunicationManager();
-
+    /**
+     * When an already paired client is re-connecting, the public key returned by this
+     * method will be compared with the signature of the pair verification request to validate the
+     * client.
+     *
+     * @param destinationPairingId the client pairing id of the client to retrieve the public key for.
+     * @return the previously stored public key for this client.
+     */
+    byte @Nullable [] getDestinationPublicKey(byte[] destinationPairingId);
 }

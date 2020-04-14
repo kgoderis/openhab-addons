@@ -19,7 +19,7 @@ import org.openhab.io.homekit.api.PairingRegistry;
  *
  * @author Karel Goderis
  */
-public class StandAloneAccessoryServer extends AbstractAccessoryServer {
+public class StandAloneAccessoryServer extends AbstractLocalAccessoryServer {
 
     public StandAloneAccessoryServer(InetAddress localAddress, int port, byte[] pairingId, BigInteger salt,
             byte[] privateKey, MDNSService mdnsService, AccessoryRegistry accessoryRegistry,

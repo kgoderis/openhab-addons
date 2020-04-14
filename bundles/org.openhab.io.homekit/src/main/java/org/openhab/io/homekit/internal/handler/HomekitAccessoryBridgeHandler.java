@@ -26,7 +26,7 @@ import org.openhab.io.homekit.api.Service;
 import org.openhab.io.homekit.internal.client.HomekitAccessoryConfiguration;
 import org.openhab.io.homekit.internal.client.HomekitAccessoryProtocolParticipant;
 import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
-import org.openhab.io.homekit.internal.client.HomekitClient;
+import org.openhab.io.homekit.internal.client.RemoteAccessoryServer;
 import org.openhab.io.homekit.internal.client.HomekitException;
 import org.openhab.io.homekit.internal.client.HomekitStatusListener;
 import org.slf4j.Logger;
@@ -43,7 +43,7 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
     private static final String STATE_REMOVED = "removed";
 
     private @Nullable HomekitAccessoryConfiguration config;
-    private HomekitClient homekitClient;
+    private RemoteAccessoryServer accessoryServer;
     private final PairingRegistry pairingRegistry;
 
     private final List<HomekitStatusListener> homekitStatusListeners = new CopyOnWriteArrayList<>();
@@ -69,14 +69,23 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
 
     @Override
     public int getConfigurationNumber() {
-        return Integer.parseInt(
-                (String) getThing().getConfiguration().get(HomekitAccessoryConfiguration.CONFIGURATION_NUMBER));
+        if (getThing().getConfiguration().containsKey(HomekitAccessoryConfiguration.CONFIGURATION_NUMBER)) {
+            return Integer.parseInt(
+                    (String) getThing().getConfiguration().get(HomekitAccessoryConfiguration.CONFIGURATION_NUMBER));
+        } else {
+            return 0;
+        }
     }
 
     @Override
+    @Nullable
     public String getAccessoryPairingId() {
-        return new String(Base64.getDecoder().decode(
-                (String) getThing().getConfiguration().get(HomekitAccessoryConfiguration.ACCESSORY_PAIRING_ID)));
+        if (getThing().getConfiguration().containsKey(HomekitAccessoryConfiguration.ACCESSORY_PAIRING_ID)) {
+            return new String(Base64.getDecoder().decode(
+                    (String) getThing().getConfiguration().get(HomekitAccessoryConfiguration.ACCESSORY_PAIRING_ID)));
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -112,8 +121,8 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
 
             try {
 
-                if (homekitClient != null) {
-                    homekitClient.dispose();
+                if (accessoryServer != null) {
+                    accessoryServer.dispose();
                 }
 
                 byte[] clientPairingId = null;
@@ -138,26 +147,26 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
                     logger.info("'{}' : Creating a Homekit client using an existing Id '{}'", getThing().getUID(),
                             new String(clientPairingId));
 
-                    homekitClient = new HomekitClient(InetAddress.getByName(config.host), config.port, clientPairingId,
+                    accessoryServer = new RemoteAccessoryServer(InetAddress.getByName(config.host), config.port, clientPairingId,
                             clientLongtermSecretKey, accessoryPairingId, pairingRegistry);
 
                 } else {
-                    homekitClient = new HomekitClient(InetAddress.getByName(config.host), config.port, pairingRegistry);
+                    accessoryServer = new RemoteAccessoryServer(InetAddress.getByName(config.host), config.port, pairingRegistry);
 
                     logger.info("'{}' : Creating a Homekit client using a newly generated Id '{}'", getThing().getUID(),
-                            new String(homekitClient.getPairingId()));
+                            new String(accessoryServer.getPairingId()));
 
                     Configuration config = editConfiguration();
                     config.put(HomekitAccessoryConfiguration.CLIENT_PAIRING_ID,
-                            Base64.getEncoder().encodeToString(homekitClient.getPairingId()));
+                            Base64.getEncoder().encodeToString(accessoryServer.getPairingId()));
                     config.put(HomekitAccessoryConfiguration.CLIENT_LTSK,
-                            Base64.getEncoder().encodeToString(homekitClient.getLongTermSecretKey()));
+                            Base64.getEncoder().encodeToString(accessoryServer.getSecretKey()));
                     updateConfiguration(config);
                 }
 
-                if (homekitClient != null) {
+                if (accessoryServer != null) {
                     if (config.setupCode != null) {
-                        if (!homekitClient.isPaired()) {
+                        if (!accessoryServer.isPaired()) {
                             logger.info("'{}' : Pairing the Homekit Accessory using an existing Setup Code",
                                     getThing().getUID());
                             pair(config.setupCode);
@@ -169,11 +178,11 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
                                 getThing().getUID());
                     }
 
-                    if (homekitClient.isPaired()) {
+                    if (accessoryServer.isPaired()) {
                         pairVerify();
                     }
 
-                    if (homekitClient.isPairVerified()) {
+                    if (accessoryServer.isPairVerified()) {
                         startSearch();
                     }
                 }
@@ -194,8 +203,8 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
 
     @Override
     public void dispose() {
-        if (homekitClient != null) {
-            homekitClient.dispose();
+        if (accessoryServer != null) {
+            accessoryServer.dispose();
         }
 
         super.dispose();
@@ -203,19 +212,19 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
 
     @Override
     public void pair(String setupCode) {
-        if (homekitClient != null) {
+        if (accessoryServer != null) {
             logger.info("'{}' : Pairing the Homekit Accessory using Setup Code {}", getThing().getUID(), setupCode);
 
             Configuration config = editConfiguration();
             config.put(HomekitAccessoryConfiguration.SETUP_CODE, setupCode);
             updateConfiguration(config);
 
-            homekitClient.setSetupCode(setupCode);
+            accessoryServer.setSetupCode(setupCode);
 
-            if (homekitClient.isPaired()) {
+            if (accessoryServer.isPaired()) {
                 logger.info("'{}' : Removing an existing pairing with the Homekit Accessory", getThing().getUID());
                 try {
-                    homekitClient.pairRemove();
+                    accessoryServer.pairRemove();
                 } catch (HomekitException | IOException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -225,20 +234,20 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
 
             logger.info("'{}' : Setting up a new pairing with the Homekit Accessory", getThing().getUID());
             try {
-                homekitClient.pairSetup();
+                accessoryServer.pairSetup();
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
 
-            if (homekitClient.isPaired()) {
+            if (accessoryServer.isPaired()) {
                 config = editConfiguration();
                 config.put(HomekitAccessoryConfiguration.CLIENT_PAIRING_ID,
-                        Base64.getEncoder().encodeToString(homekitClient.getPairingId()));
+                        Base64.getEncoder().encodeToString(accessoryServer.getPairingId()));
                 config.put(HomekitAccessoryConfiguration.CLIENT_LTSK,
-                        Base64.getEncoder().encodeToString(homekitClient.getLongTermSecretKey()));
+                        Base64.getEncoder().encodeToString(accessoryServer.getSecretKey()));
                 config.put(HomekitAccessoryConfiguration.ACCESSORY_PAIRING_ID,
-                        Base64.getEncoder().encodeToString(homekitClient.getAccessoryPairingId()));
+                        Base64.getEncoder().encodeToString(accessoryServer.getDestinationPairingId()));
                 updateConfiguration(config);
             } else {
                 updateStatus(ThingStatus.OFFLINE);
@@ -250,13 +259,13 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
 
     @Override
     public void pairVerify() {
-        if (homekitClient != null) {
-            if (homekitClient.isPaired() && !homekitClient.isPairVerified()) {
+        if (accessoryServer != null) {
+            if (accessoryServer.isPaired() && !accessoryServer.isPairVerified()) {
                 logger.info("'{}' : Verifying the Homekit Accessory pairing", getThing().getUID());
 
-                homekitClient.pairVerify();
+                accessoryServer.pairVerify();
 
-                if (homekitClient.isPairVerified()) {
+                if (accessoryServer.isPairVerified()) {
                     updateStatus(ThingStatus.ONLINE);
                     logger.info("'{}' : Verification of the Homekit Accessory pairing is successfull",
                             getThing().getUID());
@@ -264,7 +273,7 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
                     logger.warn("'{}' : Verification of the Homekit Accessory pairing failed. Removing the pairing",
                             getThing().getUID());
                     try {
-                        homekitClient.pairRemove();
+                        accessoryServer.pairRemove();
                     } catch (HomekitException | IOException e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
@@ -274,9 +283,9 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
             } else {
                 logger.info(
                         "'{}' : Verification of the Homekit Accessory pairing failed because it is {} paired and/or the pairing was {} verified before",
-                        getThing().getUID(), homekitClient.isPaired() ? "already" : "not",
-                        homekitClient.isPairVerified() ? "already" : "not");
-                if (!homekitClient.isPaired()) {
+                        getThing().getUID(), accessoryServer.isPaired() ? "already" : "not",
+                        accessoryServer.isPairVerified() ? "already" : "not");
+                if (!accessoryServer.isPaired()) {
                     updateStatus(ThingStatus.OFFLINE);
                 }
             }
@@ -284,7 +293,7 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
     }
 
     public void startSearch() {
-        Collection<Accessory> accessories = homekitClient.getAccessories();
+        Collection<Accessory> accessories = accessoryServer.getAccessories();
 
         for (Accessory accessory : accessories) {
             boolean doesExist = false;
@@ -505,5 +514,22 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
                 logger.error("An exception occurred while calling the Homekit status listeners", e);
             }
         }
+    }
+
+    @Nullable
+    public Accessory getAccessory(long id) {
+        startSearch();
+        for (Accessory accessory : lastAccessories) {
+            if (accessory.getId() == id) {
+                return accessory;
+            }
+        }
+
+        return null;
+    }
+
+    public Collection<Accessory> getAccessories() {
+        startSearch();
+        return lastAccessories;
     }
 }

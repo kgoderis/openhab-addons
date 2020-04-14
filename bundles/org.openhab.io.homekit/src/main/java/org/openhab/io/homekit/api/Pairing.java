@@ -11,5 +11,5 @@ public interface Pairing extends Identifiable<PairingUID> {
 
     public byte[] getDestinationPairingId();
 
-    public byte[] getDestinationLongtermPublicKey();
+    public byte[] getDestinationPublicKey();
 }

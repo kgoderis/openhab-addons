@@ -61,7 +61,11 @@ public class GenericService implements Service {
 
     @Override
     public String getInstanceType() {
-        return type;
+        if (type.length() == 2) {
+            return String.format("%0" + (8 - type.length()) + "d%s", 0, type) + "-0000-1000-8000-0026BB765291";
+        } else {
+            return type;
+        }
     }
 
     @Override

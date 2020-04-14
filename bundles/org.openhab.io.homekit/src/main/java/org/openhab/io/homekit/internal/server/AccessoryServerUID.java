@@ -8,7 +8,7 @@ import org.openhab.core.thing.UID;
 @NonNullByDefault
 public class AccessoryServerUID extends UID {
 
-    // type : server mac address
+    // type : server id
 
     @Override
     protected int getMinimalNumberOfSegments() {

@@ -2,10 +2,12 @@ package org.openhab.io.homekit.api;
 
 import java.math.BigInteger;
 import java.net.InetAddress;
-import java.security.InvalidAlgorithmParameterException;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+
+//TODO : ServerFactory that can create AccessoryHolder for the client side
+// Rename to AccessoryHolderFactory
 
 @NonNullByDefault
 public interface AccessoryServerFactory {
@@ -36,6 +38,10 @@ public interface AccessoryServerFactory {
     AccessoryServer createServer(String factoryType, InetAddress localAddress, int port, byte[] pairingId,
             BigInteger salt, byte[] privateKey, int configurationIndex);
 
+    @Nullable
+    AccessoryServer createServer(String factoryType, InetAddress localAddress, int port, BigInteger salt,
+            int configurationIndex);
+
     /**
      * Returns the list of all supported AccessoryServer types of this factory.
      *
@@ -43,29 +49,29 @@ public interface AccessoryServerFactory {
      */
     String[] getSupportedServerTypes();
 
-    /**
-     * This is used to salt the setup code during pairing.
-     *
-     * @return the generated salt
-     */
-    BigInteger generateSalt();
+    // /**
+    // * This is used to salt the setup code during pairing.
+    // *
+    // * @return the generated salt
+    // */
+    // BigInteger generateSalt();
 
-    /**
-     * This is used as the private key during pairing and connection setup
-     * setup.
-     *
-     * @return the generated key
-     * @throws InvalidAlgorithmParameterException if the JVM does not contain the necessary encryption
-     *             algorithms.
-     */
-    byte[] generatePrivateKey() throws InvalidAlgorithmParameterException;
-
-    /**
-     * This is used as the unique identifier of the AccessoryServer during mDNS advertising. It is a valid MAC
-     * address generated in the locally administered range so as not to conflict with any commercial
-     * devices.
-     *
-     * @return the generated pairing id
-     */
-    byte[] generatePairingId();
+    // /**
+    // * This is used as the private key during pairing and connection setup
+    // * setup.
+    // *
+    // * @return the generated key
+    // * @throws InvalidAlgorithmParameterException if the JVM does not contain the necessary encryption
+    // * algorithms.
+    // */
+    // byte[] generatePrivateKey() throws InvalidAlgorithmParameterException;
+    //
+    // /**
+    // * This is used as the unique identifier of the AccessoryServer during mDNS advertising. It is a valid MAC
+    // * address generated in the locally administered range so as not to conflict with any commercial
+    // * devices.
+    // *
+    // * @return the generated pairing id
+    // */
+    // byte[] generatePairingId();
 }

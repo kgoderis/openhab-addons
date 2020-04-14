@@ -7,7 +7,7 @@ import org.openhab.core.thing.UID;
 
 public class PairingUID extends UID {
 
-    // accessory pairing id : client pairing id
+    // source pairing id : destination pairing id
 
     @Override
     protected int getMinimalNumberOfSegments() {

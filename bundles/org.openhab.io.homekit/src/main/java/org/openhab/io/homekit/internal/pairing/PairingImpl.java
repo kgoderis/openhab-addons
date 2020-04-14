@@ -39,7 +39,7 @@ public class PairingImpl implements Pairing {
     }
 
     @Override
-    public byte[] getDestinationLongtermPublicKey() {
+    public byte[] getDestinationPublicKey() {
         return Base64.getDecoder().decode(destinationLongtermPublicKey);
     }
 

@@ -6,6 +6,7 @@ import java.security.SecureRandom;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
+import org.openhab.io.homekit.crypto.HomekitEncryptionEngine;
 import org.openhab.io.homekit.hap.HomekitAuthInfo;
 import org.openhab.io.homekit.hap.impl.HomekitRegistry;
 import org.openhab.io.homekit.hap.impl.crypto.ChachaDecoder;
@@ -65,7 +66,7 @@ public class PairVerificationManager {
 
         accessoryPublicKey = new byte[32];
         byte[] accessoryPrivateKey = new byte[32];
-        getSecureRandom().nextBytes(accessoryPrivateKey);
+        HomekitEncryptionEngine.getSecureRandom().nextBytes(accessoryPrivateKey);
         Curve25519.keygen(accessoryPublicKey, null, accessoryPrivateKey);
         logger.info("Stage 1 : Accessory Public Key is {}", byteToHexString(accessoryPublicKey));
         logger.info("Stage 1 : Accessory Private Key is {}", byteToHexString(accessoryPrivateKey));
@@ -133,8 +134,9 @@ public class PairVerificationManager {
         if (new EdsaVerifier(clientLongtermPublicKey).verify(clientDeviceInfo, clientSignature)) {
             encoder.add(Message.STATE, (short) 4);
             logger.debug("Completed pair verification for " + registry.getLabel());
-            return new UpgradeResponse(encoder.toByteArray(), createKey("Control-Write-Encryption-Key"),
-                    createKey("Control-Read-Encryption-Key"));
+            return new UpgradeResponse(encoder.toByteArray(),
+                    HomekitEncryptionEngine.createKey("Control-Write-Encryption-Key", sharedSecret),
+                    HomekitEncryptionEngine.createKey("Control-Read-Encryption-Key", sharedSecret));
         } else {
             encoder.add(Message.ERROR, (short) 4);
             logger.warn("Invalid signature. Could not pair " + registry.getLabel());
@@ -142,25 +144,25 @@ public class PairVerificationManager {
         }
     }
 
-    private byte[] createKey(String info) {
-        HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA512Digest());
-        hkdf.init(new HKDFParameters(sharedSecret, "Control-Salt".getBytes(StandardCharsets.UTF_8),
-                info.getBytes(StandardCharsets.UTF_8)));
-        byte[] key = new byte[32];
-        hkdf.generateBytes(key, 0, 32);
-        return key;
-    }
-
-    private static SecureRandom getSecureRandom() {
-        if (secureRandom == null) {
-            synchronized (PairVerificationManager.class) {
-                if (secureRandom == null) {
-                    secureRandom = new SecureRandom();
-                }
-            }
-        }
-        return secureRandom;
-    }
+    // private byte[] createKey(String info) {
+    // HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA512Digest());
+    // hkdf.init(new HKDFParameters(sharedSecret, "Control-Salt".getBytes(StandardCharsets.UTF_8),
+    // info.getBytes(StandardCharsets.UTF_8)));
+    // byte[] key = new byte[32];
+    // hkdf.generateBytes(key, 0, 32);
+    // return key;
+    // }
+    //
+    // private static SecureRandom getSecureRandom() {
+    // if (secureRandom == null) {
+    // synchronized (PairVerificationManager.class) {
+    // if (secureRandom == null) {
+    // secureRandom = new SecureRandom();
+    // }
+    // }
+    // }
+    // return secureRandom;
+    // }
 
     protected static String byteToHexString(byte[] input) {
         StringBuilder sb = new StringBuilder();

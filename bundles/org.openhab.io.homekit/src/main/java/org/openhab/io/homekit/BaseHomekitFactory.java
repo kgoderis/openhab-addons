@@ -14,10 +14,12 @@ import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.type.ChannelTypeUID;
 import org.openhab.io.homekit.api.AccessoryServer;
+import org.openhab.io.homekit.api.Characteristic;
 import org.openhab.io.homekit.api.HomekitFactory;
 import org.openhab.io.homekit.api.ManagedAccessory;
 import org.openhab.io.homekit.api.ManagedCharacteristic;
 import org.openhab.io.homekit.api.ManagedService;
+import org.openhab.io.homekit.api.Service;
 import org.openhab.io.homekit.library.accessory.ThingAccessory;
 import org.openhab.io.homekit.library.service.ThingService;
 import org.openhab.io.homekit.util.UUID5;
@@ -415,6 +417,16 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
         }
 
         return null;
+    }
+
+    @Override
+    public Class<? extends Characteristic> getCharacteristic(@NonNull String characteristicType) {
+        return characteristicTypeCharacteristicClassMapper.get(characteristicType);
+    }
+
+    @Override
+    public Class<? extends Service> getService(@NonNull String serviceType) {
+        return serviceTypeServiceClassMapper.get(serviceType);
     }
 
 }

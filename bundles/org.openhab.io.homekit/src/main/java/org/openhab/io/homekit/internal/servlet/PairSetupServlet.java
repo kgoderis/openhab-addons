@@ -23,6 +23,7 @@ import org.openhab.io.homekit.crypto.ChachaDecoder;
 import org.openhab.io.homekit.crypto.ChachaEncoder;
 import org.openhab.io.homekit.crypto.EdsaSigner;
 import org.openhab.io.homekit.crypto.EdsaVerifier;
+import org.openhab.io.homekit.crypto.HomekitEncryptionEngine;
 import org.openhab.io.homekit.internal.servlet.HomekitServerSRP6Session.State;
 import org.openhab.io.homekit.util.Byte;
 import org.openhab.io.homekit.util.Error;
@@ -33,13 +34,9 @@ import org.openhab.io.homekit.util.TypeLengthValue.Encoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nimbusds.srp6.ClientEvidenceRoutine;
-import com.nimbusds.srp6.SRP6ClientEvidenceContext;
-import com.nimbusds.srp6.SRP6CryptoParams;
 import com.nimbusds.srp6.SRP6Exception;
-import com.nimbusds.srp6.SRP6ServerEvidenceContext;
+import com.nimbusds.srp6.SRP6Routines;
 import com.nimbusds.srp6.SRP6VerifierGenerator;
-import com.nimbusds.srp6.ServerEvidenceRoutine;
 import com.nimbusds.srp6.XRoutineWithUserIdentity;
 
 @SuppressWarnings("serial")
@@ -47,12 +44,6 @@ public class PairSetupServlet extends BaseServlet {
 
     protected static final Logger logger = LoggerFactory.getLogger(PairSetupServlet.class);
 
-    protected static final BigInteger N_3072 = new BigInteger(
-            "5809605995369958062791915965639201402176612226902900533702900882779736177890990861472094774477339581147373410185646378328043729800750470098210924487866935059164371588168047540943981644516632755067501626434556398193186628990071248660819361205119793693985433297036118232914410171876807536457391277857011849897410207519105333355801121109356897459426271845471397952675959440793493071628394122780510124618488232602464649876850458861245784240929258426287699705312584509625419513463605155428017165714465363094021609290561084025893662561222573202082865797821865270991145082200656978177192827024538990239969175546190770645685893438011714430426409338676314743571154537142031573004276428701433036381801705308659830751190352946025482059931306571004727362479688415574702596946457770284148435989129632853918392117997472632693078113129886487399347796982772784615865232621289656944284216824611318709764535152507354116344703769998514148343807");
-    protected static final BigInteger G = BigInteger.valueOf(5);
-    protected static final String IDENTIFIER = "Pair-Setup";
-
-    protected final SRP6CryptoParams config = new SRP6CryptoParams(N_3072, G, "SHA-512");
     protected byte[] sessionKey;
 
     public PairSetupServlet() {
@@ -99,9 +90,9 @@ public class PairSetupServlet extends BaseServlet {
         HomekitServerSRP6Session SRP6Session = (HomekitServerSRP6Session) session.getAttribute("SRP6Session");
 
         if (SRP6Session == null) {
-            SRP6Session = new HomekitServerSRP6Session(config);
-            SRP6Session.setClientEvidenceRoutine(new ClientEvidenceRoutineImpl());
-            SRP6Session.setServerEvidenceRoutine(new ServerEvidenceRoutineImpl());
+            SRP6Session = new HomekitServerSRP6Session(HomekitEncryptionEngine.SRP6Params);
+            SRP6Session.setClientEvidenceRoutine(new HomekitEncryptionEngine.ClientEvidenceRoutineImpl());
+            SRP6Session.setServerEvidenceRoutine(new HomekitEncryptionEngine.ServerEvidenceRoutineImpl());
             session.setAttribute("SRP6Session", SRP6Session);
             logger.info("Stage 1 : Added {} to Session", SRP6Session.toString());
         }
@@ -110,17 +101,19 @@ public class PairSetupServlet extends BaseServlet {
             logger.error("Stage 1 : Session is not in state INIT");
             response.setStatus(HttpServletResponse.SC_CONFLICT);
         } else {
-            SRP6VerifierGenerator verifierGenerator = new SRP6VerifierGenerator(config);
+            SRP6VerifierGenerator verifierGenerator = new SRP6VerifierGenerator(HomekitEncryptionEngine.SRP6Params);
             verifierGenerator.setXRoutine(new XRoutineWithUserIdentity());
-            BigInteger verifier = verifierGenerator.generateVerifier(server.getSalt(), IDENTIFIER,
-                    server.getSetupCode());
+
+            BigInteger salt = generateSalt();
+            BigInteger verifier = verifierGenerator.generateVerifier(salt, "Pair-Setup", server.getSetupCode());
             logger.info("Stage 1 : Verifier is {} ", Byte.toHexString(bigIntegerToUnsignedByteArray(verifier)));
 
             Encoder encoder = TypeLengthValue.getEncoder();
             encoder.add(Message.STATE, (short) 0x02);
-            encoder.add(Message.SALT, server.getSalt());
 
-            BigInteger publicKey = SRP6Session.step1(IDENTIFIER, server.getSalt(), verifier);
+            encoder.add(Message.SALT, salt);
+
+            BigInteger publicKey = SRP6Session.step1("Pair-Setup", salt, verifier);
             encoder.add(Message.PUBLIC_KEY, publicKey);
 
             logger.info("Stage 1 : End");
@@ -274,8 +267,8 @@ public class PairSetupServlet extends BaseServlet {
                 hkdf.generateBytes(accessoryDeviceX, 0, 32);
                 logger.info("Stage 3 : Accessory Device X is {}", Byte.toHexString(accessoryDeviceX));
 
-                logger.info("Stage 3 : Server Private Key is {}", Byte.toHexString(server.getPrivateKey()));
-                EdsaSigner signer = new EdsaSigner(server.getPrivateKey());
+                logger.info("Stage 3 : Server Private Key is {}", Byte.toHexString(server.getSecretKey()));
+                EdsaSigner signer = new EdsaSigner(server.getSecretKey());
 
                 byte[] accessoryInfo = Byte.joinBytes(accessoryDeviceX, server.getPairingId(), signer.getPublicKey());
                 logger.info("Stage 3 : Accessory Device Info is {}", Byte.toHexString(accessoryInfo));
@@ -326,80 +319,80 @@ public class PairSetupServlet extends BaseServlet {
 
     }
 
-    class ClientEvidenceRoutineImpl implements ClientEvidenceRoutine {
+    // class ClientEvidenceRoutineImpl implements ClientEvidenceRoutine {
+    //
+    // public ClientEvidenceRoutineImpl() {
+    // }
+    //
+    // /**
+    // * Calculates M1 according to the following formula:
+    // *
+    // * <p>
+    // * M1 = H(H(N) xor H(g) || H(username) || s || A || B || H(S))
+    // */
+    // @Override
+    // public BigInteger computeClientEvidence(SRP6CryptoParams cryptoParams, SRP6ClientEvidenceContext ctx) {
+    //
+    // MessageDigest digest;
+    // try {
+    // digest = MessageDigest.getInstance(cryptoParams.H);
+    // } catch (NoSuchAlgorithmException e) {
+    // throw new RuntimeException("Could not locate requested algorithm", e);
+    // }
+    // digest.update(bigIntegerToUnsignedByteArray(cryptoParams.N));
+    // byte[] hN = digest.digest();
+    //
+    // digest.update(bigIntegerToUnsignedByteArray(cryptoParams.g));
+    // byte[] hg = digest.digest();
+    //
+    // byte[] hNhg = xor(hN, hg);
+    //
+    // digest.update(ctx.userID.getBytes(StandardCharsets.UTF_8));
+    // byte[] hu = digest.digest();
+    //
+    // digest.update(bigIntegerToUnsignedByteArray(ctx.S));
+    // byte[] hS = digest.digest();
+    //
+    // digest.update(hNhg);
+    // digest.update(hu);
+    // digest.update(bigIntegerToUnsignedByteArray(ctx.s));
+    // digest.update(bigIntegerToUnsignedByteArray(ctx.A));
+    // digest.update(bigIntegerToUnsignedByteArray(ctx.B));
+    // digest.update(hS);
+    // BigInteger ret = new BigInteger(1, digest.digest());
+    // return ret;
+    // }
+    //
+    // private byte[] xor(byte[] b1, byte[] b2) {
+    // byte[] result = new byte[b1.length];
+    // for (int i = 0; i < b1.length; i++) {
+    // result[i] = (byte) (b1[i] ^ b2[i]);
+    // }
+    // return result;
+    // }
+    // }
 
-        public ClientEvidenceRoutineImpl() {
-        }
-
-        /**
-         * Calculates M1 according to the following formula:
-         *
-         * <p>
-         * M1 = H(H(N) xor H(g) || H(username) || s || A || B || H(S))
-         */
-        @Override
-        public BigInteger computeClientEvidence(SRP6CryptoParams cryptoParams, SRP6ClientEvidenceContext ctx) {
-
-            MessageDigest digest;
-            try {
-                digest = MessageDigest.getInstance(cryptoParams.H);
-            } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException("Could not locate requested algorithm", e);
-            }
-            digest.update(bigIntegerToUnsignedByteArray(cryptoParams.N));
-            byte[] hN = digest.digest();
-
-            digest.update(bigIntegerToUnsignedByteArray(cryptoParams.g));
-            byte[] hg = digest.digest();
-
-            byte[] hNhg = xor(hN, hg);
-
-            digest.update(ctx.userID.getBytes(StandardCharsets.UTF_8));
-            byte[] hu = digest.digest();
-
-            digest.update(bigIntegerToUnsignedByteArray(ctx.S));
-            byte[] hS = digest.digest();
-
-            digest.update(hNhg);
-            digest.update(hu);
-            digest.update(bigIntegerToUnsignedByteArray(ctx.s));
-            digest.update(bigIntegerToUnsignedByteArray(ctx.A));
-            digest.update(bigIntegerToUnsignedByteArray(ctx.B));
-            digest.update(hS);
-            BigInteger ret = new BigInteger(1, digest.digest());
-            return ret;
-        }
-
-        private byte[] xor(byte[] b1, byte[] b2) {
-            byte[] result = new byte[b1.length];
-            for (int i = 0; i < b1.length; i++) {
-                result[i] = (byte) (b1[i] ^ b2[i]);
-            }
-            return result;
-        }
-    }
-
-    class ServerEvidenceRoutineImpl implements ServerEvidenceRoutine {
-
-        @Override
-        public BigInteger computeServerEvidence(SRP6CryptoParams cryptoParams, SRP6ServerEvidenceContext ctx) {
-
-            MessageDigest digest;
-            try {
-                digest = MessageDigest.getInstance(cryptoParams.H);
-            } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException("Could not locate requested algorithm", e);
-            }
-
-            byte[] hS = digest.digest(bigIntegerToUnsignedByteArray(ctx.S));
-
-            digest.update(bigIntegerToUnsignedByteArray(ctx.A));
-            digest.update(bigIntegerToUnsignedByteArray(ctx.M1));
-            digest.update(hS);
-
-            return new BigInteger(1, digest.digest());
-        }
-    }
+    // class ServerEvidenceRoutineImpl implements ServerEvidenceRoutine {
+    //
+    // @Override
+    // public BigInteger computeServerEvidence(SRP6CryptoParams cryptoParams, SRP6ServerEvidenceContext ctx) {
+    //
+    // MessageDigest digest;
+    // try {
+    // digest = MessageDigest.getInstance(cryptoParams.H);
+    // } catch (NoSuchAlgorithmException e) {
+    // throw new RuntimeException("Could not locate requested algorithm", e);
+    // }
+    //
+    // byte[] hS = digest.digest(bigIntegerToUnsignedByteArray(ctx.S));
+    //
+    // digest.update(bigIntegerToUnsignedByteArray(ctx.A));
+    // digest.update(bigIntegerToUnsignedByteArray(ctx.M1));
+    // digest.update(hS);
+    //
+    // return new BigInteger(1, digest.digest());
+    // }
+    // }
 
     protected BigInteger getPublicKey(byte[] content) throws IOException {
         DecodeResult d = TypeLengthValue.decode(content);
@@ -409,5 +402,9 @@ public class PairSetupServlet extends BaseServlet {
     protected BigInteger getProof(byte[] content) throws IOException {
         DecodeResult d = TypeLengthValue.decode(content);
         return d.getBigInt(Message.PROOF);
+    }
+
+    public BigInteger generateSalt() {
+        return new BigInteger(SRP6Routines.generateRandomSalt(16));
     }
 }

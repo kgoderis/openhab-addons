@@ -75,16 +75,6 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
         this.bundleContext = componentContext.getBundleContext();
         this.pairingRegistry = pairingRegistry;
     }
-    //
-    // @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
-    // protected void addHomekitFactory(HomekitFactory factory) {
-    // homekitFactories.add(factory);
-    // logger.info("Added a HomeKit Factory for Thing Types {}", Arrays.toString(factory.getSupportedThingTypes()));
-    // }
-    //
-    // protected void removeHomekitFactory(HomekitFactory factory) {
-    // homekitFactories.remove(factory);
-    // }
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -118,7 +108,7 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
         }
 
         if (HomekitBindingConstants.THING_TYPE_ACCESSORY.equals(thingTypeUID)) {
-            return new HomekitAccessoryHandler(thing);
+            return new HomekitAccessoryHandler(thing, bundleContext);
         }
 
         if (HomekitBindingConstants.THING_TYPE_STANDALONE_ACCESSORY.equals(thingTypeUID)) {

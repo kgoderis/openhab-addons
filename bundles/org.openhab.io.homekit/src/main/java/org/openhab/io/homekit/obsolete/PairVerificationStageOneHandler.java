@@ -64,7 +64,7 @@ public class PairVerificationStageOneHandler extends PairVerificationHandler {
 
             byte[] accessorySignature = null;
             try {
-                accessorySignature = new EdsaSigner(server.getPrivateKey()).sign(accessoryInfo);
+                accessorySignature = new EdsaSigner(server.getSecretKey()).sign(accessoryInfo);
             } catch (InvalidKeyException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();

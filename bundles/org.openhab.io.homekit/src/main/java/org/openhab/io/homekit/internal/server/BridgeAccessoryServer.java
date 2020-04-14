@@ -1,6 +1,5 @@
 package org.openhab.io.homekit.internal.server;
 
-import java.math.BigInteger;
 import java.net.InetAddress;
 
 import org.eclipse.jdt.annotation.NonNull;
@@ -29,18 +28,26 @@ import org.openhab.io.homekit.api.PairingRegistry;
  * @author Karel Goderis
  */
 @NonNullByDefault
-public class BridgeAccessoryServer extends AbstractAccessoryServer {
+public class BridgeAccessoryServer extends AbstractLocalAccessoryServer {
 
-    public BridgeAccessoryServer(InetAddress localAddress, int port, byte[] pairingId, BigInteger salt,
-            byte[] privateKey, @Nullable MDNSService mdnsService, @Nullable AccessoryRegistry accessoryRegistry,
+    public BridgeAccessoryServer(InetAddress localAddress, int port, byte[] pairingId, byte[] privateKey,
+            @Nullable MDNSService mdnsService, @Nullable AccessoryRegistry accessoryRegistry,
             @Nullable PairingRegistry pairingRegistry, @Nullable NotificationRegistry notificationRegistry,
             @Nullable HomekitCommunicationManager manager, @Nullable SafeCaller safeCaller) throws Exception {
-        super(localAddress, port, pairingId, salt, privateKey, mdnsService, accessoryRegistry, pairingRegistry,
+        super(localAddress, port, pairingId, privateKey, mdnsService, accessoryRegistry, pairingRegistry,
                 notificationRegistry, manager, safeCaller);
+    }
+
+    public BridgeAccessoryServer(InetAddress localAddress, int port, @Nullable MDNSService mdnsService,
+            @Nullable AccessoryRegistry accessoryRegistry, @Nullable PairingRegistry pairingRegistry,
+            @Nullable NotificationRegistry notificationRegistry, @Nullable HomekitCommunicationManager manager,
+            @Nullable SafeCaller safeCaller) throws Exception {
+        this(localAddress, port, generatePairingId(), generateSecretKey(), mdnsService, accessoryRegistry,
+                pairingRegistry, notificationRegistry, manager, safeCaller);
     }
 
     @Override
     public @NonNull AccessoryServerUID getUID() {
-        return new AccessoryServerUID(getClass().getSimpleName(), getId());
+        return new AccessoryServerUID("Bridge", getId());
     }
 }

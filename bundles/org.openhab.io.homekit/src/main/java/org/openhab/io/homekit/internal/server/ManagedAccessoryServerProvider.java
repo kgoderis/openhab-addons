@@ -108,8 +108,8 @@ public class ManagedAccessoryServerProvider
 
     @Override
     protected PersistedAccessoryServer toPersistableElement(AccessoryServer element) {
-        return new PersistedAccessoryServer(element.getLocalAddress(), element.getPort(), element.getPairingId(),
-                element.getSalt(), element.getPrivateKey(), element.getConfigurationIndex());
+        return new PersistedAccessoryServer(element.getAddress(), element.getPort(), element.getPairingId(),
+                element.getSalt(), element.getSecretKey(), element.getConfigurationIndex());
     }
 
 }

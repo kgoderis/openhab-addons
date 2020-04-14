@@ -1,5 +1,6 @@
 package org.openhab.io.homekit.internal.client;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
@@ -42,7 +43,13 @@ public class HomekitAccessoryBridgeDiscoveryService extends AbstractDiscoverySer
 
     @Override
     protected void startScan() {
-        homekitBridgeHandler.startSearch();
+        // TO DO : clear the list in the BridgeHandler when the inbox is cleared. Can we capture that event?
+        // homekitBridgeHandler.startSearch();
+        Collection<Accessory> accessories = homekitBridgeHandler.getAccessories();
+
+        for (Accessory accessory : accessories) {
+            onAccessoryAdded(homekitBridgeHandler.getThing(), accessory);
+        }
     }
 
     @Override
@@ -98,7 +105,7 @@ public class HomekitAccessoryBridgeDiscoveryService extends AbstractDiscoverySer
                     String.valueOf(accessory.getId()));
 
             DiscoveryResult discoveryResult = DiscoveryResultBuilder.create(uid)
-                    .withThingType(HomekitBindingConstants.THING_TYPE_BRIDGE).withBridge(bridge.getUID())
+                    .withThingType(HomekitBindingConstants.THING_TYPE_ACCESSORY).withBridge(bridge.getUID())
                     .withLabel("Homekit Accessory").build();
 
             logger.info("Accessory {} was added. A Discovery result for Thing {} will be reported", accessory.getId(),
