@@ -19,7 +19,7 @@ public class HomekitException extends Exception {
      *
      * @param message the detail message
      */
-    protected HomekitException(String message) {
+    public HomekitException(String message) {
         super(message);
     }
 

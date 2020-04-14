@@ -1,4 +1,4 @@
-package org.openhab.io.homekit.internal.client;
+package org.openhab.io.homekit.internal.server;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
@@ -45,7 +45,6 @@ import javax.json.JsonValue.ValueType;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.ProtocolHandlers;
@@ -66,11 +65,11 @@ import org.openhab.io.homekit.crypto.EdsaSigner;
 import org.openhab.io.homekit.crypto.EdsaVerifier;
 import org.openhab.io.homekit.crypto.HomekitEncryptionEngine;
 import org.openhab.io.homekit.internal.accessory.GenericAccessory;
+import org.openhab.io.homekit.internal.client.HomekitClientSRP6Session;
+import org.openhab.io.homekit.internal.client.HomekitException;
 import org.openhab.io.homekit.internal.http.jetty.HomekitHttpClientTransportOverHTTP;
 import org.openhab.io.homekit.internal.http.jetty.HomekitHttpDestinationOverHTTP;
 import org.openhab.io.homekit.internal.http.jetty.HomekitProtocolHandler;
-import org.openhab.io.homekit.internal.server.AbstractAccessoryServer;
-import org.openhab.io.homekit.internal.server.AccessoryServerUID;
 import org.openhab.io.homekit.util.Byte;
 import org.openhab.io.homekit.util.Error;
 import org.openhab.io.homekit.util.Message;
@@ -87,9 +86,9 @@ import com.nimbusds.srp6.XRoutineWithUserIdentity;
 
 import djb.Curve25519;
 
-public class RemoteAccessoryServer extends AbstractAccessoryServer {
+public abstract class AbstractRemoteAccessoryServer extends AbstractAccessoryServer implements RemoteAccessoryServer {
 
-    protected static final Logger logger = LoggerFactory.getLogger(RemoteAccessoryServer.class);
+    protected static final Logger logger = LoggerFactory.getLogger(AbstractRemoteAccessoryServer.class);
 
     private static final String HTTP_SCHEME = "http";
 
@@ -115,7 +114,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer {
 
     // private final PairingRegistry pairingRegistry;
 
-    public RemoteAccessoryServer(InetAddress address, int port, byte[] pairingIdentifier, byte[] secretKey,
+    public AbstractRemoteAccessoryServer(InetAddress address, int port, byte[] pairingIdentifier, byte[] secretKey,
             AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry,
             NotificationRegistry notificationRegistry) {
         super(address, port, pairingIdentifier, secretKey, accessoryRegistry, pairingRegistry, notificationRegistry);
@@ -152,15 +151,10 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer {
         }
     }
 
-    public RemoteAccessoryServer(InetAddress address, int port, AccessoryRegistry accessoryRegistry,
+    public AbstractRemoteAccessoryServer(InetAddress address, int port, AccessoryRegistry accessoryRegistry,
             PairingRegistry pairingRegistry, NotificationRegistry notificationRegistry) {
         this(address, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry,
                 notificationRegistry);
-    }
-
-    @Override
-    public @NonNull AccessoryServerUID getUID() {
-        return new AccessoryServerUID("Remote", getId());
     }
 
     // @Override
@@ -173,6 +167,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer {
     // return false;
     // }
 
+    @Override
     public boolean isPairVerified() {
         return isPairVerified;
     }
@@ -195,6 +190,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer {
     // return destinationPublicKey;
     // }
 
+    @Override
     public boolean isSecure() {
         if (httpClient != null && address != null && port != 0) {
             Destination destination = httpClient.getDestination(HTTP_SCHEME, address.getHostAddress(), port);
@@ -207,6 +203,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer {
         return false;
     }
 
+    @Override
     public void pairSetup() throws IOException {
 
         logger.info("'{}' : Pair setup", new String(getPairingId()));
@@ -303,6 +300,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer {
 
     }
 
+    @Override
     public boolean pairVerify() {
 
         logger.info("'{}' : Pair verify", new String(getPairingId()));
@@ -391,6 +389,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer {
         return !stageResult.isFailure();
     }
 
+    @Override
     public void pairRemove() throws HomekitException, IOException {
         if (isPaired()) {
             if (isPairVerified() && isSecure()) {

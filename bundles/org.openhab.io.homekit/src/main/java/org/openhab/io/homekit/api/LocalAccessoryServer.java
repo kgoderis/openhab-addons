@@ -5,14 +5,7 @@ import org.openhab.io.homekit.HomekitCommunicationManager;
 
 public interface LocalAccessoryServer extends AccessoryServer {
 
-    /**
-     * Every Accessory must support a manufacturer-defined mechanism to restore itself to a “factory reset” state where
-     * all pairing information is erased and restored to factory default settings. This mechanism should be easily
-     * accessible to a user, e.g. a physical button or a reset code.
-     */
-    void factoryReset();
-
-    int getConfigurationIndex();
+    HomekitCommunicationManager getCommunicationManager();
 
     /**
      * Accessory Instance IDs are assigned from the same number pool that is global across entire
@@ -23,21 +16,18 @@ public interface LocalAccessoryServer extends AccessoryServer {
      */
     long getInstanceId();
 
-    // long getCurrentInstanceId();
+    int getConfigurationIndex();
+
+    /**
+     * Every Accessory must support a manufacturer-defined mechanism to restore itself to a “factory reset” state where
+     * all pairing information is erased and restored to factory default settings. This mechanism should be easily
+     * accessible to a user, e.g. a physical button or a reset code.
+     */
+    void factoryReset();
 
     void advertise();
-
-    HomekitCommunicationManager getCommunicationManager();
 
     void addNotification(ManagedCharacteristic<?> characteristic, HttpConnection connection);
 
     void removeNotification(ManagedCharacteristic<?> characteristic);
-
-    // /**
-    // * The salt that will be used when hashing the setup code to send to the client.
-    // *
-    // * @return the salt.
-    // */
-    // BigInteger getSalt();
-
 }

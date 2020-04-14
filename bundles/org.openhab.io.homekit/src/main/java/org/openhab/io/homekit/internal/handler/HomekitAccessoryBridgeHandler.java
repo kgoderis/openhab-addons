@@ -26,9 +26,9 @@ import org.openhab.io.homekit.api.Service;
 import org.openhab.io.homekit.internal.client.HomekitAccessoryConfiguration;
 import org.openhab.io.homekit.internal.client.HomekitAccessoryProtocolParticipant;
 import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
-import org.openhab.io.homekit.internal.client.RemoteAccessoryServer;
 import org.openhab.io.homekit.internal.client.HomekitException;
 import org.openhab.io.homekit.internal.client.HomekitStatusListener;
+import org.openhab.io.homekit.internal.server.AbstractRemoteAccessoryServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +43,7 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
     private static final String STATE_REMOVED = "removed";
 
     private @Nullable HomekitAccessoryConfiguration config;
-    private RemoteAccessoryServer accessoryServer;
+    private AbstractRemoteAccessoryServer accessoryServer;
     private final PairingRegistry pairingRegistry;
 
     private final List<HomekitStatusListener> homekitStatusListeners = new CopyOnWriteArrayList<>();
@@ -147,11 +147,11 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
                     logger.info("'{}' : Creating a Homekit client using an existing Id '{}'", getThing().getUID(),
                             new String(clientPairingId));
 
-                    accessoryServer = new RemoteAccessoryServer(InetAddress.getByName(config.host), config.port, clientPairingId,
+                    accessoryServer = new AbstractRemoteAccessoryServer(InetAddress.getByName(config.host), config.port, clientPairingId,
                             clientLongtermSecretKey, accessoryPairingId, pairingRegistry);
 
                 } else {
-                    accessoryServer = new RemoteAccessoryServer(InetAddress.getByName(config.host), config.port, pairingRegistry);
+                    accessoryServer = new AbstractRemoteAccessoryServer(InetAddress.getByName(config.host), config.port, pairingRegistry);
 
                     logger.info("'{}' : Creating a Homekit client using a newly generated Id '{}'", getThing().getUID(),
                             new String(accessoryServer.getPairingId()));
