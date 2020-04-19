@@ -3,14 +3,10 @@ package org.openhab.io.homekit.internal.server;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Hashtable;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.io.Connection;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnection;
@@ -22,15 +18,14 @@ import org.openhab.core.common.SafeCaller;
 import org.openhab.core.io.transport.mdns.MDNSService;
 import org.openhab.core.io.transport.mdns.ServiceDescription;
 import org.openhab.io.homekit.HomekitCommunicationManager;
+import org.openhab.io.homekit.api.Accessory;
 import org.openhab.io.homekit.api.AccessoryRegistry;
 import org.openhab.io.homekit.api.LocalAccessoryServer;
-import org.openhab.io.homekit.api.ManagedAccessory;
 import org.openhab.io.homekit.api.ManagedCharacteristic;
 import org.openhab.io.homekit.api.Notification;
 import org.openhab.io.homekit.api.NotificationRegistry;
 import org.openhab.io.homekit.api.PairingRegistry;
 import org.openhab.io.homekit.crypto.HomekitEncryptionEngine;
-import org.openhab.io.homekit.internal.accessory.AccessoryUID;
 import org.openhab.io.homekit.internal.http.HomekitRequestLogHandler;
 import org.openhab.io.homekit.internal.http.jetty.HomekitHttpConnectionFactory;
 import org.openhab.io.homekit.internal.http.jetty.HomekitSessionHandler;
@@ -42,7 +37,6 @@ import org.openhab.io.homekit.internal.servlet.CharacteristicServlet;
 import org.openhab.io.homekit.internal.servlet.PairSetupServlet;
 import org.openhab.io.homekit.internal.servlet.PairVerificationServlet;
 import org.openhab.io.homekit.internal.servlet.PairingServlet;
-import org.openhab.io.homekit.library.accessory.BridgeAccessory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,24 +45,18 @@ import org.slf4j.LoggerFactory;
 //       Abstract class AccesspryHolder
 //       Component AccessoryClient (die httpclient heeft)
 
-//TODO : ofwel werken met LocalAccessoryServer en RemoteAccessoryServer voor server en client aspects
-
 public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServer implements LocalAccessoryServer {
 
     protected static final Logger logger = LoggerFactory.getLogger(AbstractLocalAccessoryServer.class);
 
     private final Server server;
     protected final MDNSService mdnsService;
+    protected ServiceDescription announcedServiceDescription;
     protected final HomekitCommunicationManager homekitCommunicationManager;
     protected final SafeCaller safeCaller;
 
-    // private final BigInteger salt;
     protected String label;
     private long instanceIdPool = 1;
-
-    protected ServiceDescription announcedServiceDescription;
-    // protected boolean hasBeenPaired = false;
-    protected int configurationIndex = 1;
 
     public AbstractLocalAccessoryServer(InetAddress address, int port, byte[] pairingId, byte[] secretKey,
             MDNSService mdnsService, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry,
@@ -77,7 +65,6 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
         super(address, port, pairingId, secretKey, accessoryRegistry, pairingRegistry, notificationRegistry);
 
         this.mdnsService = mdnsService;
-        // this.salt = salt;
         this.homekitCommunicationManager = manager;
         this.safeCaller = safeCaller;
 
@@ -187,7 +174,6 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
 
     public void start() throws Exception {
         server.start();
-        // server.dumpStdErr();
     }
 
     public void stop() throws Exception {
@@ -196,73 +182,25 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
 
     @Override
     public void addPairing(byte @NonNull [] destinationPairingId, byte @NonNull [] destinationPublicKey) {
-        try {
-            super.addPairing(destinationPairingId, destinationPublicKey);
-            advertise();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void removePairing(byte @NonNull [] destinationPairingId) {
-        try {
-            super.removePairing(destinationPairingId);
-            advertise();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        //
-        // pairingRegistry.remove(new PairingUID(getPairingId(), destinationPairingId));
-        // if (pairingRegistry.get(getPairingId()).isEmpty()) {
-        // // hasBeenPaired = false;
-        // advertise();
-        // }
-    }
-
-    @Override
-    public Collection<ManagedAccessory> getAccessories() {
-        return Collections.unmodifiableList(accessoryRegistry.get(getId()).stream()
-                .sorted((o1, o2) -> new Long(o1.getId()).compareTo(new Long(o2.getId()))).collect(Collectors.toList()));
-    }
-
-    @Override
-    public @Nullable ManagedAccessory getAccessory(int instanceId) {
-        AccessoryUID id = new AccessoryUID(getId(), Integer.toString(instanceId));
-        return accessoryRegistry.get(id);
-    }
-
-    @Override
-    public @Nullable ManagedAccessory getAccessory(Class<? extends ManagedAccessory> accessoryClass) {
-        Collection<ManagedAccessory> accessories = accessoryRegistry.get(getId());
-        for (ManagedAccessory accessory : accessories) {
-            if (accessory.getClass() == accessoryClass) {
-                return accessory;
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public void addAccessory(ManagedAccessory accessory) {
-        logger.debug("Adding Accessory {} of Type {} to Accessory Server {}", accessory.getUID(),
-                accessory.getClass().getSimpleName(), this.getUID());
-        if (accessory.getId() <= 1 && !(accessory instanceof BridgeAccessory)) {
-            throw new IndexOutOfBoundsException("The ID of an accessory used in a bridge must be greater than 1");
-        }
-
-        if (accessoryRegistry.update(accessory) == null) {
-            logger.debug("Adding Accessory {} of Type {} to the Accessory Registry", accessory.getUID(),
-                    accessory.getClass().getSimpleName(), this.getUID());
-            accessoryRegistry.add(accessory);
-        }
-
+        super.addPairing(destinationPairingId, destinationPublicKey);
         advertise();
     }
 
     @Override
-    public void removeAccessory(ManagedAccessory accessory) {
-        accessoryRegistry.remove(accessory.getUID());
+    public void removePairing(byte @NonNull [] destinationPairingId) {
+        super.removePairing(destinationPairingId);
+        advertise();
+    }
+
+    @Override
+    public void addAccessory(Accessory accessory) {
+        super.addAccessory(accessory);
+        advertise();
+    }
+
+    @Override
+    public void removeAccessory(Accessory accessory) {
+        super.removeAccessory(accessory);
         advertise();
     }
 
@@ -302,18 +240,7 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
         }
 
         instanceIdPool++;
-        // notifyListeners();
         return instanceIdPool;
-    }
-
-    // @Override
-    // public BigInteger getSalt() {
-    // return salt;
-    // }
-
-    @Override
-    public int getConfigurationIndex() {
-        return configurationIndex;
     }
 
     @Override
@@ -325,14 +252,9 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
             try {
                 start();
             } catch (Exception e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
-
-        // if (announcedServiceDescription != null) {
-        // mdnsService.unregisterService(announcedServiceDescription);
-        // }
 
         // Announce the accessory via MDNS
         Hashtable<String, String> props = new Hashtable<>();
@@ -353,11 +275,11 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
         // Accessories must increment the config number after a firmware update.
         // This must have a range of 1-65535 and wrap to 1 when it overflows.
         // This value must persist across reboots, power cycles, etc.
-        if (configurationIndex == 65535) {
-            configurationIndex = 1;
+        if (getConfigurationIndex() == 65535) {
+            setConfigurationIndex(1);
         }
-        props.put("c#", Integer.toString(configurationIndex));
-        configurationIndex++;
+        props.put("c#", Integer.toString(getConfigurationIndex()));
+        setConfigurationIndex(getConfigurationIndex() + 1);
 
         // Current state number. Required.
         // This must have a value of ”1”.

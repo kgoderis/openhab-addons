@@ -25,6 +25,10 @@ public class AccessoryServerUID extends UID {
         super(serverType, serverId);
     }
 
+    public AccessoryServerUID(String serverUID) {
+        super(serverUID);
+    }
+
     /**
      * Returns the id.
      *

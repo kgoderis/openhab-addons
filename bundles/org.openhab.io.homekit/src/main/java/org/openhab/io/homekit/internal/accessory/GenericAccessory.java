@@ -13,6 +13,7 @@ import javax.json.JsonValue;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.Accessory;
+import org.openhab.io.homekit.api.AccessoryServer;
 import org.openhab.io.homekit.api.Service;
 import org.openhab.io.homekit.internal.service.GenericService;
 import org.slf4j.Logger;
@@ -24,12 +25,15 @@ public class GenericAccessory implements Accessory {
 
     private final long instanceId;
     private Collection<Service> services = new HashSet<Service>();
+    private final AccessoryServer server;
 
-    public GenericAccessory(long instanceId) {
+    public GenericAccessory(AccessoryServer server, long instanceId) {
+        this.server = server;
         this.instanceId = instanceId;
     }
 
-    public GenericAccessory(JsonValue value) {
+    public GenericAccessory(AccessoryServer server, JsonValue value) {
+        this.server = server;
         this.instanceId = ((JsonObject) value).getInt("aid");
 
         JsonArray servicesArray = ((JsonObject) value).getJsonArray("services");
@@ -96,6 +100,16 @@ public class GenericAccessory implements Accessory {
         JsonObjectBuilder builder = Json.createObjectBuilder().add("aid", instanceId).add("services", services);
 
         return builder.build();
+    }
+
+    @Override
+    public AccessoryUID getUID() {
+        return new AccessoryUID(getServer().getId(), Long.toString(getId()));
+    }
+
+    @Override
+    public @NonNull AccessoryServer getServer() {
+        return server;
     }
 
 }

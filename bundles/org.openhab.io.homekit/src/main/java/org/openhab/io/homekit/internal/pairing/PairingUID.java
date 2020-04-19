@@ -39,7 +39,7 @@ public class PairingUID extends UID {
         return Base64.getDecoder().decode(segments.get(segments.size() - 1));
     }
 
-    public byte[] getAccessoryPairingId() {
+    public byte[] getSourcePairingId() {
         return Base64.getDecoder().decode(getSegment(0));
     }
 

@@ -21,9 +21,10 @@ import org.openhab.core.common.registry.Provider;
 import org.openhab.core.service.ReadyMarker;
 import org.openhab.core.service.ReadyMarkerFilter;
 import org.openhab.core.service.ReadyService;
-import org.openhab.io.homekit.api.ManagedAccessory;
+import org.openhab.io.homekit.api.Accessory;
 import org.openhab.io.homekit.api.AccessoryProvider;
 import org.openhab.io.homekit.api.AccessoryRegistry;
+import org.openhab.io.homekit.api.LocalAccessoryServer;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -41,7 +42,7 @@ import org.slf4j.LoggerFactory;
  */
 @NonNullByDefault
 @Component(immediate = true, service = AccessoryRegistry.class)
-public class AccessoryRegistryImpl extends AbstractRegistry<ManagedAccessory, AccessoryUID, AccessoryProvider>
+public class AccessoryRegistryImpl extends AbstractRegistry<Accessory, AccessoryUID, AccessoryProvider>
         implements AccessoryRegistry, ReadyService.ReadyTracker {
 
     private final Logger logger = LoggerFactory.getLogger(AccessoryRegistry.class);
@@ -83,26 +84,32 @@ public class AccessoryRegistryImpl extends AbstractRegistry<ManagedAccessory, Ac
     }
 
     @Override
-    public Collection<ManagedAccessory> get(String serverId) {
+    public Collection<Accessory> get(String serverId) {
         return getAll().stream().filter(a -> a.getServer().getId().equals(serverId)).collect(Collectors.toList());
     }
 
     @Override
-    public void added(Provider<ManagedAccessory> provider, ManagedAccessory element) {
+    public void added(Provider<Accessory> provider, Accessory element) {
         super.added(provider, element);
-        element.getServer().advertise();
+        if (element.getServer() instanceof LocalAccessoryServer) {
+            ((LocalAccessoryServer) element.getServer()).advertise();
+        }
     }
 
     @Override
-    public void removed(Provider<ManagedAccessory> provider, ManagedAccessory element) {
+    public void removed(Provider<Accessory> provider, Accessory element) {
         super.removed(provider, element);
-        element.getServer().advertise();
+        if (element.getServer() instanceof LocalAccessoryServer) {
+            ((LocalAccessoryServer) element.getServer()).advertise();
+        }
     }
 
     @Override
-    public void updated(Provider<ManagedAccessory> provider, ManagedAccessory oldElement, ManagedAccessory element) {
+    public void updated(Provider<Accessory> provider, Accessory oldElement, Accessory element) {
         super.updated(provider, oldElement, element);
-        element.getServer().advertise();
+        if (element.getServer() instanceof LocalAccessoryServer) {
+            ((LocalAccessoryServer) element.getServer()).advertise();
+        }
     }
 
     @Override
@@ -120,7 +127,7 @@ public class AccessoryRegistryImpl extends AbstractRegistry<ManagedAccessory, Ac
     }
 
     @Override
-    protected void addProvider(Provider<ManagedAccessory> provider) {
+    protected void addProvider(Provider<Accessory> provider) {
         // if (provider instanceof ManagedAccessoryProvider) {
         // // Skip, only do this when we get a readyMarker
         // logger.warn("Delaying adding the Managed Accessory Provider");
@@ -141,10 +148,10 @@ public class AccessoryRegistryImpl extends AbstractRegistry<ManagedAccessory, Ac
         }
     }
 
-    public synchronized void addProviderWithReadyMarker(Provider<ManagedAccessory> provider) {
+    public synchronized void addProviderWithReadyMarker(Provider<Accessory> provider) {
         super.addProvider(provider);
 
-        for (ManagedAccessory accessory : getAll()) {
+        for (Accessory accessory : getAll()) {
             logger.debug("Accessory {} is available in the Accessory Registry", accessory.getUID());
         }
 

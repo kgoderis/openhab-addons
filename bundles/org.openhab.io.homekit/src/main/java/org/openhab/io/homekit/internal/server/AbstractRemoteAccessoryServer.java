@@ -59,6 +59,7 @@ import org.openhab.io.homekit.api.AccessoryRegistry;
 import org.openhab.io.homekit.api.NotificationRegistry;
 import org.openhab.io.homekit.api.Pairing;
 import org.openhab.io.homekit.api.PairingRegistry;
+import org.openhab.io.homekit.api.RemoteAccessoryServer;
 import org.openhab.io.homekit.crypto.ChachaDecoder;
 import org.openhab.io.homekit.crypto.ChachaEncoder;
 import org.openhab.io.homekit.crypto.EdsaSigner;
@@ -92,40 +93,21 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
 
     private static final String HTTP_SCHEME = "http";
 
-    // private static volatile SecureRandom secureRandom = new SecureRandom();
     private HomekitClientSRP6Session SRP6Session;
-
-    // private byte[] getPairingId();
-    // private byte[] secretKey;
-
     private byte[] sessionKey;
     private byte[] sharedSecret;
-    // private byte[] destinationPairingIdentifier;
-    // private byte[] destinationPublicKey;
     private byte[] clientPublicKey;
     private byte[] clientPrivateKey;
 
-    // private InetAddress address;
-    // private int port;
-
     private @Nullable HttpClient httpClient;
-    // private String setupCode;
     private boolean isPairVerified;
-
-    // private final PairingRegistry pairingRegistry;
 
     public AbstractRemoteAccessoryServer(InetAddress address, int port, byte[] pairingIdentifier, byte[] secretKey,
             AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry,
             NotificationRegistry notificationRegistry) {
         super(address, port, pairingIdentifier, secretKey, accessoryRegistry, pairingRegistry, notificationRegistry);
-        // this.address = address;
-        // this.port = port;
-        // this.getPairingId() = getPairingId();
-        // this.secretKey = secretKey;
-        // this.destinationPairingIdentifier = accessoryPairingId;
         this.setupCode = null;
         this.isPairVerified = false;
-        // this.pairingRegistry = pairingRegistry;
 
         this.httpClient = new HttpClient(new HomekitHttpClientTransportOverHTTP(), null);
 
@@ -157,38 +139,10 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
                 notificationRegistry);
     }
 
-    // @Override
-    // public boolean isPaired() {
-    // if (getPairingId() != null && destinationPairingIdentifier != null) {
-    // PairingUID pairingUID = new PairingUID(getPairingId(), destinationPairingIdentifier);
-    // return pairingRegistry.get(pairingUID) != null ? true : false;
-    // }
-    //
-    // return false;
-    // }
-
     @Override
     public boolean isPairVerified() {
         return isPairVerified;
     }
-
-    // @Override
-    // public byte[] getPairingId() {
-    // return getPairingId();
-    // }
-
-    // @Override
-    // public byte[] getSecretKey() {
-    // return secretKey;
-    // }
-    //
-    // public byte[] getDestinationPairingId() {
-    // return destinationPairingIdentifier;
-    // }
-
-    // public byte[] getDestinationPublicKey() {
-    // return destinationPublicKey;
-    // }
 
     @Override
     public boolean isSecure() {
@@ -216,8 +170,6 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
 
         sessionKey = null;
         sharedSecret = null;
-        // destinationPairingIdentifier = null;
-        // destinationPublicKey = null;
         clientPublicKey = null;
         clientPrivateKey = null;
 
@@ -307,7 +259,6 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
 
         sessionKey = null;
         sharedSecret = null;
-        // destinationPublicKey = null;
         clientPublicKey = null;
         clientPrivateKey = null;
 
@@ -433,7 +384,9 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
             }
 
             if (isPaired()) {
-                removePairing(destinationPairingIdentifier);
+                for (Pairing pairing : getPairings()) {
+                    removePairing(pairing.getDestinationPairingId());
+                }
             } else {
                 logger.warn("'{}' : The pairing identifier for the Homekit Accessory is not set",
                         new String(getPairingId()));
@@ -944,8 +897,7 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
         public String message;
     }
 
-    @Override
-    public Collection<Accessory> getAccessories() {
+    protected Collection<Accessory> getRemoteAccessories() {
         Collection<Accessory> result = new HashSet<Accessory>();
 
         if (isPaired() && isPairVerified() && isSecure()) {
@@ -966,7 +918,7 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
                 JsonArray accessories = Json.createReader(new ByteArrayInputStream(contentResult.body)).readObject()
                         .getJsonArray("accessories");
                 for (JsonValue value : accessories) {
-                    result.add(new GenericAccessory(value));
+                    result.add(new GenericAccessory(this, value));
                 }
             }
         }

@@ -1,6 +1,5 @@
 package org.openhab.io.homekit.internal.server;
 
-import java.math.BigInteger;
 import java.net.InetAddress;
 import java.security.InvalidAlgorithmParameterException;
 
@@ -19,13 +18,13 @@ import org.openhab.io.homekit.api.PairingRegistry;
  *
  * @author Karel Goderis
  */
-public class StandAloneAccessoryServer extends AbstractLocalAccessoryServer {
+public class LocalStandAloneAccessoryServer extends AbstractLocalAccessoryServer {
 
-    public StandAloneAccessoryServer(InetAddress localAddress, int port, byte[] pairingId, BigInteger salt,
-            byte[] privateKey, MDNSService mdnsService, AccessoryRegistry accessoryRegistry,
-            PairingRegistry pairingRegistry, NotificationRegistry notificationRegistry,
-            HomekitCommunicationManager manager, SafeCaller safeCaller) throws InvalidAlgorithmParameterException {
-        super(localAddress, port, pairingId, salt, privateKey, mdnsService, accessoryRegistry, pairingRegistry,
+    public LocalStandAloneAccessoryServer(InetAddress address, int port, byte[] pairingId, byte[] secretKey,
+            MDNSService mdnsService, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry,
+            NotificationRegistry notificationRegistry, HomekitCommunicationManager manager, SafeCaller safeCaller)
+            throws InvalidAlgorithmParameterException {
+        super(address, port, pairingId, secretKey, mdnsService, accessoryRegistry, pairingRegistry,
                 notificationRegistry, manager, safeCaller);
     }
 

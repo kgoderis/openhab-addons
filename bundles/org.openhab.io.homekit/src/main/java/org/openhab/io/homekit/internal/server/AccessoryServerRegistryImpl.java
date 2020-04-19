@@ -13,11 +13,15 @@ import org.openhab.core.net.NetworkAddressService;
 import org.openhab.core.service.ReadyMarker;
 import org.openhab.core.service.ReadyMarkerFilter;
 import org.openhab.core.service.ReadyService;
+import org.openhab.io.homekit.api.Accessory;
 import org.openhab.io.homekit.api.AccessoryServer;
 import org.openhab.io.homekit.api.AccessoryServerChangeListener;
 import org.openhab.io.homekit.api.AccessoryServerFactory;
 import org.openhab.io.homekit.api.AccessoryServerProvider;
 import org.openhab.io.homekit.api.AccessoryServerRegistry;
+import org.openhab.io.homekit.api.Characteristic;
+import org.openhab.io.homekit.api.LocalAccessoryServer;
+import org.openhab.io.homekit.api.Service;
 import org.openhab.io.homekit.library.accessory.BridgeAccessory;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
@@ -85,7 +89,7 @@ public class AccessoryServerRegistryImpl
 
     @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
     protected void addServerFactory(AccessoryServerFactory serverFactory) {
-        if (serverFactory instanceof BridgeAccessoryServerFactoryImpl) {
+        if (serverFactory instanceof LocalAccessoryServerFactory) {
             serverFactories.add(serverFactory);
         }
     }
@@ -112,13 +116,13 @@ public class AccessoryServerRegistryImpl
 
     @Override
     @Nullable
-    public synchronized BridgeAccessoryServer getAvailableBridgeAccessoryServer() {
-        BridgeAccessoryServer availableServer = null;
+    public synchronized LocalBridgeAccessoryServer getAvailableBridgeAccessoryServer() {
+        LocalBridgeAccessoryServer availableServer = null;
         int highestPortNumber = LOWEST_PORT_NUMBER;
         for (AccessoryServer server : getAll()) {
-            if (server instanceof BridgeAccessoryServer
+            if (server instanceof LocalBridgeAccessoryServer
                     && server.getAccessories().size() < MAX_ACCESSORIES_PER_SERVER) {
-                availableServer = (BridgeAccessoryServer) server;
+                availableServer = (LocalBridgeAccessoryServer) server;
                 break;
             }
             if (server.getPort() > highestPortNumber) {
@@ -131,8 +135,8 @@ public class AccessoryServerRegistryImpl
         if (availableServer == null) {
             for (AccessoryServerFactory factory : serverFactories) {
                 try {
-                    availableServer = (BridgeAccessoryServer) factory.createServer(
-                            BridgeAccessoryServer.class.getSimpleName(),
+                    availableServer = (LocalBridgeAccessoryServer) factory.createServer(
+                            LocalBridgeAccessoryServer.class.getSimpleName(),
                             InetAddress.getByName(networkAddressService.getPrimaryIpv4HostAddress()),
                             highestPortNumber++);
                     if (availableServer != null) {
@@ -184,7 +188,6 @@ public class AccessoryServerRegistryImpl
 
     @Override
     public void onReadyMarkerAdded(ReadyMarker readyMarker) {
-
         logger.debug("Receiving the ready marker {}:{}", readyMarker.getType(), readyMarker.getIdentifier());
 
         if (getManagedProvider().isPresent()) {
@@ -195,7 +198,6 @@ public class AccessoryServerRegistryImpl
     @Override
     public void onReadyMarkerRemoved(ReadyMarker readyMarker) {
         // TODO Auto-generated method stub
-
     }
 
     public synchronized void addProviderWithReadyMarker(Provider<AccessoryServer> provider) {
@@ -204,17 +206,14 @@ public class AccessoryServerRegistryImpl
         for (AccessoryServer aServer : getAll()) {
             logger.debug("Accessory Server {} with Setup Code {} is available in the Accessory Server Registry",
                     aServer.getUID(), aServer.getSetupCode());
-            aServer.advertise();
+            if (aServer instanceof LocalAccessoryServer) {
+                ((LocalAccessoryServer) aServer).advertise();
+            }
         }
 
         logger.warn("Marking the Accessory Server Registry as ready");
         ReadyMarker newMarker = new ReadyMarker(HOMEKIT_ACCESSORY_SERVER_REGISTRY, this.toString());
         readyService.markReady(newMarker);
-    }
-
-    @Override
-    public void updated(AccessoryServer server) {
-        this.update(server);
     }
 
     @Override
@@ -227,5 +226,45 @@ public class AccessoryServerRegistryImpl
     public void removed(Provider<AccessoryServer> provider, AccessoryServer element) {
         element.removeChangeListener(this);
         super.removed(provider, element);
+    }
+
+    @Override
+    public void onServerUpdated(AccessoryServer server) {
+        this.update(server);
+    }
+
+    @Override
+    public void onAccessoryAdded(Accessory accessory) {
+        // No Op
+    }
+
+    @Override
+    public void onAccessoryRemoved(Accessory accessory) {
+        // No Op
+    }
+
+    @Override
+    public void onServiceAdded(Service service) {
+        // No Op
+    }
+
+    @Override
+    public void onServiceRemoved(Service service) {
+        // No Op
+    }
+
+    @Override
+    public void onCharacteristicAdded(Characteristic characteristic) {
+        // No Op
+    }
+
+    @Override
+    public void onCharacteristicRemoved(Characteristic characteristic) {
+        // No Op
+    }
+
+    @Override
+    public void onCharacteristicStateChanged(Characteristic characteristic) {
+        // No Op
     }
 }

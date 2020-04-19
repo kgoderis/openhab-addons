@@ -58,7 +58,7 @@ public class ManagedAccessoryServerProvider
                 Arrays.toString(serverFactory.getSupportedServerTypes()));
 
         if (Arrays.stream(serverFactory.getSupportedServerTypes())
-                .anyMatch(BridgeAccessoryServer.class.getSimpleName()::equals)) {
+                .anyMatch(LocalBridgeAccessoryServer.class.getSimpleName()::equals)) {
             logger.warn("Marking the Managed Accessory Server Provider as ready");
             ReadyMarker newMarker = new ReadyMarker(HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER, this.toString());
             readyService.markReady(newMarker);
@@ -84,10 +84,10 @@ public class ManagedAccessoryServerProvider
 
         for (AccessoryServerFactory factory : serverFactories) {
 
-            AccessoryServer server = factory.createServer(BridgeAccessoryServer.class.getSimpleName(),
+            AccessoryServer server = factory.createServer(LocalBridgeAccessoryServer.class.getSimpleName(),
                     persistableElement.getLocalAddress(), persistableElement.getPort(),
-                    persistableElement.getPairingIdentifier(), persistableElement.getSalt(),
-                    persistableElement.getPrivateKey(), persistableElement.getConfigurationIndex());
+                    persistableElement.getPairingIdentifier(), persistableElement.getPrivateKey(),
+                    persistableElement.getConfigurationIndex());
 
             if (server != null) {
                 logger.debug("Created an Accessory Server {} with Setup Code {}", server.getUID(),
@@ -95,13 +95,13 @@ public class ManagedAccessoryServerProvider
                 return server;
             } else {
                 logger.warn("Unable to create an Accessory Server of Type {}",
-                        BridgeAccessoryServer.class.getSimpleName());
+                        LocalBridgeAccessoryServer.class.getSimpleName());
                 return null;
             }
         }
 
         logger.warn("There is no Acessory Server Factory for Accessory Servers of Type '{}'",
-                BridgeAccessoryServer.class.getSimpleName());
+                LocalBridgeAccessoryServer.class.getSimpleName());
 
         return null;
     }
@@ -109,7 +109,7 @@ public class ManagedAccessoryServerProvider
     @Override
     protected PersistedAccessoryServer toPersistableElement(AccessoryServer element) {
         return new PersistedAccessoryServer(element.getAddress(), element.getPort(), element.getPairingId(),
-                element.getSalt(), element.getSecretKey(), element.getConfigurationIndex());
+                element.getSecretKey(), element.getConfigurationIndex());
     }
 
 }

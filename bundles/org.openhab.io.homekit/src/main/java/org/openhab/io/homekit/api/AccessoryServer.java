@@ -52,17 +52,17 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
      *
      * @return the list of HomekitAccessories.
      */
-    Collection<ManagedAccessory> getAccessories();
+    Collection<Accessory> getAccessories();
 
     @Nullable
-    ManagedAccessory getAccessory(int instanceId);
+    Accessory getAccessory(int instanceId);
 
     @Nullable
-    ManagedAccessory getAccessory(Class<? extends ManagedAccessory> accessoryClass);
+    Accessory getAccessory(Class<? extends Accessory> accessoryClass);
 
-    void addAccessory(ManagedAccessory accessory);
+    void addAccessory(Accessory accessory);
 
-    void removeAccessory(ManagedAccessory accessory);
+    void removeAccessory(Accessory accessory);
 
     InetAddress getAddress();
 
@@ -117,4 +117,10 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
      * @return the previously stored public key for this client.
      */
     byte @Nullable [] getDestinationPublicKey(byte[] destinationPairingId);
+
+    void setConfigurationIndex(int configurationIndex);
+
+    int getConfigurationIndex();
+
+    Collection<Pairing> getPairings();
 }

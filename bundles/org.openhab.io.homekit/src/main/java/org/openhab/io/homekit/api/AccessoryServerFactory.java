@@ -1,6 +1,5 @@
 package org.openhab.io.homekit.api;
 
-import java.math.BigInteger;
 import java.net.InetAddress;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -36,11 +35,7 @@ public interface AccessoryServerFactory {
      */
     @Nullable
     AccessoryServer createServer(String factoryType, InetAddress localAddress, int port, byte[] pairingId,
-            BigInteger salt, byte[] privateKey, int configurationIndex);
-
-    @Nullable
-    AccessoryServer createServer(String factoryType, InetAddress localAddress, int port, BigInteger salt,
-            int configurationIndex);
+            byte[] privateKey, int configurationIndex);
 
     /**
      * Returns the list of all supported AccessoryServer types of this factory.

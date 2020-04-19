@@ -3,11 +3,14 @@ package org.openhab.io.homekit.internal.server;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.io.homekit.api.Accessory;
 import org.openhab.io.homekit.api.AccessoryRegistry;
 import org.openhab.io.homekit.api.AccessoryServer;
 import org.openhab.io.homekit.api.AccessoryServerChangeListener;
@@ -15,8 +18,10 @@ import org.openhab.io.homekit.api.NotificationRegistry;
 import org.openhab.io.homekit.api.Pairing;
 import org.openhab.io.homekit.api.PairingRegistry;
 import org.openhab.io.homekit.crypto.HomekitEncryptionEngine;
+import org.openhab.io.homekit.internal.accessory.AccessoryUID;
 import org.openhab.io.homekit.internal.pairing.PairingImpl;
 import org.openhab.io.homekit.internal.pairing.PairingUID;
+import org.openhab.io.homekit.library.accessory.BridgeAccessory;
 import org.openhab.io.homekit.util.Byte;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +44,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     protected final byte[] pairingIdentifier;
     protected final byte[] secretKey;
     protected String setupCode;
+    protected int configurationIndex = 1;
 
     private final Collection<AccessoryServerChangeListener> listeners = new CopyOnWriteArraySet<>();
 
@@ -163,23 +169,56 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     protected void notifyListeners() {
         for (AccessoryServerChangeListener listener : this.listeners) {
             try {
-                listener.updated(this);
+                listener.onServerUpdated(this);
             } catch (Throwable throwable) {
                 logger.error("Cannot inform listener {} ", listener, throwable.getMessage(), throwable);
             }
         }
     }
 
-    // protected static SecureRandom getSecureRandom() {
-    // if (secureRandom == null) {
-    // synchronized (HomekitCommunicationManager.class) {
-    // if (secureRandom == null) {
-    // secureRandom = new SecureRandom();
-    // }
-    // }
-    // }
-    // return secureRandom;
-    // }
+    @Override
+    public Collection<Accessory> getAccessories() {
+        return Collections.unmodifiableList(accessoryRegistry.get(getId()).stream()
+                .sorted((o1, o2) -> Long.valueOf(o1.getId()).compareTo(Long.valueOf(o2.getId())))
+                .collect(Collectors.toList()));
+    }
+
+    @Override
+    public @Nullable Accessory getAccessory(int instanceId) {
+        AccessoryUID id = new AccessoryUID(getId(), Integer.toString(instanceId));
+        return accessoryRegistry.get(id);
+    }
+
+    @Override
+    public @Nullable Accessory getAccessory(Class<? extends Accessory> accessoryClass) {
+        Collection<Accessory> accessories = accessoryRegistry.get(getId());
+        for (Accessory accessory : accessories) {
+            if (accessory.getClass() == accessoryClass) {
+                return accessory;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void addAccessory(Accessory accessory) {
+        logger.debug("Adding Accessory {} of Type {} to Accessory Server {}", accessory.getUID(),
+                accessory.getClass().getSimpleName(), this.getUID());
+        if (accessory.getId() <= 1 && !(accessory instanceof BridgeAccessory)) {
+            throw new IndexOutOfBoundsException("The ID of an accessory used in a bridge must be greater than 1");
+        }
+
+        if (accessoryRegistry.update(accessory) == null) {
+            logger.debug("Adding Accessory {} of Type {} to the Accessory Registry", accessory.getUID(),
+                    accessory.getClass().getSimpleName(), this.getUID());
+            accessoryRegistry.add(accessory);
+        }
+    }
+
+    @Override
+    public void removeAccessory(Accessory accessory) {
+        accessoryRegistry.remove(accessory.getUID());
+    }
 
     @Override
     public void addPairing(byte @NonNull [] destinationPairingId, byte @NonNull [] destinationPublicKey) {
@@ -202,6 +241,17 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     }
 
     @Override
+    public Pairing getPairing(byte @NonNull [] destinationPairingId) {
+        return pairingRegistry.get(new PairingUID(getPairingId(), destinationPairingId));
+    }
+
+    @Override
+    public Collection<Pairing> getPairings() {
+        return pairingRegistry.get(getPairingId());
+
+    }
+
+    @Override
     public void removePairing(byte @NonNull [] destinationPairingId) {
         Pairing oldPairing = pairingRegistry.remove(new PairingUID(getPairingId(), destinationPairingId));
         if (oldPairing != null) {
@@ -212,11 +262,6 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
             logger.warn("The Pairing Registry does not contain a Pairing for {} with Destination {}", getId(),
                     Byte.toHexString(destinationPairingId));
         }
-    }
-
-    @Override
-    public Pairing getPairing(byte @NonNull [] destinationPairingId) {
-        return pairingRegistry.get(new PairingUID(getPairingId(), destinationPairingId));
     }
 
     @Override
@@ -238,6 +283,16 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
                 + Stream.generate(() -> HomekitEncryptionEngine.getSecureRandom().nextInt(255) + 1).limit(5)
                         .map(i -> Integer.toHexString(i).toUpperCase()).collect(Collectors.joining(":")))
                                 .getBytes(StandardCharsets.UTF_8);
+    }
+
+    @Override
+    public int getConfigurationIndex() {
+        return configurationIndex;
+    }
+
+    @Override
+    public void setConfigurationIndex(int configurationIndex) {
+        this.configurationIndex = configurationIndex;
     }
 
 }

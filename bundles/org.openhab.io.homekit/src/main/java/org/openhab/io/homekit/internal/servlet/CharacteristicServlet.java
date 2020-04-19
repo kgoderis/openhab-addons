@@ -66,7 +66,7 @@ public class CharacteristicServlet extends BaseServlet {
             int aid = Integer.parseInt(parts[0]);
             int iid = Integer.parseInt(parts[1]);
 
-            ManagedAccessory theAccessory = server.getAccessory(aid);
+            ManagedAccessory theAccessory = (ManagedAccessory) server.getAccessory(aid);
             if (theAccessory != null) {
                 Collection<Service> services = theAccessory.getServices();
 
@@ -115,7 +115,7 @@ public class CharacteristicServlet extends BaseServlet {
                     int aid = characteristicWriteObject.getInt("aid");
                     int iid = characteristicWriteObject.getInt("iid");
 
-                    ManagedAccessory theAccessory = server.getAccessory(aid);
+                    ManagedAccessory theAccessory = (ManagedAccessory) server.getAccessory(aid);
                     if (theAccessory != null) {
                         Collection<Service> services = theAccessory.getServices();
 

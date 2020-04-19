@@ -28,9 +28,9 @@ import org.openhab.io.homekit.api.PairingRegistry;
  * @author Karel Goderis
  */
 @NonNullByDefault
-public class BridgeAccessoryServer extends AbstractLocalAccessoryServer {
+public class LocalBridgeAccessoryServer extends AbstractLocalAccessoryServer {
 
-    public BridgeAccessoryServer(InetAddress localAddress, int port, byte[] pairingId, byte[] privateKey,
+    public LocalBridgeAccessoryServer(InetAddress localAddress, int port, byte[] pairingId, byte[] privateKey,
             @Nullable MDNSService mdnsService, @Nullable AccessoryRegistry accessoryRegistry,
             @Nullable PairingRegistry pairingRegistry, @Nullable NotificationRegistry notificationRegistry,
             @Nullable HomekitCommunicationManager manager, @Nullable SafeCaller safeCaller) throws Exception {
@@ -38,7 +38,7 @@ public class BridgeAccessoryServer extends AbstractLocalAccessoryServer {
                 notificationRegistry, manager, safeCaller);
     }
 
-    public BridgeAccessoryServer(InetAddress localAddress, int port, @Nullable MDNSService mdnsService,
+    public LocalBridgeAccessoryServer(InetAddress localAddress, int port, @Nullable MDNSService mdnsService,
             @Nullable AccessoryRegistry accessoryRegistry, @Nullable PairingRegistry pairingRegistry,
             @Nullable NotificationRegistry notificationRegistry, @Nullable HomekitCommunicationManager manager,
             @Nullable SafeCaller safeCaller) throws Exception {

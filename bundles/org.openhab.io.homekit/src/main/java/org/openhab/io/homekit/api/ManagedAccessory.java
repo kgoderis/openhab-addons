@@ -1,8 +1,6 @@
 package org.openhab.io.homekit.api;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.core.common.registry.Identifiable;
-import org.openhab.io.homekit.internal.accessory.AccessoryUID;
 
 /**
  * Base interface for all \. You can implement this interface directly, but most
@@ -12,7 +10,7 @@ import org.openhab.io.homekit.internal.accessory.AccessoryUID;
  * @author Andy Lintner
  */
 @NonNullByDefault
-public interface ManagedAccessory extends Identifiable<AccessoryUID>, Accessory {
+public interface ManagedAccessory extends Accessory {
 
     /**
      * Characteristic Instance IDs are assigned from the same number pool that is unique within each

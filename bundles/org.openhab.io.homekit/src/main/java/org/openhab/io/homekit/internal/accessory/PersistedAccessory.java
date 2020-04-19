@@ -1,5 +1,7 @@
 package org.openhab.io.homekit.internal.accessory;
 
+import org.openhab.io.homekit.internal.server.AccessoryServerUID;
+
 public class PersistedAccessory {
 
     private String json;
@@ -33,8 +35,8 @@ public class PersistedAccessory {
         return Long.parseLong(instanceIdPool);
     }
 
-    public String getServerId() {
-        return serverId;
+    public AccessoryServerUID getServerId() {
+        return new AccessoryServerUID(serverId);
     }
 
     public String getThingUID() {
@@ -53,8 +55,8 @@ public class PersistedAccessory {
         this.instanceIdPool = Long.toString(instanceIdPool);
     }
 
-    public void setServerId(String serverId) {
-        this.serverId = serverId;
+    public void setServerId(AccessoryServerUID serverId) {
+        this.serverId = serverId.toString();
     }
 
     public void setThingUID(String thingUID) {

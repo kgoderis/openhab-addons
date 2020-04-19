@@ -1,14 +1,10 @@
-package org.openhab.io.homekit.internal.server;
+package org.openhab.io.homekit.api;
 
 import java.io.IOException;
-import java.util.Collection;
 
-import org.openhab.io.homekit.api.Accessory;
 import org.openhab.io.homekit.internal.client.HomekitException;
 
 public interface RemoteAccessoryServer {
-
-    boolean isPairVerified();
 
     boolean isSecure();
 
@@ -16,8 +12,10 @@ public interface RemoteAccessoryServer {
 
     boolean pairVerify();
 
+    boolean isPairVerified();
+
     void pairRemove() throws HomekitException, IOException;
 
-    Collection<Accessory> getAccessories();
+    // Collection<Accessory> getAccessories();
 
 }

@@ -88,7 +88,7 @@ public class PairingRegistryImpl extends AbstractRegistry<Pairing, PairingUID, P
 
     @Override
     public Collection<Pairing> get(byte[] pairingId) {
-        return getAll().stream().filter(p -> Arrays.equals(p.getUID().getAccessoryPairingId(), pairingId))
+        return getAll().stream().filter(p -> Arrays.equals(p.getUID().getSourcePairingId(), pairingId))
                 .collect(Collectors.toList());
     }
 

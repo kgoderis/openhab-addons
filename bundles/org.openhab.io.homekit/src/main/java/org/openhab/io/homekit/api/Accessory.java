@@ -6,6 +6,8 @@ import javax.json.JsonObject;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.core.common.registry.Identifiable;
+import org.openhab.io.homekit.internal.accessory.AccessoryUID;
 
 /**
  * Base interface for all \. You can implement this interface directly, but most
@@ -15,7 +17,7 @@ import org.eclipse.jdt.annotation.Nullable;
  * @author Andy Lintner
  */
 @NonNullByDefault
-public interface Accessory {
+public interface Accessory extends Identifiable<AccessoryUID> {
 
     /**
      * Accessory Instance IDs are assigned from the same number pool that is global across entire
@@ -25,6 +27,8 @@ public interface Accessory {
      * @return the Accessory Instance ID.
      */
     long getId();
+
+    AccessoryServer getServer();
 
     void addService(Service service);
 

@@ -12,14 +12,12 @@ public abstract class AbstractManagedAccessory extends GenericAccessory implemen
     private final Logger logger = LoggerFactory.getLogger(AbstractManagedAccessory.class);
 
     private final HomekitCommunicationManager manager;
-    private final AccessoryServer server;
     private long instanceIdPool = 1;
 
     public AbstractManagedAccessory(HomekitCommunicationManager manager, AccessoryServer server, long instanceId,
             boolean extend) {
-        super(instanceId);
+        super(server, instanceId);
         this.manager = manager;
-        this.server = server;
 
         if (extend) {
             addServices();
@@ -29,16 +27,6 @@ public abstract class AbstractManagedAccessory extends GenericAccessory implemen
     @Override
     public void addServices() {
         addService(new AccessoryInformationService(getManager(), this, getInstanceId(), true, getLabel()));
-    }
-
-    @Override
-    public AccessoryUID getUID() {
-        return new AccessoryUID(server.getId(), Long.toString(getId()));
-    }
-
-    @Override
-    public AccessoryServer getServer() {
-        return server;
     }
 
     @Override
