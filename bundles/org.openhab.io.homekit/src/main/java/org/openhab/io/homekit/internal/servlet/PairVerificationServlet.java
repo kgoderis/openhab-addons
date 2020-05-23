@@ -15,7 +15,7 @@ import org.apache.commons.io.IOUtils;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
-import org.openhab.io.homekit.api.AccessoryServer;
+import org.openhab.io.homekit.api.LocalAccessoryServer;
 import org.openhab.io.homekit.crypto.ChachaDecoder;
 import org.openhab.io.homekit.crypto.ChachaEncoder;
 import org.openhab.io.homekit.crypto.EdsaSigner;
@@ -40,7 +40,7 @@ public class PairVerificationServlet extends BaseServlet {
     public PairVerificationServlet() {
     }
 
-    public PairVerificationServlet(AccessoryServer server) {
+    public PairVerificationServlet(LocalAccessoryServer server) {
         super(server);
     }
 

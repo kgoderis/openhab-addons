@@ -63,6 +63,12 @@ public abstract class AbstractHomekitAccessoryHandler extends BaseThingHandler {
     }
 
     @Override
+    public void dispose() {
+        homekitFactoryRegistryServiceTracker.close();
+        super.dispose();
+    }
+
+    @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
         try {
 

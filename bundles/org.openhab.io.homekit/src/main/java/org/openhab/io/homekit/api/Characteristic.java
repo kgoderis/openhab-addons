@@ -2,6 +2,9 @@ package org.openhab.io.homekit.api;
 
 import javax.json.JsonObject;
 
+import org.openhab.core.common.registry.Identifiable;
+import org.openhab.io.homekit.internal.characteristic.CharacteristicUID;
+
 /**
  * Interface for the Characteristics provided by a Service.
  *
@@ -11,7 +14,7 @@ import javax.json.JsonObject;
  *
  * @author Andy Lintner
  */
-public interface Characteristic {
+public interface Characteristic extends Identifiable<CharacteristicUID> {
 
     /**
      * Characteristic Instance IDs are assigned from the same number pool that is unique within each

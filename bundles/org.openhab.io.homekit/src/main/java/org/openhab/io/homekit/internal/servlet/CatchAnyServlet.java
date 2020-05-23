@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
-import org.openhab.io.homekit.api.AccessoryServer;
+import org.openhab.io.homekit.api.LocalAccessoryServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +19,7 @@ public class CatchAnyServlet extends BaseServlet {
     public CatchAnyServlet() {
     }
 
-    public CatchAnyServlet(AccessoryServer server) {
+    public CatchAnyServlet(LocalAccessoryServer server) {
         super(server);
     }
 

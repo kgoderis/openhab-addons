@@ -3,10 +3,8 @@ package org.openhab.io.homekit.api;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
-import org.openhab.core.common.registry.Identifiable;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.types.State;
-import org.openhab.io.homekit.internal.characteristic.CharacteristicUID;
 
 /**
  * Interface for the Characteristics provided by a Service.
@@ -17,7 +15,7 @@ import org.openhab.io.homekit.internal.characteristic.CharacteristicUID;
  *
  * @author Andy Lintner
  */
-public interface ManagedCharacteristic<T> extends Identifiable<CharacteristicUID>, Characteristic {
+public interface ManagedCharacteristic<T> extends Characteristic {
 
     void setChannelUID(ChannelUID channelUID);
 

@@ -39,25 +39,6 @@ public abstract class AbstractManagedAccessory extends GenericAccessory implemen
         return instanceIdPool;
     }
 
-    @Override
-    public String getSerialNumber() {
-        return getUID().getId();
-    }
-
-    @Override
-    public String getModel() {
-        return this.getClass().getSimpleName();
-    }
-
-    @Override
-    public void identify() {
-    }
-
-    @Override
-    public boolean isExtensible() {
-        return true;
-    }
-
     public HomekitCommunicationManager getManager() {
         return manager;
     }

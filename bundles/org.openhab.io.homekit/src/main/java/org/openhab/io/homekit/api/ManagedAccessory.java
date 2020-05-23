@@ -26,43 +26,6 @@ public interface ManagedAccessory extends Accessory {
 
     long getCurrentInstanceId();
 
-    AccessoryServer getServer();
-
     void addServices();
 
-    /**
-     * Returns a label to display
-     *
-     * @return the label.
-     */
-    String getLabel();
-
-    /**
-     * Returns a serial number
-     *
-     * @return the serial number, or null.
-     */
-    String getSerialNumber();
-
-    /**
-     * Returns a model name
-     *
-     * @return the model name, or null.
-     */
-    String getModel();
-
-    /**
-     * Returns a manufacturer name
-     *
-     * @return the manufacturer, or null.
-     */
-    String getManufacturer();
-
-    /**
-     * Performs an operation that can be used to identify the accessory. This action can be performed
-     * without pairing.
-     */
-    void identify();
-
-    boolean isExtensible();
 }

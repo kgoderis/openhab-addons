@@ -7,7 +7,7 @@ import java.util.Arrays;
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServlet;
 
-import org.openhab.io.homekit.api.AccessoryServer;
+import org.openhab.io.homekit.api.LocalAccessoryServer;
 import org.openhab.io.homekit.internal.http.HomekitServletConfig;
 import org.openhab.io.homekit.util.Message;
 import org.openhab.io.homekit.util.TypeLengthValue;
@@ -16,19 +16,19 @@ import org.openhab.io.homekit.util.TypeLengthValue.DecodeResult;
 @SuppressWarnings("serial")
 public abstract class BaseServlet extends HttpServlet {
 
-    AccessoryServer server;
+    LocalAccessoryServer server;
 
     public BaseServlet() {
     }
 
-    public BaseServlet(AccessoryServer server) {
+    public BaseServlet(LocalAccessoryServer server) {
         this.server = server;
     }
 
     @Override
     public void init(ServletConfig config) {
         if (config instanceof HomekitServletConfig) {
-            this.server = ((HomekitServletConfig) config).getAccessoryServer();
+            this.server = (LocalAccessoryServer) ((HomekitServletConfig) config).getAccessoryServer();
         }
     }
 

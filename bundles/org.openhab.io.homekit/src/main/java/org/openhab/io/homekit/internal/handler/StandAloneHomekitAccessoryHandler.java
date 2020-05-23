@@ -14,11 +14,12 @@ import org.openhab.core.thing.ThingStatus;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.io.homekit.api.Accessory;
 import org.openhab.io.homekit.api.PairingRegistry;
+import org.openhab.io.homekit.api.RemoteAccessoryServer;
 import org.openhab.io.homekit.internal.client.HomekitAccessoryConfiguration;
 import org.openhab.io.homekit.internal.client.HomekitAccessoryProtocolParticipant;
 import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
 import org.openhab.io.homekit.internal.client.HomekitException;
-import org.openhab.io.homekit.internal.server.AbstractRemoteAccessoryServer;
+import org.openhab.io.homekit.internal.server.RemoteStandAloneAccessoryServer;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +33,7 @@ public class StandAloneHomekitAccessoryHandler extends AbstractHomekitAccessoryH
             .singleton(HomekitBindingConstants.THING_TYPE_STANDALONE_ACCESSORY);
 
     private @Nullable HomekitAccessoryConfiguration config;
-    private AbstractRemoteAccessoryServer homekitClient;
+    private RemoteAccessoryServer homekitClient;
     private final PairingRegistry pairingRegistry;
     // private Collection<HomekitFactory> homekitFactories = new CopyOnWriteArrayList<>();
 
@@ -118,11 +119,12 @@ public class StandAloneHomekitAccessoryHandler extends AbstractHomekitAccessoryH
                     logger.info("'{}' : Creating a Homekit client using an existing Id '{}'", getThing().getUID(),
                             new String(clientPairingId));
 
-                    homekitClient = new AbstractRemoteAccessoryServer(InetAddress.getByName(config.host), config.port, clientPairingId,
-                            clientLongtermSecretKey, accessoryPairingId, pairingRegistry);
+                    homekitClient = new RemoteStandAloneAccessoryServer(InetAddress.getByName(config.host), config.port,
+                            clientPairingId, clientLongtermSecretKey, accessoryPairingId, pairingRegistry);
 
                 } else {
-                    homekitClient = new AbstractRemoteAccessoryServer(InetAddress.getByName(config.host), config.port, pairingRegistry);
+                    homekitClient = new RemoteStandAloneAccessoryServer(InetAddress.getByName(config.host), config.port,
+                            pairingRegistry);
 
                     logger.info("'{}' : Creating a Homekit client using a newly generated Id '{}'", getThing().getUID(),
                             new String(homekitClient.getPairingId()));

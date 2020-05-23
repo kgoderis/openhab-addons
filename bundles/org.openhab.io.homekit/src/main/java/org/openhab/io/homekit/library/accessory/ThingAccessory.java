@@ -66,9 +66,4 @@ public class ThingAccessory extends AbstractManagedAccessory {
         }
     }
 
-    @Override
-    public String getManufacturer() {
-        return "openHAB";
-    }
-
 }

@@ -28,15 +28,17 @@ public class GenericService implements Service {
 
     private final Accessory accessory;
     private final long instanceId;
+    private final String name;
     private String type;
     private boolean isHidden;
     private boolean isPrimary;
     private final List<Characteristic> characteristics = new LinkedList<>();
 
-    public GenericService(Accessory accessory, JsonValue value) {
+    public GenericService(Accessory accessory, JsonValue value, String name) {
         this.accessory = accessory;
         this.instanceId = ((JsonObject) value).getInt("iid");
         this.type = ((JsonObject) value).getString("type");
+        this.name = name;
 
         JsonArray characteristicsArray = ((JsonObject) value).getJsonArray("characteristics");
         for (JsonValue characteristicValue : characteristicsArray) {
@@ -44,14 +46,26 @@ public class GenericService implements Service {
         }
     }
 
-    public GenericService(@NonNull Accessory accessory, long instanceId) {
+    public GenericService(@NonNull Accessory accessory, long instanceId, String name) {
         this.accessory = accessory;
         this.instanceId = instanceId;
+        this.name = name;
+    }
+
+    @Override
+    public ServiceUID getUID() {
+        return new ServiceUID(getAccessory().getServer().getId(), Long.toString(getAccessory().getId()),
+                Long.toString(getId()));
     }
 
     @Override
     public long getId() {
         return instanceId;
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 
     @Override
@@ -118,6 +132,11 @@ public class GenericService implements Service {
         return characteristics.remove(characteristic);
     }
 
+    @Override
+    public boolean isExtensible() {
+        return true;
+    }
+
     /**
      * The maximum number of characteristics must not exceed 100, and each characteristic in the array must have a
      * unique type.
@@ -126,7 +145,7 @@ public class GenericService implements Service {
      */
     @Override
     public void addCharacteristic(Characteristic characteristic) {
-        if (getCharacteristic(characteristic.getInstanceType()) == null) {
+        if (getCharacteristic(characteristic.getInstanceType()) == null && isExtensible()) {
             characteristics.add(characteristic);
             // logger.debug("Added Characteristic {} of Type {} to Service {} of Type {}", characteristic.getUID(),
             // characteristic.getClass().getSimpleName(), this.getUID(), this.getClass().getSimpleName());

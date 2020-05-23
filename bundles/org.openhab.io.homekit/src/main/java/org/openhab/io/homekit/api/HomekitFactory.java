@@ -21,6 +21,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.type.ChannelTypeUID;
+import org.openhab.io.homekit.internal.accessory.GenericAccessory;
 
 /**
  * The {@link HomekitFactory} is responsible for creating {@link ManagedAccessory}s based on {@link Thing}s. Therefore
@@ -56,11 +57,15 @@ public interface HomekitFactory {
      * @throws IllegalStateException if the handler instance could not be created
      */
     @Nullable
-    ManagedAccessory createAccessory(Thing thing, AccessoryServer server) throws Exception;
+    ManagedAccessory createAccessory(Thing thing, LocalAccessoryServer server) throws Exception;
 
     @Nullable
     ManagedAccessory createAccessory(Class<? extends ManagedAccessory> accessoryClass, AccessoryServer server,
             long instanceId, boolean extend);
+
+    @Nullable
+    GenericAccessory createAccessory(Class<? extends GenericAccessory> accessoryClass, AccessoryServer server,
+            long instanceId);
 
     @Nullable
     ManagedService createService(String serviceType, ManagedAccessory accessory, boolean extend, String serviceName);

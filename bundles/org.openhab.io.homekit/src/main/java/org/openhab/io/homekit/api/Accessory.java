@@ -28,22 +28,39 @@ public interface Accessory extends Identifiable<AccessoryUID> {
      */
     long getId();
 
-    AccessoryServer getServer();
-
-    void addService(Service service);
-
-    @Nullable
-    Service getService(String serviceType);
+    /**
+     * Returns a label to display
+     *
+     * @return the label.
+     */
+    String getLabel();
 
     /**
-     * Accessory should list one of its Services as the primary Service. The primary Service
-     * must match the primary function of the Accessory and must also match with the accessory category. An
-     * Accessory must expose only one primary Service from its list of available Services
+     * Returns a serial number
      *
-     * @return the primary Services.
+     * @return the serial number, or null.
      */
-    @Nullable
-    Service getPrimaryService();
+    String getSerialNumber();
+
+    /**
+     * Returns a model name
+     *
+     * @return the model name, or null.
+     */
+    String getModel();
+
+    /**
+     * Returns a manufacturer name
+     *
+     * @return the manufacturer, or null.
+     */
+    String getManufacturer();
+
+    AccessoryServer getServer();
+
+    boolean isExtensible();
+
+    void addService(Service service);
 
     /**
      * The collection of Services this single Accessory supports. Services are the primary way to
@@ -65,6 +82,19 @@ public interface Accessory extends Identifiable<AccessoryUID> {
      */
     Collection<Service> getServices();
 
+    @Nullable
+    Service getService(String serviceType);
+
+    /**
+     * Accessory should list one of its Services as the primary Service. The primary Service
+     * must match the primary function of the Accessory and must also match with the accessory category. An
+     * Accessory must expose only one primary Service from its list of available Services
+     *
+     * @return the primary Services.
+     */
+    @Nullable
+    Service getPrimaryService();
+
     /**
      * Creates the JSON representation of the Accessory, in accordance with the Homekit Accessory
      * Protocol.
@@ -74,5 +104,11 @@ public interface Accessory extends Identifiable<AccessoryUID> {
     JsonObject toJson();
 
     JsonObject toReducedJson();
+
+    /**
+     * Performs an operation that can be used to identify the accessory. This action can be performed
+     * without pairing.
+     */
+    void identify();
 
 }

@@ -38,8 +38,13 @@ public class GenericAccessory implements Accessory {
 
         JsonArray servicesArray = ((JsonObject) value).getJsonArray("services");
         for (JsonValue serviceValue : servicesArray) {
-            services.add(new GenericService(this, serviceValue));
+            services.add(new GenericService(this, serviceValue, GenericService.class.getSimpleName()));
         }
+    }
+
+    @Override
+    public AccessoryUID getUID() {
+        return new AccessoryUID(getServer().getId(), Long.toString(getId()));
     }
 
     @Override
@@ -48,13 +53,33 @@ public class GenericAccessory implements Accessory {
     }
 
     @Override
-    public Collection<Service> getServices() {
-        return services;
+    public String getSerialNumber() {
+        return getUID().getId();
     }
 
     @Override
-    public @NonNull Service getPrimaryService() {
-        return services.stream().filter(s -> s.isPrimary()).findAny().get();
+    public @NonNull String getLabel() {
+        return getUID().toString();
+    }
+
+    @Override
+    public @NonNull String getManufacturer() {
+        return "openHAB";
+    }
+
+    @Override
+    public String getModel() {
+        return this.getClass().getSimpleName();
+    }
+
+    @Override
+    public @NonNull AccessoryServer getServer() {
+        return server;
+    }
+
+    @Override
+    public Collection<Service> getServices() {
+        return services;
     }
 
     @Override
@@ -63,8 +88,18 @@ public class GenericAccessory implements Accessory {
     }
 
     @Override
+    public @NonNull Service getPrimaryService() {
+        return services.stream().filter(s -> s.isPrimary()).findAny().get();
+    }
+
+    @Override
+    public boolean isExtensible() {
+        return true;
+    }
+
+    @Override
     public void addService(@Nullable Service service) {
-        if (service != null) {
+        if (service != null && isExtensible()) {
             if (getService(service.getInstanceType()) == null) {
                 services.add(service);
                 // logger.debug("Added Service {} of Type {} to Accessory {} of Type {}", service.getUID(),
@@ -103,13 +138,8 @@ public class GenericAccessory implements Accessory {
     }
 
     @Override
-    public AccessoryUID getUID() {
-        return new AccessoryUID(getServer().getId(), Long.toString(getId()));
-    }
-
-    @Override
-    public @NonNull AccessoryServer getServer() {
-        return server;
+    public void identify() {
+        // TODO No Op?
     }
 
 }

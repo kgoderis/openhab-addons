@@ -62,4 +62,5 @@ public class AppleHomekitFactory extends BaseHomekitFactory {
         this.addCharacteristic(TemperatureDisplayUnitsCharacteristic.class);
         this.addCharacteristic(VersionCharacteristic.class);
     }
+
 }

@@ -84,6 +84,12 @@ public class GenericCharacteristic implements Characteristic {
     }
 
     @Override
+    public CharacteristicUID getUID() {
+        return new CharacteristicUID(getService().getAccessory().getServer().getId(),
+                getService().getAccessory().getId(), getService().getId(), getId());
+    }
+
+    @Override
     public long getId() {
         return instanceId;
     }

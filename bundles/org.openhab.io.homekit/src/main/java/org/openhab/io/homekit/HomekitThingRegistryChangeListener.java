@@ -18,11 +18,13 @@ import org.openhab.core.service.ReadyService;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingRegistry;
 import org.openhab.core.thing.ThingRegistryChangeListener;
-import org.openhab.io.homekit.api.ManagedAccessory;
+import org.openhab.io.homekit.api.Accessory;
 import org.openhab.io.homekit.api.AccessoryRegistry;
 import org.openhab.io.homekit.api.AccessoryServer;
 import org.openhab.io.homekit.api.AccessoryServerRegistry;
 import org.openhab.io.homekit.api.HomekitFactory;
+import org.openhab.io.homekit.api.LocalAccessoryServer;
+import org.openhab.io.homekit.api.ManagedAccessory;
 import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
 import org.openhab.io.homekit.library.accessory.ThingAccessory;
 import org.osgi.service.component.annotations.Activate;
@@ -111,7 +113,9 @@ public class HomekitThingRegistryChangeListener implements ThingRegistryChangeLi
 
         for (AccessoryServer server : serverRegistry.getAll()) {
             logger.debug("Advertising {} with Setup Code {} ", server.getUID(), server.getSetupCode());
-            server.advertise();
+            if (server instanceof LocalAccessoryServer) {
+                ((LocalAccessoryServer) server).advertise();
+            }
         }
 
         logger.info("Marking the Homekit ThingRegistry Change Listener as ready");
@@ -141,8 +145,8 @@ public class HomekitThingRegistryChangeListener implements ThingRegistryChangeLi
         }
 
         boolean accessoryExists = false;
-        ManagedAccessory foundAccessory = null;
-        for (ManagedAccessory accessory : accessoryRegistry.getAll()) {
+        Accessory foundAccessory = null;
+        for (Accessory accessory : accessoryRegistry.getAll()) {
             if (accessory instanceof ThingAccessory) {
                 if (((ThingAccessory) accessory).getThingUID() != null) {
                     if (((ThingAccessory) accessory).getThingUID().toString().equals(thing.getUID().toString())) {
@@ -157,7 +161,7 @@ public class HomekitThingRegistryChangeListener implements ThingRegistryChangeLi
         if (!accessoryExists) {
             HomekitFactory factory = homekitFactories.stream().filter(f -> f.supportsThingType(thing.getThingTypeUID()))
                     .findFirst().orElse(null);
-            AccessoryServer server = serverRegistry.getAvailableBridgeAccessoryServer();
+            LocalAccessoryServer server = serverRegistry.getAvailableBridgeAccessoryServer();
 
             if (factory != null) {
                 if (server != null) {
@@ -190,7 +194,7 @@ public class HomekitThingRegistryChangeListener implements ThingRegistryChangeLi
             return;
         }
 
-        for (ManagedAccessory accessory : accessoryRegistry.getAll()) {
+        for (Accessory accessory : accessoryRegistry.getAll()) {
             if (accessory instanceof ThingAccessory) {
                 if (((ThingAccessory) accessory).getThingUID().toString().equals(thing.getUID().toString())) {
                     AccessoryServer server = accessory.getServer();

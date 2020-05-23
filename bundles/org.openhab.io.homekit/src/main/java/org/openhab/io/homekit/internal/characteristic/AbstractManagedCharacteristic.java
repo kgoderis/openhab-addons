@@ -10,7 +10,6 @@ import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.types.State;
 import org.openhab.core.types.UnDefType;
 import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.ManagedAccessory;
 import org.openhab.io.homekit.api.ManagedCharacteristic;
 import org.openhab.io.homekit.api.ManagedService;
 import org.slf4j.Logger;
@@ -44,12 +43,6 @@ public abstract class AbstractManagedCharacteristic<T> extends GenericCharacteri
         }
 
         this.manager = manager;
-    }
-
-    @Override
-    public CharacteristicUID getUID() {
-        return new CharacteristicUID(((ManagedAccessory) getService().getAccessory()).getServer().getId(),
-                getService().getAccessory().getId(), getService().getId(), getId());
     }
 
     @Override

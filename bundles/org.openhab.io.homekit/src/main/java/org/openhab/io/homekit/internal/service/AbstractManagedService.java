@@ -15,7 +15,7 @@ public abstract class AbstractManagedService extends GenericService implements M
     protected static final Logger logger = LoggerFactory.getLogger(AbstractManagedService.class);
 
     private final HomekitCommunicationManager manager;
-    private final String name;
+    private final boolean isExtensible;
 
     /**
      * Creates a new instance of this class with the specified UUID and {@link ManagedAccessory}.
@@ -35,11 +35,11 @@ public abstract class AbstractManagedService extends GenericService implements M
      */
     public AbstractManagedService(@NonNull HomekitCommunicationManager manager, @NonNull ManagedAccessory accessory,
             long instanceId, boolean extend, String name) {
-        super(accessory, instanceId);
+        super(accessory, instanceId, name);
+        this.isExtensible = extend;
         this.manager = manager;
-        this.name = name;
 
-        if (extend) {
+        if (isExtensible()) {
             addCharacteristics();
         }
 
@@ -50,20 +50,14 @@ public abstract class AbstractManagedService extends GenericService implements M
     }
 
     @Override
+    public boolean isExtensible() {
+        return isExtensible;
+    }
+
+    @Override
     public void addCharacteristics() {
         addCharacteristic(
                 new NameCharacteristic(getManager(), this, ((ManagedAccessory) getAccessory()).getInstanceId()));
-    }
-
-    @Override
-    public ServiceUID getUID() {
-        return new ServiceUID(((ManagedAccessory) getAccessory()).getServer().getId(),
-                Long.toString(getAccessory().getId()), Long.toString(getId()));
-    }
-
-    @Override
-    public boolean isExtensible() {
-        return false;
     }
 
     @Override
@@ -71,11 +65,6 @@ public abstract class AbstractManagedService extends GenericService implements M
 
     protected HomekitCommunicationManager getManager() {
         return manager;
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 
 }

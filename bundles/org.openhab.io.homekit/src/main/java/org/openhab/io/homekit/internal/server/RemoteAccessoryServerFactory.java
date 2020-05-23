@@ -89,8 +89,8 @@ public class RemoteAccessoryServerFactory implements AccessoryServerFactory {
             RemoteStandAloneAccessoryServer newBridge = null;
 
             try {
-                newBridge = new RemoteStandAloneAccessoryServer(address, port, mdnsService, accessoryRegistry,
-                        pairingRegistry, notificationRegistry, communicationManager, safeCaller);
+                newBridge = new RemoteStandAloneAccessoryServer(address, port, accessoryRegistry, pairingRegistry,
+                        notificationRegistry);
                 if (newBridge != null) {
                     logger.debug("Created an Accessory Server {} of Type {} running at {}:{}", newBridge.getUID(),
                             newBridge.getClass().getSimpleName(), address.toString(), port);
@@ -117,8 +117,8 @@ public class RemoteAccessoryServerFactory implements AccessoryServerFactory {
             RemoteStandAloneAccessoryServer newBridge = null;
 
             try {
-                newBridge = new RemoteStandAloneAccessoryServer(address, port, id, privateKey, mdnsService,
-                        accessoryRegistry, pairingRegistry, notificationRegistry, communicationManager, safeCaller);
+                newBridge = new RemoteStandAloneAccessoryServer(address, port, id, privateKey, accessoryRegistry,
+                        pairingRegistry, notificationRegistry);
                 if (newBridge != null) {
                     logger.debug("Created an Accessory Server {} of Type {} running at {}:{}", newBridge.getUID(),
                             newBridge.getClass().getSimpleName(), address.toString(), port);

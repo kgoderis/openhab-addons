@@ -16,10 +16,12 @@ import org.openhab.core.thing.type.ChannelTypeUID;
 import org.openhab.io.homekit.api.AccessoryServer;
 import org.openhab.io.homekit.api.Characteristic;
 import org.openhab.io.homekit.api.HomekitFactory;
+import org.openhab.io.homekit.api.LocalAccessoryServer;
 import org.openhab.io.homekit.api.ManagedAccessory;
 import org.openhab.io.homekit.api.ManagedCharacteristic;
 import org.openhab.io.homekit.api.ManagedService;
 import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.internal.accessory.GenericAccessory;
 import org.openhab.io.homekit.library.accessory.ThingAccessory;
 import org.openhab.io.homekit.library.service.ThingService;
 import org.openhab.io.homekit.util.UUID5;
@@ -63,7 +65,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     }
 
     @Override
-    public @Nullable ManagedAccessory createAccessory(@NonNull Thing thing, @NonNull AccessoryServer server)
+    public @Nullable ManagedAccessory createAccessory(@NonNull Thing thing, @NonNull LocalAccessoryServer server)
             throws Exception {
 
         ThingTypeUID thingType = thing.getThingTypeUID();
@@ -130,6 +132,25 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
         } catch (NoSuchMethodException e) {
             logger.warn(
                     "Accessory {} is missing a valid constructor of type (HomekitCommunicationManager.class, AccessoryServer.class, long.class, boolean.class)",
+                    accessoryClass.getSimpleName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    @Override
+    public @Nullable GenericAccessory createAccessory(Class<? extends GenericAccessory> accessoryClass,
+            AccessoryServer server, long instanceId) {
+        try {
+            GenericAccessory accessory = accessoryClass.getConstructor(AccessoryServer.class, long.class)
+                    .newInstance(server, instanceId);
+            logger.debug("Created an Accessory {} of Type {}, with instanceId {}", accessory.getUID(),
+                    accessory.getClass().getSimpleName(), accessory.getId());
+            return accessory;
+        } catch (NoSuchMethodException e) {
+            logger.warn("Accessory {} is missing a valid constructor of type (AccessoryServer.class, long.class)",
                     accessoryClass.getSimpleName());
         } catch (Exception e) {
             e.printStackTrace();
@@ -349,12 +370,6 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     public HashSet<String> getCharacteristicTypes(@Nullable ChannelTypeUID channelType) {
         return channelTypeCharacteristicTypesMapper.get(channelType);
     }
-
-    // @Override
-    // public Set<String> getSupportedCharacteristicTypes() {
-    // return characteristicTypeCharacteristicClassMapper.values().stream().map(c -> c.getSimpleName())
-    // .collect(Collectors.toSet());
-    // }
 
     @Override
     public Set<String> getSupportedCharacteristicTypes() {

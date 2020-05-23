@@ -16,5 +16,5 @@ import org.openhab.io.homekit.internal.server.AccessoryServerUID;
 @NonNullByDefault
 public interface AccessoryServerRegistry extends Registry<AccessoryServer, AccessoryServerUID> {
 
-    public @Nullable AccessoryServer getAvailableBridgeAccessoryServer();
+    public @Nullable LocalAccessoryServer getAvailableBridgeAccessoryServer();
 }

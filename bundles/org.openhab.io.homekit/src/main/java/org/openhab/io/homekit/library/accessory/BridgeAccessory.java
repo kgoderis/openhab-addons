@@ -23,9 +23,4 @@ public class BridgeAccessory extends AbstractManagedAccessory {
         return this.getServer().getId();
     }
 
-    @Override
-    public @NonNull String getManufacturer() {
-        return "openHAB";
-    }
-
 }

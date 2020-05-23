@@ -12,6 +12,7 @@ import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingRegistry;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.ThingHandler;
+import org.openhab.io.homekit.api.Accessory;
 import org.openhab.io.homekit.api.AccessoryRegistry;
 import org.openhab.io.homekit.api.AccessoryServerRegistry;
 import org.openhab.io.homekit.api.Characteristic;
@@ -169,23 +170,24 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
     }
 
     private void printAccessories(Console console) {
-        Collection<ManagedAccessory> accessories = accessoryRegistry.getAll();
+        Collection<Accessory> accessories = accessoryRegistry.getAll();
 
         if (accessories.isEmpty()) {
             console.println("No accessories found.");
         }
 
-        for (Iterator<ManagedAccessory> iter = accessories.iterator(); iter.hasNext();) {
-            ManagedAccessory accessory = iter.next();
+        for (Iterator<Accessory> iter = accessories.iterator(); iter.hasNext();) {
+            Accessory accessory = iter.next();
 
             if (accessory instanceof ThingAccessory) {
                 console.println(String.format("Accessory %s (Type=%s, Label=%s, Thing=%s)",
-                        accessory.getUID().toString(), accessory.getClass().getSimpleName(), accessory.getLabel(),
-                        ((ThingAccessory) accessory).getThingUID()));
-            } else {
+                        accessory.getUID().toString(), accessory.getClass().getSimpleName(),
+                        ((ThingAccessory) accessory).getLabel(), ((ThingAccessory) accessory).getThingUID()));
+            } else if (accessory instanceof ManagedAccessory) {
                 console.println(String.format("Accessory %s (Type=%s, Label=%s)", accessory.getUID().toString(),
-                        accessory.getClass().getSimpleName(), accessory.getLabel()));
+                        accessory.getClass().getSimpleName(), ((ManagedAccessory) accessory).getLabel()));
             }
+
             for (Service service : accessory.getServices()) {
                 console.println(String.format("     Service %s (Type=%s, HAP=%s, Name=%s)",
                         ((ManagedService) service).getUID().toString(), service.getClass().getSimpleName(),

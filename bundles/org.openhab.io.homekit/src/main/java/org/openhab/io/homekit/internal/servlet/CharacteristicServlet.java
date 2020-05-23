@@ -19,8 +19,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.server.HttpConnection;
-import org.openhab.io.homekit.api.AccessoryServer;
-import org.openhab.io.homekit.api.ManagedAccessory;
+import org.openhab.io.homekit.api.Accessory;
+import org.openhab.io.homekit.api.LocalAccessoryServer;
 import org.openhab.io.homekit.api.ManagedCharacteristic;
 import org.openhab.io.homekit.api.Service;
 import org.slf4j.Logger;
@@ -36,7 +36,7 @@ public class CharacteristicServlet extends BaseServlet {
     public CharacteristicServlet() {
     }
 
-    public CharacteristicServlet(AccessoryServer server) {
+    public CharacteristicServlet(LocalAccessoryServer server) {
         super(server);
     }
 
@@ -66,7 +66,7 @@ public class CharacteristicServlet extends BaseServlet {
             int aid = Integer.parseInt(parts[0]);
             int iid = Integer.parseInt(parts[1]);
 
-            ManagedAccessory theAccessory = (ManagedAccessory) server.getAccessory(aid);
+            Accessory theAccessory = server.getAccessory(aid);
             if (theAccessory != null) {
                 Collection<Service> services = theAccessory.getServices();
 
@@ -115,7 +115,7 @@ public class CharacteristicServlet extends BaseServlet {
                     int aid = characteristicWriteObject.getInt("aid");
                     int iid = characteristicWriteObject.getInt("iid");
 
-                    ManagedAccessory theAccessory = (ManagedAccessory) server.getAccessory(aid);
+                    Accessory theAccessory = server.getAccessory(aid);
                     if (theAccessory != null) {
                         Collection<Service> services = theAccessory.getServices();
 
