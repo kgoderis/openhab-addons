@@ -11,10 +11,3 @@ https://www.eclipse.org/legal/epl-2.0/.
 == Source Code
 
 https://github.com/openhab/openhab-addons
-
-== Third-party Content
-
-calimero
-* License: GPL v2 License with CLASSPATH EXCEPTION
-* Project: http://calimero-project.github.io
-* Source:  https://github.com/calimero-project

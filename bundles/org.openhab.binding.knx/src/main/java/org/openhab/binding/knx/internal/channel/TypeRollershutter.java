@@ -1,25 +1,26 @@
 /**
- * Copyright (c) 2010-2020 Contributors to the openHAB project
+ * Copyright (c) 2010-2018 by the respective copyright holders.
  *
- * See the NOTICE file(s) distributed with this work for additional
- * information.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0
- *
- * SPDX-License-Identifier: EPL-2.0
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  */
 package org.openhab.binding.knx.internal.channel;
 
 import static java.util.stream.Collectors.toSet;
-import static org.openhab.binding.knx.internal.KNXBindingConstants.*;
+import static org.openhab.binding.knx.KNXBindingConstants.*;
 
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.core.config.core.Configuration;
+import org.openhab.core.library.types.PercentType;
+import org.openhab.core.library.types.UpDownType;
+import org.openhab.core.types.Type;
 
 import tuwien.auto.calimero.dptxlator.DPTXlator8BitUnsigned;
 import tuwien.auto.calimero.dptxlator.DPTXlatorBoolean;
@@ -54,5 +55,26 @@ class TypeRollershutter extends KNXChannelType {
     @Override
     protected Set<String> getAllGAKeys() {
         return Stream.of(UP_DOWN_GA, STOP_MOVE_GA, POSITION_GA).collect(toSet());
+    }
+
+    @Override
+    protected @Nullable Type convertType(@Nullable Type type, Configuration channelConfiguration) {
+        if (type instanceof UpDownType) {
+            if (channelConfiguration.get(UP_DOWN_GA) != null) {
+                return type;
+            } else if (channelConfiguration.get(POSITION_GA) != null) {
+                return ((UpDownType) type).as(PercentType.class);
+            }
+        }
+
+        if (type instanceof PercentType) {
+            if (channelConfiguration.get(POSITION_GA) != null) {
+                return type;
+            } else if (channelConfiguration.get(UP_DOWN_GA) != null) {
+                return ((PercentType) type).as(UpDownType.class);
+            }
+        }
+
+        return type;
     }
 }

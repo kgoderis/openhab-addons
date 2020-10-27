@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <thing:thing-descriptions bindingId="knx" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
-	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+	xmlns:thing="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0 http://eclipse.org/smarthome/schemas/thing-description-1.0.0.xsd">
 
 	<!-- Bridge Thing Type -->
 	<bridge-type id="ip">
@@ -35,9 +35,8 @@
 				<context>network-address</context>
 			</parameter>
 			<parameter name="localSourceAddr" type="text">
-				<label>Local Device Address</label>
-				<description>The Physical Address (Individual Address) in x.y.z notation for identification of this KNX/IP gateway
-					within the KNX bus</description>
+				<label>Local KNX GA</label>
+				<description>The group address for identification of this KNX/IP gateway within the KNX bus</description>
 				<default>0.0.0</default>
 			</parameter>
 			<parameter name="useNAT" type="boolean">
@@ -63,7 +62,7 @@
 			</parameter>
 			<parameter name="autoReconnectPeriod" type="integer">
 				<label>Auto Reconnect Period</label>
-				<description>Seconds between connection retries when KNX link has been lost, 0 means never retry, minimum 30s</description>
+				<description>Seconds between connection retries when KNX link has been lost, 0 means never retry</description>
 				<default>60</default>
 			</parameter>
 		</config-description>

@@ -1,20 +1,17 @@
 /**
- * Copyright (c) 2010-2020 Contributors to the openHAB project
+ * Copyright (c) 2010-2018 by the respective copyright holders.
  *
- * See the NOTICE file(s) distributed with this work for additional
- * information.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0
- *
- * SPDX-License-Identifier: EPL-2.0
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  */
 package org.openhab.binding.knx.internal.channel;
 
 import static java.util.stream.Collectors.toList;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -30,10 +27,10 @@ import org.eclipse.jdt.annotation.Nullable;
 public class ChannelConfiguration {
 
     private final @Nullable String dpt;
-    private final GroupAddressConfiguration mainGA;
+    private final @Nullable GroupAddressConfiguration mainGA;
     private final List<GroupAddressConfiguration> listenGAs;
 
-    public ChannelConfiguration(@Nullable String dpt, GroupAddressConfiguration mainGA,
+    public ChannelConfiguration(@Nullable String dpt, @Nullable GroupAddressConfiguration mainGA,
             List<GroupAddressConfiguration> listenGAs) {
         this.dpt = dpt;
         this.mainGA = mainGA;
@@ -44,12 +41,12 @@ public class ChannelConfiguration {
         return dpt;
     }
 
-    public GroupAddressConfiguration getMainGA() {
+    public @Nullable GroupAddressConfiguration getMainGA() {
         return mainGA;
     }
 
     public List<GroupAddressConfiguration> getListenGAs() {
-        return Stream.concat(Stream.of(mainGA), listenGAs.stream()).collect(toList());
+        return Stream.concat(Stream.of(mainGA), listenGAs.stream()).filter(Objects::nonNull).collect(toList());
     }
 
     public List<GroupAddressConfiguration> getReadGAs() {

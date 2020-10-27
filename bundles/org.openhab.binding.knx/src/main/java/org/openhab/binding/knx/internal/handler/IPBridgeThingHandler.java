@@ -1,14 +1,10 @@
 /**
- * Copyright (c) 2010-2020 Contributors to the openHAB project
+ * Copyright (c) 2010-2018 by the respective copyright holders.
  *
- * See the NOTICE file(s) distributed with this work for additional
- * information.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0
- *
- * SPDX-License-Identifier: EPL-2.0
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  */
 package org.openhab.binding.knx.internal.handler;
 
@@ -17,18 +13,17 @@ import java.text.MessageFormat;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.binding.knx.internal.KNXBindingConstants;
+import org.openhab.binding.knx.KNXBindingConstants;
+import org.openhab.binding.knx.client.KNXClient;
+import org.openhab.binding.knx.handler.KNXBridgeBaseThingHandler;
 import org.openhab.binding.knx.internal.client.CustomKNXNetworkLinkIP;
 import org.openhab.binding.knx.internal.client.IPClient;
-import org.openhab.binding.knx.internal.client.KNXClient;
 import org.openhab.binding.knx.internal.client.NoOpClient;
 import org.openhab.binding.knx.internal.config.IPBridgeConfiguration;
 import org.openhab.core.net.NetworkAddressService;
 import org.openhab.core.thing.Bridge;
 import org.openhab.core.thing.ThingStatus;
 import org.openhab.core.thing.ThingStatusDetail;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The {@link IPBridgeThingHandler} is responsible for handling commands, which are
@@ -41,12 +36,13 @@ import org.slf4j.LoggerFactory;
  */
 @NonNullByDefault
 public class IPBridgeThingHandler extends KNXBridgeBaseThingHandler {
+
     private static final String MODE_ROUTER = "ROUTER";
     private static final String MODE_TUNNEL = "TUNNEL";
 
-    private final Logger logger = LoggerFactory.getLogger(IPBridgeThingHandler.class);
+    @Nullable
+    private IPClient client;
 
-    private @Nullable IPClient client;
     private final NetworkAddressService networkAddressService;
 
     public IPBridgeThingHandler(Bridge bridge, NetworkAddressService networkAddressService) {
@@ -57,13 +53,6 @@ public class IPBridgeThingHandler extends KNXBridgeBaseThingHandler {
     @Override
     public void initialize() {
         IPBridgeConfiguration config = getConfigAs(IPBridgeConfiguration.class);
-        int autoReconnectPeriod = config.getAutoReconnectPeriod();
-        if (autoReconnectPeriod != 0 && autoReconnectPeriod < 30) {
-            logger.info("autoReconnectPeriod for {} set to {}s, allowed range is 0 (never) or >30", thing.getUID(),
-                    autoReconnectPeriod);
-            autoReconnectPeriod = 30;
-            config.setAutoReconnectPeriod(autoReconnectPeriod);
-        }
         String localSource = config.getLocalSourceAddr();
         String connectionTypeString = config.getType();
         int port = config.getPortNumber().intValue();
@@ -99,9 +88,9 @@ public class IPBridgeThingHandler extends KNXBridgeBaseThingHandler {
         }
 
         updateStatus(ThingStatus.UNKNOWN);
-        client = new IPClient(ipConnectionType, ip, localSource, port, localEndPoint, useNAT, autoReconnectPeriod,
-                thing.getUID(), config.getResponseTimeout().intValue(), config.getReadingPause().intValue(),
-                config.getReadRetriesLimit().intValue(), getScheduler(), this);
+        client = new IPClient(ipConnectionType, ip, localSource, port, localEndPoint, useNAT,
+                config.getAutoReconnectPeriod().intValue(), thing.getUID(), config.getResponseTimeout().intValue(),
+                config.getReadingPause().intValue(), config.getReadRetriesLimit().intValue(), getScheduler(), this);
 
         client.initialize();
     }

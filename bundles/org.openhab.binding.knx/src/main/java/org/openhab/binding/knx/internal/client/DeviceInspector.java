@@ -1,18 +1,14 @@
 /**
- * Copyright (c) 2010-2020 Contributors to the openHAB project
+ * Copyright (c) 2010-2018 by the respective copyright holders.
  *
- * See the NOTICE file(s) distributed with this work for additional
- * information.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0
- *
- * SPDX-License-Identifier: EPL-2.0
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  */
 package org.openhab.binding.knx.internal.client;
 
-import static org.openhab.binding.knx.internal.KNXBindingConstants.*;
+import static org.openhab.binding.knx.KNXBindingConstants.*;
 import static org.openhab.binding.knx.internal.handler.DeviceConstants.*;
 
 import java.util.Collections;
@@ -22,6 +18,7 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.knx.client.DeviceInfoClient;
 import org.openhab.binding.knx.internal.handler.Firmware;
 import org.openhab.binding.knx.internal.handler.Manufacturer;
 import org.slf4j.Logger;
@@ -99,8 +96,9 @@ public class DeviceInspector {
             byte[] elements = getClient().readDeviceProperties(address, DEVICE_OBJECT, PID.OBJECT_TYPE, 0, 1, false,
                     OPERATION_TIMEOUT);
             if ((elements == null ? 0 : toUnsigned(elements)) == 1) {
+
                 Thread.sleep(OPERATION_INTERVAL);
-                String ManufacturerID = Manufacturer.getName(toUnsigned(getClient().readDeviceProperties(address,
+                String manufacturerID = Manufacturer.getName(toUnsigned(getClient().readDeviceProperties(address,
                         DEVICE_OBJECT, PID.MANUFACTURER_ID, 1, 1, false, OPERATION_TIMEOUT)));
                 Thread.sleep(OPERATION_INTERVAL);
                 String serialNo = toHex(getClient().readDeviceProperties(address, DEVICE_OBJECT, PID.SERIAL_NUMBER, 1,
@@ -112,7 +110,7 @@ public class DeviceInspector {
                 String firmwareRevision = Integer.toString(toUnsigned(getClient().readDeviceProperties(address,
                         DEVICE_OBJECT, PID.FIRMWARE_REVISION, 1, 1, false, OPERATION_TIMEOUT)));
 
-                ret.put(MANUFACTURER_NAME, ManufacturerID);
+                ret.put(MANUFACTURER_NAME, manufacturerID);
                 if (serialNo != null) {
                     ret.put(MANUFACTURER_SERIAL_NO, serialNo);
                 }
@@ -121,7 +119,7 @@ public class DeviceInspector {
                 }
                 ret.put(MANUFACTURER_FIRMWARE_REVISION, firmwareRevision);
                 logger.debug("Identified device {} as a {}, type {}, revision {}, serial number {}", address,
-                        ManufacturerID, hardwareType, firmwareRevision, serialNo);
+                        manufacturerID, hardwareType, firmwareRevision, serialNo);
             } else {
                 logger.debug("The KNX device with address {} does not expose a Device Object", address);
             }

@@ -1,14 +1,10 @@
 /**
- * Copyright (c) 2010-2020 Contributors to the openHAB project
+ * Copyright (c) 2010-2018 by the respective copyright holders.
  *
- * See the NOTICE file(s) distributed with this work for additional
- * information.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0
- *
- * SPDX-License-Identifier: EPL-2.0
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  */
 package org.openhab.binding.knx.internal.client;
 
@@ -22,9 +18,13 @@ import java.util.function.Consumer;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.binding.knx.internal.KNXTypeMapper;
+import org.openhab.binding.knx.KNXTypeMapper;
+import org.openhab.binding.knx.client.DeviceInfoClient;
+import org.openhab.binding.knx.client.KNXClient;
+import org.openhab.binding.knx.client.OutboundSpec;
+import org.openhab.binding.knx.client.StatusUpdateCallback;
+import org.openhab.binding.knx.handler.GroupAddressListener;
 import org.openhab.binding.knx.internal.dpt.KNXCoreTypeMapper;
-import org.openhab.binding.knx.internal.handler.GroupAddressListener;
 import org.openhab.core.thing.ThingStatus;
 import org.openhab.core.thing.ThingStatusDetail;
 import org.openhab.core.thing.ThingUID;
@@ -142,17 +142,17 @@ public abstract class AbstractKNXClient implements NetworkLinkListener, KNXClien
 
     private boolean scheduleReconnectJob() {
         if (autoReconnectPeriod > 0) {
-            connectJob = knxScheduler.schedule(this::connect, autoReconnectPeriod, TimeUnit.SECONDS);
+            connectJob = knxScheduler.scheduleWithFixedDelay(() -> connect(), 0, autoReconnectPeriod, TimeUnit.SECONDS);
             return true;
         } else {
             return false;
         }
     }
 
-    private void cancelReconnectJob() {
+    private void cancelReconnectJob(boolean kill) {
         ScheduledFuture<?> currentReconnectJob = connectJob;
         if (currentReconnectJob != null) {
-            currentReconnectJob.cancel(true);
+            currentReconnectJob.cancel(kill);
             connectJob = null;
         }
     }
@@ -200,12 +200,11 @@ public abstract class AbstractKNXClient implements NetworkLinkListener, KNXClien
                     TimeUnit.MILLISECONDS);
 
             statusUpdateCallback.updateStatus(ThingStatus.ONLINE);
-            connectJob = null;
+            cancelReconnectJob(false);
             return true;
         } catch (KNXException | InterruptedException e) {
             logger.debug("Error connecting to the bus: {}", e.getMessage(), e);
             disconnect(e);
-            scheduleReconnectJob();
             return false;
         }
     }
@@ -220,7 +219,6 @@ public abstract class AbstractKNXClient implements NetworkLinkListener, KNXClien
         }
     }
 
-    @SuppressWarnings("null")
     private void releaseConnection() {
         logger.debug("Bridge {} is disconnecting from the KNX bus", thingUID);
         readDatapoints.clear();
@@ -250,7 +248,7 @@ public abstract class AbstractKNXClient implements NetworkLinkListener, KNXClien
         GroupAddress destination = event.getDestination();
         IndividualAddress source = event.getSourceAddr();
         byte[] asdu = event.getASDU();
-        logger.trace("Received a {} telegram from '{}' to '{}' with value '{}'", task, source, destination, asdu);
+        // logger.trace("Received a {} telegram from '{}' to '{}'", task, source, destination);
         for (GroupAddressListener listener : groupAddressListeners) {
             if (listener.listensTo(destination)) {
                 knxScheduler.schedule(() -> action.apply(listener, source, destination, asdu), 0, TimeUnit.SECONDS);
@@ -270,7 +268,6 @@ public abstract class AbstractKNXClient implements NetworkLinkListener, KNXClien
         return typeHelper.toDPTValue(type, dpt);
     }
 
-    @SuppressWarnings("null")
     private void readNextQueuedDatapoint() {
         if (!connectIfNotAutomatic()) {
             return;
@@ -302,7 +299,7 @@ public abstract class AbstractKNXClient implements NetworkLinkListener, KNXClien
     }
 
     public void dispose() {
-        cancelReconnectJob();
+        cancelReconnectJob(true);
         disconnect(null);
     }
 
@@ -357,7 +354,8 @@ public abstract class AbstractKNXClient implements NetworkLinkListener, KNXClien
             managementClient.restart(destination);
         } catch (KNXException e) {
             logger.warn("Could not reset device with address '{}': {}", address, e.getMessage());
-        } catch (InterruptedException e) { // ignored as in Calimero pre-2.4.0
+        } catch (InterruptedException e) {
+            logger.warn("Could not reset device with address '{}': {}", address, e.getMessage());
         } finally {
             if (destination != null) {
                 destination.destroy();
@@ -391,8 +389,7 @@ public abstract class AbstractKNXClient implements NetworkLinkListener, KNXClien
     }
 
     @Override
-    public DeviceInfoClient getDeviceInfoClient() {
-        DeviceInfoClient deviceInfoClient = this.deviceInfoClient;
+    public @Nullable DeviceInfoClient getDeviceInfoClient() throws IllegalStateException {
         if (deviceInfoClient != null) {
             return deviceInfoClient;
         } else {
@@ -411,9 +408,6 @@ public abstract class AbstractKNXClient implements NetworkLinkListener, KNXClien
             return;
         }
         GroupAddress groupAddress = commandSpec.getGroupAddress();
-
-        logger.trace("writeToKNX groupAddress '{}', commandSpec '{}'", groupAddress, commandSpec);
-
         if (groupAddress != null) {
             sendToKNX(processCommunicator, link, groupAddress, commandSpec.getDPT(), commandSpec.getType());
         }
@@ -430,9 +424,6 @@ public abstract class AbstractKNXClient implements NetworkLinkListener, KNXClien
             return;
         }
         GroupAddress groupAddress = responseSpec.getGroupAddress();
-
-        logger.trace("respondToKNX groupAddress '{}', responseSpec '{}'", groupAddress, responseSpec);
-
         if (groupAddress != null) {
             sendToKNX(responseCommunicator, link, groupAddress, responseSpec.getDPT(), responseSpec.getType());
         }
@@ -446,9 +437,6 @@ public abstract class AbstractKNXClient implements NetworkLinkListener, KNXClien
 
         Datapoint datapoint = new CommandDP(groupAddress, thingUID.toString(), 0, dpt);
         String mappedValue = toDPTValue(type, dpt);
-
-        logger.trace("sendToKNX mappedValue: '{}' groupAddress: '{}'", mappedValue, groupAddress);
-
         if (mappedValue == null) {
             logger.debug("Value '{}' cannot be mapped to datapoint '{}'", type, datapoint);
             return;
