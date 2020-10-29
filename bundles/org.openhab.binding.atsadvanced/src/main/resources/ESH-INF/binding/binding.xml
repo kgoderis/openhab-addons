@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<binding:binding id="atsadvanced" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:binding="https://openhab.org/schemas/binding/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/binding/v1.0.0 https://openhab.org/schemas/binding-1.0.0.xsd">
+
+	<name>ATSAdvanced Binding</name>
+	<description>This is the binding for ATSAdvanced</description>
+	<author>Karel Goderis</author>
+	
+	   <config-description>
+        <parameter name="ats" type="text">
+            <label>ATS</label>
+            <description>Location of the ATS Gateway binary</description>
+        </parameter>
+        <parameter name="mono" type="text" >
+            <label>Mono</label>
+            <description>Location of the mono binary</description>
+        </parameter>
+    </config-description>
+
+</binding:binding>
