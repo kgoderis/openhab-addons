@@ -6,6 +6,9 @@
 		<feature dependency="true">openhab-runtime-base</feature>
 		<feature dependency="true">openhab-transport-serial</feature>
 		<feature dependency="true">openhab.tp-jaxb</feature>
+<!--         <bundle dependency="true">mvn:com.github.calimero/calimero-core/2.4</bundle>
+        <bundle dependency="true">mvn:com.github.calimero/calimero-device/2.4</bundle>
+        <bundle dependency="true">mvn:com.github.calimero/calimero-rxtx/2.4</bundle> -->
 		<bundle start-level="80">mvn:org.openhab.addons.bundles/org.openhab.binding.knx/${project.version}</bundle>
 	</feature>
 </features>
