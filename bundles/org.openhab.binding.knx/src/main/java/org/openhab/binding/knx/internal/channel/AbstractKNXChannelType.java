@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -161,21 +162,23 @@ public abstract class AbstractKNXChannelType {
                 .filter(spec -> !spec.getGroupAddresses().isEmpty()).collect(Collectors.toList());
     }
 
-    public final @NonNull InboundSpec getListenSpec(@NonNull Configuration configuration,
+    public final @Nullable InboundSpec getListenSpec(@NonNull Configuration configuration,
             @Nullable GroupAddress groupAddress) throws NoSuchElementException {
-        return getAllGAKeys().stream()
+        Optional<@NonNull ListenSpecImpl> first = getAllGAKeys().stream()
                 .map(key -> new ListenSpecImpl(parse((String) configuration.get(key)), getDefaultDPT(key)))
                 .filter(spec -> !spec.getGroupAddresses().isEmpty())
-                .filter(spec -> spec.getGroupAddresses().contains(groupAddress)).findFirst().orElseThrow();
+                .filter(spec -> spec.getGroupAddresses().contains(groupAddress)).findFirst();
+        return first.isPresent() ? first.get() : null;
     }
 
     protected abstract String getDefaultDPT(@NonNull String gaConfigKey);
 
-    public final @NonNull OutboundSpec getResponseSpec(@NonNull Configuration configuration,
+    public final @Nullable OutboundSpec getResponseSpec(@NonNull Configuration configuration,
             @NonNull GroupAddress groupAddress, @NonNull Type type) throws NoSuchElementException {
-        return getAllGAKeys().stream()
+        Optional<@NonNull ReadResponseSpecImpl> first = getAllGAKeys().stream()
                 .map(key -> new ReadResponseSpecImpl(parse((String) configuration.get(key)), getDefaultDPT(key), type))
-                .filter(spec -> groupAddress.equals(spec.getGroupAddress())).findFirst().orElseThrow();
+                .filter(spec -> groupAddress.equals(spec.getGroupAddress())).findFirst();
+        return first.isPresent() ? first.get() : null;
     }
 
     protected @Nullable Type convertType(@Nullable Type type, @NonNull Configuration channelConfiguration) {

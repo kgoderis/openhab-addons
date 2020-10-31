@@ -241,18 +241,28 @@ public class DeviceThingHandler extends AbstractKNXThingHandler {
 
         for (Channel channel : getThing().getChannels()) {
             if (isControl(channel.getUID())) {
-                withKNXType(channel, (selector, configuration) -> {
-                    try {
-                        OutboundSpec responseSpec = selector.getResponseSpec(configuration, destination,
-                                RefreshType.REFRESH);
-                        postCommand(channel.getUID().getId(), RefreshType.REFRESH);
-                    } catch (NoSuchElementException e) {
-                        logger.error(
-                                "Exception while handling a Group Read Request telegram from '{}' for destination '{}' for Thing '{}' : {}",
-                                source, destination, getThing().getUID(), e.getMessage());
-                    }
-                });
-
+                try {
+                    withKNXType(channel, (selector, configuration) -> {
+                        try {
+                            OutboundSpec responseSpec = selector.getResponseSpec(configuration, destination,
+                                    RefreshType.REFRESH);
+                            if (responseSpec != null) {
+                                logger.trace(
+                                        "Thing '{}' processes a Group Read request for destination '{}' for channel '{}'",
+                                        getThing().getUID(), destination, channel.getUID());
+                                postCommand(channel.getUID().getId(), RefreshType.REFRESH);
+                            }
+                        } catch (NoSuchElementException e) {
+                            logger.error(
+                                    "Exception while handling a Group Read Request telegram from '{}' for destination '{}' for Thing '{}' : {}",
+                                    source, destination, getThing().getUID(), e.getMessage());
+                        }
+                    });
+                } catch (NoSuchElementException e) {
+                    logger.error(
+                            "Exception while handling a Group Read Request telegram from '{}' for destination '{}' for Thing '{}' : {}",
+                            source, destination, getThing().getUID(), e.getMessage());
+                }
             }
         }
     }
@@ -271,18 +281,27 @@ public class DeviceThingHandler extends AbstractKNXThingHandler {
                 source, destination);
 
         for (Channel channel : getThing().getChannels()) {
-            withKNXType(channel, (selector, configuration) -> {
-                try {
-                    InboundSpec listenSpec = selector.getListenSpec(configuration, destination);
-                    logger.trace("Thing '{}' processes a Group Write telegram for destination '{}' for channel '{}'",
-                            getThing().getUID(), destination, channel.getUID());
-                    processDataReceived(destination, asdu, listenSpec, channel.getUID());
-                } catch (NoSuchElementException e) {
-                    logger.error(
-                            "Exception while handling a Group Write telegram from '{}' for destination '{}' for Thing '{}' : {}",
-                            source, destination, getThing().getUID(), e.getMessage());
-                }
-            });
+            try {
+                withKNXType(channel, (selector, configuration) -> {
+                    try {
+                        InboundSpec listenSpec = selector.getListenSpec(configuration, destination);
+                        if (listenSpec != null) {
+                            logger.trace(
+                                    "Thing '{}' processes a Group Write telegram for destination '{}' for channel '{}'",
+                                    getThing().getUID(), destination, channel.getUID());
+                            processDataReceived(destination, asdu, listenSpec, channel.getUID());
+                        }
+                    } catch (NoSuchElementException e) {
+                        logger.error(
+                                "Exception while handling a Group Write telegram from '{}' for destination '{}' for Thing '{}' : {}",
+                                source, destination, getThing().getUID(), e.getMessage());
+                    }
+                });
+            } catch (NoSuchElementException e) {
+                logger.error(
+                        "Exception while handling a Group Write telegram from '{}' for destination '{}' for Thing '{}' : {}",
+                        source, destination, getThing().getUID(), e.getMessage());
+            }
         }
     }
 
