@@ -27,6 +27,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
+import org.openhab.binding.keba.internal.KebaBindingConstants.KebaAuthorization;
 import org.openhab.binding.keba.internal.KebaBindingConstants.KebaSeries;
 import org.openhab.binding.keba.internal.KebaBindingConstants.KebaType;
 import org.openhab.core.cache.ExpiringCacheMap;
@@ -84,6 +85,7 @@ public class KeContactHandler extends BaseThingHandler {
     private int maxSystemCurrent = 63000;
     private KebaType type;
     private KebaSeries series;
+    private KebaAuthorization authorization;
     private int lastState = -1; // trigger a report100 at startup
     private boolean isReport100needed = true;
 
@@ -102,7 +104,13 @@ public class KeContactHandler extends BaseThingHandler {
             cache.put(CACHE_REPORT_1, () -> transceiver.send("report 1", getHandler()));
             cache.put(CACHE_REPORT_2, () -> transceiver.send("report 2", getHandler()));
             cache.put(CACHE_REPORT_3, () -> transceiver.send("report 3", getHandler()));
-            cache.put(CACHE_REPORT_100, () -> transceiver.send("report 100", getHandler()));
+
+            if (type == KebaType.P20) {
+                logger.warn("'Report 1xx' is not supported on a KEBA KeContact {}:{}", type, series);
+                isReport100needed = false;
+            } else {
+                cache.put(CACHE_REPORT_100, () -> transceiver.send("report 100", getHandler()));
+            }
 
             if (pollingJob == null || pollingJob.isCancelled()) {
                 try {
@@ -153,7 +161,13 @@ public class KeContactHandler extends BaseThingHandler {
             if (!InetAddress.getByName(((String) getConfig().get(IP_ADDRESS))).isReachable(PING_TIME_OUT)) {
                 logger.debug("Ping timed out after '{}' milliseconds", System.currentTimeMillis() - stamp);
                 transceiver.unRegisterHandler(getHandler());
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
+                        "The remote host is not reacheable");
             } else {
+                if (getThing().getStatus() == ThingStatus.OFFLINE) {
+                    transceiver.registerHandler(this);
+                }
+
                 if (getThing().getStatus() == ThingStatus.ONLINE) {
                     ByteBuffer response = cache.get(CACHE_REPORT_1);
                     if (response != null) {
@@ -221,6 +235,7 @@ public class KeContactHandler extends BaseThingHandler {
                             type = KebaType.P30;
                         }
                         series = KebaSeries.getSeries(product.substring(13, 14).charAt(0));
+                        authorization = KebaAuthorization.getAuthorization(product.substring(18, 19).charAt(0));
                         break;
                     }
                     case "Serial": {
@@ -555,19 +570,27 @@ public class KeContactHandler extends BaseThingHandler {
                 }
                 case CHANNEL_SETENERGY: {
                     if (command instanceof DecimalType) {
-                        transceiver.send(
-                                "setenergy " + String.valueOf(
-                                        Math.min(Math.max(0, ((DecimalType) command).intValue() * 10), 999999999)),
-                                this);
+                        if (type == KebaType.P20) {
+                            logger.warn("'Energy Limit' is not supported on a KEBA KeContact {}:{}", type, series);
+                        } else {
+                            transceiver.send(
+                                    "setenergy " + String.valueOf(
+                                            Math.min(Math.max(0, ((DecimalType) command).intValue() * 10), 999999999)),
+                                    this);
+                        }
                     }
                     break;
                 }
                 case CHANNEL_AUTHENTICATE: {
                     if (command instanceof StringType) {
-                        String cmd = command.toString();
-                        // cmd must contain ID + CLASS (works only if the RFID TAG is in the whitelist of the Keba
-                        // station)
-                        transceiver.send("start " + cmd, this);
+                        if (authorization == KebaAuthorization.RFID) {
+                            String cmd = command.toString();
+                            // cmd must contain ID + CLASS (works only if the RFID TAG is in the whitelist of the Keba
+                            // station)
+                            transceiver.send("start " + cmd, this);
+                        } else {
+                            logger.warn("'Authenticate' is not supported on a KEBA KeContact {}:{}", type, series);
+                        }
                     }
                     break;
                 }

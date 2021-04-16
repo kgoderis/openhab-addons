@@ -339,9 +339,9 @@ class KeContactTransceiver {
                                 DatagramChannel theChannel = (DatagramChannel) selKey.channel();
                                 KeContactHandler theHandler = null;
 
-                                for (KeContactHandler handlers : handlers) {
-                                    if (datagramChannels.get(handlers).equals(theChannel)) {
-                                        theHandler = handlers;
+                                for (KeContactHandler handler : handlers) {
+                                    if (datagramChannels.get(handler).equals(theChannel)) {
+                                        theHandler = handler;
                                         break;
                                     }
                                 }

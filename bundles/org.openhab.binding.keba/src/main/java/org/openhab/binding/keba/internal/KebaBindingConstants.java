@@ -82,7 +82,7 @@ public class KebaBindingConstants {
         E('0'),
         B('1'),
         C('2', '3'),
-        X('A', 'B', 'C', 'D');
+        X('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H');
 
         private final List<Character> things = new ArrayList<>();
 
@@ -105,6 +105,36 @@ public class KebaBindingConstants {
             }
 
             throw new IllegalArgumentException("Not a valid series");
+        }
+    }
+
+    public enum KebaAuthorization {
+
+        None('0'),
+        RFID('R'),
+        Key('K');
+
+        private final List<Character> things = new ArrayList<>();
+
+        KebaAuthorization(char... e) {
+            Character[] cArray = ArrayUtils.toObject(e);
+            for (char c : cArray) {
+                things.add(c);
+            }
+        }
+
+        public boolean matchesAuthorization(char c) {
+            return things.contains(c);
+        }
+
+        public static KebaAuthorization getAuthorization(char text) throws IllegalArgumentException {
+            for (KebaAuthorization c : KebaAuthorization.values()) {
+                if (c.matchesAuthorization(text)) {
+                    return c;
+                }
+            }
+
+            throw new IllegalArgumentException("Not a valid authorization");
         }
     }
 }
