@@ -1,61 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-  <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>org.openhab.addons.bundles</groupId>
-    <artifactId>org.openhab.addons.reactor.bundles</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
-  </parent>
+    <parent>
+        <groupId>org.openhab.addons.bundles</groupId>
+        <artifactId>org.openhab.addons.reactor.bundles</artifactId>
+        <version>3.3.0-SNAPSHOT</version>
+    </parent>
 
-  <artifactId>org.openhab.binding.knx</artifactId>
+    <artifactId>org.openhab.binding.knx</artifactId>
 
-  <name>openHAB Add-ons :: Bundles :: knx Binding</name>
+    <name>openHAB Add-ons :: Bundles :: knx Binding</name>
 
-  <properties>
-    <bnd.importpackage>gnu.io;version="[3.12,6)",javax.microedition.io.*;resolution:="optional",javax.usb.*;resolution:="optional",org.usb4java.*;resolution:="optional"</bnd.importpackage>
-  </properties>
+    <properties>
+        <bnd.importpackage>gnu.io;version="[3.12,6)",javax.microedition.io.*;resolution:="optional",javax.usb.*;resolution:="optional",org.usb4java.*;resolution:="optional"</bnd.importpackage>
+    </properties>
 
-  <dependencies>
-    <dependency>
-      <groupId>com.github.calimero</groupId>
-      <artifactId>calimero-core</artifactId>
-      <version>2.4</version>
-      <scope>compile</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.github.calimero</groupId>
-      <artifactId>calimero-device</artifactId>
-      <version>2.4</version>
-      <scope>compile</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.github.calimero</groupId>
-      <artifactId>calimero-rxtx</artifactId>
-      <version>2.4</version>
-      <scope>compile</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-  </dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>1.3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.12.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.calimero</groupId>
+            <artifactId>calimero-core</artifactId>
+            <version>2.4</version>
+            <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.github.calimero</groupId>
+            <artifactId>calimero-device</artifactId>
+            <version>2.4</version>
+            <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.github.calimero</groupId>
+            <artifactId>calimero-rxtx</artifactId>
+            <version>2.4</version>
+            <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
 
 </project>

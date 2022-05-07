@@ -18,7 +18,7 @@ import java.util.Hashtable;
 import java.util.Locale;
 import java.util.Map;
 
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.openhab.binding.knx.ets.ETSDeviceThingHandler;
 import org.openhab.binding.knx.ets.KNXProjectProvider;
 import org.openhab.binding.knx.handler.KNXBridgeBaseThingHandler;

@@ -209,7 +209,7 @@ public abstract class AbstractKNXClient implements NetworkLinkListener, KNXClien
         }
     }
 
-    private void disconnect(@Nullable Exception e) {
+    private void disconnect(Exception e) {
         releaseConnection();
         if (e != null) {
             statusUpdateCallback.updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,

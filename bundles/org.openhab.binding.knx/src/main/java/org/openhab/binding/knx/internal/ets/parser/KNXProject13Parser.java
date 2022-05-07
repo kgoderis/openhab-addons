@@ -21,7 +21,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.openhab.binding.knx.KNXBindingConstants;
 import org.openhab.binding.knx.internal.ets.parser.knxproj13.Area;
 import org.openhab.binding.knx.internal.ets.parser.knxproj13.ComObject;
