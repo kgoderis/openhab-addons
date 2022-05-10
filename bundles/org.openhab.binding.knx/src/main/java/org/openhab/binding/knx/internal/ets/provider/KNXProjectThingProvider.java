@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -31,7 +32,6 @@ import java.util.zip.ZipInputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -161,9 +161,9 @@ public class KNXProjectThingProvider implements ThingProvider, KNXProjectProvide
 
     private class ZipRunnable implements Runnable {
         private File file;
-        private FileInputStream openInputStream;
+        private InputStream openInputStream;
 
-        public ZipRunnable(File file, FileInputStream openInputStream) {
+        public ZipRunnable(File file, InputStream openInputStream) {
             this.file = file;
             this.openInputStream = openInputStream;
         }
@@ -431,9 +431,10 @@ public class KNXProjectThingProvider implements ThingProvider, KNXProjectProvide
 
     @Override
     public void addOrRefreshProject(File file) {
-        FileInputStream openInputStream = null;
+        InputStream openInputStream = null;
         try {
-            openInputStream = FileUtils.openInputStream(file);
+            // openInputStream = FileUtils.openInputStream(file);
+            openInputStream = new FileInputStream(file);
 
             if (bridge != null) {
                 ETSBridgeConfiguration config = bridge.getConfiguration().as(ETSBridgeConfiguration.class);
