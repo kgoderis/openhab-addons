@@ -16,6 +16,7 @@ import static org.openhab.binding.atsadvanced.ATSadvancedBindingConstants.MAX_NU
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -41,7 +42,6 @@ import org.apache.commons.exec.LogOutputStream;
 import org.apache.commons.exec.ProcessDestroyer;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.ShutdownHookProcessDestroyer;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.openhab.binding.atsadvanced.ATSadvancedBindingConstants;
 import org.openhab.binding.atsadvanced.ATSadvancedBindingConstants.AreaStatusFlags;
