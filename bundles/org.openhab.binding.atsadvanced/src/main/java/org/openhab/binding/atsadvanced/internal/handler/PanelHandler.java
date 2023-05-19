@@ -351,7 +351,7 @@ public class PanelHandler extends BaseBridgeHandler {
         if (!gatewayProcessStarted) {
 
             gatewayURL = "http://" + (String) getConfig().get(OPENHAB_HOST) + ":" + getConfig().get(GATEWAY_PORT);
-            logger.debug("The ATS Advanced Panel handler will contact the gateway via '{}'", gatewayURL);
+            logger.debug("The ATS Advanced Panel handler will connect to the Gateway at '{}'", gatewayURL);
 
             DefaultExecutor executor = new DefaultExecutor();
             executor.setExitValue(0);
@@ -379,10 +379,10 @@ public class PanelHandler extends BaseBridgeHandler {
             checkAndKillExistingProcessRunning(commandLine);
 
             try {
-                logger.debug("Starting the ATS Advanced Panel gateway process : '{}'", commandLine.toString());
+                logger.debug("Starting the Gateway : '{}'", commandLine.toString());
                 executor.execute(commandLine, environment, resultHandler);
             } catch (IOException e) {
-                logger.error("An exception occurred while starting the gateway process : '{}'", e.getMessage());
+                logger.error("An exception occurred while starting the Gateway : '{}'", e.getMessage());
             }
             // gatewayProcessStarted = true;
         }
@@ -415,35 +415,32 @@ public class PanelHandler extends BaseBridgeHandler {
                     commandLine.addArgument(entry[0]);
                     int result = executor.execute(commandLine);
                     if (result == 0) {
-                        logger.info("Killed a running ATS Advanced Panel gateway process");
+                        logger.info("Killed a running Gateway");
                     } else {
-                        logger.warn("Killing a running ATS Advanced Panel gateway process exited with code : '{}'",
-                                result);
+                        logger.warn("Killing a running Gateway exited with code : '{}'", result);
                     }
                 }
             }
             input.close();
 
         } catch (Exception err) {
-            logger.warn(
-                    "An exception occurred while checking and killing existing ATS Advanced Panel gateway processes: '{}'",
-                    err.getMessage());
+            logger.warn("An exception occurred while checking and killing existing Gateways : '{}'", err.getMessage());
         }
     }
 
     private void stopGatewayProcess() {
         if (!gatewayProcessStarted) {
-            logger.error("The gateway process was already stopped (or never started)");
+            logger.error("The Gateway was already stopped (or never started)");
         }
 
-        logger.debug("Destroying the gateway process");
+        logger.debug("Destroying the Gateway");
         watchDog.destroyProcess();
 
         try {
             // Safer to waitFor() after destroy()
             resultHandler.waitFor();
         } catch (InterruptedException e) {
-            logger.error("The gateway process was interrupted. This should not occur");
+            logger.error("The Gateway was interrupted. This should not occur");
         }
 
         gatewayProcessStarted = false;
@@ -452,7 +449,6 @@ public class PanelHandler extends BaseBridgeHandler {
     @SuppressWarnings("resource")
     private void setupClients() {
         try {
-            logger.trace("The Json Service Stack client will use base URL '{}'", gatewayURL);
             client = new JsonServiceClient(gatewayURL);
             if (sseclient != null) {
                 sseclient.close();
@@ -460,17 +456,18 @@ public class PanelHandler extends BaseBridgeHandler {
             sseclient = new ServerEventsClient(gatewayURL).registerHandler("panelevent", (sseclient, e) -> {
                 handleMessageResponse((MessageResponse) JsonUtils.fromJson(e.getJson(), MessageResponse.class));
             }).setOnConnect(sub -> {
-                logger.debug("The SSE Hartbeat is set at {}ms", sub.getHeartbeatIntervalMs());
+                logger.debug("Setup Gateway Client : The SSE Hartbeat is set at {} ms", sub.getHeartbeatIntervalMs());
             }).start();
             clientsSetUp = true;
         } catch (Exception e) {
-            logger.error("An exception occurred while setting up clients: {}", e.getMessage(), e);
+            logger.error("An exception occurred while setting up the Gateway Client: {}", e.getMessage(), e);
             clientsSetUp = false;
         }
     }
 
     private void establishConnection() throws Exception {
         if (isClientsSetUp()) {
+            logger.debug("Configure Panel");
             ConfigurePanel configurePanel = new ConfigurePanel();
             configurePanel.setHearbeat(HEART_BEAT);
             configurePanel.setHostaddress((String) getConfig().get(IP_ADDRESS));
@@ -483,7 +480,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
             if (panelResponse != null) {
                 if (panelResponse.getResult() != null) {
-                    logger.debug("The gateway returned: {}", panelResponse.getResult());
+                    logger.debug("Configure Panel : Gateway : Result : {}", panelResponse.getResult());
                     if (!panelResponse.getResult().equals("1")) {
                         handleError(panelResponse.getResult());
                     } else {
@@ -496,7 +493,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
     private void login() {
         if (isClientsSetUp() && isConnected()) {
-            logger.debug("The gateway will log into the panel with PIN: {}", getConfig().get(PIN));
+            logger.debug("Login : Log into the ATS Advanced Panel with PIN: {}", getConfig().get(PIN));
             Message message = new Message();
             ArrayList<Property> properties = new ArrayList<Property>();
 
@@ -553,7 +550,7 @@ public class PanelHandler extends BaseBridgeHandler {
             message.setName("device.getConnect");
             MessageResponse response = client.post(message);
 
-            logger.debug("The gateway returned a message of type : {}", response.getName());
+            logger.debug("Login : Gateway : Message Type : {}", response.getName());
 
             for (Property property : response.getProperties()) {
                 logger.debug("\t Property {} : {} : {}",
@@ -571,7 +568,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
     private void logout() {
         if (isClientsSetUp()) {
-            logger.debug("The gateway will logout");
+            logger.debug("Logout");
             Message message = new Message();
             ArrayList<Property> properties = new ArrayList<Property>();
 
@@ -579,7 +576,7 @@ public class PanelHandler extends BaseBridgeHandler {
             message.setName("device.disconnect");
             MessageResponse response = client.post(message);
 
-            logger.debug("The gateway returned a message of type : {}", response.getName());
+            logger.debug("Logout : Gateway : Message Type : {}", response.getName());
 
             for (Property property : response.getProperties()) {
                 logger.debug("\t Property {} : {} : {}",
@@ -603,7 +600,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
     private void openLogs() {
         if (isClientsSetUp() && isConnected() && isLoggedIn()) {
-            logger.debug("The gateway will open the logs");
+            logger.debug("Logs : Open");
             Message message = new Message();
             ArrayList<Property> properties = new ArrayList<Property>();
 
@@ -611,7 +608,7 @@ public class PanelHandler extends BaseBridgeHandler {
             message.setName("open.LOG");
             MessageResponse response = client.post(message);
 
-            logger.debug("The gateway returned a message of type : {}", response.getName());
+            logger.debug("Logs : Gateway : Message Type : {}", response.getName());
 
             for (Property property : response.getProperties()) {
                 logger.debug("\t Property {} : {} : {}",
@@ -628,7 +625,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
     private void startMonitor() {
         if (isClientsSetUp() && isConnected() && isLoggedIn()) {
-            logger.debug("The gateway will start the monitor");
+            logger.debug("Monitor : Start");
             Message message = new Message();
             ArrayList<Property> properties = new ArrayList<Property>();
 
@@ -636,7 +633,7 @@ public class PanelHandler extends BaseBridgeHandler {
             message.setName("start.MONITOR");
             MessageResponse response = client.post(message);
 
-            logger.debug("The gateway returned a message of type : {}", response.getName());
+            logger.debug("Monitor : Gateway : Message Type : {}", response.getName());
 
             for (Property property : response.getProperties()) {
                 logger.debug("\t Property {} : {} : {}",
@@ -653,7 +650,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
     public boolean isAlive() {
         if (isClientsSetUp() && isConnected() && isLoggedIn()) {
-            logger.debug("The gateway will check if the panel is alive");
+            logger.debug("Is Alive");
             Message message = new Message();
             ArrayList<Property> properties = new ArrayList<Property>();
 
@@ -661,7 +658,7 @@ public class PanelHandler extends BaseBridgeHandler {
             message.setName("is.Alive");
             MessageResponse response = client.post(message);
 
-            logger.debug("The gateway returned a message of type : {}", response.getName());
+            logger.debug("Is Alive : Gateway : Message Type : {}", response.getName());
 
             for (Property property : response.getProperties()) {
                 logger.debug("\t Property {} : {} : {}",
@@ -686,7 +683,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
     public boolean getUserPrivilege(int index) {
         if (isClientsSetUp() && isConnected() && isLoggedIn()) {
-            logger.debug("The gateway will verify the user privileges with index: {}", index);
+            logger.debug("Verify User Priveleges : Index: {}", index);
             Message message = new Message();
             ArrayList<Property> properties = new ArrayList<Property>();
 
@@ -701,7 +698,7 @@ public class PanelHandler extends BaseBridgeHandler {
             message.setName("get.privileges");
             MessageResponse response = client.post(message);
 
-            logger.debug("The gateway returned a message of type : {}", response.getName());
+            logger.debug("Verify User Priveleges : Gateway : Message Type : {}", response.getName());
 
             for (Property property : response.getProperties()) {
                 logger.debug("\t Property {} : {} : {}",
@@ -946,7 +943,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
     private MessageResponse getLiveEvent(boolean next) {
         if (isClientsSetUp()) {
-            logger.debug("The gateway will fetch live events");
+            logger.debug("Fetch Live Events");
             Message message = new Message();
             ArrayList<Property> properties = new ArrayList<Property>();
 
@@ -975,7 +972,7 @@ public class PanelHandler extends BaseBridgeHandler {
             message.setName("get.liveEvents");
             MessageResponse response = client.post(message);
 
-            logger.debug("The gateway returned a message of type : {}", response.getName());
+            logger.debug("Fetch Live Events : Gateway : Message Type : {}", response.getName());
 
             for (Property property : response.getProperties()) {
                 logger.debug("\t Property {} : {} : {}",
@@ -1061,12 +1058,13 @@ public class PanelHandler extends BaseBridgeHandler {
 
             while (state != ControlSessionState.CSMS_FC_Setting) {
                 if (state == ControlSessionState.CSMS_FC_Faults) {
-                    logger.debug("There are detected faults in the system that prevents setting selected areas");
+                    logger.debug(
+                            "Set Area : There are detected faults in the system that prevents setting selected areas");
                     getFaults(sessionID);
                 }
                 if (state == ControlSessionState.CSMS_FC_ActiveStates) {
                     logger.debug(
-                            "There are detected active states in zones or devices that prevents setting selected areas");
+                            "Set Area : There are detected active states in zones or devices that prevents setting selected areas");
                     getActiveZones(sessionID);
                 }
 
@@ -1098,7 +1096,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
     private boolean inhibitActiveZone(int sessionID, int eventID) {
         if (isClientsSetUp()) {
-            logger.debug("The gateway will inhibit the fault with ID {} for session : {}", eventID, sessionID);
+            logger.debug("Inhibit Active Zone : Fault with ID {} for Session : {}", eventID, sessionID);
             Message message = new Message();
             ArrayList<Property> properties = new ArrayList<Property>();
 
@@ -1120,7 +1118,7 @@ public class PanelHandler extends BaseBridgeHandler {
             message.setName("fnCC.A_SET_INHACTIVE");
             MessageResponse response = client.post(message);
 
-            logger.debug("The gateway returned a message of type : {}", response.getName());
+            logger.debug("Inhibit Active Zone : Gateway : Message Type : {}", response.getName());
 
             for (Property property : response.getProperties()) {
                 logger.debug("\t Property {} : {} : {}",
@@ -1142,7 +1140,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
     private MessageResponse getActiveZones(int sessionID, boolean next) {
         if (isClientsSetUp()) {
-            logger.debug("The gateway will fetch the faults for session : {}", sessionID);
+            logger.debug("Get Active Zones : Faults for Session : {}", sessionID);
             Message message = new Message();
             ArrayList<Property> properties = new ArrayList<Property>();
 
@@ -1159,7 +1157,7 @@ public class PanelHandler extends BaseBridgeHandler {
             message.setName("fnCC.A_SET_GETACTIVE");
             MessageResponse response = client.post(message);
 
-            logger.debug("The gateway returned a message of type : {}", response.getName());
+            logger.debug("Get Active Zones : Gateway : Message Type : {}", response.getName());
 
             for (Property property : response.getProperties()) {
                 logger.debug("\t Property {} : {} : {}",
@@ -1194,7 +1192,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
     private boolean inhibitFault(int sessionID, int eventID) {
         if (isClientsSetUp()) {
-            logger.debug("The gateway will inhibit the fault with ID {} for session : {}", eventID, sessionID);
+            logger.debug("Inhibit Fault : ID {} for Session : {}", eventID, sessionID);
             Message message = new Message();
             ArrayList<Property> properties = new ArrayList<Property>();
 
@@ -1216,7 +1214,7 @@ public class PanelHandler extends BaseBridgeHandler {
             message.setName("fnCC.A_SET_INHFAULT");
             MessageResponse response = client.post(message);
 
-            logger.debug("The gateway returned a message of type : {}", response.getName());
+            logger.debug("Inhibit Fault : Gateway : Message Type : {}", response.getName());
 
             for (Property property : response.getProperties()) {
                 logger.debug("\t Property {} : {} : {}",
@@ -1238,7 +1236,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
     private MessageResponse getFaults(int sessionID, boolean next) {
         if (isClientsSetUp()) {
-            logger.debug("The gateway will fetch the faults for session : {}", sessionID);
+            logger.debug("Get Faults : Session : {}", sessionID);
             Message message = new Message();
             ArrayList<Property> properties = new ArrayList<Property>();
 
@@ -1255,7 +1253,7 @@ public class PanelHandler extends BaseBridgeHandler {
             message.setName("fnCC.A_SET_GETFAULT");
             MessageResponse response = client.post(message);
 
-            logger.debug("The gateway returned a message of type : {}", response.getName());
+            logger.debug("Get Faults : Gateway : Message Type : {}", response.getName());
 
             for (Property property : response.getProperties()) {
                 logger.debug("\t Property {} : {} : {}",
@@ -1273,7 +1271,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
     private boolean armAreas(int sessionID) {
         if (isClientsSetUp()) {
-            logger.debug("The gateway will arm the areas for session : {}", sessionID);
+            logger.debug("Arm Areas : Session : {}", sessionID);
             Message message = new Message();
             ArrayList<Property> properties = new ArrayList<Property>();
 
@@ -1288,7 +1286,7 @@ public class PanelHandler extends BaseBridgeHandler {
             message.setName("fnCC.A_SET_SETAREAS");
             MessageResponse response = client.post(message);
 
-            logger.debug("The gateway returned a message of type : {}", response.getName());
+            logger.debug("Arm Areas : Gateway : Message Type : {}", response.getName());
 
             for (Property property : response.getProperties()) {
                 logger.debug("\t Property {} : {} : {}",
@@ -1306,7 +1304,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
     private boolean skipAlarms(int sessionID) {
         if (isClientsSetUp()) {
-            logger.debug("The gateway will arm the areas for session : {}", sessionID);
+            logger.debug("Skip Alarms : Session : {}", sessionID);
             Message message = new Message();
             ArrayList<Property> properties = new ArrayList<Property>();
 
@@ -1321,7 +1319,7 @@ public class PanelHandler extends BaseBridgeHandler {
             message.setName("fnCC.A_UNSET_SKIP");
             MessageResponse response = client.post(message);
 
-            logger.debug("The gateway returned a message of type : {}", response.getName());
+            logger.debug("Skip Alarms : Gateway : Message Type : {}", response.getName());
 
             for (Property property : response.getProperties()) {
                 logger.debug("\t Property {} : {} : {}",
@@ -1339,7 +1337,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
     private boolean skipFaults(int sessionID) {
         if (isClientsSetUp()) {
-            logger.debug("The gateway will arm the areas for session : {}", sessionID);
+            logger.debug("Skip Faults : Session : {}", sessionID);
             Message message = new Message();
             ArrayList<Property> properties = new ArrayList<Property>();
 
@@ -1354,7 +1352,7 @@ public class PanelHandler extends BaseBridgeHandler {
             message.setName("fnCC.A_UNSET_SKIP");
             MessageResponse response = client.post(message);
 
-            logger.debug("The gateway returned a message of type : {}", response.getName());
+            logger.debug("Skip Faults : Gateway : Message Type : {}", response.getName());
 
             for (Property property : response.getProperties()) {
                 logger.debug("\t Property {} : {} : {}",
@@ -1372,7 +1370,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
     private boolean unArmAreas(int sessionID) {
         if (isClientsSetUp()) {
-            logger.debug("The gateway will unarm the areas for session : {}", sessionID);
+            logger.debug("Arm Areas : Session : {}", sessionID);
             Message message = new Message();
             ArrayList<Property> properties = new ArrayList<Property>();
 
@@ -1387,7 +1385,7 @@ public class PanelHandler extends BaseBridgeHandler {
             message.setName("fnCC.A_UNSET_UNSETAREAS");
             MessageResponse response = client.post(message);
 
-            logger.debug("The gateway returned a message of type : {}", response.getName());
+            logger.debug("Unarm Areas : Gateway : Message Type : {}", response.getName());
 
             for (Property property : response.getProperties()) {
                 logger.debug("\t Property {} : {} : {}",
@@ -1405,7 +1403,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
     private ControlSessionState getControlSessionState(int sessionID) {
         if (isClientsSetUp()) {
-            logger.debug("The gateway will fetch the control session state for session : {}", sessionID);
+            logger.debug("Get Control Session State : Session : {}", sessionID);
             Message message = new Message();
             ArrayList<Property> properties = new ArrayList<Property>();
 
@@ -1420,7 +1418,7 @@ public class PanelHandler extends BaseBridgeHandler {
             message.setName("statusCC.SESSION");
             MessageResponse response = client.post(message);
 
-            logger.debug("The gateway returned a message of type : {}", response.getName());
+            logger.debug("Get Control Session State : Gateway : Message Type : {}", response.getName());
 
             for (Property property : response.getProperties()) {
                 logger.debug("\t Property {} : {} : {}",
@@ -1442,7 +1440,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
     private boolean finishControlSession(int sessionID) {
         if (isClientsSetUp()) {
-            logger.debug("The gateway will finish the control session for session : {}", sessionID);
+            logger.debug("Finish Control Session : Session : {}", sessionID);
             Message message = new Message();
             ArrayList<Property> properties = new ArrayList<Property>();
 
@@ -1457,7 +1455,7 @@ public class PanelHandler extends BaseBridgeHandler {
             message.setName("destroyCC.SESSION");
             MessageResponse response = client.post(message);
 
-            logger.debug("The gateway returned a message of type : {}", response.getName());
+            logger.debug("Finish Control Session : Gateway : Message Type : {}", response.getName());
 
             for (Property property : response.getProperties()) {
                 logger.debug("\t Property {} : {} : {}",
@@ -1475,7 +1473,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
     private int initiateSetControlSession(int area) {
         if (isClientsSetUp()) {
-            logger.debug("The gateway will start the set control session for area: {}", area);
+            logger.debug("Initiate Set Control Session : Area: {}", area);
             Message message = new Message();
             ArrayList<Property> properties = new ArrayList<Property>();
 
@@ -1487,7 +1485,7 @@ public class PanelHandler extends BaseBridgeHandler {
             message.setName("createCC.A_SET");
             MessageResponse response = client.post(message);
 
-            logger.debug("The gateway returned a message of type : {}", response.getName());
+            logger.debug("Initiate Set Control Session : Gateway : Message Type : {}", response.getName());
 
             for (Property property : response.getProperties()) {
                 logger.debug("\t Property {} : {} : {}",
@@ -1509,7 +1507,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
     private int initiateUnsetControlSession(int area) {
         if (isClientsSetUp()) {
-            logger.debug("The gateway will start the unset control session for area: {}", area);
+            logger.debug("Initiate Unset Control Session : Area: {}", area);
             Message message = new Message();
             ArrayList<Property> properties = new ArrayList<Property>();
 
@@ -1521,7 +1519,7 @@ public class PanelHandler extends BaseBridgeHandler {
             message.setName("createCC.A_UNSET");
             MessageResponse response = client.post(message);
 
-            logger.debug("The gateway returned a message of type : {}", response.getName());
+            logger.debug("Initiate Unset Control Session : Gateway : Message Type : {}", response.getName());
 
             for (Property property : response.getProperties()) {
                 logger.debug("\t Property {} : {} : {}",
@@ -1582,7 +1580,7 @@ public class PanelHandler extends BaseBridgeHandler {
                 String eventText = null;
 
                 for (Property aProperty : properties) {
-                    logger.trace("\t property {} : {}", aProperty.getId(), aProperty.getValue());
+                    logger.trace("\t Property {} : {}", aProperty.getId(), aProperty.getValue());
                     if (aProperty.getId().equals("timeStamp")) {
                         Calendar cal = javax.xml.bind.DatatypeConverter.parseDateTime((String) aProperty.getValue());
                         timeStamp = cal.getTime();
@@ -1628,7 +1626,7 @@ public class PanelHandler extends BaseBridgeHandler {
         // handle errors returned from the panel
         try {
             if (!handlingError) {
-                logger.debug("Handling a panel or gateway error: {}", error);
+                logger.debug("ATS Advanced Panel or Gateway : Error : {}", error);
                 if (StringUtils.contains(error, "Connection refused")
                         || StringUtils.contains(error, "The socket has been shut down")
                         || StringUtils.contains(error, "Connection reset by peer")
@@ -1690,7 +1688,7 @@ public class PanelHandler extends BaseBridgeHandler {
         @Override
         public void onProcessComplete(int exitValue) {
             super.onProcessComplete(exitValue);
-            logger.info("The gateway process just exited, with value '{}'", exitValue);
+            logger.info("Gateway exited with value '{}'", exitValue);
             gatewayProcessStarted = false;
             onConnectionLost();
         }
@@ -1699,8 +1697,8 @@ public class PanelHandler extends BaseBridgeHandler {
         public void onProcessFailed(ExecuteException e) {
             super.onProcessFailed(e);
             if (!watchDog.killedProcess()) {
-                logger.error("The gateway process just failed unexpectedly with value '{}'", e.getExitValue());
-                logger.error("The gateway process just failed unexpectedly with message '{}'", e.getMessage());
+                logger.error("Gateway failed unexpectedly with value '{}'", e.getExitValue());
+                logger.error("Gateway failed unexpectedly with message '{}'", e.getMessage());
             }
             gatewayProcessStarted = false;
             onConnectionLost();

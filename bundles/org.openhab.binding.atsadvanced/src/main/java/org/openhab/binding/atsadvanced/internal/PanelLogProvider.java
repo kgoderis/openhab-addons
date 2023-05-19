@@ -27,7 +27,7 @@ public class PanelLogProvider extends LogProvider {
 
     @Override
     public void println(LogType type, Object message) {
-        logger.trace("{} {} : {}", getPrefix(), logTypeString(type), message);
+        logger.trace("Panel : {}[{}] : {}", getPrefix() != "" ? getPrefix() + " : " : "", logTypeString(type), message);
     }
 
     @Override
