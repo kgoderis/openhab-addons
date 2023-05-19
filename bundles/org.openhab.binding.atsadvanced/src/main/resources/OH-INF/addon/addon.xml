@@ -5,6 +5,18 @@
 
 	<type>binding</type>
 	<name>ATSAdvanced Binding</name>
-	<description>This is the binding for ATSAdvanced.</description>
+	<description>This is the binding for ATSAdvanced</description>
+	<author>Karel Goderis</author>
+
+	<config-description>
+		<parameter name="ats" type="text">
+			<label>ATS</label>
+			<description>Location of the ATS Gateway binary</description>
+		</parameter>
+		<parameter name="mono" type="text">
+			<label>Mono</label>
+			<description>Location of the mono binary</description>
+		</parameter>
+	</config-description>
 
 </addon:addon>

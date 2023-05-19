@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ATSAdvancedGateway", "ATSAdvancedGateway.csproj", "{0C2E970E-4D33-462C-9B86-A1FF9752C84E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0C2E970E-4D33-462C-9B86-A1FF9752C84E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C2E970E-4D33-462C-9B86-A1FF9752C84E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C2E970E-4D33-462C-9B86-A1FF9752C84E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C2E970E-4D33-462C-9B86-A1FF9752C84E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = ATSAdvancedGateway.csproj
+		Policies = $0
+		$0.VersionControlPolicy = $1
+		$1.inheritsSet = Mono
+		$0.ChangeLogPolicy = $2
+		$2.UpdateMode = None
+		$2.MessageStyle = $3
+		$3.LineAlign = 0
+		$2.inheritsSet = Mono
+	EndGlobalSection
+EndGlobal

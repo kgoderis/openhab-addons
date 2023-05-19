@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2023 Contributors to the openHAB project
+ * Copyright (c) 2010-2020 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -10,22 +10,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.atsadvanced.internal;
+package org.openhab.binding.atsadvanced.internal.handler;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * The {@link ATSAdvancedConfiguration} class contains fields mapping thing configuration parameters.
- *
  * @author Karel Goderis - Initial contribution
  */
 @NonNullByDefault
-public class ATSAdvancedConfiguration {
-
-    /**
-     * Sample configuration parameters. Replace with your own.
-     */
-    public String hostname = "";
-    public String password = "";
-    public int refreshInterval = 600;
+public interface ZoneStatusListener {
+    void onZoneStateChanged(int zoneNumber);
 }

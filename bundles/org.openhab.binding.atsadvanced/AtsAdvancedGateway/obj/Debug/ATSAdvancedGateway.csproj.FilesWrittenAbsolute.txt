@@ -1,0 +1,17 @@
+/Users/kgoderis/openHAB/openhab2-master/git/openhab2-addons/addons/binding/org.openhab.binding.atsadvanced/AtsAdvancedGateway/obj/Debug/.NETFramework,Version=v4.5.AssemblyAttribute.cs
+/Users/kgoderis/openHAB/openhab2-master/git/openhab2-addons/addons/binding/org.openhab.binding.atsadvanced/AtsAdvancedGateway/bin/Debug/ats.advanced.drv
+/Users/kgoderis/openHAB/openhab2-master/git/openhab2-addons/addons/binding/org.openhab.binding.atsadvanced/AtsAdvancedGateway/bin/Debug/ATSAdvancedGateway.exe.mdb
+/Users/kgoderis/openHAB/openhab2-master/git/openhab2-addons/addons/binding/org.openhab.binding.atsadvanced/AtsAdvancedGateway/bin/Debug/ATSAdvancedGateway.exe
+/Users/kgoderis/openHAB/openhab2-master/git/openhab2-addons/addons/binding/org.openhab.binding.atsadvanced/AtsAdvancedGateway/obj/Debug/ATSAdvancedGateway.exe
+/Users/kgoderis/openHAB/openhab2-master/git/openhab2-addons/addons/binding/org.openhab.binding.atsadvanced/AtsAdvancedGateway/obj/Debug/ATSAdvancedGateway.exe.mdb
+/Users/kgoderis/openHAB/openhab2-master/git/openhab2-addons/addons/binding/org.openhab.binding.atsadvanced/AtsAdvancedGateway/bin/Debug/NAce.Api.dll
+/Users/kgoderis/openHAB/openhab2-master/git/openhab2-addons/addons/binding/org.openhab.binding.atsadvanced/AtsAdvancedGateway/bin/Debug/NAce.Ats.dll
+/Users/kgoderis/openHAB/openhab2-master/git/openhab2-addons/addons/binding/org.openhab.binding.atsadvanced/AtsAdvancedGateway/bin/Debug/NAce.Communication.dll
+/Users/kgoderis/openHAB/openhab2-master/git/openhab2-addons/addons/binding/org.openhab.binding.atsadvanced/AtsAdvancedGateway/bin/Debug/NAce.Message.dll
+/Users/kgoderis/openHAB/openhab2-master/git/openhab2-addons/addons/binding/org.openhab.binding.atsadvanced/AtsAdvancedGateway/bin/Debug/NAce.Utilities.dll
+/Users/kgoderis/openHAB/openhab2-master/git/openhab2-addons/addons/binding/org.openhab.binding.atsadvanced/AtsAdvancedGateway/bin/Debug/ServiceStack.Interfaces.dll
+/Users/kgoderis/openHAB/openhab2-master/git/openhab2-addons/addons/binding/org.openhab.binding.atsadvanced/AtsAdvancedGateway/bin/Debug/ServiceStack.Text.dll
+/Users/kgoderis/openHAB/openhab2-master/git/openhab2-addons/addons/binding/org.openhab.binding.atsadvanced/AtsAdvancedGateway/bin/Debug/ServiceStack.Client.dll
+/Users/kgoderis/openHAB/openhab2-master/git/openhab2-addons/addons/binding/org.openhab.binding.atsadvanced/AtsAdvancedGateway/bin/Debug/ServiceStack.Common.dll
+/Users/kgoderis/openHAB/openhab2-master/git/openhab2-addons/addons/binding/org.openhab.binding.atsadvanced/AtsAdvancedGateway/bin/Debug/ServiceStack.dll
+/Users/kgoderis/openHAB/openhab2-master/git/openhab2-addons/addons/binding/org.openhab.binding.atsadvanced/AtsAdvancedGateway/bin/Debug/ServiceStackPlugins.Interfaces.dll
