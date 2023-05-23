@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecuteResultHandler;
@@ -89,7 +90,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
     private Logger logger = LoggerFactory.getLogger(PanelHandler.class);
 
-    private static int CONNECTION_THREAD_INTERVAL = 5;
+    private static int CONNECTION_THREAD_INTERVAL = 15;
     private static int POLLING_THREAD_INTERVAL = 30;
     private static int HEART_BEAT = 10000;
     private static int RETRIES = 1;
@@ -117,6 +118,8 @@ public class PanelHandler extends BaseBridgeHandler {
     private List<PanelStatusListener> panelStatusListeners = new CopyOnWriteArrayList<>();
     private List<ZoneStatusListener> zoneStatusListeners = new CopyOnWriteArrayList<>();
     private List<AreaStatusListener> areaStatusListeners = new CopyOnWriteArrayList<>();
+
+    private ReentrantLock GatewayProcessLock;
 
     public PanelHandler(Bridge bridge, String monoPath, String atsPath) {
         super(bridge);
@@ -269,6 +272,7 @@ public class PanelHandler extends BaseBridgeHandler {
         @Override
         public void run() {
             try {
+                logger.trace("connectionRunnable invoked");
                 if (getThing().getStatus() == ThingStatus.OFFLINE) {
 
                     if (!isGatewayStarted()) {
@@ -350,41 +354,48 @@ public class PanelHandler extends BaseBridgeHandler {
 
         if (!gatewayProcessStarted) {
 
-            gatewayURL = "http://" + (String) getConfig().get(OPENHAB_HOST) + ":" + getConfig().get(GATEWAY_PORT);
-            logger.debug("The ATS Advanced Panel handler will connect to the Gateway at '{}'", gatewayURL);
-
-            DefaultExecutor executor = new DefaultExecutor();
-            executor.setExitValue(0);
-
-            PumpStreamHandler psh = new PumpStreamHandler(new GatewayLogHandler(logger, 0),
-                    new GatewayLogHandler(logger, 1));
-            // PumpStreamHandler psh = new PumpStreamHandler(new GatewayLogHangler(logger, 0));
-            executor.setStreamHandler(psh);
-            executor.setProcessDestroyer(shutdownHookProcessDestroyer);
-            executor.setExitValue(0);
-            executor.setWatchdog(watchDog);
-
-            File file = new File(atsPath);
-            executor.setWorkingDirectory(file);
-
-            CommandLine commandLine = new CommandLine(monoPath);
-            commandLine.addArgument("--debug");
-            commandLine.addArgument("ATSAdvancedGateway.exe");
-            commandLine.addArgument("-p");
-            commandLine.addArgument(((BigDecimal) getConfig().get(GATEWAY_PORT)).toString());
-            commandLine.addArgument("-d");
-            commandLine.addArgument("ats.advanced.drv");
-            Map<String, String> environment = new HashMap<String, String>();
-
-            checkAndKillExistingProcessRunning(commandLine);
+            GatewayProcessLock.lock();
 
             try {
-                logger.debug("Starting the Gateway : '{}'", commandLine.toString());
-                executor.execute(commandLine, environment, resultHandler);
-            } catch (IOException e) {
-                logger.error("An exception occurred while starting the Gateway : '{}'", e.getMessage());
+
+                gatewayURL = "http://" + (String) getConfig().get(OPENHAB_HOST) + ":" + getConfig().get(GATEWAY_PORT);
+                logger.debug("The ATS Advanced Panel handler will connect to the Gateway at '{}'", gatewayURL);
+
+                DefaultExecutor executor = new DefaultExecutor();
+                executor.setExitValue(0);
+
+                PumpStreamHandler psh = new PumpStreamHandler(new GatewayLogHandler(logger, 0),
+                        new GatewayLogHandler(logger, 1));
+                // PumpStreamHandler psh = new PumpStreamHandler(new GatewayLogHangler(logger, 0));
+                executor.setStreamHandler(psh);
+                executor.setProcessDestroyer(shutdownHookProcessDestroyer);
+                executor.setExitValue(0);
+                executor.setWatchdog(watchDog);
+
+                File file = new File(atsPath);
+                executor.setWorkingDirectory(file);
+
+                CommandLine commandLine = new CommandLine(monoPath);
+                commandLine.addArgument("--debug");
+                commandLine.addArgument("ATSAdvancedGateway.exe");
+                commandLine.addArgument("-p");
+                commandLine.addArgument(((BigDecimal) getConfig().get(GATEWAY_PORT)).toString());
+                commandLine.addArgument("-d");
+                commandLine.addArgument("ats.advanced.drv");
+                Map<String, String> environment = new HashMap<String, String>();
+
+                checkAndKillExistingProcessRunning(commandLine);
+
+                try {
+                    logger.debug("Starting the Gateway : '{}'", commandLine.toString());
+                    executor.execute(commandLine, environment, resultHandler);
+                } catch (IOException e) {
+                    logger.error("An exception occurred while starting the Gateway : '{}'", e.getMessage());
+                }
+                // gatewayProcessStarted = true;
+            } finally {
+                GatewayProcessLock.unlock();
             }
-            // gatewayProcessStarted = true;
         }
     }
 
@@ -408,6 +419,8 @@ public class PanelHandler extends BaseBridgeHandler {
             while ((line = input.readLine()) != null) {
                 if (line.contains(commandline.toString())) {
 
+                    logger.trace("Process check : '{}' vs '{}'", line, commandline.toString());
+
                     String[] entry = StringUtils.split(line);
 
                     CommandLine commandLine = new CommandLine("/bin/kill");
@@ -415,9 +428,9 @@ public class PanelHandler extends BaseBridgeHandler {
                     commandLine.addArgument(entry[0]);
                     int result = executor.execute(commandLine);
                     if (result == 0) {
-                        logger.info("Killed a running Gateway");
+                        logger.info("Killed a running Gateway with pid {}", entry[0]);
                     } else {
-                        logger.warn("Killing a running Gateway exited with code : '{}'", result);
+                        logger.warn("Killing a running Gateway with pid {} exited with code : '{}'", entry[0], result);
                     }
                 }
             }
