@@ -95,6 +95,7 @@ public class PanelHandler extends BaseBridgeHandler {
     private static int HEART_BEAT = 10000;
     private static int RETRIES = 1;
     private static int TIME_OUT = 2000;
+    private static int GATEWAY_START_TIME_OUT = 3000;
 
     private ScheduledFuture<?> connectionJob;
     private ScheduledFuture<?> pollingJob;
@@ -119,7 +120,7 @@ public class PanelHandler extends BaseBridgeHandler {
     private List<ZoneStatusListener> zoneStatusListeners = new CopyOnWriteArrayList<>();
     private List<AreaStatusListener> areaStatusListeners = new CopyOnWriteArrayList<>();
 
-    private ReentrantLock GatewayProcessLock;
+    private ReentrantLock GatewayProcessLock = new ReentrantLock();
 
     public PanelHandler(Bridge bridge, String monoPath, String atsPath) {
         super(bridge);
@@ -350,6 +351,13 @@ public class PanelHandler extends BaseBridgeHandler {
         }
     }
 
+    private String convertStringArrayToString(String[] strArr, String delimiter) {
+        StringBuilder sb = new StringBuilder();
+        for (String str : strArr)
+            sb.append(str).append(delimiter);
+        return sb.substring(0, sb.length() - 1);
+    }
+
     private void startGatewayProcess() {
 
         if (!gatewayProcessStarted) {
@@ -359,7 +367,7 @@ public class PanelHandler extends BaseBridgeHandler {
             try {
 
                 gatewayURL = "http://" + (String) getConfig().get(OPENHAB_HOST) + ":" + getConfig().get(GATEWAY_PORT);
-                logger.debug("The ATS Advanced Panel handler will connect to the Gateway at '{}'", gatewayURL);
+                logger.info("The ATS Advanced Panel handler will connect to the Gateway at '{}'", gatewayURL);
 
                 DefaultExecutor executor = new DefaultExecutor();
                 executor.setExitValue(0);
@@ -387,15 +395,58 @@ public class PanelHandler extends BaseBridgeHandler {
                 checkAndKillExistingProcessRunning(commandLine);
 
                 try {
-                    logger.debug("Starting the Gateway : '{}'", commandLine.toString());
+                    logger.info("Starting the Gateway : '{}'",
+                            convertStringArrayToString(commandLine.toStrings(), " "));
                     executor.execute(commandLine, environment, resultHandler);
                 } catch (IOException e) {
                     logger.error("An exception occurred while starting the Gateway : '{}'", e.getMessage());
                 }
-                // gatewayProcessStarted = true;
+
+                try {
+                    Thread.sleep(GATEWAY_START_TIME_OUT);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                checkProcessRunning(commandLine);
             } finally {
                 GatewayProcessLock.unlock();
             }
+        }
+    }
+
+    private void checkProcessRunning(CommandLine commandline) {
+        try {
+            String line;
+            DefaultExecutor executor = new DefaultExecutor();
+            CommandLine psCmd = new CommandLine("ps");
+            psCmd.addArgument("aux");
+
+            ByteArrayOutputStream err = new ByteArrayOutputStream();
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            PumpStreamHandler p = new PumpStreamHandler(out, err);
+            executor.setStreamHandler(p);
+
+            executor.execute(psCmd);
+
+            BufferedReader input = new BufferedReader(
+                    new InputStreamReader(new ByteArrayInputStream(out.toByteArray())));
+
+            while ((line = input.readLine()) != null) {
+                logger.trace("Process check : '{}' vs '{}'", line,
+                        convertStringArrayToString(commandline.toStrings(), " "));
+
+                if (line.contains(convertStringArrayToString(commandline.toStrings(), " "))) {
+                    String[] entry = StringUtils.split(line);
+                    logger.info("The Gateway started with PID {} : '{}'", entry[1],
+                            convertStringArrayToString(commandline.toStrings(), " "));
+                    return;
+                }
+            }
+            input.close();
+            logger.warn("The Gateway did not start : '{}'", convertStringArrayToString(commandline.toStrings(), " "));
+        } catch (Exception err) {
+            logger.error("An exception occurred while checking the Gateway : '{}'", err.getMessage());
         }
     }
 
@@ -417,27 +468,27 @@ public class PanelHandler extends BaseBridgeHandler {
                     new InputStreamReader(new ByteArrayInputStream(out.toByteArray())));
 
             while ((line = input.readLine()) != null) {
-                if (line.contains(commandline.toString())) {
 
-                    logger.trace("Process check : '{}' vs '{}'", line, commandline.toString());
+                logger.trace("Process check : '{}' vs '{}'", line,
+                        convertStringArrayToString(commandline.toStrings(), " "));
 
+                if (line.contains(convertStringArrayToString(commandline.toStrings(), " "))) {
                     String[] entry = StringUtils.split(line);
 
                     CommandLine commandLine = new CommandLine("/bin/kill");
                     commandLine.addArgument("-9");
-                    commandLine.addArgument(entry[0]);
+                    commandLine.addArgument(entry[1]);
                     int result = executor.execute(commandLine);
                     if (result == 0) {
-                        logger.info("Killed a running Gateway with pid {}", entry[0]);
+                        logger.info("Killed a running Gateway with PID {}", entry[1]);
                     } else {
-                        logger.warn("Killing a running Gateway with pid {} exited with code : '{}'", entry[0], result);
+                        logger.warn("Killing a running Gateway with PID {} exited with code : '{}'", entry[1], result);
                     }
                 }
             }
             input.close();
-
         } catch (Exception err) {
-            logger.warn("An exception occurred while checking and killing existing Gateways : '{}'", err.getMessage());
+            logger.error("An exception occurred while checking and killing existing Gateways : '{}'", err.getMessage());
         }
     }
 
