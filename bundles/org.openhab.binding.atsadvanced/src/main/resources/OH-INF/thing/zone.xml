@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="atsadvanced"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+	<thing-type id="zone">
+
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="panel"/>
+		</supported-bridge-type-refs>
+
+		<label>Zone Thing</label>
+		<description>Zone</description>
+
+		<channels>
+			<channel id="active" typeId="active-channel"/>
+			<channel id="alarm" typeId="alarm-channel"/>
+		</channels>
+
+		<config-description>
+			<parameter name="number" type="integer">
+				<label>Zone Number</label>
+				<description>Unique number identifying the security zone in the ATS Advanced Panel</description>
+				<required>true</required>
+			</parameter>
+		</config-description>
+
+	</thing-type>
+
+	<channel-type id="active-channel">
+		<item-type>Switch</item-type>
+		<label>Active</label>
+		<description>Flag to indicate if the Zone is in active state, or not</description>
+	</channel-type>
+	<channel-type id="alarm-channel">
+		<item-type>Switch</item-type>
+		<label>Alarm</label>
+		<description>Flag to indicate if the Zone is in alarm state</description>
+	</channel-type>
+</thing:thing-descriptions>

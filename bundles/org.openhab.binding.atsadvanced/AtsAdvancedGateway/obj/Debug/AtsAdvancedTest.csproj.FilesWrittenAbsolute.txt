@@ -1,0 +1,17 @@
+/Users/kgoderis/Documents/NACE_SDKSDK_1.4.1.4012/AtsAdvancedTest/obj/Debug/.NETFramework,Version=v4.5.AssemblyAttribute.cs
+/Users/kgoderis/Documents/NACE_SDKSDK_1.4.1.4012/AtsAdvancedTest/obj/Debug/AtsAdvancedTest.ats.advanced.drv
+/Users/kgoderis/Documents/NACE_SDKSDK_1.4.1.4012/AtsAdvancedTest/bin/Debug/ats.advanced.drv
+/Users/kgoderis/Documents/NACE_SDKSDK_1.4.1.4012/AtsAdvancedTest/bin/Debug/AtsAdvancedTest.exe.mdb
+/Users/kgoderis/Documents/NACE_SDKSDK_1.4.1.4012/AtsAdvancedTest/bin/Debug/AtsAdvancedTest.exe
+/Users/kgoderis/Documents/NACE_SDKSDK_1.4.1.4012/AtsAdvancedTest/obj/Debug/AtsAdvancedTest.exe
+/Users/kgoderis/Documents/NACE_SDKSDK_1.4.1.4012/AtsAdvancedTest/obj/Debug/AtsAdvancedTest.exe.mdb
+/Users/kgoderis/Documents/NACE_SDKSDK_1.4.1.4012/AtsAdvancedTest/bin/Debug/NAce.Api.dll
+/Users/kgoderis/Documents/NACE_SDKSDK_1.4.1.4012/AtsAdvancedTest/bin/Debug/NAce.Communication.dll
+/Users/kgoderis/Documents/NACE_SDKSDK_1.4.1.4012/AtsAdvancedTest/bin/Debug/NAce.Message.dll
+/Users/kgoderis/Documents/NACE_SDKSDK_1.4.1.4012/AtsAdvancedTest/bin/Debug/NAce.Utilities.dll
+/Users/kgoderis/Documents/NACE_SDKSDK_1.4.1.4012/AtsAdvancedTest/bin/Debug/NAce.Ats.dll
+/Users/kgoderis/Documents/NACE_SDKSDK_1.4.1.4012/AtsAdvancedTest/bin/Debug/ServiceStack.Interfaces.dll
+/Users/kgoderis/Documents/NACE_SDKSDK_1.4.1.4012/AtsAdvancedTest/bin/Debug/ServiceStack.Text.dll
+/Users/kgoderis/Documents/NACE_SDKSDK_1.4.1.4012/AtsAdvancedTest/bin/Debug/ServiceStack.Common.dll
+/Users/kgoderis/Documents/NACE_SDKSDK_1.4.1.4012/AtsAdvancedTest/bin/Debug/ServiceStack.Client.dll
+/Users/kgoderis/Documents/NACE_SDKSDK_1.4.1.4012/AtsAdvancedTest/bin/Debug/ServiceStack.dll

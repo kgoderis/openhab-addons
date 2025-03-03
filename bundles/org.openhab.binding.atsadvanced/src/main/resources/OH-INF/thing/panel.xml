@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="atsadvanced"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+	<!-- Bridge Thing Type -->
+	<bridge-type id="panel">
+		<label>ATS Advanced Panel</label>
+		<description>This Bridge defines the ATS Advanced Alarm System Control panel</description>
+
+		<channels>
+			<channel id="monitor" typeId="monitor-channel"/>
+		</channels>
+
+		<config-description>
+			<parameter name="ipAddress" type="text" required="true">
+				<label>Network Address</label>
+				<description>Network address of the ATS Advanced panel</description>
+			</parameter>
+			<parameter name="openhab" type="text" required="true">
+				<label>Network Address</label>
+				<description>Network address of the openHAB host</description>
+			</parameter>
+			<parameter name="portNumber" type="integer" required="true">
+				<label>Port Number</label>
+				<description>TCP port number of the ATS Advanced panel</description>
+			</parameter>
+			<parameter name="gatewayPortNumber" type="integer" required="true">
+				<label>Port Number</label>
+				<description>TCP port number of the ATS Advanced panel Gateway webservice</description>
+			</parameter>
+			<!-- <parameter name="eventLoggerPortNumber" type="integer" required="true">
+				<label>Port Number</label>
+				<description>TCP port number of the Event Logger webservice</description>
+				</parameter> -->
+			<!-- <parameter name="gatewayURL" type="text" required="true">
+				<label>Gateway URL</label>
+				<description>The web services URL of the ATS Advanced gateway</description>
+				</parameter>
+				<parameter name="loggerURL" type="text" required="true">
+				<label>Gateway URL</label>
+				<description>The web services URL where the ATS Advanced gateway will post monitor and log messages</description>
+				</parameter> -->
+			<parameter name="pin" type="integer" required="true">
+				<label>PIN</label>
+				<description>The PIN of the supervisor user of the ATS Advanced panel</description>
+			</parameter>
+		</config-description>
+	</bridge-type>
+
+	<channel-type id="monitor-channel">
+		<item-type>String</item-type>
+		<label>Monitor</label>
+		<description>System monitor that contains a description of the most recent event that occurred at the ATS Advanced
+			panel</description>
+	</channel-type>
+
+</thing:thing-descriptions>
