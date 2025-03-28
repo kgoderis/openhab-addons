@@ -164,5 +164,4 @@ public class AccessoryRegistryImpl extends AbstractRegistry<Accessory, Accessory
     // public @Nullable Accessory get(ThingUID uid) {
     // return getAll().stream().filter(a -> a.getThingUID() == uid).findFirst().get();
     // }
-
 }

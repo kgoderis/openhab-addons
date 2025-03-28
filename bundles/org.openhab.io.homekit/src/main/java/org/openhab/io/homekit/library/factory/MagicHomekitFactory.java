@@ -61,6 +61,5 @@ public class MagicHomekitFactory extends BaseHomekitFactory {
         this.addCharacteristic(
                 new ChannelTypeUID(MagicBindingConstants.BINDING_ID, MagicBindingConstants.CHANNEL_SET_TEMPERATURE),
                 TargetTemperatureCharacteristic.class);
-
     }
 }

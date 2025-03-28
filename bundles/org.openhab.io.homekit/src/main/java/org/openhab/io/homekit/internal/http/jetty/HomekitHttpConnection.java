@@ -42,7 +42,6 @@ public class HomekitHttpConnection extends HttpConnection {
         if (newConnection != null) {
             getEndPoint().upgrade(newConnection);
         }
-
     }
 
     public void setUpgradable(boolean b) {

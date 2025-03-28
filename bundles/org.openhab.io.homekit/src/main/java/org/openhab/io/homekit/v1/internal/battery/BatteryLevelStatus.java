@@ -16,9 +16,8 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.library.items.NumberItem;
 import org.openhab.core.library.types.DecimalType;
+import org.openhab.io.homekit.hap.HomekitCharacteristicChangeCallback;
 import org.openhab.io.homekit.v1.internal.HomekitAccessoryUpdater;
-
-import  org.openhab.io.homekit.hap.HomekitCharacteristicChangeCallback;
 
 /**
  *

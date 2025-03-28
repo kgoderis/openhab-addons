@@ -56,5 +56,4 @@ public class FilterConfiguration extends HttpComponentConfigurationAdapter<Filte
         super.addConfigInitParameter(name, value);
         return this;
     }
-
 }

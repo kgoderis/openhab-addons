@@ -134,12 +134,10 @@ public class PairingRegistryImpl extends AbstractRegistry<Pairing, PairingUID, P
             ReadyMarker newMarker = new ReadyMarker(HOMEKIT_PAIRING_REGISTRY, this.toString());
             readyService.markReady(newMarker);
         }
-
     }
 
     @Override
     public void onReadyMarkerRemoved(ReadyMarker readyMarker) {
         // TODO Auto-generated method stub
-
     }
 }

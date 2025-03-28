@@ -443,5 +443,4 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     public Class<? extends Service> getService(@NonNull String serviceType) {
         return serviceTypeServiceClassMapper.get(serviceType);
     }
-
 }

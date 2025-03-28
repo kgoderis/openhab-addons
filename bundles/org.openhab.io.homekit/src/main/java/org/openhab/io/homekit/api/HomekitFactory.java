@@ -122,5 +122,4 @@ public interface HomekitFactory {
 
     @Nullable
     Class<? extends Characteristic> getCharacteristic(String serviceType);
-
 }

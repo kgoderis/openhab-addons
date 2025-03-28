@@ -20,11 +20,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.io.homekit.hap.HomekitAccessory;
+import org.openhab.io.homekit.hap.HomekitRoot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import  org.openhab.io.homekit.hap.HomekitAccessory;
-import  org.openhab.io.homekit.hap.HomekitRoot;
 
 /**
  * Stores the created HomekitAccessories. GroupedAccessories are also held here

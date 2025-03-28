@@ -74,5 +74,4 @@ public abstract class PairSetupHandler extends BaseHandler {
     // homekitResponse.getVersion() == HttpResponse.HttpVersion.EVENT_1_0
     // ? EVENT_VERSION
     // : HttpVersion.HTTP_1_1,
-
 }

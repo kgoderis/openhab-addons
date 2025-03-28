@@ -8,5 +8,4 @@ package org.openhab.io.homekit.api;
 public interface ManagedService extends Service {
 
     void addCharacteristics();
-
 }

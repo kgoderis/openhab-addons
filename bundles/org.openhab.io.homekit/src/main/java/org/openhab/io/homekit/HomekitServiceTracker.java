@@ -52,5 +52,4 @@ public class HomekitServiceTracker<T> implements AutoCloseable, Supplier<T> {
             serviceTracker.close();
         }
     }
-
 }

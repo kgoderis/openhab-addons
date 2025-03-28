@@ -1,8 +1,9 @@
 package org.openhab.io.homekit.hap.accessories;
 
-import  org.openhab.io.homekit.hap.HomekitCharacteristicChangeCallback;
-import  org.openhab.io.homekit.hap.accessories.properties.LockMechanismState;
 import java.util.concurrent.CompletableFuture;
+
+import org.openhab.io.homekit.hap.HomekitCharacteristicChangeCallback;
+import org.openhab.io.homekit.hap.accessories.properties.LockMechanismState;
 
 /**
  * Extends {@link LockMechanism} with the ability to lock and unlock the mechanism.
@@ -11,28 +12,28 @@ import java.util.concurrent.CompletableFuture;
  */
 public interface LockableLockMechanism extends LockMechanism {
 
-  /**
-   * Sets the binary state of the lock mechanism.
-   *
-   * @param state true for a locked mechanism, false for unlocked.
-   * @throws Exception when the change cannot be made.
-   */
-  void setTargetMechanismState(LockMechanismState state) throws Exception;
+    /**
+     * Sets the binary state of the lock mechanism.
+     *
+     * @param state true for a locked mechanism, false for unlocked.
+     * @throws Exception when the change cannot be made.
+     */
+    void setTargetMechanismState(LockMechanismState state) throws Exception;
 
-  /**
-   * Retrieves the pending, but not yet completed, state of the lock mechanism.
-   *
-   * @return the binary state
-   */
-  CompletableFuture<LockMechanismState> getTargetMechanismState();
+    /**
+     * Retrieves the pending, but not yet completed, state of the lock mechanism.
+     *
+     * @return the binary state
+     */
+    CompletableFuture<LockMechanismState> getTargetMechanismState();
 
-  /**
-   * Subscribes to changes in the pending, but not yet completed, binary state.
-   *
-   * @param callback the function to call when the state changes.
-   */
-  void subscribeTargetMechanismState(HomekitCharacteristicChangeCallback callback);
+    /**
+     * Subscribes to changes in the pending, but not yet completed, binary state.
+     *
+     * @param callback the function to call when the state changes.
+     */
+    void subscribeTargetMechanismState(HomekitCharacteristicChangeCallback callback);
 
-  /** Unsubscribes from changes in the pending, but not yet completed, binary state. */
-  void unsubscribeTargetMechanismState();
+    /** Unsubscribes from changes in the pending, but not yet completed, binary state. */
+    void unsubscribeTargetMechanismState();
 }

@@ -27,5 +27,4 @@ public class ServletBridgeException extends Exception {
     public ServletBridgeException(String message) {
         super(message);
     }
-
 }

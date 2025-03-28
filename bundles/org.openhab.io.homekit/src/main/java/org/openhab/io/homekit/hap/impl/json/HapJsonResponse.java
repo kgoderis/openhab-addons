@@ -1,28 +1,27 @@
 package org.openhab.io.homekit.hap.impl.json;
 
-import  org.openhab.io.homekit.hap.impl.responses.OkResponse;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.openhab.io.homekit.hap.impl.responses.OkResponse;
+
 class HapJsonResponse extends OkResponse {
 
-  private static final Map<String, String> headers =
-      Collections.unmodifiableMap(
-          new HashMap<String, String>() {
-            private static final long serialVersionUID = 1L;
+    private static final Map<String, String> headers = Collections.unmodifiableMap(new HashMap<String, String>() {
+        private static final long serialVersionUID = 1L;
 
-            {
-              put("Content-type", "application/hap+json");
-            }
-          });
+        {
+            put("Content-type", "application/hap+json");
+        }
+    });
 
-  public HapJsonResponse(byte[] body) {
-    super(body);
-  }
+    public HapJsonResponse(byte[] body) {
+        super(body);
+    }
 
-  @Override
-  public Map<String, String> getHeaders() {
-    return headers;
-  }
+    @Override
+    public Map<String, String> getHeaders() {
+        return headers;
+    }
 }

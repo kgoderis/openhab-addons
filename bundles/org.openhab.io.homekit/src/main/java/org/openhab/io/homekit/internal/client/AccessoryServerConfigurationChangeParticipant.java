@@ -61,5 +61,4 @@ public class AccessoryServerConfigurationChangeParticipant implements MDNSDiscov
     public @Nullable ThingUID getThingUID(@NonNull ServiceInfo service) {
         return null;
     }
-
 }

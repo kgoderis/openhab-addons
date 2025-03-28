@@ -22,5 +22,4 @@ public class BridgeAccessory extends AbstractManagedAccessory {
     public @NonNull String getLabel() {
         return this.getServer().getId();
     }
-
 }

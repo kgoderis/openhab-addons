@@ -64,5 +64,4 @@ public class FilterChainImpl implements FilterChain {
     public ServletConfiguration getServletConfiguration() {
         return servletConfiguration;
     }
-
 }

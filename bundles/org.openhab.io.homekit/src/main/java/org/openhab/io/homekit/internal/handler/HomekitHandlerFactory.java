@@ -168,5 +168,4 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
             }
         }
     }
-
 }

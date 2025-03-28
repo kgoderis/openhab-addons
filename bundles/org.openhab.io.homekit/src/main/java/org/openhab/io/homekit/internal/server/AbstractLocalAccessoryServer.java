@@ -314,7 +314,6 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
         // TODO Auto-generated method stub
         // TODO Remove all crypto keys
         // TODO id is a unique random number, regenerate
-
     }
 
     @Override
@@ -349,5 +348,4 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
 
         return setupCode;
     }
-
 }

@@ -20,6 +20,7 @@ import java.util.Optional;
 import org.openhab.core.items.GroupItem;
 import org.openhab.core.items.Item;
 import org.openhab.core.items.ItemRegistry;
+import org.openhab.io.homekit.hap.HomekitAccessory;
 import org.openhab.io.homekit.v1.internal.HomekitAccessoryType;
 import org.openhab.io.homekit.v1.internal.HomekitAccessoryUpdater;
 import org.openhab.io.homekit.v1.internal.HomekitCharacteristicType;
@@ -29,8 +30,6 @@ import org.openhab.io.homekit.v1.internal.HomekitTaggedItem;
 import org.openhab.io.homekit.v1.internal.battery.BatteryStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import  org.openhab.io.homekit.hap.HomekitAccessory;
 
 /**
  * Creates a HomekitAccessory for a given HomekitTaggedItem.
@@ -61,22 +60,22 @@ public class HomekitAccessoryFactory {
             case MOTION_SENSOR:
                 HomekitTaggedItem motionSensorAccessory = getPrimaryAccessory(taggedItem,
                         HomekitAccessoryType.MOTION_SENSOR, itemRegistry)
-                                .orElseThrow(() -> new HomekitException(
-                                        "Motion sensor accessory group should have a motion sensor item in it"));
+                        .orElseThrow(() -> new HomekitException(
+                                "Motion sensor accessory group should have a motion sensor item in it"));
                 return new HomekitMotionSensorImpl(motionSensorAccessory, itemRegistry, updater,
                         BatteryStatus.getFromCharacteristics(characteristicItems));
             case OCCUPANCY_SENSOR:
                 HomekitTaggedItem occupancySensorAccessory = getPrimaryAccessory(taggedItem,
                         HomekitAccessoryType.OCCUPANCY_SENSOR, itemRegistry)
-                                .orElseThrow(() -> new HomekitException(
-                                        "Occupancy sensor accessory group should have a occupancy sensor item in it"));
+                        .orElseThrow(() -> new HomekitException(
+                                "Occupancy sensor accessory group should have a occupancy sensor item in it"));
                 return new HomekitOccupancySensorImpl(occupancySensorAccessory, itemRegistry, updater,
                         BatteryStatus.getFromCharacteristics(characteristicItems));
             case CONTACT_SENSOR:
                 HomekitTaggedItem contactSensorAccessory = getPrimaryAccessory(taggedItem,
                         HomekitAccessoryType.CONTACT_SENSOR, itemRegistry)
-                                .orElseThrow(() -> new HomekitException(
-                                        "Contact sensor accessory group should have a occupancy sensor item in it"));
+                        .orElseThrow(() -> new HomekitException(
+                                "Contact sensor accessory group should have a occupancy sensor item in it"));
                 return new HomekitContactSensorImpl(contactSensorAccessory, itemRegistry, updater,
                         BatteryStatus.getFromCharacteristics(characteristicItems));
             case LIGHTBULB:
@@ -87,8 +86,8 @@ public class HomekitAccessoryFactory {
                 return new HomekitColorfulLightbulbImpl(taggedItem, itemRegistry, updater);
             case THERMOSTAT:
                 HomekitTaggedItem temperatureAccessory = getPrimaryAccessory(taggedItem,
-                        HomekitAccessoryType.TEMPERATURE_SENSOR, itemRegistry).orElseThrow(
-                                () -> new HomekitException("Thermostats need a CurrentTemperature accessory"));
+                        HomekitAccessoryType.TEMPERATURE_SENSOR, itemRegistry)
+                        .orElseThrow(() -> new HomekitException("Thermostats need a CurrentTemperature accessory"));
                 return new HomekitThermostatImpl(taggedItem, itemRegistry, updater, settings,
                         temperatureAccessory.getItem(), getCharacteristicItems(taggedItem));
             case SWITCH:
@@ -109,8 +108,8 @@ public class HomekitAccessoryFactory {
             case CARBON_MONOXIDE_SENSOR:
                 HomekitTaggedItem carbonMonoxideSensorAccessory = getPrimaryAccessory(taggedItem,
                         HomekitAccessoryType.CARBON_MONOXIDE_SENSOR, itemRegistry)
-                                .orElseThrow(() -> new HomekitException(
-                                        "Carbon monoxide accessory group should have a carbon monoxide sensor in it"));
+                        .orElseThrow(() -> new HomekitException(
+                                "Carbon monoxide accessory group should have a carbon monoxide sensor in it"));
                 return new HomekitSmokeSensorImpl(carbonMonoxideSensorAccessory, itemRegistry, updater,
                         BatteryStatus.getFromCharacteristics(characteristicItems));
         }

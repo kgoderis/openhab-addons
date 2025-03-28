@@ -119,7 +119,6 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
         HttpConnection conn = new HomekitHttpConnection(config, connector, endPoint, httpCompliance,
                 isRecordHttpComplianceViolations());
         return configure(conn, connector, endPoint);
-
     }
 
     public void setRecordHttpComplianceViolations(boolean recordHttpComplianceViolations) {

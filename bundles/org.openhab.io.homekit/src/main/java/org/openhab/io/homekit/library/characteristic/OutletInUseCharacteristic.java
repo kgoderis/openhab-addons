@@ -25,5 +25,4 @@ public class OutletInUseCharacteristic extends BooleanCharacteristic {
     public String getInstanceType() {
         return getType();
     }
-
 }

@@ -18,13 +18,12 @@ import org.openhab.core.items.GenericItem;
 import org.openhab.core.items.ItemRegistry;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.library.types.OpenClosedType;
+import org.openhab.io.homekit.hap.HomekitCharacteristicChangeCallback;
+import org.openhab.io.homekit.hap.accessories.BatteryStatusAccessory;
+import org.openhab.io.homekit.hap.accessories.OccupancySensor;
 import org.openhab.io.homekit.v1.internal.HomekitAccessoryUpdater;
 import org.openhab.io.homekit.v1.internal.HomekitTaggedItem;
 import org.openhab.io.homekit.v1.internal.battery.BatteryStatus;
-
-import  org.openhab.io.homekit.hap.HomekitCharacteristicChangeCallback;
-import  org.openhab.io.homekit.hap.accessories.BatteryStatusAccessory;
-import  org.openhab.io.homekit.hap.accessories.OccupancySensor;
 
 /**
  *

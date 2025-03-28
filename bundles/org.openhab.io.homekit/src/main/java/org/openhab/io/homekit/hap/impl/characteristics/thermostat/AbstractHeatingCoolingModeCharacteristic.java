@@ -1,29 +1,28 @@
 package org.openhab.io.homekit.hap.impl.characteristics.thermostat;
 
-import  org.openhab.io.homekit.hap.accessories.properties.ThermostatMode;
-import  org.openhab.io.homekit.hap.characteristics.EnumCharacteristic;
-import  org.openhab.io.homekit.hap.characteristics.EventableCharacteristic;
 import java.util.concurrent.CompletableFuture;
 
-abstract class AbstractHeatingCoolingModeCharacteristic extends EnumCharacteristic
-    implements EventableCharacteristic {
+import org.openhab.io.homekit.hap.accessories.properties.ThermostatMode;
+import org.openhab.io.homekit.hap.characteristics.EnumCharacteristic;
+import org.openhab.io.homekit.hap.characteristics.EventableCharacteristic;
 
-  public AbstractHeatingCoolingModeCharacteristic(
-      String type, boolean isWritable, String description) {
-    super(type, isWritable, true, description, 3);
-  }
+abstract class AbstractHeatingCoolingModeCharacteristic extends EnumCharacteristic implements EventableCharacteristic {
 
-  @Override
-  protected final void setValue(Integer value) throws Exception {
-    setModeValue(ThermostatMode.fromCode(value));
-  }
+    public AbstractHeatingCoolingModeCharacteristic(String type, boolean isWritable, String description) {
+        super(type, isWritable, true, description, 3);
+    }
 
-  @Override
-  protected final CompletableFuture<Integer> getValue() {
-    return getModeValue().thenApply(t -> t.getCode());
-  }
+    @Override
+    protected final void setValue(Integer value) throws Exception {
+        setModeValue(ThermostatMode.fromCode(value));
+    }
 
-  protected abstract void setModeValue(ThermostatMode mode) throws Exception;
+    @Override
+    protected final CompletableFuture<Integer> getValue() {
+        return getModeValue().thenApply(t -> t.getCode());
+    }
 
-  protected abstract CompletableFuture<ThermostatMode> getModeValue();
+    protected abstract void setModeValue(ThermostatMode mode) throws Exception;
+
+    protected abstract CompletableFuture<ThermostatMode> getModeValue();
 }

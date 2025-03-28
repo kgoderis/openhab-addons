@@ -17,11 +17,10 @@ import java.util.concurrent.CompletableFuture;
 import org.openhab.core.items.ItemRegistry;
 import org.openhab.core.library.items.NumberItem;
 import org.openhab.core.library.types.DecimalType;
+import org.openhab.io.homekit.hap.HomekitCharacteristicChangeCallback;
+import org.openhab.io.homekit.hap.accessories.HumiditySensor;
 import org.openhab.io.homekit.v1.internal.HomekitAccessoryUpdater;
 import org.openhab.io.homekit.v1.internal.HomekitTaggedItem;
-
-import  org.openhab.io.homekit.hap.HomekitCharacteristicChangeCallback;
-import  org.openhab.io.homekit.hap.accessories.HumiditySensor;
 
 /**
  *

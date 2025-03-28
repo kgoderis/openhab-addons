@@ -26,12 +26,11 @@ import org.openhab.core.items.Item;
 import org.openhab.core.items.ItemNotFoundException;
 import org.openhab.core.items.ItemRegistry;
 import org.openhab.core.items.ItemRegistryChangeListener;
+import org.openhab.io.homekit.hap.HomekitRoot;
 import org.openhab.io.homekit.v1.internal.accessories.HomekitAccessoryFactory;
 import org.openhab.io.homekit.v1.internal.accessories.IncompleteAccessoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import  org.openhab.io.homekit.hap.HomekitRoot;
 
 /**
  * Listens for changes to the item registry. When changes are detected, check

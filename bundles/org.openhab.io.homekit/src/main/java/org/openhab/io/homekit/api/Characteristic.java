@@ -66,5 +66,4 @@ public interface Characteristic extends Identifiable<CharacteristicUID> {
     // String getAcceptedItemType();
     //
     // ChannelTypeUID getChannelTypeUID();
-
 }

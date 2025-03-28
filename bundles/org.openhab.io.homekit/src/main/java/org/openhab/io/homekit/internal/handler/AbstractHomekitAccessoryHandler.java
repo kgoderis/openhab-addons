@@ -242,5 +242,4 @@ public abstract class AbstractHomekitAccessoryHandler extends BaseThingHandler {
 
         return null;
     }
-
 }

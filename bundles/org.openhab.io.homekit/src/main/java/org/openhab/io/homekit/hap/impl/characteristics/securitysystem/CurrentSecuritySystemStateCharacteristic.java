@@ -1,41 +1,39 @@
 package org.openhab.io.homekit.hap.impl.characteristics.securitysystem;
 
-import  org.openhab.io.homekit.hap.HomekitCharacteristicChangeCallback;
-import  org.openhab.io.homekit.hap.accessories.SecuritySystem;
-import  org.openhab.io.homekit.hap.accessories.properties.CurrentSecuritySystemState;
-import  org.openhab.io.homekit.hap.characteristics.EnumCharacteristic;
-import  org.openhab.io.homekit.hap.characteristics.EventableCharacteristic;
 import java.util.concurrent.CompletableFuture;
 
-public class CurrentSecuritySystemStateCharacteristic extends EnumCharacteristic
-    implements EventableCharacteristic {
+import org.openhab.io.homekit.hap.HomekitCharacteristicChangeCallback;
+import org.openhab.io.homekit.hap.accessories.SecuritySystem;
+import org.openhab.io.homekit.hap.accessories.properties.CurrentSecuritySystemState;
+import org.openhab.io.homekit.hap.characteristics.EnumCharacteristic;
+import org.openhab.io.homekit.hap.characteristics.EventableCharacteristic;
 
-  private final SecuritySystem securitySystem;
+public class CurrentSecuritySystemStateCharacteristic extends EnumCharacteristic implements EventableCharacteristic {
 
-  public CurrentSecuritySystemStateCharacteristic(SecuritySystem securitySystem) {
-    super("00000066-0000-1000-8000-0026BB765291", false, true, "Current security system state", 4);
-    this.securitySystem = securitySystem;
-  }
+    private final SecuritySystem securitySystem;
 
-  @Override
-  protected CompletableFuture<Integer> getValue() {
-    return securitySystem
-        .getCurrentSecuritySystemState()
-        .thenApply(CurrentSecuritySystemState::getCode);
-  }
+    public CurrentSecuritySystemStateCharacteristic(SecuritySystem securitySystem) {
+        super("00000066-0000-1000-8000-0026BB765291", false, true, "Current security system state", 4);
+        this.securitySystem = securitySystem;
+    }
 
-  @Override
-  protected void setValue(Integer value) throws Exception {
-    // Not writable
-  }
+    @Override
+    protected CompletableFuture<Integer> getValue() {
+        return securitySystem.getCurrentSecuritySystemState().thenApply(CurrentSecuritySystemState::getCode);
+    }
 
-  @Override
-  public void subscribe(HomekitCharacteristicChangeCallback callback) {
-    securitySystem.subscribeCurrentSecuritySystemState(callback);
-  }
+    @Override
+    protected void setValue(Integer value) throws Exception {
+        // Not writable
+    }
 
-  @Override
-  public void unsubscribe() {
-    securitySystem.unsubscribeCurrentSecuritySystemState();
-  }
+    @Override
+    public void subscribe(HomekitCharacteristicChangeCallback callback) {
+        securitySystem.subscribeCurrentSecuritySystemState(callback);
+    }
+
+    @Override
+    public void unsubscribe() {
+        securitySystem.unsubscribeCurrentSecuritySystemState();
+    }
 }

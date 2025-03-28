@@ -1,28 +1,27 @@
 package org.openhab.io.homekit.hap.impl.pairing;
 
-import  org.openhab.io.homekit.hap.impl.responses.OkResponse;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.openhab.io.homekit.hap.impl.responses.OkResponse;
+
 class PairingResponse extends OkResponse {
 
-  private static final Map<String, String> headers =
-      Collections.unmodifiableMap(
-          new HashMap<String, String>() {
-            private static final long serialVersionUID = 1L;
+    private static final Map<String, String> headers = Collections.unmodifiableMap(new HashMap<String, String>() {
+        private static final long serialVersionUID = 1L;
 
-            {
-              put("Content-type", "application/pairing+tlv8");
-            }
-          });
+        {
+            put("Content-type", "application/pairing+tlv8");
+        }
+    });
 
-  public PairingResponse(byte[] body) {
-    super(body);
-  }
+    public PairingResponse(byte[] body) {
+        super(body);
+    }
 
-  @Override
-  public Map<String, String> getHeaders() {
-    return headers;
-  }
+    @Override
+    public Map<String, String> getHeaders() {
+        return headers;
+    }
 }

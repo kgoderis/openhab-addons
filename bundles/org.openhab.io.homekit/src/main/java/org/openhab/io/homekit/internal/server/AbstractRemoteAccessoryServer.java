@@ -249,7 +249,6 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
                         stageResult.message);
             }
         }
-
     }
 
     @Override
@@ -392,7 +391,6 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
                         new String(getPairingId()));
             }
         }
-
     }
 
     protected byte[] doPairSetupStage0() throws IOException, HomekitException {
@@ -855,7 +853,6 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
     }
 
     protected class StageResult {
@@ -1051,5 +1048,4 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
             }
         }
     }
-
 }

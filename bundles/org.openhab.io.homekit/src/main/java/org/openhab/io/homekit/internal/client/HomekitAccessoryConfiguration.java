@@ -20,5 +20,4 @@ public class HomekitAccessoryConfiguration {
     public String accessoryPairingId;
     public String setupCode;
     public int configurationNumber;
-
 }

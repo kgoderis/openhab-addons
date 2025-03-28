@@ -20,5 +20,4 @@ public class HomekitRequestListener implements ServletRequestListener {
     public void requestInitialized(ServletRequestEvent sre) {
         ServletRequest servletRequest = sre.getServletRequest();
     }
-
 }

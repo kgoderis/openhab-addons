@@ -1,13 +1,14 @@
 package org.openhab.io.homekit.hap.impl;
 
-import  org.openhab.io.homekit.hap.impl.http.HomekitClientConnectionFactory;
 import java.util.concurrent.CompletableFuture;
+
+import org.openhab.io.homekit.hap.impl.http.HomekitClientConnectionFactory;
 
 public interface HomekitWebHandler {
 
-  CompletableFuture<Integer> start(HomekitClientConnectionFactory clientConnectionFactory);
+    CompletableFuture<Integer> start(HomekitClientConnectionFactory clientConnectionFactory);
 
-  void stop();
+    void stop();
 
-  void resetConnections();
+    void resetConnections();
 }

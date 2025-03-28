@@ -13,7 +13,8 @@ import org.openhab.io.homekit.internal.characteristic.EnumCharacteristic;
  */
 public class StatusLowBatteryCharacteristic extends EnumCharacteristic {
 
-    public StatusLowBatteryCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId) {
+    public StatusLowBatteryCharacteristic(HomekitCommunicationManager manager, ManagedService service,
+            long instanceId) {
         super(manager, service, instanceId, false, true, true, "State of an accessoryʼs battery", 1);
     }
 

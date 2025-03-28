@@ -13,5 +13,4 @@ public interface HomekitAccessoryProtocolParticipant {
     void pair(String setupCode);
 
     void pairVerify();
-
 }

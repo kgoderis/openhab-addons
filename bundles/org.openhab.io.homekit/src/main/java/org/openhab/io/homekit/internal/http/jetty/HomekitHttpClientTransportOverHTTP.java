@@ -52,5 +52,4 @@ public class HomekitHttpClientTransportOverHTTP extends HttpClientTransportOverH
     public HttpDestination newHttpDestination(Origin origin) {
         return new HomekitHttpDestinationOverHTTP(getHttpClient(), origin);
     }
-
 }

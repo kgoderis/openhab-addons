@@ -141,5 +141,4 @@ public class GenericAccessory implements Accessory {
     public void identify() {
         // TODO No Op?
     }
-
 }

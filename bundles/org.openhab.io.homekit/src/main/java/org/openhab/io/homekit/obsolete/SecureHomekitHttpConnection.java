@@ -1,4 +1,5 @@
 package org.openhab.io.homekit.obsolete;
+
 // package org.openhab.io.homekit.internal.http;
 //
 // import java.nio.ByteBuffer;

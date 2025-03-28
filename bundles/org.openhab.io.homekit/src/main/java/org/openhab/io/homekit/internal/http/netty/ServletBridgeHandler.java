@@ -89,7 +89,6 @@ public class ServletBridgeHandler extends IdleStateHandler {
         super(20000, 20000, 20000);
         this.uriPrefix = uriPrefix;
         this.matcher = TypeParameterMatcher.get(FullHttpRequest.class);
-
     }
 
     public ServletBridgeHandler addInterceptor(ServletBridgeInterceptor interceptor) {
@@ -217,7 +216,6 @@ public class ServletBridgeHandler extends IdleStateHandler {
         // if (!keepAlive) {
         // future.addListener(ChannelFutureListener.CLOSE);
         // }
-
     }
 
     protected void handleStaticResourceRequest(ChannelHandlerContext ctx, HttpRequest request) throws Exception {
@@ -287,7 +285,6 @@ public class ServletBridgeHandler extends IdleStateHandler {
                 }
             });
         }
-
     }
 
     @Override
@@ -308,7 +305,6 @@ public class ServletBridgeHandler extends IdleStateHandler {
             }
 
         }
-
     }
 
     private void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
@@ -338,7 +334,6 @@ public class ServletBridgeHandler extends IdleStateHandler {
                 interceptor.onRequestReceived(ctx, request);
             }
         }
-
     }
 
     private void interceptOnRequestSuccessed(ChannelHandlerContext ctx, HttpRequest request, HttpResponse response) {
@@ -347,7 +342,6 @@ public class ServletBridgeHandler extends IdleStateHandler {
                 interceptor.onRequestSuccessed(ctx, request, response);
             }
         }
-
     }
     //
     // private void interceptOnRequestFailed(ChannelHandlerContext ctx, Throwable e, HttpResponse response) {

@@ -110,5 +110,4 @@ public interface Accessory extends Identifiable<AccessoryUID> {
      * without pairing.
      */
     void identify();
-
 }

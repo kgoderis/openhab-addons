@@ -89,5 +89,4 @@ public class HomekitSessionTracker
         ServletRequest servletRequest = sre.getServletRequest();
         logger.debug("{} : initialized servlet request {}", server.toString(), servletRequest.getRemoteAddr());
     }
-
 }

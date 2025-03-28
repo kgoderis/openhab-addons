@@ -6,7 +6,8 @@ import org.openhab.io.homekit.internal.characteristic.FloatCharacteristic;
 
 public class TargetTemperatureCharacteristic extends FloatCharacteristic {
 
-    public TargetTemperatureCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId) {
+    public TargetTemperatureCharacteristic(HomekitCommunicationManager manager, ManagedService service,
+            long instanceId) {
         super(manager, service, instanceId, true, true, true, "Target temperature of the environment in Celsius", 10,
                 38, 0.1, "celcius");
     }
@@ -19,5 +20,4 @@ public class TargetTemperatureCharacteristic extends FloatCharacteristic {
     public String getInstanceType() {
         return getType();
     }
-
 }

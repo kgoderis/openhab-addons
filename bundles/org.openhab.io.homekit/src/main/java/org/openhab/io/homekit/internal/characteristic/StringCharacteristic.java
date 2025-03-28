@@ -89,5 +89,4 @@ public abstract class StringCharacteristic extends AbstractManagedCharacteristic
     public static String getAcceptedItemType() {
         return CoreItemFactory.STRING;
     }
-
 }

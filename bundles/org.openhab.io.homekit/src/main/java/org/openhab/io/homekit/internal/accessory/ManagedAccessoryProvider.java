@@ -372,5 +372,4 @@ public class ManagedAccessoryProvider extends AbstractManagedProvider<Accessory,
         ReadyMarker newMarker = new ReadyMarker(HOMEKIT_MANAGED_ACCESSORY_PROVIDER, this.toString());
         readyService.unmarkReady(newMarker);
     }
-
 }

@@ -121,7 +121,6 @@ public class HttpServletResponseImpl implements HttpServletResponse {
     @Override
     public void setIntHeader(String name, int value) {
         this.originalResponse.headers().add(name, value);
-
     }
 
     @Override

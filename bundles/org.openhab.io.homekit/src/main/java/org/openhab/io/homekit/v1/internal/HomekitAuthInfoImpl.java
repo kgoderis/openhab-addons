@@ -20,11 +20,10 @@ import java.util.HashSet;
 
 import org.openhab.core.storage.Storage;
 import org.openhab.core.storage.StorageService;
+import org.openhab.io.homekit.hap.HomekitAuthInfo;
+import org.openhab.io.homekit.hap.HomekitServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import  org.openhab.io.homekit.hap.HomekitAuthInfo;
-import  org.openhab.io.homekit.hap.HomekitServer;
 
 /**
  * Provides a mechanism to store authenticated homekit client details inside the
@@ -126,5 +125,4 @@ public class HomekitAuthInfoImpl implements HomekitAuthInfo {
             storage.put("privateKey", Base64.getEncoder().encodeToString(HomekitServer.generateKey()));
         }
     }
-
 }

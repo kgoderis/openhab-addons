@@ -316,7 +316,6 @@ public class PairSetupServlet extends BaseServlet {
                 logger.info("Stage 3 : Flushed");
             }
         }
-
     }
 
     // class ClientEvidenceRoutineImpl implements ClientEvidenceRoutine {

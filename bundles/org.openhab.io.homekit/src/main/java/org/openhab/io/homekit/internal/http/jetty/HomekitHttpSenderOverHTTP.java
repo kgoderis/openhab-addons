@@ -370,7 +370,6 @@ public class HomekitHttpSenderOverHTTP extends HttpSenderOverHTTP {
         this.encryptionKey = encryptionKey;
 
         logger.info("Setting Encryption Key on {}", this);
-
     }
 
     public boolean hasEncryptionKey() {
@@ -380,5 +379,4 @@ public class HomekitHttpSenderOverHTTP extends HttpSenderOverHTTP {
     public byte[] getEncryptionKey() {
         return encryptionKey;
     }
-
 }

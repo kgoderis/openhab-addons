@@ -84,5 +84,4 @@ public abstract class LongCharacteristic extends AbstractManagedCharacteristic<L
     public static String getAcceptedItemType() {
         return CoreItemFactory.NUMBER;
     }
-
 }

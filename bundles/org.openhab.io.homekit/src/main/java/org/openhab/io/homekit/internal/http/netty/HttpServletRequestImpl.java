@@ -90,7 +90,6 @@ public class HttpServletRequestImpl implements HttpServletRequest {
         this.uriParser = new URIParser(chain);
         this.uriParser.parse(request.uri());
         this.characterEncoding = Utils.getCharsetFromContentType(getContentType());
-
     }
 
     public HttpRequest getOriginalRequest() {
@@ -519,13 +518,11 @@ public class HttpServletRequestImpl implements HttpServletRequest {
     @Override
     public void login(String username, String password) throws ServletException {
         // TODO Auto-generated method stub
-
     }
 
     @Override
     public void logout() throws ServletException {
         // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -545,5 +542,4 @@ public class HttpServletRequestImpl implements HttpServletRequest {
         // TODO Auto-generated method stub
         return null;
     }
-
 }

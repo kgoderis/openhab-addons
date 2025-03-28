@@ -1,12 +1,13 @@
 package org.openhab.io.homekit.internal.http.netty;
 
+import java.io.IOException;
+
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 /**
  * Simple RequestDispatcher Implementation
@@ -25,9 +26,7 @@ public class RequestDispatcherImpl implements RequestDispatcher {
      */
     private String servletPath = null;
 
-
     private HttpServlet httpServlet;
-
 
     public RequestDispatcherImpl(String servletName, String servletPath, HttpServlet servlet) {
         this.name = servletName;
@@ -35,11 +34,11 @@ public class RequestDispatcherImpl implements RequestDispatcher {
         this.httpServlet = servlet;
     }
 
-
     @Override
-    public void forward(ServletRequest servletRequest, ServletResponse servletResponse) throws ServletException, IOException {
+    public void forward(ServletRequest servletRequest, ServletResponse servletResponse)
+            throws ServletException, IOException {
         if (httpServlet != null) {
-            //TODO Wrap
+            // TODO Wrap
             httpServlet.service(servletRequest, servletResponse);
         } else {
             ((HttpServletResponse) servletResponse).sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -47,9 +46,10 @@ public class RequestDispatcherImpl implements RequestDispatcher {
     }
 
     @Override
-    public void include(ServletRequest servletRequest, ServletResponse servletResponse) throws ServletException, IOException {
+    public void include(ServletRequest servletRequest, ServletResponse servletResponse)
+            throws ServletException, IOException {
         if (httpServlet != null) {
-            //TODO Wrap
+            // TODO Wrap
             httpServlet.service(servletRequest, servletResponse);
         } else {
             ((HttpServletResponse) servletResponse).sendError(HttpServletResponse.SC_NOT_FOUND);

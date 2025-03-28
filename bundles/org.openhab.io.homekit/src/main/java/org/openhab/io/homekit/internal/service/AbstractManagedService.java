@@ -66,5 +66,4 @@ public abstract class AbstractManagedService extends GenericService implements M
     protected HomekitCommunicationManager getManager() {
         return manager;
     }
-
 }

@@ -19,5 +19,4 @@ public interface Notification extends Identifiable<NotificationUID> {
     Connection getConnection();
 
     ManagedCharacteristic<?> getCharacteristic();
-
 }

@@ -17,5 +17,4 @@ public interface RemoteAccessoryServer {
     void pairRemove() throws HomekitException, IOException;
 
     // Collection<Accessory> getAccessories();
-
 }

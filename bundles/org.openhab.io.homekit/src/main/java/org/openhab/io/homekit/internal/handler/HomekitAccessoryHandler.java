@@ -43,5 +43,4 @@ public class HomekitAccessoryHandler extends AbstractHomekitAccessoryHandler {
             logger.warn("{}' : There is no Homekit Accessory Bridge Handler", getThing().getUID());
         }
     }
-
 }

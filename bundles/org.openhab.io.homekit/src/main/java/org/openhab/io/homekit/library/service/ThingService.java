@@ -7,8 +7,8 @@ import org.openhab.io.homekit.util.UUID5;
 
 public class ThingService extends AbstractManagedService {
 
-    public ThingService(HomekitCommunicationManager manager, ManagedAccessory accessory, long instanceId, boolean extend,
-            String serviceName) throws Exception {
+    public ThingService(HomekitCommunicationManager manager, ManagedAccessory accessory, long instanceId,
+            boolean extend, String serviceName) throws Exception {
         super(manager, accessory, instanceId, extend, serviceName);
     }
 

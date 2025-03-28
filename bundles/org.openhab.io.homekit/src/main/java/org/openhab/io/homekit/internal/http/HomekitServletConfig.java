@@ -29,5 +29,4 @@ public class HomekitServletConfig extends ConfigAdapter implements ServletConfig
     public AccessoryServer getAccessoryServer() {
         return server;
     }
-
 }

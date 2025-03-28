@@ -18,5 +18,4 @@ public class StatusTamperedCharacteristic extends EnumCharacteristic {
     public String getInstanceType() {
         return getType();
     }
-
 }

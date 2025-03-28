@@ -62,7 +62,6 @@ public class HttpSessionInterceptor implements ServletBridgeInterceptor {
                 sessionRequestedByAddress = true;
             }
         }
-
     }
 
     @Override
@@ -73,7 +72,6 @@ public class HttpSessionInterceptor implements ServletBridgeInterceptor {
             response.headers().add(HttpHeaderNames.SET_COOKIE,
                     ServerCookieEncoder.STRICT.encode(HttpSessionImpl.SESSION_ID_KEY, s.getId()));
         }
-
     }
 
     @Override
@@ -81,5 +79,4 @@ public class HttpSessionInterceptor implements ServletBridgeInterceptor {
         this.sessionRequestedByCookie = false;
         HttpSessionThreadLocal.unset();
     }
-
 }

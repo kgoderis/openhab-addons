@@ -20,5 +20,4 @@ public interface AccessoryServerChangeListener {
     void onCharacteristicRemoved(Characteristic characteristic);
 
     void onCharacteristicStateChanged(Characteristic characteristic);
-
 }

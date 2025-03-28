@@ -53,5 +53,4 @@ public abstract class ConfigAdapter {
     protected String getOwnerName() {
         return ownerName;
     }
-
 }

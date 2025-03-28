@@ -49,5 +49,4 @@ public class BrightnessCharacteristic extends IntegerCharacteristic {
             return new DecimalType(value);
         }
     }
-
 }

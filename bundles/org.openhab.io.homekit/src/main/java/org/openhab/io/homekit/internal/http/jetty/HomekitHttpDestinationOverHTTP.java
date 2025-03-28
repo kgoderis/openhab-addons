@@ -87,5 +87,4 @@ public class HomekitHttpDestinationOverHTTP extends HttpDestinationOverHTTP {
     public byte[] getEncryptionKey() {
         return encryptionKey;
     }
-
 }

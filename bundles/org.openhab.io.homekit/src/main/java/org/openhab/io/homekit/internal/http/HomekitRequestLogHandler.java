@@ -84,5 +84,4 @@ public class HomekitRequestLogHandler extends RequestLogHandler {
             }
         }
     }
-
 }

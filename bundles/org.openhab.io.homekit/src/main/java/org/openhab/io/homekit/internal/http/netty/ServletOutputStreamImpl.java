@@ -80,6 +80,5 @@ public class ServletOutputStreamImpl extends ServletOutputStream {
     @Override
     public void setWriteListener(WriteListener writeListener) {
         // TODO Auto-generated method stub
-
     }
 }

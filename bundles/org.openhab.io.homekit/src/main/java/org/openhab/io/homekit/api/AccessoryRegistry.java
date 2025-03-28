@@ -24,5 +24,4 @@ public interface AccessoryRegistry extends Registry<Accessory, AccessoryUID> {
      * @return list of HomekitAccessories for a given serverId or an empty list if no HomekitAccessory was found
      */
     Collection<Accessory> get(String serverId);
-
 }

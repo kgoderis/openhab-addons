@@ -118,31 +118,25 @@ public class HomekitAccessoryBridgeDiscoveryService extends AbstractDiscoverySer
     @Override
     public void onCharacteristicRemoved(@Nullable Bridge bridge, @NonNull Characteristic characteristic) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
     public void onCharacteristicAdded(@Nullable Bridge bridge, @NonNull Characteristic characteristic) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
     public void onCharacteristicStateChanged(@Nullable Bridge bridge, @NonNull Characteristic characteristic) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
     public void onServiceAdded(@Nullable Bridge bridge, @NonNull Service service) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
     public void onServiceRemoved(@Nullable Bridge bridge, @NonNull Service service) {
         // TODO Auto-generated method stub
-
     }
-
 }

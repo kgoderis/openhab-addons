@@ -533,7 +533,6 @@ public class HomekitHttpGenerator extends HttpGenerator {
             header.put(getReasonBytes(reason));
         }
         header.put(CRLF);
-
     }
 
     /* ------------------------------------------------------------ */

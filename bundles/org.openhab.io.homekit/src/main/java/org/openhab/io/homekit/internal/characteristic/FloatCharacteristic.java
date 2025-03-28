@@ -89,5 +89,4 @@ public abstract class FloatCharacteristic extends AbstractManagedCharacteristic<
     public static String getAcceptedItemType() {
         return CoreItemFactory.NUMBER;
     }
-
 }

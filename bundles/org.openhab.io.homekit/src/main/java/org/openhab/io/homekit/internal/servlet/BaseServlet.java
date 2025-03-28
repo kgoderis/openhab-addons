@@ -59,5 +59,4 @@ public abstract class BaseServlet extends HttpServlet {
         }
         return array;
     }
-
 }

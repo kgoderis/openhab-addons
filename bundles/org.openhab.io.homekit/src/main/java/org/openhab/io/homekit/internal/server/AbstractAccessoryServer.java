@@ -248,7 +248,6 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     @Override
     public Collection<Pairing> getPairings() {
         return pairingRegistry.get(getPairingId());
-
     }
 
     @Override
@@ -282,7 +281,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
         return (Integer.toHexString(byte1).toUpperCase() + ":"
                 + Stream.generate(() -> HomekitEncryptionEngine.getSecureRandom().nextInt(255) + 1).limit(5)
                         .map(i -> Integer.toHexString(i).toUpperCase()).collect(Collectors.joining(":")))
-                                .getBytes(StandardCharsets.UTF_8);
+                .getBytes(StandardCharsets.UTF_8);
     }
 
     @Override
@@ -294,5 +293,4 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     public void setConfigurationIndex(int configurationIndex) {
         this.configurationIndex = configurationIndex;
     }
-
 }

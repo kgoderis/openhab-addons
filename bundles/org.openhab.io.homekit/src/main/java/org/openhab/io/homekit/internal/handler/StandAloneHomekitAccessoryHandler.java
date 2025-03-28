@@ -171,7 +171,6 @@ public class StandAloneHomekitAccessoryHandler extends AbstractHomekitAccessoryH
         // Add a description to give user information to understand why thing does not work as expected. E.g.
         // updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
         // "Can not access device as username and/or password are invalid");
-
     }
 
     @Override
@@ -280,5 +279,4 @@ public class StandAloneHomekitAccessoryHandler extends AbstractHomekitAccessoryH
             configureThing((Accessory) accessories.toArray()[0]);
         }
     }
-
 }

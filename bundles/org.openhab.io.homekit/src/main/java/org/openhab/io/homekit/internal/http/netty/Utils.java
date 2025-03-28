@@ -42,7 +42,7 @@ public final class Utils {
     }
 
     public static final <T> Enumeration<T> emptyEnumeration() {
-        return Collections.enumeration(Collections.<T>emptySet());
+        return Collections.enumeration(Collections.<T> emptySet());
     }
 
     public static final <T> Enumeration<T> enumeration(Collection<T> collection) {
@@ -78,7 +78,6 @@ public final class Utils {
         } catch (IllegalAccessException e) {
             throw new ServletBridgeRuntimeException("Error instantiating class: " + clazz, e);
         }
-
     }
 
     /**
@@ -108,7 +107,6 @@ public final class Utils {
             encoding = encoding.substring(1, encoding.length() - 1);
         }
         return (encoding.trim());
-
     }
 
     public static final Collection<Cookie> getCookies(String name, HttpRequest request) {
@@ -212,7 +210,5 @@ public final class Utils {
         }
 
         return locales;
-
     }
-
 }

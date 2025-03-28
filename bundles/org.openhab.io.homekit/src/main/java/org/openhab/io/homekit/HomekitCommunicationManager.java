@@ -886,7 +886,6 @@ public class HomekitCommunicationManager implements EventSubscriber, RegistryCha
         public ScheduledExecutorService getExecutorService() {
             return ThreadPoolManager.getScheduledPool(THREAD_POOL_NAME);
         }
-
     }
     // public void stateUpdated(ChannelUID channelUID, State state) {
     // itemChannelLinkRegistry.getLinks(channelUID).forEach(link -> {

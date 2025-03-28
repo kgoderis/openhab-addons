@@ -6,7 +6,8 @@ import org.openhab.io.homekit.internal.characteristic.EnumCharacteristic;
 
 public class ContactSensorStateCharacteristic extends EnumCharacteristic {
 
-    public ContactSensorStateCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId) {
+    public ContactSensorStateCharacteristic(HomekitCommunicationManager manager, ManagedService service,
+            long instanceId) {
         super(manager, service, instanceId, false, true, true, "State of a door/window contact sensor", 1);
     }
 
@@ -18,5 +19,4 @@ public class ContactSensorStateCharacteristic extends EnumCharacteristic {
     public String getInstanceType() {
         return getType();
     }
-
 }

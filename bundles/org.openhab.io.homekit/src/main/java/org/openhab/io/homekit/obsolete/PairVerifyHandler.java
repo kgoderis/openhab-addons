@@ -8,5 +8,4 @@ abstract class PairVerifyHandler extends BaseHandler {
         super(server);
         // TODO Auto-generated constructor stub
     }
-
 }

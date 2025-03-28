@@ -6,7 +6,8 @@ import org.openhab.io.homekit.internal.characteristic.FloatCharacteristic;
 
 public class CurrentTemperatureCharacteristic extends FloatCharacteristic {
 
-    public CurrentTemperatureCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId) {
+    public CurrentTemperatureCharacteristic(HomekitCommunicationManager manager, ManagedService service,
+            long instanceId) {
         super(manager, service, instanceId, false, true, true, "Current temperature of the environment in Celsius", 0,
                 100, 0.1, "celcius");
     }
@@ -19,5 +20,4 @@ public class CurrentTemperatureCharacteristic extends FloatCharacteristic {
     public String getInstanceType() {
         return getType();
     }
-
 }

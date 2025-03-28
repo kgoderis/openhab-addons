@@ -99,5 +99,4 @@ public abstract class ShortReadOnlyStringCharacteristic extends AbstractManagedC
     public static String getAcceptedItemType() {
         return CoreItemFactory.STRING;
     }
-
 }

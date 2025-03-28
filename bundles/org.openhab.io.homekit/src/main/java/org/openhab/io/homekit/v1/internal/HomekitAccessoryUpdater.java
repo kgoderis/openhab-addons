@@ -19,10 +19,9 @@ import org.openhab.core.items.GenericItem;
 import org.openhab.core.items.Item;
 import org.openhab.core.items.StateChangeListener;
 import org.openhab.core.types.State;
+import org.openhab.io.homekit.hap.HomekitCharacteristicChangeCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import  org.openhab.io.homekit.hap.HomekitCharacteristicChangeCallback;
 
 /**
  * Subscribes and unsubscribes from Item changes to enable notification to Homekit

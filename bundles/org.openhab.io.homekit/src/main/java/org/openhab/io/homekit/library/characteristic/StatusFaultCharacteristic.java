@@ -18,5 +18,4 @@ public class StatusFaultCharacteristic extends EnumCharacteristic {
     public String getInstanceType() {
         return getType();
     }
-
 }

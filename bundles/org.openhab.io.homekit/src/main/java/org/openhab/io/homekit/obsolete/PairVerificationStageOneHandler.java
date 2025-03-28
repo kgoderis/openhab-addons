@@ -115,5 +115,4 @@ public class PairVerificationStageOneHandler extends PairVerificationHandler {
         }
         return secureRandom;
     }
-
 }

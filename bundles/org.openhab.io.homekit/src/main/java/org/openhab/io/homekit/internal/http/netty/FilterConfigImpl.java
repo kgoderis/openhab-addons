@@ -34,5 +34,4 @@ public class FilterConfigImpl extends ConfigAdapter implements FilterConfig {
     public ServletContext getServletContext() {
         return ServletContextImpl.get();
     }
-
 }

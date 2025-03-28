@@ -20,5 +20,4 @@ public class CurrentHorizontalTiltAngleCharacteristic extends IntegerCharacteris
     public String getInstanceType() {
         return getType();
     }
-
 }

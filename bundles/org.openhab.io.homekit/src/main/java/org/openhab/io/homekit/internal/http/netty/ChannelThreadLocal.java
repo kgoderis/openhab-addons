@@ -33,5 +33,4 @@ public class ChannelThreadLocal {
     public static Channel get() {
         return channelThreadLocal.get();
     }
-
 }

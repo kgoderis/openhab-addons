@@ -19,11 +19,10 @@ import org.openhab.core.items.GroupItem;
 import org.openhab.core.items.ItemRegistry;
 import org.openhab.core.library.items.SwitchItem;
 import org.openhab.core.library.types.OnOffType;
+import org.openhab.io.homekit.hap.HomekitCharacteristicChangeCallback;
+import org.openhab.io.homekit.hap.accessories.Lightbulb;
 import org.openhab.io.homekit.v1.internal.HomekitAccessoryUpdater;
 import org.openhab.io.homekit.v1.internal.HomekitTaggedItem;
-
-import  org.openhab.io.homekit.hap.HomekitCharacteristicChangeCallback;
-import  org.openhab.io.homekit.hap.accessories.Lightbulb;
 
 /**
  * Abstract class implementing a Homekit Lightbulb using a SwitchItem
@@ -64,5 +63,4 @@ abstract class AbstractHomekitLightbulbImpl<T extends SwitchItem> extends Abstra
     public void unsubscribeLightbulbPowerState() {
         getUpdater().unsubscribe(getItem());
     }
-
 }

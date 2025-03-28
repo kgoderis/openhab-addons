@@ -27,5 +27,4 @@ public interface ServletBridgeInterceptor {
     void onRequestSuccessed(ChannelHandlerContext ctx, HttpRequest e, HttpResponse response);
 
     void onRequestFailed(ChannelHandlerContext ctx, Throwable e, HttpResponse response);
-
 }

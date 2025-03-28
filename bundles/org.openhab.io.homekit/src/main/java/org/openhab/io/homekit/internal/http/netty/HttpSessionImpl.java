@@ -135,7 +135,6 @@ public class HttpSessionImpl implements HttpSession {
         if (value != null && value instanceof HttpSessionBindingListener) {
             ((HttpSessionBindingListener) value).valueBound(new HttpSessionBindingEvent(this, name, value));
         }
-
     }
 
     @Override
@@ -146,7 +145,6 @@ public class HttpSessionImpl implements HttpSession {
     @Override
     public void setMaxInactiveInterval(int interval) {
         this.maxInactiveInterval = interval;
-
     }
 
     public void touch() {
@@ -157,5 +155,4 @@ public class HttpSessionImpl implements HttpSession {
     public boolean isNew() {
         throw new IllegalStateException("Method 'isNew' not yet implemented!");
     }
-
 }

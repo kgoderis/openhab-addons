@@ -22,5 +22,4 @@ public interface HomekitStatusListener {
     void onCharacteristicRemoved(Bridge bridge, Characteristic characteristic);
 
     void onCharacteristicStateChanged(Bridge bridge, Characteristic characteristic);
-
 }

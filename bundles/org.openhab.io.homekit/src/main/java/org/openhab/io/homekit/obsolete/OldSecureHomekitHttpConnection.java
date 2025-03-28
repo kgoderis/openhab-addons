@@ -106,7 +106,8 @@ public class OldSecureHomekitHttpConnection extends AbstractConnection implement
 
         @Override
         public String toString() {
-            return String.format("HOMEKIT:%s:%s:%s", OldSecureHomekitHttpConnection.this, _operation, getInvocationType());
+            return String.format("HOMEKIT:%s:%s:%s", OldSecureHomekitHttpConnection.this, _operation,
+                    getInvocationType());
         }
     }
 
@@ -486,7 +487,8 @@ public class OldSecureHomekitHttpConnection extends AbstractConnection implement
                         }
 
                         if (logger.isDebugEnabled()) {
-                            logger.debug("<fill f={} uf={} {}", filled, _underflown, OldSecureHomekitHttpConnection.this);
+                            logger.debug("<fill f={} uf={} {}", filled, _underflown,
+                                    OldSecureHomekitHttpConnection.this);
                         }
                     }
                 }
@@ -701,8 +703,8 @@ public class OldSecureHomekitHttpConnection extends AbstractConnection implement
                     boolean ishut = endPoint.isInputShutdown();
                     boolean oshut = endPoint.isOutputShutdown();
                     if (logger.isDebugEnabled()) {
-                        logger.debug("shutdownOutput: {} oshut={}, ishut={}", OldSecureHomekitHttpConnection.this, oshut,
-                                ishut);
+                        logger.debug("shutdownOutput: {} oshut={}, ishut={}", OldSecureHomekitHttpConnection.this,
+                                oshut, ishut);
                     }
 
                     if (!_closedOutbound) {
@@ -901,7 +903,6 @@ public class OldSecureHomekitHttpConnection extends AbstractConnection implement
         ByteBuffer dummy = decryptedBuffer.duplicate();
         BufferUtil.flipToFlush(dummy, 0);
         logger.debug("DecryptBuffer : Decrypted '{}'", BufferUtil.toUTF8String(dummy));
-
     }
 
     public void encryptBuffer(ByteBuffer encryptedBuffer, ByteBuffer plainTextBuffer, byte[] readKey)

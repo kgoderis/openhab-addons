@@ -245,7 +245,6 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         } else {
             logger.warn("Thing '{}' does not exist", thingUID);
         }
-
     }
 
     // private MaxCubeBridgeHandler getHandler(String thingId) {

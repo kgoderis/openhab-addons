@@ -32,5 +32,4 @@ public class IdentifyCharacteristic extends WriteOnlyBooleanCharacteristic {
     protected Boolean getDefault() {
         return null;
     }
-
 }

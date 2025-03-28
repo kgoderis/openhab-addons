@@ -36,5 +36,4 @@ public class ChannelInterceptor implements ServletBridgeInterceptor {
     public void onRequestSuccessed(ChannelHandlerContext ctx, HttpRequest e, HttpResponse response) {
         ChannelThreadLocal.unset();
     }
-
 }

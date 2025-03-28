@@ -46,5 +46,4 @@ public class HomekitProtocolHandler implements ProtocolHandler {
         public void onComplete(Result result) {
         }
     }
-
 }

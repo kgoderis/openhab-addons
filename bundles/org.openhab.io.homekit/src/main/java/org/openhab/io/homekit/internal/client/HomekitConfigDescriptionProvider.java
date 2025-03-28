@@ -61,5 +61,4 @@ public class HomekitConfigDescriptionProvider implements ConfigDescriptionProvid
     public @Nullable ConfigDescription getConfigDescription(@NonNull URI uri, @Nullable Locale locale) {
         return getConfigDescriptions(locale).stream().findFirst().get();
     }
-
 }

@@ -25,6 +25,8 @@ import org.openhab.core.config.core.Configuration;
 import org.openhab.core.items.ItemRegistry;
 import org.openhab.core.net.NetworkAddressService;
 import org.openhab.core.storage.StorageService;
+import org.openhab.io.homekit.hap.HomekitRoot;
+import org.openhab.io.homekit.hap.HomekitServer;
 import org.openhab.io.homekit.v1.Homekit;
 import org.osgi.framework.Constants;
 import org.osgi.framework.FrameworkUtil;
@@ -35,9 +37,6 @@ import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import  org.openhab.io.homekit.hap.HomekitRoot;
-import  org.openhab.io.homekit.hap.HomekitServer;
 
 /**
  * Provides access to openHAB items via the Homekit API

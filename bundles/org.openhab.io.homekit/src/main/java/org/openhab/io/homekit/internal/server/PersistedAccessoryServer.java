@@ -74,5 +74,4 @@ public class PersistedAccessoryServer {
     public void setConfigurationIndex(int configurationIndex) {
         this.configurationIndex = Integer.toString(configurationIndex);
     }
-
 }

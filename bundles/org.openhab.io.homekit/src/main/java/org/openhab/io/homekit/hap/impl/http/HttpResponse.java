@@ -6,26 +6,26 @@ import java.util.Map;
 
 public interface HttpResponse {
 
-  int getStatusCode();
+    int getStatusCode();
 
-  default ByteBuffer getBody() {
-    return ByteBuffer.allocate(0);
-  }
+    default ByteBuffer getBody() {
+        return ByteBuffer.allocate(0);
+    }
 
-  default HttpVersion getVersion() {
-    return HttpVersion.HTTP_1_1;
-  }
+    default HttpVersion getVersion() {
+        return HttpVersion.HTTP_1_1;
+    }
 
-  default Map<String, String> getHeaders() {
-    return Collections.emptyMap();
-  }
+    default Map<String, String> getHeaders() {
+        return Collections.emptyMap();
+    }
 
-  default boolean doUpgrade() {
-    return false;
-  }
+    default boolean doUpgrade() {
+        return false;
+    }
 
-  public enum HttpVersion {
-    HTTP_1_1,
-    EVENT_1_0
-  }
+    public enum HttpVersion {
+        HTTP_1_1,
+        EVENT_1_0
+    }
 }

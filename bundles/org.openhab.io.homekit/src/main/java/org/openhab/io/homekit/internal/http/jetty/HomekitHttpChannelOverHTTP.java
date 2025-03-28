@@ -65,7 +65,6 @@ public class HomekitHttpChannelOverHTTP extends HttpChannelOverHTTP {
         if (receiver instanceof HomekitHttpReceiverOverHTTP) {
             ((HomekitHttpReceiverOverHTTP) receiver).setDecryptionKey(decryptionKey);
         }
-
     }
 
     public boolean hasEncryptionKeys() {

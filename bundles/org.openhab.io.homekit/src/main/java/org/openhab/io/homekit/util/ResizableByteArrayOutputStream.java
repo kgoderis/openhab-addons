@@ -57,5 +57,4 @@ public class ResizableByteArrayOutputStream extends ByteArrayOutputStream {
     public synchronized int capacity() {
         return this.buf.length;
     }
-
 }

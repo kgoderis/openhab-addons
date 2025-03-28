@@ -13,18 +13,21 @@ import org.slf4j.LoggerFactory;
  * and implements the ManagedAccessory interface. It provides a foundation for creating
  * managed accessories in the HomeKit integration for openHAB.
  *
- * <p>This class handles the management of accessory services and instance IDs, and
+ * <p>
+ * This class handles the management of accessory services and instance IDs, and
  * integrates with the HomekitCommunicationManager for communication purposes. It also
  * provides a mechanism to extend and add additional services to the accessory.
  *
- * <p>Key responsibilities of this class include:
+ * <p>
+ * Key responsibilities of this class include:
  * <ul>
- *   <li>Managing the lifecycle of accessory services.</li>
- *   <li>Providing unique instance IDs for accessories.</li>
- *   <li>Integrating with the HomekitCommunicationManager for communication.</li>
+ * <li>Managing the lifecycle of accessory services.</li>
+ * <li>Providing unique instance IDs for accessories.</li>
+ * <li>Integrating with the HomekitCommunicationManager for communication.</li>
  * </ul>
  *
- * <p>Subclasses are expected to provide specific implementations for the managed accessory
+ * <p>
+ * Subclasses are expected to provide specific implementations for the managed accessory
  * behavior by extending this abstract class.
  *
  * @author [Your Name]
@@ -41,10 +44,10 @@ public abstract class AbstractManagedAccessory extends GenericAccessory implemen
     /**
      * Constructs an AbstractManagedAccessory instance.
      *
-     * @param manager    The HomekitCommunicationManager responsible for managing communication.
-     * @param server     The AccessoryServer associated with this accessory.
+     * @param manager The HomekitCommunicationManager responsible for managing communication.
+     * @param server The AccessoryServer associated with this accessory.
      * @param instanceId The initial instance ID for the accessory.
-     * @param extend     A flag indicating whether to add default services.
+     * @param extend A flag indicating whether to add default services.
      */
     public AbstractManagedAccessory(HomekitCommunicationManager manager, AccessoryServer server, long instanceId,
             boolean extend) {

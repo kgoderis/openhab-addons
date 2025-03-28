@@ -39,5 +39,4 @@ public class NotificationUID extends UID {
         List<String> segments = getAllSegments();
         return segments.get(segments.size() - 1);
     }
-
 }

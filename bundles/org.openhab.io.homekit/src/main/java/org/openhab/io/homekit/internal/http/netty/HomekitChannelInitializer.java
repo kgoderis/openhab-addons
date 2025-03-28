@@ -92,13 +92,10 @@ public class HomekitChannelInitializer extends ChannelInitializer<SocketChannel>
                 }
 
             }
-
         }
 
         public void stopWatching() {
             this.shouldStopWatching = true;
         }
-
     }
-
 }

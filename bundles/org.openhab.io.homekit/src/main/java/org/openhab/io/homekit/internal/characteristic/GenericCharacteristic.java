@@ -69,7 +69,6 @@ public class GenericCharacteristic implements Characteristic {
         }
 
         this.value = ((JsonObject) value).get("value");
-
     }
 
     public GenericCharacteristic(Service service, long instanceId, String format, boolean isWritable,
@@ -282,5 +281,4 @@ public class GenericCharacteristic implements Characteristic {
     public static ChannelTypeUID getChannelTypeUID() {
         return new ChannelTypeUID(HomekitBindingConstants.BINDING_ID, "generic");
     }
-
 }

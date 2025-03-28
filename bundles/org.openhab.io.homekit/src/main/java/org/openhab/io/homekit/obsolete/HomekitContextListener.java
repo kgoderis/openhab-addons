@@ -22,5 +22,4 @@ public class HomekitContextListener implements ServletContextListener {
         String contextPath = sce.getServletContext().getContextPath();
         logger.debug("Destroyed context {}", contextPath);
     }
-
 }

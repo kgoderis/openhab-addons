@@ -1,9 +1,10 @@
 package org.openhab.io.homekit.hap.accessories.properties;
 
-import  org.openhab.io.homekit.hap.accessories.thermostat.BasicThermostat;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.openhab.io.homekit.hap.accessories.thermostat.BasicThermostat;
 
 /**
  * The mode used by a {@link BasicThermostat}
@@ -11,29 +12,28 @@ import java.util.stream.Collectors;
  * @author Andy Lintner
  */
 public enum ThermostatMode {
-  OFF(0),
-  HEAT(1),
-  COOL(2),
-  AUTO(3);
+    OFF(0),
+    HEAT(1),
+    COOL(2),
+    AUTO(3);
 
-  private static final Map<Integer, ThermostatMode> reverse;
+    private static final Map<Integer, ThermostatMode> reverse;
 
-  static {
-    reverse =
-        Arrays.stream(ThermostatMode.values()).collect(Collectors.toMap(t -> t.getCode(), t -> t));
-  }
+    static {
+        reverse = Arrays.stream(ThermostatMode.values()).collect(Collectors.toMap(t -> t.getCode(), t -> t));
+    }
 
-  public static ThermostatMode fromCode(Integer code) {
-    return reverse.get(code);
-  }
+    public static ThermostatMode fromCode(Integer code) {
+        return reverse.get(code);
+    }
 
-  private final int code;
+    private final int code;
 
-  private ThermostatMode(int code) {
-    this.code = code;
-  }
+    private ThermostatMode(int code) {
+        this.code = code;
+    }
 
-  public int getCode() {
-    return code;
-  }
+    public int getCode() {
+        return code;
+    }
 }

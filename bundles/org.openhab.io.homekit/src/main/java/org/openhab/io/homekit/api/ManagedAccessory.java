@@ -27,5 +27,4 @@ public interface ManagedAccessory extends Accessory {
     long getCurrentInstanceId();
 
     void addServices();
-
 }

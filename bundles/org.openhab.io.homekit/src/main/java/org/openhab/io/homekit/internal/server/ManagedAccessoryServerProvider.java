@@ -111,5 +111,4 @@ public class ManagedAccessoryServerProvider
         return new PersistedAccessoryServer(element.getAddress(), element.getPort(), element.getPairingId(),
                 element.getSecretKey(), element.getConfigurationIndex());
     }
-
 }

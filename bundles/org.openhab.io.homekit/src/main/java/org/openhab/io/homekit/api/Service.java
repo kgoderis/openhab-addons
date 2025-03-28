@@ -108,5 +108,4 @@ public interface Service extends Identifiable<ServiceUID> {
     JsonObject toJson();
 
     JsonObject toReducedJson();
-
 }

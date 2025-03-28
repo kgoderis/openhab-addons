@@ -42,5 +42,4 @@ public class PairingImpl implements Pairing {
     public byte[] getDestinationPublicKey() {
         return Base64.getDecoder().decode(destinationLongtermPublicKey);
     }
-
 }

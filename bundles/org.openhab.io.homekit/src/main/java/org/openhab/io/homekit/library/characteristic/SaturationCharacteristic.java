@@ -50,5 +50,4 @@ public class SaturationCharacteristic extends FloatCharacteristic {
             return new DecimalType(value);
         }
     }
-
 }

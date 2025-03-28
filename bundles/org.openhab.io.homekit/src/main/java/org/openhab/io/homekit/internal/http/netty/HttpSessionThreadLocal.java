@@ -60,5 +60,4 @@ public class HttpSessionThreadLocal {
         }
         return get();
     }
-
 }

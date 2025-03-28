@@ -375,5 +375,4 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
     public byte[] getDecryptionKey() {
         return decryptionKey;
     }
-
 }

@@ -18,5 +18,4 @@ public class TargetPositionCharacteristic extends IntegerCharacteristic {
     public String getInstanceType() {
         return getType();
     }
-
 }

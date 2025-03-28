@@ -198,5 +198,4 @@ public class GenericService implements Service {
     public Collection<Service> getLinkedServices() {
         return new HashSet<Service>();
     }
-
 }

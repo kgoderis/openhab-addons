@@ -229,7 +229,6 @@ public class DecryptedHomekitEndPoint implements EndPoint {
             // Never reached.
             throw new AssertionError();
         }
-
     }
 
     @Override

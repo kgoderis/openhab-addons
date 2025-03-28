@@ -268,5 +268,4 @@ public class PairVerificationServlet extends BaseServlet {
     // hkdf.generateBytes(key, 0, 32);
     // return key;
     // }
-
 }

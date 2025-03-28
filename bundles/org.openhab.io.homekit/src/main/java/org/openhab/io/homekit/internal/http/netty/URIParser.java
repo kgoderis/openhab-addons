@@ -35,8 +35,7 @@ public class URIParser {
     public void parse(String uri) {
 
         int indx = uri.indexOf('?');
-        this.servletPath = this.chain.getServletConfiguration()
-                .getMatchingUrlPattern(uri);
+        this.servletPath = this.chain.getServletConfiguration().getMatchingUrlPattern(uri);
         if (!this.servletPath.startsWith("/"))
             this.servletPath = "/" + this.servletPath;
 
@@ -56,7 +55,6 @@ public class URIParser {
             this.pathInfo = null;
         else if (!this.pathInfo.startsWith("/"))
             this.pathInfo = "/" + this.pathInfo;
-
     }
 
     public String getServletPath() {
@@ -74,5 +72,4 @@ public class URIParser {
     public String getRequestUri() {
         return requestUri;
     }
-
 }

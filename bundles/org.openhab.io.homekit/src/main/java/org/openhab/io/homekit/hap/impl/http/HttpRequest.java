@@ -2,9 +2,9 @@ package org.openhab.io.homekit.hap.impl.http;
 
 public interface HttpRequest {
 
-  String getUri();
+    String getUri();
 
-  byte[] getBody();
+    byte[] getBody();
 
-  HttpMethod getMethod();
+    HttpMethod getMethod();
 }

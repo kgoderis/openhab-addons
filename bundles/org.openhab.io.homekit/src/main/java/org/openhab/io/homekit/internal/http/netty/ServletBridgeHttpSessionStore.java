@@ -31,5 +31,4 @@ public interface ServletBridgeHttpSessionStore {
     HttpSessionImpl createSession(ServletRequest request);
 
     HttpSessionImpl findSession(String hostString, int port);
-
 }

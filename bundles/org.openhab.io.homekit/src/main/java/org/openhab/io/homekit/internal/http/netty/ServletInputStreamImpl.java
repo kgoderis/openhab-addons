@@ -78,7 +78,5 @@ public class ServletInputStreamImpl extends ServletInputStream {
     @Override
     public void setReadListener(ReadListener readListener) {
         // TODO Auto-generated method stub
-
     }
-
 }

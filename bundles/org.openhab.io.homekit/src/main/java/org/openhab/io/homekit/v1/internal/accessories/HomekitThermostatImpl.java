@@ -28,16 +28,15 @@ import org.openhab.core.library.items.StringItem;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.types.State;
+import org.openhab.io.homekit.hap.HomekitCharacteristicChangeCallback;
+import org.openhab.io.homekit.hap.accessories.properties.ThermostatMode;
+import org.openhab.io.homekit.hap.accessories.thermostat.BasicThermostat;
 import org.openhab.io.homekit.v1.internal.HomekitAccessoryUpdater;
 import org.openhab.io.homekit.v1.internal.HomekitCharacteristicType;
 import org.openhab.io.homekit.v1.internal.HomekitSettings;
 import org.openhab.io.homekit.v1.internal.HomekitTaggedItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import  org.openhab.io.homekit.hap.HomekitCharacteristicChangeCallback;
-import  org.openhab.io.homekit.hap.accessories.properties.ThermostatMode;
-import  org.openhab.io.homekit.hap.accessories.thermostat.BasicThermostat;
 
 /**
  * Implements Thermostat as a GroupedAccessory made up of multiple items:
@@ -89,8 +88,7 @@ class HomekitThermostatImpl extends AbstractTemperatureHomekitAccessoryImpl<Grou
 
         Item targetTemperatureItem = getItemWithDeprecation(characteristicItems,
                 HomekitCharacteristicType.TARGET_TEMPERATURE, HomekitCharacteristicType.OLD_TARGET_TEMPERATURE)
-                        .orElseThrow(
-                                () -> new IncompleteAccessoryException(HomekitCharacteristicType.TARGET_TEMPERATURE));
+                .orElseThrow(() -> new IncompleteAccessoryException(HomekitCharacteristicType.TARGET_TEMPERATURE));
         if (targetTemperatureItem instanceof NumberItem) {
             this.targetTemperatureItem = (NumberItem) targetTemperatureItem;
         } else {

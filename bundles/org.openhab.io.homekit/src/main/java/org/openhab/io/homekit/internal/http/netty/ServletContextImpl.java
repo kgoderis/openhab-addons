@@ -172,7 +172,6 @@ public class ServletContextImpl extends ConfigAdapter implements ServletContext 
     @Override
     public String getMimeType(String file) {
         return Utils.getMimeType(file);
-
     }
 
     @Override
@@ -322,7 +321,6 @@ public class ServletContextImpl extends ConfigAdapter implements ServletContext 
     @Override
     public void setSessionTrackingModes(Set<SessionTrackingMode> sessionTrackingModes) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -340,19 +338,16 @@ public class ServletContextImpl extends ConfigAdapter implements ServletContext 
     @Override
     public void addListener(String className) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
     public <T extends EventListener> void addListener(T t) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
     public void addListener(Class<? extends EventListener> listenerClass) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -376,7 +371,6 @@ public class ServletContextImpl extends ConfigAdapter implements ServletContext 
     @Override
     public void declareRoles(String... roleNames) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -384,5 +378,4 @@ public class ServletContextImpl extends ConfigAdapter implements ServletContext 
         // TODO Auto-generated method stub
         return null;
     }
-
 }

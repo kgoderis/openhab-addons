@@ -41,5 +41,4 @@ public abstract class PairVerificationHandler extends BaseHandler {
         d.getBytes(Message.ENCRYPTED_DATA, authTagData, messageData.length);
         return authTagData;
     }
-
 }

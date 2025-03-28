@@ -246,7 +246,6 @@ public class HomekitEncryptionEngine {
 
             return new BigInteger(1, digest.digest());
         }
-
     }
 
     public static byte[] createKey(String info, byte[] sharedSecret) {

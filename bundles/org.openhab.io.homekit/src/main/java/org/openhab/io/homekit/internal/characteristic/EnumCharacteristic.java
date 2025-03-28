@@ -92,5 +92,4 @@ public abstract class EnumCharacteristic extends AbstractManagedCharacteristic<I
     public static String getAcceptedItemType() {
         return CoreItemFactory.STRING;
     }
-
 }

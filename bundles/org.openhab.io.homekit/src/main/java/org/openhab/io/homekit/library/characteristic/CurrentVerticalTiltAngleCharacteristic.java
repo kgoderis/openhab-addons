@@ -20,5 +20,4 @@ public class CurrentVerticalTiltAngleCharacteristic extends IntegerCharacteristi
     public String getInstanceType() {
         return getType();
     }
-
 }

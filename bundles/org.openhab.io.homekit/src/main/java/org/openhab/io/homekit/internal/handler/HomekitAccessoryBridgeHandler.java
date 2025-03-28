@@ -147,12 +147,12 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
                     logger.info("'{}' : Creating a Homekit client using an existing Id '{}'", getThing().getUID(),
                             new String(clientPairingId));
 
-                    accessoryServer = new RemoteStandAloneAccessoryServer(InetAddress.getByName(config.host), config.port,
-                            clientPairingId, clientLongtermSecretKey, accessoryPairingId, pairingRegistry);
+                    accessoryServer = new RemoteStandAloneAccessoryServer(InetAddress.getByName(config.host),
+                            config.port, clientPairingId, clientLongtermSecretKey, accessoryPairingId, pairingRegistry);
 
                 } else {
-                    accessoryServer = new RemoteStandAloneAccessoryServer(InetAddress.getByName(config.host), config.port,
-                            pairingRegistry);
+                    accessoryServer = new RemoteStandAloneAccessoryServer(InetAddress.getByName(config.host),
+                            config.port, pairingRegistry);
 
                     logger.info("'{}' : Creating a Homekit client using a newly generated Id '{}'", getThing().getUID(),
                             new String(accessoryServer.getPairingId()));
@@ -199,7 +199,6 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
         // Add a description to give user information to understand why thing does not work as expected. E.g.
         // updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
         // "Can not access device as username and/or password are invalid");
-
     }
 
     @Override

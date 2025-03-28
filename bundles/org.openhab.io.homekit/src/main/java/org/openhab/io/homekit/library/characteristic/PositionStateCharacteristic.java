@@ -18,5 +18,4 @@ public class PositionStateCharacteristic extends EnumCharacteristic {
     public String getInstanceType() {
         return getType();
     }
-
 }

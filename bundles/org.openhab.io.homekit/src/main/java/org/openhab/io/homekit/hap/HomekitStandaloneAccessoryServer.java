@@ -1,9 +1,10 @@
 package org.openhab.io.homekit.hap;
 
-import  org.openhab.io.homekit.hap.impl.HomekitWebHandler;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+
+import org.openhab.io.homekit.hap.impl.HomekitWebHandler;
 
 /**
  * A server for exposing standalone Homekit accessory (as opposed to a Bridge accessory which
@@ -15,20 +16,16 @@ import java.net.UnknownHostException;
  */
 public class HomekitStandaloneAccessoryServer {
 
-  private final HomekitRoot root;
+    private final HomekitRoot root;
 
-  HomekitStandaloneAccessoryServer(
-      HomekitAccessory accessory,
-      HomekitWebHandler webHandler,
-      InetAddress localhost,
-      HomekitAuthInfo authInfo)
-      throws UnknownHostException, IOException {
-    root = new HomekitRoot(accessory.getLabel(), webHandler, localhost, authInfo);
-    root.addAccessory(accessory);
-  }
+    HomekitStandaloneAccessoryServer(HomekitAccessory accessory, HomekitWebHandler webHandler, InetAddress localhost,
+            HomekitAuthInfo authInfo) throws UnknownHostException, IOException {
+        root = new HomekitRoot(accessory.getLabel(), webHandler, localhost, authInfo);
+        root.addAccessory(accessory);
+    }
 
-  /** Begins advertising and handling requests for this accessory. */
-  public void start() {
-    root.start();
-  }
+    /** Begins advertising and handling requests for this accessory. */
+    public void start() {
+        root.start();
+    }
 }

@@ -93,5 +93,4 @@ public abstract class ReadOnlyStringCharacteristic extends AbstractManagedCharac
     public static String getAcceptedItemType() {
         return CoreItemFactory.STRING;
     }
-
 }

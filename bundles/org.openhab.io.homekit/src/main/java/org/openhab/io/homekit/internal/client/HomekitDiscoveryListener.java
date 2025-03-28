@@ -156,5 +156,4 @@ public class HomekitDiscoveryListener implements DiscoveryListener {
         }
         return null;
     }
-
 }

@@ -27,5 +27,4 @@ public class ServletBridgeRuntimeException extends RuntimeException {
     public ServletBridgeRuntimeException(String message) {
         super(message);
     }
-
 }

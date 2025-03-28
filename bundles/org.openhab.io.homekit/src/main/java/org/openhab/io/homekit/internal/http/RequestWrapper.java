@@ -28,7 +28,6 @@ public class RequestWrapper extends HttpServletRequestWrapper {
     public ServletInputStream getInputStream() throws IOException {
 
         return new DelegatingServletInputStream(new ByteArrayInputStream(body));
-
     }
 
     public class DelegatingServletInputStream extends ServletInputStream {

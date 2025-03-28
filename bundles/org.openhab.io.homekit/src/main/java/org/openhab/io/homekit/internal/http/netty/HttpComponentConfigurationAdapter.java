@@ -135,7 +135,6 @@ public abstract class HttpComponentConfigurationAdapter<COMP, CONFIG extends Con
         }
 
         return null;
-
     }
 
     protected void addConfigInitParameter(String name, String value) {
@@ -153,5 +152,4 @@ public abstract class HttpComponentConfigurationAdapter<COMP, CONFIG extends Con
     public boolean isInitialized() {
         return initialized;
     }
-
 }

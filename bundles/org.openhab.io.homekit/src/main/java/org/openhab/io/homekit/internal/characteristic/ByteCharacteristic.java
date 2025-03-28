@@ -74,5 +74,4 @@ public abstract class ByteCharacteristic extends AbstractManagedCharacteristic<B
     public static String getAcceptedItemType() {
         return CoreItemFactory.NUMBER;
     }
-
 }

@@ -56,5 +56,4 @@ public class ManagedPairingProvider extends AbstractManagedProvider<Pairing, Pai
     protected Pairing toPersistableElement(Pairing element) {
         return element;
     }
-
 }

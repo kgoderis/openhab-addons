@@ -41,5 +41,4 @@ public class CatchAnyServlet extends BaseServlet {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         }
     }
-
 }

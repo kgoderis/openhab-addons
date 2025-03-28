@@ -13,7 +13,8 @@ import org.openhab.io.homekit.internal.characteristic.BooleanCharacteristic;
  */
 public class ObstructionDetectedCharacteristic extends BooleanCharacteristic {
 
-    public ObstructionDetectedCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId) {
+    public ObstructionDetectedCharacteristic(HomekitCommunicationManager manager, ManagedService service,
+            long instanceId) {
         super(manager, service, instanceId, false, true, true, "State of an obstruction sensor");
     }
 

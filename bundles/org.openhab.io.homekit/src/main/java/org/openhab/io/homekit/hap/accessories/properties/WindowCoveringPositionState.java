@@ -1,9 +1,10 @@
 package org.openhab.io.homekit.hap.accessories.properties;
 
-import  org.openhab.io.homekit.hap.accessories.WindowCovering;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.openhab.io.homekit.hap.accessories.WindowCovering;
 
 /**
  * The position state used by a {@link WindowCovering}
@@ -11,29 +12,28 @@ import java.util.stream.Collectors;
  * @author Andy Lintner
  */
 public enum WindowCoveringPositionState {
-  DECREASING(0),
-  INCREASING(1),
-  STOPPED(2);
+    DECREASING(0),
+    INCREASING(1),
+    STOPPED(2);
 
-  private static final Map<Integer, WindowCoveringPositionState> reverse;
+    private static final Map<Integer, WindowCoveringPositionState> reverse;
 
-  static {
-    reverse =
-        Arrays.stream(WindowCoveringPositionState.values())
-            .collect(Collectors.toMap(t -> t.getCode(), t -> t));
-  }
+    static {
+        reverse = Arrays.stream(WindowCoveringPositionState.values())
+                .collect(Collectors.toMap(t -> t.getCode(), t -> t));
+    }
 
-  public static WindowCoveringPositionState fromCode(Integer code) {
-    return reverse.get(code);
-  }
+    public static WindowCoveringPositionState fromCode(Integer code) {
+        return reverse.get(code);
+    }
 
-  private final int code;
+    private final int code;
 
-  private WindowCoveringPositionState(int code) {
-    this.code = code;
-  }
+    private WindowCoveringPositionState(int code) {
+        this.code = code;
+    }
 
-  public int getCode() {
-    return code;
-  }
+    public int getCode() {
+        return code;
+    }
 }
