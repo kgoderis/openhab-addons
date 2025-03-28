@@ -17,7 +17,7 @@
   <properties>
     <!--     <dep.noembedding>javax.json,javax.json-api,netty-common,netty-buffer,netty-transport,netty-handler,netty-codec,netty-codec-http,netty-resolver</dep.noembedding>
  -->
-    <netty.version>4.1.42.Final</netty.version>
+    <netty.version>4.1.119.Final</netty.version>
   </properties>
 
   <dependencies>
@@ -47,8 +47,8 @@
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
-      <artifactId>bcprov-jdk15on</artifactId>
-      <version>1.51</version>
+      <artifactId>bcprov-jdk18on</artifactId>
+      <version>1.81</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
