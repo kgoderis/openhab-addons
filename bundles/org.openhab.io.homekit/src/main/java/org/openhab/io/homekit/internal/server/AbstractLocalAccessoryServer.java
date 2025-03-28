@@ -298,10 +298,12 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
 
         if (announcedServiceDescription != null) {
             announcedServiceDescription.serviceProperties = props;
-            safeCaller.create(mdnsService, MDNSService.class).withAsync()
-                    .withIdentifier(announcedServiceDescription.serviceName).build()
-                    .updateService(announcedServiceDescription);
+            // safeCaller.create(mdnsService, MDNSService.class).withAsync()
+            //         .withIdentifier(announcedServiceDescription.serviceName).build()
+            //         .updateService(announcedServiceDescription);
             // mdnsService.updateService(announcedServiceDescription);
+            mdnsService.unregisterService(announcedServiceDescription);
+            mdnsService.registerService(announcedServiceDescription);
         } else {
             announcedServiceDescription = new ServiceDescription(SERVICE_TYPE,
                     "openHAB " + getClass().getSimpleName() + " " + getPort(), port, props);
