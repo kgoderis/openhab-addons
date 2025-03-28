@@ -165,9 +165,9 @@ public class HomekitEncryptionEngine {
             }
             return new ChachaDecoder(key, nonce).decodeCiphertext(mac, additionalData, ciphertext);
         } catch (Exception e) {
-            if (e instanceof org.bouncycastle.crypto.tls.TlsFatalAlert) {
+            if (e instanceof org.bouncycastle.tls.TlsFatalAlert) {
                 logger.error("Decrypt : Exception while decrypting : Description = {}",
-                        ((org.bouncycastle.crypto.tls.TlsFatalAlert) e).getAlertDescription());
+                        ((org.bouncycastle.tls.TlsFatalAlert) e).getAlertDescription());
             }
             throw new RuntimeException(e);
         }
