@@ -292,6 +292,9 @@ public class GenericCharacteristic implements Characteristic {
         if (!Objects.equals(this.value, newValue)) {
             Object oldValue = this.value;
             this.value = newValue;
+            logger.debug("Characteristic '{}' (Type: {}) value changed from '{}' to '{}' in Service '{}'", 
+                this.getDescription(), this.getInstanceType(),
+                oldValue, newValue, this.service.getName());
             notifyValueChanged(oldValue, newValue);
         }
     }
@@ -305,6 +308,9 @@ public class GenericCharacteristic implements Characteristic {
     }
 
     protected void notifyValueChanged(Object oldValue, Object newValue) {
+        logger.debug("Notifying listeners of Characteristic '{}' (Type: {}) value change from '{}' to '{}' in Service '{}'", 
+            this.getDescription(), this.getInstanceType(),
+            oldValue, newValue, this.service.getName());
         CharacteristicEvent event = new CharacteristicEvent(this, oldValue, newValue);
         notifyListeners(event);
     }

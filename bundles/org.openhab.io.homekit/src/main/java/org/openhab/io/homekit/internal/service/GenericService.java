@@ -129,6 +129,12 @@ public class GenericService implements Service {
         for (Characteristic characteristic : characteristics.stream().filter(c -> c.getClass() == characteristicClass)
                 .collect(Collectors.toList())) {
             characteristics.remove(characteristic);
+            String description = characteristic instanceof GenericCharacteristic ? 
+                ((GenericCharacteristic) characteristic).getDescription() : 
+                characteristic.getInstanceType();
+            logger.debug("Removed Characteristic '{}' (Type: {}) from Service '{}' (Type: {})", 
+                description, characteristic.getInstanceType(),
+                this.getName(), this.getInstanceType());
             notifyCharacteristicRemoved(characteristic);
         }
     }
@@ -136,6 +142,12 @@ public class GenericService implements Service {
     public boolean removeCharacteristic(Characteristic characteristic) {
         boolean removed = characteristics.remove(characteristic);
         if (removed) {
+            String description = characteristic instanceof GenericCharacteristic ? 
+                ((GenericCharacteristic) characteristic).getDescription() : 
+                characteristic.getInstanceType();
+            logger.debug("Removed Characteristic '{}' (Type: {}) from Service '{}' (Type: {})", 
+                description, characteristic.getInstanceType(),
+                this.getName(), this.getInstanceType());
             notifyCharacteristicRemoved(characteristic);
         }
         return removed;
@@ -156,6 +168,12 @@ public class GenericService implements Service {
     public void addCharacteristic(Characteristic characteristic) {
         if (getCharacteristic(characteristic.getInstanceType()) == null && isExtensible()) {
             characteristics.add(characteristic);
+            String description = characteristic instanceof GenericCharacteristic ? 
+                ((GenericCharacteristic) characteristic).getDescription() : 
+                characteristic.getInstanceType();
+            logger.debug("Added Characteristic '{}' (Type: {}) to Service '{}' (Type: {})", 
+                description, characteristic.getInstanceType(),
+                this.getName(), this.getInstanceType());
             notifyCharacteristicAdded(characteristic);
             
             // Listen for characteristic value changes
@@ -167,6 +185,13 @@ public class GenericService implements Service {
                     }
                 });
             }
+        } else {
+            String description = characteristic instanceof GenericCharacteristic ? 
+                ((GenericCharacteristic) characteristic).getDescription() : 
+                characteristic.getInstanceType();
+            logger.debug("Service '{}' (Type: {}) already contains Characteristic '{}' (Type: {})", 
+                this.getName(), this.getInstanceType(),
+                description, characteristic.getInstanceType());
         }
     }
 
@@ -221,16 +246,31 @@ public class GenericService implements Service {
     }
 
     protected void notifyCharacteristicAdded(Characteristic characteristic) {
+        String description = characteristic instanceof GenericCharacteristic ? 
+            ((GenericCharacteristic) characteristic).getDescription() : 
+            characteristic.getInstanceType();
+        logger.debug("Notifying listeners of Characteristic '{}' (Type: {}) addition to Service '{}'", 
+            description, characteristic.getInstanceType(), this.getName());
         ServiceEvent event = new ServiceEvent(this, characteristic, ServiceEvent.ServiceEventType.CHARACTERISTIC_ADDED);
         notifyListeners(event);
     }
 
     protected void notifyCharacteristicRemoved(Characteristic characteristic) {
+        String description = characteristic instanceof GenericCharacteristic ? 
+            ((GenericCharacteristic) characteristic).getDescription() : 
+            characteristic.getInstanceType();
+        logger.debug("Notifying listeners of Characteristic '{}' (Type: {}) removal from Service '{}'", 
+            description, characteristic.getInstanceType(), this.getName());
         ServiceEvent event = new ServiceEvent(this, characteristic, ServiceEvent.ServiceEventType.CHARACTERISTIC_REMOVED);
         notifyListeners(event);
     }
 
     protected void notifyCharacteristicStateChanged(Characteristic characteristic) {
+        String description = characteristic instanceof GenericCharacteristic ? 
+            ((GenericCharacteristic) characteristic).getDescription() : 
+            characteristic.getInstanceType();
+        logger.debug("Notifying listeners of Characteristic '{}' (Type: {}) state change in Service '{}'", 
+            description, characteristic.getInstanceType(), this.getName());
         ServiceEvent event = new ServiceEvent(this, characteristic, ServiceEvent.ServiceEventType.CHARACTERISTIC_STATE_CHANGED);
         notifyListeners(event);
     }

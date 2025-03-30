@@ -108,6 +108,9 @@ public class GenericAccessory implements Accessory {
         if (service != null && isExtensible()) {
             if (getService(service.getInstanceType()) == null) {
                 services.add(service);
+                logger.debug("Added Service '{}' (Type: {}) to Accessory '{}' (Type: {})", 
+                    service.getName(), service.getInstanceType(), 
+                    this.getLabel(), this.getClass().getSimpleName());
                 notifyServiceAdded(service);
                 
                 // Listen for service changes
@@ -119,6 +122,10 @@ public class GenericAccessory implements Accessory {
                         }
                     });
                 }
+            } else {
+                logger.debug("Accessory '{}' (Type: {}) already contains Service '{}' (Type: {})", 
+                    this.getLabel(), this.getClass().getSimpleName(),
+                    service.getName(), service.getInstanceType());
             }
         }
     }
@@ -132,16 +139,22 @@ public class GenericAccessory implements Accessory {
     }
 
     protected void notifyServiceAdded(Service service) {
+        logger.debug("Notifying listeners of Service '{}' (Type: {}) addition to Accessory '{}'", 
+            service.getName(), service.getInstanceType(), this.getLabel());
         AccessoryEvent event = new AccessoryEvent(this, service, AccessoryEvent.AccessoryEventType.SERVICE_ADDED);
         notifyListeners(event);
     }
 
     protected void notifyServiceRemoved(Service service) {
+        logger.debug("Notifying listeners of Service '{}' (Type: {}) removal from Accessory '{}'", 
+            service.getName(), service.getInstanceType(), this.getLabel());
         AccessoryEvent event = new AccessoryEvent(this, service, AccessoryEvent.AccessoryEventType.SERVICE_REMOVED);
         notifyListeners(event);
     }
 
     protected void notifyServiceStateChanged(Service service) {
+        logger.debug("Notifying listeners of Service '{}' (Type: {}) state change in Accessory '{}'", 
+            service.getName(), service.getInstanceType(), this.getLabel());
         AccessoryEvent event = new AccessoryEvent(this, service, AccessoryEvent.AccessoryEventType.SERVICE_STATE_CHANGED);
         notifyListeners(event);
     }
