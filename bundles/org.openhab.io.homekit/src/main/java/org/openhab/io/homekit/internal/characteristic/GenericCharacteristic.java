@@ -2,6 +2,9 @@ package org.openhab.io.homekit.internal.characteristic;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -16,6 +19,8 @@ import org.openhab.core.thing.type.ChannelTypeUID;
 import org.openhab.io.homekit.api.Characteristic;
 import org.openhab.io.homekit.api.Service;
 import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
+import org.openhab.io.homekit.internal.events.*;
+import org.openhab.io.homekit.internal.listeners.CharacteristicChangeListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +39,7 @@ public class GenericCharacteristic implements Characteristic {
     private final String description;
     private String type;
     private Object value;
+    private final Collection<CharacteristicChangeListener> listeners = new CopyOnWriteArraySet<>();
 
     public GenericCharacteristic(Service service, JsonValue value) {
         this.service = service;
@@ -280,5 +286,36 @@ public class GenericCharacteristic implements Characteristic {
 
     public static ChannelTypeUID getChannelTypeUID() {
         return new ChannelTypeUID(HomekitBindingConstants.BINDING_ID, "generic");
+    }
+
+    public void setValue(Object newValue) {
+        if (!Objects.equals(this.value, newValue)) {
+            Object oldValue = this.value;
+            this.value = newValue;
+            notifyValueChanged(oldValue, newValue);
+        }
+    }
+
+    public void addListener(CharacteristicChangeListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeListener(CharacteristicChangeListener listener) {
+        listeners.remove(listener);
+    }
+
+    protected void notifyValueChanged(Object oldValue, Object newValue) {
+        CharacteristicEvent event = new CharacteristicEvent(this, oldValue, newValue);
+        notifyListeners(event);
+    }
+
+    private void notifyListeners(CharacteristicEvent event) {
+        for (CharacteristicChangeListener listener : listeners) {
+            try {
+                listener.onCharacteristicEvent(event);
+            } catch (Exception e) {
+                logger.error("Error notifying listener of characteristic event", e);
+            }
+        }
     }
 }

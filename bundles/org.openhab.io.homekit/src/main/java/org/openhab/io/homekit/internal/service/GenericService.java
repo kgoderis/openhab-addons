@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Collectors;
 
 import javax.json.Json;
@@ -19,6 +20,10 @@ import org.openhab.io.homekit.api.Accessory;
 import org.openhab.io.homekit.api.Characteristic;
 import org.openhab.io.homekit.api.Service;
 import org.openhab.io.homekit.internal.characteristic.GenericCharacteristic;
+import org.openhab.io.homekit.internal.events.ServiceEvent;
+import org.openhab.io.homekit.internal.events.CharacteristicEvent;
+import org.openhab.io.homekit.internal.listeners.ServiceChangeListener;
+import org.openhab.io.homekit.internal.listeners.CharacteristicChangeListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +38,7 @@ public class GenericService implements Service {
     private boolean isHidden;
     private boolean isPrimary;
     private final List<Characteristic> characteristics = new LinkedList<>();
+    private final Collection<ServiceChangeListener> listeners = new CopyOnWriteArraySet<>();
 
     public GenericService(Accessory accessory, JsonValue value, String name) {
         this.accessory = accessory;
@@ -123,13 +129,16 @@ public class GenericService implements Service {
         for (Characteristic characteristic : characteristics.stream().filter(c -> c.getClass() == characteristicClass)
                 .collect(Collectors.toList())) {
             characteristics.remove(characteristic);
-            // logger.debug("Removed Characteristic {} of Type {} from Service {} of Type {}", characteristic.getUID(),
-            // characteristic.getClass().getSimpleName(), this.getUID(), this.getClass().getSimpleName());
+            notifyCharacteristicRemoved(characteristic);
         }
     }
 
     public boolean removeCharacteristic(Characteristic characteristic) {
-        return characteristics.remove(characteristic);
+        boolean removed = characteristics.remove(characteristic);
+        if (removed) {
+            notifyCharacteristicRemoved(characteristic);
+        }
+        return removed;
     }
 
     @Override
@@ -147,13 +156,17 @@ public class GenericService implements Service {
     public void addCharacteristic(Characteristic characteristic) {
         if (getCharacteristic(characteristic.getInstanceType()) == null && isExtensible()) {
             characteristics.add(characteristic);
-            // logger.debug("Added Characteristic {} of Type {} to Service {} of Type {}", characteristic.getUID(),
-            // characteristic.getClass().getSimpleName(), this.getUID(), this.getClass().getSimpleName());
-        } else {
-            // logger.warn("Service {} of Type {} already holds a Characteristic {} of Type {}", this.getUID(),
-            // this.getClass().getSimpleName(), characteristic.getUID(),
-            // characteristic.getClass().getSimpleName());
-
+            notifyCharacteristicAdded(characteristic);
+            
+            // Listen for characteristic value changes
+            if (characteristic instanceof GenericCharacteristic) {
+                ((GenericCharacteristic) characteristic).addListener(new CharacteristicChangeListener() {
+                    @Override
+                    public void onCharacteristicEvent(CharacteristicEvent event) {
+                        notifyCharacteristicStateChanged(characteristic);
+                    }
+                });
+            }
         }
     }
 
@@ -197,5 +210,38 @@ public class GenericService implements Service {
     @Override
     public Collection<Service> getLinkedServices() {
         return new HashSet<Service>();
+    }
+
+    public void addListener(ServiceChangeListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeListener(ServiceChangeListener listener) {
+        listeners.remove(listener);
+    }
+
+    protected void notifyCharacteristicAdded(Characteristic characteristic) {
+        ServiceEvent event = new ServiceEvent(this, characteristic, ServiceEvent.ServiceEventType.CHARACTERISTIC_ADDED);
+        notifyListeners(event);
+    }
+
+    protected void notifyCharacteristicRemoved(Characteristic characteristic) {
+        ServiceEvent event = new ServiceEvent(this, characteristic, ServiceEvent.ServiceEventType.CHARACTERISTIC_REMOVED);
+        notifyListeners(event);
+    }
+
+    protected void notifyCharacteristicStateChanged(Characteristic characteristic) {
+        ServiceEvent event = new ServiceEvent(this, characteristic, ServiceEvent.ServiceEventType.CHARACTERISTIC_STATE_CHANGED);
+        notifyListeners(event);
+    }
+
+    private void notifyListeners(ServiceEvent event) {
+        for (ServiceChangeListener listener : listeners) {
+            try {
+                listener.onServiceEvent(event);
+            } catch (Exception e) {
+                logger.error("Error notifying listener of service event", e);
+            }
+        }
     }
 }

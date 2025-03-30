@@ -2,6 +2,7 @@ package org.openhab.io.homekit.internal.accessory;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -15,6 +16,10 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.Accessory;
 import org.openhab.io.homekit.api.AccessoryServer;
 import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.internal.events.AccessoryEvent;
+import org.openhab.io.homekit.internal.events.ServiceEvent;
+import org.openhab.io.homekit.internal.listeners.AccessoryChangeListener;
+import org.openhab.io.homekit.internal.listeners.ServiceChangeListener;
 import org.openhab.io.homekit.internal.service.GenericService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +31,7 @@ public class GenericAccessory implements Accessory {
     private final long instanceId;
     private Collection<Service> services = new HashSet<Service>();
     private final AccessoryServer server;
+    private final Collection<AccessoryChangeListener> listeners = new CopyOnWriteArraySet<>();
 
     public GenericAccessory(AccessoryServer server, long instanceId) {
         this.server = server;
@@ -102,11 +108,50 @@ public class GenericAccessory implements Accessory {
         if (service != null && isExtensible()) {
             if (getService(service.getInstanceType()) == null) {
                 services.add(service);
-                // logger.debug("Added Service {} of Type {} to Accessory {} of Type {}", service.getUID(),
-                // service.getClass().getSimpleName(), this.getUID(), this.getClass().getSimpleName());
-            } else {
-                // logger.debug("Accessory {} of Type {} already holds a Service {} of Type {} to ", this.getUID(),
-                // this.getClass().getSimpleName(), service.getUID(), service.getClass().getSimpleName());
+                notifyServiceAdded(service);
+                
+                // Listen for service changes
+                if (service instanceof GenericService) {
+                    ((GenericService) service).addListener(new ServiceChangeListener() {
+                        @Override
+                        public void onServiceEvent(ServiceEvent event) {
+                            notifyServiceStateChanged(service);
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+    public void addListener(AccessoryChangeListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeListener(AccessoryChangeListener listener) {
+        listeners.remove(listener);
+    }
+
+    protected void notifyServiceAdded(Service service) {
+        AccessoryEvent event = new AccessoryEvent(this, service, AccessoryEvent.AccessoryEventType.SERVICE_ADDED);
+        notifyListeners(event);
+    }
+
+    protected void notifyServiceRemoved(Service service) {
+        AccessoryEvent event = new AccessoryEvent(this, service, AccessoryEvent.AccessoryEventType.SERVICE_REMOVED);
+        notifyListeners(event);
+    }
+
+    protected void notifyServiceStateChanged(Service service) {
+        AccessoryEvent event = new AccessoryEvent(this, service, AccessoryEvent.AccessoryEventType.SERVICE_STATE_CHANGED);
+        notifyListeners(event);
+    }
+
+    private void notifyListeners(AccessoryEvent event) {
+        for (AccessoryChangeListener listener : listeners) {
+            try {
+                listener.onAccessoryEvent(event);
+            } catch (Exception e) {
+                logger.error("Error notifying listener of accessory event", e);
             }
         }
     }
