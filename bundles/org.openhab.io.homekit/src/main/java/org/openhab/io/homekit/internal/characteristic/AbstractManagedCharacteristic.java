@@ -15,7 +15,7 @@ import org.openhab.io.homekit.api.ManagedService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractManagedCharacteristic<T> extends GenericCharacteristic
+public abstract class AbstractManagedCharacteristic<T> extends GenericCharacteristic<T>
         implements ManagedCharacteristic<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractManagedCharacteristic.class);
@@ -60,27 +60,21 @@ public abstract class AbstractManagedCharacteristic<T> extends GenericCharacteri
 
     @Override
     public T getValue() throws Exception {
-        ChannelUID uid = getChannelUID();
-
-        if (uid != null) {
-            State state = manager.getState(uid);
-
+        if (channelUID != null) {
+            State state = getState(channelUID);
             if (state != UnDefType.UNDEF) {
                 return convert(state);
-            } else {
-                return null;
             }
-        } else {
-            return null;
         }
+        return getDefault();
     }
 
     @Override
     public void setValue(T value) throws Exception {
         if (isWritable()) {
-            manager.stateUpdated(getChannelUID(), convert(value));
+            updateState(channelUID, convert(value));
         } else {
-            throw new Exception("Can not modify a readonly characteristic");
+            throw new Exception("Cannot modify a readonly characteristic");
         }
     }
 
@@ -210,9 +204,8 @@ public abstract class AbstractManagedCharacteristic<T> extends GenericCharacteri
      */
     protected abstract T convert(JsonValue jsonValue);
 
-    protected abstract T convert(State state);
-
-    protected abstract State convert(T value);
+    protected abstract State getState(ChannelUID channelUID) throws Exception;
+    protected abstract void updateState(ChannelUID channelUID, State state) throws Exception;
 
     /**
      * Provide a default value for the characteristic to be send when the real value cannot be retrieved.

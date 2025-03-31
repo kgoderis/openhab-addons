@@ -14,17 +14,15 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 
-import org.openhab.core.library.CoreItemFactory;
-import org.openhab.core.thing.type.ChannelTypeUID;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.Characteristic;
 import org.openhab.io.homekit.api.Service;
-import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
-import org.openhab.io.homekit.internal.events.*;
+import org.openhab.io.homekit.internal.events.CharacteristicEvent;
 import org.openhab.io.homekit.internal.listeners.CharacteristicChangeListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GenericCharacteristic implements Characteristic {
+public abstract class GenericCharacteristic<T> implements Characteristic {
 
     private static final Logger logger = LoggerFactory.getLogger(GenericCharacteristic.class);
 
@@ -38,7 +36,8 @@ public class GenericCharacteristic implements Characteristic {
     private boolean hasEventsEnabled;
     private final String description;
     private String type;
-    private Object value;
+    private T oldValue;
+    private T value;
     private final Collection<CharacteristicChangeListener> listeners = new CopyOnWriteArraySet<>();
 
     public GenericCharacteristic(Service service, JsonValue value) {
@@ -53,28 +52,31 @@ public class GenericCharacteristic implements Characteristic {
             this.description = "";
         }
 
-        if (((JsonObject) value).containsKey("ev")) {
-            this.hasEventsEnabled = ((JsonObject) value).getBoolean("ev");
-        } else {
-            this.hasEventsEnabled = false;
-        }
-
-        JsonArray permissionsArray = ((JsonObject) value).getJsonArray("perms");
-
-        for (JsonValue permsValue : permissionsArray) {
-            switch (((JsonString) permsValue).getString()) {
-                case "pr":
-                    isReadable = true;
-                case "pw":
-                    isWritable = true;
-                case "ev":
-                    hasEvents = true;
-                case "hd":
-                    isHidden = true;
+        if (((JsonObject) value).containsKey("perms")) {
+            JsonArray perms = ((JsonObject) value).getJsonArray("perms");
+            for (JsonValue perm : perms) {
+                String permString = ((JsonString) perm).getString();
+                switch (permString) {
+                    case "pw":
+                        this.isWritable = true;
+                        break;
+                    case "pr":
+                        this.isReadable = true;
+                        break;
+                    case "ev":
+                        this.hasEvents = true;
+                        break;
+                }
             }
         }
 
-        this.value = ((JsonObject) value).get("value");
+        if (((JsonObject) value).containsKey("ev")) {
+            this.hasEventsEnabled = ((JsonObject) value).getBoolean("ev");
+        }
+
+        if (((JsonObject) value).containsKey("value")) {
+            this.value = convert(((JsonObject) value).get("value"));
+        }
     }
 
     public GenericCharacteristic(Service service, long instanceId, String format, boolean isWritable,
@@ -89,9 +91,8 @@ public class GenericCharacteristic implements Characteristic {
     }
 
     @Override
-    public CharacteristicUID getUID() {
-        return new CharacteristicUID(getService().getAccessory().getServer().getId(),
-                getService().getAccessory().getId(), getService().getId(), getId());
+    public Service getService() {
+        return service;
     }
 
     @Override
@@ -108,14 +109,8 @@ public class GenericCharacteristic implements Characteristic {
     public String getInstanceType() {
         if (type.length() == 2) {
             return String.format("%0" + (8 - type.length()) + "d%s", 0, type) + "-0000-1000-8000-0026BB765291";
-        } else {
-            return type;
         }
-    }
-
-    @Override
-    public Service getService() {
-        return service;
+        return type;
     }
 
     @Override
@@ -123,128 +118,123 @@ public class GenericCharacteristic implements Characteristic {
         return isHidden;
     }
 
-    public boolean isEventsEnabled() {
-        return hasEventsEnabled;
-    }
-
     @Override
     public void setEventsEnabled(boolean value) {
         this.hasEventsEnabled = value;
     }
 
-    public boolean isWritable() {
-        return isWritable;
+    public T getValue() {
+        return value;
     }
 
-    public void setWritable(boolean isWritable) {
-        this.isWritable = isWritable;
-    }
-
-    public boolean isReadable() {
-        return isReadable;
-    }
-
-    public void setReadable(boolean isReadable) {
-        this.isReadable = isReadable;
-    }
-
-    public void setHidden(boolean isHidden) {
-        this.isHidden = isHidden;
-    }
-
-    public boolean isHasEvents() {
-        return hasEvents;
-    }
-
-    public void setHasEvents(boolean hasEvents) {
-        this.hasEvents = hasEvents;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getFormat() {
-        return format;
-    }
-
-    protected JsonObject toJson(boolean aid, boolean iid, boolean type, boolean shortType, boolean perms,
-            boolean format, boolean ev, boolean description, boolean addValue) {
-
-        JsonObjectBuilder builder = Json.createObjectBuilder();
-
-        if (aid) {
-            builder.add("aid", service.getAccessory().getId());
+    public void setValue(T value) {
+        T oldValue = this.value;
+        this.value = value;
+        if (!Objects.equals(oldValue, value)) {
+            CharacteristicEvent event = new CharacteristicEvent(this, oldValue, value);
+            notifyValueChanged(oldValue, value);
+            notifyListeners(event);
         }
+    }
 
-        if (iid) {
-            builder.add("iid", this.instanceId);
+    public void addListener(CharacteristicChangeListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeListener(CharacteristicChangeListener listener) {
+        listeners.remove(listener);
+    }
+
+    protected void notifyValueChanged(T oldValue, T newValue) {
+        for (CharacteristicChangeListener listener : listeners) {
+            listener.onCharacteristicEvent(new CharacteristicEvent(this, oldValue, newValue));
         }
+    }
 
-        if (type) {
-            if (shortType) {
-                builder.add("type",
-                        getInstanceType().replaceAll("^0*([0-9a-fA-F]+)-0000-1000-8000-0026BB765291$", "$1"));
-            } else {
-                builder.add("type", getInstanceType());
-            }
-        }
-
-        if (perms) {
-            JsonArrayBuilder permissions = Json.createArrayBuilder();
-            if (isWritable()) {
-                permissions.add("pw");
-            }
-            if (isReadable()) {
-                permissions.add("pr");
-            }
-            if (isHasEvents()) {
-                permissions.add("ev");
-            }
-
-            builder.add("perms", permissions.build());
-        }
-
-        if (format) {
-            builder.add("format", this.getFormat());
-        }
-
-        if (ev) {
-            builder.add("ev", this.isEventsEnabled());
-        }
-
-        if (description) {
-            builder.add("description", this.getDescription());
-        }
-
-        JsonObject jsonObject = builder.build();
-
-        if (addValue) {
-            return enrich(jsonObject, "value", value);
-        } else {
-            return jsonObject;
+    protected void notifyListeners(CharacteristicEvent event) {
+        for (CharacteristicChangeListener listener : listeners) {
+            listener.onCharacteristicEvent(event);
         }
     }
 
     @Override
     public JsonObject toJson() {
-        return toJson(true, true, true, false, true, true, true, true, true);
+        JsonObjectBuilder builder = Json.createObjectBuilder();
+        builder.add("iid", instanceId);
+        builder.add("aid", service.getAccessory().getId());
+        builder.add("type", getInstanceType());
+        builder.add("perms", getPermissions());
+        builder.add("format", format);
+        builder.add("description", description);
+        builder.add("ev", hasEvents);
+        if (value != null) {
+            addValue(builder, "value", value);
+        }
+        return builder.build();
     }
 
     @Override
     public JsonObject toReducedJson() {
-        return toJson(false, true, true, true, true, true, true, true, true);
-    }
-
-    @Override
-    public JsonObject toEventJson() {
-        return toJson(true, true, false, false, false, false, false, false, true);
+        JsonObjectBuilder builder = Json.createObjectBuilder();
+        builder.add("iid", instanceId);
+        builder.add("type", getInstanceType());
+        builder.add("perms", getPermissions());
+        builder.add("format", format);
+        builder.add("description", description);
+        builder.add("ev", hasEvents);
+        if (value != null) {
+            addValue(builder, "value", value);
+        }
+        return builder.build();
     }
 
     @Override
     public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType,
             boolean includeEvent) {
-        return toJson(true, true, includeType, includeType, includePermissions, includeMeta, includeEvent, false, true);
+        JsonObjectBuilder builder = Json.createObjectBuilder();
+        if (includeMeta) {
+            builder.add("iid", instanceId);
+            builder.add("aid", service.getAccessory().getId());
+            builder.add("type", getInstanceType());
+        }
+        if (includePermissions) {
+            builder.add("perms", getPermissions());
+        }
+        if (includeType) {
+            builder.add("format", format);
+        }
+        if (includeEvent) {
+            builder.add("ev", hasEvents);
+        }
+        JsonObject baseJson = builder.build();
+        if (value != null) {
+            return enrich(baseJson, "value", value);
+        }
+        return baseJson;
+    }
+
+    public JsonObject toEventJson() {
+        JsonObjectBuilder builder = Json.createObjectBuilder();
+        builder.add("iid", instanceId);
+        builder.add("aid", service.getAccessory().getId());
+        if (value != null) {
+            addValue(builder, "value", value);
+        }
+        return builder.build();
+    }
+
+    private JsonArray getPermissions() {
+        JsonArrayBuilder builder = Json.createArrayBuilder();
+        if (isWritable) {
+            builder.add("pw");
+        }
+        if (isReadable) {
+            builder.add("pr");
+        }
+        if (hasEvents) {
+            builder.add("ev");
+        }
+        return builder.build();
     }
 
     protected JsonObject enrich(JsonObject source, String key, Object value) {
@@ -280,48 +270,26 @@ public class GenericCharacteristic implements Characteristic {
         }
     }
 
-    public static String getAcceptedItemType() {
-        return CoreItemFactory.STRING;
-    }
-
-    public static ChannelTypeUID getChannelTypeUID() {
-        return new ChannelTypeUID(HomekitBindingConstants.BINDING_ID, "generic");
-    }
-
-    public void setValue(Object newValue) {
-        if (!Objects.equals(this.value, newValue)) {
-            Object oldValue = this.value;
-            this.value = newValue;
-            logger.debug("Characteristic '{}' (Type: {}) value changed from '{}' to '{}' in Service '{}'", 
-                this.getDescription(), this.getInstanceType(),
-                oldValue, newValue, this.service.getName());
-            notifyValueChanged(oldValue, newValue);
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
         }
-    }
-
-    public void addListener(CharacteristicChangeListener listener) {
-        listeners.add(listener);
-    }
-
-    public void removeListener(CharacteristicChangeListener listener) {
-        listeners.remove(listener);
-    }
-
-    protected void notifyValueChanged(Object oldValue, Object newValue) {
-        logger.debug("Notifying listeners of Characteristic '{}' (Type: {}) value change from '{}' to '{}' in Service '{}'", 
-            this.getDescription(), this.getInstanceType(),
-            oldValue, newValue, this.service.getName());
-        CharacteristicEvent event = new CharacteristicEvent(this, oldValue, newValue);
-        notifyListeners(event);
-    }
-
-    private void notifyListeners(CharacteristicEvent event) {
-        for (CharacteristicChangeListener listener : listeners) {
-            try {
-                listener.onCharacteristicEvent(event);
-            } catch (Exception e) {
-                logger.error("Error notifying listener of characteristic event", e);
-            }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
         }
+        GenericCharacteristic that = (GenericCharacteristic) o;
+        return instanceId == that.instanceId && Objects.equals(service, that.service);
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(service, instanceId);
+    }
+
+    // Abstract methods for type conversion
+    protected abstract T convert(JsonValue jsonValue);
+    protected abstract T convert(State state);
+    protected abstract State convert(T value);
+    protected abstract T getDefault();
 }
