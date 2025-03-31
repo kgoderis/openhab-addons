@@ -36,7 +36,7 @@ import org.openhab.io.homekit.internal.accessory.GenericAccessory;
 import org.openhab.io.homekit.internal.accessory.AbstractManagedAccessory;
 import org.openhab.io.homekit.internal.characteristic.GenericCharacteristic;
 import org.openhab.io.homekit.library.accessory.ThingAccessory;
-import org.openhab.io.homekit.HomekitCommunicationManager;
+import org.openhab.io.homekit.internal.service.GenericService;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -62,7 +62,6 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     private final EventPublisher eventPublisher;
     private final AccessoryRegistryImpl accessoryRegistry;
     private final AccessoryServerRegistry accessoryServerRegistry;
-    private final HomekitCommunicationManager communicationManager;
     private final Map<String, HomekitFactory> homekitFactories = new ConcurrentHashMap<>();
     private final Map<String, GenericCharacteristic> characteristicMap = new ConcurrentHashMap<>();
     private final Map<String, GenericAccessory> accessoryMap = new ConcurrentHashMap<>();
@@ -72,13 +71,11 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
             @Reference ItemRegistry itemRegistry,
             @Reference EventPublisher eventPublisher,
             @Reference AccessoryRegistryImpl accessoryRegistry,
-            @Reference AccessoryServerRegistry accessoryServerRegistry,
-            @Reference HomekitCommunicationManager communicationManager) {
+            @Reference AccessoryServerRegistry accessoryServerRegistry) {
         this.itemRegistry = itemRegistry;
         this.eventPublisher = eventPublisher;
         this.accessoryRegistry = accessoryRegistry;
         this.accessoryServerRegistry = accessoryServerRegistry;
-        this.communicationManager = communicationManager;
         
         itemRegistry.addRegistryChangeListener(this);
         
@@ -205,9 +202,9 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                         
                         // Set up characteristics
                         for (org.openhab.io.homekit.api.Service service : accessory.getServices()) {
-                            if (service instanceof ManagedService) {
-                                ManagedService managedService = (ManagedService) service;
-                                for (Characteristic characteristic : managedService.getCharacteristics()) {
+                            if (service instanceof GenericService) {
+                                GenericService genericService = (GenericService) service;
+                                for (Characteristic characteristic : genericService.getCharacteristics()) {
                                     if (characteristic instanceof GenericCharacteristic) {
                                         GenericCharacteristic genericCharacteristic = (GenericCharacteristic) characteristic;
                                         characteristicMap.put(taggedItem.getName(), genericCharacteristic);
@@ -215,7 +212,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                                             @Override
                                             public void onCharacteristicEvent(CharacteristicEvent event) {
                                                 // Convert HomeKit value to openHAB state and publish
-                                                State state = communicationManager.toState(characteristic, event.getNewValue());
+                                                ManagedCharacteristic<?> managedCharacteristic = (ManagedCharacteristic<?>) characteristic;
+                                                State state = managedCharacteristic.getValue();
                                                 if (state != null) {
                                                     eventPublisher.post(ItemEventFactory.createStateEvent(taggedItem.getName(), state));
                                                 }
@@ -261,11 +259,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                     .findFirst();
             
             if (factory.isPresent()) {
-                Object value = communicationManager.toCharacteristicValue(characteristic, state);
-                if (value != null) {
-                    characteristic.setValue(value);
-                    logger.debug("Updated characteristic {} with value {}", characteristic.getInstanceType(), value);
-                }
+                characteristic.setValue(state);
+                logger.debug("Updated characteristic {} with value {}", characteristic.getInstanceType(), state);
             }
         } catch (Exception e) {
             logger.warn("Error updating characteristic value", e);

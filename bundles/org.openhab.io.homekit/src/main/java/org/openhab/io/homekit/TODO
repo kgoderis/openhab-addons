@@ -1,0 +1,5 @@
+TODO:
+ - Remove HomekitCommunicationManager
+ - Use Characterstic Listeners in the code base
+ - Move the state from ManagedCharacteristic to the Characteristic class
+ - Move the conversion from ManagedCharacteristic to Characteristic class
