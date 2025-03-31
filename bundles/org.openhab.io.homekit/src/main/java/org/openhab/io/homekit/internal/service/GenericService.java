@@ -20,10 +20,10 @@ import org.openhab.io.homekit.api.Accessory;
 import org.openhab.io.homekit.api.Characteristic;
 import org.openhab.io.homekit.api.Service;
 import org.openhab.io.homekit.internal.characteristic.GenericCharacteristic;
-import org.openhab.io.homekit.internal.events.ServiceEvent;
 import org.openhab.io.homekit.internal.events.CharacteristicEvent;
-import org.openhab.io.homekit.internal.listeners.ServiceChangeListener;
+import org.openhab.io.homekit.internal.events.ServiceEvent;
 import org.openhab.io.homekit.internal.listeners.CharacteristicChangeListener;
+import org.openhab.io.homekit.internal.listeners.ServiceChangeListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -237,10 +237,12 @@ public class GenericService implements Service {
         return new HashSet<Service>();
     }
 
+    @Override
     public void addListener(ServiceChangeListener listener) {
         listeners.add(listener);
     }
 
+    @Override
     public void removeListener(ServiceChangeListener listener) {
         listeners.remove(listener);
     }

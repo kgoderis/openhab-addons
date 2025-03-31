@@ -130,10 +130,12 @@ public class GenericAccessory implements Accessory {
         }
     }
 
+    @Override
     public void addListener(AccessoryChangeListener listener) {
         listeners.add(listener);
     }
 
+    @Override
     public void removeListener(AccessoryChangeListener listener) {
         listeners.remove(listener);
     }

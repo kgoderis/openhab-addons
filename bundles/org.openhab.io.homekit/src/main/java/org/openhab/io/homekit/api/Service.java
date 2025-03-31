@@ -7,6 +7,7 @@ import javax.json.JsonObject;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.core.common.registry.Identifiable;
+import org.openhab.io.homekit.internal.listeners.ServiceChangeListener;
 import org.openhab.io.homekit.internal.service.ServiceUID;
 
 /**
@@ -18,8 +19,8 @@ public interface Service extends Identifiable<ServiceUID> {
 
     /**
      * Service Instance Ids are assigned from the same number pool that is unique within each Accessory.
-     * For example, if the first Service has an Instance Id of “1”, then no other Service
-     * can have an Instance Id of “1” within the parent Accessory. The Required Accessory
+     * For example, if the first Service has an Instance Id of "1", then no other Service
+     * can have an Instance Id of "1" within the parent Accessory. The Required Accessory
      * Information Service must have a service Instance Id of 1. After a firmware update, Services types
      * that remain unchanged must retain their previous Instance Ids, newly added Service must not reuse Instance
      * IDs from Services that were removed in the firmware update.
@@ -98,6 +99,20 @@ public interface Service extends Identifiable<ServiceUID> {
     boolean isPrimary();
 
     void setPrimary(boolean isPrimary);
+
+    /**
+     * Adds a listener to be notified of service changes.
+     *
+     * @param listener the listener to add
+     */
+    void addListener(ServiceChangeListener listener);
+
+    /**
+     * Removes a listener from being notified of service changes.
+     *
+     * @param listener the listener to remove
+     */
+    void removeListener(ServiceChangeListener listener);
 
     /**
      * Creates the JSON representation of the Service, in accordance with the Homekit Accessory

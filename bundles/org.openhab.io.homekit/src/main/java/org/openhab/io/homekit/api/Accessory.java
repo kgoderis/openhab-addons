@@ -8,6 +8,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.registry.Identifiable;
 import org.openhab.io.homekit.internal.accessory.AccessoryUID;
+import org.openhab.io.homekit.internal.listeners.AccessoryChangeListener;
 
 /**
  * Base interface for all \. You can implement this interface directly, but most
@@ -21,8 +22,8 @@ public interface Accessory extends Identifiable<AccessoryUID> {
 
     /**
      * Accessory Instance IDs are assigned from the same number pool that is global across entire
-     * AccessoryServer. For example, if the first Accessory object has an Instance ID of “1”, then no
-     * other Accessory object can have an Instance ID of “1” within the AccessoryServer.
+     * AccessoryServer. For example, if the first Accessory object has an Instance ID of "1", then no
+     * other Accessory object can have an Instance ID of "1" within the AccessoryServer.
      *
      * @return the Accessory Instance ID.
      */
@@ -94,6 +95,20 @@ public interface Accessory extends Identifiable<AccessoryUID> {
      */
     @Nullable
     Service getPrimaryService();
+
+    /**
+     * Adds a listener to be notified of accessory changes.
+     *
+     * @param listener the listener to add
+     */
+    void addListener(AccessoryChangeListener listener);
+
+    /**
+     * Removes a listener from being notified of accessory changes.
+     *
+     * @param listener the listener to remove
+     */
+    void removeListener(AccessoryChangeListener listener);
 
     /**
      * Creates the JSON representation of the Accessory, in accordance with the Homekit Accessory

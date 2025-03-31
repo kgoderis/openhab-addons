@@ -26,20 +26,24 @@ public abstract class GenericCharacteristic<T> implements Characteristic {
 
     private static final Logger logger = LoggerFactory.getLogger(GenericCharacteristic.class);
 
+    // Instance fields - final
     private final Service service;
     private final long instanceId;
     private final String format;
+    private final String description;
+    private final Collection<CharacteristicChangeListener> listeners = new CopyOnWriteArraySet<>();
+
+    // Instance fields - mutable
     private boolean isWritable = false;
     private boolean isReadable = false;
     private boolean isHidden = false;
     private boolean hasEvents = false;
     private boolean hasEventsEnabled;
-    private final String description;
     private String type;
     private T oldValue;
     private T value;
-    private final Collection<CharacteristicChangeListener> listeners = new CopyOnWriteArraySet<>();
 
+    // Constructors
     public GenericCharacteristic(Service service, JsonValue value) {
         this.service = service;
         this.instanceId = ((JsonObject) value).getInt("iid");
@@ -90,6 +94,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic {
         this.description = description;
     }
 
+    // Interface implementation methods
     @Override
     public Service getService() {
         return service;
@@ -123,71 +128,6 @@ public abstract class GenericCharacteristic<T> implements Characteristic {
         this.hasEventsEnabled = value;
     }
 
-    public T getValue() {
-        return value;
-    }
-
-    public void setValue(T value) {
-        T oldValue = this.value;
-        this.value = value;
-        if (!Objects.equals(oldValue, value)) {
-            CharacteristicEvent event = new CharacteristicEvent(this, oldValue, value);
-            notifyValueChanged(oldValue, value);
-            notifyListeners(event);
-        }
-    }
-
-    public void addListener(CharacteristicChangeListener listener) {
-        listeners.add(listener);
-    }
-
-    public void removeListener(CharacteristicChangeListener listener) {
-        listeners.remove(listener);
-    }
-
-    protected void notifyValueChanged(T oldValue, T newValue) {
-        for (CharacteristicChangeListener listener : listeners) {
-            listener.onCharacteristicEvent(new CharacteristicEvent(this, oldValue, newValue));
-        }
-    }
-
-    protected void notifyListeners(CharacteristicEvent event) {
-        for (CharacteristicChangeListener listener : listeners) {
-            listener.onCharacteristicEvent(event);
-        }
-    }
-
-    @Override
-    public JsonObject toJson() {
-        JsonObjectBuilder builder = Json.createObjectBuilder();
-        builder.add("iid", instanceId);
-        builder.add("aid", service.getAccessory().getId());
-        builder.add("type", getInstanceType());
-        builder.add("perms", getPermissions());
-        builder.add("format", format);
-        builder.add("description", description);
-        builder.add("ev", hasEvents);
-        if (value != null) {
-            addValue(builder, "value", value);
-        }
-        return builder.build();
-    }
-
-    @Override
-    public JsonObject toReducedJson() {
-        JsonObjectBuilder builder = Json.createObjectBuilder();
-        builder.add("iid", instanceId);
-        builder.add("type", getInstanceType());
-        builder.add("perms", getPermissions());
-        builder.add("format", format);
-        builder.add("description", description);
-        builder.add("ev", hasEvents);
-        if (value != null) {
-            addValue(builder, "value", value);
-        }
-        return builder.build();
-    }
-
     @Override
     public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType,
             boolean includeEvent) {
@@ -213,28 +153,87 @@ public abstract class GenericCharacteristic<T> implements Characteristic {
         return baseJson;
     }
 
+    @Override
+    public JsonObject toJson() {
+        JsonObjectBuilder builder = Json.createObjectBuilder();
+        builder.add("iid", instanceId);
+        builder.add("aid", service.getAccessory().getId());
+        builder.add("type", getInstanceType());
+        builder.add("perms", getPermissions());
+        builder.add("format", format);
+        builder.add("description", description);
+        builder.add("ev", hasEvents);
+        JsonObject baseJson = builder.build();
+        if (value != null) {
+            return enrich(baseJson, "value", value);
+        }
+        return baseJson;
+    }
+
+    @Override
+    public JsonObject toReducedJson() {
+        JsonObjectBuilder builder = Json.createObjectBuilder();
+        builder.add("iid", instanceId);
+        builder.add("type", getInstanceType());
+        builder.add("perms", getPermissions());
+        builder.add("format", format);
+        builder.add("description", description);
+        builder.add("ev", hasEvents);
+        JsonObject baseJson = builder.build();
+        if (value != null) {
+            return enrich(baseJson, "value", value);
+        }
+        return baseJson;
+    }
+
+    @Override
     public JsonObject toEventJson() {
         JsonObjectBuilder builder = Json.createObjectBuilder();
         builder.add("iid", instanceId);
         builder.add("aid", service.getAccessory().getId());
+        JsonObject baseJson = builder.build();
         if (value != null) {
-            addValue(builder, "value", value);
+            return enrich(baseJson, "value", value);
         }
-        return builder.build();
+        return baseJson;
     }
 
-    private JsonArray getPermissions() {
-        JsonArrayBuilder builder = Json.createArrayBuilder();
-        if (isWritable) {
-            builder.add("pw");
+    // Public methods
+    public T getValue() {
+        return value;
+    }
+
+    public void setValue(T value) {
+        T oldValue = this.value;
+        this.value = value;
+        if (!Objects.equals(oldValue, value)) {
+            CharacteristicEvent event = new CharacteristicEvent(this, oldValue, value);
+            notifyValueChanged(oldValue, value);
+            notifyListeners(event);
         }
-        if (isReadable) {
-            builder.add("pr");
+    }
+
+    @Override
+    public void addListener(CharacteristicChangeListener listener) {
+        listeners.add(listener);
+    }
+
+    @Override
+    public void removeListener(CharacteristicChangeListener listener) {
+        listeners.remove(listener);
+    }
+
+    // Protected methods
+    protected void notifyValueChanged(T oldValue, T newValue) {
+        for (CharacteristicChangeListener listener : listeners) {
+            listener.onCharacteristicEvent(new CharacteristicEvent(this, oldValue, newValue));
         }
-        if (hasEvents) {
-            builder.add("ev");
+    }
+
+    protected void notifyListeners(CharacteristicEvent event) {
+        for (CharacteristicChangeListener listener : listeners) {
+            listener.onCharacteristicEvent(event);
         }
-        return builder.build();
     }
 
     protected JsonObject enrich(JsonObject source, String key, Object value) {
@@ -270,6 +269,22 @@ public abstract class GenericCharacteristic<T> implements Characteristic {
         }
     }
 
+    // Private methods
+    private JsonArray getPermissions() {
+        JsonArrayBuilder builder = Json.createArrayBuilder();
+        if (isWritable) {
+            builder.add("pw");
+        }
+        if (isReadable) {
+            builder.add("pr");
+        }
+        if (hasEvents) {
+            builder.add("ev");
+        }
+        return builder.build();
+    }
+
+    // Object methods
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -287,7 +302,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic {
         return Objects.hash(service, instanceId);
     }
 
-    // Abstract methods for type conversion
+    // Abstract methods
     protected abstract T convert(JsonValue jsonValue);
     protected abstract T convert(State state);
     protected abstract State convert(T value);
