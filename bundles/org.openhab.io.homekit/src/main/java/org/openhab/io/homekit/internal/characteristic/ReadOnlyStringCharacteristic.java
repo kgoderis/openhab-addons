@@ -10,23 +10,18 @@ import javax.json.JsonValue;
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.types.State;
-import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.ManagedService;
+import org.openhab.io.homekit.api.Service;
 
 /**
  * @author Karel Goderis - Initial Contribution
  *
  */
-public abstract class ReadOnlyStringCharacteristic extends AbstractManagedCharacteristic<String> {
+public abstract class ReadOnlyStringCharacteristic extends GenericCharacteristic<String> {
 
     private static final int MAX_LEN = 255;
 
-    private String value;
-
-    public ReadOnlyStringCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId,
-            String description, String value) {
-        super(manager, service, instanceId, "string", false, true, false, description);
-        this.value = value;
+    public ReadOnlyStringCharacteristic(Service service, long instanceId, String description) {
+        super(service, instanceId, "string", false, true, false, description);
     }
 
     @Override
@@ -34,22 +29,11 @@ public abstract class ReadOnlyStringCharacteristic extends AbstractManagedCharac
         return false;
     }
 
-    public void setReadOnlyValue(String value) {
-        this.value = value;
-    }
-
     @Override
-    public String getValue() {
-        return value != null ? value : "Unavailable";
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected String getDefault() {
+    public String getDefault() {
         return "Unknown";
     }
 
-    /** {@inheritDoc} */
     @Override
     public String convert(JsonValue jsonValue) {
         return ((JsonString) jsonValue).getString();
@@ -70,23 +54,21 @@ public abstract class ReadOnlyStringCharacteristic extends AbstractManagedCharac
     @Override
     public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType,
             boolean includeEvent) {
-        JsonObject base = toJson(true, true, includeType, includeType, includePermissions, includeMeta, includeEvent,
-                false, true);
+        JsonObject base = super.toJson(includeMeta, includePermissions, includeType, includeEvent);
         return enrich(base, "maxLen", MAX_LEN);
     }
 
     @Override
-    protected String convert(State state) {
+    public String convert(State state) {
         StringType convertedState = state.as(StringType.class);
         if (convertedState == null) {
             return null;
         }
-
         return convertedState.toFullString();
     }
 
     @Override
-    protected State convert(String value) {
+    public State convert(String value) {
         return StringType.valueOf(value);
     }
 

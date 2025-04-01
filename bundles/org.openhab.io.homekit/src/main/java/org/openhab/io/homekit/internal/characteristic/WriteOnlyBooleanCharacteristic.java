@@ -10,18 +10,16 @@ import javax.json.JsonValue.ValueType;
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.types.State;
-import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.ManagedService;
+import org.openhab.io.homekit.api.Service;
 
 /**
  * @author Karel Goderis - Initial Contribution
  *
  */
-public abstract class WriteOnlyBooleanCharacteristic extends AbstractManagedCharacteristic<Boolean> {
+public abstract class WriteOnlyBooleanCharacteristic extends GenericCharacteristic<Boolean> {
 
-    public WriteOnlyBooleanCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId,
-            String description) {
-        super(manager, service, instanceId, "bool", true, false, false, description);
+    public WriteOnlyBooleanCharacteristic(Service service, long instanceId, String description) {
+        super(service, instanceId, "bool", true, false, false, description);
     }
 
     @Override
@@ -31,14 +29,14 @@ public abstract class WriteOnlyBooleanCharacteristic extends AbstractManagedChar
 
     /** {@inheritDoc} */
     @Override
-    protected Boolean getDefault() {
+    public Boolean getDefault() {
         return false;
     }
 
     /** {@inheritDoc} */
     @Override
-    public Boolean getValue() throws Exception {
-        throw new Exception("Can not read a write-only characteristic");
+    public Boolean getValue() {
+        return null;
     }
 
     /** {@inheritDoc} */
@@ -51,7 +49,7 @@ public abstract class WriteOnlyBooleanCharacteristic extends AbstractManagedChar
     }
 
     @Override
-    protected Boolean convert(State state) {
+    public Boolean convert(State state) {
         OnOffType convertedState = state.as(OnOffType.class);
         if (convertedState == null) {
             return null;
@@ -61,7 +59,7 @@ public abstract class WriteOnlyBooleanCharacteristic extends AbstractManagedChar
     }
 
     @Override
-    protected State convert(Boolean value) {
+    public State convert(Boolean value) {
         return value ? OnOffType.ON : OnOffType.OFF;
     }
 

@@ -7,21 +7,20 @@ import javax.json.JsonValue;
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
-import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.ManagedService;
+import org.openhab.io.homekit.api.Service;
 
 /**
  * * Characteristic that exposes an Enum value. Enums are represented as an Integer value in the
  * Homekit protocol, and classes extending this one must handle the static mapping to an Integer
  * value.
  **/
-public abstract class EnumCharacteristic extends AbstractManagedCharacteristic<Integer> {
+public abstract class EnumCharacteristic extends GenericCharacteristic<Integer> {
 
     private final int maxValue;
 
-    public EnumCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId,
-            boolean isWritable, boolean isReadable, boolean hasEvents, String description, int maxValue) {
-        super(manager, service, instanceId, "int", isWritable, isReadable, hasEvents, description);
+    public EnumCharacteristic(Service service, long instanceId, boolean isWritable, boolean isReadable,
+            boolean hasEvents, String description, int maxValue) {
+        super(service, instanceId, "int", isWritable, isReadable, hasEvents, description);
         this.maxValue = maxValue;
     }
 
@@ -49,15 +48,14 @@ public abstract class EnumCharacteristic extends AbstractManagedCharacteristic<I
     @Override
     public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType,
             boolean includeEvent) {
-        JsonObject base = toJson(true, true, includeType, includeType, includePermissions, includeMeta, includeEvent,
-                false, true);
+        JsonObject base = super.toJson(includeMeta, includePermissions, includeType, includeEvent);
         base = enrich(base, "minValue", 0);
         base = enrich(base, "maxValue", maxValue);
         return enrich(base, "minStep", 1);
     }
 
     @Override
-    protected Integer convert(JsonValue value) {
+    public Integer convert(JsonValue value) {
         if (value instanceof JsonNumber) {
             return ((JsonNumber) value).intValue();
         } else if (value == JsonValue.TRUE) {
@@ -70,22 +68,21 @@ public abstract class EnumCharacteristic extends AbstractManagedCharacteristic<I
     }
 
     @Override
-    protected Integer convert(State state) {
+    public Integer convert(State state) {
         DecimalType convertedState = state.as(DecimalType.class);
         if (convertedState == null) {
             return null;
         }
-
         return convertedState.intValue();
     }
 
     @Override
-    protected State convert(Integer value) {
+    public State convert(Integer value) {
         return new DecimalType(value);
     }
 
     @Override
-    protected Integer getDefault() {
+    public Integer getDefault() {
         return 0;
     }
 
