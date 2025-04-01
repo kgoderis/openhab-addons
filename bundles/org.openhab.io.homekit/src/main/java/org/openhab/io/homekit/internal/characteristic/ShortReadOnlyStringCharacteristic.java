@@ -24,6 +24,17 @@ public abstract class ShortReadOnlyStringCharacteristic extends GenericCharacter
         super(service, instanceId, "string", false, true, false, description);
     }
 
+    public void setReadOnlyValue(String value) {
+       this.value = value;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setValue(String value) throws Exception {
+        throw new Exception("Can not modify a readonly characteristic");
+    }
+
+
     @Override
     public boolean isHidden() {
         return false;

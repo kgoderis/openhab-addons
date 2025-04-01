@@ -1,15 +1,12 @@
 package org.openhab.io.homekit.library.characteristic;
 
-import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.ManagedAccessory;
-import org.openhab.io.homekit.api.ManagedService;
+import org.openhab.io.homekit.api.Service;
 import org.openhab.io.homekit.internal.characteristic.ReadOnlyStringCharacteristic;
 
 public class ManufacturerCharacteristic extends ReadOnlyStringCharacteristic {
 
-    public ManufacturerCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId) {
-        super(manager, service, instanceId, "Name of the Manufacturer",
-                ((ManagedAccessory) service.getAccessory()).getManufacturer());
+    protected ManufacturerCharacteristic(Service service, long instanceId) {
+        super(service, instanceId, "Manufacturer of the accessory");
     }
 
     public static String getType() {

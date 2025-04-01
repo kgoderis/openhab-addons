@@ -8,7 +8,7 @@ public class CurrentVerticalTiltAngleCharacteristic extends IntegerCharacteristi
 
     public CurrentVerticalTiltAngleCharacteristic(HomekitCommunicationManager manager, ManagedService service,
             long instanceId) {
-        super(manager, service, instanceId, false, true, true, "The current angle of vertical slats", -90, 90,
+        super(service, instanceId, false, true, true, "The current angle of vertical slats", -90, 90,
                 "arcdegrees");
     }
 

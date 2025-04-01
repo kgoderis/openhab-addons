@@ -5,7 +5,7 @@ import org.openhab.io.homekit.api.Service;
 
 public class ServiceEvent {
     private final Service service;
-    private final Characteristic characteristic;
+    private final Characteristic<?> characteristic;
     private final ServiceEventType type;
 
     public enum ServiceEventType {
@@ -14,7 +14,7 @@ public class ServiceEvent {
         CHARACTERISTIC_STATE_CHANGED
     }
 
-    public ServiceEvent(Service service, Characteristic characteristic, ServiceEventType type) {
+    public ServiceEvent(Service service, Characteristic<?> characteristic, ServiceEventType type) {
         this.service = service;
         this.characteristic = characteristic;
         this.type = type;
@@ -24,7 +24,7 @@ public class ServiceEvent {
         return service;
     }
 
-    public Characteristic getCharacteristic() {
+    public Characteristic<?> getCharacteristic() {
         return characteristic;
     }
 

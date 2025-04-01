@@ -1,13 +1,12 @@
 package org.openhab.io.homekit.library.characteristic;
 
-import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.ManagedService;
+import org.openhab.io.homekit.api.Service;
 import org.openhab.io.homekit.internal.characteristic.EnumCharacteristic;
 
 public class PositionStateCharacteristic extends EnumCharacteristic {
 
-    public PositionStateCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId) {
-        super(manager, service, instanceId, false, true, true, "State of the position of an accessory", 2);
+    protected PositionStateCharacteristic(Service service, long instanceId) {
+        super(service, instanceId, false, true, true, "Position state", 2);
     }
 
     public static String getType() {
@@ -18,4 +17,5 @@ public class PositionStateCharacteristic extends EnumCharacteristic {
     public String getInstanceType() {
         return getType();
     }
+
 }

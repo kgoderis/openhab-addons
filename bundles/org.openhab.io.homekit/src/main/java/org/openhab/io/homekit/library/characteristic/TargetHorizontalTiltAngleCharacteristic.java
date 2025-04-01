@@ -1,15 +1,12 @@
 package org.openhab.io.homekit.library.characteristic;
 
-import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.ManagedService;
+import org.openhab.io.homekit.api.Service;
 import org.openhab.io.homekit.internal.characteristic.IntegerCharacteristic;
 
 public class TargetHorizontalTiltAngleCharacteristic extends IntegerCharacteristic {
 
-    public TargetHorizontalTiltAngleCharacteristic(HomekitCommunicationManager manager, ManagedService service,
-            long instanceId) {
-        super(manager, service, instanceId, true, true, true, "The target angle of horizontal slats", -90, 90,
-                "arcdegrees");
+    protected TargetHorizontalTiltAngleCharacteristic(Service service, long instanceId) {
+        super(service, instanceId, true, true, true, "Target horizontal tilt angle", -90, 90, "arcdegrees");
     }
 
     public static String getType() {
@@ -20,4 +17,5 @@ public class TargetHorizontalTiltAngleCharacteristic extends IntegerCharacterist
     public String getInstanceType() {
         return getType();
     }
+
 }

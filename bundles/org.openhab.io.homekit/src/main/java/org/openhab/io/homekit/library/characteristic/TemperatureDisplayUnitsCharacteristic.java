@@ -1,15 +1,12 @@
 package org.openhab.io.homekit.library.characteristic;
 
-import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.ManagedService;
+import org.openhab.io.homekit.api.Service;
 import org.openhab.io.homekit.internal.characteristic.ByteCharacteristic;
 
 public class TemperatureDisplayUnitsCharacteristic extends ByteCharacteristic {
 
-    public TemperatureDisplayUnitsCharacteristic(HomekitCommunicationManager manager, ManagedService service,
-            long instanceId) {
-        super(manager, service, instanceId, false, true, true, "Units of temperature used for presentation purposes",
-                (byte) 0, (byte) 1);
+    protected TemperatureDisplayUnitsCharacteristic(Service service, long instanceId) {
+        super(service, instanceId, true, true, true, "Temperature display units", (byte) 0, (byte) 1);
     }
 
     public static String getType() {
@@ -20,4 +17,5 @@ public class TemperatureDisplayUnitsCharacteristic extends ByteCharacteristic {
     public String getInstanceType() {
         return getType();
     }
+
 }

@@ -10,15 +10,14 @@ import javax.json.JsonValue.ValueType;
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.types.State;
-import org.openhab.io.homekit.api.ManagedService;
-
+import org.openhab.io.homekit.api.Service;
 /**
  * @author Karel Goderis - Initial Contribution
  *
  */
 public abstract class BooleanCharacteristic extends GenericCharacteristic<Boolean> {
 
-    public BooleanCharacteristic(ManagedService service, long instanceId,
+    public BooleanCharacteristic(Service service, long instanceId,
             boolean isWritable, boolean isReadable, boolean hasEvents, String description) {
         super( service, instanceId, "bool", isWritable, isReadable, hasEvents, description);
     }

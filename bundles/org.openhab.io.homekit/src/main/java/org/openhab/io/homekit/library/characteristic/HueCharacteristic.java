@@ -1,16 +1,16 @@
 package org.openhab.io.homekit.library.characteristic;
 
-import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.HSBType;
+import org.openhab.core.library.types.PercentType;
+import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
-import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.ManagedService;
+import org.openhab.io.homekit.api.Service;
 import org.openhab.io.homekit.internal.characteristic.FloatCharacteristic;
 
 public class HueCharacteristic extends FloatCharacteristic {
 
-    public HueCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId) {
-        super(manager, service, instanceId, true, true, true, "Adjust hue of a light", 0, 360, 1, "arcdegrees");
+    protected HueCharacteristic(Service service, long instanceId) {
+        super(service, instanceId, true, true, true, "Adjust hue of the light", 0, 360, 1, "arcdegrees");
     }
 
     public static String getType() {
@@ -23,7 +23,7 @@ public class HueCharacteristic extends FloatCharacteristic {
     }
 
     @Override
-    protected Double toValue(State state) {
+    public Double toValue(State state) {
         if (state instanceof HSBType) {
             DecimalType hue = ((HSBType) state).getHue();
             return hue.doubleValue();
@@ -37,15 +37,17 @@ public class HueCharacteristic extends FloatCharacteristic {
     }
 
     @Override
-    protected State toState(Double value) {
+    public State toState(Double value) {
+        return new DecimalType(value);
+        // return new HSBType(value, 100, 100);
 
-        State state = manager.getState(getChannelUID());
+        // State state = manager.getState(getChannelUID());
 
-        if (state instanceof HSBType) {
-            return new HSBType(new DecimalType(value), ((HSBType) state).getSaturation(),
-                    ((HSBType) state).getBrightness());
-        } else {
-            return new DecimalType(value);
-        }
+        // if (state instanceof HSBType) {
+        //     return new HSBType(new DecimalType(value), ((HSBType) state).getSaturation(),
+        //             ((HSBType) state).getBrightness());
+        // } else {
+        //     return new DecimalType(value);
+        // }
     }
 }

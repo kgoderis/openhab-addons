@@ -1,15 +1,12 @@
 package org.openhab.io.homekit.library.characteristic;
 
-import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.ManagedService;
+import org.openhab.io.homekit.api.Service;
 import org.openhab.io.homekit.internal.characteristic.FloatCharacteristic;
 
 public class TargetTemperatureCharacteristic extends FloatCharacteristic {
 
-    public TargetTemperatureCharacteristic(HomekitCommunicationManager manager, ManagedService service,
-            long instanceId) {
-        super(manager, service, instanceId, true, true, true, "Target temperature of the environment in Celsius", 10,
-                38, 0.1, "celcius");
+    protected TargetTemperatureCharacteristic(Service service, long instanceId) {
+        super(service, instanceId, true, true, true, "Target temperature in Celsius", 10, 38, 0.1, "celcius");
     }
 
     public static String getType() {

@@ -1,15 +1,12 @@
 package org.openhab.io.homekit.library.characteristic;
 
-import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.ManagedAccessory;
-import org.openhab.io.homekit.api.ManagedService;
+import org.openhab.io.homekit.api.Service;
 import org.openhab.io.homekit.internal.characteristic.ReadOnlyStringCharacteristic;
 
 public class SerialNumberCharacteristic extends ReadOnlyStringCharacteristic {
 
-    public SerialNumberCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId) {
-        super(manager, service, instanceId, "The serial number of the Accessory",
-                ((ManagedAccessory) service.getAccessory()).getUID().toString());
+    protected SerialNumberCharacteristic(Service service, long instanceId) {
+        super(service, instanceId, "Serial number of the accessory");
     }
 
     public static String getType() {

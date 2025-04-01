@@ -1,17 +1,17 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.HSBType;
 import org.openhab.core.library.types.PercentType;
 import org.openhab.core.types.State;
-import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.ManagedService;
+import org.openhab.io.homekit.api.Service;
 import org.openhab.io.homekit.internal.characteristic.IntegerCharacteristic;
 
 public class BrightnessCharacteristic extends IntegerCharacteristic {
 
-    public BrightnessCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId) {
-        super(manager, service, instanceId, true, true, true, "Adjust brightness of a light", 0, 100, "percentage");
+    protected BrightnessCharacteristic(Service service, long instanceId) {
+        super(service, instanceId, true, true, true, "Adjust brightness of a light", 0, 100, "percentage");
     }
 
     public static String getType() {
@@ -24,12 +24,11 @@ public class BrightnessCharacteristic extends IntegerCharacteristic {
     }
 
     @Override
-    protected Integer toValue(State state) {
+    public Integer toValue(State state) {
         if (state instanceof HSBType) {
             PercentType brightness = ((HSBType) state).getBrightness();
             return brightness.intValue();
         } else {
-
             DecimalType convertedState = state.as(DecimalType.class);
             if (convertedState == null) {
                 return null;
@@ -39,14 +38,15 @@ public class BrightnessCharacteristic extends IntegerCharacteristic {
     }
 
     @Override
-    protected State toState(Integer value) {
+    public State toState(Integer value) {
+        return new PercentType(value);
 
-        State state = manager.getState(getChannelUID());
+        // State state = manager.getState(getChannelUID());
 
-        if (state instanceof HSBType) {
-            return new HSBType(((HSBType) state).getHue(), ((HSBType) state).getSaturation(), new PercentType(value));
-        } else {
-            return new DecimalType(value);
-        }
+        // if (state instanceof HSBType) {
+        //     return new HSBType(((HSBType) state).getHue(), ((HSBType) state).getSaturation(), new PercentType(value));
+        // } else {
+        //     return new DecimalType(value);
+        // }
     }
 }

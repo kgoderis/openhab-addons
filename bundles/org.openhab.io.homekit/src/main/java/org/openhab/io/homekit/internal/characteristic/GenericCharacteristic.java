@@ -14,6 +14,7 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.Characteristic;
 import org.openhab.io.homekit.api.Service;
@@ -39,7 +40,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     private boolean isHidden = false;
     private boolean hasEvents = false;
     private String type;
-    private T value;
+    protected T value;
 
     // Constructors
     public GenericCharacteristic(Service service, JsonValue value) {
@@ -103,6 +104,12 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     @Override
     public long getId() {
         return instanceId;
+    }
+
+    @Override
+    @NonNull public CharacteristicUID getUID() {
+        Service service = getService();
+        return new CharacteristicUID("homekit", service.getAccessory().getId(), service.getId(), getId());
     }
 
     @Override
@@ -231,7 +238,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     }
 
     @Override
-    public void setValue(T value) {
+    public void setValue(T value) throws Exception {
         if (isWritable) {
             T oldValue = this.value;
             this.value = value;

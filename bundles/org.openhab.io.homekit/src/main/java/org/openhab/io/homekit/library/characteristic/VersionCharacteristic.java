@@ -1,13 +1,13 @@
 package org.openhab.io.homekit.library.characteristic;
 
-import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.ManagedService;
+import org.openhab.core.OpenHAB;
+import org.openhab.io.homekit.api.Service;
 import org.openhab.io.homekit.internal.characteristic.ShortReadOnlyStringCharacteristic;
 
 public class VersionCharacteristic extends ShortReadOnlyStringCharacteristic {
 
-    public VersionCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId) {
-        super(manager, service, instanceId, "Version", "");
+    protected VersionCharacteristic(Service service, long instanceId) {
+        super(service, instanceId, "Version");
     }
 
     public static String getType() {
@@ -17,6 +17,11 @@ public class VersionCharacteristic extends ShortReadOnlyStringCharacteristic {
     @Override
     public String getInstanceType() {
         return getType();
+    }
+
+    @Override
+    public String getValue() {
+        return OpenHAB.getVersion();
     }
 
     public void setVersion(String version) {

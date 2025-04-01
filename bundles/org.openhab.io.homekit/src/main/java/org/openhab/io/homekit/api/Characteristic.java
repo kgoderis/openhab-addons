@@ -7,7 +7,7 @@ import org.openhab.core.common.registry.Identifiable;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.internal.characteristic.CharacteristicUID;
 import org.openhab.io.homekit.internal.listeners.CharacteristicChangeListener;
-
+import org.eclipse.jdt.annotation.NonNull;
 /**
  * Interface for the Characteristics provided by a Service.
  *
@@ -17,7 +17,7 @@ import org.openhab.io.homekit.internal.listeners.CharacteristicChangeListener;
  *
  * @author Andy Lintner
  */
-public interface Characteristic<T> extends Identifiable<CharacteristicUID> {
+public interface Characteristic<T> extends Identifiable<@NonNull CharacteristicUID> {
 
     /**
      * Characteristic Instance IDs are assigned from the same number pool that is unique within each
@@ -137,7 +137,7 @@ public interface Characteristic<T> extends Identifiable<CharacteristicUID> {
      *
      * @param value the new value to set
      */
-    void setValue(T value);
+    void setValue(T value) throws Exception;;
 
     /**
      * Sets the value of the characteristic from a JSON value.

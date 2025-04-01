@@ -3,8 +3,7 @@
  */
 package org.openhab.io.homekit.library.characteristic;
 
-import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.ManagedService;
+import org.openhab.io.homekit.api.Service;
 import org.openhab.io.homekit.internal.characteristic.EnumCharacteristic;
 
 /**
@@ -13,9 +12,8 @@ import org.openhab.io.homekit.internal.characteristic.EnumCharacteristic;
  */
 public class StatusLowBatteryCharacteristic extends EnumCharacteristic {
 
-    public StatusLowBatteryCharacteristic(HomekitCommunicationManager manager, ManagedService service,
-            long instanceId) {
-        super(manager, service, instanceId, false, true, true, "State of an accessoryʼs battery", 1);
+    protected StatusLowBatteryCharacteristic(Service service, long instanceId) {
+        super(service, instanceId, false, true, true, "Status low battery", 1);
     }
 
     public static String getType() {
@@ -26,4 +24,5 @@ public class StatusLowBatteryCharacteristic extends EnumCharacteristic {
     public String getInstanceType() {
         return getType();
     }
+
 }

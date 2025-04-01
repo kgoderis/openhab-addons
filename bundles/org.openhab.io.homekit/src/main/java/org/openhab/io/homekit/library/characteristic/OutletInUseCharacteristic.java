@@ -3,8 +3,7 @@
  */
 package org.openhab.io.homekit.library.characteristic;
 
-import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.ManagedService;
+import org.openhab.io.homekit.api.Service;
 import org.openhab.io.homekit.internal.characteristic.BooleanCharacteristic;
 
 /**
@@ -13,8 +12,8 @@ import org.openhab.io.homekit.internal.characteristic.BooleanCharacteristic;
  */
 public class OutletInUseCharacteristic extends BooleanCharacteristic {
 
-    public OutletInUseCharacteristic(HomekitCommunicationManager manager, ManagedService service, long instanceId) {
-        super(manager, service, instanceId, false, true, true, "Plugged-in State");
+    protected OutletInUseCharacteristic(Service service, long instanceId) {
+        super(service, instanceId, false, true, true, "Outlet in use");
     }
 
     public static String getType() {
@@ -25,4 +24,5 @@ public class OutletInUseCharacteristic extends BooleanCharacteristic {
     public String getInstanceType() {
         return getType();
     }
+
 }
