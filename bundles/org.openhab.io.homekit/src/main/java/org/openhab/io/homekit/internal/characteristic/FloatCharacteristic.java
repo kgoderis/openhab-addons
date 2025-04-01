@@ -59,12 +59,12 @@ public abstract class FloatCharacteristic extends GenericCharacteristic<Double> 
     }
 
     @Override
-    public Double convert(JsonValue value) {
+    public Double toValue(JsonValue value) {
         return ((JsonNumber) value).doubleValue();
     }
 
     @Override
-    public Double convert(State state) {
+    public Double toValue(State state) {
         DecimalType convertedState = state.as(DecimalType.class);
         if (convertedState == null) {
             return null;
@@ -73,7 +73,7 @@ public abstract class FloatCharacteristic extends GenericCharacteristic<Double> 
     }
 
     @Override
-    public State convert(Double value) {
+    public State toState(Double value) {
         return new DecimalType(value);
     }
 

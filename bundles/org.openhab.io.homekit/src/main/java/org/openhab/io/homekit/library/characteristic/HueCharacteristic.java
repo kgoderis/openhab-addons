@@ -23,7 +23,7 @@ public class HueCharacteristic extends FloatCharacteristic {
     }
 
     @Override
-    protected Double convert(State state) {
+    protected Double toValue(State state) {
         if (state instanceof HSBType) {
             DecimalType hue = ((HSBType) state).getHue();
             return hue.doubleValue();
@@ -37,7 +37,7 @@ public class HueCharacteristic extends FloatCharacteristic {
     }
 
     @Override
-    protected State convert(Double value) {
+    protected State toState(Double value) {
 
         State state = manager.getState(getChannelUID());
 

@@ -52,12 +52,12 @@ public abstract class ByteCharacteristic extends GenericCharacteristic<Byte> {
     }
 
     @Override
-    public Byte convert(JsonValue value) {
+    public Byte toValue(JsonValue value) {
         return (byte) ((JsonNumber) value).intValue();
     }
 
     @Override
-    public Byte convert(State state) {
+    public Byte toValue(State state) {
         DecimalType convertedState = state.as(DecimalType.class);
         if (convertedState == null) {
             return null;
@@ -66,7 +66,7 @@ public abstract class ByteCharacteristic extends GenericCharacteristic<Byte> {
     }
 
     @Override
-    public State convert(Byte value) {
+    public State toState(Byte value) {
         return new DecimalType(value);
     }
 

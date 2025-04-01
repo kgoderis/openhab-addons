@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.events.EventPublisher;
 import org.openhab.core.items.Item;
 import org.openhab.core.items.ItemRegistry;
@@ -15,28 +14,17 @@ import org.openhab.core.items.StateChangeListener;
 import org.openhab.core.items.events.ItemEventFactory;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingTypeUID;
-import org.openhab.core.types.State;
-import org.openhab.io.homekit.v1.internal.HomekitTaggedItem;
-import org.openhab.io.homekit.v1.internal.HomekitAccessoryType;
-import org.openhab.io.homekit.v1.internal.HomekitCharacteristicType;
-import org.openhab.io.homekit.api.AccessoryServerRegistry;
-import org.openhab.io.homekit.api.LocalAccessoryServer;
-import org.openhab.io.homekit.api.HomekitFactory;
-import org.openhab.io.homekit.api.Characteristic;
-import org.openhab.io.homekit.api.Accessory;
-import org.openhab.io.homekit.api.ManagedAccessory;
-import org.openhab.io.homekit.api.ManagedService;
-import org.openhab.io.homekit.api.ManagedCharacteristic;
-import org.openhab.io.homekit.internal.accessory.AccessoryRegistryImpl;
-import org.openhab.io.homekit.internal.accessory.AccessoryUID;
-import org.openhab.io.homekit.internal.events.CharacteristicEvent;
-import org.openhab.io.homekit.internal.listeners.CharacteristicChangeListener;
 import org.openhab.core.thing.binding.builder.ThingBuilder;
+import org.openhab.core.types.State;
+import org.openhab.io.homekit.api.AccessoryServerRegistry;
+import org.openhab.io.homekit.api.Characteristic;
+import org.openhab.io.homekit.api.HomekitFactory;
+import org.openhab.io.homekit.api.LocalAccessoryServer;
+import org.openhab.io.homekit.internal.accessory.AccessoryRegistryImpl;
 import org.openhab.io.homekit.internal.accessory.GenericAccessory;
-import org.openhab.io.homekit.internal.accessory.AbstractManagedAccessory;
 import org.openhab.io.homekit.internal.characteristic.GenericCharacteristic;
-import org.openhab.io.homekit.library.accessory.ThingAccessory;
 import org.openhab.io.homekit.internal.service.GenericService;
+import org.openhab.io.homekit.v1.internal.HomekitTaggedItem;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -63,7 +51,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     private final AccessoryRegistryImpl accessoryRegistry;
     private final AccessoryServerRegistry accessoryServerRegistry;
     private final Map<String, HomekitFactory> homekitFactories = new ConcurrentHashMap<>();
-    private final Map<String, GenericCharacteristic> characteristicMap = new ConcurrentHashMap<>();
+    private final Map<String, Characteristic<?>> characteristicMap = new ConcurrentHashMap<>();
     private final Map<String, GenericAccessory> accessoryMap = new ConcurrentHashMap<>();
 
     @Activate
@@ -162,7 +150,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
     @Override
     public void stateChanged(Item item, State oldState, State newState) {
-        GenericCharacteristic characteristic = characteristicMap.get(item.getName());
+        Characteristic<?> characteristic = characteristicMap.get(item.getName());
         if (characteristic != null) {
             updateCharacteristicValue(characteristic, newState);
         }
@@ -170,7 +158,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
     @Override
     public void stateUpdated(Item item, State state) {
-        GenericCharacteristic characteristic = characteristicMap.get(item.getName());
+        Characteristic<?> characteristic = characteristicMap.get(item.getName());
         if (characteristic != null) {
             updateCharacteristicValue(characteristic, state);
         }
@@ -204,22 +192,15 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                         for (org.openhab.io.homekit.api.Service service : accessory.getServices()) {
                             if (service instanceof GenericService) {
                                 GenericService genericService = (GenericService) service;
-                                for (Characteristic characteristic : genericService.getCharacteristics()) {
-                                    if (characteristic instanceof GenericCharacteristic) {
-                                        GenericCharacteristic genericCharacteristic = (GenericCharacteristic) characteristic;
-                                        characteristicMap.put(taggedItem.getName(), genericCharacteristic);
-                                        genericCharacteristic.addListener(new CharacteristicChangeListener() {
-                                            @Override
-                                            public void onCharacteristicEvent(CharacteristicEvent event) {
-                                                // Convert HomeKit value to openHAB state and publish
-                                                ManagedCharacteristic<?> managedCharacteristic = (ManagedCharacteristic<?>) characteristic;
-                                                State state = managedCharacteristic.getValue();
-                                                if (state != null) {
-                                                    eventPublisher.post(ItemEventFactory.createStateEvent(taggedItem.getName(), state));
-                                                }
-                                            }
-                                        });
-                                    }
+                                for (Characteristic<?> characteristic : genericService.getCharacteristics()) {
+                                    characteristicMap.put(taggedItem.getName(), characteristic);
+                                    characteristic.addListener(event -> {
+                                        // Convert HomeKit value to openHAB state and publish
+                                        State state = characteristic.toState(event.getNewValue());
+                                        if (state != null) {
+                                            eventPublisher.post(ItemEventFactory.createStateEvent(taggedItem.getName(), state));
+                                        }
+                                    });
                                 }
                             }
                         }
@@ -251,7 +232,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
         }
     }
 
-    private void updateCharacteristicValue(GenericCharacteristic characteristic, State state) {
+    private void updateCharacteristicValue(Characteristic<?> characteristic, State state) {
         try {
             // Find the factory that created this characteristic
             Optional<HomekitFactory> factory = homekitFactories.values().stream()
@@ -259,8 +240,15 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                     .findFirst();
             
             if (factory.isPresent()) {
-                characteristic.setValue(state);
-                logger.debug("Updated characteristic {} with value {}", characteristic.getInstanceType(), state);
+                if (characteristic instanceof GenericCharacteristic) {
+                    @SuppressWarnings("unchecked")
+                    GenericCharacteristic<Object> genericCharacteristic = (GenericCharacteristic<Object>) characteristic;
+                    Object value = genericCharacteristic.toValue(state);
+                    if (value != null) {
+                        genericCharacteristic.setValue(value);
+                        logger.debug("Updated characteristic {} with value {}", characteristic.getInstanceType(), state);
+                    }
+                }
             }
         } catch (Exception e) {
             logger.warn("Error updating characteristic value", e);

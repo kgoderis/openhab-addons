@@ -123,6 +123,8 @@ public interface Characteristic<T> extends Identifiable<CharacteristicUID> {
      */
     JsonObject toEventJson(T value);
 
+    JsonValue toValueJson(T value);
+
     /**
      * Gets the current value of the characteristic.
      *
@@ -151,7 +153,7 @@ public interface Characteristic<T> extends Identifiable<CharacteristicUID> {
      * @param jsonValue the JSON value to convert
      * @return the converted value
      */
-    T convert(JsonValue jsonValue);
+    T toValue(JsonValue jsonValue);
 
     /**
      * Converts a State to the characteristic's type.
@@ -159,7 +161,7 @@ public interface Characteristic<T> extends Identifiable<CharacteristicUID> {
      * @param state the state to convert
      * @return the converted value
      */
-    T convert(State state);
+    T toValue(State state);
 
     /**
      * Converts the characteristic's type to a State.
@@ -167,7 +169,9 @@ public interface Characteristic<T> extends Identifiable<CharacteristicUID> {
      * @param value the value to convert
      * @return the converted state
      */
-    State convert(T value);
+    State toState(T value);
+
+    State toState(JsonValue jsonValue);
 
     /**
      * Gets the default value for the characteristic.

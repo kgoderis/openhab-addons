@@ -26,7 +26,7 @@ public class SaturationCharacteristic extends FloatCharacteristic {
     }
 
     @Override
-    protected Double convert(State state) {
+    protected Double toValue(State state) {
         if (state instanceof HSBType) {
             PercentType saturation = ((HSBType) state).getSaturation();
             return saturation.doubleValue();
@@ -40,7 +40,7 @@ public class SaturationCharacteristic extends FloatCharacteristic {
     }
 
     @Override
-    protected State convert(Double value) {
+    protected State toState(Double value) {
         State state = manager.getState(getChannelUID());
 
         if (state instanceof HSBType) {

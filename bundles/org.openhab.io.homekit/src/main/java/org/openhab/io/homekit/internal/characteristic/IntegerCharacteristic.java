@@ -57,12 +57,12 @@ public abstract class IntegerCharacteristic extends GenericCharacteristic<Intege
     }
 
     @Override
-    public Integer convert(JsonValue value) {
+    public Integer toValue(JsonValue value) {
         return ((JsonNumber) value).intValue();
     }
 
     @Override
-    public Integer convert(State state) {
+    public Integer toValue(State state) {
         DecimalType convertedState = state.as(DecimalType.class);
         if (convertedState == null) {
             return null;
@@ -71,7 +71,7 @@ public abstract class IntegerCharacteristic extends GenericCharacteristic<Intege
     }
 
     @Override
-    public State convert(Integer value) {
+    public State toState(Integer value) {
         return new DecimalType(value);
     }
 

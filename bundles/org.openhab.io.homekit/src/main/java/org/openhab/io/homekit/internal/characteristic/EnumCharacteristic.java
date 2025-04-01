@@ -55,7 +55,7 @@ public abstract class EnumCharacteristic extends GenericCharacteristic<Integer> 
     }
 
     @Override
-    public Integer convert(JsonValue value) {
+    public Integer toValue(JsonValue value) {
         if (value instanceof JsonNumber) {
             return ((JsonNumber) value).intValue();
         } else if (value == JsonValue.TRUE) {
@@ -68,7 +68,7 @@ public abstract class EnumCharacteristic extends GenericCharacteristic<Integer> 
     }
 
     @Override
-    public Integer convert(State state) {
+    public Integer toValue(State state) {
         DecimalType convertedState = state.as(DecimalType.class);
         if (convertedState == null) {
             return null;
@@ -77,7 +77,7 @@ public abstract class EnumCharacteristic extends GenericCharacteristic<Integer> 
     }
 
     @Override
-    public State convert(Integer value) {
+    public State toState(Integer value) {
         return new DecimalType(value);
     }
 

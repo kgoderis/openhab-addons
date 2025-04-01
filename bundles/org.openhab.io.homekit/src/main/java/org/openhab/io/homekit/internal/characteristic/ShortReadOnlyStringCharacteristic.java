@@ -35,7 +35,7 @@ public abstract class ShortReadOnlyStringCharacteristic extends GenericCharacter
     }
 
     @Override
-    public String convert(JsonValue jsonValue) {
+    public String toValue(JsonValue jsonValue) {
         return ((JsonString) jsonValue).getString();
     }
 
@@ -59,7 +59,7 @@ public abstract class ShortReadOnlyStringCharacteristic extends GenericCharacter
     }
 
     @Override
-    public String convert(State state) {
+    public String toValue(State state) {
         StringType convertedState = state.as(StringType.class);
         if (convertedState == null) {
             return null;
@@ -68,7 +68,7 @@ public abstract class ShortReadOnlyStringCharacteristic extends GenericCharacter
     }
 
     @Override
-    public State convert(String value) {
+    public State toState(String value) {
         return StringType.valueOf(value);
     }
 

@@ -44,7 +44,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     // Constructors
     public GenericCharacteristic(Service service, JsonValue value) {
         this.service = service;
-        this.value = convert(value);
+        this.value = toValue(value);
         this.instanceId = ((JsonObject) value).getInt("iid");
         this.type = ((JsonObject) value).getString("type");
         this.format = ((JsonObject) value).getString("format");
@@ -78,7 +78,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
         }
 
         if (((JsonObject) value).containsKey("value")) {
-            this.value = convert(((JsonObject) value).get("value"));
+            this.value = toValue(((JsonObject) value).get("value"));
         }
     }
 
@@ -210,6 +210,16 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
         return baseJson;
     }
 
+    @Override
+    public JsonValue toValueJson(T value) {
+        JsonObjectBuilder builder = Json.createObjectBuilder();
+        JsonObject baseJson = builder.build();
+        if (value != null) {
+            return enrich(baseJson, "value", getValue());
+        }
+        return baseJson;
+    }
+
     // Public methods
     @Override
     public T getValue() {
@@ -226,7 +236,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
             T oldValue = this.value;
             this.value = value;
             if (!Objects.equals(oldValue, value)) {
-                CharacteristicEvent event = new CharacteristicEvent(this, oldValue, value);
+                CharacteristicEvent event = new CharacteristicEvent(this, toValueJson(oldValue), toValueJson(value));
                 notifyValueChanged(oldValue, value);
                 notifyListeners(event);
             }
@@ -237,7 +247,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     public final void setValue(JsonValue jsonValue) throws Exception {
         if (isWritable) {
             try {
-                setValue(convert(jsonValue));
+                setValue(toValue(jsonValue));
             } catch (Exception e) {
                 logger.error("Error while setting JSON value", e);
             }
@@ -259,7 +269,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     // Protected methods
     protected void notifyValueChanged(T oldValue, T newValue) {
         for (CharacteristicChangeListener listener : listeners) {
-            listener.onCharacteristicEvent(new CharacteristicEvent(this, oldValue, newValue));
+            listener.onCharacteristicEvent(new CharacteristicEvent(this, toValueJson(oldValue), toValueJson(value)));
         }
     }
 
@@ -337,11 +347,16 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
 
     // Abstract methods
     @Override
-    public abstract T convert(JsonValue jsonValue);
+    public abstract T toValue(JsonValue jsonValue);
     @Override
-    public abstract T convert(State state);
+    public abstract T toValue(State state);
     @Override
-    public abstract State convert(T value);
+    public abstract State toState(T value);
+
+    public State toState(JsonValue jsonValue) {
+        return toState(toValue(jsonValue));
+    }
+
     @Override
     public abstract T getDefault();
 }

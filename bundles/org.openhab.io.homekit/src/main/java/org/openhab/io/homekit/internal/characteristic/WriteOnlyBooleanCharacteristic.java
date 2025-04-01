@@ -41,7 +41,7 @@ public abstract class WriteOnlyBooleanCharacteristic extends GenericCharacterist
 
     /** {@inheritDoc} */
     @Override
-    public Boolean convert(JsonValue jsonValue) {
+    public Boolean toValue(JsonValue jsonValue) {
         if (jsonValue.getValueType().equals(ValueType.NUMBER)) {
             return ((JsonNumber) jsonValue).intValue() > 0;
         }
@@ -49,7 +49,7 @@ public abstract class WriteOnlyBooleanCharacteristic extends GenericCharacterist
     }
 
     @Override
-    public Boolean convert(State state) {
+    public Boolean toValue(State state) {
         OnOffType convertedState = state.as(OnOffType.class);
         if (convertedState == null) {
             return null;
@@ -59,7 +59,7 @@ public abstract class WriteOnlyBooleanCharacteristic extends GenericCharacterist
     }
 
     @Override
-    public State convert(Boolean value) {
+    public State toState(Boolean value) {
         return value ? OnOffType.ON : OnOffType.OFF;
     }
 

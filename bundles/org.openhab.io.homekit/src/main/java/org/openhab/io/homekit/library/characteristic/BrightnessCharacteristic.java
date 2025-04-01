@@ -24,7 +24,7 @@ public class BrightnessCharacteristic extends IntegerCharacteristic {
     }
 
     @Override
-    protected Integer convert(State state) {
+    protected Integer toValue(State state) {
         if (state instanceof HSBType) {
             PercentType brightness = ((HSBType) state).getBrightness();
             return brightness.intValue();
@@ -39,7 +39,7 @@ public class BrightnessCharacteristic extends IntegerCharacteristic {
     }
 
     @Override
-    protected State convert(Integer value) {
+    protected State toState(Integer value) {
 
         State state = manager.getState(getChannelUID());
 

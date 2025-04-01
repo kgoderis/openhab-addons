@@ -54,12 +54,12 @@ public abstract class LongCharacteristic extends GenericCharacteristic<Long> {
     }
 
     @Override
-    public Long convert(JsonValue value) {
+    public Long toValue(JsonValue value) {
         return ((JsonNumber) value).longValue();
     }
 
     @Override
-    public Long convert(State state) {
+    public Long toValue(State state) {
         DecimalType convertedState = state.as(DecimalType.class);
         if (convertedState == null) {
             return null;
@@ -68,7 +68,7 @@ public abstract class LongCharacteristic extends GenericCharacteristic<Long> {
     }
 
     @Override
-    public State convert(Long value) {
+    public State toState(Long value) {
         return new DecimalType(value);
     }
 

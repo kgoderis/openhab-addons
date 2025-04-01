@@ -1,27 +1,30 @@
 package org.openhab.io.homekit.internal.events;
 
+import javax.json.JsonValue;
+
 import org.openhab.io.homekit.api.Characteristic;
 
-public class CharacteristicEvent {
-    private final Characteristic characteristic;
-    private final Object oldValue;
-    private final Object newValue;
 
-    public CharacteristicEvent(Characteristic characteristic, Object oldValue, Object newValue) {
+public class CharacteristicEvent {
+    private final Characteristic<?> characteristic;
+    private final JsonValue oldValue;
+    private final JsonValue newValue;
+
+    public CharacteristicEvent(Characteristic<?> characteristic, JsonValue oldValue, JsonValue newValue) {
         this.characteristic = characteristic;
         this.oldValue = oldValue;
         this.newValue = newValue;
     }
 
-    public Characteristic getCharacteristic() {
+    public Characteristic<?> getCharacteristic() {
         return characteristic;
     }
 
-    public Object getOldValue() {
+    public JsonValue getOldValue() {
         return oldValue;
     }
 
-    public Object getNewValue() {
+    public JsonValue getNewValue() {
         return newValue;
     }
 }

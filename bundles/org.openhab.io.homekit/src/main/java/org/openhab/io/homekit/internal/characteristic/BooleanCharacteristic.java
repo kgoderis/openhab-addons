@@ -36,7 +36,7 @@ public abstract class BooleanCharacteristic extends GenericCharacteristic<Boolea
 
     /** {@inheritDoc} */
     @Override
-    public Boolean convert(JsonValue value) {
+    public Boolean toValue(JsonValue value) {
         if (value.getValueType().equals(ValueType.NUMBER)) {
             return ((JsonNumber) value).intValue() > 0;
         }
@@ -44,7 +44,7 @@ public abstract class BooleanCharacteristic extends GenericCharacteristic<Boolea
     }
 
     @Override
-    public Boolean convert(State state) {
+    public Boolean toValue(State state) {
         OnOffType convertedState = state.as(OnOffType.class);
         if (convertedState == null) {
             return null;
@@ -54,7 +54,7 @@ public abstract class BooleanCharacteristic extends GenericCharacteristic<Boolea
     }
 
     @Override
-    public State convert(Boolean value) {
+    public State toState(Boolean value) {
         return value ? OnOffType.ON : OnOffType.OFF;
     }
 
