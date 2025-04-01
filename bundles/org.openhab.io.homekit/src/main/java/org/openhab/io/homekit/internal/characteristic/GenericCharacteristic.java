@@ -164,8 +164,8 @@ public abstract class GenericCharacteristic<T> implements Characteristic {
         builder.add("description", description);
         builder.add("ev", hasEvents);
         JsonObject baseJson = builder.build();
-        if (value != null) {
-            return enrich(baseJson, "value", value);
+        if (getValue() != null) {
+            return enrich(baseJson, "value", getValue());
         }
         return baseJson;
     }
@@ -180,14 +180,26 @@ public abstract class GenericCharacteristic<T> implements Characteristic {
         builder.add("description", description);
         builder.add("ev", hasEvents);
         JsonObject baseJson = builder.build();
-        if (value != null) {
-            return enrich(baseJson, "value", value);
+        if (getValue() != null) {
+            return enrich(baseJson, "value", getValue());
         }
         return baseJson;
     }
 
     @Override
     public JsonObject toEventJson() {
+        JsonObjectBuilder builder = Json.createObjectBuilder();
+        builder.add("iid", instanceId);
+        builder.add("aid", service.getAccessory().getId());
+        JsonObject baseJson = builder.build();
+        if (getValue() != null) {
+            return enrich(baseJson, "value", getValue());
+        }
+        return baseJson;
+    }
+
+    @Override
+    public JsonObject toEventJson(T value) {
         JsonObjectBuilder builder = Json.createObjectBuilder();
         builder.add("iid", instanceId);
         builder.add("aid", service.getAccessory().getId());
@@ -200,16 +212,33 @@ public abstract class GenericCharacteristic<T> implements Characteristic {
 
     // Public methods
     public T getValue() {
-        return value;
+        if (value != null) {
+            return value;
+        }else { return getDefault();}
     }
 
     public void setValue(T value) {
-        T oldValue = this.value;
-        this.value = value;
-        if (!Objects.equals(oldValue, value)) {
-            CharacteristicEvent event = new CharacteristicEvent(this, oldValue, value);
-            notifyValueChanged(oldValue, value);
-            notifyListeners(event);
+        if (isWritable) {
+            T oldValue = this.value;
+            this.value = value;
+            if (!Objects.equals(oldValue, value)) {
+                CharacteristicEvent event = new CharacteristicEvent(this, oldValue, value);
+                notifyValueChanged(oldValue, value);
+                notifyListeners(event);
+            }
+        }
+    }
+    
+    @Override
+    public final void setValue(JsonValue jsonValue) throws Exception {
+        if (isWritable) {
+            try {
+                setValue(convert(jsonValue));
+            } catch (Exception e) {
+                logger.error("Error while setting JSON value", e);
+            }
+        } else {
+            throw new Exception("Can not modify a readonly characteristic");
         }
     }
 
