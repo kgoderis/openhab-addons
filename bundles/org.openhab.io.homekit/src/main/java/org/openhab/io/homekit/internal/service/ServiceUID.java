@@ -2,6 +2,7 @@ package org.openhab.io.homekit.internal.service;
 
 import java.util.List;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.core.thing.UID;
 
 public class ServiceUID extends UID {

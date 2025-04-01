@@ -83,6 +83,8 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
         }
     }
 
+    //TODO add constructor that takes servce, instanceid and value
+
     public GenericCharacteristic(Service service, long instanceId, String format, boolean isWritable,
             boolean isReadable, boolean hasEvents, String description) {
         this.service = service;
@@ -366,4 +368,9 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
 
     @Override
     public abstract T getDefault();
+
+    @Override
+    public String getDescription() {
+        return description;
+    }
 }

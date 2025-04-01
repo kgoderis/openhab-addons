@@ -183,4 +183,6 @@ public interface Characteristic<T> extends Identifiable<@NonNull CharacteristicU
     // String getAcceptedItemType();
     //
     // ChannelTypeUID getChannelTypeUID();
+
+    String getDescription();
 }

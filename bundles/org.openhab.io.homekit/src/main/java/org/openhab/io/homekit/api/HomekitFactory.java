@@ -15,6 +15,8 @@ package org.openhab.io.homekit.api;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -22,6 +24,8 @@ import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.type.ChannelTypeUID;
 import org.openhab.io.homekit.internal.accessory.GenericAccessory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The {@link HomekitFactory} is responsible for creating {@link ManagedAccessory}s based on {@link Thing}s. Therefore
@@ -78,10 +82,19 @@ public interface HomekitFactory {
     ManagedService createService(String serviceType, ManagedAccessory accessory, long instanceId, boolean extend);
 
     @Nullable
-    ManagedCharacteristic<?> createCharacteristic(String characteristicsType, ManagedService service);
+    Characteristic<?> createCharacteristic(String characteristicsType, ManagedService service);
 
     @Nullable
-    ManagedCharacteristic<?> createCharacteristic(String characteristicsType, ManagedService service, long instanceId);
+    Characteristic<?> createCharacteristic(String characteristicsType, ManagedService service, long instanceId);
+
+    /**
+     * Creates a characteristic instance from a JSON value.
+     * 
+     * @param service The service to create the characteristic for
+     * @param value The JSON value containing characteristic data
+     * @return The created characteristic instance, or null if creation fails
+     */
+    @Nullable Characteristic<?> createCharacteristic( Service service, JsonValue value);
 
     void addAccessory(ThingTypeUID type, Class<? extends ManagedAccessory> accessoryClass);
 
@@ -97,11 +110,11 @@ public interface HomekitFactory {
 
     void addCharacteristic(ChannelTypeUID type, String characateristicType);
 
-    void addCharacteristic(ChannelTypeUID type, Class<@NonNull ? extends ManagedCharacteristic<?>> characteristicClass);
+    void addCharacteristic(ChannelTypeUID type, Class<@NonNull ? extends Characteristic<?>> characteristicClass);
 
-    void addCharacteristic(String characateristicType, Class<? extends ManagedCharacteristic<?>> characteristicClass);
+    void addCharacteristic(String characateristicType, Class<? extends Characteristic<?>> characteristicClass);
 
-    void addCharacteristic(Class<@NonNull ? extends ManagedCharacteristic<?>> characteristicClass);
+    void addCharacteristic(Class<@NonNull ? extends Characteristic<?>> characteristicClass);
 
     HashSet<String> getCharacteristicTypes(@Nullable ChannelTypeUID type);
 
@@ -110,6 +123,8 @@ public interface HomekitFactory {
     Set<String> getSupportedServiceTypes();
 
     Set<String> getSupportedCharacteristicTypes();
+
+    boolean isCharacteristicSupported(String characteristicType);
 
     @Nullable
     String getCharacteristicAcceptedItemType(String characteristicType);
@@ -121,5 +136,5 @@ public interface HomekitFactory {
     Class<? extends Service> getService(String characteristicType);
 
     @Nullable
-    Class<? extends Characteristic> getCharacteristic(String serviceType);
+    Class<? extends Characteristic<?>> getCharacteristic(String serviceType);
 }

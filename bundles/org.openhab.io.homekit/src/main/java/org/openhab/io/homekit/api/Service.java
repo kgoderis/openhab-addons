@@ -15,7 +15,7 @@ import org.openhab.io.homekit.internal.service.ServiceUID;
  *
  * @author Andy Lintner
  */
-public interface Service extends Identifiable<ServiceUID> {
+public interface Service extends Identifiable<@NonNull ServiceUID> {
 
     /**
      * Service Instance Ids are assigned from the same number pool that is unique within each Accessory.
@@ -58,13 +58,13 @@ public interface Service extends Identifiable<ServiceUID> {
 
     boolean isExtensible();
 
-    void addCharacteristic(Characteristic characteristic);
+    void addCharacteristic(Characteristic<?> characteristic);
 
-    Characteristic getCharacteristic(long iid);
+    Characteristic<?> getCharacteristic(long iid);
 
-    Characteristic getCharacteristic(String characteristicType);
+    Characteristic<?> getCharacteristic(String characteristicType);
 
-    Characteristic getCharacteristic(@NonNull Class<@NonNull ? extends Characteristic> characteristicClass);
+    Characteristic<?> getCharacteristic(@NonNull Class<@NonNull ? extends Characteristic> characteristicClass);
 
     /**
      * Characteristics are the variables offered for reading, updating, and eventing by the Service
@@ -74,7 +74,7 @@ public interface Service extends Identifiable<ServiceUID> {
      * @return the list of Characteristics.
      */
     @NonNull
-    List<Characteristic> getCharacteristics();
+    List<Characteristic<?>> getCharacteristics();
 
     void removeCharacteristic(@NonNull Class<@NonNull ? extends Characteristic> characteristicClass);
 

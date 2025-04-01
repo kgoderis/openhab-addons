@@ -1,11 +1,15 @@
 package org.openhab.io.homekit;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.json.JsonObject;
+import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -249,6 +253,37 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
         return null;
     }
 
+    /**
+     * Creates a characteristic instance from a JSON value.
+     * 
+     * @param service The service to create the characteristic for
+     * @param value The JSON value containing characteristic data
+     * @return The created characteristic instance, or null if creation fails
+     */
+    public @Nullable Characteristic<?> createCharacteristic(@NonNull Service service, @NonNull JsonValue value) {
+        JsonObject jsonObject = (JsonObject) value;
+        String type = jsonObject.getString("type");
+        long instanceId = jsonObject.getInt("iid");
+        
+        Class<? extends Characteristic<?>> characteristicClass = characteristicTypeCharacteristicClassMapper.get(type);
+        if (characteristicClass == null) {
+            logger.warn("Unknown characteristic type: {}", type);
+            return null;
+        }
+        
+        try {
+            Constructor<? extends Characteristic<?>> constructor = 
+                characteristicClass.getDeclaredConstructor(Service.class, long.class);
+            constructor.setAccessible(true);
+            Characteristic<?> characteristic = constructor.newInstance(communicationManagerTracker.get(), service, instanceId);
+            logger.debug("Created characteristic of type {} with instanceId {}", type, instanceId);
+            return characteristic;
+        } catch (Exception e) {
+            logger.error("Failed to create characteristic of type {}: {}", type, e.getMessage());
+            return null;
+        }
+    }
+
     @Override
     public void addAccessory(@NonNull ThingTypeUID thingType,
             @NonNull Class<? extends @NonNull ManagedAccessory> accessoryClass) {
@@ -435,12 +470,17 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     }
 
     @Override
-    public Class<? extends Characteristic> getCharacteristic(@NonNull String characteristicType) {
+    public Class<? extends Characteristic<?>> getCharacteristic(@NonNull String characteristicType) {
         return characteristicTypeCharacteristicClassMapper.get(characteristicType);
     }
 
     @Override
     public Class<? extends Service> getService(@NonNull String serviceType) {
         return serviceTypeServiceClassMapper.get(serviceType);
+    }
+
+    @Override
+    public boolean isCharacteristicSupported(@NonNull String characteristicType) {
+        return characteristicTypeCharacteristicClassMapper.containsKey(characteristicType);
     }
 }
