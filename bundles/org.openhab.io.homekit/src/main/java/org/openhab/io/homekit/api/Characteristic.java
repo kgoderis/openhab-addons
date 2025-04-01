@@ -1,8 +1,10 @@
 package org.openhab.io.homekit.api;
 
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 
 import org.openhab.core.common.registry.Identifiable;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.internal.characteristic.CharacteristicUID;
 import org.openhab.io.homekit.internal.listeners.CharacteristicChangeListener;
 
@@ -15,7 +17,7 @@ import org.openhab.io.homekit.internal.listeners.CharacteristicChangeListener;
  *
  * @author Andy Lintner
  */
-public interface Characteristic extends Identifiable<CharacteristicUID> {
+public interface Characteristic<T> extends Identifiable<CharacteristicUID> {
 
     /**
      * Characteristic Instance IDs are assigned from the same number pool that is unique within each
@@ -63,7 +65,7 @@ public interface Characteristic extends Identifiable<CharacteristicUID> {
      *
      * @param value true to enable events, false to disable
      */
-    void setEventsEnabled(boolean value);
+    void setHasEvents(boolean value);
 
     /**
      * Adds a listener to be notified of characteristic changes.
@@ -112,6 +114,67 @@ public interface Characteristic extends Identifiable<CharacteristicUID> {
      * @return the resulting JSON object
      */
     JsonObject toEventJson();
+
+    /**
+     * Creates the JSON representation of an event for the Characteristic with a specific value.
+     *
+     * @param value the value to include in the event
+     * @return the resulting JSON object
+     */
+    JsonObject toEventJson(T value);
+
+    /**
+     * Gets the current value of the characteristic.
+     *
+     * @return the current value
+     */
+    T getValue();
+
+    /**
+     * Sets the value of the characteristic.
+     *
+     * @param value the new value to set
+     */
+    void setValue(T value);
+
+    /**
+     * Sets the value of the characteristic from a JSON value.
+     *
+     * @param jsonValue the JSON value to convert and set
+     * @throws Exception if the value cannot be set
+     */
+    void setValue(JsonValue jsonValue) throws Exception;
+
+    /**
+     * Converts a JSON value to the characteristic's type.
+     *
+     * @param jsonValue the JSON value to convert
+     * @return the converted value
+     */
+    T convert(JsonValue jsonValue);
+
+    /**
+     * Converts a State to the characteristic's type.
+     *
+     * @param state the state to convert
+     * @return the converted value
+     */
+    T convert(State state);
+
+    /**
+     * Converts the characteristic's type to a State.
+     *
+     * @param value the value to convert
+     * @return the converted state
+     */
+    State convert(T value);
+
+    /**
+     * Gets the default value for the characteristic.
+     *
+     * @return the default value
+     */
+    T getDefault();
 
     // String getAcceptedItemType();
     //

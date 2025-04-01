@@ -214,7 +214,7 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
             logger.debug("Adding Notification {} for Connection {} to the Notification Registry", notification.getUID(),
                     connection.toConnectionString());
             notificationRegistry.add(notification);
-            characteristic.setEventsEnabled(true);
+            characteristic.setHasEvents(true);
         }
 
         // TODO : Notificfation to more than one controller? -> Adjust Notification UID, of , >1 Connection per
@@ -225,7 +225,7 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
     public void removeNotification(ManagedCharacteristic<?> characteristic) {
         notificationRegistry.remove(new NotificationUID(getId(), characteristic.getService().getAccessory().getId(),
                 characteristic.getService().getId(), characteristic.getId()));
-        characteristic.setEventsEnabled(false);
+        characteristic.setHasEvents(false);
     }
 
     @Override

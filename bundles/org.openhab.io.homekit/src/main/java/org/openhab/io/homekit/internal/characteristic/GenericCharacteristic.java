@@ -22,7 +22,7 @@ import org.openhab.io.homekit.internal.listeners.CharacteristicChangeListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class GenericCharacteristic<T> implements Characteristic {
+public abstract class GenericCharacteristic<T> implements Characteristic<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(GenericCharacteristic.class);
 
@@ -38,14 +38,13 @@ public abstract class GenericCharacteristic<T> implements Characteristic {
     private boolean isReadable = false;
     private boolean isHidden = false;
     private boolean hasEvents = false;
-    private boolean hasEventsEnabled;
     private String type;
-    private T oldValue;
     private T value;
 
     // Constructors
     public GenericCharacteristic(Service service, JsonValue value) {
         this.service = service;
+        this.value = convert(value);
         this.instanceId = ((JsonObject) value).getInt("iid");
         this.type = ((JsonObject) value).getString("type");
         this.format = ((JsonObject) value).getString("format");
@@ -75,7 +74,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic {
         }
 
         if (((JsonObject) value).containsKey("ev")) {
-            this.hasEventsEnabled = ((JsonObject) value).getBoolean("ev");
+            this.hasEvents = ((JsonObject) value).getBoolean("ev");
         }
 
         if (((JsonObject) value).containsKey("value")) {
@@ -92,6 +91,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic {
         this.isReadable = isReadable;
         this.hasEvents = hasEvents;
         this.description = description;
+        this.value = getDefault();
     }
 
     // Interface implementation methods
@@ -124,8 +124,8 @@ public abstract class GenericCharacteristic<T> implements Characteristic {
     }
 
     @Override
-    public void setEventsEnabled(boolean value) {
-        this.hasEventsEnabled = value;
+    public void setHasEvents(boolean value) {
+        this.hasEvents = value;
     }
 
     @Override
@@ -211,12 +211,16 @@ public abstract class GenericCharacteristic<T> implements Characteristic {
     }
 
     // Public methods
+    @Override
     public T getValue() {
         if (value != null) {
             return value;
-        }else { return getDefault();}
+        } else {
+            return getDefault();
+        }
     }
 
+    @Override
     public void setValue(T value) {
         if (isWritable) {
             T oldValue = this.value;
@@ -322,7 +326,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        GenericCharacteristic that = (GenericCharacteristic) o;
+        GenericCharacteristic<?> that = (GenericCharacteristic<?>) o;
         return instanceId == that.instanceId && Objects.equals(service, that.service);
     }
 
@@ -332,8 +336,12 @@ public abstract class GenericCharacteristic<T> implements Characteristic {
     }
 
     // Abstract methods
-    protected abstract T convert(JsonValue jsonValue);
-    protected abstract T convert(State state);
-    protected abstract State convert(T value);
-    protected abstract T getDefault();
+    @Override
+    public abstract T convert(JsonValue jsonValue);
+    @Override
+    public abstract T convert(State state);
+    @Override
+    public abstract State convert(T value);
+    @Override
+    public abstract T getDefault();
 }
