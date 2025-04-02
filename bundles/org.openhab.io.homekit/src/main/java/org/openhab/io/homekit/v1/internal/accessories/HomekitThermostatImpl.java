@@ -31,10 +31,10 @@ import org.openhab.core.types.State;
 import org.openhab.io.homekit.hap.HomekitCharacteristicChangeCallback;
 import org.openhab.io.homekit.hap.accessories.properties.ThermostatMode;
 import org.openhab.io.homekit.hap.accessories.thermostat.BasicThermostat;
+import org.openhab.io.homekit.internal.bridge.HomekitCharacteristicType;
+import org.openhab.io.homekit.internal.bridge.HomekitTaggedItem;
 import org.openhab.io.homekit.v1.internal.HomekitAccessoryUpdater;
-import org.openhab.io.homekit.v1.internal.HomekitCharacteristicType;
 import org.openhab.io.homekit.v1.internal.HomekitSettings;
-import org.openhab.io.homekit.v1.internal.HomekitTaggedItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

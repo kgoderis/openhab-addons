@@ -21,8 +21,8 @@ import org.openhab.core.library.types.OnOffType;
 import org.openhab.io.homekit.hap.HomekitCharacteristicChangeCallback;
 import org.openhab.io.homekit.hap.accessories.Valve;
 import org.openhab.io.homekit.hap.accessories.properties.ValveType;
+import org.openhab.io.homekit.internal.bridge.HomekitTaggedItem;
 import org.openhab.io.homekit.v1.internal.HomekitAccessoryUpdater;
-import org.openhab.io.homekit.v1.internal.HomekitTaggedItem;
 
 /**
  *

@@ -27,7 +27,6 @@ import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.api.server.AccessoryServer;
-import org.openhab.io.homekit.api.server.LocalAccessoryServer;
 
 /**
  * The {@link HomekitFactory} is responsible for creating {@link Accessory}s based on {@link Thing}s. Therefore
@@ -51,19 +50,19 @@ public interface HomekitFactory {
 
     boolean supportsCharacteristicsType(String type);
 
-    /**
-     * Creates a new {@link Accessory} instance.
-     * <p>
-     * This method is only called if the {@link HomekitFactory} supports the type of the given thing.
-     * <p>
-     *
-     * @param thing the thing for which a new handler must be registered
-     * @return the created thing handler instance, not null
-     * @throws Exception
-     * @throws IllegalStateException if the handler instance could not be created
-     */
-    @Nullable
-    Accessory createAccessory(Thing thing, LocalAccessoryServer server) throws Exception;
+    // /**
+    //  * Creates a new {@link Accessory} instance.
+    //  * <p>
+    //  * This method is only called if the {@link HomekitFactory} supports the type of the given thing.
+    //  * <p>
+    //  *
+    //  * @param thing the thing for which a new handler must be registered
+    //  * @return the created thing handler instance, not null
+    //  * @throws Exception
+    //  * @throws IllegalStateException if the handler instance could not be created
+    //  */
+    // @Nullable
+    // Accessory createAccessory(Thing thing, LocalAccessoryServer server) throws Exception;
 
     @Nullable
     Accessory createAccessory(Class<? extends Accessory> accessoryClass, AccessoryServer server,
@@ -113,6 +112,8 @@ public interface HomekitFactory {
 
     void addService(Class<@NonNull ? extends Service> serviceClass);
 
+    void addServiceWithTag(String tag, Class<? extends Service> serviceClass);
+
     void addCharacteristic(ChannelTypeUID type, String characateristicType);
 
     void addCharacteristic(ChannelTypeUID type, Class<@NonNull ? extends Characteristic<?>> characteristicClass);
@@ -120,6 +121,8 @@ public interface HomekitFactory {
     void addCharacteristic(String characateristicType, Class<? extends Characteristic<?>> characteristicClass);
 
     void addCharacteristic(Class<@NonNull ? extends Characteristic<?>> characteristicClass);
+
+    void addCharacteristicWithTag(String tag, Class<? extends Characteristic<?>> characteristicClass);
 
     HashSet<String> getCharacteristicTypes(@Nullable ChannelTypeUID type);
 

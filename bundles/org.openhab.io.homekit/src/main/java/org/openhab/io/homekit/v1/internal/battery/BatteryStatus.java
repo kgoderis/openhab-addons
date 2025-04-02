@@ -20,8 +20,8 @@ import org.openhab.core.items.Item;
 import org.openhab.core.library.items.NumberItem;
 import org.openhab.core.library.items.SwitchItem;
 import org.openhab.io.homekit.hap.HomekitCharacteristicChangeCallback;
+import org.openhab.io.homekit.internal.bridge.HomekitCharacteristicType;
 import org.openhab.io.homekit.v1.internal.HomekitAccessoryUpdater;
-import org.openhab.io.homekit.v1.internal.HomekitCharacteristicType;
 
 /**
  *

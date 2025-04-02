@@ -14,8 +14,8 @@ package org.openhab.io.homekit.v1.internal.accessories;
 
 import org.openhab.core.items.ItemRegistry;
 import org.openhab.core.library.items.SwitchItem;
+import org.openhab.io.homekit.internal.bridge.HomekitTaggedItem;
 import org.openhab.io.homekit.v1.internal.HomekitAccessoryUpdater;
-import org.openhab.io.homekit.v1.internal.HomekitTaggedItem;
 
 /**
  * Implements Lightbulb using an Item that provides an On/Off state

@@ -19,9 +19,9 @@ import org.openhab.core.library.items.NumberItem;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.io.homekit.hap.HomekitCharacteristicChangeCallback;
 import org.openhab.io.homekit.hap.accessories.TemperatureSensor;
+import org.openhab.io.homekit.internal.bridge.HomekitTaggedItem;
 import org.openhab.io.homekit.v1.internal.HomekitAccessoryUpdater;
 import org.openhab.io.homekit.v1.internal.HomekitSettings;
-import org.openhab.io.homekit.v1.internal.HomekitTaggedItem;
 
 /**
  * Implements a Homekit TemperatureSensor using a NumberItem

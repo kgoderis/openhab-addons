@@ -21,8 +21,8 @@ import org.openhab.core.library.items.SwitchItem;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.io.homekit.hap.HomekitCharacteristicChangeCallback;
 import org.openhab.io.homekit.hap.accessories.Switch;
+import org.openhab.io.homekit.internal.bridge.HomekitTaggedItem;
 import org.openhab.io.homekit.v1.internal.HomekitAccessoryUpdater;
-import org.openhab.io.homekit.v1.internal.HomekitTaggedItem;
 
 /**
  * Implements Switch using an Item that provides an On/Off state.

@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.io.homekit.v1.internal;
+package org.openhab.io.homekit.internal.bridge;
 
 import java.util.List;
 import java.util.Map;

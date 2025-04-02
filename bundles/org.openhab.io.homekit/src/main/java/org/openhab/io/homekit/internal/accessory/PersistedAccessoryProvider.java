@@ -4,7 +4,6 @@ import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -23,11 +22,7 @@ import org.openhab.core.service.ReadyMarker;
 import org.openhab.core.service.ReadyMarkerFilter;
 import org.openhab.core.service.ReadyService;
 import org.openhab.core.storage.StorageService;
-import org.openhab.core.thing.Channel;
-import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingRegistry;
-import org.openhab.core.thing.ThingUID;
-import org.openhab.io.homekit.HomekitCommunicationManager;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.Characteristic;
@@ -70,7 +65,6 @@ public class  PersistedAccessoryProvider extends AbstractManagedProvider<org.ope
 
     private final Collection<HomekitFactory> homekitFactories = new CopyOnWriteArrayList<>();
 
-    private final HomekitCommunicationManager homekitCommunicationManager;
     private final AccessoryServerRegistry accessoryServerRegistry;
     private final ThingRegistry thingRegistry;
     private ReadyService readyService;
@@ -80,11 +74,9 @@ public class  PersistedAccessoryProvider extends AbstractManagedProvider<org.ope
 
     @Activate
     public  PersistedAccessoryProvider(@Reference StorageService storageService,
-            @Reference HomekitCommunicationManager homekitCommunicationManager,
             @Reference AccessoryServerRegistry accessoryServerRegistry, @Reference ThingRegistry thingRegistry,
             @Reference ReadyService readyService) {
         super(storageService);
-        this.homekitCommunicationManager = homekitCommunicationManager;
         this.accessoryServerRegistry = accessoryServerRegistry;
         this.thingRegistry = thingRegistry;
         this.readyService = readyService;
@@ -170,9 +162,9 @@ public class  PersistedAccessoryProvider extends AbstractManagedProvider<org.ope
 
                     // TODO : Replace with a call to a Factory in order to create the accessory ?
                     try {
-                        accessory = (Accessory) clazz.getConstructor(HomekitCommunicationManager.class,
+                        accessory = (Accessory) clazz.getConstructor(
                                 AccessoryServer.class, long.class, boolean.class)
-                                .newInstance(homekitCommunicationManager, server, aid, false);
+                                .newInstance( server, aid, false);
                     } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                             | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                         // TODO Auto-generated catch block

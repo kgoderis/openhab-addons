@@ -22,8 +22,8 @@ import org.openhab.core.library.types.OpenClosedType;
 import org.openhab.io.homekit.hap.HomekitCharacteristicChangeCallback;
 import org.openhab.io.homekit.hap.accessories.BatteryStatusAccessory;
 import org.openhab.io.homekit.hap.accessories.LeakSensor;
+import org.openhab.io.homekit.internal.bridge.HomekitTaggedItem;
 import org.openhab.io.homekit.v1.internal.HomekitAccessoryUpdater;
-import org.openhab.io.homekit.v1.internal.HomekitTaggedItem;
 import org.openhab.io.homekit.v1.internal.battery.BatteryStatus;
 
 /**

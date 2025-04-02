@@ -23,15 +23,14 @@ import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.api.listener.CharacteristicChangeListener;
 import org.openhab.io.homekit.api.listener.ServiceChangeListener;
 import org.openhab.io.homekit.internal.characteristic.GenericCharacteristic;
-import org.openhab.io.homekit.internal.characteristic.ReadOnlyStringCharacteristic;
 import org.openhab.io.homekit.internal.events.CharacteristicEvent;
 import org.openhab.io.homekit.internal.events.ServiceEvent;
 import org.openhab.io.homekit.library.characteristic.ServiceNameCharacteristic;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GenericService implements Service {
 

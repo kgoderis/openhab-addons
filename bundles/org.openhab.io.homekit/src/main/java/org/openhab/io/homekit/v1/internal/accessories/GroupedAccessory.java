@@ -13,7 +13,7 @@
 package org.openhab.io.homekit.v1.internal.accessories;
 
 import org.openhab.io.homekit.hap.HomekitAccessory;
-import org.openhab.io.homekit.v1.internal.HomekitTaggedItem;
+import org.openhab.io.homekit.internal.bridge.HomekitTaggedItem;
 
 /**
  * An accessory that is too complex to be represented by a single item. A

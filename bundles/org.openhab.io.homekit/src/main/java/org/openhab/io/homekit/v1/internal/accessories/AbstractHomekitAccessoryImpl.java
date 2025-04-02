@@ -17,8 +17,8 @@ import org.openhab.core.items.GroupItem;
 import org.openhab.core.items.Item;
 import org.openhab.core.items.ItemRegistry;
 import org.openhab.io.homekit.hap.HomekitAccessory;
+import org.openhab.io.homekit.internal.bridge.HomekitTaggedItem;
 import org.openhab.io.homekit.v1.internal.HomekitAccessoryUpdater;
-import org.openhab.io.homekit.v1.internal.HomekitTaggedItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

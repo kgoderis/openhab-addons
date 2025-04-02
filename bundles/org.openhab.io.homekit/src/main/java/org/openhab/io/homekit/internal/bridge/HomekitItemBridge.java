@@ -24,7 +24,6 @@ import org.openhab.io.homekit.internal.accessory.AccessoryRegistryImpl;
 import org.openhab.io.homekit.internal.accessory.GenericAccessory;
 import org.openhab.io.homekit.internal.characteristic.GenericCharacteristic;
 import org.openhab.io.homekit.internal.service.GenericService;
-import org.openhab.io.homekit.v1.internal.HomekitTaggedItem;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -252,6 +251,51 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
             }
         } catch (Exception e) {
             logger.warn("Error updating characteristic value", e);
+        }
+    }
+
+        /**
+     * Given an accessory group, return the item in the group tagged as an accessory.
+     *
+     * @param taggedItem The group item containing our item, or, the accessory item.
+     * @param accessoryType The accessory type for which we're looking
+     * @return
+     */
+    private static Optional<HomekitTaggedItem> getPrimaryAccessory(HomekitTaggedItem taggedItem,
+            HomekitAccessoryType accessoryType, ItemRegistry itemRegistry) {
+        LOGGER.debug("{}: isGroup? {}, isMember? {}", taggedItem.getName(), taggedItem.isGroup(),
+                taggedItem.isMemberOfAccessoryGroup());
+        if (taggedItem.isGroup()) {
+            GroupItem groupItem = (GroupItem) taggedItem.getItem();
+            return groupItem.getMembers().stream().filter(item -> item.hasTag(accessoryType.getTag())).findFirst()
+                    .map(item -> new HomekitTaggedItem(item, itemRegistry));
+        } else if (taggedItem.getAccessoryType() == accessoryType) {
+            return Optional.of(taggedItem);
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    private static Map<HomekitCharacteristicType, Item> getCharacteristicItems(HomekitTaggedItem taggedItem) {
+        if (taggedItem.isGroup()) {
+            GroupItem groupItem = (GroupItem) taggedItem.getItem();
+            Map<HomekitCharacteristicType, Item> characteristicItems = new HashMap<>();
+            groupItem.getMembers().forEach(item -> {
+                HomekitCharacteristicType type = HomekitCharacteristicType.fromItem(item);
+                if (type != null) {
+                    if (characteristicItems.containsKey(type)) {
+                        LOGGER.warn("incorrect configuration for {} detected: {} and {} are tagged as {}, skipping {}",
+                                taggedItem.getItem().getUID(), characteristicItems.get(type).getUID(), item.getUID(),
+                                type, item.getUID());
+                    } else {
+                        characteristicItems.put(type, item);
+                    }
+                }
+            });
+            return Collections.unmodifiableMap(characteristicItems);
+        } else {
+            // do nothing; only accessory groups have characteristic items
+            return Collections.emptyMap();
         }
     }
 } 

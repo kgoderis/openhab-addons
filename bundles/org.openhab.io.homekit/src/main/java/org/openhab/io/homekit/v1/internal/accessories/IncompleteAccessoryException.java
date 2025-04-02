@@ -12,7 +12,7 @@
  */
 package org.openhab.io.homekit.v1.internal.accessories;
 
-import org.openhab.io.homekit.v1.internal.HomekitCharacteristicType;
+import org.openhab.io.homekit.internal.bridge.HomekitCharacteristicType;
 
 /**
  *

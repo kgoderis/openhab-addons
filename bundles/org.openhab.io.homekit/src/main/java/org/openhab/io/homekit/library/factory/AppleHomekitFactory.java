@@ -38,9 +38,9 @@ public class AppleHomekitFactory extends BaseHomekitFactory {
 
         this.addService(AccessoryInformationService.class);
         this.addService(HAPProtocolInformationService.class);
-        this.addService(LightBulbService.class);
+        this.addServiceWithTag("Lighting",LightBulbService.class);
         this.addService(OutletService.class);
-        this.addService(SwitchService.class);
+        this.addService(SwitchService.class);   
         this.addService(ThermostatService.class);
 
         this.addCharacteristic(BrightnessCharacteristic.class);
@@ -58,7 +58,7 @@ public class AppleHomekitFactory extends BaseHomekitFactory {
         this.addCharacteristic(SaturationCharacteristic.class);
         this.addCharacteristic(SerialNumberCharacteristic.class);
         this.addCharacteristic(StatusLowBatteryCharacteristic.class);
-        this.addCharacteristic(TargetHeatingCoolingStateCharacteristic.class);
+        this.addCharacteristicWithTag("homekit:TargetHeatingCoolingMode",TargetHeatingCoolingStateCharacteristic.class);
         this.addCharacteristic(TemperatureDisplayUnitsCharacteristic.class);
         this.addCharacteristic(VersionCharacteristic.class);
     }

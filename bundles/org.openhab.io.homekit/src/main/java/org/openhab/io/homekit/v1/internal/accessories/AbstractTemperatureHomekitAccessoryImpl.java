@@ -16,9 +16,9 @@ import org.openhab.core.items.GenericItem;
 import org.openhab.core.items.ItemRegistry;
 import org.openhab.io.homekit.hap.accessories.TemperatureSensor;
 import org.openhab.io.homekit.hap.accessories.properties.TemperatureUnit;
+import org.openhab.io.homekit.internal.bridge.HomekitTaggedItem;
 import org.openhab.io.homekit.v1.internal.HomekitAccessoryUpdater;
 import org.openhab.io.homekit.v1.internal.HomekitSettings;
-import org.openhab.io.homekit.v1.internal.HomekitTaggedItem;
 
 /**
  *

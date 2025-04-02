@@ -23,8 +23,8 @@ import org.openhab.core.types.State;
 import org.openhab.io.homekit.hap.HomekitCharacteristicChangeCallback;
 import org.openhab.io.homekit.hap.accessories.ColorfulLightbulb;
 import org.openhab.io.homekit.hap.accessories.DimmableLightbulb;
+import org.openhab.io.homekit.internal.bridge.HomekitTaggedItem;
 import org.openhab.io.homekit.v1.internal.HomekitAccessoryUpdater;
-import org.openhab.io.homekit.v1.internal.HomekitTaggedItem;
 
 /**
  * Implements ColorfulLightBulb using an Item that provides a On/Off and color state
