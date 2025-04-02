@@ -6,7 +6,7 @@ import java.util.Set;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingStatus;
 import org.openhab.core.thing.ThingTypeUID;
-import org.openhab.io.homekit.api.Accessory;
+import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;

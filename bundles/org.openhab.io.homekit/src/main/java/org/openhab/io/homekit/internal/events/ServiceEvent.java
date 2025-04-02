@@ -1,7 +1,7 @@
 package org.openhab.io.homekit.internal.events;
 
-import org.openhab.io.homekit.api.Characteristic;
-import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.api.hap.Characteristic;
+import org.openhab.io.homekit.api.hap.Service;
 
 public class ServiceEvent {
     private final Service service;

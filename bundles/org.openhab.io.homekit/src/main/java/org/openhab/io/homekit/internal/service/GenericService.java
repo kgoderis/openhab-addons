@@ -16,27 +16,27 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.openhab.io.homekit.api.Accessory;
-import org.openhab.io.homekit.api.Characteristic;
-import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.api.factory.HomekitFactory;
+import org.openhab.io.homekit.api.hap.Accessory;
+import org.openhab.io.homekit.api.hap.Characteristic;
+import org.openhab.io.homekit.api.hap.Service;
+import org.openhab.io.homekit.api.listener.CharacteristicChangeListener;
+import org.openhab.io.homekit.api.listener.ServiceChangeListener;
 import org.openhab.io.homekit.internal.characteristic.GenericCharacteristic;
 import org.openhab.io.homekit.internal.characteristic.ReadOnlyStringCharacteristic;
 import org.openhab.io.homekit.internal.events.CharacteristicEvent;
 import org.openhab.io.homekit.internal.events.ServiceEvent;
-import org.openhab.io.homekit.internal.listeners.CharacteristicChangeListener;
-import org.openhab.io.homekit.internal.listeners.ServiceChangeListener;
 import org.openhab.io.homekit.library.characteristic.ServiceNameCharacteristic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
-import org.openhab.io.homekit.api.HomekitFactory;
 
 public class GenericService implements Service {
 
     protected static final Logger logger = LoggerFactory.getLogger(GenericService.class);
-    private static ServiceTracker<@NonNull HomekitFactory, @NonNull HomekitFactory> homekitFactoryTracker;
+    private static ServiceTracker<org.openhab.io.homekit.api.factory.HomekitFactory, org.openhab.io.homekit.api.factory.HomekitFactory> homekitFactoryTracker;
 
     private final Accessory accessory;
     private final long instanceId;

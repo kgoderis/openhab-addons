@@ -2,7 +2,7 @@ package org.openhab.io.homekit.library.service;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.Accessory;
+import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.library.characteristic.ColorTemperatureCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HueCharacteristic;
 import org.openhab.io.homekit.library.characteristic.SaturationCharacteristic;

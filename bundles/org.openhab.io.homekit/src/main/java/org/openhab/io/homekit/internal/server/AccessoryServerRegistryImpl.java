@@ -13,15 +13,16 @@ import org.openhab.core.net.NetworkAddressService;
 import org.openhab.core.service.ReadyMarker;
 import org.openhab.core.service.ReadyMarkerFilter;
 import org.openhab.core.service.ReadyService;
-import org.openhab.io.homekit.api.Accessory;
-import org.openhab.io.homekit.api.AccessoryServer;
-import org.openhab.io.homekit.api.AccessoryServerChangeListener;
-import org.openhab.io.homekit.api.AccessoryServerFactory;
-import org.openhab.io.homekit.api.AccessoryServerProvider;
-import org.openhab.io.homekit.api.AccessoryServerRegistry;
-import org.openhab.io.homekit.api.Characteristic;
-import org.openhab.io.homekit.api.LocalAccessoryServer;
-import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.api.factory.AccessoryServerFactory;
+import org.openhab.io.homekit.api.hap.Accessory;
+import org.openhab.io.homekit.api.hap.Characteristic;
+import org.openhab.io.homekit.api.hap.Service;
+import org.openhab.io.homekit.api.listener.AccessoryServerChangeListener;
+import org.openhab.io.homekit.api.provider.AccessoryServerProvider;
+import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
+import org.openhab.io.homekit.api.server.AccessoryServer;
+import org.openhab.io.homekit.api.server.LocalAccessoryServer;
+import org.openhab.io.homekit.internal.events.AccessoryServerEvent;
 import org.openhab.io.homekit.library.accessory.BridgeAccessory;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
@@ -100,7 +101,6 @@ public class AccessoryServerRegistryImpl
 
     @Override
     protected void addProvider(Provider<AccessoryServer> provider) {
-
         logger.debug("Adding Provider {}", provider.toString());
 
         ReadyMarker newMarker = new ReadyMarker(HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER, provider.toString());
@@ -140,8 +140,9 @@ public class AccessoryServerRegistryImpl
                             InetAddress.getByName(networkAddressService.getPrimaryIpv4HostAddress()),
                             highestPortNumber++);
                     if (availableServer != null) {
-                        availableServer.addAccessory(new BridgeAccessory(availableServer.getCommunicationManager(),
-                                availableServer, 1, true));
+                        BridgeAccessory bridgeAccessory = new BridgeAccessory(availableServer.getCommunicationManager(),
+                                availableServer, 1, true);
+                        availableServer.addAccessory(bridgeAccessory);
                     }
 
                 } catch (Exception e) {
@@ -169,8 +170,9 @@ public class AccessoryServerRegistryImpl
                             "Added a Bridge Accessory to Server {} of Type {} running on Port {} with Setup Code {}",
                             availableServer.getUID(), availableServer.getClass().getSimpleName(),
                             availableServer.getPort(), availableServer.getSetupCode());
-                    availableServer.addAccessory(
-                            new BridgeAccessory(availableServer.getCommunicationManager(), availableServer, 1, true));
+                    BridgeAccessory bridgeAccessory = new BridgeAccessory(availableServer.getCommunicationManager(),
+                            availableServer, 1, true);
+                    availableServer.addAccessory(bridgeAccessory);
                 } catch (Exception e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -198,6 +200,24 @@ public class AccessoryServerRegistryImpl
     @Override
     public void onReadyMarkerRemoved(ReadyMarker readyMarker) {
         // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void onAccessoryServerEvent(AccessoryServerEvent event) {
+        switch (event.getType()) {
+            case SERVER_UPDATED:
+                this.update(event.getServer());
+                break;
+            case ACCESSORY_ADDED:
+            case ACCESSORY_REMOVED:
+            case SERVICE_ADDED:
+            case SERVICE_REMOVED:
+            case CHARACTERISTIC_ADDED:
+            case CHARACTERISTIC_REMOVED:
+            case CHARACTERISTIC_STATE_CHANGED:
+                // No Op
+                break;
+        }
     }
 
     public synchronized void addProviderWithReadyMarker(Provider<AccessoryServer> provider) {
@@ -228,43 +248,4 @@ public class AccessoryServerRegistryImpl
         super.removed(provider, element);
     }
 
-    @Override
-    public void onServerUpdated(AccessoryServer server) {
-        this.update(server);
-    }
-
-    @Override
-    public void onAccessoryAdded(Accessory accessory) {
-        // No Op
-    }
-
-    @Override
-    public void onAccessoryRemoved(Accessory accessory) {
-        // No Op
-    }
-
-    @Override
-    public void onServiceAdded(Service service) {
-        // No Op
-    }
-
-    @Override
-    public void onServiceRemoved(Service service) {
-        // No Op
-    }
-
-    @Override
-    public void onCharacteristicAdded(Characteristic characteristic) {
-        // No Op
-    }
-
-    @Override
-    public void onCharacteristicRemoved(Characteristic characteristic) {
-        // No Op
-    }
-
-    @Override
-    public void onCharacteristicStateChanged(Characteristic characteristic) {
-        // No Op
-    }
 }

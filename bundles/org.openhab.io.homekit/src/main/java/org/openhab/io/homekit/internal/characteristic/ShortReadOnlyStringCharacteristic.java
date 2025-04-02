@@ -10,7 +10,7 @@ import javax.json.JsonValue;
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.types.State;
-import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.api.hap.Service;
 
 /**
  * @author Karel Goderis - Initial Contribution

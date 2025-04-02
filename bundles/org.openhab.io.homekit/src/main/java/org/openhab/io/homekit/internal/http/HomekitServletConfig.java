@@ -3,7 +3,7 @@ package org.openhab.io.homekit.internal.http;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 
-import org.openhab.io.homekit.api.AccessoryServer;
+import org.openhab.io.homekit.api.server.AccessoryServer;
 import org.openhab.io.homekit.internal.http.netty.ConfigAdapter;
 import org.openhab.io.homekit.internal.http.netty.ServletContextImpl;
 

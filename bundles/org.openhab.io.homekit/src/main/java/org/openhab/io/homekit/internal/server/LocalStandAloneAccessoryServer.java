@@ -7,9 +7,9 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.core.common.SafeCaller;
 import org.openhab.core.io.transport.mdns.MDNSService;
 import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.AccessoryRegistry;
 import org.openhab.io.homekit.api.NotificationRegistry;
-import org.openhab.io.homekit.api.PairingRegistry;
+import org.openhab.io.homekit.api.registry.AccessoryRegistry;
+import org.openhab.io.homekit.api.registry.PairingRegistry;
 
 /**
  * An HomekitAccessoryServer is a class that supports HomeKit Accessory Protocol and exposes a collection of

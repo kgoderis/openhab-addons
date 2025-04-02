@@ -4,7 +4,7 @@ import org.openhab.core.library.types.HSBType;
 import org.openhab.core.library.types.PercentType;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
-import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.FloatCharacteristic;
 import java.math.BigDecimal;
 public class SaturationCharacteristic extends FloatCharacteristic {

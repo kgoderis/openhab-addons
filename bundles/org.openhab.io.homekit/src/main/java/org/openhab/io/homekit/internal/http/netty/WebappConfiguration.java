@@ -29,7 +29,7 @@ import javax.servlet.Filter;
 import javax.servlet.ServletContextListener;
 import javax.servlet.http.HttpServlet;
 
-import org.openhab.io.homekit.api.AccessoryServer;
+import org.openhab.io.homekit.api.server.AccessoryServer;
 
 public class WebappConfiguration {
 

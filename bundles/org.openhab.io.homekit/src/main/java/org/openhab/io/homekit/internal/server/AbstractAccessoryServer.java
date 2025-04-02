@@ -10,15 +10,16 @@ import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.io.homekit.api.Accessory;
-import org.openhab.io.homekit.api.AccessoryRegistry;
-import org.openhab.io.homekit.api.AccessoryServer;
-import org.openhab.io.homekit.api.AccessoryServerChangeListener;
 import org.openhab.io.homekit.api.NotificationRegistry;
-import org.openhab.io.homekit.api.Pairing;
-import org.openhab.io.homekit.api.PairingRegistry;
+import org.openhab.io.homekit.api.hap.Accessory;
+import org.openhab.io.homekit.api.hap.Pairing;
+import org.openhab.io.homekit.api.listener.AccessoryServerChangeListener;
+import org.openhab.io.homekit.api.registry.AccessoryRegistry;
+import org.openhab.io.homekit.api.registry.PairingRegistry;
+import org.openhab.io.homekit.api.server.AccessoryServer;
 import org.openhab.io.homekit.crypto.HomekitEncryptionEngine;
 import org.openhab.io.homekit.internal.accessory.AccessoryUID;
+import org.openhab.io.homekit.internal.events.AccessoryServerEvent;
 import org.openhab.io.homekit.internal.pairing.PairingImpl;
 import org.openhab.io.homekit.internal.pairing.PairingUID;
 import org.openhab.io.homekit.library.accessory.BridgeAccessory;
@@ -167,9 +168,10 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     }
 
     protected void notifyListeners() {
+        AccessoryServerEvent event = new AccessoryServerEvent(this, null, null, null, AccessoryServerEvent.AccessoryServerEventType.SERVER_UPDATED);
         for (AccessoryServerChangeListener listener : this.listeners) {
             try {
-                listener.onServerUpdated(this);
+                listener.onAccessoryServerEvent(event);
             } catch (Throwable throwable) {
                 logger.error("Cannot inform listener {} ", listener, throwable.getMessage(), throwable);
             }

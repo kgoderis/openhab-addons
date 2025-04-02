@@ -1,7 +1,7 @@
 package org.openhab.io.homekit.internal.events;
 
-import org.openhab.io.homekit.api.Accessory;
-import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.api.hap.Accessory;
+import org.openhab.io.homekit.api.hap.Service;
 
 public class AccessoryEvent {
     private final Accessory accessory;

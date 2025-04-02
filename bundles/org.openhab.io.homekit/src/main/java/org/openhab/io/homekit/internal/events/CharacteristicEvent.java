@@ -2,7 +2,7 @@ package org.openhab.io.homekit.internal.events;
 
 import javax.json.JsonValue;
 
-import org.openhab.io.homekit.api.Characteristic;
+import org.openhab.io.homekit.api.hap.Characteristic;
 
 public class CharacteristicEvent {
     private final Characteristic<?> characteristic;

@@ -12,8 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.http.HttpHeader;
-import org.openhab.io.homekit.api.Accessory;
-import org.openhab.io.homekit.api.LocalAccessoryServer;
+import org.openhab.io.homekit.api.hap.Accessory;
+import org.openhab.io.homekit.api.server.LocalAccessoryServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

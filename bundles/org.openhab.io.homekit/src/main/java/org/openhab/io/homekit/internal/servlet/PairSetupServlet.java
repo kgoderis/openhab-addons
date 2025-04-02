@@ -18,7 +18,7 @@ import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
 import org.eclipse.jetty.http.HttpHeader;
-import org.openhab.io.homekit.api.LocalAccessoryServer;
+import org.openhab.io.homekit.api.server.LocalAccessoryServer;
 import org.openhab.io.homekit.crypto.ChachaDecoder;
 import org.openhab.io.homekit.crypto.ChachaEncoder;
 import org.openhab.io.homekit.crypto.EdsaSigner;

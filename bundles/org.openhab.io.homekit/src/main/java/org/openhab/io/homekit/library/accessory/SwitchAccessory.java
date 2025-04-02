@@ -2,7 +2,7 @@ package org.openhab.io.homekit.library.accessory;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.AccessoryServer;
+import org.openhab.io.homekit.api.server.AccessoryServer;
 import org.openhab.io.homekit.library.service.SwitchService;
 
 public class SwitchAccessory extends ThingAccessory {

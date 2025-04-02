@@ -7,7 +7,7 @@ import javax.json.JsonValue;
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
-import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.api.hap.Service;
 
 /**
  * * Characteristic that exposes an Enum value. Enums are represented as an Integer value in the

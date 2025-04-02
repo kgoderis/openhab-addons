@@ -13,14 +13,14 @@ import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.io.homekit.api.Accessory;
-import org.openhab.io.homekit.api.AccessoryServer;
-import org.openhab.io.homekit.api.HomekitFactory;
-import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.api.factory.HomekitFactory;
+import org.openhab.io.homekit.api.hap.Accessory;
+import org.openhab.io.homekit.api.hap.Service;
+import org.openhab.io.homekit.api.listener.AccessoryChangeListener;
+import org.openhab.io.homekit.api.listener.ServiceChangeListener;
+import org.openhab.io.homekit.api.server.AccessoryServer;
 import org.openhab.io.homekit.internal.events.AccessoryEvent;
 import org.openhab.io.homekit.internal.events.ServiceEvent;
-import org.openhab.io.homekit.internal.listeners.AccessoryChangeListener;
-import org.openhab.io.homekit.internal.listeners.ServiceChangeListener;
 import org.openhab.io.homekit.internal.service.GenericService;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
@@ -32,7 +32,7 @@ import org.openhab.io.homekit.library.service.AccessoryInformationService;
 public class GenericAccessory implements Accessory {
 
     private final Logger logger = LoggerFactory.getLogger(GenericAccessory.class);
-    private static ServiceTracker<@NonNull HomekitFactory, @NonNull HomekitFactory> homekitFactoryTracker;
+    private static ServiceTracker<org.openhab.io.homekit.api.factory.HomekitFactory, org.openhab.io.homekit.api.factory.HomekitFactory> homekitFactoryTracker;
 
 
     private final long instanceId;

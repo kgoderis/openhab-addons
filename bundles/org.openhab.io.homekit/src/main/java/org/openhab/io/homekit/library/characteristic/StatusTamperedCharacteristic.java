@@ -1,6 +1,6 @@
 package org.openhab.io.homekit.library.characteristic;
 
-import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.EnumCharacteristic;
 
 public class StatusTamperedCharacteristic extends EnumCharacteristic {

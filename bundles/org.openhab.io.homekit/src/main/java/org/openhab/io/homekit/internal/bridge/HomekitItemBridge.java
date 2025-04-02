@@ -16,10 +16,10 @@ import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.binding.builder.ThingBuilder;
 import org.openhab.core.types.State;
-import org.openhab.io.homekit.api.AccessoryServerRegistry;
-import org.openhab.io.homekit.api.Characteristic;
-import org.openhab.io.homekit.api.HomekitFactory;
-import org.openhab.io.homekit.api.LocalAccessoryServer;
+import org.openhab.io.homekit.api.factory.HomekitFactory;
+import org.openhab.io.homekit.api.hap.Characteristic;
+import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
+import org.openhab.io.homekit.api.server.LocalAccessoryServer;
 import org.openhab.io.homekit.internal.accessory.AccessoryRegistryImpl;
 import org.openhab.io.homekit.internal.accessory.GenericAccessory;
 import org.openhab.io.homekit.internal.characteristic.GenericCharacteristic;
@@ -189,7 +189,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                         accessoryMap.put(taggedItem.getName(), accessory);
                         
                         // Set up characteristics
-                        for (org.openhab.io.homekit.api.Service service : accessory.getServices()) {
+                        for (org.openhab.io.homekit.api.hap.Service service : accessory.getServices()) {
                             if (service instanceof GenericService) {
                                 GenericService genericService = (GenericService) service;
                                 for (Characteristic<?> characteristic : genericService.getCharacteristics()) {

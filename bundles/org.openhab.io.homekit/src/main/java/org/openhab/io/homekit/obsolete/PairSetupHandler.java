@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 
-import org.openhab.io.homekit.api.AccessoryServer;
+import org.openhab.io.homekit.api.server.AccessoryServer;
 import org.openhab.io.homekit.util.Message;
 import org.openhab.io.homekit.util.TypeLengthValue;
 import org.openhab.io.homekit.util.TypeLengthValue.DecodeResult;

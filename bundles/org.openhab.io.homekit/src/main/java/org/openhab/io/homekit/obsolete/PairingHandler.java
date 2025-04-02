@@ -1,6 +1,6 @@
 package org.openhab.io.homekit.obsolete;
 
-import org.openhab.io.homekit.api.AccessoryServer;
+import org.openhab.io.homekit.api.server.AccessoryServer;
 
 abstract class PairingHandler extends BaseHandler {
 

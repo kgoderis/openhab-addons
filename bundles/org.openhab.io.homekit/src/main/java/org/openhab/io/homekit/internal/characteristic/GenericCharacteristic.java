@@ -16,10 +16,10 @@ import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.core.types.State;
-import org.openhab.io.homekit.api.Characteristic;
-import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.api.hap.Characteristic;
+import org.openhab.io.homekit.api.hap.Service;
+import org.openhab.io.homekit.api.listener.CharacteristicChangeListener;
 import org.openhab.io.homekit.internal.events.CharacteristicEvent;
-import org.openhab.io.homekit.internal.listeners.CharacteristicChangeListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

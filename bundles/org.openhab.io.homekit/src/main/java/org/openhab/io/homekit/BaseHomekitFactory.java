@@ -17,14 +17,12 @@ import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.type.ChannelTypeUID;
-import org.openhab.io.homekit.api.AccessoryServer;
-import org.openhab.io.homekit.api.Characteristic;
-import org.openhab.io.homekit.api.HomekitFactory;
-import org.openhab.io.homekit.api.LocalAccessoryServer;
-import org.openhab.io.homekit.api.Accessory;
-import org.openhab.io.homekit.api.Characteristic;
-import org.openhab.io.homekit.api.ManagedService;
-import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.api.factory.HomekitFactory;
+import org.openhab.io.homekit.api.hap.Accessory;
+import org.openhab.io.homekit.api.hap.Characteristic;
+import org.openhab.io.homekit.api.hap.Service;
+import org.openhab.io.homekit.api.server.AccessoryServer;
+import org.openhab.io.homekit.api.server.LocalAccessoryServer;
 import org.openhab.io.homekit.internal.accessory.GenericAccessory;
 import org.openhab.io.homekit.library.accessory.ThingAccessory;
 import org.openhab.io.homekit.library.service.ThingService;
@@ -41,7 +39,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     HashMap<ThingTypeUID, Class<? extends Accessory>> thingTypeAccessoryClassMapper = new HashMap<ThingTypeUID, Class<? extends Accessory>>();
     HashMap<ThingTypeUID, HashSet<String>> thingTypeServiceTypesMapper = new HashMap<ThingTypeUID, @NonNull HashSet<String>>();
     HashMap<ChannelTypeUID, HashSet<String>> channelTypeCharacteristicTypesMapper = new HashMap<ChannelTypeUID, @NonNull HashSet<String>>();
-    HashMap<String, Class<? extends ManagedService>> serviceTypeServiceClassMapper = new HashMap<String, Class<@NonNull ? extends ManagedService>>();
+    HashMap<String, Class<? extends Service>> serviceTypeServiceClassMapper = new HashMap<String, Class<@NonNull ? extends Service>>();
     HashMap<String, Class<? extends Characteristic<?>>> characteristicTypeCharacteristicClassMapper = new HashMap<String, Class<@NonNull ? extends Characteristic<?>>>();
 
     public BaseHomekitFactory() {
@@ -95,7 +93,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
                             .addService(createService(serviceType, thingAccessory, true, thingAccessory.getLabel()));
                 }
 
-                ManagedService service = (ManagedService) thingAccessory.getService(serviceType);
+                Service service = (Service) thingAccessory.getService(serviceType);
 
                 if (service != null) {
                     for (Channel channel : thing.getChannels()) {
@@ -164,13 +162,13 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     }
 
     @Override
-    public @Nullable ManagedService createService(@NonNull String serviceType, @NonNull Accessory accessory,
+    public @Nullable Service createService(@NonNull String serviceType, @NonNull Accessory accessory,
             long instanceId, boolean extend, @NonNull String serviceName) {
-        Class<? extends ManagedService> serviceClass = serviceTypeServiceClassMapper.get(serviceType);
+        Class<? extends Service> serviceClass = serviceTypeServiceClassMapper.get(serviceType);
         if (serviceClass != null) {
             try {
-                ManagedService service = serviceClass
-                        .getConstructor(HomekitCommunicationManager.class, Accessory.class, long.class,
+                Service service = serviceClass
+                        .getConstructor( Accessory.class, long.class,
                                 boolean.class, String.class)
                         .newInstance(communicationManagerTracker.get(), accessory, instanceId, extend, serviceName);
                 logger.debug(
@@ -191,9 +189,9 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     }
 
     @Override
-    public @Nullable ManagedService createService(@NonNull String serviceType, @NonNull Accessory accessory,
+    public @Nullable Service createService(@NonNull String serviceType, @NonNull Accessory accessory,
             boolean extend, @NonNull String serviceName) {
-        Class<? extends ManagedService> serviceClass = serviceTypeServiceClassMapper.get(serviceType);
+        Class<? extends Service> serviceClass = serviceTypeServiceClassMapper.get(serviceType);
         if (serviceClass != null) {
             return createService(serviceType, accessory, accessory.getInstanceId(), extend, serviceName);
         }
@@ -202,9 +200,9 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     }
 
     @Override
-    public @Nullable ManagedService createService(@NonNull String serviceType, @NonNull Accessory accessory,
+    public @Nullable Service createService(@NonNull String serviceType, @NonNull Accessory accessory,
             long instanceId, boolean extend) {
-        Class<? extends ManagedService> serviceClass = serviceTypeServiceClassMapper.get(serviceType);
+        Class<? extends Service> serviceClass = serviceTypeServiceClassMapper.get(serviceType);
         if (serviceClass != null) {
             return createService(serviceType, accessory, instanceId, extend, serviceClass.getSimpleName());
         }
@@ -214,14 +212,14 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
 
     @Override
     public @Nullable Characteristic<?> createCharacteristic(@NonNull String characteristicType,
-            @NonNull ManagedService service, long instanceId) {
+            @NonNull Service service, long instanceId) {
         Class<? extends Characteristic<?>> characteristicsClass = characteristicTypeCharacteristicClassMapper
                 .get(characteristicType);
         if (characteristicsClass != null) {
             try {
 
                 Characteristic<?> characteristic = characteristicsClass
-                        .getConstructor(HomekitCommunicationManager.class, ManagedService.class, long.class)
+                        .getConstructor(HomekitCommunicationManager.class, Service.class, long.class)
                         .newInstance(communicationManagerTracker.get(), service, instanceId);
                 logger.debug(
                         "Created a Characteristic {} of Type {} (HAP Type {}) for Service {} of Type {}, with instanceId {}",
@@ -243,7 +241,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
 
     @Override
     public @Nullable Characteristic<?> createCharacteristic(@NonNull String characteristicType,
-            @NonNull ManagedService service) {
+            @NonNull Service service) {
         Class<? extends Characteristic<?>> characteristicsClass = characteristicTypeCharacteristicClassMapper
                 .get(characteristicType);
         if (characteristicsClass != null) {
@@ -286,7 +284,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
 
     @Override
     public void addAccessory(@NonNull ThingTypeUID thingType,
-            @NonNull Class<? extends @NonNull Accessory> accessoryClass) {
+            @NonNull Class<? extends org.openhab.io.homekit.api.hap.Accessory> accessoryClass) {
         thingTypeAccessoryClassMapper.put(thingType, accessoryClass);
     }
 
@@ -297,7 +295,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
 
     @Override
     public void addService(@NonNull ThingTypeUID thingType,
-            @NonNull Class<@NonNull ? extends ManagedService> serviceClass) {
+            @NonNull Class<@NonNull ? extends Service> serviceClass) {
 
         String serviceType = UUID5.fromNamespaceAndString(UUID5.NAMESPACE_SERVICE, serviceClass.getName()).toString();
         try {
@@ -315,7 +313,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     }
 
     @Override
-    public void addService(@NonNull Class<@NonNull ? extends ManagedService> serviceClass) {
+    public void addService(@NonNull Class<@NonNull ? extends Service> serviceClass) {
 
         String serviceType = UUID5.fromNamespaceAndString(UUID5.NAMESPACE_SERVICE, serviceClass.getName()).toString();
         try {
@@ -343,7 +341,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
 
     @Override
     public void addService(@NonNull String serviceType,
-            @NonNull Class<@NonNull ? extends ManagedService> serviceClass) {
+            @NonNull Class<@NonNull ? extends Service> serviceClass) {
         serviceTypeServiceClassMapper.put(serviceType, serviceClass);
     }
 

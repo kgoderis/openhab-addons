@@ -19,10 +19,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.server.HttpConnection;
-import org.openhab.io.homekit.api.Accessory;
-import org.openhab.io.homekit.api.LocalAccessoryServer;
 import org.openhab.io.homekit.api.ManagedCharacteristic;
-import org.openhab.io.homekit.api.Service;
+import org.openhab.io.homekit.api.hap.Accessory;
+import org.openhab.io.homekit.api.hap.Service;
+import org.openhab.io.homekit.api.server.LocalAccessoryServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

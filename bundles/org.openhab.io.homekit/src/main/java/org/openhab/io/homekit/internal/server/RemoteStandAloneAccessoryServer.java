@@ -5,10 +5,10 @@ import java.util.Collection;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.io.homekit.api.AccessoryRegistry;
 import org.openhab.io.homekit.api.NotificationRegistry;
-import org.openhab.io.homekit.api.Pairing;
-import org.openhab.io.homekit.api.PairingRegistry;
+import org.openhab.io.homekit.api.hap.Pairing;
+import org.openhab.io.homekit.api.registry.AccessoryRegistry;
+import org.openhab.io.homekit.api.registry.PairingRegistry;
 
 public class RemoteStandAloneAccessoryServer extends AbstractRemoteAccessoryServer {
 
@@ -31,7 +31,7 @@ public class RemoteStandAloneAccessoryServer extends AbstractRemoteAccessoryServ
     }
 
     public Pairing getPairing() {
-        Collection<@NonNull Pairing> pairings = pairingRegistry.get(getPairingId());
+        Collection<org.openhab.io.homekit.api.hap.Pairing> pairings = pairingRegistry.get(getPairingId());
 
         if (pairings.size() == 1) {
             return (Pairing) pairings.toArray()[0];

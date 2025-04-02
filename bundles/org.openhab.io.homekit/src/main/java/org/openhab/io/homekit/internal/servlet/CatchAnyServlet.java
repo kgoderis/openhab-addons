@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
-import org.openhab.io.homekit.api.LocalAccessoryServer;
+import org.openhab.io.homekit.api.server.LocalAccessoryServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -21,10 +21,10 @@ import org.openhab.core.common.registry.Provider;
 import org.openhab.core.service.ReadyMarker;
 import org.openhab.core.service.ReadyMarkerFilter;
 import org.openhab.core.service.ReadyService;
-import org.openhab.io.homekit.api.Accessory;
-import org.openhab.io.homekit.api.AccessoryProvider;
-import org.openhab.io.homekit.api.AccessoryRegistry;
-import org.openhab.io.homekit.api.LocalAccessoryServer;
+import org.openhab.io.homekit.api.hap.Accessory;
+import org.openhab.io.homekit.api.provider.AccessoryProvider;
+import org.openhab.io.homekit.api.registry.AccessoryRegistry;
+import org.openhab.io.homekit.api.server.LocalAccessoryServer;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -34,6 +34,7 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.openhab.core.common.registry.ManagedProvider;
 
 /**
  * Stores the created Accessories
@@ -59,11 +60,11 @@ public class AccessoryRegistryImpl extends AbstractRegistry<Accessory, Accessory
     }
 
     @Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC)
-    protected void setManagedProvider(ManagedAccessoryProvider provider) {
+    protected void setManagedProvider(ManagedProvider<Accessory, AccessoryUID> provider) {
         super.setManagedProvider(provider);
     }
 
-    protected void unsetManagedProvider(ManagedAccessoryProvider provider) {
+    protected void unsetManagedProvider(ManagedProvider<Accessory, AccessoryUID> provider) {
         super.unsetManagedProvider(provider);
     }
 
@@ -139,7 +140,7 @@ public class AccessoryRegistryImpl extends AbstractRegistry<Accessory, Accessory
 
         ReadyMarker newMarker = new ReadyMarker(HOMEKIT_MANAGED_ACCESSORY_PROVIDER, provider.toString());
 
-        if (provider instanceof ManagedAccessoryProvider) {
+        if (provider instanceof Provider<Accessory>) {
             if (readyService.isReady(newMarker)) {
                 addProviderWithReadyMarker(provider);
             }

@@ -1,6 +1,6 @@
 package org.openhab.io.homekit.library.service;
 
-import org.openhab.io.homekit.api.Accessory;
+import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.internal.service.GenericService;
 import org.openhab.io.homekit.util.UUID5;
 

@@ -3,7 +3,7 @@ package org.openhab.io.homekit.internal.pairing;
 import java.util.Base64;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.openhab.io.homekit.api.Pairing;
+import org.openhab.io.homekit.api.hap.Pairing;
 
 public class PairingImpl implements Pairing {
 

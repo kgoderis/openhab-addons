@@ -3,7 +3,7 @@ package org.openhab.io.homekit.library.factory;
 import org.openhab.core.magic.binding.MagicBindingConstants;
 import org.openhab.core.thing.type.ChannelTypeUID;
 import org.openhab.io.homekit.BaseHomekitFactory;
-import org.openhab.io.homekit.api.HomekitFactory;
+import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.library.characteristic.BrightnessCharacteristic;
 import org.openhab.io.homekit.library.characteristic.CurrentTemperatureCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HueCharacteristic;

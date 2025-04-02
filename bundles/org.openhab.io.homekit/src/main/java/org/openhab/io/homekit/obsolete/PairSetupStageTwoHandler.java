@@ -10,7 +10,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.server.Request;
-import org.openhab.io.homekit.api.AccessoryServer;
+import org.openhab.io.homekit.api.server.AccessoryServer;
 import org.openhab.io.homekit.internal.servlet.HomekitServerSRP6Session;
 import org.openhab.io.homekit.internal.servlet.HomekitServerSRP6Session.State;
 import org.openhab.io.homekit.util.Message;
