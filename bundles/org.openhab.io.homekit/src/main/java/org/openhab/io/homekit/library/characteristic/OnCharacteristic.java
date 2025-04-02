@@ -12,7 +12,7 @@ import org.openhab.io.homekit.internal.characteristic.BooleanCharacteristic;
  */
 public class OnCharacteristic extends BooleanCharacteristic {
 
-    protected OnCharacteristic(Service service, long instanceId) {
+    public OnCharacteristic(Service service, long instanceId) {
         super(service, instanceId, true, true, true, "On");
     }
 

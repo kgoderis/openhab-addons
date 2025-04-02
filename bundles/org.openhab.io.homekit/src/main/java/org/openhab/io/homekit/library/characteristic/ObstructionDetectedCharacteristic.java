@@ -10,7 +10,7 @@ import org.openhab.io.homekit.internal.characteristic.BooleanCharacteristic;/**
  */
 public class ObstructionDetectedCharacteristic extends BooleanCharacteristic {
 
-    protected ObstructionDetectedCharacteristic(Service service, long instanceId) {
+    public ObstructionDetectedCharacteristic(Service service, long instanceId) {
         super(service, instanceId, false, true, true, "Obstruction detected");
     }
 

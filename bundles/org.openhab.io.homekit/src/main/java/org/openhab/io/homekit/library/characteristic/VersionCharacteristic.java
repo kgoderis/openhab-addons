@@ -6,8 +6,8 @@ import org.openhab.io.homekit.internal.characteristic.ShortReadOnlyStringCharact
 
 public class VersionCharacteristic extends ShortReadOnlyStringCharacteristic {
 
-    protected VersionCharacteristic(Service service, long instanceId) {
-        super(service, instanceId, "Version");
+    public VersionCharacteristic(Service service, long instanceId) {
+        super(service, instanceId, "1.0.0");
     }
 
     public static String getType() {

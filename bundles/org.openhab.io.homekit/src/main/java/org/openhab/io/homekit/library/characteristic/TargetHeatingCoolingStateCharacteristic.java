@@ -5,7 +5,7 @@ import org.openhab.io.homekit.internal.characteristic.ByteCharacteristic;
 
 public class TargetHeatingCoolingStateCharacteristic extends ByteCharacteristic {
 
-    protected TargetHeatingCoolingStateCharacteristic(Service service, long instanceId) {
+    public TargetHeatingCoolingStateCharacteristic(Service service, long instanceId) {
         super(service, instanceId, true, true, true, "Target heating cooling state", (byte) 0, (byte) 3);
     }
 

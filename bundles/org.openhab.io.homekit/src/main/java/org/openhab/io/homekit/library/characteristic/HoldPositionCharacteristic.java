@@ -12,7 +12,7 @@ import org.openhab.io.homekit.internal.characteristic.BooleanCharacteristic;
  */
 public class HoldPositionCharacteristic extends BooleanCharacteristic {
 
-    protected HoldPositionCharacteristic(Service service, long instanceId) {
+    public HoldPositionCharacteristic(Service service, long instanceId) {
         super(service, instanceId, true, true, true, "Hold position");
     }
 

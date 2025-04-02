@@ -5,7 +5,7 @@ import org.openhab.io.homekit.internal.characteristic.LongCharacteristic;
 
 public class ColorTemperatureCharacteristic extends LongCharacteristic {
 
-    protected ColorTemperatureCharacteristic(Service service, long instanceId) {
+    public ColorTemperatureCharacteristic(Service service, long instanceId) {
         super(service, instanceId, true, true, true, "Color temperature", 50L, 400L, 1L);
     }
 

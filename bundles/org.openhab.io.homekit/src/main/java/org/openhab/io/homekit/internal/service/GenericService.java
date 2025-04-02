@@ -20,18 +20,18 @@ import org.openhab.io.homekit.api.Accessory;
 import org.openhab.io.homekit.api.Characteristic;
 import org.openhab.io.homekit.api.Service;
 import org.openhab.io.homekit.internal.characteristic.GenericCharacteristic;
+import org.openhab.io.homekit.internal.characteristic.ReadOnlyStringCharacteristic;
 import org.openhab.io.homekit.internal.events.CharacteristicEvent;
 import org.openhab.io.homekit.internal.events.ServiceEvent;
 import org.openhab.io.homekit.internal.listeners.CharacteristicChangeListener;
 import org.openhab.io.homekit.internal.listeners.ServiceChangeListener;
+import org.openhab.io.homekit.library.characteristic.ServiceNameCharacteristic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
 import org.openhab.io.homekit.api.HomekitFactory;
-import org.openhab.io.homekit.library.characteristic.NameCharacteristic;
-
 
 public class GenericService implements Service {
 
@@ -41,17 +41,39 @@ public class GenericService implements Service {
     private final Accessory accessory;
     private final long instanceId;
     private final String name;
-    private String type;
+    private String type = "";
     private boolean isHidden;
     private boolean isPrimary;
     private final List<Characteristic<?>> characteristics = new LinkedList<>();
     private final Collection<ServiceChangeListener> listeners = new CopyOnWriteArraySet<>();
+    private final boolean isExtensible;
+
+    public GenericService(@NonNull Accessory accessory, long instanceId, boolean extend, String name) {
+        this.accessory = accessory;
+        this.instanceId = instanceId;
+        this.name = name;
+        this.isExtensible = extend;
+
+        if (isExtensible()) {
+            addCharacteristics();
+        }
+
+        Characteristic<?> nameCharacteristic = getCharacteristic(ServiceNameCharacteristic.class);
+        if (nameCharacteristic != null) {
+            try {
+                ((ServiceNameCharacteristic) nameCharacteristic).setValue(name);
+            } catch (Exception e) {
+                logger.error("Error setting name characteristic value", e);
+            }
+        }
+    }
 
     public GenericService(Accessory accessory, JsonValue value, String name) {
         this.accessory = accessory;
         this.instanceId = ((JsonObject) value).getInt("iid");
         this.type = ((JsonObject) value).getString("type");
         this.name = name;
+        this.isExtensible = false; // Not extensible when created from JSON
 
         JsonArray characteristicsArray = ((JsonObject) value).getJsonArray("characteristics");
         for (JsonValue characteristicValue : characteristicsArray) {
@@ -60,24 +82,12 @@ public class GenericService implements Service {
                 characteristics.add(characteristic);
             }
         }
-
-
-    }
-
-    public GenericService(@NonNull Accessory accessory, long instanceId, String name) {
-        this.accessory = accessory;
-        this.instanceId = instanceId;
-        this.name = name;
-
-        if (isExtensible()) {
-            addCharacteristics();
-        }
     }
 
     @Override
     public void addCharacteristics() {
         addCharacteristic(
-                new NameCharacteristic( this, accessory.getInstanceId()));
+                new ServiceNameCharacteristic(this, getAccessory().getId()));
     }
 
     private Characteristic<?> createCharacteristic(JsonValue value) {
@@ -202,7 +212,7 @@ public class GenericService implements Service {
 
     @Override
     public boolean isExtensible() {
-        return true;
+        return isExtensible;
     }
 
     /**

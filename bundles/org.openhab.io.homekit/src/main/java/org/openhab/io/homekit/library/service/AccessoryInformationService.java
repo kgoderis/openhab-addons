@@ -2,18 +2,18 @@ package org.openhab.io.homekit.library.service;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.ManagedAccessory;
-import org.openhab.io.homekit.internal.service.AbstractManagedService;
+import org.openhab.io.homekit.api.Accessory;
+import org.openhab.io.homekit.internal.service.GenericService;
 import org.openhab.io.homekit.library.characteristic.IdentifyCharacteristic;
 import org.openhab.io.homekit.library.characteristic.ManufacturerCharacteristic;
 import org.openhab.io.homekit.library.characteristic.ModelCharacteristic;
 import org.openhab.io.homekit.library.characteristic.SerialNumberCharacteristic;
 
-public class AccessoryInformationService extends AbstractManagedService {
+public class AccessoryInformationService extends GenericService {
 
-    public AccessoryInformationService(HomekitCommunicationManager manager, ManagedAccessory accessory, long instanceId,
+    public AccessoryInformationService(Accessory accessory, long instanceId,
             boolean extend, @NonNull String serviceName) {
-        super(manager, accessory, instanceId, extend, serviceName);
+        super(accessory, instanceId, extend, serviceName);
     }
 
     @Override
@@ -21,13 +21,13 @@ public class AccessoryInformationService extends AbstractManagedService {
         super.addCharacteristics();
         // addCharacteristic(new FirmwareRevisionCharacteristic(manager, this, getAccessory().getInstanceId()));
         addCharacteristic(
-                new IdentifyCharacteristic(getManager(), this, ((ManagedAccessory) getAccessory()).getInstanceId()));
-        addCharacteristic(new ManufacturerCharacteristic(getManager(), this,
-                ((ManagedAccessory) getAccessory()).getInstanceId()));
+                new IdentifyCharacteristic( this, ((Accessory) getAccessory()).getNewInstanceId()));
+        addCharacteristic(new ManufacturerCharacteristic (this,
+                ((Accessory) getAccessory()).getNewInstanceId()));
         addCharacteristic(
-                new ModelCharacteristic(getManager(), this, ((ManagedAccessory) getAccessory()).getInstanceId()));
-        addCharacteristic(new SerialNumberCharacteristic(getManager(), this,
-                ((ManagedAccessory) getAccessory()).getInstanceId()));
+                new ModelCharacteristic( this, ((Accessory) getAccessory()).getNewInstanceId()));
+        addCharacteristic(new SerialNumberCharacteristic( this,
+                ((Accessory) getAccessory()).getNewInstanceId()));
     }
 
     @Override

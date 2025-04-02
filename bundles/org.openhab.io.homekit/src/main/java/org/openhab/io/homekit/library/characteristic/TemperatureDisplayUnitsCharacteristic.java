@@ -5,7 +5,7 @@ import org.openhab.io.homekit.internal.characteristic.ByteCharacteristic;
 
 public class TemperatureDisplayUnitsCharacteristic extends ByteCharacteristic {
 
-    protected TemperatureDisplayUnitsCharacteristic(Service service, long instanceId) {
+    public TemperatureDisplayUnitsCharacteristic(Service service, long instanceId) {
         super(service, instanceId, true, true, true, "Temperature display units", (byte) 0, (byte) 1);
     }
 

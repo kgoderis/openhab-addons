@@ -23,12 +23,12 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.type.ChannelTypeUID;
-import org.openhab.io.homekit.internal.accessory.GenericAccessory;
+import org.openhab.io.homekit.internal.accessory.Accessory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link HomekitFactory} is responsible for creating {@link ManagedAccessory}s based on {@link Thing}s. Therefore
+ * The {@link HomekitFactory} is responsible for creating {@link Accessory}s based on {@link Thing}s. Therefore
  * the
  * factory must be registered as OSGi service.
  *
@@ -50,7 +50,7 @@ public interface HomekitFactory {
     boolean supportsCharacteristicsType(String type);
 
     /**
-     * Creates a new {@link ManagedAccessory} instance.
+     * Creates a new {@link Accessory} instance.
      * <p>
      * This method is only called if the {@link HomekitFactory} supports the type of the given thing.
      * <p>
@@ -61,31 +61,34 @@ public interface HomekitFactory {
      * @throws IllegalStateException if the handler instance could not be created
      */
     @Nullable
-    ManagedAccessory createAccessory(Thing thing, LocalAccessoryServer server) throws Exception;
+    Accessory createAccessory(Thing thing, LocalAccessoryServer server) throws Exception;
 
     @Nullable
-    ManagedAccessory createAccessory(Class<? extends ManagedAccessory> accessoryClass, AccessoryServer server,
+    Accessory createAccessory(Class<? extends Accessory> accessoryClass, AccessoryServer server,
             long instanceId, boolean extend);
 
     @Nullable
-    GenericAccessory createAccessory(Class<? extends GenericAccessory> accessoryClass, AccessoryServer server,
+    Accessory createAccessory(Class<? extends Accessory> accessoryClass, AccessoryServer server,
             long instanceId);
 
     @Nullable
-    ManagedService createService(String serviceType, ManagedAccessory accessory, boolean extend, String serviceName);
+    Service createService(String serviceType, Accessory accessory, boolean extend, String serviceName);
 
     @Nullable
-    ManagedService createService(String serviceType, ManagedAccessory accessory, long instanceId, boolean extend,
+    Service createService(String serviceType, Accessory accessory, long instanceId, boolean extend,
             String serviceName);
 
     @Nullable
-    ManagedService createService(String serviceType, ManagedAccessory accessory, long instanceId, boolean extend);
+    Service createService(String serviceType, Accessory accessory, long instanceId, boolean extend);
+
+    @Nullable Service createService( Accessory accessory, JsonValue value);
+
 
     @Nullable
-    Characteristic<?> createCharacteristic(String characteristicsType, ManagedService service);
+    Characteristic<?> createCharacteristic(String characteristicsType, Service service);
 
     @Nullable
-    Characteristic<?> createCharacteristic(String characteristicsType, ManagedService service, long instanceId);
+    Characteristic<?> createCharacteristic(String characteristicsType, Service service, long instanceId);
 
     /**
      * Creates a characteristic instance from a JSON value.
@@ -96,17 +99,17 @@ public interface HomekitFactory {
      */
     @Nullable Characteristic<?> createCharacteristic( Service service, JsonValue value);
 
-    void addAccessory(ThingTypeUID type, Class<? extends ManagedAccessory> accessoryClass);
+    void addAccessory(ThingTypeUID type, Class<? extends Accessory> accessoryClass);
 
     void addService(ThingTypeUID type);
 
     void addService(ThingTypeUID type, String serviceType);
 
-    void addService(ThingTypeUID type, Class<? extends ManagedService> serviceClass);
+    void addService(ThingTypeUID type, Class<? extends Service> serviceClass);
 
-    void addService(String serviceType, Class<? extends ManagedService> serviceClass);
+    void addService(String serviceType, Class<? extends Service> serviceClass);
 
-    void addService(Class<@NonNull ? extends ManagedService> serviceClass);
+    void addService(Class<@NonNull ? extends Service> serviceClass);
 
     void addCharacteristic(ChannelTypeUID type, String characateristicType);
 
@@ -121,6 +124,8 @@ public interface HomekitFactory {
     ThingTypeUID[] getSupportedThingTypes();
 
     Set<String> getSupportedServiceTypes();
+
+    boolean isServiceSupported(String serviceType);
 
     Set<String> getSupportedCharacteristicTypes();
 

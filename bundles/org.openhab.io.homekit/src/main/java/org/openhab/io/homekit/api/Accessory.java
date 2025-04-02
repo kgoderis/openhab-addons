@@ -1,9 +1,7 @@
 package org.openhab.io.homekit.api;
 
 import java.util.Collection;
-
 import javax.json.JsonObject;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.registry.Identifiable;
@@ -62,6 +60,8 @@ public interface Accessory extends Identifiable<AccessoryUID> {
     boolean isExtensible();
 
     void addService(Service service);
+
+    void addServices();
 
     /**
      * The collection of Services this single Accessory supports. Services are the primary way to
@@ -125,4 +125,8 @@ public interface Accessory extends Identifiable<AccessoryUID> {
      * without pairing.
      */
     void identify();
+
+    public long getNewInstanceId();
+
+    public long getCurrentInstanceId();
 }

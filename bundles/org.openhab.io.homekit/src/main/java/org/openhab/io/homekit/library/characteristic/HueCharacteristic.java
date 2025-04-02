@@ -1,7 +1,6 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import org.openhab.core.library.types.HSBType;
-import org.openhab.core.library.types.PercentType;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.Service;
@@ -9,7 +8,7 @@ import org.openhab.io.homekit.internal.characteristic.FloatCharacteristic;
 
 public class HueCharacteristic extends FloatCharacteristic {
 
-    protected HueCharacteristic(Service service, long instanceId) {
+    public HueCharacteristic(Service service, long instanceId) {
         super(service, instanceId, true, true, true, "Adjust hue of the light", 0, 360, 1, "arcdegrees");
     }
 

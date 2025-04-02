@@ -5,7 +5,7 @@ import org.openhab.io.homekit.internal.characteristic.ReadOnlyStringCharacterist
 
 public class FirmwareRevisionCharacteristic extends ReadOnlyStringCharacteristic {
 
-    protected FirmwareRevisionCharacteristic(Service service, long instanceId) {
+    public FirmwareRevisionCharacteristic(Service service, long instanceId) {
         super(service, instanceId, "Firmware revision of the accessory");
     }
 

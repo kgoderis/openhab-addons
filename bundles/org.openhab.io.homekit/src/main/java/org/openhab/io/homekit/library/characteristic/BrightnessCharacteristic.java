@@ -10,7 +10,7 @@ import org.openhab.io.homekit.internal.characteristic.IntegerCharacteristic;
 
 public class BrightnessCharacteristic extends IntegerCharacteristic {
 
-    protected BrightnessCharacteristic(Service service, long instanceId) {
+    public BrightnessCharacteristic(Service service, long instanceId) {
         super(service, instanceId, true, true, true, "Adjust brightness of a light", 0, 100, "percentage");
     }
 

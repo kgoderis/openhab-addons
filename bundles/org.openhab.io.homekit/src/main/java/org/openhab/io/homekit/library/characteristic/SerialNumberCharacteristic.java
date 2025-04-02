@@ -5,7 +5,7 @@ import org.openhab.io.homekit.internal.characteristic.ReadOnlyStringCharacterist
 
 public class SerialNumberCharacteristic extends ReadOnlyStringCharacteristic {
 
-    protected SerialNumberCharacteristic(Service service, long instanceId) {
+    public SerialNumberCharacteristic(Service service, long instanceId) {
         super(service, instanceId, "Serial number of the accessory");
     }
 

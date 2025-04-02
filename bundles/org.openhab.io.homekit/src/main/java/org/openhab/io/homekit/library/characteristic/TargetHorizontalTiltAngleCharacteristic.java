@@ -5,7 +5,7 @@ import org.openhab.io.homekit.internal.characteristic.IntegerCharacteristic;
 
 public class TargetHorizontalTiltAngleCharacteristic extends IntegerCharacteristic {
 
-    protected TargetHorizontalTiltAngleCharacteristic(Service service, long instanceId) {
+    public TargetHorizontalTiltAngleCharacteristic(Service service, long instanceId) {
         super(service, instanceId, true, true, true, "Target horizontal tilt angle", -90, 90, "arcdegrees");
     }
 

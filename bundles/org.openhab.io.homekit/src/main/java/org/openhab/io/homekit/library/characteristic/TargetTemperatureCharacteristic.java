@@ -5,7 +5,7 @@ import org.openhab.io.homekit.internal.characteristic.FloatCharacteristic;
 
 public class TargetTemperatureCharacteristic extends FloatCharacteristic {
 
-    protected TargetTemperatureCharacteristic(Service service, long instanceId) {
+    public TargetTemperatureCharacteristic(Service service, long instanceId) {
         super(service, instanceId, true, true, true, "Target temperature in Celsius", 10, 38, 0.1, "celcius");
     }
 

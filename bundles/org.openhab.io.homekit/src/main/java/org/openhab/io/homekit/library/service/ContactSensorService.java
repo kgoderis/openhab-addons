@@ -2,34 +2,34 @@ package org.openhab.io.homekit.library.service;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.ManagedAccessory;
-import org.openhab.io.homekit.internal.service.AbstractManagedService;
+import org.openhab.io.homekit.api.Accessory;
+import org.openhab.io.homekit.internal.service.GenericService;
 import org.openhab.io.homekit.library.characteristic.ContactSensorStateCharacteristic;
 import org.openhab.io.homekit.library.characteristic.StatusActiveCharacteristic;
 import org.openhab.io.homekit.library.characteristic.StatusFaultCharacteristic;
 import org.openhab.io.homekit.library.characteristic.StatusLowBatteryCharacteristic;
 import org.openhab.io.homekit.library.characteristic.StatusTamperedCharacteristic;
 
-public class ContactSensorService extends AbstractManagedService {
+public class ContactSensorService extends GenericService {
 
-    public ContactSensorService(HomekitCommunicationManager manager, ManagedAccessory accessory, long instanceId,
+    public ContactSensorService(Accessory accessory, long instanceId,
             boolean extend, @NonNull String serviceName) throws Exception {
-        super(manager, accessory, instanceId, extend, serviceName);
+        super( accessory, instanceId, extend, serviceName);
     }
 
     @Override
     public void addCharacteristics() {
         super.addCharacteristics();
-        addCharacteristic(new ContactSensorStateCharacteristic(getManager(), this,
-                ((ManagedAccessory) getAccessory()).getInstanceId()));
-        addCharacteristic(new StatusActiveCharacteristic(getManager(), this,
-                ((ManagedAccessory) getAccessory()).getInstanceId()));
+        addCharacteristic(new ContactSensorStateCharacteristic  (this,
+                ((Accessory) getAccessory()).getNewInstanceId()));
+        addCharacteristic(new StatusActiveCharacteristic  (this,
+                ((Accessory) getAccessory()).getNewInstanceId()));
         addCharacteristic(
-                new StatusFaultCharacteristic(getManager(), this, ((ManagedAccessory) getAccessory()).getInstanceId()));
-        addCharacteristic(new StatusTamperedCharacteristic(getManager(), this,
-                ((ManagedAccessory) getAccessory()).getInstanceId()));
-        addCharacteristic(new StatusLowBatteryCharacteristic(getManager(), this,
-                ((ManagedAccessory) getAccessory()).getInstanceId()));
+                new StatusFaultCharacteristic  (this, ((Accessory) getAccessory()).getNewInstanceId()));
+        addCharacteristic(new StatusTamperedCharacteristic  (this,
+                ((Accessory) getAccessory()).getNewInstanceId()));
+        addCharacteristic(new StatusLowBatteryCharacteristic  (this,
+                ((Accessory) getAccessory()).getNewInstanceId()));
     }
 
     @Override

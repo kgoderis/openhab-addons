@@ -1,22 +1,19 @@
 package org.openhab.io.homekit.library.service;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.ManagedAccessory;
-import org.openhab.io.homekit.internal.service.AbstractManagedService;
+import org.openhab.io.homekit.api.Accessory;
+import org.openhab.io.homekit.internal.service.GenericService;
 import org.openhab.io.homekit.library.characteristic.VersionCharacteristic;
 
-public class HAPProtocolInformationService extends AbstractManagedService {
+public class HAPProtocolInformationService extends GenericService {
 
-    public HAPProtocolInformationService(HomekitCommunicationManager manager, ManagedAccessory accessory,
-            long instanceId, boolean extend, @NonNull String serviceName) throws Exception {
-        super(manager, accessory, instanceId, extend, serviceName);
+    public HAPProtocolInformationService(Accessory accessory, long instanceId, boolean extend, @NonNull String serviceName) throws Exception {
+        super(accessory, instanceId, extend, serviceName);
     }
 
     @Override
     public void addCharacteristics() {
-        VersionCharacteristic characteristic = new VersionCharacteristic(getManager(), this,
-                ((ManagedAccessory) getAccessory()).getInstanceId());
+        VersionCharacteristic characteristic = new VersionCharacteristic(this, getAccessory().getNewInstanceId());
         characteristic.setVersion("01.01.00");
         addCharacteristic(characteristic);
     }

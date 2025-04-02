@@ -5,7 +5,7 @@ import org.openhab.io.homekit.internal.characteristic.WriteOnlyBooleanCharacteri
 
 public class IdentifyCharacteristic extends WriteOnlyBooleanCharacteristic {
 
-    protected IdentifyCharacteristic(Service service, long instanceId) {
+    public IdentifyCharacteristic(Service service, long instanceId) {
         super(service, instanceId, "Identify");
     }
 

@@ -5,7 +5,7 @@ import org.openhab.io.homekit.internal.characteristic.EnumCharacteristic;
 
 public class StatusTamperedCharacteristic extends EnumCharacteristic {
 
-    protected StatusTamperedCharacteristic(Service service, long instanceId) {
+    public StatusTamperedCharacteristic(Service service, long instanceId) {
         super(service, instanceId, false, true, true, "Status tampered", 1);
     }
 

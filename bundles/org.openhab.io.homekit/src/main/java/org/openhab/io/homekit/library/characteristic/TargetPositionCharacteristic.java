@@ -5,7 +5,7 @@ import org.openhab.io.homekit.internal.characteristic.IntegerCharacteristic;
 
 public class TargetPositionCharacteristic extends IntegerCharacteristic {
 
-    protected TargetPositionCharacteristic(Service service, long instanceId) {
+    public TargetPositionCharacteristic(Service service, long instanceId) {
         super(service, instanceId, true, true, true, "Target position", 0, 100, "%");
     }
 

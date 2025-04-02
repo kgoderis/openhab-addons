@@ -4,7 +4,7 @@ import org.openhab.io.homekit.api.Service;
 import org.openhab.io.homekit.internal.characteristic.IntegerCharacteristic;
 public class CurrentHorizontalTiltAngleCharacteristic extends IntegerCharacteristic {
 
-    protected CurrentHorizontalTiltAngleCharacteristic(Service service, long instanceId) {
+    public CurrentHorizontalTiltAngleCharacteristic(Service service, long instanceId) {
         super(service, instanceId, false, true, true, "Current horizontal tilt angle", -90, 90, "arcdegrees");
     }
 

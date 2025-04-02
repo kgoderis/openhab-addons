@@ -5,7 +5,7 @@ import org.openhab.io.homekit.internal.characteristic.ReadOnlyStringCharacterist
 
 public class ManufacturerCharacteristic extends ReadOnlyStringCharacteristic {
 
-    protected ManufacturerCharacteristic(Service service, long instanceId) {
+    public ManufacturerCharacteristic(Service service, long instanceId) {
         super(service, instanceId, "Manufacturer of the accessory");
     }
 

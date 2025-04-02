@@ -5,7 +5,7 @@ import org.openhab.io.homekit.internal.characteristic.ReadOnlyStringCharacterist
 
 public class ModelCharacteristic extends ReadOnlyStringCharacteristic {
 
-    protected ModelCharacteristic(Service service, long instanceId) {
+    public ModelCharacteristic(Service service, long instanceId) {
         super(service, instanceId, "Model of the accessory");
     }
 

@@ -12,7 +12,7 @@ import org.openhab.io.homekit.internal.characteristic.BooleanCharacteristic;
  */
 public class OutletInUseCharacteristic extends BooleanCharacteristic {
 
-    protected OutletInUseCharacteristic(Service service, long instanceId) {
+    public OutletInUseCharacteristic(Service service, long instanceId) {
         super(service, instanceId, false, true, true, "Outlet in use");
     }
 

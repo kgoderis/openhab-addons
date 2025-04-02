@@ -60,6 +60,8 @@ public interface Service extends Identifiable<@NonNull ServiceUID> {
 
     void addCharacteristic(Characteristic<?> characteristic);
 
+    void addCharacteristics();
+
     Characteristic<?> getCharacteristic(long iid);
 
     Characteristic<?> getCharacteristic(String characteristicType);

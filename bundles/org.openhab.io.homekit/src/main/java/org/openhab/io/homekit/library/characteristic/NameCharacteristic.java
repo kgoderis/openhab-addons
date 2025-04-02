@@ -5,7 +5,7 @@ import org.openhab.io.homekit.internal.characteristic.ReadOnlyStringCharacterist
 
 public class NameCharacteristic extends ReadOnlyStringCharacteristic {
 
-    protected NameCharacteristic(Service service, long instanceId) {
+    public NameCharacteristic(Service service, long instanceId) {
         super(service, instanceId, "Name of the accessory");
     }
 

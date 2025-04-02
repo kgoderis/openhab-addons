@@ -5,7 +5,7 @@ import org.openhab.io.homekit.internal.characteristic.IntegerCharacteristic;
 
 public class CurrentPositionCharacteristic extends IntegerCharacteristic {
 
-    protected CurrentPositionCharacteristic(Service service, long instanceId) {
+    public CurrentPositionCharacteristic(Service service, long instanceId) {
         super(service, instanceId, false, true, true, "Current position", 0, 100, "percent");
     }
 

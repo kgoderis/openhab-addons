@@ -12,7 +12,7 @@ import org.openhab.io.homekit.internal.characteristic.EnumCharacteristic;
  */
 public class StatusLowBatteryCharacteristic extends EnumCharacteristic {
 
-    protected StatusLowBatteryCharacteristic(Service service, long instanceId) {
+    public StatusLowBatteryCharacteristic(Service service, long instanceId) {
         super(service, instanceId, false, true, true, "Status low battery", 1);
     }
 

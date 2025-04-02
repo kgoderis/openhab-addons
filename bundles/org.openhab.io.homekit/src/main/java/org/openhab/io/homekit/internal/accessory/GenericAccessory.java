@@ -15,20 +15,28 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.Accessory;
 import org.openhab.io.homekit.api.AccessoryServer;
+import org.openhab.io.homekit.api.HomekitFactory;
 import org.openhab.io.homekit.api.Service;
 import org.openhab.io.homekit.internal.events.AccessoryEvent;
 import org.openhab.io.homekit.internal.events.ServiceEvent;
 import org.openhab.io.homekit.internal.listeners.AccessoryChangeListener;
 import org.openhab.io.homekit.internal.listeners.ServiceChangeListener;
 import org.openhab.io.homekit.internal.service.GenericService;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.openhab.io.homekit.library.service.AccessoryInformationService;
 
 public class GenericAccessory implements Accessory {
 
     private final Logger logger = LoggerFactory.getLogger(GenericAccessory.class);
+    private static ServiceTracker<@NonNull HomekitFactory, @NonNull HomekitFactory> homekitFactoryTracker;
+
 
     private final long instanceId;
+    private long instanceIdPool = 1;
     private Collection<Service> services = new HashSet<Service>();
     private final AccessoryServer server;
     private final Collection<AccessoryChangeListener> listeners = new CopyOnWriteArraySet<>();
@@ -36,6 +44,10 @@ public class GenericAccessory implements Accessory {
     public GenericAccessory(AccessoryServer server, long instanceId) {
         this.server = server;
         this.instanceId = instanceId;
+
+        if (isExtensible()) {
+            addServices();
+        }
     }
 
     public GenericAccessory(AccessoryServer server, JsonValue value) {
@@ -44,12 +56,50 @@ public class GenericAccessory implements Accessory {
 
         JsonArray servicesArray = ((JsonObject) value).getJsonArray("services");
         for (JsonValue serviceValue : servicesArray) {
-            services.add(new GenericService(this, serviceValue, GenericService.class.getSimpleName()));
+            Service service = createService(serviceValue);
+            if (service != null) {
+                services.add(service);
+            }
+            // services.add(new GenericService(this, serviceValue, GenericService.class.getSimpleName()));
         }
     }
 
+      private Service createService(JsonValue value) {
+          if (homekitFactoryTracker == null) {
+              BundleContext context = FrameworkUtil.getBundle(GenericAccessory.class).getBundleContext();
+              homekitFactoryTracker = new ServiceTracker<>(context, HomekitFactory.class, null);
+              homekitFactoryTracker.open();
+          }
+
+          Object[] factories = homekitFactoryTracker.getServices();
+          if (factories != null) {
+              for (Object factory : factories) {
+                  if (factory instanceof HomekitFactory homekitFactory) {
+                      String serviceType = ((JsonObject) value).getString("type");
+                      if (homekitFactory.isServiceSupported(serviceType)) {
+                          Service service = homekitFactory.createService(this, value);
+                          if (service != null) {
+                              return service;
+                          }
+                      }
+                  }
+              }
+          }
+          logger.warn("No HomekitFactory found to create service from JSON value");
+          return null;
+      }
+
+      /**
+     * Adds default services to the accessory. Subclasses can override this method
+     * to provide additional services.
+     */
     @Override
-    public AccessoryUID getUID() {
+    public void addServices() {
+        addService(new AccessoryInformationService(this, getNewInstanceId(), true, getLabel()));
+    }
+
+    @Override
+    @NonNull public AccessoryUID getUID() {
         return new AccessoryUID(getServer().getId(), Long.toString(getId()));
     }
 
@@ -200,5 +250,25 @@ public class GenericAccessory implements Accessory {
     @Override
     public void identify() {
         // TODO No Op?
+    }
+
+        /**
+     * Retrieves and increments the instance ID for the accessory.
+     *
+     * @return The next instance ID for the accessory.
+     */
+    @Override
+    public long getNewInstanceId() {
+        return instanceIdPool++;
+    }
+
+    /**
+     * Retrieves the current instance ID without incrementing it.
+     *
+     * @return The current instance ID.
+     */
+    @Override
+    public long getCurrentInstanceId() {
+        return instanceIdPool;
     }
 }

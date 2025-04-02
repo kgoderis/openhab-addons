@@ -12,7 +12,7 @@ import org.openhab.io.homekit.internal.characteristic.BooleanCharacteristic;
  */
 public class StatusActiveCharacteristic extends BooleanCharacteristic {
 
-    protected StatusActiveCharacteristic(Service service, long instanceId) {
+    public StatusActiveCharacteristic(Service service, long instanceId) {
         super(service, instanceId, false, true, true, "Status active");
     }
 
