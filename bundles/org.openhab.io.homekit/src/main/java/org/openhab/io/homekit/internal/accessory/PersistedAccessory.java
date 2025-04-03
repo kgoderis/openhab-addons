@@ -5,20 +5,20 @@ import org.openhab.io.homekit.internal.server.AccessoryServerUID;
 public class PersistedAccessory {
 
     private String json;
-    private String instanceIdPool;
+    // private String instanceIdPool;
     private String serverId;
     private String accessoryClass;
 
     public PersistedAccessory() {
         json = "";
-        instanceIdPool = "";
+        // instanceIdPool = "";
         serverId = "";
         accessoryClass = "";
     }
 
-    public PersistedAccessory(String accessoryClass, String json, String serverId, long instanceIdPool) {
+    public PersistedAccessory(String accessoryClass, String json, String serverId) {
         this.json = json;
-        this.instanceIdPool = Long.toString(instanceIdPool);
+        // this.instanceIdPool = Long.toString(instanceIdPool);
         this.serverId = serverId;
         this.accessoryClass = accessoryClass;
     }
@@ -27,9 +27,9 @@ public class PersistedAccessory {
         return json;
     }
 
-    public long getInstanceIdPool() {
-        return Long.parseLong(instanceIdPool);
-    }
+        // public long getInstanceIdPool() {
+        //     return Long.parseLong(instanceIdPool);
+        // }
 
     public AccessoryServerUID getServerId() {
         return new AccessoryServerUID(serverId);
@@ -43,9 +43,9 @@ public class PersistedAccessory {
         this.json = json;
     }
 
-    public void setInstanceIdPool(long instanceIdPool) {
-        this.instanceIdPool = Long.toString(instanceIdPool);
-    }
+    // public void setInstanceIdPool(long instanceIdPool) {
+    //     this.instanceIdPool = Long.toString(instanceIdPool);
+    // }
 
     public void setServerId(AccessoryServerUID serverId) {
         this.serverId = serverId.toString();

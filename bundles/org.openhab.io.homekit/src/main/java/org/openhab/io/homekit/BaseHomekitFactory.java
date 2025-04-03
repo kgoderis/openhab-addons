@@ -189,7 +189,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
             boolean extend, @NonNull String serviceName) {
         Class<? extends Service> serviceClass = serviceTypeServiceClassMapper.get(serviceType);
         if (serviceClass != null) {
-            return createService(serviceType, accessory, accessory.getNewInstanceId(), extend, serviceName);
+            return createService(serviceType, accessory, accessory.getNextAvailableInstanceId(), extend, serviceName);
         }
 
         return null;
@@ -287,7 +287,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
                 .get(characteristicType);
         if (characteristicsClass != null) {
             return createCharacteristic(characteristicType, service,
-                    ((Accessory) service.getAccessory()).getNewInstanceId());
+                    ((Accessory) service.getAccessory()).getNextAvailableInstanceId());
         }
         return null;
     }

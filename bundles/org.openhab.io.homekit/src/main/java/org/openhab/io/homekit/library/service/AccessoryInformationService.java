@@ -20,13 +20,13 @@ public class AccessoryInformationService extends GenericService {
         super.addCharacteristics();
         // addCharacteristic(new FirmwareRevisionCharacteristic(manager, this, getAccessory().getInstanceId()));
         addCharacteristic(
-                new IdentifyCharacteristic( this, ((Accessory) getAccessory()).getNewInstanceId()));
+                new IdentifyCharacteristic( this, ((Accessory) getAccessory()).getNextAvailableInstanceId()));
         addCharacteristic(new ManufacturerCharacteristic (this,
-                ((Accessory) getAccessory()).getNewInstanceId()));
+                ((Accessory) getAccessory()).getNextAvailableInstanceId()));
         addCharacteristic(
-                new ModelCharacteristic( this, ((Accessory) getAccessory()).getNewInstanceId()));
+                new ModelCharacteristic( this, ((Accessory) getAccessory()).getNextAvailableInstanceId()));
         addCharacteristic(new SerialNumberCharacteristic( this,
-                ((Accessory) getAccessory()).getNewInstanceId()));
+                ((Accessory) getAccessory()).getNextAvailableInstanceId()));
     }
 
     @Override

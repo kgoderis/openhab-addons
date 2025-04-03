@@ -182,7 +182,7 @@
 //                     if (primaryAccessory != null) {
 //                         Accessory accessory = new GenericAccessory(server, 1);
 //                         Service primaryService = serviceFactory.createService(primaryAccessory.getServiceType(),
-//                                 accessory, accessory.getNewInstanceId(), true,
+//                                 accessory, accessory.getNextAvailableInstanceId(), true,
 //                                 "Primary Service for " + taggedItem.getItem().getName());
 //                         if (primaryService != null) {
 //                             accessory.addService(primaryService);
@@ -207,7 +207,7 @@
 //                                         && compatibleCharacteristicFactory.isPresent()) {
 //                                     HomekitFactory characteristicFactory = compatibleCharacteristicFactory.get();
 //                                     Characteristic<?> characteristic = characteristicFactory.createCharacteristic(
-//                                             characteristicType, primaryService, accessory.getNewInstanceId());
+//                                             characteristicType, primaryService, accessory.getNextAvailableInstanceId());
 //                                     if (characteristic != null) {
 //                                         primaryService.addCharacteristic(characteristic);
 

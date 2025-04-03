@@ -16,7 +16,7 @@ public class BatteryService extends GenericService {
     public void addCharacteristics() {
         super.addCharacteristics();
         addCharacteristic(new StatusLowBatteryCharacteristic( this,
-                ((Accessory) getAccessory()).getNewInstanceId()));
+                ((Accessory) getAccessory()).getNextAvailableInstanceId()));
     }
 
     @Override

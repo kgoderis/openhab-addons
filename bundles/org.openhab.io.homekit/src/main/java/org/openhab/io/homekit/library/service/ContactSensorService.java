@@ -20,15 +20,15 @@ public class ContactSensorService extends GenericService {
     public void addCharacteristics() {
         super.addCharacteristics();
         addCharacteristic(new ContactSensorStateCharacteristic  (this,
-                ((Accessory) getAccessory()).getNewInstanceId()));
+                ((Accessory) getAccessory()).getNextAvailableInstanceId()));
         addCharacteristic(new StatusActiveCharacteristic  (this,
-                ((Accessory) getAccessory()).getNewInstanceId()));
+                ((Accessory) getAccessory()).getNextAvailableInstanceId()));
         addCharacteristic(
-                new StatusFaultCharacteristic  (this, ((Accessory) getAccessory()).getNewInstanceId()));
+                new StatusFaultCharacteristic  (this, ((Accessory) getAccessory()).getNextAvailableInstanceId()));
         addCharacteristic(new StatusTamperedCharacteristic  (this,
-                ((Accessory) getAccessory()).getNewInstanceId()));
+                ((Accessory) getAccessory()).getNextAvailableInstanceId()));
         addCharacteristic(new StatusLowBatteryCharacteristic  (this,
-                ((Accessory) getAccessory()).getNewInstanceId()));
+                ((Accessory) getAccessory()).getNextAvailableInstanceId()));
     }
 
     @Override

@@ -13,7 +13,7 @@ public class HAPProtocolInformationService extends GenericService {
 
     @Override
     public void addCharacteristics() {
-        VersionCharacteristic characteristic = new VersionCharacteristic(this, getAccessory().getNewInstanceId());
+        VersionCharacteristic characteristic = new VersionCharacteristic(this, getAccessory().getNextAvailableInstanceId());
         characteristic.setVersion("01.01.00");
         addCharacteristic(characteristic);
     }

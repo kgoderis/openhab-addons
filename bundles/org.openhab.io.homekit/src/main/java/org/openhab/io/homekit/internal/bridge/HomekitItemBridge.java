@@ -222,10 +222,15 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      * @param taggedItem The item to find a compatible factory for
      * @return Optional containing the compatible factory if found
      */
-    private Optional<HomekitFactory> findCompatibleServiceFactory(HomekitTaggedItem taggedItem) {
-        return homekitFactories.values().stream()
-                .filter(factory -> factory.supportsServiceType(taggedItem.getServiceType()))
-                .findFirst();
+    private Optional<HomekitFactory> findCompatibleFactory(HomekitTaggedItem taggedItem) {
+        if (taggedItem == null || taggedItem.getServiceType() == null) {
+            return Optional.empty();
+        }
+        synchronized (factoryLock) {
+            return homekitFactories.values().stream()
+                    .filter(factory -> factory.supportsServiceType(taggedItem.getServiceType()))
+                    .findFirst();
+        }
     }
 
     /**
@@ -250,7 +255,12 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
         try {
             logger.debug(DEBUG_CREATING_ACCESSORY, taggedItem.getName());
             
-            Optional<HomekitFactory> compatibleFactory = findCompatibleServiceFactory(taggedItem);
+            Optional<HomekitFactory> compatibleFactory = findCompatibleFactory(taggedItem);
+            if (!compatibleFactory.isPresent()) {
+                logger.warn(NO_COMPATIBLE_FACTORY, taggedItem.getName());
+                return;
+            }
+            
             compatibleFactory.ifPresent(serviceFactory -> {
                 logger.debug(DEBUG_FOUND_COMPATIBLE_FACTORY, serviceFactory.getClass().getSimpleName(), taggedItem.getName());
                 
@@ -264,6 +274,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
             });
         } catch (Exception e) {
             logger.error(ERROR_CREATING_ACCESSORY, taggedItem.getName(), e.getMessage(), e);
+            // Consider adding recovery logic here
         }
     }
 
@@ -354,7 +365,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
             Map<String, Item> characteristicItems = getCharacteristicTypeItemMap(taggedItem);
 
             if (primaryAccessory != null) {
-                Accessory accessory = new GenericAccessory(server, 1);
+                Accessory accessory = new GenericAccessory(server);
                 Service primaryService = createPrimaryService(serviceFactory, primaryAccessory, accessory, taggedItem);
                 if (primaryService != null) {
                     accessory.addService(primaryService);
@@ -382,7 +393,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     private Service createPrimaryService(HomekitFactory serviceFactory, HomekitTaggedItem primaryAccessory,
             Accessory accessory, HomekitTaggedItem taggedItem) {
         return serviceFactory.createService(primaryAccessory.getServiceType(), accessory,
-                accessory.getNewInstanceId(), true, "Primary Service for " + taggedItem.getItem().getName());
+                accessory.getNextAvailableInstanceId(), true, "Primary Service for " + taggedItem.getItem().getName());
     }
 
     /**
@@ -433,7 +444,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     private void addCharacteristicToService(Service primaryService, String characteristicType, Item item,
             Accessory accessory, HomekitFactory characteristicFactory) {
         Characteristic<?> characteristic = characteristicFactory.createCharacteristic(characteristicType, primaryService,
-                accessory.getNewInstanceId());
+                accessory.getNextAvailableInstanceId());
         if (characteristic != null) {
             primaryService.addCharacteristic(characteristic);
             addCharacteristic(item.getName(), characteristic);
@@ -481,10 +492,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                 }
             }
         } catch (Exception e) {
-            logger.error(ERROR_UPDATING_CHARACTERISTIC, 
-                characteristic.getInstanceType(), 
-                e.getMessage(), 
-                e);
+            logger.error(ERROR_UPDATING_CHARACTERISTIC, characteristic.getInstanceType(), e.getMessage(), e);
         }
     }
 

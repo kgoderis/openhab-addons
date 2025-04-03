@@ -15,6 +15,6 @@ public class DimmableLightBulbService extends LightBulbService {
     public void addCharacteristics() {
         super.addCharacteristics();
         addCharacteristic(
-                new BrightnessCharacteristic  (this, ((Accessory) getAccessory()).getNewInstanceId()));
+                new BrightnessCharacteristic  (this, ((Accessory) getAccessory()).getNextAvailableInstanceId()));
     }
 }

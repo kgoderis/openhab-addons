@@ -18,11 +18,11 @@ public class ThermostatService extends GenericService {
     @Override
     public void addCharacteristics() {
         super.addCharacteristics();
-        addCharacteristic(new CurrentHeatingCoolingStateCharacteristic(this, getAccessory().getNewInstanceId()));
-        addCharacteristic(new TargetHeatingCoolingStateCharacteristic(this, getAccessory().getNewInstanceId()));
-        addCharacteristic(new CurrentTemperatureCharacteristic(this, getAccessory().getNewInstanceId()));
-        addCharacteristic(new TargetTemperatureCharacteristic(this, getAccessory().getNewInstanceId()));
-        addCharacteristic(new TemperatureDisplayUnitsCharacteristic(this, getAccessory().getNewInstanceId()));
+        addCharacteristic(new CurrentHeatingCoolingStateCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(new TargetHeatingCoolingStateCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(new CurrentTemperatureCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(new TargetTemperatureCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(new TemperatureDisplayUnitsCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
     }
 
     @Override

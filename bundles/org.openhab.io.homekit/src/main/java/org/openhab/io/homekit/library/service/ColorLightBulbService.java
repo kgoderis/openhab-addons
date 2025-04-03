@@ -17,10 +17,10 @@ public class ColorLightBulbService extends LightBulbService {
     public void addCharacteristics() {
         super.addCharacteristics();
         addCharacteristic(
-                new HueCharacteristic( this, ((Accessory) getAccessory()).getNewInstanceId()));
+                new HueCharacteristic( this, ((Accessory) getAccessory()).getNextAvailableInstanceId()));
         addCharacteristic(
-                new SaturationCharacteristic  (this, ((Accessory) getAccessory()).getNewInstanceId()));
+                new SaturationCharacteristic  (this, ((Accessory) getAccessory()).getNextAvailableInstanceId()));
         addCharacteristic(new ColorTemperatureCharacteristic ( this,
-                ((Accessory) getAccessory()).getNewInstanceId()));
+                ((Accessory) getAccessory()).getNextAvailableInstanceId()));
     }
 }

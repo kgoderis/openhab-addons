@@ -329,13 +329,13 @@ public class  PersistedAccessoryProvider extends AbstractManagedProvider<org.ope
     @Override
     protected PersistedAccessory toPersistableElement(Accessory element) {
 
-        long currentInstanceId = 0;
-        if (element instanceof  Accessory) {
-            currentInstanceId = (( Accessory) element).getCurrentInstanceId();
-        }
+        // long currentInstanceId = 0;
+        // if (element instanceof  Accessory) {
+        //     currentInstanceId = (( Accessory) element).getCurrentInstanceId();
+        // }
 
         return new PersistedAccessory(element.getClass().getName(), element.toJson().toString(),
-                element.getServer().getUID().toString(), currentInstanceId);
+                element.getServer().getUID().toString());
     }
 
     @Override

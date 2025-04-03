@@ -2,6 +2,7 @@ package org.openhab.io.homekit.internal.accessory;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import javax.json.Json;
@@ -22,37 +23,53 @@ import org.openhab.io.homekit.api.server.AccessoryServer;
 import org.openhab.io.homekit.internal.events.AccessoryEvent;
 import org.openhab.io.homekit.internal.events.ServiceEvent;
 import org.openhab.io.homekit.internal.service.GenericService;
+import org.openhab.io.homekit.library.service.AccessoryInformationService;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.openhab.io.homekit.library.service.AccessoryInformationService;
 
 public class GenericAccessory implements Accessory {
 
-    private final Logger logger = LoggerFactory.getLogger(GenericAccessory.class);
+    private static final Logger logger = LoggerFactory.getLogger(GenericAccessory.class);
     private static ServiceTracker<org.openhab.io.homekit.api.factory.HomekitFactory, org.openhab.io.homekit.api.factory.HomekitFactory> homekitFactoryTracker;
 
-
     private final long instanceId;
-    private long instanceIdPool = 1;
-    private Collection<Service> services = new HashSet<Service>();
+    private final Object instanceIdLock = new Object();
+    private final Set<Long> usedInstanceIds = new HashSet<>();
+    private long nextInstanceId = 1;
     private final AccessoryServer server;
     private final Collection<AccessoryChangeListener> listeners = new CopyOnWriteArraySet<>();
+    private Collection<Service> services = new HashSet<Service>();
 
-    public GenericAccessory(AccessoryServer server, long instanceId) {
+    /**
+     * Creates a new GenericAccessory with a unique instance ID.
+     * The instance ID is automatically assigned and managed to avoid conflicts.
+     *
+     * @param server The accessory server this accessory belongs to
+     */
+    public GenericAccessory(AccessoryServer server) {
         this.server = server;
-        this.instanceId = instanceId;
-
+        this.instanceId = getNextAvailableInstanceId();
+        logger.debug("Created new accessory with instance ID: {}", instanceId);
+        
         if (isExtensible()) {
             addServices();
         }
     }
 
+    /**
+     * Creates a new GenericAccessory from a JSON value.
+     * The instance ID is taken from the JSON data.
+     *
+     * @param server The accessory server this accessory belongs to
+     * @param value The JSON value containing the accessory data
+     */
     public GenericAccessory(AccessoryServer server, JsonValue value) {
         this.server = server;
         this.instanceId = ((JsonObject) value).getInt("aid");
+        logger.debug("Created accessory from JSON with instance ID: {}", instanceId);
 
         JsonArray servicesArray = ((JsonObject) value).getJsonArray("services");
         for (JsonValue serviceValue : servicesArray) {
@@ -60,42 +77,108 @@ public class GenericAccessory implements Accessory {
             if (service != null) {
                 services.add(service);
             }
-            // services.add(new GenericService(this, serviceValue, GenericService.class.getSimpleName()));
         }
     }
 
-      private Service createService(JsonValue value) {
-          if (homekitFactoryTracker == null) {
-              BundleContext context = FrameworkUtil.getBundle(GenericAccessory.class).getBundleContext();
-              homekitFactoryTracker = new ServiceTracker<>(context, HomekitFactory.class, null);
-              homekitFactoryTracker.open();
-          }
+    /**
+     * Gets the next available instance ID from this accessory's pool.
+     * This method is thread-safe and ensures unique IDs within this accessory.
+     * Services and Characteristics associated with this accessory can use this method to get unique IDs.
+     *
+     * @return The next available instance ID
+     */
+    public long getNextAvailableInstanceId() {
+        synchronized (instanceIdLock) {
+            // First try to find a recycled ID
+            for (long id = 1; id < nextInstanceId; id++) {
+                if (!usedInstanceIds.contains(id)) {
+                    usedInstanceIds.add(id);
+                    logger.debug("Recycled instance ID: {} for accessory: {}", id, instanceId);
+                    return id;
+                }
+            }
+            
+            // If no recycled IDs available, use the next new ID
+            long newId = nextInstanceId++;
+            usedInstanceIds.add(newId);
+            logger.debug("Assigned new instance ID: {} for accessory: {}", newId, instanceId);
+            return newId;
+        }
+    }
 
-          Object[] factories = homekitFactoryTracker.getServices();
-          if (factories != null) {
-              for (Object factory : factories) {
-                  if (factory instanceof HomekitFactory homekitFactory) {
-                      String serviceType = ((JsonObject) value).getString("type");
-                      if (homekitFactory.isServiceSupported(serviceType)) {
-                          Service service = homekitFactory.createService(this, value);
-                          if (service != null) {
-                              return service;
-                          }
-                      }
-                  }
-              }
-          }
-          logger.warn("No HomekitFactory found to create service from JSON value");
-          return null;
-      }
+    /**
+     * Releases an instance ID back to this accessory's pool.
+     * This method is thread-safe and should be called when an ID is no longer needed.
+     * Services and Characteristics associated with this accessory can use this method to release their IDs.
+     *
+     * @param id The instance ID to release
+     */
+    public void releaseInstanceId(long id) {
+        synchronized (instanceIdLock) {
+            if (usedInstanceIds.remove(id)) {
+                logger.debug("Released instance ID: {} from accessory: {}", id, instanceId);
+            } else {
+                logger.warn("Attempted to release unused instance ID: {} from accessory: {}", id, instanceId);
+            }
+        }
+    }
 
-      /**
+    /**
+     * Checks if an instance ID is currently in use in this accessory's pool.
+     * This method is thread-safe and can be used to verify ID availability.
+     *
+     * @param id The instance ID to check
+     * @return true if the ID is in use, false otherwise
+     */
+    public boolean isInstanceIdInUse(long id) {
+        synchronized (instanceIdLock) {
+            return usedInstanceIds.contains(id);
+        }
+    }
+
+    /**
+     * Cleans up resources associated with this accessory.
+     * This method should be called when the accessory is no longer needed.
+     */
+    public void cleanup() {
+        releaseInstanceId(instanceId);
+        services.clear();
+        listeners.clear();
+        logger.debug("Cleaned up accessory with instance ID: {}", instanceId);
+    }
+
+    private Service createService(JsonValue value) {
+        if (homekitFactoryTracker == null) {
+            BundleContext context = FrameworkUtil.getBundle(GenericAccessory.class).getBundleContext();
+            homekitFactoryTracker = new ServiceTracker<>(context, HomekitFactory.class, null);
+            homekitFactoryTracker.open();
+        }
+
+        Object[] factories = homekitFactoryTracker.getServices();
+        if (factories != null) {
+            for (Object factory : factories) {
+                if (factory instanceof HomekitFactory homekitFactory) {
+                    String serviceType = ((JsonObject) value).getString("type");
+                    if (homekitFactory.isServiceSupported(serviceType)) {
+                        Service service = homekitFactory.createService(this, value);
+                        if (service != null) {
+                            return service;
+                        }
+                    }
+                }
+            }
+        }
+        logger.warn("No HomekitFactory found to create service from JSON value");
+        return null;
+    }
+
+    /**
      * Adds default services to the accessory. Subclasses can override this method
      * to provide additional services.
      */
     @Override
     public void addServices() {
-        addService(new AccessoryInformationService(this, getNewInstanceId(), true, getLabel()));
+        addService(new AccessoryInformationService(this, getNextAvailableInstanceId(), true, getLabel()));
     }
 
     @Override
@@ -250,25 +333,5 @@ public class GenericAccessory implements Accessory {
     @Override
     public void identify() {
         // TODO No Op?
-    }
-
-        /**
-     * Retrieves and increments the instance ID for the accessory.
-     *
-     * @return The next instance ID for the accessory.
-     */
-    @Override
-    public long getNewInstanceId() {
-        return instanceIdPool++;
-    }
-
-    /**
-     * Retrieves the current instance ID without incrementing it.
-     *
-     * @return The current instance ID.
-     */
-    @Override
-    public long getCurrentInstanceId() {
-        return instanceIdPool;
     }
 }

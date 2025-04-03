@@ -1,7 +1,9 @@
 package org.openhab.io.homekit.api.hap;
 
 import java.util.Collection;
+
 import javax.json.JsonObject;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.registry.Identifiable;
@@ -127,7 +129,7 @@ public interface Accessory extends Identifiable<AccessoryUID> {
      */
     void identify();
 
-    public long getNewInstanceId();
+    public long getNextAvailableInstanceId();
 
-    public long getCurrentInstanceId();
+    // public long getCurrentInstanceId();
 }

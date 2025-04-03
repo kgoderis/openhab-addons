@@ -22,15 +22,15 @@ public class WindowCoveringService extends GenericService {
     @Override
     public void addCharacteristics() {
         super.addCharacteristics();
-        addCharacteristic(new TargetPositionCharacteristic(this, getAccessory().getNewInstanceId()));
-        addCharacteristic(new CurrentPositionCharacteristic(this, getAccessory().getNewInstanceId()));
-        addCharacteristic(new PositionStateCharacteristic(this, getAccessory().getNewInstanceId()));
-        addCharacteristic(new HoldPositionCharacteristic(this, getAccessory().getNewInstanceId()));
-        addCharacteristic(new CurrentHorizontalTiltAngleCharacteristic(this, getAccessory().getNewInstanceId()));
-        addCharacteristic(new TargetHorizontalTiltAngleCharacteristic(this, getAccessory().getNewInstanceId()));
-        addCharacteristic(new CurrentVerticalTiltAngleCharacteristic(this, getAccessory().getNewInstanceId()));
-        addCharacteristic(new TargetVerticalTiltAngleCharacteristic(this, getAccessory().getNewInstanceId()));
-        addCharacteristic(new ObstructionDetectedCharacteristic(this, getAccessory().getNewInstanceId()));
+        addCharacteristic(new TargetPositionCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(new CurrentPositionCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(new PositionStateCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(new HoldPositionCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(new CurrentHorizontalTiltAngleCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(new TargetHorizontalTiltAngleCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(new CurrentVerticalTiltAngleCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(new TargetVerticalTiltAngleCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(new ObstructionDetectedCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
     }
 
     @Override
