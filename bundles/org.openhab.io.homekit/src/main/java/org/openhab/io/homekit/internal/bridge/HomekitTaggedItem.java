@@ -19,23 +19,43 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.core.items.GroupItem;
 import org.openhab.core.items.Item;
 import org.openhab.core.items.ItemRegistry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
-import org.eclipse.jdt.annotation.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Wraps an Item with data derived from supported tags defined.
+ * This class represents an openHAB item that has been tagged for HomeKit integration.
+ * It manages the mapping between openHAB items and their corresponding HomeKit accessories or characteristics.
+ *
+ * <p>The class handles two main types of items:
+ * <ul>
+ * <li>Accessory items: Items that represent complete HomeKit accessories (e.g., lights, switches)</li>
+ * <li>Characteristic items: Items that represent specific characteristics of an accessory (e.g., brightness, color)</li>
+ * </ul>
+ * </p>
+ *
+ * <p>Items can be tagged in two ways:
+ * <ul>
+ * <li>Direct tagging: The item itself is tagged as a HomeKit accessory</li>
+ * <li>Group membership: The item is a member of a group that is tagged as a HomeKit accessory</li>
+ * </ul>
+ * </p>
  *
  * @author Andy Lintner - Initial contribution
  */
 public class HomekitTaggedItem {
+    /**
+     * Exception thrown when an item's configuration is invalid for HomeKit integration.
+     * This includes cases where items are incorrectly tagged or grouped.
+     */
     class BadItemConfigurationException extends Exception {
         private static final long serialVersionUID = 2199765638404197193L;
 
@@ -58,6 +78,14 @@ public class HomekitTaggedItem {
     private final int id;
     private GroupItem parentGroupItem;
 
+    /**
+     * Constructs a new HomekitTaggedItem instance for the given item.
+     * Determines the item's role in HomeKit integration based on its tags and group membership.
+     *
+     * @param item The openHAB item to wrap
+     * @param itemRegistry The item registry to use for group lookups
+     * @throws BadItemConfigurationException if the item's configuration is invalid
+     */
     public HomekitTaggedItem(Item item, ItemRegistry itemRegistry) {
         this.item = item;
 
@@ -104,8 +132,12 @@ public class HomekitTaggedItem {
         }
     }
 
-
-
+    /**
+     * Retrieves the HomeKit service type from the item's tags.
+     * This method checks all available HomeKit factories to find a matching service type.
+     *
+     * @return The HomeKit service type if found, null otherwise
+     */
     public String getFactoryServiceType() {
         if (homekitFactoryTracker == null) {
             BundleContext context = FrameworkUtil.getBundle(HomekitTaggedItem.class).getBundleContext();
@@ -130,6 +162,12 @@ public class HomekitTaggedItem {
         return null;
     }
 
+    /**
+     * Retrieves the HomeKit characteristic type from the item's tags.
+     * This method checks all available HomeKit factories to find a matching characteristic type.
+     *
+     * @return The HomeKit characteristic type if found, null otherwise
+     */
     public String getFactoryCharacteristicType() {
         if (homekitFactoryTracker == null) {
             BundleContext context = FrameworkUtil.getBundle(HomekitTaggedItem.class).getBundleContext();
@@ -154,69 +192,123 @@ public class HomekitTaggedItem {
         return null;
     }
 
+    /**
+     * Checks if the item is tagged for HomeKit integration.
+     * An item is considered tagged if it has either a service type or a characteristic type.
+     *
+     * @return true if the item is tagged for HomeKit integration, false otherwise
+     */
     public boolean isTagged() {
         return (serviceType != null && id != 0) || characteristicType != null;
     }
 
+    /**
+     * Checks if the item is a group item that represents a HomeKit accessory.
+     *
+     * @return true if the item is a group and represents a HomeKit accessory, false otherwise
+     */
     public boolean isGroup() {
         return (isAccessory() && (this.item instanceof GroupItem));
     }
 
+    /**
+     * Gets the HomeKit service type associated with this item.
+     * This represents the type of HomeKit accessory (e.g., Light, Switch, Thermostat).
+     *
+     * @return The HomeKit service type, or null if not applicable
+     */
     public String getServiceType() {
         return serviceType;
     }
 
+    /**
+     * Gets the HomeKit characteristic type associated with this item.
+     * This represents a specific property of a HomeKit accessory (e.g., On, Brightness, Temperature).
+     *
+     * @return The HomeKit characteristic type, or null if not applicable
+     */
     public String getCharacteristicType() {
         return characteristicType;
     }
 
     /**
-     * Returns whether or not this item refers to an item that fully specifies a Homekit accessory. Mutually
-     * exclusive
-     * to isCharacteristic(). Primary devices must belong to a root accessory group.
+     * Checks if this item represents a complete HomeKit accessory.
+     * An item is considered an accessory if it has a service type defined.
+     * Accessory items must belong to a root accessory group.
+     *
+     * @return true if the item represents a HomeKit accessory, false otherwise
      */
     public boolean isAccessory() {
         return serviceType != null;
     }
 
     /**
-     * Returns whether or not this item is in a group that specifies a Homekit accessory. It is not possible to be a
-     * characteristic and an accessory. Further, all characteristics belong to a
-     * root deviceGroup.
+     * Checks if this item represents a HomeKit characteristic.
+     * An item is considered a characteristic if it has a characteristic type defined.
+     * Characteristic items must belong to a root accessory group.
+     *
+     * @return true if the item represents a HomeKit characteristic, false otherwise
      */
     public boolean isCharacteristic() {
         return characteristicType != null;
     }
 
+    /**
+     * Gets the underlying openHAB item.
+     *
+     * @return The wrapped openHAB item
+     */
     public Item getItem() {
         return item;
     }
 
+    /**
+     * Gets the unique identifier for this HomeKit accessory.
+     * The ID is calculated based on the item's name and is used to identify the accessory in HomeKit.
+     *
+     * @return The unique identifier for the accessory
+     */
     public int getId() {
         return id;
     }
 
+    /**
+     * Gets the name of the underlying openHAB item.
+     *
+     * @return The name of the item
+     */
     public String getName() {
         return item.getName();
     }
 
     /**
-     * Returns the RootDevice GroupItem to which this item belongs.
-     * Returns null if not in a group.
+     * Gets the root device group item to which this item belongs.
+     * This is the group that represents the complete HomeKit accessory.
+     *
+     * @return The root device group item, or null if the item is not in a group
      */
     public GroupItem getRootDeviceGroupItem() {
         return parentGroupItem;
     }
 
     /**
-     * Returns whether or not this item belongs to a Homekit accessory group.
+     * Checks if this item belongs to a HomeKit accessory group.
+     * Characteristic items must belong to an accessory group.
      *
-     * Characteristic devices must belong to a Homekit accessory group.
+     * @return true if the item belongs to a HomeKit accessory group, false otherwise
      */
     public boolean isMemberOfAccessoryGroup() {
         return parentGroupItem != null;
     }
 
+    /**
+     * Calculates a unique identifier for the HomeKit accessory.
+     * The ID is based on the item's name and is guaranteed to be unique within the system.
+     * IDs 0 and 1 are reserved for special purposes.
+     *
+     * @param item The item to calculate the ID for
+     * @return A unique identifier for the accessory
+     */
     private int calculateId(Item item) {
         int id = new HashCodeBuilder().append(item.getName()).hashCode();
         if (id < 0) {
@@ -238,17 +330,15 @@ public class HomekitTaggedItem {
         return id;
     }
 
+    /**
+     * Finds all accessory groups that contain the given item.
+     * An accessory group is a group item that is tagged as a HomeKit accessory.
+     *
+     * @param item The item to find groups for
+     * @param itemRegistry The item registry to use for group lookups
+     * @return A list of group items that are tagged as HomeKit accessories
+     */
     public static List<GroupItem> findMyAccessoryGroups(Item item, ItemRegistry itemRegistry) {
-        // return item.getGroupNames().stream().flatMap(name -> {
-        //     Item groupItem = itemRegistry.get(name);
-        //     if ((groupItem != null) && (groupItem instanceof GroupItem)) {
-        //         return Stream.of((GroupItem) groupItem);
-        //     } else {
-        //         return Stream.empty();
-        //     }
-        // }).filter(groupItem -> {
-        //     return groupItem.getTags().stream().filter(gt -> HomekitAccessoryType.valueOfTag(gt) != null).count() > 0;
-        // }).collect(Collectors.toList());
         if (homekitFactoryTracker == null) {
             BundleContext context = FrameworkUtil.getBundle(HomekitTaggedItem.class).getBundleContext();
             homekitFactoryTracker = new ServiceTracker<>(context, HomekitFactory.class, null);

@@ -22,7 +22,6 @@ import org.openhab.core.service.ReadyMarker;
 import org.openhab.core.service.ReadyMarkerFilter;
 import org.openhab.core.service.ReadyService;
 import org.openhab.core.storage.StorageService;
-import org.openhab.core.thing.ThingRegistry;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.Characteristic;
@@ -33,7 +32,6 @@ import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
 import org.openhab.io.homekit.api.server.AccessoryServer;
 import org.openhab.io.homekit.api.server.LocalAccessoryServer;
 import org.openhab.io.homekit.api.server.RemoteAccessoryServer;
-import org.openhab.io.homekit.library.accessory.ThingAccessory;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -66,7 +64,6 @@ public class  PersistedAccessoryProvider extends AbstractManagedProvider<org.ope
     private final Collection<HomekitFactory> homekitFactories = new CopyOnWriteArrayList<>();
 
     private final AccessoryServerRegistry accessoryServerRegistry;
-    private final ThingRegistry thingRegistry;
     private ReadyService readyService;
 
     private volatile long lastUpdate = System.nanoTime();
@@ -74,11 +71,10 @@ public class  PersistedAccessoryProvider extends AbstractManagedProvider<org.ope
 
     @Activate
     public  PersistedAccessoryProvider(@Reference StorageService storageService,
-            @Reference AccessoryServerRegistry accessoryServerRegistry, @Reference ThingRegistry thingRegistry,
+            @Reference AccessoryServerRegistry accessoryServerRegistry,
             @Reference ReadyService readyService) {
         super(storageService);
         this.accessoryServerRegistry = accessoryServerRegistry;
-        this.thingRegistry = thingRegistry;
         this.readyService = readyService;
 
         readyService.registerTracker(this, new ReadyMarkerFilter().withType(HOMEKIT_ACCESSORY_SERVER_REGISTRY));
@@ -155,9 +151,9 @@ public class  PersistedAccessoryProvider extends AbstractManagedProvider<org.ope
                         clazz = Class.forName(persistableElement.getAccessoryClass());
                     } catch (ClassNotFoundException e) {
                         logger.warn(
-                                "Unable to find Accessory class {}, and will revert to the default ThingAccessory class",
+                                "Unable to find Accessory class {}, and will revert to the default GenericAccessory class",
                                 persistableElement.getAccessoryClass());
-                        clazz = ThingAccessory.class;
+                        clazz = GenericAccessory.class;
                     }
 
                     // TODO : Replace with a call to a Factory in order to create the accessory ?
@@ -333,18 +329,13 @@ public class  PersistedAccessoryProvider extends AbstractManagedProvider<org.ope
     @Override
     protected PersistedAccessory toPersistableElement(Accessory element) {
 
-        String thingUID = "";
-        if (element instanceof ThingAccessory) {
-            thingUID = ((ThingAccessory) element).getThingUID().toString();
-        }
-
         long currentInstanceId = 0;
         if (element instanceof  Accessory) {
             currentInstanceId = (( Accessory) element).getCurrentInstanceId();
         }
 
         return new PersistedAccessory(element.getClass().getName(), element.toJson().toString(),
-                element.getServer().getUID().toString(), currentInstanceId, thingUID);
+                element.getServer().getUID().toString(), currentInstanceId);
     }
 
     @Override

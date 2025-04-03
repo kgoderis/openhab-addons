@@ -1,12 +1,9 @@
 package org.openhab.io.homekit.api.server;
 
 import org.eclipse.jetty.server.HttpConnection;
-import org.openhab.io.homekit.HomekitCommunicationManager;
 import org.openhab.io.homekit.api.hap.Characteristic;
 
 public interface LocalAccessoryServer extends AccessoryServer {
-
-    HomekitCommunicationManager getCommunicationManager();
 
     /**
      * Accessory Instance IDs are assigned from the same number pool that is global across entire
