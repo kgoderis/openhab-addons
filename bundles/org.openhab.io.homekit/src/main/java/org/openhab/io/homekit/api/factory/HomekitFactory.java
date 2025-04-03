@@ -147,4 +147,14 @@ public interface HomekitFactory {
 
     @Nullable
     Class<? extends Characteristic<?>> getCharacteristic(String serviceType);
+
+    @Nullable
+    String getServiceTypeFromTag(String firstTag);
+
+    @Nullable
+    String getCharacteristicTypeFromTag(String firstTag);
+
+    @Nullable
+    String getTagFromServiceType(String serviceType);
+
 }

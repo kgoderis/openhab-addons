@@ -43,11 +43,11 @@ public class HomekitAccessoryFactory {
     public static HomekitAccessory create(HomekitTaggedItem taggedItem, ItemRegistry itemRegistry,
             HomekitAccessoryUpdater updater, HomekitSettings settings)
             throws HomekitException, IncompleteAccessoryException {
-        LOGGER.debug("Constructing {} of accessoryType {}", taggedItem.getName(), taggedItem.getAccessoryType());
+        LOGGER.debug("Constructing {} of accessoryType {}", taggedItem.getName(), taggedItem.getServiceType());
 
         Map<HomekitCharacteristicType, Item> characteristicItems = getCharacteristicItems(taggedItem);
 
-        switch (taggedItem.getAccessoryType()) {
+        switch (taggedItem.getServiceType()) {
             case LEAK_SENSOR:
                 HomekitTaggedItem leakSensorAccessory = getPrimaryAccessory(taggedItem,
                         HomekitAccessoryType.LEAK_SENSOR, itemRegistry).orElseThrow(
@@ -114,7 +114,7 @@ public class HomekitAccessoryFactory {
                         BatteryStatus.getFromCharacteristics(characteristicItems));
         }
 
-        throw new HomekitException("Unknown homekit type: " + taggedItem.getAccessoryType());
+        throw new HomekitException("Unknown homekit type: " + taggedItem.getServiceType());
     }
 
     /**
@@ -132,7 +132,7 @@ public class HomekitAccessoryFactory {
             GroupItem groupItem = (GroupItem) taggedItem.getItem();
             return groupItem.getMembers().stream().filter(item -> item.hasTag(accessoryType.getTag())).findFirst()
                     .map(item -> new HomekitTaggedItem(item, itemRegistry));
-        } else if (taggedItem.getAccessoryType() == accessoryType) {
+        } else if (taggedItem.getServiceType() == accessoryType) {
             return Optional.of(taggedItem);
         } else {
             return Optional.empty();

@@ -24,6 +24,11 @@ import org.openhab.core.items.Item;
 import org.openhab.core.items.ItemRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.openhab.io.homekit.api.factory.HomekitFactory;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.util.tracker.ServiceTracker;
+import org.eclipse.jdt.annotation.NonNull;
 
 /**
  * Wraps an Item with data derived from supported tags defined.
@@ -39,14 +44,15 @@ public class HomekitTaggedItem {
         }
     }
 
+    private static ServiceTracker<@NonNull HomekitFactory, @NonNull HomekitFactory> homekitFactoryTracker;
     private static final Map<Integer, String> CREATED_ACCESSORY_IDS = new ConcurrentHashMap<>();
 
     /**
      * The type of HomekitDevice we've decided this was. If the item is question is the member of a group which is a
      * HomekitDevice, then this is null.
      */
-    private HomekitAccessoryType homekitAccessoryType;
-    private HomekitCharacteristicType homekitCharacteristicType;
+    private String serviceType;
+    private String characteristicType;
     private final Item item;
     private Logger logger = LoggerFactory.getLogger(HomekitTaggedItem.class);
     private final int id;
@@ -56,9 +62,9 @@ public class HomekitTaggedItem {
         this.item = item;
 
         try {
-            homekitAccessoryType = HomekitAccessoryType.fromItem(item);
-            homekitCharacteristicType = HomekitCharacteristicType.fromItem(item);
-            if (homekitAccessoryType != null && homekitCharacteristicType != null) {
+            serviceType = getFactoryServiceType();
+            characteristicType = getFactoryCharacteristicType();
+            if (serviceType != null && characteristicType != null) {
                 throw new BadItemConfigurationException(
                         "Items cannot be tagged as both a characteristic and an accessory type");
             }
@@ -66,7 +72,7 @@ public class HomekitTaggedItem {
 
             switch (matchingGroupItems.size()) {
                 case 0: // Does not belong to a accessory group
-                    if (homekitCharacteristicType != null) {
+                    if (characteristicType != null) {
                         throw new BadItemConfigurationException(
                                 "Item is tagged as a characteristic, but does not belong to a root accessory group");
                     }
@@ -87,31 +93,81 @@ public class HomekitTaggedItem {
 
         } catch (BadItemConfigurationException e) {
             logger.warn("Item {} was misconfigured: {}. Excluding item from homekit.", item.getName(), e.getMessage());
-            homekitAccessoryType = null;
-            homekitCharacteristicType = null;
+            serviceType = null;
+            characteristicType = null;
             parentGroupItem = null;
         }
-        if (homekitAccessoryType != null) {
+        if (serviceType != null) {
             this.id = calculateId(item);
         } else {
             this.id = 0;
         }
     }
 
+
+
+    public String getFactoryServiceType() {
+        if (homekitFactoryTracker == null) {
+            BundleContext context = FrameworkUtil.getBundle(HomekitTaggedItem.class).getBundleContext();
+            homekitFactoryTracker = new ServiceTracker<>(context, HomekitFactory.class, null);
+            homekitFactoryTracker.open();
+        }
+
+        Object[] factories = homekitFactoryTracker.getServices();
+        if (factories != null) {
+            if (!item.getTags().isEmpty()) {
+                String firstTag = item.getTags().iterator().next();
+                for (Object factory : factories) {
+                    if (factory instanceof HomekitFactory homekitFactory) {
+                        String serviceType = homekitFactory.getServiceTypeFromTag(firstTag);
+                        if (serviceType != null) {
+                            return serviceType;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public String getFactoryCharacteristicType() {
+        if (homekitFactoryTracker == null) {
+            BundleContext context = FrameworkUtil.getBundle(HomekitTaggedItem.class).getBundleContext();
+            homekitFactoryTracker = new ServiceTracker<>(context, HomekitFactory.class, null);
+            homekitFactoryTracker.open();
+        }
+
+        Object[] factories = homekitFactoryTracker.getServices();
+        if (factories != null) {
+            if (!item.getTags().isEmpty()) {
+                String firstTag = item.getTags().iterator().next();
+                for (Object factory : factories) {
+                    if (factory instanceof HomekitFactory homekitFactory) {
+                        String characteristicType = homekitFactory.getCharacteristicTypeFromTag(firstTag);
+                        if (characteristicType != null) {
+                            return characteristicType;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     public boolean isTagged() {
-        return (homekitAccessoryType != null && id != 0) || homekitCharacteristicType != null;
+        return (serviceType != null && id != 0) || characteristicType != null;
     }
 
     public boolean isGroup() {
         return (isAccessory() && (this.item instanceof GroupItem));
     }
 
-    public HomekitAccessoryType getAccessoryType() {
-        return homekitAccessoryType;
+    public String getServiceType() {
+        return serviceType;
     }
 
-    public HomekitCharacteristicType getCharacteristicType() {
-        return homekitCharacteristicType;
+    public String getCharacteristicType() {
+        return characteristicType;
     }
 
     /**
@@ -120,7 +176,7 @@ public class HomekitTaggedItem {
      * to isCharacteristic(). Primary devices must belong to a root accessory group.
      */
     public boolean isAccessory() {
-        return homekitAccessoryType != null;
+        return serviceType != null;
     }
 
     /**
@@ -129,7 +185,7 @@ public class HomekitTaggedItem {
      * root deviceGroup.
      */
     public boolean isCharacteristic() {
-        return homekitCharacteristicType != null;
+        return characteristicType != null;
     }
 
     public Item getItem() {
@@ -183,6 +239,22 @@ public class HomekitTaggedItem {
     }
 
     public static List<GroupItem> findMyAccessoryGroups(Item item, ItemRegistry itemRegistry) {
+        // return item.getGroupNames().stream().flatMap(name -> {
+        //     Item groupItem = itemRegistry.get(name);
+        //     if ((groupItem != null) && (groupItem instanceof GroupItem)) {
+        //         return Stream.of((GroupItem) groupItem);
+        //     } else {
+        //         return Stream.empty();
+        //     }
+        // }).filter(groupItem -> {
+        //     return groupItem.getTags().stream().filter(gt -> HomekitAccessoryType.valueOfTag(gt) != null).count() > 0;
+        // }).collect(Collectors.toList());
+        if (homekitFactoryTracker == null) {
+            BundleContext context = FrameworkUtil.getBundle(HomekitTaggedItem.class).getBundleContext();
+            homekitFactoryTracker = new ServiceTracker<>(context, HomekitFactory.class, null);
+            homekitFactoryTracker.open();
+        }
+
         return item.getGroupNames().stream().flatMap(name -> {
             Item groupItem = itemRegistry.get(name);
             if ((groupItem != null) && (groupItem instanceof GroupItem)) {
@@ -191,7 +263,16 @@ public class HomekitTaggedItem {
                 return Stream.empty();
             }
         }).filter(groupItem -> {
-            return groupItem.getTags().stream().filter(gt -> HomekitAccessoryType.valueOfTag(gt) != null).count() > 0;
+            return groupItem.getTags().stream().anyMatch(tag -> {
+                Object[] factories = homekitFactoryTracker.getServices();
+                if (factories != null) {
+                    return Stream.of(factories)
+                        .filter(factory -> factory instanceof HomekitFactory)
+                        .map(factory -> (HomekitFactory) factory)
+                        .anyMatch(homekitFactory -> homekitFactory.getServiceTypeFromTag(tag) != null);
+                }
+                return false;
+            });
         }).collect(Collectors.toList());
     }
 }

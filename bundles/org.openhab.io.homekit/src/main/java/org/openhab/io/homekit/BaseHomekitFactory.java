@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -567,6 +568,47 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     @Override
     public boolean isServiceSupported(@NonNull String serviceType) {
         return serviceTypeServiceClassMapper.containsKey(serviceType);
+    }
+
+    @Override
+    public String getServiceTypeFromTag(@NonNull String tag) {
+        HashSet<Class<? extends Service>> serviceClasses = tagServiceClassMapper.get(tag);
+        if (serviceClasses != null && !serviceClasses.isEmpty()) {
+            Class<? extends Service> serviceClass = serviceClasses.iterator().next();
+            for (String serviceType : serviceTypeServiceClassMapper.keySet()) {
+                if (serviceTypeServiceClassMapper.get(serviceType).equals(serviceClass)) {
+                    return serviceType;
+                }
+            }
+        }
+        return null; // Return empty string instead of null
+    }
+    
+    @Override
+    public String getCharacteristicTypeFromTag(@NonNull String tag) {
+        HashSet<Class<? extends Characteristic<?>>> characteristicClasses = tagCharacteristicClassMapper.get(tag);
+        if (characteristicClasses != null && !characteristicClasses.isEmpty()) {
+            Class<? extends Characteristic<?>> characteristicClass = characteristicClasses.iterator().next();
+            for (String characteristicType : characteristicTypeCharacteristicClassMapper.keySet()) {
+                if (characteristicTypeCharacteristicClassMapper.get(characteristicType).equals(characteristicClass)) {
+                    return characteristicType;
+                }
+            }
+        }
+        return null; // Return empty string instead of null
+    }
+    
+    @Override
+    public String getTagFromServiceType(@NonNull String serviceType) {
+        Class<? extends Service> serviceClass = serviceTypeServiceClassMapper.get(serviceType);
+        if (serviceClass != null) {
+            for (Map.Entry<String, HashSet<Class<? extends Service>>> entry : tagServiceClassMapper.entrySet()) {
+                if (entry.getValue().contains(serviceClass)) {
+                    return entry.getKey();
+                }
+            }
+        }
+        return null;
     }
 }
 
