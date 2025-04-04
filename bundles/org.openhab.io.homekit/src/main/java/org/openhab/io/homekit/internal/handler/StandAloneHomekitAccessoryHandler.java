@@ -275,7 +275,7 @@ public class StandAloneHomekitAccessoryHandler extends AbstractHomekitAccessoryH
 
         if (accessories.size() > 0) {
             logger.info("'{}' : Configuring the Thing using Accessory {}",
-                    ((Accessory) accessories.toArray()[0]).getId());
+                    ((Accessory) accessories.toArray()[0]).getAccessoryId());
             configureThing((Accessory) accessories.toArray()[0]);
         }
     }

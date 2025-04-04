@@ -10,6 +10,7 @@ import org.openhab.io.homekit.HomekitCommunicationManager;
 import org.openhab.io.homekit.api.NotificationRegistry;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
+import org.openhab.io.homekit.internal.server.registry.AccessoryServerUID;
 
 /**
  * An HomekitAccessoryServer is a class that supports HomeKit Accessory Protocol and exposes a collection of
@@ -30,6 +31,6 @@ public class LocalStandAloneAccessoryServer extends AbstractLocalAccessoryServer
 
     @Override
     public @NonNull AccessoryServerUID getUID() {
-        return new AccessoryServerUID("StandAlone", getId());
+        return new AccessoryServerUID("StandAlone", getAccessoryId());
     }
 }

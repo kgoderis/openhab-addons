@@ -5,8 +5,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.registry.Registry;
 import org.openhab.io.homekit.api.provider.AccessoryServerProvider;
 import org.openhab.io.homekit.api.server.AccessoryServer;
-import org.openhab.io.homekit.api.server.LocalAccessoryServer;
-import org.openhab.io.homekit.internal.server.AccessoryServerUID;
+import org.openhab.io.homekit.internal.server.registry.AccessoryServerUID;
 
 /**
  * {@link AccessoryServerRegistry} tracks all {@link AccessoryServer}s from different {@link AccessoryServerProvider}s
@@ -19,5 +18,5 @@ import org.openhab.io.homekit.internal.server.AccessoryServerUID;
 @NonNullByDefault
 public interface AccessoryServerRegistry extends Registry<AccessoryServer, AccessoryServerUID> {
 
-    public @Nullable LocalAccessoryServer getAvailableBridgeAccessoryServer();
+    public @Nullable AccessoryServer getAvailableBridgeAccessoryServer();
 }

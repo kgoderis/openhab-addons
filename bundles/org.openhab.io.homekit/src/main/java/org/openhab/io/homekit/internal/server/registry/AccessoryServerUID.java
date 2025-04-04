@@ -1,4 +1,4 @@
-package org.openhab.io.homekit.internal.server;
+package org.openhab.io.homekit.internal.server.registry;
 
 import java.util.List;
 
@@ -34,6 +34,7 @@ public class AccessoryServerUID extends UID {
      *
      * @return id the id
      */
+    @SuppressWarnings("null")
     public String getId() {
         List<String> segments = getAllSegments();
         return segments.get(segments.size() - 1);

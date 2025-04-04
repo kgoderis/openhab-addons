@@ -1,4 +1,4 @@
-package org.openhab.io.homekit.internal.server;
+package org.openhab.io.homekit.internal.server.registry;
 
 import java.net.InetAddress;
 import java.util.Collection;
@@ -14,15 +14,14 @@ import org.openhab.core.service.ReadyMarker;
 import org.openhab.core.service.ReadyMarkerFilter;
 import org.openhab.core.service.ReadyService;
 import org.openhab.io.homekit.api.factory.AccessoryServerFactory;
-import org.openhab.io.homekit.api.hap.Accessory;
-import org.openhab.io.homekit.api.hap.Characteristic;
-import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.api.listener.AccessoryServerChangeListener;
 import org.openhab.io.homekit.api.provider.AccessoryServerProvider;
 import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
 import org.openhab.io.homekit.api.server.AccessoryServer;
 import org.openhab.io.homekit.api.server.LocalAccessoryServer;
 import org.openhab.io.homekit.internal.events.AccessoryServerEvent;
+import org.openhab.io.homekit.internal.server.LocalBridgeAccessoryServer;
+import org.openhab.io.homekit.internal.server.factory.LocalAccessoryServerFactory;
 import org.openhab.io.homekit.library.accessory.BridgeAccessory;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;

@@ -1,4 +1,4 @@
-package org.openhab.io.homekit.internal.server;
+package org.openhab.io.homekit.internal.server.factory;
 
 import java.net.InetAddress;
 import java.security.InvalidAlgorithmParameterException;
@@ -16,6 +16,7 @@ import org.openhab.io.homekit.api.factory.AccessoryServerFactory;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.api.server.AccessoryServer;
+import org.openhab.io.homekit.internal.server.LocalBridgeAccessoryServer;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;

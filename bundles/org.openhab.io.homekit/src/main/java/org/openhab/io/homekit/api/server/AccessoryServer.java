@@ -1,129 +1,274 @@
 package org.openhab.io.homekit.api.server;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Collection;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jetty.server.HttpConnection;
 import org.openhab.core.common.registry.Identifiable;
 import org.openhab.io.homekit.api.hap.Accessory;
+import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Pairing;
 import org.openhab.io.homekit.api.listener.AccessoryServerChangeListener;
-import org.openhab.io.homekit.internal.server.AccessoryServerUID;
+import org.openhab.io.homekit.internal.client.HomekitException;
+import org.openhab.io.homekit.internal.server.registry.AccessoryServerUID;
 
 /**
- * Interface for an HAP Accessory Server that exposes a collection of Accessories to the HAP controller(s). An HAP
- * Accessory Server represents one endpoint of the pairing relationship established with HAP Pairing
+ * Interface for an HAP Accessory Server that exposes a collection of Accessories to the HAP controller(s).
+ * An HAP Accessory Server represents one endpoint of the pairing relationship established with HAP Pairing.
+ * This interface provides methods for managing accessories, handling pairing, and controlling server behavior.
  *
  * @author Karel Goderis
  */
 @NonNullByDefault
 public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
 
+    // ==================== Core Server Methods ====================
+
     /**
-     * A unique identifier that will be advertised by HAP, and that will be used to pair the AccessoryServer.
+     * Gets the unique identifier for this accessory server.
+     * This ID is used for advertising and pairing purposes.
      *
-     * @return the unique pairing identifier.
+     * @return the unique server identifier
      */
     String getId();
 
     /**
-     * A setup code used for pairing the AccessoryServer. This setup code will be required by the cliet (e.g iOS/iPadOS)
-     * in order to
-     * complete pairing. The setup codes cannot be sequential and should not have a repeating pattern.
+     * Gets the network address of this accessory server.
      *
-     * @return the setup code, in the form ###-##-###
+     * @return the server's network address
+     */
+    InetAddress getAddress();
+
+    /**
+     * Gets the network port this accessory server is listening on.
+     *
+     * @return the server's port number
+     */
+    int getPort();
+
+    /**
+     * Checks if the server is using secure communication.
+     *
+     * @return true if the server is secure, false otherwise
+     */
+    boolean isSecure();
+
+    // ==================== Accessory Management ====================
+
+    /**
+     * Gets all accessories registered with this server.
+     *
+     * @return collection of registered accessories
+     */
+    Collection<Accessory> getAccessories();
+
+    /**
+     * Gets an accessory by its accessory ID.
+     *
+     * @param accessoryId the accessory ID of the accessory
+     * @return the accessory, or null if not found
+     */
+    @Nullable
+    Accessory getAccessory(int accessoryId);
+
+    /**
+     * Gets an accessory by its class type.
+     *
+     * @param accessoryClass the class type of the accessory
+     * @return the accessory, or null if not found
+     */
+    @Nullable
+    Accessory getAccessory(Class<? extends Accessory> accessoryClass);
+
+    /**
+     * Adds a new accessory to this server.
+     *
+     * @param accessory the accessory to add
+     */
+    void addAccessory(Accessory accessory);
+
+    /**
+     * Removes an accessory from this server.
+     *
+     * @param accessory the accessory to remove
+     */
+    void removeAccessory(Accessory accessory);
+
+    /**
+     * Gets the next available accessory ID.
+     * IDs are unique across all accessories in this server.
+     *
+     * @return the next available accessory ID
+     */
+    long getNextAvailableAccessoryId();
+
+    // ==================== Pairing Management ====================
+
+    /**
+     * Gets the setup code used for pairing.
+     * The code format is ###-##-### and should not be sequential or have repeating patterns.
+     *
+     * @return the setup code
      */
     String getSetupCode();
 
+    /**
+     * Sets the setup code used for pairing.
+     *
+     * @param setupCode the new setup code
+     */
     void setSetupCode(String setupCode);
 
     /**
-     * The private key used during pairing and message encryption.
+     * Gets the server's private key used for encryption.
      *
-     * @return the private key.
+     * @return the private key
      */
     byte[] getSecretKey();
 
     /**
-     * An Accessory object represents a physical accessory on an AccessoryServer. For example, a
-     * thermostat would expose a single Accessory object that represents the user-addressable functionality of
-     * the thermostat
+     * Gets the server's pairing ID.
      *
-     * The Accessory object with an instance ID of 1 is considered the primary Accessory object. For
-     * BridgeAccessoryServers, this must be the BridgeAccessoryServer itself.
-     *
-     * @return the list of HomekitAccessories.
+     * @return the pairing ID
      */
-    Collection<Accessory> getAccessories();
-
-    @Nullable
-    Accessory getAccessory(int instanceId);
-
-    @Nullable
-    Accessory getAccessory(Class<? extends Accessory> accessoryClass);
-
-    void addAccessory(Accessory accessory);
-
-    void removeAccessory(Accessory accessory);
-
-    InetAddress getAddress();
-
-    int getPort();
-
-    void addChangeListener(AccessoryServerChangeListener listener);
-
-    void removeChangeListener(AccessoryServerChangeListener listener);
-
     byte[] getPairingId();
 
     /**
-     * During the pairing process one should store the pairing id and public key in a persistent manner so that
-     * the public key can later be retrieved using {@link #getDestinationPublicKey(String)}.
+     * Adds a new pairing with a client.
      *
-     * @param destinationPairingId the client's pairing id. The value will not be meaningful to anything but
-     *            iOS.
-     * @param destinationPublicKey the client's public key.
+     * @param destinationPairingId the client's pairing ID
+     * @param destinationPublicKey the client's public key
      */
     void addPairing(byte[] destinationPairingId, byte[] destinationPublicKey);
 
     /**
-     * Remove an existing pairing. Subsequent calls to {@link #getDestinationPublicKey(String)} for this pairing id
-     * return
-     * null.
+     * Removes a pairing with a client.
      *
-     * @param destinationPairingId the clientPairingId to delete
+     * @param destinationPairingId the client's pairing ID to remove
      */
     void removePairing(byte[] destinationPairingId);
 
     /**
-     * When the Accessory Server has been paired, the homekit server advertises whether the
-     * server has already been paired. At this time, it's unclear whether multiple pairings can be
-     * created, however it is known that advertising as unpaired will break in iOS 9. The default
-     * value has been provided to maintain API compatibility for implementations targeting iOS 8.
+     * Gets a pairing by its ID.
      *
-     * @return whether a pairing has been established and stored
+     * @param destinationPairingId the pairing ID
+     * @return the pairing, or null if not found
+     */
+    @Nullable
+    Pairing getPairing(byte[] destinationPairingId);
+
+    /**
+     * Gets all active pairings.
+     *
+     * @return collection of active pairings
+     */
+    Collection<Pairing> getPairings();
+
+    /**
+     * Gets the public key for a paired client.
+     *
+     * @param destinationPairingId the client's pairing ID
+     * @return the client's public key, or null if not found
+     */
+    byte @Nullable [] getDestinationPublicKey(byte[] destinationPairingId);
+
+    /**
+     * Checks if the server has any active pairings.
+     *
+     * @return true if paired, false otherwise
      */
     default boolean isPaired() {
         return false;
     }
 
-    @Nullable
-    Pairing getPairing(byte[] destinationPairingId);
+    // ==================== Server Control ====================
 
     /**
-     * When an already paired client is re-connecting, the public key returned by this
-     * method will be compared with the signature of the pair verification request to validate the
-     * client.
-     *
-     * @param destinationPairingId the client pairing id of the client to retrieve the public key for.
-     * @return the previously stored public key for this client.
+     * Performs a factory reset, removing all pairings and restoring default settings.
      */
-    byte @Nullable [] getDestinationPublicKey(byte[] destinationPairingId);
+    void factoryReset();
 
+    /**
+     * Advertises the server on the network.
+     */
+    void advertise();
+
+    /**
+     * Sets the configuration index.
+     *
+     * @param configurationIndex the new configuration index
+     */
     void setConfigurationIndex(int configurationIndex);
 
+    /**
+     * Gets the current configuration index.
+     *
+     * @return the configuration index
+     */
     int getConfigurationIndex();
 
-    Collection<Pairing> getPairings();
+    // ==================== Event Handling ====================
+
+    /**
+     * Adds a change listener to the server.
+     *
+     * @param listener the listener to add
+     */
+    void addChangeListener(AccessoryServerChangeListener listener);
+
+    /**
+     * Removes a change listener from the server.
+     *
+     * @param listener the listener to remove
+     */
+    void removeChangeListener(AccessoryServerChangeListener listener);
+
+    /**
+     * Adds a notification for characteristic changes.
+     *
+     * @param characteristic the characteristic to monitor
+     * @param connection the HTTP connection to notify
+     */
+    void addNotification(Characteristic<?> characteristic, HttpConnection connection);
+
+    /**
+     * Removes a notification for characteristic changes.
+     *
+     * @param characteristic the characteristic to stop monitoring
+     */
+    void removeNotification(Characteristic<?> characteristic);
+
+    // ==================== Pairing Operations ====================
+
+    /**
+     * Initiates the pairing setup process.
+     *
+     * @throws IOException if an I/O error occurs during setup
+     */
+    void pairSetup() throws IOException;
+
+    /**
+     * Verifies the pairing with a client.
+     *
+     * @return true if verification successful, false otherwise
+     */
+    boolean pairVerify();
+
+    /**
+     * Checks if the current pairing is verified.
+     *
+     * @return true if verified, false otherwise
+     */
+    boolean isPairVerified();
+
+    /**
+     * Removes the current pairing.
+     *
+     * @throws HomekitException if an error occurs during removal
+     * @throws IOException if an I/O error occurs
+     */
+    void pairRemove() throws HomekitException, IOException;
 }

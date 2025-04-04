@@ -9,6 +9,7 @@ import org.openhab.io.homekit.api.NotificationRegistry;
 import org.openhab.io.homekit.api.hap.Pairing;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
+import org.openhab.io.homekit.internal.server.registry.AccessoryServerUID;
 
 public class RemoteStandAloneAccessoryServer extends AbstractRemoteAccessoryServer {
 
@@ -27,7 +28,7 @@ public class RemoteStandAloneAccessoryServer extends AbstractRemoteAccessoryServ
 
     @Override
     public @NonNull AccessoryServerUID getUID() {
-        return new AccessoryServerUID("RemoteStandAlone", getId());
+        return new AccessoryServerUID("RemoteStandAlone", getAccessoryId());
     }
 
     public Pairing getPairing() {

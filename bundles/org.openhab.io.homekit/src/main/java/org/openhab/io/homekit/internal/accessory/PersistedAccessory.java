@@ -1,6 +1,6 @@
 package org.openhab.io.homekit.internal.accessory;
 
-import org.openhab.io.homekit.internal.server.AccessoryServerUID;
+import org.openhab.io.homekit.internal.server.registry.AccessoryServerUID;
 
 public class PersistedAccessory {
 

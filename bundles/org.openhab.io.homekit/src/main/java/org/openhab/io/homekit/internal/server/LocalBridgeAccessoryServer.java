@@ -11,6 +11,7 @@ import org.openhab.io.homekit.HomekitCommunicationManager;
 import org.openhab.io.homekit.api.NotificationRegistry;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
+import org.openhab.io.homekit.internal.server.registry.AccessoryServerUID;
 
 /**
  * A HomekitBridge is a special type of HomekitAccessoryServer that bridges the HomeKit Accessory Protocol. A
@@ -48,6 +49,6 @@ public class LocalBridgeAccessoryServer extends AbstractLocalAccessoryServer {
 
     @Override
     public @NonNull AccessoryServerUID getUID() {
-        return new AccessoryServerUID("Bridge", getId());
+        return new AccessoryServerUID("Bridge", getAccessoryId());
     }
 }

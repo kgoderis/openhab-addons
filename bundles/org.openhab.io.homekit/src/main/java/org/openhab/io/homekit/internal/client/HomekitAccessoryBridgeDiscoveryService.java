@@ -75,14 +75,14 @@ public class HomekitAccessoryBridgeDiscoveryService extends AbstractDiscoverySer
 
     @Override
     public void onAccessoryRemoved(Bridge bridge, Accessory accessory) {
-        if (accessory.getId() == 1) {
+        if (accessory.getAccessoryId() == 1) {
             // String id = bridge.getUID().getId().replace(":", "");
             // ThingUID uid = new ThingUID(HomekitBindingConstants.THING_TYPE_BRIDGE, id);
             // thingRemoved(uid);
         } else {
             ThingUID uid = new ThingUID(HomekitBindingConstants.THING_TYPE_ACCESSORY, bridge.getUID(),
-                    String.valueOf(accessory.getId()));
-            logger.info("Accessory {} was removed. The affiliated Thing {} will equally be removed", accessory.getId(),
+                    String.valueOf(accessory.getAccessoryId()));
+            logger.info("Accessory {} was removed. The affiliated Thing {} will equally be removed", accessory.getAccessoryId(),
                     uid);
             thingRemoved(uid);
         }
@@ -90,7 +90,7 @@ public class HomekitAccessoryBridgeDiscoveryService extends AbstractDiscoverySer
 
     @Override
     public void onAccessoryAdded(Bridge bridge, Accessory accessory) {
-        if (accessory.getId() == 1) {
+        if (accessory.getAccessoryId() == 1) {
             // String id = bridge.getUID().getId().replace(":", "");
             // ThingUID uid = new ThingUID(HomekitBindingConstants.THING_TYPE_BRIDGE, id);
             //
@@ -102,13 +102,13 @@ public class HomekitAccessoryBridgeDiscoveryService extends AbstractDiscoverySer
             // thingDiscovered(discoveryResult);
         } else {
             ThingUID uid = new ThingUID(HomekitBindingConstants.THING_TYPE_ACCESSORY, bridge.getUID(),
-                    String.valueOf(accessory.getId()));
+                    String.valueOf(accessory.getAccessoryId()));
 
             DiscoveryResult discoveryResult = DiscoveryResultBuilder.create(uid)
                     .withThingType(HomekitBindingConstants.THING_TYPE_ACCESSORY).withBridge(bridge.getUID())
                     .withLabel("Homekit Accessory").build();
 
-            logger.info("Accessory {} was added. A Discovery result for Thing {} will be reported", accessory.getId(),
+            logger.info("Accessory {} was added. A Discovery result for Thing {} will be reported", accessory.getAccessoryId(),
                     uid);
 
             thingDiscovered(discoveryResult);

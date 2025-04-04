@@ -181,7 +181,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     @Override
     public Collection<Accessory> getAccessories() {
         return Collections.unmodifiableList(accessoryRegistry.get(getId()).stream()
-                .sorted((o1, o2) -> Long.valueOf(o1.getId()).compareTo(Long.valueOf(o2.getId())))
+                .sorted((o1, o2) -> Long.valueOf(o1.getAccessoryId()).compareTo(Long.valueOf(o2.getAccessoryId())))
                 .collect(Collectors.toList()));
     }
 
@@ -206,7 +206,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     public void addAccessory(Accessory accessory) {
         logger.debug("Adding Accessory {} of Type {} to Accessory Server {}", accessory.getUID(),
                 accessory.getClass().getSimpleName(), this.getUID());
-        if (accessory.getId() <= 1 && !(accessory instanceof BridgeAccessory)) {
+        if (accessory.getAccessoryId() <= 1 && !(accessory instanceof BridgeAccessory)) {
             throw new IndexOutOfBoundsException("The ID of an accessory used in a bridge must be greater than 1");
         }
 

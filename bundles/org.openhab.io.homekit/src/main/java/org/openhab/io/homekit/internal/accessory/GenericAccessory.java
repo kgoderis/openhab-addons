@@ -36,6 +36,7 @@ public class GenericAccessory implements Accessory {
     private static ServiceTracker<org.openhab.io.homekit.api.factory.HomekitFactory, org.openhab.io.homekit.api.factory.HomekitFactory> homekitFactoryTracker;
 
     private final long instanceId;
+    private final long accessoryId;
     private final Object instanceIdLock = new Object();
     private final Set<Long> usedInstanceIds = new HashSet<>();
     private long nextInstanceId = 1;
@@ -52,6 +53,7 @@ public class GenericAccessory implements Accessory {
     public GenericAccessory(AccessoryServer server) {
         this.server = server;
         this.instanceId = getNextAvailableInstanceId();
+        this.accessoryId = server.getNextAvailableAccessoryId();
         logger.debug("Created new accessory with instance ID: {}", instanceId);
         
         if (isExtensible()) {
@@ -68,8 +70,9 @@ public class GenericAccessory implements Accessory {
      */
     public GenericAccessory(AccessoryServer server, JsonValue value) {
         this.server = server;
-        this.instanceId = ((JsonObject) value).getInt("aid");
-        logger.debug("Created accessory from JSON with instance ID: {}", instanceId);
+        this.instanceId = getNextAvailableInstanceId();
+        this.accessoryId = ((JsonObject) value).getInt("aid");
+        logger.debug("Created accessory from JSON with accessory ID: {}", accessoryId);
 
         JsonArray servicesArray = ((JsonObject) value).getJsonArray("services");
         for (JsonValue serviceValue : servicesArray) {
@@ -183,15 +186,16 @@ public class GenericAccessory implements Accessory {
 
     @Override
     @NonNull public AccessoryUID getUID() {
-        return new AccessoryUID(getServer().getId(), Long.toString(getId()));
+        return new AccessoryUID(getServer().getId(), Long.toString(getAccessoryId()));
     }
 
     @Override
-    public long getId() {
-        return instanceId;
+    public long getAccessoryId() {
+        return accessoryId;
     }
 
     @Override
+    @NonNull
     public String getSerialNumber() {
         return getUID().getId();
     }
@@ -207,6 +211,7 @@ public class GenericAccessory implements Accessory {
     }
 
     @Override
+    @NonNull
     public String getModel() {
         return this.getClass().getSimpleName();
     }
@@ -217,7 +222,8 @@ public class GenericAccessory implements Accessory {
     }
 
     @Override
-    public Collection<Service> getServices() {
+    @NonNull
+    public Collection<@NonNull Service> getServices() {
         return services;
     }
 
@@ -305,6 +311,7 @@ public class GenericAccessory implements Accessory {
     }
 
     @Override
+    @NonNull
     public JsonObject toJson() {
         JsonArrayBuilder services = Json.createArrayBuilder();
 
@@ -318,6 +325,7 @@ public class GenericAccessory implements Accessory {
     }
 
     @Override
+    @NonNull
     public JsonObject toReducedJson() {
         JsonArrayBuilder services = Json.createArrayBuilder();
 

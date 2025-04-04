@@ -28,7 +28,7 @@ public interface Accessory extends Identifiable<AccessoryUID> {
      *
      * @return the Accessory Instance ID.
      */
-    long getId();
+    long getAccessoryId();
 
     /**
      * Returns a label to display

@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.AbstractRegistry;
+import org.openhab.core.common.registry.ManagedProvider;
 import org.openhab.core.common.registry.Provider;
 import org.openhab.core.service.ReadyMarker;
 import org.openhab.core.service.ReadyMarkerFilter;
@@ -24,7 +25,7 @@ import org.openhab.core.service.ReadyService;
 import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.provider.AccessoryProvider;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
-import org.openhab.io.homekit.api.server.LocalAccessoryServer;
+import org.openhab.io.homekit.api.server.AccessoryServer;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -34,7 +35,6 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.openhab.core.common.registry.ManagedProvider;
 
 /**
  * Stores the created Accessories
@@ -92,25 +92,22 @@ public class AccessoryRegistryImpl extends AbstractRegistry<Accessory, Accessory
     @Override
     public void added(Provider<Accessory> provider, Accessory element) {
         super.added(provider, element);
-        if (element.getServer() instanceof LocalAccessoryServer) {
-            ((LocalAccessoryServer) element.getServer()).advertise();
-        }
+            ((AccessoryServer) element.getServer()).advertise();
+        
     }
 
     @Override
     public void removed(Provider<Accessory> provider, Accessory element) {
         super.removed(provider, element);
-        if (element.getServer() instanceof LocalAccessoryServer) {
-            ((LocalAccessoryServer) element.getServer()).advertise();
-        }
+            ((AccessoryServer) element.getServer()).advertise();
+        
     }
 
     @Override
     public void updated(Provider<Accessory> provider, Accessory oldElement, Accessory element) {
         super.updated(provider, oldElement, element);
-        if (element.getServer() instanceof LocalAccessoryServer) {
-            ((LocalAccessoryServer) element.getServer()).advertise();
-        }
+            ((AccessoryServer) element.getServer()).advertise();
+        
     }
 
     @Override

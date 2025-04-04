@@ -86,7 +86,7 @@ public class GenericService implements Service {
     @Override
     public void addCharacteristics() {
         addCharacteristic(
-                new ServiceNameCharacteristic(this, getAccessory().getId()));
+                new ServiceNameCharacteristic(this, getAccessory().getAccessoryId()));
     }
 
     private Characteristic<?> createCharacteristic(JsonValue value) {
@@ -116,7 +116,7 @@ public class GenericService implements Service {
 
     @Override
     @NonNull public ServiceUID getUID() {
-        return new ServiceUID(getAccessory().getServer().getId(), Long.toString(getAccessory().getId()),
+        return new ServiceUID(getAccessory().getServer().getId(), Long.toString(getAccessory().getAccessoryId()),
                 Long.toString(getId()));
     }
 

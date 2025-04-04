@@ -111,7 +111,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     @Override
     @NonNull public CharacteristicUID getUID() {
         Service service = getService();
-        return new CharacteristicUID("homekit", service.getAccessory().getId(), service.getId(), getId());
+        return new CharacteristicUID("homekit", service.getAccessory().getAccessoryId(), service.getId(), getId());
     }
 
     @Override
@@ -143,7 +143,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
         JsonObjectBuilder builder = Json.createObjectBuilder();
         if (includeMeta) {
             builder.add("iid", instanceId);
-            builder.add("aid", service.getAccessory().getId());
+            builder.add("aid", service.getAccessory().getAccessoryId());
             builder.add("type", getInstanceType());
         }
         if (includePermissions) {
@@ -166,7 +166,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     public JsonObject toJson() {
         JsonObjectBuilder builder = Json.createObjectBuilder();
         builder.add("iid", instanceId);
-        builder.add("aid", service.getAccessory().getId());
+        builder.add("aid", service.getAccessory().getAccessoryId());
         builder.add("type", getInstanceType());
         builder.add("perms", getPermissions());
         builder.add("format", format);
@@ -199,7 +199,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     public JsonObject toEventJson() {
         JsonObjectBuilder builder = Json.createObjectBuilder();
         builder.add("iid", instanceId);
-        builder.add("aid", service.getAccessory().getId());
+        builder.add("aid", service.getAccessory().getAccessoryId());
         JsonObject baseJson = builder.build();
         if (getValue() != null) {
             return enrich(baseJson, "value", getValue());
@@ -211,7 +211,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     public JsonObject toEventJson(T value) {
         JsonObjectBuilder builder = Json.createObjectBuilder();
         builder.add("iid", instanceId);
-        builder.add("aid", service.getAccessory().getId());
+        builder.add("aid", service.getAccessory().getAccessoryId());
         JsonObject baseJson = builder.build();
         if (value != null) {
             return enrich(baseJson, "value", value);

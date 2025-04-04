@@ -1,4 +1,4 @@
-package org.openhab.io.homekit.internal.server;
+package org.openhab.io.homekit.internal.server.registry;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -13,6 +13,8 @@ import org.openhab.core.storage.StorageService;
 import org.openhab.io.homekit.api.factory.AccessoryServerFactory;
 import org.openhab.io.homekit.api.provider.AccessoryServerProvider;
 import org.openhab.io.homekit.api.server.AccessoryServer;
+import org.openhab.io.homekit.internal.server.LocalBridgeAccessoryServer;
+import org.openhab.io.homekit.internal.server.PersistedAccessoryServer;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;

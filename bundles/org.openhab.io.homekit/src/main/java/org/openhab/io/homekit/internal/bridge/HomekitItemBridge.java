@@ -23,7 +23,7 @@ import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
-import org.openhab.io.homekit.api.server.LocalAccessoryServer;
+import org.openhab.io.homekit.api.server.AccessoryServer;
 import org.openhab.io.homekit.internal.accessory.AccessoryRegistryImpl;
 import org.openhab.io.homekit.internal.accessory.GenericAccessory;
 import org.openhab.io.homekit.internal.characteristic.GenericCharacteristic;
@@ -264,7 +264,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
             compatibleFactory.ifPresent(serviceFactory -> {
                 logger.debug(DEBUG_FOUND_COMPATIBLE_FACTORY, serviceFactory.getClass().getSimpleName(), taggedItem.getName());
                 
-                LocalAccessoryServer server = accessoryServerRegistry.getAvailableBridgeAccessoryServer();
+                AccessoryServer server = accessoryServerRegistry.getAvailableBridgeAccessoryServer();
                 if (server != null) {
                     logger.debug(DEBUG_FOUND_AVAILABLE_SERVER, server.getUID(), taggedItem.getName());
                     createAndRegisterAccessory(taggedItem, serviceFactory, server);
@@ -287,7 +287,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      * @param server The server to register the accessory with
      */
     private void createAndRegisterAccessory(HomekitTaggedItem taggedItem, HomekitFactory serviceFactory,
-            LocalAccessoryServer server) {
+    AccessoryServer server) {
         try {
             Accessory accessory = createAccessory(taggedItem, serviceFactory, server);
             if (accessory != null) {
@@ -355,7 +355,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      * @return The created accessory, or null if creation failed
      */
     private Accessory createAccessory(HomekitTaggedItem taggedItem,
-            HomekitFactory serviceFactory, LocalAccessoryServer server) {
+            HomekitFactory serviceFactory, AccessoryServer server) {
         try {
             HomekitTaggedItem primaryAccessory = getPrimaryAccessory(taggedItem, taggedItem.getServiceType(),
                     itemRegistry)

@@ -136,7 +136,7 @@ public abstract class AbstractHomekitAccessoryHandler extends BaseThingHandler {
         for (Service service : accessory.getServices()) {
             for (Characteristic characteristic : service.getCharacteristics()) {
 
-                String tempUID = accessory.getId() + ":" + service.getId() + ":" + characteristic.getId();
+                String tempUID = accessory.getAccessoryId() + ":" + service.getId() + ":" + characteristic.getId();
 
                 Channel associatedChannel = null;
                 for (Channel aChannel : getThing().getChannels()) {
@@ -176,7 +176,7 @@ public abstract class AbstractHomekitAccessoryHandler extends BaseThingHandler {
                         channels.add(channel);
                         logger.info(
                                 "'{}' : Accessory/Service/Characteristic {}/{}/{} of type {}/{} ({}/{}) is associated with Channel {}",
-                                getThing().getUID(), accessory.getId(), service.getId(), characteristic.getId(),
+                                getThing().getUID(), accessory.getAccessoryId(), service.getId(), characteristic.getId(),
                                 serviceClass.getSimpleName(), characteristicClass.getSimpleName(),
                                 service.getInstanceType().replaceAll("^0*([0-9a-fA-F]+)-0000-1000-8000-0026BB765291$",
                                         "$1"),
@@ -186,7 +186,7 @@ public abstract class AbstractHomekitAccessoryHandler extends BaseThingHandler {
                     } else {
                         logger.warn(
                                 "'{}' : Accessory/Service/Characteristic {}/{}/{} of type {}/{} is not supported by any Homekit Factory",
-                                getThing().getUID(), accessory.getId(), service.getId(), characteristic.getId(),
+                                getThing().getUID(), accessory.getAccessoryId(), service.getId(), characteristic.getId(),
                                 service.getInstanceType().replaceAll("^0*([0-9a-fA-F]+)-0000-1000-8000-0026BB765291$",
                                         "$1"),
                                 characteristic.getInstanceType()
@@ -209,7 +209,7 @@ public abstract class AbstractHomekitAccessoryHandler extends BaseThingHandler {
 
                         logger.warn(
                                 "'{}' : Accessory/Service/Characteristic {}/{}/{} of type {}/{} ({}/{}) is already associated with Channel {}",
-                                getThing().getUID(), accessory.getId(), service.getId(), characteristic.getId(),
+                                getThing().getUID(), accessory.getAccessoryId(), service.getId(), characteristic.getId(),
                                 serviceClass.getSimpleName(), characteristicClass.getSimpleName(),
                                 service.getInstanceType().replaceAll("^0*([0-9a-fA-F]+)-0000-1000-8000-0026BB765291$",
                                         "$1"),

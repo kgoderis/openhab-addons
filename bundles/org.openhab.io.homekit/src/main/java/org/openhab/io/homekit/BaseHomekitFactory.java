@@ -126,7 +126,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
                     .getConstructor(AccessoryServer.class, long.class, boolean.class)
                     .newInstance(server, instanceId, extend);
             logger.debug("Created an Accessory {} of Type {}, with instanceId {}", accessory.getUID(),
-                    accessory.getClass().getSimpleName(), accessory.getId());
+                    accessory.getClass().getSimpleName(), accessory.getAccessoryId());
             return accessory;
         } catch (NoSuchMethodException e) {
             logger.warn(
@@ -146,7 +146,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
             Accessory accessory = accessoryClass.getConstructor(AccessoryServer.class, long.class)
                     .newInstance(server, instanceId);
             logger.debug("Created an Accessory {} of Type {}, with instanceId {}", accessory.getUID(),
-                    accessory.getClass().getSimpleName(), accessory.getId());
+                    accessory.getClass().getSimpleName(), accessory.getAccessoryId());
             return accessory;
         } catch (NoSuchMethodException e) {
             logger.warn("Accessory {} is missing a valid constructor of type (AccessoryServer.class, long.class)",
