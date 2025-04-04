@@ -220,25 +220,30 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
             updateConfiguration(config);
 
             accessoryServer.setSetupCode(setupCode);
+            accessoryServer.start();
 
-            if (accessoryServer.isPaired()) {
-                logger.info("'{}' : Removing an existing pairing with the Homekit Accessory", getThing().getUID());
-                try {
-                    accessoryServer.pairRemove();
-                } catch (HomekitException | IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-                updateStatus(ThingStatus.OFFLINE);
-            }
 
-            logger.info("'{}' : Setting up a new pairing with the Homekit Accessory", getThing().getUID());
-            try {
-                accessoryServer.pairSetup();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+
+            // if (accessoryServer.isPaired()) {
+            //     logger.info("'{}' : Removing an existing pairing with the Homekit Accessory", getThing().getUID());
+            // if (accessoryServer.isPaired()) {
+            //     logger.info("'{}' : Removing an existing pairing with the Homekit Accessory", getThing().getUID());
+            //     try {
+            //         accessoryServer.pairRemove();
+            //     } catch (HomekitException | IOException e) {
+            //         // TODO Auto-generated catch block
+            //         e.printStackTrace();
+            //     }
+            //     updateStatus(ThingStatus.OFFLINE);
+            // }
+
+            // logger.info("'{}' : Setting up a new pairing with the Homekit Accessory", getThing().getUID());
+            // try {
+            //     accessoryServer.pairSetup();
+            // } catch (IOException e) {
+            //     // TODO Auto-generated catch block
+            //     e.printStackTrace();
+            // }
 
             if (accessoryServer.isPaired()) {
                 config = editConfiguration();
@@ -247,7 +252,7 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
                 config.put(HomekitAccessoryConfiguration.CLIENT_LTSK,
                         Base64.getEncoder().encodeToString(accessoryServer.getSecretKey()));
                 config.put(HomekitAccessoryConfiguration.ACCESSORY_PAIRING_ID,
-                        Base64.getEncoder().encodeToString(accessoryServer.getDestinationPairingId()));
+                        Base64.getEncoder().encodeToString(accessoryServer.getDestinationId()));
                 updateConfiguration(config);
             } else {
                 updateStatus(ThingStatus.OFFLINE);
@@ -298,7 +303,7 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
         for (Accessory accessory : accessories) {
             boolean doesExist = false;
             for (Accessory existingAccessory : lastAccessories) {
-                if (accessory.getAccessoryId() == existingAccessory.getAccessoryId()) {
+                if (accessory.getId() == existingAccessory.getId()) {
                     doesExist = true;
                     break;
                 }
@@ -312,7 +317,7 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
             for (Service service : accessory.getServices()) {
                 boolean doesExist = false;
                 for (Accessory existingAccessory : lastAccessories) {
-                    if (accessory.getAccessoryId() == existingAccessory.getAccessoryId()) {
+                    if (accessory.getId() == existingAccessory.getId()) {
                         for (Service existingService : existingAccessory.getServices()) {
                             if (service.getId() == existingService.getId()) {
                                 doesExist = true;
@@ -335,7 +340,7 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
                 for (Characteristic characteristic : service.getCharacteristics()) {
                     boolean doesExist = false;
                     for (Accessory existingAccessory : lastAccessories) {
-                        if (accessory.getAccessoryId() == existingAccessory.getAccessoryId()) {
+                        if (accessory.getId() == existingAccessory.getId()) {
                             for (Service existingService : existingAccessory.getServices()) {
                                 for (Characteristic existingCharacteristic : service.getCharacteristics()) {
                                     if (characteristic.getId() == existingCharacteristic.getId()) {
@@ -362,7 +367,7 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
         for (Accessory existingAccessory : lastAccessories) {
             boolean isRemoved = true;
             for (Accessory accessory : accessories) {
-                if (accessory.getAccessoryId() == existingAccessory.getAccessoryId()) {
+                if (accessory.getId() == existingAccessory.getId()) {
                     isRemoved = false;
                     break;
                 }
@@ -376,7 +381,7 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
             for (Service existingService : existingAccessory.getServices()) {
                 boolean isRemoved = true;
                 for (Accessory accessory : accessories) {
-                    if (accessory.getAccessoryId() == existingAccessory.getAccessoryId()) {
+                    if (accessory.getId() == existingAccessory.getId()) {
                         for (Service service : accessory.getServices()) {
                             if (service.getId() == existingService.getId()) {
                                 isRemoved = false;
@@ -399,7 +404,7 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
                 for (Characteristic existingCharacteristic : existingService.getCharacteristics()) {
                     boolean isRemoved = true;
                     for (Accessory accessory : accessories) {
-                        if (accessory.getAccessoryId() == existingAccessory.getAccessoryId()) {
+                        if (accessory.getId() == existingAccessory.getId()) {
                             for (Service service : accessory.getServices()) {
                                 for (Characteristic characteristic : service.getCharacteristics()) {
                                     if (characteristic.getId() == existingCharacteristic.getId()) {
@@ -436,7 +441,7 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
 
     private void notifyHomekitStatusListeners(final Accessory accessory, final String type) {
         if (homekitStatusListeners.isEmpty()) {
-            logger.debug("No Homekit status listeners to notify of change for Accessory '{}'", accessory.getAccessoryId());
+            logger.debug("No Homekit status listeners to notify of change for Accessory '{}'", accessory.getId());
             return;
         }
 
@@ -444,11 +449,11 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
             try {
                 switch (type) {
                     case STATE_ADDED:
-                        logger.debug("Sending accessoryAdded for Accessory '{}'", accessory.getAccessoryId());
+                        logger.debug("Sending accessoryAdded for Accessory '{}'", accessory.getId());
                         homekitStatusListener.onAccessoryAdded(getThing(), accessory);
                         break;
                     case STATE_REMOVED:
-                        logger.debug("Sending accessoryRemoved for Accessory '{}'", accessory.getAccessoryId());
+                        logger.debug("Sending accessoryRemoved for Accessory '{}'", accessory.getId());
                         homekitStatusListener.onAccessoryRemoved(getThing(), accessory);
                         break;
                     default:
@@ -520,7 +525,7 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
     public Accessory getAccessory(long id) {
         startSearch();
         for (Accessory accessory : lastAccessories) {
-            if (accessory.getAccessoryId() == id) {
+            if (accessory.getId() == id) {
                 return accessory;
             }
         }

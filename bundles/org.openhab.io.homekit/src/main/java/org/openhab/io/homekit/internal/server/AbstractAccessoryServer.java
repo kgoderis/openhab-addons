@@ -9,8 +9,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.io.homekit.api.NotificationRegistry;
 import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.Pairing;
 import org.openhab.io.homekit.api.listener.AccessoryServerChangeListener;
@@ -22,7 +22,6 @@ import org.openhab.io.homekit.internal.accessory.AccessoryUID;
 import org.openhab.io.homekit.internal.events.AccessoryServerEvent;
 import org.openhab.io.homekit.internal.pairing.PairingImpl;
 import org.openhab.io.homekit.internal.pairing.PairingUID;
-import org.openhab.io.homekit.library.accessory.BridgeAccessory;
 import org.openhab.io.homekit.util.Byte;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
 import net.i2p.crypto.eddsa.spec.EdDSAParameterSpec;
 
+@NonNullByDefault
 public abstract class AbstractAccessoryServer implements AccessoryServer {
 
     protected static final Logger logger = LoggerFactory.getLogger(AbstractAccessoryServer.class);
@@ -38,7 +38,6 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
 
     protected final AccessoryRegistry accessoryRegistry;
     protected final PairingRegistry pairingRegistry;
-    protected final NotificationRegistry notificationRegistry;
 
     protected final InetAddress address;
     protected final int port;
@@ -104,16 +103,16 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     // }
 
     public AbstractAccessoryServer(InetAddress address, int port, byte[] pairingId, byte[] privateKey,
-            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry,
-            NotificationRegistry notificationRegistry) {
+            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry
+            ) {
         super();
         this.address = address;
         this.port = port;
         this.accessoryRegistry = accessoryRegistry;
         this.pairingRegistry = pairingRegistry;
-        this.notificationRegistry = notificationRegistry;
         this.secretKey = privateKey;
         this.pairingIdentifier = pairingId;
+        this.setupCode = "";
     }
 
     @Override
@@ -142,9 +141,9 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     }
 
     @Override
-    public byte[] getDestinationPublicKey(byte @NonNull [] destinationPairingId) {
+    public byte[] getPublicKey(byte @NonNull [] destinationPairingId) {
         Pairing hp = pairingRegistry.get(new PairingUID(getPairingId(), destinationPairingId));
-        return hp != null ? hp.getDestinationPublicKey() : null;
+        return hp != null ? hp.getPublicKey() : null;
     }
 
     @Override
@@ -191,60 +190,60 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
         return accessoryRegistry.get(id);
     }
 
-    @Override
-    public @Nullable Accessory getAccessory(Class<? extends Accessory> accessoryClass) {
-        Collection<Accessory> accessories = accessoryRegistry.get(getId());
-        for (Accessory accessory : accessories) {
-            if (accessory.getClass() == accessoryClass) {
-                return accessory;
-            }
-        }
-        return null;
-    }
+    // @Override
+    // public @Nullable Accessory getAccessory(Class<? extends Accessory> accessoryClass) {
+    //     Collection<Accessory> accessories = accessoryRegistry.get(getId());
+    //     for (Accessory accessory : accessories) {
+    //         if (accessory.getClass() == accessoryClass) {
+    //             return accessory;
+    //         }
+    //     }
+    //     return null;
+    // }
+
+    // @Override
+    // public void addAccessory(Accessory accessory) {
+    //     logger.debug("Adding Accessory {} of Type {} to Accessory Server {}", accessory.getUID(),
+    //             accessory.getClass().getSimpleName(), this.getUID());
+    //     // if (accessory.getAccessoryId() <= 1 && !(accessory instanceof BridgeAccessory)) {
+    //     //     throw new IndexOutOfBoundsException("The ID of an accessory used in a bridge must be greater than 1");
+    //     // }
+
+    //     if (accessoryRegistry.update(accessory) == null) {
+    //         logger.debug("Adding Accessory {} of Type {} to the Accessory Registry", accessory.getUID(),
+    //                 accessory.getClass().getSimpleName(), this.getUID());
+    //         accessoryRegistry.add(accessory);
+    //     }
+    // }
+
+    // @Override
+    // public void removeAccessory(Accessory accessory) {
+    //     accessoryRegistry.remove(accessory.getUID());
+    // }
 
     @Override
-    public void addAccessory(Accessory accessory) {
-        logger.debug("Adding Accessory {} of Type {} to Accessory Server {}", accessory.getUID(),
-                accessory.getClass().getSimpleName(), this.getUID());
-        if (accessory.getAccessoryId() <= 1 && !(accessory instanceof BridgeAccessory)) {
-            throw new IndexOutOfBoundsException("The ID of an accessory used in a bridge must be greater than 1");
-        }
-
-        if (accessoryRegistry.update(accessory) == null) {
-            logger.debug("Adding Accessory {} of Type {} to the Accessory Registry", accessory.getUID(),
-                    accessory.getClass().getSimpleName(), this.getUID());
-            accessoryRegistry.add(accessory);
-        }
-    }
-
-    @Override
-    public void removeAccessory(Accessory accessory) {
-        accessoryRegistry.remove(accessory.getUID());
-    }
-
-    @Override
-    public void addPairing(byte @NonNull [] destinationPairingId, byte @NonNull [] destinationPublicKey) {
+    public void addPairing(byte @NonNull [] pairingId, byte @NonNull [] publicKey) {
         try {
-            Pairing newPairing = new PairingImpl(getPairingId(), destinationPairingId, destinationPublicKey);
+            Pairing newPairing = new PairingImpl(getPairingId(), pairingId, publicKey);
             Pairing oldPairing = pairingRegistry.remove(newPairing.getUID());
 
             if (oldPairing != null) {
                 logger.debug("Removed Pairing of {} with Destination {} holding Public Key {}", getId(),
-                        Byte.toHexString(oldPairing.getDestinationPairingId()),
-                        Byte.toHexString(oldPairing.getDestinationPublicKey()));
+                        Byte.toHexString(oldPairing.getDestinationId()),
+                        Byte.toHexString(oldPairing.getPublicKey()));
             }
 
             pairingRegistry.add(newPairing);
-            logger.debug("Paired {} with Destination {} holding Public Key {}", getId(), destinationPairingId,
-                    Byte.toHexString(destinationPublicKey));
+            logger.debug("Paired {} with Destination {} holding Public Key {}", getId(), pairingId,
+                    Byte.toHexString(publicKey));
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     @Override
-    public Pairing getPairing(byte @NonNull [] destinationPairingId) {
-        return pairingRegistry.get(new PairingUID(getPairingId(), destinationPairingId));
+    public Pairing getPairing(byte @NonNull [] pairingId) {
+        return pairingRegistry.get(new PairingUID(getPairingId(), pairingId));
     }
 
     @Override
@@ -253,15 +252,15 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     }
 
     @Override
-    public void removePairing(byte @NonNull [] destinationPairingId) {
-        Pairing oldPairing = pairingRegistry.remove(new PairingUID(getPairingId(), destinationPairingId));
+    public void removePairing(byte @NonNull [] pairingId) {
+        Pairing oldPairing = pairingRegistry.remove(new PairingUID(getPairingId(), pairingId));
         if (oldPairing != null) {
             logger.debug("Removed Pairing of {} with Destination {} holding Public Key {}", getId(),
-                    Byte.toHexString(oldPairing.getDestinationPairingId()),
-                    Byte.toHexString(oldPairing.getDestinationPublicKey()));
+                    Byte.toHexString(oldPairing.getDestinationId()),
+                    Byte.toHexString(oldPairing.getPublicKey()));
         } else {
             logger.warn("The Pairing Registry does not contain a Pairing for {} with Destination {}", getId(),
-                    Byte.toHexString(destinationPairingId));
+                    Byte.toHexString(pairingId));
         }
     }
 
@@ -294,5 +293,12 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     @Override
     public void setConfigurationIndex(int configurationIndex) {
         this.configurationIndex = configurationIndex;
+    }
+
+    @Override
+    public void factoryReset() {
+        // TODO Auto-generated method stub
+        // TODO Remove all crypto keys
+        // TODO id is a unique random number, regenerate
     }
 }

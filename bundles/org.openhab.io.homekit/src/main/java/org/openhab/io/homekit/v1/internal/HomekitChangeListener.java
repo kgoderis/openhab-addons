@@ -28,6 +28,7 @@ import org.openhab.core.items.ItemRegistry;
 import org.openhab.core.items.ItemRegistryChangeListener;
 import org.openhab.io.homekit.hap.HomekitRoot;
 import org.openhab.io.homekit.internal.bridge.HomekitTaggedItem;
+import org.openhab.io.homekit.util.Debouncer;
 import org.openhab.io.homekit.v1.internal.accessories.HomekitAccessoryFactory;
 import org.openhab.io.homekit.v1.internal.accessories.IncompleteAccessoryException;
 import org.slf4j.Logger;

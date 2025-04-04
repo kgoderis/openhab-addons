@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.http.HttpHeader;
-import org.openhab.io.homekit.api.server.LocalAccessoryServer;
+import org.openhab.io.homekit.api.server.AccessoryServer;
 import org.openhab.io.homekit.util.Byte;
 import org.openhab.io.homekit.util.Message;
 import org.openhab.io.homekit.util.Method;
@@ -26,7 +26,7 @@ public class PairingServlet extends BaseServlet {
     public PairingServlet() {
     }
 
-    public PairingServlet(LocalAccessoryServer server) {
+    public PairingServlet(AccessoryServer server) {
         super(server);
     }
 

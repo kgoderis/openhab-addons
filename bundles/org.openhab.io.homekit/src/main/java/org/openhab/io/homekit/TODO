@@ -5,4 +5,5 @@ TODO:
  - Move the conversion from ManagedCharacteristic to Characteristic class
  - Replace servicetrackers withs HomekitServiceTracker
  - Check factory so that it add char and svc to root catalogue with or without tags and all the rest
+ - The ID of an accessory used in a bridge must be greater than 1 (AbstractAccessoryServer)
  

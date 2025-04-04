@@ -74,28 +74,28 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
     @Nullable
     Accessory getAccessory(int accessoryId);
 
-    /**
-     * Gets an accessory by its class type.
-     *
-     * @param accessoryClass the class type of the accessory
-     * @return the accessory, or null if not found
-     */
-    @Nullable
-    Accessory getAccessory(Class<? extends Accessory> accessoryClass);
+    // /**
+    //  * Gets an accessory by its class type.
+    //  *
+    //  * @param accessoryClass the class type of the accessory
+    //  * @return the accessory, or null if not found
+    //  */
+    // @Nullable
+    // Accessory getAccessory(Class<? extends Accessory> accessoryClass);
 
-    /**
-     * Adds a new accessory to this server.
-     *
-     * @param accessory the accessory to add
-     */
-    void addAccessory(Accessory accessory);
+    // /**
+    //  * Adds a new accessory to this server.
+    //  *
+    //  * @param accessory the accessory to add
+    //  */
+    // void addAccessory(Accessory accessory);
 
-    /**
-     * Removes an accessory from this server.
-     *
-     * @param accessory the accessory to remove
-     */
-    void removeAccessory(Accessory accessory);
+    // /**
+    //  * Removes an accessory from this server.
+    //  *
+    //  * @param accessory the accessory to remove
+    //  */
+    // void removeAccessory(Accessory accessory);
 
     /**
      * Gets the next available accessory ID.
@@ -139,26 +139,26 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
     /**
      * Adds a new pairing with a client.
      *
-     * @param destinationPairingId the client's pairing ID
-     * @param destinationPublicKey the client's public key
+     * @param pairingId the client's pairing ID
+     * @param publicKey the client's public key
      */
-    void addPairing(byte[] destinationPairingId, byte[] destinationPublicKey);
+    void addPairing(byte[] pairingId, byte[] publicKey);
 
     /**
      * Removes a pairing with a client.
      *
-     * @param destinationPairingId the client's pairing ID to remove
+     * @param pairingId the client's pairing ID to remove
      */
-    void removePairing(byte[] destinationPairingId);
+    void removePairing(byte[] pairingId);
 
     /**
      * Gets a pairing by its ID.
      *
-     * @param destinationPairingId the pairing ID
+     * @param pairingId the pairing ID
      * @return the pairing, or null if not found
      */
     @Nullable
-    Pairing getPairing(byte[] destinationPairingId);
+    Pairing getPairing(byte[] pairingId);
 
     /**
      * Gets all active pairings.
@@ -170,10 +170,10 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
     /**
      * Gets the public key for a paired client.
      *
-     * @param destinationPairingId the client's pairing ID
+     * @param pairingId the client's pairing ID
      * @return the client's public key, or null if not found
      */
-    byte @Nullable [] getDestinationPublicKey(byte[] destinationPairingId);
+    byte @Nullable [] getPublicKey(byte[] pairingId);
 
     /**
      * Checks if the server has any active pairings.
@@ -243,12 +243,12 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
 
     // ==================== Pairing Operations ====================
 
-    /**
-     * Initiates the pairing setup process.
-     *
-     * @throws IOException if an I/O error occurs during setup
-     */
-    void pairSetup() throws IOException;
+    // /**
+    //  * Initiates the pairing setup process.
+    //  *
+    //  * @throws IOException if an I/O error occurs during setup
+    //  */
+    // void pairSetup() throws IOException;
 
     /**
      * Verifies the pairing with a client.
@@ -256,13 +256,6 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
      * @return true if verification successful, false otherwise
      */
     boolean pairVerify();
-
-    /**
-     * Checks if the current pairing is verified.
-     *
-     * @return true if verified, false otherwise
-     */
-    boolean isPairVerified();
 
     /**
      * Removes the current pairing.

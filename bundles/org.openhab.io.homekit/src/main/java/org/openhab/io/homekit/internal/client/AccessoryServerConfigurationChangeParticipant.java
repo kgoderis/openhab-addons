@@ -41,7 +41,7 @@ public class AccessoryServerConfigurationChangeParticipant implements MDNSDiscov
 
     @Override
     public @Nullable DiscoveryResult createResult(@NonNull ServiceInfo service) {
-        String accessoryPairingId = new String(accessoryServer.getPairing().getDestinationPairingId(),
+        String accessoryPairingId = new String(accessoryServer.getPairing().getDestinationId(),
                 StandardCharsets.UTF_8);
         if (accessoryPairingId != null && accessoryPairingId.equals(service.getPropertyString("id"))) {
             int configurationNumber = Integer.parseInt(service.getPropertyString("c#"));

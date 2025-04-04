@@ -221,7 +221,7 @@ public class StandAloneHomekitAccessoryHandler extends AbstractHomekitAccessoryH
                 config.put(HomekitAccessoryConfiguration.CLIENT_LTSK,
                         Base64.getEncoder().encodeToString(homekitClient.getSecretKey()));
                 config.put(HomekitAccessoryConfiguration.ACCESSORY_PAIRING_ID,
-                        Base64.getEncoder().encodeToString(homekitClient.getDestinationPairingId()));
+                        Base64.getEncoder().encodeToString(homekitClient.getDestinationId()));
                 updateConfiguration(config);
             } else {
                 updateStatus(ThingStatus.OFFLINE);

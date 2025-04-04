@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.io.homekit.v1.internal;
+package org.openhab.io.homekit.util;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  * @author Tim Harper - Initial contribution
  *
  */
-class Debouncer {
+public class Debouncer {
 
     private final Clock clock;
     private final ScheduledExecutorService scheduler;
@@ -57,7 +57,7 @@ class Debouncer {
      *            for testing purposes
      * @param action The action to invoke
      */
-    Debouncer(String name, ScheduledExecutorService scheduler, Duration delay, Clock clock, Runnable action) {
+    public Debouncer(String name, ScheduledExecutorService scheduler, Duration delay, Clock clock, Runnable action) {
         this.name = name;
         this.scheduler = scheduler;
         this.action = action;
@@ -70,7 +70,7 @@ class Debouncer {
     /**
      * Register that the provided action should be called according to the debounce logic
      */
-    void call() {
+    public void call() {
         lastCallAttempt = clock.millis();
         calls.incrementAndGet();
         if (pending.compareAndSet(false, true)) {

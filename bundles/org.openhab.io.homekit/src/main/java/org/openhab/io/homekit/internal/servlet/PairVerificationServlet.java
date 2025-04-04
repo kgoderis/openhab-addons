@@ -15,7 +15,7 @@ import org.apache.commons.io.IOUtils;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
-import org.openhab.io.homekit.api.server.LocalAccessoryServer;
+import org.openhab.io.homekit.api.server.AccessoryServer;
 import org.openhab.io.homekit.crypto.ChachaDecoder;
 import org.openhab.io.homekit.crypto.ChachaEncoder;
 import org.openhab.io.homekit.crypto.EdsaSigner;
@@ -40,7 +40,7 @@ public class PairVerificationServlet extends BaseServlet {
     public PairVerificationServlet() {
     }
 
-    public PairVerificationServlet(LocalAccessoryServer server) {
+    public PairVerificationServlet(AccessoryServer server) {
         super(server);
     }
 
@@ -190,7 +190,7 @@ public class PairVerificationServlet extends BaseServlet {
                 clientSignature = d.getBytes(Message.SIGNATURE);
                 logger.info("Stage 2 : Client Signature is {}", Byte.toHexString(clientSignature));
 
-                clientLongtermPublicKey = server.getDestinationPublicKey(clientPairingId);
+                clientLongtermPublicKey = server.getPublicKey(clientPairingId);
                 if (clientLongtermPublicKey == null) {
                     isError = true;
                     logger.warn("Stage 2 : Unknown Pairing {}", new String(clientPairingId, StandardCharsets.UTF_8));

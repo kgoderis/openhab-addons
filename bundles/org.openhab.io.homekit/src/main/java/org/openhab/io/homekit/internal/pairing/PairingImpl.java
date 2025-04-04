@@ -25,21 +25,21 @@ public class PairingImpl implements Pairing {
 
     @Override
     public @NonNull PairingUID getUID() {
-        return new PairingUID(getSourcePairingId(), getDestinationPairingId());
+        return new PairingUID(getSourceId(), getDestinationId());
     }
 
     @Override
-    public byte[] getSourcePairingId() {
+    public byte[] getSourceId() {
         return Base64.getDecoder().decode(sourcePairingId);
     }
 
     @Override
-    public byte[] getDestinationPairingId() {
+    public byte[] getDestinationId() {
         return Base64.getDecoder().decode(destinationPairingId);
     }
 
     @Override
-    public byte[] getDestinationPublicKey() {
+    public byte[] getPublicKey() {
         return Base64.getDecoder().decode(destinationLongtermPublicKey);
     }
 }

@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.http.HttpHeader;
 import org.openhab.io.homekit.api.hap.Accessory;
-import org.openhab.io.homekit.api.server.LocalAccessoryServer;
+import org.openhab.io.homekit.api.server.AccessoryServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +25,7 @@ public class AccessoryServlet extends BaseServlet {
     public AccessoryServlet() {
     }
 
-    public AccessoryServlet(LocalAccessoryServer server) {
+    public AccessoryServlet(AccessoryServer server) {
         super(server);
     }
 

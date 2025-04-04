@@ -54,12 +54,10 @@ import org.eclipse.jetty.client.util.BufferingResponseListener;
 import org.eclipse.jetty.client.util.BytesContentProvider;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
-import org.openhab.io.homekit.api.NotificationRegistry;
 import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.Pairing;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
-import org.openhab.io.homekit.api.server.RemoteAccessoryServer;
 import org.openhab.io.homekit.crypto.ChachaDecoder;
 import org.openhab.io.homekit.crypto.ChachaEncoder;
 import org.openhab.io.homekit.crypto.EdsaSigner;
@@ -87,7 +85,7 @@ import com.nimbusds.srp6.XRoutineWithUserIdentity;
 
 import djb.Curve25519;
 
-public abstract class AbstractRemoteAccessoryServer extends AbstractAccessoryServer implements RemoteAccessoryServer {
+public abstract class AbstractRemoteAccessoryServer extends AbstractAccessoryServer  {
 
     protected static final Logger logger = LoggerFactory.getLogger(AbstractRemoteAccessoryServer.class);
 
@@ -103,10 +101,9 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
     private boolean isPairVerified;
 
     public AbstractRemoteAccessoryServer(InetAddress address, int port, byte[] pairingIdentifier, byte[] secretKey,
-            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry,
-            NotificationRegistry notificationRegistry) {
-        super(address, port, pairingIdentifier, secretKey, accessoryRegistry, pairingRegistry, notificationRegistry);
-        this.setupCode = null;
+            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry) {
+        super(address, port, pairingIdentifier, secretKey, accessoryRegistry, pairingRegistry);
+        this.setupCode = "";
         this.isPairVerified = false;
 
         this.httpClient = new HttpClient(new HomekitHttpClientTransportOverHTTP(), null);
@@ -134,15 +131,45 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
     }
 
     public AbstractRemoteAccessoryServer(InetAddress address, int port, AccessoryRegistry accessoryRegistry,
-            PairingRegistry pairingRegistry, NotificationRegistry notificationRegistry) {
-        this(address, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry,
-                notificationRegistry);
+            PairingRegistry pairingRegistry) {
+        this(address, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry);
     }
 
-    @Override
-    public boolean isPairVerified() {
-        return isPairVerified;
+    public void start() throws Exception {
+        if (isPaired()) {
+            logger.info("'{}' : Removing an existing pairing with the Homekit Accessory");
+            try {
+                pairRemove();
+            } catch (HomekitException | IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+
+        logger.info("'{}' : Setting up a new pairing with the Homekit Accessory");
+        try {
+            pairSetup();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
     }
+
+    public void stop() throws Exception {
+        logger.info("'{}' : Removing an existing pairing with the Homekit Accessory");
+        try {
+            pairRemove();
+        } catch (HomekitException | IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    public  void advertise() {
+        // No Operation
+    }
+    
 
     @Override
     public boolean isSecure() {
@@ -157,8 +184,7 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
         return false;
     }
 
-    @Override
-    public void pairSetup() throws IOException {
+    protected void pairSetup() throws IOException {
 
         logger.info("'{}' : Pair setup", new String(getPairingId()));
 
@@ -342,7 +368,7 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
     @Override
     public void pairRemove() throws HomekitException, IOException {
         if (isPaired()) {
-            if (isPairVerified() && isSecure()) {
+            if (isPairVerified && isSecure()) {
                 Encoder encoder = TypeLengthValue.getEncoder();
                 encoder.add(Message.STATE, (short) 0x01);
                 encoder.add(Message.METHOD, Method.REMOVE_PAIRING.getKey());
@@ -379,12 +405,12 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
             } else {
                 logger.warn(
                         "'{}' : The Homekit Accessory pairing can not be removed because it is {} paired verified and the connection is {}secured",
-                        new String(getPairingId()), isPairVerified() ? "already" : "not", isSecure() ? "" : "not ");
+                        new String(getPairingId()), isPairVerified ? "already" : "not", isSecure() ? "" : "not ");
             }
 
             if (isPaired()) {
                 for (Pairing pairing : getPairings()) {
-                    removePairing(pairing.getDestinationPairingId());
+                    removePairing(pairing.getDestinationId());
                 }
             } else {
                 logger.warn("'{}' : The pairing identifier for the Homekit Accessory is not set",
@@ -673,14 +699,14 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
             throw new HomekitException("Accessory is not paired");
         } else {
             logger.info("'{}' : Fetched the Pairing {} : {}", new String(getPairingId()), accessoryPairing.getUID(),
-                    Byte.toHexString(accessoryPairing.getDestinationPublicKey()));
+                    Byte.toHexString(accessoryPairing.getPublicKey()));
         }
 
         byte[] accessoryDeviceInfo = Byte.joinBytes(destinationPublicKey, destinationPairingIdentifier,
                 clientPublicKey);
 
         try {
-            boolean signatureVerification = new EdsaVerifier(accessoryPairing.getDestinationPublicKey())
+            boolean signatureVerification = new EdsaVerifier(accessoryPairing.getPublicKey())
                     .verify(accessoryDeviceInfo, accessorySignature);
             if (!signatureVerification) {
                 throw new HomekitException("Signature verification failed");
@@ -897,7 +923,7 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
     protected Collection<Accessory> getRemoteAccessories() {
         Collection<Accessory> result = new HashSet<Accessory>();
 
-        if (isPaired() && isPairVerified() && isSecure()) {
+        if (isPaired() && isPairVerified && isSecure()) {
 
             Future<ContentResult> contentFuture;
             ContentResult contentResult = null;

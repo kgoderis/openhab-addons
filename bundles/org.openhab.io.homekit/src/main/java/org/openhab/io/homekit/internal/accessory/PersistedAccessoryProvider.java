@@ -30,8 +30,6 @@ import org.openhab.io.homekit.api.provider.AccessoryProvider;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
 import org.openhab.io.homekit.api.server.AccessoryServer;
-import org.openhab.io.homekit.api.server.LocalAccessoryServer;
-import org.openhab.io.homekit.api.server.RemoteAccessoryServer;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
