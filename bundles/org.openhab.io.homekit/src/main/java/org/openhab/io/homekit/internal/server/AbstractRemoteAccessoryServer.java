@@ -56,6 +56,7 @@ import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
 import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.Pairing;
+import org.openhab.io.homekit.api.listener.AccessoryServerChangeListener;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.crypto.ChachaDecoder;
@@ -63,6 +64,7 @@ import org.openhab.io.homekit.crypto.ChachaEncoder;
 import org.openhab.io.homekit.crypto.EdsaSigner;
 import org.openhab.io.homekit.crypto.EdsaVerifier;
 import org.openhab.io.homekit.crypto.HomekitEncryptionEngine;
+import org.openhab.io.homekit.internal.accessory.AccessoryState;
 import org.openhab.io.homekit.internal.accessory.GenericAccessory;
 import org.openhab.io.homekit.internal.client.HomekitClientSRP6Session;
 import org.openhab.io.homekit.internal.client.HomekitException;
@@ -97,6 +99,9 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
     private byte[] clientPublicKey;
     private byte[] clientPrivateKey;
 
+    private final java.util.concurrent.ScheduledExecutorService scheduler;
+    private @Nullable java.util.concurrent.ScheduledFuture<?> connectionMonitorJob;
+
     private @Nullable HttpClient httpClient;
     private boolean isPairVerified;
 
@@ -107,60 +112,122 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
         this.isPairVerified = false;
 
         this.httpClient = new HttpClient(new HomekitHttpClientTransportOverHTTP(), null);
+        this.scheduler = org.openhab.core.common.ThreadPoolManager.getScheduledPool("homekit-remote");
 
         // TODO : Detect when the remote end closes the connection -> Thing should go offline
+    }  
 
-        try {
-            httpClient.start();
-            ProtocolHandlers handlers = httpClient.getProtocolHandlers();
-            handlers.clear();
-            handlers.put(new HomekitProtocolHandler(this));
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+    private final List<AccessoryServerChangeListener> changeListeners = new ArrayList<>();
+
+
+    protected AccessoryState getState() {
+        return currentState;
     }
 
-    public void dispose() {
-        try {
-            httpClient.stop();
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+    public boolean isPairVerified() {
+        return currentState == AccessoryState.PAIR_VERIFIED;
     }
+
+    @Override
+    public boolean isPaired() {
+        return currentState == AccessoryState.PAIRED || currentState == AccessoryState.PAIR_VERIFIED;
+    }
+
+    public boolean isConnected() {
+        return currentState != AccessoryState.DISCONNECTED;
+    }
+
+
+
 
     public AbstractRemoteAccessoryServer(InetAddress address, int port, AccessoryRegistry accessoryRegistry,
             PairingRegistry pairingRegistry) {
         this(address, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry);
     }
 
-    public void start() throws Exception {
-        if (isPaired()) {
-            logger.info("'{}' : Removing an existing pairing with the Homekit Accessory");
-            try {
-                pairRemove();
-            } catch (HomekitException | IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+    protected void startConnectionMonitor() {
+        if (connectionMonitorJob != null) {
+            connectionMonitorJob.cancel(true);
         }
 
-        logger.info("'{}' : Setting up a new pairing with the Homekit Accessory");
+        // Schedule periodic connection monitoring
+        connectionMonitorJob = scheduler.scheduleWithFixedDelay(() -> {
+            try {
+                if (isPaired()) {
+                    logger.info("Removing existing pairing with Homekit Accessory");
+                    try {
+                        pairRemove();
+                    } catch (HomekitException | IOException e) {
+                        logger.warn("Error removing existing pairing: {}", e.getMessage());
+                        setState(AccessoryState.UNPAIRED);
+                    }
+                }
+
+                logger.info("Setting up new pairing with Homekit Accessory");
+                try {
+                    pairSetup();
+                } catch (IOException e) {
+                    logger.warn("Error during pair setup: {}", e.getMessage());
+                    setState(AccessoryState.MISSING_SETUP_CODE);
+                }
+
+                if (isPaired()) {
+                    logger.info("Successfully paired with Homekit Accessory");
+                    if (!isPairVerified()) {
+                        pairVerify();
+                    }
+                }
+
+                if (!isPairVerified()) {
+                    logger.debug("Connection verification failed, attempting to re-verify");
+                    pairVerify();
+                }
+            } catch (Exception e) {
+                logger.warn("Error during connection monitoring: {}", e.getMessage());
+                setState(AccessoryState.MISSING_SETUP_CODE);
+            }
+        }, 0, 60, java.util.concurrent.TimeUnit.SECONDS);
+    }
+
+    protected void stopConnectionMonitor() {
+        if (connectionMonitorJob != null) {
+            connectionMonitorJob.cancel(true);
+            connectionMonitorJob = null;
+        }
+    }
+
+    
+    public void start() throws Exception {
         try {
-            pairSetup();
-        } catch (IOException e) {
+            httpClient.start();
+            ProtocolHandlers handlers = httpClient.getProtocolHandlers();
+            handlers.clear();
+            handlers.put(new HomekitProtocolHandler(this));
+            setState(AccessoryState.CONNECTED);
+        } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+            setState(AccessoryState.MISSING_SETUP_CODE);
         }
 
+        startConnectionMonitor();
     }
 
     public void stop() throws Exception {
+        stopConnectionMonitor();
+
         logger.info("'{}' : Removing an existing pairing with the Homekit Accessory");
         try {
             pairRemove();
         } catch (HomekitException | IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        try {
+            httpClient.stop();
+            setState(AccessoryState.STOPPED);
+        } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
@@ -191,6 +258,7 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
         if (setupCode == null) {
             logger.warn("'{}' : Unable to pair with {}:{} because no setup code is set", new String(getPairingId()),
                     address.getHostAddress(), port);
+            setState(AccessoryState.MISSING_SETUP_CODE);
             return;
         }
 
@@ -200,6 +268,7 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
         clientPrivateKey = null;
 
         isPairVerified = false;
+        setState(AccessoryState.AUTHENTICATING);
 
         StageResult stageResult = null;
         int failedStage = 0;
@@ -210,8 +279,10 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
             stageResult = stageFuture.get();
         } catch (InterruptedException | ExecutionException e1) {
             e1.printStackTrace();
+            setState(AccessoryState.UNPAIRED);
             return;
         } catch (HomekitException e) {
+            setState(AccessoryState.UNPAIRED);
             return;
         }
 
@@ -222,8 +293,10 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
                 stageResult = stageFuture.get();
             } catch (InterruptedException | ExecutionException e1) {
                 e1.printStackTrace();
+                setState(AccessoryState.UNPAIRED);
                 return;
             } catch (HomekitException e) {
+                setState(AccessoryState.UNPAIRED);
                 return;
             }
 
@@ -234,25 +307,32 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
                     stageResult = stageFuture.get();
                 } catch (InterruptedException | ExecutionException e1) {
                     e1.printStackTrace();
+                    setState(AccessoryState.UNPAIRED);
                     return;
                 } catch (HomekitException e) {
+                    setState(AccessoryState.UNPAIRED);
                     return;
                 }
 
                 if (!stageResult.isFailure()) {
                     try {
                         byte[] payload = doPairSetupStage3(stageResult);
+                        setState(AccessoryState.PAIR_UNVERIFIED);
                     } catch (HomekitException e) {
+                        setState(AccessoryState.UNPAIRED);
                         return;
                     }
                 } else {
                     failedStage = 2;
+                    setState(AccessoryState.UNPAIRED);
                 }
             } else {
                 failedStage = 1;
+                setState(AccessoryState.UNPAIRED);
             }
         } else {
             failedStage = 0;
+            setState(AccessoryState.UNPAIRED);
         }
 
         if (stageResult.isFailure()) {
@@ -288,6 +368,7 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
         clientPrivateKey = null;
 
         isPairVerified = false;
+        setState(AccessoryState.PAIR_UNVERIFIED);
 
         StageResult stageResult = null;
         int failedStage = 0;
@@ -298,8 +379,10 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
             stageResult = stageFuture.get();
         } catch (InterruptedException | ExecutionException | IOException e) {
             e.printStackTrace();
+            setState(AccessoryState.PAIR_UNVERIFIED);
             return false;
         } catch (HomekitException e) {
+            setState(AccessoryState.PAIR_UNVERIFIED);
             return false;
         }
 
@@ -310,6 +393,7 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
                 stageResult = stageFuture.get();
             } catch (InterruptedException | ExecutionException | IOException e) {
                 e.printStackTrace();
+                setState(AccessoryState.PAIR_UNVERIFIED);
                 return false;
             } catch (HomekitException e) {
                 Encoder encoder = TypeLengthValue.getEncoder();
@@ -323,6 +407,7 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
                     // TODO Auto-generated catch block
                     e1.printStackTrace();
                 }
+                setState(AccessoryState.PAIR_UNVERIFIED);
                 return false;
             }
 
@@ -330,17 +415,22 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
                 try {
                     byte[] payload = doPairVerifyStage2(stageResult);
                     isPairVerified = true;
+                    setState(AccessoryState.PAIR_VERIFIED);
                 } catch (IOException e) {
                     e.printStackTrace();
+                    setState(AccessoryState.PAIR_UNVERIFIED);
                     return false;
                 } catch (HomekitException e) {
+                    setState(AccessoryState.PAIR_UNVERIFIED);
                     return false;
                 }
             } else {
                 failedStage = 1;
+                setState(AccessoryState.PAIR_UNVERIFIED);
             }
         } else {
             failedStage = 0;
+            setState(AccessoryState.PAIR_UNVERIFIED);
         }
 
         if (stageResult.isFailure()) {
@@ -397,24 +487,29 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
                     logger.warn("'{}' : The Homekit Accessory failed to remove the pairing : {}",
                             new String(getPairingId()),
                             Error.get(stageResult.decodeResult.getByte(Message.ERROR)).toString());
+                    setState(AccessoryState.PAIR_UNVERIFIED);
                 } else {
                     logger.warn("'{}' : The Homekit Accessory removed the pairing", new String(getPairingId()));
 
                     isPairVerified = false;
+                    setState(AccessoryState.UNPAIRED);
                 }
             } else {
                 logger.warn(
                         "'{}' : The Homekit Accessory pairing can not be removed because it is {} paired verified and the connection is {}secured",
                         new String(getPairingId()), isPairVerified ? "already" : "not", isSecure() ? "" : "not ");
+                setState(AccessoryState.PAIR_UNVERIFIED);
             }
 
             if (isPaired()) {
                 for (Pairing pairing : getPairings()) {
                     removePairing(pairing.getDestinationId());
                 }
+                setState(AccessoryState.UNPAIRED);
             } else {
                 logger.warn("'{}' : The pairing identifier for the Homekit Accessory is not set",
                         new String(getPairingId()));
+                setState(AccessoryState.UNPAIRED);
             }
         }
     }

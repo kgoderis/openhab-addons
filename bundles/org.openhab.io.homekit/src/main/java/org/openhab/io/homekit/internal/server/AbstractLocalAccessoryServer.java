@@ -20,6 +20,7 @@ import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.crypto.HomekitEncryptionEngine;
+import org.openhab.io.homekit.internal.accessory.AccessoryState;
 import org.openhab.io.homekit.internal.http.HomekitRequestLogHandler;
 import org.openhab.io.homekit.internal.http.jetty.HomekitHttpConnectionFactory;
 import org.openhab.io.homekit.internal.http.jetty.HomekitSessionHandler;
@@ -171,11 +172,23 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
     }
 
     public void start() throws Exception {
-        server.start();
+        try {
+            server.start();
+            setState(AccessoryState.CONNECTED);
+        } catch (Exception e) {
+            logger.error("Failed to start server: {}", e.getMessage());
+            setState(AccessoryState.DISCONNECTED);
+        }
     }
 
     public void stop() throws Exception {
-        server.stop();
+        try {
+            server.stop();
+            setState(AccessoryState.STOPPED);
+        } catch (Exception e) {
+            logger.error("Failed to stop server: {}", e.getMessage());
+            setState(AccessoryState.UNKNOWN);
+        }
     }
 
     @Override
@@ -240,6 +253,8 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
                 start();
             } catch (Exception e) {
                 e.printStackTrace();
+                setState(AccessoryState.STOPPED);
+                return;
             }
         }
 
@@ -291,29 +306,26 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
             // mdnsService.updateService(announcedServiceDescription);
             mdnsService.unregisterService(announcedServiceDescription);
             mdnsService.registerService(announcedServiceDescription);
+            setState(AccessoryState.READY);
         } else {
             announcedServiceDescription = new ServiceDescription(SERVICE_TYPE,
                     "openHAB " + getClass().getSimpleName() + " " + getPort(), port, props);
             mdnsService.registerService(announcedServiceDescription);
+            setState(AccessoryState.READY);
         }
     }
 
-    @Override
-    public void factoryReset() {
-        // TODO Auto-generated method stub
-        // TODO Remove all crypto keys
-        // TODO id is a unique random number, regenerate
-    }
+
 
     @Override
     public String getSetupCode() {
         if (setupCode == null) {
             if (logger.isDebugEnabled()) {
                 setupCode = "123-12-123";
-
             } else {
                 setupCode = generateSetupCode();
             }
+            setState(AccessoryState.READY);
         }
         return setupCode;
     }
@@ -661,3 +673,5 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
     //         e.printStackTrace();
     //     }
     // }}
+
+}

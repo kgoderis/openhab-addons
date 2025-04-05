@@ -18,6 +18,7 @@ import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.api.server.AccessoryServer;
 import org.openhab.io.homekit.crypto.HomekitEncryptionEngine;
+import org.openhab.io.homekit.internal.accessory.AccessoryState;
 import org.openhab.io.homekit.internal.accessory.AccessoryUID;
 import org.openhab.io.homekit.internal.events.AccessoryServerEvent;
 import org.openhab.io.homekit.internal.pairing.PairingImpl;
@@ -46,7 +47,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     protected String setupCode;
     protected int configurationIndex = 1;
 
-    private final Collection<AccessoryServerChangeListener> listeners = new CopyOnWriteArraySet<>();
+    private final Collection<AccessoryServerChangeListener> changeListeners = new CopyOnWriteArraySet<>();
 
     // TODO use service trackers
 
@@ -115,6 +116,20 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
         this.setupCode = "";
     }
 
+    protected AccessoryState currentState = AccessoryState.UNKNOWN;
+
+    protected synchronized void setState(AccessoryState newState) {
+        if (!currentState.equals(newState)) {
+            logger.debug("Accessory state changing from {} to {}", currentState, newState);
+            AccessoryServerEvent event = new AccessoryServerEvent(this, null, null, null, newState.getEventType());
+            currentState = newState;
+
+            for (AccessoryServerChangeListener listener : changeListeners) {
+                listener.onAccessoryServerEvent(event);
+            }
+        }
+    }
+
     @Override
     public InetAddress getAddress() {
         return address;
@@ -158,17 +173,17 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
 
     @Override
     public void addChangeListener(AccessoryServerChangeListener listener) {
-        listeners.add(listener);
+        changeListeners.add(listener);
     }
 
     @Override
     public void removeChangeListener(AccessoryServerChangeListener listener) {
-        listeners.remove(listener);
+        changeListeners.remove(listener);
     }
 
     protected void notifyListeners() {
         AccessoryServerEvent event = new AccessoryServerEvent(this, null, null, null, AccessoryServerEvent.AccessoryServerEventType.SERVER_UPDATED);
-        for (AccessoryServerChangeListener listener : this.listeners) {
+        for (AccessoryServerChangeListener listener : this.changeListeners) {
             try {
                 listener.onAccessoryServerEvent(event);
             } catch (Throwable throwable) {
@@ -231,13 +246,16 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
                 logger.debug("Removed Pairing of {} with Destination {} holding Public Key {}", getId(),
                         Byte.toHexString(oldPairing.getDestinationId()),
                         Byte.toHexString(oldPairing.getPublicKey()));
+                setState(ExtendedAccessoryState.DISCONNECTED);
             }
 
             pairingRegistry.add(newPairing);
             logger.debug("Paired {} with Destination {} holding Public Key {}", getId(), pairingId,
                     Byte.toHexString(publicKey));
+            setState(ExtendedAccessoryState.PAIRED);
         } catch (Exception e) {
             e.printStackTrace();
+            setState(ExtendedAccessoryState.UNKNOWN);
         }
     }
 
@@ -258,15 +276,23 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
             logger.debug("Removed Pairing of {} with Destination {} holding Public Key {}", getId(),
                     Byte.toHexString(oldPairing.getDestinationId()),
                     Byte.toHexString(oldPairing.getPublicKey()));
+            setState(ExtendedAccessoryState.DISCONNECTED);
         } else {
             logger.warn("The Pairing Registry does not contain a Pairing for {} with Destination {}", getId(),
                     Byte.toHexString(pairingId));
+            setState(ExtendedAccessoryState.UNKNOWN);
         }
     }
 
     @Override
     public boolean isPaired() {
-        return !pairingRegistry.get(getPairingId()).isEmpty();
+        boolean paired = !pairingRegistry.get(getPairingId()).isEmpty();
+        if (paired) {
+            setState(ExtendedAccessoryState.PAIRED);
+        } else {
+            setState(ExtendedAccessoryState.DISCONNECTED);
+        }
+        return paired;
     }
 
     protected static byte[] generateSecretKey() {
@@ -300,5 +326,24 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
         // TODO Auto-generated method stub
         // TODO Remove all crypto keys
         // TODO id is a unique random number, regenerate
+        setState(ExtendedAccessoryState.UNKNOWN);
+    }
+
+    // Add a method to handle connection state
+    protected void handleConnection(boolean connected) {
+        if (connected) {
+            setState(ExtendedAccessoryState.CONNECTED);
+        } else {
+            setState(ExtendedAccessoryState.DISCONNECTED);
+        }
+    }
+
+    // Add a method to handle pairing verification
+    protected void handlePairingVerification(boolean verified) {
+        if (verified) {
+            setState(ExtendedAccessoryState.PAIR_VERIFIED);
+        } else {
+            setState(ExtendedAccessoryState.PAIRED);
+        }
     }
 }

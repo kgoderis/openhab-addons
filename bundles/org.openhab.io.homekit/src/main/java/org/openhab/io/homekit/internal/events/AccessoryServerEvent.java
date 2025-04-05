@@ -20,7 +20,7 @@ public class AccessoryServerEvent {
         SERVICE_REMOVED,
         CHARACTERISTIC_ADDED,
         CHARACTERISTIC_REMOVED,
-        CHARACTERISTIC_STATE_CHANGED
+        CHARACTERISTIC_STATE_CHANGED, SERVER_STATE_DISCONNECTED, SERVER_STATE_CONNECTED, SERVER_STATE_PAIRED, SERVER_STATE_PAIR_VERIFIED
     }
 
     public AccessoryServerEvent(AccessoryServer server, Accessory accessory, Service service, Characteristic<?> characteristic, AccessoryServerEventType type) {

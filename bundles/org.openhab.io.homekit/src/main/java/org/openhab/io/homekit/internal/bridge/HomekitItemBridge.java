@@ -129,19 +129,19 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      */
     private void cleanup() {
         synchronized (accessoryLock) {
-            accessoryMap.values().forEach(accessory -> {
-                try {
-                    accessoryRegistry.remove(accessory.getUID());
-                } catch (Exception e) {
+        accessoryMap.values().forEach(accessory -> {
+            try {
+                accessoryRegistry.remove(accessory.getUID());
+            } catch (Exception e) {
                     logger.error(ERROR_REMOVING_ACCESSORY, accessory.getUID(), e.getMessage(), e);
-                }
-            });
+            }
+        });
             accessoryMap.clear();
         }
-
+        
         synchronized (characteristicLock) {
-            characteristicMap.clear();
-        }
+        characteristicMap.clear();
+    }
 
         synchronized (factoryLock) {
             homekitFactories.clear();
@@ -189,7 +189,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
     protected void addHomekitFactory(HomekitFactory homekitFactory) {
         synchronized (factoryLock) {
-            homekitFactories.put(homekitFactory.getClass().getName(), homekitFactory);
+        homekitFactories.put(homekitFactory.getClass().getName(), homekitFactory);
         }
         
         // Check existing items for compatibility with new factory
@@ -212,7 +212,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      */
     protected void removeHomekitFactory(HomekitFactory homekitFactory) {
         synchronized (factoryLock) {
-            homekitFactories.remove(homekitFactory.getClass().getName());
+        homekitFactories.remove(homekitFactory.getClass().getName());
         }
     }
 
