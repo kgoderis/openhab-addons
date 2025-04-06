@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
  *
  **/
 @Component(immediate = true, service = { PersistedAccessoryProvider.class,  PersistedAccessoryProvider.class })
-public class  PersistedAccessoryProvider extends AbstractManagedProvider<org.openhab.io.homekit.api.hap.Accessory, @NonNull AccessoryUID, @NonNull    PersistedAccessory>
+public class  PersistedAccessoryProvider extends AbstractManagedProvider<Accessory, @NonNull AccessoryUID, @NonNull    PersistedAccessory>
         implements AccessoryProvider, ReadyService.ReadyTracker {
 
     private final Logger logger = LoggerFactory.getLogger( PersistedAccessoryProvider.class);

@@ -6,8 +6,6 @@ import java.security.InvalidAlgorithmParameterException;
 import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.core.common.SafeCaller;
 import org.openhab.core.io.transport.mdns.MDNSService;
-import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.NotificationRegistry;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.internal.server.registry.AccessoryServerUID;
@@ -19,14 +17,14 @@ import org.openhab.io.homekit.internal.server.registry.AccessoryServerUID;
  *
  * @author Karel Goderis
  */
-public class LocalStandAloneAccessoryServer extends AbstractLocalAccessoryServer {
+public class StandAloneLocalAccessoryServer extends AbstractLocalAccessoryServer {
 
-    public LocalStandAloneAccessoryServer(InetAddress address, int port, byte[] pairingId, byte[] secretKey,
+    public StandAloneLocalAccessoryServer(InetAddress address, int port, byte[] pairingId, byte[] secretKey,
             MDNSService mdnsService, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry,
-            NotificationRegistry notificationRegistry, HomekitCommunicationManager manager, SafeCaller safeCaller)
+              SafeCaller safeCaller)
             throws InvalidAlgorithmParameterException {
         super(address, port, pairingId, secretKey, mdnsService, accessoryRegistry, pairingRegistry,
-                notificationRegistry, manager, safeCaller);
+                 safeCaller);
     }
 
     @Override

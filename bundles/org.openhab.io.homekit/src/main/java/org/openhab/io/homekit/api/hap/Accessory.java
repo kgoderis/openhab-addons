@@ -8,7 +8,6 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.registry.Identifiable;
 import org.openhab.io.homekit.api.listener.AccessoryChangeListener;
-import org.openhab.io.homekit.api.server.AccessoryServer;
 import org.openhab.io.homekit.internal.accessory.AccessoryUID;
 
 /**
@@ -20,6 +19,8 @@ import org.openhab.io.homekit.internal.accessory.AccessoryUID;
  */
 @NonNullByDefault
 public interface Accessory extends Identifiable<AccessoryUID> {
+
+    AccessoryUID getUID();
 
     /**
      * Accessory Instance IDs are assigned from the same number pool that is global across entire

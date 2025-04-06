@@ -42,7 +42,7 @@ public class PairVerificationStageOneHandler extends PairVerificationHandler {
 
         if (getStage(body) == 1) {
 
-            logger.debug("Starting pair verification for " + server.getId());
+            logger.debug("Starting pair verification for " + server.getUID());
 
             HttpSession session = request.getSession();
 
@@ -60,7 +60,7 @@ public class PairVerificationStageOneHandler extends PairVerificationHandler {
             session.setAttribute("sharedSecret", sharedSecret);
 
             byte[] accessoryInfo = org.openhab.io.homekit.util.Byte.joinBytes(accessoryPublicKey,
-                    server.getId().getBytes(StandardCharsets.UTF_8), clientPublicKey);
+                    server.getUID().getBytes(StandardCharsets.UTF_8), clientPublicKey);
 
             byte[] accessorySignature = null;
             try {
@@ -84,7 +84,7 @@ public class PairVerificationStageOneHandler extends PairVerificationHandler {
             session.setAttribute("sessionKey", sessionKey);
 
             Encoder encoder = TypeLengthValue.getEncoder();
-            encoder.add(Message.IDENTIFIER, server.getId().getBytes(StandardCharsets.UTF_8));
+            encoder.add(Message.IDENTIFIER, server.getUID().getBytes(StandardCharsets.UTF_8));
             encoder.add(Message.SIGNATURE, accessorySignature);
             byte[] plaintext = encoder.toByteArray();
 

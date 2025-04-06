@@ -33,6 +33,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -87,7 +89,7 @@ import com.nimbusds.srp6.XRoutineWithUserIdentity;
 
 import djb.Curve25519;
 
-public abstract class AbstractRemoteAccessoryServer extends AbstractAccessoryServer  {
+public abstract class AbstractRemoteAccessoryServer extends AbstractAccessoryServer {
 
     protected static final Logger logger = LoggerFactory.getLogger(AbstractRemoteAccessoryServer.class);
 
@@ -99,8 +101,8 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
     private byte[] clientPublicKey;
     private byte[] clientPrivateKey;
 
-    private final java.util.concurrent.ScheduledExecutorService scheduler;
-    private @Nullable java.util.concurrent.ScheduledFuture<?> connectionMonitorJob;
+    private final ScheduledExecutorService scheduler;
+    private @Nullable ScheduledFuture<?> connectionMonitorJob;
 
     private @Nullable HttpClient httpClient;
     private boolean isPairVerified;
@@ -115,10 +117,9 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
         this.scheduler = org.openhab.core.common.ThreadPoolManager.getScheduledPool("homekit-remote");
 
         // TODO : Detect when the remote end closes the connection -> Thing should go offline
-    }  
+    }
 
     private final List<AccessoryServerChangeListener> changeListeners = new ArrayList<>();
-
 
     protected AccessoryState getState() {
         return currentState;
@@ -136,9 +137,6 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
     public boolean isConnected() {
         return currentState != AccessoryState.DISCONNECTED;
     }
-
-
-
 
     public AbstractRemoteAccessoryServer(InetAddress address, int port, AccessoryRegistry accessoryRegistry,
             PairingRegistry pairingRegistry) {
@@ -196,7 +194,6 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
         }
     }
 
-    
     public void start() throws Exception {
         try {
             httpClient.start();
@@ -233,10 +230,9 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
         }
     }
 
-    public  void advertise() {
+    public void advertise() {
         // No Operation
     }
-    
 
     @Override
     public boolean isSecure() {
@@ -1168,5 +1164,10 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
                 throw new UnsupportedOperationException("Unsupported object type: " + targetClass, e);
             }
         }
+    }
+
+    @Override
+    public long getNextAvailableAccessoryId() {
+        return 0;
     }
 }

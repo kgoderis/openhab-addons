@@ -1,5 +1,6 @@
 package org.openhab.io.homekit.internal.server;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
@@ -21,6 +22,7 @@ import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.crypto.HomekitEncryptionEngine;
 import org.openhab.io.homekit.internal.accessory.AccessoryState;
+import org.openhab.io.homekit.internal.client.HomekitException;
 import org.openhab.io.homekit.internal.http.HomekitRequestLogHandler;
 import org.openhab.io.homekit.internal.http.jetty.HomekitHttpConnectionFactory;
 import org.openhab.io.homekit.internal.http.jetty.HomekitSessionHandler;
@@ -62,6 +64,8 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
             MDNSService mdnsService, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry,
             SafeCaller safeCaller) throws InvalidAlgorithmParameterException {
         super(address, port, pairingId, secretKey, accessoryRegistry, pairingRegistry);
+
+        //TODO : Remove SafeCaller
 
         this.mdnsService = mdnsService;
         this.safeCaller = safeCaller;
@@ -203,7 +207,7 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
         advertise();
     }
 
-//TODO : Advertise() the server after it is used to create an accessory
+    //TODO : Advertise() the server after it is used to create an accessory
 
     // @Override
     // public void addAccessory(Accessory accessory) {
@@ -230,7 +234,7 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
             for (long id = 1; id < nextInstanceId; id++) {
                 if (!usedInstanceIds.contains(id)) {
                     usedInstanceIds.add(id);
-                    logger.debug("Recycled instance ID: {} for server: {}", id, getId());
+                    logger.debug("Recycled instance ID: {} for server: {}", id, getUID());
                     return id;
                 }
             }
@@ -238,7 +242,7 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
             // If no recycled IDs available, use the next new ID
             long newId = nextInstanceId++;
             usedInstanceIds.add(newId);
-            logger.debug("Assigned new instance ID: {} for server: {}", newId, getId());
+            logger.debug("Assigned new instance ID: {} for server: {}", newId, getUID());
             return newId;
         }
     }
@@ -254,7 +258,6 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
             } catch (Exception e) {
                 e.printStackTrace();
                 setState(AccessoryState.STOPPED);
-                return;
             }
         }
 
@@ -315,11 +318,9 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
         }
     }
 
-
-
     @Override
     public String getSetupCode() {
-        if (setupCode == null) {
+        if (setupCode == null || setupCode.isEmpty()) {
             if (logger.isDebugEnabled()) {
                 setupCode = "123-12-123";
             } else {
@@ -624,7 +625,7 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
     //         }
     //     }
     // }
-  // /**
+    // /**
     //  * Sends all queued notifications for a connection and clears the queue.
     //  *
     //  * @param connection The HTTP connection to flush notifications for
@@ -674,4 +675,20 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
     //     }
     // }}
 
+    @Override
+    public boolean isSecure() {
+        // We are not in control, the remote controller will handle this
+        return true;
+    }
+
+    @Override
+    public boolean pairVerify() {
+        // We are not in control, the remote controller will handle this
+        return isPaired();
+    }
+
+    @Override
+    public void pairRemove() throws HomekitException, IOException {
+        // We are not in control, the remote controller will handle this
+    }
 }

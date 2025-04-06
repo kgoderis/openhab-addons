@@ -13,7 +13,7 @@ import org.openhab.core.storage.StorageService;
 import org.openhab.io.homekit.api.factory.AccessoryServerFactory;
 import org.openhab.io.homekit.api.provider.AccessoryServerProvider;
 import org.openhab.io.homekit.api.server.AccessoryServer;
-import org.openhab.io.homekit.internal.server.LocalBridgeAccessoryServer;
+import org.openhab.io.homekit.internal.server.BridgeLocalAccessoryServer;
 import org.openhab.io.homekit.internal.server.PersistedAccessoryServer;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -60,7 +60,7 @@ public class ManagedAccessoryServerProvider
                 Arrays.toString(serverFactory.getSupportedServerTypes()));
 
         if (Arrays.stream(serverFactory.getSupportedServerTypes())
-                .anyMatch(LocalBridgeAccessoryServer.class.getSimpleName()::equals)) {
+                .anyMatch(BridgeLocalAccessoryServer.class.getSimpleName()::equals)) {
             logger.warn("Marking the Managed Accessory Server Provider as ready");
             ReadyMarker newMarker = new ReadyMarker(HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER, this.toString());
             readyService.markReady(newMarker);
@@ -86,7 +86,7 @@ public class ManagedAccessoryServerProvider
 
         for (AccessoryServerFactory factory : serverFactories) {
 
-            AccessoryServer server = factory.createServer(LocalBridgeAccessoryServer.class.getSimpleName(),
+            AccessoryServer server = factory.createServer(BridgeLocalAccessoryServer.class.getSimpleName(),
                     persistableElement.getLocalAddress(), persistableElement.getPort(),
                     persistableElement.getPairingIdentifier(), persistableElement.getPrivateKey(),
                     persistableElement.getConfigurationIndex());
@@ -97,13 +97,13 @@ public class ManagedAccessoryServerProvider
                 return server;
             } else {
                 logger.warn("Unable to create an Accessory Server of Type {}",
-                        LocalBridgeAccessoryServer.class.getSimpleName());
+                        BridgeLocalAccessoryServer.class.getSimpleName());
                 return null;
             }
         }
 
         logger.warn("There is no Acessory Server Factory for Accessory Servers of Type '{}'",
-                LocalBridgeAccessoryServer.class.getSimpleName());
+                BridgeLocalAccessoryServer.class.getSimpleName());
 
         return null;
     }

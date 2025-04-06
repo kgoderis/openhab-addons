@@ -116,12 +116,12 @@ public class GenericService implements Service {
 
     @Override
     @NonNull public ServiceUID getUID() {
-        return new ServiceUID(getAccessory().getServer().getId(), Long.toString(getAccessory().getAccessoryId()),
-                Long.toString(getId()));
+        return new ServiceUID(getAccessory().getServer().getUID(), Long.toString(getAccessory().getAccessoryId()),
+                Long.toString(getInstanceId()));
     }
 
     @Override
-    public long getId() {
+    public long getInstanceId() {
         return instanceId;
     }
 
@@ -252,7 +252,7 @@ public class GenericService implements Service {
             characteristics.add(characteristic.toJson());
         }
 
-        JsonObjectBuilder builder = Json.createObjectBuilder().add("iid", getId()).add("type", getInstanceType())
+        JsonObjectBuilder builder = Json.createObjectBuilder().add("iid", getInstanceId()).add("type", getInstanceType())
                 .add("characteristics", characteristics);
 
         return builder.build();
@@ -265,7 +265,7 @@ public class GenericService implements Service {
             characteristics.add(characteristic.toReducedJson());
         }
 
-        JsonObjectBuilder builder = Json.createObjectBuilder().add("iid", getId())
+        JsonObjectBuilder builder = Json.createObjectBuilder().add("iid", getInstanceId())
                 .add("type", getInstanceType().replaceAll("^0*([0-9a-fA-F]+)-0000-1000-8000-0026BB765291$", "$1"))
                 .add("characteristics", characteristics);
 

@@ -116,7 +116,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
         this.setupCode = "";
     }
 
-    protected AccessoryState currentState = AccessoryState.UNKNOWN;
+    protected AccessoryState currentState = AccessoryState.UNPAIRED;
 
     protected synchronized void setState(AccessoryState newState) {
         if (!currentState.equals(newState)) {
@@ -146,7 +146,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     }
 
     @Override
-    public String getId() {
+    public String getUID() {
         return (new String(getPairingId(), StandardCharsets.UTF_8)).replace(":", "");
     }
 
@@ -194,14 +194,14 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
 
     @Override
     public Collection<Accessory> getAccessories() {
-        return Collections.unmodifiableList(accessoryRegistry.get(getId()).stream()
+        return Collections.unmodifiableList(accessoryRegistry.get(getUID()).stream()
                 .sorted((o1, o2) -> Long.valueOf(o1.getAccessoryId()).compareTo(Long.valueOf(o2.getAccessoryId())))
                 .collect(Collectors.toList()));
     }
 
     @Override
     public @Nullable Accessory getAccessory(int instanceId) {
-        AccessoryUID id = new AccessoryUID(getId(), Integer.toString(instanceId));
+        AccessoryUID id = new AccessoryUID(getUID(), Integer.toString(instanceId));
         return accessoryRegistry.get(id);
     }
 
@@ -243,19 +243,19 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
             Pairing oldPairing = pairingRegistry.remove(newPairing.getUID());
 
             if (oldPairing != null) {
-                logger.debug("Removed Pairing of {} with Destination {} holding Public Key {}", getId(),
+                logger.debug("Removed Pairing of {} with Destination {} holding Public Key {}", getUID(),
                         Byte.toHexString(oldPairing.getDestinationId()),
                         Byte.toHexString(oldPairing.getPublicKey()));
-                setState(ExtendedAccessoryState.DISCONNECTED);
+                setState(AccessoryState.DISCONNECTED);
             }
 
             pairingRegistry.add(newPairing);
-            logger.debug("Paired {} with Destination {} holding Public Key {}", getId(), pairingId,
+            logger.debug("Paired {} with Destination {} holding Public Key {}", getUID(), pairingId,
                     Byte.toHexString(publicKey));
-            setState(ExtendedAccessoryState.PAIRED);
+            setState(AccessoryState.PAIRED);
         } catch (Exception e) {
             e.printStackTrace();
-            setState(ExtendedAccessoryState.UNKNOWN);
+            setState(AccessoryState.UNKNOWN);
         }
     }
 
@@ -273,14 +273,14 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     public void removePairing(byte @NonNull [] pairingId) {
         Pairing oldPairing = pairingRegistry.remove(new PairingUID(getPairingId(), pairingId));
         if (oldPairing != null) {
-            logger.debug("Removed Pairing of {} with Destination {} holding Public Key {}", getId(),
+            logger.debug("Removed Pairing of {} with Destination {} holding Public Key {}", getUID(),
                     Byte.toHexString(oldPairing.getDestinationId()),
                     Byte.toHexString(oldPairing.getPublicKey()));
-            setState(ExtendedAccessoryState.DISCONNECTED);
+            setState(AccessoryState.DISCONNECTED);
         } else {
-            logger.warn("The Pairing Registry does not contain a Pairing for {} with Destination {}", getId(),
+            logger.warn("The Pairing Registry does not contain a Pairing for {} with Destination {}", getUID(),
                     Byte.toHexString(pairingId));
-            setState(ExtendedAccessoryState.UNKNOWN);
+            setState(AccessoryState.PAIRING_MISSING);
         }
     }
 
@@ -288,9 +288,9 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     public boolean isPaired() {
         boolean paired = !pairingRegistry.get(getPairingId()).isEmpty();
         if (paired) {
-            setState(ExtendedAccessoryState.PAIRED);
+            setState(AccessoryState.PAIRED);
         } else {
-            setState(ExtendedAccessoryState.DISCONNECTED);
+            setState(AccessoryState.UNPAIRED);
         }
         return paired;
     }
@@ -326,24 +326,24 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
         // TODO Auto-generated method stub
         // TODO Remove all crypto keys
         // TODO id is a unique random number, regenerate
-        setState(ExtendedAccessoryState.UNKNOWN);
+        setState(AccessoryState.RESET);
     }
 
     // Add a method to handle connection state
     protected void handleConnection(boolean connected) {
         if (connected) {
-            setState(ExtendedAccessoryState.CONNECTED);
+            setState(AccessoryState.CONNECTED);
         } else {
-            setState(ExtendedAccessoryState.DISCONNECTED);
+            setState(AccessoryState.DISCONNECTED);
         }
     }
 
     // Add a method to handle pairing verification
     protected void handlePairingVerification(boolean verified) {
         if (verified) {
-            setState(ExtendedAccessoryState.PAIR_VERIFIED);
+            setState(AccessoryState.PAIR_VERIFIED);
         } else {
-            setState(ExtendedAccessoryState.PAIRED);
+            setState(AccessoryState.PAIRED);
         }
     }
 }

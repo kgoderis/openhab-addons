@@ -5,25 +5,24 @@ import java.util.Collection;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.io.homekit.api.NotificationRegistry;
 import org.openhab.io.homekit.api.hap.Pairing;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.internal.server.registry.AccessoryServerUID;
 
-public class RemoteStandAloneAccessoryServer extends AbstractRemoteAccessoryServer {
+public class StandAloneRemoteAccessoryServer extends AbstractRemoteAccessoryServer {
 
-    public RemoteStandAloneAccessoryServer(InetAddress address, int port, byte[] pairingIdentifier, byte[] secretKey,
-            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry,
-            NotificationRegistry notificationRegistry) {
-        super(address, port, pairingIdentifier, secretKey, accessoryRegistry, pairingRegistry, notificationRegistry);
+    public StandAloneRemoteAccessoryServer(InetAddress address, int port, byte[] pairingIdentifier, byte[] secretKey,
+            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry
+            ) {
+        super(address, port, pairingIdentifier, secretKey, accessoryRegistry, pairingRegistry);
     }
 
-    public RemoteStandAloneAccessoryServer(InetAddress localAddress, int port,
-            @Nullable AccessoryRegistry accessoryRegistry, @Nullable PairingRegistry pairingRegistry,
-            @Nullable NotificationRegistry notificationRegistry) throws Exception {
-        this(localAddress, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry,
-                notificationRegistry);
+    public StandAloneRemoteAccessoryServer(InetAddress localAddress, int port,
+            @Nullable AccessoryRegistry accessoryRegistry, @Nullable PairingRegistry pairingRegistry
+            ) throws Exception {
+        this(localAddress, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry
+                );
     }
 
     @Override

@@ -20,7 +20,7 @@ import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
 import org.openhab.io.homekit.api.server.AccessoryServer;
 import org.openhab.io.homekit.api.server.LocalAccessoryServer;
 import org.openhab.io.homekit.internal.events.AccessoryServerEvent;
-import org.openhab.io.homekit.internal.server.LocalBridgeAccessoryServer;
+import org.openhab.io.homekit.internal.server.BridgeLocalAccessoryServer;
 import org.openhab.io.homekit.internal.server.factory.LocalAccessoryServerFactory;
 import org.openhab.io.homekit.library.accessory.BridgeAccessory;
 import org.osgi.framework.BundleContext;
@@ -115,13 +115,13 @@ public class AccessoryServerRegistryImpl
 
     @Override
     @Nullable
-    public synchronized LocalBridgeAccessoryServer getAvailableBridgeAccessoryServer() {
-        LocalBridgeAccessoryServer availableServer = null;
+    public synchronized BridgeLocalAccessoryServer getAvailableBridgeAccessoryServer() {
+        BridgeLocalAccessoryServer availableServer = null;
         int highestPortNumber = LOWEST_PORT_NUMBER;
         for (AccessoryServer server : getAll()) {
-            if (server instanceof LocalBridgeAccessoryServer
+            if (server instanceof BridgeLocalAccessoryServer
                     && server.getAccessories().size() < MAX_ACCESSORIES_PER_SERVER) {
-                availableServer = (LocalBridgeAccessoryServer) server;
+                availableServer = (BridgeLocalAccessoryServer) server;
                 break;
             }
             if (server.getPort() > highestPortNumber) {
@@ -134,8 +134,8 @@ public class AccessoryServerRegistryImpl
         if (availableServer == null) {
             for (AccessoryServerFactory factory : serverFactories) {
                 try {
-                    availableServer = (LocalBridgeAccessoryServer) factory.createServer(
-                            LocalBridgeAccessoryServer.class.getSimpleName(),
+                    availableServer = (BridgeLocalAccessoryServer) factory.createServer(
+                            BridgeLocalAccessoryServer.class.getSimpleName(),
                             InetAddress.getByName(networkAddressService.getPrimaryIpv4HostAddress()),
                             highestPortNumber++);
                     if (availableServer != null) {

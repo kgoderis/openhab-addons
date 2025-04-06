@@ -7,8 +7,6 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.SafeCaller;
 import org.openhab.core.io.transport.mdns.MDNSService;
-import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.NotificationRegistry;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.internal.server.registry.AccessoryServerUID;
@@ -29,26 +27,25 @@ import org.openhab.io.homekit.internal.server.registry.AccessoryServerUID;
  * @author Karel Goderis
  */
 @NonNullByDefault
-public class LocalBridgeAccessoryServer extends AbstractLocalAccessoryServer {
+public class BridgeLocalAccessoryServer extends AbstractLocalAccessoryServer {
 
-    public LocalBridgeAccessoryServer(InetAddress localAddress, int port, byte[] pairingId, byte[] privateKey,
+    public BridgeLocalAccessoryServer(InetAddress localAddress, int port, byte[] pairingId, byte[] privateKey,
             @Nullable MDNSService mdnsService, @Nullable AccessoryRegistry accessoryRegistry,
-            @Nullable PairingRegistry pairingRegistry, @Nullable NotificationRegistry notificationRegistry,
-            @Nullable HomekitCommunicationManager manager, @Nullable SafeCaller safeCaller) throws Exception {
+            @Nullable PairingRegistry pairingRegistry, @Nullable SafeCaller safeCaller) throws Exception {
         super(localAddress, port, pairingId, privateKey, mdnsService, accessoryRegistry, pairingRegistry,
-                notificationRegistry, manager, safeCaller);
+                safeCaller);
     }
 
-    public LocalBridgeAccessoryServer(InetAddress localAddress, int port, @Nullable MDNSService mdnsService,
+    public BridgeLocalAccessoryServer(InetAddress localAddress, int port, @Nullable MDNSService mdnsService,
             @Nullable AccessoryRegistry accessoryRegistry, @Nullable PairingRegistry pairingRegistry,
-            @Nullable NotificationRegistry notificationRegistry, @Nullable HomekitCommunicationManager manager,
             @Nullable SafeCaller safeCaller) throws Exception {
         this(localAddress, port, generatePairingId(), generateSecretKey(), mdnsService, accessoryRegistry,
-                pairingRegistry, notificationRegistry, manager, safeCaller);
+                pairingRegistry, safeCaller);
     }
 
     @Override
     public @NonNull AccessoryServerUID getUID() {
         return new AccessoryServerUID("Bridge", getAccessoryId());
     }
+
 }

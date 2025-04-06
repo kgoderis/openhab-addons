@@ -18,9 +18,9 @@ import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.type.ChannelTypeUID;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.api.hap.Accessory;
+import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Service;
-import org.openhab.io.homekit.api.server.AccessoryServer;
 import org.openhab.io.homekit.library.service.ThingService;
 import org.openhab.io.homekit.util.UUID5;
 import org.slf4j.Logger;
@@ -170,7 +170,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
                 logger.debug(
                         "Created a Service {} of Type {} (HAP Type {}, Name {}) for Accessory {} of Type {}, with instanceId {}",
                         service.getUID(), service.getClass().getSimpleName(), service.getInstanceType(), serviceName,
-                        accessory.getUID(), accessory.getClass().getSimpleName(), service.getId());
+                        accessory.getUID(), accessory.getClass().getSimpleName(), service.getInstanceId());
                 return service;
             } catch (NoSuchMethodException e) {
                 logger.warn(

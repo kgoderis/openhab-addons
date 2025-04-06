@@ -86,7 +86,7 @@ public class AccessoryRegistryImpl extends AbstractRegistry<Accessory, Accessory
 
     @Override
     public Collection<Accessory> get(String serverId) {
-        return getAll().stream().filter(a -> a.getServer().getId().equals(serverId)).collect(Collectors.toList());
+        return getAll().stream().filter(a -> a.getServer().getUID().equals(serverId)).collect(Collectors.toList());
     }
 
     @Override

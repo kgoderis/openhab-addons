@@ -12,7 +12,7 @@ import org.openhab.core.config.discovery.DiscoveryResult;
 import org.openhab.core.config.discovery.mdns.MDNSDiscoveryParticipant;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.ThingUID;
-import org.openhab.io.homekit.internal.server.RemoteStandAloneAccessoryServer;
+import org.openhab.io.homekit.internal.server.StandAloneRemoteAccessoryServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,10 +22,10 @@ public class AccessoryServerConfigurationChangeParticipant implements MDNSDiscov
 
     private final Logger logger = LoggerFactory.getLogger(AccessoryServerConfigurationChangeParticipant.class);
 
-    private final RemoteStandAloneAccessoryServer accessoryServer;
+    private final StandAloneRemoteAccessoryServer accessoryServer;
     int lastConfigurationNumber;
 
-    public AccessoryServerConfigurationChangeParticipant(@NonNull RemoteStandAloneAccessoryServer participant) {
+    public AccessoryServerConfigurationChangeParticipant(@NonNull StandAloneRemoteAccessoryServer participant) {
         this.accessoryServer = participant;
     }
 

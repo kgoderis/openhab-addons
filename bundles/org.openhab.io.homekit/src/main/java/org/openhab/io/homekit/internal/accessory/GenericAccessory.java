@@ -186,7 +186,7 @@ public class GenericAccessory implements Accessory {
 
     @Override
     @NonNull public AccessoryUID getUID() {
-        return new AccessoryUID(getServer().getId(), Long.toString(getAccessoryId()));
+        return new AccessoryUID(getServer().getUID(), Long.toString(getAccessoryId()));
     }
 
     @Override
@@ -197,7 +197,7 @@ public class GenericAccessory implements Accessory {
     @Override
     @NonNull
     public String getSerialNumber() {
-        return getUID().getId();
+        return getUID().getAsString();
     }
 
     @Override

@@ -6,10 +6,8 @@ import java.util.Collection;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.jetty.server.HttpConnection;
 import org.openhab.core.common.registry.Identifiable;
 import org.openhab.io.homekit.api.hap.Accessory;
-import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Pairing;
 import org.openhab.io.homekit.api.listener.AccessoryServerChangeListener;
 import org.openhab.io.homekit.internal.client.HomekitException;
@@ -33,7 +31,7 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
      *
      * @return the unique server identifier
      */
-    String getId();
+    AccessoryServerUID getUID();
 
     /**
      * Gets the network address of this accessory server.
@@ -226,20 +224,20 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
      */
     void removeChangeListener(AccessoryServerChangeListener listener);
 
-    /**
-     * Adds a notification for characteristic changes.
-     *
-     * @param characteristic the characteristic to monitor
-     * @param connection the HTTP connection to notify
-     */
-    void addNotification(Characteristic<?> characteristic, HttpConnection connection);
+    // /**
+    //  * Adds a notification for characteristic changes.
+    //  *
+    //  * @param characteristic the characteristic to monitor
+    //  * @param connection the HTTP connection to notify
+    //  */
+    // void addNotification(Characteristic<?> characteristic, HttpConnection connection);
 
-    /**
-     * Removes a notification for characteristic changes.
-     *
-     * @param characteristic the characteristic to stop monitoring
-     */
-    void removeNotification(Characteristic<?> characteristic);
+    // /**
+    //  * Removes a notification for characteristic changes.
+    //  *
+    //  * @param characteristic the characteristic to stop monitoring
+    //  */
+    // void removeNotification(Characteristic<?> characteristic);
 
     // ==================== Pairing Operations ====================
 

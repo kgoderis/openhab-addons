@@ -17,6 +17,8 @@ import org.openhab.io.homekit.internal.service.ServiceUID;
  */
 public interface Service extends Identifiable<@NonNull ServiceUID> {
 
+    @NonNull ServiceUID getUID();
+
     /**
      * Service Instance Ids are assigned from the same number pool that is unique within each Accessory.
      * For example, if the first Service has an Instance Id of "1", then no other Service
@@ -27,7 +29,7 @@ public interface Service extends Identifiable<@NonNull ServiceUID> {
      *
      * @return the unique identifier.
      */
-    long getId();
+    long getInstanceId();
 
     /**
      * Not all Services provide user-visible or user-interactive functionality. Services which provide either

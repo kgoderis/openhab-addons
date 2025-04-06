@@ -16,7 +16,7 @@ import org.openhab.io.homekit.api.factory.AccessoryServerFactory;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.api.server.AccessoryServer;
-import org.openhab.io.homekit.internal.server.LocalBridgeAccessoryServer;
+import org.openhab.io.homekit.internal.server.BridgeLocalAccessoryServer;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
@@ -62,10 +62,10 @@ public class LocalAccessoryServerFactory implements AccessoryServerFactory {
     @Override
     public @Nullable AccessoryServer createServer(@NonNull String factoryType, InetAddress localAddress, int port) {
         if (Arrays.stream(getSupportedServerTypes()).anyMatch(factoryType::equals)) {
-            LocalBridgeAccessoryServer newBridge = null;
+            BridgeLocalAccessoryServer newBridge = null;
 
             try {
-                newBridge = new LocalBridgeAccessoryServer(localAddress, port, mdnsService, accessoryRegistry,
+                newBridge = new BridgeLocalAccessoryServer(localAddress, port, mdnsService, accessoryRegistry,
                         pairingRegistry, notificationRegistry, communicationManager, safeCaller);
                 if (newBridge != null) {
                     logger.debug("Created an Accessory Server {} of Type {} running at {}:{}", newBridge.getUID(),
@@ -88,10 +88,10 @@ public class LocalAccessoryServerFactory implements AccessoryServerFactory {
             byte[] id, byte[] privateKey, int configurationIndex) {
 
         if (Arrays.stream(getSupportedServerTypes()).anyMatch(factoryType::equals)) {
-            LocalBridgeAccessoryServer newBridge = null;
+            BridgeLocalAccessoryServer newBridge = null;
 
             try {
-                newBridge = new LocalBridgeAccessoryServer(localAddress, port, id, privateKey, mdnsService,
+                newBridge = new BridgeLocalAccessoryServer(localAddress, port, id, privateKey, mdnsService,
                         accessoryRegistry, pairingRegistry, notificationRegistry, communicationManager, safeCaller);
                 if (newBridge != null) {
                     logger.debug("Created an Accessory Server {} of Type {} running at {}:{}", newBridge.getUID(),
@@ -111,6 +111,6 @@ public class LocalAccessoryServerFactory implements AccessoryServerFactory {
 
     @Override
     public String @NonNull [] getSupportedServerTypes() {
-        return new String[] { LocalBridgeAccessoryServer.class.getSimpleName() };
+        return new String[] { BridgeLocalAccessoryServer.class.getSimpleName() };
     }
 }

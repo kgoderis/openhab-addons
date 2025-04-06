@@ -27,7 +27,7 @@ import org.openhab.core.thing.ThingUID;
 import org.openhab.io.homekit.api.factory.AccessoryServerFactory;
 import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
 import org.openhab.io.homekit.api.server.AccessoryServer;
-import org.openhab.io.homekit.internal.server.RemoteStandAloneAccessoryServer;
+import org.openhab.io.homekit.internal.server.StandAloneRemoteAccessoryServer;
 import org.openhab.io.homekit.internal.server.registry.AccessoryServerUID;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -144,7 +144,7 @@ public class AccessoryServerDiscoveryParticipant implements MDNSDiscoveryPartici
                     for (AccessoryServerFactory factory : serverFactories) {
                         AccessoryServer server = null;
                         try {
-                            server = factory.createServer(RemoteStandAloneAccessoryServer.class.getSimpleName(),
+                            server = factory.createServer(StandAloneRemoteAccessoryServer.class.getSimpleName(),
                                     InetAddress.getByName(hostAddress), port);
                         } catch (UnknownHostException e) {
                             // TODO Auto-generated catch block
@@ -157,7 +157,7 @@ public class AccessoryServerDiscoveryParticipant implements MDNSDiscoveryPartici
                                     server.getSetupCode());
                         } else {
                             logger.warn("Unable to create an Accessory Server of Type {}",
-                                    RemoteStandAloneAccessoryServer.class.getSimpleName());
+                                    StandAloneRemoteAccessoryServer.class.getSimpleName());
                         }
                     }
                 }

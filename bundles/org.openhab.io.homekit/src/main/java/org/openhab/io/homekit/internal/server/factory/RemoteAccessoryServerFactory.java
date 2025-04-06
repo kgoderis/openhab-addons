@@ -21,7 +21,7 @@ import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.api.server.AccessoryServer;
 import org.openhab.io.homekit.internal.client.AccessoryServerConfigurationChangeParticipant;
-import org.openhab.io.homekit.internal.server.RemoteStandAloneAccessoryServer;
+import org.openhab.io.homekit.internal.server.StandAloneRemoteAccessoryServer;
 import org.openhab.io.homekit.internal.server.registry.AccessoryServerUID;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -88,10 +88,10 @@ public class RemoteAccessoryServerFactory implements AccessoryServerFactory {
     @Override
     public @Nullable AccessoryServer createServer(@NonNull String factoryType, InetAddress address, int port) {
         if (Arrays.stream(getSupportedServerTypes()).anyMatch(factoryType::equals)) {
-            RemoteStandAloneAccessoryServer newBridge = null;
+            StandAloneRemoteAccessoryServer newBridge = null;
 
             try {
-                newBridge = new RemoteStandAloneAccessoryServer(address, port, accessoryRegistry, pairingRegistry,
+                newBridge = new StandAloneRemoteAccessoryServer(address, port, accessoryRegistry, pairingRegistry,
                         notificationRegistry);
                 if (newBridge != null) {
                     logger.debug("Created an Accessory Server {} of Type {} running at {}:{}", newBridge.getUID(),
@@ -116,10 +116,10 @@ public class RemoteAccessoryServerFactory implements AccessoryServerFactory {
             byte[] privateKey, int configurationIndex) {
 
         if (Arrays.stream(getSupportedServerTypes()).anyMatch(factoryType::equals)) {
-            RemoteStandAloneAccessoryServer newBridge = null;
+            StandAloneRemoteAccessoryServer newBridge = null;
 
             try {
-                newBridge = new RemoteStandAloneAccessoryServer(address, port, id, privateKey, accessoryRegistry,
+                newBridge = new StandAloneRemoteAccessoryServer(address, port, id, privateKey, accessoryRegistry,
                         pairingRegistry, notificationRegistry);
                 if (newBridge != null) {
                     logger.debug("Created an Accessory Server {} of Type {} running at {}:{}", newBridge.getUID(),
@@ -137,10 +137,10 @@ public class RemoteAccessoryServerFactory implements AccessoryServerFactory {
 
     @Override
     public String @NonNull [] getSupportedServerTypes() {
-        return new String[] { RemoteStandAloneAccessoryServer.class.getSimpleName() };
+        return new String[] { StandAloneRemoteAccessoryServer.class.getSimpleName() };
     }
 
-    private synchronized void registerHomekitMDNSParticipant(RemoteStandAloneAccessoryServer participant) {
+    private synchronized void registerHomekitMDNSParticipant(StandAloneRemoteAccessoryServer participant) {
         AccessoryServerConfigurationChangeParticipant mdnsParticipant = new AccessoryServerConfigurationChangeParticipant(
                 participant);
         this.mdnsServiceRegs.put(participant.getUID(), getBundleContext().registerService(
