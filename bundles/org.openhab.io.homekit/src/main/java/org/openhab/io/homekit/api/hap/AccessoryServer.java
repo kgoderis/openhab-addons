@@ -1,4 +1,4 @@
-package org.openhab.io.homekit.api.server;
+package org.openhab.io.homekit.api.hap;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -7,11 +7,9 @@ import java.util.Collection;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.registry.Identifiable;
-import org.openhab.io.homekit.api.hap.Accessory;
-import org.openhab.io.homekit.api.hap.Pairing;
 import org.openhab.io.homekit.api.listener.AccessoryServerChangeListener;
 import org.openhab.io.homekit.internal.client.HomekitException;
-import org.openhab.io.homekit.internal.server.registry.AccessoryServerUID;
+import org.openhab.io.homekit.internal.server.AccessoryServerUID;
 
 /**
  * Interface for an HAP Accessory Server that exposes a collection of Accessories to the HAP controller(s).

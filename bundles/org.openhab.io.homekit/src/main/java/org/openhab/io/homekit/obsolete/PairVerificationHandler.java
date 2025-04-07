@@ -2,7 +2,7 @@ package org.openhab.io.homekit.obsolete;
 
 import java.io.IOException;
 
-import org.openhab.io.homekit.api.server.AccessoryServer;
+import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.util.Message;
 import org.openhab.io.homekit.util.TypeLengthValue;
 import org.openhab.io.homekit.util.TypeLengthValue.DecodeResult;

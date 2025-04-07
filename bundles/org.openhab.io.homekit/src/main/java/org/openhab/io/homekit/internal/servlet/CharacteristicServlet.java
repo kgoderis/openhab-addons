@@ -27,8 +27,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.openhab.io.homekit.api.hap.Accessory;
+import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.hap.Characteristic;
-import org.openhab.io.homekit.api.server.AccessoryServer;
 import org.openhab.io.homekit.util.Debouncer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

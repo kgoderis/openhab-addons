@@ -7,7 +7,7 @@ import java.util.Arrays;
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServlet;
 
-import org.openhab.io.homekit.api.server.AccessoryServer;
+import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.internal.http.HomekitServletConfig;
 import org.openhab.io.homekit.util.Message;
 import org.openhab.io.homekit.util.TypeLengthValue;

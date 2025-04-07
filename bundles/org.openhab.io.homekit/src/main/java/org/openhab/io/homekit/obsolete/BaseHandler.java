@@ -1,7 +1,7 @@
 package org.openhab.io.homekit.obsolete;
 
 import org.eclipse.jetty.servlet.ServletHandler;
-import org.openhab.io.homekit.api.server.AccessoryServer;
+import org.openhab.io.homekit.api.hap.AccessoryServer;
 
 public abstract class BaseHandler extends ServletHandler {
 

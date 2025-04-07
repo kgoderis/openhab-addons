@@ -1,9 +1,9 @@
 package org.openhab.io.homekit.internal.events;
 
 import org.openhab.io.homekit.api.hap.Accessory;
+import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Service;
-import org.openhab.io.homekit.api.server.AccessoryServer;
 
 public class AccessoryServerEvent {
     private final AccessoryServer server;

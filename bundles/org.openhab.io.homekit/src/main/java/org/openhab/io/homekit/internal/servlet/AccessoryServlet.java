@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.http.HttpHeader;
 import org.openhab.io.homekit.api.hap.Accessory;
-import org.openhab.io.homekit.api.server.AccessoryServer;
+import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

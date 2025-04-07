@@ -6,29 +6,25 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.hap.Accessory;
+import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.hap.Pairing;
 import org.openhab.io.homekit.api.listener.AccessoryServerChangeListener;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
-import org.openhab.io.homekit.api.server.AccessoryServer;
-import org.openhab.io.homekit.crypto.HomekitEncryptionEngine;
 import org.openhab.io.homekit.internal.accessory.AccessoryState;
 import org.openhab.io.homekit.internal.accessory.AccessoryUID;
 import org.openhab.io.homekit.internal.events.AccessoryServerEvent;
 import org.openhab.io.homekit.internal.pairing.PairingImpl;
 import org.openhab.io.homekit.internal.pairing.PairingUID;
 import org.openhab.io.homekit.util.Byte;
+import org.openhab.io.homekit.util.HomekitKeyGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
-import net.i2p.crypto.eddsa.spec.EdDSAParameterSpec;
 
 @NonNullByDefault
 public abstract class AbstractAccessoryServer implements AccessoryServer {
@@ -146,8 +142,8 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     }
 
     @Override
-    public String getUID() {
-        return (new String(getPairingId(), StandardCharsets.UTF_8)).replace(":", "");
+    public AccessoryServerUID getUID() {
+        return new AccessoryServerUID(new String(getPairingId(), StandardCharsets.UTF_8).replace(":", ""));
     }
 
     @Override
@@ -296,19 +292,11 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     }
 
     protected static byte[] generateSecretKey() {
-        EdDSAParameterSpec spec = EdDSANamedCurveTable.getByName("ed25519-sha-512");
-        byte[] seed = new byte[spec.getCurve().getField().getb() / 8];
-        HomekitEncryptionEngine.getSecureRandom().nextBytes(seed);
-        return seed;
+        return HomekitKeyGenerator.generateSecretKey();
     }
 
     protected static byte[] generatePairingId() {
-        int byte1 = ((HomekitEncryptionEngine.getSecureRandom().nextInt(255) + 1) | 2) & 0xFE; // Unicast locally
-                                                                                               // administered MAC;
-        return (Integer.toHexString(byte1).toUpperCase() + ":"
-                + Stream.generate(() -> HomekitEncryptionEngine.getSecureRandom().nextInt(255) + 1).limit(5)
-                        .map(i -> Integer.toHexString(i).toUpperCase()).collect(Collectors.joining(":")))
-                .getBytes(StandardCharsets.UTF_8);
+        return HomekitKeyGenerator.generateHexidecimalId();
     }
 
     @Override

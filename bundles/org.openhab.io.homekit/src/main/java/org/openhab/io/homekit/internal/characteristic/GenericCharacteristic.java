@@ -110,8 +110,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
 
     @Override
     @NonNull public CharacteristicUID getUID() {
-        Service service = getService();
-        return new CharacteristicUID("homekit", service.getAccessory().getAccessoryId(), service.getInstanceId(), getId());
+        return new CharacteristicUID(getService().getAccessory().getUID().getHexId(), getService().getAccessory().getAccessoryId(), getService().getInstanceId(), getId());
     }
 
     @Override

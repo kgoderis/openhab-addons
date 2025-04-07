@@ -8,18 +8,18 @@ public class ServiceUID extends UID {
 
     @Override
     protected int getMinimalNumberOfSegments() {
-        return 3;
+        return 5;
     }
 
     /**
      * Instantiates a new thing UID.
      *
-     * @param serverId the server id
+     * @param hexId the the hexidecimal pre-generated id of the accessory
      * @param accessoryId the accessory instance id
-     * @param instanceId the service instance id
+     * @param serviceId the service instance id
      */
-    public ServiceUID(String serverId, String accessoryId, String instanceId) {
-        super(serverId, accessoryId, instanceId);
+    public ServiceUID(String hexId, long accessoryId, long serviceId) {
+        super("homekit", "service",hexId, Long.toString(accessoryId), Long.toString(serviceId));
     }
 
     // /**

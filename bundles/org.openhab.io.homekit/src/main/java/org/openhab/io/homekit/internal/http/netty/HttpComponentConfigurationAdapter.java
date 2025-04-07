@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
 
-import org.openhab.io.homekit.api.server.AccessoryServer;
+import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

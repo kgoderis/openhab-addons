@@ -1,5 +1,6 @@
 package org.openhab.io.homekit.internal.accessory;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -16,14 +17,15 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.api.hap.Accessory;
+import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.api.listener.AccessoryChangeListener;
 import org.openhab.io.homekit.api.listener.ServiceChangeListener;
-import org.openhab.io.homekit.api.server.AccessoryServer;
 import org.openhab.io.homekit.internal.events.AccessoryEvent;
 import org.openhab.io.homekit.internal.events.ServiceEvent;
 import org.openhab.io.homekit.internal.service.GenericService;
 import org.openhab.io.homekit.library.service.AccessoryInformationService;
+import org.openhab.io.homekit.util.HomekitKeyGenerator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -43,22 +45,25 @@ public class GenericAccessory implements Accessory {
     private final AccessoryServer server;
     private final Collection<AccessoryChangeListener> listeners = new CopyOnWriteArraySet<>();
     private Collection<Service> services = new HashSet<Service>();
-
-    /**
-     * Creates a new GenericAccessory with a unique instance ID.
-     * The instance ID is automatically assigned and managed to avoid conflicts.
-     *
-     * @param server The accessory server this accessory belongs to
-     */
-    public GenericAccessory(AccessoryServer server) {
-        this.server = server;
-        this.instanceId = getNextAvailableInstanceId();
-        this.accessoryId = server.getNextAvailableAccessoryId();
-        logger.debug("Created new accessory with instance ID: {}", instanceId);
-        
-        if (isExtensible()) {
-            addServices();
-        }
+        private @NonNull AccessoryUID accessoryUID;
+    
+        /**
+         * Creates a new GenericAccessory with a unique instance ID.
+         * The instance ID is automatically assigned and managed to avoid conflicts.
+         *
+         * @param server The accessory server this accessory belongs to
+         */
+        public GenericAccessory(AccessoryServer server) {
+            this.server = server;
+            this.instanceId = getNextAvailableInstanceId();
+            this.accessoryId = server.getNextAvailableAccessoryId();
+            logger.debug("Created new accessory with instance ID: {}", instanceId);
+            
+            if (isExtensible()) {
+                addServices();
+            }
+    
+            this.accessoryUID = new AccessoryUID(new String(HomekitKeyGenerator.generateHexidecimalId(), StandardCharsets.UTF_8).replace(":", ""), getAccessoryId());
     }
 
     /**
@@ -186,8 +191,9 @@ public class GenericAccessory implements Accessory {
 
     @Override
     @NonNull public AccessoryUID getUID() {
-        return new AccessoryUID(getServer().getUID(), Long.toString(getAccessoryId()));
+        return accessoryUID;
     }
+        
 
     @Override
     public long getAccessoryId() {

@@ -116,8 +116,8 @@ public class GenericService implements Service {
 
     @Override
     @NonNull public ServiceUID getUID() {
-        return new ServiceUID(getAccessory().getServer().getUID(), Long.toString(getAccessory().getAccessoryId()),
-                Long.toString(getInstanceId()));
+        return new ServiceUID(getAccessory().getUID().getHexId(), getAccessory().getAccessoryId(),
+               getInstanceId());
     }
 
     @Override

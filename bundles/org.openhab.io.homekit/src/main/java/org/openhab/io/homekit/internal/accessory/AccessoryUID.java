@@ -13,17 +13,21 @@ public class AccessoryUID extends UID {
 
     @Override
     protected int getMinimalNumberOfSegments() {
-        return 2;
+        return 4;
     }
 
     /**
      * Instantiates a new Accessory UID.
      *
-     * @param serverId the server id
+     * @param hexId the hexidecimal pre-generated id
      * @param instanceId the accessory instance id
      */
-    public AccessoryUID(String serverId, String instanceId) {
-        super(serverId, instanceId);
+    public AccessoryUID(String hexId, long accessoryId) {
+        super("homekit", "accessory",hexId, Long.toString(accessoryId));
+    }
+
+    public String getHexId() {
+        return getSegment(2);
     }
 
 }
