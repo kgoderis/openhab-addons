@@ -17,7 +17,6 @@ import org.openhab.io.homekit.api.listener.AccessoryServerChangeListener;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.internal.accessory.AccessoryState;
-import org.openhab.io.homekit.internal.accessory.AccessoryUID;
 import org.openhab.io.homekit.internal.events.AccessoryServerEvent;
 import org.openhab.io.homekit.internal.pairing.PairingImpl;
 import org.openhab.io.homekit.internal.pairing.PairingUID;
@@ -190,15 +189,67 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
 
     @Override
     public Collection<Accessory> getAccessories() {
-        return Collections.unmodifiableList(accessoryRegistry.get(getUID()).stream()
+        return Collections.unmodifiableList(accessories.stream()
                 .sorted((o1, o2) -> Long.valueOf(o1.getAccessoryId()).compareTo(Long.valueOf(o2.getAccessoryId())))
                 .collect(Collectors.toList()));
     }
 
     @Override
-    public @Nullable Accessory getAccessory(int instanceId) {
-        AccessoryUID id = new AccessoryUID(getUID(), Integer.toString(instanceId));
-        return accessoryRegistry.get(id);
+    public @Nullable Accessory getAccessory(int acessoryId) {
+        return accessories.stream()
+                .filter(accessory -> accessory.getAccessoryId() == acessoryId)
+                .findFirst()
+                .orElse(null);
+    }
+
+    // Collection to track accessories locally
+    private final Collection<Accessory> accessories = new CopyOnWriteArraySet<>();
+    
+    @Override
+    public void addAccessory(Accessory accessory) {
+        logger.debug("Adding Accessory {} of Type {} to Accessory Server {}", accessory.getUID(),
+                accessory.getClass().getSimpleName(), this.getUID());
+
+        if (accessories.add(accessory)) {
+            // Increment configuration index when accessories change
+            configurationIndex++;
+
+            advertise();
+            
+            // Notify listeners of accessory addition
+            AccessoryServerEvent event = new AccessoryServerEvent(this, accessory, null, null, 
+                    AccessoryServerEvent.AccessoryServerEventType.ACCESSORY_ADDED);
+            for (AccessoryServerChangeListener listener : changeListeners) {
+                try {
+                    listener.onAccessoryServerEvent(event);
+                } catch (Throwable throwable) {
+                    logger.error("Cannot inform listener {} of accessory addition", listener, throwable);
+                }
+            }
+        }
+    }
+
+    @Override 
+    public void removeAccessory(Accessory accessory) {
+        logger.debug("Removing Accessory {} from Accessory Server {}", accessory.getUID(), this.getUID());
+        
+        if (accessories.remove(accessory)) {
+            // Increment configuration index when accessories change
+            configurationIndex++;
+
+            advertise();
+            
+            // Notify listeners of accessory removal
+            AccessoryServerEvent event = new AccessoryServerEvent(this, accessory, null, null,
+                    AccessoryServerEvent.AccessoryServerEventType.ACCESSORY_REMOVED); 
+            for (AccessoryServerChangeListener listener : changeListeners) {
+                try {
+                    listener.onAccessoryServerEvent(event);
+                } catch (Throwable throwable) {
+                    logger.error("Cannot inform listener {} of accessory removal", listener, throwable);
+                }
+            }
+        }
     }
 
     // @Override

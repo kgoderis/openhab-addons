@@ -135,7 +135,7 @@ public class  PersistedAccessoryProvider extends AbstractManagedProvider<Accesso
             JsonObject jsonObject = jsonReader.readObject();
             jsonReader.close();
 
-            AccessoryServer server = accessoryServerRegistry.get(persistableElement.getServerId());
+            AccessoryServer server = accessoryServerRegistry.get(persistableElement.getServerUID());
 
             if (server != null) {
                 long aid = jsonObject.getJsonNumber("aid").longValue();
@@ -143,7 +143,7 @@ public class  PersistedAccessoryProvider extends AbstractManagedProvider<Accesso
 
                 Accessory accessory = null;
 
-                if (server instanceof LocalAccessoryServer) {
+                // if (server instanceof LocalAccessoryServer) {
                     Class<?> clazz;
                     try {
                         clazz = Class.forName(persistableElement.getAccessoryClass());
@@ -165,17 +165,17 @@ public class  PersistedAccessoryProvider extends AbstractManagedProvider<Accesso
                         e.printStackTrace();
                     }
 
-                } else if (server instanceof RemoteAccessoryServer) {
-                    Class<?> clazz = GenericAccessory.class;
+                // } else if (server instanceof RemoteAccessoryServer) {
+                //     Class<?> clazz = GenericAccessory.class;
 
-                    try {
-                        accessory = (Accessory) clazz.getConstructor(AccessoryServer.class, long.class)
-                                .newInstance(server, aid);
-                    } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                            | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
+                //     try {
+                //         accessory = (Accessory) clazz.getConstructor(AccessoryServer.class, long.class)
+                //                 .newInstance(server, aid);
+                //     } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                //             | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+                //         // TODO Auto-generated catch block
+                //         e.printStackTrace();
+                //     }
                 }
 
                 if (accessory != null) {

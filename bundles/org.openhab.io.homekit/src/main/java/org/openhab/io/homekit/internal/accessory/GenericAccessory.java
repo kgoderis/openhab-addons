@@ -17,7 +17,6 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.api.hap.Accessory;
-import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.api.listener.AccessoryChangeListener;
 import org.openhab.io.homekit.api.listener.ServiceChangeListener;
@@ -42,7 +41,7 @@ public class GenericAccessory implements Accessory {
     private final Object instanceIdLock = new Object();
     private final Set<Long> usedInstanceIds = new HashSet<>();
     private long nextInstanceId = 1;
-    private final AccessoryServer server;
+    // private final AccessoryServer server;
     private final Collection<AccessoryChangeListener> listeners = new CopyOnWriteArraySet<>();
     private Collection<Service> services = new HashSet<Service>();
         private @NonNull AccessoryUID accessoryUID;
@@ -53,10 +52,10 @@ public class GenericAccessory implements Accessory {
          *
          * @param server The accessory server this accessory belongs to
          */
-        public GenericAccessory(AccessoryServer server) {
-            this.server = server;
+        public GenericAccessory(long accessoryId) {
+            // this.server = server;
             this.instanceId = getNextAvailableInstanceId();
-            this.accessoryId = server.getNextAvailableAccessoryId();
+            this.accessoryId = accessoryId;
             logger.debug("Created new accessory with instance ID: {}", instanceId);
             
             if (isExtensible()) {
@@ -73,8 +72,8 @@ public class GenericAccessory implements Accessory {
      * @param server The accessory server this accessory belongs to
      * @param value The JSON value containing the accessory data
      */
-    public GenericAccessory(AccessoryServer server, JsonValue value) {
-        this.server = server;
+    public GenericAccessory(JsonValue value) {
+        // this.server = server;
         this.instanceId = getNextAvailableInstanceId();
         this.accessoryId = ((JsonObject) value).getInt("aid");
         logger.debug("Created accessory from JSON with accessory ID: {}", accessoryId);
@@ -222,10 +221,10 @@ public class GenericAccessory implements Accessory {
         return this.getClass().getSimpleName();
     }
 
-    @Override
-    public @NonNull AccessoryServer getServer() {
-        return server;
-    }
+    // @Override
+    // public @NonNull AccessoryServer getServer() {
+    //     return server;
+    // }
 
     @Override
     @NonNull
@@ -276,12 +275,12 @@ public class GenericAccessory implements Accessory {
     }
 
     @Override
-    public void addListener(AccessoryChangeListener listener) {
+    public void addListener(@NonNull AccessoryChangeListener listener) {
         listeners.add(listener);
     }
 
     @Override
-    public void removeListener(AccessoryChangeListener listener) {
+    public void removeListener(@NonNull AccessoryChangeListener listener) {
         listeners.remove(listener);
     }
 

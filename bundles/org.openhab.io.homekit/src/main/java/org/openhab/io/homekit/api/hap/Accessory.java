@@ -59,7 +59,7 @@ public interface Accessory extends Identifiable<AccessoryUID> {
      */
     String getManufacturer();
 
-    AccessoryServer getServer();
+    // AccessoryServer getServer();
 
     boolean isExtensible();
 

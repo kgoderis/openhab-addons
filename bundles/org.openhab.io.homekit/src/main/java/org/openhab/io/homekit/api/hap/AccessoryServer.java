@@ -79,19 +79,19 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
     // @Nullable
     // Accessory getAccessory(Class<? extends Accessory> accessoryClass);
 
-    // /**
-    //  * Adds a new accessory to this server.
-    //  *
-    //  * @param accessory the accessory to add
-    //  */
-    // void addAccessory(Accessory accessory);
+    /**
+     * Adds a new accessory to this server.
+     *
+     * @param accessory the accessory to add
+     */
+    void addAccessory(Accessory accessory);
 
-    // /**
-    //  * Removes an accessory from this server.
-    //  *
-    //  * @param accessory the accessory to remove
-    //  */
-    // void removeAccessory(Accessory accessory);
+    /**
+     * Removes an accessory from this server.
+     *
+     * @param accessory the accessory to remove
+     */
+    void removeAccessory(Accessory accessory);
 
     /**
      * Gets the next available accessory ID.

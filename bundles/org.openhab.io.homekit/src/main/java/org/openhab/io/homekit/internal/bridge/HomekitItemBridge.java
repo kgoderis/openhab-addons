@@ -365,7 +365,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
             Map<String, Item> characteristicItems = getCharacteristicTypeItemMap(taggedItem);
 
             if (primaryAccessory != null) {
-                Accessory accessory = new GenericAccessory(server);
+                Accessory accessory = new GenericAccessory(server.getNextAvailableAccessoryId());
                 Service primaryService = createPrimaryService(serviceFactory, primaryAccessory, accessory, taggedItem);
                 if (primaryService != null) {
                     accessory.addService(primaryService);

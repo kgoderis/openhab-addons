@@ -5,7 +5,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.registry.Registry;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.provider.AccessoryServerProvider;
-import org.openhab.io.homekit.internal.server.registry.AccessoryServerUID;
+import org.openhab.io.homekit.internal.server.AccessoryServerUID;
 
 /**
  * {@link AccessoryServerRegistry} tracks all {@link AccessoryServer}s from different {@link AccessoryServerProvider}s

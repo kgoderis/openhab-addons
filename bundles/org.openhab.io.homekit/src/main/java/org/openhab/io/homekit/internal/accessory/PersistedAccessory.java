@@ -1,25 +1,25 @@
 package org.openhab.io.homekit.internal.accessory;
 
-import org.openhab.io.homekit.internal.server.registry.AccessoryServerUID;
+import org.openhab.io.homekit.internal.server.AccessoryServerUID;
 
 public class PersistedAccessory {
 
     private String json;
     // private String instanceIdPool;
-    private String serverId;
+    private String serverUID;
     private String accessoryClass;
 
     public PersistedAccessory() {
         json = "";
         // instanceIdPool = "";
-        serverId = "";
+        serverUID = "";
         accessoryClass = "";
     }
 
-    public PersistedAccessory(String accessoryClass, String json, String serverId) {
+    public PersistedAccessory(String accessoryClass, String json, String serverUID) {
         this.json = json;
         // this.instanceIdPool = Long.toString(instanceIdPool);
-        this.serverId = serverId;
+        this.serverUID = serverUID;
         this.accessoryClass = accessoryClass;
     }
 
@@ -31,8 +31,8 @@ public class PersistedAccessory {
         //     return Long.parseLong(instanceIdPool);
         // }
 
-    public AccessoryServerUID getServerId() {
-        return new AccessoryServerUID(serverId);
+    public AccessoryServerUID getServerUID() {
+        return new AccessoryServerUID(serverUID);
     }
 
     public String getAccessoryClass() {
@@ -47,8 +47,8 @@ public class PersistedAccessory {
     //     this.instanceIdPool = Long.toString(instanceIdPool);
     // }
 
-    public void setServerId(AccessoryServerUID serverId) {
-        this.serverId = serverId.toString();
+    public void setServerUID(AccessoryServerUID serverUID) {
+        this.serverUID = serverUID.toString();
     }
 
     public void setAccessoryClass(String accessoryClass) {

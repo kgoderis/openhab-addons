@@ -12,9 +12,6 @@
  */
 package org.openhab.io.homekit.internal.accessory;
 
-import java.util.Collection;
-import java.util.stream.Collectors;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.AbstractRegistry;
 import org.openhab.core.common.registry.ManagedProvider;
@@ -23,7 +20,6 @@ import org.openhab.core.service.ReadyMarker;
 import org.openhab.core.service.ReadyMarkerFilter;
 import org.openhab.core.service.ReadyService;
 import org.openhab.io.homekit.api.hap.Accessory;
-import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.provider.AccessoryProvider;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.osgi.framework.BundleContext;
@@ -84,31 +80,31 @@ public class AccessoryRegistryImpl extends AbstractRegistry<Accessory, Accessory
         readyService.unregisterTracker(this);
     }
 
-    @Override
-    public Collection<Accessory> get(String serverId) {
-        return getAll().stream().filter(a -> a.getServer().getUID().equals(serverId)).collect(Collectors.toList());
-    }
+    // @Override
+    // public Collection<Accessory> get(String serverId) {
+    //     return getAll().stream().filter(a -> a.getServer().getUID().equals(serverId)).collect(Collectors.toList());
+    // }
 
-    @Override
-    public void added(Provider<Accessory> provider, Accessory element) {
-        super.added(provider, element);
-            ((AccessoryServer) element.getServer()).advertise();
+    // @Override
+    // public void added(Provider<Accessory> provider, Accessory element) {
+    //     super.added(provider, element);
+    //         ((AccessoryServer) element.getServer()).advertise();
         
-    }
+    // }
 
-    @Override
-    public void removed(Provider<Accessory> provider, Accessory element) {
-        super.removed(provider, element);
-            ((AccessoryServer) element.getServer()).advertise();
+    // @Override
+    // public void removed(Provider<Accessory> provider, Accessory element) {
+    //     super.removed(provider, element);
+    //         ((AccessoryServer) element.getServer()).advertise();
         
-    }
+    // }
 
-    @Override
-    public void updated(Provider<Accessory> provider, Accessory oldElement, Accessory element) {
-        super.updated(provider, oldElement, element);
-            ((AccessoryServer) element.getServer()).advertise();
+    // @Override
+    // public void updated(Provider<Accessory> provider, Accessory oldElement, Accessory element) {
+    //     super.updated(provider, oldElement, element);
+    //         // ((AccessoryServer) element.getServer()).advertise();
         
-    }
+    // }
 
     @Override
     public void onReadyMarkerAdded(ReadyMarker readyMarker) {

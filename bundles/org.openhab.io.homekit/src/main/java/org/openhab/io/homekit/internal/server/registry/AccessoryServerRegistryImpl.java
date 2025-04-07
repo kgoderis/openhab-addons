@@ -20,6 +20,7 @@ import org.openhab.io.homekit.api.provider.AccessoryServerProvider;
 import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
 import org.openhab.io.homekit.api.server.LocalAccessoryServer;
 import org.openhab.io.homekit.internal.events.AccessoryServerEvent;
+import org.openhab.io.homekit.internal.server.AccessoryServerUID;
 import org.openhab.io.homekit.internal.server.BridgeLocalAccessoryServer;
 import org.openhab.io.homekit.internal.server.factory.LocalAccessoryServerFactory;
 import org.openhab.io.homekit.library.accessory.BridgeAccessory;
