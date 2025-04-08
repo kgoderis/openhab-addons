@@ -176,12 +176,15 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
     }
 
     public void start() throws Exception {
-        try {
-            server.start();
-            setState(AccessoryState.CONNECTED);
-        } catch (Exception e) {
-            logger.error("Failed to start server: {}", e.getMessage());
-            setState(AccessoryState.DISCONNECTED);
+        if (!server.isStarted() && !server.isStarting()) {
+            logger.debug("Starting HomeKit server");
+            try {
+                server.start();
+                setState(AccessoryState.CONNECTED);
+            } catch (Exception e) {
+                logger.error("Failed to start server: {}", e.getMessage());
+                setState(AccessoryState.DISCONNECTED);
+            }
         }
     }
 

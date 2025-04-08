@@ -129,7 +129,7 @@ public class AccessoryServerDiscoveryParticipant implements MDNSDiscoveryPartici
                 for (AccessoryServerFactory factory : serverFactories) {
                     for (String type : factory.getSupportedServerTypes()) {
                         AccessoryServer accessoryServer = accessoryServerRegistry
-                                .get(new AccessoryServerUID(type, id.replace(":", "")));
+                                .get(new AccessoryServerUID(id.replace(":", "")));
                         if (accessoryServer != null) {
                             logger.debug(
                                     "The Accessory Server Registry already contains an Accessory Server with Id '{}'",

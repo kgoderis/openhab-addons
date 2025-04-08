@@ -2,7 +2,6 @@ package org.openhab.io.homekit.internal.server;
 
 import java.net.InetAddress;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.SafeCaller;
@@ -40,11 +39,6 @@ public class BridgeLocalAccessoryServer extends AbstractLocalAccessoryServer {
             @Nullable SafeCaller safeCaller) throws Exception {
         this(localAddress, port, generatePairingId(), generateSecretKey(), mdnsService, accessoryRegistry,
                 pairingRegistry, safeCaller);
-    }
-
-    @Override
-    public @NonNull AccessoryServerUID getUID() {
-        return new AccessoryServerUID("Bridge", getAccessoryId());
     }
 
 }
