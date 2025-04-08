@@ -9,7 +9,6 @@ import org.openhab.core.common.SafeCaller;
 import org.openhab.core.io.transport.mdns.MDNSService;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
-import org.openhab.io.homekit.internal.server.registry.AccessoryServerUID;
 
 /**
  * A HomekitBridge is a special type of HomekitAccessoryServer that bridges the HomeKit Accessory Protocol. A

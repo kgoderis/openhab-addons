@@ -6,4 +6,6 @@ TODO:
  - Replace servicetrackers withs HomekitServiceTracker
  - Check factory so that it add char and svc to root catalogue with or without tags and all the rest
  - The ID of an accessory used in a bridge must be greater than 1 (AbstractAccessoryServer)
+ - Sync the loading of the PErsistedPRoviders so that all get populated well. Use markers ? 
+ 
  

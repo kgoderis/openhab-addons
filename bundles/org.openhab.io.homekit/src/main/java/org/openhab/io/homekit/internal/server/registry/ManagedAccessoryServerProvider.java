@@ -11,8 +11,12 @@ import org.openhab.core.service.ReadyMarker;
 import org.openhab.core.service.ReadyService;
 import org.openhab.core.storage.StorageService;
 import org.openhab.io.homekit.api.factory.AccessoryServerFactory;
+import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.provider.AccessoryServerProvider;
+import org.openhab.io.homekit.api.registry.AccessoryRegistry;
+import org.openhab.io.homekit.internal.accessory.AccessoryUID;
+import org.openhab.io.homekit.internal.server.AccessoryServerUID;
 import org.openhab.io.homekit.internal.server.BridgeLocalAccessoryServer;
 import org.openhab.io.homekit.internal.server.PersistedAccessoryServer;
 import org.osgi.service.component.annotations.Activate;
@@ -44,12 +48,14 @@ public class ManagedAccessoryServerProvider
 
     private final Collection<AccessoryServerFactory> serverFactories = new CopyOnWriteArrayList<>();
     private final ReadyService readyService;
-
+    private final AccessoryRegistry accessoryRegistry;
     @Activate
     public ManagedAccessoryServerProvider(@Reference StorageService storageService,
-            @Reference ReadyService readyService) {
+            @Reference ReadyService readyService,
+            @Reference AccessoryRegistry accessoryRegistry) {
         super(storageService);
         this.readyService = readyService;
+        this.accessoryRegistry = accessoryRegistry;
     }
 
     @Reference(cardinality = ReferenceCardinality.AT_LEAST_ONE, policy = ReferencePolicy.DYNAMIC)
@@ -94,6 +100,17 @@ public class ManagedAccessoryServerProvider
             if (server != null) {
                 logger.debug("Created an Accessory Server {} with Setup Code {}", server.getUID(),
                         server.getSetupCode());
+
+                        if (accessoryRegistry != null) {
+                            Collection<String> accessoryUIDs = persistableElement.getAccessoryUIDs();
+                            for (String accessoryUID : accessoryUIDs) {
+                                Accessory accessory = accessoryRegistry.get(new AccessoryUID(accessoryUID));
+                                if (accessory != null) {
+                                    server.addAccessory(accessory);
+                                }
+                            }
+                        }
+
                 return server;
             } else {
                 logger.warn("Unable to create an Accessory Server of Type {}",
@@ -105,12 +122,15 @@ public class ManagedAccessoryServerProvider
         logger.warn("There is no Acessory Server Factory for Accessory Servers of Type '{}'",
                 BridgeLocalAccessoryServer.class.getSimpleName());
 
+
+
+
         return null;
     }
 
     @Override
-    protected PersistedAccessoryServer toPersistableElement(AccessoryServer element) {
+    protected @NonNull PersistedAccessoryServer toPersistableElement(@NonNull AccessoryServer element) {
         return new PersistedAccessoryServer(element.getAddress(), element.getPort(), element.getPairingId(),
-                element.getSecretKey(), element.getConfigurationIndex());
+                element.getSecretKey(), element.getConfigurationIndex(), element.getAccessories());
     }
 }

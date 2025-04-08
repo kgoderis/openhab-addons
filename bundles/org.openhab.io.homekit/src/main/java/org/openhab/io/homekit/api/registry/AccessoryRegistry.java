@@ -1,10 +1,9 @@
 package org.openhab.io.homekit.api.registry;
 
-import java.util.Collection;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.Registry;
 import org.openhab.io.homekit.api.hap.Accessory;
+import org.openhab.io.homekit.api.listener.AccessoryChangeListener;
 import org.openhab.io.homekit.api.provider.AccessoryProvider;
 import org.openhab.io.homekit.internal.accessory.AccessoryUID;
 
@@ -19,11 +18,11 @@ import org.openhab.io.homekit.internal.accessory.AccessoryUID;
 @NonNullByDefault
 public interface AccessoryRegistry extends Registry<Accessory, AccessoryUID> {
 
-    /**
-     * Returns a list of HomekitAccessories for a given serverId or an empty list if no HomekitAccessory was found
-     *
-     * @param serverId the id uniquely identifying the HomekitServer
-     * @return list of HomekitAccessories for a given serverId or an empty list if no HomekitAccessory was found
-     */
-    Collection<Accessory> get(String serverId);
+    // /**
+    //  * Returns a list of HomekitAccessories for a given serverId or an empty list if no HomekitAccessory was found
+    //  *
+    //  * @param serverId the id uniquely identifying the HomekitServer
+    //  * @return list of HomekitAccessories for a given serverId or an empty list if no HomekitAccessory was found
+    //  */
+    // Collection<Accessory> get(String serverId);
 }

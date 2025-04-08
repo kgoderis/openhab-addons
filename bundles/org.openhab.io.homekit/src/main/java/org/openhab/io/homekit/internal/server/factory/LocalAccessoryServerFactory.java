@@ -10,8 +10,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.SafeCaller;
 import org.openhab.core.io.transport.mdns.MDNSService;
 import org.openhab.core.net.NetworkAddressService;
-import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.NotificationRegistry;
 import org.openhab.io.homekit.api.factory.AccessoryServerFactory;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
@@ -37,25 +35,17 @@ public class LocalAccessoryServerFactory implements AccessoryServerFactory {
     @Nullable
     private NetworkAddressService networkAddressService;
     @Nullable
-    private NotificationRegistry notificationRegistry;
-    @Nullable
-    private HomekitCommunicationManager communicationManager;
-    @Nullable
     private SafeCaller safeCaller;
 
     @Activate
     public LocalAccessoryServerFactory(@Nullable MDNSService mdnsService, @Nullable AccessoryRegistry accessoryRegistry,
-            @Nullable PairingRegistry pairingRegistry, @Nullable NetworkAddressService networkAddressService,
-            @Nullable NotificationRegistry notificationRegistry,
-            @Nullable HomekitCommunicationManager communicationManager, @Nullable SafeCaller safeCaller) {
+            @Nullable PairingRegistry pairingRegistry, @Nullable NetworkAddressService networkAddressService, @Nullable SafeCaller safeCaller) {
         super();
 
         this.mdnsService = mdnsService;
         this.accessoryRegistry = accessoryRegistry;
         this.pairingRegistry = pairingRegistry;
         this.networkAddressService = networkAddressService;
-        this.notificationRegistry = notificationRegistry;
-        this.communicationManager = communicationManager;
         this.safeCaller = safeCaller;
     }
 
@@ -66,7 +56,7 @@ public class LocalAccessoryServerFactory implements AccessoryServerFactory {
 
             try {
                 newBridge = new BridgeLocalAccessoryServer(localAddress, port, mdnsService, accessoryRegistry,
-                        pairingRegistry, notificationRegistry, communicationManager, safeCaller);
+                        pairingRegistry,  safeCaller);
                 if (newBridge != null) {
                     logger.debug("Created an Accessory Server {} of Type {} running at {}:{}", newBridge.getUID(),
                             newBridge.getClass().getSimpleName(), localAddress.toString(), port);
@@ -92,7 +82,7 @@ public class LocalAccessoryServerFactory implements AccessoryServerFactory {
 
             try {
                 newBridge = new BridgeLocalAccessoryServer(localAddress, port, id, privateKey, mdnsService,
-                        accessoryRegistry, pairingRegistry, notificationRegistry, communicationManager, safeCaller);
+                        accessoryRegistry, pairingRegistry, safeCaller);
                 if (newBridge != null) {
                     logger.debug("Created an Accessory Server {} of Type {} running at {}:{}", newBridge.getUID(),
                             newBridge.getClass().getSimpleName(), localAddress.toString(), port);

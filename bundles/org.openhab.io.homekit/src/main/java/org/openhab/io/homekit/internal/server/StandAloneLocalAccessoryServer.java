@@ -3,12 +3,10 @@ package org.openhab.io.homekit.internal.server;
 import java.net.InetAddress;
 import java.security.InvalidAlgorithmParameterException;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.core.common.SafeCaller;
 import org.openhab.core.io.transport.mdns.MDNSService;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
-import org.openhab.io.homekit.internal.server.registry.AccessoryServerUID;
 
 /**
  * An HomekitAccessoryServer is a class that supports HomeKit Accessory Protocol and exposes a collection of
@@ -25,10 +23,5 @@ public class StandAloneLocalAccessoryServer extends AbstractLocalAccessoryServer
             throws InvalidAlgorithmParameterException {
         super(address, port, pairingId, secretKey, mdnsService, accessoryRegistry, pairingRegistry,
                  safeCaller);
-    }
-
-    @Override
-    public @NonNull AccessoryServerUID getUID() {
-        return new AccessoryServerUID("StandAlone", getAccessoryId());
     }
 }

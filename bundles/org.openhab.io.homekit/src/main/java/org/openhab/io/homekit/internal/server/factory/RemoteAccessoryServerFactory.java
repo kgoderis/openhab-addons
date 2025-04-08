@@ -14,15 +14,13 @@ import org.openhab.core.common.SafeCaller;
 import org.openhab.core.config.discovery.mdns.MDNSDiscoveryParticipant;
 import org.openhab.core.io.transport.mdns.MDNSService;
 import org.openhab.core.net.NetworkAddressService;
-import org.openhab.io.homekit.HomekitCommunicationManager;
-import org.openhab.io.homekit.api.NotificationRegistry;
 import org.openhab.io.homekit.api.factory.AccessoryServerFactory;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.internal.client.AccessoryServerConfigurationChangeParticipant;
+import org.openhab.io.homekit.internal.server.AccessoryServerUID;
 import org.openhab.io.homekit.internal.server.StandAloneRemoteAccessoryServer;
-import org.openhab.io.homekit.internal.server.registry.AccessoryServerUID;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.ComponentContext;
@@ -47,10 +45,6 @@ public class RemoteAccessoryServerFactory implements AccessoryServerFactory {
     @Nullable
     private NetworkAddressService networkAddressService;
     @Nullable
-    private NotificationRegistry notificationRegistry;
-    @Nullable
-    private HomekitCommunicationManager communicationManager;
-    @Nullable
     private SafeCaller safeCaller;
 
     protected final @NonNullByDefault({}) BundleContext bundleContext;
@@ -59,8 +53,7 @@ public class RemoteAccessoryServerFactory implements AccessoryServerFactory {
     @Activate
     public RemoteAccessoryServerFactory(ComponentContext componentContext, @Nullable MDNSService mdnsService,
             @Nullable AccessoryRegistry accessoryRegistry, @Nullable PairingRegistry pairingRegistry,
-            @Nullable NetworkAddressService networkAddressService, @Nullable NotificationRegistry notificationRegistry,
-            @Nullable HomekitCommunicationManager communicationManager, @Nullable SafeCaller safeCaller) {
+            @Nullable NetworkAddressService networkAddressService, @Nullable SafeCaller safeCaller) {
         super();
         this.bundleContext = componentContext.getBundleContext();
 
@@ -68,8 +61,6 @@ public class RemoteAccessoryServerFactory implements AccessoryServerFactory {
         this.accessoryRegistry = accessoryRegistry;
         this.pairingRegistry = pairingRegistry;
         this.networkAddressService = networkAddressService;
-        this.notificationRegistry = notificationRegistry;
-        this.communicationManager = communicationManager;
         this.safeCaller = safeCaller;
     }
 
@@ -91,8 +82,7 @@ public class RemoteAccessoryServerFactory implements AccessoryServerFactory {
             StandAloneRemoteAccessoryServer newBridge = null;
 
             try {
-                newBridge = new StandAloneRemoteAccessoryServer(address, port, accessoryRegistry, pairingRegistry,
-                        notificationRegistry);
+                newBridge = new StandAloneRemoteAccessoryServer(address, port, accessoryRegistry, pairingRegistry);
                 if (newBridge != null) {
                     logger.debug("Created an Accessory Server {} of Type {} running at {}:{}", newBridge.getUID(),
                             newBridge.getClass().getSimpleName(), address.toString(), port);
@@ -120,7 +110,7 @@ public class RemoteAccessoryServerFactory implements AccessoryServerFactory {
 
             try {
                 newBridge = new StandAloneRemoteAccessoryServer(address, port, id, privateKey, accessoryRegistry,
-                        pairingRegistry, notificationRegistry);
+                        pairingRegistry);
                 if (newBridge != null) {
                     logger.debug("Created an Accessory Server {} of Type {} running at {}:{}", newBridge.getUID(),
                             newBridge.getClass().getSimpleName(), address.toString(), port);

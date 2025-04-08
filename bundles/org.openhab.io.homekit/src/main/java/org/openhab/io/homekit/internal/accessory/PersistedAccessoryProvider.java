@@ -24,7 +24,6 @@ import org.openhab.core.service.ReadyService;
 import org.openhab.core.storage.StorageService;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.api.hap.Accessory;
-import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.api.provider.AccessoryProvider;
@@ -135,9 +134,9 @@ public class  PersistedAccessoryProvider extends AbstractManagedProvider<Accesso
             JsonObject jsonObject = jsonReader.readObject();
             jsonReader.close();
 
-            AccessoryServer server = accessoryServerRegistry.get(persistableElement.getServerUID());
+            // AccessoryServer server = accessoryServerRegistry.get(persistableElement.getServerUID());
 
-            if (server != null) {
+            // if (server != null) {
                 long aid = jsonObject.getJsonNumber("aid").longValue();
                 JsonArray services = (JsonArray) jsonObject.get("services");
 
@@ -157,8 +156,8 @@ public class  PersistedAccessoryProvider extends AbstractManagedProvider<Accesso
                     // TODO : Replace with a call to a Factory in order to create the accessory ?
                     try {
                         accessory = (Accessory) clazz.getConstructor(
-                                AccessoryServer.class, long.class, boolean.class)
-                                .newInstance( server, aid, false);
+                                 long.class)
+                                .newInstance(  aid);
                     } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                             | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                         // TODO Auto-generated catch block
@@ -176,7 +175,7 @@ public class  PersistedAccessoryProvider extends AbstractManagedProvider<Accesso
                 //         // TODO Auto-generated catch block
                 //         e.printStackTrace();
                 //     }
-                }
+                // }
 
                 if (accessory != null) {
                     logger.debug("Created an Accessory {} of Type {} ", accessory.getUID(),
@@ -306,16 +305,16 @@ public class  PersistedAccessoryProvider extends AbstractManagedProvider<Accesso
 
                 return accessory;
 
-            } else {
-                AccessoryUID uid = new AccessoryUID(key);
+            // } else {
+            //     AccessoryUID uid = new AccessoryUID(key);
 
-                logger.warn("Accessory Server {} hosting Accessory {} was not found in the Accessory Server Registry",
-                        persistableElement.getServerId(), uid);
+            //     logger.warn("Accessory Server {} hosting Accessory {} was not found in the Accessory Server Registry",
+            //             persistableElement.getServerUID(), uid);
 
-                this.remove(uid);
-            }
+            //     this.remove(uid);
+            // }
 
-            return null;
+            // return null;
         } catch (
 
         Exception e) {
@@ -325,15 +324,8 @@ public class  PersistedAccessoryProvider extends AbstractManagedProvider<Accesso
     }
 
     @Override
-    protected PersistedAccessory toPersistableElement(Accessory element) {
-
-        // long currentInstanceId = 0;
-        // if (element instanceof  Accessory) {
-        //     currentInstanceId = (( Accessory) element).getCurrentInstanceId();
-        // }
-
-        return new PersistedAccessory(element.getClass().getName(), element.toJson().toString(),
-                element.getServer().getUID().toString());
+    protected @NonNull PersistedAccessory toPersistableElement(Accessory element) {
+        return new PersistedAccessory(element.getClass().getName(), element.toJson().toString());
     }
 
     @Override

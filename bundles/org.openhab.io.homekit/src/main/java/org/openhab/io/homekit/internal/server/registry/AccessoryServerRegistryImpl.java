@@ -18,7 +18,6 @@ import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.listener.AccessoryServerChangeListener;
 import org.openhab.io.homekit.api.provider.AccessoryServerProvider;
 import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
-import org.openhab.io.homekit.api.server.LocalAccessoryServer;
 import org.openhab.io.homekit.internal.events.AccessoryServerEvent;
 import org.openhab.io.homekit.internal.server.AccessoryServerUID;
 import org.openhab.io.homekit.internal.server.BridgeLocalAccessoryServer;
@@ -140,8 +139,8 @@ public class AccessoryServerRegistryImpl
                             InetAddress.getByName(networkAddressService.getPrimaryIpv4HostAddress()),
                             highestPortNumber++);
                     if (availableServer != null) {
-                        BridgeAccessory bridgeAccessory = new BridgeAccessory(availableServer.getCommunicationManager(),
-                                availableServer, 1, true);
+                        BridgeAccessory bridgeAccessory = new BridgeAccessory(
+                                1, true);
                         availableServer.addAccessory(bridgeAccessory);
                     }
 
@@ -164,14 +163,13 @@ public class AccessoryServerRegistryImpl
                 }
             }
         } else {
-            if (availableServer.getAccessory(BridgeAccessory.class) == null) {
+            if (availableServer.getAccessory(1) == null) {
                 try {
                     logger.warn(
                             "Added a Bridge Accessory to Server {} of Type {} running on Port {} with Setup Code {}",
                             availableServer.getUID(), availableServer.getClass().getSimpleName(),
                             availableServer.getPort(), availableServer.getSetupCode());
-                    BridgeAccessory bridgeAccessory = new BridgeAccessory(availableServer.getCommunicationManager(),
-                            availableServer, 1, true);
+                    BridgeAccessory bridgeAccessory = new BridgeAccessory( 1, true);
                     availableServer.addAccessory(bridgeAccessory);
                 } catch (Exception e) {
                     // TODO Auto-generated catch block
@@ -226,8 +224,8 @@ public class AccessoryServerRegistryImpl
         for (AccessoryServer aServer : getAll()) {
             logger.debug("Accessory Server {} with Setup Code {} is available in the Accessory Server Registry",
                     aServer.getUID(), aServer.getSetupCode());
-            if (aServer instanceof LocalAccessoryServer) {
-                ((LocalAccessoryServer) aServer).advertise();
+            if (aServer instanceof AccessoryServer) {
+                ((AccessoryServer) aServer).advertise();
             }
         }
 

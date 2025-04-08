@@ -8,7 +8,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.hap.Pairing;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
-import org.openhab.io.homekit.internal.server.registry.AccessoryServerUID;
 
 public class StandAloneRemoteAccessoryServer extends AbstractRemoteAccessoryServer {
 
@@ -25,13 +24,8 @@ public class StandAloneRemoteAccessoryServer extends AbstractRemoteAccessoryServ
                 );
     }
 
-    @Override
-    public @NonNull AccessoryServerUID getUID() {
-        return new AccessoryServerUID("RemoteStandAlone", getAccessoryId());
-    }
-
     public Pairing getPairing() {
-        Collection<org.openhab.io.homekit.api.hap.Pairing> pairings = pairingRegistry.get(getPairingId());
+        @NonNull Collection<@NonNull Pairing> pairings = pairingRegistry.get(getPairingId());
 
         if (pairings.size() == 1) {
             return (Pairing) pairings.toArray()[0];
