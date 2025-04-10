@@ -12,8 +12,6 @@ import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingRegistry;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.ThingHandler;
-import org.openhab.io.homekit.api.ManagedAccessory;
-import org.openhab.io.homekit.api.ManagedCharacteristic;
 import org.openhab.io.homekit.api.NotificationRegistry;
 import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.Characteristic;
@@ -182,7 +180,7 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
                 console.println(String.format("Accessory %s (Type=%s, Label=%s, Thing=%s)",
                         accessory.getUID().toString(), accessory.getClass().getSimpleName(),
                         ((ThingAccessory) accessory).getLabel(), ((ThingAccessory) accessory).getThingUID()));
-            } else if (accessory instanceof ManagedAccessory) {
+            } else if (accessory instanceof Accessory) {
                 console.println(String.format("Accessory %s (Type=%s, Label=%s)", accessory.getUID().toString(),
                         accessory.getClass().getSimpleName(), accessory.getLabel()));
             }
@@ -191,11 +189,11 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
                 console.println(String.format("     Service %s (Type=%s, HAP=%s, Name=%s)", service.getUID().toString(),
                         service.getClass().getSimpleName(), service.getInstanceType(), service.getName()));
                 for (Characteristic characteristic : service.getCharacteristics()) {
-                    if (((ManagedCharacteristic<?>) characteristic).getChannelUID() != null) {
+                    if (((Characteristic<?>) characteristic).getChannelUID() != null) {
                         console.println(String.format("         Characteristic %s (Type=%s, HAP=%s, Channel=%s)",
                                 characteristic.getUID().toString(), characteristic.getClass().getSimpleName(),
                                 characteristic.getInstanceType(),
-                                ((ManagedCharacteristic<?>) characteristic).getChannelUID()));
+                                ((Characteristic<?>) characteristic).getChannelUID()));
                     } else {
                         console.println(String.format("         Characteristic %s (Type=%s, HAP=%s)",
                                 characteristic.getUID().toString(), characteristic.getClass().getSimpleName(),

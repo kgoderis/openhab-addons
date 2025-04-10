@@ -32,7 +32,6 @@ import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.BaseThingHandlerFactory;
 import org.openhab.core.thing.binding.ThingHandler;
 import org.openhab.core.thing.binding.ThingHandlerFactory;
-import org.openhab.io.homekit.api.NotificationRegistry;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.internal.client.HomekitAccessoryBridgeDiscoveryService;
@@ -70,17 +69,15 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
     private final Map<ThingUID, @Nullable ServiceRegistration<?>> mdnsServiceRegs = new HashMap<>();
     protected final AccessoryRegistry accessoryRegistry;
     protected final PairingRegistry pairingRegistry;
-    protected final NotificationRegistry notificationRegistry;
     protected final @NonNullByDefault({}) BundleContext bundleContext;
 
     @Activate
     public HomekitHandlerFactory(ComponentContext componentContext, @Reference AccessoryRegistry accessoryRegistry,
-            @Reference PairingRegistry pairingRegistry, @Reference NotificationRegistry notificationRegistry) {
+            @Reference PairingRegistry pairingRegistry) {
         super.activate(componentContext);
         this.bundleContext = componentContext.getBundleContext();
         this.accessoryRegistry = accessoryRegistry;
         this.pairingRegistry = pairingRegistry;
-        this.notificationRegistry = notificationRegistry;
     }
 
     @Override
