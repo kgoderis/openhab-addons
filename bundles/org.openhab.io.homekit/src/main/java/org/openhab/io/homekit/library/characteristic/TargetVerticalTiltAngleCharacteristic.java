@@ -17,5 +17,4 @@ public class TargetVerticalTiltAngleCharacteristic extends IntegerCharacteristic
     public String getInstanceType() {
         return getType();
     }
-
 }

@@ -1,4 +1,4 @@
-package org.openhab.io.homekit;
+package org.openhab.io.homekit.util;
 
 import java.util.function.Supplier;
 

@@ -83,7 +83,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
         }
     }
 
-    //TODO add constructor that takes servce, instanceid and value
+    // TODO add constructor that takes servce, instanceid and value
 
     public GenericCharacteristic(Service service, long instanceId, String format, boolean isWritable,
             boolean isReadable, boolean hasEvents, String description) {
@@ -109,8 +109,10 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     }
 
     @Override
-    @NonNull public CharacteristicUID getUID() {
-        return new CharacteristicUID(getService().getAccessory().getUID().getHexId(), getService().getAccessory().getAccessoryId(), getService().getInstanceId(), getId());
+    @NonNull
+    public CharacteristicUID getUID() {
+        return new CharacteristicUID(getService().getAccessory().getUID().getHexId(),
+                getService().getAccessory().getAccessoryId(), getService().getInstanceId(), getId());
     }
 
     @Override
@@ -250,7 +252,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
             }
         }
     }
-    
+
     @Override
     public final void setValue(JsonValue jsonValue) throws Exception {
         if (isWritable) {
@@ -265,12 +267,12 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     }
 
     @Override
-    public void addListener(CharacteristicChangeListener listener) {
+    public void addChangeListener(CharacteristicChangeListener listener) {
         listeners.add(listener);
     }
 
     @Override
-    public void removeListener(CharacteristicChangeListener listener) {
+    public void removeChangeListener(CharacteristicChangeListener listener) {
         listeners.remove(listener);
     }
 
@@ -356,8 +358,10 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     // Abstract methods
     @Override
     public abstract T toValue(JsonValue jsonValue);
+
     @Override
     public abstract T toValue(State state);
+
     @Override
     public abstract State toState(T value);
 

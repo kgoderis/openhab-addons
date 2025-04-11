@@ -24,5 +24,4 @@ public class HoldPositionCharacteristic extends BooleanCharacteristic {
     public String getInstanceType() {
         return getType();
     }
-
 }

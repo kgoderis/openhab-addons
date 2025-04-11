@@ -1,7 +1,7 @@
 package org.openhab.io.homekit.library.factory;
 
-import org.openhab.io.homekit.BaseHomekitFactory;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
+import org.openhab.io.homekit.internal.factory.BaseHomekitFactory;
 import org.openhab.io.homekit.library.characteristic.BrightnessCharacteristic;
 import org.openhab.io.homekit.library.characteristic.ColorTemperatureCharacteristic;
 import org.openhab.io.homekit.library.characteristic.CurrentHeatingCoolingStateCharacteristic;
@@ -38,9 +38,9 @@ public class AppleHomekitFactory extends BaseHomekitFactory {
 
         this.addService(AccessoryInformationService.class);
         this.addService(HAPProtocolInformationService.class);
-        this.addServiceWithTag("Lighting",LightBulbService.class);
+        this.addServiceWithTag("Lighting", LightBulbService.class);
         this.addService(OutletService.class);
-        this.addService(SwitchService.class);   
+        this.addService(SwitchService.class);
         this.addService(ThermostatService.class);
 
         this.addCharacteristic(BrightnessCharacteristic.class);
@@ -58,7 +58,8 @@ public class AppleHomekitFactory extends BaseHomekitFactory {
         this.addCharacteristic(SaturationCharacteristic.class);
         this.addCharacteristic(SerialNumberCharacteristic.class);
         this.addCharacteristic(StatusLowBatteryCharacteristic.class);
-        this.addCharacteristicWithTag("homekit:TargetHeatingCoolingMode",TargetHeatingCoolingStateCharacteristic.class);
+        this.addCharacteristicWithTag("homekit:TargetHeatingCoolingMode",
+                TargetHeatingCoolingStateCharacteristic.class);
         this.addCharacteristic(TemperatureDisplayUnitsCharacteristic.class);
         this.addCharacteristic(VersionCharacteristic.class);
     }

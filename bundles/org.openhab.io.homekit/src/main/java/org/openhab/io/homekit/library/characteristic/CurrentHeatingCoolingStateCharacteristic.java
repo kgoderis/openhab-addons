@@ -17,5 +17,4 @@ public class CurrentHeatingCoolingStateCharacteristic extends ByteCharacteristic
     public String getInstanceType() {
         return getType();
     }
-
 }

@@ -24,5 +24,4 @@ public class StatusLowBatteryCharacteristic extends EnumCharacteristic {
     public String getInstanceType() {
         return getType();
     }
-
 }

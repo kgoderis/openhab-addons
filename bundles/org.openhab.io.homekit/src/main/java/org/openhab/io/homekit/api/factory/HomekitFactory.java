@@ -51,39 +51,37 @@ public interface HomekitFactory {
     boolean supportsCharacteristicsType(String type);
 
     // /**
-    //  * Creates a new {@link Accessory} instance.
-    //  * <p>
-    //  * This method is only called if the {@link HomekitFactory} supports the type of the given thing.
-    //  * <p>
-    //  *
-    //  * @param thing the thing for which a new handler must be registered
-    //  * @return the created thing handler instance, not null
-    //  * @throws Exception
-    //  * @throws IllegalStateException if the handler instance could not be created
-    //  */
+    // * Creates a new {@link Accessory} instance.
+    // * <p>
+    // * This method is only called if the {@link HomekitFactory} supports the type of the given thing.
+    // * <p>
+    // *
+    // * @param thing the thing for which a new handler must be registered
+    // * @return the created thing handler instance, not null
+    // * @throws Exception
+    // * @throws IllegalStateException if the handler instance could not be created
+    // */
     // @Nullable
     // Accessory createAccessory(Thing thing, LocalAccessoryServer server) throws Exception;
 
     @Nullable
-    Accessory createAccessory(Class<? extends Accessory> accessoryClass, AccessoryServer server,
-            long instanceId, boolean extend);
+    Accessory createAccessory(Class<? extends Accessory> accessoryClass, AccessoryServer server, long instanceId,
+            boolean extend);
 
     @Nullable
-    Accessory createAccessory(Class<? extends Accessory> accessoryClass, AccessoryServer server,
-            long instanceId);
+    Accessory createAccessory(Class<? extends Accessory> accessoryClass, AccessoryServer server, long instanceId);
 
     @Nullable
     Service createService(String serviceType, Accessory accessory, boolean extend, String serviceName);
 
     @Nullable
-    Service createService(String serviceType, Accessory accessory, long instanceId, boolean extend,
-            String serviceName);
+    Service createService(String serviceType, Accessory accessory, long instanceId, boolean extend, String serviceName);
 
     @Nullable
     Service createService(String serviceType, Accessory accessory, long instanceId, boolean extend);
 
-    @Nullable Service createService( Accessory accessory, JsonValue value);
-
+    @Nullable
+    Service createService(Accessory accessory, JsonValue value);
 
     @Nullable
     Characteristic<?> createCharacteristic(String characteristicsType, Service service);
@@ -98,7 +96,8 @@ public interface HomekitFactory {
      * @param value The JSON value containing characteristic data
      * @return The created characteristic instance, or null if creation fails
      */
-    @Nullable Characteristic<?> createCharacteristic( Service service, JsonValue value);
+    @Nullable
+    Characteristic<?> createCharacteristic(Service service, JsonValue value);
 
     void addAccessory(ThingTypeUID type, Class<? extends Accessory> accessoryClass);
 
@@ -156,5 +155,4 @@ public interface HomekitFactory {
 
     @Nullable
     String getTagFromServiceType(String serviceType);
-
 }

@@ -22,11 +22,9 @@ public class PersistedAccessory {
         return json;
     }
 
-        // public long getInstanceIdPool() {
-        //     return Long.parseLong(instanceIdPool);
-        // }
-
-
+    // public long getInstanceIdPool() {
+    // return Long.parseLong(instanceIdPool);
+    // }
 
     public String getAccessoryClass() {
         return accessoryClass;
@@ -37,11 +35,11 @@ public class PersistedAccessory {
     }
 
     // public void setInstanceIdPool(long instanceIdPool) {
-    //     this.instanceIdPool = Long.toString(instanceIdPool);
+    // this.instanceIdPool = Long.toString(instanceIdPool);
     // }
 
     // public void setServerUID(AccessoryServerUID serverUID) {
-    //     this.serverUID = serverUID.toString();
+    // this.serverUID = serverUID.toString();
     // }
 
     public void setAccessoryClass(String accessoryClass) {

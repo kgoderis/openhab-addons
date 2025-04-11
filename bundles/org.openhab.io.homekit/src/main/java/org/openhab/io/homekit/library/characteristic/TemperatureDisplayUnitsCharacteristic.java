@@ -17,5 +17,4 @@ public class TemperatureDisplayUnitsCharacteristic extends ByteCharacteristic {
     public String getInstanceType() {
         return getType();
     }
-
 }

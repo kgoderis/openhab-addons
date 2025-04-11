@@ -13,8 +13,8 @@ import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingStatus;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.io.homekit.api.hap.Accessory;
+import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
-import org.openhab.io.homekit.api.server.RemoteAccessoryServer;
 import org.openhab.io.homekit.internal.client.HomekitAccessoryConfiguration;
 import org.openhab.io.homekit.internal.client.HomekitAccessoryProtocolParticipant;
 import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
@@ -33,7 +33,7 @@ public class StandAloneHomekitAccessoryHandler extends AbstractHomekitAccessoryH
             .singleton(HomekitBindingConstants.THING_TYPE_STANDALONE_ACCESSORY);
 
     private @Nullable HomekitAccessoryConfiguration config;
-    private RemoteAccessoryServer homekitClient;
+    private AccessoryServer homekitClient;
     private final PairingRegistry pairingRegistry;
     // private Collection<HomekitFactory> homekitFactories = new CopyOnWriteArrayList<>();
 

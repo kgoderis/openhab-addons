@@ -25,7 +25,7 @@ public abstract class ShortReadOnlyStringCharacteristic extends GenericCharacter
     }
 
     public void setReadOnlyValue(String value) {
-       this.value = value;
+        this.value = value;
     }
 
     /** {@inheritDoc} */
@@ -33,7 +33,6 @@ public abstract class ShortReadOnlyStringCharacteristic extends GenericCharacter
     public void setValue(String value) throws Exception {
         throw new Exception("Can not modify a readonly characteristic");
     }
-
 
     @Override
     public boolean isHidden() {

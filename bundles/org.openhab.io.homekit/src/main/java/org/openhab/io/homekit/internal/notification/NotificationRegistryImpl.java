@@ -14,37 +14,37 @@
 // import org.osgi.service.component.annotations.ReferencePolicy;
 
 // /**
-//  * Stores the created HomekitNotification
-//  *
-//  * @author Karel Goderis - Initial contribution
-//  */
+// * Stores the created HomekitNotification
+// *
+// * @author Karel Goderis - Initial contribution
+// */
 // @NonNullByDefault
 // @Component(immediate = true, service = NotificationRegistry.class)
 // public class NotificationRegistryImpl extends AbstractRegistry<Notification, NotificationUID, NotificationProvider>
-//         implements NotificationRegistry {
+// implements NotificationRegistry {
 
-//     public NotificationRegistryImpl() {
-//         super(NotificationProvider.class);
-//     }
+// public NotificationRegistryImpl() {
+// super(NotificationProvider.class);
+// }
 
-//     @Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC)
-//     protected void setManagedProvider(ManagedNotificationProvider provider) {
-//         super.setManagedProvider(provider);
-//     }
+// @Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC)
+// protected void setManagedProvider(ManagedNotificationProvider provider) {
+// super.setManagedProvider(provider);
+// }
 
-//     protected void unsetManagedProvider(ManagedNotificationProvider provider) {
-//         super.unsetManagedProvider(provider);
-//     }
+// protected void unsetManagedProvider(ManagedNotificationProvider provider) {
+// super.unsetManagedProvider(provider);
+// }
 
-//     @Override
-//     @Activate
-//     protected void activate(final BundleContext context) {
-//         super.activate(context);
-//     }
+// @Override
+// @Activate
+// protected void activate(final BundleContext context) {
+// super.activate(context);
+// }
 
-//     @Override
-//     @Deactivate
-//     protected void deactivate() {
-//         super.deactivate();
-//     }
+// @Override
+// @Deactivate
+// protected void deactivate() {
+// super.deactivate();
+// }
 // }

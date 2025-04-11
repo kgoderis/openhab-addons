@@ -17,5 +17,4 @@ public class FirmwareRevisionCharacteristic extends ReadOnlyStringCharacteristic
     public String getInstanceType() {
         return getType();
     }
-
 }

@@ -6,15 +6,15 @@ import org.openhab.io.homekit.library.characteristic.BrightnessCharacteristic;
 
 public class DimmableLightBulbService extends LightBulbService {
 
-    public DimmableLightBulbService(Accessory accessory, long instanceId,
-            boolean extend, @NonNull String serviceName) throws Exception {
-        super( accessory, instanceId, extend, serviceName);
+    public DimmableLightBulbService(Accessory accessory, long instanceId, boolean extend, @NonNull String serviceName)
+            throws Exception {
+        super(accessory, instanceId, extend, serviceName);
     }
 
     @Override
     public void addCharacteristics() {
         super.addCharacteristics();
         addCharacteristic(
-                new BrightnessCharacteristic  (this, ((Accessory) getAccessory()).getNextAvailableInstanceId()));
+                new BrightnessCharacteristic(this, ((Accessory) getAccessory()).getNextAvailableInstanceId()));
     }
 }

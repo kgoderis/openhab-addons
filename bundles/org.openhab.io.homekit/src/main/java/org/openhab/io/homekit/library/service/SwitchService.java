@@ -14,8 +14,7 @@ public class SwitchService extends GenericService {
     @Override
     public void addCharacteristics() {
         super.addCharacteristics();
-        addCharacteristic(
-                new OnCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(new OnCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
     }
 
     @Override

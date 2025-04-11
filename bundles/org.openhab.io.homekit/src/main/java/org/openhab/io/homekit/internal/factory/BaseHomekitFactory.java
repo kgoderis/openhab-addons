@@ -1,4 +1,4 @@
-package org.openhab.io.homekit;
+package org.openhab.io.homekit.internal.factory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -38,8 +38,6 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     HashMap<String, HashSet<Class<? extends Service>>> tagServiceClassMapper = new HashMap<>();
     HashMap<String, HashSet<Class<? extends Characteristic<?>>>> tagCharacteristicClassMapper = new HashMap<>();
 
-
-    
     public BaseHomekitFactory() {
     }
 
@@ -65,65 +63,64 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
 
     // @Override
     // public @Nullable Accessory createAccessory(@NonNull Thing thing, @NonNull LocalAccessoryServer server)
-    //         throws Exception {
+    // throws Exception {
 
-    //     ThingTypeUID thingType = thing.getThingTypeUID();
+    // ThingTypeUID thingType = thing.getThingTypeUID();
 
-    //     Class<? extends Accessory> accessoryClass = thingTypeAccessoryClassMapper.get(thingType);
+    // Class<? extends Accessory> accessoryClass = thingTypeAccessoryClassMapper.get(thingType);
 
-    //     if (accessoryClass == null) {
-    //         accessoryClass = ThingAccessory.class;
-    //     }
+    // if (accessoryClass == null) {
+    // accessoryClass = ThingAccessory.class;
+    // }
 
-    //     Accessory accessory = createAccessory(accessoryClass, server, server.getInstanceId(), true);
+    // Accessory accessory = createAccessory(accessoryClass, server, server.getInstanceId(), true);
 
-    //     if (accessory != null && (accessory instanceof ThingAccessory)) {
-    //         ThingAccessory thingAccessory = (ThingAccessory) accessory;
-    //         thingAccessory.setThingUID(thing.getUID());
-    //         logger.info("Linked Thing {} to Accessory {} of Type {}", thing.getUID(), accessory.getUID(),
-    //                 accessory.getClass().getSimpleName());
+    // if (accessory != null && (accessory instanceof ThingAccessory)) {
+    // ThingAccessory thingAccessory = (ThingAccessory) accessory;
+    // thingAccessory.setThingUID(thing.getUID());
+    // logger.info("Linked Thing {} to Accessory {} of Type {}", thing.getUID(), accessory.getUID(),
+    // accessory.getClass().getSimpleName());
 
-    //         HashSet<String> serviceTypes = thingTypeServiceTypesMapper.get(thingType);
-    //         for (String serviceType : serviceTypes) {
-    //             if (thingAccessory.getService(serviceType) == null && thingAccessory.isExtensible()) {
-    //                 thingAccessory
-    //                         .addService(createService(serviceType, thingAccessory, true, thingAccessory.getLabel()));
-    //             }
+    // HashSet<String> serviceTypes = thingTypeServiceTypesMapper.get(thingType);
+    // for (String serviceType : serviceTypes) {
+    // if (thingAccessory.getService(serviceType) == null && thingAccessory.isExtensible()) {
+    // thingAccessory
+    // .addService(createService(serviceType, thingAccessory, true, thingAccessory.getLabel()));
+    // }
 
-    //             Service service = (Service) thingAccessory.getService(serviceType);
+    // Service service = (Service) thingAccessory.getService(serviceType);
 
-    //             if (service != null) {
-    //                 for (Channel channel : thing.getChannels()) {
-    //                     HashSet<String> characteristicTypes = channelTypeCharacteristicTypesMapper
-    //                             .get(channel.getChannelTypeUID());
+    // if (service != null) {
+    // for (Channel channel : thing.getChannels()) {
+    // HashSet<String> characteristicTypes = channelTypeCharacteristicTypesMapper
+    // .get(channel.getChannelTypeUID());
 
-    //                     for (String characteristicType : characteristicTypes) {
-    //                         if (service.getCharacteristic(characteristicType) == null && service.isExtensible()) {
-    //                             service.addCharacteristic(createCharacteristic(characteristicType, service));
-    //                         }
+    // for (String characteristicType : characteristicTypes) {
+    // if (service.getCharacteristic(characteristicType) == null && service.isExtensible()) {
+    // service.addCharacteristic(createCharacteristic(characteristicType, service));
+    // }
 
-    //                         Characteristic<?> characteristic = (Characteristic<?>) service
-    //                                 .getCharacteristic(characteristicType);
-    //                         if (characteristic != null) {
-    //                             characteristic.setChannelUID(channel.getUID());
-    //                             logger.debug("Linked Channel {} to Characteristic {} of Type {}", channel.getUID(),
-    //                                     characteristic.getUID(), characteristic.getClass().getSimpleName());
-    //                         }
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
+    // Characteristic<?> characteristic = (Characteristic<?>) service
+    // .getCharacteristic(characteristicType);
+    // if (characteristic != null) {
+    // characteristic.setChannelUID(channel.getUID());
+    // logger.debug("Linked Channel {} to Characteristic {} of Type {}", channel.getUID(),
+    // characteristic.getUID(), characteristic.getClass().getSimpleName());
+    // }
+    // }
+    // }
+    // }
+    // }
+    // }
 
-    //     return accessory;
+    // return accessory;
     // }
 
     @Override
     public @Nullable Accessory createAccessory(Class<? extends Accessory> accessoryClass,
             @NonNull AccessoryServer server, long instanceId, boolean extend) {
         try {
-            Accessory accessory = accessoryClass
-                    .getConstructor(AccessoryServer.class, long.class, boolean.class)
+            Accessory accessory = accessoryClass.getConstructor(AccessoryServer.class, long.class, boolean.class)
                     .newInstance(server, instanceId, extend);
             logger.debug("Created an Accessory {} of Type {}, with instanceId {}", accessory.getUID(),
                     accessory.getClass().getSimpleName(), accessory.getAccessoryId());
@@ -140,11 +137,11 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     }
 
     @Override
-    public @Nullable Accessory createAccessory(Class<? extends Accessory> accessoryClass,
-            AccessoryServer server, long instanceId) {
+    public @Nullable Accessory createAccessory(Class<? extends Accessory> accessoryClass, AccessoryServer server,
+            long instanceId) {
         try {
-            Accessory accessory = accessoryClass.getConstructor(AccessoryServer.class, long.class)
-                    .newInstance(server, instanceId);
+            Accessory accessory = accessoryClass.getConstructor(AccessoryServer.class, long.class).newInstance(server,
+                    instanceId);
             logger.debug("Created an Accessory {} of Type {}, with instanceId {}", accessory.getUID(),
                     accessory.getClass().getSimpleName(), accessory.getAccessoryId());
             return accessory;
@@ -159,13 +156,12 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     }
 
     @Override
-    public @Nullable Service createService(@NonNull String serviceType, @NonNull Accessory accessory,
-            long instanceId, boolean extend, @NonNull String serviceName) {
+    public @Nullable Service createService(@NonNull String serviceType, @NonNull Accessory accessory, long instanceId,
+            boolean extend, @NonNull String serviceName) {
         Class<? extends Service> serviceClass = serviceTypeServiceClassMapper.get(serviceType);
         if (serviceClass != null) {
             try {
-                Service service = serviceClass
-                        .getConstructor(Accessory.class, long.class, boolean.class, String.class)
+                Service service = serviceClass.getConstructor(Accessory.class, long.class, boolean.class, String.class)
                         .newInstance(accessory, instanceId, extend, serviceName);
                 logger.debug(
                         "Created a Service {} of Type {} (HAP Type {}, Name {}) for Accessory {} of Type {}, with instanceId {}",
@@ -185,8 +181,8 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     }
 
     @Override
-    public @Nullable Service createService(@NonNull String serviceType, @NonNull Accessory accessory,
-            boolean extend, @NonNull String serviceName) {
+    public @Nullable Service createService(@NonNull String serviceType, @NonNull Accessory accessory, boolean extend,
+            @NonNull String serviceName) {
         Class<? extends Service> serviceClass = serviceTypeServiceClassMapper.get(serviceType);
         if (serviceClass != null) {
             return createService(serviceType, accessory, accessory.getNextAvailableInstanceId(), extend, serviceName);
@@ -196,8 +192,8 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     }
 
     @Override
-    public @Nullable Service createService(@NonNull String serviceType, @NonNull Accessory accessory,
-            long instanceId, boolean extend) {
+    public @Nullable Service createService(@NonNull String serviceType, @NonNull Accessory accessory, long instanceId,
+            boolean extend) {
         Class<? extends Service> serviceClass = serviceTypeServiceClassMapper.get(serviceType);
         if (serviceClass != null) {
             return createService(serviceType, accessory, instanceId, extend, serviceClass.getSimpleName());
@@ -206,7 +202,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
         return null;
     }
 
-        /**
+    /**
      * Creates a service instance from a JSON value.
      * 
      * @param accessory The accessory to create the service for
@@ -237,15 +233,17 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
             return null;
         }
     }
-    
+
     protected @Nullable Service createServiceByTag(String tag, Accessory accessory, long instanceId, boolean extend) {
         HashSet<Class<? extends Service>> serviceClasses = tagServiceClassMapper.get(tag);
         if (serviceClasses != null && !serviceClasses.isEmpty()) {
             Class<? extends Service> serviceClass = serviceClasses.iterator().next();
             try {
-                Constructor<? extends Service> constructor = serviceClass.getConstructor(Accessory.class, long.class, boolean.class);
+                Constructor<? extends Service> constructor = serviceClass.getConstructor(Accessory.class, long.class,
+                        boolean.class);
                 return constructor.newInstance(accessory, instanceId, extend);
-            } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            } catch (NoSuchMethodException | IllegalAccessException | InstantiationException
+                    | InvocationTargetException e) {
                 logger.warn("Could not create service for tag {}", tag, e);
             }
         }
@@ -259,8 +257,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
                 .get(characteristicType);
         if (characteristicsClass != null) {
             try {
-                Characteristic<?> characteristic = characteristicsClass
-                        .getConstructor(Service.class, long.class)
+                Characteristic<?> characteristic = characteristicsClass.getConstructor(Service.class, long.class)
                         .newInstance(service, instanceId);
                 logger.debug(
                         "Created a Characteristic {} of Type {} (HAP Type {}) for Service {} of Type {}, with instanceId {}",
@@ -328,15 +325,16 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
         if (characteristicClasses != null && !characteristicClasses.isEmpty()) {
             Class<? extends Characteristic<?>> characteristicClass = characteristicClasses.iterator().next();
             try {
-                Constructor<? extends Characteristic<?>> constructor = characteristicClass.getConstructor(Service.class, long.class);
+                Constructor<? extends Characteristic<?>> constructor = characteristicClass.getConstructor(Service.class,
+                        long.class);
                 return constructor.newInstance(service, instanceId);
-            } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            } catch (NoSuchMethodException | IllegalAccessException | InstantiationException
+                    | InvocationTargetException e) {
                 logger.warn("Could not create characteristic for tag {}", tag, e);
             }
         }
         return null;
     }
-
 
     @Override
     public void addAccessory(@NonNull ThingTypeUID thingType,
@@ -350,8 +348,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     }
 
     @Override
-    public void addService(@NonNull ThingTypeUID thingType,
-            @NonNull Class<@NonNull ? extends Service> serviceClass) {
+    public void addService(@NonNull ThingTypeUID thingType, @NonNull Class<@NonNull ? extends Service> serviceClass) {
 
         String serviceType = UUID5.fromNamespaceAndString(UUID5.NAMESPACE_SERVICE, serviceClass.getName()).toString();
         try {
@@ -396,8 +393,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     }
 
     @Override
-    public void addService(@NonNull String serviceType,
-            @NonNull Class<@NonNull ? extends Service> serviceClass) {
+    public void addService(@NonNull String serviceType, @NonNull Class<@NonNull ? extends Service> serviceClass) {
         serviceTypeServiceClassMapper.put(serviceType, serviceClass);
     }
 
@@ -469,7 +465,6 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
         addCharacteristic(characteristicClass);
     }
 
-
     @Override
     public void addCharacteristicWithTag(String tag, Class<? extends Characteristic<?>> characteristicClass) {
         tagCharacteristicClassMapper.computeIfAbsent(tag, k -> new HashSet<>()).add(characteristicClass);
@@ -477,7 +472,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
             Method method = characteristicClass.getMethod("getType");
             String characteristicType = (String) method.invoke(null);
             characteristicTypeCharacteristicClassMapper.put(characteristicType, characteristicClass);
-            addCharacteristic( characteristicClass);
+            addCharacteristic(characteristicClass);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             logger.warn("Could not get characteristic type for class {}", characteristicClass.getName(), e);
         }
@@ -583,7 +578,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
         }
         return null; // Return empty string instead of null
     }
-    
+
     @Override
     public String getCharacteristicTypeFromTag(@NonNull String tag) {
         HashSet<Class<? extends Characteristic<?>>> characteristicClasses = tagCharacteristicClassMapper.get(tag);
@@ -597,7 +592,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
         }
         return null; // Return empty string instead of null
     }
-    
+
     @Override
     public String getTagFromServiceType(@NonNull String serviceType) {
         Class<? extends Service> serviceClass = serviceTypeServiceClassMapper.get(serviceType);
@@ -611,4 +606,3 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
         return null;
     }
 }
-

@@ -13,4 +13,4 @@ public class ServiceNameCharacteristic extends ReadOnlyStringCharacteristic {
     public String getInstanceType() {
         return "00000023-0000-1000-8000-0026BB765291";
     }
-} 
+}

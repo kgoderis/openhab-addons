@@ -1,4 +1,4 @@
-package org.openhab.io.homekit.internal.type;
+package org.openhab.io.homekit.internal.provider;
 
 import java.util.Collection;
 import java.util.Locale;
@@ -12,6 +12,7 @@ import org.openhab.core.storage.StorageService;
 import org.openhab.core.thing.binding.AbstractStorageBasedTypeProvider;
 import org.openhab.core.thing.type.ChannelType;
 import org.openhab.core.thing.type.ChannelTypeBuilder;
+import org.openhab.core.thing.type.ChannelTypeProvider;
 import org.openhab.core.thing.type.ChannelTypeUID;
 import org.openhab.core.thing.type.StateChannelTypeBuilder;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
@@ -29,7 +30,7 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  */
 @NonNullByDefault
-@Component(service = { HomekitChannelTypeProvider.class })
+@Component(service = { ChannelTypeProvider.class })
 public class HomekitChannelTypeProvider extends AbstractStorageBasedTypeProvider {
     private final Logger logger = LoggerFactory.getLogger(HomekitChannelTypeProvider.class);
     private final Map<String, HomekitFactory> homekitFactories = new ConcurrentHashMap<>();
@@ -85,4 +86,4 @@ public class HomekitChannelTypeProvider extends AbstractStorageBasedTypeProvider
         // Return the specific channel type if it exists
         return super.getChannelType(channelTypeUID, locale);
     }
-} 
+}

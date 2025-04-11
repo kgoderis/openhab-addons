@@ -14,55 +14,55 @@
 
 // public class ThingAccessory extends AbstractManagedAccessory {
 
-//     protected static final Logger logger = LoggerFactory.getLogger(ThingAccessory.class);
+// protected static final Logger logger = LoggerFactory.getLogger(ThingAccessory.class);
 
-//     private ThingUID thingUID;
+// private ThingUID thingUID;
 
-//     public ThingAccessory(HomekitCommunicationManager manager, AccessoryServer server, long instanceId,
-//             boolean extend) {
-//         super(manager, server, instanceId, extend);
-//     }
+// public ThingAccessory(HomekitCommunicationManager manager, AccessoryServer server, long instanceId,
+// boolean extend) {
+// super(manager, server, instanceId, extend);
+// }
 
-//     @Override
-//     public @NonNull String getLabel() {
-//         Thing theThing = getManager().getThing(thingUID);
-//         if (theThing != null) {
-//             String label = theThing.getLabel();
-//             String location = theThing.getLocation();
-//             if (label != null || location != null) {
-//                 String result = "";
-//                 if (label != null) {
-//                     result = label;
-//                 } else {
-//                     result = theThing.getUID().toString();
-//                 }
+// @Override
+// public @NonNull String getLabel() {
+// Thing theThing = getManager().getThing(thingUID);
+// if (theThing != null) {
+// String label = theThing.getLabel();
+// String location = theThing.getLocation();
+// if (label != null || location != null) {
+// String result = "";
+// if (label != null) {
+// result = label;
+// } else {
+// result = theThing.getUID().toString();
+// }
 
-//                 if (result != "" && location != null) {
-//                     result = result + " @ ";
-//                     result = result + location;
-//                 }
-//                 return result;
-//             } else {
-//                 return theThing.getUID().toString();
-//             }
-//         }
-//         return getUID().toString();
-//     }
+// if (result != "" && location != null) {
+// result = result + " @ ";
+// result = result + location;
+// }
+// return result;
+// } else {
+// return theThing.getUID().toString();
+// }
+// }
+// return getUID().toString();
+// }
 
-//     public ThingUID getThingUID() {
-//         return thingUID;
-//     }
+// public ThingUID getThingUID() {
+// return thingUID;
+// }
 
-//     public void setThingUID(ThingUID thingUID) {
-//         this.thingUID = thingUID;
+// public void setThingUID(ThingUID thingUID) {
+// this.thingUID = thingUID;
 
-//         for (Service aService : getServices()) {
-//             ManagedCharacteristic<?> nc = (ManagedCharacteristic<?>) aService
-//                     .getCharacteristic(NameCharacteristic.getType());
-//             if (nc != null) {
-//                 logger.debug("setThingUID - Setting name of {} to {}", nc.getUID(), getLabel());
-//                 ((NameCharacteristic) nc).setReadOnlyValue(getLabel());
-//             }
-//         }
-//     }
+// for (Service aService : getServices()) {
+// ManagedCharacteristic<?> nc = (ManagedCharacteristic<?>) aService
+// .getCharacteristic(NameCharacteristic.getType());
+// if (nc != null) {
+// logger.debug("setThingUID - Setting name of {} to {}", nc.getUID(), getLabel());
+// ((NameCharacteristic) nc).setReadOnlyValue(getLabel());
+// }
+// }
+// }
 // }

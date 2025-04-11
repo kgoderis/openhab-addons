@@ -19,83 +19,44 @@ public class AccessoryState {
         this.isTransient = isTransient;
     }
 
-    public static final AccessoryState UNKNOWN = new AccessoryState(
-            "UNKNOWN",
-            "Unknown state",
-            AccessoryServerEventType.SERVER_UPDATED,
-            false);
+    public static final AccessoryState UNKNOWN = new AccessoryState("UNKNOWN", "Unknown state",
+            AccessoryServerEventType.SERVER_UPDATED, false);
 
-    public static final AccessoryState CONNECTED = new AccessoryState(
-            "CONNECTED",
-            "Connected to controller",
-            AccessoryServerEventType.SERVER_STATE_CONNECTED,
-            false);
+    public static final AccessoryState CONNECTED = new AccessoryState("CONNECTED", "Connected to controller",
+            AccessoryServerEventType.SERVER_STATE_CONNECTED, false);
 
-    public static final AccessoryState DISCONNECTED = new AccessoryState(
-            "DISCONNECTED",
-            "Disconnected from controller",
-            AccessoryServerEventType.SERVER_STATE_DISCONNECTED,
-            false);
+    public static final AccessoryState DISCONNECTED = new AccessoryState("DISCONNECTED", "Disconnected from controller",
+            AccessoryServerEventType.SERVER_STATE_DISCONNECTED, false);
 
-    public static final AccessoryState PAIRED = new AccessoryState(
-            "PAIRED",
-            "Paired with controller",
-            AccessoryServerEventType.SERVER_STATE_PAIRED,
-            false);
+    public static final AccessoryState PAIRED = new AccessoryState("PAIRED", "Paired with controller",
+            AccessoryServerEventType.SERVER_STATE_PAIRED, false);
 
-    public static final AccessoryState PAIR_VERIFIED = new AccessoryState(
-            "PAIR_VERIFIED",
-            "Pairing verified with controller",
-            AccessoryServerEventType.SERVER_STATE_PAIR_VERIFIED,
-            false);
+    public static final AccessoryState PAIR_VERIFIED = new AccessoryState("PAIR_VERIFIED",
+            "Pairing verified with controller", AccessoryServerEventType.SERVER_STATE_PAIR_VERIFIED, false);
 
-    public static final AccessoryState PAIR_UNVERIFIED = new AccessoryState(
-            "PAIR_UNVERIFIED",
-            "Pairing exists but not verified",
-            AccessoryServerEventType.SERVER_STATE_PAIR_UNVERIFIED,
-            false);
+    public static final AccessoryState PAIR_UNVERIFIED = new AccessoryState("PAIR_UNVERIFIED",
+            "Pairing exists but not verified", AccessoryServerEventType.SERVER_STATE_PAIR_UNVERIFIED, false);
 
-    public static final AccessoryState UNPAIRED = new AccessoryState(
-            "UNPAIRED",
-            "Not paired with any controller",
-            AccessoryServerEventType.SERVER_STATE_UNPAIRED,
-            false);
+    public static final AccessoryState UNPAIRED = new AccessoryState("UNPAIRED", "Not paired with any controller",
+            AccessoryServerEventType.SERVER_STATE_UNPAIRED, false);
 
-    public static final AccessoryState PAIRING_MISSING = new AccessoryState(
-            "PAIRING_MISSING",
-            "Pairing information is missing",
-            AccessoryServerEventType.SERVER_STATE_PAIRING_MISSING,
-            false);
+    public static final AccessoryState PAIRING_MISSING = new AccessoryState("PAIRING_MISSING",
+            "Pairing information is missing", AccessoryServerEventType.SERVER_STATE_PAIRING_MISSING, false);
 
-    public static final AccessoryState MISSING_SETUP_CODE = new AccessoryState(
-            "MISSING_SETUP_CODE",
-            "Setup code is missing or invalid",
-            AccessoryServerEventType.SERVER_STATE_MISSING_SETUP_CODE,
-            false);
+    public static final AccessoryState MISSING_SETUP_CODE = new AccessoryState("MISSING_SETUP_CODE",
+            "Setup code is missing or invalid", AccessoryServerEventType.SERVER_STATE_MISSING_SETUP_CODE, false);
 
-    public static final AccessoryState AUTHENTICATING = new AccessoryState(
-            "AUTHENTICATING",
-            "Authenticating with controller",
-            AccessoryServerEventType.SERVER_UPDATED,
-            true);
-    
-    public static final AccessoryState READY = new AccessoryState(
-            "READY", 
-            "Ready for operation",
-            AccessoryServerEventType.SERVER_UPDATED,
-            false);
-    
-    public static final AccessoryState STOPPED = new AccessoryState(
-            "STOPPED",
-            "Server stopped",
-            AccessoryServerEventType.SERVER_UPDATED,
-            false);
+    public static final AccessoryState AUTHENTICATING = new AccessoryState("AUTHENTICATING",
+            "Authenticating with controller", AccessoryServerEventType.SERVER_UPDATED, true);
 
-    public static final AccessoryState RESET = new AccessoryState(
-            "RESET",
-            "Accessory has been factory reset",
-            AccessoryServerEventType.SERVER_UPDATED,
-            false);
+    public static final AccessoryState READY = new AccessoryState("READY", "Ready for operation",
+            AccessoryServerEventType.SERVER_UPDATED, false);
+
+    public static final AccessoryState STOPPED = new AccessoryState("STOPPED", "Server stopped",
+            AccessoryServerEventType.SERVER_UPDATED, false);
+
+    public static final AccessoryState RESET = new AccessoryState("RESET", "Accessory has been factory reset",
+            AccessoryServerEventType.SERVER_UPDATED, false);
 
     public String getName() {
         return name;
@@ -134,4 +95,4 @@ public class AccessoryState {
     public int hashCode() {
         return 31 * name.hashCode() + eventType.hashCode();
     }
-} 
+}

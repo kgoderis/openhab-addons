@@ -8,17 +8,16 @@ import org.openhab.io.homekit.library.characteristic.OutletInUseCharacteristic;
 
 public class OutletService extends GenericService {
 
-    public OutletService(Accessory accessory, long instanceId, boolean extend, @NonNull String serviceName) throws Exception {
+    public OutletService(Accessory accessory, long instanceId, boolean extend, @NonNull String serviceName)
+            throws Exception {
         super(accessory, instanceId, extend, serviceName);
     }
 
     @Override
     public void addCharacteristics() {
         super.addCharacteristics();
-        addCharacteristic(
-                new OnCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
-        addCharacteristic(
-                new OutletInUseCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(new OnCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(new OutletInUseCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
     }
 
     @Override

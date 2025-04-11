@@ -5,8 +5,7 @@ import org.openhab.io.homekit.internal.accessory.GenericAccessory;
 
 public class BridgeAccessory extends GenericAccessory {
 
-    public BridgeAccessory(long instanceId, boolean extend)
-            throws Exception {
+    public BridgeAccessory(long instanceId, boolean extend) throws Exception {
         super(instanceId);
     }
 

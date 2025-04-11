@@ -1,7 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
-import org.openhab.core.library.types.HSBType;
 import org.openhab.core.library.types.DecimalType;
+import org.openhab.core.library.types.HSBType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.FloatCharacteristic;
@@ -43,10 +43,10 @@ public class HueCharacteristic extends FloatCharacteristic {
         // State state = manager.getState(getChannelUID());
 
         // if (state instanceof HSBType) {
-        //     return new HSBType(new DecimalType(value), ((HSBType) state).getSaturation(),
-        //             ((HSBType) state).getBrightness());
+        // return new HSBType(new DecimalType(value), ((HSBType) state).getSaturation(),
+        // ((HSBType) state).getBrightness());
         // } else {
-        //     return new DecimalType(value);
+        // return new DecimalType(value);
         // }
     }
 }

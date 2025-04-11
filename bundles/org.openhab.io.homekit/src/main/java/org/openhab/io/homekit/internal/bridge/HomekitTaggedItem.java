@@ -35,14 +35,17 @@ import org.slf4j.LoggerFactory;
  * This class represents an openHAB item that has been tagged for HomeKit integration.
  * It manages the mapping between openHAB items and their corresponding HomeKit accessories or characteristics.
  *
- * <p>The class handles two main types of items:
+ * <p>
+ * The class handles two main types of items:
  * <ul>
  * <li>Accessory items: Items that represent complete HomeKit accessories (e.g., lights, switches)</li>
- * <li>Characteristic items: Items that represent specific characteristics of an accessory (e.g., brightness, color)</li>
+ * <li>Characteristic items: Items that represent specific characteristics of an accessory (e.g., brightness,
+ * color)</li>
  * </ul>
  * </p>
  *
- * <p>Items can be tagged in two ways:
+ * <p>
+ * Items can be tagged in two ways:
  * <ul>
  * <li>Direct tagging: The item itself is tagged as a HomeKit accessory</li>
  * <li>Group membership: The item is a member of a group that is tagged as a HomeKit accessory</li>
@@ -356,10 +359,9 @@ public class HomekitTaggedItem {
             return groupItem.getTags().stream().anyMatch(tag -> {
                 Object[] factories = homekitFactoryTracker.getServices();
                 if (factories != null) {
-                    return Stream.of(factories)
-                        .filter(factory -> factory instanceof HomekitFactory)
-                        .map(factory -> (HomekitFactory) factory)
-                        .anyMatch(homekitFactory -> homekitFactory.getServiceTypeFromTag(tag) != null);
+                    return Stream.of(factories).filter(factory -> factory instanceof HomekitFactory)
+                            .map(factory -> (HomekitFactory) factory)
+                            .anyMatch(homekitFactory -> homekitFactory.getServiceTypeFromTag(tag) != null);
                 }
                 return false;
             });

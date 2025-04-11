@@ -11,15 +11,18 @@ import org.openhab.io.homekit.library.characteristic.TemperatureDisplayUnitsChar
 
 public class ThermostatService extends GenericService {
 
-    public ThermostatService(Accessory accessory, long instanceId, boolean extend, @NonNull String serviceName) throws Exception {
+    public ThermostatService(Accessory accessory, long instanceId, boolean extend, @NonNull String serviceName)
+            throws Exception {
         super(accessory, instanceId, extend, serviceName);
     }
 
     @Override
     public void addCharacteristics() {
         super.addCharacteristics();
-        addCharacteristic(new CurrentHeatingCoolingStateCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
-        addCharacteristic(new TargetHeatingCoolingStateCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(
+                new CurrentHeatingCoolingStateCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(
+                new TargetHeatingCoolingStateCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
         addCharacteristic(new CurrentTemperatureCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
         addCharacteristic(new TargetTemperatureCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
         addCharacteristic(new TemperatureDisplayUnitsCharacteristic(this, getAccessory().getNextAvailableInstanceId()));

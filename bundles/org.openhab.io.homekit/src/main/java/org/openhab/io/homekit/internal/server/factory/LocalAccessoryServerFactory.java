@@ -39,7 +39,8 @@ public class LocalAccessoryServerFactory implements AccessoryServerFactory {
 
     @Activate
     public LocalAccessoryServerFactory(@Nullable MDNSService mdnsService, @Nullable AccessoryRegistry accessoryRegistry,
-            @Nullable PairingRegistry pairingRegistry, @Nullable NetworkAddressService networkAddressService, @Nullable SafeCaller safeCaller) {
+            @Nullable PairingRegistry pairingRegistry, @Nullable NetworkAddressService networkAddressService,
+            @Nullable SafeCaller safeCaller) {
         super();
 
         this.mdnsService = mdnsService;
@@ -56,7 +57,7 @@ public class LocalAccessoryServerFactory implements AccessoryServerFactory {
 
             try {
                 newBridge = new BridgeLocalAccessoryServer(localAddress, port, mdnsService, accessoryRegistry,
-                        pairingRegistry,  safeCaller);
+                        pairingRegistry, safeCaller);
                 if (newBridge != null) {
                     logger.debug("Created an Accessory Server {} of Type {} running at {}:{}", newBridge.getUID(),
                             newBridge.getClass().getSimpleName(), localAddress.toString(), port);

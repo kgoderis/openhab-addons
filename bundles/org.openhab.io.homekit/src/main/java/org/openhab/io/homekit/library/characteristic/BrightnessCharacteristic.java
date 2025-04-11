@@ -1,6 +1,5 @@
 package org.openhab.io.homekit.library.characteristic;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.HSBType;
 import org.openhab.core.library.types.PercentType;
@@ -44,9 +43,9 @@ public class BrightnessCharacteristic extends IntegerCharacteristic {
         // State state = manager.getState(getChannelUID());
 
         // if (state instanceof HSBType) {
-        //     return new HSBType(((HSBType) state).getHue(), ((HSBType) state).getSaturation(), new PercentType(value));
+        // return new HSBType(((HSBType) state).getHue(), ((HSBType) state).getSaturation(), new PercentType(value));
         // } else {
-        //     return new DecimalType(value);
+        // return new DecimalType(value);
         // }
     }
 }

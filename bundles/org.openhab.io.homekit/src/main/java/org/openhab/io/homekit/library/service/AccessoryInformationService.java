@@ -10,8 +10,8 @@ import org.openhab.io.homekit.library.characteristic.SerialNumberCharacteristic;
 
 public class AccessoryInformationService extends GenericService {
 
-    public AccessoryInformationService(Accessory accessory, long instanceId,
-            boolean extend, @NonNull String serviceName) {
+    public AccessoryInformationService(Accessory accessory, long instanceId, boolean extend,
+            @NonNull String serviceName) {
         super(accessory, instanceId, extend, serviceName);
     }
 
@@ -19,14 +19,12 @@ public class AccessoryInformationService extends GenericService {
     public void addCharacteristics() {
         super.addCharacteristics();
         // addCharacteristic(new FirmwareRevisionCharacteristic(manager, this, getAccessory().getInstanceId()));
+        addCharacteristic(new IdentifyCharacteristic(this, ((Accessory) getAccessory()).getNextAvailableInstanceId()));
         addCharacteristic(
-                new IdentifyCharacteristic( this, ((Accessory) getAccessory()).getNextAvailableInstanceId()));
-        addCharacteristic(new ManufacturerCharacteristic (this,
-                ((Accessory) getAccessory()).getNextAvailableInstanceId()));
+                new ManufacturerCharacteristic(this, ((Accessory) getAccessory()).getNextAvailableInstanceId()));
+        addCharacteristic(new ModelCharacteristic(this, ((Accessory) getAccessory()).getNextAvailableInstanceId()));
         addCharacteristic(
-                new ModelCharacteristic( this, ((Accessory) getAccessory()).getNextAvailableInstanceId()));
-        addCharacteristic(new SerialNumberCharacteristic( this,
-                ((Accessory) getAccessory()).getNextAvailableInstanceId()));
+                new SerialNumberCharacteristic(this, ((Accessory) getAccessory()).getNextAvailableInstanceId()));
     }
 
     @Override

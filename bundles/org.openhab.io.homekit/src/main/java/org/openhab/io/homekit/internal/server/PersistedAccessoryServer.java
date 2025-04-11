@@ -34,13 +34,12 @@ public class PersistedAccessoryServer {
         this.pairingIdentifier = Base64.getEncoder().encodeToString(pairingId);
         this.privateKey = Base64.getEncoder().encodeToString(privateKey);
         this.configurationIndex = Integer.toString(configurationIndex);
-        
+
         // Handle accessories safely
         if (accessories.isEmpty()) {
             this.accessories = "";
         } else {
-            this.accessories = accessories.stream()
-                    .map(Object::toString)
+            this.accessories = accessories.stream().map(Object::toString)
                     .collect(java.util.stream.Collectors.joining(";"));
         }
     }
@@ -93,8 +92,7 @@ public class PersistedAccessoryServer {
         if (accessories.isEmpty()) {
             this.accessories = "";
         } else {
-            this.accessories = accessories.stream()
-                    .map(accessory -> accessory.getUID().getAsString())
+            this.accessories = accessories.stream().map(accessory -> accessory.getUID().getAsString())
                     .collect(java.util.stream.Collectors.joining(";"));
         }
     }
@@ -104,6 +102,5 @@ public class PersistedAccessoryServer {
             return Collections.emptyList();
         }
         return Arrays.asList(accessories.split(";"));
-    
     }
 }

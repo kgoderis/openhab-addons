@@ -2,11 +2,11 @@ package org.openhab.io.homekit.api.obsolete;
 // package org.openhab.io.homekit.api;
 
 // /**
-//  * Interface for a Managed Service offered by an Accessory.
-//  *
-//  * @author Karel Goderis
-//  */
+// * Interface for a Managed Service offered by an Accessory.
+// *
+// * @author Karel Goderis
+// */
 // public interface ManagedService extends Service {
 
-//     void addCharacteristics();
+// void addCharacteristics();
 // }

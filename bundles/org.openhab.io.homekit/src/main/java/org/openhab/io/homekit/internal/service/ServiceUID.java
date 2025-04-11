@@ -19,16 +19,16 @@ public class ServiceUID extends UID {
      * @param serviceId the service instance id
      */
     public ServiceUID(String hexId, long accessoryId, long serviceId) {
-        super("homekit", "service",hexId, Long.toString(accessoryId), Long.toString(serviceId));
+        super("homekit", "service", hexId, Long.toString(accessoryId), Long.toString(serviceId));
     }
 
     // /**
-    //  * Returns the id.
-    //  *
-    //  * @return id the id
-    //  */
+    // * Returns the id.
+    // *
+    // * @return id the id
+    // */
     // public String getId() {
-    //     List<String> segments = getAllSegments();
-    //     return segments.get(segments.size() - 1);
+    // List<String> segments = getAllSegments();
+    // return segments.get(segments.size() - 1);
     // }
 }

@@ -7,15 +7,15 @@ import org.openhab.io.homekit.library.characteristic.OnCharacteristic;
 
 public class LightBulbService extends GenericService {
 
-    public LightBulbService(Accessory accessory, long instanceId, boolean extend, @NonNull String serviceName) throws Exception {
+    public LightBulbService(Accessory accessory, long instanceId, boolean extend, @NonNull String serviceName)
+            throws Exception {
         super(accessory, instanceId, extend, serviceName);
     }
 
     @Override
     public void addCharacteristics() {
         super.addCharacteristics();
-        addCharacteristic(
-                new OnCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(new OnCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
     }
 
     @Override

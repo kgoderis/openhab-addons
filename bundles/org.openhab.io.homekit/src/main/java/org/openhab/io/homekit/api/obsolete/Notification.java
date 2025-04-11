@@ -13,11 +13,11 @@ package org.openhab.io.homekit.api.obsolete;
 // @NonNullByDefault
 // public interface Notification extends Identifiable<NotificationUID> {
 
-//     void publish();
+// void publish();
 
-//     void publish(JsonObject notification);
+// void publish(JsonObject notification);
 
-//     Connection getConnection();
+// Connection getConnection();
 
-//     ManagedCharacteristic<?> getCharacteristic();
+// ManagedCharacteristic<?> getCharacteristic();
 // }

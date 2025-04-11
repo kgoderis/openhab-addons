@@ -17,7 +17,8 @@ import org.openhab.io.homekit.internal.service.ServiceUID;
  */
 public interface Service extends Identifiable<@NonNull ServiceUID> {
 
-    @NonNull ServiceUID getUID();
+    @NonNull
+    ServiceUID getUID();
 
     /**
      * Service Instance Ids are assigned from the same number pool that is unique within each Accessory.
@@ -109,14 +110,14 @@ public interface Service extends Identifiable<@NonNull ServiceUID> {
      *
      * @param listener the listener to add
      */
-    void addListener(ServiceChangeListener listener);
+    void addChangeListener(ServiceChangeListener listener);
 
     /**
      * Removes a listener from being notified of service changes.
      *
      * @param listener the listener to remove
      */
-    void removeListener(ServiceChangeListener listener);
+    void removeChangeListener(ServiceChangeListener listener);
 
     /**
      * Creates the JSON representation of the Service, in accordance with the Homekit Accessory

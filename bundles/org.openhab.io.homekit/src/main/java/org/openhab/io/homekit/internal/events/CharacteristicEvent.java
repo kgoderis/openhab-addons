@@ -12,7 +12,7 @@ public class CharacteristicEvent {
 
     public enum CharacteristicEventType {
         CHARACTERISTIC_STATE_CHANGED
-    } 
+    }
 
     public CharacteristicEvent(Characteristic<?> characteristic, JsonValue oldValue, JsonValue newValue) {
         this.characteristic = characteristic;

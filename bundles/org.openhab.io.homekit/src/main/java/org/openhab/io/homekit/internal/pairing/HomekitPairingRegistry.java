@@ -43,10 +43,10 @@ import org.slf4j.LoggerFactory;
  */
 @NonNullByDefault
 @Component(immediate = true, service = PairingRegistry.class)
-public class PairingRegistryImpl extends AbstractRegistry<Pairing, PairingUID, PairingProvider>
+public class HomekitPairingRegistry extends AbstractRegistry<Pairing, PairingUID, PairingProvider>
         implements PairingRegistry, ReadyService.ReadyTracker {
 
-    private final Logger logger = LoggerFactory.getLogger(PairingRegistryImpl.class);
+    private final Logger logger = LoggerFactory.getLogger(HomekitPairingRegistry.class);
 
     private static final String HOMEKIT_PAIRING_REGISTRY = "homekit.pairingRegistry";
     private static final String HOMEKIT_MANAGED_PAIRING_PROVIDER = "homekit.managedPairingProvider";
@@ -57,7 +57,7 @@ public class PairingRegistryImpl extends AbstractRegistry<Pairing, PairingUID, P
     private boolean managedPairingProviderReady = false;
 
     @Activate
-    public PairingRegistryImpl(@Reference ReadyService readyService) {
+    public HomekitPairingRegistry(@Reference ReadyService readyService) {
         super(PairingProvider.class);
         this.readyService = readyService;
 

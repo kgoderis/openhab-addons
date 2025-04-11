@@ -1,12 +1,14 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.math.BigDecimal;
+
+import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.HSBType;
 import org.openhab.core.library.types.PercentType;
-import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.FloatCharacteristic;
-import java.math.BigDecimal;
+
 public class SaturationCharacteristic extends FloatCharacteristic {
 
     public SaturationCharacteristic(Service service, long instanceId) {
@@ -42,10 +44,9 @@ public class SaturationCharacteristic extends FloatCharacteristic {
         // State state = manager.getState(getChannelUID());
 
         // if (state instanceof HSBType) {
-        //     return new HSBType(((HSBType) state).getHue(), new PercentType(new BigDecimal(value)),
-        //             ((HSBType) state).getBrightness());
+        // return new HSBType(((HSBType) state).getHue(), new PercentType(new BigDecimal(value)),
+        // ((HSBType) state).getBrightness());
         // } else {
-        //     return new DecimalType(value);
-        
+        // return new DecimalType(value);
     }
 }

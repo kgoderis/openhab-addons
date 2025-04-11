@@ -5,19 +5,19 @@ import java.util.Base64;
 import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.io.homekit.api.hap.Pairing;
 
-public class PairingImpl implements Pairing {
+public class HomekitPairing implements Pairing {
 
     private final String sourcePairingId;
     private final String destinationPairingId;
     private final String destinationLongtermPublicKey;
 
-    public PairingImpl() {
+    public HomekitPairing() {
         this.sourcePairingId = "";
         this.destinationPairingId = "";
         this.destinationLongtermPublicKey = "";
     }
 
-    public PairingImpl(byte[] sourcePairingId, byte[] destinationPairingId, byte[] destinationLongtermPublicKey) {
+    public HomekitPairing(byte[] sourcePairingId, byte[] destinationPairingId, byte[] destinationLongtermPublicKey) {
         this.sourcePairingId = Base64.getEncoder().encodeToString(sourcePairingId);
         this.destinationPairingId = Base64.getEncoder().encodeToString(destinationPairingId);
         this.destinationLongtermPublicKey = Base64.getEncoder().encodeToString(destinationLongtermPublicKey);

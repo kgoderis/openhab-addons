@@ -82,28 +82,28 @@ public class AccessoryRegistryImpl extends AbstractRegistry<Accessory, Accessory
 
     // @Override
     // public Collection<Accessory> get(String serverId) {
-    //     return getAll().stream().filter(a -> a.getServer().getUID().equals(serverId)).collect(Collectors.toList());
+    // return getAll().stream().filter(a -> a.getServer().getUID().equals(serverId)).collect(Collectors.toList());
     // }
 
     // @Override
     // public void added(Provider<Accessory> provider, Accessory element) {
-    //     super.added(provider, element);
-    //         ((AccessoryServer) element.getServer()).advertise();
-        
+    // super.added(provider, element);
+    // ((AccessoryServer) element.getServer()).advertise();
+
     // }
 
     // @Override
     // public void removed(Provider<Accessory> provider, Accessory element) {
-    //     super.removed(provider, element);
-    //         ((AccessoryServer) element.getServer()).advertise();
-        
+    // super.removed(provider, element);
+    // ((AccessoryServer) element.getServer()).advertise();
+
     // }
 
     // @Override
     // public void updated(Provider<Accessory> provider, Accessory oldElement, Accessory element) {
-    //     super.updated(provider, oldElement, element);
-    //         // ((AccessoryServer) element.getServer()).advertise();
-        
+    // super.updated(provider, oldElement, element);
+    // // ((AccessoryServer) element.getServer()).advertise();
+
     // }
 
     @Override

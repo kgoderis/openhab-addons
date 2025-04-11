@@ -20,16 +20,17 @@ public class CharacteristicUID extends UID {
      * @param characteristicId the characteristic instance id
      */
     public CharacteristicUID(String hexId, long accessoryId, long serviceId, long characteristicId) {
-        super("homekit", "characteristic", hexId, Long.toString(accessoryId), Long.toString(serviceId), Long.toString(characteristicId));
+        super("homekit", "characteristic", hexId, Long.toString(accessoryId), Long.toString(serviceId),
+                Long.toString(characteristicId));
     }
 
     // /**
-    //  * Returns the id.
-    //  *
-    //  * @return id the id
-    //  */
+    // * Returns the id.
+    // *
+    // * @return id the id
+    // */
     // public String getId() {
-    //     List<String> segments = getAllSegments();
-    //     return segments.get(segments.size() - 1);
+    // List<String> segments = getAllSegments();
+    // return segments.get(segments.size() - 1);
     // }
 }

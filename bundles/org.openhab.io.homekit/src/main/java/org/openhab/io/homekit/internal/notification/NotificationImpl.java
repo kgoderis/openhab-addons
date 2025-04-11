@@ -30,114 +30,115 @@
 // @NonNullByDefault
 // public class NotificationImpl implements Notification {
 
-//     protected static final Logger logger = LoggerFactory.getLogger(Notification.class);
+// protected static final Logger logger = LoggerFactory.getLogger(Notification.class);
 
-//     // DeliveringnotificationstocontrollersrequiresthecontrollertoestablishanHAPsessionwiththeaccessory.
-//     // • Thenotificationregistrationstateofacharacteristicmustnotpersistacrosssessions.
-//     // • WhenanewHAPsessionisestablishedthenotificationregistrationstateofthatcontrollermustbeʼfalseʼfor all
-//     // characteristics provided by the accessory.
-//     // • Awrite-onlycharacteristic(i.e.thecharacteristicpermissionsonlyincludePairedWrite”pw”)mustnotsupport event
-//     // notifications.
-//     // • Theaccessorymustsupportregisteringfornotificationsagainstmultiplecharacteristicsinasinglerequest.
-//     // • Theaccessoryshouldcoalescenotificationswheneverpossible.
-//     // • Theaccessorymustonlydelivernotificationstothecontrollerforcharacteristicsthatthecontrollerhasregis- tered to
-//     // receive notifications against.
-//     // • At any point the controller may deregister for event notifications against a characteristic by setting the ”ev”
-//     // key to ”false.” The accessory must stop delivering notifications for the deregistered characteristic immediately
-//     // after receiving the deregister request from the controller.
+// // DeliveringnotificationstocontrollersrequiresthecontrollertoestablishanHAPsessionwiththeaccessory.
+// // • Thenotificationregistrationstateofacharacteristicmustnotpersistacrosssessions.
+// // • WhenanewHAPsessionisestablishedthenotificationregistrationstateofthatcontrollermustbeʼfalseʼfor all
+// // characteristics provided by the accessory.
+// // • Awrite-onlycharacteristic(i.e.thecharacteristicpermissionsonlyincludePairedWrite”pw”)mustnotsupport event
+// // notifications.
+// // • Theaccessorymustsupportregisteringfornotificationsagainstmultiplecharacteristicsinasinglerequest.
+// // • Theaccessoryshouldcoalescenotificationswheneverpossible.
+// // • Theaccessorymustonlydelivernotificationstothecontrollerforcharacteristicsthatthecontrollerhasregis- tered to
+// // receive notifications against.
+// // • At any point the controller may deregister for event notifications against a characteristic by setting the ”ev”
+// // key to ”false.” The accessory must stop delivering notifications for the deregistered characteristic immediately
+// // after receiving the deregister request from the controller.
 
-//     @SuppressWarnings("rawtypes")
-//     ManagedCharacteristic characteristic;
-//     HttpConnection connection;
-//     List<JsonObject> notifications = Collections.synchronizedList(new LinkedList<JsonObject>());
+// @SuppressWarnings("rawtypes")
+// ManagedCharacteristic characteristic;
+// HttpConnection connection;
+// List<JsonObject> notifications = Collections.synchronizedList(new LinkedList<JsonObject>());
 
-//     boolean batchMode = false;
+// boolean batchMode = false;
 
-//     public NotificationImpl(@SuppressWarnings("rawtypes") ManagedCharacteristic characteristic,
-//             HttpConnection connection) {
-//         this.characteristic = characteristic;
-//         this.connection = connection;
-//     }
+// public NotificationImpl(@SuppressWarnings("rawtypes") ManagedCharacteristic characteristic,
+// HttpConnection connection) {
+// this.characteristic = characteristic;
+// this.connection = connection;
+// }
 
-//     @Override
-//     public NotificationUID getUID() {
-//         return new NotificationUID(((ManagedAccessory) characteristic.getService().getAccessory()).getServer().getAccessoryId(),
-//                 characteristic.getService().getAccessory().getAccessoryId(), characteristic.getService().getAccessoryId(),
-//                 characteristic.getAccessoryId());
-//     }
+// @Override
+// public NotificationUID getUID() {
+// return new NotificationUID(((ManagedAccessory)
+// characteristic.getService().getAccessory()).getServer().getAccessoryId(),
+// characteristic.getService().getAccessory().getAccessoryId(), characteristic.getService().getAccessoryId(),
+// characteristic.getAccessoryId());
+// }
 
-//     public void disableBatchMode() {
-//         this.batchMode = false;
-//     }
+// public void disableBatchMode() {
+// this.batchMode = false;
+// }
 
-//     public void enableBatchMode() {
-//         this.batchMode = true;
-//     }
+// public void enableBatchMode() {
+// this.batchMode = true;
+// }
 
-//     @Override
-//     public synchronized void publish(JsonObject notification) {
-//         if (characteristic.getAccessoryId() == this.characteristic.getAccessoryId()) {
-//             if (batchMode) {
-//                 notifications.add(notification);
-//             } else {
-//                 JsonArrayBuilder notifications = Json.createArrayBuilder().add(notification);
-//                 publish(notifications);
-//             }
-//         }
-//     }
+// @Override
+// public synchronized void publish(JsonObject notification) {
+// if (characteristic.getAccessoryId() == this.characteristic.getAccessoryId()) {
+// if (batchMode) {
+// notifications.add(notification);
+// } else {
+// JsonArrayBuilder notifications = Json.createArrayBuilder().add(notification);
+// publish(notifications);
+// }
+// }
+// }
 
-//     @Override
-//     public synchronized void publish() {
-//         if (notifications.size() > 0) {
-//             JsonArrayBuilder notificationsBuilder = Json.createArrayBuilder();
+// @Override
+// public synchronized void publish() {
+// if (notifications.size() > 0) {
+// JsonArrayBuilder notificationsBuilder = Json.createArrayBuilder();
 
-//             for (JsonObject notification : notifications) {
-//                 notificationsBuilder.add(notification);
-//             }
+// for (JsonObject notification : notifications) {
+// notificationsBuilder.add(notification);
+// }
 
-//             publish(notificationsBuilder);
+// publish(notificationsBuilder);
 
-//             notifications.clear();
-//         }
-//     }
+// notifications.clear();
+// }
+// }
 
-//     protected synchronized void publish(JsonArrayBuilder arrayBuilder) {
-//         JsonObjectBuilder builder = Json.createObjectBuilder().add("characteristics", arrayBuilder);
+// protected synchronized void publish(JsonArrayBuilder arrayBuilder) {
+// JsonObjectBuilder builder = Json.createObjectBuilder().add("characteristics", arrayBuilder);
 
-//         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-//             Json.createWriter(baos).write(builder.build());
-//             byte[] dataBytes = baos.toByteArray();
+// try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+// Json.createWriter(baos).write(builder.build());
+// byte[] dataBytes = baos.toByteArray();
 
-//             HttpFields fields = new HttpFields();
-//             fields.add("X-HAP-Event", "True");
-//             fields.add("Content-Type", "application/hap+json");
+// HttpFields fields = new HttpFields();
+// fields.add("X-HAP-Event", "True");
+// fields.add("Content-Type", "application/hap+json");
 
-//             MetaData.Response info = new MetaData.Response(HttpVersion.HTTP_1_1, HttpStatus.OK_200, "", fields,
-//                     dataBytes.length);
-//             FutureCallback callback = new FutureCallback();
-//             logger.debug("Publishing Notification to connection {}", connection.toString());
-//             if (dataBytes.length > 0) {
-//                 try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
-//                     HexDump.dump(dataBytes, 0, stream, 0);
-//                     stream.flush();
-//                     logger.debug("\n{}", stream.toString(StandardCharsets.UTF_8.name()));
-//                 }
-//             }
-//             connection.send(info, false, ByteBuffer.wrap(dataBytes), true, callback);
-//             connection.getGenerator().reset();
-//             callback.get();
-//         } catch (Exception e) {
-//             e.printStackTrace();
-//         }
-//     }
+// MetaData.Response info = new MetaData.Response(HttpVersion.HTTP_1_1, HttpStatus.OK_200, "", fields,
+// dataBytes.length);
+// FutureCallback callback = new FutureCallback();
+// logger.debug("Publishing Notification to connection {}", connection.toString());
+// if (dataBytes.length > 0) {
+// try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
+// HexDump.dump(dataBytes, 0, stream, 0);
+// stream.flush();
+// logger.debug("\n{}", stream.toString(StandardCharsets.UTF_8.name()));
+// }
+// }
+// connection.send(info, false, ByteBuffer.wrap(dataBytes), true, callback);
+// connection.getGenerator().reset();
+// callback.get();
+// } catch (Exception e) {
+// e.printStackTrace();
+// }
+// }
 
-//     @Override
-//     public Connection getConnection() {
-//         return connection;
-//     }
+// @Override
+// public Connection getConnection() {
+// return connection;
+// }
 
-//     @Override
-//     public ManagedCharacteristic<?> getCharacteristic() {
-//         return characteristic;
-//     }
+// @Override
+// public ManagedCharacteristic<?> getCharacteristic() {
+// return characteristic;
+// }
 // }

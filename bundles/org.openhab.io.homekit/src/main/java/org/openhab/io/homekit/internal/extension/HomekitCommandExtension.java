@@ -1,4 +1,4 @@
-package org.openhab.io.homekit;
+package org.openhab.io.homekit.internal.extension;
 
 import java.util.Arrays;
 import java.util.Collection;

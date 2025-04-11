@@ -1032,7 +1032,7 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
                 JsonArray accessories = Json.createReader(new ByteArrayInputStream(contentResult.body)).readObject()
                         .getJsonArray("accessories");
                 for (JsonValue value : accessories) {
-                    result.add(new GenericAccessory( value));
+                    result.add(new GenericAccessory(value));
                 }
             }
         }

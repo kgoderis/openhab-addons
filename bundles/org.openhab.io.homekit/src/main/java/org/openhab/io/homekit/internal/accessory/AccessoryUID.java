@@ -23,11 +23,10 @@ public class AccessoryUID extends UID {
      * @param instanceId the accessory instance id
      */
     public AccessoryUID(String hexId, long accessoryId) {
-        super("homekit", "accessory",hexId, Long.toString(accessoryId));
+        super("homekit", "accessory", hexId, Long.toString(accessoryId));
     }
 
     public String getHexId() {
         return getSegment(2);
     }
-
 }

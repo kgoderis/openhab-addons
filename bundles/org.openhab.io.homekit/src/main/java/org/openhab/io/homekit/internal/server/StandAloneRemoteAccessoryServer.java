@@ -12,20 +12,18 @@ import org.openhab.io.homekit.api.registry.PairingRegistry;
 public class StandAloneRemoteAccessoryServer extends AbstractRemoteAccessoryServer {
 
     public StandAloneRemoteAccessoryServer(InetAddress address, int port, byte[] pairingIdentifier, byte[] secretKey,
-            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry
-            ) {
+            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry) {
         super(address, port, pairingIdentifier, secretKey, accessoryRegistry, pairingRegistry);
     }
 
     public StandAloneRemoteAccessoryServer(InetAddress localAddress, int port,
-            @Nullable AccessoryRegistry accessoryRegistry, @Nullable PairingRegistry pairingRegistry
-            ) throws Exception {
-        this(localAddress, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry
-                );
+            @Nullable AccessoryRegistry accessoryRegistry, @Nullable PairingRegistry pairingRegistry) throws Exception {
+        this(localAddress, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry);
     }
 
     public Pairing getPairing() {
-        @NonNull Collection<@NonNull Pairing> pairings = pairingRegistry.get(getPairingId());
+        @NonNull
+        Collection<@NonNull Pairing> pairings = pairingRegistry.get(getPairingId());
 
         if (pairings.size() == 1) {
             return (Pairing) pairings.toArray()[0];

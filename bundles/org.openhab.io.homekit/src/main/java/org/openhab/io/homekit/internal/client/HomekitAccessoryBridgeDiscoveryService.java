@@ -82,8 +82,8 @@ public class HomekitAccessoryBridgeDiscoveryService extends AbstractDiscoverySer
         } else {
             ThingUID uid = new ThingUID(HomekitBindingConstants.THING_TYPE_ACCESSORY, bridge.getUID(),
                     String.valueOf(accessory.getAccessoryId()));
-            logger.info("Accessory {} was removed. The affiliated Thing {} will equally be removed", accessory.getAccessoryId(),
-                    uid);
+            logger.info("Accessory {} was removed. The affiliated Thing {} will equally be removed",
+                    accessory.getAccessoryId(), uid);
             thingRemoved(uid);
         }
     }
@@ -108,8 +108,8 @@ public class HomekitAccessoryBridgeDiscoveryService extends AbstractDiscoverySer
                     .withThingType(HomekitBindingConstants.THING_TYPE_ACCESSORY).withBridge(bridge.getUID())
                     .withLabel("Homekit Accessory").build();
 
-            logger.info("Accessory {} was added. A Discovery result for Thing {} will be reported", accessory.getAccessoryId(),
-                    uid);
+            logger.info("Accessory {} was added. A Discovery result for Thing {} will be reported",
+                    accessory.getAccessoryId(), uid);
 
             thingDiscovered(discoveryResult);
         }

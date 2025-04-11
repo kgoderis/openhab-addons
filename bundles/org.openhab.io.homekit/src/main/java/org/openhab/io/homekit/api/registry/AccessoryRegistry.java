@@ -19,10 +19,10 @@ import org.openhab.io.homekit.internal.accessory.AccessoryUID;
 public interface AccessoryRegistry extends Registry<Accessory, AccessoryUID> {
 
     // /**
-    //  * Returns a list of HomekitAccessories for a given serverId or an empty list if no HomekitAccessory was found
-    //  *
-    //  * @param serverId the id uniquely identifying the HomekitServer
-    //  * @return list of HomekitAccessories for a given serverId or an empty list if no HomekitAccessory was found
-    //  */
+    // * Returns a list of HomekitAccessories for a given serverId or an empty list if no HomekitAccessory was found
+    // *
+    // * @param serverId the id uniquely identifying the HomekitServer
+    // * @return list of HomekitAccessories for a given serverId or an empty list if no HomekitAccessory was found
+    // */
     // Collection<Accessory> get(String serverId);
 }

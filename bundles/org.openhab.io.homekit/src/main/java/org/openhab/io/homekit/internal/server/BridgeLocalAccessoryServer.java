@@ -30,8 +30,7 @@ public class BridgeLocalAccessoryServer extends AbstractLocalAccessoryServer {
     public BridgeLocalAccessoryServer(InetAddress localAddress, int port, byte[] pairingId, byte[] privateKey,
             @Nullable MDNSService mdnsService, @Nullable AccessoryRegistry accessoryRegistry,
             @Nullable PairingRegistry pairingRegistry, @Nullable SafeCaller safeCaller) throws Exception {
-        super(localAddress, port, pairingId, privateKey, mdnsService, accessoryRegistry, pairingRegistry,
-                safeCaller);
+        super(localAddress, port, pairingId, privateKey, mdnsService, accessoryRegistry, pairingRegistry, safeCaller);
     }
 
     public BridgeLocalAccessoryServer(InetAddress localAddress, int port, @Nullable MDNSService mdnsService,
@@ -40,5 +39,4 @@ public class BridgeLocalAccessoryServer extends AbstractLocalAccessoryServer {
         this(localAddress, port, generatePairingId(), generateSecretKey(), mdnsService, accessoryRegistry,
                 pairingRegistry, safeCaller);
     }
-
 }

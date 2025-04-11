@@ -40,19 +40,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * {@link  PersistedAccessoryProvider} is an OSGi service, that allows to add or remove Accessories at runtime by calling
- * {@link  PersistedAccessoryProvider#addAccessory(Accessory)} or
- * {@link  PersistedAccessoryProvider#removeAccessory(Accessory)}. An added Accessory is automatically exposed to
+ * {@link PersistedAccessoryProvider} is an OSGi service, that allows to add or remove Accessories at runtime by calling
+ * {@link PersistedAccessoryProvider#addAccessory(Accessory)} or
+ * {@link PersistedAccessoryProvider#removeAccessory(Accessory)}. An added Accessory is automatically exposed to
  * the
  * {@link AccessoryRegistry}. Persistence of added Accessories is handled by a {@link StorageService}. Accessories are
  * being restored using the given {@link HomekitFactory}s.
  *
  **/
-@Component(immediate = true, service = { PersistedAccessoryProvider.class,  PersistedAccessoryProvider.class })
-public class  PersistedAccessoryProvider extends AbstractManagedProvider<Accessory, @NonNull AccessoryUID, @NonNull    PersistedAccessory>
+@Component(immediate = true, service = { PersistedAccessoryProvider.class, PersistedAccessoryProvider.class })
+public class PersistedAccessoryProvider
+        extends AbstractManagedProvider<Accessory, @NonNull AccessoryUID, @NonNull PersistedAccessory>
         implements AccessoryProvider, ReadyService.ReadyTracker {
 
-    private final Logger logger = LoggerFactory.getLogger( PersistedAccessoryProvider.class);
+    private final Logger logger = LoggerFactory.getLogger(PersistedAccessoryProvider.class);
 
     static final String HOMEKIT_ACCESSORY_SERVER_REGISTRY = "homekit.accessoryServerRegistry";
     static final String HOMEKIT_MANAGED_ACCESSORY_PROVIDER = "homekit. AccessoryProvider";
@@ -67,9 +68,8 @@ public class  PersistedAccessoryProvider extends AbstractManagedProvider<Accesso
     private @Nullable ScheduledExecutorService executor;
 
     @Activate
-    public  PersistedAccessoryProvider(@Reference StorageService storageService,
-            @Reference AccessoryServerRegistry accessoryServerRegistry,
-            @Reference ReadyService readyService) {
+    public PersistedAccessoryProvider(@Reference StorageService storageService,
+            @Reference AccessoryServerRegistry accessoryServerRegistry, @Reference ReadyService readyService) {
         super(storageService);
         this.accessoryServerRegistry = accessoryServerRegistry;
         this.readyService = readyService;
@@ -137,181 +137,172 @@ public class  PersistedAccessoryProvider extends AbstractManagedProvider<Accesso
             // AccessoryServer server = accessoryServerRegistry.get(persistableElement.getServerUID());
 
             // if (server != null) {
-                long aid = jsonObject.getJsonNumber("aid").longValue();
-                JsonArray services = (JsonArray) jsonObject.get("services");
+            long aid = jsonObject.getJsonNumber("aid").longValue();
+            JsonArray services = (JsonArray) jsonObject.get("services");
 
-                Accessory accessory = null;
+            Accessory accessory = null;
 
-                // if (server instanceof LocalAccessoryServer) {
-                    Class<?> clazz;
-                    try {
-                        clazz = Class.forName(persistableElement.getAccessoryClass());
-                    } catch (ClassNotFoundException e) {
-                        logger.warn(
-                                "Unable to find Accessory class {}, and will revert to the default GenericAccessory class",
-                                persistableElement.getAccessoryClass());
-                        clazz = GenericAccessory.class;
-                    }
+            // if (server instanceof LocalAccessoryServer) {
+            Class<?> clazz;
+            try {
+                clazz = Class.forName(persistableElement.getAccessoryClass());
+            } catch (ClassNotFoundException e) {
+                logger.warn("Unable to find Accessory class {}, and will revert to the default GenericAccessory class",
+                        persistableElement.getAccessoryClass());
+                clazz = GenericAccessory.class;
+            }
 
-                    // TODO : Replace with a call to a Factory in order to create the accessory ?
-                    try {
-                        accessory = (Accessory) clazz.getConstructor(
-                                 long.class)
-                                .newInstance(  aid);
-                    } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                            | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
+            // TODO : Replace with a call to a Factory in order to create the accessory ?
+            try {
+                accessory = (Accessory) clazz.getConstructor(long.class).newInstance(aid);
+            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                    | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
 
-                // } else if (server instanceof RemoteAccessoryServer) {
-                //     Class<?> clazz = GenericAccessory.class;
+            // } else if (server instanceof RemoteAccessoryServer) {
+            // Class<?> clazz = GenericAccessory.class;
 
-                //     try {
-                //         accessory = (Accessory) clazz.getConstructor(AccessoryServer.class, long.class)
-                //                 .newInstance(server, aid);
-                //     } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                //             | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-                //         // TODO Auto-generated catch block
-                //         e.printStackTrace();
-                //     }
-                // }
+            // try {
+            // accessory = (Accessory) clazz.getConstructor(AccessoryServer.class, long.class)
+            // .newInstance(server, aid);
+            // } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+            // | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+            // // TODO Auto-generated catch block
+            // e.printStackTrace();
+            // }
+            // }
 
-                if (accessory != null) {
-                    logger.debug("Created an Accessory {} of Type {} ", accessory.getUID(),
-                            accessory.getClass().getSimpleName());
+            if (accessory != null) {
+                logger.debug("Created an Accessory {} of Type {} ", accessory.getUID(),
+                        accessory.getClass().getSimpleName());
 
+                for (JsonValue service : services) {
+                    long iid = ((JsonObject) service).getJsonNumber("iid").longValue();
+                    final String serviceType = ((JsonObject) service).getString("type");
 
-                        for (JsonValue service : services) {
-                            long iid = ((JsonObject) service).getJsonNumber("iid").longValue();
-                            final String serviceType = ((JsonObject) service).getString("type");
+                    if (accessory.getService(serviceType) == null) {
 
-                            if (accessory.getService(serviceType) == null) {
+                        HomekitFactory factory = homekitFactories.stream()
+                                .filter(f -> f.supportsServiceType(serviceType)).findFirst().orElse(null);
 
-                                HomekitFactory factory = homekitFactories.stream()
-                                        .filter(f -> f.supportsServiceType(serviceType)).findFirst().orElse(null);
+                        if (factory != null) {
+                            Service newService = factory.createService(serviceType, (Accessory) accessory, iid, false);
 
-                                if (factory != null) {
-                                     Service newService = factory.createService(serviceType,
-                                            ( Accessory) accessory, iid, false);
+                            if (newService != null) {
+                                accessory.addService(newService);
+                                JsonArray characteristics = (JsonArray) ((JsonObject) service).get("characteristics");
 
-                                    if (newService != null) {
-                                        accessory.addService(newService);
-                                        JsonArray characteristics = (JsonArray) ((JsonObject) service)
-                                                .get("characteristics");
+                                for (JsonValue characteristic : characteristics) {
+                                    iid = ((JsonObject) characteristic).getJsonNumber("iid").longValue();
+                                    final String characteristicType = ((JsonObject) characteristic).getString("type");
 
-                                        for (JsonValue characteristic : characteristics) {
-                                            iid = ((JsonObject) characteristic).getJsonNumber("iid").longValue();
-                                            final String characteristicType = ((JsonObject) characteristic)
-                                                    .getString("type");
+                                    if (newService.getCharacteristic(characteristicType) == null) {
 
-                                            if (newService.getCharacteristic(characteristicType) == null) {
+                                        factory = homekitFactories.stream()
+                                                .filter(f -> f.supportsCharacteristicsType(characteristicType))
+                                                .findFirst().orElse(null);
 
-                                                factory = homekitFactories.stream()
-                                                        .filter(f -> f.supportsCharacteristicsType(characteristicType))
-                                                        .findFirst().orElse(null);
-
-                                                if (factory != null) {
-                                                    Characteristic<?> newCharacteristic = factory
-                                                            .createCharacteristic(characteristicType, newService, iid);
-                                                    if (newCharacteristic != null) {
-                                                        newService.addCharacteristic(newCharacteristic);
-                                                    } else {
-                                                        logger.warn(
-                                                                "Homekit Factory {} could not create a Characteristic of Type {}",
-                                                                factory.toString(), characteristicType);
-                                                    }
-                                                } else {
-                                                    logger.warn(
-                                                            "No Homekit Factory can create a Characteristic of Type {}",
-                                                            characteristicType);
-                                                }
+                                        if (factory != null) {
+                                            Characteristic<?> newCharacteristic = factory
+                                                    .createCharacteristic(characteristicType, newService, iid);
+                                            if (newCharacteristic != null) {
+                                                newService.addCharacteristic(newCharacteristic);
                                             } else {
-                                                if (newService.getCharacteristic(characteristicType) != null) {
-                                                    logger.info(
-                                                            "Service {} of Type {} already holds Characteristic {} of Type {}",
-                                                            newService.getUID(), newService.getClass().getSimpleName(),
-                                                            ((Characteristic<?>) newService
-                                                                    .getCharacteristic(characteristicType)).getUID(),
-                                                            newService.getCharacteristic(characteristicType).getClass()
-                                                                    .getSimpleName());
-                                                }
+                                                logger.warn(
+                                                        "Homekit Factory {} could not create a Characteristic of Type {}",
+                                                        factory.toString(), characteristicType);
                                             }
+                                        } else {
+                                            logger.warn("No Homekit Factory can create a Characteristic of Type {}",
+                                                    characteristicType);
                                         }
                                     } else {
-                                        logger.warn("Homekit Factory {} could not create a Service of Type {}",
-                                                factory.toString(), serviceType);
+                                        if (newService.getCharacteristic(characteristicType) != null) {
+                                            logger.info(
+                                                    "Service {} of Type {} already holds Characteristic {} of Type {}",
+                                                    newService.getUID(), newService.getClass().getSimpleName(),
+                                                    ((Characteristic<?>) newService
+                                                            .getCharacteristic(characteristicType)).getUID(),
+                                                    newService.getCharacteristic(characteristicType).getClass()
+                                                            .getSimpleName());
+                                        }
                                     }
-                                } else {
-                                    logger.warn("No Homekit Factory can create a Service of Type {}", serviceType);
                                 }
                             } else {
-                                if (accessory.getService(serviceType) != null) {
-                                    logger.info("Accessory {} of Type {} already holds Service {} of Type {}",
-                                            accessory.getUID(), accessory.getClass().getSimpleName(),
-                                            (( Service) accessory.getService(serviceType)).getUID(),
-                                            accessory.getService(serviceType).getClass().getSimpleName());
-                                }
+                                logger.warn("Homekit Factory {} could not create a Service of Type {}",
+                                        factory.toString(), serviceType);
                             }
+                        } else {
+                            logger.warn("No Homekit Factory can create a Service of Type {}", serviceType);
                         }
-                    
-
-                    // if (accessory instanceof ThingAccessory) {
-                    //     ThingUID thingUID = new ThingUID(persistableElement.getThingUID());
-                    //     Thing thing = thingRegistry.get(thingUID);
-
-                    //     if (thing != null) {
-                    //         HomekitFactory factory = homekitFactories.stream()
-                    //                 .filter(f -> f.supportsThingType(thing.getThingTypeUID())).findFirst().orElse(null);
-
-                    //         if (factory != null) {
-                    //             ((ThingAccessory) accessory).setThingUID(thingUID);
-                    //             logger.info("Linked Thing {} ({}) to Accessory {} of Type {}",
-                    //                     persistableElement.getThingUID(), thing.getLabel(), accessory.getUID(),
-                    //                     accessory.getClass().getSimpleName());
-
-                    //             for (Channel channel : thing.getChannels()) {
-                    //                 HashSet<String> characteristicTypes = factory
-                    //                         .getCharacteristicTypes(channel.getChannelTypeUID());
-
-                    //                 for (Service aService : accessory.getServices()) {
-                    //                     for (Characteristic aCharacteristic : aService.getCharacteristics()) {
-                    //                         for (String aCharacteristicType : characteristicTypes) {
-                    //                             if (aCharacteristic.isType(aCharacteristicType)) {
-                    //                                 ((Characteristic<?>) aCharacteristic)
-                    //                                         .setChannelUID(channel.getUID());
-                    //                                 logger.debug(
-                    //                                         "Linked Channel {} ({}) to Characteristic {} of Type {}",
-                    //                                         channel.getUID(), channel.getLabel(),
-                    //                                         ((Characteristic<?>) aCharacteristic).getUID(),
-                    //                                         aCharacteristic.getClass().getSimpleName());
-                    //                             }
-                    //                         }
-                    //                     }
-                    //                 }
-                    //             }
-                    //         } else {
-                    //             logger.warn("There is no Homekit Factory that supports ThingType {}",
-                    //                     persistableElement.getThingUID());
-                    //         }
-                    //     } else {
-                    //         logger.warn(
-                    //                 "The Thing {} linked to to Accessory {} could not be found in the Thing Registry",
-                    //                 persistableElement.getThingUID(), accessory.getUID());
-                    //         // TODO : Remove from accessory registry? what if thingregistry is not ready?
-                    //     }
-                    // }
+                    } else {
+                        if (accessory.getService(serviceType) != null) {
+                            logger.info("Accessory {} of Type {} already holds Service {} of Type {}",
+                                    accessory.getUID(), accessory.getClass().getSimpleName(),
+                                    ((Service) accessory.getService(serviceType)).getUID(),
+                                    accessory.getService(serviceType).getClass().getSimpleName());
+                        }
+                    }
                 }
 
-                return accessory;
+                // if (accessory instanceof ThingAccessory) {
+                // ThingUID thingUID = new ThingUID(persistableElement.getThingUID());
+                // Thing thing = thingRegistry.get(thingUID);
+
+                // if (thing != null) {
+                // HomekitFactory factory = homekitFactories.stream()
+                // .filter(f -> f.supportsThingType(thing.getThingTypeUID())).findFirst().orElse(null);
+
+                // if (factory != null) {
+                // ((ThingAccessory) accessory).setThingUID(thingUID);
+                // logger.info("Linked Thing {} ({}) to Accessory {} of Type {}",
+                // persistableElement.getThingUID(), thing.getLabel(), accessory.getUID(),
+                // accessory.getClass().getSimpleName());
+
+                // for (Channel channel : thing.getChannels()) {
+                // HashSet<String> characteristicTypes = factory
+                // .getCharacteristicTypes(channel.getChannelTypeUID());
+
+                // for (Service aService : accessory.getServices()) {
+                // for (Characteristic aCharacteristic : aService.getCharacteristics()) {
+                // for (String aCharacteristicType : characteristicTypes) {
+                // if (aCharacteristic.isType(aCharacteristicType)) {
+                // ((Characteristic<?>) aCharacteristic)
+                // .setChannelUID(channel.getUID());
+                // logger.debug(
+                // "Linked Channel {} ({}) to Characteristic {} of Type {}",
+                // channel.getUID(), channel.getLabel(),
+                // ((Characteristic<?>) aCharacteristic).getUID(),
+                // aCharacteristic.getClass().getSimpleName());
+                // }
+                // }
+                // }
+                // }
+                // }
+                // } else {
+                // logger.warn("There is no Homekit Factory that supports ThingType {}",
+                // persistableElement.getThingUID());
+                // }
+                // } else {
+                // logger.warn(
+                // "The Thing {} linked to to Accessory {} could not be found in the Thing Registry",
+                // persistableElement.getThingUID(), accessory.getUID());
+                // // TODO : Remove from accessory registry? what if thingregistry is not ready?
+                // }
+                // }
+            }
+
+            return accessory;
 
             // } else {
-            //     AccessoryUID uid = new AccessoryUID(key);
+            // AccessoryUID uid = new AccessoryUID(key);
 
-            //     logger.warn("Accessory Server {} hosting Accessory {} was not found in the Accessory Server Registry",
-            //             persistableElement.getServerUID(), uid);
+            // logger.warn("Accessory Server {} hosting Accessory {} was not found in the Accessory Server Registry",
+            // persistableElement.getServerUID(), uid);
 
-            //     this.remove(uid);
+            // this.remove(uid);
             // }
 
             // return null;

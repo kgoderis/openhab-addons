@@ -71,11 +71,11 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
     Accessory getAccessory(int accessoryId);
 
     // /**
-    //  * Gets an accessory by its class type.
-    //  *
-    //  * @param accessoryClass the class type of the accessory
-    //  * @return the accessory, or null if not found
-    //  */
+    // * Gets an accessory by its class type.
+    // *
+    // * @param accessoryClass the class type of the accessory
+    // * @return the accessory, or null if not found
+    // */
     // @Nullable
     // Accessory getAccessory(Class<? extends Accessory> accessoryClass);
 
@@ -223,27 +223,27 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
     void removeChangeListener(AccessoryServerChangeListener listener);
 
     // /**
-    //  * Adds a notification for characteristic changes.
-    //  *
-    //  * @param characteristic the characteristic to monitor
-    //  * @param connection the HTTP connection to notify
-    //  */
+    // * Adds a notification for characteristic changes.
+    // *
+    // * @param characteristic the characteristic to monitor
+    // * @param connection the HTTP connection to notify
+    // */
     // void addNotification(Characteristic<?> characteristic, HttpConnection connection);
 
     // /**
-    //  * Removes a notification for characteristic changes.
-    //  *
-    //  * @param characteristic the characteristic to stop monitoring
-    //  */
+    // * Removes a notification for characteristic changes.
+    // *
+    // * @param characteristic the characteristic to stop monitoring
+    // */
     // void removeNotification(Characteristic<?> characteristic);
 
     // ==================== Pairing Operations ====================
 
     // /**
-    //  * Initiates the pairing setup process.
-    //  *
-    //  * @throws IOException if an I/O error occurs during setup
-    //  */
+    // * Initiates the pairing setup process.
+    // *
+    // * @throws IOException if an I/O error occurs during setup
+    // */
     // void pairSetup() throws IOException;
 
     /**

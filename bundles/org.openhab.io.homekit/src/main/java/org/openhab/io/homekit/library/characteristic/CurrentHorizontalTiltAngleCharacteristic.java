@@ -2,6 +2,7 @@ package org.openhab.io.homekit.library.characteristic;
 
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.IntegerCharacteristic;
+
 public class CurrentHorizontalTiltAngleCharacteristic extends IntegerCharacteristic {
 
     public CurrentHorizontalTiltAngleCharacteristic(Service service, long instanceId) {
@@ -16,5 +17,4 @@ public class CurrentHorizontalTiltAngleCharacteristic extends IntegerCharacteris
     public String getInstanceType() {
         return getType();
     }
-
 }

@@ -29,6 +29,7 @@ import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
 import org.openhab.io.homekit.internal.server.AccessoryServerUID;
 import org.openhab.io.homekit.internal.server.StandAloneRemoteAccessoryServer;
+import org.openhab.io.homekit.internal.server.registry.ManagedAccessoryServerProvider;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -44,17 +45,20 @@ public class AccessoryServerDiscoveryParticipant implements MDNSDiscoveryPartici
 
     private static final String HAP_SERVICE_TYPE = "_hap._tcp.local.";
 
-    private final AccessoryServerRegistry accessoryServerRegistry;
+    private final ManagedAccessoryServerProvider managedAccessoryServerProvider;
     private final NetworkAddressService networkAddressService;
     private final Map<String, ThingUID> cachedServices;
     private final Collection<AccessoryServerFactory> serverFactories = new CopyOnWriteArrayList<>();
+    private final AccessoryServerRegistry accessoryServerRegistry;
 
     @Activate
-    public AccessoryServerDiscoveryParticipant(@Reference AccessoryServerRegistry accessoryServerRegistry,
-            @Reference NetworkAddressService networkAddressService) {
-        this.accessoryServerRegistry = accessoryServerRegistry;
+    public AccessoryServerDiscoveryParticipant(@Reference ManagedAccessoryServerProvider managedAccessoryServerProvider,
+            @Reference NetworkAddressService networkAddressService,
+            @Reference AccessoryServerRegistry accessoryServerRegistry) {
+        this.managedAccessoryServerProvider = managedAccessoryServerProvider;
         this.networkAddressService = networkAddressService;
         this.cachedServices = new HashMap<String, ThingUID>();
+        this.accessoryServerRegistry = accessoryServerRegistry;
     }
 
     @Override
@@ -125,41 +129,28 @@ public class AccessoryServerDiscoveryParticipant implements MDNSDiscoveryPartici
 
                 port = service.getPort();
 
-                boolean alreadyExists = false;
-                for (AccessoryServerFactory factory : serverFactories) {
-                    for (String type : factory.getSupportedServerTypes()) {
-                        AccessoryServer accessoryServer = accessoryServerRegistry
-                                .get(new AccessoryServerUID(id.replace(":", "")));
-                        if (accessoryServer != null) {
-                            logger.debug(
-                                    "The Accessory Server Registry already contains an Accessory Server with Id '{}'",
-                                    accessoryServer.getUID());
-                            alreadyExists = true;
-                            break;
-                        }
-                    }
-                }
+                AccessoryServer accessoryServer = accessoryServerRegistry
+                        .get(new AccessoryServerUID(id.replace(":", "")));
 
-                if (!alreadyExists) {
+                if (accessoryServer == null) {
                     for (AccessoryServerFactory factory : serverFactories) {
-                        AccessoryServer server = null;
                         try {
-                            server = factory.createServer(StandAloneRemoteAccessoryServer.class.getSimpleName(),
+                            AccessoryServer server = factory.createServer(
+                                    StandAloneRemoteAccessoryServer.class.getSimpleName(),
                                     InetAddress.getByName(hostAddress), port);
+                            if (server != null) {
+                                managedAccessoryServerProvider.add(server);
+                                logger.debug("Created a Remote Accessory Server {} with Setup Code {}", server.getUID(),
+                                        server.getSetupCode());
+                                break; // Exit loop once server is created successfully
+                            }
                         } catch (UnknownHostException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
-
-                        if (server != null) {
-                            accessoryServerRegistry.add(server);
-                            logger.debug("Created a Remote Accessory Server {} with Setup Code {}", server.getUID(),
-                                    server.getSetupCode());
-                        } else {
-                            logger.warn("Unable to create an Accessory Server of Type {}",
-                                    StandAloneRemoteAccessoryServer.class.getSimpleName());
+                            logger.warn("Failed to create server: {}", e.getMessage());
                         }
                     }
+                } else {
+                    logger.debug("The Accessory Server Registry already contains an Accessory Server with Id '{}'",
+                            accessoryServer.getUID());
                 }
 
                 Enumeration<String> serviceProperties = service.getPropertyNames();

@@ -49,10 +49,10 @@ public class ManagedAccessoryServerProvider
     private final Collection<AccessoryServerFactory> serverFactories = new CopyOnWriteArrayList<>();
     private final ReadyService readyService;
     private final AccessoryRegistry accessoryRegistry;
+
     @Activate
     public ManagedAccessoryServerProvider(@Reference StorageService storageService,
-            @Reference ReadyService readyService,
-            @Reference AccessoryRegistry accessoryRegistry) {
+            @Reference ReadyService readyService, @Reference AccessoryRegistry accessoryRegistry) {
         super(storageService);
         this.readyService = readyService;
         this.accessoryRegistry = accessoryRegistry;
@@ -101,15 +101,15 @@ public class ManagedAccessoryServerProvider
                 logger.debug("Created an Accessory Server {} with Setup Code {}", server.getUID(),
                         server.getSetupCode());
 
-                        if (accessoryRegistry != null) {
-                            Collection<String> accessoryUIDs = persistableElement.getAccessoryUIDs();
-                            for (String accessoryUID : accessoryUIDs) {
-                                Accessory accessory = accessoryRegistry.get(new AccessoryUID(accessoryUID));
-                                if (accessory != null) {
-                                    server.addAccessory(accessory);
-                                }
-                            }
+                if (accessoryRegistry != null) {
+                    Collection<String> accessoryUIDs = persistableElement.getAccessoryUIDs();
+                    for (String accessoryUID : accessoryUIDs) {
+                        Accessory accessory = accessoryRegistry.get(new AccessoryUID(accessoryUID));
+                        if (accessory != null) {
+                            server.addAccessory(accessory);
                         }
+                    }
+                }
 
                 return server;
             } else {
@@ -121,9 +121,6 @@ public class ManagedAccessoryServerProvider
 
         logger.warn("There is no Acessory Server Factory for Accessory Servers of Type '{}'",
                 BridgeLocalAccessoryServer.class.getSimpleName());
-
-
-
 
         return null;
     }

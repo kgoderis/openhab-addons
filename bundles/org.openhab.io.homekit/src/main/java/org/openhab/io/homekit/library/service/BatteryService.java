@@ -7,16 +7,16 @@ import org.openhab.io.homekit.library.characteristic.StatusLowBatteryCharacteris
 
 public class BatteryService extends GenericService {
 
-    public BatteryService(Accessory accessory, long instanceId,
-            boolean extend, @NonNull String serviceName) throws Exception {
-        super( accessory, instanceId, extend, serviceName);
+    public BatteryService(Accessory accessory, long instanceId, boolean extend, @NonNull String serviceName)
+            throws Exception {
+        super(accessory, instanceId, extend, serviceName);
     }
 
     @Override
     public void addCharacteristics() {
         super.addCharacteristics();
-        addCharacteristic(new StatusLowBatteryCharacteristic( this,
-                ((Accessory) getAccessory()).getNextAvailableInstanceId()));
+        addCharacteristic(
+                new StatusLowBatteryCharacteristic(this, ((Accessory) getAccessory()).getNextAvailableInstanceId()));
     }
 
     @Override

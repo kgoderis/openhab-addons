@@ -54,5 +54,4 @@ public class AccessoryServerUID extends UID {
     protected int getMinimalNumberOfSegments() {
         return 3;
     }
-
-} 
+}

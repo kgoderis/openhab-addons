@@ -18,7 +18,7 @@ import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.internal.accessory.AccessoryState;
 import org.openhab.io.homekit.internal.events.AccessoryServerEvent;
-import org.openhab.io.homekit.internal.pairing.PairingImpl;
+import org.openhab.io.homekit.internal.pairing.HomekitPairing;
 import org.openhab.io.homekit.internal.pairing.PairingUID;
 import org.openhab.io.homekit.util.Byte;
 import org.openhab.io.homekit.util.HomekitKeyGenerator;
@@ -99,8 +99,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     // }
 
     public AbstractAccessoryServer(InetAddress address, int port, byte[] pairingId, byte[] privateKey,
-            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry
-            ) {
+            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry) {
         super();
         this.address = address;
         this.port = port;
@@ -177,7 +176,8 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     }
 
     protected void notifyListeners() {
-        AccessoryServerEvent event = new AccessoryServerEvent(this, null, null, null, AccessoryServerEvent.AccessoryServerEventType.SERVER_UPDATED);
+        AccessoryServerEvent event = new AccessoryServerEvent(this, null, null, null,
+                AccessoryServerEvent.AccessoryServerEventType.SERVER_UPDATED);
         for (AccessoryServerChangeListener listener : this.changeListeners) {
             try {
                 listener.onAccessoryServerEvent(event);
@@ -196,15 +196,13 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
 
     @Override
     public @Nullable Accessory getAccessory(int acessoryId) {
-        return accessories.stream()
-                .filter(accessory -> accessory.getAccessoryId() == acessoryId)
-                .findFirst()
+        return accessories.stream().filter(accessory -> accessory.getAccessoryId() == acessoryId).findFirst()
                 .orElse(null);
     }
 
     // Collection to track accessories locally
     private final Collection<Accessory> accessories = new CopyOnWriteArraySet<>();
-    
+
     @Override
     public void addAccessory(Accessory accessory) {
         logger.debug("Adding Accessory {} of Type {} to Accessory Server {}", accessory.getUID(),
@@ -215,9 +213,9 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
             configurationIndex++;
 
             advertise();
-            
+
             // Notify listeners of accessory addition
-            AccessoryServerEvent event = new AccessoryServerEvent(this, accessory, null, null, 
+            AccessoryServerEvent event = new AccessoryServerEvent(this, accessory, null, null,
                     AccessoryServerEvent.AccessoryServerEventType.ACCESSORY_ADDED);
             for (AccessoryServerChangeListener listener : changeListeners) {
                 try {
@@ -229,19 +227,19 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
         }
     }
 
-    @Override 
+    @Override
     public void removeAccessory(Accessory accessory) {
         logger.debug("Removing Accessory {} from Accessory Server {}", accessory.getUID(), this.getUID());
-        
+
         if (accessories.remove(accessory)) {
             // Increment configuration index when accessories change
             configurationIndex++;
 
             advertise();
-            
+
             // Notify listeners of accessory removal
             AccessoryServerEvent event = new AccessoryServerEvent(this, accessory, null, null,
-                    AccessoryServerEvent.AccessoryServerEventType.ACCESSORY_REMOVED); 
+                    AccessoryServerEvent.AccessoryServerEventType.ACCESSORY_REMOVED);
             for (AccessoryServerChangeListener listener : changeListeners) {
                 try {
                     listener.onAccessoryServerEvent(event);
@@ -254,45 +252,44 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
 
     // @Override
     // public @Nullable Accessory getAccessory(Class<? extends Accessory> accessoryClass) {
-    //     Collection<Accessory> accessories = accessoryRegistry.get(getId());
-    //     for (Accessory accessory : accessories) {
-    //         if (accessory.getClass() == accessoryClass) {
-    //             return accessory;
-    //         }
-    //     }
-    //     return null;
+    // Collection<Accessory> accessories = accessoryRegistry.get(getId());
+    // for (Accessory accessory : accessories) {
+    // if (accessory.getClass() == accessoryClass) {
+    // return accessory;
+    // }
+    // }
+    // return null;
     // }
 
     // @Override
     // public void addAccessory(Accessory accessory) {
-    //     logger.debug("Adding Accessory {} of Type {} to Accessory Server {}", accessory.getUID(),
-    //             accessory.getClass().getSimpleName(), this.getUID());
-    //     // if (accessory.getAccessoryId() <= 1 && !(accessory instanceof BridgeAccessory)) {
-    //     //     throw new IndexOutOfBoundsException("The ID of an accessory used in a bridge must be greater than 1");
-    //     // }
+    // logger.debug("Adding Accessory {} of Type {} to Accessory Server {}", accessory.getUID(),
+    // accessory.getClass().getSimpleName(), this.getUID());
+    // // if (accessory.getAccessoryId() <= 1 && !(accessory instanceof BridgeAccessory)) {
+    // // throw new IndexOutOfBoundsException("The ID of an accessory used in a bridge must be greater than 1");
+    // // }
 
-    //     if (accessoryRegistry.update(accessory) == null) {
-    //         logger.debug("Adding Accessory {} of Type {} to the Accessory Registry", accessory.getUID(),
-    //                 accessory.getClass().getSimpleName(), this.getUID());
-    //         accessoryRegistry.add(accessory);
-    //     }
+    // if (accessoryRegistry.update(accessory) == null) {
+    // logger.debug("Adding Accessory {} of Type {} to the Accessory Registry", accessory.getUID(),
+    // accessory.getClass().getSimpleName(), this.getUID());
+    // accessoryRegistry.add(accessory);
+    // }
     // }
 
     // @Override
     // public void removeAccessory(Accessory accessory) {
-    //     accessoryRegistry.remove(accessory.getUID());
+    // accessoryRegistry.remove(accessory.getUID());
     // }
 
     @Override
     public void addPairing(byte @NonNull [] pairingId, byte @NonNull [] publicKey) {
         try {
-            Pairing newPairing = new PairingImpl(getPairingId(), pairingId, publicKey);
+            Pairing newPairing = new HomekitPairing(getPairingId(), pairingId, publicKey);
             Pairing oldPairing = pairingRegistry.remove(newPairing.getUID());
 
             if (oldPairing != null) {
                 logger.debug("Removed Pairing of {} with Destination {} holding Public Key {}", getUID(),
-                        Byte.toHexString(oldPairing.getDestinationId()),
-                        Byte.toHexString(oldPairing.getPublicKey()));
+                        Byte.toHexString(oldPairing.getDestinationId()), Byte.toHexString(oldPairing.getPublicKey()));
                 setState(AccessoryState.DISCONNECTED);
             }
 
@@ -321,8 +318,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
         Pairing oldPairing = pairingRegistry.remove(new PairingUID(getPairingId(), pairingId));
         if (oldPairing != null) {
             logger.debug("Removed Pairing of {} with Destination {} holding Public Key {}", getUID(),
-                    Byte.toHexString(oldPairing.getDestinationId()),
-                    Byte.toHexString(oldPairing.getPublicKey()));
+                    Byte.toHexString(oldPairing.getDestinationId()), Byte.toHexString(oldPairing.getPublicKey()));
             setState(AccessoryState.DISCONNECTED);
         } else {
             logger.warn("The Pairing Registry does not contain a Pairing for {} with Destination {}", getUID(),

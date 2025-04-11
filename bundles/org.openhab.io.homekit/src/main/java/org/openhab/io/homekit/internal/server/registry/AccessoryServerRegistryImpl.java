@@ -139,8 +139,7 @@ public class AccessoryServerRegistryImpl
                             InetAddress.getByName(networkAddressService.getPrimaryIpv4HostAddress()),
                             highestPortNumber++);
                     if (availableServer != null) {
-                        BridgeAccessory bridgeAccessory = new BridgeAccessory(
-                                1, true);
+                        BridgeAccessory bridgeAccessory = new BridgeAccessory(1, true);
                         availableServer.addAccessory(bridgeAccessory);
                     }
 
@@ -169,7 +168,7 @@ public class AccessoryServerRegistryImpl
                             "Added a Bridge Accessory to Server {} of Type {} running on Port {} with Setup Code {}",
                             availableServer.getUID(), availableServer.getClass().getSimpleName(),
                             availableServer.getPort(), availableServer.getSetupCode());
-                    BridgeAccessory bridgeAccessory = new BridgeAccessory( 1, true);
+                    BridgeAccessory bridgeAccessory = new BridgeAccessory(1, true);
                     availableServer.addAccessory(bridgeAccessory);
                 } catch (Exception e) {
                     // TODO Auto-generated catch block
@@ -245,5 +244,4 @@ public class AccessoryServerRegistryImpl
         element.removeChangeListener(this);
         super.removed(provider, element);
     }
-
 }

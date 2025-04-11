@@ -5,10 +5,8 @@ import org.openhab.io.homekit.internal.characteristic.IntegerCharacteristic;
 
 public class CurrentVerticalTiltAngleCharacteristic extends IntegerCharacteristic {
 
-    public CurrentVerticalTiltAngleCharacteristic(Service service,
-            long instanceId) {
-        super(service, instanceId, false, true, true, "The current angle of vertical slats", -90, 90,
-                "arcdegrees");
+    public CurrentVerticalTiltAngleCharacteristic(Service service, long instanceId) {
+        super(service, instanceId, false, true, true, "The current angle of vertical slats", -90, 90, "arcdegrees");
     }
 
     public static String getType() {

@@ -3,11 +3,12 @@ package org.openhab.io.homekit.api.hap;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.core.common.registry.Identifiable;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.listener.CharacteristicChangeListener;
 import org.openhab.io.homekit.internal.characteristic.CharacteristicUID;
-import org.eclipse.jdt.annotation.NonNull;
+
 /**
  * Interface for the Characteristics provided by a Service.
  *
@@ -72,14 +73,14 @@ public interface Characteristic<T> extends Identifiable<@NonNull CharacteristicU
      *
      * @param listener the listener to add
      */
-    void addListener(CharacteristicChangeListener listener);
+    void addChangeListener(CharacteristicChangeListener listener);
 
     /**
      * Removes a listener from being notified of characteristic changes.
      *
      * @param listener the listener to remove
      */
-    void removeListener(CharacteristicChangeListener listener);
+    void removeChangeListener(CharacteristicChangeListener listener);
 
     /**
      * Creates a JSON representation of the Characteristic with specified fields included.

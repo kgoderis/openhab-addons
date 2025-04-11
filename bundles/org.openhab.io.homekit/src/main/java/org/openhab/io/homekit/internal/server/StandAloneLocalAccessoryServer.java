@@ -19,9 +19,7 @@ public class StandAloneLocalAccessoryServer extends AbstractLocalAccessoryServer
 
     public StandAloneLocalAccessoryServer(InetAddress address, int port, byte[] pairingId, byte[] secretKey,
             MDNSService mdnsService, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry,
-              SafeCaller safeCaller)
-            throws InvalidAlgorithmParameterException {
-        super(address, port, pairingId, secretKey, mdnsService, accessoryRegistry, pairingRegistry,
-                 safeCaller);
+            SafeCaller safeCaller) throws InvalidAlgorithmParameterException {
+        super(address, port, pairingId, secretKey, mdnsService, accessoryRegistry, pairingRegistry, safeCaller);
     }
 }

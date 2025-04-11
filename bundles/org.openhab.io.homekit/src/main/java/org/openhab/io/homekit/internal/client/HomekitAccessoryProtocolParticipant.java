@@ -1,16 +1,16 @@
-package org.openhab.io.homekit.internal.client;
+// package org.openhab.io.homekit.internal.client;
 
-public interface HomekitAccessoryProtocolParticipant {
+// public interface HomekitAccessoryProtocolParticipant {
 
-    void updateConfigurationNumber(int configurationNumber);
+// void updateConfigurationNumber(int configurationNumber);
 
-    int getConfigurationNumber();
+// int getConfigurationNumber();
 
-    String getAccessoryPairingId();
+// String getAccessoryPairingId();
 
-    void updateDestination(String host, int portNumber);
+// void updateDestination(String host, int portNumber);
 
-    void pair(String setupCode);
+// void pair(String setupCode);
 
-    void pairVerify();
-}
+// void pairVerify();
+// }

@@ -44,25 +44,27 @@ public class GenericAccessory implements Accessory {
     // private final AccessoryServer server;
     private final Collection<AccessoryChangeListener> listeners = new CopyOnWriteArraySet<>();
     private Collection<Service> services = new HashSet<Service>();
-        private @NonNull AccessoryUID accessoryUID;
-    
-        /**
-         * Creates a new GenericAccessory with a unique instance ID.
-         * The instance ID is automatically assigned and managed to avoid conflicts.
-         *
-         * @param server The accessory server this accessory belongs to
-         */
-        public GenericAccessory(long accessoryId) {
-            // this.server = server;
-            this.instanceId = getNextAvailableInstanceId();
-            this.accessoryId = accessoryId;
-            logger.debug("Created new accessory with instance ID: {}", instanceId);
-            
-            if (isExtensible()) {
-                addServices();
-            }
-    
-            this.accessoryUID = new AccessoryUID(new String(HomekitKeyGenerator.generateHexidecimalId(), StandardCharsets.UTF_8).replace(":", ""), getAccessoryId());
+    private @NonNull AccessoryUID accessoryUID;
+
+    /**
+     * Creates a new GenericAccessory with a unique instance ID.
+     * The instance ID is automatically assigned and managed to avoid conflicts.
+     *
+     * @param server The accessory server this accessory belongs to
+     */
+    public GenericAccessory(long accessoryId) {
+        // this.server = server;
+        this.instanceId = getNextAvailableInstanceId();
+        this.accessoryId = accessoryId;
+        logger.debug("Created new accessory with instance ID: {}", instanceId);
+
+        if (isExtensible()) {
+            addServices();
+        }
+
+        this.accessoryUID = new AccessoryUID(
+                new String(HomekitKeyGenerator.generateHexidecimalId(), StandardCharsets.UTF_8).replace(":", ""),
+                getAccessoryId());
     }
 
     /**
@@ -104,7 +106,7 @@ public class GenericAccessory implements Accessory {
                     return id;
                 }
             }
-            
+
             // If no recycled IDs available, use the next new ID
             long newId = nextInstanceId++;
             usedInstanceIds.add(newId);
@@ -189,10 +191,10 @@ public class GenericAccessory implements Accessory {
     }
 
     @Override
-    @NonNull public AccessoryUID getUID() {
+    @NonNull
+    public AccessoryUID getUID() {
         return accessoryUID;
     }
-        
 
     @Override
     public long getAccessoryId() {
@@ -223,7 +225,7 @@ public class GenericAccessory implements Accessory {
 
     // @Override
     // public @NonNull AccessoryServer getServer() {
-    //     return server;
+    // return server;
     // }
 
     @Override
@@ -252,14 +254,13 @@ public class GenericAccessory implements Accessory {
         if (service != null && isExtensible()) {
             if (getService(service.getInstanceType()) == null) {
                 services.add(service);
-                logger.debug("Added Service '{}' (Type: {}) to Accessory '{}' (Type: {})", 
-                    service.getName(), service.getInstanceType(), 
-                    this.getLabel(), this.getClass().getSimpleName());
+                logger.debug("Added Service '{}' (Type: {}) to Accessory '{}' (Type: {})", service.getName(),
+                        service.getInstanceType(), this.getLabel(), this.getClass().getSimpleName());
                 notifyServiceAdded(service);
-                
+
                 // Listen for service changes
                 if (service instanceof GenericService) {
-                    ((GenericService) service).addListener(new ServiceChangeListener() {
+                    ((GenericService) service).addChangeListener(new ServiceChangeListener() {
                         @Override
                         public void onServiceEvent(ServiceEvent event) {
                             notifyServiceStateChanged(service);
@@ -267,41 +268,41 @@ public class GenericAccessory implements Accessory {
                     });
                 }
             } else {
-                logger.debug("Accessory '{}' (Type: {}) already contains Service '{}' (Type: {})", 
-                    this.getLabel(), this.getClass().getSimpleName(),
-                    service.getName(), service.getInstanceType());
+                logger.debug("Accessory '{}' (Type: {}) already contains Service '{}' (Type: {})", this.getLabel(),
+                        this.getClass().getSimpleName(), service.getName(), service.getInstanceType());
             }
         }
     }
 
     @Override
-    public void addListener(@NonNull AccessoryChangeListener listener) {
+    public void addChangeListener(@NonNull AccessoryChangeListener listener) {
         listeners.add(listener);
     }
 
     @Override
-    public void removeListener(@NonNull AccessoryChangeListener listener) {
+    public void removeChangeListener(@NonNull AccessoryChangeListener listener) {
         listeners.remove(listener);
     }
 
     protected void notifyServiceAdded(Service service) {
-        logger.debug("Notifying listeners of Service '{}' (Type: {}) addition to Accessory '{}'", 
-            service.getName(), service.getInstanceType(), this.getLabel());
+        logger.debug("Notifying listeners of Service '{}' (Type: {}) addition to Accessory '{}'", service.getName(),
+                service.getInstanceType(), this.getLabel());
         AccessoryEvent event = new AccessoryEvent(this, service, AccessoryEvent.AccessoryEventType.SERVICE_ADDED);
         notifyListeners(event);
     }
 
     protected void notifyServiceRemoved(Service service) {
-        logger.debug("Notifying listeners of Service '{}' (Type: {}) removal from Accessory '{}'", 
-            service.getName(), service.getInstanceType(), this.getLabel());
+        logger.debug("Notifying listeners of Service '{}' (Type: {}) removal from Accessory '{}'", service.getName(),
+                service.getInstanceType(), this.getLabel());
         AccessoryEvent event = new AccessoryEvent(this, service, AccessoryEvent.AccessoryEventType.SERVICE_REMOVED);
         notifyListeners(event);
     }
 
     protected void notifyServiceStateChanged(Service service) {
-        logger.debug("Notifying listeners of Service '{}' (Type: {}) state change in Accessory '{}'", 
-            service.getName(), service.getInstanceType(), this.getLabel());
-        AccessoryEvent event = new AccessoryEvent(this, service, AccessoryEvent.AccessoryEventType.SERVICE_STATE_CHANGED);
+        logger.debug("Notifying listeners of Service '{}' (Type: {}) state change in Accessory '{}'", service.getName(),
+                service.getInstanceType(), this.getLabel());
+        AccessoryEvent event = new AccessoryEvent(this, service,
+                AccessoryEvent.AccessoryEventType.SERVICE_STATE_CHANGED);
         notifyListeners(event);
     }
 

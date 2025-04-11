@@ -31,4 +31,4 @@ public class AccessoryEvent {
     public AccessoryEventType getType() {
         return type;
     }
-} 
+}

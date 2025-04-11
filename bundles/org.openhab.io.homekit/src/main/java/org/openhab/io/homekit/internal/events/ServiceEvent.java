@@ -31,4 +31,4 @@ public class ServiceEvent {
     public ServiceEventType getType() {
         return type;
     }
-} 
+}

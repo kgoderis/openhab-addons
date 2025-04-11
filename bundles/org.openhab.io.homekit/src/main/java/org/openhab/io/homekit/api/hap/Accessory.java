@@ -105,14 +105,14 @@ public interface Accessory extends Identifiable<AccessoryUID> {
      *
      * @param listener the listener to add
      */
-    void addListener(AccessoryChangeListener listener);
+    void addChangeListener(AccessoryChangeListener listener);
 
     /**
      * Removes a listener from being notified of accessory changes.
      *
      * @param listener the listener to remove
      */
-    void removeListener(AccessoryChangeListener listener);
+    void removeChangeListener(AccessoryChangeListener listener);
 
     /**
      * Creates the JSON representation of the Accessory, in accordance with the Homekit Accessory

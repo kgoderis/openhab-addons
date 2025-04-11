@@ -24,5 +24,4 @@ public class OnCharacteristic extends BooleanCharacteristic {
     public String getInstanceType() {
         return getType();
     }
-
 }

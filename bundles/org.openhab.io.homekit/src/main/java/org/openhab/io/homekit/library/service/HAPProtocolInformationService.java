@@ -7,13 +7,15 @@ import org.openhab.io.homekit.library.characteristic.VersionCharacteristic;
 
 public class HAPProtocolInformationService extends GenericService {
 
-    public HAPProtocolInformationService(Accessory accessory, long instanceId, boolean extend, @NonNull String serviceName) throws Exception {
+    public HAPProtocolInformationService(Accessory accessory, long instanceId, boolean extend,
+            @NonNull String serviceName) throws Exception {
         super(accessory, instanceId, extend, serviceName);
     }
 
     @Override
     public void addCharacteristics() {
-        VersionCharacteristic characteristic = new VersionCharacteristic(this, getAccessory().getNextAvailableInstanceId());
+        VersionCharacteristic characteristic = new VersionCharacteristic(this,
+                getAccessory().getNextAvailableInstanceId());
         characteristic.setVersion("01.01.00");
         addCharacteristic(characteristic);
     }

@@ -15,7 +15,8 @@ import org.openhab.io.homekit.library.characteristic.TargetVerticalTiltAngleChar
 
 public class WindowCoveringService extends GenericService {
 
-    public WindowCoveringService(Accessory accessory, long instanceId, boolean extend, @NonNull String serviceName) throws Exception {
+    public WindowCoveringService(Accessory accessory, long instanceId, boolean extend, @NonNull String serviceName)
+            throws Exception {
         super(accessory, instanceId, extend, serviceName);
     }
 
@@ -26,9 +27,12 @@ public class WindowCoveringService extends GenericService {
         addCharacteristic(new CurrentPositionCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
         addCharacteristic(new PositionStateCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
         addCharacteristic(new HoldPositionCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
-        addCharacteristic(new CurrentHorizontalTiltAngleCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
-        addCharacteristic(new TargetHorizontalTiltAngleCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
-        addCharacteristic(new CurrentVerticalTiltAngleCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(
+                new CurrentHorizontalTiltAngleCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(
+                new TargetHorizontalTiltAngleCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(
+                new CurrentVerticalTiltAngleCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
         addCharacteristic(new TargetVerticalTiltAngleCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
         addCharacteristic(new ObstructionDetectedCharacteristic(this, getAccessory().getNextAvailableInstanceId()));
     }

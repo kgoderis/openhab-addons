@@ -55,4 +55,4 @@ public class HomekitKeyGenerator {
                         .map(i -> Integer.toHexString(i).toUpperCase()).collect(Collectors.joining(":")))
                 .getBytes(StandardCharsets.UTF_8);
     }
-} 
+}

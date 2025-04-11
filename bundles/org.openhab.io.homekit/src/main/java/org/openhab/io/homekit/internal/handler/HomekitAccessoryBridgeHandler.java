@@ -222,27 +222,25 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
             accessoryServer.setSetupCode(setupCode);
             accessoryServer.start();
 
-
-
             // if (accessoryServer.isPaired()) {
-            //     logger.info("'{}' : Removing an existing pairing with the Homekit Accessory", getThing().getUID());
+            // logger.info("'{}' : Removing an existing pairing with the Homekit Accessory", getThing().getUID());
             // if (accessoryServer.isPaired()) {
-            //     logger.info("'{}' : Removing an existing pairing with the Homekit Accessory", getThing().getUID());
-            //     try {
-            //         accessoryServer.pairRemove();
-            //     } catch (HomekitException | IOException e) {
-            //         // TODO Auto-generated catch block
-            //         e.printStackTrace();
-            //     }
-            //     updateStatus(ThingStatus.OFFLINE);
+            // logger.info("'{}' : Removing an existing pairing with the Homekit Accessory", getThing().getUID());
+            // try {
+            // accessoryServer.pairRemove();
+            // } catch (HomekitException | IOException e) {
+            // // TODO Auto-generated catch block
+            // e.printStackTrace();
+            // }
+            // updateStatus(ThingStatus.OFFLINE);
             // }
 
             // logger.info("'{}' : Setting up a new pairing with the Homekit Accessory", getThing().getUID());
             // try {
-            //     accessoryServer.pairSetup();
+            // accessoryServer.pairSetup();
             // } catch (IOException e) {
-            //     // TODO Auto-generated catch block
-            //     e.printStackTrace();
+            // // TODO Auto-generated catch block
+            // e.printStackTrace();
             // }
 
             if (accessoryServer.isPaired()) {
