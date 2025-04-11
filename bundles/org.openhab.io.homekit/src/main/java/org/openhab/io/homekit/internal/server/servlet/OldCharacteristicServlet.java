@@ -1,3 +1,4 @@
+package org.openhab.io.homekit.internal.server.servlet;
 // package org.openhab.io.homekit.internal.servlet;
 
 // import java.io.ByteArrayInputStream;

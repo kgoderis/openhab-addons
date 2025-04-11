@@ -11,6 +11,14 @@ public class ServiceNameCharacteristic extends ReadOnlyStringCharacteristic {
 
     @Override
     public String getInstanceType() {
+        return getType();
+    }
+
+    public static String getType() {
         return "00000023-0000-1000-8000-0026BB765291";
+    }
+
+    public static String getTag() {
+        return ServiceNameCharacteristic.class.getSimpleName().replace("Characteristic", "");
     }
 }

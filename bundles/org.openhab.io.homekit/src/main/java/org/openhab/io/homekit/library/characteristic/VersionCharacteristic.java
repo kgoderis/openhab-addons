@@ -27,4 +27,8 @@ public class VersionCharacteristic extends ShortReadOnlyStringCharacteristic {
     public void setVersion(String version) {
         setReadOnlyValue(version);
     }
+
+    public static String getTag() {
+        return VersionCharacteristic.class.getSimpleName().replace("Characteristic", "");
+    }
 }

@@ -33,4 +33,8 @@ public class OutletService extends GenericService {
     public String getInstanceType() {
         return getType();
     }
+
+    public static String getTag() {
+        return OutletService.class.getSimpleName().replace("Service", "");
+    }
 }

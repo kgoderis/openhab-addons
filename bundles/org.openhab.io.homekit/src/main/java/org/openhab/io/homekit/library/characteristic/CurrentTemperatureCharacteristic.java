@@ -18,4 +18,8 @@ public class CurrentTemperatureCharacteristic extends FloatCharacteristic {
     public String getInstanceType() {
         return getType();
     }
+
+    public static String getTag() {
+        return CurrentTemperatureCharacteristic.class.getSimpleName().replace("Characteristic", "");
+    }
 }

@@ -24,4 +24,8 @@ public class StatusActiveCharacteristic extends BooleanCharacteristic {
     public String getInstanceType() {
         return getType();
     }
+
+    public static String getTag() {
+        return StatusActiveCharacteristic.class.getSimpleName().replace("Characteristic", "");
+    }
 }

@@ -1,5 +1,7 @@
 package org.openhab.io.homekit.internal.provider;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -90,7 +92,18 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
 
         // Get the service class to determine the service name
         Class<?> serviceClass = homekitFactory.getService(serviceType);
-        String serviceName = serviceClass != null ? serviceClass.getSimpleName() : serviceType;
+        String serviceName = serviceType;
+        if (serviceClass != null) {
+            try {
+                Method getTagMethod = serviceClass.getMethod("getTag");
+                Object tag = getTagMethod.invoke(null);
+                if (tag != null) {
+                    serviceName = tag.toString();
+                }
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                logger.debug("Could not get tag from service class {}, using service type as name", serviceClass.getName());
+            }
+        }
 
         // Create channel definitions for each characteristic type supported by this service
         List<ChannelDefinition> channelDefinitions = createChannelDefinitions(serviceType, homekitFactory);
@@ -142,10 +155,10 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
                 "HomeKit " + serviceType + " Service Group"));
     }
 
-    private ThingTypeUID getThingTypeUID(String serviceType) {
+    public ThingTypeUID getThingTypeUID(String serviceType) {
         // Create a unique ID for the thing type based on the service type
         // Format: homekit:service-serviceType
-        String serviceTypeId = serviceType.replaceAll("^0*([0-9a-fA-F]+)-0000-1000-8000-0026BB765291$", "$1");
+        String serviceTypeId = serviceType.replaceAll("^0*([0-9a-fA-F]+)-0000-1000-8000-0026BB765291$", "");
         return new ThingTypeUID("homekit", "service-" + serviceTypeId);
     }
 

@@ -32,4 +32,8 @@ public class ContactSensorStateCharacteristic extends EnumCharacteristic {
     public State toState(Integer value) {
         return value == 0 ? OpenClosedType.OPEN : OpenClosedType.CLOSED;
     }
+
+    public static String getTag() {
+        return ContactSensorStateCharacteristic.class.getSimpleName().replace("Characteristic", "");
+    }
 }

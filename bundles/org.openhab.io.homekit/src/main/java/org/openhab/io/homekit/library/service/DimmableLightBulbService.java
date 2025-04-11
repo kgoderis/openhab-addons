@@ -17,4 +17,13 @@ public class DimmableLightBulbService extends LightBulbService {
         addCharacteristic(
                 new BrightnessCharacteristic(this, ((Accessory) getAccessory()).getNextAvailableInstanceId()));
     }
+
+    @Override
+    public String getInstanceType() {
+        return getType();
+    }
+
+    public static String getTag() {
+        return DimmableLightBulbService.class.getSimpleName().replace("Service", "");
+    }
 }

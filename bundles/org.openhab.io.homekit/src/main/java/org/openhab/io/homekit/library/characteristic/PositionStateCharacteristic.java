@@ -17,4 +17,8 @@ public class PositionStateCharacteristic extends EnumCharacteristic {
     public String getInstanceType() {
         return getType();
     }
+
+    public static String getTag() {
+        return PositionStateCharacteristic.class.getSimpleName().replace("Characteristic", "");
+    }
 }

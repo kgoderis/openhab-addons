@@ -33,4 +33,8 @@ public class HAPProtocolInformationService extends GenericService {
     public String getInstanceType() {
         return getType();
     }
+
+    public static String getTag() {
+        return HAPProtocolInformationService.class.getSimpleName().replace("Service", "");
+    }
 }

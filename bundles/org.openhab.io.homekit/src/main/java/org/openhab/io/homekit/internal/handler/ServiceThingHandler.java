@@ -25,6 +25,7 @@ import org.openhab.io.homekit.api.listener.ServiceChangeListener;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
 import org.openhab.io.homekit.internal.accessory.AccessoryUID;
+import org.openhab.io.homekit.internal.client.HomekitException;
 import org.openhab.io.homekit.internal.events.AccessoryServerEvent;
 import org.openhab.io.homekit.internal.events.CharacteristicEvent;
 import org.openhab.io.homekit.internal.events.ServiceEvent;
@@ -33,7 +34,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @NonNullByDefault
-public class ServiceThingHandler extends BaseThingHandler implements AccessoryServerChangeListener, ServiceChangeListener, CharacteristicChangeListener {
+public class ServiceThingHandler extends BaseThingHandler
+        implements AccessoryServerChangeListener, ServiceChangeListener, CharacteristicChangeListener {
     private final Logger logger = LoggerFactory.getLogger(ServiceThingHandler.class);
     private final AccessoryServerRegistry serverRegistry;
     private final AccessoryRegistry accessoryRegistry;
@@ -45,18 +47,19 @@ public class ServiceThingHandler extends BaseThingHandler implements AccessorySe
     private Service service;
     private final Map<Channel, Characteristic<?>> characteristicMap = new ConcurrentHashMap<>();
 
-    public ServiceThingHandler(Thing thing, AccessoryServerRegistry serverRegistry, AccessoryRegistry accessoryRegistry) {
+    public ServiceThingHandler(Thing thing, AccessoryServerRegistry serverRegistry,
+            AccessoryRegistry accessoryRegistry) {
         super(thing);
         this.serverRegistry = serverRegistry;
         this.accessoryRegistry = accessoryRegistry;
-        
+
         // Parse configuration
         Configuration config = thing.getConfiguration();
         deviceId = (String) config.get("deviceId");
         serviceId = (String) config.get("serviceId");
         Object accessoryIdConfig = config.get("accessoryId");
         accessoryId = accessoryIdConfig != null ? (String) accessoryIdConfig : "1";
-        
+
         if (deviceId == null || serviceId == null) {
             throw new IllegalArgumentException("Thing configuration must contain deviceId and serviceId parameters");
         }
@@ -84,9 +87,15 @@ public class ServiceThingHandler extends BaseThingHandler implements AccessorySe
 
         // Verify ThingType matches Service type
         String thingType = thing.getThingTypeUID().getId();
-        String serviceTag = service.getTag(); // Do not fix this with Agent
-        if (!thingType.equals(serviceTag)) {
-            throw new IllegalArgumentException("ThingType " + thingType + " does not match Service type " + serviceTag);
+        String serviceTag;
+        try {
+            serviceTag = getServiceTag(service);
+            if (!thingType.equals(serviceTag)) {
+                throw new IllegalArgumentException(
+                        "ThingType " + thingType + " does not match Service type " + serviceTag);
+            }
+        } catch (HomekitException e) {
+            throw new IllegalArgumentException("Service type could not be determined", e);
         }
 
         // Compare and map Channels with Characteristics
@@ -101,8 +110,19 @@ public class ServiceThingHandler extends BaseThingHandler implements AccessorySe
             // Compare existing channels with characteristics
             for (Channel channel : thing.getChannels()) {
                 String channelId = channel.getUID().getId();
-                Characteristic<?> characteristic = service.getCharacteristicByTag(channelId); // Do not fix this with Agent
-                
+                Characteristic<?> characteristic = null;
+                for (Characteristic<?> c : service.getCharacteristics()) {
+                    try {
+                        if (getCharacteristicTag(c).equals(channelId)) {
+                            characteristic = c;
+                            break;
+                        }
+                    } catch (HomekitException e) {
+                        logger.warn("Channel {} has no matching Characteristic in Service {}", channelId,
+                                service.getUID());
+                    }
+                }
+
                 if (characteristic == null) {
                     logger.warn("Channel {} has no matching Characteristic in Service {}", channelId, service.getUID());
                 } else {
@@ -110,12 +130,34 @@ public class ServiceThingHandler extends BaseThingHandler implements AccessorySe
                 }
             }
         }
-        
+
         // Register as listener
         this.server.addChangeListener(this);
         this.service.addChangeListener(this);
 
         initializeChannels();
+    }
+
+    private String getServiceTag(Service service) throws HomekitException {
+        try {
+            Class<?> serviceClass = service.getClass();
+            java.lang.reflect.Method getTagMethod = serviceClass.getMethod("getTag");
+            return (String) getTagMethod.invoke(null);
+        } catch (NoSuchMethodException | IllegalAccessException | java.lang.reflect.InvocationTargetException e) {
+            throw new HomekitException(
+                    "Service " + service.getClass().getName() + " does not implement getTag() method");
+        }
+    }
+
+    private String getCharacteristicTag(Characteristic<?> characteristic) throws HomekitException {
+        try {
+            Class<?> characteristicClass = characteristic.getClass();
+            java.lang.reflect.Method getTagMethod = characteristicClass.getMethod("getTag");
+            return (String) getTagMethod.invoke(null);
+        } catch (NoSuchMethodException | IllegalAccessException | java.lang.reflect.InvocationTargetException e) {
+            throw new HomekitException(
+                    "Characteristic " + characteristic.getClass().getName() + " does not implement getTag() method");
+        }
     }
 
     @Override
@@ -126,7 +168,7 @@ public class ServiceThingHandler extends BaseThingHandler implements AccessorySe
                 server.advertise();
                 server.start();
             }
-            
+
             updateStatus(ThingStatus.ONLINE);
         } catch (Exception e) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, e.getMessage());
@@ -164,7 +206,8 @@ public class ServiceThingHandler extends BaseThingHandler implements AccessorySe
                     updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Missing setup code");
                     break;
                 case SERVER_STATE_PAIRING_MISSING:
-                    updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Pairing information missing");
+                    updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
+                            "Pairing information missing");
                     break;
                 case SERVICE_ADDED:
                     if (event.getService().equals(service)) {
@@ -175,6 +218,8 @@ public class ServiceThingHandler extends BaseThingHandler implements AccessorySe
                     if (event.getService().equals(service)) {
                         updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.GONE, "Service was removed");
                     }
+                    break;
+                default:
                     break;
             }
         }
@@ -190,9 +235,9 @@ public class ServiceThingHandler extends BaseThingHandler implements AccessorySe
                 case CHARACTERISTIC_REMOVED:
                     removeChannelForCharacteristic(serviceEvent.getCharacteristic());
                     break;
-                // case CHARACTERISTIC_STATE_CHANGED:
-                //     updateChannelForCharacteristic(serviceEvent.getCharacteristic());
-                //     break;
+                case CHARACTERISTIC_STATE_CHANGED:
+                    // TODO: Handle characteristic state changed
+                    break;
             }
         }
     }
@@ -203,7 +248,7 @@ public class ServiceThingHandler extends BaseThingHandler implements AccessorySe
         String channelId = characteristic.getUID().toString();
         ChannelUID channelUID = new ChannelUID(thing.getUID(), channelId);
         Channel channel = thing.getChannel(channelUID);
-        
+
         if (channel != null && characteristicMap.get(channel) == characteristic) {
             Object newValue = event.getNewValue();
             if (newValue instanceof State) {
@@ -224,13 +269,11 @@ public class ServiceThingHandler extends BaseThingHandler implements AccessorySe
     private Channel addChannelForCharacteristic(Characteristic<?> characteristic) {
         String channelId = characteristic.getUID().toString();
         ChannelUID channelUID = new ChannelUID(thing.getUID(), channelId);
-        
+
         Channel channel = ChannelBuilder.create(channelUID, characteristic.getUID().toString())
                 .withType(new ChannelTypeUID("homekit", characteristic.getUID().toString()))
-                .withLabel(characteristic.getDescription())
-                .withDescription(characteristic.getDescription())
-                .build();
-        
+                .withLabel(characteristic.getDescription()).withDescription(characteristic.getDescription()).build();
+
         updateThing(editThing().withChannel(channel).build());
         return channel;
     }

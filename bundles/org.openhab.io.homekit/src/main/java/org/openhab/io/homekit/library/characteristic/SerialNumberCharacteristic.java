@@ -17,4 +17,8 @@ public class SerialNumberCharacteristic extends ReadOnlyStringCharacteristic {
     public String getInstanceType() {
         return getType();
     }
+
+    public static String getTag() {
+        return SerialNumberCharacteristic.class.getSimpleName().replace("Characteristic", "");
+    }
 }

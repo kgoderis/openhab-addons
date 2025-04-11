@@ -6,56 +6,56 @@ import org.openhab.io.homekit.internal.events.AccessoryServerEvent.AccessoryServ
  * Extended version of accessory state using the Enum extension pattern.
  * This class provides additional functionality and state management for accessories.
  */
-public class AccessoryState {
+public class AccessoryServerState {
     private final String name;
     private final String description;
     private final AccessoryServerEventType eventType;
     private final boolean isTransient;
 
-    private AccessoryState(String name, String description, AccessoryServerEventType eventType, boolean isTransient) {
+    private AccessoryServerState(String name, String description, AccessoryServerEventType eventType, boolean isTransient) {
         this.name = name;
         this.description = description;
         this.eventType = eventType;
         this.isTransient = isTransient;
     }
 
-    public static final AccessoryState UNKNOWN = new AccessoryState("UNKNOWN", "Unknown state",
+    public static final AccessoryServerState UNKNOWN = new AccessoryServerState("UNKNOWN", "Unknown state",
             AccessoryServerEventType.SERVER_UPDATED, false);
 
-    public static final AccessoryState CONNECTED = new AccessoryState("CONNECTED", "Connected to controller",
+    public static final AccessoryServerState CONNECTED = new AccessoryServerState("CONNECTED", "Connected to controller",
             AccessoryServerEventType.SERVER_STATE_CONNECTED, false);
 
-    public static final AccessoryState DISCONNECTED = new AccessoryState("DISCONNECTED", "Disconnected from controller",
+    public static final AccessoryServerState DISCONNECTED = new AccessoryServerState("DISCONNECTED", "Disconnected from controller",
             AccessoryServerEventType.SERVER_STATE_DISCONNECTED, false);
 
-    public static final AccessoryState PAIRED = new AccessoryState("PAIRED", "Paired with controller",
+    public static final AccessoryServerState PAIRED = new AccessoryServerState("PAIRED", "Paired with controller",
             AccessoryServerEventType.SERVER_STATE_PAIRED, false);
 
-    public static final AccessoryState PAIR_VERIFIED = new AccessoryState("PAIR_VERIFIED",
+    public static final AccessoryServerState PAIR_VERIFIED = new AccessoryServerState("PAIR_VERIFIED",
             "Pairing verified with controller", AccessoryServerEventType.SERVER_STATE_PAIR_VERIFIED, false);
 
-    public static final AccessoryState PAIR_UNVERIFIED = new AccessoryState("PAIR_UNVERIFIED",
+    public static final AccessoryServerState PAIR_UNVERIFIED = new AccessoryServerState("PAIR_UNVERIFIED",
             "Pairing exists but not verified", AccessoryServerEventType.SERVER_STATE_PAIR_UNVERIFIED, false);
 
-    public static final AccessoryState UNPAIRED = new AccessoryState("UNPAIRED", "Not paired with any controller",
+    public static final AccessoryServerState UNPAIRED = new AccessoryServerState("UNPAIRED", "Not paired with any controller",
             AccessoryServerEventType.SERVER_STATE_UNPAIRED, false);
 
-    public static final AccessoryState PAIRING_MISSING = new AccessoryState("PAIRING_MISSING",
+    public static final AccessoryServerState PAIRING_MISSING = new AccessoryServerState("PAIRING_MISSING",
             "Pairing information is missing", AccessoryServerEventType.SERVER_STATE_PAIRING_MISSING, false);
 
-    public static final AccessoryState MISSING_SETUP_CODE = new AccessoryState("MISSING_SETUP_CODE",
+    public static final AccessoryServerState MISSING_SETUP_CODE = new AccessoryServerState("MISSING_SETUP_CODE",
             "Setup code is missing or invalid", AccessoryServerEventType.SERVER_STATE_MISSING_SETUP_CODE, false);
 
-    public static final AccessoryState AUTHENTICATING = new AccessoryState("AUTHENTICATING",
+    public static final AccessoryServerState AUTHENTICATING = new AccessoryServerState("AUTHENTICATING",
             "Authenticating with controller", AccessoryServerEventType.SERVER_UPDATED, true);
 
-    public static final AccessoryState READY = new AccessoryState("READY", "Ready for operation",
+    public static final AccessoryServerState READY = new AccessoryServerState("READY", "Ready for operation",
             AccessoryServerEventType.SERVER_UPDATED, false);
 
-    public static final AccessoryState STOPPED = new AccessoryState("STOPPED", "Server stopped",
+    public static final AccessoryServerState STOPPED = new AccessoryServerState("STOPPED", "Server stopped",
             AccessoryServerEventType.SERVER_UPDATED, false);
 
-    public static final AccessoryState RESET = new AccessoryState("RESET", "Accessory has been factory reset",
+    public static final AccessoryServerState RESET = new AccessoryServerState("RESET", "Accessory has been factory reset",
             AccessoryServerEventType.SERVER_UPDATED, false);
 
     public String getName() {
@@ -87,7 +87,7 @@ public class AccessoryState {
         if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
-        AccessoryState other = (AccessoryState) obj;
+        AccessoryServerState other = (AccessoryServerState) obj;
         return name.equals(other.name) && eventType == other.eventType;
     }
 

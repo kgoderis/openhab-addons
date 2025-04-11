@@ -1,4 +1,4 @@
-package org.openhab.io.homekit.internal.client;
+package org.openhab.io.homekit.internal.provider;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -14,6 +14,8 @@ import org.openhab.core.config.core.ConfigDescriptionBuilder;
 import org.openhab.core.config.core.ConfigDescriptionParameter.Type;
 import org.openhab.core.config.core.ConfigDescriptionParameterBuilder;
 import org.openhab.core.config.core.ConfigDescriptionProvider;
+import org.openhab.io.homekit.internal.client.HomekitAccessoryConfiguration;
+import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
 import org.osgi.service.component.annotations.Component;
 
 @Component(service = ConfigDescriptionProvider.class, immediate = true)

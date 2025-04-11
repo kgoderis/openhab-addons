@@ -41,4 +41,8 @@ public class ThermostatService extends GenericService {
     public String getInstanceType() {
         return getType();
     }
+
+    public static String getTag() {
+        return ThermostatService.class.getSimpleName().replace("Service", "");
+    }
 }

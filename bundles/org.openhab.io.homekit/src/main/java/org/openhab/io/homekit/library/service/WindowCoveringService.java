@@ -50,4 +50,8 @@ public class WindowCoveringService extends GenericService {
     public String getInstanceType() {
         return getType();
     }
+
+    public static String getTag() {
+        return WindowCoveringService.class.getSimpleName().replace("Service", "");
+    }
 }

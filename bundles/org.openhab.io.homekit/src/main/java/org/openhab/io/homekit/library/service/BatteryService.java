@@ -32,4 +32,8 @@ public class BatteryService extends GenericService {
     public String getInstanceType() {
         return getType();
     }
+
+    public static String getTag() {
+        return BatteryService.class.getSimpleName().replace("Service", "");
+    }
 }

@@ -49,4 +49,8 @@ public class HueCharacteristic extends FloatCharacteristic {
         // return new DecimalType(value);
         // }
     }
+
+    public static String getTag() {
+        return HueCharacteristic.class.getSimpleName().replace("Characteristic", "");
+    }
 }

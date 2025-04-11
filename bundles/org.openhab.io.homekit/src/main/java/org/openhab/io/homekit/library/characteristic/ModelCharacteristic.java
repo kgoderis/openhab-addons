@@ -17,4 +17,8 @@ public class ModelCharacteristic extends ReadOnlyStringCharacteristic {
     public String getInstanceType() {
         return getType();
     }
+
+    public static String getTag() {
+        return ModelCharacteristic.class.getSimpleName().replace("Characteristic", "");
+    }
 }

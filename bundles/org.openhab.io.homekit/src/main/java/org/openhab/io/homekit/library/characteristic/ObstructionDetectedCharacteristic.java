@@ -24,4 +24,8 @@ public class ObstructionDetectedCharacteristic extends BooleanCharacteristic {
     public String getInstanceType() {
         return getType();
     }
+
+    public static String getTag() {
+        return ObstructionDetectedCharacteristic.class.getSimpleName().replace("Characteristic", "");
+    }
 }

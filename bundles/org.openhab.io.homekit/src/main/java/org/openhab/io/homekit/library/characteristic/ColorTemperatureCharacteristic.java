@@ -17,4 +17,8 @@ public class ColorTemperatureCharacteristic extends LongCharacteristic {
     public String getInstanceType() {
         return getType();
     }
+
+    public static String getTag() {
+        return ColorTemperatureCharacteristic.class.getSimpleName().replace("Characteristic", "");
+    }
 }

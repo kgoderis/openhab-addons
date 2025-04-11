@@ -44,4 +44,8 @@ public class ContactSensorService extends GenericService {
     public String getInstanceType() {
         return getType();
     }
+
+    public static String getTag() {
+        return ContactSensorService.class.getSimpleName().replace("Service", "");
+    }
 }

@@ -30,4 +30,8 @@ public class IdentifyCharacteristic extends WriteOnlyBooleanCharacteristic {
     public Boolean getDefault() {
         return null;
     }
+
+    public static String getTag() {
+        return IdentifyCharacteristic.class.getSimpleName().replace("Characteristic", "");
+    }
 }

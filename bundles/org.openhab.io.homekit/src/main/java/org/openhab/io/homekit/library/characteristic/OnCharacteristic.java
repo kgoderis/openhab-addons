@@ -24,4 +24,8 @@ public class OnCharacteristic extends BooleanCharacteristic {
     public String getInstanceType() {
         return getType();
     }
+
+    public static String getTag() {
+        return OnCharacteristic.class.getSimpleName().replace("Characteristic", "");
+    }
 }

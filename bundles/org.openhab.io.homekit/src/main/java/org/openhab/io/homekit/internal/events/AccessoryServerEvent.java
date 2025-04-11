@@ -28,7 +28,8 @@ public class AccessoryServerEvent {
         SERVER_STATE_MISSING_SETUP_CODE,
         SERVER_STATE_PAIRING_MISSING,
         SERVER_STATE_UNPAIRED,
-        SERVER_STATE_PAIR_UNVERIFIED
+        SERVER_STATE_PAIR_UNVERIFIED,
+        SERVER_STATE_CONFIGURATION_NUMBER_CHANGED
     }
 
     public AccessoryServerEvent(AccessoryServer server, Accessory accessory, Service service,

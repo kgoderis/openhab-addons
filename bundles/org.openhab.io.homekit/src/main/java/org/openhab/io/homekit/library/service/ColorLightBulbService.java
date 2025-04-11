@@ -22,4 +22,13 @@ public class ColorLightBulbService extends LightBulbService {
         addCharacteristic(
                 new ColorTemperatureCharacteristic(this, ((Accessory) getAccessory()).getNextAvailableInstanceId()));
     }
+
+    @Override
+    public String getInstanceType() {
+        return getType();
+    }
+
+    public static String getTag() {
+        return ColorLightBulbService.class.getSimpleName().replace("Service", "");
+    }
 }

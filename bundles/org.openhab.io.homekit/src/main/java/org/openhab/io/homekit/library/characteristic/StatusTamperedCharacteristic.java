@@ -17,4 +17,8 @@ public class StatusTamperedCharacteristic extends EnumCharacteristic {
     public String getInstanceType() {
         return getType();
     }
+
+    public static String getTag() {
+        return StatusTamperedCharacteristic.class.getSimpleName().replace("Characteristic", "");
+    }
 }

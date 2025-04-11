@@ -17,4 +17,8 @@ public class FirmwareRevisionCharacteristic extends ReadOnlyStringCharacteristic
     public String getInstanceType() {
         return getType();
     }
+
+    public static String getTag() {
+        return FirmwareRevisionCharacteristic.class.getSimpleName().replace("Characteristic", "");
+    }
 }

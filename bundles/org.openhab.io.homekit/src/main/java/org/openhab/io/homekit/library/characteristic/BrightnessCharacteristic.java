@@ -48,4 +48,8 @@ public class BrightnessCharacteristic extends IntegerCharacteristic {
         // return new DecimalType(value);
         // }
     }
+
+    public static String getTag() {
+        return BrightnessCharacteristic.class.getSimpleName().replace("Characteristic", "");
+    }
 }

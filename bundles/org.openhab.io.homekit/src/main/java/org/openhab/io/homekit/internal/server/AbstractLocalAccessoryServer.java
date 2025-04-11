@@ -21,17 +21,17 @@ import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.crypto.HomekitEncryptionEngine;
-import org.openhab.io.homekit.internal.accessory.AccessoryState;
+import org.openhab.io.homekit.internal.accessory.AccessoryServerState;
 import org.openhab.io.homekit.internal.client.HomekitException;
 import org.openhab.io.homekit.internal.http.HomekitRequestLogHandler;
 import org.openhab.io.homekit.internal.http.jetty.HomekitHttpConnectionFactory;
 import org.openhab.io.homekit.internal.http.jetty.HomekitSessionHandler;
-import org.openhab.io.homekit.internal.servlet.AccessoryServlet;
-import org.openhab.io.homekit.internal.servlet.CatchAnyServlet;
-import org.openhab.io.homekit.internal.servlet.CharacteristicServlet;
-import org.openhab.io.homekit.internal.servlet.PairSetupServlet;
-import org.openhab.io.homekit.internal.servlet.PairVerificationServlet;
-import org.openhab.io.homekit.internal.servlet.PairingServlet;
+import org.openhab.io.homekit.internal.server.servlet.AccessoryServlet;
+import org.openhab.io.homekit.internal.server.servlet.CatchAnyServlet;
+import org.openhab.io.homekit.internal.server.servlet.CharacteristicServlet;
+import org.openhab.io.homekit.internal.server.servlet.PairSetupServlet;
+import org.openhab.io.homekit.internal.server.servlet.PairVerificationServlet;
+import org.openhab.io.homekit.internal.server.servlet.PairingServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -175,27 +175,16 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
         // });
     }
 
+    @Override
     public void start() throws Exception {
-        if (!server.isStarted() && !server.isStarting()) {
-            logger.debug("Starting HomeKit server");
-            try {
-                server.start();
-                setState(AccessoryState.CONNECTED);
-            } catch (Exception e) {
-                logger.error("Failed to start server: {}", e.getMessage());
-                setState(AccessoryState.DISCONNECTED);
-            }
-        }
+        logger.debug("Starting HomeKit server");
+        setState(AccessoryServerState.CONNECTED);
     }
 
+    @Override
     public void stop() throws Exception {
-        try {
-            server.stop();
-            setState(AccessoryState.STOPPED);
-        } catch (Exception e) {
-            logger.error("Failed to stop server: {}", e.getMessage());
-            setState(AccessoryState.UNKNOWN);
-        }
+        logger.debug("Stopping HomeKit server");
+        setState(AccessoryServerState.STOPPED);
     }
 
     @Override
@@ -260,7 +249,7 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
                 start();
             } catch (Exception e) {
                 e.printStackTrace();
-                setState(AccessoryState.STOPPED);
+                setState(AccessoryServerState.STOPPED);
             }
         }
 
@@ -312,12 +301,12 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
             // mdnsService.updateService(announcedServiceDescription);
             mdnsService.unregisterService(announcedServiceDescription);
             mdnsService.registerService(announcedServiceDescription);
-            setState(AccessoryState.READY);
+            setState(AccessoryServerState.READY);
         } else {
             announcedServiceDescription = new ServiceDescription(SERVICE_TYPE,
                     "openHAB " + getClass().getSimpleName() + " " + getPort(), port, props);
             mdnsService.registerService(announcedServiceDescription);
-            setState(AccessoryState.READY);
+            setState(AccessoryServerState.READY);
         }
     }
 
@@ -329,7 +318,7 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
             } else {
                 setupCode = generateSetupCode();
             }
-            setState(AccessoryState.READY);
+            setState(AccessoryServerState.READY);
         }
         return setupCode;
     }

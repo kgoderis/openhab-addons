@@ -30,13 +30,13 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
 
     protected static final Logger logger = LoggerFactory.getLogger(BaseHomekitFactory.class);
 
-    HashMap<ThingTypeUID, Class<? extends Accessory>> thingTypeAccessoryClassMapper = new HashMap<ThingTypeUID, Class<? extends Accessory>>();
-    HashMap<ThingTypeUID, HashSet<String>> thingTypeServiceTypesMapper = new HashMap<ThingTypeUID, @NonNull HashSet<String>>();
-    HashMap<ChannelTypeUID, HashSet<String>> channelTypeCharacteristicTypesMapper = new HashMap<ChannelTypeUID, @NonNull HashSet<String>>();
-    HashMap<String, Class<? extends Service>> serviceTypeServiceClassMapper = new HashMap<String, Class<@NonNull ? extends Service>>();
-    HashMap<String, Class<? extends Characteristic<?>>> characteristicTypeCharacteristicClassMapper = new HashMap<String, Class<@NonNull ? extends Characteristic<?>>>();
-    HashMap<String, HashSet<Class<? extends Service>>> tagServiceClassMapper = new HashMap<>();
-    HashMap<String, HashSet<Class<? extends Characteristic<?>>>> tagCharacteristicClassMapper = new HashMap<>();
+    private HashMap<ThingTypeUID, Class<? extends Accessory>> thingTypeAccessoryClassMapper = new HashMap<ThingTypeUID, Class<? extends Accessory>>();
+    private HashMap<ThingTypeUID, HashSet<String>> thingTypeServiceTypesMapper = new HashMap<ThingTypeUID, @NonNull HashSet<String>>();
+    private HashMap<ChannelTypeUID, HashSet<String>> channelTypeCharacteristicTypesMapper = new HashMap<ChannelTypeUID, @NonNull HashSet<String>>();
+    private HashMap<String, Class<? extends Service>> serviceTypeServiceClassMapper = new HashMap<String, Class<@NonNull ? extends Service>>();
+    private HashMap<String, Class<? extends Characteristic<?>>> characteristicTypeCharacteristicClassMapper = new HashMap<String, Class<@NonNull ? extends Characteristic<?>>>();
+    private Map<String, HashSet<Class<? extends Service>>> tagServiceClassMapper = new HashMap<>();
+    private Map<String, HashSet<Class<? extends Characteristic<?>>>> tagCharacteristicClassMapper = new HashMap<>();
 
     public BaseHomekitFactory() {
     }
@@ -106,7 +106,6 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     // characteristic.setChannelUID(channel.getUID());
     // logger.debug("Linked Channel {} to Characteristic {} of Type {}", channel.getUID(),
     // characteristic.getUID(), characteristic.getClass().getSimpleName());
-    // }
     // }
     // }
     // }
@@ -237,15 +236,19 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     protected @Nullable Service createServiceByTag(String tag, Accessory accessory, long instanceId, boolean extend) {
         HashSet<Class<? extends Service>> serviceClasses = tagServiceClassMapper.get(tag);
         if (serviceClasses != null && !serviceClasses.isEmpty()) {
-            Class<? extends Service> serviceClass = serviceClasses.iterator().next();
-            try {
-                Constructor<? extends Service> constructor = serviceClass.getConstructor(Accessory.class, long.class,
-                        boolean.class);
-                return constructor.newInstance(accessory, instanceId, extend);
-            } catch (NoSuchMethodException | IllegalAccessException | InstantiationException
-                    | InvocationTargetException e) {
-                logger.warn("Could not create service for tag {}", tag, e);
+            if (serviceClasses != null && !serviceClasses.isEmpty()) {
+                Class<? extends Service> serviceClass = serviceClasses.iterator().next();
+                try {
+                    Constructor<? extends Service> constructor = serviceClass.getConstructor(Accessory.class,
+                            long.class, boolean.class, String.class);
+                    Service service = constructor.newInstance(accessory, instanceId, extend);
+                    return service;
+                } catch (NoSuchMethodException | IllegalAccessException | InstantiationException
+                        | InvocationTargetException e) {
+                    logger.warn("Could not create service for tag {} and class {}", tag, serviceClass.getName(), e);
+                }
             }
+            logger.warn("No service found with matching tag {}", tag);
         }
         return null;
     }
@@ -390,25 +393,35 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
         }
         currentTypes.add(serviceType);
         thingTypeServiceTypesMapper.put(thingType, currentTypes);
+
+        // TODO : Modify to add service tag to a mapper structure
     }
 
     @Override
     public void addService(@NonNull String serviceType, @NonNull Class<@NonNull ? extends Service> serviceClass) {
         serviceTypeServiceClassMapper.put(serviceType, serviceClass);
-    }
 
-    @Override
-    public void addServiceWithTag(String tag, Class<? extends Service> serviceClass) {
-        tagServiceClassMapper.computeIfAbsent(tag, k -> new HashSet<>()).add(serviceClass);
         try {
-            Method method = serviceClass.getMethod("getType");
-            String serviceType = (String) method.invoke(null);
-            serviceTypeServiceClassMapper.put(serviceType, serviceClass);
-            addService(serviceClass);
+            Method tagMethod = serviceClass.getMethod("getTag");
+            String tag = (String) tagMethod.invoke(null);
+            tagServiceClassMapper.computeIfAbsent(tag, k -> new HashSet<>()).add(serviceClass);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            logger.warn("Could not get service type for class {}", serviceClass.getName(), e);
+            logger.warn("Could not get service tag for class {}", serviceClass.getName(), e);
         }
     }
+
+    // @Override
+    // public void addServiceWithTag(String tag, Class<? extends Service> serviceClass) {
+    // tagServiceClassMapper.computeIfAbsent(tag, k -> new HashSet<>()).add(serviceClass);
+    // try {
+    // Method method = serviceClass.getMethod("getType");
+    // String serviceType = (String) method.invoke(null);
+    // serviceTypeServiceClassMapper.put(serviceType, serviceClass);
+    // addService(serviceClass);
+    // } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+    // logger.warn("Could not get service type for class {}", serviceClass.getName(), e);
+    // }
+    // }
 
     @Override
     public void addCharacteristic(@NonNull ChannelTypeUID channelType,
@@ -459,22 +472,21 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     }
 
     @Override
-    public void addCharacteristic(@NonNull String characateristicUID,
+    public void addCharacteristic(@NonNull String characteristicType,
             @NonNull Class<@NonNull ? extends Characteristic<?>> characteristicClass) {
-        characteristicTypeCharacteristicClassMapper.put(characateristicUID, characteristicClass);
-        addCharacteristic(characteristicClass);
-    }
+        characteristicTypeCharacteristicClassMapper.put(characteristicType, characteristicClass);
 
-    @Override
-    public void addCharacteristicWithTag(String tag, Class<? extends Characteristic<?>> characteristicClass) {
-        tagCharacteristicClassMapper.computeIfAbsent(tag, k -> new HashSet<>()).add(characteristicClass);
         try {
-            Method method = characteristicClass.getMethod("getType");
-            String characteristicType = (String) method.invoke(null);
-            characteristicTypeCharacteristicClassMapper.put(characteristicType, characteristicClass);
-            addCharacteristic(characteristicClass);
+            Method tagMethod = characteristicClass.getMethod("getTag");
+            String tag = (String) tagMethod.invoke(null);
+            HashSet<Class<? extends Characteristic<?>>> characteristics = tagCharacteristicClassMapper.get(tag);
+            if (characteristics == null) {
+                characteristics = new HashSet<>();
+            }
+            characteristics.add(characteristicClass);
+            tagCharacteristicClassMapper.put(tag, characteristics);
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            logger.warn("Could not get characteristic type for class {}", characteristicClass.getName(), e);
+            logger.debug("Characteristic {} does not define a getTag() method", characteristicClass.getName());
         }
     }
 

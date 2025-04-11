@@ -31,4 +31,8 @@ public class LightBulbService extends GenericService {
     public String getInstanceType() {
         return getType();
     }
+
+    public static String getTag() {
+        return LightBulbService.class.getSimpleName().replace("Service", "");
+    }
 }

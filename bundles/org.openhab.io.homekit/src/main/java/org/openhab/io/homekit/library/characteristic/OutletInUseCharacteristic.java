@@ -24,4 +24,8 @@ public class OutletInUseCharacteristic extends BooleanCharacteristic {
     public String getInstanceType() {
         return getType();
     }
+
+    public static String getTag() {
+        return OutletInUseCharacteristic.class.getSimpleName().replace("Characteristic", "");
+    }
 }

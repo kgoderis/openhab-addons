@@ -30,4 +30,8 @@ public class SwitchService extends GenericService {
     public String getInstanceType() {
         return getType();
     }
+
+    public static String getTag() {
+        return SwitchService.class.getSimpleName().replace("Service", "");
+    }
 }

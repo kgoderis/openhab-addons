@@ -17,4 +17,8 @@ public class TargetPositionCharacteristic extends IntegerCharacteristic {
     public String getInstanceType() {
         return getType();
     }
+
+    public static String getTag() {
+        return TargetPositionCharacteristic.class.getSimpleName().replace("Characteristic", "");
+    }
 }

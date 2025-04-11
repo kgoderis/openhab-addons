@@ -17,4 +17,8 @@ public class ManufacturerCharacteristic extends ReadOnlyStringCharacteristic {
     public String getInstanceType() {
         return getType();
     }
+
+    public static String getTag() {
+        return ManufacturerCharacteristic.class.getSimpleName().replace("Characteristic", "");
+    }
 }

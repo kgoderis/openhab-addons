@@ -1,4 +1,4 @@
-package org.openhab.io.homekit.internal.servlet;
+package org.openhab.io.homekit.internal.server.servlet;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

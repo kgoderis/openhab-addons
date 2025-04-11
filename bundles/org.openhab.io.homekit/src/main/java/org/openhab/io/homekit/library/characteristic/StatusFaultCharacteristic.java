@@ -17,4 +17,8 @@ public class StatusFaultCharacteristic extends EnumCharacteristic {
     public String getInstanceType() {
         return getType();
     }
+
+    public static String getTag() {
+        return StatusFaultCharacteristic.class.getSimpleName().replace("Characteristic", "");
+    }
 }

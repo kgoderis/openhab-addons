@@ -17,4 +17,8 @@ public class TargetTemperatureCharacteristic extends FloatCharacteristic {
     public String getInstanceType() {
         return getType();
     }
+
+    public static String getTag() {
+        return TargetTemperatureCharacteristic.class.getSimpleName().replace("Characteristic", "");
+    }
 }

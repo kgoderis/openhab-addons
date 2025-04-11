@@ -17,4 +17,8 @@ public class CurrentHorizontalTiltAngleCharacteristic extends IntegerCharacteris
     public String getInstanceType() {
         return getType();
     }
+
+    public static String getTag() {
+        return CurrentHorizontalTiltAngleCharacteristic.class.getSimpleName().replace("Characteristic", "");
+    }
 }

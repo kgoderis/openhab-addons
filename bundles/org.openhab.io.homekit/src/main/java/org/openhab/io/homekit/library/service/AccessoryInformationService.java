@@ -40,4 +40,8 @@ public class AccessoryInformationService extends GenericService {
     public String getInstanceType() {
         return getType();
     }
+
+    public static String getTag() {
+        return AccessoryInformationService.class.getSimpleName().replace("Service", "");
+    }
 }

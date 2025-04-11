@@ -111,7 +111,7 @@ public interface HomekitFactory {
 
     void addService(Class<@NonNull ? extends Service> serviceClass);
 
-    void addServiceWithTag(String tag, Class<? extends Service> serviceClass);
+    // void addServiceWithTag(String tag, Class<? extends Service> serviceClass);
 
     void addCharacteristic(ChannelTypeUID type, String characateristicType);
 
@@ -121,7 +121,7 @@ public interface HomekitFactory {
 
     void addCharacteristic(Class<@NonNull ? extends Characteristic<?>> characteristicClass);
 
-    void addCharacteristicWithTag(String tag, Class<? extends Characteristic<?>> characteristicClass);
+    // void addCharacteristicWithTag(String tag, Class<? extends Characteristic<?>> characteristicClass);
 
     HashSet<String> getCharacteristicTypes(@Nullable ChannelTypeUID type);
 

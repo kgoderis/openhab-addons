@@ -1,4 +1,4 @@
-package org.openhab.io.homekit.internal.servlet;
+package org.openhab.io.homekit.internal.server.servlet;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -24,7 +24,7 @@ import org.openhab.io.homekit.crypto.ChachaEncoder;
 import org.openhab.io.homekit.crypto.EdsaSigner;
 import org.openhab.io.homekit.crypto.EdsaVerifier;
 import org.openhab.io.homekit.crypto.HomekitEncryptionEngine;
-import org.openhab.io.homekit.internal.servlet.HomekitServerSRP6Session.State;
+import org.openhab.io.homekit.internal.server.servlet.HomekitServerSRP6Session.State;
 import org.openhab.io.homekit.util.Byte;
 import org.openhab.io.homekit.util.Error;
 import org.openhab.io.homekit.util.Message;

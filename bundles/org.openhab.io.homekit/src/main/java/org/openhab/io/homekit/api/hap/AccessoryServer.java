@@ -260,4 +260,8 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
      * @throws IOException if an I/O error occurs
      */
     void pairRemove() throws HomekitException, IOException;
+
+    void start() throws Exception;
+
+    void stop() throws Exception;
 }

@@ -49,4 +49,8 @@ public class SaturationCharacteristic extends FloatCharacteristic {
         // } else {
         // return new DecimalType(value);
     }
+
+    public static String getTag() {
+        return SaturationCharacteristic.class.getSimpleName().replace("Characteristic", "");
+    }
 }

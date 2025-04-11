@@ -17,4 +17,8 @@ public class CurrentHeatingCoolingStateCharacteristic extends ByteCharacteristic
     public String getInstanceType() {
         return getType();
     }
+
+    public static String getTag() {
+        return CurrentHeatingCoolingStateCharacteristic.class.getSimpleName().replace("Characteristic", "");
+    }
 }
