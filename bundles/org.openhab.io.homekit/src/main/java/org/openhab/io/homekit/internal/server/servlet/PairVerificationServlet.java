@@ -16,17 +16,17 @@ import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
+import org.openhab.io.homekit.api.hap.Error;
+import org.openhab.io.homekit.api.hap.Message;
 import org.openhab.io.homekit.crypto.ChachaDecoder;
 import org.openhab.io.homekit.crypto.ChachaEncoder;
 import org.openhab.io.homekit.crypto.EdsaSigner;
 import org.openhab.io.homekit.crypto.EdsaVerifier;
 import org.openhab.io.homekit.crypto.HomekitEncryptionEngine;
 import org.openhab.io.homekit.util.Byte;
-import org.openhab.io.homekit.util.Error;
-import org.openhab.io.homekit.util.Message;
-import org.openhab.io.homekit.util.TypeLengthValue;
-import org.openhab.io.homekit.util.TypeLengthValue.DecodeResult;
-import org.openhab.io.homekit.util.TypeLengthValue.Encoder;
+import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder;
+import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder.DecodeResult;
+import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder.Encoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -112,7 +112,7 @@ public class PairVerificationServlet extends BaseServlet {
             e.printStackTrace();
         }
 
-        Encoder encoder = TypeLengthValue.getEncoder();
+        Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
 
         logger.info("Stage 1 : Accessory Pairing Id is {}", server.getPairingId());
         encoder.add(Message.IDENTIFIER, server.getPairingId());
@@ -132,7 +132,7 @@ public class PairVerificationServlet extends BaseServlet {
         ChachaEncoder chacha = new ChachaEncoder(sessionKey, "PV-Msg02".getBytes(StandardCharsets.UTF_8));
         byte[] ciphertext = chacha.encodeCiphertext(plaintext);
 
-        encoder = TypeLengthValue.getEncoder();
+        encoder = TypeLengthValueEncoderDecoder.getEncoder();
         encoder.add(Message.STATE, (short) 0x02);
         encoder.add(Message.ENCRYPTED_DATA, ciphertext);
         encoder.add(Message.PUBLIC_KEY, accessoryPublicKey);
@@ -166,7 +166,7 @@ public class PairVerificationServlet extends BaseServlet {
             byte[] sharedSecret = (byte[]) session.getAttribute("sharedSecret");
             logger.info("Stage 2 : Get Shared Secret {} from Session", Byte.toHexString(sharedSecret));
 
-            Encoder encoder = TypeLengthValue.getEncoder();
+            Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
 
             byte[] plaintext = null;
             ChachaDecoder chacha = new ChachaDecoder(sessionKey, "PV-Msg03".getBytes(StandardCharsets.UTF_8));
@@ -182,7 +182,7 @@ public class PairVerificationServlet extends BaseServlet {
             byte[] clientSignature = null;
 
             if (!isError) {
-                DecodeResult d = TypeLengthValue.decode(plaintext);
+                DecodeResult d = TypeLengthValueEncoderDecoder.decode(plaintext);
 
                 clientPairingId = d.getBytes(Message.IDENTIFIER);
                 logger.info("Stage 2 : Client Pairing Id is {}", Byte.toHexString(clientPairingId));
@@ -256,7 +256,7 @@ public class PairVerificationServlet extends BaseServlet {
     }
 
     public byte[] getClientPublicKey(byte[] content) throws IOException {
-        DecodeResult d = TypeLengthValue.decode(content);
+        DecodeResult d = TypeLengthValueEncoderDecoder.decode(content);
         return d.getBytes(Message.PUBLIC_KEY);
     }
 

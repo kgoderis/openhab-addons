@@ -62,6 +62,14 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
     Collection<Accessory> getAccessories();
 
     /**
+     * Updates the list of accessories by fetching remote accessories and comparing with currently managed ones.
+     * New accessories are added, removed ones are removed, and listeners are notified of changes.
+     *
+     * @throws IOException if an error occurs while fetching remote accessories
+     */
+    void updateAccessories() throws IOException;
+
+    /**
      * Gets an accessory by its accessory ID.
      *
      * @param accessoryId the accessory ID of the accessory
@@ -239,15 +247,20 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
 
     // ==================== Pairing Operations ====================
 
-    // /**
-    // * Initiates the pairing setup process.
-    // *
-    // * @throws IOException if an I/O error occurs during setup
-    // */
-    // void pairSetup() throws IOException;
+    /**
+     * Initiates the pairing setup process.Pair Setup is a one-time operation that creates a valid pairing between an
+     * iOS device and an accessory by securely exchanging public keys with an iOS device and an accessory. Pair Setup
+     * requires the customer to enter an eight-digit Setup Code on their iOS device. The Setup Code is provided by the
+     * accessory via a label or display
+     *
+     * @throws IOException if an I/O error occurs during setup
+     */
+    void pairSetup() throws IOException;
 
     /**
-     * Verifies the pairing with a client.
+     * Verifies the pairing with a client. Pair Verify is performed for every HomeKit Accessory Protocol session. Pair
+     * Verify verifies the pairing between an iOS device and an accessory and establishes an ephemeral shared secret
+     * used to secure the HomeKit Accessory Protocol session
      *
      * @return true if verification successful, false otherwise
      */

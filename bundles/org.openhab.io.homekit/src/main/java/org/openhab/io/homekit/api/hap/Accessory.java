@@ -25,7 +25,9 @@ public interface Accessory extends Identifiable<AccessoryUID> {
     /**
      * Accessory Instance IDs are assigned from the same number pool that is global across entire
      * AccessoryServer. For example, if the first Accessory object has an Instance ID of "1", then no
-     * other Accessory object can have an Instance ID of "1" within the AccessoryServer.
+     * other Accessory object can have an Instance ID of "1" within the AccessoryServer. The HAP accessory object with
+     * an instance ID of 1 is considered the primary HAP accessory object. For bridges, this must be the bridge itself
+     * 
      *
      * @return the Accessory Instance ID.
      */

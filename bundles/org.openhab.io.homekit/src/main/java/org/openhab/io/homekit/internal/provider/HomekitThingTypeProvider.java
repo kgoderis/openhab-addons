@@ -101,7 +101,8 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
                     serviceName = tag.toString();
                 }
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                logger.debug("Could not get tag from service class {}, using service type as name", serviceClass.getName());
+                logger.debug("Could not get tag from service class {}, using service type as name",
+                        serviceClass.getName());
             }
         }
 

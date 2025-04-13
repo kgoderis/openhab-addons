@@ -8,14 +8,16 @@ import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.openhab.io.homekit.api.hap.Error;
+import org.openhab.io.homekit.api.hap.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TypeLengthValue {
+public class TypeLengthValueEncoderDecoder {
 
-    protected static final Logger logger = LoggerFactory.getLogger(TypeLengthValue.class);
+    protected static final Logger logger = LoggerFactory.getLogger(TypeLengthValueEncoderDecoder.class);
 
-    private TypeLengthValue() {
+    private TypeLengthValueEncoderDecoder() {
     }
 
     public static DecodeResult decode(byte[] content) throws IOException {

@@ -18,11 +18,11 @@ import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
 import org.eclipse.jetty.server.Request;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
+import org.openhab.io.homekit.api.hap.Message;
 import org.openhab.io.homekit.crypto.ChachaEncoder;
 import org.openhab.io.homekit.crypto.EdsaSigner;
-import org.openhab.io.homekit.util.Message;
-import org.openhab.io.homekit.util.TypeLengthValue;
-import org.openhab.io.homekit.util.TypeLengthValue.Encoder;
+import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder;
+import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder.Encoder;
 
 import djb.Curve25519;
 
@@ -83,7 +83,7 @@ public class PairVerificationStageOneHandler extends PairVerificationHandler {
             hkdf.generateBytes(sessionKey, 0, 32);
             session.setAttribute("sessionKey", sessionKey);
 
-            Encoder encoder = TypeLengthValue.getEncoder();
+            Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
             encoder.add(Message.IDENTIFIER, server.getUID().getBytes(StandardCharsets.UTF_8));
             encoder.add(Message.SIGNATURE, accessorySignature);
             byte[] plaintext = encoder.toByteArray();
@@ -91,7 +91,7 @@ public class PairVerificationStageOneHandler extends PairVerificationHandler {
             ChachaEncoder chacha = new ChachaEncoder(sessionKey, "PV-Msg02".getBytes(StandardCharsets.UTF_8));
             byte[] ciphertext = chacha.encodeCiphertext(plaintext);
 
-            encoder = TypeLengthValue.getEncoder();
+            encoder = TypeLengthValueEncoderDecoder.getEncoder();
             encoder.add(Message.STATE, (short) 2);
             encoder.add(Message.ENCRYPTED_DATA, ciphertext);
             encoder.add(Message.PUBLIC_KEY, accessoryPublicKey);

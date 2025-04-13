@@ -99,7 +99,11 @@ public interface Service extends Identifiable<@NonNull ServiceUID> {
 
     /**
      *
-     * @return true of if the Service is the primary Service
+     * @return true of if the Service is the primary Service. Accessories should list one of its services as the primary
+     *         service. The primary service must match the primary function of the accessory and must also match with
+     *         the accessory category. An accessory must expose only one primary service from its list of available
+     *         services.
+     * 
      */
     boolean isPrimary();
 

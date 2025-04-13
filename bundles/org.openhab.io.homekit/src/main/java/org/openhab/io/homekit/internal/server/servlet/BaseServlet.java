@@ -8,10 +8,10 @@ import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServlet;
 
 import org.openhab.io.homekit.api.hap.AccessoryServer;
+import org.openhab.io.homekit.api.hap.Message;
 import org.openhab.io.homekit.internal.http.HomekitServletConfig;
-import org.openhab.io.homekit.util.Message;
-import org.openhab.io.homekit.util.TypeLengthValue;
-import org.openhab.io.homekit.util.TypeLengthValue.DecodeResult;
+import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder;
+import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder.DecodeResult;
 
 @SuppressWarnings("serial")
 public abstract class BaseServlet extends HttpServlet {
@@ -33,19 +33,19 @@ public abstract class BaseServlet extends HttpServlet {
     }
 
     protected short getState(byte[] content) throws IOException {
-        DecodeResult d = TypeLengthValue.decode(content);
+        DecodeResult d = TypeLengthValueEncoderDecoder.decode(content);
         return d.getByte(Message.STATE);
     }
 
     protected byte[] getMessageData(byte[] content) throws IOException {
-        DecodeResult d = TypeLengthValue.decode(content);
+        DecodeResult d = TypeLengthValueEncoderDecoder.decode(content);
         byte[] messageData = new byte[d.getLength(Message.ENCRYPTED_DATA) - 16];
         d.getBytes(Message.ENCRYPTED_DATA, messageData, 0);
         return messageData;
     }
 
     protected byte[] getAuthTagData(byte[] content) throws IOException {
-        DecodeResult d = TypeLengthValue.decode(content);
+        DecodeResult d = TypeLengthValueEncoderDecoder.decode(content);
         byte[] messageData = getMessageData(content);
         byte[] authTagData = new byte[16];
         d.getBytes(Message.ENCRYPTED_DATA, authTagData, messageData.length);

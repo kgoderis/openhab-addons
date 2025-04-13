@@ -4,13 +4,13 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.util.Arrays;
 
+import org.openhab.io.homekit.api.hap.Message;
 import org.openhab.io.homekit.hap.impl.http.HttpResponse;
 import org.openhab.io.homekit.hap.impl.pairing.HomekitSRP6ServerSession.State;
 import org.openhab.io.homekit.hap.impl.pairing.PairSetupRequest.Stage2Request;
 import org.openhab.io.homekit.hap.impl.responses.ConflictResponse;
 import org.openhab.io.homekit.hap.impl.responses.NotFoundResponse;
-import org.openhab.io.homekit.util.Message;
-import org.openhab.io.homekit.util.TypeLengthValue;
+import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +65,8 @@ class SrpHandler {
         verifierGenerator.setXRoutine(new XRoutineWithUserIdentity());
         BigInteger verifier = verifierGenerator.generateVerifier(salt, IDENTIFIER, pin);
 
-        org.openhab.io.homekit.util.TypeLengthValue.Encoder encoder = TypeLengthValue.getEncoder();
+        org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder.Encoder encoder = TypeLengthValueEncoderDecoder
+                .getEncoder();
         encoder.add(Message.STATE, (short) 0x02);
         encoder.add(Message.SALT, salt);
         encoder.add(Message.PUBLIC_KEY, session.step1(IDENTIFIER, salt, verifier));
@@ -78,7 +79,8 @@ class SrpHandler {
             return new ConflictResponse();
         }
         BigInteger m2 = session.step2(request.getA(), request.getM1());
-        org.openhab.io.homekit.util.TypeLengthValue.Encoder encoder = TypeLengthValue.getEncoder();
+        org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder.Encoder encoder = TypeLengthValueEncoderDecoder
+                .getEncoder();
         encoder.add(Message.STATE, (short) 0x04);
         encoder.add(Message.PROOF, m2);
         return new PairingResponse(encoder.toByteArray());

@@ -125,7 +125,6 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
         }
     }
 
-
     @Override
     public InetAddress getAddress() {
         return address;
@@ -177,7 +176,6 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
         changeListeners.remove(listener);
     }
 
-
     protected synchronized void notifyChangeListeners(AccessoryServerEventType eventType) {
         AccessoryServerEvent event = new AccessoryServerEvent(this, null, null, null, eventType);
         for (AccessoryServerChangeListener listener : changeListeners) {
@@ -185,7 +183,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
         }
     }
 
-    protected void notifyListeners() {
+    protected void notifyChangeListeners() {
         AccessoryServerEvent event = new AccessoryServerEvent(this, null, null, null,
                 AccessoryServerEvent.AccessoryServerEventType.SERVER_UPDATED);
         for (AccessoryServerChangeListener listener : this.changeListeners) {

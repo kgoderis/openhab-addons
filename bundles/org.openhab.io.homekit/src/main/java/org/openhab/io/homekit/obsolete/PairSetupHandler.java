@@ -5,9 +5,9 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 import org.openhab.io.homekit.api.hap.AccessoryServer;
-import org.openhab.io.homekit.util.Message;
-import org.openhab.io.homekit.util.TypeLengthValue;
-import org.openhab.io.homekit.util.TypeLengthValue.DecodeResult;
+import org.openhab.io.homekit.api.hap.Message;
+import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder;
+import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder.DecodeResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,29 +30,29 @@ public abstract class PairSetupHandler extends BaseHandler {
     }
 
     protected short getStage(byte[] content) throws IOException {
-        DecodeResult d = TypeLengthValue.decode(content);
+        DecodeResult d = TypeLengthValueEncoderDecoder.decode(content);
         return d.getByte(Message.STATE);
     }
 
     protected BigInteger getA(byte[] content) throws IOException {
-        DecodeResult d = TypeLengthValue.decode(content);
+        DecodeResult d = TypeLengthValueEncoderDecoder.decode(content);
         return d.getBigInt(Message.PUBLIC_KEY);
     }
 
     protected BigInteger getM1(byte[] content) throws IOException {
-        DecodeResult d = TypeLengthValue.decode(content);
+        DecodeResult d = TypeLengthValueEncoderDecoder.decode(content);
         return d.getBigInt(Message.PROOF);
     }
 
     protected byte[] getMessageData(byte[] content) throws IOException {
-        DecodeResult d = TypeLengthValue.decode(content);
+        DecodeResult d = TypeLengthValueEncoderDecoder.decode(content);
         byte[] messageData = new byte[d.getLength(Message.ENCRYPTED_DATA) - 16];
         d.getBytes(Message.ENCRYPTED_DATA, messageData, 0);
         return messageData;
     }
 
     protected byte[] getAuthTagData(byte[] content) throws IOException {
-        DecodeResult d = TypeLengthValue.decode(content);
+        DecodeResult d = TypeLengthValueEncoderDecoder.decode(content);
         byte[] messageData = getMessageData(content);
         byte[] authTagData = new byte[16];
         d.getBytes(Message.ENCRYPTED_DATA, authTagData, messageData.length);

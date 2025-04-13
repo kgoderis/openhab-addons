@@ -1,4 +1,4 @@
-package org.openhab.io.homekit.util;
+package org.openhab.io.homekit.api.hap;
 
 import java.util.EnumSet;
 import java.util.HashMap;

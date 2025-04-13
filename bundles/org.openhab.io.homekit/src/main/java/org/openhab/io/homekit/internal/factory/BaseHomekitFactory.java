@@ -266,7 +266,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
                         "Created a Characteristic {} of Type {} (HAP Type {}) for Service {} of Type {}, with instanceId {}",
                         characteristic.getUID(), characteristic.getClass().getSimpleName(),
                         characteristic.getInstanceType(), service.getUID(), service.getClass().getSimpleName(),
-                        characteristic.getId());
+                        characteristic.getInstanceId());
                 return characteristic;
             } catch (NoSuchMethodException e) {
                 logger.warn(

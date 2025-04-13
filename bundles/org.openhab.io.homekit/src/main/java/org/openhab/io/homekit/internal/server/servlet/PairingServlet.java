@@ -9,12 +9,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.http.HttpHeader;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
+import org.openhab.io.homekit.api.hap.Message;
+import org.openhab.io.homekit.api.hap.Method;
 import org.openhab.io.homekit.util.Byte;
-import org.openhab.io.homekit.util.Message;
-import org.openhab.io.homekit.util.Method;
-import org.openhab.io.homekit.util.TypeLengthValue;
-import org.openhab.io.homekit.util.TypeLengthValue.DecodeResult;
-import org.openhab.io.homekit.util.TypeLengthValue.Encoder;
+import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder;
+import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder.DecodeResult;
+import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder.Encoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +36,7 @@ public class PairingServlet extends BaseServlet {
         try {
             byte[] body = IOUtils.toByteArray(request.getInputStream());
 
-            DecodeResult d = TypeLengthValue.decode(body);
+            DecodeResult d = TypeLengthValueEncoderDecoder.decode(body);
             Method method = Method.get(d.getByte(Message.METHOD));
 
             switch (method) {
@@ -64,7 +64,7 @@ public class PairingServlet extends BaseServlet {
         logger.info("doAddPairing : Start");
         logger.info("doAddPairing : Received Body {}", Byte.toHexString(body));
 
-        DecodeResult d = TypeLengthValue.decode(body);
+        DecodeResult d = TypeLengthValueEncoderDecoder.decode(body);
 
         byte[] additionalControllerPairingIdentifier = d.getBytes(Message.IDENTIFIER);
         byte[] additionalControllerLTPK = d.getBytes(Message.PUBLIC_KEY);
@@ -72,7 +72,7 @@ public class PairingServlet extends BaseServlet {
 
         server.addPairing(additionalControllerPairingIdentifier, additionalControllerLTPK);
 
-        Encoder encoder = TypeLengthValue.getEncoder();
+        Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
         encoder.add(Message.STATE, (short) 2);
 
         response.setContentType("application/pairing+tlv8");
@@ -91,12 +91,12 @@ public class PairingServlet extends BaseServlet {
         logger.info("doRemovePairing : Start");
         logger.info("doRemovePairing : Received Body {}", Byte.toHexString(body));
 
-        DecodeResult d = TypeLengthValue.decode(body);
+        DecodeResult d = TypeLengthValueEncoderDecoder.decode(body);
 
         byte[] removedControllerPairingIdentifier = d.getBytes(Message.IDENTIFIER);
         server.removePairing(removedControllerPairingIdentifier);
 
-        Encoder encoder = TypeLengthValue.getEncoder();
+        Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
         encoder.add(Message.STATE, (short) 2);
 
         response.setContentType("application/pairing+tlv8");

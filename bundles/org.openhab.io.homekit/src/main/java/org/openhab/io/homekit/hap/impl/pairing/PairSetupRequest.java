@@ -2,9 +2,9 @@ package org.openhab.io.homekit.hap.impl.pairing;
 
 import java.math.BigInteger;
 
-import org.openhab.io.homekit.util.Message;
-import org.openhab.io.homekit.util.TypeLengthValue;
-import org.openhab.io.homekit.util.TypeLengthValue.DecodeResult;
+import org.openhab.io.homekit.api.hap.Message;
+import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder;
+import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder.DecodeResult;
 
 abstract class PairSetupRequest {
 
@@ -13,7 +13,8 @@ abstract class PairSetupRequest {
     private static final short VALUE_STAGE_3 = 5;
 
     public static PairSetupRequest of(byte[] content) throws Exception {
-        org.openhab.io.homekit.util.TypeLengthValue.DecodeResult d = TypeLengthValue.decode(content);
+        org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder.DecodeResult d = TypeLengthValueEncoderDecoder
+                .decode(content);
         short stage = d.getByte(Message.STATE);
         switch (stage) {
             case VALUE_STAGE_1:

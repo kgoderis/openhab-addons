@@ -1,7 +1,7 @@
 package org.openhab.io.homekit.hap.impl.pairing;
 
-import org.openhab.io.homekit.util.Message;
-import org.openhab.io.homekit.util.TypeLengthValue;
+import org.openhab.io.homekit.api.hap.Message;
+import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder;
 
 abstract class PairVerificationRequest {
 
@@ -9,7 +9,8 @@ abstract class PairVerificationRequest {
     private static final short VALUE_STAGE_2 = 3;
 
     static PairVerificationRequest of(byte[] content) throws Exception {
-        org.openhab.io.homekit.util.TypeLengthValue.DecodeResult d = TypeLengthValue.decode(content);
+        org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder.DecodeResult d = TypeLengthValueEncoderDecoder
+                .decode(content);
         short stage = d.getByte(Message.STATE);
         switch (stage) {
             case VALUE_STAGE_1:
@@ -29,7 +30,7 @@ abstract class PairVerificationRequest {
 
         private final byte[] clientPublicKey;
 
-        public Stage1Request(org.openhab.io.homekit.util.TypeLengthValue.DecodeResult d) {
+        public Stage1Request(org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder.DecodeResult d) {
             clientPublicKey = d.getBytes(Message.PUBLIC_KEY);
         }
 
@@ -48,7 +49,7 @@ abstract class PairVerificationRequest {
         private final byte[] messageData;
         private final byte[] authTagData;
 
-        public Stage2Request(org.openhab.io.homekit.util.TypeLengthValue.DecodeResult d) {
+        public Stage2Request(org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder.DecodeResult d) {
             messageData = new byte[d.getLength(Message.ENCRYPTED_DATA) - 16];
             authTagData = new byte[16];
             d.getBytes(Message.ENCRYPTED_DATA, messageData, 0);

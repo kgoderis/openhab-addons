@@ -11,11 +11,11 @@ import javax.servlet.http.HttpSession;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.server.Request;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
+import org.openhab.io.homekit.api.hap.Message;
 import org.openhab.io.homekit.internal.server.servlet.HomekitServerSRP6Session;
 import org.openhab.io.homekit.internal.server.servlet.HomekitServerSRP6Session.State;
-import org.openhab.io.homekit.util.Message;
-import org.openhab.io.homekit.util.TypeLengthValue;
-import org.openhab.io.homekit.util.TypeLengthValue.Encoder;
+import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder;
+import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder.Encoder;
 
 import com.nimbusds.srp6.SRP6Exception;
 
@@ -43,7 +43,7 @@ public class PairSetupStageTwoHandler extends PairSetupHandler {
                     response.setStatus(HttpServletResponse.SC_CONFLICT);
                 } else {
                     BigInteger proof = null;
-                    Encoder encoder = TypeLengthValue.getEncoder();
+                    Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
                     try {
                         proof = SRP6Session.step2(getA(body), getM1(body));
                         encoder.add(Message.STATE, (short) 0x04);

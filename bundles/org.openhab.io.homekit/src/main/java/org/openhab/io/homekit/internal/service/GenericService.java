@@ -160,13 +160,13 @@ public class GenericService implements Service {
     @Override
     public @NonNull List<Characteristic<?>> getCharacteristics() {
         return Collections.unmodifiableList(characteristics.stream()
-                .sorted((o1, o2) -> Long.valueOf(o1.getId()).compareTo(Long.valueOf(o2.getId())))
+                .sorted((o1, o2) -> Long.valueOf(o1.getInstanceId()).compareTo(Long.valueOf(o2.getInstanceId())))
                 .collect(Collectors.toList()));
     }
 
     @Override
     public Characteristic<?> getCharacteristic(long iid) {
-        return characteristics.stream().filter(c -> c.getId() == iid).findFirst().orElse(null);
+        return characteristics.stream().filter(c -> c.getInstanceId() == iid).findFirst().orElse(null);
     }
 
     @Override

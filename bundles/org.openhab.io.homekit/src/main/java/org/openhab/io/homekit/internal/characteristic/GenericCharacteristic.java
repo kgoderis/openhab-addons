@@ -104,7 +104,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     }
 
     @Override
-    public long getId() {
+    public long getInstanceId() {
         return instanceId;
     }
 
@@ -112,7 +112,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     @NonNull
     public CharacteristicUID getUID() {
         return new CharacteristicUID(getService().getAccessory().getUID().getHexId(),
-                getService().getAccessory().getAccessoryId(), getService().getInstanceId(), getId());
+                getService().getAccessory().getAccessoryId(), getService().getInstanceId(), getInstanceId());
     }
 
     @Override

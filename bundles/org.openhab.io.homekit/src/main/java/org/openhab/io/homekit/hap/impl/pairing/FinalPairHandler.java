@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
+import org.openhab.io.homekit.api.hap.Message;
 import org.openhab.io.homekit.hap.HomekitAuthInfo;
 import org.openhab.io.homekit.hap.impl.crypto.ChachaDecoder;
 import org.openhab.io.homekit.hap.impl.crypto.ChachaEncoder;
@@ -12,8 +13,7 @@ import org.openhab.io.homekit.hap.impl.crypto.EdsaSigner;
 import org.openhab.io.homekit.hap.impl.crypto.EdsaVerifier;
 import org.openhab.io.homekit.hap.impl.http.HttpResponse;
 import org.openhab.io.homekit.hap.impl.pairing.PairSetupRequest.Stage3Request;
-import org.openhab.io.homekit.util.Message;
-import org.openhab.io.homekit.util.TypeLengthValue;
+import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder;
 
 class FinalPairHandler {
 
@@ -41,7 +41,8 @@ class FinalPairHandler {
         ChachaDecoder chacha = new ChachaDecoder(key, "PS-Msg05".getBytes(StandardCharsets.UTF_8));
         byte[] plaintext = chacha.decodeCiphertext(req.getAuthTagData(), req.getMessageData());
 
-        org.openhab.io.homekit.util.TypeLengthValue.DecodeResult d = TypeLengthValue.decode(plaintext);
+        org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder.DecodeResult d = TypeLengthValueEncoderDecoder
+                .decode(plaintext);
         byte[] username = d.getBytes(Message.IDENTIFIER);
         byte[] ltpk = d.getBytes(Message.PUBLIC_KEY);
         byte[] proof = d.getBytes(Message.SIGNATURE);
@@ -78,7 +79,8 @@ class FinalPairHandler {
 
         byte[] proof = signer.sign(material);
 
-        org.openhab.io.homekit.util.TypeLengthValue.Encoder encoder = TypeLengthValue.getEncoder();
+        org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder.Encoder encoder = TypeLengthValueEncoderDecoder
+                .getEncoder();
         encoder.add(Message.IDENTIFIER, authInfo.getMac().getBytes(StandardCharsets.UTF_8));
         encoder.add(Message.PUBLIC_KEY, signer.getPublicKey());
         encoder.add(Message.SIGNATURE, proof);
@@ -87,7 +89,7 @@ class FinalPairHandler {
         ChachaEncoder chacha = new ChachaEncoder(hkdf_enc_key, "PS-Msg06".getBytes(StandardCharsets.UTF_8));
         byte[] ciphertext = chacha.encodeCiphertext(plaintext);
 
-        encoder = TypeLengthValue.getEncoder();
+        encoder = TypeLengthValueEncoderDecoder.getEncoder();
         encoder.add(Message.STATE, (short) 6);
         encoder.add(Message.ENCRYPTED_DATA, ciphertext);
 

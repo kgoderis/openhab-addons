@@ -30,7 +30,7 @@ public interface Characteristic<T> extends Identifiable<@NonNull CharacteristicU
      *
      * @return the unique identifier.
      */
-    long getId();
+    long getInstanceId();
 
     /**
      * Gets the parent Service that contains this Characteristic.

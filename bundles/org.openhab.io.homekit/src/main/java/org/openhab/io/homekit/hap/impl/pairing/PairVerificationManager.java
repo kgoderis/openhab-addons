@@ -6,6 +6,7 @@ import java.security.SecureRandom;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
+import org.openhab.io.homekit.api.hap.Message;
 import org.openhab.io.homekit.crypto.HomekitEncryptionEngine;
 import org.openhab.io.homekit.hap.HomekitAuthInfo;
 import org.openhab.io.homekit.hap.impl.HomekitRegistry;
@@ -19,8 +20,7 @@ import org.openhab.io.homekit.hap.impl.pairing.PairVerificationRequest.Stage1Req
 import org.openhab.io.homekit.hap.impl.pairing.PairVerificationRequest.Stage2Request;
 import org.openhab.io.homekit.hap.impl.responses.NotFoundResponse;
 import org.openhab.io.homekit.hap.impl.responses.OkResponse;
-import org.openhab.io.homekit.util.Message;
-import org.openhab.io.homekit.util.TypeLengthValue;
+import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,7 +92,8 @@ public class PairVerificationManager {
         hkdf.generateBytes(sessionKey, 0, 32);
         logger.info("Stage 1 : Session Key is {}", byteToHexString(sessionKey));
 
-        org.openhab.io.homekit.util.TypeLengthValue.Encoder encoder = TypeLengthValue.getEncoder();
+        org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder.Encoder encoder = TypeLengthValueEncoderDecoder
+                .getEncoder();
         encoder.add(Message.IDENTIFIER, authInfo.getMac().getBytes(StandardCharsets.UTF_8));
         encoder.add(Message.SIGNATURE, accessorySignature);
         byte[] plaintext = encoder.toByteArray();
@@ -100,7 +101,7 @@ public class PairVerificationManager {
         ChachaEncoder chacha = new ChachaEncoder(sessionKey, "PV-Msg02".getBytes(StandardCharsets.UTF_8));
         byte[] ciphertext = chacha.encodeCiphertext(plaintext);
 
-        encoder = TypeLengthValue.getEncoder();
+        encoder = TypeLengthValueEncoderDecoder.getEncoder();
         encoder.add(Message.STATE, (short) 2);
         encoder.add(Message.ENCRYPTED_DATA, ciphertext);
         encoder.add(Message.PUBLIC_KEY, accessoryPublicKey);
@@ -113,7 +114,8 @@ public class PairVerificationManager {
         ChachaDecoder chacha = new ChachaDecoder(sessionKey, "PV-Msg03".getBytes(StandardCharsets.UTF_8));
         byte[] plaintext = chacha.decodeCiphertext(request.getAuthTagData(), request.getMessageData());
 
-        org.openhab.io.homekit.util.TypeLengthValue.DecodeResult d = TypeLengthValue.decode(plaintext);
+        org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder.DecodeResult d = TypeLengthValueEncoderDecoder
+                .decode(plaintext);
         byte[] clientPairingId = d.getBytes(Message.IDENTIFIER);
         logger.info("Stage 2 : Client Pairing Id is {}", byteToHexString(clientPairingId));
 
@@ -130,7 +132,8 @@ public class PairVerificationManager {
 
         logger.info("Stage 2 : Client Long Term Public Key is {}", byteToHexString(clientLongtermPublicKey));
 
-        org.openhab.io.homekit.util.TypeLengthValue.Encoder encoder = TypeLengthValue.getEncoder();
+        org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder.Encoder encoder = TypeLengthValueEncoderDecoder
+                .getEncoder();
         if (new EdsaVerifier(clientLongtermPublicKey).verify(clientDeviceInfo, clientSignature)) {
             encoder.add(Message.STATE, (short) 4);
             logger.debug("Completed pair verification for " + registry.getLabel());

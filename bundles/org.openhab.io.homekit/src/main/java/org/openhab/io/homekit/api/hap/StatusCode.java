@@ -1,4 +1,4 @@
-package org.openhab.io.homekit.util;
+package org.openhab.io.homekit.api.hap;
 
 public enum StatusCode {
     SUCCESS(0),

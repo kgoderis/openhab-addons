@@ -17,7 +17,10 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.openhab.core.common.SafeCaller;
 import org.openhab.core.io.transport.mdns.MDNSService;
 import org.openhab.core.io.transport.mdns.ServiceDescription;
+import org.openhab.io.homekit.api.hap.AccessoryCategory;
 import org.openhab.io.homekit.api.hap.Characteristic;
+import org.openhab.io.homekit.api.hap.PairingFeatureFlag;
+import org.openhab.io.homekit.api.hap.PairingStatusFlag;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.crypto.HomekitEncryptionEngine;
@@ -32,6 +35,7 @@ import org.openhab.io.homekit.internal.server.servlet.CharacteristicServlet;
 import org.openhab.io.homekit.internal.server.servlet.PairSetupServlet;
 import org.openhab.io.homekit.internal.server.servlet.PairVerificationServlet;
 import org.openhab.io.homekit.internal.server.servlet.PairingServlet;
+import org.osgi.service.component.annotations.Deactivate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -173,16 +177,22 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
         // }
         // }
         // });
+        start();
+    }
+
+    @Deactivate
+    public void dispose() {
+        stop();
     }
 
     @Override
-    public void start() throws Exception {
+    public void start() {
         logger.debug("Starting HomeKit server");
         setState(AccessoryServerState.CONNECTED);
     }
 
     @Override
-    public void stop() throws Exception {
+    public void stop() {
         logger.debug("Stopping HomeKit server");
         setState(AccessoryServerState.STOPPED);
     }
@@ -257,11 +267,13 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
         Hashtable<String, String> props = new Hashtable<>();
 
         // Status flags (e.g. "0x04" for bit 3). Value should be an unsigned integer. See Table 6-8 (page 58). Required.
-        props.put("sf", !isPaired() ? "1" : "0");
+        props.put("sf", Integer
+                .toString(!isPaired() ? PairingStatusFlag.NOT_PAIRED.getMask() : PairingStatusFlag.UNKNOWN.getMask()));
 
         // Device ID ("5.4 Device ID" (page 31)) of the accessory. The Device ID must be formatted as
         // "XX:XX:XX:XX:XX:XX", where "XX" is a hexadecimal string representing a byte. Required.
-        // This value is also used as the accessory's Pairing Identifier.
+        // This value is also used as the accessory's Pairing Identifier. This identifier of the accessory must be a
+        // unique random number generated at every factory reset and must persist across reboots.
         props.put("id", (new String(getPairingId(), StandardCharsets.UTF_8)));
 
         // Model name of the accessory (e.g. "Device1,1"). Required.
@@ -283,7 +295,7 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
         props.put("s#", "1");
 
         // Pairing Feature flags (e.g. "0x3" for bits 0 and 1). Required if non-zero. See Table 5-4 (page 49).
-        props.put("ff", "0");
+        props.put("ff", Integer.toString(PairingFeatureFlag.NOT_SUPPORTED.getMask()));
 
         // Protocol version string "X.Y" (e.g. "1.0"). Required if value is not "1.0".
         // props.put("pv", "1.1");
@@ -291,7 +303,7 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
         // Accessory Category Identifier. Required. Indicates the category that best describes the primary function of
         // the accessory. This must have a range of 1-65535. This must take values defined in "13-1 Accessory
         // Categories" (page 252). This must persist across reboots, power cycles, etc.
-        props.put("ci", "2");
+        props.put("ci", Integer.toString(AccessoryCategory.BRIDGES.getValue()));
 
         if (announcedServiceDescription != null) {
             announcedServiceDescription.serviceProperties = props;

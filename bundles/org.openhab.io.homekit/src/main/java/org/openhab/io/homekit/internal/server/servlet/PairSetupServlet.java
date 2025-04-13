@@ -19,6 +19,8 @@ import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
 import org.eclipse.jetty.http.HttpHeader;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
+import org.openhab.io.homekit.api.hap.Error;
+import org.openhab.io.homekit.api.hap.Message;
 import org.openhab.io.homekit.crypto.ChachaDecoder;
 import org.openhab.io.homekit.crypto.ChachaEncoder;
 import org.openhab.io.homekit.crypto.EdsaSigner;
@@ -26,11 +28,9 @@ import org.openhab.io.homekit.crypto.EdsaVerifier;
 import org.openhab.io.homekit.crypto.HomekitEncryptionEngine;
 import org.openhab.io.homekit.internal.server.servlet.HomekitServerSRP6Session.State;
 import org.openhab.io.homekit.util.Byte;
-import org.openhab.io.homekit.util.Error;
-import org.openhab.io.homekit.util.Message;
-import org.openhab.io.homekit.util.TypeLengthValue;
-import org.openhab.io.homekit.util.TypeLengthValue.DecodeResult;
-import org.openhab.io.homekit.util.TypeLengthValue.Encoder;
+import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder;
+import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder.DecodeResult;
+import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder.Encoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,7 +108,7 @@ public class PairSetupServlet extends BaseServlet {
             BigInteger verifier = verifierGenerator.generateVerifier(salt, "Pair-Setup", server.getSetupCode());
             logger.info("Stage 1 : Verifier is {} ", Byte.toHexString(bigIntegerToUnsignedByteArray(verifier)));
 
-            Encoder encoder = TypeLengthValue.getEncoder();
+            Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
             encoder.add(Message.STATE, (short) 0x02);
 
             encoder.add(Message.SALT, salt);
@@ -146,7 +146,7 @@ public class PairSetupServlet extends BaseServlet {
                 response.setStatus(HttpServletResponse.SC_CONFLICT);
             } else {
                 BigInteger proof = null;
-                Encoder encoder = TypeLengthValue.getEncoder();
+                Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
                 try {
                     proof = SRP6Session.step2(getPublicKey(body), getProof(body));
                     encoder.add(Message.STATE, (short) 0x04);
@@ -203,7 +203,7 @@ public class PairSetupServlet extends BaseServlet {
             byte[] plaintext = chachaDecoder.decodeCiphertext(getAuthTagData(body), getMessageData(body));
             logger.info("Stage 3 : Plaintext is {}", Byte.toHexString(plaintext));
 
-            DecodeResult d = TypeLengthValue.decode(plaintext);
+            DecodeResult d = TypeLengthValueEncoderDecoder.decode(plaintext);
             byte[] clientPairingIdentifier = d.getBytes(Message.IDENTIFIER);
             logger.info("Stage 3 : Client Pairing Id is {}", Byte.toHexString(clientPairingIdentifier));
 
@@ -223,7 +223,7 @@ public class PairSetupServlet extends BaseServlet {
             byte[] clientDeviceInfo = Byte.joinBytes(clientDeviceX, clientPairingIdentifier, clientLongtermPublicKey);
             logger.info("Stage 3 : Client Device Info is {}", Byte.toHexString(clientDeviceInfo));
 
-            Encoder encoder = TypeLengthValue.getEncoder();
+            Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
 
             boolean isError = false;
             try {
@@ -237,7 +237,7 @@ public class PairSetupServlet extends BaseServlet {
             if (isError) {
                 logger.info("Stage 3 : Reporting an Error");
 
-                encoder = TypeLengthValue.getEncoder();
+                encoder = TypeLengthValueEncoderDecoder.getEncoder();
                 encoder.add(Message.STATE, (short) 6);
                 encoder.add(Message.ERROR, Error.AUTHENTICATION);
 
@@ -299,7 +299,7 @@ public class PairSetupServlet extends BaseServlet {
                         "PS-Msg06".getBytes(StandardCharsets.UTF_8));
                 byte[] ciphertext = chachaEncoder.encodeCiphertext(plaintext);
 
-                encoder = TypeLengthValue.getEncoder();
+                encoder = TypeLengthValueEncoderDecoder.getEncoder();
                 encoder.add(Message.STATE, (short) 6);
                 encoder.add(Message.ENCRYPTED_DATA, ciphertext);
                 logger.info("Stage 3 : End");
@@ -394,12 +394,12 @@ public class PairSetupServlet extends BaseServlet {
     // }
 
     protected BigInteger getPublicKey(byte[] content) throws IOException {
-        DecodeResult d = TypeLengthValue.decode(content);
+        DecodeResult d = TypeLengthValueEncoderDecoder.decode(content);
         return d.getBigInt(Message.PUBLIC_KEY);
     }
 
     protected BigInteger getProof(byte[] content) throws IOException {
-        DecodeResult d = TypeLengthValue.decode(content);
+        DecodeResult d = TypeLengthValueEncoderDecoder.decode(content);
         return d.getBigInt(Message.PROOF);
     }
 

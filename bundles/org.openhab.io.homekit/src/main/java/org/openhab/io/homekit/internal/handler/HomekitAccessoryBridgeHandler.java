@@ -341,7 +341,7 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
                         if (accessory.getUID() == existingAccessory.getUID()) {
                             for (Service existingService : existingAccessory.getServices()) {
                                 for (Characteristic existingCharacteristic : service.getCharacteristics()) {
-                                    if (characteristic.getId() == existingCharacteristic.getId()) {
+                                    if (characteristic.getInstanceId() == existingCharacteristic.getInstanceId()) {
                                         doesExist = true;
                                         break;
                                     }
@@ -405,7 +405,7 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
                         if (accessory.getUID() == existingAccessory.getUID()) {
                             for (Service service : accessory.getServices()) {
                                 for (Characteristic characteristic : service.getCharacteristics()) {
-                                    if (characteristic.getId() == existingCharacteristic.getId()) {
+                                    if (characteristic.getInstanceId() == existingCharacteristic.getInstanceId()) {
                                         isRemoved = false;
                                         break;
                                     }
@@ -494,7 +494,7 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
     private void notifyHomekitStatusListeners(final Characteristic characteristic, final String type) {
         if (homekitStatusListeners.isEmpty()) {
             logger.debug("No Homekit status listeners to notify of change for Characteristic '{}'",
-                    characteristic.getId());
+                    characteristic.getInstanceId());
             return;
         }
 
@@ -502,11 +502,11 @@ public class HomekitAccessoryBridgeHandler extends BaseBridgeHandler implements 
             try {
                 switch (type) {
                     case STATE_ADDED:
-                        logger.debug("Sending characteristicAdded for Service '{}'", characteristic.getId());
+                        logger.debug("Sending characteristicAdded for Service '{}'", characteristic.getInstanceId());
                         homekitStatusListener.onCharacteristicAdded(getThing(), characteristic);
                         break;
                     case STATE_REMOVED:
-                        logger.debug("Sending characteristicRemoved for Service '{}'", characteristic.getId());
+                        logger.debug("Sending characteristicRemoved for Service '{}'", characteristic.getInstanceId());
                         homekitStatusListener.onCharacteristicRemoved(getThing(), characteristic);
                         break;
                     default:

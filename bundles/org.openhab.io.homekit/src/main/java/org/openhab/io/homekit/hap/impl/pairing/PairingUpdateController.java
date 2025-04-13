@@ -3,12 +3,12 @@ package org.openhab.io.homekit.hap.impl.pairing;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import org.openhab.io.homekit.api.hap.Message;
 import org.openhab.io.homekit.hap.HomekitAuthInfo;
 import org.openhab.io.homekit.hap.impl.http.HttpRequest;
 import org.openhab.io.homekit.hap.impl.http.HttpResponse;
 import org.openhab.io.homekit.hap.impl.jmdns.JmdnsHomekitAdvertiser;
-import org.openhab.io.homekit.util.Message;
-import org.openhab.io.homekit.util.TypeLengthValue;
+import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder;
 
 public class PairingUpdateController {
 
@@ -21,7 +21,8 @@ public class PairingUpdateController {
     }
 
     public HttpResponse handle(HttpRequest request) throws IOException {
-        org.openhab.io.homekit.util.TypeLengthValue.DecodeResult d = TypeLengthValue.decode(request.getBody());
+        org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder.DecodeResult d = TypeLengthValueEncoderDecoder
+                .decode(request.getBody());
 
         int method = d.getByte(Message.METHOD);
         if (method == 3) { // Add pairing

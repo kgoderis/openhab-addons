@@ -1,13 +1,13 @@
 package org.openhab.io.homekit.internal.discovery;
 
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -26,19 +26,21 @@ import org.openhab.core.io.transport.mdns.MDNSClient;
 import org.openhab.core.io.transport.mdns.MDNSService;
 import org.openhab.core.net.NetworkAddressService;
 import org.openhab.core.thing.ThingTypeUID;
+import org.openhab.core.thing.ThingUID;
 import org.openhab.io.homekit.api.hap.Accessory;
+import org.openhab.io.homekit.api.hap.AccessoryCategory;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
+import org.openhab.io.homekit.api.hap.PairingFeatureFlag;
+import org.openhab.io.homekit.api.hap.PairingStatusFlag;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
-import org.openhab.io.homekit.internal.accessory.AccessoryServerState;
+import org.openhab.io.homekit.internal.provider.HomekitThingTypeProvider;
 import org.openhab.io.homekit.internal.server.AbstractRemoteAccessoryServer;
 import org.openhab.io.homekit.internal.server.AccessoryServerUID;
-import org.openhab.io.homekit.internal.server.BridgeLocalAccessoryServer;
 import org.openhab.io.homekit.internal.server.StandAloneRemoteAccessoryServer;
 import org.openhab.io.homekit.internal.server.registry.ManagedAccessoryServerProvider;
-import org.openhab.io.homekit.internal.provider.HomekitThingTypeProvider;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -142,19 +144,21 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
         for (ServiceInfo serviceInfo : services) {
             processService(serviceInfo);
         }
+
         for (AccessoryServer server : accessoryServerRegistry.getAll()) {
             if (server instanceof AbstractRemoteAccessoryServer && accessoryRegistry != null) {
                 if (server.isPaired()) {
                     logger.info("AccessoryServer {} is paired", server.getUID());
 
-                    Collection<Accessory> accessories = ((AbstractRemoteAccessoryServer)server).getRemoteAccessories();
+                    Collection<Accessory> accessories = ((AbstractRemoteAccessoryServer) server).getRemoteAccessories();
                     for (Accessory accessory : accessories) {
-                        logger.info("Accessory {} is paired", accessory.getUID());
-                        //Check that the accessory is not already in the accessory registry
+                        // Check that the accessory is not already in the accessory registry
                         if (accessoryRegistry.get(accessory.getUID()) == null) {
                             logger.info("Accessory {} is not in the accessory registry", accessory.getUID());
                             accessoryRegistry.add(accessory);
                             createThingFromAccessory(server, accessory);
+                            // TODO : add code to check if a things exists for this accessory and if not create one
+                            // we need to check all accessories and all services of the accessory
                         } else {
                             logger.info("Accessory {} is already in the accessory registry", accessory.getUID());
                         }
@@ -212,18 +216,17 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
         if (serviceInfo.hasData() && serviceInfo.getApplication().contains("hap") && serviceInfo.getPort() != 0) {
             try {
 
-
                 Enumeration<String> serviceProperties = serviceInfo.getPropertyNames();
                 while (serviceProperties.hasMoreElements()) {
                     String element = serviceProperties.nextElement();
                     String value = serviceInfo.getPropertyString(element);
-                                        properties.put(element, value);
+                    properties.put(element, value);
                 }
 
                 String id = serviceInfo.getPropertyString("id");
                 if (id == null) {
                     logger.warn("Skipping service with no ID: {}", serviceInfo.getName());
-                    return null ;
+                    return null;
                 }
 
                 AccessoryServerUID serverUID = new AccessoryServerUID(id.replace(":", ""));
@@ -272,28 +275,41 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
                     }
 
                     port = serviceInfo.getPort();
-                    String setupCode = serviceInfo.getPropertyString("sf");
-                    String deviceId = serviceInfo.getName();
+                    String deviceId = serviceInfo.getPropertyString("id");
                     String model = serviceInfo.getPropertyString("md");
                     String version = serviceInfo.getPropertyString("pv");
                     int configIndex = Integer.parseInt(serviceInfo.getPropertyString("c#"));
-                    String category = serviceInfo.getPropertyString("ci");
+                    AccessoryCategory category = AccessoryCategory
+                            .fromValue(Integer.parseInt(serviceInfo.getPropertyString("ci")));
+                    PairingStatusFlag pairingStatus = PairingStatusFlag
+                            .fromValue(Integer.parseInt(serviceInfo.getPropertyString("sf")));
+                    int stateNumber = Integer.parseInt(serviceInfo.getPropertyString("s#"));
+                    PairingFeatureFlag pairingFeatureFlag = PairingFeatureFlag
+                            .fromValue(Integer.parseInt(serviceInfo.getPropertyString("ff")));
 
-                    logger.warn("Creating new AccessoryServer instances not yet implemented");
-                    AccessoryServer server = null;
-                    try {
-                        if (category.equals("2")) {
-                            server = new BridgeLocalAccessoryServer(InetAddress.getByName(hostAddress), port,
-                                    mdnsService, accessoryRegistry, pairingRegistry, safeCaller);
-                        } else {
-                            server = new StandAloneRemoteAccessoryServer(InetAddress.getByName(hostAddress), port,
-                                    accessoryRegistry, pairingRegistry);
+                    logger.info(
+                            "Found a Homekit Accessory Server with id {}, category {}, model {}, version {}, configuration index {}, pairing status {}, pairing feature flag {}",
+                            id, category, model, version, configIndex, pairingStatus, pairingFeatureFlag);
+
+                    if (pairingStatus.equals(PairingStatusFlag.NOT_PAIRED)) {
+                        AccessoryServer server = null;
+                        try {
+                            if (category.equals(AccessoryCategory.BRIDGES)) {
+                                server = new BridgeRemoteAccessoryServer(InetAddress.getByName(hostAddress), port,
+                                        mdnsService, accessoryRegistry, pairingRegistry, safeCaller);
+                            } else {
+                                server = new StandAloneRemoteAccessoryServer(InetAddress.getByName(hostAddress), port,
+                                        accessoryRegistry, pairingRegistry);
+                            }
+                            server.setConfigurationIndex(configIndex);
+                            managedAccessoryServerProvider.add(server);
+                            logger.debug("Created a Remote Accessory Server {} with Setup Code {}", server.getUID(),
+                                    server.getSetupCode());
+                        } catch (Exception e) {
+                            logger.error("Error creating accessory server", e);
                         }
-                        managedAccessoryServerProvider.add(server);
-                        logger.debug("Created a Remote Accessory Server {} with Setup Code {}", server.getUID(),
-                                server.getSetupCode());
-                    } catch (Exception e) {
-                        logger.error("Error creating accessory server", e);
+                    } else {
+                        logger.info("Skipping accessory server {} because it is paired to another controller", id);
                     }
 
                     cancelRemovalTask(serviceInfo);
@@ -304,6 +320,7 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
                 logger.error("Error processing HomeKit service: {}", serviceInfo.getName(), e);
             }
         }
+        return properties;
     }
 
     private void cancelRemovalTask(ServiceInfo serviceInfo) {
@@ -324,75 +341,28 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
         // TODO: Implement thing creation from accessory
         logger.debug("Creating thing from accessory {}", accessory.getUID());
 
-
         Map<String, Object> properties = new HashMap<>();
-        
+
         // Get the ThingTypeUID for each service in the accessory
         Collection<Service> services = accessory.getServices();
         for (Service service : services) {
             String serviceType = service.getInstanceType();
             ThingTypeUID thingTypeUID = homekitThingTypeProvider.getThingTypeUID(serviceType);
-            
+
             // Create a unique ID for this accessory's service
-            String id = accessory.getUID().getId() + "-" + serviceType;
-            ThingUID thingUID = new ThingUID(thingTypeUID, id);
-            
+            ThingUID thingUID = new ThingUID(thingTypeUID,
+                    "service-" + accessory.getAccessoryId() + "-" + service.getInstanceId());
+
             // Build discovery result
-            DiscoveryResultBuilder builder = DiscoveryResultBuilder.create(thingUID)
-                .withBridge(server.getUID())
-                .withProperties(properties)
-                .withLabel("HomeKit " + service.getClass().getSimpleName());
-                
+            DiscoveryResultBuilder builder = DiscoveryResultBuilder.create(thingUID).withProperties(properties)
+                    .withProperty("accessoryId", accessory.getAccessoryId())
+                    .withProperty("instanceId", service.getInstanceId())
+                    .withProperty("deviceId", new String(server.getPairingId(), StandardCharsets.UTF_8))
+                    .withLabel("HomeKit " + service.getClass().getSimpleName());
+
             thingDiscovered(builder.build());
-            
+
             logger.debug("Created thing {} for HomeKit service type {}", thingUID, serviceType);
         }
-
-        // //
-        // // if (element.equals(HomekitBindingConstants.CONFIGURATION_NUMBER_SHARP)) {
-        // // properties.put(HomekitAccessoryConfiguration.CONFIGURATION_NUMBER, value);
-        // // }
-
-        // if (element.equals(HomekitBindingConstants.DEVICE_ID)) {
-        // properties.put(HomekitAccessoryConfiguration.ACCESSORY_PAIRING_ID,
-        // Base64.getEncoder().encodeToString(value.getBytes(StandardCharsets.UTF_8)));
-        // }
-        // }
-
-        // ThingUID uid = getThingUID(service);
-        // cachedServices.put(service.getQualifiedName(), uid);
-
-        // if (uid != null) {
-
-        // DiscoveryResultBuilder builder = DiscoveryResultBuilder.create(uid).withProperties(properties)
-        // .withRepresentationProperty(HomekitBindingConstants.DEVICE_ID);
-
-        // String category = service.getPropertyString("ci");
-
-        // if (category.equals("2")) {
-        // return builder.withLabel("Homekit Accessory Bridge").build();
-        // } else {
-        // return builder.withLabel("Homekit StandAlone Accessory").build();
-        // }
     }
-    
-    public @Nullable ThingUID getThingUID(@NonNull ServiceInfo service) {
-if (service.hasData()) {
-if (service.getApplication().contains("hap") && service.getPropertyString("id") != null
-&& service.getPropertyString("ci") != null) {
-String id = service.getPropertyString("id").replace(":", "");
-
-if (service.getPropertyString("ci").contentEquals("2")) {
-return new ThingUID(HomekitBindingConstants.THING_TYPE_BRIDGE, id);
-} else {
-return new ThingUID(HomekitBindingConstants.THING_TYPE_STANDALONE_ACCESSORY, id);
-}
-}
-} else {
-if (service.getApplication().contains("hap") && cachedServices.containsKey(service.getQualifiedName())) {
-logger.warn("Removing {} from the service cache", service.getQualifiedName());
-ThingUID thingUID = cachedServices.remove(service.getQualifiedName());
-return thingUID;
-}
-}
 }
