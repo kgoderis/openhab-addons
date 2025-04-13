@@ -1,5 +1,6 @@
 package org.openhab.io.homekit.internal.discovery;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -37,10 +38,9 @@ import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.internal.provider.HomekitThingTypeProvider;
-import org.openhab.io.homekit.internal.server.AbstractRemoteAccessoryServer;
 import org.openhab.io.homekit.internal.server.AccessoryServerUID;
+import org.openhab.io.homekit.internal.server.BridgeRemoteAccessoryServer;
 import org.openhab.io.homekit.internal.server.StandAloneRemoteAccessoryServer;
-import org.openhab.io.homekit.internal.server.registry.ManagedAccessoryServerProvider;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -60,7 +60,6 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
     private final AccessoryServerRegistry accessoryServerRegistry;
     private Map<String, ScheduledFuture<?>> deviceRemovalTasks = new ConcurrentHashMap<>();
     private NetworkAddressService networkAddressService;
-    private ManagedAccessoryServerProvider managedAccessoryServerProvider;
     private @Nullable MDNSService mdnsService;
     private @Nullable AccessoryRegistry accessoryRegistry;
     private @Nullable PairingRegistry pairingRegistry;
@@ -71,7 +70,6 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
     public AccessoryServerDiscoveryService(final @Nullable Map<String, Object> configProperties,
             final @Reference MDNSClient mdnsClient, final @Reference AccessoryServerRegistry accessoryServerRegistry,
             final @Reference NetworkAddressService networkAddressService,
-            final @Reference ManagedAccessoryServerProvider managedAccessoryServerProvider,
             @Nullable MDNSService mdnsService, @Nullable AccessoryRegistry accessoryRegistry,
             @Nullable PairingRegistry pairingRegistry, @Nullable SafeCaller safeCaller,
             @Nullable HomekitThingTypeProvider homekitThingTypeProvider) {
@@ -79,7 +77,6 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
         this.mdnsClient = mdnsClient;
         this.accessoryServerRegistry = accessoryServerRegistry;
         this.networkAddressService = networkAddressService;
-        this.managedAccessoryServerProvider = managedAccessoryServerProvider;
         this.mdnsService = mdnsService;
         this.accessoryRegistry = accessoryRegistry;
         this.pairingRegistry = pairingRegistry;
@@ -142,31 +139,46 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
         }
         logger.debug("{} HomeKit services found; duration: {}ms", services.length, System.currentTimeMillis() - start);
         for (ServiceInfo serviceInfo : services) {
-            processService(serviceInfo);
-        }
+            Map<String, String> properties = processService(serviceInfo);
 
-        for (AccessoryServer server : accessoryServerRegistry.getAll()) {
-            if (server instanceof AbstractRemoteAccessoryServer && accessoryRegistry != null) {
-                if (server.isPaired()) {
-                    logger.info("AccessoryServer {} is paired", server.getUID());
+            if (properties == null) {
+                continue;
+            }
 
-                    Collection<Accessory> accessories = ((AbstractRemoteAccessoryServer) server).getRemoteAccessories();
-                    for (Accessory accessory : accessories) {
-                        // Check that the accessory is not already in the accessory registry
-                        if (accessoryRegistry.get(accessory.getUID()) == null) {
-                            logger.info("Accessory {} is not in the accessory registry", accessory.getUID());
-                            accessoryRegistry.add(accessory);
-                            createThingFromAccessory(server, accessory);
-                            // TODO : add code to check if a things exists for this accessory and if not create one
-                            // we need to check all accessories and all services of the accessory
-                        } else {
-                            logger.info("Accessory {} is already in the accessory registry", accessory.getUID());
-                        }
-                    }
+            String deviceId = properties.get("id");
+            // creater a AccessoryServerUID from the deviceId
+            AccessoryServerUID serverUID = new AccessoryServerUID(deviceId);
+            // get the AccessoryServer from the accessoryServerRegistry
+            AccessoryServer server = accessoryServerRegistry.get(serverUID);
 
-                } else {
-                    logger.warn("AccessoryServer {} is not paired", server.getUID());
+            if (server == null) {
+                continue;
+            }
+
+            if (server.isPaired()) {
+                logger.info("AccessoryServer {} is paired", server.getUID());
+
+                try {
+                    server.updateAccessories();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
                 }
+                for (Accessory accessory : server.getAccessories()) {
+                    // Check that the accessory is not already in the accessory registry
+                    if (accessoryRegistry.get(accessory.getUID()) == null) {
+                        logger.info("Accessory {} is not in the accessory registry", accessory.getUID());
+                        accessoryRegistry.add(accessory);
+                        createThingFromAccessory(server, accessory);
+                        // TODO : add code to check if a things exists for this accessory and if not create one
+                        // we need to check all accessories and all services of the accessory
+                    } else {
+                        logger.info("Accessory {} is already in the accessory registry", accessory.getUID());
+                    }
+                }
+
+            } else {
+                logger.warn("AccessoryServer {} is not paired", server.getUID());
             }
 
         }
@@ -232,10 +244,24 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
                 AccessoryServerUID serverUID = new AccessoryServerUID(id.replace(":", ""));
                 AccessoryServer existingServer = accessoryServerRegistry.get(serverUID);
 
+                int port = serviceInfo.getPort();
+                String deviceId = serviceInfo.getPropertyString("id");
+                String model = serviceInfo.getPropertyString("md");
+                String version = serviceInfo.getPropertyString("pv");
+                int configIndex = Integer.parseInt(serviceInfo.getPropertyString("c#"));
+                AccessoryCategory category = AccessoryCategory
+                        .fromValue(Integer.parseInt(serviceInfo.getPropertyString("ci")));
+                PairingStatusFlag pairingStatus = PairingStatusFlag
+                        .fromValue(Integer.parseInt(serviceInfo.getPropertyString("sf")));
+                int stateNumber = Integer.parseInt(serviceInfo.getPropertyString("s#"));
+                PairingFeatureFlag pairingFeatureFlag = PairingFeatureFlag
+                        .fromValue(Integer.parseInt(serviceInfo.getPropertyString("ff")));
+
                 if (existingServer != null) {
                     // Update configuration index if needed
-                    int configIndex = Integer.parseInt(serviceInfo.getPropertyString("c#"));
                     if (existingServer.getConfigurationIndex() != configIndex) {
+                        logger.debug("Updating configuration index for server {} from {} to {}",
+                                existingServer.getUID(), existingServer.getConfigurationIndex(), configIndex);
                         existingServer.setConfigurationIndex(configIndex);
                     }
                 } else {
@@ -244,7 +270,6 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
                             id, serviceInfo.getInet4Addresses().length, serviceInfo.getInet6Addresses().length);
 
                     String hostAddress = null;
-                    int port = 0;
 
                     if (SystemUtils.IS_OS_MAC) {
                         // Use IPv4 only - see
@@ -274,48 +299,31 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
                         return null;
                     }
 
-                    port = serviceInfo.getPort();
-                    String deviceId = serviceInfo.getPropertyString("id");
-                    String model = serviceInfo.getPropertyString("md");
-                    String version = serviceInfo.getPropertyString("pv");
-                    int configIndex = Integer.parseInt(serviceInfo.getPropertyString("c#"));
-                    AccessoryCategory category = AccessoryCategory
-                            .fromValue(Integer.parseInt(serviceInfo.getPropertyString("ci")));
-                    PairingStatusFlag pairingStatus = PairingStatusFlag
-                            .fromValue(Integer.parseInt(serviceInfo.getPropertyString("sf")));
-                    int stateNumber = Integer.parseInt(serviceInfo.getPropertyString("s#"));
-                    PairingFeatureFlag pairingFeatureFlag = PairingFeatureFlag
-                            .fromValue(Integer.parseInt(serviceInfo.getPropertyString("ff")));
-
                     logger.info(
                             "Found a Homekit Accessory Server with id {}, category {}, model {}, version {}, configuration index {}, pairing status {}, pairing feature flag {}",
                             id, category, model, version, configIndex, pairingStatus, pairingFeatureFlag);
 
-                    if (pairingStatus.equals(PairingStatusFlag.NOT_PAIRED)) {
+                    try {
                         AccessoryServer server = null;
-                        try {
-                            if (category.equals(AccessoryCategory.BRIDGES)) {
-                                server = new BridgeRemoteAccessoryServer(InetAddress.getByName(hostAddress), port,
-                                        mdnsService, accessoryRegistry, pairingRegistry, safeCaller);
-                            } else {
-                                server = new StandAloneRemoteAccessoryServer(InetAddress.getByName(hostAddress), port,
-                                        accessoryRegistry, pairingRegistry);
-                            }
-                            server.setConfigurationIndex(configIndex);
-                            managedAccessoryServerProvider.add(server);
-                            logger.debug("Created a Remote Accessory Server {} with Setup Code {}", server.getUID(),
-                                    server.getSetupCode());
-                        } catch (Exception e) {
-                            logger.error("Error creating accessory server", e);
+                        if (category.equals(AccessoryCategory.BRIDGES)) {
+                            server = new BridgeRemoteAccessoryServer(InetAddress.getByName(hostAddress), port,
+                                    mdnsService, accessoryRegistry, pairingRegistry, safeCaller);
+                        } else {
+                            server = new StandAloneRemoteAccessoryServer(InetAddress.getByName(hostAddress), port,
+                                    accessoryRegistry, pairingRegistry);
                         }
-                    } else {
-                        logger.info("Skipping accessory server {} because it is paired to another controller", id);
+                        server.setConfigurationIndex(configIndex);
+                        accessoryServerRegistry.add(server);
+                        logger.debug("Created a Remote Accessory Server {} with Setup Code {}", server.getUID(),
+                                server.getSetupCode());
+                    } catch (Exception e) {
+                        logger.error("Error creating accessory server", e);
                     }
 
-                    cancelRemovalTask(serviceInfo);
-
-                    return properties;
                 }
+
+                cancelRemovalTask(serviceInfo);
+                return properties;
             } catch (Exception e) {
                 logger.error("Error processing HomeKit service: {}", serviceInfo.getName(), e);
             }

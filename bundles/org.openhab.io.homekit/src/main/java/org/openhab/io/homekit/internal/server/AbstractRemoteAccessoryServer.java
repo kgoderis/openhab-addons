@@ -58,10 +58,13 @@ import org.eclipse.jetty.client.util.BytesContentProvider;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
 import org.openhab.io.homekit.api.hap.Accessory;
+import org.openhab.io.homekit.api.hap.AccessoryServer;
+import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Error;
 import org.openhab.io.homekit.api.hap.Message;
 import org.openhab.io.homekit.api.hap.Method;
 import org.openhab.io.homekit.api.hap.Pairing;
+import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.api.listener.AccessoryServerChangeListener;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
@@ -1332,27 +1335,66 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
                     notifyChangeListeners(AccessoryServerEvent.AccessoryServerEventType.ACCESSORY_REMOVED);
                 }
             }
-            
-            // Notify listeners if there were any changes
-            if (!currentAccessories.equals(remoteAccessories)) {
-                notifyChangeListeners();
+
+            // Compare services and characteristics for each accessory
+            for (Accessory currentAccessory : currentAccessories) {
+                for (Accessory remoteAccessory : remoteAccessories) {
+                    if (currentAccessory.getAccessoryId() == remoteAccessory.getAccessoryId()) {
+                        // Compare services
+                        Collection<Service> currentServices = currentAccessory.getServices();
+                        Collection<Service> remoteServices = remoteAccessory.getServices();
+                        
+                        // Find new services to add
+                        for (Service remoteService : remoteServices) {
+                            if (!currentServices.contains(remoteService)) {
+                                logger.info("'{}' : Adding new service {} to accessory {}", new String(getPairingId()), remoteService, currentAccessory);
+                                notifyChangeListeners(AccessoryServerEvent.AccessoryServerEventType.SERVICE_ADDED);
+                            }
+                        }
+                        
+                        // Find services to remove
+                        for (Service currentService : currentServices) {
+                            if (!remoteServices.contains(currentService)) {
+                                logger.info("'{}' : Removing service {} from accessory {}", new String(getPairingId()), currentService, currentAccessory);
+                                notifyChangeListeners(AccessoryServerEvent.AccessoryServerEventType.SERVICE_REMOVED);
+                            }
+                        }
+
+                        // Compare characteristics for each service
+                        for (Service currentService : currentServices) {
+                            for (Service remoteService : remoteServices) {
+                                if (currentService.getInstanceId() == remoteService.getInstanceId()) {
+                                    List<Characteristic<?>> currentCharacteristics = currentService.getCharacteristics();
+                                    List<Characteristic<?>> remoteCharacteristics = remoteService.getCharacteristics();
+                                    
+                                    // Find new characteristics to add
+                                    for (Characteristic<?> remoteCharacteristic : remoteCharacteristics) {
+                                        if (!currentCharacteristics.contains(remoteCharacteristic)) {
+                                            logger.info("'{}' : Adding new characteristic {} to service {} of accessory {}", 
+                                                new String(getPairingId()), remoteCharacteristic, currentService, currentAccessory);
+                                            notifyChangeListeners(AccessoryServerEvent.AccessoryServerEventType.CHARACTERISTIC_ADDED);
+                                        }
+                                    }
+                                    
+                                    // Find characteristics to remove
+                                    for (Characteristic<?> currentCharacteristic : currentCharacteristics) {
+                                        if (!remoteCharacteristics.contains(currentCharacteristic)) {
+                                            logger.info("'{}' : Removing characteristic {} from service {} of accessory {}", 
+                                                new String(getPairingId()), currentCharacteristic, currentService, currentAccessory);
+                                            notifyChangeListeners(AccessoryServerEvent.AccessoryServerEventType.CHARACTERISTIC_REMOVED);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
+
         } catch (Exception e) {
             logger.warn("'{}' : Error updating accessories: {}", new String(getPairingId()), e.getMessage());
             logger.debug("'{}' : Exception details", new String(getPairingId()), e);
             throw new IOException("Failed to update accessories", e);
-        }
-    }
-
-    private void notifyChangeListeners(AccessoryServerEvent.AccessoryServerEventType eventType) {
-        for (AccessoryServerChangeListener listener : changeListeners) {
-            listener.onAccessoryServerEvent(new AccessoryServerEvent(this, null, null, null, eventType));
-        }
-    }
-
-    private void notifyChangeListeners() {
-        for (AccessoryServerChangeListener listener : changeListeners) {
-            listener.onAccessoryServerEvent(new AccessoryServerEvent(this, null, null, null, AccessoryServerEvent.AccessoryServerEventType.SERVER_UPDATED));
         }
     }
 }

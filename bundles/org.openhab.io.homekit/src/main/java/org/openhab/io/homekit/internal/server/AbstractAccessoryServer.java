@@ -217,21 +217,14 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
                 accessory.getClass().getSimpleName(), this.getUID());
 
         if (accessories.add(accessory)) {
+            // Update the AccessoryRegistry
+            if (accessoryRegistry.update(accessory) == null) {
+                accessoryRegistry.add(accessory);
+            }
             // Increment configuration index when accessories change
             configurationIndex++;
-
             advertise();
-
-            // Notify listeners of accessory addition
-            AccessoryServerEvent event = new AccessoryServerEvent(this, accessory, null, null,
-                    AccessoryServerEvent.AccessoryServerEventType.ACCESSORY_ADDED);
-            for (AccessoryServerChangeListener listener : changeListeners) {
-                try {
-                    listener.onAccessoryServerEvent(event);
-                } catch (Throwable throwable) {
-                    logger.error("Cannot inform listener {} of accessory addition", listener, throwable);
-                }
-            }
+            notifyChangeListeners(AccessoryServerEventType.ACCESSORY_ADDED);
         }
     }
 
@@ -240,21 +233,12 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
         logger.debug("Removing Accessory {} from Accessory Server {}", accessory.getUID(), this.getUID());
 
         if (accessories.remove(accessory)) {
+            // Remove from AccessoryRegistry
+            accessoryRegistry.remove(accessory.getUID());
             // Increment configuration index when accessories change
             configurationIndex++;
-
             advertise();
-
-            // Notify listeners of accessory removal
-            AccessoryServerEvent event = new AccessoryServerEvent(this, accessory, null, null,
-                    AccessoryServerEvent.AccessoryServerEventType.ACCESSORY_REMOVED);
-            for (AccessoryServerChangeListener listener : changeListeners) {
-                try {
-                    listener.onAccessoryServerEvent(event);
-                } catch (Throwable throwable) {
-                    logger.error("Cannot inform listener {} of accessory removal", listener, throwable);
-                }
-            }
+            notifyChangeListeners(AccessoryServerEventType.ACCESSORY_REMOVED);
         }
     }
 
