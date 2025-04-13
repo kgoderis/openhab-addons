@@ -2,11 +2,16 @@ package org.openhab.io.homekit.library.characteristic;
 
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.IntegerCharacteristic;
+import javax.json.JsonValue;
 
 public class CurrentPositionCharacteristic extends IntegerCharacteristic {
 
     public CurrentPositionCharacteristic(Service service, long instanceId) {
         super(service, instanceId, false, true, true, "Current position", 0, 100, "percent");
+    }
+
+    public CurrentPositionCharacteristic(Service service, JsonValue value) {
+        super(service, value);
     }
 
     public static String getType() {

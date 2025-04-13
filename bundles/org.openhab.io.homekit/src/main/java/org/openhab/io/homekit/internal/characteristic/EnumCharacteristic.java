@@ -24,6 +24,12 @@ public abstract class EnumCharacteristic extends GenericCharacteristic<Integer> 
         this.maxValue = maxValue;
     }
 
+    public EnumCharacteristic(Service service, JsonValue value) {
+        super(service, value);
+        JsonObject jsonObject = (JsonObject) value;
+        this.maxValue = jsonObject.containsKey("maxValue") ? jsonObject.getInt("maxValue") : 1;
+    }
+
     @Override
     public boolean isHidden() {
         return false;

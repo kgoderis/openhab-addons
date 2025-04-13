@@ -22,6 +22,10 @@ public abstract class WriteOnlyBooleanCharacteristic extends GenericCharacterist
         super(service, instanceId, "bool", true, false, false, description);
     }
 
+    public WriteOnlyBooleanCharacteristic(Service service, JsonValue value) {
+        super(service, value);
+    }
+
     @Override
     public boolean isHidden() {
         return false;

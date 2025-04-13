@@ -30,8 +30,8 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     // Instance fields - final
     private final Service service;
     private final long instanceId;
-    private final String format;
-    private final String description;
+    private  String format;
+    private  String description;
     private final Collection<CharacteristicChangeListener> listeners = new CopyOnWriteArraySet<>();
 
     // Instance fields - mutable
@@ -246,9 +246,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
             T oldValue = this.value;
             this.value = value;
             if (!Objects.equals(oldValue, value)) {
-                CharacteristicEvent event = new CharacteristicEvent(this, toValueJson(oldValue), toValueJson(value));
                 notifyValueChanged(oldValue, value);
-                notifyListeners(event);
             }
         }
     }
@@ -340,19 +338,57 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     // Object methods
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        
         GenericCharacteristic<?> that = (GenericCharacteristic<?>) o;
-        return instanceId == that.instanceId && Objects.equals(service, that.service);
+        
+        // Compare fields in the same order as compareTo
+        return instanceId == that.instanceId &&
+               getInstanceType().equals(that.getInstanceType()) &&
+               format.equals(that.format) &&
+               isWritable == that.isWritable &&
+               isReadable == that.isReadable &&
+               hasEvents == that.hasEvents &&
+               description.equals(that.description);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(service, instanceId);
+        return Objects.hash(instanceId, type, service);
+    }
+
+    @Override
+    public int compareTo(Characteristic<?> other) {
+        if (other == null) return 1;
+        if (this == other) return 0;
+        
+        // Compare by instance ID
+        int idCompare = Long.compare(this.instanceId, other.getInstanceId());
+        if (idCompare != 0) return idCompare;
+        
+        // Compare by instance type
+        int typeCompare = this.getInstanceType().compareTo(other.getInstanceType());
+        if (typeCompare != 0) return typeCompare;
+        
+        // Compare by format
+        int formatCompare = this.format.compareTo(((GenericCharacteristic<?>) other).format);
+        if (formatCompare != 0) return formatCompare;
+        
+        // Compare by isWritable
+        int writableCompare = Boolean.compare(this.isWritable, ((GenericCharacteristic<?>) other).isWritable);
+        if (writableCompare != 0) return writableCompare;
+        
+        // Compare by isReadable
+        int readableCompare = Boolean.compare(this.isReadable, ((GenericCharacteristic<?>) other).isReadable);
+        if (readableCompare != 0) return readableCompare;
+        
+        // Compare by hasEvents
+        int eventsCompare = Boolean.compare(this.hasEvents, ((GenericCharacteristic<?>) other).hasEvents);
+        if (eventsCompare != 0) return eventsCompare;
+        
+        // Finally compare by description
+        return this.description.compareTo(((GenericCharacteristic<?>) other).description);
     }
 
     // Abstract methods
@@ -375,5 +411,26 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     @Override
     public String getDescription() {
         return description;
+    }
+
+    @SuppressWarnings("unchecked")
+	public void updateWith(Characteristic<?> other) {
+        if (other == null) return;
+        if (other instanceof GenericCharacteristic<?> otherGeneric) {
+            if (this.getInstanceType().equals(otherGeneric.getInstanceType()) && this.instanceId == otherGeneric.getInstanceId()) {
+                this.isWritable = otherGeneric.isWritable;
+                this.isReadable = otherGeneric.isReadable;
+                this.hasEvents = otherGeneric.hasEvents;
+                this.description = otherGeneric.description;
+                this.format = otherGeneric.format;
+                this.isHidden = otherGeneric.isHidden;
+                try {
+					setValue((T) otherGeneric.getValue());
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+            }
+        }
     }
 }

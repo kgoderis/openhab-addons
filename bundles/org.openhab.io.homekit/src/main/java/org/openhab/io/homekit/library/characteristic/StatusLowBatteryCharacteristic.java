@@ -5,6 +5,7 @@ package org.openhab.io.homekit.library.characteristic;
 
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.EnumCharacteristic;
+import javax.json.JsonValue;
 
 /**
  * @author kgoderis
@@ -14,6 +15,10 @@ public class StatusLowBatteryCharacteristic extends EnumCharacteristic {
 
     public StatusLowBatteryCharacteristic(Service service, long instanceId) {
         super(service, instanceId, false, true, true, "Status low battery", 1);
+    }
+
+    public StatusLowBatteryCharacteristic(Service service, JsonValue value) {
+        super(service, value);
     }
 
     public static String getType() {

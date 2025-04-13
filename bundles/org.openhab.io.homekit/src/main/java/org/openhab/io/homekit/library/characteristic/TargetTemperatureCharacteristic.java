@@ -2,11 +2,16 @@ package org.openhab.io.homekit.library.characteristic;
 
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.FloatCharacteristic;
+import javax.json.JsonValue;
 
 public class TargetTemperatureCharacteristic extends FloatCharacteristic {
 
     public TargetTemperatureCharacteristic(Service service, long instanceId) {
         super(service, instanceId, true, true, true, "Target temperature in Celsius", 10, 38, 0.1, "celcius");
+    }
+
+    public TargetTemperatureCharacteristic(Service service, JsonValue value) {
+        super(service, value);
     }
 
     public static String getType() {

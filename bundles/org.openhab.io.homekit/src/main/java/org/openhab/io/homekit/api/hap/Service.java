@@ -15,7 +15,7 @@ import org.openhab.io.homekit.internal.service.ServiceUID;
  *
  * @author Andy Lintner
  */
-public interface Service extends Identifiable<@NonNull ServiceUID> {
+public interface Service extends Identifiable<@NonNull ServiceUID>, Comparable<Service> {
 
     @NonNull
     ServiceUID getUID();
@@ -64,6 +64,8 @@ public interface Service extends Identifiable<@NonNull ServiceUID> {
     void addCharacteristic(Characteristic<?> characteristic);
 
     void addCharacteristics();
+
+    void removeCharacteristic(Characteristic<?> characteristic);
 
     Characteristic<?> getCharacteristic(long iid);
 

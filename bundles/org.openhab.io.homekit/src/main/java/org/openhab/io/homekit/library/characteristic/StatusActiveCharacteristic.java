@@ -5,6 +5,7 @@ package org.openhab.io.homekit.library.characteristic;
 
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.BooleanCharacteristic;
+import javax.json.JsonValue;
 
 /**
  * @author kgoderis
@@ -14,6 +15,10 @@ public class StatusActiveCharacteristic extends BooleanCharacteristic {
 
     public StatusActiveCharacteristic(Service service, long instanceId) {
         super(service, instanceId, false, true, true, "Status active");
+    }
+
+    public StatusActiveCharacteristic(Service service, JsonValue value) {
+        super(service, value);
     }
 
     public static String getType() {

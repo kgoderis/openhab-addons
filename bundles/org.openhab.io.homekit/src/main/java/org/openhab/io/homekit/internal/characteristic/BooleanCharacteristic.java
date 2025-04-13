@@ -23,6 +23,10 @@ public abstract class BooleanCharacteristic extends GenericCharacteristic<Boolea
         super(service, instanceId, "bool", isWritable, isReadable, hasEvents, description);
     }
 
+    public BooleanCharacteristic(Service service, JsonValue value) {
+        super(service, value);
+    }
+
     @Override
     public boolean isHidden() {
         return false;

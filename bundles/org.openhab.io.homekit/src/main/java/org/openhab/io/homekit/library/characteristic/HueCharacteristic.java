@@ -5,11 +5,16 @@ import org.openhab.core.library.types.HSBType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.FloatCharacteristic;
+import javax.json.JsonValue;
 
 public class HueCharacteristic extends FloatCharacteristic {
 
     public HueCharacteristic(Service service, long instanceId) {
         super(service, instanceId, true, true, true, "Adjust hue of the light", 0, 360, 1, "arcdegrees");
+    }
+
+    public HueCharacteristic(Service service, JsonValue value) {
+        super(service, value);
     }
 
     public static String getType() {

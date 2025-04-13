@@ -2,11 +2,16 @@ package org.openhab.io.homekit.library.characteristic;
 
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.ReadOnlyStringCharacteristic;
+import javax.json.JsonValue;
 
 public class ModelCharacteristic extends ReadOnlyStringCharacteristic {
 
     public ModelCharacteristic(Service service, long instanceId) {
         super(service, instanceId, "Model of the accessory");
+    }
+
+    public ModelCharacteristic(Service service, JsonValue value) {
+        super(service, value);
     }
 
     public static String getType() {

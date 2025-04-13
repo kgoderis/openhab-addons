@@ -2,11 +2,16 @@ package org.openhab.io.homekit.library.characteristic;
 
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.WriteOnlyBooleanCharacteristic;
+import javax.json.JsonValue;
 
 public class IdentifyCharacteristic extends WriteOnlyBooleanCharacteristic {
 
     public IdentifyCharacteristic(Service service, long instanceId) {
         super(service, instanceId, "Identify");
+    }
+
+    public IdentifyCharacteristic(Service service, JsonValue value) {
+        super(service, value);
     }
 
     public static String getType() {

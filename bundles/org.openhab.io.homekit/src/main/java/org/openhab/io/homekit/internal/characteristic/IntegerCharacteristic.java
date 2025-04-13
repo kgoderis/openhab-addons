@@ -23,6 +23,14 @@ public abstract class IntegerCharacteristic extends GenericCharacteristic<Intege
         this.unit = unit;
     }
 
+    public IntegerCharacteristic(Service service, JsonValue value) {
+        super(service, value);
+        JsonObject jsonObject = (JsonObject) value;
+        this.minValue = jsonObject.containsKey("minValue") ? jsonObject.getInt("minValue") : 0;
+        this.maxValue = jsonObject.containsKey("maxValue") ? jsonObject.getInt("maxValue") : Integer.MAX_VALUE;
+        this.unit = jsonObject.containsKey("unit") ? jsonObject.getString("unit") : "";
+    }
+
     @Override
     public boolean isHidden() {
         return false;

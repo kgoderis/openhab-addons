@@ -7,12 +7,17 @@ import org.openhab.io.homekit.library.characteristic.IdentifyCharacteristic;
 import org.openhab.io.homekit.library.characteristic.ManufacturerCharacteristic;
 import org.openhab.io.homekit.library.characteristic.ModelCharacteristic;
 import org.openhab.io.homekit.library.characteristic.SerialNumberCharacteristic;
+import javax.json.JsonValue;
 
 public class AccessoryInformationService extends GenericService {
 
     public AccessoryInformationService(Accessory accessory, long instanceId, boolean extend,
             @NonNull String serviceName) {
         super(accessory, instanceId, extend, serviceName);
+    }
+
+    public AccessoryInformationService(Accessory accessory, JsonValue value, String name) {
+        super(accessory, value, name);
     }
 
     @Override

@@ -6,11 +6,16 @@ import org.openhab.core.library.types.PercentType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.IntegerCharacteristic;
+import javax.json.JsonValue;
 
 public class BrightnessCharacteristic extends IntegerCharacteristic {
 
     public BrightnessCharacteristic(Service service, long instanceId) {
         super(service, instanceId, true, true, true, "Adjust brightness of a light", 0, 100, "percentage");
+    }
+
+    public BrightnessCharacteristic(Service service, JsonValue value) {
+        super(service, value);
     }
 
     public static String getType() {

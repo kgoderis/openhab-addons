@@ -8,12 +8,17 @@ import org.openhab.io.homekit.library.characteristic.CurrentTemperatureCharacter
 import org.openhab.io.homekit.library.characteristic.TargetHeatingCoolingStateCharacteristic;
 import org.openhab.io.homekit.library.characteristic.TargetTemperatureCharacteristic;
 import org.openhab.io.homekit.library.characteristic.TemperatureDisplayUnitsCharacteristic;
+import javax.json.JsonValue;
 
 public class ThermostatService extends GenericService {
 
     public ThermostatService(Accessory accessory, long instanceId, boolean extend, @NonNull String serviceName)
             throws Exception {
         super(accessory, instanceId, extend, serviceName);
+    }
+
+    public ThermostatService(Accessory accessory, JsonValue value, String name) {
+        super(accessory, value, name);
     }
 
     @Override

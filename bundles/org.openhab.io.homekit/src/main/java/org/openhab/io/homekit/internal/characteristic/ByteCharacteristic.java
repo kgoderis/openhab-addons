@@ -13,12 +13,22 @@ public abstract class ByteCharacteristic extends GenericCharacteristic<Byte> {
 
     private final byte minValue;
     private final byte maxValue;
+    private final String unit;
 
     public ByteCharacteristic(Service service, long instanceId, boolean isWritable, boolean isReadable,
             boolean hasEvents, String description, byte minValue, byte maxValue) {
         super(service, instanceId, "uint8", isWritable, isReadable, hasEvents, description);
         this.minValue = minValue;
         this.maxValue = maxValue;
+        this.unit = "";
+    }
+
+    public ByteCharacteristic(Service service, JsonValue value) {
+        super(service, value);
+        JsonObject jsonObject = (JsonObject) value;
+        this.minValue = jsonObject.containsKey("minValue") ? (byte) jsonObject.getInt("minValue") : 0;
+        this.maxValue = jsonObject.containsKey("maxValue") ? (byte) jsonObject.getInt("maxValue") : Byte.MAX_VALUE;
+        this.unit = jsonObject.containsKey("unit") ? jsonObject.getString("unit") : "";
     }
 
     @Override

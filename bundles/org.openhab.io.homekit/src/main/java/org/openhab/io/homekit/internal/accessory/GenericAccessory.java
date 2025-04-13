@@ -1,8 +1,11 @@
 package org.openhab.io.homekit.internal.accessory;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -36,8 +39,8 @@ public class GenericAccessory implements Accessory {
     private static final Logger logger = LoggerFactory.getLogger(GenericAccessory.class);
     private static ServiceTracker<org.openhab.io.homekit.api.factory.HomekitFactory, org.openhab.io.homekit.api.factory.HomekitFactory> homekitFactoryTracker;
 
-    private final long instanceId;
-    private final long accessoryId;
+    private final long instanceId = 0;
+    private  long accessoryId = 0;
     private final Object instanceIdLock = new Object();
     private final Set<Long> usedInstanceIds = new HashSet<>();
     private long nextInstanceId = 1;
@@ -54,7 +57,6 @@ public class GenericAccessory implements Accessory {
      */
     public GenericAccessory(long accessoryId) {
         // this.server = server;
-        this.instanceId = getNextAvailableInstanceId();
         this.accessoryId = accessoryId;
         logger.debug("Created new accessory with instance ID: {}", instanceId);
 
@@ -76,7 +78,6 @@ public class GenericAccessory implements Accessory {
      */
     public GenericAccessory(JsonValue value) {
         // this.server = server;
-        this.instanceId = getNextAvailableInstanceId();
         this.accessoryId = ((JsonObject) value).getInt("aid");
         logger.debug("Created accessory from JSON with accessory ID: {}", accessoryId);
 
@@ -84,7 +85,57 @@ public class GenericAccessory implements Accessory {
         for (JsonValue serviceValue : servicesArray) {
             Service service = createService(serviceValue);
             if (service != null) {
+                addService(service);
+            }
+        }
+    }
+
+    private Service createService(JsonValue value) {
+        if (homekitFactoryTracker == null) {
+            BundleContext context = FrameworkUtil.getBundle(GenericAccessory.class).getBundleContext();
+            homekitFactoryTracker = new ServiceTracker<>(context, HomekitFactory.class, null);
+            homekitFactoryTracker.open();
+        }
+
+        Object[] factories = homekitFactoryTracker.getServices();
+        if (factories != null) {
+            for (Object factory : factories) {
+                if (factory instanceof HomekitFactory homekitFactory) {
+                    String serviceType = ((JsonObject) value).getString("type");
+                    if (homekitFactory.isServiceSupported(serviceType)) {
+                        Service service = homekitFactory.createService(this, value);
+                        if (service != null) {
+                            return service;
+                        }
+                    }
+                }
+            }
+        }
+        logger.warn("No HomekitFactory found to create service from JSON value");
+        return null;
+    }
+
+    @Override
+    public void addService(@Nullable Service service) {
+        if (service != null && isExtensible()) {
+            if (getService(service.getInstanceType()) == null) {
                 services.add(service);
+                logger.debug("Added Service '{}' (Type: {}) to Accessory '{}' (Type: {})", service.getName(),
+                        service.getInstanceType(), this.getLabel(), this.getClass().getSimpleName());
+                notifyServiceAdded(service);
+
+                // Listen for service changes
+                if (service instanceof GenericService) {
+                    ((GenericService) service).addChangeListener(new ServiceChangeListener() {
+                        @Override
+                        public void onServiceEvent(ServiceEvent event) {
+                            notifyServiceStateChanged(service);
+                        }
+                    });
+                }
+            } else {
+                logger.debug("Accessory '{}' (Type: {}) already contains Service '{}' (Type: {})", this.getLabel(),
+                        this.getClass().getSimpleName(), service.getName(), service.getInstanceType());
             }
         }
     }
@@ -156,30 +207,7 @@ public class GenericAccessory implements Accessory {
         logger.debug("Cleaned up accessory with instance ID: {}", instanceId);
     }
 
-    private Service createService(JsonValue value) {
-        if (homekitFactoryTracker == null) {
-            BundleContext context = FrameworkUtil.getBundle(GenericAccessory.class).getBundleContext();
-            homekitFactoryTracker = new ServiceTracker<>(context, HomekitFactory.class, null);
-            homekitFactoryTracker.open();
-        }
 
-        Object[] factories = homekitFactoryTracker.getServices();
-        if (factories != null) {
-            for (Object factory : factories) {
-                if (factory instanceof HomekitFactory homekitFactory) {
-                    String serviceType = ((JsonObject) value).getString("type");
-                    if (homekitFactory.isServiceSupported(serviceType)) {
-                        Service service = homekitFactory.createService(this, value);
-                        if (service != null) {
-                            return service;
-                        }
-                    }
-                }
-            }
-        }
-        logger.warn("No HomekitFactory found to create service from JSON value");
-        return null;
-    }
 
     /**
      * Adds default services to the accessory. Subclasses can override this method
@@ -249,30 +277,7 @@ public class GenericAccessory implements Accessory {
         return true;
     }
 
-    @Override
-    public void addService(@Nullable Service service) {
-        if (service != null && isExtensible()) {
-            if (getService(service.getInstanceType()) == null) {
-                services.add(service);
-                logger.debug("Added Service '{}' (Type: {}) to Accessory '{}' (Type: {})", service.getName(),
-                        service.getInstanceType(), this.getLabel(), this.getClass().getSimpleName());
-                notifyServiceAdded(service);
-
-                // Listen for service changes
-                if (service instanceof GenericService) {
-                    ((GenericService) service).addChangeListener(new ServiceChangeListener() {
-                        @Override
-                        public void onServiceEvent(ServiceEvent event) {
-                            notifyServiceStateChanged(service);
-                        }
-                    });
-                }
-            } else {
-                logger.debug("Accessory '{}' (Type: {}) already contains Service '{}' (Type: {})", this.getLabel(),
-                        this.getClass().getSimpleName(), service.getName(), service.getInstanceType());
-            }
-        }
-    }
+ 
 
     @Override
     public void addChangeListener(@NonNull AccessoryChangeListener listener) {
@@ -325,7 +330,7 @@ public class GenericAccessory implements Accessory {
             services.add(service.toJson());
         }
 
-        JsonObjectBuilder builder = Json.createObjectBuilder().add("aid", instanceId).add("services", services);
+        JsonObjectBuilder builder = Json.createObjectBuilder().add("aid", accessoryId).add("services", services);
 
         return builder.build();
     }
@@ -339,7 +344,7 @@ public class GenericAccessory implements Accessory {
             services.add(service.toReducedJson());
         }
 
-        JsonObjectBuilder builder = Json.createObjectBuilder().add("aid", instanceId).add("services", services);
+        JsonObjectBuilder builder = Json.createObjectBuilder().add("aid", accessoryId).add("services", services);
 
         return builder.build();
     }
@@ -348,4 +353,77 @@ public class GenericAccessory implements Accessory {
     public void identify() {
         // TODO No Op?
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        
+        GenericAccessory that = (GenericAccessory) o;
+        
+        // Compare accessory ID
+        if (accessoryId != that.accessoryId) return false;
+        
+        // Compare services
+        List<Service> thisServices = new ArrayList<>(this.services);
+        List<Service> thatServices = new ArrayList<>(that.services);
+        
+        // Sort both lists by instance ID for consistent comparison
+        thisServices.sort((s1, s2) -> Long.compare(s1.getInstanceId(), s2.getInstanceId()));
+        thatServices.sort((s1, s2) -> Long.compare(s1.getInstanceId(), s2.getInstanceId()));
+        
+        // Compare sizes
+        if (thisServices.size() != thatServices.size()) return false;
+        
+        // Compare each service
+        for (int i = 0; i < thisServices.size(); i++) {
+            if (!thisServices.get(i).equals(thatServices.get(i))) return false;
+        }
+        
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(accessoryId, services);
+    }
+
+    @Override
+    public int compareTo(@NonNull Accessory other) {
+        if (this == other) return 0;
+        
+        // First compare by accessory ID
+        int idCompare = Long.compare(this.accessoryId, other.getAccessoryId());
+        if (idCompare != 0) return idCompare;
+        
+        // Compare services
+        GenericAccessory that = (GenericAccessory) other;
+        List<Service> thisServices = new ArrayList<>(this.services);
+        List<Service> thatServices = new ArrayList<>(that.services);
+        
+        // Sort both lists by instance ID for consistent comparison
+        thisServices.sort((s1, s2) -> Long.compare(s1.getInstanceId(), s2.getInstanceId()));
+        thatServices.sort((s1, s2) -> Long.compare(s1.getInstanceId(), s2.getInstanceId()));
+        
+        // Compare sizes first
+        int sizeCompare = Integer.compare(thisServices.size(), thatServices.size());
+        if (sizeCompare != 0) return sizeCompare;
+        
+        // Compare each service
+        for (int i = 0; i < thisServices.size(); i++) {
+            int serviceCompare = thisServices.get(i).compareTo(thatServices.get(i));
+            if (serviceCompare != 0) return serviceCompare;
+        }
+        
+        return 0;
+    }
+
+	@Override
+	public void removeService(@NonNull Service service) {
+		if (services.remove(service)) {
+			logger.debug("Removed Service '{}' (Type: {}) from Accessory '{}' (Type: {})", service.getName(),
+					service.getInstanceType(), this.getLabel(), this.getClass().getSimpleName());
+			notifyServiceRemoved(service);
+		}
+	}
 }

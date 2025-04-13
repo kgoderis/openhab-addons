@@ -2,11 +2,16 @@ package org.openhab.io.homekit.library.characteristic;
 
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.IntegerCharacteristic;
+import javax.json.JsonValue;
 
 public class TargetPositionCharacteristic extends IntegerCharacteristic {
 
     public TargetPositionCharacteristic(Service service, long instanceId) {
         super(service, instanceId, true, true, true, "Target position", 0, 100, "%");
+    }
+
+    public TargetPositionCharacteristic(Service service, JsonValue value) {
+        super(service, value);
     }
 
     public static String getType() {

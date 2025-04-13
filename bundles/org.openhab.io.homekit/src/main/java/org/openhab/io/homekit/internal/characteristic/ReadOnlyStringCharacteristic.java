@@ -22,6 +22,10 @@ public abstract class ReadOnlyStringCharacteristic extends GenericCharacteristic
 
     public ReadOnlyStringCharacteristic(Service service, long instanceId, String description) {
         super(service, instanceId, "string", false, true, false, description);
+        }
+
+    public ReadOnlyStringCharacteristic(Service service, JsonValue value) {
+        super(service, value);
     }
 
     @Override

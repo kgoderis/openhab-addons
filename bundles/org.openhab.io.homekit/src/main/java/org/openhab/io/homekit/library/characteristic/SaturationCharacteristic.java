@@ -8,11 +8,16 @@ import org.openhab.core.library.types.PercentType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.FloatCharacteristic;
+import javax.json.JsonValue;
 
 public class SaturationCharacteristic extends FloatCharacteristic {
 
     public SaturationCharacteristic(Service service, long instanceId) {
         super(service, instanceId, true, true, true, "Adjust saturation of the light", 0, 100, 1, "percentage");
+    }
+
+    public SaturationCharacteristic(Service service, JsonValue value) {
+        super(service, value);
     }
 
     public static String getType() {

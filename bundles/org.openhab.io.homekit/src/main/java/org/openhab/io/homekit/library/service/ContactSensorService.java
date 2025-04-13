@@ -8,12 +8,17 @@ import org.openhab.io.homekit.library.characteristic.StatusActiveCharacteristic;
 import org.openhab.io.homekit.library.characteristic.StatusFaultCharacteristic;
 import org.openhab.io.homekit.library.characteristic.StatusLowBatteryCharacteristic;
 import org.openhab.io.homekit.library.characteristic.StatusTamperedCharacteristic;
+import javax.json.JsonValue;
 
 public class ContactSensorService extends GenericService {
 
     public ContactSensorService(Accessory accessory, long instanceId, boolean extend, @NonNull String serviceName)
             throws Exception {
         super(accessory, instanceId, extend, serviceName);
+    }
+
+    public ContactSensorService(Accessory accessory, JsonValue value, String name) {
+        super(accessory, value, name);
     }
 
     @Override

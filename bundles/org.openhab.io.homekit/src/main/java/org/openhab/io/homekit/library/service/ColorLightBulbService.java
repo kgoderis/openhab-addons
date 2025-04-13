@@ -1,5 +1,7 @@
 package org.openhab.io.homekit.library.service;
 
+import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.library.characteristic.ColorTemperatureCharacteristic;
@@ -11,6 +13,10 @@ public class ColorLightBulbService extends LightBulbService {
     public ColorLightBulbService(Accessory accessory, long instanceId, boolean extend, @NonNull String serviceName)
             throws Exception {
         super(accessory, instanceId, extend, serviceName);
+    }
+
+    public ColorLightBulbService(Accessory accessory, JsonValue value, String name) {
+        super(accessory, value, name);
     }
 
     @Override

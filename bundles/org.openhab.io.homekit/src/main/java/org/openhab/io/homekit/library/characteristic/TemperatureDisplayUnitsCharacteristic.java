@@ -2,11 +2,16 @@ package org.openhab.io.homekit.library.characteristic;
 
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.ByteCharacteristic;
+import javax.json.JsonValue;
 
 public class TemperatureDisplayUnitsCharacteristic extends ByteCharacteristic {
 
     public TemperatureDisplayUnitsCharacteristic(Service service, long instanceId) {
         super(service, instanceId, true, true, true, "Temperature display units", (byte) 0, (byte) 1);
+    }
+
+    public TemperatureDisplayUnitsCharacteristic(Service service, JsonValue value) {
+        super(service, value);
     }
 
     public static String getType() {

@@ -5,12 +5,17 @@ import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.internal.service.GenericService;
 import org.openhab.io.homekit.library.characteristic.OnCharacteristic;
 import org.openhab.io.homekit.library.characteristic.OutletInUseCharacteristic;
+import javax.json.JsonValue;
 
 public class OutletService extends GenericService {
 
     public OutletService(Accessory accessory, long instanceId, boolean extend, @NonNull String serviceName)
             throws Exception {
         super(accessory, instanceId, extend, serviceName);
+    }
+
+    public OutletService(Accessory accessory, JsonValue value, String name) {
+        super(accessory, value, name);
     }
 
     @Override

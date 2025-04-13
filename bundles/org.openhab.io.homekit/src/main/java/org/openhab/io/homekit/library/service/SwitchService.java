@@ -4,11 +4,16 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.internal.service.GenericService;
 import org.openhab.io.homekit.library.characteristic.OnCharacteristic;
+import javax.json.JsonValue;
 
 public class SwitchService extends GenericService {
 
     public SwitchService(Accessory accessory, long instanceId, boolean extend, @NonNull String serviceName) {
         super(accessory, instanceId, extend, serviceName);
+    }
+
+    public SwitchService(Accessory accessory, JsonValue value, String name) {
+        super(accessory, value, name);
     }
 
     @Override

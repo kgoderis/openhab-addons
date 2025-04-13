@@ -2,11 +2,16 @@ package org.openhab.io.homekit.library.characteristic;
 
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.ReadOnlyStringCharacteristic;
+import javax.json.JsonValue;
 
 public class FirmwareRevisionCharacteristic extends ReadOnlyStringCharacteristic {
 
     public FirmwareRevisionCharacteristic(Service service, long instanceId) {
         super(service, instanceId, "Firmware revision of the accessory");
+    }
+
+    public FirmwareRevisionCharacteristic(Service service, JsonValue value) {
+        super(service, value);
     }
 
     public static String getType() {

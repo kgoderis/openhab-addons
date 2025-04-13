@@ -24,6 +24,10 @@ public abstract class StringCharacteristic extends GenericCharacteristic<String>
         super(service, instanceId, "string", true, true, true, description);
     }
 
+    public StringCharacteristic(Service service, JsonValue value) {
+        super(service, value);
+    }
+
     @Override
     public boolean isHidden() {
         return false;

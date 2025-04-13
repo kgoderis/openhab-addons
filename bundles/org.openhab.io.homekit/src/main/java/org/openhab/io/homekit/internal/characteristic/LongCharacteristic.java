@@ -23,6 +23,14 @@ public abstract class LongCharacteristic extends GenericCharacteristic<Long> {
         this.minStep = minStep;
     }
 
+    public LongCharacteristic(Service service, JsonValue value) {
+        super(service, value);
+        JsonObject jsonObject = (JsonObject) value;
+        this.minValue = jsonObject.containsKey("minValue") ? jsonObject.getJsonNumber("minValue").longValue() : 0;
+        this.maxValue = jsonObject.containsKey("maxValue") ? jsonObject.getJsonNumber("maxValue").longValue() : Long.MAX_VALUE;
+        this.minStep = jsonObject.containsKey("minStep") ? jsonObject.getJsonNumber("minStep").longValue() : 1;
+    }
+
     @Override
     public boolean isHidden() {
         return false;

@@ -25,6 +25,15 @@ public abstract class FloatCharacteristic extends GenericCharacteristic<Double> 
         this.unit = unit;
     }
 
+    public FloatCharacteristic(Service service, JsonValue value) {
+        super(service, value);
+        JsonObject jsonObject = (JsonObject) value;
+        this.minValue = jsonObject.containsKey("minValue") ? jsonObject.getJsonNumber("minValue").doubleValue() : 0;
+        this.maxValue = jsonObject.containsKey("maxValue") ? jsonObject.getJsonNumber("maxValue").doubleValue() : 100;
+        this.minStep = jsonObject.containsKey("minStep") ? jsonObject.getJsonNumber("minStep").doubleValue() : 1;
+        this.unit = jsonObject.containsKey("unit") ? jsonObject.getString("unit") : "";
+    }
+
     @Override
     public boolean isHidden() {
         return false;

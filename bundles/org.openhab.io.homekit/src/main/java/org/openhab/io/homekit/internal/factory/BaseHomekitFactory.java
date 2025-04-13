@@ -222,9 +222,9 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
 
         try {
             Constructor<? extends Service> constructor = serviceClass.getDeclaredConstructor(Accessory.class,
-                    long.class, boolean.class);
+                    JsonValue.class, String.class);
             constructor.setAccessible(true);
-            Service service = constructor.newInstance(accessory, instanceId, false);
+            Service service = constructor.newInstance(accessory, value,""); // update name parameter
             logger.debug("Created service of type {} with instanceId {}", type, instanceId);
             return service;
         } catch (Exception e) {
@@ -241,6 +241,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
                 try {
                     Constructor<? extends Service> constructor = serviceClass.getConstructor(Accessory.class,
                             long.class, boolean.class, String.class);
+                            constructor.setAccessible(true);
                     Service service = constructor.newInstance(accessory, instanceId, extend);
                     return service;
                 } catch (NoSuchMethodException | IllegalAccessException | InstantiationException
@@ -312,9 +313,9 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
 
         try {
             Constructor<? extends Characteristic<?>> constructor = characteristicClass
-                    .getDeclaredConstructor(Service.class, long.class);
+                    .getDeclaredConstructor(Service.class, JsonValue.class);
             constructor.setAccessible(true);
-            Characteristic<?> characteristic = constructor.newInstance(service, instanceId);
+            Characteristic<?> characteristic = constructor.newInstance(service, value);
             logger.debug("Created characteristic of type {} with instanceId {}", type, instanceId);
             return characteristic;
         } catch (Exception e) {

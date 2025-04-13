@@ -12,12 +12,17 @@ import org.openhab.io.homekit.library.characteristic.PositionStateCharacteristic
 import org.openhab.io.homekit.library.characteristic.TargetHorizontalTiltAngleCharacteristic;
 import org.openhab.io.homekit.library.characteristic.TargetPositionCharacteristic;
 import org.openhab.io.homekit.library.characteristic.TargetVerticalTiltAngleCharacteristic;
+import javax.json.JsonValue;
 
 public class WindowCoveringService extends GenericService {
 
     public WindowCoveringService(Accessory accessory, long instanceId, boolean extend, @NonNull String serviceName)
             throws Exception {
         super(accessory, instanceId, extend, serviceName);
+    }
+
+    public WindowCoveringService(Accessory accessory, JsonValue value, String name) {
+        super(accessory, value, name);
     }
 
     @Override

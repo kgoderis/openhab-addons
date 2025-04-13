@@ -18,7 +18,7 @@ import org.openhab.io.homekit.internal.accessory.AccessoryUID;
  * @author Andy Lintner
  */
 @NonNullByDefault
-public interface Accessory extends Identifiable<AccessoryUID> {
+public interface Accessory extends Identifiable<AccessoryUID>, Comparable<Accessory> {
 
     AccessoryUID getUID();
 
@@ -68,6 +68,8 @@ public interface Accessory extends Identifiable<AccessoryUID> {
     void addService(Service service);
 
     void addServices();
+
+    void removeService(Service service);
 
     /**
      * The collection of Services this single Accessory supports. Services are the primary way to

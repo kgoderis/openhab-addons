@@ -2,11 +2,16 @@ package org.openhab.io.homekit.library.characteristic;
 
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.IntegerCharacteristic;
+import javax.json.JsonValue;
 
 public class CurrentVerticalTiltAngleCharacteristic extends IntegerCharacteristic {
 
     public CurrentVerticalTiltAngleCharacteristic(Service service, long instanceId) {
         super(service, instanceId, false, true, true, "The current angle of vertical slats", -90, 90, "arcdegrees");
+    }
+
+    public CurrentVerticalTiltAngleCharacteristic(Service service, JsonValue value) {
+        super(service, value);
     }
 
     public static String getType() {

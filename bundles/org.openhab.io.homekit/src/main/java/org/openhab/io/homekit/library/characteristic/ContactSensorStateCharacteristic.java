@@ -4,11 +4,16 @@ import org.openhab.core.library.types.OpenClosedType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.EnumCharacteristic;
+import javax.json.JsonValue;
 
 public class ContactSensorStateCharacteristic extends EnumCharacteristic {
 
     public ContactSensorStateCharacteristic(Service service, long instanceId) {
         super(service, instanceId, false, true, true, "State of a door/window contact sensor", 1);
+    }
+
+    public ContactSensorStateCharacteristic(Service service, JsonValue value) {
+        super(service, value);
     }
 
     public static String getType() {

@@ -18,7 +18,7 @@ import org.openhab.io.homekit.internal.characteristic.CharacteristicUID;
  *
  * @author Andy Lintner
  */
-public interface Characteristic<T> extends Identifiable<@NonNull CharacteristicUID> {
+public interface Characteristic<T> extends Identifiable<@NonNull CharacteristicUID>, Comparable<Characteristic<?>> {
 
     /**
      * Characteristic Instance IDs are assigned from the same number pool that is unique within each
@@ -186,4 +186,6 @@ public interface Characteristic<T> extends Identifiable<@NonNull CharacteristicU
     // ChannelTypeUID getChannelTypeUID();
 
     String getDescription();
+
+    void updateWith(Characteristic<?> other);
 }
