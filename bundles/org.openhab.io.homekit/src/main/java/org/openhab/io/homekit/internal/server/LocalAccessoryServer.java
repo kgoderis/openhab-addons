@@ -14,7 +14,6 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.openhab.core.common.SafeCaller;
 import org.openhab.core.io.transport.mdns.MDNSService;
 import org.openhab.core.io.transport.mdns.ServiceDescription;
 import org.openhab.io.homekit.api.hap.AccessoryCategory;
@@ -44,14 +43,13 @@ import org.slf4j.LoggerFactory;
 //       Abstract class AccesspryHolder
 //       Component AccessoryClient (die httpclient heeft)
 
-public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServer {
+public class LocalAccessoryServer extends AbstractAccessoryServer {
 
-    protected static final Logger logger = LoggerFactory.getLogger(AbstractLocalAccessoryServer.class);
+    protected static final Logger logger = LoggerFactory.getLogger(LocalAccessoryServer.class);
 
     private final Server server;
     protected final MDNSService mdnsService;
     protected ServiceDescription announcedServiceDescription;
-    protected final SafeCaller safeCaller;
     protected final Object notificationLock = new Object();
     // private final Map<Characteristic<?>, Set<HttpConnection>> characteristicConnections = new ConcurrentHashMap<>();
     // private final Map<HttpConnection, List<JsonObject>> batchedNotifications = new ConcurrentHashMap<>();
@@ -64,15 +62,11 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
 
     private final CharacteristicServlet characteristicServlet;
 
-    public AbstractLocalAccessoryServer(InetAddress address, int port, byte[] pairingId, byte[] secretKey,
-            MDNSService mdnsService, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry,
-            SafeCaller safeCaller) throws InvalidAlgorithmParameterException {
-        super(address, port, pairingId, secretKey, accessoryRegistry, pairingRegistry);
-
-        // TODO : Remove SafeCaller
+    public LocalAccessoryServer(AccessoryCategory category, InetAddress address, int port, byte[] pairingId, byte[] secretKey,
+            MDNSService mdnsService, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry) throws InvalidAlgorithmParameterException {
+        super(category, address, port, pairingId, secretKey, accessoryRegistry, pairingRegistry);
 
         this.mdnsService = mdnsService;
-        this.safeCaller = safeCaller;
 
         // Jetty
         server = new Server();
@@ -178,6 +172,11 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
         // }
         // });
         start();
+    }
+
+    public LocalAccessoryServer(AccessoryCategory category, InetAddress address, int port,
+    MDNSService mdnsService, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry) throws InvalidAlgorithmParameterException {
+        this(category, address, port, generatePairingId(), generateSecretKey(), mdnsService, accessoryRegistry, pairingRegistry);
     }
 
     @Deactivate
@@ -696,4 +695,16 @@ public abstract class AbstractLocalAccessoryServer extends AbstractAccessoryServ
     public void pairRemove() throws HomekitException, IOException {
         // We are not in control, the remote controller will handle this
     }
+
+	@Override
+	public void updateAccessories() throws IOException {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'updateAccessories'");
+	}
+
+	@Override
+	public void pairSetup() throws IOException {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'pairSetup'");
+	}
 }

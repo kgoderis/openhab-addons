@@ -39,8 +39,7 @@ import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.internal.provider.HomekitThingTypeProvider;
 import org.openhab.io.homekit.internal.server.AccessoryServerUID;
-import org.openhab.io.homekit.internal.server.BridgeRemoteAccessoryServer;
-import org.openhab.io.homekit.internal.server.StandAloneRemoteAccessoryServer;
+import org.openhab.io.homekit.internal.server.RemoteAccessoryServer;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -305,13 +304,13 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
 
                     try {
                         AccessoryServer server = null;
-                        if (category.equals(AccessoryCategory.BRIDGES)) {
-                            server = new BridgeRemoteAccessoryServer(InetAddress.getByName(hostAddress), port,
-                                    mdnsService, accessoryRegistry, pairingRegistry, safeCaller);
-                        } else {
-                            server = new StandAloneRemoteAccessoryServer(InetAddress.getByName(hostAddress), port,
+                        // if (category.equals(AccessoryCategory.BRIDGES)) {
+                        //     server = new BridgeRemoteAccessoryServer(InetAddress.getByName(hostAddress), port,
+                        //             mdnsService, accessoryRegistry, pairingRegistry, safeCaller);
+                        // } else {
+                            server = new RemoteAccessoryServer(category, InetAddress.getByName(hostAddress), port,
                                     accessoryRegistry, pairingRegistry);
-                        }
+                        // }
                         server.setConfigurationIndex(configIndex);
                         accessoryServerRegistry.add(server);
                         logger.debug("Created a Remote Accessory Server {} with Setup Code {}", server.getUID(),

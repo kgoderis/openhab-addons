@@ -16,7 +16,6 @@ import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
 import org.bouncycastle.util.Pack;
 import org.eclipse.jetty.util.BufferUtil;
-import org.openhab.io.homekit.obsolete.PairVerificationStageOneHandler;
 import org.openhab.io.homekit.util.Byte;
 import org.openhab.io.homekit.util.ByteBufferOutputStream;
 import org.slf4j.Logger;
@@ -259,7 +258,7 @@ public class HomekitEncryptionEngine {
 
     public static SecureRandom getSecureRandom() {
         if (secureRandom == null) {
-            synchronized (PairVerificationStageOneHandler.class) {
+            synchronized (HomekitEncryptionEngine.class) {
                 if (secureRandom == null) {
                     secureRandom = new SecureRandom();
                 }

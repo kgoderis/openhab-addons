@@ -38,8 +38,10 @@ import java.util.concurrent.ScheduledFuture;
 
 import javax.json.Json;
 import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
@@ -58,6 +60,7 @@ import org.eclipse.jetty.client.util.BytesContentProvider;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
 import org.openhab.io.homekit.api.hap.Accessory;
+import org.openhab.io.homekit.api.hap.AccessoryCategory;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Error;
@@ -66,6 +69,8 @@ import org.openhab.io.homekit.api.hap.Method;
 import org.openhab.io.homekit.api.hap.Pairing;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.api.listener.AccessoryServerChangeListener;
+import org.openhab.io.homekit.api.listener.CharacteristicChangeListener;
+import org.openhab.io.homekit.api.listener.CharacteristicChangeListener;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.crypto.ChachaDecoder;
@@ -78,6 +83,8 @@ import org.openhab.io.homekit.internal.accessory.GenericAccessory;
 import org.openhab.io.homekit.internal.client.HomekitClientSRP6Session;
 import org.openhab.io.homekit.internal.client.HomekitException;
 import org.openhab.io.homekit.internal.events.AccessoryServerEvent;
+import org.openhab.io.homekit.internal.events.CharacteristicEvent;
+import org.openhab.io.homekit.internal.events.CharacteristicEvent.CharacteristicEventType;
 import org.openhab.io.homekit.internal.http.jetty.HomekitHttpClientTransportOverHTTP;
 import org.openhab.io.homekit.internal.http.jetty.HomekitHttpDestinationOverHTTP;
 import org.openhab.io.homekit.internal.http.jetty.HomekitProtocolHandler;
@@ -95,9 +102,13 @@ import com.nimbusds.srp6.XRoutineWithUserIdentity;
 
 import djb.Curve25519;
 
-public abstract class AbstractRemoteAccessoryServer extends AbstractAccessoryServer {
+// A bridge is a special type of HAP accessory server that bridges HomeKit Accessory Protocol and different RF/transport protocols, such as ZigBee or Z-Wave. A bridge must expose all the user-addressable functionality supported by its connected devices as HAP accessory objects to the HAP controller(s). A bridge must ensure that the instance ID assigned to the HAP accessory objects exposed on behalf of its connected devices do not change for the lifetime of the server/client pairing.
+// For example, a bridge that bridges three lights would expose four HAP accessory objects: one HAP accessory object that represents the bridge itself that may include a "firmware update" service, and three additional HAP accessory objects that each contain a "lightbulb" service.
+// A bridge must not expose more than 150 HAP accessory objects. The HAP accessory object with an instance ID of 1 is considered the primary HAP accessory object. For bridges, this must be the bridge itself.
 
-    protected static final Logger logger = LoggerFactory.getLogger(AbstractRemoteAccessoryServer.class);
+public  class RemoteAccessoryServer extends AbstractAccessoryServer implements CharacteristicChangeListener {
+
+    protected static final Logger logger = LoggerFactory.getLogger(RemoteAccessoryServer.class);
 
     private static final String HTTP_SCHEME = "http";
 
@@ -112,9 +123,10 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
     private @Nullable HttpClient httpClient;
     private boolean isPairVerified;
 
-    public AbstractRemoteAccessoryServer(InetAddress address, int port, byte[] pairingIdentifier, byte[] secretKey,
+
+    public RemoteAccessoryServer(AccessoryCategory category, InetAddress address, int port, byte[] pairingIdentifier, byte[] secretKey,
             AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry) {
-        super(address, port, pairingIdentifier, secretKey, accessoryRegistry, pairingRegistry);
+        super(category, address, port, pairingIdentifier, secretKey, accessoryRegistry, pairingRegistry);
         this.setupCode = "";
         this.isPairVerified = false;
         this.httpClient = new HttpClient(new HomekitHttpClientTransportOverHTTP(), null);
@@ -122,6 +134,11 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
 
         // TODO : Detect when the remote end closes the connection -> Thing should go offline
         start();
+    }
+
+    public RemoteAccessoryServer(AccessoryCategory category, InetAddress address, int port, AccessoryRegistry accessoryRegistry,
+            PairingRegistry pairingRegistry) {
+        this(category, address, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry);
     }
 
     @Deactivate
@@ -146,9 +163,22 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
         return currentState != AccessoryServerState.DISCONNECTED;
     }
 
-    public AbstractRemoteAccessoryServer(InetAddress address, int port, AccessoryRegistry accessoryRegistry,
-            PairingRegistry pairingRegistry) {
-        this(address, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry);
+
+
+
+
+    public Pairing getPairing() {
+        Collection<Pairing> pairings = pairingRegistry.get(getPairingId());
+
+        if (pairings.size() == 1) {
+            return (Pairing) pairings.toArray()[0];
+        }
+
+        if (pairings.size() > 1) {
+            // oh oh
+        }
+
+        return null;
     }
 
     protected void startConnectionMonitor() {
@@ -1095,6 +1125,37 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
         return completableFuture;
     }
 
+    protected Future<ContentResult> putContent(String url, byte[] body) throws InterruptedException {
+        URI uri = null;
+        try {
+            uri = new URI("http", null, address.getHostAddress(), port, url, null, null);
+        } catch (URISyntaxException e1) {
+            e1.printStackTrace();
+            }
+
+        CompletableFuture<ContentResult> completableFuture = new CompletableFuture<>();
+
+        httpClient.newRequest(uri.toString()).method(HttpMethod.PUT)
+                .content(new BytesContentProvider(body), "application/pairing+json")
+                .header(HttpHeader.CONNECTION.asString(), HttpHeader.KEEP_ALIVE.asString())
+                .send(new BufferingResponseListener(8 * 1024 * 1024) {
+                    @Override
+                    public void onComplete(Result result) {
+                        if (!result.isFailed()) {
+                            byte[] body = getContent();
+                            ContentResult stageResult = new ContentResult(body, result);
+                            completableFuture.complete(stageResult);
+                        } else {
+                            ContentResult stageResult = new ContentResult(
+                                    result.getResponseFailure().getMessage().getBytes(), result);
+                            completableFuture.complete(stageResult);
+                        }
+                    }
+                });
+
+        return completableFuture;
+    }
+
     public void handleEvent(byte[] body) {
 
         try {
@@ -1144,34 +1205,7 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
         }
     }
 
-    public Collection<Accessory> getRemoteAccessories() {
-        Collection<Accessory> result = new HashSet<Accessory>();
 
-        if (isPaired() && isPairVerified() && isSecure()) {
-
-            Future<ContentResult> contentFuture;
-            ContentResult contentResult = null;
-            try {
-                contentFuture = getContent("/accessories");
-                contentResult = contentFuture.get();
-            } catch (InterruptedException | ExecutionException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-
-            logger.info("'{}' : Received {}", new String(getPairingId()), new String(contentResult.body));
-
-            if (contentResult.result.getResponse().getStatus() == 200) {
-                JsonArray accessories = Json.createReader(new ByteArrayInputStream(contentResult.body)).readObject()
-                        .getJsonArray("accessories");
-                for (JsonValue value : accessories) {
-                    result.add(new GenericAccessory(value));
-                }
-            }
-        }
-
-        return result;
-    }
 
     @SuppressWarnings("unchecked")
     public static <T> T fromJson(String json, Class<T> beanClass) {
@@ -1302,6 +1336,77 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
     @Override
     public long getNextAvailableAccessoryId() {
         return 0;
+    }
+
+    public Collection<Accessory> getRemoteAccessories() {
+        Collection<Accessory> result = new HashSet<Accessory>();
+
+        if (isPaired() && isPairVerified() && isSecure()) {
+
+            Future<ContentResult> contentFuture;
+            ContentResult contentResult = null;
+            try {
+                contentFuture = getContent("/accessories");
+                contentResult = contentFuture.get();
+            } catch (InterruptedException | ExecutionException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+            logger.info("'{}' : Received {}", new String(getPairingId()), new String(contentResult.body));
+
+            if (contentResult.result.getResponse().getStatus() == 200) {
+                JsonArray accessories = Json.createReader(new ByteArrayInputStream(contentResult.body)).readObject()
+                        .getJsonArray("accessories");
+                for (JsonValue value : accessories) {
+                    result.add(new GenericAccessory(value));
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public boolean subscriveEvents(Characteristic<?> characteristic, boolean subscribe) {
+
+        if (!isPairVerified()) {
+            logger.debug("'{}' : Cannot subscribe to events - not paired", new String(getPairingId()));
+            return false;
+        }
+
+        try {
+            // Create the characteristic update request
+            JsonObjectBuilder requestBuilder = Json.createObjectBuilder();
+            JsonArrayBuilder characteristicsBuilder = Json.createArrayBuilder();
+            JsonObjectBuilder characteristicBuilder = Json.createObjectBuilder()
+                .add("aid", characteristic.getService().getAccessory().getAccessoryId())
+                .add("iid", characteristic.getInstanceId()) 
+                .add("ev", subscribe);
+                
+            characteristicsBuilder.add(characteristicBuilder);
+            requestBuilder.add("characteristics", characteristicsBuilder);
+
+            // Send the subscription request
+            Future<ContentResult> contentFuture = putContent("/characteristics", 
+                requestBuilder.build().toString().getBytes(StandardCharsets.UTF_8));
+            ContentResult contentResult = contentFuture.get();
+
+            if (contentResult.result.getResponse().getStatus() == 204) {
+                logger.debug("'{}' : Successfully subscribed to events for characteristic {}", 
+                    new String(getPairingId()), characteristic.getUID());
+                characteristic.setHasEvents(true);
+                return true;
+            } else {
+                logger.warn("'{}' : Failed to subscribe to events for characteristic {} - Status: {}", 
+                    new String(getPairingId()), characteristic.getUID(), 
+                    contentResult.result.getResponse().getStatus());
+                return false;
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("'{}' : Error subscribing to events for characteristic {}: {}", 
+                new String(getPairingId()), characteristic.getUID(), e.getMessage());
+            return false;
+        }        
     }
 
     @Override
@@ -1455,17 +1560,47 @@ public abstract class AbstractRemoteAccessoryServer extends AbstractAccessorySer
                                                             notifyChangeListeners(AccessoryServerEvent.AccessoryServerEventType.CHARACTERISTIC_UPDATED);
                                                 }
                                             }
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-
         } catch (Exception e) {
             logger.warn("'{}' : Error updating accessories: {}", new String(getPairingId()), e.getMessage());
             logger.debug("'{}' : Exception details", new String(getPairingId()), e);
             throw new IOException("Failed to update accessories", e);
         }
+    }
+
+    @Override
+    public void addAccessory(Accessory accessory) {
+        super.addAccessory(accessory);
+        for (Service service : accessory.getServices()) {
+            for (Characteristic<?> characteristic : service.getCharacteristics()) {
+                characteristic.addChangeListener(this);
+            }
+        }
+    }
+
+    @Override
+    public void removeAccessory(Accessory accessory) {
+        super.removeAccessory(accessory);
+        for (Service service : accessory.getServices()) {
+            for (Characteristic<?> characteristic : service.getCharacteristics()) {
+                characteristic.removeChangeListener(this);
+            }
+        }
+    }
+
+    @Override
+    public void onCharacteristicEvent(CharacteristicEvent event) {
+        if(event.getEventType() == CharacteristicEventType.CHARACTERISTIC_START_EVENTS) {
+            subscriveEvents(event.getCharacteristic(),true);
+        } else if(event.getEventType() == CharacteristicEventType.CHARACTERISTIC_STOP_EVENTS) {
+            subscriveEvents(event.getCharacteristic(),false);
+        }   
     }
 }

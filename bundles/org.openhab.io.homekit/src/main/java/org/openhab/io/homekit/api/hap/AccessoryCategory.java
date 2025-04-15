@@ -1,4 +1,4 @@
-package org.openhab.io.homekit.internal;
+package org.openhab.io.homekit.api.hap;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 

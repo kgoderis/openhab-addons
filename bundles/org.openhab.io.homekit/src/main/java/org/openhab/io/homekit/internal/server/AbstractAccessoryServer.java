@@ -11,6 +11,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.hap.Accessory;
+import org.openhab.io.homekit.api.hap.AccessoryCategory;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.hap.Pairing;
 import org.openhab.io.homekit.api.listener.AccessoryServerChangeListener;
@@ -42,6 +43,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     protected final byte[] secretKey;
     protected String setupCode;
     protected int configurationIndex = 1;
+    private final AccessoryCategory category;
 
     private final Collection<AccessoryServerChangeListener> changeListeners = new CopyOnWriteArraySet<>();
 
@@ -99,9 +101,10 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     // return null;
     // }
 
-    public AbstractAccessoryServer(InetAddress address, int port, byte[] pairingId, byte[] privateKey,
+    public AbstractAccessoryServer(AccessoryCategory category, InetAddress address, int port, byte[] pairingId, byte[] privateKey,
             AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry) {
         super();
+        this.category = category;
         this.address = address;
         this.port = port;
         this.accessoryRegistry = accessoryRegistry;
@@ -164,6 +167,11 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     @Override
     public void setSetupCode(String setupCode) {
         this.setupCode = setupCode;
+    }
+
+
+    public boolean isBridge() {
+        return category == AccessoryCategory.BRIDGES;
     }
 
     @Override

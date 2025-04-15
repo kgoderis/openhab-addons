@@ -20,6 +20,7 @@ import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.api.listener.CharacteristicChangeListener;
 import org.openhab.io.homekit.internal.events.CharacteristicEvent;
+import org.openhab.io.homekit.internal.events.CharacteristicEvent.CharacteristicEventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -267,11 +268,17 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     @Override
     public void addChangeListener(CharacteristicChangeListener listener) {
         listeners.add(listener);
+        if(listeners.size() == 1) {
+            notifyListeners(new CharacteristicEvent(this, CharacteristicEventType.CHARACTERISTIC_START_EVENTS));
+        }
     }
 
     @Override
     public void removeChangeListener(CharacteristicChangeListener listener) {
         listeners.remove(listener);
+        if(listeners.size() == 0) {
+            notifyListeners(new CharacteristicEvent(this, CharacteristicEventType.CHARACTERISTIC_STOP_EVENTS));
+        }   
     }
 
     // Protected methods

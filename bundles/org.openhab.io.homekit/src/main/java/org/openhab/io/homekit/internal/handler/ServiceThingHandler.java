@@ -270,7 +270,7 @@ public class ServiceThingHandler extends BaseThingHandler
         String channelId = characteristic.getUID().toString();
         ChannelUID channelUID = new ChannelUID(thing.getUID(), channelId);
 
-        Channel channel = ChannelBuilder.create(channelUID, characteristic.getUID().toString())
+        Channel channel = ChannelBuilder.create(channelUID, characteristic.getAcceptedItemType())
                 .withType(new ChannelTypeUID("homekit", characteristic.getUID().toString()))
                 .withLabel(characteristic.getDescription()).withDescription(characteristic.getDescription()).build();
 

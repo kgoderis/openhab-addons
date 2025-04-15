@@ -1,28 +1,33 @@
 package org.openhab.io.homekit.internal.server.registry;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.security.InvalidAlgorithmParameterException;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.core.common.SafeCaller;
 import org.openhab.core.common.registry.AbstractRegistry;
 import org.openhab.core.common.registry.Provider;
 import org.openhab.core.common.registry.ProviderChangeListener;
+import org.openhab.core.io.transport.mdns.MDNSService;
 import org.openhab.core.net.NetworkAddressService;
 import org.openhab.core.service.ReadyMarker;
 import org.openhab.core.service.ReadyMarkerFilter;
 import org.openhab.core.service.ReadyService;
-import org.openhab.io.homekit.api.factory.AccessoryServerFactory;
+import org.openhab.io.homekit.api.hap.AccessoryCategory;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.listener.AccessoryServerChangeListener;
 import org.openhab.io.homekit.api.provider.AccessoryServerProvider;
+import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
+import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.internal.events.AccessoryServerEvent;
 import org.openhab.io.homekit.internal.server.AccessoryServerUID;
-import org.openhab.io.homekit.internal.server.BridgeLocalAccessoryServer;
-import org.openhab.io.homekit.internal.server.factory.LocalAccessoryServerFactory;
 import org.openhab.io.homekit.library.accessory.BridgeAccessory;
+import org.openhab.io.homekit.internal.server.RemoteAccessoryServer;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -52,17 +57,28 @@ public class AccessoryServerRegistryImpl
     private static final int MAX_ACCESSORIES_PER_SERVER = 150;
     private static final int LOWEST_PORT_NUMBER = 9000;
 
-    private final Collection<AccessoryServerFactory> serverFactories = new CopyOnWriteArrayList<>();
     private final ReadyService readyService;
     private final NetworkAddressService networkAddressService;
+    private final MDNSService mdnsService;
+    private final AccessoryRegistry accessoryRegistry;
+    private final PairingRegistry pairingRegistry;
+    private final SafeCaller safeCaller;
 
     @Activate
     public AccessoryServerRegistryImpl(@Reference ReadyService readyService,
-            @Reference NetworkAddressService networkAddressService) {
+            @Reference NetworkAddressService networkAddressService,
+            @Reference MDNSService mdnsService,
+            @Reference AccessoryRegistry accessoryRegistry,
+            @Reference PairingRegistry pairingRegistry,
+            @Reference SafeCaller safeCaller) {
         super(AccessoryServerProvider.class);
         this.readyService = readyService;
         this.networkAddressService = networkAddressService;
-
+        this.mdnsService = mdnsService;
+        this.accessoryRegistry = accessoryRegistry;
+        this.pairingRegistry = pairingRegistry;
+        this.safeCaller = safeCaller;
+        
         readyService.registerTracker(this, new ReadyMarkerFilter().withType(HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER));
     }
 
@@ -87,17 +103,6 @@ public class AccessoryServerRegistryImpl
         super.unsetManagedProvider(provider);
     }
 
-    @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
-    protected void addServerFactory(AccessoryServerFactory serverFactory) {
-        if (serverFactory instanceof LocalAccessoryServerFactory) {
-            serverFactories.add(serverFactory);
-        }
-    }
-
-    protected void removeServerFactory(AccessoryServerFactory serverFactory) {
-        serverFactories.remove(serverFactory);
-    }
-
     @Override
     protected void addProvider(Provider<AccessoryServer> provider) {
         logger.debug("Adding Provider {}", provider.toString());
@@ -115,13 +120,12 @@ public class AccessoryServerRegistryImpl
 
     @Override
     @Nullable
-    public synchronized BridgeLocalAccessoryServer getAvailableBridgeAccessoryServer() {
-        BridgeLocalAccessoryServer availableServer = null;
+    public synchronized AccessoryServer getAvailableBridgeAccessoryServer() {
+        AccessoryServer availableServer = null;
         int highestPortNumber = LOWEST_PORT_NUMBER;
         for (AccessoryServer server : getAll()) {
-            if (server instanceof BridgeLocalAccessoryServer
-                    && server.getAccessories().size() < MAX_ACCESSORIES_PER_SERVER) {
-                availableServer = (BridgeLocalAccessoryServer) server;
+            if (server.getAccessories().size() < MAX_ACCESSORIES_PER_SERVER) {
+                availableServer = server;
                 break;
             }
             if (server.getPort() > highestPortNumber) {
@@ -132,34 +136,15 @@ public class AccessoryServerRegistryImpl
         logger.info("Found {} Accessory Servers, the highest Port is/will be {}", getAll().size(), highestPortNumber);
 
         if (availableServer == null) {
-            for (AccessoryServerFactory factory : serverFactories) {
-                try {
-                    availableServer = (BridgeLocalAccessoryServer) factory.createServer(
-                            BridgeLocalAccessoryServer.class.getSimpleName(),
-                            InetAddress.getByName(networkAddressService.getPrimaryIpv4HostAddress()),
-                            highestPortNumber++);
-                    if (availableServer != null) {
-                        BridgeAccessory bridgeAccessory = new BridgeAccessory(1, true);
-                        availableServer.addAccessory(bridgeAccessory);
-                    }
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-                if (availableServer != null) {
-                    logger.info("Added an Accessory Server {} of Type {} running on Port {} with Setup Code {}",
-                            availableServer.getUID(), availableServer.getClass().getSimpleName(),
-                            availableServer.getPort(), availableServer.getSetupCode());
-                    add(availableServer);
-                    try {
-                        availableServer.start();
-                    } catch (Exception e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                    break;
-                }
+            try {
+                availableServer = new RemoteAccessoryServer(AccessoryCategory.BRIDGES, 
+                    InetAddress.getByName(networkAddressService.getPrimaryIpv4HostAddress()), 
+                    highestPortNumber++, 
+                    accessoryRegistry, 
+                    pairingRegistry);
+            } catch (UnknownHostException e) {
+                logger.error("Failed to create RemoteAccessoryServer", e);
+                return null;
             }
         } else {
             if (availableServer.getAccessory(1) == null) {
@@ -171,8 +156,7 @@ public class AccessoryServerRegistryImpl
                     BridgeAccessory bridgeAccessory = new BridgeAccessory(1, true);
                     availableServer.addAccessory(bridgeAccessory);
                 } catch (Exception e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    logger.error("Error adding bridge accessory", e);
                 }
             }
 

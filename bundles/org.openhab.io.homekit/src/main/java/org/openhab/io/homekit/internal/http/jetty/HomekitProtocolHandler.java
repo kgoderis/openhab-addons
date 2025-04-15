@@ -6,14 +6,14 @@ import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.client.api.Response.Listener;
 import org.eclipse.jetty.client.api.Result;
 import org.eclipse.jetty.client.util.BufferingResponseListener;
-import org.openhab.io.homekit.internal.server.AbstractRemoteAccessoryServer;
+import org.openhab.io.homekit.internal.server.RemoteAccessoryServer;
 
 public class HomekitProtocolHandler implements ProtocolHandler {
 
-    protected AbstractRemoteAccessoryServer homekitClient;
+    protected RemoteAccessoryServer server;
 
-    public HomekitProtocolHandler(AbstractRemoteAccessoryServer homekitClient) {
-        this.homekitClient = homekitClient;
+    public HomekitProtocolHandler(RemoteAccessoryServer server) {
+        this.server = server;
     }
 
     @Override
@@ -39,7 +39,7 @@ public class HomekitProtocolHandler implements ProtocolHandler {
 
         @Override
         public void onSuccess(Response response) {
-            homekitClient.handleEvent(getContent());
+            server.handleEvent(getContent());
         }
 
         @Override

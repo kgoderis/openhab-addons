@@ -9,8 +9,14 @@ import java.util.Collections;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.io.homekit.api.hap.Accessory;
+import org.openhab.io.homekit.api.hap.AccessoryCategory;
 
 public class PersistedAccessoryServer {
+
+    public enum ServerType {
+        LOCAL,
+        REMOTE
+    }
 
     private String localAddress;
     private String port;
@@ -18,6 +24,8 @@ public class PersistedAccessoryServer {
     private String privateKey;
     private String configurationIndex;
     private String accessories;
+    private AccessoryCategory category;
+    private ServerType serverType;
 
     public PersistedAccessoryServer() {
         localAddress = "";
@@ -25,15 +33,19 @@ public class PersistedAccessoryServer {
         pairingIdentifier = "";
         privateKey = "";
         configurationIndex = "";
+        category = AccessoryCategory.OTHER;
+        serverType = ServerType.LOCAL;
     }
 
     public PersistedAccessoryServer(@NonNull InetAddress localAddress, int port, byte[] pairingId, byte[] privateKey,
-            int configurationIndex, @NonNull Collection<@NonNull Accessory> accessories) {
+            int configurationIndex, @NonNull Collection<@NonNull Accessory> accessories, AccessoryCategory category, ServerType serverType) {
         this.localAddress = localAddress.getHostAddress();
         this.port = Integer.toString(port);
         this.pairingIdentifier = Base64.getEncoder().encodeToString(pairingId);
         this.privateKey = Base64.getEncoder().encodeToString(privateKey);
         this.configurationIndex = Integer.toString(configurationIndex);
+        this.category = category;
+        this.serverType = serverType;
 
         // Handle accessories safely
         if (accessories.isEmpty()) {
@@ -102,5 +114,21 @@ public class PersistedAccessoryServer {
             return Collections.emptyList();
         }
         return Arrays.asList(accessories.split(";"));
+    }
+
+    public AccessoryCategory getCategory() {
+        return category;
+    }
+
+    public void setCategory(AccessoryCategory category) {
+        this.category = category;
+    }
+
+    public ServerType getServerType() {
+        return serverType;
+    }
+
+    public void setServerType(ServerType serverType) {
+        this.serverType = serverType;
     }
 }

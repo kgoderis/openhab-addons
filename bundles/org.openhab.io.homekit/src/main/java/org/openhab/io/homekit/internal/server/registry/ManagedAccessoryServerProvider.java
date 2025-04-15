@@ -7,6 +7,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.core.common.registry.AbstractManagedProvider;
 import org.openhab.core.common.registry.ManagedProvider;
+import org.openhab.core.io.transport.mdns.MDNSService;
 import org.openhab.core.service.ReadyMarker;
 import org.openhab.core.service.ReadyService;
 import org.openhab.core.storage.StorageService;
@@ -17,8 +18,11 @@ import org.openhab.io.homekit.api.provider.AccessoryServerProvider;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.internal.accessory.AccessoryUID;
 import org.openhab.io.homekit.internal.server.AccessoryServerUID;
-import org.openhab.io.homekit.internal.server.BridgeLocalAccessoryServer;
+import org.openhab.io.homekit.internal.server.LocalAccessoryServer;
 import org.openhab.io.homekit.internal.server.PersistedAccessoryServer;
+import org.openhab.io.homekit.internal.server.RemoteAccessoryServer;
+import org.openhab.io.homekit.api.registry.PairingRegistry;
+import org.openhab.io.homekit.api.hap.AccessoryCategory;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -46,35 +50,23 @@ public class ManagedAccessoryServerProvider
 
     private static final String HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER = "homekit.managedAccessoryServerProvider";
 
-    private final Collection<AccessoryServerFactory> serverFactories = new CopyOnWriteArrayList<>();
     private final ReadyService readyService;
     private final AccessoryRegistry accessoryRegistry;
-
+    private final PairingRegistry pairingRegistry;
+    private final MDNSService mdnsService;
     @Activate
     public ManagedAccessoryServerProvider(@Reference StorageService storageService,
-            @Reference ReadyService readyService, @Reference AccessoryRegistry accessoryRegistry) {
+            @Reference ReadyService readyService, @Reference AccessoryRegistry accessoryRegistry,
+            @Reference PairingRegistry pairingRegistry, @Reference MDNSService mdnsService  ) {
         super(storageService);
         this.readyService = readyService;
         this.accessoryRegistry = accessoryRegistry;
-    }
+        this.pairingRegistry = pairingRegistry;
+        this.mdnsService = mdnsService;
 
-    @Reference(cardinality = ReferenceCardinality.AT_LEAST_ONE, policy = ReferencePolicy.DYNAMIC)
-    public void addServerFactory(AccessoryServerFactory serverFactory) {
-        serverFactories.add(serverFactory);
-
-        logger.debug("Added an Accessory Server Factory that supports {}",
-                Arrays.toString(serverFactory.getSupportedServerTypes()));
-
-        if (Arrays.stream(serverFactory.getSupportedServerTypes())
-                .anyMatch(BridgeLocalAccessoryServer.class.getSimpleName()::equals)) {
-            logger.warn("Marking the Managed Accessory Server Provider as ready");
-            ReadyMarker newMarker = new ReadyMarker(HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER, this.toString());
-            readyService.markReady(newMarker);
-        }
-    }
-
-    public void removeServerFactory(AccessoryServerFactory serverFactory) {
-        serverFactories.remove(serverFactory);
+        logger.warn("Marking the Managed Accessory Server Provider as ready");
+        ReadyMarker newMarker = new ReadyMarker(HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER, this.toString());
+        readyService.markReady(newMarker);
     }
 
     @Override
@@ -89,13 +81,30 @@ public class ManagedAccessoryServerProvider
 
     @Override
     protected AccessoryServer toElement(@NonNull String key, @NonNull PersistedAccessoryServer persistableElement) {
+        try {
 
-        for (AccessoryServerFactory factory : serverFactories) {
-
-            AccessoryServer server = factory.createServer(BridgeLocalAccessoryServer.class.getSimpleName(),
-                    persistableElement.getLocalAddress(), persistableElement.getPort(),
-                    persistableElement.getPairingIdentifier(), persistableElement.getPrivateKey(),
-                    persistableElement.getConfigurationIndex());
+            AccessoryServer server = null;
+            if (persistableElement.getServerType() == PersistedAccessoryServer.ServerType.REMOTE) {
+                server = new RemoteAccessoryServer(
+                    persistableElement.getCategory(),
+                    persistableElement.getLocalAddress(),
+                    persistableElement.getPort(),
+                    persistableElement.getPairingIdentifier(),
+                persistableElement.getPrivateKey(),
+                accessoryRegistry,
+                pairingRegistry
+            );
+            } else {
+                server = new LocalAccessoryServer(
+                    persistableElement.getCategory(),
+                    persistableElement.getLocalAddress(),
+                    persistableElement.getPort(),
+                    persistableElement.getPairingIdentifier(),
+                    persistableElement.getPrivateKey(),
+                    mdnsService, accessoryRegistry,
+                    pairingRegistry
+                );
+            }
 
             if (server != null) {
                 logger.debug("Created an Accessory Server {} with Setup Code {}", server.getUID(),
@@ -113,21 +122,21 @@ public class ManagedAccessoryServerProvider
 
                 return server;
             } else {
-                logger.warn("Unable to create an Accessory Server of Type {}",
-                        BridgeLocalAccessoryServer.class.getSimpleName());
+                logger.warn("Unable to create an Accessory Server");
                 return null;
             }
+        } catch (Exception e) {
+            logger.warn("Error creating Accessory Server", e);
+            return null;
         }
-
-        logger.warn("There is no Acessory Server Factory for Accessory Servers of Type '{}'",
-                BridgeLocalAccessoryServer.class.getSimpleName());
-
-        return null;
     }
 
     @Override
     protected @NonNull PersistedAccessoryServer toPersistableElement(@NonNull AccessoryServer element) {
+        PersistedAccessoryServer.ServerType serverType = element instanceof LocalAccessoryServer ? 
+            PersistedAccessoryServer.ServerType.LOCAL : PersistedAccessoryServer.ServerType.REMOTE;
         return new PersistedAccessoryServer(element.getAddress(), element.getPort(), element.getPairingId(),
-                element.getSecretKey(), element.getConfigurationIndex(), element.getAccessories());
+                element.getSecretKey(), element.getConfigurationIndex(), element.getAccessories(), 
+                AccessoryCategory.BRIDGES, serverType);
     }
 }
