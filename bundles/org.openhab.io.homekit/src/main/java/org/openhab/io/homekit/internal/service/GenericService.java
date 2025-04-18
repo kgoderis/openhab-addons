@@ -1,14 +1,14 @@
 package org.openhab.io.homekit.internal.service;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Collectors;
-import java.util.Objects;
-import java.util.ArrayList;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -118,7 +118,7 @@ public class GenericService implements Service {
     @Override
     @NonNull
     public ServiceUID getUID() {
-        return new ServiceUID(getAccessory().getUID().getHexId(), getAccessory().getAccessoryId(), getInstanceId());
+        return new ServiceUID(getAccessory().getUID().getPairingId(), getAccessory().getAccessoryId(), getInstanceId());
     }
 
     @Override
@@ -327,33 +327,41 @@ public class GenericService implements Service {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+
         GenericService that = (GenericService) o;
-        
+
         // Compare basic fields
-        if (instanceId != that.instanceId) return false;
-        if (isHidden != that.isHidden) return false;
-        if (isPrimary != that.isPrimary) return false;
-        if (!getInstanceType().equals(that.getInstanceType())) return false;
-        
+        if (instanceId != that.instanceId)
+            return false;
+        if (isHidden != that.isHidden)
+            return false;
+        if (isPrimary != that.isPrimary)
+            return false;
+        if (!getInstanceType().equals(that.getInstanceType()))
+            return false;
+
         // Compare characteristics
         List<Characteristic<?>> thisChars = new ArrayList<>(this.characteristics);
         List<Characteristic<?>> thatChars = new ArrayList<>(that.characteristics);
-        
+
         // Sort both lists by instance ID for consistent comparison
         thisChars.sort((c1, c2) -> Long.compare(c1.getInstanceId(), c2.getInstanceId()));
         thatChars.sort((c1, c2) -> Long.compare(c1.getInstanceId(), c2.getInstanceId()));
-        
+
         // Compare sizes
-        if (thisChars.size() != thatChars.size()) return false;
-        
+        if (thisChars.size() != thatChars.size())
+            return false;
+
         // Compare each characteristic
         for (int i = 0; i < thisChars.size(); i++) {
-            if (!thisChars.get(i).equals(thatChars.get(i))) return false;
+            if (!thisChars.get(i).equals(thatChars.get(i)))
+                return false;
         }
-        
+
         return true;
     }
 
@@ -364,44 +372,52 @@ public class GenericService implements Service {
 
     @Override
     public int compareTo(Service other) {
-        if (other == null) return 1;
-        if (this == other) return 0;
-        
+        if (other == null)
+            return 1;
+        if (this == other)
+            return 0;
+
         // Compare by instance ID
         int idCompare = Long.compare(this.instanceId, other.getInstanceId());
-        if (idCompare != 0) return idCompare;
-        
+        if (idCompare != 0)
+            return idCompare;
+
         // Compare by instance type
         int typeCompare = this.getInstanceType().compareTo(other.getInstanceType());
-        if (typeCompare != 0) return typeCompare;
-        
+        if (typeCompare != 0)
+            return typeCompare;
+
         // Compare by isHidden
         int hiddenCompare = Boolean.compare(this.isHidden, other.isHidden());
-        if (hiddenCompare != 0) return hiddenCompare;
-        
+        if (hiddenCompare != 0)
+            return hiddenCompare;
+
         // Compare by isPrimary
         int primaryCompare = Boolean.compare(this.isPrimary, other.isPrimary());
-        if (primaryCompare != 0) return primaryCompare;
-        
+        if (primaryCompare != 0)
+            return primaryCompare;
+
         // Compare characteristics
         GenericService that = (GenericService) other;
         List<Characteristic<?>> thisChars = new ArrayList<>(this.characteristics);
         List<Characteristic<?>> thatChars = new ArrayList<>(that.characteristics);
-        
+
         // Sort both lists by instance ID for consistent comparison
         thisChars.sort((c1, c2) -> Long.compare(c1.getInstanceId(), c2.getInstanceId()));
         thatChars.sort((c1, c2) -> Long.compare(c1.getInstanceId(), c2.getInstanceId()));
-        
+
         // Compare sizes first
         int sizeCompare = Integer.compare(thisChars.size(), thatChars.size());
-        if (sizeCompare != 0) return sizeCompare;
-        
+        if (sizeCompare != 0)
+            return sizeCompare;
+
         // Compare each characteristic
         for (int i = 0; i < thisChars.size(); i++) {
             int charCompare = thisChars.get(i).compareTo(thatChars.get(i));
-            if (charCompare != 0) return charCompare;
+            if (charCompare != 0)
+                return charCompare;
         }
-        
+
         return 0;
     }
 }

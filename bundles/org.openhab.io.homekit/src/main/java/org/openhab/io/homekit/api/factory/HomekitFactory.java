@@ -155,4 +155,10 @@ public interface HomekitFactory {
 
     @Nullable
     String getTagFromServiceType(String serviceType);
+
+    @Nullable
+    String getTagFromCharacteristicType(String characteristicType);
+
+    @Nullable
+    String getServiceInstanceType(String serviceType);
 }

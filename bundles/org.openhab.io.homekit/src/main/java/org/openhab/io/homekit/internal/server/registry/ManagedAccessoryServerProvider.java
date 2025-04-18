@@ -1,8 +1,6 @@
 package org.openhab.io.homekit.internal.server.registry;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.core.common.registry.AbstractManagedProvider;
@@ -11,23 +9,20 @@ import org.openhab.core.io.transport.mdns.MDNSService;
 import org.openhab.core.service.ReadyMarker;
 import org.openhab.core.service.ReadyService;
 import org.openhab.core.storage.StorageService;
-import org.openhab.io.homekit.api.factory.AccessoryServerFactory;
 import org.openhab.io.homekit.api.hap.Accessory;
+import org.openhab.io.homekit.api.hap.AccessoryCategory;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.provider.AccessoryServerProvider;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
+import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.internal.accessory.AccessoryUID;
 import org.openhab.io.homekit.internal.server.AccessoryServerUID;
 import org.openhab.io.homekit.internal.server.LocalAccessoryServer;
 import org.openhab.io.homekit.internal.server.PersistedAccessoryServer;
 import org.openhab.io.homekit.internal.server.RemoteAccessoryServer;
-import org.openhab.io.homekit.api.registry.PairingRegistry;
-import org.openhab.io.homekit.api.hap.AccessoryCategory;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,10 +49,11 @@ public class ManagedAccessoryServerProvider
     private final AccessoryRegistry accessoryRegistry;
     private final PairingRegistry pairingRegistry;
     private final MDNSService mdnsService;
+
     @Activate
     public ManagedAccessoryServerProvider(@Reference StorageService storageService,
             @Reference ReadyService readyService, @Reference AccessoryRegistry accessoryRegistry,
-            @Reference PairingRegistry pairingRegistry, @Reference MDNSService mdnsService  ) {
+            @Reference PairingRegistry pairingRegistry, @Reference MDNSService mdnsService) {
         super(storageService);
         this.readyService = readyService;
         this.accessoryRegistry = accessoryRegistry;
@@ -85,25 +81,15 @@ public class ManagedAccessoryServerProvider
 
             AccessoryServer server = null;
             if (persistableElement.getServerType() == PersistedAccessoryServer.ServerType.REMOTE) {
-                server = new RemoteAccessoryServer(
-                    persistableElement.getCategory(),
-                    persistableElement.getLocalAddress(),
-                    persistableElement.getPort(),
-                    persistableElement.getPairingIdentifier(),
-                persistableElement.getPrivateKey(),
-                accessoryRegistry,
-                pairingRegistry
-            );
+                server = new RemoteAccessoryServer(persistableElement.getCategory(),
+                        persistableElement.getLocalAddress(), persistableElement.getPort(),
+                        persistableElement.getPairingIdentifier(), persistableElement.getPrivateKey(),
+                        accessoryRegistry, pairingRegistry);
             } else {
-                server = new LocalAccessoryServer(
-                    persistableElement.getCategory(),
-                    persistableElement.getLocalAddress(),
-                    persistableElement.getPort(),
-                    persistableElement.getPairingIdentifier(),
-                    persistableElement.getPrivateKey(),
-                    mdnsService, accessoryRegistry,
-                    pairingRegistry
-                );
+                server = new LocalAccessoryServer(persistableElement.getCategory(),
+                        persistableElement.getLocalAddress(), persistableElement.getPort(),
+                        persistableElement.getPairingIdentifier(), persistableElement.getPrivateKey(), mdnsService,
+                        accessoryRegistry, pairingRegistry);
             }
 
             if (server != null) {
@@ -133,10 +119,11 @@ public class ManagedAccessoryServerProvider
 
     @Override
     protected @NonNull PersistedAccessoryServer toPersistableElement(@NonNull AccessoryServer element) {
-        PersistedAccessoryServer.ServerType serverType = element instanceof LocalAccessoryServer ? 
-            PersistedAccessoryServer.ServerType.LOCAL : PersistedAccessoryServer.ServerType.REMOTE;
+        PersistedAccessoryServer.ServerType serverType = element instanceof LocalAccessoryServer
+                ? PersistedAccessoryServer.ServerType.LOCAL
+                : PersistedAccessoryServer.ServerType.REMOTE;
         return new PersistedAccessoryServer(element.getAddress(), element.getPort(), element.getPairingId(),
-                element.getSecretKey(), element.getConfigurationIndex(), element.getAccessories(), 
+                element.getSecretKey(), element.getConfigurationIndex(), element.getAccessories(),
                 AccessoryCategory.BRIDGES, serverType);
     }
 }

@@ -14,12 +14,12 @@ public class ServiceUID extends UID {
     /**
      * Instantiates a new thing UID.
      *
-     * @param hexId the the hexidecimal pre-generated id of the accessory
+     * @param pairingId the the hexidecimal pre-generated id of the accessory
      * @param accessoryId the accessory instance id
      * @param serviceId the service instance id
      */
-    public ServiceUID(String hexId, long accessoryId, long serviceId) {
-        super("homekit", "service", hexId, Long.toString(accessoryId), Long.toString(serviceId));
+    public ServiceUID(String pairingId, long accessoryId, long serviceId) {
+        super("homekit", "service", pairingId, Long.toString(accessoryId), Long.toString(serviceId));
     }
 
     // /**

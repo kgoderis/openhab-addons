@@ -123,7 +123,7 @@ public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypePro
         }).filter(def -> def != null).collect(Collectors.toList());
     }
 
-    private ChannelGroupTypeUID getChannelGroupTypeUID(String serviceType) {
+    public ChannelGroupTypeUID getChannelGroupTypeUID(String serviceType) {
         // Create a unique ID for the channel group type based on the service type
         // Format: homekit:service:serviceType
         String serviceTypeId = serviceType.replaceAll("^0*([0-9a-fA-F]+)-0000-1000-8000-0026BB765291$", "$1");

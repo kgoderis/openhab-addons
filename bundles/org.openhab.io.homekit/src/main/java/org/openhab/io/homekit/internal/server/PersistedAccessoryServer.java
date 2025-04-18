@@ -38,7 +38,8 @@ public class PersistedAccessoryServer {
     }
 
     public PersistedAccessoryServer(@NonNull InetAddress localAddress, int port, byte[] pairingId, byte[] privateKey,
-            int configurationIndex, @NonNull Collection<@NonNull Accessory> accessories, AccessoryCategory category, ServerType serverType) {
+            int configurationIndex, @NonNull Collection<@NonNull Accessory> accessories, AccessoryCategory category,
+            ServerType serverType) {
         this.localAddress = localAddress.getHostAddress();
         this.port = Integer.toString(port);
         this.pairingIdentifier = Base64.getEncoder().encodeToString(pairingId);

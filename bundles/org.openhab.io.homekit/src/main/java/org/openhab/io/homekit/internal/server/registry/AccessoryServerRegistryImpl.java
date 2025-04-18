@@ -2,9 +2,6 @@ package org.openhab.io.homekit.internal.server.registry;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.security.InvalidAlgorithmParameterException;
-import java.util.Collection;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -26,8 +23,8 @@ import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.internal.events.AccessoryServerEvent;
 import org.openhab.io.homekit.internal.server.AccessoryServerUID;
-import org.openhab.io.homekit.library.accessory.BridgeAccessory;
 import org.openhab.io.homekit.internal.server.RemoteAccessoryServer;
+import org.openhab.io.homekit.library.accessory.BridgeAccessory;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -66,10 +63,8 @@ public class AccessoryServerRegistryImpl
 
     @Activate
     public AccessoryServerRegistryImpl(@Reference ReadyService readyService,
-            @Reference NetworkAddressService networkAddressService,
-            @Reference MDNSService mdnsService,
-            @Reference AccessoryRegistry accessoryRegistry,
-            @Reference PairingRegistry pairingRegistry,
+            @Reference NetworkAddressService networkAddressService, @Reference MDNSService mdnsService,
+            @Reference AccessoryRegistry accessoryRegistry, @Reference PairingRegistry pairingRegistry,
             @Reference SafeCaller safeCaller) {
         super(AccessoryServerProvider.class);
         this.readyService = readyService;
@@ -78,7 +73,7 @@ public class AccessoryServerRegistryImpl
         this.accessoryRegistry = accessoryRegistry;
         this.pairingRegistry = pairingRegistry;
         this.safeCaller = safeCaller;
-        
+
         readyService.registerTracker(this, new ReadyMarkerFilter().withType(HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER));
     }
 
@@ -137,11 +132,9 @@ public class AccessoryServerRegistryImpl
 
         if (availableServer == null) {
             try {
-                availableServer = new RemoteAccessoryServer(AccessoryCategory.BRIDGES, 
-                    InetAddress.getByName(networkAddressService.getPrimaryIpv4HostAddress()), 
-                    highestPortNumber++, 
-                    accessoryRegistry, 
-                    pairingRegistry);
+                availableServer = new RemoteAccessoryServer(AccessoryCategory.BRIDGES,
+                        InetAddress.getByName(networkAddressService.getPrimaryIpv4HostAddress()), highestPortNumber++,
+                        accessoryRegistry, pairingRegistry);
             } catch (UnknownHostException e) {
                 logger.error("Failed to create RemoteAccessoryServer", e);
                 return null;
@@ -153,7 +146,7 @@ public class AccessoryServerRegistryImpl
                             "Added a Bridge Accessory to Server {} of Type {} running on Port {} with Setup Code {}",
                             availableServer.getUID(), availableServer.getClass().getSimpleName(),
                             availableServer.getPort(), availableServer.getSetupCode());
-                    BridgeAccessory bridgeAccessory = new BridgeAccessory(1, true);
+                    BridgeAccessory bridgeAccessory = new BridgeAccessory(availableServer, true);
                     availableServer.addAccessory(bridgeAccessory);
                 } catch (Exception e) {
                     logger.error("Error adding bridge accessory", e);

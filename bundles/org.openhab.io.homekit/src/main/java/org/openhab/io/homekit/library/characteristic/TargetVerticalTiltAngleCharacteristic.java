@@ -1,8 +1,9 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import javax.json.JsonValue;
+
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.IntegerCharacteristic;
-import javax.json.JsonValue;
 
 public class TargetVerticalTiltAngleCharacteristic extends IntegerCharacteristic {
 

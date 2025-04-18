@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.hap.Characteristic;
+import org.openhab.io.homekit.api.hap.StatusCode;
 import org.openhab.io.homekit.util.Debouncer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -173,15 +174,11 @@ public class CharacteristicServlet extends BaseServlet {
         } catch (Exception e) {
             logger.error("Error processing characteristic update", e);
             response.setStatus(SC_MULTI_STATUS);
-            sendJsonResponse(response,
-                    Json.createObjectBuilder()
-                            .add("characteristics",
-                                    Json.createArrayBuilder().add(Json.createObjectBuilder().add("status", -70402) // HAP
-                                                                                                                   // Specification
-                                                                                                                   // error
-                                                                                                                   // code
-                                            .build()).build())
-                            .build());
+            sendJsonResponse(response, Json.createObjectBuilder()
+                    .add("characteristics", Json.createArrayBuilder().add(
+                            Json.createObjectBuilder().add("status", StatusCode.UNABLE_TO_PERFORM.getKey()).build())
+                            .build())
+                    .build());
         }
     }
 

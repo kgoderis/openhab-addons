@@ -31,8 +31,8 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     // Instance fields - final
     private final Service service;
     private final long instanceId;
-    private  String format;
-    private  String description;
+    private String format;
+    private String description;
     private final Collection<CharacteristicChangeListener> listeners = new CopyOnWriteArraySet<>();
 
     // Instance fields - mutable
@@ -112,7 +112,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     @Override
     @NonNull
     public CharacteristicUID getUID() {
-        return new CharacteristicUID(getService().getAccessory().getUID().getHexId(),
+        return new CharacteristicUID(getService().getAccessory().getUID().getPairingId(),
                 getService().getAccessory().getAccessoryId(), getService().getInstanceId(), getInstanceId());
     }
 
@@ -268,7 +268,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     @Override
     public void addChangeListener(CharacteristicChangeListener listener) {
         listeners.add(listener);
-        if(listeners.size() == 1) {
+        if (listeners.size() == 1) {
             notifyListeners(new CharacteristicEvent(this, CharacteristicEventType.CHARACTERISTIC_START_EVENTS));
         }
     }
@@ -276,9 +276,9 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     @Override
     public void removeChangeListener(CharacteristicChangeListener listener) {
         listeners.remove(listener);
-        if(listeners.size() == 0) {
+        if (listeners.size() == 0) {
             notifyListeners(new CharacteristicEvent(this, CharacteristicEventType.CHARACTERISTIC_STOP_EVENTS));
-        }   
+        }
     }
 
     // Protected methods
@@ -345,19 +345,17 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     // Object methods
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+
         GenericCharacteristic<?> that = (GenericCharacteristic<?>) o;
-        
+
         // Compare fields in the same order as compareTo
-        return instanceId == that.instanceId &&
-               getInstanceType().equals(that.getInstanceType()) &&
-               format.equals(that.format) &&
-               isWritable == that.isWritable &&
-               isReadable == that.isReadable &&
-               hasEvents == that.hasEvents &&
-               description.equals(that.description);
+        return instanceId == that.instanceId && getInstanceType().equals(that.getInstanceType())
+                && format.equals(that.format) && isWritable == that.isWritable && isReadable == that.isReadable
+                && hasEvents == that.hasEvents && description.equals(that.description);
     }
 
     @Override
@@ -367,33 +365,41 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
 
     @Override
     public int compareTo(Characteristic<?> other) {
-        if (other == null) return 1;
-        if (this == other) return 0;
-        
+        if (other == null)
+            return 1;
+        if (this == other)
+            return 0;
+
         // Compare by instance ID
         int idCompare = Long.compare(this.instanceId, other.getInstanceId());
-        if (idCompare != 0) return idCompare;
-        
+        if (idCompare != 0)
+            return idCompare;
+
         // Compare by instance type
         int typeCompare = this.getInstanceType().compareTo(other.getInstanceType());
-        if (typeCompare != 0) return typeCompare;
-        
+        if (typeCompare != 0)
+            return typeCompare;
+
         // Compare by format
         int formatCompare = this.format.compareTo(((GenericCharacteristic<?>) other).format);
-        if (formatCompare != 0) return formatCompare;
-        
+        if (formatCompare != 0)
+            return formatCompare;
+
         // Compare by isWritable
         int writableCompare = Boolean.compare(this.isWritable, ((GenericCharacteristic<?>) other).isWritable);
-        if (writableCompare != 0) return writableCompare;
-        
+        if (writableCompare != 0)
+            return writableCompare;
+
         // Compare by isReadable
         int readableCompare = Boolean.compare(this.isReadable, ((GenericCharacteristic<?>) other).isReadable);
-        if (readableCompare != 0) return readableCompare;
-        
+        if (readableCompare != 0)
+            return readableCompare;
+
         // Compare by hasEvents
         int eventsCompare = Boolean.compare(this.hasEvents, ((GenericCharacteristic<?>) other).hasEvents);
-        if (eventsCompare != 0) return eventsCompare;
-        
+        if (eventsCompare != 0)
+            return eventsCompare;
+
         // Finally compare by description
         return this.description.compareTo(((GenericCharacteristic<?>) other).description);
     }
@@ -421,10 +427,12 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     }
 
     @SuppressWarnings("unchecked")
-	public void updateWith(Characteristic<?> other) {
-        if (other == null) return;
+    public void updateWith(Characteristic<?> other) {
+        if (other == null)
+            return;
         if (other instanceof GenericCharacteristic<?> otherGeneric) {
-            if (this.getInstanceType().equals(otherGeneric.getInstanceType()) && this.instanceId == otherGeneric.getInstanceId()) {
+            if (this.getInstanceType().equals(otherGeneric.getInstanceType())
+                    && this.instanceId == otherGeneric.getInstanceId()) {
                 this.isWritable = otherGeneric.isWritable;
                 this.isReadable = otherGeneric.isReadable;
                 this.hasEvents = otherGeneric.hasEvents;
@@ -432,11 +440,11 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
                 this.format = otherGeneric.format;
                 this.isHidden = otherGeneric.isHidden;
                 try {
-					setValue((T) otherGeneric.getValue());
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+                    setValue((T) otherGeneric.getValue());
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             }
         }
     }

@@ -21,6 +21,7 @@ import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Service;
+import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
 import org.openhab.io.homekit.library.service.ThingService;
 import org.openhab.io.homekit.util.UUID5;
 import org.slf4j.Logger;
@@ -224,7 +225,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
             Constructor<? extends Service> constructor = serviceClass.getDeclaredConstructor(Accessory.class,
                     JsonValue.class, String.class);
             constructor.setAccessible(true);
-            Service service = constructor.newInstance(accessory, value,""); // update name parameter
+            Service service = constructor.newInstance(accessory, value, ""); // update name parameter
             logger.debug("Created service of type {} with instanceId {}", type, instanceId);
             return service;
         } catch (Exception e) {
@@ -241,7 +242,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
                 try {
                     Constructor<? extends Service> constructor = serviceClass.getConstructor(Accessory.class,
                             long.class, boolean.class, String.class);
-                            constructor.setAccessible(true);
+                    constructor.setAccessible(true);
                     Service service = constructor.newInstance(accessory, instanceId, extend);
                     return service;
                 } catch (NoSuchMethodException | IllegalAccessException | InstantiationException
@@ -516,6 +517,20 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     }
 
     @Override
+    public String getServiceInstanceType(@NonNull String serviceType) {
+        Class<? extends Service> serviceClass = serviceTypeServiceClassMapper.get(serviceType);
+        if (serviceClass != null) {
+            try {
+                Method method = serviceClass.getMethod("getInstanceType");
+                return (String) method.invoke(null);
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                logger.warn("Service {} is missing the method getInstanceType()", serviceType, e);
+            }
+        }
+        return null;
+    }
+
+    @Override
     public Set<String> getSupportedServiceTypes() {
         return serviceTypeServiceClassMapper.values().stream().map(s -> s.getSimpleName()).collect(Collectors.toSet());
     }
@@ -550,6 +565,8 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
             } catch (NoSuchMethodException e) {
                 logger.warn("Characteristic {} is missing the method getChannelTypeUID()",
                         characteristicClass.getSimpleName());
+                // default to a channelTypeuid constructed from the characteristicType
+                return new ChannelTypeUID(HomekitBindingConstants.BINDING_ID, characteristicType);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -612,6 +629,21 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
         if (serviceClass != null) {
             for (Map.Entry<String, HashSet<Class<? extends Service>>> entry : tagServiceClassMapper.entrySet()) {
                 if (entry.getValue().contains(serviceClass)) {
+                    return entry.getKey();
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public String getTagFromCharacteristicType(@NonNull String characteristicType) {
+        Class<? extends Characteristic<?>> characteristicClass = characteristicTypeCharacteristicClassMapper
+                .get(characteristicType);
+        if (characteristicClass != null) {
+            for (Map.Entry<String, HashSet<Class<? extends Characteristic<?>>>> entry : tagCharacteristicClassMapper
+                    .entrySet()) {
+                if (entry.getValue().contains(characteristicClass)) {
                     return entry.getKey();
                 }
             }

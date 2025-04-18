@@ -12,7 +12,6 @@ import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingRegistry;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.ThingHandler;
-import org.openhab.io.homekit.api.NotificationRegistry;
 import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Service;
@@ -54,16 +53,14 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
     private final ThingRegistry thingRegistry;
     private final AccessoryServerRegistry accessoryServerRegistry;
     private final AccessoryRegistry accessoryRegistry;
-    private final NotificationRegistry notificationRegistry;
 
     @Activate
     public HomekitCommandExtension(@Reference ThingRegistry thingRegistry,
-            @Reference AccessoryServerRegistry accessoryServerRegistry, @Reference AccessoryRegistry accessoryRegistry,
-            @Reference NotificationRegistry notificationRegistry) {
+            @Reference AccessoryServerRegistry accessoryServerRegistry,
+            @Reference AccessoryRegistry accessoryRegistry) {
         super(CMD_HOMEKIT, "Interact with HomeKit.");
         this.thingRegistry = thingRegistry;
         this.accessoryServerRegistry = accessoryServerRegistry;
-        this.notificationRegistry = notificationRegistry;
         this.accessoryRegistry = accessoryRegistry;
     }
 

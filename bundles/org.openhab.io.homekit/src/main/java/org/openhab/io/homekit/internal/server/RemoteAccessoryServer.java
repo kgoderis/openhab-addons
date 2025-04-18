@@ -61,15 +61,12 @@ import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
 import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.AccessoryCategory;
-import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Error;
 import org.openhab.io.homekit.api.hap.Message;
 import org.openhab.io.homekit.api.hap.Method;
 import org.openhab.io.homekit.api.hap.Pairing;
 import org.openhab.io.homekit.api.hap.Service;
-import org.openhab.io.homekit.api.listener.AccessoryServerChangeListener;
-import org.openhab.io.homekit.api.listener.CharacteristicChangeListener;
 import org.openhab.io.homekit.api.listener.CharacteristicChangeListener;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
@@ -106,7 +103,7 @@ import djb.Curve25519;
 // For example, a bridge that bridges three lights would expose four HAP accessory objects: one HAP accessory object that represents the bridge itself that may include a "firmware update" service, and three additional HAP accessory objects that each contain a "lightbulb" service.
 // A bridge must not expose more than 150 HAP accessory objects. The HAP accessory object with an instance ID of 1 is considered the primary HAP accessory object. For bridges, this must be the bridge itself.
 
-public  class RemoteAccessoryServer extends AbstractAccessoryServer implements CharacteristicChangeListener {
+public class RemoteAccessoryServer extends AbstractAccessoryServer implements CharacteristicChangeListener {
 
     protected static final Logger logger = LoggerFactory.getLogger(RemoteAccessoryServer.class);
 
@@ -123,9 +120,8 @@ public  class RemoteAccessoryServer extends AbstractAccessoryServer implements C
     private @Nullable HttpClient httpClient;
     private boolean isPairVerified;
 
-
-    public RemoteAccessoryServer(AccessoryCategory category, InetAddress address, int port, byte[] pairingIdentifier, byte[] secretKey,
-            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry) {
+    public RemoteAccessoryServer(AccessoryCategory category, InetAddress address, int port, byte[] pairingIdentifier,
+            byte[] secretKey, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry) {
         super(category, address, port, pairingIdentifier, secretKey, accessoryRegistry, pairingRegistry);
         this.setupCode = "";
         this.isPairVerified = false;
@@ -136,8 +132,8 @@ public  class RemoteAccessoryServer extends AbstractAccessoryServer implements C
         start();
     }
 
-    public RemoteAccessoryServer(AccessoryCategory category, InetAddress address, int port, AccessoryRegistry accessoryRegistry,
-            PairingRegistry pairingRegistry) {
+    public RemoteAccessoryServer(AccessoryCategory category, InetAddress address, int port,
+            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry) {
         this(category, address, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry);
     }
 
@@ -163,10 +159,6 @@ public  class RemoteAccessoryServer extends AbstractAccessoryServer implements C
         return currentState != AccessoryServerState.DISCONNECTED;
     }
 
-
-
-
-
     public Pairing getPairing() {
         Collection<Pairing> pairings = pairingRegistry.get(getPairingId());
 
@@ -191,7 +183,8 @@ public  class RemoteAccessoryServer extends AbstractAccessoryServer implements C
             try {
                 monitorConnection();
             } catch (Exception e) {
-                logger.warn("'{}' : Error during connection monitoring: {}", new String(getPairingId()), e.getMessage());
+                logger.warn("'{}' : Error during connection monitoring: {}", new String(getPairingId()),
+                        e.getMessage());
                 logger.debug("'{}' : Exception details", new String(getPairingId()), e);
                 setState(AccessoryServerState.DISCONNECTED);
             }
@@ -200,11 +193,11 @@ public  class RemoteAccessoryServer extends AbstractAccessoryServer implements C
 
     private void monitorConnection() throws HomekitException, IOException {
         logger.debug("'{}' : Monitoring connection state", new String(getPairingId()));
-        
+
         // Check if we were previously disconnected
         if (currentState == AccessoryServerState.DISCONNECTED) {
             logger.info("'{}' : Connection was lost, attempting to re-establish", new String(getPairingId()));
-            
+
             // If we're not paired at all, proceed with pairing
             if (!isPaired()) {
                 logger.info("'{}' : Setting up new pairing", new String(getPairingId()));
@@ -274,15 +267,15 @@ public  class RemoteAccessoryServer extends AbstractAccessoryServer implements C
                 if (responseContent != null && responseContent.length > 0) {
                     String pairingsList = new String(responseContent, StandardCharsets.UTF_8);
                     String pairingIdStr = new String(getPairingId(), StandardCharsets.UTF_8);
-                    
+
                     // Check if our controller is in the list
                     if (!pairingsList.contains(pairingIdStr)) {
-                        logger.info("'{}' : Accessory is paired with other controllers, but not with us", 
+                        logger.info("'{}' : Accessory is paired with other controllers, but not with us",
                                 new String(getPairingId()));
                         setState(AccessoryServerState.PAIRED_TO_OTHER_CONTROLLER);
                         return;
                     } else {
-                        logger.info("'{}' : Accessory is already paired with us and other controllers", 
+                        logger.info("'{}' : Accessory is already paired with us and other controllers",
                                 new String(getPairingId()));
                         setState(AccessoryServerState.PAIRED);
                     }
@@ -309,7 +302,7 @@ public  class RemoteAccessoryServer extends AbstractAccessoryServer implements C
                 handlers.clear();
                 handlers.put(new HomekitProtocolHandler(this));
                 setState(AccessoryServerState.CONNECTED);
-                
+
                 // Create a test request to check connection using the address member
                 String url = String.format("http://%s:%d", address.getHostAddress(), port);
                 Request request = httpClient.newRequest(url);
@@ -377,8 +370,8 @@ public  class RemoteAccessoryServer extends AbstractAccessoryServer implements C
 
         // Validate setup code
         if (setupCode == null || setupCode.isEmpty()) {
-            logger.warn("'{}' : Unable to pair with {}:{} because no setup code is set", 
-                new String(getPairingId()), address.getHostAddress(), port);
+            logger.warn("'{}' : Unable to pair with {}:{} because no setup code is set", new String(getPairingId()),
+                    address.getHostAddress(), port);
             setState(AccessoryServerState.MISSING_SETUP_CODE);
             return;
         }
@@ -427,7 +420,7 @@ public  class RemoteAccessoryServer extends AbstractAccessoryServer implements C
                 return;
             }
             logger.debug("'{}' : Stage 3 completed successfully", new String(getPairingId()));
-            
+
             // Pairing completed successfully
             setState(AccessoryServerState.PAIR_UNVERIFIED);
             logger.info("'{}' : Pair setup completed successfully", new String(getPairingId()));
@@ -454,18 +447,18 @@ public  class RemoteAccessoryServer extends AbstractAccessoryServer implements C
         logger.debug("'{}' : Pairing state reset completed", new String(getPairingId()));
     }
 
-    private StageResult executePairingStage(int stage, PairingStageExecutor executor) 
+    private StageResult executePairingStage(int stage, PairingStageExecutor executor)
             throws IOException, HomekitException, InterruptedException, ExecutionException {
         logger.debug("'{}' : Executing pair setup stage {} - preparing payload", new String(getPairingId()), stage);
         byte[] payload = executor.execute();
-        
+
         logger.debug("'{}' : Stage {} - sending payload", new String(getPairingId()), stage);
         Future<StageResult> stageFuture = sendPairSetupStage(payload);
-        
+
         StageResult result = stageFuture.get();
-        logger.debug("'{}' : Stage {} - received response, success: {}", 
-            new String(getPairingId()), stage, !result.isFailure());
-        
+        logger.debug("'{}' : Stage {} - received response, success: {}", new String(getPairingId()), stage,
+                !result.isFailure());
+
         return result;
     }
 
@@ -473,19 +466,19 @@ public  class RemoteAccessoryServer extends AbstractAccessoryServer implements C
         logger.debug("'{}' : Handling failure for stage {}", new String(getPairingId()), stage);
         if (result.error != null) {
             if (result.error == Error.UNAVAILABLE) {
-                logger.warn("'{}' : Pair setup failed - accessory is not available for pairing (already paired)", 
-                    new String(getPairingId()));
+                logger.warn("'{}' : Pair setup failed - accessory is not available for pairing (already paired)",
+                        new String(getPairingId()));
                 logger.debug("'{}' : Accessory reported UNAVAILABLE error", new String(getPairingId()));
             } else {
-                logger.warn("'{}' : Pair setup failed at stage {} with error: {}", 
-                    new String(getPairingId()), stage, result.error);
+                logger.warn("'{}' : Pair setup failed at stage {} with error: {}", new String(getPairingId()), stage,
+                        result.error);
                 logger.debug("'{}' : Stage {} error details: {}", new String(getPairingId()), stage, result.error);
             }
         } else {
-            logger.warn("'{}' : Pair setup failed at stage {} with message: {}", 
-                new String(getPairingId()), stage, result.message);
-            logger.debug("'{}' : Stage {} failure message details: {}", 
-                new String(getPairingId()), stage, result.message);
+            logger.warn("'{}' : Pair setup failed at stage {} with message: {}", new String(getPairingId()), stage,
+                    result.message);
+            logger.debug("'{}' : Stage {} failure message details: {}", new String(getPairingId()), stage,
+                    result.message);
         }
         setState(AccessoryServerState.UNPAIRED);
         logger.debug("'{}' : State set to UNPAIRED after failure", new String(getPairingId()));
@@ -519,7 +512,7 @@ public  class RemoteAccessoryServer extends AbstractAccessoryServer implements C
             // Stage 1: Exchange Keys
             logger.debug("'{}' : Starting Stage 1 - Exchange Keys", new String(getPairingId()));
             setState(AccessoryServerState.PAIR_SETUP_VERIFY);
-            
+
             // Handle stage 1 with authentication error handling
             final StageResult stage1Result = handleStage1Verification(stage0Result);
             if (stage1Result.isFailure()) {
@@ -551,26 +544,27 @@ public  class RemoteAccessoryServer extends AbstractAccessoryServer implements C
             setState(AccessoryServerState.PAIR_UNVERIFIED);
             return false;
         } catch (Exception e) {
-            logger.error("'{}' : Unexpected error during pair verification: {}", new String(getPairingId()), e.getMessage());
+            logger.error("'{}' : Unexpected error during pair verification: {}", new String(getPairingId()),
+                    e.getMessage());
             logger.debug("'{}' : Exception details", new String(getPairingId()), e);
             setState(AccessoryServerState.PAIR_UNVERIFIED);
             return false;
         }
     }
 
-    private StageResult handleStage1Verification(StageResult stage0Result) 
+    private StageResult handleStage1Verification(StageResult stage0Result)
             throws HomekitException, InterruptedException, ExecutionException, IOException {
         try {
             return executePairingStage(1, () -> doPairVerifyStage1(stage0Result));
         } catch (HomekitException e) {
             logger.error("'{}' : Authentication error in stage 1: {}", new String(getPairingId()), e.getMessage());
             logger.debug("'{}' : Sending authentication error to accessory", new String(getPairingId()));
-            
+
             // Send authentication error to accessory
             Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
             encoder.add(Message.STATE, (short) 0x03);
             encoder.add(Message.ERROR, Error.AUTHENTICATION);
-            
+
             Future<StageResult> errorFuture = sendPairVerifyStage(encoder.toByteArray());
             return errorFuture.get();
         }
@@ -593,15 +587,15 @@ public  class RemoteAccessoryServer extends AbstractAccessoryServer implements C
                 logger.warn("'{}' : Pair verification failed - accessory is not available", new String(getPairingId()));
                 logger.debug("'{}' : Accessory reported UNAVAILABLE error", new String(getPairingId()));
             } else {
-                logger.warn("'{}' : Pair verification failed at stage {} with error: {}", 
-                    new String(getPairingId()), stage, result.error);
+                logger.warn("'{}' : Pair verification failed at stage {} with error: {}", new String(getPairingId()),
+                        stage, result.error);
                 logger.debug("'{}' : Stage {} error details: {}", new String(getPairingId()), stage, result.error);
             }
         } else {
-            logger.warn("'{}' : Pair verification failed at stage {} with message: {}", 
-                new String(getPairingId()), stage, result.message);
-            logger.debug("'{}' : Stage {} failure message details: {}", 
-                new String(getPairingId()), stage, result.message);
+            logger.warn("'{}' : Pair verification failed at stage {} with message: {}", new String(getPairingId()),
+                    stage, result.message);
+            logger.debug("'{}' : Stage {} failure message details: {}", new String(getPairingId()), stage,
+                    result.message);
         }
         setState(AccessoryServerState.PAIR_UNVERIFIED);
         logger.debug("'{}' : State set to PAIR_UNVERIFIED after failure", new String(getPairingId()));
@@ -1131,7 +1125,7 @@ public  class RemoteAccessoryServer extends AbstractAccessoryServer implements C
             uri = new URI("http", null, address.getHostAddress(), port, url, null, null);
         } catch (URISyntaxException e1) {
             e1.printStackTrace();
-            }
+        }
 
         CompletableFuture<ContentResult> completableFuture = new CompletableFuture<>();
 
@@ -1204,8 +1198,6 @@ public  class RemoteAccessoryServer extends AbstractAccessoryServer implements C
             this.message = message;
         }
     }
-
-
 
     @SuppressWarnings("unchecked")
     public static <T> T fromJson(String json, Class<T> beanClass) {
@@ -1379,34 +1371,33 @@ public  class RemoteAccessoryServer extends AbstractAccessoryServer implements C
             JsonObjectBuilder requestBuilder = Json.createObjectBuilder();
             JsonArrayBuilder characteristicsBuilder = Json.createArrayBuilder();
             JsonObjectBuilder characteristicBuilder = Json.createObjectBuilder()
-                .add("aid", characteristic.getService().getAccessory().getAccessoryId())
-                .add("iid", characteristic.getInstanceId()) 
-                .add("ev", subscribe);
-                
+                    .add("aid", characteristic.getService().getAccessory().getAccessoryId())
+                    .add("iid", characteristic.getInstanceId()).add("ev", subscribe);
+
             characteristicsBuilder.add(characteristicBuilder);
             requestBuilder.add("characteristics", characteristicsBuilder);
 
             // Send the subscription request
-            Future<ContentResult> contentFuture = putContent("/characteristics", 
-                requestBuilder.build().toString().getBytes(StandardCharsets.UTF_8));
+            Future<ContentResult> contentFuture = putContent("/characteristics",
+                    requestBuilder.build().toString().getBytes(StandardCharsets.UTF_8));
             ContentResult contentResult = contentFuture.get();
 
             if (contentResult.result.getResponse().getStatus() == 204) {
-                logger.debug("'{}' : Successfully subscribed to events for characteristic {}", 
-                    new String(getPairingId()), characteristic.getUID());
+                logger.debug("'{}' : Successfully subscribed to events for characteristic {}",
+                        new String(getPairingId()), characteristic.getUID());
                 characteristic.setHasEvents(true);
                 return true;
             } else {
-                logger.warn("'{}' : Failed to subscribe to events for characteristic {} - Status: {}", 
-                    new String(getPairingId()), characteristic.getUID(), 
-                    contentResult.result.getResponse().getStatus());
+                logger.warn("'{}' : Failed to subscribe to events for characteristic {} - Status: {}",
+                        new String(getPairingId()), characteristic.getUID(),
+                        contentResult.result.getResponse().getStatus());
                 return false;
             }
         } catch (InterruptedException | ExecutionException e) {
-            logger.error("'{}' : Error subscribing to events for characteristic {}: {}", 
-                new String(getPairingId()), characteristic.getUID(), e.getMessage());
+            logger.error("'{}' : Error subscribing to events for characteristic {}: {}", new String(getPairingId()),
+                    characteristic.getUID(), e.getMessage());
             return false;
-        }        
+        }
     }
 
     @Override
@@ -1419,10 +1410,10 @@ public  class RemoteAccessoryServer extends AbstractAccessoryServer implements C
         try {
             // Get current accessories
             Collection<Accessory> currentAccessories = new HashSet<>(getAccessories());
-            
+
             // Get remote accessories
             Collection<Accessory> remoteAccessories = getRemoteAccessories();
-            
+
             // Find new accessories to add
             for (Accessory remoteAccessory : remoteAccessories) {
                 boolean found = false;
@@ -1438,7 +1429,7 @@ public  class RemoteAccessoryServer extends AbstractAccessoryServer implements C
                     notifyChangeListeners(AccessoryServerEvent.AccessoryServerEventType.ACCESSORY_ADDED);
                 }
             }
-            
+
             // Find accessories to remove
             for (Accessory currentAccessory : currentAccessories) {
                 boolean found = false;
@@ -1462,7 +1453,7 @@ public  class RemoteAccessoryServer extends AbstractAccessoryServer implements C
                         // Compare services
                         Collection<Service> currentServices = currentAccessory.getServices();
                         Collection<Service> remoteServices = remoteAccessory.getServices();
-                        
+
                         // Find new services to add
                         for (Service remoteService : remoteServices) {
                             boolean found = false;
@@ -1473,13 +1464,14 @@ public  class RemoteAccessoryServer extends AbstractAccessoryServer implements C
                                 }
                             }
                             if (!found) {
-                                logger.info("'{}' : Adding new service {} to accessory {}", new String(getPairingId()), remoteService, currentAccessory);
-                                //add the service to the accessory
+                                logger.info("'{}' : Adding new service {} to accessory {}", new String(getPairingId()),
+                                        remoteService, currentAccessory);
+                                // add the service to the accessory
                                 currentAccessory.addService(remoteService);
                                 notifyChangeListeners(AccessoryServerEvent.AccessoryServerEventType.SERVICE_ADDED);
                             }
                         }
-                        
+
                         // Find services to remove
                         for (Service currentService : currentServices) {
                             boolean found = false;
@@ -1490,8 +1482,9 @@ public  class RemoteAccessoryServer extends AbstractAccessoryServer implements C
                                 }
                             }
                             if (!found) {
-                                logger.info("'{}' : Removing service {} from accessory {}", new String(getPairingId()), currentService, currentAccessory);
-                                //remove the service from the accessory
+                                logger.info("'{}' : Removing service {} from accessory {}", new String(getPairingId()),
+                                        currentService, currentAccessory);
+                                // remove the service from the accessory
                                 currentAccessory.removeService(currentService);
                                 notifyChangeListeners(AccessoryServerEvent.AccessoryServerEventType.SERVICE_REMOVED);
                             }
@@ -1501,27 +1494,32 @@ public  class RemoteAccessoryServer extends AbstractAccessoryServer implements C
                         for (Service currentService : currentAccessory.getServices()) {
                             for (Service remoteService : remoteServices) {
                                 if (currentService.getInstanceId() == remoteService.getInstanceId()) {
-                                    List<Characteristic<?>> currentCharacteristics = currentService.getCharacteristics();
+                                    List<Characteristic<?>> currentCharacteristics = currentService
+                                            .getCharacteristics();
                                     List<Characteristic<?>> remoteCharacteristics = remoteService.getCharacteristics();
-                                    
+
                                     // Find new characteristics to add
                                     for (Characteristic<?> remoteCharacteristic : remoteCharacteristics) {
                                         boolean found = false;
                                         for (Characteristic<?> currentCharacteristic : currentCharacteristics) {
-                                            if (currentCharacteristic.getInstanceId() == remoteCharacteristic.getInstanceId()) {
+                                            if (currentCharacteristic.getInstanceId() == remoteCharacteristic
+                                                    .getInstanceId()) {
                                                 found = true;
                                                 break;
                                             }
                                         }
                                         if (!found) {
-                                            logger.info("'{}' : Adding new characteristic {} to service {} of accessory {}", 
-                                                new String(getPairingId()), remoteCharacteristic, currentService, currentAccessory);
-                                            //add the characteristic to the service
+                                            logger.info(
+                                                    "'{}' : Adding new characteristic {} to service {} of accessory {}",
+                                                    new String(getPairingId()), remoteCharacteristic, currentService,
+                                                    currentAccessory);
+                                            // add the characteristic to the service
                                             currentService.addCharacteristic(remoteCharacteristic);
-                                            notifyChangeListeners(AccessoryServerEvent.AccessoryServerEventType.CHARACTERISTIC_ADDED);
+                                            notifyChangeListeners(
+                                                    AccessoryServerEvent.AccessoryServerEventType.CHARACTERISTIC_ADDED);
                                         }
                                     }
-                                    
+
                                     // Find characteristics to remove
                                     for (Characteristic<?> currentCharacteristic : currentCharacteristics) {
                                         boolean found = false;
@@ -1538,26 +1536,29 @@ public  class RemoteAccessoryServer extends AbstractAccessoryServer implements C
                                                     new String(getPairingId()), currentCharacteristic, currentService,
                                                     currentAccessory);
 
-                                                    //remove the characteristic from the service
+                                            // remove the characteristic from the service
                                             currentService.removeCharacteristic(currentCharacteristic);
                                             notifyChangeListeners(
                                                     AccessoryServerEvent.AccessoryServerEventType.CHARACTERISTIC_REMOVED);
                                         }
                                     }
-                                    
-                                    // Find characteristics that are the same, and check if they are equal()    
-                                    for (Characteristic<?> currentCharacteristic : currentCharacteristics) {    
+
+                                    // Find characteristics that are the same, and check if they are equal()
+                                    for (Characteristic<?> currentCharacteristic : currentCharacteristics) {
                                         for (Characteristic<?> remoteCharacteristic : remoteCharacteristics) {
-                                            if (currentCharacteristic.getInstanceId() == remoteCharacteristic.getInstanceId()) {
+                                            if (currentCharacteristic.getInstanceId() == remoteCharacteristic
+                                                    .getInstanceId()) {
                                                 if (!currentCharacteristic.equals(remoteCharacteristic)) {
-                                                    logger.info("'{}' : Characteristic {} is different from {}", 
-                                                            new String(getPairingId()), currentCharacteristic, remoteCharacteristic);
+                                                    logger.info("'{}' : Characteristic {} is different from {}",
+                                                            new String(getPairingId()), currentCharacteristic,
+                                                            remoteCharacteristic);
 
-                                                            //update the charactistic with the other one
-                                                            currentCharacteristic.updateWith(remoteCharacteristic);
+                                                    // update the charactistic with the other one
+                                                    currentCharacteristic.updateWith(remoteCharacteristic);
 
-                                                              //notify the changelisteners that a characteristic had changed  
-                                                            notifyChangeListeners(AccessoryServerEvent.AccessoryServerEventType.CHARACTERISTIC_UPDATED);
+                                                    // notify the changelisteners that a characteristic had changed
+                                                    notifyChangeListeners(
+                                                            AccessoryServerEvent.AccessoryServerEventType.CHARACTERISTIC_UPDATED);
                                                 }
                                             }
                                         }
@@ -1597,10 +1598,10 @@ public  class RemoteAccessoryServer extends AbstractAccessoryServer implements C
 
     @Override
     public void onCharacteristicEvent(CharacteristicEvent event) {
-        if(event.getEventType() == CharacteristicEventType.CHARACTERISTIC_START_EVENTS) {
-            subscriveEvents(event.getCharacteristic(),true);
-        } else if(event.getEventType() == CharacteristicEventType.CHARACTERISTIC_STOP_EVENTS) {
-            subscriveEvents(event.getCharacteristic(),false);
-        }   
+        if (event.getEventType() == CharacteristicEventType.CHARACTERISTIC_START_EVENTS) {
+            subscriveEvents(event.getCharacteristic(), true);
+        } else if (event.getEventType() == CharacteristicEventType.CHARACTERISTIC_STOP_EVENTS) {
+            subscriveEvents(event.getCharacteristic(), false);
+        }
     }
 }

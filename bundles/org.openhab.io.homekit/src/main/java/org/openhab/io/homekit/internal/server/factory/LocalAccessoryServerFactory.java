@@ -24,84 +24,84 @@
 // @NonNullByDefault
 // public class LocalAccessoryServerFactory implements AccessoryServerFactory {
 
-//     private final Logger logger = LoggerFactory.getLogger(LocalAccessoryServerFactory.class);
+// private final Logger logger = LoggerFactory.getLogger(LocalAccessoryServerFactory.class);
 
-//     @Nullable
-//     private MDNSService mdnsService;
-//     @Nullable
-//     private AccessoryRegistry accessoryRegistry;
-//     @Nullable
-//     private PairingRegistry pairingRegistry;
-//     @Nullable
-//     private NetworkAddressService networkAddressService;
-//     @Nullable
-//     private SafeCaller safeCaller;
+// @Nullable
+// private MDNSService mdnsService;
+// @Nullable
+// private AccessoryRegistry accessoryRegistry;
+// @Nullable
+// private PairingRegistry pairingRegistry;
+// @Nullable
+// private NetworkAddressService networkAddressService;
+// @Nullable
+// private SafeCaller safeCaller;
 
-//     @Activate
-//     public LocalAccessoryServerFactory(@Nullable MDNSService mdnsService, @Nullable AccessoryRegistry accessoryRegistry,
-//             @Nullable PairingRegistry pairingRegistry, @Nullable NetworkAddressService networkAddressService,
-//             @Nullable SafeCaller safeCaller) {
-//         super();
+// @Activate
+// public LocalAccessoryServerFactory(@Nullable MDNSService mdnsService, @Nullable AccessoryRegistry accessoryRegistry,
+// @Nullable PairingRegistry pairingRegistry, @Nullable NetworkAddressService networkAddressService,
+// @Nullable SafeCaller safeCaller) {
+// super();
 
-//         this.mdnsService = mdnsService;
-//         this.accessoryRegistry = accessoryRegistry;
-//         this.pairingRegistry = pairingRegistry;
-//         this.networkAddressService = networkAddressService;
-//         this.safeCaller = safeCaller;
-//     }
+// this.mdnsService = mdnsService;
+// this.accessoryRegistry = accessoryRegistry;
+// this.pairingRegistry = pairingRegistry;
+// this.networkAddressService = networkAddressService;
+// this.safeCaller = safeCaller;
+// }
 
-//     @Override
-//     public @Nullable AccessoryServer createServer(@NonNull String factoryType, InetAddress localAddress, int port) {
-//         if (Arrays.stream(getSupportedServerTypes()).anyMatch(factoryType::equals)) {
-//             BridgeLocalAccessoryServer newBridge = null;
+// @Override
+// public @Nullable AccessoryServer createServer(@NonNull String factoryType, InetAddress localAddress, int port) {
+// if (Arrays.stream(getSupportedServerTypes()).anyMatch(factoryType::equals)) {
+// BridgeLocalAccessoryServer newBridge = null;
 
-//             try {
-//                 newBridge = new BridgeLocalAccessoryServer(localAddress, port, mdnsService, accessoryRegistry,
-//                         pairingRegistry, safeCaller);
-//                 if (newBridge != null) {
-//                     logger.debug("Created an Accessory Server {} of Type {} running at {}:{}", newBridge.getUID(),
-//                             newBridge.getClass().getSimpleName(), localAddress.toString(), port);
-//                 }
-//                 return newBridge;
-//             } catch (InvalidAlgorithmParameterException e) {
-//                 e.printStackTrace();
-//                 return null;
-//             } catch (Exception e) {
-//                 e.printStackTrace();
-//             }
-//         }
+// try {
+// newBridge = new BridgeLocalAccessoryServer(localAddress, port, mdnsService, accessoryRegistry,
+// pairingRegistry, safeCaller);
+// if (newBridge != null) {
+// logger.debug("Created an Accessory Server {} of Type {} running at {}:{}", newBridge.getUID(),
+// newBridge.getClass().getSimpleName(), localAddress.toString(), port);
+// }
+// return newBridge;
+// } catch (InvalidAlgorithmParameterException e) {
+// e.printStackTrace();
+// return null;
+// } catch (Exception e) {
+// e.printStackTrace();
+// }
+// }
 
-//         return null;
-//     }
+// return null;
+// }
 
-//     @Override
-//     public @Nullable AccessoryServer createServer(@NonNull String factoryType, InetAddress localAddress, int port,
-//             byte[] id, byte[] privateKey, int configurationIndex) {
+// @Override
+// public @Nullable AccessoryServer createServer(@NonNull String factoryType, InetAddress localAddress, int port,
+// byte[] id, byte[] privateKey, int configurationIndex) {
 
-//         if (Arrays.stream(getSupportedServerTypes()).anyMatch(factoryType::equals)) {
-//             BridgeLocalAccessoryServer newBridge = null;
+// if (Arrays.stream(getSupportedServerTypes()).anyMatch(factoryType::equals)) {
+// BridgeLocalAccessoryServer newBridge = null;
 
-//             try {
-//                 newBridge = new BridgeLocalAccessoryServer(localAddress, port, id, privateKey, mdnsService,
-//                         accessoryRegistry, pairingRegistry, safeCaller);
-//                 if (newBridge != null) {
-//                     logger.debug("Created an Accessory Server {} of Type {} running at {}:{}", newBridge.getUID(),
-//                             newBridge.getClass().getSimpleName(), localAddress.toString(), port);
-//                 }
-//                 return newBridge;
-//             } catch (InvalidAlgorithmParameterException e) {
-//                 e.printStackTrace();
-//                 return null;
-//             } catch (Exception e) {
-//                 e.printStackTrace();
-//             }
-//         }
+// try {
+// newBridge = new BridgeLocalAccessoryServer(localAddress, port, id, privateKey, mdnsService,
+// accessoryRegistry, pairingRegistry, safeCaller);
+// if (newBridge != null) {
+// logger.debug("Created an Accessory Server {} of Type {} running at {}:{}", newBridge.getUID(),
+// newBridge.getClass().getSimpleName(), localAddress.toString(), port);
+// }
+// return newBridge;
+// } catch (InvalidAlgorithmParameterException e) {
+// e.printStackTrace();
+// return null;
+// } catch (Exception e) {
+// e.printStackTrace();
+// }
+// }
 
-//         return null;
-//     }
+// return null;
+// }
 
-//     @Override
-//     public String @NonNull [] getSupportedServerTypes() {
-//         return new String[] { BridgeLocalAccessoryServer.class.getSimpleName() };
-//     }
+// @Override
+// public String @NonNull [] getSupportedServerTypes() {
+// return new String[] { BridgeLocalAccessoryServer.class.getSimpleName() };
+// }
 // }

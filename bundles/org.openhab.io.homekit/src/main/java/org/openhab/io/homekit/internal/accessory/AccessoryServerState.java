@@ -41,8 +41,9 @@ public class AccessoryServerState {
     public static final AccessoryServerState UNPAIRED = new AccessoryServerState("UNPAIRED",
             "Not paired with any controller", AccessoryServerEventType.SERVER_STATE_UNPAIRED, false);
 
-    public static final AccessoryServerState PAIRED_TO_OTHER_CONTROLLER = new AccessoryServerState("PAIRED_TO_OTHER_CONTROLLER",
-            "Paired with another controller", AccessoryServerEventType.SERVER_STATE_PAIRED, false);
+    public static final AccessoryServerState PAIRED_TO_OTHER_CONTROLLER = new AccessoryServerState(
+            "PAIRED_TO_OTHER_CONTROLLER", "Paired with another controller",
+            AccessoryServerEventType.SERVER_STATE_PAIRED, false);
 
     public static final AccessoryServerState PAIRING_MISSING = new AccessoryServerState("PAIRING_MISSING",
             "Pairing information is missing", AccessoryServerEventType.SERVER_STATE_PAIRING_MISSING, false);
@@ -61,7 +62,7 @@ public class AccessoryServerState {
 
     public static final AccessoryServerState RESET = new AccessoryServerState("RESET",
             "Accessory has been factory reset", AccessoryServerEventType.SERVER_UPDATED, false);
-           
+
     public static final AccessoryServerState PAIR_SETUP_INITIAL = new AccessoryServerState("PAIR_SETUP_INITIAL",
             "Starting pair setup process", AccessoryServerEventType.SERVER_UPDATED, true);
 

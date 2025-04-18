@@ -14,23 +14,18 @@ public class CharacteristicUID extends UID {
     /**
      * Instantiates a new thing UID.
      *
-     * @param hexId the the hexidecimal pre-generated id of the accessory
+     * @param pairingId the the hexidecimal pre-generated id of the accessory
      * @param accessoryId the accessory instance id
      * @param serviceId the accessory instance id
      * @param characteristicId the characteristic instance id
      */
-    public CharacteristicUID(String hexId, long accessoryId, long serviceId, long characteristicId) {
-        super("homekit", "characteristic", hexId, Long.toString(accessoryId), Long.toString(serviceId),
+    public CharacteristicUID(String pairingId, long accessoryId, long serviceId, long characteristicId) {
+        super("homekit", "characteristic", pairingId, Long.toString(accessoryId), Long.toString(serviceId),
                 Long.toString(characteristicId));
     }
 
-    // /**
-    // * Returns the id.
-    // *
-    // * @return id the id
-    // */
-    // public String getId() {
-    // List<String> segments = getAllSegments();
-    // return segments.get(segments.size() - 1);
-    // }
+    // return the last 4 segments as a string with SEPARATOR as a separator
+    public String getHomekitId() {
+        return String.join(SEPARATOR, getAllSegments().subList(getAllSegments().size() - 4, getAllSegments().size()));
+    }
 }

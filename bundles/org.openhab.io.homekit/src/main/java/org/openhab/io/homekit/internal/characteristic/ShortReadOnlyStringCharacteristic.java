@@ -22,7 +22,7 @@ public abstract class ShortReadOnlyStringCharacteristic extends GenericCharacter
 
     public ShortReadOnlyStringCharacteristic(Service service, long instanceId, String description) {
         super(service, instanceId, "string", false, true, false, description);
-        }
+    }
 
     public ShortReadOnlyStringCharacteristic(Service service, JsonValue value) {
         super(service, value);

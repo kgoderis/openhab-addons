@@ -101,8 +101,8 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     // return null;
     // }
 
-    public AbstractAccessoryServer(AccessoryCategory category, InetAddress address, int port, byte[] pairingId, byte[] privateKey,
-            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry) {
+    public AbstractAccessoryServer(AccessoryCategory category, InetAddress address, int port, byte[] pairingId,
+            byte[] privateKey, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry) {
         super();
         this.category = category;
         this.address = address;
@@ -168,7 +168,6 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     public void setSetupCode(String setupCode) {
         this.setupCode = setupCode;
     }
-
 
     public boolean isBridge() {
         return category == AccessoryCategory.BRIDGES;

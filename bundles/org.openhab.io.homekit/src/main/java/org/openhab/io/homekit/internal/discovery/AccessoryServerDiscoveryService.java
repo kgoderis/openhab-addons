@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Collection;
+import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,9 +38,13 @@ import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
+import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
+import org.openhab.io.homekit.internal.client.HomekitException;
 import org.openhab.io.homekit.internal.provider.HomekitThingTypeProvider;
 import org.openhab.io.homekit.internal.server.AccessoryServerUID;
 import org.openhab.io.homekit.internal.server.RemoteAccessoryServer;
+import org.osgi.service.cm.Configuration;
+import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -64,14 +69,17 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
     private @Nullable PairingRegistry pairingRegistry;
     private @Nullable SafeCaller safeCaller;
     private @Nullable HomekitThingTypeProvider homekitThingTypeProvider;
+    private @Nullable ConfigurationAdmin configAdmin;
+    private boolean autoCreateAccessoryThing;
+    private boolean autoCreateServiceThing;
 
     @Activate
     public AccessoryServerDiscoveryService(final @Nullable Map<String, Object> configProperties,
             final @Reference MDNSClient mdnsClient, final @Reference AccessoryServerRegistry accessoryServerRegistry,
-            final @Reference NetworkAddressService networkAddressService,
-            @Nullable MDNSService mdnsService, @Nullable AccessoryRegistry accessoryRegistry,
-            @Nullable PairingRegistry pairingRegistry, @Nullable SafeCaller safeCaller,
-            @Nullable HomekitThingTypeProvider homekitThingTypeProvider) {
+            final @Reference NetworkAddressService networkAddressService, @Nullable MDNSService mdnsService,
+            @Nullable AccessoryRegistry accessoryRegistry, @Nullable PairingRegistry pairingRegistry,
+            @Nullable SafeCaller safeCaller, @Nullable HomekitThingTypeProvider homekitThingTypeProvider,
+            @Reference ConfigurationAdmin configAdmin) {
         super(5);
         this.mdnsClient = mdnsClient;
         this.accessoryServerRegistry = accessoryServerRegistry;
@@ -85,6 +93,32 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
 
         if (isBackgroundDiscoveryEnabled()) {
             mdnsClient.addServiceListener(SERVICE_TYPE, this);
+        }
+
+        // Get binding configuration using ConfigurationAdmin
+        try {
+            if (configAdmin != null) {
+                Configuration config = configAdmin.getConfiguration("org.openhab.homekit");
+                Dictionary<String, Object> properties = config.getProperties();
+
+                if (properties != null) {
+                    // Get auto-create configuration
+                    Object autoCreateObj = properties.get("auto.create.accessoryThing");
+                    if (autoCreateObj instanceof Boolean) {
+                        autoCreateAccessoryThing = (Boolean) autoCreateObj;
+                        logger.info("Thing auto create: {}", autoCreateAccessoryThing);
+                    }
+
+                    // Get service thing auto-create configuration
+                    Object autoCreateServiceObj = properties.get("auto.create.serviceThing");
+                    if (autoCreateServiceObj instanceof Boolean) {
+                        autoCreateServiceThing = (Boolean) autoCreateServiceObj;
+                        logger.info("Service thing auto create: {}", autoCreateServiceThing);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            logger.warn("Error reading HomeKit binding configuration: {}", e.getMessage());
         }
     }
 
@@ -305,11 +339,11 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
                     try {
                         AccessoryServer server = null;
                         // if (category.equals(AccessoryCategory.BRIDGES)) {
-                        //     server = new BridgeRemoteAccessoryServer(InetAddress.getByName(hostAddress), port,
-                        //             mdnsService, accessoryRegistry, pairingRegistry, safeCaller);
+                        // server = new BridgeRemoteAccessoryServer(InetAddress.getByName(hostAddress), port,
+                        // mdnsService, accessoryRegistry, pairingRegistry, safeCaller);
                         // } else {
-                            server = new RemoteAccessoryServer(category, InetAddress.getByName(hostAddress), port,
-                                    accessoryRegistry, pairingRegistry);
+                        server = new RemoteAccessoryServer(category, InetAddress.getByName(hostAddress), port,
+                                accessoryRegistry, pairingRegistry);
                         // }
                         server.setConfigurationIndex(configIndex);
                         accessoryServerRegistry.add(server);
@@ -345,31 +379,54 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
     }
 
     private void createThingFromAccessory(AccessoryServer server, Accessory accessory) {
-        // TODO: Implement thing creation from accessory
         logger.debug("Creating thing from accessory {}", accessory.getUID());
 
-        Map<String, Object> properties = new HashMap<>();
+        if (autoCreateServiceThing) {
+            Map<String, Object> properties = new HashMap<>();
 
-        // Get the ThingTypeUID for each service in the accessory
-        Collection<Service> services = accessory.getServices();
-        for (Service service : services) {
-            String serviceType = service.getInstanceType();
-            ThingTypeUID thingTypeUID = homekitThingTypeProvider.getThingTypeUID(serviceType);
+            // Get the ThingTypeUID for each service in the accessory
+            Collection<Service> services = accessory.getServices();
+            for (Service service : services) {
+                String serviceType = service.getInstanceType();
+                ThingTypeUID thingTypeUID = homekitThingTypeProvider.getThingTypeUID(serviceType);
+                String serviceTag;
+                try {
+                    serviceTag = homekitThingTypeProvider.getServiceTag(serviceType);
+                } catch (HomekitException e) {
+                    serviceTag = serviceType;
+                }
 
-            // Create a unique ID for this accessory's service
-            ThingUID thingUID = new ThingUID(thingTypeUID,
-                    "service-" + accessory.getAccessoryId() + "-" + service.getInstanceId());
+                // Create a unique ID for this accessory's service
+                ThingUID thingUID = new ThingUID(thingTypeUID, server.getUID().getPairingId() + "."
+                        + accessory.getAccessoryId() + "." + service.getInstanceId());
+
+                // Build discovery result
+                DiscoveryResultBuilder builder = DiscoveryResultBuilder.create(thingUID).withProperties(properties)
+                        .withProperty("accessoryId", accessory.getAccessoryId())
+                        .withProperty("instanceId", service.getInstanceId())
+                        .withProperty("pairingId", new String(server.getPairingId(), StandardCharsets.UTF_8))
+                        .withLabel("HomeKit " + serviceTag);
+
+                thingDiscovered(builder.build());
+
+                logger.debug("Created thing {} for HomeKit service type {}", thingUID, serviceType);
+            }
+        }
+
+        if (autoCreateAccessoryThing) {
+            // Create a unique ID for this accessory
+            ThingUID thingUID = new ThingUID(HomekitBindingConstants.THING_TYPE_ACCESSORY,
+                    server.getUID().getPairingId() + "." + accessory.getAccessoryId());
 
             // Build discovery result
-            DiscoveryResultBuilder builder = DiscoveryResultBuilder.create(thingUID).withProperties(properties)
+            DiscoveryResultBuilder builder = DiscoveryResultBuilder.create(thingUID)
                     .withProperty("accessoryId", accessory.getAccessoryId())
-                    .withProperty("instanceId", service.getInstanceId())
-                    .withProperty("deviceId", new String(server.getPairingId(), StandardCharsets.UTF_8))
-                    .withLabel("HomeKit " + service.getClass().getSimpleName());
+                    .withProperty("pairingId", new String(server.getPairingId(), StandardCharsets.UTF_8))
+                    .withLabel("HomeKit " + accessory.getClass().getSimpleName());
 
             thingDiscovered(builder.build());
+            logger.debug("Created thing {} for HomeKit accessory {}", thingUID, accessory.getAccessoryId());
 
-            logger.debug("Created thing {} for HomeKit service type {}", thingUID, serviceType);
         }
     }
 }

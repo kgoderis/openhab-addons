@@ -24,7 +24,8 @@ public class CharacteristicEvent {
         this(characteristic, oldValue, newValue, CharacteristicEventType.CHARACTERISTIC_STATE_CHANGED);
     }
 
-    public CharacteristicEvent(Characteristic<?> characteristic, JsonValue oldValue, JsonValue newValue, CharacteristicEventType eventType) {
+    public CharacteristicEvent(Characteristic<?> characteristic, JsonValue oldValue, JsonValue newValue,
+            CharacteristicEventType eventType) {
         this.characteristic = characteristic;
         this.oldValue = oldValue;
         this.newValue = newValue;

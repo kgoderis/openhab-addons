@@ -1,12 +1,13 @@
 package org.openhab.io.homekit.library.accessory;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.internal.accessory.GenericAccessory;
 
 public class BridgeAccessory extends GenericAccessory {
 
-    public BridgeAccessory(long instanceId, boolean extend) throws Exception {
-        super(instanceId);
+    public BridgeAccessory(AccessoryServer server, boolean extend) throws Exception {
+        super(server);
     }
 
     @Override

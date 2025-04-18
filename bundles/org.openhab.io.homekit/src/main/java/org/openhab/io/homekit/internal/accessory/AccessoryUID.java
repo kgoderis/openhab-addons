@@ -19,14 +19,14 @@ public class AccessoryUID extends UID {
     /**
      * Instantiates a new Accessory UID.
      *
-     * @param hexId the hexidecimal pre-generated id
+     * @param pairingId the hexidecimal pre-generated id
      * @param instanceId the accessory instance id
      */
-    public AccessoryUID(String hexId, long accessoryId) {
-        super("homekit", "accessory", hexId, Long.toString(accessoryId));
+    public AccessoryUID(String pairingId, long accessoryId) {
+        super("homekit", "accessory", pairingId, Long.toString(accessoryId));
     }
 
-    public String getHexId() {
+    public String getPairingId() {
         return getSegment(2);
     }
 }

@@ -34,116 +34,117 @@
 // @NonNullByDefault
 // public class RemoteAccessoryServerFactory implements AccessoryServerFactory {
 
-//     private final Logger logger = LoggerFactory.getLogger(RemoteAccessoryServerFactory.class);
+// private final Logger logger = LoggerFactory.getLogger(RemoteAccessoryServerFactory.class);
 
-//     @Nullable
-//     private MDNSService mdnsService;
-//     @Nullable
-//     private AccessoryRegistry accessoryRegistry;
-//     @Nullable
-//     private PairingRegistry pairingRegistry;
-//     @Nullable
-//     private NetworkAddressService networkAddressService;
-//     @Nullable
-//     private SafeCaller safeCaller;
+// @Nullable
+// private MDNSService mdnsService;
+// @Nullable
+// private AccessoryRegistry accessoryRegistry;
+// @Nullable
+// private PairingRegistry pairingRegistry;
+// @Nullable
+// private NetworkAddressService networkAddressService;
+// @Nullable
+// private SafeCaller safeCaller;
 
-//     protected final @NonNullByDefault({}) BundleContext bundleContext;
-//     private final Map<AccessoryServerUID, @Nullable ServiceRegistration<?>> mdnsServiceRegs = new HashMap<>();
+// protected final @NonNullByDefault({}) BundleContext bundleContext;
+// private final Map<AccessoryServerUID, @Nullable ServiceRegistration<?>> mdnsServiceRegs = new HashMap<>();
 
-//     @Activate
-//     public RemoteAccessoryServerFactory(ComponentContext componentContext, @Nullable MDNSService mdnsService,
-//             @Nullable AccessoryRegistry accessoryRegistry, @Nullable PairingRegistry pairingRegistry,
-//             @Nullable NetworkAddressService networkAddressService, @Nullable SafeCaller safeCaller) {
-//         super();
-//         this.bundleContext = componentContext.getBundleContext();
+// @Activate
+// public RemoteAccessoryServerFactory(ComponentContext componentContext, @Nullable MDNSService mdnsService,
+// @Nullable AccessoryRegistry accessoryRegistry, @Nullable PairingRegistry pairingRegistry,
+// @Nullable NetworkAddressService networkAddressService, @Nullable SafeCaller safeCaller) {
+// super();
+// this.bundleContext = componentContext.getBundleContext();
 
-//         this.mdnsService = mdnsService;
-//         this.accessoryRegistry = accessoryRegistry;
-//         this.pairingRegistry = pairingRegistry;
-//         this.networkAddressService = networkAddressService;
-//         this.safeCaller = safeCaller;
-//     }
+// this.mdnsService = mdnsService;
+// this.accessoryRegistry = accessoryRegistry;
+// this.pairingRegistry = pairingRegistry;
+// this.networkAddressService = networkAddressService;
+// this.safeCaller = safeCaller;
+// }
 
-//     @Deactivate
-//     public void deactivate() {
-//         for (AccessoryServerUID serverUID : mdnsServiceRegs.keySet()) {
-//             ServiceRegistration<?> serviceReg = this.mdnsServiceRegs.remove(serverUID);
-//             if (serviceReg != null) {
-//                 AccessoryServerConfigurationChangeParticipant service = (AccessoryServerConfigurationChangeParticipant) getBundleContext()
-//                         .getService(serviceReg.getReference());
-//                 serviceReg.unregister();
-//             }
-//         }
-//     }
+// @Deactivate
+// public void deactivate() {
+// for (AccessoryServerUID serverUID : mdnsServiceRegs.keySet()) {
+// ServiceRegistration<?> serviceReg = this.mdnsServiceRegs.remove(serverUID);
+// if (serviceReg != null) {
+// AccessoryServerConfigurationChangeParticipant service = (AccessoryServerConfigurationChangeParticipant)
+// getBundleContext()
+// .getService(serviceReg.getReference());
+// serviceReg.unregister();
+// }
+// }
+// }
 
-//     @Override
-//     public @Nullable AccessoryServer createServer(@NonNull String factoryType, InetAddress address, int port) {
-//         if (Arrays.stream(getSupportedServerTypes()).anyMatch(factoryType::equals)) {
-//             RemoteAccessoryServer newBridge = null;
+// @Override
+// public @Nullable AccessoryServer createServer(@NonNull String factoryType, InetAddress address, int port) {
+// if (Arrays.stream(getSupportedServerTypes()).anyMatch(factoryType::equals)) {
+// RemoteAccessoryServer newBridge = null;
 
-//             try {
-//                 newBridge = new RemoteAccessoryServer(address, port, accessoryRegistry, pairingRegistry);
-//                 if (newBridge != null) {
-//                     logger.debug("Created an Accessory Server {} of Type {} running at {}:{}", newBridge.getUID(),
-//                             newBridge.getClass().getSimpleName(), address.toString(), port);
-//                     registerHomekitMDNSParticipant(newBridge);
+// try {
+// newBridge = new RemoteAccessoryServer(address, port, accessoryRegistry, pairingRegistry);
+// if (newBridge != null) {
+// logger.debug("Created an Accessory Server {} of Type {} running at {}:{}", newBridge.getUID(),
+// newBridge.getClass().getSimpleName(), address.toString(), port);
+// registerHomekitMDNSParticipant(newBridge);
 
-//                 }
-//                 return newBridge;
-//             } catch (InvalidAlgorithmParameterException e) {
-//                 e.printStackTrace();
-//                 return null;
-//             } catch (Exception e) {
-//                 e.printStackTrace();
-//             }
-//         }
+// }
+// return newBridge;
+// } catch (InvalidAlgorithmParameterException e) {
+// e.printStackTrace();
+// return null;
+// } catch (Exception e) {
+// e.printStackTrace();
+// }
+// }
 
-//         return null;
-//     }
+// return null;
+// }
 
-//     @Override
-//     public @Nullable AccessoryServer createServer(@NonNull String factoryType, InetAddress address, int port, byte[] id,
-//             byte[] privateKey, int configurationIndex) {
+// @Override
+// public @Nullable AccessoryServer createServer(@NonNull String factoryType, InetAddress address, int port, byte[] id,
+// byte[] privateKey, int configurationIndex) {
 
-//         if (Arrays.stream(getSupportedServerTypes()).anyMatch(factoryType::equals)) {
-//             RemoteAccessoryServer newBridge = null;
+// if (Arrays.stream(getSupportedServerTypes()).anyMatch(factoryType::equals)) {
+// RemoteAccessoryServer newBridge = null;
 
-//             try {
-//                 newBridge = new RemoteAccessoryServer(address, port, id, privateKey, accessoryRegistry,
-//                         pairingRegistry);
-//                 if (newBridge != null) {
-//                     logger.debug("Created an Accessory Server {} of Type {} running at {}:{}", newBridge.getUID(),
-//                             newBridge.getClass().getSimpleName(), address.toString(), port);
-//                     registerHomekitMDNSParticipant(newBridge);
-//                 }
-//                 return newBridge;
-//             } catch (Exception e) {
-//                 e.printStackTrace();
-//             }
-//         }
+// try {
+// newBridge = new RemoteAccessoryServer(address, port, id, privateKey, accessoryRegistry,
+// pairingRegistry);
+// if (newBridge != null) {
+// logger.debug("Created an Accessory Server {} of Type {} running at {}:{}", newBridge.getUID(),
+// newBridge.getClass().getSimpleName(), address.toString(), port);
+// registerHomekitMDNSParticipant(newBridge);
+// }
+// return newBridge;
+// } catch (Exception e) {
+// e.printStackTrace();
+// }
+// }
 
-//         return null;
-//     }
+// return null;
+// }
 
-//     @Override
-//     public String @NonNull [] getSupportedServerTypes() {
-//         return new String[] { RemoteAccessoryServer.class.getSimpleName() };
-//     }
+// @Override
+// public String @NonNull [] getSupportedServerTypes() {
+// return new String[] { RemoteAccessoryServer.class.getSimpleName() };
+// }
 
-//     private synchronized void registerHomekitMDNSParticipant(RemoteAccessoryServer participant) {
-//         AccessoryServerConfigurationChangeParticipant mdnsParticipant = new AccessoryServerConfigurationChangeParticipant(
-//                 participant);
-//         this.mdnsServiceRegs.put(participant.getUID(), getBundleContext().registerService(
-//                 MDNSDiscoveryParticipant.class.getName(), mdnsParticipant, new Hashtable<String, Object>()));
-//     }
+// private synchronized void registerHomekitMDNSParticipant(RemoteAccessoryServer participant) {
+// AccessoryServerConfigurationChangeParticipant mdnsParticipant = new AccessoryServerConfigurationChangeParticipant(
+// participant);
+// this.mdnsServiceRegs.put(participant.getUID(), getBundleContext().registerService(
+// MDNSDiscoveryParticipant.class.getName(), mdnsParticipant, new Hashtable<String, Object>()));
+// }
 
-//     protected BundleContext getBundleContext() {
-//         final BundleContext bundleContext = this.bundleContext;
-//         if (bundleContext != null) {
-//             return bundleContext;
-//         } else {
-//             throw new IllegalStateException(
-//                     "The bundle context is missing (it seems your thing handler factory is used but not active).");
-//         }
-//     }
+// protected BundleContext getBundleContext() {
+// final BundleContext bundleContext = this.bundleContext;
+// if (bundleContext != null) {
+// return bundleContext;
+// } else {
+// throw new IllegalStateException(
+// "The bundle context is missing (it seems your thing handler factory is used but not active).");
+// }
+// }
 // }

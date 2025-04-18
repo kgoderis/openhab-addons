@@ -62,8 +62,9 @@ public class LocalAccessoryServer extends AbstractAccessoryServer {
 
     private final CharacteristicServlet characteristicServlet;
 
-    public LocalAccessoryServer(AccessoryCategory category, InetAddress address, int port, byte[] pairingId, byte[] secretKey,
-            MDNSService mdnsService, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry) throws InvalidAlgorithmParameterException {
+    public LocalAccessoryServer(AccessoryCategory category, InetAddress address, int port, byte[] pairingId,
+            byte[] secretKey, MDNSService mdnsService, AccessoryRegistry accessoryRegistry,
+            PairingRegistry pairingRegistry) throws InvalidAlgorithmParameterException {
         super(category, address, port, pairingId, secretKey, accessoryRegistry, pairingRegistry);
 
         this.mdnsService = mdnsService;
@@ -174,9 +175,11 @@ public class LocalAccessoryServer extends AbstractAccessoryServer {
         start();
     }
 
-    public LocalAccessoryServer(AccessoryCategory category, InetAddress address, int port,
-    MDNSService mdnsService, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry) throws InvalidAlgorithmParameterException {
-        this(category, address, port, generatePairingId(), generateSecretKey(), mdnsService, accessoryRegistry, pairingRegistry);
+    public LocalAccessoryServer(AccessoryCategory category, InetAddress address, int port, MDNSService mdnsService,
+            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry)
+            throws InvalidAlgorithmParameterException {
+        this(category, address, port, generatePairingId(), generateSecretKey(), mdnsService, accessoryRegistry,
+                pairingRegistry);
     }
 
     @Deactivate
@@ -696,15 +699,15 @@ public class LocalAccessoryServer extends AbstractAccessoryServer {
         // We are not in control, the remote controller will handle this
     }
 
-	@Override
-	public void updateAccessories() throws IOException {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'updateAccessories'");
-	}
+    @Override
+    public void updateAccessories() throws IOException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'updateAccessories'");
+    }
 
-	@Override
-	public void pairSetup() throws IOException {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'pairSetup'");
-	}
+    @Override
+    public void pairSetup() throws IOException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'pairSetup'");
+    }
 }

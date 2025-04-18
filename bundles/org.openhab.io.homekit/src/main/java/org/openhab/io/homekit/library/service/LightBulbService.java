@@ -1,10 +1,11 @@
 package org.openhab.io.homekit.library.service;
 
+import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.internal.service.GenericService;
 import org.openhab.io.homekit.library.characteristic.OnCharacteristic;
-import javax.json.JsonValue;
 
 public class LightBulbService extends GenericService {
 

@@ -16,6 +16,7 @@ import org.openhab.core.thing.type.ChannelTypeProvider;
 import org.openhab.core.thing.type.ChannelTypeUID;
 import org.openhab.core.thing.type.StateChannelTypeBuilder;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
+import org.openhab.io.homekit.internal.client.HomekitException;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -85,5 +86,29 @@ public class HomekitChannelTypeProvider extends AbstractStorageBasedTypeProvider
     public @Nullable ChannelType getChannelType(ChannelTypeUID channelTypeUID, @Nullable Locale locale) {
         // Return the specific channel type if it exists
         return super.getChannelType(channelTypeUID, locale);
+    }
+
+    public String getCharacteristicTypeFromTag(String tag) throws HomekitException {
+        // traverse factories and get the instance type from the tag
+        for (HomekitFactory factory : homekitFactories.values()) {
+            String instanceType = factory.getCharacteristicTypeFromTag(tag);
+            if (instanceType != null) {
+                return instanceType;
+            }
+        }
+        throw new HomekitException("No factory found for tag: " + tag);
+    }
+
+    public String getCharacteristicTag(String characteristicType) throws HomekitException {
+        // get the tag from the characteristic type
+        @Nullable
+        HomekitFactory factory = homekitFactories.get(characteristicType);
+        if (factory != null) {
+            String tag = factory.getTagFromCharacteristicType(characteristicType);
+            if (tag != null) {
+                return tag;
+            }
+        }
+        throw new HomekitException("No factory found for characteristic type: " + characteristicType);
     }
 }
