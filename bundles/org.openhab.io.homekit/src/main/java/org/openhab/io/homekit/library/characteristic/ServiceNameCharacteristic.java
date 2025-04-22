@@ -8,6 +8,8 @@ import org.openhab.io.homekit.internal.characteristic.ReadOnlyStringCharacterist
 
 public class ServiceNameCharacteristic extends ReadOnlyStringCharacteristic {
 
+    private static final String TYPE = "00000023-0000-1000-8000-0026BB765291";
+
     public ServiceNameCharacteristic(Service service, long instanceId) {
         super(service, instanceId, "Name of the service");
     }
@@ -21,8 +23,9 @@ public class ServiceNameCharacteristic extends ReadOnlyStringCharacteristic {
         return getType();
     }
 
-    public static String getType() {
-        return "00000023-0000-1000-8000-0026BB765291";
+    @Override
+    public String getType() {
+        return TYPE;
     }
 
     public static String getTag() {

@@ -8,6 +8,8 @@ import org.openhab.io.homekit.internal.characteristic.IntegerCharacteristic;
 
 public class CurrentHorizontalTiltAngleCharacteristic extends IntegerCharacteristic {
 
+    private static final String TYPE = "0000006C-0000-1000-8000-0026BB765291";
+
     public CurrentHorizontalTiltAngleCharacteristic(Service service, long instanceId) {
         super(service, instanceId, false, true, true, "Current horizontal tilt angle", -90, 90, "arcdegrees");
     }
@@ -16,8 +18,9 @@ public class CurrentHorizontalTiltAngleCharacteristic extends IntegerCharacteris
         super(service, value);
     }
 
-    public static String getType() {
-        return "0000006C-0000-1000-8000-0026BB765291";
+    @Override
+    public String getType() {
+        return TYPE;
     }
 
     @Override

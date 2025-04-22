@@ -8,6 +8,8 @@ import org.openhab.io.homekit.internal.characteristic.ReadOnlyStringCharacterist
 
 public class SerialNumberCharacteristic extends ReadOnlyStringCharacteristic {
 
+    private static final String TYPE = "00000030-0000-1000-8000-0026BB765291";
+
     public SerialNumberCharacteristic(Service service, long instanceId) {
         super(service, instanceId, "Serial number of the accessory");
     }
@@ -16,8 +18,9 @@ public class SerialNumberCharacteristic extends ReadOnlyStringCharacteristic {
         super(service, value);
     }
 
-    public static String getType() {
-        return "00000030-0000-1000-8000-0026BB765291";
+    @Override
+    public String getType() {
+        return TYPE;
     }
 
     @Override

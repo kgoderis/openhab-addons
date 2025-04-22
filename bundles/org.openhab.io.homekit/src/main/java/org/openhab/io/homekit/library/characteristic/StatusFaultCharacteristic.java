@@ -8,6 +8,7 @@ import org.openhab.io.homekit.internal.characteristic.EnumCharacteristic;
 import org.openhab.core.types.State;
 
 public class StatusFaultCharacteristic extends EnumCharacteristic {
+    private static final String TYPE = "00000077-0000-1000-8000-0026BB765291";
 
     public StatusFaultCharacteristic(Service service, long instanceId) {
         super(service, instanceId, false, true, true, "Status fault", 1);
@@ -18,7 +19,7 @@ public class StatusFaultCharacteristic extends EnumCharacteristic {
     }
 
     public static String getType() {
-        return "00000077-0000-1000-8000-0026BB765291";
+        return TYPE;
     }
 
     @Override

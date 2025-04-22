@@ -6,7 +6,6 @@ import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.ReadOnlyStringCharacteristic;
 
 public class FirmwareRevisionCharacteristic extends ReadOnlyStringCharacteristic {
-
     private static final String TYPE = "00000052-0000-1000-8000-0026BB765291";
 
     public FirmwareRevisionCharacteristic(Service service, long instanceId) {
@@ -18,13 +17,13 @@ public class FirmwareRevisionCharacteristic extends ReadOnlyStringCharacteristic
     }
 
     @Override
-    public String getType() {
+    public static String getType() {
         return TYPE;
     }
 
     @Override
     public String getInstanceType() {
-        return getType();
+        return TYPE;
     }
 
     public static String getTag() {

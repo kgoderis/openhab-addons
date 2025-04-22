@@ -15,6 +15,8 @@ import org.openhab.io.homekit.internal.characteristic.BooleanCharacteristic;
  */
 public class HoldPositionCharacteristic extends BooleanCharacteristic {
 
+    private static final String TYPE = "0000006F-0000-1000-8000-0026BB765291";
+
     public HoldPositionCharacteristic(Service service, long instanceId) {
         super(service, instanceId, true, true, true, "Hold position");
     }
@@ -23,8 +25,9 @@ public class HoldPositionCharacteristic extends BooleanCharacteristic {
         super(service, value);
     }
 
-    public static String getType() {
-        return "0000006F-0000-1000-8000-0026BB765291";
+    @Override
+    public String getType() {
+        return TYPE;
     }
 
     @Override

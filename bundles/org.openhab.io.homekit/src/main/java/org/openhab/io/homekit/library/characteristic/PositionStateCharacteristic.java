@@ -8,6 +8,7 @@ import org.openhab.io.homekit.internal.characteristic.EnumCharacteristic;
 import org.openhab.core.library.types.State;
 
 public class PositionStateCharacteristic extends EnumCharacteristic {
+    private static final String TYPE = "00000072-0000-1000-8000-0026BB765291";
 
     public PositionStateCharacteristic(Service service, long instanceId) {
         super(service, instanceId, false, true, true, "Position state", 2);
@@ -18,7 +19,7 @@ public class PositionStateCharacteristic extends EnumCharacteristic {
     }
 
     public static String getType() {
-        return "00000072-0000-1000-8000-0026BB765291";
+        return TYPE;
     }
 
     @Override

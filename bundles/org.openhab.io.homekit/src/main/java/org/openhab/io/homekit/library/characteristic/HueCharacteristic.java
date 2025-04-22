@@ -11,6 +11,8 @@ import org.openhab.io.homekit.internal.characteristic.FloatCharacteristic;
 
 public class HueCharacteristic extends FloatCharacteristic {
 
+    private static final String TYPE = "00000013-0000-1000-8000-0026BB765291";
+
     public HueCharacteristic(Service service, long instanceId) {
         super(service, instanceId, true, true, true, "Adjust hue of the light", 0, 360, 1, "arcdegrees");
     }
@@ -19,8 +21,9 @@ public class HueCharacteristic extends FloatCharacteristic {
         super(service, value);
     }
 
-    public static String getType() {
-        return "00000013-0000-1000-8000-0026BB765291";
+    @Override
+    public String getType() {
+        return TYPE;
     }
 
     @Override

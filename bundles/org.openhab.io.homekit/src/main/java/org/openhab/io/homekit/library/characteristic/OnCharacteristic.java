@@ -17,6 +17,8 @@ import org.openhab.core.types.State;
  */
 public class OnCharacteristic extends BooleanCharacteristic {
 
+    private static final String TYPE = "00000025-0000-1000-8000-0026BB765291";
+
     public OnCharacteristic(Service service, long instanceId) {
         super(service, instanceId, true, true, true, "On");
     }
@@ -31,8 +33,8 @@ public class OnCharacteristic extends BooleanCharacteristic {
     }
 
     @Override
-    public static String getType() {
-        return "00000025-0000-1000-8000-0026BB765291";
+    public String getType() {
+        return TYPE;
     }
 
     public static String getTag() {

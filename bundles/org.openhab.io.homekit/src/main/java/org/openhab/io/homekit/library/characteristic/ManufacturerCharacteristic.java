@@ -7,7 +7,6 @@ import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.ReadOnlyStringCharacteristic;
 
 public class ManufacturerCharacteristic extends ReadOnlyStringCharacteristic {
-
     private static final String TYPE = "00000020-0000-1000-8000-0026BB765291";
 
     public ManufacturerCharacteristic(Service service, long instanceId) {

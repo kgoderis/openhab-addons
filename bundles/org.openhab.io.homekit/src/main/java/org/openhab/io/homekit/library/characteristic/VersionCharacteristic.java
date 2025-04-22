@@ -7,7 +7,6 @@ import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.ShortReadOnlyStringCharacteristic;
 
 public class VersionCharacteristic extends ShortReadOnlyStringCharacteristic {
-
     private static final String TYPE = "00000037-0000-1000-8000-0026BB765291";
 
     public VersionCharacteristic(Service service, long instanceId) {

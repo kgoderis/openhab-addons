@@ -2,6 +2,7 @@ package org.openhab.io.homekit.library.characteristic;
 
 import java.math.BigDecimal;
 
+import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import org.openhab.core.library.types.DecimalType;
@@ -23,13 +24,14 @@ public class SaturationCharacteristic extends FloatCharacteristic {
         super(service, value);
     }
 
+    @Override
     public static String getType() {
         return TYPE;
     }
 
     @Override
     public String getInstanceType() {
-        return getType();
+        return TYPE;
     }
 
     @Override
@@ -49,19 +51,8 @@ public class SaturationCharacteristic extends FloatCharacteristic {
     @Override
     public State toState(Double value) {
         return new HSBType(new PercentType(0), new PercentType(new BigDecimal(value)), new PercentType(100));
-        // State state = manager.getState(getChannelUID());
-
-        // if (state instanceof HSBType) {
-        // return new HSBType(((HSBType) state).getHue(), new PercentType(new BigDecimal(value)),
-        // ((HSBType) state).getBrightness());
-        // } else {
-        // return new DecimalType(value);
     }
 
-    public static String getTag() {
-        return SaturationCharacteristic.class.getSimpleName().replace("Characteristic", "");
-    }
-    
     @Override
     public JsonObject toEventJson() {
         return super.toEventJson();
@@ -70,6 +61,11 @@ public class SaturationCharacteristic extends FloatCharacteristic {
     @Override
     public JsonObject toEventJson(Double value) {
         return super.toEventJson(value);
+    }
+
+    @Override
+    public JsonValue toValueJson(Double value) {
+        return super.toValueJson(value);
     }
 
     @Override
@@ -87,9 +83,7 @@ public class SaturationCharacteristic extends FloatCharacteristic {
         return super.toReducedJson();
     }
 
-    @Override
-    public JsonValue toValueJson(Double value) {
-        return super.toValueJson(value);
+    public static String getTag() {
+        return SaturationCharacteristic.class.getSimpleName().replace("Characteristic", "");
     }
-
 }

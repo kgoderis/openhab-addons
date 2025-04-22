@@ -8,6 +8,7 @@ import org.openhab.io.homekit.internal.characteristic.IntegerCharacteristic;
 import org.openhab.core.types.State;
 
 public class CurrentPositionCharacteristic extends IntegerCharacteristic {
+    private static final String TYPE = "0000006D-0000-1000-8000-0026BB765291";
 
     public CurrentPositionCharacteristic(Service service, long instanceId) {
         super(service, instanceId, false, true, true, "Current position", 0, 100, "percent");
@@ -18,7 +19,7 @@ public class CurrentPositionCharacteristic extends IntegerCharacteristic {
     }
 
     public static String getType() {
-        return "0000006D-0000-1000-8000-0026BB765291";
+        return TYPE;
     }
 
     @Override

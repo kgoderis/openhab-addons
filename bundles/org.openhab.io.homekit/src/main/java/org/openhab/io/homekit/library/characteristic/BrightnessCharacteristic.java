@@ -12,6 +12,8 @@ import org.openhab.io.homekit.internal.characteristic.IntegerCharacteristic;
 
 public class BrightnessCharacteristic extends IntegerCharacteristic {
 
+    private static final String TYPE = "00000008-0000-1000-8000-0026BB765291";
+
     public BrightnessCharacteristic(Service service, long instanceId) {
         super(service, instanceId, true, true, true, "Adjust brightness of a light", 0, 100, "percentage");
     }
@@ -20,8 +22,9 @@ public class BrightnessCharacteristic extends IntegerCharacteristic {
         super(service, value);
     }
 
-    public static String getType() {
-        return "00000008-0000-1000-8000-0026BB765291";
+    @Override
+    public String getType() {
+        return TYPE;
     }
 
     @Override
