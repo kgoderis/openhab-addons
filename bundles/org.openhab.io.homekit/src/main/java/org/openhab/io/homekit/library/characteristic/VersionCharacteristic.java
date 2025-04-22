@@ -8,6 +8,8 @@ import org.openhab.io.homekit.internal.characteristic.ShortReadOnlyStringCharact
 
 public class VersionCharacteristic extends ShortReadOnlyStringCharacteristic {
 
+    private static final String TYPE = "00000037-0000-1000-8000-0026BB765291";
+
     public VersionCharacteristic(Service service, long instanceId) {
         super(service, instanceId, "1.0.0");
     }
@@ -17,7 +19,7 @@ public class VersionCharacteristic extends ShortReadOnlyStringCharacteristic {
     }
 
     public static String getType() {
-        return "00000037-0000-1000-8000-0026BB765291";
+        return TYPE;
     }
 
     @Override

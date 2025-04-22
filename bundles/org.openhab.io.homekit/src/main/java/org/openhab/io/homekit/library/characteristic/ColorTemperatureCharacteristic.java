@@ -17,6 +17,7 @@ public class ColorTemperatureCharacteristic extends LongCharacteristic {
         super(service, value);
     }
 
+    @Override
     public static String getType() {
         return TYPE;
     }

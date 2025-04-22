@@ -7,6 +7,8 @@ import org.openhab.io.homekit.internal.characteristic.ReadOnlyStringCharacterist
 
 public class FirmwareRevisionCharacteristic extends ReadOnlyStringCharacteristic {
 
+    private static final String TYPE = "00000052-0000-1000-8000-0026BB765291";
+
     public FirmwareRevisionCharacteristic(Service service, long instanceId) {
         super(service, instanceId, "Firmware revision of the accessory");
     }
@@ -15,8 +17,9 @@ public class FirmwareRevisionCharacteristic extends ReadOnlyStringCharacteristic
         super(service, value);
     }
 
-    public static String getType() {
-        return "00000052-0000-1000-8000-0026BB765291";
+    @Override
+    public String getType() {
+        return TYPE;
     }
 
     @Override
@@ -39,7 +42,7 @@ public class FirmwareRevisionCharacteristic extends ReadOnlyStringCharacteristic
     }
 
     @Override
-    public JsonObject toEventJson(Double value) {
+    public JsonObject toEventJson(String value) {
         return super.toEventJson(value);
     }
 

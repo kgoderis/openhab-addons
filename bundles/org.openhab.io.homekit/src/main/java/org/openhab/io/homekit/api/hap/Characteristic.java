@@ -47,10 +47,10 @@ public interface Characteristic<T> extends Identifiable<@NonNull CharacteristicU
     boolean isType(String aType);
 
 
-        // // Static method can't be called through instance
-        // static String getType() {
-        //     throw new UnsupportedOperationException("Must be implemented by characteristic class");
-        // }
+    // Static method can't be called through instance
+    static String getType() {
+        throw new UnsupportedOperationException("Must be implemented by characteristic class");
+    }
 
     /**
      * Gets the instance type of this Characteristic.

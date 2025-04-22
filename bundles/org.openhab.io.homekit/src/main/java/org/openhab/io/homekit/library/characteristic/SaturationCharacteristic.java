@@ -13,6 +13,8 @@ import org.openhab.io.homekit.internal.characteristic.FloatCharacteristic;
 
 public class SaturationCharacteristic extends FloatCharacteristic {
 
+    private static final String TYPE = "0000002F-0000-1000-8000-0026BB765291";
+
     public SaturationCharacteristic(Service service, long instanceId) {
         super(service, instanceId, true, true, true, "Adjust saturation of the light", 0, 100, 1, "percentage");
     }
@@ -22,7 +24,7 @@ public class SaturationCharacteristic extends FloatCharacteristic {
     }
 
     public static String getType() {
-        return "0000002F-0000-1000-8000-0026BB765291";
+        return TYPE;
     }
 
     @Override
@@ -83,6 +85,11 @@ public class SaturationCharacteristic extends FloatCharacteristic {
     @Override
     public JsonObject toReducedJson() {
         return super.toReducedJson();
+    }
+
+    @Override
+    public JsonValue toValueJson(Double value) {
+        return super.toValueJson(value);
     }
 
 }

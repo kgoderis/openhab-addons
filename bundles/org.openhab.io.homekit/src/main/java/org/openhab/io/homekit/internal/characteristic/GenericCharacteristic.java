@@ -451,11 +451,6 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     }
 
     @Override
-    public String getType() {
-        return type;
-    }
-
-    @Override
     public boolean isWritable() {
         return isWritable;
     }

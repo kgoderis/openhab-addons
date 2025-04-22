@@ -10,6 +10,8 @@ import org.openhab.io.homekit.internal.characteristic.EnumCharacteristic;
 
 public class ContactSensorStateCharacteristic extends EnumCharacteristic {
 
+    private static final String TYPE = "0000006A-0000-1000-8000-0026BB765291";
+
     public ContactSensorStateCharacteristic(Service service, long instanceId) {
         super(service, instanceId, false, true, true, "State of a door/window contact sensor", 1);
     }
@@ -18,13 +20,14 @@ public class ContactSensorStateCharacteristic extends EnumCharacteristic {
         super(service, value);
     }
 
+    @Override
     public static String getType() {
-        return "0000006A-0000-1000-8000-0026BB765291";
+        return TYPE;
     }
 
     @Override
     public String getInstanceType() {
-        return getType();
+        return TYPE;
     }
 
     @Override

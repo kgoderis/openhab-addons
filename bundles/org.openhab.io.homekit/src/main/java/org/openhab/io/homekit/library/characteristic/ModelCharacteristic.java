@@ -17,7 +17,8 @@ public class ModelCharacteristic extends ReadOnlyStringCharacteristic {
         super(service, value);
     }
 
-    public static String getType() {
+    @Override
+    public String getType() {
         return "00000021-0000-1000-8000-0026BB765291";
     }
 
