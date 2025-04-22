@@ -58,4 +58,9 @@ public class TargetTemperatureCharacteristic extends FloatCharacteristic {
     public JsonObject toReducedJson() {
         return super.toReducedJson();
     }
+
+    @Override
+    public State toState(Double value) {
+        return super.toState(value);
+    }
 }

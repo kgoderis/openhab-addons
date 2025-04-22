@@ -5,6 +5,7 @@ import javax.json.JsonValue;
 
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.EnumCharacteristic;
+import org.openhab.core.library.types.State;
 
 public class PositionStateCharacteristic extends EnumCharacteristic {
 
@@ -57,5 +58,10 @@ public class PositionStateCharacteristic extends EnumCharacteristic {
     @Override
     public JsonObject toReducedJson() {
         return super.toReducedJson();
+    }
+
+    @Override
+    public State toState(Integer value) {
+        return super.toState(value);
     }
 }

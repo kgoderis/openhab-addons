@@ -5,6 +5,7 @@ import javax.json.JsonValue;
 
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.IntegerCharacteristic;
+import org.openhab.core.types.State;
 
 public class TargetPositionCharacteristic extends IntegerCharacteristic {
 
@@ -57,5 +58,10 @@ public class TargetPositionCharacteristic extends IntegerCharacteristic {
     @Override
     public JsonObject toReducedJson() {
         return super.toReducedJson();
+    }
+
+    @Override
+    public State toState(Integer value) {
+        return super.toState(value);
     }
 }

@@ -57,5 +57,10 @@ public class TargetVerticalTiltAngleCharacteristic extends IntegerCharacteristic
     @Override
     public JsonObject toReducedJson() {
         return super.toReducedJson();
+    }   
+
+    @Override
+    public State toState(Integer value) {
+        return super.toState(value);
     }
 }

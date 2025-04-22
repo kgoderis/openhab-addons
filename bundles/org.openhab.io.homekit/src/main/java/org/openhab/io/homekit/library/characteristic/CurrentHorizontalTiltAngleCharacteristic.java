@@ -58,4 +58,8 @@ public class CurrentHorizontalTiltAngleCharacteristic extends IntegerCharacteris
     public JsonObject toReducedJson() {
         return super.toReducedJson();
     }
+    @Override
+    public State toState(Integer value) {
+        return super.toState(value);
+    }
 }

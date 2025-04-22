@@ -65,4 +65,9 @@ public class StatusActiveCharacteristic extends BooleanCharacteristic {
     public JsonObject toReducedJson() {
         return super.toReducedJson();
     }
+
+    @Override
+    public State toState(Boolean value) {
+        return super.toState(value);
+    }
 }

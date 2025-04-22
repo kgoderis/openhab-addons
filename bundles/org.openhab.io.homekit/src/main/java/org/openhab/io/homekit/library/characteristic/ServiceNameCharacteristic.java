@@ -58,4 +58,9 @@ public class ServiceNameCharacteristic extends ReadOnlyStringCharacteristic {
     public JsonObject toReducedJson() {
         return super.toReducedJson();
     }
+
+    @Override
+    public State toState(String value) {
+        return super.toState(value);
+    }
 }

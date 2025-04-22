@@ -3,6 +3,7 @@ package org.openhab.io.homekit.library.characteristic;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.ReadOnlyStringCharacteristic;
 
@@ -23,6 +24,11 @@ public class NameCharacteristic extends ReadOnlyStringCharacteristic {
     @Override
     public String getInstanceType() {
         return getType();
+    }
+
+    @Override
+    public State toState(String value) {
+        return super.toState(value);
     }
 
     @Override

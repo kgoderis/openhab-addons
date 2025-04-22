@@ -59,4 +59,30 @@ public class SaturationCharacteristic extends FloatCharacteristic {
     public static String getTag() {
         return SaturationCharacteristic.class.getSimpleName().replace("Characteristic", "");
     }
+    
+    @Override
+    public JsonObject toEventJson() {
+        return super.toEventJson();
+    }
+
+    @Override
+    public JsonObject toEventJson(Double value) {
+        return super.toEventJson(value);
+    }
+
+    @Override
+    public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType, boolean includeEvent) {
+        return super.toJson(includeMeta, includePermissions, includeType, includeEvent);
+    }
+
+    @Override
+    public JsonObject toJson() {
+        return super.toJson();
+    }
+
+    @Override
+    public JsonObject toReducedJson() {
+        return super.toReducedJson();
+    }
+
 }

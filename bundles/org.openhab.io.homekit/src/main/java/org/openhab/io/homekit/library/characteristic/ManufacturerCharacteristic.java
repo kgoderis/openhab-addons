@@ -58,4 +58,8 @@ public class ManufacturerCharacteristic extends ReadOnlyStringCharacteristic {
     public static String getTag() {
         return ManufacturerCharacteristic.class.getSimpleName().replace("Characteristic", "");
     }
+    @Override
+    public State toState(String value) {
+        return super.toState(value);
+    }
 }

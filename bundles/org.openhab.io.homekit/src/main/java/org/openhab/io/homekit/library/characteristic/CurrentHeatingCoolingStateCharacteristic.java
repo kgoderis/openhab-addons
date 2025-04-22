@@ -58,4 +58,9 @@ public class CurrentHeatingCoolingStateCharacteristic extends ByteCharacteristic
     public JsonObject toReducedJson() {
         return super.toReducedJson();
     }
+
+    @Override
+    public State toState(Byte value) {
+        return super.toState(value);
+    }
 }

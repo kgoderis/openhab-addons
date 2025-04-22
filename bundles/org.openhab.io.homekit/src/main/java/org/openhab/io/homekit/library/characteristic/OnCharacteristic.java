@@ -8,6 +8,8 @@ import javax.json.JsonValue;
 
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.BooleanCharacteristic;
+import org.openhab.core.library.types.OnOffType;
+import org.openhab.core.types.State;
 
 /**
  * @author kgoderis
@@ -23,13 +25,14 @@ public class OnCharacteristic extends BooleanCharacteristic {
         super(service, value);
     }
 
-    public static String getType() {
-        return "00000025-0000-1000-8000-0026BB765291";
-    }
-
     @Override
     public String getInstanceType() {
         return getType();
+    }
+
+    @Override
+    public static String getType() {
+        return "00000025-0000-1000-8000-0026BB765291";
     }
 
     public static String getTag() {
@@ -64,5 +67,10 @@ public class OnCharacteristic extends BooleanCharacteristic {
     @Override
     public JsonObject toReducedJson() {
         return super.toReducedJson();
+    }
+
+    @Override
+    public State toState(Boolean value) {
+        return new OnOffType(value ? OnOffType.ON : OnOffType.OFF);
     }
 }
