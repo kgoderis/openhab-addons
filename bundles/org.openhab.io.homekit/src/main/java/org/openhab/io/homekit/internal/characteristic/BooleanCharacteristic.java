@@ -3,10 +3,8 @@
  */
 package org.openhab.io.homekit.internal.characteristic;
 
-import javax.json.JsonNumber;
+import javax.json.JsonObject;
 import javax.json.JsonValue;
-import javax.json.JsonValue.ValueType;
-
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.types.State;
@@ -53,13 +51,42 @@ public abstract class BooleanCharacteristic extends GenericCharacteristic<Boolea
         if (convertedState == null) {
             return null;
         }
-
-        return convertedState.equals(OnOffType.ON);
+        return convertedState == OnOffType.ON;
     }
 
     @Override
     public State toState(Boolean value) {
         return value ? OnOffType.ON : OnOffType.OFF;
+    }
+
+    @Override
+    public JsonObject toEventJson(Boolean value) {
+        return super.toEventJson(value);
+    }
+
+    @Override
+    public JsonObject toEventJson() {
+        return super.toEventJson();
+    }
+
+    @Override
+    public JsonValue toValueJson(Boolean value) {
+        return super.toValueJson(value);
+    }
+
+    @Override
+    public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType, boolean includeEvent) {
+        return super.toJson(includeMeta, includePermissions, includeType, includeEvent);
+    }
+
+    @Override
+    public JsonObject toJson() {
+        return super.toJson();
+    }
+
+    @Override
+    public JsonObject toReducedJson() {
+        return super.toReducedJson();
     }
 
     public static String getAcceptedItemType() {

@@ -1,5 +1,6 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import org.openhab.io.homekit.api.hap.Service;
@@ -27,5 +28,35 @@ public class CurrentTemperatureCharacteristic extends FloatCharacteristic {
 
     public static String getTag() {
         return CurrentTemperatureCharacteristic.class.getSimpleName().replace("Characteristic", "");
+    }
+
+    @Override
+    public JsonObject toEventJson(Double value) {
+        return super.toEventJson(value);
+    }
+
+    @Override
+    public JsonObject toEventJson() {
+        return super.toEventJson();
+    }
+
+    @Override
+    public JsonValue toValueJson(Double value) {
+        return super.toValueJson(value);
+    }
+
+    @Override
+    public JsonObject toJson() {
+        return super.toJson();
+    }
+
+    @Override
+    public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType, boolean includeEvent) {
+        return super.toJson(includeMeta, includePermissions, includeType, includeEvent);
+    }
+
+    @Override
+    public JsonObject toReducedJson() {
+        return super.toReducedJson();
     }
 }

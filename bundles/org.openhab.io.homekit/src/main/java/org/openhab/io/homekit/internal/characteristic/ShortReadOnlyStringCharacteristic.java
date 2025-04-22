@@ -6,7 +6,6 @@ package org.openhab.io.homekit.internal.characteristic;
 import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
-
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.types.State;
@@ -84,6 +83,21 @@ public abstract class ShortReadOnlyStringCharacteristic extends GenericCharacter
     @Override
     public State toState(String value) {
         return StringType.valueOf(value);
+    }
+
+    @Override
+    public JsonObject toEventJson(String value) {
+        return super.toEventJson(value);
+    }
+
+    @Override
+    public JsonObject toEventJson() {
+        return super.toEventJson();
+    }
+
+    @Override
+    public JsonValue toValueJson(String value) {
+        return super.toValueJson(value);
     }
 
     public static String getAcceptedItemType() {

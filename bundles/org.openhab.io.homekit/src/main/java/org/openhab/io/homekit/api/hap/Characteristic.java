@@ -2,7 +2,6 @@ package org.openhab.io.homekit.api.hap;
 
 import javax.json.JsonObject;
 import javax.json.JsonValue;
-
 import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.core.common.registry.Identifiable;
 import org.openhab.core.types.State;
@@ -46,6 +45,12 @@ public interface Characteristic<T> extends Identifiable<@NonNull CharacteristicU
      * @return true if the Characteristic is of the specified type
      */
     boolean isType(String aType);
+
+
+        // // Static method can't be called through instance
+        // static String getType() {
+        //     throw new UnsupportedOperationException("Must be implemented by characteristic class");
+        // }
 
     /**
      * Gets the instance type of this Characteristic.

@@ -345,6 +345,7 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
             throw new IllegalArgumentException("No Service found for serviceId: " + serviceId);
         }
         setService(foundService);
+        serviceAvailable = true;
         foundService.addChangeListener(this);
         
     }
@@ -461,15 +462,16 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
 
     protected void handleSpecificDispose() {
         // No additional cleanup needed for service handler
-        synchronized (serviceLock) {
-            if (service != null) {
-                try {
-                    service.removeChangeListener(this);
-                    logger.debug("{}Removed service change listener", LOG_CLEANUP);
-                } catch (Exception e) {
-                    logger.warn("{}Failed to remove service change listener: {}", LOG_CLEANUP, e.getMessage());
-                }
-                service = null;
+            synchronized (serviceLock) {
+                if (service != null) {
+                    try {
+                        service.removeChangeListener(this);
+                        logger.debug("{}Removed service change listener", LOG_CLEANUP);
+                    } catch (Exception e) {
+                        logger.warn("{}Failed to remove service change listener: {}", LOG_CLEANUP, e.getMessage());
+                    }
+                    service = null;
+                serviceAvailable = false; 
             }
         }
     }
@@ -664,19 +666,36 @@ protected String determineThingStatusDescription() {
     return null;
 }   
 
-
 @Override
 protected void handleAccessoryServiceAdded(AccessoryEvent event) {
-    synchronized (serviceLock) {
-        if (service == null && accessory != null) {
-            Service foundService = accessory.getService(serviceId);
-            if (foundService != null) {
-                setService(foundService);
-                foundService.addChangeListener(this);
+    synchronized (accessoryLock) {
+        if (accessory == null) {
+            Accessory foundAccessory = accessoryRegistry.get(new AccessoryUID(accessoryId));
+            if (foundAccessory != null) {
+                setAccessory(foundAccessory);
+                foundAccessory.addChangeListener(this);
+                accessoryAvailable = true;
                 validateAndUpdateState();
             } else {
-                logger.warn("{}Service not found in accessory after add event", LOG_EVENT);
-                updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Service not found");
+                logger.warn("{}Accessory not found in registry after add event", LOG_EVENT);
+                accessoryAvailable = false;
+                updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Accessory not found");
+            }
+        }
+
+        synchronized (serviceLock) {
+            if (service == null && accessory != null) {
+                Service foundService = accessory.getService(serviceId);
+                if (foundService != null) {
+                    setService(foundService);
+                    serviceAvailable = true;
+                    foundService.addChangeListener(this);
+                    validateAndUpdateState();
+                } else {
+                    serviceAvailable = false; 
+                    logger.warn("{}Service not found in accessory after add event", LOG_EVENT);
+                    updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Service not found");
+                }
             }
         }
     }
@@ -684,36 +703,69 @@ protected void handleAccessoryServiceAdded(AccessoryEvent event) {
 
 @Override
 protected void handleAccessoryServiceRemoved(AccessoryEvent event) {
-    synchronized (serviceLock) {
-        if (service != null) {
-            try {
-                service.removeChangeListener(this);
-            } catch (Exception e) {
-                logger.warn("{}Failed to remove service change listener: {}", LOG_EVENT, e.getMessage());
+    synchronized (accessoryLock) {
+        synchronized (accessoryLock) {
+            if (accessory != null) {
+                try {
+                    accessory.removeChangeListener(this);
+        } catch (Exception e) {
+                    logger.warn("{}Failed to remove accessory change listener: {}", LOG_EVENT, e.getMessage());
+                }
+                accessory = null;
+                accessoryAvailable = false;
+                updateState(ThingStatus.OFFLINE, ThingStatusDetail.GONE, "Accessory removed");
             }
-            service = null;
-            updateState(ThingStatus.OFFLINE, ThingStatusDetail.GONE, "Service removed");
+        }
+
+        synchronized (serviceLock) {
+            if (service != null) {
+                try {
+                    service.removeChangeListener(this);
+                } catch (Exception e) {
+                    logger.warn("{}Failed to remove service change listener: {}", LOG_EVENT, e.getMessage());
+                }
+                service = null;
+                serviceAvailable = false; 
+                updateState(ThingStatus.OFFLINE, ThingStatusDetail.GONE, "Service removed");
+            }   
         }
     }
     handleServiceRemoved();
-}   
+} 
 
 @Override
 protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
+    synchronized (accessoryLock) {
+        if (accessory != null) {
+            Service foundService = accessory.getService(serviceId);
+            if (foundService != null) {
+                accessoryAvailable = true;
+                validateAndUpdateState();
+                synchronizeChannels();
+            } else {
+                logger.warn("{}Service not found in accessory after change event", LOG_EVENT);
+                accessoryAvailable = false;
+                updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Accessory not found");
+            }
+        }
+    }
+
     synchronized (serviceLock) {
         if (service != null) {
             Service foundService = accessory.getService(serviceId);
             if (foundService != null) {
                 setService(foundService);
+                serviceAvailable = true;
                 validateAndUpdateState();
                 synchronizeChannels();
             } else {
+                serviceAvailable = false; 
                 logger.warn("{}Service not found in accessory after change event", LOG_EVENT);
                 updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Service not found");
             }
         }
+        }
     }
-}
 
     /**
      * Updates the state of the thing with detailed information.
@@ -1164,9 +1216,10 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
         }
         return Collections.emptySet();
     }
-    
-    protected String getChannelId(Characteristic<?> characteristic) {
-        return homekitChannelTypeProvider.getCharacteristicTag(characteristic.getInstanceType());
+
+    @Override
+    protected ChannelUID getChannelUID(Characteristic<?> characteristic) {
+        return new ChannelUID(thing.getUID(), homekitChannelTypeProvider.getCharacteristicTag(characteristic.getInstanceType()));
     }
 
     /**
@@ -2301,17 +2354,23 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
 
     protected void performSpecificRecovery() throws Exception {
         // No additional recovery steps needed for service handler
-        synchronized (serviceLock) {
-            if (service == null && accessory != null) {
-                Service foundService = accessory.getService(serviceId);
-                if (foundService != null) {
-                    setService(foundService);
-                    foundService.addChangeListener(this);
-                    logger.debug("{}Recovered service connection", LOG_INIT);
+                synchronized (serviceLock) {
+                    if (service == null && accessory != null) {
+                        Service foundService = accessory.getService(serviceId);
+                        if (foundService != null) {
+                            setService(foundService);
+                    serviceAvailable = true;
+                            foundService.addChangeListener(this);
+                            logger.debug("{}Recovered service connection", LOG_INIT);
+                        }
+                else {
+                    serviceAvailable = false; 
+                    logger.warn("{}Service not found in accessory after recovery", LOG_EVENT);
+                    updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Service not found");
                 }
             }
         }
-    }   
+    }
 
     /**
      * Finds the characteristic associated with a channel.
@@ -2376,6 +2435,7 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
     private void setService(@Nullable Service service) {
         synchronized (serviceLock) {
             this.service = service;
+            serviceAvailable = (service != null); 
         }
         synchronizeChannels();
     }

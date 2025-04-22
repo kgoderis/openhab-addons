@@ -17,7 +17,6 @@ import org.openhab.io.homekit.internal.provider.HomekitThingTypeProvider;
 @NonNullByDefault
 public class AccessoryThingHandler extends AbstractHomekitHandler {
     // Accessory-specific fields
-    private volatile boolean accessoryAvailable = false;
     private final HomekitChannelGroupTypeProvider homekitChannelGroupTypeProvider;
 
     public AccessoryThingHandler(Thing thing, AccessoryServerRegistry serverRegistry,
@@ -55,6 +54,9 @@ public class AccessoryThingHandler extends AbstractHomekitHandler {
                 logger.info("Thing has no channels, traversing services of accessory");
                 for (Service service : accessory.getServices()) {
                     addChannelGroupForService(service);
+                    for (Characteristic<?> characteristic : service.getCharacteristics()) {
+                        addChannelForCharacteristic(characteristic);
+                    }
                 }
             } else {
                 // traverse channels and add them to the characteristicMap
@@ -110,6 +112,77 @@ public class AccessoryThingHandler extends AbstractHomekitHandler {
         }
     }
 
+    protected void addChannelGroupForService(Service service) {
+        // Implementation needed for channel group creation
+        if (service == null) {
+            return;
+        }
+
+        try {
+            String serviceTag = homekitThingTypeProvider.getServiceTag(service.getInstanceType());
+            String groupId = serviceTag + "_" + service.getInstanceId();
+
+            // Create channel group for service
+            ChannelGroupBuilder groupBuilder = ChannelGroupBuilder
+                    .create(new ChannelGroupUID(thing.getUID(), groupId), service.getDescription())
+                    .withLabel(service.getDescription());
+
+            // Add channel group to thing
+            ThingBuilder thingBuilder = editThing();
+            thingBuilder.withChannelGroup(groupBuilder.build());
+            updateThing(thingBuilder.build());
+
+            logger.debug("{}Added channel group for service {} with ID {}", LOG_PREFIX, service.getDescription(), groupId);
+        } catch (Exception e) {
+            logger.warn("{}Warning - Type: Channel Group, Message: Failed to add channel group for service {}: {}", 
+                    LOG_PREFIX, service.getInstanceId(), e.getMessage());
+        }
+    }
+
+    // private void addChannelGroupForService(Service service) {
+    //     logger.info("Adding channel group for service: {}", service.getUID());
+    //     try {
+    //         String groupId = homekitThingTypeProvider.getServiceTag(service.getInstanceType()) + "."
+    //                 + service.getInstanceId();
+    //         ChannelGroupTypeUID channelGroupTypeUID = homekitChannelGroupTypeProvider
+    //                 .getChannelGroupTypeUID(service.getInstanceType());
+
+    //         // Create a list to hold all channels for this group
+    //         List<Channel> channels = new ArrayList<>();
+
+    //         // Add channels for each characteristic
+    //         for (Characteristic<?> characteristic : service.getCharacteristics()) {
+    //             ChannelUID channelUID = new ChannelUID(thing.getUID(), groupId,
+    //                     homekitChannelTypeProvider.getCharacteristicTag(characteristic.getInstanceType()));
+    //             ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
+    //                     characteristic.getInstanceType());
+
+    //             ChannelType channelType = homekitChannelTypeProvider.getChannelType(channelTypeUID, null);
+    //             if (channelType == null) {
+    //                 logger.warn("No ChannelType found for characteristic {}", characteristic.getUID());
+    //                 continue;
+    //             }
+
+    //             Channel channel = ChannelBuilder.create(channelUID).withType(channelTypeUID)
+    //                     .withLabel(characteristic.getDescription()).build();
+
+    //             channels.add(channel);
+    //             characteristicMap.put(channel, characteristic);
+    //         }
+
+    //         // Create a ThingBuilder to modify the thing
+    //         ThingBuilder thingBuilder = editThing();
+
+    //         // Add all channels at once
+    //         channels.forEach(thingBuilder::withChannel);
+
+    //         // Update the thing with all new channels
+    //         updateThing(thingBuilder.build());
+
+    //     } catch (IllegalArgumentException | HomekitException e) {
+    //         logger.warn("Error adding channel group for service {}: {}", service.getUID(), e.getMessage());
+    //     }
+    // }
 
     @Override
     protected void handleSpecificDispose() {
@@ -159,57 +232,6 @@ public class AccessoryThingHandler extends AbstractHomekitHandler {
         return null;
     }
 
-    // ========== Event Handling Methods ==========
-    @Override
-    protected void handleAccessoryServiceAdded(AccessoryEvent event) {
-        synchronized (accessoryLock) {
-            if (accessory == null) {
-                Accessory foundAccessory = accessoryRegistry.get(new AccessoryUID(accessoryId));
-                if (foundAccessory != null) {
-                    setAccessory(foundAccessory);
-                    foundAccessory.addChangeListener(this);
-                    validateAndUpdateState();
-                } else {
-                    logger.warn("{}Accessory not found in registry after add event", LOG_EVENT);
-                    updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Accessory not found");
-                }
-            }
-        }
-    }
-
-    @Override
-    protected void handleAccessoryServiceRemoved(AccessoryEvent event) {
-        synchronized (accessoryLock) {
-            if (accessory != null) {
-                try {
-                    accessory.removeChangeListener(this);
-                } catch (Exception e) {
-                    logger.warn("{}Failed to remove accessory change listener: {}", LOG_EVENT, e.getMessage());
-                }
-                accessory = null;
-                updateState(ThingStatus.OFFLINE, ThingStatusDetail.GONE, "Accessory removed");
-            }
-        }
-        handleServiceRemoved();
-    }
-
-    @Override
-    protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
-        synchronized (accessoryLock) {
-            if (accessory != null) {
-                Service foundService = accessory.getService(serviceId);
-                if (foundService != null) {
-                    setService(foundService);
-                    validateAndUpdateState();
-                    synchronizeChannels();
-                } else {
-                    logger.warn("{}Service not found in accessory after change event", LOG_EVENT);
-                    updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Service not found");
-                }
-            }
-        }
-    }
-
     // ========== Channel Management Methods ==========
     @Override
     protected Set<Characteristic<?>> getCurrentCharacteristics() {
@@ -227,8 +249,12 @@ public class AccessoryThingHandler extends AbstractHomekitHandler {
     }
 
     @Override
-    protected String getChannelId(Characteristic<?> characteristic) {
-        return characteristic.getUID().getHomekitId();
+    protected ChannelUID getChannelUID(Characteristic<?> characteristic) {
+        String groupId = homekitThingTypeProvider.getServiceTag(characteristic.getService().getInstanceType()) + "."
+                + characteristic.getService().getInstanceId();
+
+        return new ChannelUID(thing.getUID(), groupId,
+            homekitChannelTypeProvider.getCharacteristicTag(characteristic.getInstanceType()));
     }
 
     @Override
@@ -249,4 +275,11 @@ public class AccessoryThingHandler extends AbstractHomekitHandler {
     protected void performSpecificRecovery() throws Exception {
         // no additional recovery steps needed for accessory handler
     }
+
+
+
+
+
+
+ 
 }

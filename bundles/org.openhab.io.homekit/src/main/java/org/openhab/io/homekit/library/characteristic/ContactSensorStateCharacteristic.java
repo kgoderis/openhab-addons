@@ -1,5 +1,6 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import org.openhab.core.library.types.OpenClosedType;
@@ -37,6 +38,36 @@ public class ContactSensorStateCharacteristic extends EnumCharacteristic {
     @Override
     public State toState(Integer value) {
         return value == 0 ? OpenClosedType.OPEN : OpenClosedType.CLOSED;
+    }
+
+    @Override
+    public JsonObject toEventJson(Integer value) {
+        return super.toEventJson(value);
+    }
+
+    @Override
+    public JsonObject toEventJson() {
+        return super.toEventJson();
+    }
+
+    @Override
+    public JsonValue toValueJson(Integer value) {
+        return super.toValueJson(value);
+    }
+
+    @Override
+    public JsonObject toJson() {
+        return super.toJson();
+    }
+
+    @Override
+    public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType, boolean includeEvent) {
+        return super.toJson(includeMeta, includePermissions, includeType, includeEvent);
+    }
+
+    @Override
+    public JsonObject toReducedJson() {
+        return super.toReducedJson();
     }
 
     public static String getTag() {

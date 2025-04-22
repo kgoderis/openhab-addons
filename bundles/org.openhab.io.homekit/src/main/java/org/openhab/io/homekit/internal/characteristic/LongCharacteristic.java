@@ -3,7 +3,6 @@ package org.openhab.io.homekit.internal.characteristic;
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
-
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
@@ -60,6 +59,21 @@ public abstract class LongCharacteristic extends GenericCharacteristic<Long> {
         base = enrich(base, "minValue", minValue);
         base = enrich(base, "maxValue", maxValue);
         return enrich(base, "minStep", minStep);
+    }
+
+    @Override
+    public JsonObject toEventJson() {
+        return super.toEventJson();
+    }
+
+    @Override
+    public JsonObject toEventJson(Long value) {
+        return super.toEventJson(value);
+    }
+
+    @Override
+    public JsonValue toValueJson(Long value) {
+        return super.toValueJson(value);
     }
 
     @Override

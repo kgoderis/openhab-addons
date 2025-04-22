@@ -13,6 +13,7 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonString;
 import javax.json.JsonValue;
+import javax.json.JsonBuilderFactory;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.core.types.State;
@@ -447,5 +448,25 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
                 }
             }
         }
+    }
+
+    @Override
+    public String getType() {
+        return type;
+    }
+
+    @Override
+    public boolean isWritable() {
+        return isWritable;
+    }
+
+    @Override
+    public boolean isReadable() {
+        return isReadable;
+    }
+
+    @Override
+    public boolean hasEvents() {
+        return hasEvents;
     }
 }
