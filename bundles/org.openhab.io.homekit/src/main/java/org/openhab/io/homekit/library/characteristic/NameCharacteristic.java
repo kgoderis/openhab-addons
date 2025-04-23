@@ -18,13 +18,14 @@ public class NameCharacteristic extends ReadOnlyStringCharacteristic {
         super(service, value);
     }
 
+    @Override
     public static String getType() {
         return TYPE;
     }
 
     @Override
     public String getInstanceType() {
-        return getType();
+        return TYPE;
     }
 
     @Override

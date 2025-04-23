@@ -14,9 +14,7 @@ package org.openhab.io.homekit.api.factory;
 
 import java.util.HashSet;
 import java.util.Set;
-
 import javax.json.JsonValue;
-
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -37,7 +35,6 @@ import org.openhab.io.homekit.api.hap.Service;
  */
 @NonNullByDefault
 public interface HomekitFactory {
-
     /**
      * Returns whether the factory is able to create an accessory for the given type.
      *
@@ -46,23 +43,15 @@ public interface HomekitFactory {
      */
     boolean supportsThingType(ThingTypeUID thingTypeUID);
 
+    ThingTypeUID[] getSupportedThingTypes();
+
     boolean supportsServiceType(String serviceType);
 
-    boolean supportsCharacteristicsType(String type);
+    Set<String> getSupportedServiceTypes();
 
-    // /**
-    // * Creates a new {@link Accessory} instance.
-    // * <p>
-    // * This method is only called if the {@link HomekitFactory} supports the type of the given thing.
-    // * <p>
-    // *
-    // * @param thing the thing for which a new handler must be registered
-    // * @return the created thing handler instance, not null
-    // * @throws Exception
-    // * @throws IllegalStateException if the handler instance could not be created
-    // */
-    // @Nullable
-    // Accessory createAccessory(Thing thing, LocalAccessoryServer server) throws Exception;
+    boolean supportsCharacteristicsType(String characteristicType);
+
+    Set<String> getSupportedCharacteristicTypes();
 
     @Nullable
     Accessory createAccessory(Class<? extends Accessory> accessoryClass, AccessoryServer server, long instanceId,
@@ -89,51 +78,31 @@ public interface HomekitFactory {
     @Nullable
     Characteristic<?> createCharacteristic(String characteristicsType, Service service, long instanceId);
 
-    /**
-     * Creates a characteristic instance from a JSON value.
-     * 
-     * @param service The service to create the characteristic for
-     * @param value The JSON value containing characteristic data
-     * @return The created characteristic instance, or null if creation fails
-     */
     @Nullable
     Characteristic<?> createCharacteristic(Service service, JsonValue value);
 
-    void addAccessory(ThingTypeUID type, Class<? extends Accessory> accessoryClass);
 
-    void addService(ThingTypeUID type);
+    void addAccessory(ThingTypeUID thingTypeUID, Class<? extends Accessory> accessoryClass);
 
-    void addService(ThingTypeUID type, String serviceType);
+    void addService(ThingTypeUID thingTypeUID);
 
-    void addService(ThingTypeUID type, Class<? extends Service> serviceClass);
+    void addService(ThingTypeUID thingTypeUID, String serviceType);
+
+    void addService(ThingTypeUID thingTypeUID, Class<? extends Service> serviceClass);
 
     void addService(String serviceType, Class<? extends Service> serviceClass);
 
     void addService(Class<@NonNull ? extends Service> serviceClass);
 
-    // void addServiceWithTag(String tag, Class<? extends Service> serviceClass);
+    void addCharacteristic(ChannelTypeUID channelTypeUID, String characteristicType);
 
-    void addCharacteristic(ChannelTypeUID type, String characateristicType);
+    void addCharacteristic(ChannelTypeUID channelTypeUID, Class<@NonNull ? extends Characteristic<?>> characteristicClass);
 
-    void addCharacteristic(ChannelTypeUID type, Class<@NonNull ? extends Characteristic<?>> characteristicClass);
-
-    void addCharacteristic(String characateristicType, Class<? extends Characteristic<?>> characteristicClass);
+    void addCharacteristic(String characteristicType, Class<? extends Characteristic<?>> characteristicClass);
 
     void addCharacteristic(Class<@NonNull ? extends Characteristic<?>> characteristicClass);
 
-    // void addCharacteristicWithTag(String tag, Class<? extends Characteristic<?>> characteristicClass);
-
-    HashSet<String> getCharacteristicTypes(@Nullable ChannelTypeUID type);
-
-    ThingTypeUID[] getSupportedThingTypes();
-
-    Set<String> getSupportedServiceTypes();
-
-    boolean isServiceSupported(String serviceType);
-
-    Set<String> getSupportedCharacteristicTypes();
-
-    boolean isCharacteristicSupported(String characteristicType);
+    HashSet<String> getCharacteristicTypes(@Nullable ChannelTypeUID channelTypeUID);
 
     @Nullable
     String getCharacteristicAcceptedItemType(String characteristicType);
@@ -142,16 +111,16 @@ public interface HomekitFactory {
     ChannelTypeUID getChannelTypeUID(String characteristicType);
 
     @Nullable
-    Class<? extends Service> getService(String characteristicType);
+    Class<? extends Service> getService(String serviceType);
 
     @Nullable
-    Class<? extends Characteristic<?>> getCharacteristic(String serviceType);
+    Class<? extends Characteristic<?>> getCharacteristic(String characteristicType);
 
     @Nullable
-    String getServiceTypeFromTag(String firstTag);
+    String getServiceTypeFromTag(String tag);
 
     @Nullable
-    String getCharacteristicTypeFromTag(String firstTag);
+    String getCharacteristicTypeFromTag(String tag);
 
     @Nullable
     String getTagFromServiceType(String serviceType);
@@ -160,5 +129,5 @@ public interface HomekitFactory {
     String getTagFromCharacteristicType(String characteristicType);
 
     @Nullable
-    String getServiceInstanceType(String serviceType);
+    String getServiceInstanceType(String characteristicType);
 }

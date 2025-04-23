@@ -16,16 +16,12 @@ import org.openhab.io.homekit.library.service.DimmableLightBulbService;
 import org.openhab.io.homekit.library.service.LightBulbService;
 import org.openhab.io.homekit.library.service.ThermostatService;
 import org.openhab.io.homekit.library.service.WindowCoveringService;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 
 @Component(immediate = true, service = HomekitFactory.class)
 public class MagicHomekitFactory extends BaseHomekitFactory {
-
-    @Activate
-    public MagicHomekitFactory() {
-        super();
-
+    @Override
+    protected void initializeMappers() {
         this.addService(MagicBindingConstants.THING_TYPE_ON_OFF_LIGHT, LightBulbService.class);
         this.addService(MagicBindingConstants.THING_TYPE_DIMMABLE_LIGHT, DimmableLightBulbService.class);
         this.addService(MagicBindingConstants.THING_TYPE_COLOR_LIGHT, ColorLightBulbService.class);

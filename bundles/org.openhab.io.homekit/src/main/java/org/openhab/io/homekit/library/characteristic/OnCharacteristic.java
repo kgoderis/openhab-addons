@@ -28,12 +28,12 @@ public class OnCharacteristic extends BooleanCharacteristic {
     }
 
     @Override
-    public String getInstanceType() {
-        return getType();
+    public static String getType() {
+        return TYPE;
     }
 
     @Override
-    public String getType() {
+    public String getInstanceType() {
         return TYPE;
     }
 

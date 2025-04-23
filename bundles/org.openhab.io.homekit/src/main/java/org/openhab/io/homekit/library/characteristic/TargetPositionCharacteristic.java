@@ -18,13 +18,14 @@ public class TargetPositionCharacteristic extends IntegerCharacteristic {
         super(service, value);
     }
 
+    @Override
     public static String getType() {
         return TYPE;
     }
 
     @Override
     public String getInstanceType() {
-        return getType();
+        return TYPE;
     }
 
     public static String getTag() {

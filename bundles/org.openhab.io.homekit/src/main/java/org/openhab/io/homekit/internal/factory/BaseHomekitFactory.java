@@ -31,109 +31,260 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
 
     protected static final Logger logger = LoggerFactory.getLogger(BaseHomekitFactory.class);
 
-    private HashMap<ThingTypeUID, Class<? extends Accessory>> thingTypeAccessoryClassMapper = new HashMap<ThingTypeUID, Class<? extends Accessory>>();
-    private HashMap<ThingTypeUID, HashSet<String>> thingTypeServiceTypesMapper = new HashMap<ThingTypeUID, @NonNull HashSet<String>>();
-    private HashMap<ChannelTypeUID, HashSet<String>> channelTypeCharacteristicTypesMapper = new HashMap<ChannelTypeUID, @NonNull HashSet<String>>();
-    private HashMap<String, Class<? extends Service>> serviceTypeServiceClassMapper = new HashMap<String, Class<@NonNull ? extends Service>>();
-    private HashMap<String, Class<? extends Characteristic<?>>> characteristicTypeCharacteristicClassMapper = new HashMap<String, Class<@NonNull ? extends Characteristic<?>>>();
-    private Map<String, HashSet<Class<? extends Service>>> tagServiceClassMapper = new HashMap<>();
-    private Map<String, HashSet<Class<? extends Characteristic<?>>>> tagCharacteristicClassMapper = new HashMap<>();
+    // 1. Metadata classes and mappers
+    private static class ServiceMetadata {
+        final String serviceType;
+        final String tag;
+        final Class<? extends Service> serviceClass;
+        final String instanceType;
 
-    public BaseHomekitFactory() {
+        ServiceMetadata(Class<? extends Service> serviceClass, String serviceType, String tag, String instanceType) {
+            this.serviceClass = serviceClass;
+            this.serviceType = serviceType;
+            this.tag = tag;
+            this.instanceType = instanceType;
+        }
     }
 
-    @Override
-    public boolean supportsThingType(@NonNull ThingTypeUID thingTypeUID) {
-        return thingTypeServiceTypesMapper.containsKey(thingTypeUID);
+    private static class CharacteristicMetadata {
+        final String characteristicType;
+        final String tag;
+        final Class<? extends Characteristic<?>> characteristicClass;
+        final String acceptedItemType;
+        final String instanceType;
+        final ChannelTypeUID channelTypeUID;
+
+        CharacteristicMetadata(Class<? extends Characteristic<?>> characteristicClass, String characteristicType, String tag, 
+                String acceptedItemType, String instanceType, ChannelTypeUID channelTypeUID) {
+            this.characteristicClass = characteristicClass;
+            this.characteristicType = characteristicType;
+            this.tag = tag;
+            this.acceptedItemType = acceptedItemType;
+            this.instanceType = instanceType;
+            this.channelTypeUID = channelTypeUID;
+        }
     }
 
-    @Override
-    public ThingTypeUID @NonNull [] getSupportedThingTypes() {
-        return thingTypeServiceTypesMapper.keySet().toArray(new ThingTypeUID[0]);
+    private final Map<ThingTypeUID, Class<? extends Accessory>> thingTypeAccessoryClassMapper = new HashMap<>();
+    private final Map<ThingTypeUID, Set<String>> thingTypeServiceTypesMapper = new HashMap<>();
+    private final Map<ChannelTypeUID, Set<String>> channelTypeCharacteristicTypesMapper = new HashMap<>();
+    private final Map<String, ServiceMetadata> serviceMetadataMapper = new HashMap<>();
+    private final Map<String, CharacteristicMetadata> characteristicMetadataMapper = new HashMap<>();
+    private final Map<String, Set<Class<? extends Service>>> tagServiceClassMapper = new HashMap<>();
+    private final Map<String, Set<Class<? extends Characteristic<?>>>> tagCharacteristicClassMapper = new HashMap<>();
+
+    // 2. Constructor and initialization
+    protected BaseHomekitFactory() {
+        initializeMappers();
     }
 
-    @Override
-    public boolean supportsServiceType(@NonNull String serviceType) {
-        return serviceTypeServiceClassMapper.containsKey(serviceType);
-    }
+    protected abstract void initializeMappers();
 
-    @Override
-    public boolean supportsCharacteristicsType(@NonNull String characteristicsType) {
-        return characteristicTypeCharacteristicClassMapper.containsKey(characteristicsType);
-    }
-
-    // @Override
-    // public @Nullable Accessory createAccessory(@NonNull Thing thing, @NonNull LocalAccessoryServer server)
-    // throws Exception {
-
-    // ThingTypeUID thingType = thing.getThingTypeUID();
-
-    // Class<? extends Accessory> accessoryClass = thingTypeAccessoryClassMapper.get(thingType);
-
-    // if (accessoryClass == null) {
-    // accessoryClass = ThingAccessory.class;
-    // }
-
-    // Accessory accessory = createAccessory(accessoryClass, server, server.getInstanceId(), true);
-
-    // if (accessory != null && (accessory instanceof ThingAccessory)) {
-    // ThingAccessory thingAccessory = (ThingAccessory) accessory;
-    // thingAccessory.setThingUID(thing.getUID());
-    // logger.info("Linked Thing {} to Accessory {} of Type {}", thing.getUID(), accessory.getUID(),
-    // accessory.getClass().getSimpleName());
-
-    // HashSet<String> serviceTypes = thingTypeServiceTypesMapper.get(thingType);
-    // for (String serviceType : serviceTypes) {
-    // if (thingAccessory.getService(serviceType) == null && thingAccessory.isExtensible()) {
-    // thingAccessory
-    // .addService(createService(serviceType, thingAccessory, true, thingAccessory.getLabel()));
-    // }
-
-    // Service service = (Service) thingAccessory.getService(serviceType);
-
-    // if (service != null) {
-    // for (Channel channel : thing.getChannels()) {
-    // HashSet<String> characteristicTypes = channelTypeCharacteristicTypesMapper
-    // .get(channel.getChannelTypeUID());
-
-    // for (String characteristicType : characteristicTypes) {
-    // if (service.getCharacteristic(characteristicType) == null && service.isExtensible()) {
-    // service.addCharacteristic(createCharacteristic(characteristicType, service));
-    // }
-
-    // Characteristic<?> characteristic = (Characteristic<?>) service
-    // .getCharacteristic(characteristicType);
-    // if (characteristic != null) {
-    // characteristic.setChannelUID(channel.getUID());
-    // logger.debug("Linked Channel {} to Characteristic {} of Type {}", channel.getUID(),
-    // characteristic.getUID(), characteristic.getClass().getSimpleName());
-    // }
-    // }
-    // }
-    // }
-    // }
-
-    // return accessory;
-    // }
-
-    @Override
-    public @Nullable Accessory createAccessory(Class<? extends Accessory> accessoryClass,
-            @NonNull AccessoryServer server, long instanceId, boolean extend) {
-        try {
-            Accessory accessory = accessoryClass.getConstructor(AccessoryServer.class, long.class, boolean.class)
-                    .newInstance(server, instanceId, extend);
-            logger.debug("Created an Accessory {} of Type {}, with instanceId {}", accessory.getUID(),
-                    accessory.getClass().getSimpleName(), accessory.getAccessoryId());
-            return accessory;
-        } catch (NoSuchMethodException e) {
-            logger.warn(
-                    "Accessory {} is missing a valid constructor of type (HomekitCommunicationManager.class, AccessoryServer.class, long.class, boolean.class)",
-                    accessoryClass.getSimpleName());
-        } catch (Exception e) {
-            e.printStackTrace();
+    // 3. Metadata population methods
+    private void populateServiceMetadata(Class<? extends Service> serviceClass) {
+        if (serviceClass == null) {
+            logger.error("Cannot populate metadata for null service class");
+            return;
         }
 
-        return null;
+        try {
+            Method getTypeMethod = serviceClass.getMethod("getType");
+            Method getTagMethod = serviceClass.getMethod("getTag");
+            Method getInstanceTypeMethod = serviceClass.getMethod("getInstanceType");
+            
+            String type = (String) getTypeMethod.invoke(null);
+            String tag = (String) getTagMethod.invoke(null);
+            String instanceType = (String) getInstanceTypeMethod.invoke(null);
+            
+            if (type == null || type.isEmpty()) {
+                logger.warn("Service {} has empty or null type, using generated UUID", serviceClass.getSimpleName());
+                type = UUID5.fromNamespaceAndString(UUID5.NAMESPACE_SERVICE, serviceClass.getName()).toString();
+            }
+            
+            if (tag == null || tag.isEmpty()) {
+                logger.warn("Service {} has empty or null tag, using type as tag", serviceClass.getSimpleName());
+                tag = type;
+            }
+            
+            if (instanceType == null || instanceType.isEmpty()) {
+                logger.warn("Service {} has empty or null instance type, using default", serviceClass.getSimpleName());
+                instanceType = "default";
+            }
+            
+            registerServiceMetadata(serviceClass, type, tag, instanceType);
+        } catch (NoSuchMethodException e) {
+            logger.error("Service {} is missing required methods: {}", serviceClass.getSimpleName(), e.getMessage());
+        } catch (IllegalAccessException e) {
+            logger.error("Cannot access methods for service {}: {}", serviceClass.getSimpleName(), e.getMessage());
+        } catch (InvocationTargetException e) {
+            logger.error("Error invoking methods for service {}: {}", serviceClass.getSimpleName(), e.getMessage());
+        } catch (Exception e) {
+            logger.error("Unexpected error populating service metadata for {}: {}", serviceClass.getSimpleName(), e.getMessage());
+        }
+    }
+
+    private void populateCharacteristicMetadata(Class<? extends Characteristic<?>> characteristicClass) {
+        if (characteristicClass == null) {
+            logger.error("Cannot populate metadata for null characteristic class");
+            return;
+        }
+
+        try {
+            Method getTypeMethod = characteristicClass.getMethod("getType");
+            Method getTagMethod = characteristicClass.getMethod("getTag");
+            Method getAcceptedItemTypeMethod = characteristicClass.getMethod("getAcceptedItemType");
+            Method getInstanceTypeMethod = characteristicClass.getMethod("getInstanceType");
+            Method getChannelTypeUIDMethod = characteristicClass.getMethod("getChannelTypeUID");
+            
+            String type = (String) getTypeMethod.invoke(null);
+            String tag = (String) getTagMethod.invoke(null);
+            String acceptedItemType = (String) getAcceptedItemTypeMethod.invoke(null);
+            String instanceType = (String) getInstanceTypeMethod.invoke(null);
+            ChannelTypeUID channelTypeUID = (ChannelTypeUID) getChannelTypeUIDMethod.invoke(null);
+            
+            if (type == null || type.isEmpty()) {
+                logger.warn("Characteristic {} has empty or null type, using generated UUID", characteristicClass.getSimpleName());
+                type = UUID5.fromNamespaceAndString(UUID5.NAMESPACE_CHARACTERISTIC, characteristicClass.getName()).toString();
+            }
+            
+            if (tag == null || tag.isEmpty()) {
+                logger.warn("Characteristic {} has empty or null tag, using type as tag", characteristicClass.getSimpleName());
+                tag = type;
+            }
+            
+            if (acceptedItemType == null || acceptedItemType.isEmpty()) {
+                logger.warn("Characteristic {} has empty or null accepted item type, using default", characteristicClass.getSimpleName());
+                acceptedItemType = "default";
+            }
+            
+            if (instanceType == null || instanceType.isEmpty()) {
+                logger.warn("Characteristic {} has empty or null instance type, using default", characteristicClass.getSimpleName());
+                instanceType = "default";
+            }
+            
+            if (channelTypeUID == null) {
+                logger.warn("Characteristic {} has null channel type UID, using generated one", characteristicClass.getSimpleName());
+                channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID, type);
+            }
+            
+            registerCharacteristicMetadata(characteristicClass, type, tag, acceptedItemType, instanceType, channelTypeUID);
+        } catch (NoSuchMethodException e) {
+            logger.error("Characteristic {} is missing required methods: {}", characteristicClass.getSimpleName(), e.getMessage());
+        } catch (IllegalAccessException e) {
+            logger.error("Cannot access methods for characteristic {}: {}", characteristicClass.getSimpleName(), e.getMessage());
+        } catch (InvocationTargetException e) {
+            logger.error("Error invoking methods for characteristic {}: {}", characteristicClass.getSimpleName(), e.getMessage());
+        } catch (Exception e) {
+            logger.error("Unexpected error populating characteristic metadata for {}: {}", characteristicClass.getSimpleName(), e.getMessage());
+        }
+    }
+
+    protected void registerServiceMetadata(Class<? extends Service> serviceClass, String serviceType, 
+            String tag, String instanceType) {
+        ServiceMetadata metadata = new ServiceMetadata(serviceClass, serviceType, tag, instanceType);
+        serviceMetadataMapper.put(serviceType, metadata);
+        tagServiceClassMapper.computeIfAbsent(tag, k -> new HashSet<>()).add(serviceClass);
+    }
+
+    protected void registerCharacteristicMetadata(Class<? extends Characteristic<?>> characteristicClass, 
+            String characteristicType, String tag, String acceptedItemType, String instanceType, ChannelTypeUID channelTypeUID) {
+        CharacteristicMetadata metadata = new CharacteristicMetadata(characteristicClass, characteristicType, tag, 
+                acceptedItemType, instanceType, channelTypeUID);
+        characteristicMetadataMapper.put(characteristicType, metadata);
+        tagCharacteristicClassMapper.computeIfAbsent(tag, k -> new HashSet<>()).add(characteristicClass);
+    }
+
+    // 4. Service-related methods
+    @Override
+    public void addService(@NonNull ThingTypeUID thingTypeUID, @NonNull Class<@NonNull ? extends Service> serviceClass) {
+        String serviceType = getServiceType(serviceClass);
+        addService(thingTypeUID, serviceType);
+        if (!serviceMetadataMapper.containsKey(serviceType)) {
+            populateServiceMetadata(serviceClass);
+        }
+    }
+
+    @Override
+    public void addService(@NonNull Class<@NonNull ? extends Service> serviceClass) {
+        String serviceType = getServiceType(serviceClass);
+        addService(serviceType, serviceClass);
+        if (!serviceMetadataMapper.containsKey(serviceType)) {
+            populateServiceMetadata(serviceClass);
+        }
+    }
+
+    @Override
+    public void addService(@NonNull ThingTypeUID thingType, @NonNull String serviceType) {
+        Set<String> currentTypes = thingTypeServiceTypesMapper.get(thingType);
+        if (currentTypes == null) {
+            currentTypes = new HashSet<String>();
+        }
+        currentTypes.add(serviceType);
+        thingTypeServiceTypesMapper.put(thingType, currentTypes);
+    }
+
+    @Override
+    public void addService(@NonNull String serviceType, @NonNull Class<@NonNull ? extends Service> serviceClass) {
+        if (!serviceMetadataMapper.containsKey(serviceType)) {
+            populateServiceMetadata(serviceClass);
+        }
+    }
+
+    @Override
+    public void addServiceWithTag(String tag, Class<? extends Service> serviceClass) {
+        tagServiceClassMapper.computeIfAbsent(tag, k -> new HashSet<>()).add(serviceClass);
+        populateServiceMetadata(serviceClass);
+    }
+
+    // 5. Characteristic-related methods
+    @Override
+    public void addCharacteristic(@NonNull ChannelTypeUID channelTypeUID,
+            @NonNull Class<@NonNull ? extends Characteristic<?>> characteristicClass) {
+        String characteristicType = getCharacteristicType(characteristicClass);
+        addCharacteristic(channelTypeUID, characteristicType);
+        if (!characteristicMetadataMapper.containsKey(characteristicType)) {
+            populateCharacteristicMetadata(characteristicClass);
+        }
+    }
+
+    @Override
+    public void addCharacteristic(@NonNull Class<@NonNull ? extends Characteristic<?>> characteristicClass) {
+        String characteristicType = getCharacteristicType(characteristicClass);
+        addCharacteristic(characteristicType, characteristicClass);
+        if (!characteristicMetadataMapper.containsKey(characteristicType)) {
+            populateCharacteristicMetadata(characteristicClass);
+        }
+    }
+
+    @Override
+    public void addCharacteristic(@NonNull ChannelTypeUID channelTypeUID, @NonNull String characteristicType) {
+        Set<String> currentTypes = channelTypeCharacteristicTypesMapper.get(channelTypeUID);
+        if (currentTypes == null) {
+            currentTypes = new HashSet<String>();
+        }
+        currentTypes.add(characteristicType);
+        channelTypeCharacteristicTypesMapper.put(channelTypeUID, currentTypes);
+    }
+
+    @Override
+    public void addCharacteristic(@NonNull String characteristicType,
+            @NonNull Class<@NonNull ? extends Characteristic<?>> characteristicClass) {
+        if (!characteristicMetadataMapper.containsKey(characteristicType)) {
+            populateCharacteristicMetadata(characteristicClass);
+        }
+    }
+
+    @Override
+    public void addCharacteristicWithTag(String tag, Class<? extends Characteristic<?>> characteristicClass) {
+        tagCharacteristicClassMapper.computeIfAbsent(tag, k -> new HashSet<>()).add(characteristicClass);
+        populateCharacteristicMetadata(characteristicClass);
+    }
+
+    // 6. Accessory-related methods
+    @Override
+    public void addAccessory(@NonNull ThingTypeUID thingTypeUID,
+            @NonNull Class<? extends org.openhab.io.homekit.api.hap.Accessory> accessoryClass) {
+        thingTypeAccessoryClassMapper.put(thingTypeUID, accessoryClass);
     }
 
     @Override
@@ -156,498 +307,211 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     }
 
     @Override
-    public @Nullable Service createService(@NonNull String serviceType, @NonNull Accessory accessory, long instanceId,
-            boolean extend, @NonNull String serviceName) {
-        Class<? extends Service> serviceClass = serviceTypeServiceClassMapper.get(serviceType);
-        if (serviceClass != null) {
-            try {
-                Service service = serviceClass.getConstructor(Accessory.class, long.class, boolean.class, String.class)
-                        .newInstance(accessory, instanceId, extend, serviceName);
-                logger.debug(
-                        "Created a Service {} of Type {} (HAP Type {}, Name {}) for Accessory {} of Type {}, with instanceId {}",
-                        service.getUID(), service.getClass().getSimpleName(), service.getInstanceType(), serviceName,
-                        accessory.getUID(), accessory.getClass().getSimpleName(), service.getInstanceId());
-                return service;
-            } catch (NoSuchMethodException e) {
-                logger.warn(
-                        "Service {} is missing a valid constructor of type (HomekitCommunicationManager.class, Accessory.class, long.class, boolean.class, String.class))",
-                        serviceClass.getSimpleName());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+    public @Nullable Accessory createAccessory(@NonNull Thing thing, @NonNull LocalAccessoryServer server) throws Exception {
+        ThingTypeUID thingTypeUID = thing.getThingTypeUID();
+        Class<? extends Accessory> accessoryClass = thingTypeAccessoryClassMapper.get(thingTypeUID);
+
+        if (accessoryClass == null) {
+            accessoryClass = ThingAccessory.class;
         }
 
-        return null;
-    }
+        Accessory accessory = createAccessory(accessoryClass, server, server.getInstanceId(), true);
 
-    @Override
-    public @Nullable Service createService(@NonNull String serviceType, @NonNull Accessory accessory, boolean extend,
-            @NonNull String serviceName) {
-        Class<? extends Service> serviceClass = serviceTypeServiceClassMapper.get(serviceType);
-        if (serviceClass != null) {
-            return createService(serviceType, accessory, accessory.getNextAvailableInstanceId(), extend, serviceName);
-        }
+        if (accessory != null && (accessory instanceof ThingAccessory)) {
+            ThingAccessory thingAccessory = (ThingAccessory) accessory;
+            thingAccessory.setThingUID(thing.getUID());
+            logger.info("Linked Thing {} to Accessory {} of Type {}", thing.getUID(), accessory.getUID(),
+                    accessory.getClass().getSimpleName());
 
-        return null;
-    }
+            Set<String> serviceTypes = thingTypeServiceTypesMapper.get(thingTypeUID);
+            if (serviceTypes != null) {
+                for (String serviceType : serviceTypes) {
+                    if (thingAccessory.getService(serviceType) == null && thingAccessory.isExtensible()) {
+                        thingAccessory.addService(createService(serviceType, thingAccessory, true, thingAccessory.getLabel()));
+                    }
 
-    @Override
-    public @Nullable Service createService(@NonNull String serviceType, @NonNull Accessory accessory, long instanceId,
-            boolean extend) {
-        Class<? extends Service> serviceClass = serviceTypeServiceClassMapper.get(serviceType);
-        if (serviceClass != null) {
-            return createService(serviceType, accessory, instanceId, extend, serviceClass.getSimpleName());
-        }
+                    Service service = thingAccessory.getService(serviceType);
+                    if (service != null) {
+                        for (Channel channel : thing.getChannels()) {
+                            Set<String> characteristicTypes = channelTypeCharacteristicTypesMapper.get(channel.getChannelTypeUID());
+                            if (characteristicTypes != null) {
+                                for (String characteristicType : characteristicTypes) {
+                                    if (service.getCharacteristic(characteristicType) == null && service.isExtensible()) {
+                                        service.addCharacteristic(createCharacteristic(characteristicType, service));
+                                    }
 
-        return null;
-    }
-
-    /**
-     * Creates a service instance from a JSON value.
-     * 
-     * @param accessory The accessory to create the service for
-     * @param value The JSON value containing service data
-     * @return The created service instance, or null if creation fails
-     */
-    @Override
-    public @Nullable Service createService(@NonNull Accessory accessory, @NonNull JsonValue value) {
-        JsonObject jsonObject = (JsonObject) value;
-        String type = jsonObject.getString("type");
-        long instanceId = jsonObject.getInt("iid");
-
-        Class<? extends Service> serviceClass = serviceTypeServiceClassMapper.get(type);
-        if (serviceClass == null) {
-            logger.warn("Unknown service type: {}", type);
-            return null;
-        }
-
-        try {
-            Constructor<? extends Service> constructor = serviceClass.getDeclaredConstructor(Accessory.class,
-                    JsonValue.class, String.class);
-            constructor.setAccessible(true);
-            Service service = constructor.newInstance(accessory, value, ""); // update name parameter
-            logger.debug("Created service of type {} with instanceId {}", type, instanceId);
-            return service;
-        } catch (Exception e) {
-            logger.error("Failed to create service of type {}: {}", type, e.getMessage());
-            return null;
-        }
-    }
-
-    protected @Nullable Service createServiceByTag(String tag, Accessory accessory, long instanceId, boolean extend) {
-        HashSet<Class<? extends Service>> serviceClasses = tagServiceClassMapper.get(tag);
-        if (serviceClasses != null && !serviceClasses.isEmpty()) {
-            if (serviceClasses != null && !serviceClasses.isEmpty()) {
-                Class<? extends Service> serviceClass = serviceClasses.iterator().next();
-                try {
-                    Constructor<? extends Service> constructor = serviceClass.getConstructor(Accessory.class,
-                            long.class, boolean.class, String.class);
-                    constructor.setAccessible(true);
-                    Service service = constructor.newInstance(accessory, instanceId, extend);
-                    return service;
-                } catch (NoSuchMethodException | IllegalAccessException | InstantiationException
-                        | InvocationTargetException e) {
-                    logger.warn("Could not create service for tag {} and class {}", tag, serviceClass.getName(), e);
+                                    Characteristic<?> characteristic = service.getCharacteristic(characteristicType);
+                                    if (characteristic != null) {
+                                        characteristic.setChannelUID(channel.getUID());
+                                        logger.debug("Linked Channel {} to Characteristic {} of Type {}", channel.getUID(),
+                                                characteristic.getUID(), characteristic.getClass().getSimpleName());
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
-            logger.warn("No service found with matching tag {}", tag);
+        }
+
+        return accessory;
+    }
+
+    public  Class<? extends Service> getService(String serviceType) {
+        ServiceMetadata metadata = serviceMetadataMapper.get(serviceType);
+        if (metadata != null) {
+            return metadata.serviceClass;
         }
         return null;
     }
 
-    @Override
-    public @Nullable Characteristic<?> createCharacteristic(@NonNull String characteristicType,
-            @NonNull Service service, long instanceId) {
-        Class<? extends Characteristic<?>> characteristicsClass = characteristicTypeCharacteristicClassMapper
-                .get(characteristicType);
-        if (characteristicsClass != null) {
-            try {
-                Characteristic<?> characteristic = characteristicsClass.getConstructor(Service.class, long.class)
-                        .newInstance(service, instanceId);
-                logger.debug(
-                        "Created a Characteristic {} of Type {} (HAP Type {}) for Service {} of Type {}, with instanceId {}",
-                        characteristic.getUID(), characteristic.getClass().getSimpleName(),
-                        characteristic.getInstanceType(), service.getUID(), service.getClass().getSimpleName(),
-                        characteristic.getInstanceId());
-                return characteristic;
-            } catch (NoSuchMethodException e) {
-                logger.warn(
-                        "Characteristic {} is missing a valid constructor of type (HomekitCommunicationManager.class, Service.class, long.class)",
-                        characteristicsClass.getSimpleName());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        return null;
-    }
-
-    @Override
-    public @Nullable Characteristic<?> createCharacteristic(@NonNull String characteristicType,
-            @NonNull Service service) {
-        Class<? extends Characteristic<?>> characteristicsClass = characteristicTypeCharacteristicClassMapper
-                .get(characteristicType);
-        if (characteristicsClass != null) {
-            return createCharacteristic(characteristicType, service,
-                    ((Accessory) service.getAccessory()).getNextAvailableInstanceId());
+    public Class<? extends Characteristic<?>> getCharacteristic(String characteristicType) {
+        CharacteristicMetadata metadata = characteristicMetadataMapper.get(characteristicType);
+        if (metadata != null) {
+            return metadata.characteristicClass;
         }
         return null;
     }
 
-    /**
-     * Creates a characteristic instance from a JSON value.
-     * 
-     * @param service The service to create the characteristic for
-     * @param value The JSON value containing characteristic data
-     * @return The created characteristic instance, or null if creation fails
-     */
-    public @Nullable Characteristic<?> createCharacteristic(@NonNull Service service, @NonNull JsonValue value) {
-        JsonObject jsonObject = (JsonObject) value;
-        String type = jsonObject.getString("type");
-        long instanceId = jsonObject.getInt("iid");
-
-        Class<? extends Characteristic<?>> characteristicClass = characteristicTypeCharacteristicClassMapper.get(type);
-        if (characteristicClass == null) {
-            logger.warn("Unknown characteristic type: {}", type);
-            return null;
+    // 7. Type conversion and lookup methods
+    private String getServiceType(Class<? extends Service> serviceClass) {
+        ServiceMetadata metadata = serviceMetadataMapper.values().stream()
+                .filter(m -> m.serviceClass.equals(serviceClass))
+                .findFirst()
+                .orElse(null);
+        if (metadata != null) {
+            return metadata.type;
         }
-
-        try {
-            Constructor<? extends Characteristic<?>> constructor = characteristicClass
-                    .getDeclaredConstructor(Service.class, JsonValue.class);
-            constructor.setAccessible(true);
-            Characteristic<?> characteristic = constructor.newInstance(service, value);
-            logger.debug("Created characteristic of type {} with instanceId {}", type, instanceId);
-            return characteristic;
-        } catch (Exception e) {
-            logger.error("Failed to create characteristic of type {}: {}", type, e.getMessage());
-            return null;
-        }
+        return UUID5.fromNamespaceAndString(UUID5.NAMESPACE_SERVICE, serviceClass.getName()).toString();
     }
 
-    protected @Nullable Characteristic<?> createCharacteristicByTag(String tag, Service service, long instanceId) {
-        HashSet<Class<? extends Characteristic<?>>> characteristicClasses = tagCharacteristicClassMapper.get(tag);
-        if (characteristicClasses != null && !characteristicClasses.isEmpty()) {
-            Class<? extends Characteristic<?>> characteristicClass = characteristicClasses.iterator().next();
-            try {
-                Constructor<? extends Characteristic<?>> constructor = characteristicClass.getConstructor(Service.class,
-                        long.class);
-                return constructor.newInstance(service, instanceId);
-            } catch (NoSuchMethodException | IllegalAccessException | InstantiationException
-                    | InvocationTargetException e) {
-                logger.warn("Could not create characteristic for tag {}", tag, e);
-            }
+    private String getCharacteristicType(Class<? extends Characteristic<?>> characteristicClass) {
+        CharacteristicMetadata metadata = characteristicMetadataMapper.values().stream()
+                .filter(m -> m.characteristicClass.equals(characteristicClass))
+                .findFirst()
+                .orElse(null);
+        if (metadata != null) {
+            return metadata.type;
         }
+        return UUID5.fromNamespaceAndString(UUID5.NAMESPACE_CHARACTERISTIC, characteristicClass.getName()).toString();
+    }
+
+    @Override
+    public String getServiceInstanceType(@NonNull String characteristicType) {
+        CharacteristicMetadata metadata = characteristicMetadataMapper.get(characteristicType);
+        ServiceMetadata serviceMetadata = serviceMetadataMapper.get(metadata.serviceType);
+        if (serviceMetadata != null) {
+            return serviceMetadata.instanceType;
+        }
+        logger.warn("No instance type found for characteristic type: {}", characteristicType);
         return null;
-    }
-
-    @Override
-    public void addAccessory(@NonNull ThingTypeUID thingType,
-            @NonNull Class<? extends org.openhab.io.homekit.api.hap.Accessory> accessoryClass) {
-        thingTypeAccessoryClassMapper.put(thingType, accessoryClass);
-    }
-
-    @Override
-    public void addService(@NonNull ThingTypeUID type) {
-        addService(type, ThingService.class);
-    }
-
-    @Override
-    public void addService(@NonNull ThingTypeUID thingType, @NonNull Class<@NonNull ? extends Service> serviceClass) {
-
-        String serviceType = UUID5.fromNamespaceAndString(UUID5.NAMESPACE_SERVICE, serviceClass.getName()).toString();
-        try {
-            Method method = serviceClass.getMethod("getType");
-            Object o = method.invoke(null);
-            serviceType = (String) o;
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
-            // No Op - we revert back to the previously generated type
-        } catch (NoSuchMethodException e) {
-            logger.warn("{} does not define a getType() method", serviceClass.getName());
-        }
-
-        addService(thingType, serviceType);
-        addService(serviceType, serviceClass);
-    }
-
-    @Override
-    public void addService(@NonNull Class<@NonNull ? extends Service> serviceClass) {
-
-        String serviceType = UUID5.fromNamespaceAndString(UUID5.NAMESPACE_SERVICE, serviceClass.getName()).toString();
-        try {
-            Method method = serviceClass.getMethod("getType");
-            Object o = method.invoke(null);
-            serviceType = (String) o;
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
-            // No Op - we revert back to the previously generated type
-        } catch (NoSuchMethodException e) {
-            logger.warn("{} does not define a getType() method", serviceClass.getName());
-        }
-
-        addService(serviceType, serviceClass);
-    }
-
-    @Override
-    public void addService(@NonNull ThingTypeUID thingType, @NonNull String serviceType) {
-        HashSet<String> currentTypes = thingTypeServiceTypesMapper.get(thingType);
-        if (currentTypes == null) {
-            currentTypes = new HashSet<String>();
-        }
-        currentTypes.add(serviceType);
-        thingTypeServiceTypesMapper.put(thingType, currentTypes);
-
-        // TODO : Modify to add service tag to a mapper structure
-    }
-
-    @Override
-    public void addService(@NonNull String serviceType, @NonNull Class<@NonNull ? extends Service> serviceClass) {
-        serviceTypeServiceClassMapper.put(serviceType, serviceClass);
-
-        try {
-            Method tagMethod = serviceClass.getMethod("getTag");
-            String tag = (String) tagMethod.invoke(null);
-            tagServiceClassMapper.computeIfAbsent(tag, k -> new HashSet<>()).add(serviceClass);
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            logger.warn("Could not get service tag for class {}", serviceClass.getName(), e);
-        }
-    }
-
-    // @Override
-    // public void addServiceWithTag(String tag, Class<? extends Service> serviceClass) {
-    // tagServiceClassMapper.computeIfAbsent(tag, k -> new HashSet<>()).add(serviceClass);
-    // try {
-    // Method method = serviceClass.getMethod("getType");
-    // String serviceType = (String) method.invoke(null);
-    // serviceTypeServiceClassMapper.put(serviceType, serviceClass);
-    // addService(serviceClass);
-    // } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-    // logger.warn("Could not get service type for class {}", serviceClass.getName(), e);
-    // }
-    // }
-
-    @Override
-    public void addCharacteristic(@NonNull ChannelTypeUID channelType,
-            @NonNull Class<@NonNull ? extends Characteristic<?>> characteristicClass) {
-
-        String characteristicType = UUID5
-                .fromNamespaceAndString(UUID5.NAMESPACE_CHARACTERISTIC, characteristicClass.getName()).toString();
-        try {
-            Method method = characteristicClass.getMethod("getType");
-            Object o = method.invoke(null);
-            characteristicType = (String) o;
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
-            // No Op - we revert back to the previously generated type
-        } catch (NoSuchMethodException e) {
-            logger.warn("{} does not define a getType() method", characteristicClass.getName());
-        }
-
-        addCharacteristic(channelType, characteristicType);
-        addCharacteristic(characteristicType, characteristicClass);
-    }
-
-    @Override
-    public void addCharacteristic(@NonNull Class<@NonNull ? extends Characteristic<?>> characteristicClass) {
-
-        String characteristicType = UUID5
-                .fromNamespaceAndString(UUID5.NAMESPACE_CHARACTERISTIC, characteristicClass.getName()).toString();
-        try {
-            Method method = characteristicClass.getMethod("getType");
-            Object o = method.invoke(null);
-            characteristicType = (String) o;
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e) {
-            // No Op - we revert back to the previously generated type
-        } catch (NoSuchMethodException e) {
-            logger.warn("{} does not define a getType() method", characteristicClass.getName());
-        }
-
-        addCharacteristic(characteristicType, characteristicClass);
-    }
-
-    @Override
-    public void addCharacteristic(@NonNull ChannelTypeUID channelType, @NonNull String characteristicType) {
-        HashSet<String> currentTypes = channelTypeCharacteristicTypesMapper.get(channelType);
-        if (currentTypes == null) {
-            currentTypes = new HashSet<String>();
-        }
-        currentTypes.add(characteristicType);
-        channelTypeCharacteristicTypesMapper.put(channelType, currentTypes);
-    }
-
-    @Override
-    public void addCharacteristic(@NonNull String characteristicType,
-            @NonNull Class<@NonNull ? extends Characteristic<?>> characteristicClass) {
-        characteristicTypeCharacteristicClassMapper.put(characteristicType, characteristicClass);
-
-        try {
-            Method tagMethod = characteristicClass.getMethod("getTag");
-            String tag = (String) tagMethod.invoke(null);
-            HashSet<Class<? extends Characteristic<?>>> characteristics = tagCharacteristicClassMapper.get(tag);
-            if (characteristics == null) {
-                characteristics = new HashSet<>();
-            }
-            characteristics.add(characteristicClass);
-            tagCharacteristicClassMapper.put(tag, characteristics);
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            logger.debug("Characteristic {} does not define a getTag() method", characteristicClass.getName());
-        }
-    }
-
-    @Override
-    public HashSet<String> getCharacteristicTypes(@Nullable ChannelTypeUID channelType) {
-        return channelTypeCharacteristicTypesMapper.get(channelType);
-    }
-
-    @Override
-    public Set<String> getSupportedCharacteristicTypes() {
-        Set<String> result = new HashSet<String>();
-        for (Class<? extends Characteristic<?>> characteristicClass : characteristicTypeCharacteristicClassMapper
-                .values()) {
-            try {
-                Method method = characteristicClass.getMethod("getType");
-                result.add((String) method.invoke(null));
-            } catch (NoSuchMethodException e) {
-                logger.warn("Characteristic {} is missing the method getAcceptedItemType()",
-                        characteristicClass.getSimpleName());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        return result;
-    }
-
-    @Override
-    public String getServiceInstanceType(@NonNull String serviceType) {
-        Class<? extends Service> serviceClass = serviceTypeServiceClassMapper.get(serviceType);
-        if (serviceClass != null) {
-            try {
-                Method method = serviceClass.getMethod("getInstanceType");
-                return (String) method.invoke(null);
-            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                logger.warn("Service {} is missing the method getInstanceType()", serviceType, e);
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public Set<String> getSupportedServiceTypes() {
-        return serviceTypeServiceClassMapper.values().stream().map(s -> s.getSimpleName()).collect(Collectors.toSet());
     }
 
     @Override
     public String getCharacteristicAcceptedItemType(@NonNull String characteristicType) {
-        Class<? extends Characteristic<?>> characteristicClass = characteristicTypeCharacteristicClassMapper
-                .get(characteristicType);
-        if (characteristicClass != null) {
-            try {
-                Method method = characteristicClass.getMethod("getAcceptedItemType");
-                return (String) method.invoke(null, null);
-            } catch (NoSuchMethodException e) {
-                logger.warn("Characteristic {} is missing the method getAcceptedItemType()",
-                        characteristicClass.getSimpleName());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        CharacteristicMetadata metadata = characteristicMetadataMapper.get(characteristicType);
+        if (metadata != null) {
+            return metadata.acceptedItemType;
         }
-
+        logger.warn("No accepted item type found for characteristic type: {}", characteristicType);
         return null;
     }
 
-    @Override
-    public @Nullable ChannelTypeUID getChannelTypeUID(@NonNull String characteristicType) {
-        Class<? extends Characteristic<?>> characteristicClass = characteristicTypeCharacteristicClassMapper
-                .get(characteristicType);
-        if (characteristicClass != null) {
-            try {
-                Method method = characteristicClass.getMethod("getChannelTypeUID");
-                return (ChannelTypeUID) method.invoke(null);
-            } catch (NoSuchMethodException e) {
-                logger.warn("Characteristic {} is missing the method getChannelTypeUID()",
-                        characteristicClass.getSimpleName());
-                // default to a channelTypeuid constructed from the characteristicType
-                return new ChannelTypeUID(HomekitBindingConstants.BINDING_ID, characteristicType);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        return null;
-    }
-
-    @Override
-    public Class<? extends Characteristic<?>> getCharacteristic(@NonNull String characteristicType) {
-        return characteristicTypeCharacteristicClassMapper.get(characteristicType);
-    }
-
-    @Override
-    public Class<? extends Service> getService(@NonNull String serviceType) {
-        return serviceTypeServiceClassMapper.get(serviceType);
-    }
-
-    @Override
-    public boolean isCharacteristicSupported(@NonNull String characteristicType) {
-        return characteristicTypeCharacteristicClassMapper.containsKey(characteristicType);
-    }
-
-    @Override
-    public boolean isServiceSupported(@NonNull String serviceType) {
-        return serviceTypeServiceClassMapper.containsKey(serviceType);
-    }
-
-    @Override
-    public String getServiceTypeFromTag(@NonNull String tag) {
-        HashSet<Class<? extends Service>> serviceClasses = tagServiceClassMapper.get(tag);
-        if (serviceClasses != null && !serviceClasses.isEmpty()) {
-            Class<? extends Service> serviceClass = serviceClasses.iterator().next();
-            for (String serviceType : serviceTypeServiceClassMapper.keySet()) {
-                if (serviceTypeServiceClassMapper.get(serviceType).equals(serviceClass)) {
-                    return serviceType;
-                }
-            }
-        }
-        return null; // Return empty string instead of null
-    }
-
-    @Override
-    public String getCharacteristicTypeFromTag(@NonNull String tag) {
-        HashSet<Class<? extends Characteristic<?>>> characteristicClasses = tagCharacteristicClassMapper.get(tag);
-        if (characteristicClasses != null && !characteristicClasses.isEmpty()) {
-            Class<? extends Characteristic<?>> characteristicClass = characteristicClasses.iterator().next();
-            for (String characteristicType : characteristicTypeCharacteristicClassMapper.keySet()) {
-                if (characteristicTypeCharacteristicClassMapper.get(characteristicType).equals(characteristicClass)) {
-                    return characteristicType;
-                }
-            }
-        }
-        return null; // Return empty string instead of null
-    }
-
+    // 8. Tag-related methods
     @Override
     public String getTagFromServiceType(@NonNull String serviceType) {
-        Class<? extends Service> serviceClass = serviceTypeServiceClassMapper.get(serviceType);
-        if (serviceClass != null) {
-            for (Map.Entry<String, HashSet<Class<? extends Service>>> entry : tagServiceClassMapper.entrySet()) {
-                if (entry.getValue().contains(serviceClass)) {
-                    return entry.getKey();
-                }
-            }
+        ServiceMetadata metadata = serviceMetadataMapper.get(serviceType);
+        if (metadata != null) {
+            return metadata.tag;
         }
+        logger.warn("No tag found for service type: {}", serviceType);
         return null;
     }
 
     @Override
     public String getTagFromCharacteristicType(@NonNull String characteristicType) {
-        Class<? extends Characteristic<?>> characteristicClass = characteristicTypeCharacteristicClassMapper
-                .get(characteristicType);
-        if (characteristicClass != null) {
-            for (Map.Entry<String, HashSet<Class<? extends Characteristic<?>>>> entry : tagCharacteristicClassMapper
-                    .entrySet()) {
-                if (entry.getValue().contains(characteristicClass)) {
+        CharacteristicMetadata metadata = characteristicMetadataMapper.get(characteristicType);
+        if (metadata != null) {
+            return metadata.tag;
+        }
+        logger.warn("No tag found for characteristic type: {}", characteristicType);
+        return null;
+    }
+
+    @Override
+    public String getServiceTypeFromTag(@NonNull String tag) {
+        Set<Class<? extends Service>> serviceClasses = tagServiceClassMapper.get(tag);
+        if (serviceClasses != null && !serviceClasses.isEmpty()) {
+            Class<? extends Service> serviceClass = serviceClasses.iterator().next();
+            for (Map.Entry<String, ServiceMetadata> entry : serviceMetadataMapper.entrySet()) {
+                if (entry.getValue().serviceClass.equals(serviceClass)) {
                     return entry.getKey();
                 }
             }
         }
+        logger.warn("No service type found for tag: {}", tag);
         return null;
+    }
+
+    @Override
+    public String getCharacteristicTypeFromTag(@NonNull String tag) {
+        Set<Class<? extends Characteristic<?>>> characteristicClasses = tagCharacteristicClassMapper.get(tag);
+        if (characteristicClasses != null && !characteristicClasses.isEmpty()) {
+            Class<? extends Characteristic<?>> characteristicClass = characteristicClasses.iterator().next();
+            for (Map.Entry<String, CharacteristicMetadata> entry : characteristicMetadataMapper.entrySet()) {
+                if (entry.getValue().characteristicClass.equals(characteristicClass)) {
+                    return entry.getKey();
+                }
+            }
+        }
+        logger.warn("No characteristic type found for tag: {}", tag);
+        return null;
+    }
+
+    // 9. Channel-related methods
+    @Override
+    public @Nullable ChannelTypeUID getChannelTypeUID(@NonNull String characteristicType) {
+        CharacteristicMetadata metadata = characteristicMetadataMapper.get(characteristicType);
+        if (metadata != null) {
+            return metadata.channelTypeUID;
+        }
+        logger.warn("No channel type UID found for characteristic type: {}", characteristicType);
+        return null;
+    }
+
+    @Override
+    public HashSet<String> getCharacteristicTypes(@Nullable ChannelTypeUID channelTypeUID) {
+        return channelTypeCharacteristicTypesMapper.get(channelTypeUID);
+    }
+
+    // 10. Support check methods
+    @Override
+    public boolean supportsThingType(@NonNull ThingTypeUID thingTypeUID) {
+        return thingTypeServiceTypesMapper.containsKey(thingTypeUID);
+    }
+
+    @Override
+    public ThingTypeUID @NonNull [] getSupportedThingTypes() {
+        return thingTypeServiceTypesMapper.keySet().toArray(new ThingTypeUID[0]);
+    }
+
+    @Override
+    public boolean supportsServiceType(@NonNull String serviceType) {
+        return serviceMetadataMapper.containsKey(serviceType);
+    }
+
+    @Override
+    public Set<String> getSupportedServiceTypes() {
+        return serviceMetadataMapper.keySet();
+    }
+    
+    @Override
+    public boolean supportsCharacteristicsType(@NonNull String characteristicsType) {
+        return characteristicMetadataMapper.containsKey(characteristicsType);
+    }
+
+    @Override
+    public Set<String> getSupportedCharacteristicTypes() {
+        return characteristicMetadataMapper.keySet();
     }
 }

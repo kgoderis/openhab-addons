@@ -20,13 +20,13 @@ public class TargetHorizontalTiltAngleCharacteristic extends IntegerCharacterist
     }
 
     @Override
-    public String getType() {
+    public static String getType() {
         return TYPE;
     }
 
     @Override
     public String getInstanceType() {
-        return getType();
+        return TYPE;
     }
 
     @Override

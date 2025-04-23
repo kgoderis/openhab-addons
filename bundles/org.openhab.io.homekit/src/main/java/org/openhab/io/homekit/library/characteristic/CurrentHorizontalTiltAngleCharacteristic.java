@@ -19,13 +19,13 @@ public class CurrentHorizontalTiltAngleCharacteristic extends IntegerCharacteris
     }
 
     @Override
-    public String getType() {
+    public static String getType() {
         return TYPE;
     }
 
     @Override
     public String getInstanceType() {
-        return getType();
+        return TYPE;
     }
 
     public static String getTag() {

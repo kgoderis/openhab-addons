@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.storage.StorageService;
@@ -125,21 +124,21 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
         Set<String> characteristicTypes = homekitFactory.getSupportedCharacteristicTypes();
 
         // Filter to only include characteristics that are relevant to this service
-        return characteristicTypes.stream().filter(type -> {
+        return characteristicTypes.stream().filter(characteristicType -> {
             // Check if this characteristic type is associated with the service
-            return homekitFactory.getService(type) != null
-                    && homekitFactory.getServiceInstanceType(type).equals(serviceType);
-        }).map(type -> {
+            return homekitFactory.getService(characteristicType) != null
+                    && homekitFactory.getServiceInstanceType(characteristicType).equals(serviceType);
+        }).map(characteristicType -> {
             // Get the channel type UID for this characteristic
-            ChannelTypeUID channelTypeUID = homekitFactory.getChannelTypeUID(type);
+            ChannelTypeUID channelTypeUID = homekitFactory.getChannelTypeUID(characteristicType);
             if (channelTypeUID == null) {
-                logger.warn("No ChannelTypeUID found for characteristic type: {}", type);
+                logger.warn("No ChannelTypeUID found for characteristic type: {}", characteristicType);
                 return null;
             }
 
             // Create a channel definition
-            return new ChannelDefinitionBuilder(homekitFactory.getTagFromCharacteristicType(type), channelTypeUID)
-                    .withLabel(type).withDescription("HomeKit " + type + " Characteristic").build();
+            return new ChannelDefinitionBuilder(homekitFactory.getTagFromCharacteristicType(characteristicType), channelTypeUID)
+                    .withLabel(characteristicType).withDescription("HomeKit " + characteristicType + " Characteristic").build();
         }).filter(def -> def != null).collect(Collectors.toList());
     }
 

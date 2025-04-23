@@ -26,16 +26,12 @@ import org.openhab.io.homekit.library.service.LightBulbService;
 import org.openhab.io.homekit.library.service.OutletService;
 import org.openhab.io.homekit.library.service.SwitchService;
 import org.openhab.io.homekit.library.service.ThermostatService;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 
 @Component(immediate = true, service = HomekitFactory.class)
 public class AppleHomekitFactory extends BaseHomekitFactory {
-
-    @Activate
-    public AppleHomekitFactory() {
-        super();
-
+    @Override
+    protected void initializeMappers() {
         this.addService(AccessoryInformationService.class);
         this.addService(HAPProtocolInformationService.class);
         this.addService(LightBulbService.class);
