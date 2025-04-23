@@ -6,12 +6,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.config.core.Configuration;
+import org.openhab.core.scheduler.ThreadPoolManager;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
@@ -32,8 +32,6 @@ import org.openhab.io.homekit.internal.provider.HomekitChannelTypeProvider;
 import org.openhab.io.homekit.internal.provider.HomekitThingTypeProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.openhab.core.scheduler.ThreadPoolManager;
-
 
 @NonNullByDefault
 public abstract class AbstractHomekitHandler extends BaseThingHandler implements AccessoryServerChangeListener,
@@ -94,7 +92,6 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
     protected volatile boolean serverConnected = false;
     protected volatile boolean serverPaired = false;
     protected volatile boolean accessoryAvailable = false;
-
 
     // ========== Event Processing ==========
     protected final Object eventQueueLock = new Object();
@@ -182,7 +179,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
 
         try {
             logger.debug("{}Starting cleanup", LOG_CLEANUP);
-            
+
             // No need to shutdown the ThreadPoolManager pool as it's managed centrally
             // Just process remaining events if any
             synchronized (eventQueueLock) {
@@ -208,7 +205,6 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
     }
 
     protected abstract void handleSpecificDispose();
-
 
     protected void cleanupComponents() {
         synchronized (serverLock) {
@@ -362,7 +358,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
 
         try {
             validateEventData(event);
-            processEvent(() -> handleServerStateChange(event));
+            processEvent(() -> handleAccessoryServerEvent(event));
         } catch (IllegalArgumentException e) {
             logger.error("{}Invalid server event data: {}", e.getMessage());
         }
@@ -392,7 +388,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
 
         try {
             validateEventData(event);
-            processEvent(() -> handleServiceStateChange(event));
+            processEvent(() -> handleServiceEvent(event));
         } catch (IllegalArgumentException e) {
             logger.error("{}Invalid service event data: {}", LOG_EVENT, e.getMessage());
         } catch (Exception e) {
@@ -417,7 +413,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
         }
     }
 
-    private void handleServerStateChange(AccessoryServerEvent event) {
+    protected void handleAccessoryServerEvent(AccessoryServerEvent event) {
         try {
             synchronized (stateLock) {
                 synchronized (serverLock) {
@@ -470,7 +466,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
         }
     }
 
-    private void handleServiceStateChange(ServiceEvent event) {
+    protected void handleServiceEvent(ServiceEvent event) {
         try {
             synchronized (stateLock) {
                 synchronized (serviceLock) {
@@ -595,6 +591,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
             }
         }
     }
+
     /**
      * Handles the addition of a new characteristic to the service.
      * 
@@ -643,7 +640,6 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
         }
     }
 
-
     private void handleCharacteristicStateChanged(ServiceEvent event) {
         try {
             Characteristic<?> characteristic = event.getCharacteristic();
@@ -673,7 +669,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
         }
     }
 
-      /**
+    /**
      * Handles characteristic events.
      * 
      * <p>
@@ -1101,8 +1097,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
         }
     }
 
-
-  /**
+    /**
      * Handles channel linking events.
      * 
      * <p>
@@ -1156,7 +1151,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
         super.channelLinked(channelUID);
     }
 
- /**
+    /**
      * Handles channel unlinking events.
      * 
      * <p>

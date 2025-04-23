@@ -3,9 +3,9 @@ package org.openhab.io.homekit.library.characteristic;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.IntegerCharacteristic;
-import org.openhab.core.types.State;
 
 public class CurrentPositionCharacteristic extends IntegerCharacteristic {
     private static final String TYPE = "0000006D-0000-1000-8000-0026BB765291";
@@ -17,6 +17,7 @@ public class CurrentPositionCharacteristic extends IntegerCharacteristic {
     public CurrentPositionCharacteristic(Service service, JsonValue value) {
         super(service, value);
     }
+
     @Override
     public static String getType() {
         return TYPE;
@@ -52,7 +53,8 @@ public class CurrentPositionCharacteristic extends IntegerCharacteristic {
     }
 
     @Override
-    public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType, boolean includeEvent) {
+    public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType,
+            boolean includeEvent) {
         return super.toJson(includeMeta, includePermissions, includeType, includeEvent);
     }
 

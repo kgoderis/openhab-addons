@@ -1,12 +1,6 @@
 package org.openhab.io.homekit.internal.handler;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -16,29 +10,17 @@ import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingStatus;
 import org.openhab.core.thing.ThingStatusDetail;
-import org.openhab.core.thing.binding.builder.ChannelBuilder;
-import org.openhab.core.thing.type.ChannelType;
-import org.openhab.core.thing.type.ChannelTypeUID;
-import org.openhab.core.types.Command;
-import org.openhab.core.types.State;
-import org.openhab.core.types.UnDefType;
 import org.openhab.io.homekit.api.hap.Accessory;
-import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
 import org.openhab.io.homekit.internal.accessory.AccessoryUID;
-import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
 import org.openhab.io.homekit.internal.client.HomekitException;
 import org.openhab.io.homekit.internal.events.AccessoryEvent;
-import org.openhab.io.homekit.internal.events.AccessoryServerEvent;
-import org.openhab.io.homekit.internal.events.CharacteristicEvent;
-import org.openhab.io.homekit.internal.events.ServiceEvent;
 import org.openhab.io.homekit.internal.provider.HomekitChannelGroupTypeProvider;
 import org.openhab.io.homekit.internal.provider.HomekitChannelTypeProvider;
 import org.openhab.io.homekit.internal.provider.HomekitThingTypeProvider;
-import org.openhab.io.homekit.internal.server.AccessoryServerUID;
 
 @NonNullByDefault
 public class ServiceThingHandler extends AbstractHomekitHandler {
@@ -99,21 +81,21 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
         // // Get the server from registry
         // AccessoryServer foundServer = this.serverRegistry.get(new AccessoryServerUID(deviceId));
         // if (foundServer == null) {
-        //     throw new IllegalArgumentException("No AccessoryServer found for deviceId: " + deviceId);
+        // throw new IllegalArgumentException("No AccessoryServer found for deviceId: " + deviceId);
         // }
         // setServer(foundServer);
 
         // // Get the accessory from registry
         // Accessory foundAccessory = this.accessoryRegistry.get(new AccessoryUID(accessoryId));
         // if (foundAccessory == null) {
-        //     throw new IllegalArgumentException("No Accessory found for accessoryId: " + accessoryId);
+        // throw new IllegalArgumentException("No Accessory found for accessoryId: " + accessoryId);
         // }
         // setAccessory(foundAccessory);
 
         // // Get the service from accessory
         // Service foundService = foundAccessory.getService(serviceId);
         // if (foundService == null) {
-        //     throw new IllegalArgumentException("No Service found for serviceId: " + serviceId);
+        // throw new IllegalArgumentException("No Service found for serviceId: " + serviceId);
         // }
         // setService(foundService);
 
@@ -121,13 +103,13 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
         // String thingType = thing.getThingTypeUID().getId();
         // String serviceTag;
         // try {
-        //     serviceTag = homekitThingTypeProvider.getServiceTag(foundService.getInstanceType());
-        //     if (!thingType.equals(serviceTag)) {
-        //         throw new IllegalArgumentException(
-        //                 "ThingType " + thingType + " does not match Service type " + serviceTag);
-        //     }
+        // serviceTag = homekitThingTypeProvider.getServiceTag(foundService.getInstanceType());
+        // if (!thingType.equals(serviceTag)) {
+        // throw new IllegalArgumentException(
+        // "ThingType " + thingType + " does not match Service type " + serviceTag);
+        // }
         // } catch (HomekitException e) {
-        //     throw new IllegalArgumentException("Service type could not be determined", e);
+        // throw new IllegalArgumentException("Service type could not be determined", e);
         // }
 
         // // Initialize channels
@@ -138,114 +120,111 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
         // foundService.addChangeListener(this);
     }
 
-
-
-
     // /**
-    //  * Initializes the service handler.
-    //  * 
-    //  * <p>
-    //  * This method performs initialization by:
-    //  * 1. Checking if already initialized or disposed
-    //  * 2. Validating and loading configuration
-    //  * 3. Initializing server, accessory and service references
-    //  * 4. Setting up state tracking
-    //  * </p>
-    //  * 
-    //  * <p>
-    //  * Thread Safety:
-    //  * - Uses synchronized blocks for state updates
-    //  * - Thread-safe initialization of components
-    //  * - Atomic state transitions
-    //  * </p>
-    //  * 
-    //  * <p>
-    //  * State Transitions:
-    //  * - Sets status to INITIALIZING
-    //  * - Validates configuration
-    //  * - Initializes server, accessory and service
-    //  * - Updates thing status
-    //  * </p>
-    //  * 
-    //  * <p>
-    //  * Error Handling:
-    //  * - Validates configuration
-    //  * - Checks for required components
-    //  * - Updates thing status on errors
-    //  * </p>
-    //  */
+    // * Initializes the service handler.
+    // *
+    // * <p>
+    // * This method performs initialization by:
+    // * 1. Checking if already initialized or disposed
+    // * 2. Validating and loading configuration
+    // * 3. Initializing server, accessory and service references
+    // * 4. Setting up state tracking
+    // * </p>
+    // *
+    // * <p>
+    // * Thread Safety:
+    // * - Uses synchronized blocks for state updates
+    // * - Thread-safe initialization of components
+    // * - Atomic state transitions
+    // * </p>
+    // *
+    // * <p>
+    // * State Transitions:
+    // * - Sets status to INITIALIZING
+    // * - Validates configuration
+    // * - Initializes server, accessory and service
+    // * - Updates thing status
+    // * </p>
+    // *
+    // * <p>
+    // * Error Handling:
+    // * - Validates configuration
+    // * - Checks for required components
+    // * - Updates thing status on errors
+    // * </p>
+    // */
 
     // @Override
     // public void initialize() {
-    //     try {
-    //         if (disposed) {
-    //             return;
-    //         }
+    // try {
+    // if (disposed) {
+    // return;
+    // }
 
-    //         synchronized (stateLock) {
-    //             if (initialized) {
-    //                 return;
-    //             }
-    //             initialized = true;
-    //             currentStatus = ThingStatus.INITIALIZING;
-    //             updateState(currentStatus);
-    //         }
+    // synchronized (stateLock) {
+    // if (initialized) {
+    // return;
+    // }
+    // initialized = true;
+    // currentStatus = ThingStatus.INITIALIZING;
+    // updateState(currentStatus);
+    // }
 
-    //         logger.debug("{}Starting initialization", LOG_INIT);
-    //         validateConfiguration(thing.getConfiguration());
+    // logger.debug("{}Starting initialization", LOG_INIT);
+    // validateConfiguration(thing.getConfiguration());
 
-    //         synchronized (serverLock) {
-    //             if (server == null) {
-    //                 AccessoryServer foundServer = serverRegistry.get(new AccessoryServerUID(deviceId));
-    //                 if (foundServer == null) {
-    //                     throw new IllegalStateException(String.format(ERROR_SERVER_NOT_FOUND, deviceId));
-    //                 }
-    //                 setServer(foundServer);
-    //                 logger.debug("{}Server initialized - Device ID: {}", LOG_INIT, deviceId);
-    //             }
-    //         }
+    // synchronized (serverLock) {
+    // if (server == null) {
+    // AccessoryServer foundServer = serverRegistry.get(new AccessoryServerUID(deviceId));
+    // if (foundServer == null) {
+    // throw new IllegalStateException(String.format(ERROR_SERVER_NOT_FOUND, deviceId));
+    // }
+    // setServer(foundServer);
+    // logger.debug("{}Server initialized - Device ID: {}", LOG_INIT, deviceId);
+    // }
+    // }
 
-    //         synchronized (accessoryLock) {
-    //             if (accessory == null) {
-    //                 Accessory foundAccessory = accessoryRegistry.get(new AccessoryUID(accessoryId));
-    //                 if (foundAccessory == null) {
-    //                     throw new IllegalStateException(String.format(ERROR_ACCESSORY_NOT_FOUND, accessoryId));
-    //                 }
-    //                 setAccessory(foundAccessory);
-    //                 logger.debug("{}Accessory initialized - ID: {}", LOG_INIT, accessoryId);
-    //             }
-    //         }
+    // synchronized (accessoryLock) {
+    // if (accessory == null) {
+    // Accessory foundAccessory = accessoryRegistry.get(new AccessoryUID(accessoryId));
+    // if (foundAccessory == null) {
+    // throw new IllegalStateException(String.format(ERROR_ACCESSORY_NOT_FOUND, accessoryId));
+    // }
+    // setAccessory(foundAccessory);
+    // logger.debug("{}Accessory initialized - ID: {}", LOG_INIT, accessoryId);
+    // }
+    // }
 
-    //         synchronized (serviceLock) {
-    //             if (service == null) {
-    //                 Service foundService = getAccessory().getService(serviceId);
-    //                 if (foundService == null) {
-    //                     throw new IllegalStateException(String.format(ERROR_SERVICE_NOT_FOUND, serviceId));
-    //                 }
-    //                 setService(foundService);
-    //                 logger.debug("{}Service initialized - ID: {}", LOG_INIT, serviceId);
-    //             }
-    //         }
+    // synchronized (serviceLock) {
+    // if (service == null) {
+    // Service foundService = getAccessory().getService(serviceId);
+    // if (foundService == null) {
+    // throw new IllegalStateException(String.format(ERROR_SERVICE_NOT_FOUND, serviceId));
+    // }
+    // setService(foundService);
+    // logger.debug("{}Service initialized - ID: {}", LOG_INIT, serviceId);
+    // }
+    // }
 
-    //         initializeChannels();
+    // initializeChannels();
 
-    //         AccessoryServer currentServer = getServer();
-    //         Service currentService = getService();
-    //         if (currentServer != null) {
-    //             currentServer.addChangeListener(this);
-    //             logger.debug("{}Server change listener registered", LOG_INIT);
-    //         }
-    //         if (currentService != null) {
-    //             currentService.addChangeListener(this);
-    //             logger.debug("{}Service change listener registered", LOG_INIT);
-    //         }
+    // AccessoryServer currentServer = getServer();
+    // Service currentService = getService();
+    // if (currentServer != null) {
+    // currentServer.addChangeListener(this);
+    // logger.debug("{}Server change listener registered", LOG_INIT);
+    // }
+    // if (currentService != null) {
+    // currentService.addChangeListener(this);
+    // logger.debug("{}Service change listener registered", LOG_INIT);
+    // }
 
-    //         validateAndUpdateState();
-    //         logger.debug("{}Initialization completed successfully", LOG_INIT);
-    //     } catch (Exception e) {
-    //         logger.error("{}Initialization failed - Error: {}", LOG_INIT, e.getMessage(), e);
-    //         updateState(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, e.getMessage());
-    //     }
+    // validateAndUpdateState();
+    // logger.debug("{}Initialization completed successfully", LOG_INIT);
+    // } catch (Exception e) {
+    // logger.error("{}Initialization failed - Error: {}", LOG_INIT, e.getMessage(), e);
+    // updateState(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, e.getMessage());
+    // }
     // }
 
     protected void handleSpecificInitialization() {
@@ -253,7 +232,7 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
         initializeService();
     }
 
-            /**
+    /**
      * Initializes the channels for the service handler.
      * 
      * <p>
@@ -347,183 +326,180 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
         setService(foundService);
         serviceAvailable = true;
         foundService.addChangeListener(this);
-        
     }
 
     // /**
-    //  * Disposes of the service handler and cleans up resources.
-    //  * 
-    //  * <p>
-    //  * This method performs cleanup by:
-    //  * 1. Shutting down event processing
-    //  * 2. Removing listeners
-    //  * 3. Clearing component references
-    //  * 4. Cleaning up channels
-    //  * 5. Updating thing status
-    //  * </p>
-    //  * 
-    //  * <p>
-    //  * Thread Safety:
-    //  * - Uses synchronized blocks for component access
-    //  * - Thread-safe cleanup
-    //  * </p>
-    //  * 
-    //  * <p>
-    //  * Resource Management:
-    //  * - Shuts down executor service
-    //  * - Removes listeners
-    //  * - Cleans up channels
-    //  * - Releases resources
-    //  * </p>
-    //  */
+    // * Disposes of the service handler and cleans up resources.
+    // *
+    // * <p>
+    // * This method performs cleanup by:
+    // * 1. Shutting down event processing
+    // * 2. Removing listeners
+    // * 3. Clearing component references
+    // * 4. Cleaning up channels
+    // * 5. Updating thing status
+    // * </p>
+    // *
+    // * <p>
+    // * Thread Safety:
+    // * - Uses synchronized blocks for component access
+    // * - Thread-safe cleanup
+    // * </p>
+    // *
+    // * <p>
+    // * Resource Management:
+    // * - Shuts down executor service
+    // * - Removes listeners
+    // * - Cleans up channels
+    // * - Releases resources
+    // * </p>
+    // */
     // @Override
     // public void dispose() {
-    //     synchronized (stateLock) {
-    //         disposed = true;
-    //         initialized = false;
-    //         currentStatus = ThingStatus.UNINITIALIZED;
-    //         currentStatusDetail = ThingStatusDetail.NONE;
-    //         currentStatusDescription = null;
-    //         serverConnected = false;
-    //         serverPaired = false;
-    //         serviceAvailable = false;
-    //     }
+    // synchronized (stateLock) {
+    // disposed = true;
+    // initialized = false;
+    // currentStatus = ThingStatus.UNINITIALIZED;
+    // currentStatusDetail = ThingStatusDetail.NONE;
+    // currentStatusDescription = null;
+    // serverConnected = false;
+    // serverPaired = false;
+    // serviceAvailable = false;
+    // }
 
-    //     try {
-    //         logger.debug("{}Starting cleanup", LOG_CLEANUP);
-    //         eventExecutor.shutdown();
-    //         if (!eventExecutor.awaitTermination(EVENT_PROCESSING_TIMEOUT, TimeUnit.MILLISECONDS)) {
-    //             logger.warn("{}Event executor did not terminate within timeout", LOG_CLEANUP);
-    //             eventExecutor.shutdownNow();
-    //         }
+    // try {
+    // logger.debug("{}Starting cleanup", LOG_CLEANUP);
+    // eventExecutor.shutdown();
+    // if (!eventExecutor.awaitTermination(EVENT_PROCESSING_TIMEOUT, TimeUnit.MILLISECONDS)) {
+    // logger.warn("{}Event executor did not terminate within timeout", LOG_CLEANUP);
+    // eventExecutor.shutdownNow();
+    // }
 
-    //         synchronized (serverLock) {
-    //             if (server != null) {
-    //                 try {
-    //                     server.removeChangeListener(this);
-    //                     logger.debug("{}Removed server change listener", LOG_CLEANUP);
-    //                 } catch (Exception e) {
-    //                     logger.warn("{}Failed to remove server change listener: {}", LOG_CLEANUP, e.getMessage());
-    //                 }
-    //                 server = null;
-    //             }
-    //         }
+    // synchronized (serverLock) {
+    // if (server != null) {
+    // try {
+    // server.removeChangeListener(this);
+    // logger.debug("{}Removed server change listener", LOG_CLEANUP);
+    // } catch (Exception e) {
+    // logger.warn("{}Failed to remove server change listener: {}", LOG_CLEANUP, e.getMessage());
+    // }
+    // server = null;
+    // }
+    // }
 
-    //         synchronized (accessoryLock) {
-    //             if (accessory != null) {
-    //                 try {
-    //                     if (this instanceof org.openhab.io.homekit.api.listener.AccessoryChangeListener) {
-    //                         accessory.removeChangeListener(
-    //                                 (org.openhab.io.homekit.api.listener.AccessoryChangeListener) this);
-    //                         logger.debug("{}Removed accessory change listener", LOG_CLEANUP);
-    //                     }
-    //                 } catch (Exception e) {
-    //                     logger.warn("{}Failed to remove accessory change listener: {}", LOG_CLEANUP, e.getMessage());
-    //                 }
-    //                 accessory = null;
-    //             }
-    //         }
+    // synchronized (accessoryLock) {
+    // if (accessory != null) {
+    // try {
+    // if (this instanceof org.openhab.io.homekit.api.listener.AccessoryChangeListener) {
+    // accessory.removeChangeListener(
+    // (org.openhab.io.homekit.api.listener.AccessoryChangeListener) this);
+    // logger.debug("{}Removed accessory change listener", LOG_CLEANUP);
+    // }
+    // } catch (Exception e) {
+    // logger.warn("{}Failed to remove accessory change listener: {}", LOG_CLEANUP, e.getMessage());
+    // }
+    // accessory = null;
+    // }
+    // }
 
-    //         synchronized (serviceLock) {
-    //             if (service != null) {
-    //                 try {
-    //                     service.removeChangeListener(this);
-    //                     logger.debug("{}Removed service change listener", LOG_CLEANUP);
-    //                 } catch (Exception e) {
-    //                     logger.warn("{}Failed to remove service change listener: {}", LOG_CLEANUP, e.getMessage());
-    //                 }
-    //                 service = null;
-    //             }
-    //         }
+    // synchronized (serviceLock) {
+    // if (service != null) {
+    // try {
+    // service.removeChangeListener(this);
+    // logger.debug("{}Removed service change listener", LOG_CLEANUP);
+    // } catch (Exception e) {
+    // logger.warn("{}Failed to remove service change listener: {}", LOG_CLEANUP, e.getMessage());
+    // }
+    // service = null;
+    // }
+    // }
 
-    //         synchronized (characteristicMapLock) {
-    //             try {
-    //                 characteristicMap.values().stream().filter(Objects::nonNull).forEach(characteristic -> {
-    //                     try {
-    //                         characteristic.removeChangeListener(this);
-    //                         logger.debug("{}Removed characteristic change listener", LOG_CLEANUP);
-    //                     } catch (Exception e) {
-    //                         logger.warn("{}Failed to remove characteristic change listener: {}", LOG_CLEANUP,
-    //                                 e.getMessage());
-    //                     }
-    //                 });
-    //             } catch (Exception e) {
-    //                 logger.warn("{}Failed to remove characteristic change listeners: {}", LOG_CLEANUP, e.getMessage());
-    //             }
-    //             characteristicMap.clear();
-    //         }
-    //         logger.debug("{}Cleanup completed successfully", LOG_CLEANUP);
-    //     } catch (Exception e) {
-    //         logger.error("{}Unexpected error during cleanup: {}", LOG_CLEANUP, e.getMessage(), e);
-    //     } finally {
-    //         super.dispose();
-    //     }
+    // synchronized (characteristicMapLock) {
+    // try {
+    // characteristicMap.values().stream().filter(Objects::nonNull).forEach(characteristic -> {
+    // try {
+    // characteristic.removeChangeListener(this);
+    // logger.debug("{}Removed characteristic change listener", LOG_CLEANUP);
+    // } catch (Exception e) {
+    // logger.warn("{}Failed to remove characteristic change listener: {}", LOG_CLEANUP,
+    // e.getMessage());
+    // }
+    // });
+    // } catch (Exception e) {
+    // logger.warn("{}Failed to remove characteristic change listeners: {}", LOG_CLEANUP, e.getMessage());
+    // }
+    // characteristicMap.clear();
+    // }
+    // logger.debug("{}Cleanup completed successfully", LOG_CLEANUP);
+    // } catch (Exception e) {
+    // logger.error("{}Unexpected error during cleanup: {}", LOG_CLEANUP, e.getMessage(), e);
+    // } finally {
+    // super.dispose();
+    // }
     // }
 
     protected void handleSpecificDispose() {
         // No additional cleanup needed for service handler
-            synchronized (serviceLock) {
-                if (service != null) {
-                    try {
-                        service.removeChangeListener(this);
-                        logger.debug("{}Removed service change listener", LOG_CLEANUP);
-                    } catch (Exception e) {
-                        logger.warn("{}Failed to remove service change listener: {}", LOG_CLEANUP, e.getMessage());
-                    }
-                    service = null;
-                serviceAvailable = false; 
+        synchronized (serviceLock) {
+            if (service != null) {
+                try {
+                    service.removeChangeListener(this);
+                    logger.debug("{}Removed service change listener", LOG_CLEANUP);
+                } catch (Exception e) {
+                    logger.warn("{}Failed to remove service change listener: {}", LOG_CLEANUP, e.getMessage());
+                }
+                service = null;
+                serviceAvailable = false;
             }
         }
     }
 
-
-
     // /**
-    //  * Validates the configuration of the service handler.
-    //  * 
-    //  * <p>
-    //  * This method performs configuration validation by:
-    //  * 1. Checking required configuration parameters
-    //  * 2. Validating parameter values
-    //  * 3. Setting default values if needed
-    //  * 4. Updating internal state
-    //  * </p>
-    //  * 
-    //  * <p>
-    //  * Configuration Parameters:
-    //  * - deviceId: Required, identifies the HomeKit server
-    //  * - serviceId: Required, identifies the service
-    //  * - accessoryId: Optional, defaults to "1"
-    //  * </p>
-    //  * 
-    //  * <p>
-    //  * Error Handling:
-    //  * - Throws IllegalArgumentException for invalid configurations
-    //  * - Logs configuration issues
-    //  * - Maintains consistent state
-    //  * </p>
-    //  * 
-    //  * @param config The configuration to validate
-    //  * @throws IllegalArgumentException if the configuration is invalid
-    //  */
+    // * Validates the configuration of the service handler.
+    // *
+    // * <p>
+    // * This method performs configuration validation by:
+    // * 1. Checking required configuration parameters
+    // * 2. Validating parameter values
+    // * 3. Setting default values if needed
+    // * 4. Updating internal state
+    // * </p>
+    // *
+    // * <p>
+    // * Configuration Parameters:
+    // * - deviceId: Required, identifies the HomeKit server
+    // * - serviceId: Required, identifies the service
+    // * - accessoryId: Optional, defaults to "1"
+    // * </p>
+    // *
+    // * <p>
+    // * Error Handling:
+    // * - Throws IllegalArgumentException for invalid configurations
+    // * - Logs configuration issues
+    // * - Maintains consistent state
+    // * </p>
+    // *
+    // * @param config The configuration to validate
+    // * @throws IllegalArgumentException if the configuration is invalid
+    // */
     // private void validateConfiguration(Configuration config) {
-    //     if (config == null) {
-    //         throw new IllegalArgumentException("Configuration cannot be null");
-    //     }
+    // if (config == null) {
+    // throw new IllegalArgumentException("Configuration cannot be null");
+    // }
 
-    //     this.deviceId = (String) config.get(CONFIG_DEVICE_ID);
-    //     this.serviceId = (String) config.get(CONFIG_SERVICE_ID);
-    //     this.accessoryId = (String) config.get(CONFIG_ACCESSORY_ID);
+    // this.deviceId = (String) config.get(CONFIG_DEVICE_ID);
+    // this.serviceId = (String) config.get(CONFIG_SERVICE_ID);
+    // this.accessoryId = (String) config.get(CONFIG_ACCESSORY_ID);
 
-    //     if (deviceId == null || deviceId.trim().isEmpty()) {
-    //         throw new IllegalArgumentException("Configuration must contain a valid deviceId");
-    //     }
-    //     if (serviceId == null || serviceId.trim().isEmpty()) {
-    //         throw new IllegalArgumentException("Configuration must contain a valid serviceId");
-    //     }
-    //     if (accessoryId == null || accessoryId.trim().isEmpty()) {
-    //         accessoryId = DEFAULT_ACCESSORY_ID;
-    //     }
+    // if (deviceId == null || deviceId.trim().isEmpty()) {
+    // throw new IllegalArgumentException("Configuration must contain a valid deviceId");
+    // }
+    // if (serviceId == null || serviceId.trim().isEmpty()) {
+    // throw new IllegalArgumentException("Configuration must contain a valid serviceId");
+    // }
+    // if (accessoryId == null || accessoryId.trim().isEmpty()) {
+    // accessoryId = DEFAULT_ACCESSORY_ID;
+    // }
     // }
 
     protected void validateSpecificConfiguration(Configuration config) {
@@ -532,53 +508,53 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
         if (serviceId == null || serviceId.trim().isEmpty()) {
             throw new IllegalArgumentException("Configuration must contain a valid serviceId");
         }
-    }   
+    }
 
     // /**
-    //  * Handles configuration updates.
-    //  * 
-    //  * <p>
-    //  * Thread Safety:
-    //  * - Uses synchronized blocks for configuration updates
-    //  * - State changes are atomic
-    //  * </p>
-    //  * 
-    //  * <p>
-    //  * State Transitions:
-    //  * - Validates new configuration
-    //  * - Updates thing configuration
-    //  * - Reinitializes channels if necessary
-    //  * - Updates thing status
-    //  * </p>
-    //  * 
-    //  * @param configurationParameters The new configuration parameters
-    //  */
+    // * Handles configuration updates.
+    // *
+    // * <p>
+    // * Thread Safety:
+    // * - Uses synchronized blocks for configuration updates
+    // * - State changes are atomic
+    // * </p>
+    // *
+    // * <p>
+    // * State Transitions:
+    // * - Validates new configuration
+    // * - Updates thing configuration
+    // * - Reinitializes channels if necessary
+    // * - Updates thing status
+    // * </p>
+    // *
+    // * @param configurationParameters The new configuration parameters
+    // */
     // @Override
     // public void handleConfigurationUpdate(Map<String, Object> configurationParameters) {
-    //     try {
-    //         if (disposed) {
-    //             return;
-    //         }
+    // try {
+    // if (disposed) {
+    // return;
+    // }
 
-    //         Configuration newConfig = new Configuration(configurationParameters);
-    //         validateConfiguration(newConfig);
+    // Configuration newConfig = new Configuration(configurationParameters);
+    // validateConfiguration(newConfig);
 
-    //         // Update configuration
-    //         Configuration currentConfig = thing.getConfiguration();
-    //         currentConfig.setProperties(newConfig.getProperties());
-    //         updateConfiguration(currentConfig);
+    // // Update configuration
+    // Configuration currentConfig = thing.getConfiguration();
+    // currentConfig.setProperties(newConfig.getProperties());
+    // updateConfiguration(currentConfig);
 
-    //         // Reinitialize channels if necessary
-    //         if (configurationParameters.containsKey(CONFIG_SERVICE_ID)
-    //                 || configurationParameters.containsKey(CONFIG_ACCESSORY_ID)) {
-    //             initializeChannels();
-    //         }
+    // // Reinitialize channels if necessary
+    // if (configurationParameters.containsKey(CONFIG_SERVICE_ID)
+    // || configurationParameters.containsKey(CONFIG_ACCESSORY_ID)) {
+    // initializeChannels();
+    // }
 
-    //         validateAndUpdateState();
-    //     } catch (Exception e) {
-    //         logger.error("{}Failed to update configuration: {}", e.getMessage(), e);
-    //         updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, e.getMessage());
-    //     }
+    // validateAndUpdateState();
+    // } catch (Exception e) {
+    // logger.error("{}Failed to update configuration: {}", e.getMessage(), e);
+    // updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, e.getMessage());
+    // }
     // }
 
     /**
@@ -604,166 +580,168 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
      * - Determines appropriate status
      * - Updates status details
      * - Maintains state consistency
-    //  * </p>
-    //  */
+     * // *
+     * </p>
+     * //
+     */
     // protected void validateAndUpdateState() {
-    //     try {
-    //         synchronized (stateLock) {
-    //             if (disposed) {
-    //                 return;
-    //             }
-
-    //             ThingStatus newStatus = determineThingStatus();
-    //             ThingStatusDetail newDetail = determineThingStatusDetail();
-    //             String newDescription = determineThingStatusDescription();
-
-    //             updateState(newStatus, newDetail, newDescription);
-    //         }
-    //     } catch (Exception e) {
-    //         logger.error("{}Error validating and updating state: {}", LOG_PREFIX, e.getMessage(), e);
-    //         updateState(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, e.getMessage());
-    //     }
+    // try {
+    // synchronized (stateLock) {
+    // if (disposed) {
+    // return;
     // }
 
-protected ThingStatus determineThingStatus() {
-    if (!serverConnected) {
-        return ThingStatus.OFFLINE;
-    }
-    if (!serverPaired) {
-        return ThingStatus.OFFLINE;
-    }
+    // ThingStatus newStatus = determineThingStatus();
+    // ThingStatusDetail newDetail = determineThingStatusDetail();
+    // String newDescription = determineThingStatusDescription();
 
-    if(!serviceAvailable) {
-        return ThingStatus.OFFLINE;
-    }
-    return ThingStatus.ONLINE;
-}
+    // updateState(newStatus, newDetail, newDescription);
+    // }
+    // } catch (Exception e) {
+    // logger.error("{}Error validating and updating state: {}", LOG_PREFIX, e.getMessage(), e);
+    // updateState(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, e.getMessage());
+    // }
+    // }
 
-protected ThingStatusDetail determineThingStatusDetail() {
-    if (!serverConnected) {
-        return ThingStatusDetail.COMMUNICATION_ERROR;
-    }
-    if (!serverPaired) {
-        return ThingStatusDetail.CONFIGURATION_ERROR;
-    }
-
-    if (!serviceAvailable) {
-        return ThingStatusDetail.COMMUNICATION_ERROR;
-    }
-    return ThingStatusDetail.NONE;
-}
-
-protected String determineThingStatusDescription() {
-    if (!serverConnected) {
-        return "Server disconnected";
-    }
-    if (!serverPaired) {
-        return "Server not paired";
-    }   
-    if (!serviceAvailable) {
-        return "Service not available";
-    }
-    return null;
-}   
-
-@Override
-protected void handleAccessoryServiceAdded(AccessoryEvent event) {
-    synchronized (accessoryLock) {
-        if (accessory == null) {
-            Accessory foundAccessory = accessoryRegistry.get(new AccessoryUID(accessoryId));
-            if (foundAccessory != null) {
-                setAccessory(foundAccessory);
-                foundAccessory.addChangeListener(this);
-                accessoryAvailable = true;
-                validateAndUpdateState();
-            } else {
-                logger.warn("{}Accessory not found in registry after add event", LOG_EVENT);
-                accessoryAvailable = false;
-                updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Accessory not found");
-            }
+    protected ThingStatus determineThingStatus() {
+        if (!serverConnected) {
+            return ThingStatus.OFFLINE;
+        }
+        if (!serverPaired) {
+            return ThingStatus.OFFLINE;
         }
 
-        synchronized (serviceLock) {
-            if (service == null && accessory != null) {
-                Service foundService = accessory.getService(serviceId);
-                if (foundService != null) {
-                    setService(foundService);
-                    serviceAvailable = true;
-                    foundService.addChangeListener(this);
+        if (!serviceAvailable) {
+            return ThingStatus.OFFLINE;
+        }
+        return ThingStatus.ONLINE;
+    }
+
+    protected ThingStatusDetail determineThingStatusDetail() {
+        if (!serverConnected) {
+            return ThingStatusDetail.COMMUNICATION_ERROR;
+        }
+        if (!serverPaired) {
+            return ThingStatusDetail.CONFIGURATION_ERROR;
+        }
+
+        if (!serviceAvailable) {
+            return ThingStatusDetail.COMMUNICATION_ERROR;
+        }
+        return ThingStatusDetail.NONE;
+    }
+
+    protected String determineThingStatusDescription() {
+        if (!serverConnected) {
+            return "Server disconnected";
+        }
+        if (!serverPaired) {
+            return "Server not paired";
+        }
+        if (!serviceAvailable) {
+            return "Service not available";
+        }
+        return null;
+    }
+
+    @Override
+    protected void handleAccessoryServiceAdded(AccessoryEvent event) {
+        synchronized (accessoryLock) {
+            if (accessory == null) {
+                Accessory foundAccessory = accessoryRegistry.get(new AccessoryUID(accessoryId));
+                if (foundAccessory != null) {
+                    setAccessory(foundAccessory);
+                    foundAccessory.addChangeListener(this);
+                    accessoryAvailable = true;
                     validateAndUpdateState();
                 } else {
-                    serviceAvailable = false; 
-                    logger.warn("{}Service not found in accessory after add event", LOG_EVENT);
-                    updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Service not found");
+                    logger.warn("{}Accessory not found in registry after add event", LOG_EVENT);
+                    accessoryAvailable = false;
+                    updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Accessory not found");
+                }
+            }
+
+            synchronized (serviceLock) {
+                if (service == null && accessory != null) {
+                    Service foundService = accessory.getService(serviceId);
+                    if (foundService != null) {
+                        setService(foundService);
+                        serviceAvailable = true;
+                        foundService.addChangeListener(this);
+                        validateAndUpdateState();
+                    } else {
+                        serviceAvailable = false;
+                        logger.warn("{}Service not found in accessory after add event", LOG_EVENT);
+                        updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Service not found");
+                    }
                 }
             }
         }
     }
-}
 
-@Override
-protected void handleAccessoryServiceRemoved(AccessoryEvent event) {
-    synchronized (accessoryLock) {
+    @Override
+    protected void handleAccessoryServiceRemoved(AccessoryEvent event) {
+        synchronized (accessoryLock) {
+            synchronized (accessoryLock) {
+                if (accessory != null) {
+                    try {
+                        accessory.removeChangeListener(this);
+                    } catch (Exception e) {
+                        logger.warn("{}Failed to remove accessory change listener: {}", LOG_EVENT, e.getMessage());
+                    }
+                    accessory = null;
+                    accessoryAvailable = false;
+                    updateState(ThingStatus.OFFLINE, ThingStatusDetail.GONE, "Accessory removed");
+                }
+            }
+
+            synchronized (serviceLock) {
+                if (service != null) {
+                    try {
+                        service.removeChangeListener(this);
+                    } catch (Exception e) {
+                        logger.warn("{}Failed to remove service change listener: {}", LOG_EVENT, e.getMessage());
+                    }
+                    service = null;
+                    serviceAvailable = false;
+                    updateState(ThingStatus.OFFLINE, ThingStatusDetail.GONE, "Service removed");
+                }
+            }
+        }
+        handleServiceRemoved();
+    }
+
+    @Override
+    protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
         synchronized (accessoryLock) {
             if (accessory != null) {
-                try {
-                    accessory.removeChangeListener(this);
-        } catch (Exception e) {
-                    logger.warn("{}Failed to remove accessory change listener: {}", LOG_EVENT, e.getMessage());
+                Service foundService = accessory.getService(serviceId);
+                if (foundService != null) {
+                    accessoryAvailable = true;
+                    validateAndUpdateState();
+                    synchronizeChannels();
+                } else {
+                    logger.warn("{}Service not found in accessory after change event", LOG_EVENT);
+                    accessoryAvailable = false;
+                    updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Accessory not found");
                 }
-                accessory = null;
-                accessoryAvailable = false;
-                updateState(ThingStatus.OFFLINE, ThingStatusDetail.GONE, "Accessory removed");
             }
         }
 
         synchronized (serviceLock) {
             if (service != null) {
-                try {
-                    service.removeChangeListener(this);
-                } catch (Exception e) {
-                    logger.warn("{}Failed to remove service change listener: {}", LOG_EVENT, e.getMessage());
+                Service foundService = accessory.getService(serviceId);
+                if (foundService != null) {
+                    setService(foundService);
+                    serviceAvailable = true;
+                    validateAndUpdateState();
+                    synchronizeChannels();
+                } else {
+                    serviceAvailable = false;
+                    logger.warn("{}Service not found in accessory after change event", LOG_EVENT);
+                    updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Service not found");
                 }
-                service = null;
-                serviceAvailable = false; 
-                updateState(ThingStatus.OFFLINE, ThingStatusDetail.GONE, "Service removed");
-            }   
-        }
-    }
-    handleServiceRemoved();
-} 
-
-@Override
-protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
-    synchronized (accessoryLock) {
-        if (accessory != null) {
-            Service foundService = accessory.getService(serviceId);
-            if (foundService != null) {
-                accessoryAvailable = true;
-                validateAndUpdateState();
-                synchronizeChannels();
-            } else {
-                logger.warn("{}Service not found in accessory after change event", LOG_EVENT);
-                accessoryAvailable = false;
-                updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Accessory not found");
             }
-        }
-    }
-
-    synchronized (serviceLock) {
-        if (service != null) {
-            Service foundService = accessory.getService(serviceId);
-            if (foundService != null) {
-                setService(foundService);
-                serviceAvailable = true;
-                validateAndUpdateState();
-                synchronizeChannels();
-            } else {
-                serviceAvailable = false; 
-                logger.warn("{}Service not found in accessory after change event", LOG_EVENT);
-                updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Service not found");
-            }
-        }
         }
     }
 
@@ -797,24 +775,24 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      * @param description An optional description of the status
      */
     // protected void updateState(ThingStatus status, ThingStatusDetail detail, @Nullable String description) {
-    //     synchronized (stateLock) {
-    //         if (disposed) {
-    //             return;
-    //         }
+    // synchronized (stateLock) {
+    // if (disposed) {
+    // return;
+    // }
 
-    //         // Only update if the state has actually changed
-    //         if (currentStatus != status || currentStatusDetail != detail
-    //                 || (currentStatusDescription == null && description != null)
-    //                 || (currentStatusDescription != null && !currentStatusDescription.equals(description))) {
+    // // Only update if the state has actually changed
+    // if (currentStatus != status || currentStatusDetail != detail
+    // || (currentStatusDescription == null && description != null)
+    // || (currentStatusDescription != null && !currentStatusDescription.equals(description))) {
 
-    //             currentStatus = status;
-    //             currentStatusDetail = detail;
-    //             currentStatusDescription = description;
+    // currentStatus = status;
+    // currentStatusDetail = detail;
+    // currentStatusDescription = description;
 
-    //             updateStatus(status, detail, description);
-    //             logger.debug("{}State updated to {} ({}): {}", LOG_PREFIX, status, detail, description);
-    //         }
-    //     }
+    // updateStatus(status, detail, description);
+    // logger.debug("{}State updated to {} ({}): {}", LOG_PREFIX, status, detail, description);
+    // }
+    // }
     // }
 
     /**
@@ -836,10 +814,8 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      * @param status New thing status
      */
     // protected void updateState(ThingStatus status) {
-    //     updateState(status, ThingStatusDetail.NONE, null);
+    // updateState(status, ThingStatusDetail.NONE, null);
     // }
-
-
 
     /**
      * Synchronizes channels with the current service state.
@@ -873,50 +849,50 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      * </p>
      */
     // protected void synchronizeChannels() {
-    //     try {
-    //         Service currentService = getService();
-    //         if (currentService == null) {
-    //             logger.warn("{}Warning - Type: Channel, Message: Cannot synchronize channels: service is not available",
-    //                     LOG_PREFIX);
-    //             return;
-    //         }
+    // try {
+    // Service currentService = getService();
+    // if (currentService == null) {
+    // logger.warn("{}Warning - Type: Channel, Message: Cannot synchronize channels: service is not available",
+    // LOG_PREFIX);
+    // return;
+    // }
 
-    //         Set<String> currentCharacteristicTypes = currentService.getCharacteristics().stream()
-    //                 .map(Characteristic::getInstanceType).collect(Collectors.toSet());
+    // Set<String> currentCharacteristicTypes = currentService.getCharacteristics().stream()
+    // .map(Characteristic::getInstanceType).collect(Collectors.toSet());
 
-    //         // Remove channels for characteristics that no longer exist
-    //         List<Channel> channelsToRemove = new ArrayList<>();
-    //         synchronized (characteristicMapLock) {
-    //             for (Map.Entry<Channel, Characteristic<?>> entry : characteristicMap.entrySet()) {
-    //                 if (!currentCharacteristicTypes.contains(entry.getValue().getInstanceType())) {
-    //                     channelsToRemove.add(entry.getKey());
-    //                 }
-    //             }
-    //             channelsToRemove.forEach(channel -> {
-    //                 characteristicMap.remove(channel);
-    //                 updateThing(editThing().withoutChannel(channel.getUID()).build());
-    //             });
-    //         }
+    // // Remove channels for characteristics that no longer exist
+    // List<Channel> channelsToRemove = new ArrayList<>();
+    // synchronized (characteristicMapLock) {
+    // for (Map.Entry<Channel, Characteristic<?>> entry : characteristicMap.entrySet()) {
+    // if (!currentCharacteristicTypes.contains(entry.getValue().getInstanceType())) {
+    // channelsToRemove.add(entry.getKey());
+    // }
+    // }
+    // channelsToRemove.forEach(channel -> {
+    // characteristicMap.remove(channel);
+    // updateThing(editThing().withoutChannel(channel.getUID()).build());
+    // });
+    // }
 
-    //         // Add channels for new characteristics
-    //         for (Characteristic<?> characteristic : currentService.getCharacteristics()) {
-    //             boolean channelExists = false;
-    //             synchronized (characteristicMapLock) {
-    //                 for (Characteristic<?> existingCharacteristic : characteristicMap.values()) {
-    //                     if (existingCharacteristic.getInstanceType().equals(characteristic.getInstanceType())) {
-    //                         channelExists = true;
-    //                         break;
-    //                     }
-    //                 }
-    //             }
-    //             if (!channelExists) {
-    //                 addChannelForCharacteristic(characteristic);
-    //             }
-    //         }
-    //     } catch (Exception e) {
-    //         logger.error("{}Error occurred - Type: Channel, Message: Failed to synchronize channels: {}", LOG_PREFIX,
-    //                 e.getMessage(), e);
-    //     }
+    // // Add channels for new characteristics
+    // for (Characteristic<?> characteristic : currentService.getCharacteristics()) {
+    // boolean channelExists = false;
+    // synchronized (characteristicMapLock) {
+    // for (Characteristic<?> existingCharacteristic : characteristicMap.values()) {
+    // if (existingCharacteristic.getInstanceType().equals(characteristic.getInstanceType())) {
+    // channelExists = true;
+    // break;
+    // }
+    // }
+    // }
+    // if (!channelExists) {
+    // addChannelForCharacteristic(characteristic);
+    // }
+    // }
+    // } catch (Exception e) {
+    // logger.error("{}Error occurred - Type: Channel, Message: Failed to synchronize channels: {}", LOG_PREFIX,
+    // e.getMessage(), e);
+    // }
     // }
 
     /**
@@ -949,21 +925,22 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      * - Logs errors
      * - Maintains consistent state
      * </p>
-    //  */
+     * //
+     */
     // private void cleanupChannels() {
-    //     try {
-    //         synchronized (characteristicMapLock) {
-    //             // Remove all channels from the thing
-    //             List<Channel> channelsToRemove = new ArrayList<>(characteristicMap.keySet());
-    //             for (Channel channel : channelsToRemove) {
-    //                 removeChannelForCharacteristic(characteristicMap.get(channel));
-    //             }
-    //             characteristicMap.clear();
-    //         }
-    //     } catch (Exception e) {
-    //         logger.error("{}Error occurred - Type: Channel, Message: Failed to cleanup channels: {}", LOG_PREFIX,
-    //                 e.getMessage(), e);
-    //     }
+    // try {
+    // synchronized (characteristicMapLock) {
+    // // Remove all channels from the thing
+    // List<Channel> channelsToRemove = new ArrayList<>(characteristicMap.keySet());
+    // for (Channel channel : channelsToRemove) {
+    // removeChannelForCharacteristic(characteristicMap.get(channel));
+    // }
+    // characteristicMap.clear();
+    // }
+    // } catch (Exception e) {
+    // logger.error("{}Error occurred - Type: Channel, Message: Failed to cleanup channels: {}", LOG_PREFIX,
+    // e.getMessage(), e);
+    // }
     // }
 
     /**
@@ -1000,34 +977,35 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      * @param channel The channel to update
      * @param characteristic The associated characteristic
      * @param oldStatus The previous status of the channel
-    //  * @param newStatus The new status of the channel
-    //  */
+     *            // * @param newStatus The new status of the channel
+     *            //
+     */
     // protected void handleChannelStateTransition(Channel channel, Characteristic<?> characteristic,
-    //         ThingStatus oldStatus, ThingStatus newStatus) {
-    //     try {
-    //         if (channel == null || characteristic == null) {
-    //             return;
-    //         }
+    // ThingStatus oldStatus, ThingStatus newStatus) {
+    // try {
+    // if (channel == null || characteristic == null) {
+    // return;
+    // }
 
-    //         switch (newStatus) {
-    //             case ONLINE:
-    //                 // When coming online, update channel state with current characteristic value
-    //                 Object value = characteristic.getValue();
-    //                 if (value instanceof State) {
-    //                     updateState(channel.getUID(), (State) value);
-    //                 }
-    //                 break;
-    //             case OFFLINE:
-    //                 // When going offline, clear channel state
-    //                 updateState(channel.getUID(), UnDefType.UNDEF);
-    //                 break;
-    //             default:
-    //                 break;
-    //         }
-    //     } catch (Exception e) {
-    //         logger.warn("{}Warning - Type: Channel, Message: Failed to handle channel state transition: {}", LOG_PREFIX,
-    //                 e.getMessage());
-    //     }
+    // switch (newStatus) {
+    // case ONLINE:
+    // // When coming online, update channel state with current characteristic value
+    // Object value = characteristic.getValue();
+    // if (value instanceof State) {
+    // updateState(channel.getUID(), (State) value);
+    // }
+    // break;
+    // case OFFLINE:
+    // // When going offline, clear channel state
+    // updateState(channel.getUID(), UnDefType.UNDEF);
+    // break;
+    // default:
+    // break;
+    // }
+    // } catch (Exception e) {
+    // logger.warn("{}Warning - Type: Channel, Message: Failed to handle channel state transition: {}", LOG_PREFIX,
+    // e.getMessage());
+    // }
     // }
 
     /**
@@ -1056,39 +1034,40 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      * 
      * @param channel The channel to update
      * @param characteristic The associated characteristic
-    //  */
+     *            //
+     */
     // protected void handleChannelTypeChange(Channel channel, Characteristic<?> characteristic) {
-    //     try {
-    //         if (channel == null || characteristic == null) {
-    //             return;
-    //         }
+    // try {
+    // if (channel == null || characteristic == null) {
+    // return;
+    // }
 
-    //         ChannelTypeUID newChannelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
-    //                 characteristic.getInstanceType());
+    // ChannelTypeUID newChannelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
+    // characteristic.getInstanceType());
 
-    //         // Check if channel type has changed
-    //         if (!channel.getChannelTypeUID().equals(newChannelTypeUID)) {
-    //             ChannelType newChannelType = homekitChannelTypeProvider.getChannelType(newChannelTypeUID, null);
-    //             if (newChannelType != null) {
-    //                 // Create new channel with updated type
-    //                 Channel newChannel = ChannelBuilder.create(channel.getUID()).withType(newChannelTypeUID)
-    //                         .withLabel(characteristic.getDescription()).withDescription(characteristic.getDescription())
-    //                         .build();
+    // // Check if channel type has changed
+    // if (!channel.getChannelTypeUID().equals(newChannelTypeUID)) {
+    // ChannelType newChannelType = homekitChannelTypeProvider.getChannelType(newChannelTypeUID, null);
+    // if (newChannelType != null) {
+    // // Create new channel with updated type
+    // Channel newChannel = ChannelBuilder.create(channel.getUID()).withType(newChannelTypeUID)
+    // .withLabel(characteristic.getDescription()).withDescription(characteristic.getDescription())
+    // .build();
 
-    //                 // Update channel in characteristic map
-    //                 synchronized (characteristicMapLock) {
-    //                     characteristicMap.remove(channel);
-    //                     characteristicMap.put(newChannel, characteristic);
-    //                 }
+    // // Update channel in characteristic map
+    // synchronized (characteristicMapLock) {
+    // characteristicMap.remove(channel);
+    // characteristicMap.put(newChannel, characteristic);
+    // }
 
-    //                 // Update thing with new channel
-    //                 updateThing(editThing().withoutChannel(channel.getUID()).withChannel(newChannel).build());
-    //             }
-    //         }
-    //     } catch (Exception e) {
-    //         logger.warn("{}Warning - Type: Channel, Message: Failed to handle channel type change: {}", LOG_PREFIX,
-    //                 e.getMessage());
-    //     }
+    // // Update thing with new channel
+    // updateThing(editThing().withoutChannel(channel.getUID()).withChannel(newChannel).build());
+    // }
+    // }
+    // } catch (Exception e) {
+    // logger.warn("{}Warning - Type: Channel, Message: Failed to handle channel type change: {}", LOG_PREFIX,
+    // e.getMessage());
+    // }
     // }
 
     /**
@@ -1127,18 +1106,18 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      * @param command The command to process
      */
     // private @Nullable Channel findChannelForCharacteristic(Characteristic<?> characteristic) {
-    //     if (characteristic == null) {
-    //         return null;
-    //     }
+    // if (characteristic == null) {
+    // return null;
+    // }
 
-    //     synchronized (characteristicMapLock) {
-    //         for (Map.Entry<Channel, Characteristic<?>> entry : characteristicMap.entrySet()) {
-    //             if (entry.getValue() == characteristic) {
-    //                 return entry.getKey();
-    //             }
-    //         }
-    //     }
-    //     return null;
+    // synchronized (characteristicMapLock) {
+    // for (Map.Entry<Channel, Characteristic<?>> entry : characteristicMap.entrySet()) {
+    // if (entry.getValue() == characteristic) {
+    // return entry.getKey();
+    // }
+    // }
+    // }
+    // return null;
     // }
 
     /**
@@ -1170,42 +1149,42 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      */
     // @Nullable
     // protected Channel addChannelForCharacteristic(Characteristic<?> characteristic) {
-    //     if (characteristic == null) {
-    //         return null;
-    //     }
+    // if (characteristic == null) {
+    // return null;
+    // }
 
-        // try {
-        //     ChannelUID channelUID = new ChannelUID(thing.getUID(),
-        //             homekitChannelTypeProvider.getCharacteristicTag(characteristic.getInstanceType()));
+    // try {
+    // ChannelUID channelUID = new ChannelUID(thing.getUID(),
+    // homekitChannelTypeProvider.getCharacteristicTag(characteristic.getInstanceType()));
 
-    //         ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
-    //                 characteristic.getInstanceType());
-    //         ChannelType channelType = homekitChannelTypeProvider.getChannelType(channelTypeUID, null);
-    //         if (channelType == null) {
-    //             logger.warn("{}Warning - Type: Channel, Message: No ChannelType found for characteristic {}",
-    //                     LOG_PREFIX, characteristic.getUID());
-    //             return null;
-    //         }
+    // ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
+    // characteristic.getInstanceType());
+    // ChannelType channelType = homekitChannelTypeProvider.getChannelType(channelTypeUID, null);
+    // if (channelType == null) {
+    // logger.warn("{}Warning - Type: Channel, Message: No ChannelType found for characteristic {}",
+    // LOG_PREFIX, characteristic.getUID());
+    // return null;
+    // }
 
-    //         Channel channel = ChannelBuilder.create(channelUID).withType(channelTypeUID)
-    //                 .withLabel(characteristic.getDescription()).withDescription(characteristic.getDescription())
-    //                 .build();
+    // Channel channel = ChannelBuilder.create(channelUID).withType(channelTypeUID)
+    // .withLabel(characteristic.getDescription()).withDescription(characteristic.getDescription())
+    // .build();
 
-    //         synchronized (characteristicMapLock) {
-    //             characteristicMap.put(channel, characteristic);
-    //         }
+    // synchronized (characteristicMapLock) {
+    // characteristicMap.put(channel, characteristic);
+    // }
 
-    //         updateThing(editThing().withChannel(channel).build());
-    //         return channel;
-    //     } catch (HomekitException e) {
-    //         logger.warn("{}Warning - Type: Channel, Message: Failed to add channel for characteristic {}: {}",
-    //                 LOG_PREFIX, characteristic.getUID(), e.getMessage());
-    //         return null;
-    //     } catch (Exception e) {
-    //         logger.warn("{}Warning - Type: Channel, Message: Unexpected error adding channel for characteristic {}: {}",
-    //                 LOG_PREFIX, characteristic.getUID(), e.getMessage());
-    //         return null;
-    //     }
+    // updateThing(editThing().withChannel(channel).build());
+    // return channel;
+    // } catch (HomekitException e) {
+    // logger.warn("{}Warning - Type: Channel, Message: Failed to add channel for characteristic {}: {}",
+    // LOG_PREFIX, characteristic.getUID(), e.getMessage());
+    // return null;
+    // } catch (Exception e) {
+    // logger.warn("{}Warning - Type: Channel, Message: Unexpected error adding channel for characteristic {}: {}",
+    // LOG_PREFIX, characteristic.getUID(), e.getMessage());
+    // return null;
+    // }
     // }
 
     @Override
@@ -1219,7 +1198,8 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
 
     @Override
     protected ChannelUID getChannelUID(Characteristic<?> characteristic) {
-        return new ChannelUID(thing.getUID(), homekitChannelTypeProvider.getCharacteristicTag(characteristic.getInstanceType()));
+        return new ChannelUID(thing.getUID(),
+                homekitChannelTypeProvider.getCharacteristicTag(characteristic.getInstanceType()));
     }
 
     /**
@@ -1247,25 +1227,24 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      * @param characteristic The characteristic whose channel should be removed
      */
     // protected void removeChannelForCharacteristic(Characteristic<?> characteristic) {
-    //     if (characteristic == null) {
-    //         return;
-    //     }
-
-    //     try {
-    //         ChannelUID channelUID = new ChannelUID(thing.getUID(), characteristic.getUID().getHomekitId());
-    //         Channel channel = thing.getChannel(channelUID);
-    //         if (channel != null) {
-    //             synchronized (characteristicMapLock) {
-    //                 characteristicMap.remove(channel);
-    //             }
-    //             updateThing(editThing().withoutChannel(channelUID).build());
-    //         }
-    //     } catch (Exception e) {
-    //         logger.warn("{}Warning - Type: Channel, Message: Failed to remove channel for characteristic {}: {}",
-    //                 LOG_PREFIX, characteristic.getUID(), e.getMessage());
-    //     }
+    // if (characteristic == null) {
+    // return;
     // }
 
+    // try {
+    // ChannelUID channelUID = new ChannelUID(thing.getUID(), characteristic.getUID().getHomekitId());
+    // Channel channel = thing.getChannel(channelUID);
+    // if (channel != null) {
+    // synchronized (characteristicMapLock) {
+    // characteristicMap.remove(channel);
+    // }
+    // updateThing(editThing().withoutChannel(channelUID).build());
+    // }
+    // } catch (Exception e) {
+    // logger.warn("{}Warning - Type: Channel, Message: Failed to remove channel for characteristic {}: {}",
+    // LOG_PREFIX, characteristic.getUID(), e.getMessage());
+    // }
+    // }
 
     protected boolean validateCharacteristicBelongsToHandler(Characteristic<?> characteristic) {
         return characteristic != null && characteristic.getService().getUID().equals(service.getUID());
@@ -1309,16 +1288,16 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      */
     // @Override
     // public void onAccessoryServerEvent(AccessoryServerEvent event) {
-    //     if (disposed) {
-    //         return;
-    //     }
+    // if (disposed) {
+    // return;
+    // }
 
-    //     try {
-    //         validateEventData(event);
-    //         processEvent(() -> handleServerStateChange(event));
-    //     } catch (IllegalArgumentException e) {
-    //         logger.error("{}Invalid server event data: {}", e.getMessage());
-    //     }
+    // try {
+    // validateEventData(event);
+    // processEvent(() -> handleServerStateChange(event));
+    // } catch (IllegalArgumentException e) {
+    // logger.error("{}Invalid server event data: {}", e.getMessage());
+    // }
     // }
 
     /**
@@ -1350,18 +1329,18 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      */
     // @Override
     // public void onAccessoryEvent(AccessoryEvent event) {
-    //     if (disposed) {
-    //         return;
-    //     }
-    //     try {
-    //         validateEventData(event);
-    //         processEvent(() -> handleAccessoryEvent(event));
-    //     } catch (IllegalArgumentException e) {
-    //         logger.error("{}Invalid accessory event data: {}", LOG_EVENT, e.getMessage());
-    //     } catch (Exception e) {
-    //         logger.error("{}Error processing accessory event: {}", LOG_EVENT, e.getMessage(), e);
-    //         handleError(ThingStatusDetail.COMMUNICATION_ERROR, ERROR_PROCESSING_ACCESSORY_EVENT, e);
-    //     }
+    // if (disposed) {
+    // return;
+    // }
+    // try {
+    // validateEventData(event);
+    // processEvent(() -> handleAccessoryEvent(event));
+    // } catch (IllegalArgumentException e) {
+    // logger.error("{}Invalid accessory event data: {}", LOG_EVENT, e.getMessage());
+    // } catch (Exception e) {
+    // logger.error("{}Error processing accessory event: {}", LOG_EVENT, e.getMessage(), e);
+    // handleError(ThingStatusDetail.COMMUNICATION_ERROR, ERROR_PROCESSING_ACCESSORY_EVENT, e);
+    // }
     // }
 
     /**
@@ -1390,22 +1369,23 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      * </p>
      * 
      * @param event The service event to process
-    //  */
+     *            //
+     */
     // @Override
     // public void onServiceEvent(ServiceEvent event) {
-    //     if (disposed) {
-    //         return;
-    //     }
+    // if (disposed) {
+    // return;
+    // }
 
-    //     try {
-    //         validateEventData(event);
-    //         processEvent(() -> handleServiceStateChange(event));
-    //     } catch (IllegalArgumentException e) {
-    //         logger.error("{}Invalid service event data: {}", LOG_EVENT, e.getMessage());
-    //     } catch (Exception e) {
-    //         logger.error("{}Error processing service event: {}", LOG_EVENT, e.getMessage(), e);
-    //         handleError(ThingStatusDetail.COMMUNICATION_ERROR, ERROR_PROCESSING_SERVICE_EVENT, e);
-    //     }
+    // try {
+    // validateEventData(event);
+    // processEvent(() -> handleServiceStateChange(event));
+    // } catch (IllegalArgumentException e) {
+    // logger.error("{}Invalid service event data: {}", LOG_EVENT, e.getMessage());
+    // } catch (Exception e) {
+    // logger.error("{}Error processing service event: {}", LOG_EVENT, e.getMessage(), e);
+    // handleError(ThingStatusDetail.COMMUNICATION_ERROR, ERROR_PROCESSING_SERVICE_EVENT, e);
+    // }
     // }
 
     /**
@@ -1442,21 +1422,22 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      * </p>
      * 
      * @param event The characteristic event to process
-    //  */
+     *            //
+     */
     // @Override
     // public void onCharacteristicEvent(CharacteristicEvent event) {
-    //     if (disposed) {
-    //         return;
-    //     }
-    //     try {
-    //         validateEventData(event);
-    //         processEvent(() -> handleCharacteristicEvent(event));
-    //     } catch (IllegalArgumentException e) {
-    //         logger.error("{}Invalid characteristic event data: {}", LOG_EVENT, e.getMessage());
-    //     } catch (Exception e) {
-    //         logger.error("{}Error processing characteristic event: {}", LOG_EVENT, e.getMessage(), e);
-    //         handleError(ThingStatusDetail.COMMUNICATION_ERROR, ERROR_PROCESSING_CHARACTERISTIC_EVENT, e);
-    //     }
+    // if (disposed) {
+    // return;
+    // }
+    // try {
+    // validateEventData(event);
+    // processEvent(() -> handleCharacteristicEvent(event));
+    // } catch (IllegalArgumentException e) {
+    // logger.error("{}Invalid characteristic event data: {}", LOG_EVENT, e.getMessage());
+    // } catch (Exception e) {
+    // logger.error("{}Error processing characteristic event: {}", LOG_EVENT, e.getMessage(), e);
+    // handleError(ThingStatusDetail.COMMUNICATION_ERROR, ERROR_PROCESSING_CHARACTERISTIC_EVENT, e);
+    // }
     // }
 
     /**
@@ -1494,58 +1475,59 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      * </p>
      * 
      * @param event The server state change event to process
-    //  */
+     *            //
+     */
     // private void handleServerStateChange(AccessoryServerEvent event) {
-    //     try {
-    //         synchronized (stateLock) {
-    //             synchronized (serverLock) {
-    //                 if (server != null && event.getServer().equals(server)) {
-    //                     switch (event.getType()) {
-    //                         case SERVER_STATE_CONNECTED:
-    //                             serverConnected = true;
-    //                             logger.debug("{}Debug - Type: Server, Message: Server connected", LOG_PREFIX);
-    //                             validateAndUpdateState();
-    //                             break;
-    //                         case SERVER_STATE_DISCONNECTED:
-    //                             serverConnected = false;
-    //                             logger.debug("{}Debug - Type: Server, Message: Server disconnected", LOG_PREFIX);
-    //                             validateAndUpdateState();
-    //                             break;
-    //                         case SERVER_STATE_PAIRED:
-    //                         case SERVER_STATE_PAIR_VERIFIED:
-    //                             serverPaired = true;
-    //                             logger.debug("{}Debug - Type: Server, Message: Server paired", LOG_PREFIX);
-    //                             validateAndUpdateState();
-    //                             break;
-    //                         case SERVER_STATE_UNPAIRED:
-    //                         case SERVER_STATE_PAIR_UNVERIFIED:
-    //                             serverPaired = false;
-    //                             logger.debug("{}Debug - Type: Server, Message: Server unpaired", LOG_PREFIX);
-    //                             validateAndUpdateState();
-    //                             break;
-    //                         case SERVER_STATE_MISSING_SETUP_CODE:
-    //                             logger.warn("{}Warning - Type: Server, Message: Server setup code missing", LOG_PREFIX);
-    //                             updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
-    //                                     "Missing setup code");
-    //                             break;
-    //                         case SERVER_STATE_PAIRING_MISSING:
-    //                             logger.warn("{}Warning - Type: Server, Message: Server pairing information missing",
-    //                                     LOG_PREFIX);
-    //                             updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
-    //                                     "Pairing information missing");
-    //                             break;
-    //                         default:
-    //                             logger.debug("{}Debug - Type: Server, Message: Unhandled server event type: {}",
-    //                                     LOG_PREFIX, event.getType());
-    //                             break;
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     } catch (Exception e) {
-    //         logger.error("{}Error - Type: Server, Message: Server state change failed - Error: {}", LOG_PREFIX,
-    //                 e.getMessage(), e);
-    //     }
+    // try {
+    // synchronized (stateLock) {
+    // synchronized (serverLock) {
+    // if (server != null && event.getServer().equals(server)) {
+    // switch (event.getType()) {
+    // case SERVER_STATE_CONNECTED:
+    // serverConnected = true;
+    // logger.debug("{}Debug - Type: Server, Message: Server connected", LOG_PREFIX);
+    // validateAndUpdateState();
+    // break;
+    // case SERVER_STATE_DISCONNECTED:
+    // serverConnected = false;
+    // logger.debug("{}Debug - Type: Server, Message: Server disconnected", LOG_PREFIX);
+    // validateAndUpdateState();
+    // break;
+    // case SERVER_STATE_PAIRED:
+    // case SERVER_STATE_PAIR_VERIFIED:
+    // serverPaired = true;
+    // logger.debug("{}Debug - Type: Server, Message: Server paired", LOG_PREFIX);
+    // validateAndUpdateState();
+    // break;
+    // case SERVER_STATE_UNPAIRED:
+    // case SERVER_STATE_PAIR_UNVERIFIED:
+    // serverPaired = false;
+    // logger.debug("{}Debug - Type: Server, Message: Server unpaired", LOG_PREFIX);
+    // validateAndUpdateState();
+    // break;
+    // case SERVER_STATE_MISSING_SETUP_CODE:
+    // logger.warn("{}Warning - Type: Server, Message: Server setup code missing", LOG_PREFIX);
+    // updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
+    // "Missing setup code");
+    // break;
+    // case SERVER_STATE_PAIRING_MISSING:
+    // logger.warn("{}Warning - Type: Server, Message: Server pairing information missing",
+    // LOG_PREFIX);
+    // updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
+    // "Pairing information missing");
+    // break;
+    // default:
+    // logger.debug("{}Debug - Type: Server, Message: Unhandled server event type: {}",
+    // LOG_PREFIX, event.getType());
+    // break;
+    // }
+    // }
+    // }
+    // }
+    // } catch (Exception e) {
+    // logger.error("{}Error - Type: Server, Message: Server state change failed - Error: {}", LOG_PREFIX,
+    // e.getMessage(), e);
+    // }
     // }
 
     /**
@@ -1579,33 +1561,33 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      * </p>
      */
     // private void handleServiceStateChange(ServiceEvent event) {
-    //     try {
-    //         synchronized (stateLock) {
-    //             synchronized (serviceLock) {
-    //                 if (service != null && event.getService().equals(service)) {
-    //                     switch (event.getType()) {
-    //                         case CHARACTERISTIC_ADDED:
-    //                             handleCharacteristicAdded(event.getCharacteristic());
-    //                             break;
-    //                         case CHARACTERISTIC_REMOVED:
-    //                             handleCharacteristicRemoved(event.getCharacteristic());
-    //                             break;
-    //                         case CHARACTERISTIC_STATE_CHANGED:
-    //                             handleCharacteristicStateChanged(event);
-    //                             break;
-    //                         default:
-    //                             logger.debug("{}Debug - Type: Service, Message: Unhandled service event type: {}",
-    //                                     LOG_PREFIX, event.getType());
-    //                             break;
-    //                     }
-    //                     synchronizeChannels();
-    //                 }
-    //             }
-    //         }
-    //     } catch (Exception e) {
-    //         handleRecoverableError(ThingStatusDetail.COMMUNICATION_ERROR,
-    //                 "Error processing service state change: " + e.getMessage(), e);
-    //     }
+    // try {
+    // synchronized (stateLock) {
+    // synchronized (serviceLock) {
+    // if (service != null && event.getService().equals(service)) {
+    // switch (event.getType()) {
+    // case CHARACTERISTIC_ADDED:
+    // handleCharacteristicAdded(event.getCharacteristic());
+    // break;
+    // case CHARACTERISTIC_REMOVED:
+    // handleCharacteristicRemoved(event.getCharacteristic());
+    // break;
+    // case CHARACTERISTIC_STATE_CHANGED:
+    // handleCharacteristicStateChanged(event);
+    // break;
+    // default:
+    // logger.debug("{}Debug - Type: Service, Message: Unhandled service event type: {}",
+    // LOG_PREFIX, event.getType());
+    // break;
+    // }
+    // synchronizeChannels();
+    // }
+    // }
+    // }
+    // } catch (Exception e) {
+    // handleRecoverableError(ThingStatusDetail.COMMUNICATION_ERROR,
+    // "Error processing service state change: " + e.getMessage(), e);
+    // }
     // }
 
     /**
@@ -1640,81 +1622,76 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      */
 
     // private void handleAccessoryEvent(AccessoryEvent event) {
-    //     if (event == null) {
-    //         logger.warn("{}Received null accessory event", LOG_EVENT);
-    //         return;
-    //     }
-
-    //     if (!event.getAccessory().equals(getAccessory())) {
-    //         logger.debug("{}Received event for different accessory, ignoring", LOG_EVENT);
-    //         return;
-    //     }
-
-    //     switch (event.getType()) {
-    //         case SERVICE_ADDED:
-    //             logger.debug("{}Service added event received", LOG_EVENT);
-    //             synchronized (accessoryLock) {
-    //                 if (accessory == null) {
-    //                     Accessory foundAccessory = accessoryRegistry.get(new AccessoryUID(accessoryId));
-    //                     if (foundAccessory != null) {
-    //                         setAccessory(foundAccessory);
-    //                         if (this instanceof org.openhab.io.homekit.api.listener.AccessoryChangeListener) {
-    //                             foundAccessory.addChangeListener(
-    //                                     (org.openhab.io.homekit.api.listener.AccessoryChangeListener) this);
-    //                         }
-    //                         validateAndUpdateState();
-    //                     } else {
-    //                         logger.warn("{}Accessory not found in registry after add event", LOG_EVENT);
-    //                         updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
-    //                                 "Accessory not found");
-    //                     }
-    //                 }
-    //             }
-    //             break;
-    //         case SERVICE_REMOVED:
-    //             logger.debug("{}Service removed event received", LOG_EVENT);
-    //             synchronized (accessoryLock) {
-    //                 if (accessory != null) {
-    //                     try {
-    //                         if (this instanceof org.openhab.io.homekit.api.listener.AccessoryChangeListener) {
-    //                             accessory.removeChangeListener(
-    //                                     (org.openhab.io.homekit.api.listener.AccessoryChangeListener) this);
-    //                         }
-    //                     } catch (Exception e) {
-    //                         logger.warn("{}Failed to remove accessory change listener: {}", LOG_EVENT, e.getMessage());
-    //                     }
-    //                     accessory = null;
-    //                 }
-    //             }
-    //             handleServiceRemoved();
-    //             break;
-    //         case SERVICE_STATE_CHANGED:
-    //             logger.debug("{}Service state changed event received", LOG_EVENT);
-    //             synchronized (accessoryLock) {
-    //                 if (accessory != null) {
-    //                     Service foundService = accessory.getService(serviceId);
-    //                     if (foundService != null) {
-    //                         setService(foundService);
-    //                         validateAndUpdateState();
-    //                         synchronizeChannels();
-    //                     } else {
-    //                         logger.warn("{}Service not found in accessory after change event", LOG_EVENT);
-    //                         updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
-    //                                 "Service not found");
-    //                     }
-    //                 }
-    //             }
-    //             break;
-    //         default:
-    //             logger.warn("{}Unhandled accessory event type: {}", LOG_EVENT, event.getType());
-    //             break;
-    //     }
+    // if (event == null) {
+    // logger.warn("{}Received null accessory event", LOG_EVENT);
+    // return;
     // }
 
-    
-    
+    // if (!event.getAccessory().equals(getAccessory())) {
+    // logger.debug("{}Received event for different accessory, ignoring", LOG_EVENT);
+    // return;
+    // }
 
-  
+    // switch (event.getType()) {
+    // case SERVICE_ADDED:
+    // logger.debug("{}Service added event received", LOG_EVENT);
+    // synchronized (accessoryLock) {
+    // if (accessory == null) {
+    // Accessory foundAccessory = accessoryRegistry.get(new AccessoryUID(accessoryId));
+    // if (foundAccessory != null) {
+    // setAccessory(foundAccessory);
+    // if (this instanceof org.openhab.io.homekit.api.listener.AccessoryChangeListener) {
+    // foundAccessory.addChangeListener(
+    // (org.openhab.io.homekit.api.listener.AccessoryChangeListener) this);
+    // }
+    // validateAndUpdateState();
+    // } else {
+    // logger.warn("{}Accessory not found in registry after add event", LOG_EVENT);
+    // updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
+    // "Accessory not found");
+    // }
+    // }
+    // }
+    // break;
+    // case SERVICE_REMOVED:
+    // logger.debug("{}Service removed event received", LOG_EVENT);
+    // synchronized (accessoryLock) {
+    // if (accessory != null) {
+    // try {
+    // if (this instanceof org.openhab.io.homekit.api.listener.AccessoryChangeListener) {
+    // accessory.removeChangeListener(
+    // (org.openhab.io.homekit.api.listener.AccessoryChangeListener) this);
+    // }
+    // } catch (Exception e) {
+    // logger.warn("{}Failed to remove accessory change listener: {}", LOG_EVENT, e.getMessage());
+    // }
+    // accessory = null;
+    // }
+    // }
+    // handleServiceRemoved();
+    // break;
+    // case SERVICE_STATE_CHANGED:
+    // logger.debug("{}Service state changed event received", LOG_EVENT);
+    // synchronized (accessoryLock) {
+    // if (accessory != null) {
+    // Service foundService = accessory.getService(serviceId);
+    // if (foundService != null) {
+    // setService(foundService);
+    // validateAndUpdateState();
+    // synchronizeChannels();
+    // } else {
+    // logger.warn("{}Service not found in accessory after change event", LOG_EVENT);
+    // updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
+    // "Service not found");
+    // }
+    // }
+    // }
+    // break;
+    // default:
+    // logger.warn("{}Unhandled accessory event type: {}", LOG_EVENT, event.getType());
+    // break;
+    // }
+    // }
 
     /**
      * Processes events in a thread-safe manner.
@@ -1729,27 +1706,27 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      * @param eventTask The event task to process
      */
     // protected void processEvent(Runnable eventTask) {
-    //     synchronized (eventQueueLock) {
-    //         if (eventQueue.size() >= MAX_QUEUE_SIZE) {
-    //             logger.warn("{}Event queue overflow, dropping oldest event", LOG_EVENT);
-    //             eventQueue.poll(); // Remove oldest event
-    //         }
-    //         eventQueue.offer(eventTask);
-    //     }
+    // synchronized (eventQueueLock) {
+    // if (eventQueue.size() >= MAX_QUEUE_SIZE) {
+    // logger.warn("{}Event queue overflow, dropping oldest event", LOG_EVENT);
+    // eventQueue.poll(); // Remove oldest event
+    // }
+    // eventQueue.offer(eventTask);
+    // }
 
-    //     eventExecutor.submit(() -> {
-    //         try {
-    //             Runnable task;
-    //             synchronized (eventQueueLock) {
-    //                 task = eventQueue.poll();
-    //             }
-    //             if (task != null) {
-    //                 task.run();
-    //             }
-    //         } catch (Exception e) {
-    //             logger.error("{}Error processing event: {}", LOG_EVENT, e.getMessage(), e);
-    //         }
-    //     });
+    // eventExecutor.submit(() -> {
+    // try {
+    // Runnable task;
+    // synchronized (eventQueueLock) {
+    // task = eventQueue.poll();
+    // }
+    // if (task != null) {
+    // task.run();
+    // }
+    // } catch (Exception e) {
+    // logger.error("{}Error processing event: {}", LOG_EVENT, e.getMessage(), e);
+    // }
+    // });
     // }
 
     /**
@@ -1771,49 +1748,50 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      * 
      * @param event The AccessoryServerEvent to validate
      * @throws IllegalArgumentException if event data is invalid
-    //  */
+     *             //
+     */
     // private void validateEventData(AccessoryServerEvent event) {
-    //     if (event == null) {
-    //         throw new IllegalArgumentException("Event cannot be null");
-    //     }
-    //     if (event.getServer() == null) {
-    //         throw new IllegalArgumentException("Event server cannot be null");
-    //     }
-    //     if (event.getType() == null) {
-    //         throw new IllegalArgumentException("Event type cannot be null");
-    //     }
+    // if (event == null) {
+    // throw new IllegalArgumentException("Event cannot be null");
+    // }
+    // if (event.getServer() == null) {
+    // throw new IllegalArgumentException("Event server cannot be null");
+    // }
+    // if (event.getType() == null) {
+    // throw new IllegalArgumentException("Event type cannot be null");
+    // }
     // }
 
     // /**
-    //  * Validates the data in a ServiceEvent to ensure it contains all required information
-    //  * before processing.
-    //  * 
-    //  * <p>
-    //  * This method performs validation by checking:
-    //  * 1. Event is not null
-    //  * 2. Service reference is not null
-    //  * 3. Event type is not null
-    //  * </p>
-    //  * 
-    //  * <p>
-    //  * Thread Safety:
-    //  * - No synchronization needed as this is a validation-only method
-    //  * - Thread-safe validation
-    //  * </p>
-    //  * 
-    //  * @param event The ServiceEvent to validate
-    //  * @throws IllegalArgumentException if event data is invalid
-    //  */
+    // * Validates the data in a ServiceEvent to ensure it contains all required information
+    // * before processing.
+    // *
+    // * <p>
+    // * This method performs validation by checking:
+    // * 1. Event is not null
+    // * 2. Service reference is not null
+    // * 3. Event type is not null
+    // * </p>
+    // *
+    // * <p>
+    // * Thread Safety:
+    // * - No synchronization needed as this is a validation-only method
+    // * - Thread-safe validation
+    // * </p>
+    // *
+    // * @param event The ServiceEvent to validate
+    // * @throws IllegalArgumentException if event data is invalid
+    // */
     // private void validateEventData(ServiceEvent event) {
-    //     if (event == null) {
-    //         throw new IllegalArgumentException("Event cannot be null");
-    //     }
-    //     if (event.getService() == null) {
-    //         throw new IllegalArgumentException("Event service cannot be null");
-    //     }
-    //     if (event.getType() == null) {
-    //         throw new IllegalArgumentException("Event type cannot be null");
-    //     }
+    // if (event == null) {
+    // throw new IllegalArgumentException("Event cannot be null");
+    // }
+    // if (event.getService() == null) {
+    // throw new IllegalArgumentException("Event service cannot be null");
+    // }
+    // if (event.getType() == null) {
+    // throw new IllegalArgumentException("Event type cannot be null");
+    // }
     // }
 
     /**
@@ -1832,115 +1810,116 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      * - No synchronization needed as this is a validation-only method
      * - Thread-safe validation
      * </p>
-    //  * 
-    //  * @param event The AccessoryEvent to validate
-    //  * @throws IllegalArgumentException if event data is invalid
-    //  */
+     * // *
+     * // * @param event The AccessoryEvent to validate
+     * // * @throws IllegalArgumentException if event data is invalid
+     * //
+     */
     // private void validateEventData(AccessoryEvent event) {
-    //     if (event == null) {
-    //         throw new IllegalArgumentException("Event cannot be null");
-    //     }
-    //     if (event.getAccessory() == null) {
-    //         throw new IllegalArgumentException("Event accessory cannot be null");
-    //     }
-    //     if (event.getType() == null) {
-    //         throw new IllegalArgumentException("Event type cannot be null");
-    //     }
+    // if (event == null) {
+    // throw new IllegalArgumentException("Event cannot be null");
+    // }
+    // if (event.getAccessory() == null) {
+    // throw new IllegalArgumentException("Event accessory cannot be null");
+    // }
+    // if (event.getType() == null) {
+    // throw new IllegalArgumentException("Event type cannot be null");
+    // }
     // }
 
     // /**
-    //  * Validates the data in a CharacteristicEvent to ensure it contains all required information
-    //  * before processing.
-    //  * 
-    //  * <p>
-    //  * This method performs validation by checking:
-    //  * 1. Event is not null
-    //  * 2. Characteristic reference is not null
-    //  * 3. Event type is not null
-    //  * </p>
-    //  * 
-    //  * <p>
-    //  * Thread Safety:
-    //  * - No synchronization needed as this is a validation-only method
-    //  * - Thread-safe validation
-    //  * </p>
-    //  * 
-    //  * @param event The CharacteristicEvent to validate
-    //  * @throws IllegalArgumentException if event data is invalid
-    //  */
+    // * Validates the data in a CharacteristicEvent to ensure it contains all required information
+    // * before processing.
+    // *
+    // * <p>
+    // * This method performs validation by checking:
+    // * 1. Event is not null
+    // * 2. Characteristic reference is not null
+    // * 3. Event type is not null
+    // * </p>
+    // *
+    // * <p>
+    // * Thread Safety:
+    // * - No synchronization needed as this is a validation-only method
+    // * - Thread-safe validation
+    // * </p>
+    // *
+    // * @param event The CharacteristicEvent to validate
+    // * @throws IllegalArgumentException if event data is invalid
+    // */
     // private void validateEventData(CharacteristicEvent event) {
-    //     if (event == null) {
-    //         throw new IllegalArgumentException("Event cannot be null");
-    //     }
-    //     if (event.getCharacteristic() == null) {
-    //         throw new IllegalArgumentException("Event characteristic cannot be null");
-    //     }
-    //     if (event.getEventType() == null) {
-    //         throw new IllegalArgumentException("Event type cannot be null");
-    //     }
+    // if (event == null) {
+    // throw new IllegalArgumentException("Event cannot be null");
+    // }
+    // if (event.getCharacteristic() == null) {
+    // throw new IllegalArgumentException("Event characteristic cannot be null");
+    // }
+    // if (event.getEventType() == null) {
+    // throw new IllegalArgumentException("Event type cannot be null");
+    // }
     // }
 
     // /**
-    //  * Determines the current thing status detail based on component states.
-    //  * 
-    //  * <p>
-    //  * This method evaluates the state of various components to determine
-    //  * the appropriate status detail for the thing.
-    //  * </p>
-    //  * 
-    //  * @return The current thing status detail
-    //  */
+    // * Determines the current thing status detail based on component states.
+    // *
+    // * <p>
+    // * This method evaluates the state of various components to determine
+    // * the appropriate status detail for the thing.
+    // * </p>
+    // *
+    // * @return The current thing status detail
+    // */
     // protected ThingStatusDetail determineThingStatusDetail() {
-    //     if (!serverConnected) {
-    //         return ThingStatusDetail.COMMUNICATION_ERROR;
-    //     }
-    //     if (!serverPaired) {
-    //         return ThingStatusDetail.CONFIGURATION_ERROR;
-    //     }
-    //     if (!serviceAvailable) {
-    //         return ThingStatusDetail.COMMUNICATION_ERROR;
-    //     }
-    //     return ThingStatusDetail.NONE;
+    // if (!serverConnected) {
+    // return ThingStatusDetail.COMMUNICATION_ERROR;
+    // }
+    // if (!serverPaired) {
+    // return ThingStatusDetail.CONFIGURATION_ERROR;
+    // }
+    // if (!serviceAvailable) {
+    // return ThingStatusDetail.COMMUNICATION_ERROR;
+    // }
+    // return ThingStatusDetail.NONE;
     // }
 
     // /**
-    //  * Determines the current thing status description based on component states.
-    //  * 
-    //  * <p>
-    //  * This method evaluates the state of various components to provide
-    //  * a descriptive message about the current status.
-    //  * </p>
-    //  * 
-    //  * @return A description of the current thing status, or null if no description is needed
-    //  */
+    // * Determines the current thing status description based on component states.
+    // *
+    // * <p>
+    // * This method evaluates the state of various components to provide
+    // * a descriptive message about the current status.
+    // * </p>
+    // *
+    // * @return A description of the current thing status, or null if no description is needed
+    // */
     // private @Nullable String determineThingStatusDescription() {
-    //     if (!serverConnected) {
-    //         return "Server disconnected";
-    //     }
-    //     if (!serverPaired) {
-    //         return "Server not paired";
-    //     }
-    //     if (!serviceAvailable) {
-    //         return "Service not available";
-    //     }
-    //     return null;
+    // if (!serverConnected) {
+    // return "Server disconnected";
+    // }
+    // if (!serverPaired) {
+    // return "Server not paired";
+    // }
+    // if (!serviceAvailable) {
+    // return "Service not available";
+    // }
+    // return null;
     // }
 
     // /**
-    //  * Determines the current thing status based on component states.
-    //  * 
-    //  * <p>
-    //  * This method evaluates the state of various components to determine
-    //  * the overall status of the thing.
-    //  * </p>
-    //  * 
-    //  * @return The current thing status
-    //  */
+    // * Determines the current thing status based on component states.
+    // *
+    // * <p>
+    // * This method evaluates the state of various components to determine
+    // * the overall status of the thing.
+    // * </p>
+    // *
+    // * @return The current thing status
+    // */
     // protected ThingStatus determineThingStatus() {
-    //     if (!serverConnected || !serverPaired || !serviceAvailable) {
-    //         return ThingStatus.OFFLINE;
-    //     }
-    //     return ThingStatus.ONLINE;
+    // if (!serverConnected || !serverPaired || !serviceAvailable) {
+    // return ThingStatus.OFFLINE;
+    // }
+    // return ThingStatus.ONLINE;
     // }
 
     /**
@@ -1963,32 +1942,32 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      * @param event The service event containing the characteristic state change
      */
     // private void handleCharacteristicStateChanged(ServiceEvent event) {
-    //     try {
-    //         Characteristic<?> characteristic = event.getCharacteristic();
-    //         if (characteristic != null) {
-    //             Channel channel = findChannelForCharacteristic(characteristic);
-    //             if (channel != null) {
-    //                 // Check if the characteristic type has changed
-    //                 handleChannelTypeChange(channel, characteristic);
+    // try {
+    // Characteristic<?> characteristic = event.getCharacteristic();
+    // if (characteristic != null) {
+    // Channel channel = findChannelForCharacteristic(characteristic);
+    // if (channel != null) {
+    // // Check if the characteristic type has changed
+    // handleChannelTypeChange(channel, characteristic);
 
-    //                 // Update the channel state
-    //                 synchronized (characteristicMapLock) {
-    //                     if (characteristicMap.get(channel) == characteristic) {
-    //                         Object value = characteristic.getValue();
-    //                         if (value instanceof State) {
-    //                             updateState(channel.getUID(), (State) value);
-    //                             logger.debug("{}Channel state updated - UID: {}, Value: {}", LOG_CHANNEL,
-    //                                     channel.getUID(), value);
-    //                         }
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     } catch (Exception e) {
-    //         logger.error("{}Characteristic state change failed - Error: {}", LOG_CHANNEL, e.getMessage());
-    //         handleRecoverableError(ThingStatusDetail.COMMUNICATION_ERROR,
-    //                 "Error handling characteristic state change: " + e.getMessage(), e);
-    //     }
+    // // Update the channel state
+    // synchronized (characteristicMapLock) {
+    // if (characteristicMap.get(channel) == characteristic) {
+    // Object value = characteristic.getValue();
+    // if (value instanceof State) {
+    // updateState(channel.getUID(), (State) value);
+    // logger.debug("{}Channel state updated - UID: {}, Value: {}", LOG_CHANNEL,
+    // channel.getUID(), value);
+    // }
+    // }
+    // }
+    // }
+    // }
+    // } catch (Exception e) {
+    // logger.error("{}Characteristic state change failed - Error: {}", LOG_CHANNEL, e.getMessage());
+    // handleRecoverableError(ThingStatusDetail.COMMUNICATION_ERROR,
+    // "Error handling characteristic state change: " + e.getMessage(), e);
+    // }
     // }
 
     /**
@@ -2009,27 +1988,28 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      * 
      * @param channelUID The UID of the channel
      * @param command The command to process
-    //  */
+     *            //
+     */
     // @Override
     // public void handleCommand(ChannelUID channelUID, Command command) {
-    //     if (disposed || channelUID == null || command == null) {
-    //         return;
-    //     }
+    // if (disposed || channelUID == null || command == null) {
+    // return;
+    // }
 
-    //     try {
-    //         Channel channel = thing.getChannel(channelUID);
-    //         if (channel != null) {
-    //             Characteristic<?> characteristic;
-    //             synchronized (characteristicMapLock) {
-    //                 characteristic = characteristicMap.get(channel);
-    //             }
-    //             if (characteristic != null) {
-    //                 handleCharacteristicCommand(characteristic, command);
-    //             }
-    //         }
-    //     } catch (Exception e) {
-    //         logger.warn("{}Failed to handle command for channel {}: {}", LOG_CHANNEL, channelUID, e.getMessage());
-    //     }
+    // try {
+    // Channel channel = thing.getChannel(channelUID);
+    // if (channel != null) {
+    // Characteristic<?> characteristic;
+    // synchronized (characteristicMapLock) {
+    // characteristic = characteristicMap.get(channel);
+    // }
+    // if (characteristic != null) {
+    // handleCharacteristicCommand(characteristic, command);
+    // }
+    // }
+    // } catch (Exception e) {
+    // logger.warn("{}Failed to handle command for channel {}: {}", LOG_CHANNEL, channelUID, e.getMessage());
+    // }
     // }
 
     /**
@@ -2066,32 +2046,31 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      * 
      * @param characteristic The characteristic to process the command for
      * @param command The command to process
-    //  */
+     *            //
+     */
     // private <T> void handleCharacteristicCommand(Characteristic<T> characteristic, Command command) {
-    //     if (characteristic == null || command == null) {
-    //         return;
-    //     }
-
-    //     try {
-    //         if (command instanceof State) {
-    //             @SuppressWarnings("unchecked")
-    //             T value = (T) command;
-    //             characteristic.setValue(value);
-    //             Channel channel = findChannelForCharacteristic(characteristic);
-    //             if (channel != null) {
-    //                 updateState(channel.getUID(), (State) command);
-    //                 logger.debug("{}Command processed - Channel: {}, Value: {}", LOG_CHANNEL, channel.getUID(),
-    //                         command);
-    //             }
-    //         }
-    //     } catch (Exception e) {
-    //         logger.warn("{}Command processing failed - Characteristic: {}, Error: {}", LOG_CHANNEL,
-    //                 characteristic.getUID(), e.getMessage());
-    //         handleError(ThingStatusDetail.COMMUNICATION_ERROR, ERROR_COMMAND_PROCESSING, e);
-    //     }
+    // if (characteristic == null || command == null) {
+    // return;
     // }
 
-
+    // try {
+    // if (command instanceof State) {
+    // @SuppressWarnings("unchecked")
+    // T value = (T) command;
+    // characteristic.setValue(value);
+    // Channel channel = findChannelForCharacteristic(characteristic);
+    // if (channel != null) {
+    // updateState(channel.getUID(), (State) command);
+    // logger.debug("{}Command processed - Channel: {}, Value: {}", LOG_CHANNEL, channel.getUID(),
+    // command);
+    // }
+    // }
+    // } catch (Exception e) {
+    // logger.warn("{}Command processing failed - Characteristic: {}, Error: {}", LOG_CHANNEL,
+    // characteristic.getUID(), e.getMessage());
+    // handleError(ThingStatusDetail.COMMUNICATION_ERROR, ERROR_COMMAND_PROCESSING, e);
+    // }
+    // }
 
     /**
      * Handles the removal of a service.
@@ -2122,11 +2101,11 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      */
 
     // protected void handleServiceRemoved() {
-    //     cleanupChannels();
-    //     synchronized (serviceLock) {
-    //         service = null;
-    //     }
-    //     updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.GONE, "Service removed");
+    // cleanupChannels();
+    // synchronized (serviceLock) {
+    // service = null;
+    // }
+    // updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.GONE, "Service removed");
     // }
 
     /**
@@ -2138,86 +2117,81 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      * - Thread-safe server retrieval
      * </p>
      * 
-    //  * @return The current HomeKit server instance, or null if not set
-    //  */
+     * // * @return The current HomeKit server instance, or null if not set
+     * //
+     */
     // private @Nullable AccessoryServer getServer() {
-    //     synchronized (serverLock) {
-    //         return server;
-    //     }
+    // synchronized (serverLock) {
+    // return server;
+    // }
     // }
 
     // /**
-    //  * Sets the HomeKit server instance.
-    //  * 
-    //  * <p>
-    //  * This method updates the server reference and:
-    //  * 1. Validates the new server
-    //  * 2. Updates the server reference
-    //  * 3. Registers/unregisters listeners
-    //  * 4. Updates the thing status
-    //  * </p>
-    //  * 
-    //  * <p>
-    //  * Thread Safety:
-    //  * - Uses synchronized blocks for server updates
-    //  * - Thread-safe server assignment
-    //  * </p>
-    //  * 
-    //  * @param server The new HomeKit server instance
-    //  */
+    // * Sets the HomeKit server instance.
+    // *
+    // * <p>
+    // * This method updates the server reference and:
+    // * 1. Validates the new server
+    // * 2. Updates the server reference
+    // * 3. Registers/unregisters listeners
+    // * 4. Updates the thing status
+    // * </p>
+    // *
+    // * <p>
+    // * Thread Safety:
+    // * - Uses synchronized blocks for server updates
+    // * - Thread-safe server assignment
+    // * </p>
+    // *
+    // * @param server The new HomeKit server instance
+    // */
     // private void setServer(@Nullable AccessoryServer server) {
-    //     synchronized (serverLock) {
-    //         this.server = server;
-    //     }
+    // synchronized (serverLock) {
+    // this.server = server;
+    // }
     // }
 
     // /**
-    //  * Gets the current HomeKit accessory instance.
-    //  * 
-    //  * <p>
-    //  * Thread Safety:
-    //  * - Uses synchronized blocks for accessory access
-    //  * - Thread-safe accessory retrieval
-    //  * </p>
-    //  * 
-    //  * @return The current HomeKit accessory instance, or null if not set
-    //  */
+    // * Gets the current HomeKit accessory instance.
+    // *
+    // * <p>
+    // * Thread Safety:
+    // * - Uses synchronized blocks for accessory access
+    // * - Thread-safe accessory retrieval
+    // * </p>
+    // *
+    // * @return The current HomeKit accessory instance, or null if not set
+    // */
     // private @Nullable Accessory getAccessory() {
-    //     synchronized (accessoryLock) {
-    //         return accessory;
-    //     }
+    // synchronized (accessoryLock) {
+    // return accessory;
+    // }
     // }
 
     // /**
-    //  * Sets the accessory instance in a thread-safe manner.
-    //  * 
-    //  * <p>
-    //  * This method updates the accessory reference and:
-    //  * 1. Validates the new accessory
-    //  * 2. Updates the accessory reference
-    //  * 3. Registers/unregisters listeners
-    //  * 4. Updates the thing status
-    //  * </p>
-    //  * 
-    //  * <p>
-    //  * Thread Safety:
-    //  * - Uses synchronized blocks for accessory updates
-    //  * - Thread-safe accessory assignment
-    //  * </p>
-    //  * 
-    //  * @param accessory The new HomeKit accessory instance
-    //  */
+    // * Sets the accessory instance in a thread-safe manner.
+    // *
+    // * <p>
+    // * This method updates the accessory reference and:
+    // * 1. Validates the new accessory
+    // * 2. Updates the accessory reference
+    // * 3. Registers/unregisters listeners
+    // * 4. Updates the thing status
+    // * </p>
+    // *
+    // * <p>
+    // * Thread Safety:
+    // * - Uses synchronized blocks for accessory updates
+    // * - Thread-safe accessory assignment
+    // * </p>
+    // *
+    // * @param accessory The new HomeKit accessory instance
+    // */
     // private void setAccessory(@Nullable Accessory accessory) {
-    //     synchronized (accessoryLock) {
-    //         this.accessory = accessory;
-    //     }
+    // synchronized (accessoryLock) {
+    // this.accessory = accessory;
     // }
-
-
-
-  
-
-   
+    // }
 
     /**
      * Handles errors and updates the thing status accordingly.
@@ -2239,19 +2213,19 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      * @param cause The cause of the error, if any
      */
     // private void handleError(ThingStatusDetail detail, String message, @Nullable Throwable cause) {
-    //     if (disposed) {
-    //         return;
-    //     }
+    // if (disposed) {
+    // return;
+    // }
 
-    //     String errorMessage = message;
-    //     if (cause != null) {
-    //         errorMessage += " - " + cause.getMessage();
-    //         logger.error("{}Error occurred - Type: {}, Message: {}", LOG_PREFIX, detail, message, cause);
-    //     } else {
-    //         logger.error("{}Error occurred - Type: {}, Message: {}", LOG_PREFIX, detail, message);
-    //     }
+    // String errorMessage = message;
+    // if (cause != null) {
+    // errorMessage += " - " + cause.getMessage();
+    // logger.error("{}Error occurred - Type: {}, Message: {}", LOG_PREFIX, detail, message, cause);
+    // } else {
+    // logger.error("{}Error occurred - Type: {}, Message: {}", LOG_PREFIX, detail, message);
+    // }
 
-    //     updateState(ThingStatus.OFFLINE, detail, errorMessage);
+    // updateState(ThingStatus.OFFLINE, detail, errorMessage);
     // }
 
     /**
@@ -2271,13 +2245,14 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      * </p>
      * 
      * @param detail The status detail for the error
-    //  * @param message The error message
-    //  * @param cause The cause of the error, if any
-    //  */
+     *            // * @param message The error message
+     *            // * @param cause The cause of the error, if any
+     *            //
+     */
     // private void handleRecoverableError(ThingStatusDetail detail, String message, @Nullable Throwable cause) {
-    //     handleError(detail, message, cause);
-    //     logger.debug("{}Scheduling recovery attempt in 30 seconds", LOG_PREFIX);
-    //     scheduler.schedule(this::attemptRecovery, 30, TimeUnit.SECONDS);
+    // handleError(detail, message, cause);
+    // logger.debug("{}Scheduling recovery attempt in 30 seconds", LOG_PREFIX);
+    // scheduler.schedule(this::attemptRecovery, 30, TimeUnit.SECONDS);
     // }
 
     /**
@@ -2298,73 +2273,72 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      * </p>
      */
     // protected void attemptRecovery() {
-    //     if (disposed) {
-    //         return;
-    //     }
+    // if (disposed) {
+    // return;
+    // }
 
-    //     try {
-    //         synchronized (stateLock) {
-    //             if (disposed) {
-    //                 return;
-    //             }
+    // try {
+    // synchronized (stateLock) {
+    // if (disposed) {
+    // return;
+    // }
 
-    //             // Attempt to recover server connection
-    //             synchronized (serverLock) {
-    //                 if (server == null) {
-    //                     AccessoryServer foundServer = serverRegistry.get(new AccessoryServerUID(deviceId));
-    //                     if (foundServer != null) {
-    //                         setServer(foundServer);
-    //                         foundServer.addChangeListener(this);
-    //                         logger.debug("{}Recovered server connection", LOG_INIT);
-    //                     }
-    //                 }
-    //             }
+    // // Attempt to recover server connection
+    // synchronized (serverLock) {
+    // if (server == null) {
+    // AccessoryServer foundServer = serverRegistry.get(new AccessoryServerUID(deviceId));
+    // if (foundServer != null) {
+    // setServer(foundServer);
+    // foundServer.addChangeListener(this);
+    // logger.debug("{}Recovered server connection", LOG_INIT);
+    // }
+    // }
+    // }
 
-    //             // Attempt to recover accessory
-    //             synchronized (accessoryLock) {
-    //                 if (accessory == null) {
-    //                     Accessory foundAccessory = accessoryRegistry.get(new AccessoryUID(accessoryId));
-    //                     if (foundAccessory != null) {
-    //                         setAccessory(foundAccessory);
-    //                         foundAccessory.addChangeListener(this);
-    //                         logger.debug("{}Recovered accessory connection", LOG_INIT);
-    //                     }
-    //                 }
-    //             }
+    // // Attempt to recover accessory
+    // synchronized (accessoryLock) {
+    // if (accessory == null) {
+    // Accessory foundAccessory = accessoryRegistry.get(new AccessoryUID(accessoryId));
+    // if (foundAccessory != null) {
+    // setAccessory(foundAccessory);
+    // foundAccessory.addChangeListener(this);
+    // logger.debug("{}Recovered accessory connection", LOG_INIT);
+    // }
+    // }
+    // }
 
-    //             // Attempt to recover service
-    //             synchronized (serviceLock) {
-    //                 if (service == null && accessory != null) {
-    //                     Service foundService = accessory.getService(serviceId);
-    //                     if (foundService != null) {
-    //                         setService(foundService);
-    //                         foundService.addChangeListener(this);
-    //                         logger.debug("{}Recovered service connection", LOG_INIT);
-    //                     }
-    //                 }
-    //             }
-    //         }
+    // // Attempt to recover service
+    // synchronized (serviceLock) {
+    // if (service == null && accessory != null) {
+    // Service foundService = accessory.getService(serviceId);
+    // if (foundService != null) {
+    // setService(foundService);
+    // foundService.addChangeListener(this);
+    // logger.debug("{}Recovered service connection", LOG_INIT);
+    // }
+    // }
+    // }
+    // }
 
-    //         // Revalidate state after recovery attempts
-    //         validateAndUpdateState();
-    //     } catch (Exception e) {
-    //         handleError(ThingStatusDetail.COMMUNICATION_ERROR, ERROR_STATE_UPDATE, e);
-    //     }
+    // // Revalidate state after recovery attempts
+    // validateAndUpdateState();
+    // } catch (Exception e) {
+    // handleError(ThingStatusDetail.COMMUNICATION_ERROR, ERROR_STATE_UPDATE, e);
+    // }
     // }
 
     protected void performSpecificRecovery() throws Exception {
         // No additional recovery steps needed for service handler
-                synchronized (serviceLock) {
-                    if (service == null && accessory != null) {
-                        Service foundService = accessory.getService(serviceId);
-                        if (foundService != null) {
-                            setService(foundService);
+        synchronized (serviceLock) {
+            if (service == null && accessory != null) {
+                Service foundService = accessory.getService(serviceId);
+                if (foundService != null) {
+                    setService(foundService);
                     serviceAvailable = true;
-                            foundService.addChangeListener(this);
-                            logger.debug("{}Recovered service connection", LOG_INIT);
-                        }
-                else {
-                    serviceAvailable = false; 
+                    foundService.addChangeListener(this);
+                    logger.debug("{}Recovered service connection", LOG_INIT);
+                } else {
+                    serviceAvailable = false;
                     logger.warn("{}Service not found in accessory after recovery", LOG_EVENT);
                     updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Service not found");
                 }
@@ -2391,11 +2365,11 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
      * @return The associated characteristic, or null if not found
      */
     // private Characteristic<?> findCharacteristicForChannel(Channel channel) {
-    //     synchronized (characteristicMapLock) {
-    //         return characteristicMap.get(channel);
-    //     }
+    // synchronized (characteristicMapLock) {
+    // return characteristicMap.get(channel);
     // }
-        /**
+    // }
+    /**
      * Gets the current HomeKit service instance.
      * 
      * <p>
@@ -2435,7 +2409,7 @@ protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
     private void setService(@Nullable Service service) {
         synchronized (serviceLock) {
             this.service = service;
-            serviceAvailable = (service != null); 
+            serviceAvailable = (service != null);
         }
         synchronizeChannels();
     }

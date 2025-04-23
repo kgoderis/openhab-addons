@@ -17,7 +17,6 @@ public class TargetVerticalTiltAngleCharacteristic extends IntegerCharacteristic
         super(service, value);
     }
 
-
     @Override
     public static String getType() {
         return TYPE;
@@ -53,14 +52,15 @@ public class TargetVerticalTiltAngleCharacteristic extends IntegerCharacteristic
     }
 
     @Override
-    public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType, boolean includeEvent) {
+    public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType,
+            boolean includeEvent) {
         return super.toJson(includeMeta, includePermissions, includeType, includeEvent);
     }
 
     @Override
     public JsonObject toReducedJson() {
         return super.toReducedJson();
-    }   
+    }
 
     @Override
     public State toState(Integer value) {

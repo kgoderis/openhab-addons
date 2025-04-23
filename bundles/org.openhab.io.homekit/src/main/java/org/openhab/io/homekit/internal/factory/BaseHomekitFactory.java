@@ -1,15 +1,12 @@
 package org.openhab.io.homekit.internal.factory;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNull;
@@ -22,14 +19,13 @@ import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
-import org.openhab.io.homekit.library.service.ThingService;
 import org.openhab.io.homekit.util.UUID5;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class BaseHomekitFactory implements HomekitFactory {
+public abstract class AbstractHomekitFactory implements HomekitFactory {
 
-    protected static final Logger logger = LoggerFactory.getLogger(BaseHomekitFactory.class);
+    protected static final Logger logger = LoggerFactory.getLogger(AbstractHomekitFactory.class);
 
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "HomeKit Factory: ";
@@ -65,8 +61,8 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
         final String acceptedItemType;
         final ChannelTypeUID channelTypeUID;
 
-        CharacteristicMetadata(Class<? extends Characteristic<?>> characteristicClass, String characteristicType, String tag, 
-                String acceptedItemType, ChannelTypeUID channelTypeUID) {
+        CharacteristicMetadata(Class<? extends Characteristic<?>> characteristicClass, String characteristicType,
+                String tag, String acceptedItemType, ChannelTypeUID channelTypeUID) {
             this.characteristicClass = characteristicClass;
             this.characteristicType = characteristicType;
             this.tag = tag;
@@ -84,7 +80,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     private final Map<String, Set<Class<? extends Characteristic<?>>>> tagCharacteristicClassMapper = new HashMap<>();
 
     // 2. Constructor and initialization
-    protected BaseHomekitFactory() {
+    protected AbstractHomekitFactory() {
         logger.debug("{}Initializing HomeKit factory", LOG_INIT);
         initializeMappers();
         logger.debug("{}HomeKit factory initialization completed", LOG_INIT);
@@ -101,42 +97,50 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
         try {
             Method getTypeMethod = serviceClass.getMethod("getType");
             Method getTagMethod = serviceClass.getMethod("getTag");
-            
+
             String type = (String) getTypeMethod.invoke(null);
             String tag = (String) getTagMethod.invoke(null);
-            
+
             if (type == null || type.isEmpty()) {
-                logger.warn("{}Service {} has empty or null type, using generated UUID", LOG_METADATA, serviceClass.getSimpleName());
+                logger.warn("{}Service {} has empty or null type, using generated UUID", LOG_METADATA,
+                        serviceClass.getSimpleName());
                 type = UUID5.fromNamespaceAndString(UUID5.NAMESPACE_SERVICE, serviceClass.getName()).toString();
             }
-            
+
             if (tag == null || tag.isEmpty()) {
-                logger.warn("{}Service {} has empty or null tag, using type as tag", LOG_METADATA, serviceClass.getSimpleName());
+                logger.warn("{}Service {} has empty or null tag, using type as tag", LOG_METADATA,
+                        serviceClass.getSimpleName());
                 tag = type;
             }
-            
+
             registerServiceMetadata(serviceClass, type, tag);
-            logger.debug("{}Successfully populated metadata for service {}", LOG_METADATA, serviceClass.getSimpleName());
+            logger.debug("{}Successfully populated metadata for service {}", LOG_METADATA,
+                    serviceClass.getSimpleName());
         } catch (NoSuchMethodException e) {
-            String message = String.format("Service %s is missing required methods: %s", serviceClass.getSimpleName(), e.getMessage());
+            String message = String.format("Service %s is missing required methods: %s", serviceClass.getSimpleName(),
+                    e.getMessage());
             logger.error("{}{}", LOG_ERROR, message, e);
             throw new MetadataException(message, e);
         } catch (IllegalAccessException e) {
-            String message = String.format("Cannot access methods for service %s: %s", serviceClass.getSimpleName(), e.getMessage());
+            String message = String.format("Cannot access methods for service %s: %s", serviceClass.getSimpleName(),
+                    e.getMessage());
             logger.error("{}{}", LOG_ERROR, message, e);
             throw new MetadataException(message, e);
         } catch (InvocationTargetException e) {
-            String message = String.format("Error invoking methods for service %s: %s", serviceClass.getSimpleName(), e.getMessage());
+            String message = String.format("Error invoking methods for service %s: %s", serviceClass.getSimpleName(),
+                    e.getMessage());
             logger.error("{}{}", LOG_ERROR, message, e);
             throw new MetadataException(message, e);
         } catch (Exception e) {
-            String message = String.format("Unexpected error populating service metadata for %s: %s", serviceClass.getSimpleName(), e.getMessage());
+            String message = String.format("Unexpected error populating service metadata for %s: %s",
+                    serviceClass.getSimpleName(), e.getMessage());
             logger.error("{}{}", LOG_ERROR, message, e);
             throw new MetadataException(message, e);
         }
     }
 
-    private void populateCharacteristicMetadata(Class<? extends Characteristic<?>> characteristicClass) throws MetadataException {
+    private void populateCharacteristicMetadata(Class<? extends Characteristic<?>> characteristicClass)
+            throws MetadataException {
         if (characteristicClass == null) {
             throw new MetadataException("Characteristic class cannot be null");
         }
@@ -146,68 +150,79 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
             Method getTagMethod = characteristicClass.getMethod("getTag");
             Method getAcceptedItemTypeMethod = characteristicClass.getMethod("getAcceptedItemType");
             Method getChannelTypeUIDMethod = characteristicClass.getMethod("getChannelTypeUID");
-            
+
             String type = (String) getTypeMethod.invoke(null);
             String tag = (String) getTagMethod.invoke(null);
             String acceptedItemType = (String) getAcceptedItemTypeMethod.invoke(null);
             ChannelTypeUID channelTypeUID = (ChannelTypeUID) getChannelTypeUIDMethod.invoke(null);
-            
+
             if (type == null || type.isEmpty()) {
-                logger.warn("{}Characteristic {} has empty or null type, using generated UUID", LOG_METADATA, characteristicClass.getSimpleName());
-                type = UUID5.fromNamespaceAndString(UUID5.NAMESPACE_CHARACTERISTIC, characteristicClass.getName()).toString();
+                logger.warn("{}Characteristic {} has empty or null type, using generated UUID", LOG_METADATA,
+                        characteristicClass.getSimpleName());
+                type = UUID5.fromNamespaceAndString(UUID5.NAMESPACE_CHARACTERISTIC, characteristicClass.getName())
+                        .toString();
             }
-            
+
             if (tag == null || tag.isEmpty()) {
-                logger.warn("{}Characteristic {} has empty or null tag, using type as tag", LOG_METADATA, characteristicClass.getSimpleName());
+                logger.warn("{}Characteristic {} has empty or null tag, using type as tag", LOG_METADATA,
+                        characteristicClass.getSimpleName());
                 tag = type;
             }
-            
+
             if (acceptedItemType == null || acceptedItemType.isEmpty()) {
-                logger.warn("{}Characteristic {} has empty or null accepted item type, using default", LOG_METADATA, characteristicClass.getSimpleName());
+                logger.warn("{}Characteristic {} has empty or null accepted item type, using default", LOG_METADATA,
+                        characteristicClass.getSimpleName());
                 acceptedItemType = "default";
             }
-            
+
             if (channelTypeUID == null) {
-                logger.warn("{}Characteristic {} has null channel type UID, using generated one", LOG_METADATA, characteristicClass.getSimpleName());
+                logger.warn("{}Characteristic {} has null channel type UID, using generated one", LOG_METADATA,
+                        characteristicClass.getSimpleName());
                 channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID, type);
             }
-            
+
             registerCharacteristicMetadata(characteristicClass, type, tag, acceptedItemType, channelTypeUID);
-            logger.debug("{}Successfully populated metadata for characteristic {}", LOG_METADATA, characteristicClass.getSimpleName());
+            logger.debug("{}Successfully populated metadata for characteristic {}", LOG_METADATA,
+                    characteristicClass.getSimpleName());
         } catch (NoSuchMethodException e) {
-            String message = String.format("Characteristic %s is missing required methods: %s", characteristicClass.getSimpleName(), e.getMessage());
+            String message = String.format("Characteristic %s is missing required methods: %s",
+                    characteristicClass.getSimpleName(), e.getMessage());
             logger.error("{}{}", LOG_ERROR, message, e);
             throw new MetadataException(message, e);
         } catch (IllegalAccessException e) {
-            String message = String.format("Cannot access methods for characteristic %s: %s", characteristicClass.getSimpleName(), e.getMessage());
+            String message = String.format("Cannot access methods for characteristic %s: %s",
+                    characteristicClass.getSimpleName(), e.getMessage());
             logger.error("{}{}", LOG_ERROR, message, e);
             throw new MetadataException(message, e);
         } catch (InvocationTargetException e) {
-            String message = String.format("Error invoking methods for characteristic %s: %s", characteristicClass.getSimpleName(), e.getMessage());
+            String message = String.format("Error invoking methods for characteristic %s: %s",
+                    characteristicClass.getSimpleName(), e.getMessage());
             logger.error("{}{}", LOG_ERROR, message, e);
             throw new MetadataException(message, e);
         } catch (Exception e) {
-            String message = String.format("Unexpected error populating characteristic metadata for %s: %s", characteristicClass.getSimpleName(), e.getMessage());
+            String message = String.format("Unexpected error populating characteristic metadata for %s: %s",
+                    characteristicClass.getSimpleName(), e.getMessage());
             logger.error("{}{}", LOG_ERROR, message, e);
             throw new MetadataException(message, e);
         }
     }
 
-    protected void registerServiceMetadata(Class<? extends Service> serviceClass, String serviceType, 
-            String tag) {
-        logger.debug("{}Registering service metadata - Class: {}, Type: {}, Tag: {}", 
-            LOG_METADATA, serviceClass.getSimpleName(), serviceType, tag);
+    protected void registerServiceMetadata(Class<? extends Service> serviceClass, String serviceType, String tag) {
+        logger.debug("{}Registering service metadata - Class: {}, Type: {}, Tag: {}", LOG_METADATA,
+                serviceClass.getSimpleName(), serviceType, tag);
         ServiceMetadata metadata = new ServiceMetadata(serviceClass, serviceType, tag);
         serviceMetadataMapper.put(serviceType, metadata);
         tagServiceClassMapper.computeIfAbsent(tag, k -> new HashSet<>()).add(serviceClass);
         logger.debug("{}Service metadata registered successfully", LOG_METADATA);
     }
 
-    protected void registerCharacteristicMetadata(Class<? extends Characteristic<?>> characteristicClass, 
+    protected void registerCharacteristicMetadata(Class<? extends Characteristic<?>> characteristicClass,
             String characteristicType, String tag, String acceptedItemType, ChannelTypeUID channelTypeUID) {
-        logger.debug("{}Registering characteristic metadata - Class: {}, Type: {}, Tag: {}, AcceptedItemType: {}, ChannelTypeUID: {}", 
-            LOG_METADATA, characteristicClass.getSimpleName(), characteristicType, tag, acceptedItemType, channelTypeUID);
-        CharacteristicMetadata metadata = new CharacteristicMetadata(characteristicClass, characteristicType, tag, 
+        logger.debug(
+                "{}Registering characteristic metadata - Class: {}, Type: {}, Tag: {}, AcceptedItemType: {}, ChannelTypeUID: {}",
+                LOG_METADATA, characteristicClass.getSimpleName(), characteristicType, tag, acceptedItemType,
+                channelTypeUID);
+        CharacteristicMetadata metadata = new CharacteristicMetadata(characteristicClass, characteristicType, tag,
                 acceptedItemType, channelTypeUID);
         characteristicMetadataMapper.put(characteristicType, metadata);
         tagCharacteristicClassMapper.computeIfAbsent(tag, k -> new HashSet<>()).add(characteristicClass);
@@ -216,9 +231,10 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
 
     // 4. Service-related methods
     @Override
-    public void addService(@NonNull ThingTypeUID thingTypeUID, @NonNull Class<@NonNull ? extends Service> serviceClass) throws RegistrationException {
-        logger.debug("{}Adding service to thing type - ThingType: {}, ServiceClass: {}", 
-            LOG_REGISTRY, thingTypeUID, serviceClass.getSimpleName());
+    public void addService(@NonNull ThingTypeUID thingTypeUID, @NonNull Class<@NonNull ? extends Service> serviceClass)
+            throws RegistrationException {
+        logger.debug("{}Adding service to thing type - ThingType: {}, ServiceClass: {}", LOG_REGISTRY, thingTypeUID,
+                serviceClass.getSimpleName());
         try {
             String serviceType = getServiceType(serviceClass);
             addService(thingTypeUID, serviceType);
@@ -227,13 +243,13 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
             }
             logger.debug("{}Service added successfully", LOG_REGISTRY);
         } catch (MetadataException e) {
-            String message = String.format("Failed to add service %s to thing type %s: %s", 
-                serviceClass.getSimpleName(), thingTypeUID, e.getMessage());
+            String message = String.format("Failed to add service %s to thing type %s: %s",
+                    serviceClass.getSimpleName(), thingTypeUID, e.getMessage());
             logger.error("{}{}", LOG_ERROR, message, e);
             throw new RegistrationException(message, e);
         } catch (Exception e) {
-            String message = String.format("Unexpected error adding service %s to thing type %s: %s", 
-                serviceClass.getSimpleName(), thingTypeUID, e.getMessage());
+            String message = String.format("Unexpected error adding service %s to thing type %s: %s",
+                    serviceClass.getSimpleName(), thingTypeUID, e.getMessage());
             logger.error("{}{}", LOG_ERROR, message, e);
             throw new RegistrationException(message, e);
         }
@@ -250,8 +266,8 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
 
     @Override
     public void addService(@NonNull ThingTypeUID thingType, @NonNull String serviceType) {
-        logger.debug("{}Adding service type to thing type - ThingType: {}, ServiceType: {}", 
-            LOG_REGISTRY, thingType, serviceType);
+        logger.debug("{}Adding service type to thing type - ThingType: {}, ServiceType: {}", LOG_REGISTRY, thingType,
+                serviceType);
         Set<String> currentTypes = thingTypeServiceTypeMapper.get(thingType);
         if (currentTypes == null) {
             currentTypes = new HashSet<String>();
@@ -285,8 +301,8 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
             }
             logger.debug("{}Default services added successfully", LOG_REGISTRY);
         } catch (Exception e) {
-            String message = String.format("Failed to add default services to thing type %s: %s", 
-                thingTypeUID, e.getMessage());
+            String message = String.format("Failed to add default services to thing type %s: %s", thingTypeUID,
+                    e.getMessage());
             logger.error("{}{}", LOG_ERROR, message, e);
             throw new RegistrationException(message, e);
         }
@@ -302,8 +318,8 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     @Override
     public void addCharacteristic(@NonNull ChannelTypeUID channelTypeUID,
             @NonNull Class<@NonNull ? extends Characteristic<?>> characteristicClass) throws RegistrationException {
-        logger.debug("{}Adding characteristic to channel type - ChannelType: {}, CharacteristicClass: {}", 
-            LOG_REGISTRY, channelTypeUID, characteristicClass.getSimpleName());
+        logger.debug("{}Adding characteristic to channel type - ChannelType: {}, CharacteristicClass: {}", LOG_REGISTRY,
+                channelTypeUID, characteristicClass.getSimpleName());
         try {
             String characteristicType = getCharacteristicType(characteristicClass);
             addCharacteristic(channelTypeUID, characteristicType);
@@ -312,13 +328,13 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
             }
             logger.debug("{}Characteristic added successfully", LOG_REGISTRY);
         } catch (MetadataException e) {
-            String message = String.format("Failed to add characteristic %s to channel type %s: %s", 
-                characteristicClass.getSimpleName(), channelTypeUID, e.getMessage());
+            String message = String.format("Failed to add characteristic %s to channel type %s: %s",
+                    characteristicClass.getSimpleName(), channelTypeUID, e.getMessage());
             logger.error("{}{}", LOG_ERROR, message, e);
             throw new RegistrationException(message, e);
         } catch (Exception e) {
-            String message = String.format("Unexpected error adding characteristic %s to channel type %s: %s", 
-                characteristicClass.getSimpleName(), channelTypeUID, e.getMessage());
+            String message = String.format("Unexpected error adding characteristic %s to channel type %s: %s",
+                    characteristicClass.getSimpleName(), channelTypeUID, e.getMessage());
             logger.error("{}{}", LOG_ERROR, message, e);
             throw new RegistrationException(message, e);
         }
@@ -335,8 +351,8 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
 
     @Override
     public void addCharacteristic(@NonNull ChannelTypeUID channelTypeUID, @NonNull String characteristicType) {
-        logger.debug("{}Adding characteristic type to channel type - ChannelType: {}, CharacteristicType: {}", 
-            LOG_REGISTRY, channelTypeUID, characteristicType);
+        logger.debug("{}Adding characteristic type to channel type - ChannelType: {}, CharacteristicType: {}",
+                LOG_REGISTRY, channelTypeUID, characteristicType);
         Set<String> currentTypes = channelTypeCharacteristicTypeMapper.get(channelTypeUID);
         if (currentTypes == null) {
             currentTypes = new HashSet<String>();
@@ -365,8 +381,8 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     @Override
     public void addAccessory(@NonNull ThingTypeUID thingTypeUID,
             @NonNull Class<? extends org.openhab.io.homekit.api.hap.Accessory> accessoryClass) {
-        logger.debug("{}Adding accessory to thing type - ThingType: {}, AccessoryClass: {}", 
-            LOG_REGISTRY, thingTypeUID, accessoryClass.getSimpleName());
+        logger.debug("{}Adding accessory to thing type - ThingType: {}, AccessoryClass: {}", LOG_REGISTRY, thingTypeUID,
+                accessoryClass.getSimpleName());
         thingTypeAccessoryClassMapper.put(thingTypeUID, accessoryClass);
         logger.debug("{}Accessory added successfully", LOG_REGISTRY);
     }
@@ -374,8 +390,8 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     @Override
     public @Nullable Accessory createAccessory(Class<? extends Accessory> accessoryClass, AccessoryServer server,
             long instanceId) throws RegistrationException {
-        logger.debug("{}Creating accessory - Class: {}, Server: {}, InstanceId: {}", 
-            LOG_REGISTRY, accessoryClass.getSimpleName(), server, instanceId);
+        logger.debug("{}Creating accessory - Class: {}, Server: {}, InstanceId: {}", LOG_REGISTRY,
+                accessoryClass.getSimpleName(), server, instanceId);
         try {
             Accessory accessory = accessoryClass.getConstructor(AccessoryServer.class, long.class).newInstance(server,
                     instanceId);
@@ -383,19 +399,22 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
                     accessory.getClass().getSimpleName(), accessory.getAccessoryId());
             return accessory;
         } catch (NoSuchMethodException e) {
-            String message = String.format("Accessory %s is missing a valid constructor of type (AccessoryServer.class, long.class)", 
-                accessoryClass.getSimpleName());
+            String message = String.format(
+                    "Accessory %s is missing a valid constructor of type (AccessoryServer.class, long.class)",
+                    accessoryClass.getSimpleName());
             logger.error("{}{}", LOG_ERROR, message, e);
             throw new RegistrationException(message, e);
         } catch (Exception e) {
-            String message = String.format("Failed to create accessory %s: %s", accessoryClass.getSimpleName(), e.getMessage());
+            String message = String.format("Failed to create accessory %s: %s", accessoryClass.getSimpleName(),
+                    e.getMessage());
             logger.error("{}{}", LOG_ERROR, message, e);
             throw new RegistrationException(message, e);
         }
     }
 
     @Override
-    public @Nullable Accessory createAccessory(@NonNull Thing thing, @NonNull LocalAccessoryServer server) throws Exception {
+    public @Nullable Accessory createAccessory(@NonNull Thing thing, @NonNull LocalAccessoryServer server)
+            throws Exception {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
         Class<? extends Accessory> accessoryClass = thingTypeAccessoryClassMapper.get(thingTypeUID);
 
@@ -415,24 +434,28 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
             if (serviceTypes != null) {
                 for (String serviceType : serviceTypes) {
                     if (thingAccessory.getService(serviceType) == null && thingAccessory.isExtensible()) {
-                        thingAccessory.addService(createService(serviceType, thingAccessory, true, thingAccessory.getLabel()));
+                        thingAccessory.addService(
+                                createService(serviceType, thingAccessory, true, thingAccessory.getLabel()));
                     }
 
                     Service service = thingAccessory.getService(serviceType);
                     if (service != null) {
                         for (Channel channel : thing.getChannels()) {
-                            Set<String> characteristicTypes = channelTypeCharacteristicTypeMapper.get(channel.getChannelTypeUID());
+                            Set<String> characteristicTypes = channelTypeCharacteristicTypeMapper
+                                    .get(channel.getChannelTypeUID());
                             if (characteristicTypes != null) {
                                 for (String characteristicType : characteristicTypes) {
-                                    if (service.getCharacteristic(characteristicType) == null && service.isExtensible()) {
+                                    if (service.getCharacteristic(characteristicType) == null
+                                            && service.isExtensible()) {
                                         service.addCharacteristic(createCharacteristic(characteristicType, service));
                                     }
 
                                     Characteristic<?> characteristic = service.getCharacteristic(characteristicType);
                                     if (characteristic != null) {
                                         characteristic.setChannelUID(channel.getUID());
-                                        logger.debug("Linked Channel {} to Characteristic {} of Type {}", channel.getUID(),
-                                                characteristic.getUID(), characteristic.getClass().getSimpleName());
+                                        logger.debug("Linked Channel {} to Characteristic {} of Type {}",
+                                                channel.getUID(), characteristic.getUID(),
+                                                characteristic.getClass().getSimpleName());
                                     }
                                 }
                             }
@@ -446,7 +469,8 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     }
 
     @Override
-    public @Nullable Service createService(String serviceType, Accessory accessory, boolean extend, String serviceName) throws MetadataException {
+    public @Nullable Service createService(String serviceType, Accessory accessory, boolean extend, String serviceName)
+            throws MetadataException {
         try {
             Class<? extends Service> serviceClass = getService(serviceType);
             return serviceClass.getConstructor(Accessory.class, long.class, boolean.class, String.class)
@@ -459,26 +483,30 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     }
 
     @Override
-    public @Nullable Service createService(String serviceType, Accessory accessory, long instanceId, boolean extend, String serviceName) throws MetadataException {
+    public @Nullable Service createService(String serviceType, Accessory accessory, long instanceId, boolean extend,
+            String serviceName) throws MetadataException {
         try {
             Class<? extends Service> serviceClass = getService(serviceType);
             return serviceClass.getConstructor(Accessory.class, long.class, boolean.class, String.class)
                     .newInstance(accessory, instanceId, extend, serviceName);
         } catch (Exception e) {
-            String message = String.format("Failed to create service %s with instanceId %d: %s", serviceType, instanceId, e.getMessage());
+            String message = String.format("Failed to create service %s with instanceId %d: %s", serviceType,
+                    instanceId, e.getMessage());
             logger.error("{}{}", LOG_ERROR, message, e);
             throw new MetadataException(message, e);
         }
     }
 
     @Override
-    public @Nullable Service createService(String serviceType, Accessory accessory, long instanceId, boolean extend) throws MetadataException {
+    public @Nullable Service createService(String serviceType, Accessory accessory, long instanceId, boolean extend)
+            throws MetadataException {
         try {
             Class<? extends Service> serviceClass = getService(serviceType);
             return serviceClass.getConstructor(Accessory.class, long.class, boolean.class, String.class)
                     .newInstance(accessory, instanceId, extend, serviceType);
         } catch (Exception e) {
-            String message = String.format("Failed to create service %s with instanceId %d: %s", serviceType, instanceId, e.getMessage());
+            String message = String.format("Failed to create service %s with instanceId %d: %s", serviceType,
+                    instanceId, e.getMessage());
             logger.error("{}{}", LOG_ERROR, message, e);
             throw new MetadataException(message, e);
         }
@@ -489,8 +517,8 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
         try {
             String serviceType = value.asJsonObject().getString("type");
             Class<? extends Service> serviceClass = getService(serviceType);
-            return serviceClass.getConstructor(Accessory.class, JsonValue.class, String.class)
-                    .newInstance(accessory, value, serviceType);
+            return serviceClass.getConstructor(Accessory.class, JsonValue.class, String.class).newInstance(accessory,
+                    value, serviceType);
         } catch (Exception e) {
             String message = String.format("Failed to create service from JSON: %s", e.getMessage());
             logger.error("{}{}", LOG_ERROR, message, e);
@@ -499,24 +527,28 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     }
 
     @Override
-    public @Nullable Characteristic<?> createCharacteristic(String characteristicsType, Service service) throws MetadataException {
+    public @Nullable Characteristic<?> createCharacteristic(String characteristicsType, Service service)
+            throws MetadataException {
         try {
             Class<? extends Characteristic<?>> characteristicClass = getCharacteristic(characteristicsType);
             return characteristicClass.getConstructor(Service.class, long.class).newInstance(service, 0L);
         } catch (Exception e) {
-            String message = String.format("Failed to create characteristic %s: %s", characteristicsType, e.getMessage());
+            String message = String.format("Failed to create characteristic %s: %s", characteristicsType,
+                    e.getMessage());
             logger.error("{}{}", LOG_ERROR, message, e);
             throw new MetadataException(message, e);
         }
     }
 
     @Override
-    public @Nullable Characteristic<?> createCharacteristic(String characteristicsType, Service service, long instanceId) throws MetadataException {
+    public @Nullable Characteristic<?> createCharacteristic(String characteristicsType, Service service,
+            long instanceId) throws MetadataException {
         try {
             Class<? extends Characteristic<?>> characteristicClass = getCharacteristic(characteristicsType);
             return characteristicClass.getConstructor(Service.class, long.class).newInstance(service, instanceId);
         } catch (Exception e) {
-            String message = String.format("Failed to create characteristic %s with instanceId %d: %s", characteristicsType, instanceId, e.getMessage());
+            String message = String.format("Failed to create characteristic %s with instanceId %d: %s",
+                    characteristicsType, instanceId, e.getMessage());
             logger.error("{}{}", LOG_ERROR, message, e);
             throw new MetadataException(message, e);
         }
@@ -535,7 +567,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
         }
     }
 
-    public  Class<? extends Service> getService(String serviceType) {
+    public Class<? extends Service> getService(String serviceType) {
         ServiceMetadata metadata = serviceMetadataMapper.get(serviceType);
         if (metadata != null) {
             return metadata.serviceClass;
@@ -554,9 +586,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     // 7. Type conversion and lookup methods
     private String getServiceType(Class<? extends Service> serviceClass) {
         ServiceMetadata metadata = serviceMetadataMapper.values().stream()
-                .filter(m -> m.serviceClass.equals(serviceClass))
-                .findFirst()
-                .orElse(null);
+                .filter(m -> m.serviceClass.equals(serviceClass)).findFirst().orElse(null);
         if (metadata != null) {
             return metadata.serviceType;
         }
@@ -565,9 +595,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
 
     private String getCharacteristicType(Class<? extends Characteristic<?>> characteristicClass) {
         CharacteristicMetadata metadata = characteristicMetadataMapper.values().stream()
-                .filter(m -> m.characteristicClass.equals(characteristicClass))
-                .findFirst()
-                .orElse(null);
+                .filter(m -> m.characteristicClass.equals(characteristicClass)).findFirst().orElse(null);
         if (metadata != null) {
             return metadata.characteristicType;
         }
@@ -666,8 +694,8 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     @Override
     public boolean supportsThingType(@NonNull ThingTypeUID thingTypeUID) {
         boolean supported = thingTypeServiceTypeMapper.containsKey(thingTypeUID);
-        logger.debug("{}Checking thing type support - ThingType: {}, Supported: {}", 
-            LOG_REGISTRY, thingTypeUID, supported);
+        logger.debug("{}Checking thing type support - ThingType: {}, Supported: {}", LOG_REGISTRY, thingTypeUID,
+                supported);
         return supported;
     }
 
@@ -681,8 +709,8 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     @Override
     public boolean supportsServiceType(@NonNull String serviceType) {
         boolean supported = serviceMetadataMapper.containsKey(serviceType);
-        logger.debug("{}Checking service type support - ServiceType: {}, Supported: {}", 
-            LOG_REGISTRY, serviceType, supported);
+        logger.debug("{}Checking service type support - ServiceType: {}, Supported: {}", LOG_REGISTRY, serviceType,
+                supported);
         return supported;
     }
 
@@ -692,12 +720,12 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
         logger.debug("{}Retrieved supported service types - Count: {}", LOG_REGISTRY, supportedTypes.size());
         return supportedTypes;
     }
-    
+
     @Override
     public boolean supportsCharacteristicsType(@NonNull String characteristicsType) {
         boolean supported = characteristicMetadataMapper.containsKey(characteristicsType);
-        logger.debug("{}Checking characteristic type support - CharacteristicType: {}, Supported: {}", 
-            LOG_REGISTRY, characteristicsType, supported);
+        logger.debug("{}Checking characteristic type support - CharacteristicType: {}, Supported: {}", LOG_REGISTRY,
+                characteristicsType, supported);
         return supported;
     }
 
@@ -707,5 +735,4 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
         logger.debug("{}Retrieved supported characteristic types - Count: {}", LOG_REGISTRY, supportedTypes.size());
         return supportedTypes;
     }
- 
 }

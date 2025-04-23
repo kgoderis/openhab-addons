@@ -9,7 +9,6 @@ import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
-import org.openhab.io.homekit.internal.events.AccessoryEvent;
 import org.openhab.io.homekit.internal.provider.HomekitChannelGroupTypeProvider;
 import org.openhab.io.homekit.internal.provider.HomekitChannelTypeProvider;
 import org.openhab.io.homekit.internal.provider.HomekitThingTypeProvider;
@@ -32,7 +31,6 @@ public class AccessoryThingHandler extends AbstractHomekitHandler {
     protected void handleSpecificInitialization() {
         initializeChannels();
     }
-
 
     private void initializeChannels() {
         try {
@@ -132,56 +130,57 @@ public class AccessoryThingHandler extends AbstractHomekitHandler {
             thingBuilder.withChannelGroup(groupBuilder.build());
             updateThing(thingBuilder.build());
 
-            logger.debug("{}Added channel group for service {} with ID {}", LOG_PREFIX, service.getDescription(), groupId);
+            logger.debug("{}Added channel group for service {} with ID {}", LOG_PREFIX, service.getDescription(),
+                    groupId);
         } catch (Exception e) {
-            logger.warn("{}Warning - Type: Channel Group, Message: Failed to add channel group for service {}: {}", 
+            logger.warn("{}Warning - Type: Channel Group, Message: Failed to add channel group for service {}: {}",
                     LOG_PREFIX, service.getInstanceId(), e.getMessage());
         }
     }
 
     // private void addChannelGroupForService(Service service) {
-    //     logger.info("Adding channel group for service: {}", service.getUID());
-    //     try {
-    //         String groupId = homekitThingTypeProvider.getServiceTag(service.getInstanceType()) + "."
-    //                 + service.getInstanceId();
-    //         ChannelGroupTypeUID channelGroupTypeUID = homekitChannelGroupTypeProvider
-    //                 .getChannelGroupTypeUID(service.getInstanceType());
+    // logger.info("Adding channel group for service: {}", service.getUID());
+    // try {
+    // String groupId = homekitThingTypeProvider.getServiceTag(service.getInstanceType()) + "."
+    // + service.getInstanceId();
+    // ChannelGroupTypeUID channelGroupTypeUID = homekitChannelGroupTypeProvider
+    // .getChannelGroupTypeUID(service.getInstanceType());
 
-    //         // Create a list to hold all channels for this group
-    //         List<Channel> channels = new ArrayList<>();
+    // // Create a list to hold all channels for this group
+    // List<Channel> channels = new ArrayList<>();
 
-    //         // Add channels for each characteristic
-    //         for (Characteristic<?> characteristic : service.getCharacteristics()) {
-    //             ChannelUID channelUID = new ChannelUID(thing.getUID(), groupId,
-    //                     homekitChannelTypeProvider.getCharacteristicTag(characteristic.getInstanceType()));
-    //             ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
-    //                     characteristic.getInstanceType());
+    // // Add channels for each characteristic
+    // for (Characteristic<?> characteristic : service.getCharacteristics()) {
+    // ChannelUID channelUID = new ChannelUID(thing.getUID(), groupId,
+    // homekitChannelTypeProvider.getCharacteristicTag(characteristic.getInstanceType()));
+    // ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
+    // characteristic.getInstanceType());
 
-    //             ChannelType channelType = homekitChannelTypeProvider.getChannelType(channelTypeUID, null);
-    //             if (channelType == null) {
-    //                 logger.warn("No ChannelType found for characteristic {}", characteristic.getUID());
-    //                 continue;
-    //             }
+    // ChannelType channelType = homekitChannelTypeProvider.getChannelType(channelTypeUID, null);
+    // if (channelType == null) {
+    // logger.warn("No ChannelType found for characteristic {}", characteristic.getUID());
+    // continue;
+    // }
 
-    //             Channel channel = ChannelBuilder.create(channelUID).withType(channelTypeUID)
-    //                     .withLabel(characteristic.getDescription()).build();
+    // Channel channel = ChannelBuilder.create(channelUID).withType(channelTypeUID)
+    // .withLabel(characteristic.getDescription()).build();
 
-    //             channels.add(channel);
-    //             characteristicMap.put(channel, characteristic);
-    //         }
+    // channels.add(channel);
+    // characteristicMap.put(channel, characteristic);
+    // }
 
-    //         // Create a ThingBuilder to modify the thing
-    //         ThingBuilder thingBuilder = editThing();
+    // // Create a ThingBuilder to modify the thing
+    // ThingBuilder thingBuilder = editThing();
 
-    //         // Add all channels at once
-    //         channels.forEach(thingBuilder::withChannel);
+    // // Add all channels at once
+    // channels.forEach(thingBuilder::withChannel);
 
-    //         // Update the thing with all new channels
-    //         updateThing(thingBuilder.build());
+    // // Update the thing with all new channels
+    // updateThing(thingBuilder.build());
 
-    //     } catch (IllegalArgumentException | HomekitException e) {
-    //         logger.warn("Error adding channel group for service {}: {}", service.getUID(), e.getMessage());
-    //     }
+    // } catch (IllegalArgumentException | HomekitException e) {
+    // logger.warn("Error adding channel group for service {}: {}", service.getUID(), e.getMessage());
+    // }
     // }
 
     @Override
@@ -254,7 +253,7 @@ public class AccessoryThingHandler extends AbstractHomekitHandler {
                 + characteristic.getService().getInstanceId();
 
         return new ChannelUID(thing.getUID(), groupId,
-            homekitChannelTypeProvider.getCharacteristicTag(characteristic.getInstanceType()));
+                homekitChannelTypeProvider.getCharacteristicTag(characteristic.getInstanceType()));
     }
 
     @Override
@@ -275,11 +274,4 @@ public class AccessoryThingHandler extends AbstractHomekitHandler {
     protected void performSpecificRecovery() throws Exception {
         // no additional recovery steps needed for accessory handler
     }
-
-
-
-
-
-
- 
 }

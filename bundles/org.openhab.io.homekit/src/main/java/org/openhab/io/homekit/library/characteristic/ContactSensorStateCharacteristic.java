@@ -64,7 +64,8 @@ public class ContactSensorStateCharacteristic extends EnumCharacteristic {
     }
 
     @Override
-    public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType, boolean includeEvent) {
+    public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType,
+            boolean includeEvent) {
         return super.toJson(includeMeta, includePermissions, includeType, includeEvent);
     }
 

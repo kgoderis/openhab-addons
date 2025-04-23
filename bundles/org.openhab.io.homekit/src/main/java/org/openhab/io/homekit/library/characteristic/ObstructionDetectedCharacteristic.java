@@ -24,6 +24,7 @@ public class ObstructionDetectedCharacteristic extends BooleanCharacteristic {
     public ObstructionDetectedCharacteristic(Service service, JsonValue value) {
         super(service, value);
     }
+
     @Override
     public static String getType() {
         return TYPE;
@@ -59,7 +60,8 @@ public class ObstructionDetectedCharacteristic extends BooleanCharacteristic {
     }
 
     @Override
-    public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType, boolean includeEvent) {
+    public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType,
+            boolean includeEvent) {
         return super.toJson(includeMeta, includePermissions, includeType, includeEvent);
     }
 

@@ -11,4 +11,4 @@ public class HomekitFactoryException extends Exception {
     public HomekitFactoryException(String message, Throwable cause) {
         super(message, cause);
     }
-} 
+}

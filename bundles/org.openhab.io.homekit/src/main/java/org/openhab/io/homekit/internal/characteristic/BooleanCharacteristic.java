@@ -5,6 +5,7 @@ package org.openhab.io.homekit.internal.characteristic;
 
 import javax.json.JsonObject;
 import javax.json.JsonValue;
+
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.types.State;
@@ -75,7 +76,8 @@ public abstract class BooleanCharacteristic extends GenericCharacteristic<Boolea
     }
 
     @Override
-    public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType, boolean includeEvent) {
+    public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType,
+            boolean includeEvent) {
         return super.toJson(includeMeta, includePermissions, includeType, includeEvent);
     }
 

@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.storage.StorageService;
@@ -137,8 +138,9 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
             }
 
             // Create a channel definition
-            return new ChannelDefinitionBuilder(homekitFactory.getTagFromCharacteristicType(characteristicType), channelTypeUID)
-                    .withLabel(characteristicType).withDescription("HomeKit " + characteristicType + " Characteristic").build();
+            return new ChannelDefinitionBuilder(homekitFactory.getTagFromCharacteristicType(characteristicType),
+                    channelTypeUID).withLabel(characteristicType)
+                    .withDescription("HomeKit " + characteristicType + " Characteristic").build();
         }).filter(def -> def != null).collect(Collectors.toList());
     }
 

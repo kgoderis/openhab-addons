@@ -11,4 +11,4 @@ public class MetadataException extends HomekitFactoryException {
     public MetadataException(String message, Throwable cause) {
         super(message, cause);
     }
-} 
+}

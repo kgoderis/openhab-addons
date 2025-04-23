@@ -11,4 +11,4 @@ public class RegistrationException extends HomekitFactoryException {
     public RegistrationException(String message, Throwable cause) {
         super(message, cause);
     }
-} 
+}

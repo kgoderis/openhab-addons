@@ -11,7 +11,7 @@ public class IdentifyCharacteristic extends WriteOnlyBooleanCharacteristic {
 
     public IdentifyCharacteristic(Service service, long instanceId) {
         super(service, instanceId, "Identify");
-    }   
+    }
 
     public IdentifyCharacteristic(Service service, JsonValue value) {
         super(service, value);
@@ -65,7 +65,8 @@ public class IdentifyCharacteristic extends WriteOnlyBooleanCharacteristic {
     }
 
     @Override
-    public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType, boolean includeEvent) {
+    public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType,
+            boolean includeEvent) {
         return super.toJson(includeMeta, includePermissions, includeType, includeEvent);
     }
 

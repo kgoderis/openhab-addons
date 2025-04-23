@@ -13,7 +13,6 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonString;
 import javax.json.JsonValue;
-import javax.json.JsonBuilderFactory;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.core.types.State;
