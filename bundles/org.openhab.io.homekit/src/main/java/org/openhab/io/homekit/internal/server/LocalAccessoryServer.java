@@ -182,7 +182,6 @@ public class LocalAccessoryServer extends AbstractAccessoryServer {
                 pairingRegistry);
     }
 
-    @Deactivate
     public void dispose() {
         stop();
     }
