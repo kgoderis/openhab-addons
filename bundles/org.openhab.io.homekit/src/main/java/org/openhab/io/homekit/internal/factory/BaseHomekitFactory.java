@@ -31,18 +31,30 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
 
     protected static final Logger logger = LoggerFactory.getLogger(BaseHomekitFactory.class);
 
+    // ========== Log Message Prefixes ==========
+    protected static final String LOG_PREFIX = "HomeKit Factory: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    protected static final String LOG_METADATA = LOG_PREFIX + "Metadata - ";
+    protected static final String LOG_REGISTRY = LOG_PREFIX + "Registry - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+
+    // ========== Error Messages ==========
+    protected static final String ERROR_PREFIX = "HomeKit Factory Error: ";
+    protected static final String ERROR_METADATA_POPULATION = ERROR_PREFIX + "Failed to populate metadata: %s";
+    protected static final String ERROR_SERVICE_METADATA = ERROR_PREFIX + "Service metadata error: %s";
+    protected static final String ERROR_CHARACTERISTIC_METADATA = ERROR_PREFIX + "Characteristic metadata error: %s";
+    protected static final String ERROR_TYPE_LOOKUP = ERROR_PREFIX + "Type lookup error: %s";
+
     // 1. Metadata classes and mappers
     private static class ServiceMetadata {
         final String serviceType;
         final String tag;
         final Class<? extends Service> serviceClass;
-        final String instanceType;
 
-        ServiceMetadata(Class<? extends Service> serviceClass, String serviceType, String tag, String instanceType) {
+        ServiceMetadata(Class<? extends Service> serviceClass, String serviceType, String tag) {
             this.serviceClass = serviceClass;
             this.serviceType = serviceType;
             this.tag = tag;
-            this.instanceType = instanceType;
         }
     }
 
@@ -51,23 +63,21 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
         final String tag;
         final Class<? extends Characteristic<?>> characteristicClass;
         final String acceptedItemType;
-        final String instanceType;
         final ChannelTypeUID channelTypeUID;
 
         CharacteristicMetadata(Class<? extends Characteristic<?>> characteristicClass, String characteristicType, String tag, 
-                String acceptedItemType, String instanceType, ChannelTypeUID channelTypeUID) {
+                String acceptedItemType, ChannelTypeUID channelTypeUID) {
             this.characteristicClass = characteristicClass;
             this.characteristicType = characteristicType;
             this.tag = tag;
             this.acceptedItemType = acceptedItemType;
-            this.instanceType = instanceType;
             this.channelTypeUID = channelTypeUID;
         }
     }
 
     private final Map<ThingTypeUID, Class<? extends Accessory>> thingTypeAccessoryClassMapper = new HashMap<>();
-    private final Map<ThingTypeUID, Set<String>> thingTypeServiceTypesMapper = new HashMap<>();
-    private final Map<ChannelTypeUID, Set<String>> channelTypeCharacteristicTypesMapper = new HashMap<>();
+    private final Map<ThingTypeUID, Set<String>> thingTypeServiceTypeMapper = new HashMap<>();
+    private final Map<ChannelTypeUID, Set<String>> channelTypeCharacteristicTypeMapper = new HashMap<>();
     private final Map<String, ServiceMetadata> serviceMetadataMapper = new HashMap<>();
     private final Map<String, CharacteristicMetadata> characteristicMetadataMapper = new HashMap<>();
     private final Map<String, Set<Class<? extends Service>>> tagServiceClassMapper = new HashMap<>();
@@ -75,132 +85,157 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
 
     // 2. Constructor and initialization
     protected BaseHomekitFactory() {
+        logger.debug("{}Initializing HomeKit factory", LOG_INIT);
         initializeMappers();
+        logger.debug("{}HomeKit factory initialization completed", LOG_INIT);
     }
 
     protected abstract void initializeMappers();
 
     // 3. Metadata population methods
-    private void populateServiceMetadata(Class<? extends Service> serviceClass) {
+    private void populateServiceMetadata(Class<? extends Service> serviceClass) throws MetadataException {
         if (serviceClass == null) {
-            logger.error("Cannot populate metadata for null service class");
-            return;
+            throw new MetadataException("Service class cannot be null");
         }
 
         try {
             Method getTypeMethod = serviceClass.getMethod("getType");
             Method getTagMethod = serviceClass.getMethod("getTag");
-            Method getInstanceTypeMethod = serviceClass.getMethod("getInstanceType");
             
             String type = (String) getTypeMethod.invoke(null);
             String tag = (String) getTagMethod.invoke(null);
-            String instanceType = (String) getInstanceTypeMethod.invoke(null);
             
             if (type == null || type.isEmpty()) {
-                logger.warn("Service {} has empty or null type, using generated UUID", serviceClass.getSimpleName());
+                logger.warn("{}Service {} has empty or null type, using generated UUID", LOG_METADATA, serviceClass.getSimpleName());
                 type = UUID5.fromNamespaceAndString(UUID5.NAMESPACE_SERVICE, serviceClass.getName()).toString();
             }
             
             if (tag == null || tag.isEmpty()) {
-                logger.warn("Service {} has empty or null tag, using type as tag", serviceClass.getSimpleName());
+                logger.warn("{}Service {} has empty or null tag, using type as tag", LOG_METADATA, serviceClass.getSimpleName());
                 tag = type;
             }
             
-            if (instanceType == null || instanceType.isEmpty()) {
-                logger.warn("Service {} has empty or null instance type, using default", serviceClass.getSimpleName());
-                instanceType = "default";
-            }
-            
-            registerServiceMetadata(serviceClass, type, tag, instanceType);
+            registerServiceMetadata(serviceClass, type, tag);
+            logger.debug("{}Successfully populated metadata for service {}", LOG_METADATA, serviceClass.getSimpleName());
         } catch (NoSuchMethodException e) {
-            logger.error("Service {} is missing required methods: {}", serviceClass.getSimpleName(), e.getMessage());
+            String message = String.format("Service %s is missing required methods: %s", serviceClass.getSimpleName(), e.getMessage());
+            logger.error("{}{}", LOG_ERROR, message, e);
+            throw new MetadataException(message, e);
         } catch (IllegalAccessException e) {
-            logger.error("Cannot access methods for service {}: {}", serviceClass.getSimpleName(), e.getMessage());
+            String message = String.format("Cannot access methods for service %s: %s", serviceClass.getSimpleName(), e.getMessage());
+            logger.error("{}{}", LOG_ERROR, message, e);
+            throw new MetadataException(message, e);
         } catch (InvocationTargetException e) {
-            logger.error("Error invoking methods for service {}: {}", serviceClass.getSimpleName(), e.getMessage());
+            String message = String.format("Error invoking methods for service %s: %s", serviceClass.getSimpleName(), e.getMessage());
+            logger.error("{}{}", LOG_ERROR, message, e);
+            throw new MetadataException(message, e);
         } catch (Exception e) {
-            logger.error("Unexpected error populating service metadata for {}: {}", serviceClass.getSimpleName(), e.getMessage());
+            String message = String.format("Unexpected error populating service metadata for %s: %s", serviceClass.getSimpleName(), e.getMessage());
+            logger.error("{}{}", LOG_ERROR, message, e);
+            throw new MetadataException(message, e);
         }
     }
 
-    private void populateCharacteristicMetadata(Class<? extends Characteristic<?>> characteristicClass) {
+    private void populateCharacteristicMetadata(Class<? extends Characteristic<?>> characteristicClass) throws MetadataException {
         if (characteristicClass == null) {
-            logger.error("Cannot populate metadata for null characteristic class");
-            return;
+            throw new MetadataException("Characteristic class cannot be null");
         }
 
         try {
             Method getTypeMethod = characteristicClass.getMethod("getType");
             Method getTagMethod = characteristicClass.getMethod("getTag");
             Method getAcceptedItemTypeMethod = characteristicClass.getMethod("getAcceptedItemType");
-            Method getInstanceTypeMethod = characteristicClass.getMethod("getInstanceType");
             Method getChannelTypeUIDMethod = characteristicClass.getMethod("getChannelTypeUID");
             
             String type = (String) getTypeMethod.invoke(null);
             String tag = (String) getTagMethod.invoke(null);
             String acceptedItemType = (String) getAcceptedItemTypeMethod.invoke(null);
-            String instanceType = (String) getInstanceTypeMethod.invoke(null);
             ChannelTypeUID channelTypeUID = (ChannelTypeUID) getChannelTypeUIDMethod.invoke(null);
             
             if (type == null || type.isEmpty()) {
-                logger.warn("Characteristic {} has empty or null type, using generated UUID", characteristicClass.getSimpleName());
+                logger.warn("{}Characteristic {} has empty or null type, using generated UUID", LOG_METADATA, characteristicClass.getSimpleName());
                 type = UUID5.fromNamespaceAndString(UUID5.NAMESPACE_CHARACTERISTIC, characteristicClass.getName()).toString();
             }
             
             if (tag == null || tag.isEmpty()) {
-                logger.warn("Characteristic {} has empty or null tag, using type as tag", characteristicClass.getSimpleName());
+                logger.warn("{}Characteristic {} has empty or null tag, using type as tag", LOG_METADATA, characteristicClass.getSimpleName());
                 tag = type;
             }
             
             if (acceptedItemType == null || acceptedItemType.isEmpty()) {
-                logger.warn("Characteristic {} has empty or null accepted item type, using default", characteristicClass.getSimpleName());
+                logger.warn("{}Characteristic {} has empty or null accepted item type, using default", LOG_METADATA, characteristicClass.getSimpleName());
                 acceptedItemType = "default";
             }
             
-            if (instanceType == null || instanceType.isEmpty()) {
-                logger.warn("Characteristic {} has empty or null instance type, using default", characteristicClass.getSimpleName());
-                instanceType = "default";
-            }
-            
             if (channelTypeUID == null) {
-                logger.warn("Characteristic {} has null channel type UID, using generated one", characteristicClass.getSimpleName());
+                logger.warn("{}Characteristic {} has null channel type UID, using generated one", LOG_METADATA, characteristicClass.getSimpleName());
                 channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID, type);
             }
             
-            registerCharacteristicMetadata(characteristicClass, type, tag, acceptedItemType, instanceType, channelTypeUID);
+            registerCharacteristicMetadata(characteristicClass, type, tag, acceptedItemType, channelTypeUID);
+            logger.debug("{}Successfully populated metadata for characteristic {}", LOG_METADATA, characteristicClass.getSimpleName());
         } catch (NoSuchMethodException e) {
-            logger.error("Characteristic {} is missing required methods: {}", characteristicClass.getSimpleName(), e.getMessage());
+            String message = String.format("Characteristic %s is missing required methods: %s", characteristicClass.getSimpleName(), e.getMessage());
+            logger.error("{}{}", LOG_ERROR, message, e);
+            throw new MetadataException(message, e);
         } catch (IllegalAccessException e) {
-            logger.error("Cannot access methods for characteristic {}: {}", characteristicClass.getSimpleName(), e.getMessage());
+            String message = String.format("Cannot access methods for characteristic %s: %s", characteristicClass.getSimpleName(), e.getMessage());
+            logger.error("{}{}", LOG_ERROR, message, e);
+            throw new MetadataException(message, e);
         } catch (InvocationTargetException e) {
-            logger.error("Error invoking methods for characteristic {}: {}", characteristicClass.getSimpleName(), e.getMessage());
+            String message = String.format("Error invoking methods for characteristic %s: %s", characteristicClass.getSimpleName(), e.getMessage());
+            logger.error("{}{}", LOG_ERROR, message, e);
+            throw new MetadataException(message, e);
         } catch (Exception e) {
-            logger.error("Unexpected error populating characteristic metadata for {}: {}", characteristicClass.getSimpleName(), e.getMessage());
+            String message = String.format("Unexpected error populating characteristic metadata for %s: %s", characteristicClass.getSimpleName(), e.getMessage());
+            logger.error("{}{}", LOG_ERROR, message, e);
+            throw new MetadataException(message, e);
         }
     }
 
     protected void registerServiceMetadata(Class<? extends Service> serviceClass, String serviceType, 
-            String tag, String instanceType) {
-        ServiceMetadata metadata = new ServiceMetadata(serviceClass, serviceType, tag, instanceType);
+            String tag) {
+        logger.debug("{}Registering service metadata - Class: {}, Type: {}, Tag: {}", 
+            LOG_METADATA, serviceClass.getSimpleName(), serviceType, tag);
+        ServiceMetadata metadata = new ServiceMetadata(serviceClass, serviceType, tag);
         serviceMetadataMapper.put(serviceType, metadata);
         tagServiceClassMapper.computeIfAbsent(tag, k -> new HashSet<>()).add(serviceClass);
+        logger.debug("{}Service metadata registered successfully", LOG_METADATA);
     }
 
     protected void registerCharacteristicMetadata(Class<? extends Characteristic<?>> characteristicClass, 
-            String characteristicType, String tag, String acceptedItemType, String instanceType, ChannelTypeUID channelTypeUID) {
+            String characteristicType, String tag, String acceptedItemType, ChannelTypeUID channelTypeUID) {
+        logger.debug("{}Registering characteristic metadata - Class: {}, Type: {}, Tag: {}, AcceptedItemType: {}, ChannelTypeUID: {}", 
+            LOG_METADATA, characteristicClass.getSimpleName(), characteristicType, tag, acceptedItemType, channelTypeUID);
         CharacteristicMetadata metadata = new CharacteristicMetadata(characteristicClass, characteristicType, tag, 
-                acceptedItemType, instanceType, channelTypeUID);
+                acceptedItemType, channelTypeUID);
         characteristicMetadataMapper.put(characteristicType, metadata);
         tagCharacteristicClassMapper.computeIfAbsent(tag, k -> new HashSet<>()).add(characteristicClass);
+        logger.debug("{}Characteristic metadata registered successfully", LOG_METADATA);
     }
 
     // 4. Service-related methods
     @Override
-    public void addService(@NonNull ThingTypeUID thingTypeUID, @NonNull Class<@NonNull ? extends Service> serviceClass) {
-        String serviceType = getServiceType(serviceClass);
-        addService(thingTypeUID, serviceType);
-        if (!serviceMetadataMapper.containsKey(serviceType)) {
-            populateServiceMetadata(serviceClass);
+    public void addService(@NonNull ThingTypeUID thingTypeUID, @NonNull Class<@NonNull ? extends Service> serviceClass) throws RegistrationException {
+        logger.debug("{}Adding service to thing type - ThingType: {}, ServiceClass: {}", 
+            LOG_REGISTRY, thingTypeUID, serviceClass.getSimpleName());
+        try {
+            String serviceType = getServiceType(serviceClass);
+            addService(thingTypeUID, serviceType);
+            if (!serviceMetadataMapper.containsKey(serviceType)) {
+                populateServiceMetadata(serviceClass);
+            }
+            logger.debug("{}Service added successfully", LOG_REGISTRY);
+        } catch (MetadataException e) {
+            String message = String.format("Failed to add service %s to thing type %s: %s", 
+                serviceClass.getSimpleName(), thingTypeUID, e.getMessage());
+            logger.error("{}{}", LOG_ERROR, message, e);
+            throw new RegistrationException(message, e);
+        } catch (Exception e) {
+            String message = String.format("Unexpected error adding service %s to thing type %s: %s", 
+                serviceClass.getSimpleName(), thingTypeUID, e.getMessage());
+            logger.error("{}{}", LOG_ERROR, message, e);
+            throw new RegistrationException(message, e);
         }
     }
 
@@ -215,12 +250,16 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
 
     @Override
     public void addService(@NonNull ThingTypeUID thingType, @NonNull String serviceType) {
-        Set<String> currentTypes = thingTypeServiceTypesMapper.get(thingType);
+        logger.debug("{}Adding service type to thing type - ThingType: {}, ServiceType: {}", 
+            LOG_REGISTRY, thingType, serviceType);
+        Set<String> currentTypes = thingTypeServiceTypeMapper.get(thingType);
         if (currentTypes == null) {
             currentTypes = new HashSet<String>();
+            logger.debug("{}Creating new service type set for thing type: {}", LOG_REGISTRY, thingType);
         }
         currentTypes.add(serviceType);
-        thingTypeServiceTypesMapper.put(thingType, currentTypes);
+        thingTypeServiceTypeMapper.put(thingType, currentTypes);
+        logger.debug("{}Service type added successfully", LOG_REGISTRY);
     }
 
     @Override
@@ -236,14 +275,52 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
         populateServiceMetadata(serviceClass);
     }
 
+    @Override
+    public void addService(ThingTypeUID thingTypeUID) throws RegistrationException {
+        logger.debug("{}Adding default services to thing type - ThingType: {}", LOG_REGISTRY, thingTypeUID);
+        try {
+            Set<String> serviceTypes = getDefaultServiceTypes(thingTypeUID);
+            for (String serviceType : serviceTypes) {
+                addService(thingTypeUID, serviceType);
+            }
+            logger.debug("{}Default services added successfully", LOG_REGISTRY);
+        } catch (Exception e) {
+            String message = String.format("Failed to add default services to thing type %s: %s", 
+                thingTypeUID, e.getMessage());
+            logger.error("{}{}", LOG_ERROR, message, e);
+            throw new RegistrationException(message, e);
+        }
+    }
+
+    // Helper method for getting default service types
+    private Set<String> getDefaultServiceTypes(ThingTypeUID thingTypeUID) {
+        // Implementation depends on your specific requirements
+        return new HashSet<>();
+    }
+
     // 5. Characteristic-related methods
     @Override
     public void addCharacteristic(@NonNull ChannelTypeUID channelTypeUID,
-            @NonNull Class<@NonNull ? extends Characteristic<?>> characteristicClass) {
-        String characteristicType = getCharacteristicType(characteristicClass);
-        addCharacteristic(channelTypeUID, characteristicType);
-        if (!characteristicMetadataMapper.containsKey(characteristicType)) {
-            populateCharacteristicMetadata(characteristicClass);
+            @NonNull Class<@NonNull ? extends Characteristic<?>> characteristicClass) throws RegistrationException {
+        logger.debug("{}Adding characteristic to channel type - ChannelType: {}, CharacteristicClass: {}", 
+            LOG_REGISTRY, channelTypeUID, characteristicClass.getSimpleName());
+        try {
+            String characteristicType = getCharacteristicType(characteristicClass);
+            addCharacteristic(channelTypeUID, characteristicType);
+            if (!characteristicMetadataMapper.containsKey(characteristicType)) {
+                populateCharacteristicMetadata(characteristicClass);
+            }
+            logger.debug("{}Characteristic added successfully", LOG_REGISTRY);
+        } catch (MetadataException e) {
+            String message = String.format("Failed to add characteristic %s to channel type %s: %s", 
+                characteristicClass.getSimpleName(), channelTypeUID, e.getMessage());
+            logger.error("{}{}", LOG_ERROR, message, e);
+            throw new RegistrationException(message, e);
+        } catch (Exception e) {
+            String message = String.format("Unexpected error adding characteristic %s to channel type %s: %s", 
+                characteristicClass.getSimpleName(), channelTypeUID, e.getMessage());
+            logger.error("{}{}", LOG_ERROR, message, e);
+            throw new RegistrationException(message, e);
         }
     }
 
@@ -258,12 +335,16 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
 
     @Override
     public void addCharacteristic(@NonNull ChannelTypeUID channelTypeUID, @NonNull String characteristicType) {
-        Set<String> currentTypes = channelTypeCharacteristicTypesMapper.get(channelTypeUID);
+        logger.debug("{}Adding characteristic type to channel type - ChannelType: {}, CharacteristicType: {}", 
+            LOG_REGISTRY, channelTypeUID, characteristicType);
+        Set<String> currentTypes = channelTypeCharacteristicTypeMapper.get(channelTypeUID);
         if (currentTypes == null) {
             currentTypes = new HashSet<String>();
+            logger.debug("{}Creating new characteristic type set for channel type: {}", LOG_REGISTRY, channelTypeUID);
         }
         currentTypes.add(characteristicType);
-        channelTypeCharacteristicTypesMapper.put(channelTypeUID, currentTypes);
+        channelTypeCharacteristicTypeMapper.put(channelTypeUID, currentTypes);
+        logger.debug("{}Characteristic type added successfully", LOG_REGISTRY);
     }
 
     @Override
@@ -284,26 +365,33 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
     @Override
     public void addAccessory(@NonNull ThingTypeUID thingTypeUID,
             @NonNull Class<? extends org.openhab.io.homekit.api.hap.Accessory> accessoryClass) {
+        logger.debug("{}Adding accessory to thing type - ThingType: {}, AccessoryClass: {}", 
+            LOG_REGISTRY, thingTypeUID, accessoryClass.getSimpleName());
         thingTypeAccessoryClassMapper.put(thingTypeUID, accessoryClass);
+        logger.debug("{}Accessory added successfully", LOG_REGISTRY);
     }
 
     @Override
     public @Nullable Accessory createAccessory(Class<? extends Accessory> accessoryClass, AccessoryServer server,
-            long instanceId) {
+            long instanceId) throws RegistrationException {
+        logger.debug("{}Creating accessory - Class: {}, Server: {}, InstanceId: {}", 
+            LOG_REGISTRY, accessoryClass.getSimpleName(), server, instanceId);
         try {
             Accessory accessory = accessoryClass.getConstructor(AccessoryServer.class, long.class).newInstance(server,
                     instanceId);
-            logger.debug("Created an Accessory {} of Type {}, with instanceId {}", accessory.getUID(),
+            logger.debug("{}Created an Accessory {} of Type {}, with instanceId {}", LOG_REGISTRY, accessory.getUID(),
                     accessory.getClass().getSimpleName(), accessory.getAccessoryId());
             return accessory;
         } catch (NoSuchMethodException e) {
-            logger.warn("Accessory {} is missing a valid constructor of type (AccessoryServer.class, long.class)",
-                    accessoryClass.getSimpleName());
+            String message = String.format("Accessory %s is missing a valid constructor of type (AccessoryServer.class, long.class)", 
+                accessoryClass.getSimpleName());
+            logger.error("{}{}", LOG_ERROR, message, e);
+            throw new RegistrationException(message, e);
         } catch (Exception e) {
-            e.printStackTrace();
+            String message = String.format("Failed to create accessory %s: %s", accessoryClass.getSimpleName(), e.getMessage());
+            logger.error("{}{}", LOG_ERROR, message, e);
+            throw new RegistrationException(message, e);
         }
-
-        return null;
     }
 
     @Override
@@ -323,7 +411,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
             logger.info("Linked Thing {} to Accessory {} of Type {}", thing.getUID(), accessory.getUID(),
                     accessory.getClass().getSimpleName());
 
-            Set<String> serviceTypes = thingTypeServiceTypesMapper.get(thingTypeUID);
+            Set<String> serviceTypes = thingTypeServiceTypeMapper.get(thingTypeUID);
             if (serviceTypes != null) {
                 for (String serviceType : serviceTypes) {
                     if (thingAccessory.getService(serviceType) == null && thingAccessory.isExtensible()) {
@@ -333,7 +421,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
                     Service service = thingAccessory.getService(serviceType);
                     if (service != null) {
                         for (Channel channel : thing.getChannels()) {
-                            Set<String> characteristicTypes = channelTypeCharacteristicTypesMapper.get(channel.getChannelTypeUID());
+                            Set<String> characteristicTypes = channelTypeCharacteristicTypeMapper.get(channel.getChannelTypeUID());
                             if (characteristicTypes != null) {
                                 for (String characteristicType : characteristicTypes) {
                                     if (service.getCharacteristic(characteristicType) == null && service.isExtensible()) {
@@ -355,6 +443,96 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
         }
 
         return accessory;
+    }
+
+    @Override
+    public @Nullable Service createService(String serviceType, Accessory accessory, boolean extend, String serviceName) throws MetadataException {
+        try {
+            Class<? extends Service> serviceClass = getService(serviceType);
+            return serviceClass.getConstructor(Accessory.class, long.class, boolean.class, String.class)
+                    .newInstance(accessory, 0L, extend, serviceName);
+        } catch (Exception e) {
+            String message = String.format("Failed to create service %s: %s", serviceType, e.getMessage());
+            logger.error("{}{}", LOG_ERROR, message, e);
+            throw new MetadataException(message, e);
+        }
+    }
+
+    @Override
+    public @Nullable Service createService(String serviceType, Accessory accessory, long instanceId, boolean extend, String serviceName) throws MetadataException {
+        try {
+            Class<? extends Service> serviceClass = getService(serviceType);
+            return serviceClass.getConstructor(Accessory.class, long.class, boolean.class, String.class)
+                    .newInstance(accessory, instanceId, extend, serviceName);
+        } catch (Exception e) {
+            String message = String.format("Failed to create service %s with instanceId %d: %s", serviceType, instanceId, e.getMessage());
+            logger.error("{}{}", LOG_ERROR, message, e);
+            throw new MetadataException(message, e);
+        }
+    }
+
+    @Override
+    public @Nullable Service createService(String serviceType, Accessory accessory, long instanceId, boolean extend) throws MetadataException {
+        try {
+            Class<? extends Service> serviceClass = getService(serviceType);
+            return serviceClass.getConstructor(Accessory.class, long.class, boolean.class, String.class)
+                    .newInstance(accessory, instanceId, extend, serviceType);
+        } catch (Exception e) {
+            String message = String.format("Failed to create service %s with instanceId %d: %s", serviceType, instanceId, e.getMessage());
+            logger.error("{}{}", LOG_ERROR, message, e);
+            throw new MetadataException(message, e);
+        }
+    }
+
+    @Override
+    public @Nullable Service createService(Accessory accessory, JsonValue value) throws MetadataException {
+        try {
+            String serviceType = value.asJsonObject().getString("type");
+            Class<? extends Service> serviceClass = getService(serviceType);
+            return serviceClass.getConstructor(Accessory.class, JsonValue.class, String.class)
+                    .newInstance(accessory, value, serviceType);
+        } catch (Exception e) {
+            String message = String.format("Failed to create service from JSON: %s", e.getMessage());
+            logger.error("{}{}", LOG_ERROR, message, e);
+            throw new MetadataException(message, e);
+        }
+    }
+
+    @Override
+    public @Nullable Characteristic<?> createCharacteristic(String characteristicsType, Service service) throws MetadataException {
+        try {
+            Class<? extends Characteristic<?>> characteristicClass = getCharacteristic(characteristicsType);
+            return characteristicClass.getConstructor(Service.class, long.class).newInstance(service, 0L);
+        } catch (Exception e) {
+            String message = String.format("Failed to create characteristic %s: %s", characteristicsType, e.getMessage());
+            logger.error("{}{}", LOG_ERROR, message, e);
+            throw new MetadataException(message, e);
+        }
+    }
+
+    @Override
+    public @Nullable Characteristic<?> createCharacteristic(String characteristicsType, Service service, long instanceId) throws MetadataException {
+        try {
+            Class<? extends Characteristic<?>> characteristicClass = getCharacteristic(characteristicsType);
+            return characteristicClass.getConstructor(Service.class, long.class).newInstance(service, instanceId);
+        } catch (Exception e) {
+            String message = String.format("Failed to create characteristic %s with instanceId %d: %s", characteristicsType, instanceId, e.getMessage());
+            logger.error("{}{}", LOG_ERROR, message, e);
+            throw new MetadataException(message, e);
+        }
+    }
+
+    @Override
+    public @Nullable Characteristic<?> createCharacteristic(Service service, JsonValue value) throws MetadataException {
+        try {
+            String characteristicType = value.asJsonObject().getString("type");
+            Class<? extends Characteristic<?>> characteristicClass = getCharacteristic(characteristicType);
+            return characteristicClass.getConstructor(Service.class, JsonValue.class).newInstance(service, value);
+        } catch (Exception e) {
+            String message = String.format("Failed to create characteristic from JSON: %s", e.getMessage());
+            logger.error("{}{}", LOG_ERROR, message, e);
+            throw new MetadataException(message, e);
+        }
     }
 
     public  Class<? extends Service> getService(String serviceType) {
@@ -380,7 +558,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
                 .findFirst()
                 .orElse(null);
         if (metadata != null) {
-            return metadata.type;
+            return metadata.serviceType;
         }
         return UUID5.fromNamespaceAndString(UUID5.NAMESPACE_SERVICE, serviceClass.getName()).toString();
     }
@@ -391,7 +569,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
                 .findFirst()
                 .orElse(null);
         if (metadata != null) {
-            return metadata.type;
+            return metadata.characteristicType;
         }
         return UUID5.fromNamespaceAndString(UUID5.NAMESPACE_CHARACTERISTIC, characteristicClass.getName()).toString();
     }
@@ -401,9 +579,9 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
         CharacteristicMetadata metadata = characteristicMetadataMapper.get(characteristicType);
         ServiceMetadata serviceMetadata = serviceMetadataMapper.get(metadata.serviceType);
         if (serviceMetadata != null) {
-            return serviceMetadata.instanceType;
+            return serviceMetadata.serviceType;
         }
-        logger.warn("No instance type found for characteristic type: {}", characteristicType);
+        logger.warn("{}No service type found for characteristic type: {}", LOG_ERROR, characteristicType);
         return null;
     }
 
@@ -413,7 +591,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
         if (metadata != null) {
             return metadata.acceptedItemType;
         }
-        logger.warn("No accepted item type found for characteristic type: {}", characteristicType);
+        logger.warn("{}No accepted item type found for characteristic type: {}", LOG_ERROR, characteristicType);
         return null;
     }
 
@@ -424,7 +602,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
         if (metadata != null) {
             return metadata.tag;
         }
-        logger.warn("No tag found for service type: {}", serviceType);
+        logger.warn("{}No tag found for service type: {}", LOG_ERROR, serviceType);
         return null;
     }
 
@@ -434,7 +612,7 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
         if (metadata != null) {
             return metadata.tag;
         }
-        logger.warn("No tag found for characteristic type: {}", characteristicType);
+        logger.warn("{}No tag found for characteristic type: {}", LOG_ERROR, characteristicType);
         return null;
     }
 
@@ -475,43 +653,59 @@ public abstract class BaseHomekitFactory implements HomekitFactory {
         if (metadata != null) {
             return metadata.channelTypeUID;
         }
-        logger.warn("No channel type UID found for characteristic type: {}", characteristicType);
+        logger.warn("{}No channel type UID found for characteristic type: {}", LOG_ERROR, characteristicType);
         return null;
     }
 
     @Override
     public HashSet<String> getCharacteristicTypes(@Nullable ChannelTypeUID channelTypeUID) {
-        return channelTypeCharacteristicTypesMapper.get(channelTypeUID);
+        return channelTypeCharacteristicTypeMapper.get(channelTypeUID);
     }
 
     // 10. Support check methods
     @Override
     public boolean supportsThingType(@NonNull ThingTypeUID thingTypeUID) {
-        return thingTypeServiceTypesMapper.containsKey(thingTypeUID);
+        boolean supported = thingTypeServiceTypeMapper.containsKey(thingTypeUID);
+        logger.debug("{}Checking thing type support - ThingType: {}, Supported: {}", 
+            LOG_REGISTRY, thingTypeUID, supported);
+        return supported;
     }
 
     @Override
     public ThingTypeUID @NonNull [] getSupportedThingTypes() {
-        return thingTypeServiceTypesMapper.keySet().toArray(new ThingTypeUID[0]);
+        ThingTypeUID[] supportedTypes = thingTypeServiceTypeMapper.keySet().toArray(new ThingTypeUID[0]);
+        logger.debug("{}Retrieved supported thing types - Count: {}", LOG_REGISTRY, supportedTypes.length);
+        return supportedTypes;
     }
 
     @Override
     public boolean supportsServiceType(@NonNull String serviceType) {
-        return serviceMetadataMapper.containsKey(serviceType);
+        boolean supported = serviceMetadataMapper.containsKey(serviceType);
+        logger.debug("{}Checking service type support - ServiceType: {}, Supported: {}", 
+            LOG_REGISTRY, serviceType, supported);
+        return supported;
     }
 
     @Override
     public Set<String> getSupportedServiceTypes() {
-        return serviceMetadataMapper.keySet();
+        Set<String> supportedTypes = serviceMetadataMapper.keySet();
+        logger.debug("{}Retrieved supported service types - Count: {}", LOG_REGISTRY, supportedTypes.size());
+        return supportedTypes;
     }
     
     @Override
     public boolean supportsCharacteristicsType(@NonNull String characteristicsType) {
-        return characteristicMetadataMapper.containsKey(characteristicsType);
+        boolean supported = characteristicMetadataMapper.containsKey(characteristicsType);
+        logger.debug("{}Checking characteristic type support - CharacteristicType: {}, Supported: {}", 
+            LOG_REGISTRY, characteristicsType, supported);
+        return supported;
     }
 
     @Override
     public Set<String> getSupportedCharacteristicTypes() {
-        return characteristicMetadataMapper.keySet();
+        Set<String> supportedTypes = characteristicMetadataMapper.keySet();
+        logger.debug("{}Retrieved supported characteristic types - Count: {}", LOG_REGISTRY, supportedTypes.size());
+        return supportedTypes;
     }
+ 
 }

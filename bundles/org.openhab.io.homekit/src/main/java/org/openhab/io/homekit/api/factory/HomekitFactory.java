@@ -25,6 +25,9 @@ import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Service;
+import org.openhab.io.homekit.exception.HomekitFactoryException;
+import org.openhab.io.homekit.exception.MetadataException;
+import org.openhab.io.homekit.exception.RegistrationException;
 
 /**
  * The {@link HomekitFactory} is responsible for creating {@link Accessory}s based on {@link Thing}s. Therefore
@@ -55,52 +58,51 @@ public interface HomekitFactory {
 
     @Nullable
     Accessory createAccessory(Class<? extends Accessory> accessoryClass, AccessoryServer server, long instanceId,
-            boolean extend);
+            boolean extend) throws RegistrationException;
 
     @Nullable
-    Accessory createAccessory(Class<? extends Accessory> accessoryClass, AccessoryServer server, long instanceId);
+    Accessory createAccessory(Class<? extends Accessory> accessoryClass, AccessoryServer server, long instanceId) throws RegistrationException;
 
     @Nullable
-    Service createService(String serviceType, Accessory accessory, boolean extend, String serviceName);
+    Service createService(String serviceType, Accessory accessory, boolean extend, String serviceName) throws MetadataException;
 
     @Nullable
-    Service createService(String serviceType, Accessory accessory, long instanceId, boolean extend, String serviceName);
+    Service createService(String serviceType, Accessory accessory, long instanceId, boolean extend, String serviceName) throws MetadataException;
 
     @Nullable
-    Service createService(String serviceType, Accessory accessory, long instanceId, boolean extend);
+    Service createService(String serviceType, Accessory accessory, long instanceId, boolean extend) throws MetadataException;
 
     @Nullable
-    Service createService(Accessory accessory, JsonValue value);
+    Service createService(Accessory accessory, JsonValue value) throws MetadataException;
 
     @Nullable
-    Characteristic<?> createCharacteristic(String characteristicsType, Service service);
+    Characteristic<?> createCharacteristic(String characteristicsType, Service service) throws MetadataException;
 
     @Nullable
-    Characteristic<?> createCharacteristic(String characteristicsType, Service service, long instanceId);
+    Characteristic<?> createCharacteristic(String characteristicsType, Service service, long instanceId) throws MetadataException;
 
     @Nullable
-    Characteristic<?> createCharacteristic(Service service, JsonValue value);
+    Characteristic<?> createCharacteristic(Service service, JsonValue value) throws MetadataException;
 
+    void addAccessory(ThingTypeUID thingTypeUID, Class<? extends Accessory> accessoryClass) throws RegistrationException;
 
-    void addAccessory(ThingTypeUID thingTypeUID, Class<? extends Accessory> accessoryClass);
+    void addService(ThingTypeUID thingTypeUID) throws RegistrationException;
 
-    void addService(ThingTypeUID thingTypeUID);
+    void addService(ThingTypeUID thingTypeUID, String serviceType) throws RegistrationException;
 
-    void addService(ThingTypeUID thingTypeUID, String serviceType);
+    void addService(ThingTypeUID thingTypeUID, Class<? extends Service> serviceClass) throws RegistrationException;
 
-    void addService(ThingTypeUID thingTypeUID, Class<? extends Service> serviceClass);
+    void addService(String serviceType, Class<? extends Service> serviceClass) throws RegistrationException;
 
-    void addService(String serviceType, Class<? extends Service> serviceClass);
+    void addService(Class<@NonNull ? extends Service> serviceClass) throws RegistrationException;
 
-    void addService(Class<@NonNull ? extends Service> serviceClass);
+    void addCharacteristic(ChannelTypeUID channelTypeUID, String characteristicType) throws RegistrationException;
 
-    void addCharacteristic(ChannelTypeUID channelTypeUID, String characteristicType);
+    void addCharacteristic(ChannelTypeUID channelTypeUID, Class<@NonNull ? extends Characteristic<?>> characteristicClass) throws RegistrationException;
 
-    void addCharacteristic(ChannelTypeUID channelTypeUID, Class<@NonNull ? extends Characteristic<?>> characteristicClass);
+    void addCharacteristic(String characteristicType, Class<? extends Characteristic<?>> characteristicClass) throws RegistrationException;
 
-    void addCharacteristic(String characteristicType, Class<? extends Characteristic<?>> characteristicClass);
-
-    void addCharacteristic(Class<@NonNull ? extends Characteristic<?>> characteristicClass);
+    void addCharacteristic(Class<@NonNull ? extends Characteristic<?>> characteristicClass) throws RegistrationException;
 
     HashSet<String> getCharacteristicTypes(@Nullable ChannelTypeUID channelTypeUID);
 
@@ -129,5 +131,5 @@ public interface HomekitFactory {
     String getTagFromCharacteristicType(String characteristicType);
 
     @Nullable
-    String getServiceInstanceType(String characteristicType);
+    String getServiceType(String characteristicType);
 }
