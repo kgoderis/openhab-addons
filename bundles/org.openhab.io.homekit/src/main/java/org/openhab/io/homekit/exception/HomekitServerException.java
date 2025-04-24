@@ -17,4 +17,4 @@ public class HomekitServerException extends HomekitException {
     public HomekitServerException(Throwable cause) {
         super(cause);
     }
-} 
+}

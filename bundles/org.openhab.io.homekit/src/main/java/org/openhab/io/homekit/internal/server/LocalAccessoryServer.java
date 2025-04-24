@@ -34,7 +34,6 @@ import org.openhab.io.homekit.internal.server.servlet.CharacteristicServlet;
 import org.openhab.io.homekit.internal.server.servlet.PairSetupServlet;
 import org.openhab.io.homekit.internal.server.servlet.PairVerificationServlet;
 import org.openhab.io.homekit.internal.server.servlet.PairingServlet;
-import org.osgi.service.component.annotations.Deactivate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,93 +42,103 @@ import org.slf4j.LoggerFactory;
 //       Abstract class AccesspryHolder
 //       Component AccessoryClient (die httpclient heeft)
 
-public class LocalAccessoryServer extends AbstractAccessoryServer {
+public class LocalAccessoryServer extends AbstractAccessoryServer implements CharacteristicChangeListener {
 
+    // ========== Constants ==========
     protected static final Logger logger = LoggerFactory.getLogger(LocalAccessoryServer.class);
 
+    // ========== Server Components ==========
     private final Server server;
     protected final MDNSService mdnsService;
     protected ServiceDescription announcedServiceDescription;
-    protected final Object notificationLock = new Object();
-    // private final Map<Characteristic<?>, Set<HttpConnection>> characteristicConnections = new ConcurrentHashMap<>();
-    // private final Map<HttpConnection, List<JsonObject>> batchedNotifications = new ConcurrentHashMap<>();
-    // private final Map<HttpConnection, Boolean> batchModeEnabled = new ConcurrentHashMap<>();
+    private final CharacteristicServlet characteristicServlet;
 
-    protected String label;
+    // ========== Synchronization ==========
+    protected final Object notificationLock = new Object();
     private final Object instanceIdLock = new Object();
+
+    // ========== Instance Management ==========
+    protected String label;
     private final Set<Long> usedInstanceIds = new HashSet<>();
     private long nextInstanceId = 1;
 
-    private final CharacteristicServlet characteristicServlet;
-
+    // ========== Constructors ==========
     public LocalAccessoryServer(AccessoryCategory category, InetAddress address, int port, byte[] pairingId,
             byte[] secretKey, MDNSService mdnsService, AccessoryRegistry accessoryRegistry,
             PairingRegistry pairingRegistry) throws InvalidAlgorithmParameterException {
         super(category, address, port, pairingId, secretKey, accessoryRegistry, pairingRegistry);
-
+        logger.debug("{}Initializing local server - Category: {}, Address: {}, Port: {}", LOG_INIT, category, address,
+                port);
         this.mdnsService = mdnsService;
+        logger.debug("{}Local server initialization completed", LOG_INIT);
+    }
 
-        // Jetty
-        server = new Server();
+    public LocalAccessoryServer(AccessoryCategory category, InetAddress address, int port, MDNSService mdnsService,
+            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry)
+            throws InvalidAlgorithmParameterException {
+        this(category, address, port, generatePairingId(), generateSecretKey(), mdnsService, accessoryRegistry,
+                pairingRegistry);
+    }
 
-        HomekitSessionHandler homekitSessionHandler = new HomekitSessionHandler();
+    // ========== Lifecycle Methods ==========
+    @Override
+    protected void initializeResources() throws Exception {
+        logger.debug("{}Initializing server resources", LOG_INIT);
 
-        HttpConfiguration httpConfiguration = new HttpConfiguration();
-        httpConfiguration.setIdleTimeout(0);
+        super.initializeResources();
 
-        ServerConnector http = new ServerConnector(server, new HomekitHttpConnectionFactory(homekitSessionHandler));
-        http.setPort(port);
-        http.setIdleTimeout(0);
-        // http.addBean(new Connection.Listener() {
+        try {
+            // Jetty
+            server = new Server();
+            logger.debug("{}Created Jetty server instance", LOG_INIT);
 
-        // @Override
-        // public void onOpened(org.eclipse.jetty.io.Connection connection) {
-        // logger.debug("onOpened {}", connection.toString());
-        // // No Op
-        // }
+            HomekitSessionHandler homekitSessionHandler = new HomekitSessionHandler();
+            logger.debug("{}Created HomeKit session handler", LOG_INIT);
 
-        // @Override
-        // public void onClosed(org.eclipse.jetty.io.Connection connection) {
-        // logger.debug("onClosed {}", connection.toString());
-        // for (Notification notification : notificationRegistry.getAll()) {
-        // if (notification.getConnection().equals(connection)) {
-        // removeNotification(notification.getCharacteristic());
-        // }
-        // }
-        // }
-        // });
-        server.addConnector(http);
-        characteristicServlet = new CharacteristicServlet(this);
+            HttpConfiguration httpConfiguration = new HttpConfiguration();
+            httpConfiguration.setIdleTimeout(0);
+            logger.debug("{}Configured HTTP settings - Idle timeout: {}", LOG_INIT, httpConfiguration.getIdleTimeout());
 
-        ServletContextHandler servletContextHandler = new ServletContextHandler(
-                ServletContextHandler.SESSIONS | ServletContextHandler.NO_SECURITY);
-        servletContextHandler.setContextPath("/");
-        servletContextHandler.setSessionHandler(homekitSessionHandler);
+            ServerConnector http = new ServerConnector(server, new HomekitHttpConnectionFactory(homekitSessionHandler));
+            http.setPort(port);
+            http.setIdleTimeout(0);
+            logger.debug("{}Configured server connector - Port: {}, Idle timeout: {}", LOG_INIT, http.getPort(),
+                    http.getIdleTimeout());
 
-        ServletHolder pairSetupHolder = new ServletHolder(new PairSetupServlet(this));
-        servletContextHandler.addServlet(pairSetupHolder, "/pair-setup");
+            server.addConnector(http);
+            characteristicServlet = new CharacteristicServlet(this);
+            logger.debug("{}Created characteristic servlet", LOG_INIT);
 
-        ServletHolder pairVerificationHolder = new ServletHolder(new PairVerificationServlet(this));
-        servletContextHandler.addServlet(pairVerificationHolder, "/pair-verify");
+            ServletContextHandler servletContextHandler = new ServletContextHandler(
+                    ServletContextHandler.SESSIONS | ServletContextHandler.NO_SECURITY);
+            servletContextHandler.setContextPath("/");
+            servletContextHandler.setSessionHandler(homekitSessionHandler);
+            logger.debug("{}Configured servlet context handler - Context path: {}", LOG_INIT,
+                    servletContextHandler.getContextPath());
 
-        ServletHolder accessoryHolder = new ServletHolder(new AccessoryServlet(this));
-        servletContextHandler.addServlet(accessoryHolder, "/accessories");
+            // Add servlets
+            addServlets(servletContextHandler);
 
-        ServletHolder characteristicsHolder = new ServletHolder(characteristicServlet);
-        servletContextHandler.addServlet(characteristicsHolder, "/characteristics");
+            HomekitRequestLogHandler requestLogHandler = new HomekitRequestLogHandler();
+            requestLogHandler.setHandler(servletContextHandler);
+            logger.debug("{}Added request log handler", LOG_INIT);
 
-        ServletHolder pairingsHolder = new ServletHolder(new PairingServlet(this));
-        servletContextHandler.addServlet(pairingsHolder, "/pairings");
+            server.setHandler(requestLogHandler);
+            logger.debug("{}Server handler configuration completed", LOG_INIT);
 
-        ServletHolder catchAnyHolder = new ServletHolder(new CatchAnyServlet(this));
-        servletContextHandler.addServlet(catchAnyHolder, "/");
+        } catch (Exception e) {
+            logger.error("{}Failed to initialize server resources: {}", LOG_ERROR, e.getMessage(), e);
+            throw e;
+        }
 
-        HomekitRequestLogHandler requestLogHandler = new HomekitRequestLogHandler();
-        requestLogHandler.setHandler(servletContextHandler);
+        // Initialize servlets if needed
+        if (characteristicServlet == null) {
+            String error = "CharacteristicServlet not initialized";
+            logger.error("{}{}", LOG_ERROR, error);
+            throw new IllegalStateException(error);
+        }
 
-        server.setHandler(requestLogHandler);
-
-        // Netty
+        // Netty - Do not Delete
 
         // logger.debug("Attempting {}:{}", localAddress, port);
         //
@@ -172,64 +181,104 @@ public class LocalAccessoryServer extends AbstractAccessoryServer {
         // }
         // }
         // });
-        start();
     }
 
-    public LocalAccessoryServer(AccessoryCategory category, InetAddress address, int port, MDNSService mdnsService,
-            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry)
-            throws InvalidAlgorithmParameterException {
-        this(category, address, port, generatePairingId(), generateSecretKey(), mdnsService, accessoryRegistry,
-                pairingRegistry);
+    private void addServlets(ServletContextHandler servletContextHandler) {
+        logger.debug("{}Adding servlets to context handler", LOG_INIT);
+
+        ServletHolder pairSetupHolder = new ServletHolder(new PairSetupServlet(this));
+        servletContextHandler.addServlet(pairSetupHolder, "/pair-setup");
+        logger.debug("{}Added pair setup servlet - Path: /pair-setup", LOG_INIT);
+
+        ServletHolder pairVerificationHolder = new ServletHolder(new PairVerificationServlet(this));
+        servletContextHandler.addServlet(pairVerificationHolder, "/pair-verify");
+        logger.debug("{}Added pair verification servlet - Path: /pair-verify", LOG_INIT);
+
+        ServletHolder accessoryHolder = new ServletHolder(new AccessoryServlet(this));
+        servletContextHandler.addServlet(accessoryHolder, "/accessories");
+        logger.debug("{}Added accessory servlet - Path: /accessories", LOG_INIT);
+
+        ServletHolder characteristicsHolder = new ServletHolder(characteristicServlet);
+        servletContextHandler.addServlet(characteristicsHolder, "/characteristics");
+        logger.debug("{}Added characteristics servlet - Path: /characteristics", LOG_INIT);
+
+        ServletHolder pairingsHolder = new ServletHolder(new PairingServlet(this));
+        servletContextHandler.addServlet(pairingsHolder, "/pairings");
+        logger.debug("{}Added pairings servlet - Path: /pairings", LOG_INIT);
+
+        ServletHolder catchAnyHolder = new ServletHolder(new CatchAnyServlet(this));
+        servletContextHandler.addServlet(catchAnyHolder, "/");
+        logger.debug("{}Added catch-all servlet - Path: /", LOG_INIT);
     }
 
-    public void dispose() {
-        stop();
+    @Override
+    protected void cleanupResources() throws Exception {
+        logger.debug("{}Cleaning up server resources", LOG_SERVER);
+
+        super.cleanupResources();
+
+        // Unregister from mDNS
+        if (announcedServiceDescription != null) {
+            mdnsService.unregisterService(announcedServiceDescription);
+            announcedServiceDescription = null;
+            logger.debug("{}mDNS service unregistered", LOG_SERVER);
+        }
+
+        // Clean up instance IDs
+        synchronized (instanceIdLock) {
+            usedInstanceIds.clear();
+            nextInstanceId = 1;
+            logger.debug("{}Instance IDs cleared and reset", LOG_SERVER);
+        }
     }
 
     @Override
     public void start() {
-        logger.debug("Starting HomeKit server");
-        setState(AccessoryServerState.CONNECTED);
+        logger.debug("{}Starting HomeKit server", LOG_SERVER);
+        try {
+            super.start(); // This will call initializeResources() and set state to READY
+            logger.debug("{}Base server initialization completed", LOG_SERVER);
+
+            // Initialize Jetty server if not already initialized
+            if (server != null && !server.isStarted()) {
+                server.start();
+                logger.info("{}Jetty server started successfully", LOG_SERVER);
+            } else {
+                logger.debug("{}Jetty server already running", LOG_SERVER);
+            }
+
+        } catch (Exception e) {
+            logger.error("{}Failed to start server: {}", LOG_ERROR, e.getMessage(), e);
+            try {
+                setState(AccessoryServerState.STOPPED);
+                logger.debug("{}Server state set to STOPPED after start failure", LOG_STATE);
+            } catch (HomekitServerException ex) {
+                logger.error("{}Failed to set stopped state after start failure: {}", LOG_ERROR, ex.getMessage(), ex);
+            }
+        }
     }
 
     @Override
     public void stop() {
-        logger.debug("Stopping HomeKit server");
-        setState(AccessoryServerState.STOPPED);
+        logger.debug("{}Stopping HomeKit server", LOG_SERVER);
+        try {
+            // Stop Jetty server
+            if (server != null && server.isStarted()) {
+                server.stop();
+                logger.info("{}Jetty server stopped successfully", LOG_SERVER);
+            } else {
+                logger.debug("{}Jetty server already stopped", LOG_SERVER);
+            }
+
+            super.stop();
+            logger.debug("{}Base server stopped", LOG_SERVER);
+
+        } catch (Exception e) {
+            logger.error("{}Failed to stop server: {}", LOG_ERROR, e.getMessage(), e);
+        }
     }
 
-    @Override
-    public void addPairing(byte @NonNull [] destinationPairingId, byte @NonNull [] destinationPublicKey) {
-        super.addPairing(destinationPairingId, destinationPublicKey);
-        advertise();
-    }
-
-    @Override
-    public void removePairing(byte @NonNull [] destinationPairingId) {
-        super.removePairing(destinationPairingId);
-        advertise();
-    }
-
-    // TODO : Advertise() the server after it is used to create an accessory
-
-    // @Override
-    // public void addAccessory(Accessory accessory) {
-    // super.addAccessory(accessory);
-    // advertise();
-    // }
-
-    // @Override
-    // public void removeAccessory(Accessory accessory) {
-    // super.removeAccessory(accessory);
-    // advertise();
-    // }
-
-    protected void publishNotification(Characteristic<?> characteristic) {
-        // String characteristicId = characteristic.getService().getAccessory().getId() +
-        // "." + characteristic.getId();
-        characteristicServlet.publishCharacteristicUpdate((Characteristic<?>) characteristic);
-    }
-
+    // ========== Instance ID Management ==========
     @Override
     public long getNextAvailableAccessoryId() {
         synchronized (instanceIdLock) {
@@ -237,7 +286,7 @@ public class LocalAccessoryServer extends AbstractAccessoryServer {
             for (long id = 1; id < nextInstanceId; id++) {
                 if (!usedInstanceIds.contains(id)) {
                     usedInstanceIds.add(id);
-                    logger.debug("Recycled instance ID: {} for server: {}", id, getUID());
+                    logger.debug("{}Recycled instance ID: {} for server: {}", LOG_ACCESSORY, id, getUID());
                     return id;
                 }
             }
@@ -245,26 +294,127 @@ public class LocalAccessoryServer extends AbstractAccessoryServer {
             // If no recycled IDs available, use the next new ID
             long newId = nextInstanceId++;
             usedInstanceIds.add(newId);
-            logger.debug("Assigned new instance ID: {} for server: {}", newId, getUID());
+            logger.debug("{}Assigned new instance ID: {} for server: {}", LOG_ACCESSORY, newId, getUID());
             return newId;
         }
     }
 
+    // ========== Pairing Management ==========
+    @Override
+    public void addPairing(byte @NonNull [] destinationPairingId, byte @NonNull [] destinationPublicKey) {
+        logger.debug("{}Adding pairing - Destination ID: {}", LOG_PAIRING, Byte.toHexString(destinationPairingId));
+        super.addPairing(destinationPairingId, destinationPublicKey);
+        advertise();
+        logger.info("{}Pairing added and server advertised", LOG_PAIRING);
+    }
+
+    @Override
+    public void removePairing(byte @NonNull [] destinationPairingId) {
+        logger.debug("{}Removing pairing - Destination ID: {}", LOG_PAIRING, Byte.toHexString(destinationPairingId));
+        super.removePairing(destinationPairingId);
+        advertise();
+        logger.info("{}Pairing removed and server advertised", LOG_PAIRING);
+    }
+
+    @Override
+    public boolean pairVerify() {
+        logger.debug("{}Verifying pairing", LOG_PAIRING);
+        return isPaired();
+    }
+
+    @Override
+    public void pairRemove() throws HomekitException, IOException {
+        logger.debug("{}Remote pairing removal requested - No action needed for local server", LOG_PAIRING);
+    }
+
+    @Override
+    public void pairSetup() throws IOException {
+        logger.debug("{}Remote pairing setup requested - No action needed for local server", LOG_PAIRING);
+    }
+
+    // ========== Accessory Management ==========
+    @Override
+    public void updateAccessories() throws IOException {
+        logger.debug("{}Accessory update requested - No action needed for local server", LOG_ACCESSORY);
+    }
+
+    // ========== Setup Code Management ==========
+    @Override
+    public String getSetupCode() {
+        logger.debug("{}Getting setup code", LOG_CONFIG);
+        if (getSetupCode() == null || getSetupCode().isEmpty()) {
+            String newCode;
+            if (logger.isDebugEnabled()) {
+                newCode = "123-12-123";
+                logger.debug("{}Using debug setup code: {}", LOG_CONFIG, newCode);
+            } else {
+                newCode = generateSetupCode();
+                logger.debug("{}Generated new setup code", LOG_CONFIG);
+            }
+            setSetupCode(newCode);
+            setState(AccessoryServerState.READY);
+            logger.info("{}Setup code set and state updated to READY", LOG_CONFIG);
+        }
+        return getSetupCode();
+    }
+
+    protected String generateSetupCode() {
+        logger.debug("{}Generating setup code", LOG_CONFIG);
+        String setupCode = String.format("%03d-%02d-%03d", HomekitEncryptionEngine.getSecureRandom().nextInt(1000),
+                HomekitEncryptionEngine.getSecureRandom().nextInt(100),
+                HomekitEncryptionEngine.getSecureRandom().nextInt(1000));
+
+        if (isReservedSetupCode(setupCode)) {
+            logger.debug("{}Generated reserved setup code {} - regenerating", LOG_CONFIG, setupCode);
+            return generateSetupCode();
+        }
+
+        logger.debug("{}Setup code generated successfully: {}", LOG_CONFIG, setupCode);
+        return setupCode;
+    }
+
+    private boolean isReservedSetupCode(String code) {
+        return code.equals("000-00-000") || code.equals("111-11-111") || code.equals("222-22-222")
+                || code.equals("333-33-333") || code.equals("444-44-444") || code.equals("555-55-555")
+                || code.equals("666-66-666") || code.equals("777-77-777") || code.equals("888-88-888")
+                || code.equals("999-99-999") || code.equals("123-45-678") || code.equals("876-54-321");
+    }
+
+    // ========== Security Management ==========
+    @Override
+    public boolean isSecure() {
+        logger.debug("{}Security check requested - Remote controller handles security", LOG_CONFIG);
+        return true;
+    }
+
+    // ========== Advertisement Management ==========
     @Override
     public synchronized void advertise() {
-
-        logger.debug("Advertising {}", this.getUID());
+        logger.debug("{}Starting server advertisement for {}", LOG_SERVER, getUID());
 
         if (!server.isStarted()) {
             try {
                 start();
+                logger.debug("{}Server started for advertisement", LOG_SERVER);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("{}Failed to start server for advertisement: {}", LOG_ERROR, e.getMessage(), e);
                 setState(AccessoryServerState.STOPPED);
+                return;
             }
         }
 
         // Announce the accessory via MDNS
+        Hashtable<String, String> props = createAdvertisementProperties();
+        logger.debug("{}Created advertisement properties: {}", LOG_SERVER, props);
+
+        if (announcedServiceDescription != null) {
+            updateExistingAdvertisement(props);
+        } else {
+            createNewAdvertisement(props);
+        }
+    }
+
+    private Hashtable<String, String> createAdvertisementProperties() {
         Hashtable<String, String> props = new Hashtable<>();
 
         // Status flags (e.g. "0x04" for bit 3). Value should be an unsigned integer. See Table 6-8 (page 58). Required.
@@ -275,7 +425,7 @@ public class LocalAccessoryServer extends AbstractAccessoryServer {
         // "XX:XX:XX:XX:XX:XX", where "XX" is a hexadecimal string representing a byte. Required.
         // This value is also used as the accessory's Pairing Identifier. This identifier of the accessory must be a
         // unique random number generated at every factory reset and must persist across reboots.
-        props.put("id", (new String(getPairingId(), StandardCharsets.UTF_8)));
+        props.put("id", new String(getPairingId(), StandardCharsets.UTF_8));
 
         // Model name of the accessory (e.g. "Device1,1"). Required.
         props.put("md", getClass().getSimpleName());
@@ -306,407 +456,105 @@ public class LocalAccessoryServer extends AbstractAccessoryServer {
         // Categories" (page 252). This must persist across reboots, power cycles, etc.
         props.put("ci", Integer.toString(AccessoryCategory.BRIDGES.getValue()));
 
-        if (announcedServiceDescription != null) {
-            announcedServiceDescription.serviceProperties = props;
-            // safeCaller.create(mdnsService, MDNSService.class).withAsync()
-            // .withIdentifier(announcedServiceDescription.serviceName).build()
-            // .updateService(announcedServiceDescription);
-            // mdnsService.updateService(announcedServiceDescription);
-            mdnsService.unregisterService(announcedServiceDescription);
-            mdnsService.registerService(announcedServiceDescription);
-            setState(AccessoryServerState.READY);
-        } else {
-            announcedServiceDescription = new ServiceDescription(SERVICE_TYPE,
-                    "openHAB " + getClass().getSimpleName() + " " + getPort(), port, props);
-            mdnsService.registerService(announcedServiceDescription);
-            setState(AccessoryServerState.READY);
+        return props;
+    }
+
+    private void updateExistingAdvertisement(Hashtable<String, String> props) {
+        logger.debug("{}Updating existing advertisement", LOG_SERVER);
+        announcedServiceDescription.serviceProperties = props;
+        mdnsService.unregisterService(announcedServiceDescription);
+        mdnsService.registerService(announcedServiceDescription);
+        setState(AccessoryServerState.READY);
+        logger.info("{}Advertisement updated successfully", LOG_SERVER);
+    }
+
+    private void createNewAdvertisement(Hashtable<String, String> props) {
+        logger.debug("{}Creating new advertisement", LOG_SERVER);
+        announcedServiceDescription = new ServiceDescription(SERVICE_TYPE,
+                "openHAB " + getClass().getSimpleName() + " " + getPort(), getPort(), props);
+        mdnsService.registerService(announcedServiceDescription);
+        setState(AccessoryServerState.READY);
+        logger.info("{}New advertisement created successfully", LOG_SERVER);
+    }
+
+    // ========== Event Handling ==========
+    @Override
+    public void onCharacteristicEvent(CharacteristicEvent event) {
+        logger.debug("{}Received characteristic event - Type: {}, Characteristic: {}", LOG_EVENT, event.getEventType(),
+                event.getCharacteristic().getClass().getSimpleName());
+        if (event.getEventType() == CharacteristicEventType.CHARACTERISTIC_START_EVENTS) {
+            publishCharacteristicUpdate(event.getCharacteristic());
+            logger.debug("{}Published characteristic update", LOG_EVENT);
         }
     }
 
-    @Override
-    public String getSetupCode() {
-        if (setupCode == null || setupCode.isEmpty()) {
-            if (logger.isDebugEnabled()) {
-                setupCode = "123-12-123";
+    protected void handleConnection(boolean connected) throws HomekitServerException {
+        logger.debug("{}Handling connection - Connected: {}", LOG_STATE, connected);
+        synchronized (stateLock) {
+            if (connected) {
+                setState(AccessoryServerState.CONNECTED);
+                logger.info("{}Connection established", LOG_STATE);
             } else {
-                setupCode = generateSetupCode();
+                setState(AccessoryServerState.DISCONNECTED);
+                logger.info("{}Connection terminated", LOG_STATE);
             }
-            setState(AccessoryServerState.READY);
         }
-        return setupCode;
     }
 
-    protected String generateSetupCode() {
-        String setupCode = String.format("%03d-%02d-%03d", HomekitEncryptionEngine.getSecureRandom().nextInt(1000),
-                HomekitEncryptionEngine.getSecureRandom().nextInt(100),
-                HomekitEncryptionEngine.getSecureRandom().nextInt(1000));
-
-        if (setupCode == "000-00-000" || setupCode == "111-11-111" || setupCode == "222-22-222"
-                || setupCode == "333-33-333" || setupCode == "444-44-444" || setupCode == "555-55-555"
-                || setupCode == "666-66-666" || setupCode == "777-77-777" || setupCode == "888-88-888"
-                || setupCode == "999-99-999" || setupCode == "123-45-678" || setupCode == "876-54-321") {
-            return generateSetupCode();
+    protected void handlePairingVerification(boolean verified) throws HomekitServerException {
+        logger.debug("{}Handling pairing verification - Verified: {}", LOG_STATE, verified);
+        synchronized (stateLock) {
+            if (verified) {
+                setState(AccessoryServerState.PAIR_VERIFIED);
+                logger.info("{}Pairing verified successfully", LOG_STATE);
+            } else {
+                setState(AccessoryServerState.PAIRED);
+                logger.info("{}Pairing verification failed", LOG_STATE);
+            }
         }
-
-        return setupCode;
-    }
-
-    // /**
-    // * Publishes a notification for a characteristic change.
-    // * This method is thread-safe and ensures notifications are sent to all registered clients.
-    // *
-    // * @param characteristic the characteristic that changed
-    // * @param value the new value of the characteristic
-    // */
-    // protected void publishNotification(Characteristic<?> characteristic, Object value) {
-    // synchronized (notificationLock) {
-    // try {
-    // NotificationUID notificationUID = new NotificationUID(getId(),
-    // characteristic.getService().getAccessory().getId(),
-    // characteristic.getService().getId(),
-    // characteristic.getId());
-
-    // Notification notification = notificationRegistry.get(notificationUID);
-    // if (notification != null) {
-    // logger.debug("Publishing notification for characteristic {} with value {}",
-    // characteristic.getId(), value);
-
-    // // Send notification to all registered connections
-    // for (HttpConnection connection : notification.getConnections()) {
-    // try {
-    // homekitCommunicationManager.sendNotification(connection, characteristic, value);
-    // } catch (Exception e) {
-    // logger.warn("Failed to send notification to connection {}: {}",
-    // connection, e.getMessage());
-    // }
-    // }
-    // }
-    // } catch (Exception e) {
-    // logger.error("Error publishing notification: {}", e.getMessage(), e);
-    // }
-    // }
-    // }
-
-    // @Override
-    // public void addNotification(Characteristic<?> characteristic, HttpConnection connection) {
-    // synchronized (notificationLock) {
-    // NotificationUID notificationUID = new NotificationUID(getId(),
-    // characteristic.getService().getAccessory().getId(),
-    // characteristic.getService().getId(),
-    // characteristic.getId());
-
-    // Notification notification = notificationRegistry.get(notificationUID);
-    // if (notification == null) {
-    // notification = new NotificationImpl(notificationUID);
-    // notificationRegistry.add(notification);
-    // logger.debug("Added new notification for characteristic {}", characteristic.getId());
-    // }
-
-    // notification.addConnection(connection);
-    // characteristic.setHasEvents(true);
-    // logger.debug("Added connection {} to notification for characteristic {}",
-    // connection, characteristic.getId());
-    // }
-    // }
-
-    // @Override
-    // public void removeNotification(Characteristic<?> characteristic) {
-    // synchronized (notificationLock) {
-    // NotificationUID notificationUID = new NotificationUID(getId(),
-    // characteristic.getService().getAccessory().getId(), characteristic.getService().getId(),
-    // characteristic.getId());
-
-    // Notification notification = notificationRegistry.get(notificationUID);
-    // if (notification != null) {
-    // notificationRegistry.remove(notificationUID);
-    // characteristic.setHasEvents(false);
-    // logger.debug("Removed notification for characteristic {}", characteristic.getId());
-    // }
-    // }
-    // }
-
-    // public void disableBatchMode() {
-    // this.batchMode = false;
-    // // loop through all accessories, then the characteristics, then the connections and disable batch mode
-    // for (Accessory accessory : getAccessories()) {
-    // for (Service service : accessory.getServices()) {
-    // for (Characteristic<?> characteristic : service.getCharacteristics()) {
-    // disableBatchMode(characteristic);
-
-    // }
-    // }
-    // }
-
-    // // flush all batched notifications
-    // for (HttpConnection connection : characteristicConnections.values()) {
-    // flushBatchedNotifications(connection);
-    // }
-    // }
-
-    // public void enableBatchMode() {
-    // this.batchMode = true;
-
-    // // loop through all accessories, then the characteristics, then the connections and enable batch mode
-    // for (Accessory accessory : getAccessories()) {
-    // for (Service service : accessory.getServices()) {
-    // for (Characteristic characteristic : service.getCharacteristics()) {
-    // enableBatchMode(characteristic);
-    // }
-    // }
-    // }
-
-    // private boolean batchMode = false;
-
-    // @Override
-    // public synchronized void publish(JsonObject notification) {
-    // if (characteristic.getAccessoryId() == this.characteristic.getAccessoryId()) {
-    // if (batchMode) {
-    // notifications.add(notification);
-    // } else {
-    // JsonArrayBuilder notifications = Json.createArrayBuilder().add(notification);
-    // publish(notifications);
-    // }
-    // }
-    // }
-
-    // @Override
-    // public synchronized void publish() {
-    // if (notifications.size() > 0) {
-    // JsonArrayBuilder notificationsBuilder = Json.createArrayBuilder();
-
-    // for (JsonObject notification : notifications) {
-    // notificationsBuilder.add(notification);
-    // }
-
-    // publish(notificationsBuilder);
-
-    // notifications.clear();
-    // }
-    // }
-
-    // List<JsonObject> notifications = Collections.synchronizedList(new LinkedList<JsonObject>());
-
-    // @Override
-    // public synchronized void publish(JsonObject notification) {
-    // if (characteristic.getAccessoryId() == this.characteristic.getAccessoryId()) {
-    // if (batchMode) {
-    // notifications.add(notification);
-    // } else {
-    // JsonArrayBuilder notifications = Json.createArrayBuilder().add(notification);
-    // publish(notifications);
-    // }
-    // }
-    // }
-
-    // public void handleUpdate(State state) {
-    // for (AccessoryServer server : accessoryServerRegistry.getAll()) {
-    // for (Accessory accessory : server.getAccessories()) {
-    // for (Service service : accessory.getServices()) {
-    // for (Characteristic characteristic : service.getCharacteristics()) {
-    // if (link.getLinkedUID().equals(((ManagedCharacteristic<?>) characteristic).getChannelUID())) {
-    // Notification notification = notificationRegistry.get(new NotificationUID(
-    // ((ManagedCharacteristic<?>) characteristic).getUID().toString()));
-
-    // if (notification != null) {
-    // notification.publish(((ManagedCharacteristic<?>) characteristic).toEventJson(state));
-    // }
-    // }
-    // }
-    // }
-    // }
-    // }
-    // }
-
-    // /**
-    // * Maps an HttpConnection to a Characteristic for notifications.
-    // * Multiple connections can be mapped to the same characteristic.
-    // *
-    // * @param characteristic The characteristic to map to
-    // * @param connection The HTTP connection to map
-    // */
-    // protected synchronized void addConnectionMapping(Characteristic<?> characteristic, HttpConnection connection) {
-    // characteristicConnections.computeIfAbsent(characteristic, k -> ConcurrentHashMap.newKeySet()).add(connection);
-    // logger.debug("Added connection mapping for characteristic {} to connection {}", characteristic, connection);
-    // }
-
-    // /**
-    // * Removes a connection mapping for a characteristic.
-    // * If this was the last connection mapped to the characteristic, removes the characteristic entry.
-    // *
-    // * @param characteristic The characteristic to remove the mapping from
-    // * @param connection The HTTP connection to remove
-    // */
-    // protected synchronized void removeConnectionMapping(Characteristic<?> characteristic, HttpConnection connection)
-    // {
-    // Set<HttpConnection> connections = characteristicConnections.get(characteristic);
-    // if (connections != null) {
-    // connections.remove(connection);
-    // if (connections.isEmpty()) {
-    // characteristicConnections.remove(characteristic);
-    // }
-    // logger.debug("Removed connection mapping for characteristic {} from connection {}", characteristic,
-    // connection);
-    // }
-    // }
-
-    // /**
-    // * Gets all connections mapped to a characteristic.
-    // *
-    // * @param characteristic The characteristic to get connections for
-    // * @return Set of HttpConnections mapped to the characteristic, or empty set if none
-    // */
-    // protected Set<HttpConnection> getConnectionsForCharacteristic(Characteristic<?> characteristic) {
-    // return characteristicConnections.getOrDefault(characteristic, Collections.emptySet());
-    // }
-
-    // /**
-    // * Enables batch mode for a specific HTTP connection.
-    // * When enabled, notifications will be queued instead of sent immediately.
-    // *
-    // * @param connection The HTTP connection to enable batch mode for
-    // */
-    // protected void enableBatchMode(HttpConnection connection) {
-    // batchModeEnabled.put(connection, true);
-    // batchedNotifications.putIfAbsent(connection, new ArrayList<>());
-    // logger.debug("Enabled batch mode for connection {}", connection);
-    // }
-
-    // /**
-    // * Disables batch mode for a specific HTTP connection.
-    // * Any queued notifications will be sent immediately.
-    // *
-    // * @param connection The HTTP connection to disable batch mode for
-    // */
-    // protected void disableBatchMode(HttpConnection connection) {
-    // batchModeEnabled.put(connection, false);
-    // flushBatchedNotifications(connection);
-    // logger.debug("Disabled batch mode for connection {}", connection);
-    // }
-
-    // /**
-    // * Enables batch mode for all connections associated with a characteristic.
-    // * When enabled, notifications will be queued instead of sent immediately.
-    // *
-    // * @param characteristic The characteristic to enable batch mode for
-    // */
-    // protected void enableBatchMode(Characteristic characteristic) {
-    // Set<HttpConnection> connections = getConnectionsForCharacteristic(characteristic);
-    // for (HttpConnection connection : connections) {
-    // enableBatchMode(connection);
-    // }
-    // logger.debug("Enabled batch mode for all connections of characteristic {}", characteristic);
-    // }
-
-    // /**
-    // * Disables batch mode for all connections associated with a characteristic.
-    // * Any queued notifications will be sent immediately.
-    // *
-    // * @param characteristic The characteristic to disable batch mode for
-    // */
-    // protected void disableBatchMode(Characteristic characteristic) {
-    // Set<HttpConnection> connections = getConnectionsForCharacteristic(characteristic);
-    // for (HttpConnection connection : connections) {
-    // disableBatchMode(connection);
-    // }
-    // logger.debug("Disabled batch mode for all connections of characteristic {}", characteristic);
-    // }
-
-    // /**
-    // * Publishes a notification either immediately or queues it based on batch mode.
-    // *
-    // * @param connection The HTTP connection to publish to
-    // * @param notification The notification to publish
-    // */
-    // protected synchronized void publishNotification(HttpConnection connection, JsonObject notification) {
-    // if (Boolean.TRUE.equals(batchModeEnabled.get(connection))) {
-    // batchedNotifications.get(connection).add(notification);
-    // logger.debug("Queued notification for batched sending on connection {}", connection);
-    // } else {
-    // try {
-    // JsonArrayBuilder notifications = Json.createArrayBuilder().add(notification);
-    // publish();
-    // logger.debug("Sent immediate notification on connection {}", connection);
-    // } catch (Exception e) {
-    // logger.warn("Failed to send notification to connection {}: {}", connection, e.getMessage());
-    // }
-    // }
-    // }
-    // /**
-    // * Sends all queued notifications for a connection and clears the queue.
-    // *
-    // * @param connection The HTTP connection to flush notifications for
-    // */
-    // protected synchronized void flushBatchedNotifications(HttpConnection connection) {
-    // List<JsonObject> notifications = batchedNotifications.get(connection);
-    // if (notifications != null && !notifications.isEmpty()) {
-    // try {
-    // JsonArrayBuilder builder = Json.createArrayBuilder();
-    // notifications.forEach(builder::add);
-    // publish(builder);
-    // notifications.clear();
-    // logger.debug("Flushed batched notifications for connection {}", connection);
-    // } catch (Exception e) {
-    // logger.warn("Failed to flush batched notifications for connection {}: {}", connection, e.getMessage());
-    // }
-    // }
-    // }
-
-    // protected synchronized void publish(Characteristic<?> characteristic, JsonArrayBuilder arrayBuilder) {
-    // JsonObjectBuilder builder = Json.createObjectBuilder().add("characteristics", arrayBuilder);
-
-    // try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-    // Json.createWriter(baos).write(builder.build());
-    // byte[] dataBytes = baos.toByteArray();
-
-    // HttpFields fields = new HttpFields();
-    // fields.add("X-HAP-Event", "True");
-    // fields.add("Content-Type", "application/hap+json");
-
-    // MetaData.Response info = new MetaData.Response(HttpVersion.HTTP_1_1, HttpStatus.OK_200, "", fields,
-    // dataBytes.length);
-    // FutureCallback callback = new FutureCallback();
-    // logger.debug("Publishing Notification to connection {}", connection.toString());
-    // if (dataBytes.length > 0) {
-    // try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
-    // HexDump.dump(dataBytes, 0, stream, 0);
-    // stream.flush();
-    // logger.debug("\n{}", stream.toString(StandardCharsets.UTF_8.name()));
-    // }
-    // }
-    // connection.send(info, false, ByteBuffer.wrap(dataBytes), true, callback);
-    // connection.getGenerator().reset();
-    // callback.get();
-    // } catch (Exception e) {
-    // e.printStackTrace();
-    // }
-    // }}
-
-    @Override
-    public boolean isSecure() {
-        // We are not in control, the remote controller will handle this
-        return true;
     }
 
     @Override
-    public boolean pairVerify() {
-        // We are not in control, the remote controller will handle this
-        return isPaired();
+    public void addAccessory(Accessory accessory) throws AccessoryOperationException {
+        logger.debug("{}Adding accessory - ID: {}, Type: {}", LOG_ACCESSORY, accessory.getAccessoryId(),
+                accessory.getClass().getSimpleName());
+        try {
+            validateLifecycleOperation("add accessory");
+            super.addAccessory(accessory);
+            // Add characteristic listeners
+            for (Service service : accessory.getServices()) {
+                for (Characteristic<?> characteristic : service.getCharacteristics()) {
+                    characteristic.addChangeListener(this);
+                    logger.debug("{}Added change listener for characteristic: {}", LOG_ACCESSORY,
+                            characteristic.getClass().getSimpleName());
+                }
+            }
+            logger.info("{}Accessory added successfully - ID: {}", LOG_ACCESSORY, accessory.getAccessoryId());
+        } catch (HomekitServerException e) {
+            logger.error("{}Failed to add accessory: {}", LOG_ERROR, e.getMessage(), e);
+            throw new AccessoryOperationException("Failed to add accessory: " + e.getMessage(), e);
+        }
     }
 
     @Override
-    public void pairRemove() throws HomekitException, IOException {
-        // We are not in control, the remote controller will handle this
-    }
-
-    @Override
-    public void updateAccessories() throws IOException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'updateAccessories'");
-    }
-
-    @Override
-    public void pairSetup() throws IOException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'pairSetup'");
+    public void removeAccessory(Accessory accessory) throws AccessoryOperationException {
+        logger.debug("{}Removing accessory - ID: {}, Type: {}", LOG_ACCESSORY, accessory.getAccessoryId(),
+                accessory.getClass().getSimpleName());
+        try {
+            validateLifecycleOperation("remove accessory");
+            super.removeAccessory(accessory);
+            // Remove characteristic listeners
+            for (Service service : accessory.getServices()) {
+                for (Characteristic<?> characteristic : service.getCharacteristics()) {
+                    characteristic.removeChangeListener(this);
+                    logger.debug("{}Removed change listener for characteristic: {}", LOG_ACCESSORY,
+                            characteristic.getClass().getSimpleName());
+                }
+            }
+            logger.info("{}Accessory removed successfully - ID: {}", LOG_ACCESSORY, accessory.getAccessoryId());
+        } catch (HomekitServerException e) {
+            logger.error("{}Failed to remove accessory: {}", LOG_ERROR, e.getMessage(), e);
+            throw new AccessoryOperationException("Failed to remove accessory: " + e.getMessage(), e);
+        }
     }
 }

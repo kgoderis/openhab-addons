@@ -89,7 +89,6 @@ import org.openhab.io.homekit.util.Byte;
 import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder;
 import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder.DecodeResult;
 import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder.Encoder;
-import org.osgi.service.component.annotations.Deactivate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,21 +104,29 @@ import djb.Curve25519;
 
 public class RemoteAccessoryServer extends AbstractAccessoryServer implements CharacteristicChangeListener {
 
+    // ========== Constants ==========
     protected static final Logger logger = LoggerFactory.getLogger(RemoteAccessoryServer.class);
-
     private static final String HTTP_SCHEME = "http";
 
+    // ========== Log Message Prefixes ==========
+    // Using inherited log prefixes from AbstractAccessoryServer
+
+    // ========== Core Dependencies ==========
+    private final ScheduledExecutorService scheduler;
+
+    // ========== Component References and Locks ==========
     private HomekitClientSRP6Session SRP6Session;
+    private @Nullable HttpClient httpClient;
+
+    // ========== State Management ==========
     private byte[] sessionKey;
     private byte[] sharedSecret;
     private byte[] clientPublicKey;
     private byte[] clientPrivateKey;
-
-    private final ScheduledExecutorService scheduler;
-    private @Nullable ScheduledFuture<?> connectionMonitorJob;
-    private @Nullable HttpClient httpClient;
     private boolean isPairVerified;
+    private @Nullable ScheduledFuture<?> connectionMonitorJob;
 
+    // ========== Constructor ==========
     public RemoteAccessoryServer(AccessoryCategory category, InetAddress address, int port, byte[] pairingIdentifier,
             byte[] secretKey, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry) {
         super(category, address, port, pairingIdentifier, secretKey, accessoryRegistry, pairingRegistry);
@@ -128,7 +135,6 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         this.httpClient = new HttpClient(new HomekitHttpClientTransportOverHTTP(), null);
         this.scheduler = org.openhab.core.common.ThreadPoolManager.getScheduledPool("homekit-remote");
 
-        // TODO : Detect when the remote end closes the connection -> Thing should go offline
         start();
     }
 
@@ -137,11 +143,70 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         this(category, address, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry);
     }
 
-    @Deactivate
-    public void dispose() {
-        stop();
+    // ========== Core Lifecycle Methods ==========
+    @Override
+    public void start() {
+        try {
+            if (httpClient != null) {
+                logger.debug("{}Starting HTTP client initialization", LOG_INIT);
+                httpClient.start();
+                ProtocolHandlers handlers = httpClient.getProtocolHandlers();
+                handlers.clear();
+                handlers.put(new HomekitProtocolHandler(this));
+                setState(AccessoryServerState.CONNECTED);
+                logger.debug("{}HTTP client initialized successfully", LOG_INIT);
+
+                // Create a test request to check connection using the address member
+                String url = String.format("http://%s:%d", address.getHostAddress(), port);
+                logger.debug("{}Testing connection to {}", LOG_INIT, url);
+                Request request = httpClient.newRequest(url);
+                request.onRequestFailure((req, failure) -> {
+                    logger.warn("{}Connection failed - Server: {}", LOG_SERVER, new String(getPairingId()));
+                    logger.debug("{}Failure details: {}", LOG_SERVER, failure);
+                    setState(AccessoryServerState.DISCONNECTED);
+                });
+                request.send();
+            }
+        } catch (Exception e) {
+            logger.error("{}Failed to start HTTP client - Error: {}", LOG_ERROR, e.getMessage());
+            logger.debug("{}Exception details", LOG_ERROR, e);
+            setState(AccessoryServerState.DISCONNECTED);
+        }
+
+        startConnectionMonitor();
     }
 
+    @Override
+    public void stop() {
+        stopConnectionMonitor();
+
+        logger.info("{}Stopping server - Server: {}", LOG_SERVER, new String(getPairingId()));
+        try {
+            if (isPaired()) {
+                pairRemove();
+            }
+        } catch (HomekitException | IOException e) {
+            logger.warn("{}Error removing pairing during stop - Error: {}", LOG_SERVER, e.getMessage());
+            logger.debug("{}Exception details", LOG_SERVER, e);
+        }
+
+        try {
+            if (httpClient != null) {
+                httpClient.stop();
+            }
+            setState(AccessoryServerState.STOPPED);
+        } catch (Exception e) {
+            logger.error("{}Error stopping HTTP client - Error: {}", LOG_ERROR, e.getMessage());
+            logger.debug("{}Exception details", LOG_ERROR, e);
+        }
+    }
+
+    @Override
+    public void close() throws Exception {
+        // ... existing close() implementation ...
+    }
+
+    // ========== State Management Methods ==========
     protected AccessoryServerState getState() {
         return currentState;
     }
@@ -159,198 +224,6 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         return currentState != AccessoryServerState.DISCONNECTED;
     }
 
-    public Pairing getPairing() {
-        Collection<Pairing> pairings = pairingRegistry.get(getPairingId());
-
-        if (pairings.size() == 1) {
-            return (Pairing) pairings.toArray()[0];
-        }
-
-        if (pairings.size() > 1) {
-            // oh oh
-        }
-
-        return null;
-    }
-
-    protected void startConnectionMonitor() {
-        if (connectionMonitorJob != null) {
-            connectionMonitorJob.cancel(true);
-        }
-
-        // Schedule periodic connection monitoring
-        connectionMonitorJob = scheduler.scheduleWithFixedDelay(() -> {
-            try {
-                monitorConnection();
-            } catch (Exception e) {
-                logger.warn("'{}' : Error during connection monitoring: {}", new String(getPairingId()),
-                        e.getMessage());
-                logger.debug("'{}' : Exception details", new String(getPairingId()), e);
-                setState(AccessoryServerState.DISCONNECTED);
-            }
-        }, 0, 60, java.util.concurrent.TimeUnit.SECONDS);
-    }
-
-    private void monitorConnection() throws HomekitException, IOException {
-        logger.debug("'{}' : Monitoring connection state", new String(getPairingId()));
-
-        // Check if we were previously disconnected
-        if (currentState == AccessoryServerState.DISCONNECTED) {
-            logger.info("'{}' : Connection was lost, attempting to re-establish", new String(getPairingId()));
-
-            // If we're not paired at all, proceed with pairing
-            if (!isPaired()) {
-                logger.info("'{}' : Setting up new pairing", new String(getPairingId()));
-                try {
-                    pairSetup();
-                } catch (IOException e) {
-                    logger.warn("'{}' : Error during pair setup: {}", new String(getPairingId()), e.getMessage());
-                    logger.debug("'{}' : Exception details", new String(getPairingId()), e);
-                    setState(AccessoryServerState.MISSING_SETUP_CODE);
-                    return;
-                }
-            }
-        }
-
-        // If connected but not paired, attempt to pair
-        if (currentState == AccessoryServerState.CONNECTED && !isPaired()) {
-            logger.info("'{}' : Connected but not paired, attempting to pair", new String(getPairingId()));
-            try {
-                pairSetup();
-                if (isPaired()) {
-                    pairVerify();
-                }
-            } catch (IOException e) {
-                logger.warn("'{}' : Error during pair setup: {}", new String(getPairingId()), e.getMessage());
-                logger.debug("'{}' : Exception details", new String(getPairingId()), e);
-                setState(AccessoryServerState.MISSING_SETUP_CODE);
-                return;
-            }
-        }
-
-        // If paired, verify the connection
-        if (isPaired()) {
-            logger.debug("'{}' : Verifying connection", new String(getPairingId()));
-            if (!isPairVerified()) {
-                logger.info("'{}' : Connection not verified, attempting verification", new String(getPairingId()));
-                if (!pairVerify()) {
-                    logger.warn("'{}' : Connection verification failed", new String(getPairingId()));
-                    setState(AccessoryServerState.DISCONNECTED);
-                    return;
-                }
-            }
-
-            // After successful verification, check pairing status with accessory
-            if (isPairVerified()) {
-                checkPairingStatus();
-            }
-
-            // Check if connection is still secure
-            if (!isSecure()) {
-                logger.warn("'{}' : Connection is no longer secure", new String(getPairingId()));
-                setState(AccessoryServerState.DISCONNECTED);
-                return;
-            }
-
-            setState(AccessoryServerState.CONNECTED);
-            logger.debug("'{}' : Connection verified and secure", new String(getPairingId()));
-        }
-    }
-
-    private void checkPairingStatus() {
-        try {
-            Future<ContentResult> contentFuture = getContent("/pairings");
-            ContentResult contentResult = contentFuture.get();
-            if (contentResult.result.getResponse().getStatus() == 200) {
-                // Parse the pairings list to check if we're already paired
-                byte[] responseContent = contentResult.body;
-                if (responseContent != null && responseContent.length > 0) {
-                    String pairingsList = new String(responseContent, StandardCharsets.UTF_8);
-                    String pairingIdStr = new String(getPairingId(), StandardCharsets.UTF_8);
-
-                    // Check if our controller is in the list
-                    if (!pairingsList.contains(pairingIdStr)) {
-                        logger.info("'{}' : Accessory is paired with other controllers, but not with us",
-                                new String(getPairingId()));
-                        setState(AccessoryServerState.PAIRED_TO_OTHER_CONTROLLER);
-                        return;
-                    } else {
-                        logger.info("'{}' : Accessory is already paired with us and other controllers",
-                                new String(getPairingId()));
-                        setState(AccessoryServerState.PAIRED);
-                    }
-                }
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.debug("'{}' : Error checking pairing status: {}", new String(getPairingId()), e.getMessage());
-        }
-    }
-
-    protected void stopConnectionMonitor() {
-        if (connectionMonitorJob != null) {
-            connectionMonitorJob.cancel(true);
-            connectionMonitorJob = null;
-        }
-    }
-
-    @Override
-    public void start() {
-        try {
-            if (httpClient != null) {
-                httpClient.start();
-                ProtocolHandlers handlers = httpClient.getProtocolHandlers();
-                handlers.clear();
-                handlers.put(new HomekitProtocolHandler(this));
-                setState(AccessoryServerState.CONNECTED);
-
-                // Create a test request to check connection using the address member
-                String url = String.format("http://%s:%d", address.getHostAddress(), port);
-                Request request = httpClient.newRequest(url);
-                request.onRequestFailure((req, failure) -> {
-                    logger.warn("'{}' : HTTP client connection failed", new String(getPairingId()));
-                    logger.debug("'{}' : Failure details: {}", new String(getPairingId()), failure);
-                    setState(AccessoryServerState.DISCONNECTED);
-                });
-                request.send();
-            }
-        } catch (Exception e) {
-            logger.error("'{}' : Error starting HTTP client: {}", new String(getPairingId()), e.getMessage());
-            logger.debug("'{}' : Exception details", new String(getPairingId()), e);
-            setState(AccessoryServerState.DISCONNECTED);
-        }
-
-        startConnectionMonitor();
-    }
-
-    @Override
-    public void stop() {
-        stopConnectionMonitor();
-
-        logger.info("'{}' : Stopping server", new String(getPairingId()));
-        try {
-            if (isPaired()) {
-                pairRemove();
-            }
-        } catch (HomekitException | IOException e) {
-            logger.warn("'{}' : Error removing pairing during stop: {}", new String(getPairingId()), e.getMessage());
-            logger.debug("'{}' : Exception details", new String(getPairingId()), e);
-        }
-
-        try {
-            if (httpClient != null) {
-                httpClient.stop();
-            }
-            setState(AccessoryServerState.STOPPED);
-        } catch (Exception e) {
-            logger.error("'{}' : Error stopping HTTP client: {}", new String(getPairingId()), e.getMessage());
-            logger.debug("'{}' : Exception details", new String(getPairingId()), e);
-        }
-    }
-
-    public void advertise() {
-        // No Operation
-    }
-
     @Override
     public boolean isSecure() {
         if (httpClient != null && address != null && port != 0) {
@@ -364,14 +237,113 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         return false;
     }
 
+    // ========== Connection Management Methods ==========
+    protected void startConnectionMonitor() {
+        if (connectionMonitorJob != null) {
+            connectionMonitorJob.cancel(true);
+            logger.debug("{}Cancelled existing connection monitor", LOG_SERVER);
+        }
+
+        // Schedule periodic connection monitoring
+        connectionMonitorJob = scheduler.scheduleWithFixedDelay(() -> {
+            try {
+                logger.debug("{}Starting connection monitoring cycle", LOG_SERVER);
+                monitorConnection();
+            } catch (Exception e) {
+                logger.warn("{}Connection monitoring failed - Error: {}", LOG_SERVER, e.getMessage());
+                logger.debug("{}Exception details", LOG_SERVER, e);
+                setState(AccessoryServerState.DISCONNECTED);
+            }
+        }, 0, 60, java.util.concurrent.TimeUnit.SECONDS);
+        logger.debug("{}Connection monitor scheduled", LOG_SERVER);
+    }
+
+    protected void stopConnectionMonitor() {
+        if (connectionMonitorJob != null) {
+            connectionMonitorJob.cancel(true);
+            connectionMonitorJob = null;
+            logger.debug("{}Connection monitor stopped", LOG_SERVER);
+        }
+    }
+
+    private void monitorConnection() throws HomekitException, IOException {
+        logger.debug("{}Monitoring connection state - Server: {}", LOG_STATE, new String(getPairingId()));
+
+        // Check if we were previously disconnected
+        if (currentState == AccessoryServerState.DISCONNECTED) {
+            logger.info("{}Connection was lost, attempting to re-establish - Server: {}", LOG_STATE,
+                    new String(getPairingId()));
+
+            // If we're not paired at all, proceed with pairing
+            if (!isPaired()) {
+                logger.info("{}Setting up new pairing - Server: {}", LOG_PAIRING, new String(getPairingId()));
+                try {
+                    pairSetup();
+                } catch (IOException e) {
+                    logger.warn("{}Pairing setup failed - Error: {}", LOG_PAIRING, e.getMessage());
+                    logger.debug("{}Exception details", LOG_PAIRING, e);
+                    setState(AccessoryServerState.MISSING_SETUP_CODE);
+                    return;
+                }
+            }
+        }
+
+        // If connected but not paired, attempt to pair
+        if (currentState == AccessoryServerState.CONNECTED && !isPaired()) {
+            logger.info("{}Connected but not paired, attempting to pair - Server: {}", LOG_PAIRING,
+                    new String(getPairingId()));
+            try {
+                pairSetup();
+                if (isPaired()) {
+                    pairVerify();
+                }
+            } catch (IOException e) {
+                logger.warn("{}Pairing setup failed - Error: {}", LOG_PAIRING, e.getMessage());
+                logger.debug("{}Exception details", LOG_PAIRING, e);
+                setState(AccessoryServerState.MISSING_SETUP_CODE);
+                return;
+            }
+        }
+
+        // If paired, verify the connection
+        if (isPaired()) {
+            logger.debug("{}Verifying connection - Server: {}", LOG_STATE, new String(getPairingId()));
+            if (!isPairVerified()) {
+                logger.info("{}Connection not verified, attempting verification - Server: {}", LOG_STATE,
+                        new String(getPairingId()));
+                if (!pairVerify()) {
+                    logger.warn("{}Connection verification failed - Server: {}", LOG_STATE, new String(getPairingId()));
+                    setState(AccessoryServerState.DISCONNECTED);
+                    return;
+                }
+            }
+
+            // After successful verification, check pairing status with accessory
+            if (isPairVerified()) {
+                checkPairingStatus();
+            }
+
+            // Check if connection is still secure
+            if (!isSecure()) {
+                logger.warn("{}Connection is no longer secure - Server: {}", LOG_STATE, new String(getPairingId()));
+                setState(AccessoryServerState.DISCONNECTED);
+                return;
+            }
+
+            setState(AccessoryServerState.CONNECTED);
+            logger.debug("{}Connection verified and secure - Server: {}", LOG_STATE, new String(getPairingId()));
+        }
+    }
+
+    // ========== Pairing Methods ==========
     public void pairSetup() throws IOException {
-        logger.info("'{}' : Starting pair setup process", new String(getPairingId()));
-        logger.debug("'{}' : Current state: {}", new String(getPairingId()), currentState);
+        logger.info("{}Starting pair setup process - Server: {}", LOG_PAIRING, new String(getPairingId()));
+        logger.debug("{}Current state: {}", LOG_PAIRING, currentState);
 
         // Validate setup code
         if (setupCode == null || setupCode.isEmpty()) {
-            logger.warn("'{}' : Unable to pair with {}:{} because no setup code is set", new String(getPairingId()),
-                    address.getHostAddress(), port);
+            logger.warn("{}Unable to pair with {}:{} because no setup code is set - Server: {}", LOG_PAIRING,
+                    address.getHostAddress(), port, new String(getPairingId()));
             setState(AccessoryServerState.MISSING_SETUP_CODE);
             return;
         }
@@ -379,138 +351,91 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         // Initialize pairing state
         resetPairingState();
         setState(AccessoryServerState.PAIR_SETUP_INITIAL);
-        logger.debug("'{}' : Pairing state reset, starting authentication", new String(getPairingId()));
+        logger.debug("{}Pairing state reset, starting authentication - Server: {}", LOG_PAIRING,
+                new String(getPairingId()));
 
         try {
             // Stage 0: Initial Setup
-            logger.debug("'{}' : Starting Stage 0 - Initial Setup", new String(getPairingId()));
+            logger.debug("{}Starting Stage 0 - Initial Setup - Server: {}", LOG_PAIRING, new String(getPairingId()));
             StageResult stage0Result = executePairingStage(0, () -> doPairSetupStage0());
             if (stage0Result.isFailure()) {
                 handlePairingFailure(0, stage0Result);
                 return;
             }
-            logger.debug("'{}' : Stage 0 completed successfully", new String(getPairingId()));
+            logger.debug("{}Stage 0 completed successfully - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
             // Stage 1: SRP Protocol Exchange
-            logger.debug("'{}' : Starting Stage 1 - SRP Protocol Exchange", new String(getPairingId()));
+            logger.debug("{}Starting Stage 1 - SRP Protocol Exchange - Server: {}", LOG_PAIRING,
+                    new String(getPairingId()));
             setState(AccessoryServerState.PAIR_SETUP_SRP);
             StageResult stage1Result = executePairingStage(1, () -> doPairSetupStage1(stage0Result));
             if (stage1Result.isFailure()) {
                 handlePairingFailure(1, stage1Result);
                 return;
             }
-            logger.debug("'{}' : Stage 1 completed successfully", new String(getPairingId()));
+            logger.debug("{}Stage 1 completed successfully - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
             // Stage 2: Verify Proof
-            logger.debug("'{}' : Starting Stage 2 - Verify Proof", new String(getPairingId()));
+            logger.debug("{}Starting Stage 2 - Verify Proof - Server: {}", LOG_PAIRING, new String(getPairingId()));
             setState(AccessoryServerState.PAIR_SETUP_VERIFY);
             StageResult stage2Result = executePairingStage(2, () -> doPairSetupStage2(stage1Result));
             if (stage2Result.isFailure()) {
                 handlePairingFailure(2, stage2Result);
                 return;
             }
-            logger.debug("'{}' : Stage 2 completed successfully", new String(getPairingId()));
+            logger.debug("{}Stage 2 completed successfully - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
             // Stage 3: Exchange Keys
-            logger.debug("'{}' : Starting Stage 3 - Exchange Keys", new String(getPairingId()));
+            logger.debug("{}Starting Stage 3 - Exchange Keys - Server: {}", LOG_PAIRING, new String(getPairingId()));
             setState(AccessoryServerState.PAIR_SETUP_EXCHANGE);
             StageResult stage3Result = executePairingStage(3, () -> doPairSetupStage3(stage2Result));
             if (stage3Result.isFailure()) {
                 handlePairingFailure(3, stage3Result);
                 return;
             }
-            logger.debug("'{}' : Stage 3 completed successfully", new String(getPairingId()));
+            logger.debug("{}Stage 3 completed successfully - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
             // Pairing completed successfully
             setState(AccessoryServerState.PAIR_UNVERIFIED);
-            logger.info("'{}' : Pair setup completed successfully", new String(getPairingId()));
-            logger.debug("'{}' : Final state: {}", new String(getPairingId()), currentState);
+            logger.info("{}Pair setup completed successfully - Server: {}", LOG_PAIRING, new String(getPairingId()));
+            logger.debug("{}Final state: {}", LOG_PAIRING, currentState);
 
         } catch (HomekitException e) {
-            logger.error("'{}' : Pair setup failed with error: {}", new String(getPairingId()), e.getMessage());
-            logger.debug("'{}' : Homekit exception details", new String(getPairingId()), e);
+            logger.error("{}Pair setup failed with error: {} - Server: {}", LOG_ERROR, e.getMessage(),
+                    new String(getPairingId()));
+            logger.debug("{}Homekit exception details", LOG_ERROR, e);
             setState(AccessoryServerState.UNPAIRED);
         } catch (Exception e) {
-            logger.error("'{}' : Unexpected error during pair setup: {}", new String(getPairingId()), e.getMessage());
-            logger.debug("'{}' : Exception details", new String(getPairingId()), e);
+            logger.error("{}Unexpected error during pair setup: {} - Server: {}", LOG_ERROR, e.getMessage(),
+                    new String(getPairingId()));
+            logger.debug("{}Exception details", LOG_ERROR, e);
             setState(AccessoryServerState.UNPAIRED);
         }
-    }
-
-    private void resetPairingState() {
-        logger.debug("'{}' : Resetting pairing state", new String(getPairingId()));
-        sessionKey = null;
-        sharedSecret = null;
-        clientPublicKey = null;
-        clientPrivateKey = null;
-        isPairVerified = false;
-        logger.debug("'{}' : Pairing state reset completed", new String(getPairingId()));
-    }
-
-    private StageResult executePairingStage(int stage, PairingStageExecutor executor)
-            throws IOException, HomekitException, InterruptedException, ExecutionException {
-        logger.debug("'{}' : Executing pair setup stage {} - preparing payload", new String(getPairingId()), stage);
-        byte[] payload = executor.execute();
-
-        logger.debug("'{}' : Stage {} - sending payload", new String(getPairingId()), stage);
-        Future<StageResult> stageFuture = sendPairSetupStage(payload);
-
-        StageResult result = stageFuture.get();
-        logger.debug("'{}' : Stage {} - received response, success: {}", new String(getPairingId()), stage,
-                !result.isFailure());
-
-        return result;
-    }
-
-    private void handlePairingFailure(int stage, StageResult result) {
-        logger.debug("'{}' : Handling failure for stage {}", new String(getPairingId()), stage);
-        if (result.error != null) {
-            if (result.error == Error.UNAVAILABLE) {
-                logger.warn("'{}' : Pair setup failed - accessory is not available for pairing (already paired)",
-                        new String(getPairingId()));
-                logger.debug("'{}' : Accessory reported UNAVAILABLE error", new String(getPairingId()));
-            } else {
-                logger.warn("'{}' : Pair setup failed at stage {} with error: {}", new String(getPairingId()), stage,
-                        result.error);
-                logger.debug("'{}' : Stage {} error details: {}", new String(getPairingId()), stage, result.error);
-            }
-        } else {
-            logger.warn("'{}' : Pair setup failed at stage {} with message: {}", new String(getPairingId()), stage,
-                    result.message);
-            logger.debug("'{}' : Stage {} failure message details: {}", new String(getPairingId()), stage,
-                    result.message);
-        }
-        setState(AccessoryServerState.UNPAIRED);
-        logger.debug("'{}' : State set to UNPAIRED after failure", new String(getPairingId()));
-    }
-
-    @FunctionalInterface
-    private interface PairingStageExecutor {
-        byte[] execute() throws IOException, HomekitException;
     }
 
     @Override
     public boolean pairVerify() {
-        logger.info("'{}' : Starting pair verify process", new String(getPairingId()));
-        logger.debug("'{}' : Current state: {}", new String(getPairingId()), currentState);
+        logger.info("{}Starting pair verify process - Server: {}", LOG_PAIRING, new String(getPairingId()));
+        logger.debug("{}Current state: {}", LOG_PAIRING, currentState);
 
         // Reset verification state
         resetVerificationState();
         setState(AccessoryServerState.PAIR_UNVERIFIED);
-        logger.debug("'{}' : Verification state reset", new String(getPairingId()));
+        logger.debug("{}Verification state reset - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         try {
             // Stage 0: Initial Verification
-            logger.debug("'{}' : Starting Stage 0 - Initial Verification", new String(getPairingId()));
+            logger.debug("{}Starting Stage 0 - Initial Verification - Server: {}", LOG_PAIRING,
+                    new String(getPairingId()));
             StageResult stage0Result = executePairingStage(0, () -> doPairVerifyStage0());
             if (stage0Result.isFailure()) {
                 handleVerificationFailure(0, stage0Result);
                 return false;
             }
-            logger.debug("'{}' : Stage 0 completed successfully", new String(getPairingId()));
+            logger.debug("{}Stage 0 completed successfully - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
             // Stage 1: Exchange Keys
-            logger.debug("'{}' : Starting Stage 1 - Exchange Keys", new String(getPairingId()));
+            logger.debug("{}Starting Stage 1 - Exchange Keys - Server: {}", LOG_PAIRING, new String(getPairingId()));
             setState(AccessoryServerState.PAIR_SETUP_VERIFY);
 
             // Handle stage 1 with authentication error handling
@@ -519,136 +444,94 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
                 handleVerificationFailure(1, stage1Result);
                 return false;
             }
-            logger.debug("'{}' : Stage 1 completed successfully", new String(getPairingId()));
+            logger.debug("{}Stage 1 completed successfully - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
             // Stage 2: Final Verification
-            logger.debug("'{}' : Starting Stage 2 - Final Verification", new String(getPairingId()));
+            logger.debug("{}Starting Stage 2 - Final Verification - Server: {}", LOG_PAIRING,
+                    new String(getPairingId()));
             setState(AccessoryServerState.PAIR_SETUP_EXCHANGE);
             StageResult stage2Result = executePairingStage(2, () -> doPairVerifyStage2(stage1Result));
             if (stage2Result.isFailure()) {
                 handleVerificationFailure(2, stage2Result);
                 return false;
             }
-            logger.debug("'{}' : Stage 2 completed successfully", new String(getPairingId()));
+            logger.debug("{}Stage 2 completed successfully - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
             // Verification completed successfully
             isPairVerified = true;
             setState(AccessoryServerState.PAIR_VERIFIED);
-            logger.info("'{}' : Pair verification completed successfully", new String(getPairingId()));
-            logger.debug("'{}' : Final state: {}", new String(getPairingId()), currentState);
+            logger.info("{}Pair verification completed successfully - Server: {}", LOG_PAIRING,
+                    new String(getPairingId()));
+            logger.debug("{}Final state: {}", LOG_PAIRING, currentState);
             return true;
 
         } catch (HomekitException e) {
-            logger.error("'{}' : Pair verification failed with error: {}", new String(getPairingId()), e.getMessage());
-            logger.debug("'{}' : Homekit exception details", new String(getPairingId()), e);
+            logger.error("{}Pair verification failed with error: {} - Server: {}", LOG_ERROR, e.getMessage(),
+                    new String(getPairingId()));
+            logger.debug("{}Homekit exception details", LOG_ERROR, e);
             setState(AccessoryServerState.PAIR_UNVERIFIED);
             return false;
         } catch (Exception e) {
-            logger.error("'{}' : Unexpected error during pair verification: {}", new String(getPairingId()),
-                    e.getMessage());
-            logger.debug("'{}' : Exception details", new String(getPairingId()), e);
+            logger.error("{}Unexpected error during pair verification: {} - Server: {}", LOG_ERROR, e.getMessage(),
+                    new String(getPairingId()));
+            logger.debug("{}Exception details", LOG_ERROR, e);
             setState(AccessoryServerState.PAIR_UNVERIFIED);
             return false;
         }
-    }
-
-    private StageResult handleStage1Verification(StageResult stage0Result)
-            throws HomekitException, InterruptedException, ExecutionException, IOException {
-        try {
-            return executePairingStage(1, () -> doPairVerifyStage1(stage0Result));
-        } catch (HomekitException e) {
-            logger.error("'{}' : Authentication error in stage 1: {}", new String(getPairingId()), e.getMessage());
-            logger.debug("'{}' : Sending authentication error to accessory", new String(getPairingId()));
-
-            // Send authentication error to accessory
-            Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
-            encoder.add(Message.STATE, (short) 0x03);
-            encoder.add(Message.ERROR, Error.AUTHENTICATION);
-
-            Future<StageResult> errorFuture = sendPairVerifyStage(encoder.toByteArray());
-            return errorFuture.get();
-        }
-    }
-
-    private void resetVerificationState() {
-        logger.debug("'{}' : Resetting verification state", new String(getPairingId()));
-        sessionKey = null;
-        sharedSecret = null;
-        clientPublicKey = null;
-        clientPrivateKey = null;
-        isPairVerified = false;
-        logger.debug("'{}' : Verification state reset completed", new String(getPairingId()));
-    }
-
-    private void handleVerificationFailure(int stage, StageResult result) {
-        logger.debug("'{}' : Handling verification failure for stage {}", new String(getPairingId()), stage);
-        if (result.error != null) {
-            if (result.error == Error.UNAVAILABLE) {
-                logger.warn("'{}' : Pair verification failed - accessory is not available", new String(getPairingId()));
-                logger.debug("'{}' : Accessory reported UNAVAILABLE error", new String(getPairingId()));
-            } else {
-                logger.warn("'{}' : Pair verification failed at stage {} with error: {}", new String(getPairingId()),
-                        stage, result.error);
-                logger.debug("'{}' : Stage {} error details: {}", new String(getPairingId()), stage, result.error);
-            }
-        } else {
-            logger.warn("'{}' : Pair verification failed at stage {} with message: {}", new String(getPairingId()),
-                    stage, result.message);
-            logger.debug("'{}' : Stage {} failure message details: {}", new String(getPairingId()), stage,
-                    result.message);
-        }
-        setState(AccessoryServerState.PAIR_UNVERIFIED);
-        logger.debug("'{}' : State set to PAIR_UNVERIFIED after failure", new String(getPairingId()));
     }
 
     @Override
     public void pairRemove() throws HomekitException, IOException {
-        logger.info("'{}' : Starting pair remove process", new String(getPairingId()));
-        logger.debug("'{}' : Current state: {}", new String(getPairingId()), currentState);
+        logger.info("{}Starting pair remove process - Server: {}", LOG_PAIRING, new String(getPairingId()));
+        logger.debug("{}Current state: {}", LOG_PAIRING, currentState);
 
         if (!isPaired()) {
-            logger.warn("'{}' : Cannot remove pairing - accessory is not paired", new String(getPairingId()));
+            logger.warn("{}Cannot remove pairing - accessory is not paired - Server: {}", LOG_PAIRING,
+                    new String(getPairingId()));
             setState(AccessoryServerState.UNPAIRED);
             return;
         }
 
         if (!isPairVerified || !isSecure()) {
-            logger.warn("'{}' : Cannot remove pairing - accessory is {} verified and connection is {} secured",
-                    new String(getPairingId()), isPairVerified ? "already" : "not", isSecure() ? "" : "not ");
+            logger.warn("{}Cannot remove pairing - accessory is {} verified and connection is {} secured - Server: {}",
+                    LOG_PAIRING, isPairVerified ? "already" : "not", isSecure() ? "" : "not ",
+                    new String(getPairingId()));
             setState(AccessoryServerState.PAIR_UNVERIFIED);
             return;
         }
 
         try {
             // Prepare remove pairing request
-            logger.debug("'{}' : Preparing remove pairing request", new String(getPairingId()));
+            logger.debug("{}Preparing remove pairing request - Server: {}", LOG_PAIRING, new String(getPairingId()));
             Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
             encoder.add(Message.STATE, (short) 0x01);
             encoder.add(Message.METHOD, Method.REMOVE_PAIRING.getKey());
             encoder.add(Message.IDENTIFIER, getPairingId());
 
             // Send remove pairing request
-            logger.debug("'{}' : Sending remove pairing request", new String(getPairingId()));
+            logger.debug("{}Sending remove pairing request - Server: {}", LOG_PAIRING, new String(getPairingId()));
             Future<StageResult> stageFuture = sendPairing(encoder.toByteArray());
             StageResult stageResult = stageFuture.get();
 
             // Verify response state
             short state = stageResult.decodeResult.getByte(Message.STATE);
             if (state != 2) {
-                logger.error("'{}' : Invalid state in remove pairing response: {}", new String(getPairingId()), state);
+                logger.error("{}Invalid state in remove pairing response: {} - Server: {}", LOG_ERROR, state,
+                        new String(getPairingId()));
                 throw new HomekitException("Wrong STATE");
             }
 
             // Check for errors in response
             if (stageResult.decodeResult.getBytes(Message.ERROR) != null) {
                 Error error = Error.get(stageResult.decodeResult.getByte(Message.ERROR));
-                logger.warn("'{}' : Accessory failed to remove pairing: {}", new String(getPairingId()), error);
+                logger.warn("{}Accessory failed to remove pairing: {} - Server: {}", LOG_PAIRING, error,
+                        new String(getPairingId()));
                 setState(AccessoryServerState.PAIR_UNVERIFIED);
                 return;
             }
 
             // Remove all pairings
-            logger.debug("'{}' : Removing all pairings", new String(getPairingId()));
+            logger.debug("{}Removing all pairings - Server: {}", LOG_PAIRING, new String(getPairingId()));
             for (Pairing pairing : getPairings()) {
                 removePairing(pairing.getDestinationId());
             }
@@ -656,15 +539,73 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
             // Update state
             isPairVerified = false;
             setState(AccessoryServerState.UNPAIRED);
-            logger.info("'{}' : Successfully removed pairing", new String(getPairingId()));
-            logger.debug("'{}' : Final state: {}", new String(getPairingId()), currentState);
+            logger.info("{}Successfully removed pairing - Server: {}", LOG_PAIRING, new String(getPairingId()));
+            logger.debug("{}Final state: {}", LOG_PAIRING, currentState);
 
         } catch (InterruptedException | ExecutionException e) {
-            logger.error("'{}' : Error during pair remove: {}", new String(getPairingId()), e.getMessage());
-            logger.debug("'{}' : Exception details", new String(getPairingId()), e);
+            logger.error("{}Error during pair remove: {} - Server: {}", LOG_ERROR, e.getMessage(),
+                    new String(getPairingId()));
+            logger.debug("{}Exception details", LOG_ERROR, e);
             setState(AccessoryServerState.PAIR_UNVERIFIED);
             throw new HomekitException("Failed to remove pairing", e);
         }
+    }
+
+    // ========== Pairing Stage Methods ==========
+    private void resetPairingState() {
+        logger.debug("{}Resetting pairing state - Server: {}", LOG_PAIRING, new String(getPairingId()));
+        sessionKey = null;
+        sharedSecret = null;
+        clientPublicKey = null;
+        clientPrivateKey = null;
+        isPairVerified = false;
+        logger.debug("{}Pairing state reset completed - Server: {}", LOG_PAIRING, new String(getPairingId()));
+    }
+
+    private StageResult executePairingStage(int stage, PairingStageExecutor executor)
+            throws IOException, HomekitException, InterruptedException, ExecutionException {
+        logger.debug("{}Executing pair setup stage {} - preparing payload - Server: {}", LOG_PAIRING, stage,
+                new String(getPairingId()));
+        byte[] payload = executor.execute();
+
+        logger.debug("{}Stage {} - sending payload - Server: {}", LOG_PAIRING, stage, new String(getPairingId()));
+        Future<StageResult> stageFuture = sendPairSetupStage(payload);
+
+        StageResult result = stageFuture.get();
+        logger.debug("{}Stage {} - received response, success: {} - Server: {}", LOG_PAIRING, stage,
+                !result.isFailure(), new String(getPairingId()));
+
+        return result;
+    }
+
+    private void handlePairingFailure(int stage, StageResult result) {
+        logger.debug("{}Handling failure for stage {} - Server: {}", LOG_PAIRING, stage, new String(getPairingId()));
+        if (result.error != null) {
+            if (result.error == Error.UNAVAILABLE) {
+                logger.warn(
+                        "{}Pair setup failed - accessory is not available for pairing (already paired) - Server: {}",
+                        LOG_PAIRING, new String(getPairingId()));
+                logger.debug("{}Accessory reported UNAVAILABLE error - Server: {}", LOG_PAIRING,
+                        new String(getPairingId()));
+            } else {
+                logger.warn("{}Pair setup failed at stage {} with error: {} - Server: {}", LOG_PAIRING, stage,
+                        result.error, new String(getPairingId()));
+                logger.debug("{}Stage {} error details: {} - Server: {}", LOG_PAIRING, stage, result.error,
+                        new String(getPairingId()));
+            }
+        } else {
+            logger.warn("{}Pair setup failed at stage {} with message: {} - Server: {}", LOG_PAIRING, stage,
+                    result.message, new String(getPairingId()));
+            logger.debug("{}Stage {} failure message details: {} - Server: {}", LOG_PAIRING, stage, result.message,
+                    new String(getPairingId()));
+        }
+        setState(AccessoryServerState.UNPAIRED);
+        logger.debug("{}State set to UNPAIRED after failure - Server: {}", LOG_PAIRING, new String(getPairingId()));
+    }
+
+    @FunctionalInterface
+    private interface PairingStageExecutor {
+        byte[] execute() throws IOException, HomekitException;
     }
 
     protected byte[] doPairSetupStage0() throws IOException, HomekitException {
@@ -676,7 +617,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
     }
 
     protected byte[] doPairSetupStage1(StageResult stageResult) throws IOException, HomekitException {
-        logger.info("'{}' : Setup Stage 1 : Start", new String(getPairingId()));
+        logger.debug("{}Starting pair setup stage 1 - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         short state = stageResult.decodeResult.getByte(Message.STATE);
         if (state != 2) {
@@ -684,12 +625,10 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         }
 
         BigInteger publicKey = stageResult.decodeResult.getBigInt(Message.PUBLIC_KEY);
-        logger.info("'{}' : Setup Stage 1 : Public Key is {}", new String(getPairingId()),
-                Byte.toHexString(Byte.toByteArray(publicKey)));
+        logger.debug("{}Public key received - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         BigInteger salt = stageResult.decodeResult.getBigInt(Message.SALT);
-        logger.info("'{}' : Setup Stage 1 : Salt is {}", new String(getPairingId()),
-                Byte.toHexString(Byte.toByteArray(salt)));
+        logger.debug("{}Salt received - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         if (SRP6Session == null) {
             SRP6Session = new HomekitClientSRP6Session();
@@ -704,29 +643,27 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         try {
             clientCredentials = SRP6Session.step2(HomekitEncryptionEngine.SRP6Params, salt, publicKey);
         } catch (SRP6Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.error("{}SRP6 step 2 failed - Error: {}", LOG_ERROR, e.getMessage());
+            logger.debug("{}Exception details", LOG_ERROR, e);
+            throw new HomekitException("SRP6 step 2 failed", e);
         }
 
         BigInteger clientPublicKey = clientCredentials.A;
-        logger.info("'{}' : Setup Stage 1 : Client Public Key is {}", new String(getPairingId()),
-                Byte.toHexString(Byte.toByteArray(clientPublicKey)));
+        logger.debug("{}Client public key generated - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         BigInteger clientProof = clientCredentials.M1;
-        logger.info("'{}' : Setup Stage 1 : Client Proof is {}", new String(getPairingId()),
-                Byte.toHexString(Byte.toByteArray(clientProof)));
+        logger.debug("{}Client proof generated - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
         encoder.add(Message.STATE, (short) 0x03);
         encoder.add(Message.PUBLIC_KEY, clientPublicKey);
         encoder.add(Message.PROOF, clientProof);
-        logger.info("'{}' : Setup Stage 1 : End");
 
         return encoder.toByteArray();
     }
 
     protected byte[] doPairSetupStage2(StageResult stageResult) throws IOException, HomekitException {
-        logger.info("'{}' : Setup Stage 2 : Start", new String(getPairingId()));
+        logger.debug("{}Starting pair setup stage 2 - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         short state = stageResult.decodeResult.getByte(Message.STATE);
         if (state != 4) {
@@ -738,33 +675,31 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         try {
             SRP6Session.step3(proof);
         } catch (SRP6Exception e) {
-            // Verification failed
+            logger.error("{}SRP6 step 3 failed - Error: {}", LOG_ERROR, e.getMessage());
+            logger.debug("{}Exception details", LOG_ERROR, e);
+            throw new HomekitException("SRP6 step 3 failed", e);
         }
 
         MessageDigest digest = SRP6Session.getCryptoParams().getMessageDigestInstance();
         BigInteger S = SRP6Session.getSessionKey(false);
         byte[] sBytes = Byte.toByteArray(S);
-        logger.info("'{}' : Setup Stage 2 : SRP Session Key is {}", new String(getPairingId()),
-                Byte.toHexString(sBytes));
+        logger.debug("{}SRP session key generated - Server: {}", LOG_PAIRING, new String(getPairingId()));
         sharedSecret = digest.digest(sBytes);
-        logger.info("'{}' : Setup Stage 2 : Shared Secret is {}", new String(getPairingId()),
-                Byte.toHexString(sharedSecret));
+        logger.debug("{}Shared secret generated - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA512Digest());
         hkdf.init(new HKDFParameters(sharedSecret, "Pair-Setup-Encrypt-Salt".getBytes(StandardCharsets.UTF_8),
                 "Pair-Setup-Encrypt-Info".getBytes(StandardCharsets.UTF_8)));
         sessionKey = new byte[32];
         hkdf.generateBytes(sessionKey, 0, 32);
-        logger.info("'{}' : Setup Stage 2 : Session Key is {}", new String(getPairingId()),
-                Byte.toHexString(sessionKey));
+        logger.debug("{}Session key generated - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         hkdf = new HKDFBytesGenerator(new SHA512Digest());
         hkdf.init(new HKDFParameters(sharedSecret, "Pair-Setup-Controller-Sign-Salt".getBytes(StandardCharsets.UTF_8),
                 "Pair-Setup-Controller-Sign-Info".getBytes(StandardCharsets.UTF_8)));
         byte[] clientDeviceX = new byte[32];
         hkdf.generateBytes(clientDeviceX, 0, 32);
-        logger.info("'{}' : Setup Stage 2 : Client Device X is {}", new String(getPairingId()),
-                Byte.toHexString(clientDeviceX));
+        logger.debug("{}Client device X generated - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         EdsaSigner signer = new EdsaSigner(secretKey);
         byte[] clientLongtermPublicKey = signer.getPublicKey();
@@ -772,20 +707,12 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         byte[] clientSignature = null;
         try {
             clientSignature = signer.sign(clientDeviceInfo);
-        } catch (InvalidKeyException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (SignatureException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException e) {
+            logger.error("{}Failed to sign client device info - Error: {}", LOG_ERROR, e.getMessage());
+            logger.debug("{}Exception details", LOG_ERROR, e);
+            throw new HomekitException("Failed to sign client device info", e);
         }
-        logger.info("'{}' : Setup Stage 2 : Client Long Term Pubic Key is {}", new String(getPairingId()),
-                Byte.toHexString(clientLongtermPublicKey));
-        logger.info("'{}' : Setup Stage 2 : Client Signature X is {}", new String(getPairingId()),
-                Byte.toHexString(clientSignature));
+        logger.debug("{}Client signature generated - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
         encoder.add(Message.IDENTIFIER, getPairingId());
@@ -798,13 +725,12 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         encoder = TypeLengthValueEncoderDecoder.getEncoder();
         encoder.add(Message.STATE, (short) 0x05);
         encoder.add(Message.ENCRYPTED_DATA, ciphertext);
-        logger.info("'{}' : Setup Stage 2 : End", new String(getPairingId()));
 
         return encoder.toByteArray();
     }
 
     protected byte[] doPairSetupStage3(StageResult stageResult) throws IOException, HomekitException {
-        logger.info("'{}' : Setup Stage 3 : Start", new String(getPairingId()));
+        logger.debug("{}Starting pair setup stage 3 - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         short state = stageResult.decodeResult.getByte(Message.STATE);
         if (state != 6) {
@@ -818,18 +744,15 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
 
         ChachaDecoder chachaDecoder = new ChachaDecoder(sessionKey, "PS-Msg06".getBytes(StandardCharsets.UTF_8));
         byte[] plaintext = chachaDecoder.decodeCiphertext(authTagData, messageData);
-        logger.info("'{}' : Setup Stage 3 : Plaintext is {}", new String(getPairingId()), Byte.toHexString(plaintext));
+        logger.debug("{}Plaintext decoded - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         DecodeResult d = TypeLengthValueEncoderDecoder.decode(plaintext);
         byte[] destinationPairingIdentifier = d.getBytes(Message.IDENTIFIER);
-        logger.info("'{}' : Setup Stage 3 : Accessory Pairing Id is {}", new String(getPairingId()),
-                Byte.toHexString(destinationPairingIdentifier));
+        logger.debug("{}Destination pairing identifier received - Server: {}", LOG_PAIRING, new String(getPairingId()));
         byte[] destinationPublicKey = d.getBytes(Message.PUBLIC_KEY);
-        logger.info("'{}' : Setup Stage 3 : Accessory Long Term Public Key is {}", new String(getPairingId()),
-                Byte.toHexString(destinationPublicKey));
+        logger.debug("{}Destination public key received - Server: {}", LOG_PAIRING, new String(getPairingId()));
         byte[] accessorySignature = d.getBytes(Message.SIGNATURE);
-        logger.info("'{}' : Setup Stage 3 : Accessory Signature is {}", new String(getPairingId()),
-                Byte.toHexString(accessorySignature));
+        logger.debug("{}Accessory signature received - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA512Digest());
         hkdf.init(new HKDFParameters(sharedSecret, "Pair-Setup-Accessory-Sign-Salt".getBytes(StandardCharsets.UTF_8),
@@ -839,27 +762,27 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
 
         byte[] accessoryDeviceInfo = Byte.joinBytes(accessoryDeviceX, destinationPairingIdentifier,
                 destinationPublicKey);
-        logger.info("'{}' : Setup Stage 3 : Accessory Device Info is {}", new String(getPairingId()),
-                Byte.toHexString(accessoryDeviceInfo));
+        logger.debug("{}Accessory device info generated - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         try {
             if (!new EdsaVerifier(destinationPublicKey).verify(accessoryDeviceInfo, accessorySignature)) {
+                logger.error("{}Signature verification failed - Server: {}", LOG_ERROR, new String(getPairingId()));
                 throw new HomekitException("Signature verification failed");
             }
-        } catch (Exception e1) {
-            throw new HomekitException("Signature verification failed");
+        } catch (Exception e) {
+            logger.error("{}Signature verification failed - Error: {}", LOG_ERROR, e.getMessage());
+            logger.debug("{}Exception details", LOG_ERROR, e);
+            throw new HomekitException("Signature verification failed", e);
         }
 
         addPairing(destinationPairingIdentifier, destinationPublicKey);
         SRP6Session = null;
 
-        logger.info("'{}' : Setup Stage 3 : End", new String(getPairingId()));
-
         return null;
     }
 
     protected byte[] doPairVerifyStage0() throws IOException, HomekitException {
-        logger.info("'{}' : Verify Stage 0 : Start", new String(getPairingId()));
+        logger.debug("{}Starting pair verify stage 0 - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         clientPublicKey = new byte[32];
         clientPrivateKey = new byte[32];
@@ -870,13 +793,11 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         encoder.add(Message.STATE, (short) 0x01);
         encoder.add(Message.PUBLIC_KEY, clientPublicKey);
 
-        logger.info("'{}' : Verify Stage 0 : End", new String(getPairingId()));
-
         return encoder.toByteArray();
     }
 
     protected byte[] doPairVerifyStage1(StageResult stageResult) throws IOException, HomekitException {
-        logger.info("'{}' : Verify Stage 1 : Start", new String(getPairingId()));
+        logger.debug("{}Starting pair verify stage 1 - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         short state = stageResult.decodeResult.getByte(Message.STATE);
         if (state != 2) {
@@ -884,8 +805,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         }
 
         byte[] destinationPublicKey = stageResult.decodeResult.getBytes(Message.PUBLIC_KEY);
-        logger.info("'{}' : Verify Stage 1 : Accessory Public Key is {}", new String(getPairingId()),
-                Byte.toHexString(destinationPublicKey));
+        logger.debug("{}Destination public key received - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         byte[] messageData = new byte[stageResult.decodeResult.getLength(Message.ENCRYPTED_DATA) - 16];
         stageResult.decodeResult.getBytes(Message.ENCRYPTED_DATA, messageData, 0);
@@ -894,60 +814,39 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
 
         sharedSecret = new byte[32];
         Curve25519.curve(sharedSecret, clientPrivateKey, destinationPublicKey);
-        logger.info("'{}' : Verify Stage 1 : Shared Secret is {}", new String(getPairingId()),
-                Byte.toHexString(sharedSecret));
+        logger.debug("{}Shared secret generated - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA512Digest());
         hkdf.init(new HKDFParameters(sharedSecret, "Pair-Verify-Encrypt-Salt".getBytes(StandardCharsets.UTF_8),
                 "Pair-Verify-Encrypt-Info".getBytes(StandardCharsets.UTF_8)));
         byte[] sessionKey = new byte[32];
         hkdf.generateBytes(sessionKey, 0, 32);
-        logger.info("'{}' : Verify Stage 1 : Session Key is {}", new String(getPairingId()),
-                Byte.toHexString(sessionKey));
+        logger.debug("{}Session key generated - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         byte[] plaintext = null;
         ChachaDecoder chachaDecoder = new ChachaDecoder(sessionKey, "PV-Msg02".getBytes(StandardCharsets.UTF_8));
         try {
             plaintext = chachaDecoder.decodeCiphertext(authTagData, messageData);
-            logger.info("'{}' : Verify Stage 1 : Plaintext is {}", new String(getPairingId()),
-                    Byte.toHexString(plaintext));
+            logger.debug("{}Plaintext decoded - Server: {}", LOG_PAIRING, new String(getPairingId()));
         } catch (Exception e) {
-            logger.warn("'{}' : Verify Stage 1 : Unable to decode the ciphertext");
-            e.printStackTrace();
-            throw new HomekitException("Ciphertext decoding failed");
+            logger.error("{}Failed to decode ciphertext - Error: {}", LOG_ERROR, e.getMessage());
+            logger.debug("{}Exception details", LOG_ERROR, e);
+            throw new HomekitException("Ciphertext decoding failed", e);
         }
-
-        Pairing accessoryPairing = null;
-        byte[] accessorySignature = null;
 
         DecodeResult d = TypeLengthValueEncoderDecoder.decode(plaintext);
         byte[] destinationPairingIdentifier = d.getBytes(Message.IDENTIFIER);
-        // byte[] remoteAccessoryPairingIdentifier = d.getBytes(Message.IDENTIFIER);
-        // if (isPaired()) {
-        // if (!Arrays.equals(remoteAccessoryPairingIdentifier, destinationPairingIdentifier)) {
-        // logger.warn(
-        // "'{}' : Verify Stage 1 : The Accessory reports an pairing identifier that differs from what we have",
-        // new String(getPairingId()));
-        // throw new HomekitException("Invalid pairing identifier");
-        // }
-        // } else {
-        // destinationPairingIdentifier = remoteAccessoryPairingIdentifier;
-        // }
+        logger.debug("{}Destination pairing identifier received - Server: {}", LOG_PAIRING, new String(getPairingId()));
+        byte[] accessorySignature = d.getBytes(Message.SIGNATURE);
+        logger.debug("{}Accessory signature received - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
-        logger.info("'{}' : Verify Stage 1 : Accessory Pairing Id is {}", new String(getPairingId()),
-                Byte.toHexString(destinationPairingIdentifier));
-        accessorySignature = d.getBytes(Message.SIGNATURE);
-        logger.info("'{}' : Verify Stage 1 : Accessory Signature is {}", new String(getPairingId()),
-                Byte.toHexString(accessorySignature));
-
-        // accessoryPairing = pairingRegistry.get(new PairingUID(getPairingId(), destinationPairingIdentifier));
-        accessoryPairing = getPairing(destinationPairingIdentifier);
+        Pairing accessoryPairing = getPairing(destinationPairingIdentifier);
 
         if (accessoryPairing == null) {
+            logger.error("{}Accessory is not paired - Server: {}", LOG_ERROR, new String(getPairingId()));
             throw new HomekitException("Accessory is not paired");
         } else {
-            logger.info("'{}' : Fetched the Pairing {} : {}", new String(getPairingId()), accessoryPairing.getUID(),
-                    Byte.toHexString(accessoryPairing.getPublicKey()));
+            logger.debug("{}Accessory pairing found - Server: {}", LOG_PAIRING, new String(getPairingId()));
         }
 
         byte[] accessoryDeviceInfo = Byte.joinBytes(destinationPublicKey, destinationPairingIdentifier,
@@ -957,36 +856,29 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
             boolean signatureVerification = new EdsaVerifier(accessoryPairing.getPublicKey())
                     .verify(accessoryDeviceInfo, accessorySignature);
             if (!signatureVerification) {
+                logger.error("{}Signature verification failed - Server: {}", LOG_ERROR, new String(getPairingId()));
                 throw new HomekitException("Signature verification failed");
             }
         } catch (Exception e) {
-            throw new HomekitException("Signature verification failed");
+            logger.error("{}Signature verification failed - Error: {}", LOG_ERROR, e.getMessage());
+            logger.debug("{}Exception details", LOG_ERROR, e);
+            throw new HomekitException("Signature verification failed", e);
         }
 
         byte[] clientDeviceInfo = Byte.joinBytes(clientPublicKey, getPairingId(), destinationPublicKey);
 
         byte[] clientSignature = null;
         try {
-            logger.info("'{}' : Verify Stage 1 : Client Long Term Secret Key is {}", new String(getPairingId()),
-                    Byte.toHexString(secretKey));
+            logger.debug("{}Signing client device info - Server: {}", LOG_PAIRING, new String(getPairingId()));
             clientSignature = new EdsaSigner(secretKey).sign(clientDeviceInfo);
-        } catch (InvalidKeyException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (SignatureException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException e) {
+            logger.error("{}Failed to sign client device info - Error: {}", LOG_ERROR, e.getMessage());
+            logger.debug("{}Exception details", LOG_ERROR, e);
+            throw new HomekitException("Failed to sign client device info", e);
         }
 
         Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
-        logger.info("'{}' : Verify Stage 1 : Client Pairing Id is {}", new String(getPairingId()),
-                Byte.toHexString(getPairingId()));
         encoder.add(Message.IDENTIFIER, getPairingId());
-        logger.info("'{}' : Verify Stage 1 : Client Signature is {}", new String(getPairingId()),
-                Byte.toHexString(clientSignature));
         encoder.add(Message.SIGNATURE, clientSignature);
         plaintext = encoder.toByteArray();
 
@@ -997,13 +889,11 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         encoder.add(Message.STATE, (short) 0x03);
         encoder.add(Message.ENCRYPTED_DATA, ciphertext);
 
-        logger.info("'{}' : Verify Stage 1 : End", new String(getPairingId()));
-
         return encoder.toByteArray();
     }
 
     protected byte[] doPairVerifyStage2(StageResult stageResult) throws IOException, HomekitException {
-        logger.info("'{}' : Verify Stage 2 : Start", new String(getPairingId()));
+        logger.debug("{}Starting pair verify stage 2 - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         short state = stageResult.decodeResult.getByte(Message.STATE);
         if (state != 4) {
@@ -1011,24 +901,21 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         }
 
         byte[] writeKey = HomekitEncryptionEngine.createKey("Control-Write-Encryption-Key", sharedSecret);
-        logger.info("'{}' : Verify Stage 2 : Write Key is {}", new String(getPairingId()), Byte.toHexString(writeKey));
+        logger.debug("{}Write key generated - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         byte[] readKey = HomekitEncryptionEngine.createKey("Control-Read-Encryption-Key", sharedSecret);
-        logger.info("'{}' : Verify Stage 2 : Read Key is {}", new String(getPairingId()), Byte.toHexString(readKey));
+        logger.debug("{}Read key generated - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         HomekitHttpDestinationOverHTTP destination = (HomekitHttpDestinationOverHTTP) httpClient.getDestination(
                 stageResult.result.getRequest().getScheme(), stageResult.result.getRequest().getHost(),
                 stageResult.result.getRequest().getPort());
-        logger.info("'{}' : Verify Stage 2 : Setting the keys on destination ", new String(getPairingId()),
-                destination.toString());
+        logger.debug("{}Setting encryption keys on destination - Server: {}", LOG_PAIRING, new String(getPairingId()));
         destination.setEncryptionKeys(readKey, writeKey);
-        // destination.secure();
-
-        logger.info("'{}' : Verify Stage 2 : End", new String(getPairingId()));
 
         return null;
     }
 
+    // ========== Communication Methods ==========
     protected Future<StageResult> sendPairSetupStage(byte[] request) throws InterruptedException {
         return sendStage(request, "/pair-setup");
     }
@@ -1042,12 +929,12 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
     }
 
     protected Future<StageResult> sendStage(byte[] request, String url) throws InterruptedException {
-
         URI uri = null;
         try {
             uri = new URI("http", null, address.getHostAddress(), port, url, null, null);
         } catch (URISyntaxException e1) {
-            e1.printStackTrace();
+            logger.error("{}Failed to create URI - Error: {}", LOG_ERROR, e1.getMessage());
+            logger.debug("{}Exception details", LOG_ERROR, e1);
         }
 
         CompletableFuture<StageResult> completableFuture = new CompletableFuture<>();
@@ -1072,12 +959,15 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
                                 }
 
                                 short state = d.getByte(Message.STATE);
-                                logger.info("'{}' : Received State {}", new String(getPairingId()), state);
+                                logger.info("{}Received State {} - Server: {}", LOG_STATE, state,
+                                        new String(getPairingId()));
 
                                 StageResult stageResult = new StageResult(d, result);
                                 completableFuture.complete(stageResult);
                             } catch (IOException e) {
                                 SRP6Session = null;
+                                logger.error("{}Failed to decode response - Error: {}", LOG_ERROR, e.getMessage());
+                                logger.debug("{}Exception details", LOG_ERROR, e);
                             }
                         } else {
                             StageResult stageResult = new StageResult(result.getResponseFailure().getMessage());
@@ -1090,12 +980,12 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
     }
 
     protected Future<ContentResult> getContent(String url) throws InterruptedException {
-
         URI uri = null;
         try {
             uri = new URI("http", null, address.getHostAddress(), port, url, null, null);
         } catch (URISyntaxException e1) {
-            e1.printStackTrace();
+            logger.error("{}Failed to create URI - Error: {}", LOG_ERROR, e1.getMessage());
+            logger.debug("{}Exception details", LOG_ERROR, e1);
         }
 
         CompletableFuture<ContentResult> completableFuture = new CompletableFuture<>();
@@ -1124,7 +1014,8 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         try {
             uri = new URI("http", null, address.getHostAddress(), port, url, null, null);
         } catch (URISyntaxException e1) {
-            e1.printStackTrace();
+            logger.error("{}Failed to create URI - Error: {}", LOG_ERROR, e1.getMessage());
+            logger.debug("{}Exception details", LOG_ERROR, e1);
         }
 
         CompletableFuture<ContentResult> completableFuture = new CompletableFuture<>();
@@ -1150,16 +1041,295 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         return completableFuture;
     }
 
+    // ========== Event Handling Methods ==========
     public void handleEvent(byte[] body) {
-
         try {
+            logger.debug("{}Processing event - Server: {}", LOG_EVENT, new String(getPairingId()));
             Byte.logBuffer(logger, "handleEvent", Byte.toHexString(getPairingId()), ByteBuffer.wrap(body));
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.error("{}Failed to process event - Error: {}", LOG_ERROR, e.getMessage());
+            logger.debug("{}Exception details", LOG_ERROR, e);
         }
     }
 
+    @Override
+    public void onCharacteristicEvent(CharacteristicEvent event) {
+        if (event.getEventType() == CharacteristicEventType.CHARACTERISTIC_START_EVENTS) {
+            logger.debug("{}Starting events for characteristic - Server: {}", LOG_EVENT, new String(getPairingId()));
+            subscriveEvents(event.getCharacteristic(), true);
+        } else if (event.getEventType() == CharacteristicEventType.CHARACTERISTIC_STOP_EVENTS) {
+            logger.debug("{}Stopping events for characteristic - Server: {}", LOG_EVENT, new String(getPairingId()));
+            subscriveEvents(event.getCharacteristic(), false);
+        }
+    }
+
+    // ========== Accessory Management Methods ==========
+    @Override
+    public long getNextAvailableAccessoryId() {
+        return 0;
+    }
+
+    public Collection<Accessory> getRemoteAccessories() {
+        Collection<Accessory> result = new HashSet<Accessory>();
+
+        if (isPaired() && isPairVerified() && isSecure()) {
+            Future<ContentResult> contentFuture;
+            ContentResult contentResult = null;
+            try {
+                contentFuture = getContent("/accessories");
+                contentResult = contentFuture.get();
+            } catch (InterruptedException | ExecutionException e) {
+                logger.error("{}Error getting remote accessories - Error: {}", LOG_ERROR, e.getMessage());
+                logger.debug("{}Exception details", LOG_ERROR, e);
+            }
+
+            logger.info("{}Received accessories data - Server: {}", LOG_SERVER, new String(getPairingId()));
+
+            if (contentResult != null && contentResult.result.getResponse().getStatus() == 200) {
+                JsonArray accessories = Json.createReader(new ByteArrayInputStream(contentResult.body)).readObject()
+                        .getJsonArray("accessories");
+                for (JsonValue value : accessories) {
+                    result.add(new GenericAccessory(value));
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public boolean subscriveEvents(Characteristic<?> characteristic, boolean subscribe) {
+        if (!isPairVerified()) {
+            logger.debug("{}Cannot subscribe to events - not paired - Server: {}", LOG_SERVER,
+                    new String(getPairingId()));
+            return false;
+        }
+
+        try {
+            // Create the characteristic update request
+            JsonObjectBuilder requestBuilder = Json.createObjectBuilder();
+            JsonArrayBuilder characteristicsBuilder = Json.createArrayBuilder();
+            JsonObjectBuilder characteristicBuilder = Json.createObjectBuilder()
+                    .add("aid", characteristic.getService().getAccessory().getAccessoryId())
+                    .add("iid", characteristic.getInstanceId()).add("ev", subscribe);
+
+            characteristicsBuilder.add(characteristicBuilder);
+            requestBuilder.add("characteristics", characteristicsBuilder);
+
+            // Send the subscription request
+            Future<ContentResult> contentFuture = putContent("/characteristics",
+                    requestBuilder.build().toString().getBytes(StandardCharsets.UTF_8));
+            ContentResult contentResult = contentFuture.get();
+
+            if (contentResult.result.getResponse().getStatus() == 204) {
+                logger.debug("{}Successfully subscribed to events for characteristic {} - Server: {}", LOG_SERVER,
+                        characteristic.getUID(), new String(getPairingId()));
+                characteristic.setHasEvents(true);
+                return true;
+            } else {
+                logger.warn("{}Failed to subscribe to events for characteristic {} - Status: {} - Server: {}",
+                        LOG_SERVER, characteristic.getUID(), contentResult.result.getResponse().getStatus(),
+                        new String(getPairingId()));
+                return false;
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("{}Error subscribing to events for characteristic {}: {} - Server: {}", LOG_ERROR,
+                    characteristic.getUID(), e.getMessage(), new String(getPairingId()));
+            return false;
+        }
+    }
+
+    @Override
+    public void updateAccessories() throws IOException {
+        if (!isPairVerified()) {
+            logger.debug("{}Cannot update accessories - not paired - Server: {}", LOG_SERVER,
+                    new String(getPairingId()));
+            return;
+        }
+
+        try {
+            // Get current accessories
+            Collection<Accessory> currentAccessories = new HashSet<>(getAccessories());
+
+            // Get remote accessories
+            Collection<Accessory> remoteAccessories = getRemoteAccessories();
+
+            // Find new accessories to add
+            for (Accessory remoteAccessory : remoteAccessories) {
+                boolean found = false;
+                for (Accessory currentAccessory : currentAccessories) {
+                    if (currentAccessory.getAccessoryId() == remoteAccessory.getAccessoryId()) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    logger.info("{}Adding new accessory {} - Server: {}", LOG_SERVER, remoteAccessory,
+                            new String(getPairingId()));
+                    addAccessory(remoteAccessory);
+                    notifyChangeListeners(AccessoryServerEvent.AccessoryServerEventType.ACCESSORY_ADDED);
+                }
+            }
+
+            // Find accessories to remove
+            for (Accessory currentAccessory : currentAccessories) {
+                boolean found = false;
+                for (Accessory remoteAccessory : remoteAccessories) {
+                    if (currentAccessory.getAccessoryId() == remoteAccessory.getAccessoryId()) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    logger.info("{}Removing accessory {} - Server: {}", LOG_SERVER, currentAccessory,
+                            new String(getPairingId()));
+                    removeAccessory(currentAccessory);
+                    notifyChangeListeners(AccessoryServerEvent.AccessoryServerEventType.ACCESSORY_REMOVED);
+                }
+            }
+
+            // Compare services and characteristics for each accessory
+            for (Accessory currentAccessory : getAccessories()) {
+                for (Accessory remoteAccessory : remoteAccessories) {
+                    if (currentAccessory.getAccessoryId() == remoteAccessory.getAccessoryId()) {
+                        // Compare services
+                        Collection<Service> currentServices = currentAccessory.getServices();
+                        Collection<Service> remoteServices = remoteAccessory.getServices();
+
+                        // Find new services to add
+                        for (Service remoteService : remoteServices) {
+                            boolean found = false;
+                            for (Service currentService : currentServices) {
+                                if (currentService.getInstanceId() == remoteService.getInstanceId()) {
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found) {
+                                logger.info("{}Adding new service {} to accessory {} - Server: {}", LOG_SERVER,
+                                        remoteService, currentAccessory, new String(getPairingId()));
+                                currentAccessory.addService(remoteService);
+                                notifyChangeListeners(AccessoryServerEvent.AccessoryServerEventType.SERVICE_ADDED);
+                            }
+                        }
+
+                        // Find services to remove
+                        for (Service currentService : currentServices) {
+                            boolean found = false;
+                            for (Service remoteService : remoteServices) {
+                                if (currentService.getInstanceId() == remoteService.getInstanceId()) {
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found) {
+                                logger.info("{}Removing service {} from accessory {} - Server: {}", LOG_SERVER,
+                                        currentService, currentAccessory, new String(getPairingId()));
+                                currentAccessory.removeService(currentService);
+                                notifyChangeListeners(AccessoryServerEvent.AccessoryServerEventType.SERVICE_REMOVED);
+                            }
+                        }
+
+                        // Compare characteristics for each service
+                        for (Service currentService : currentAccessory.getServices()) {
+                            for (Service remoteService : remoteServices) {
+                                if (currentService.getInstanceId() == remoteService.getInstanceId()) {
+                                    List<Characteristic<?>> currentCharacteristics = currentService
+                                            .getCharacteristics();
+                                    List<Characteristic<?>> remoteCharacteristics = remoteService.getCharacteristics();
+
+                                    // Find new characteristics to add
+                                    for (Characteristic<?> remoteCharacteristic : remoteCharacteristics) {
+                                        boolean found = false;
+                                        for (Characteristic<?> currentCharacteristic : currentCharacteristics) {
+                                            if (currentCharacteristic.getInstanceId() == remoteCharacteristic
+                                                    .getInstanceId()) {
+                                                found = true;
+                                                break;
+                                            }
+                                        }
+                                        if (!found) {
+                                            logger.info(
+                                                    "{}Adding new characteristic {} to service {} of accessory {} - Server: {}",
+                                                    LOG_SERVER, remoteCharacteristic, currentService, currentAccessory,
+                                                    new String(getPairingId()));
+                                            currentService.addCharacteristic(remoteCharacteristic);
+                                            notifyChangeListeners(
+                                                    AccessoryServerEvent.AccessoryServerEventType.CHARACTERISTIC_ADDED);
+                                        }
+                                    }
+
+                                    // Find characteristics to remove
+                                    for (Characteristic<?> currentCharacteristic : currentCharacteristics) {
+                                        boolean found = false;
+                                        for (Characteristic<?> remoteCharacteristic : remoteCharacteristics) {
+                                            if (currentCharacteristic.getInstanceId() == remoteCharacteristic
+                                                    .getInstanceId()) {
+                                                found = true;
+                                                break;
+                                            }
+                                        }
+                                        if (!found) {
+                                            logger.info(
+                                                    "{}Removing characteristic {} from service {} of accessory {} - Server: {}",
+                                                    LOG_SERVER, currentCharacteristic, currentService, currentAccessory,
+                                                    new String(getPairingId()));
+                                            currentService.removeCharacteristic(currentCharacteristic);
+                                            notifyChangeListeners(
+                                                    AccessoryServerEvent.AccessoryServerEventType.CHARACTERISTIC_REMOVED);
+                                        }
+                                    }
+
+                                    // Find characteristics that are the same, and check if they are equal()
+                                    for (Characteristic<?> currentCharacteristic : currentCharacteristics) {
+                                        for (Characteristic<?> remoteCharacteristic : remoteCharacteristics) {
+                                            if (currentCharacteristic.getInstanceId() == remoteCharacteristic
+                                                    .getInstanceId()) {
+                                                if (!currentCharacteristic.equals(remoteCharacteristic)) {
+                                                    logger.info("{}Characteristic {} is different from {} - Server: {}",
+                                                            LOG_SERVER, currentCharacteristic, remoteCharacteristic,
+                                                            new String(getPairingId()));
+                                                    currentCharacteristic.updateWith(remoteCharacteristic);
+                                                    notifyChangeListeners(
+                                                            AccessoryServerEvent.AccessoryServerEventType.CHARACTERISTIC_UPDATED);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("{}Error updating accessories: {} - Server: {}", LOG_SERVER, e.getMessage(),
+                    new String(getPairingId()));
+            logger.debug("{}Exception details", LOG_SERVER, e);
+            throw new IOException("Failed to update accessories", e);
+        }
+    }
+
+    @Override
+    public void addAccessory(Accessory accessory) {
+        super.addAccessory(accessory);
+        for (Service service : accessory.getServices()) {
+            for (Characteristic<?> characteristic : service.getCharacteristics()) {
+                characteristic.addChangeListener(this);
+            }
+        }
+    }
+
+    @Override
+    public void removeAccessory(Accessory accessory) {
+        super.removeAccessory(accessory);
+        for (Service service : accessory.getServices()) {
+            for (Characteristic<?> characteristic : service.getCharacteristics()) {
+                characteristic.removeChangeListener(this);
+            }
+        }
+    }
+
+    // ========== Inner Classes ==========
     protected class StageResult {
         public StageResult(DecodeResult decodeResult, Result result) {
             this.decodeResult = decodeResult;
@@ -1199,6 +1369,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         }
     }
 
+    // ========== Utility Methods ==========
     @SuppressWarnings("unchecked")
     public static <T> T fromJson(String json, Class<T> beanClass) {
         JsonValue value = Json.createReader(new StringReader(json)).read();
@@ -1325,283 +1496,27 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         }
     }
 
-    @Override
-    public long getNextAvailableAccessoryId() {
-        return 0;
+    protected void checkPairingStatus() throws HomekitException, IOException {
+        logger.debug("{}Checking pairing status - Server: {}", LOG_STATE, new String(getPairingId()));
+        // ... existing code ...
     }
 
-    public Collection<Accessory> getRemoteAccessories() {
-        Collection<Accessory> result = new HashSet<Accessory>();
-
-        if (isPaired() && isPairVerified() && isSecure()) {
-
-            Future<ContentResult> contentFuture;
-            ContentResult contentResult = null;
-            try {
-                contentFuture = getContent("/accessories");
-                contentResult = contentFuture.get();
-            } catch (InterruptedException | ExecutionException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-
-            logger.info("'{}' : Received {}", new String(getPairingId()), new String(contentResult.body));
-
-            if (contentResult.result.getResponse().getStatus() == 200) {
-                JsonArray accessories = Json.createReader(new ByteArrayInputStream(contentResult.body)).readObject()
-                        .getJsonArray("accessories");
-                for (JsonValue value : accessories) {
-                    result.add(new GenericAccessory(value));
-                }
-            }
+    protected void handleVerificationFailure(int stage, StageResult result) {
+        logger.debug("{}Handling verification failure for stage {} - Server: {}", LOG_PAIRING, stage,
+                new String(getPairingId()));
+        if (result.error != null) {
+            logger.warn("{}Pair verification failed at stage {} with error: {} - Server: {}", LOG_PAIRING, stage,
+                    result.error, new String(getPairingId()));
+            logger.debug("{}Stage {} error details: {} - Server: {}", LOG_PAIRING, stage, result.error,
+                    new String(getPairingId()));
+        } else {
+            logger.warn("{}Pair verification failed at stage {} with message: {} - Server: {}", LOG_PAIRING, stage,
+                    result.message, new String(getPairingId()));
+            logger.debug("{}Stage {} failure message details: {} - Server: {}", LOG_PAIRING, stage, result.message,
+                    new String(getPairingId()));
         }
-
-        return result;
-    }
-
-    public boolean subscriveEvents(Characteristic<?> characteristic, boolean subscribe) {
-
-        if (!isPairVerified()) {
-            logger.debug("'{}' : Cannot subscribe to events - not paired", new String(getPairingId()));
-            return false;
-        }
-
-        try {
-            // Create the characteristic update request
-            JsonObjectBuilder requestBuilder = Json.createObjectBuilder();
-            JsonArrayBuilder characteristicsBuilder = Json.createArrayBuilder();
-            JsonObjectBuilder characteristicBuilder = Json.createObjectBuilder()
-                    .add("aid", characteristic.getService().getAccessory().getAccessoryId())
-                    .add("iid", characteristic.getInstanceId()).add("ev", subscribe);
-
-            characteristicsBuilder.add(characteristicBuilder);
-            requestBuilder.add("characteristics", characteristicsBuilder);
-
-            // Send the subscription request
-            Future<ContentResult> contentFuture = putContent("/characteristics",
-                    requestBuilder.build().toString().getBytes(StandardCharsets.UTF_8));
-            ContentResult contentResult = contentFuture.get();
-
-            if (contentResult.result.getResponse().getStatus() == 204) {
-                logger.debug("'{}' : Successfully subscribed to events for characteristic {}",
-                        new String(getPairingId()), characteristic.getUID());
-                characteristic.setHasEvents(true);
-                return true;
-            } else {
-                logger.warn("'{}' : Failed to subscribe to events for characteristic {} - Status: {}",
-                        new String(getPairingId()), characteristic.getUID(),
-                        contentResult.result.getResponse().getStatus());
-                return false;
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("'{}' : Error subscribing to events for characteristic {}: {}", new String(getPairingId()),
-                    characteristic.getUID(), e.getMessage());
-            return false;
-        }
-    }
-
-    @Override
-    public void updateAccessories() throws IOException {
-        if (!isPairVerified()) {
-            logger.debug("'{}' : Cannot update accessories - not paired", new String(getPairingId()));
-            return;
-        }
-
-        try {
-            // Get current accessories
-            Collection<Accessory> currentAccessories = new HashSet<>(getAccessories());
-
-            // Get remote accessories
-            Collection<Accessory> remoteAccessories = getRemoteAccessories();
-
-            // Find new accessories to add
-            for (Accessory remoteAccessory : remoteAccessories) {
-                boolean found = false;
-                for (Accessory currentAccessory : currentAccessories) {
-                    if (currentAccessory.getAccessoryId() == remoteAccessory.getAccessoryId()) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    logger.info("'{}' : Adding new accessory {}", new String(getPairingId()), remoteAccessory);
-                    addAccessory(remoteAccessory);
-                    notifyChangeListeners(AccessoryServerEvent.AccessoryServerEventType.ACCESSORY_ADDED);
-                }
-            }
-
-            // Find accessories to remove
-            for (Accessory currentAccessory : currentAccessories) {
-                boolean found = false;
-                for (Accessory remoteAccessory : remoteAccessories) {
-                    if (currentAccessory.getAccessoryId() == remoteAccessory.getAccessoryId()) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    logger.info("'{}' : Removing accessory {}", new String(getPairingId()), currentAccessory);
-                    removeAccessory(currentAccessory);
-                    notifyChangeListeners(AccessoryServerEvent.AccessoryServerEventType.ACCESSORY_REMOVED);
-                }
-            }
-
-            // Compare services and characteristics for each accessory
-            for (Accessory currentAccessory : getAccessories()) {
-                for (Accessory remoteAccessory : remoteAccessories) {
-                    if (currentAccessory.getAccessoryId() == remoteAccessory.getAccessoryId()) {
-                        // Compare services
-                        Collection<Service> currentServices = currentAccessory.getServices();
-                        Collection<Service> remoteServices = remoteAccessory.getServices();
-
-                        // Find new services to add
-                        for (Service remoteService : remoteServices) {
-                            boolean found = false;
-                            for (Service currentService : currentServices) {
-                                if (currentService.getInstanceId() == remoteService.getInstanceId()) {
-                                    found = true;
-                                    break;
-                                }
-                            }
-                            if (!found) {
-                                logger.info("'{}' : Adding new service {} to accessory {}", new String(getPairingId()),
-                                        remoteService, currentAccessory);
-                                // add the service to the accessory
-                                currentAccessory.addService(remoteService);
-                                notifyChangeListeners(AccessoryServerEvent.AccessoryServerEventType.SERVICE_ADDED);
-                            }
-                        }
-
-                        // Find services to remove
-                        for (Service currentService : currentServices) {
-                            boolean found = false;
-                            for (Service remoteService : remoteServices) {
-                                if (currentService.getInstanceId() == remoteService.getInstanceId()) {
-                                    found = true;
-                                    break;
-                                }
-                            }
-                            if (!found) {
-                                logger.info("'{}' : Removing service {} from accessory {}", new String(getPairingId()),
-                                        currentService, currentAccessory);
-                                // remove the service from the accessory
-                                currentAccessory.removeService(currentService);
-                                notifyChangeListeners(AccessoryServerEvent.AccessoryServerEventType.SERVICE_REMOVED);
-                            }
-                        }
-
-                        // Compare characteristics for each service
-                        for (Service currentService : currentAccessory.getServices()) {
-                            for (Service remoteService : remoteServices) {
-                                if (currentService.getInstanceId() == remoteService.getInstanceId()) {
-                                    List<Characteristic<?>> currentCharacteristics = currentService
-                                            .getCharacteristics();
-                                    List<Characteristic<?>> remoteCharacteristics = remoteService.getCharacteristics();
-
-                                    // Find new characteristics to add
-                                    for (Characteristic<?> remoteCharacteristic : remoteCharacteristics) {
-                                        boolean found = false;
-                                        for (Characteristic<?> currentCharacteristic : currentCharacteristics) {
-                                            if (currentCharacteristic.getInstanceId() == remoteCharacteristic
-                                                    .getInstanceId()) {
-                                                found = true;
-                                                break;
-                                            }
-                                        }
-                                        if (!found) {
-                                            logger.info(
-                                                    "'{}' : Adding new characteristic {} to service {} of accessory {}",
-                                                    new String(getPairingId()), remoteCharacteristic, currentService,
-                                                    currentAccessory);
-                                            // add the characteristic to the service
-                                            currentService.addCharacteristic(remoteCharacteristic);
-                                            notifyChangeListeners(
-                                                    AccessoryServerEvent.AccessoryServerEventType.CHARACTERISTIC_ADDED);
-                                        }
-                                    }
-
-                                    // Find characteristics to remove
-                                    for (Characteristic<?> currentCharacteristic : currentCharacteristics) {
-                                        boolean found = false;
-                                        for (Characteristic<?> remoteCharacteristic : remoteCharacteristics) {
-                                            if (currentCharacteristic.getInstanceId() == remoteCharacteristic
-                                                    .getInstanceId()) {
-                                                found = true;
-                                                break;
-                                            }
-                                        }
-                                        if (!found) {
-                                            logger.info(
-                                                    "'{}' : Removing characteristic {} from service {} of accessory {}",
-                                                    new String(getPairingId()), currentCharacteristic, currentService,
-                                                    currentAccessory);
-
-                                            // remove the characteristic from the service
-                                            currentService.removeCharacteristic(currentCharacteristic);
-                                            notifyChangeListeners(
-                                                    AccessoryServerEvent.AccessoryServerEventType.CHARACTERISTIC_REMOVED);
-                                        }
-                                    }
-
-                                    // Find characteristics that are the same, and check if they are equal()
-                                    for (Characteristic<?> currentCharacteristic : currentCharacteristics) {
-                                        for (Characteristic<?> remoteCharacteristic : remoteCharacteristics) {
-                                            if (currentCharacteristic.getInstanceId() == remoteCharacteristic
-                                                    .getInstanceId()) {
-                                                if (!currentCharacteristic.equals(remoteCharacteristic)) {
-                                                    logger.info("'{}' : Characteristic {} is different from {}",
-                                                            new String(getPairingId()), currentCharacteristic,
-                                                            remoteCharacteristic);
-
-                                                    // update the charactistic with the other one
-                                                    currentCharacteristic.updateWith(remoteCharacteristic);
-
-                                                    // notify the changelisteners that a characteristic had changed
-                                                    notifyChangeListeners(
-                                                            AccessoryServerEvent.AccessoryServerEventType.CHARACTERISTIC_UPDATED);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            logger.warn("'{}' : Error updating accessories: {}", new String(getPairingId()), e.getMessage());
-            logger.debug("'{}' : Exception details", new String(getPairingId()), e);
-            throw new IOException("Failed to update accessories", e);
-        }
-    }
-
-    @Override
-    public void addAccessory(Accessory accessory) {
-        super.addAccessory(accessory);
-        for (Service service : accessory.getServices()) {
-            for (Characteristic<?> characteristic : service.getCharacteristics()) {
-                characteristic.addChangeListener(this);
-            }
-        }
-    }
-
-    @Override
-    public void removeAccessory(Accessory accessory) {
-        super.removeAccessory(accessory);
-        for (Service service : accessory.getServices()) {
-            for (Characteristic<?> characteristic : service.getCharacteristics()) {
-                characteristic.removeChangeListener(this);
-            }
-        }
-    }
-
-    @Override
-    public void onCharacteristicEvent(CharacteristicEvent event) {
-        if (event.getEventType() == CharacteristicEventType.CHARACTERISTIC_START_EVENTS) {
-            subscriveEvents(event.getCharacteristic(), true);
-        } else if (event.getEventType() == CharacteristicEventType.CHARACTERISTIC_STOP_EVENTS) {
-            subscriveEvents(event.getCharacteristic(), false);
-        }
+        setState(AccessoryServerState.PAIR_UNVERIFIED);
+        logger.debug("{}State set to PAIR_UNVERIFIED after failure - Server: {}", LOG_PAIRING,
+                new String(getPairingId()));
     }
 }

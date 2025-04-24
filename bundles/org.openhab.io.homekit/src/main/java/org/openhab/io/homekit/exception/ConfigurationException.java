@@ -17,4 +17,4 @@ public class ConfigurationException extends HomekitServerException {
     public ConfigurationException(Throwable cause) {
         super(cause);
     }
-} 
+}

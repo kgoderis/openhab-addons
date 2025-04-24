@@ -2,28 +2,27 @@ package org.openhab.io.homekit.internal.server;
 
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.stream.Collectors;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.StringBuilder;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.CompletableFuture;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.StringBuilder;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.core.common.ThreadPoolManager;
 import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.AccessoryCategory;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
@@ -44,10 +43,9 @@ import org.openhab.io.homekit.util.Byte;
 import org.openhab.io.homekit.util.HomekitKeyGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.openhab.core.common.ThreadPoolManager;
 
 @NonNullByDefault
-public abstract class AbstractAccessoryServer implements AccessoryServer {
+public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCloseable {
 
     // ========== Constants ==========
     protected static final Logger logger = LoggerFactory.getLogger(AbstractAccessoryServer.class);
@@ -76,13 +74,14 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
 
     /** Server state management */
     private static final Map<AccessoryServerState, Set<AccessoryServerState>> VALID_STATE_TRANSITIONS = Map.of(
-        AccessoryServerState.UNPAIRED, Set.of(AccessoryServerState.PAIRED, AccessoryServerState.RESET),
-        AccessoryServerState.PAIRED, Set.of(AccessoryServerState.UNPAIRED, AccessoryServerState.PAIR_VERIFIED, AccessoryServerState.DISCONNECTED),
-        AccessoryServerState.PAIR_VERIFIED, Set.of(AccessoryServerState.PAIRED, AccessoryServerState.DISCONNECTED),
-        AccessoryServerState.DISCONNECTED, Set.of(AccessoryServerState.CONNECTED, AccessoryServerState.PAIRED),
-        AccessoryServerState.CONNECTED, Set.of(AccessoryServerState.DISCONNECTED),
-        AccessoryServerState.RESET, Set.of(AccessoryServerState.UNPAIRED)
-    );
+            AccessoryServerState.UNPAIRED, Set.of(AccessoryServerState.PAIRED, AccessoryServerState.RESET),
+            AccessoryServerState.PAIRED,
+            Set.of(AccessoryServerState.UNPAIRED, AccessoryServerState.PAIR_VERIFIED,
+                    AccessoryServerState.DISCONNECTED),
+            AccessoryServerState.PAIR_VERIFIED, Set.of(AccessoryServerState.PAIRED, AccessoryServerState.DISCONNECTED),
+            AccessoryServerState.DISCONNECTED, Set.of(AccessoryServerState.CONNECTED, AccessoryServerState.PAIRED),
+            AccessoryServerState.CONNECTED, Set.of(AccessoryServerState.DISCONNECTED), AccessoryServerState.RESET,
+            Set.of(AccessoryServerState.UNPAIRED));
 
     // ========== Server Configuration ==========
     private final AccessoryCategory category;
@@ -103,11 +102,14 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
 
     // ========== Constructor ==========
     public AbstractAccessoryServer(AccessoryCategory category, InetAddress address, int port, byte[] pairingId,
-            byte[] privateKey, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry) throws HomekitServerException {
+            byte[] privateKey, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry)
+            throws HomekitServerException {
         super();
-        validateConstructorParameters(category, address, port, pairingId, privateKey, accessoryRegistry, pairingRegistry);
+        validateConstructorParameters(category, address, port, pairingId, privateKey, accessoryRegistry,
+                pairingRegistry);
 
-        logger.debug("{}Initializing HomeKit server - Category: {}, Address: {}, Port: {}", LOG_INIT, category, address, port);
+        logger.debug("{}Initializing HomeKit server - Category: {}, Address: {}, Port: {}", LOG_INIT, category, address,
+                port);
         this.category = category;
         this.address = address;
         this.port = port;
@@ -119,28 +121,191 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
         logger.debug("{}HomeKit server initialization completed", LOG_INIT);
     }
 
-    private void validateConstructorParameters(AccessoryCategory category, InetAddress address, int port, byte[] pairingId,
-            byte[] privateKey, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry) throws ConfigurationException {
+    private void validateConstructorParameters(AccessoryCategory category, InetAddress address, int port,
+            byte[] pairingId, byte[] privateKey, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry)
+            throws ConfigurationException {
         if (category == null) {
-            throw new ConfigurationException("HomeKit server category cannot be null - required for proper accessory type identification");
+            throw new ConfigurationException(
+                    "HomeKit server category cannot be null - required for proper accessory type identification");
         }
         if (address == null) {
-            throw new ConfigurationException("HomeKit server network address cannot be null - required for device discovery");
+            throw new ConfigurationException(
+                    "HomeKit server network address cannot be null - required for device discovery");
         }
         if (port <= 0 || port > 65535) {
-            throw new ConfigurationException(String.format("HomeKit server port %d is invalid - must be between 1 and 65535", port));
+            throw new ConfigurationException(
+                    String.format("HomeKit server port %d is invalid - must be between 1 and 65535", port));
         }
         if (pairingId == null || pairingId.length == 0) {
-            throw new ConfigurationException("HomeKit server pairing ID cannot be null or empty - required for secure pairing");
+            throw new ConfigurationException(
+                    "HomeKit server pairing ID cannot be null or empty - required for secure pairing");
         }
         if (privateKey == null || privateKey.length == 0) {
-            throw new ConfigurationException("HomeKit server private key cannot be null or empty - required for secure communication");
+            throw new ConfigurationException(
+                    "HomeKit server private key cannot be null or empty - required for secure communication");
         }
         if (accessoryRegistry == null) {
-            throw new ConfigurationException("HomeKit accessory registry cannot be null - required for accessory management");
+            throw new ConfigurationException(
+                    "HomeKit accessory registry cannot be null - required for accessory management");
         }
         if (pairingRegistry == null) {
-            throw new ConfigurationException("HomeKit pairing registry cannot be null - required for secure pairing management");
+            throw new ConfigurationException(
+                    "HomeKit pairing registry cannot be null - required for secure pairing management");
+        }
+    }
+
+    // ========== Lifecycle Methods ==========
+    /**
+     * Initialize any resources needed by the server.
+     * Subclasses should override this method to initialize their specific resources.
+     * 
+     * @throws Exception if initialization fails
+     */
+    protected void initializeResources() throws Exception {
+        // Base implementation does nothing
+    }
+
+    /**
+     * Cleanup any resources held by the server.
+     * Subclasses should override this method to cleanup their specific resources.
+     * 
+     * @throws Exception if cleanup fails
+     */
+    protected void cleanupResources() throws Exception {
+        // Base implementation does nothing
+    }
+
+    private void cleanupAccessories() {
+        List<Accessory> accessoriesToRemove;
+        synchronized (accessoryLock) {
+            accessoriesToRemove = new ArrayList<>(accessories);
+        }
+
+        for (Accessory accessory : accessoriesToRemove) {
+            try {
+                removeAccessory(accessory);
+            } catch (AccessoryOperationException e) {
+                logger.error("{}Failed to remove accessory during shutdown: {}", LOG_ERROR, e.getMessage(), e);
+            }
+        }
+    }
+
+    @Override
+    public void start() throws HomekitServerException {
+        synchronized (stateLock) {
+            validateLifecycleOperation("start server");
+
+            if (currentState == AccessoryServerState.READY) {
+                logger.warn("{}Server is already running", LOG_SERVER);
+                return;
+            }
+            if (currentState == AccessoryServerState.STOPPED) {
+                logger.warn("{}Server is in stopped state, attempting to restart", LOG_SERVER);
+            }
+
+            try {
+                initializeResources();
+                setState(AccessoryServerState.READY);
+                logger.info("{}Server started successfully", LOG_SERVER);
+            } catch (Exception e) {
+                try {
+                    cleanupResources();
+                } catch (Exception cleanupEx) {
+                    logger.error("{}Failed to cleanup resources after failed start: {}", LOG_ERROR,
+                            cleanupEx.getMessage(), cleanupEx);
+                }
+                throw new HomekitServerException("Failed to start server", e);
+            }
+        }
+    }
+
+    @Override
+    public void stop() {
+        synchronized (stateLock) {
+            if (currentState == AccessoryServerState.STOPPED) {
+                logger.warn("{}Server is already stopped", LOG_SERVER);
+                return;
+            }
+            try {
+                try {
+                    setState(AccessoryServerState.STOPPED);
+                } catch (Exception e) {
+                    if (firstException == null)
+                        firstException = e;
+                    logger.error("{}Failed to set stopped state during shutdown: {}", LOG_ERROR, e.getMessage(), e);
+                }
+            } catch (Exception e) {
+                logger.error("{}Failed to stop server gracefully: {}", LOG_ERROR, e.getMessage(), e);
+                forceStop();
+            }
+        }
+    }
+
+    @Override
+    public void close() throws Exception {
+        synchronized (stateLock) {
+            if (isShutdown) {
+                logger.debug("{}Server already shut down", LOG_SERVER);
+                return;
+            }
+            isShutdown = true;
+            logger.info("{}Initiating server shutdown", LOG_SERVER);
+
+            Exception firstException = null;
+
+            // Cleanup in specific order, capturing first exception but continuing cleanup
+            try {
+                cleanupListeners();
+            } catch (Exception e) {
+                firstException = e;
+                logger.error("{}Error during listener cleanup: {}", LOG_ERROR, e.getMessage(), e);
+            }
+
+            try {
+                cleanupAccessories();
+            } catch (Exception e) {
+                if (firstException == null)
+                    firstException = e;
+                logger.error("{}Error during accessory cleanup: {}", LOG_ERROR, e.getMessage(), e);
+            }
+
+            try {
+                cleanupResources();
+            } catch (Exception e) {
+                if (firstException == null)
+                    firstException = e;
+                logger.error("{}Error during resource cleanup: {}", LOG_ERROR, e.getMessage(), e);
+            }
+
+            try {
+                setState(AccessoryServerState.STOPPED);
+            } catch (Exception e) {
+                if (firstException == null)
+                    firstException = e;
+                logger.error("{}Failed to set stopped state during shutdown: {}", LOG_ERROR, e.getMessage(), e);
+            }
+
+            if (firstException != null) {
+                throw new Exception("Server shutdown completed with errors", firstException);
+            }
+
+            logger.info("{}Server shutdown completed successfully", LOG_SERVER);
+        }
+    }
+
+    private void forceStop() {
+        try {
+            cleanupResources();
+            setState(AccessoryServerState.STOPPED);
+            logger.warn("{}Server force stopped", LOG_WARN);
+        } catch (Exception e) {
+            logger.error("{}Failed to force stop server: {}", LOG_ERROR, e.getMessage(), e);
+        }
+    }
+
+    protected void validateLifecycleOperation(String operation) throws HomekitServerException {
+        if (isShutdown) {
+            throw new HomekitServerException(String.format("Cannot %s - server is shut down", operation));
         }
     }
 
@@ -151,7 +316,8 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
 
     private void validateStateTransition(AccessoryServerState newState) throws ConfigurationException {
         if (newState == null) {
-            throw new ConfigurationException("Cannot transition to null state - valid HomeKit server state is required");
+            throw new ConfigurationException(
+                    "Cannot transition to null state - valid HomeKit server state is required");
         }
         if (isShutdown && newState != AccessoryServerState.STOPPED) {
             throw new ConfigurationException("Cannot transition to " + newState + " - server is shutting down");
@@ -165,14 +331,14 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
 
     protected synchronized void setState(AccessoryServerState newState) throws HomekitServerException {
         validateStateTransition(newState);
-        
+
         AccessoryServerState current;
         synchronized (stateLock) {
             current = currentState;
             if (!isValidStateTransition(current, newState)) {
                 throw new InvalidStateTransitionException(
-                    String.format("Invalid state transition from %s to %s - Valid transitions from %s are: %s", 
-                        current, newState, current, VALID_STATE_TRANSITIONS.get(current)));
+                        String.format("Invalid state transition from %s to %s - Valid transitions from %s are: %s",
+                                current, newState, current, VALID_STATE_TRANSITIONS.get(current)));
             }
 
             if (!current.equals(newState)) {
@@ -194,8 +360,9 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
                 currentState = current;
             }
             throw new ListenerNotificationException(
-                String.format("Failed to notify listeners of state change from %s to %s: %s", 
-                    current, newState, e.getMessage()), e);
+                    String.format("Failed to notify listeners of state change from %s to %s: %s", current, newState,
+                            e.getMessage()),
+                    e);
         }
     }
 
@@ -204,7 +371,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
         synchronized (stateLock) {
             listeners = new ArrayList<>(changeListeners);
         }
-        
+
         List<AccessoryServerChangeListener> failedListeners = new ArrayList<>();
         List<AccessoryServerChangeListener> timedOutListeners = new ArrayList<>();
         List<Future<Void>> futures = new ArrayList<>();
@@ -240,7 +407,8 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
                 failedListeners.add(listener);
                 future.cancel(true);
             } catch (Exception e) {
-                logger.error("{}Error waiting for listener {} notification: {}", LOG_ERROR, listener, e.getMessage(), e);
+                logger.error("{}Error waiting for listener {} notification: {}", LOG_ERROR, listener, e.getMessage(),
+                        e);
                 failedListeners.add(listener);
             }
         }
@@ -261,7 +429,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
         }
     }
 
-    private void notifyListenerWithTimeout(AccessoryServerChangeListener listener, AccessoryServerEvent event) 
+    private void notifyListenerWithTimeout(AccessoryServerChangeListener listener, AccessoryServerEvent event)
             throws ListenerNotificationException {
         CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
             try {
@@ -270,7 +438,8 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
                 throw new CompletionException(e);
             } catch (RuntimeException e) {
                 throw new CompletionException(new ListenerNotificationException(
-                    String.format("Listener %s threw unexpected runtime exception: %s", listener, e.getMessage()), e));
+                        String.format("Listener %s threw unexpected runtime exception: %s", listener, e.getMessage()),
+                        e));
             }
         }, eventExecutor);
 
@@ -278,92 +447,20 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
             future.get(EVENT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
             future.cancel(true);
-            throw new ListenerNotificationException(
-                String.format("Listener %s failed to process event within %dms timeout", listener, EVENT_TIMEOUT_MS), e);
+            throw new ListenerNotificationException(String
+                    .format("Listener %s failed to process event within %dms timeout", listener, EVENT_TIMEOUT_MS), e);
         } catch (ExecutionException e) {
             if (e.getCause() instanceof ListenerNotificationException) {
                 throw (ListenerNotificationException) e.getCause();
             }
             throw new ListenerNotificationException(
-                String.format("Listener %s failed to process event: %s", listener, e.getCause().getMessage()), e.getCause());
+                    String.format("Listener %s failed to process event: %s", listener, e.getCause().getMessage()),
+                    e.getCause());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt(); // Restore interrupted status
             future.cancel(true);
             throw new ListenerNotificationException(
-                String.format("Interrupted while waiting for listener %s to process event", listener), e);
-        }
-    }
-
-    // ========== Lifecycle Methods ==========
-    @Override
-    public void start() throws HomekitServerException {
-        synchronized (stateLock) {
-            if (currentState == AccessoryServerState.READY) {
-                logger.warn("{}Server is already running", LOG_SERVER);
-                return;
-            }
-            if (currentState == AccessoryServerState.STOPPED) {
-                logger.warn("{}Server is in stopped state, attempting to restart", LOG_SERVER);
-            }
-            setState(AccessoryServerState.READY);
-            logger.info("{}Server started successfully", LOG_SERVER);
-        }
-    }
-
-    @Override
-    public void stop() {
-        synchronized (stateLock) {
-            if (currentState == AccessoryServerState.STOPPED) {
-                logger.warn("{}Server is already stopped", LOG_SERVER);
-                return;
-            }
-            try {
-                setState(AccessoryServerState.STOPPED);
-                logger.info("{}Server stopped successfully", LOG_SERVER);
-            } catch (HomekitServerException e) {
-                logger.error("{}Failed to stop server: {}", LOG_ERROR, e.getMessage(), e);
-            }
-        }
-    }
-
-    protected void handleConnection(boolean connected) throws HomekitServerException {
-        logger.debug("{}Handling connection - Connected: {}", LOG_STATE, connected);
-        synchronized (stateLock) {
-            if (connected) {
-                setState(AccessoryServerState.CONNECTED);
-            } else {
-                setState(AccessoryServerState.DISCONNECTED);
-            }
-        }
-    }
-
-    protected void handlePairingVerification(boolean verified) throws HomekitServerException {
-        logger.debug("{}Handling pairing verification - Verified: {}", LOG_STATE, verified);
-        synchronized (stateLock) {
-            if (verified) {
-                setState(AccessoryServerState.PAIR_VERIFIED);
-            } else {
-                setState(AccessoryServerState.PAIRED);
-            }
-        }
-    }
-
-    @Override
-    public boolean isPaired() {
-        synchronized (stateLock) {
-            boolean paired = !pairingRegistry.get(getPairingId()).isEmpty();
-            try {
-                if (paired) {
-                    setState(AccessoryServerState.PAIRED);
-                } else {
-                    setState(AccessoryServerState.UNPAIRED);
-                }
-                return paired;
-            } catch (HomekitServerException e) {
-                logger.error("{}Failed to update pairing state: {}", LOG_ERROR, e.getMessage(), e);
-                // Return the current paired state without updating the server state
-                return paired;
-            }
+                    String.format("Interrupted while waiting for listener %s to process event", listener), e);
         }
     }
 
@@ -388,7 +485,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
                 // Rollback on failure
                 configurationIndex = oldIndex;
                 throw new ConfigurationException(
-                    String.format("Failed to update configuration index from %d to %d", oldIndex, newIndex), e);
+                        String.format("Failed to update configuration index from %d to %d", oldIndex, newIndex), e);
             }
         }
     }
@@ -456,7 +553,8 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
 
     @Override
     public byte[] getPublicKey(byte @NonNull [] destinationPairingId) {
-        logger.debug("{}Getting public key for destination pairing ID: {}", LOG_CONFIG, Byte.toHexString(destinationPairingId));
+        logger.debug("{}Getting public key for destination pairing ID: {}", LOG_CONFIG,
+                Byte.toHexString(destinationPairingId));
         Pairing hp = pairingRegistry.get(new PairingUID(getPairingId(), destinationPairingId));
         return hp != null ? hp.getPublicKey() : null;
     }
@@ -550,9 +648,40 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
                 logger.info("{}Pairing removed successfully - ID: {}", LOG_PAIRING, Byte.toHexString(pairingId));
             }
         } catch (Exception e) {
-            String error = String.format("Failed to remove pairing %s: %s", Byte.toHexString(pairingId), e.getMessage());
+            String error = String.format("Failed to remove pairing %s: %s", Byte.toHexString(pairingId),
+                    e.getMessage());
             logger.error("{}Pairing removal error: {}", LOG_ERROR, error, e);
             throw new HomekitServerException(error, e);
+        }
+    }
+
+    protected void handlePairingVerification(boolean verified) throws HomekitServerException {
+        logger.debug("{}Handling pairing verification - Verified: {}", LOG_STATE, verified);
+        synchronized (stateLock) {
+            if (verified) {
+                setState(AccessoryServerState.PAIR_VERIFIED);
+            } else {
+                setState(AccessoryServerState.PAIRED);
+            }
+        }
+    }
+
+    @Override
+    public boolean isPaired() {
+        synchronized (stateLock) {
+            boolean paired = !pairingRegistry.get(getPairingId()).isEmpty();
+            try {
+                if (paired) {
+                    setState(AccessoryServerState.PAIRED);
+                } else {
+                    setState(AccessoryServerState.UNPAIRED);
+                }
+                return paired;
+            } catch (HomekitServerException e) {
+                logger.error("{}Failed to update pairing state: {}", LOG_ERROR, e.getMessage(), e);
+                // Return the current paired state without updating the server state
+                return paired;
+            }
         }
     }
 
@@ -571,9 +700,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
             return null;
         }
         synchronized (accessoryLock) {
-            return accessories.stream()
-                    .filter(accessory -> accessory.getAccessoryId() == accessoryId)
-                    .findFirst()
+            return accessories.stream().filter(accessory -> accessory.getAccessoryId() == accessoryId).findFirst()
                     .orElse(null);
         }
     }
@@ -581,7 +708,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     @Override
     public void addAccessory(Accessory accessory) throws AccessoryOperationException {
         validateAccessory(accessory);
-        validateShutdownState("add accessory");
+        validateLifecycleOperation("add accessory");
 
         synchronized (accessoryLock) {
             logger.debug("{}Adding accessory - UID: {}, Type: {}, Server: {}", LOG_ACCESSORY, accessory.getUID(),
@@ -603,22 +730,24 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
                 } catch (AccessoryOperationException e) {
                     // Rollback on failure
                     accessories.remove(accessory);
-                    logger.error("{}Failed to add accessory - UID: {}, Error: {}", LOG_ERROR, accessory.getUID(), e.getMessage());
+                    logger.error("{}Failed to add accessory - UID: {}, Error: {}", LOG_ERROR, accessory.getUID(),
+                            e.getMessage());
                     throw new AccessoryOperationException(
-                        String.format("Failed to add accessory %s: %s", accessory.getUID(), e.getMessage()), e);
+                            String.format("Failed to add accessory %s: %s", accessory.getUID(), e.getMessage()), e);
                 } catch (RuntimeException e) {
                     // Rollback on failure
                     accessories.remove(accessory);
-                    logger.error("{}Failed to add accessory due to runtime error - UID: {}, Error: {}", 
-                        LOG_ERROR, accessory.getUID(), e.getMessage());
+                    logger.error("{}Failed to add accessory due to runtime error - UID: {}, Error: {}", LOG_ERROR,
+                            accessory.getUID(), e.getMessage());
                     throw new AccessoryOperationException(
-                        String.format("Failed to add accessory %s due to runtime error: %s", 
-                            accessory.getUID(), e.getMessage()), e);
+                            String.format("Failed to add accessory %s due to runtime error: %s", accessory.getUID(),
+                                    e.getMessage()),
+                            e);
                 }
             } else {
                 logger.warn("{}Accessory already exists - UID: {}", LOG_WARN, accessory.getUID());
                 throw new AccessoryOperationException(
-                    String.format("Accessory with UID %s already exists", accessory.getUID()));
+                        String.format("Accessory with UID %s already exists", accessory.getUID()));
             }
         }
     }
@@ -626,7 +755,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     @Override
     public void removeAccessory(Accessory accessory) throws AccessoryOperationException {
         validateAccessory(accessory);
-        validateShutdownState("remove accessory");
+        validateLifecycleOperation("remove accessory");
         validateAccessoryExists(accessory);
 
         synchronized (accessoryLock) {
@@ -643,22 +772,24 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
                 } catch (AccessoryOperationException e) {
                     // Rollback on failure
                     accessories.add(accessory);
-                    logger.error("{}Failed to remove accessory - UID: {}, Error: {}", LOG_ERROR, accessory.getUID(), e.getMessage());
+                    logger.error("{}Failed to remove accessory - UID: {}, Error: {}", LOG_ERROR, accessory.getUID(),
+                            e.getMessage());
                     throw new AccessoryOperationException(
-                        String.format("Failed to remove accessory %s: %s", accessory.getUID(), e.getMessage()), e);
+                            String.format("Failed to remove accessory %s: %s", accessory.getUID(), e.getMessage()), e);
                 } catch (RuntimeException e) {
                     // Rollback on failure
                     accessories.add(accessory);
-                    logger.error("{}Failed to remove accessory due to runtime error - UID: {}, Error: {}", 
-                        LOG_ERROR, accessory.getUID(), e.getMessage());
+                    logger.error("{}Failed to remove accessory due to runtime error - UID: {}, Error: {}", LOG_ERROR,
+                            accessory.getUID(), e.getMessage());
                     throw new AccessoryOperationException(
-                        String.format("Failed to remove accessory %s due to runtime error: %s", 
-                            accessory.getUID(), e.getMessage()), e);
+                            String.format("Failed to remove accessory %s due to runtime error: %s", accessory.getUID(),
+                                    e.getMessage()),
+                            e);
                 }
             } else {
                 logger.warn("{}Accessory not found - UID: {}", LOG_WARN, accessory.getUID());
                 throw new AccessoryOperationException(
-                    String.format("Accessory with UID %s not found", accessory.getUID()));
+                        String.format("Accessory with UID %s not found", accessory.getUID()));
             }
         }
     }
@@ -666,14 +797,11 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     private void validateAccessoryIdUniqueness(Accessory accessory) throws AccessoryOperationException {
         synchronized (accessoryLock) {
             if (accessories.stream().anyMatch(a -> a.getAccessoryId() == accessory.getAccessoryId())) {
-                Accessory existing = accessories.stream()
-                    .filter(a -> a.getAccessoryId() == accessory.getAccessoryId())
-                    .findFirst()
-                    .orElse(null);
-                throw new AccessoryOperationException(
-                    String.format("Cannot add accessory with ID %d - an accessory with this ID already exists (UID: %s, Type: %s)", 
-                        accessory.getAccessoryId(), 
-                        existing != null ? existing.getUID() : "unknown",
+                Accessory existing = accessories.stream().filter(a -> a.getAccessoryId() == accessory.getAccessoryId())
+                        .findFirst().orElse(null);
+                throw new AccessoryOperationException(String.format(
+                        "Cannot add accessory with ID %d - an accessory with this ID already exists (UID: %s, Type: %s)",
+                        accessory.getAccessoryId(), existing != null ? existing.getUID() : "unknown",
                         existing != null ? existing.getClass().getSimpleName() : "unknown"));
             }
         }
@@ -682,14 +810,11 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     private void validateAccessoryUidUniqueness(Accessory accessory) throws AccessoryOperationException {
         synchronized (accessoryLock) {
             if (accessories.stream().anyMatch(a -> a.getUID().equals(accessory.getUID()))) {
-                Accessory existing = accessories.stream()
-                    .filter(a -> a.getUID().equals(accessory.getUID()))
-                    .findFirst()
-                    .orElse(null);
-                throw new AccessoryOperationException(
-                    String.format("Cannot add accessory with UID %s - an accessory with this UID already exists (ID: %d, Type: %s)", 
-                        accessory.getUID(), 
-                        existing != null ? existing.getAccessoryId() : -1,
+                Accessory existing = accessories.stream().filter(a -> a.getUID().equals(accessory.getUID())).findFirst()
+                        .orElse(null);
+                throw new AccessoryOperationException(String.format(
+                        "Cannot add accessory with UID %s - an accessory with this UID already exists (ID: %d, Type: %s)",
+                        accessory.getUID(), existing != null ? existing.getAccessoryId() : -1,
                         existing != null ? existing.getClass().getSimpleName() : "unknown"));
             }
         }
@@ -700,12 +825,13 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
             throw new AccessoryOperationException("Cannot add/remove null accessory - accessory object is required");
         }
         if (accessory.getAccessoryId() < 0) {
-            throw new AccessoryOperationException(
-                String.format("Invalid accessory ID %d - must be a non-negative number", accessory.getAccessoryId()));
+            throw new AccessoryOperationException(String
+                    .format("Invalid accessory ID %d - must be a non-negative number", accessory.getAccessoryId()));
         }
         if (accessory.getUID() == null || accessory.getUID().isEmpty()) {
             throw new AccessoryOperationException(
-                String.format("Invalid accessory UID for accessory ID %d - UID cannot be null or empty", accessory.getAccessoryId()));
+                    String.format("Invalid accessory UID for accessory ID %d - UID cannot be null or empty",
+                            accessory.getAccessoryId()));
         }
         validateAccessoryIdUniqueness(accessory);
         validateAccessoryUidUniqueness(accessory);
@@ -714,9 +840,8 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
     private void validateAccessoryExists(Accessory accessory) throws AccessoryOperationException {
         synchronized (stateLock) {
             if (!accessories.contains(accessory)) {
-                throw new AccessoryOperationException(
-                    String.format("Cannot remove accessory with ID %d - accessory not found", 
-                        accessory.getAccessoryId()));
+                throw new AccessoryOperationException(String.format(
+                        "Cannot remove accessory with ID %d - accessory not found", accessory.getAccessoryId()));
             }
         }
     }
@@ -789,13 +914,11 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
         List<AccessoryServerChangeListener> timedOutListeners = new ArrayList<>();
 
         // Sort listeners by priority (if they implement PrioritizedListener)
-        List<AccessoryServerChangeListener> sortedListeners = changeListeners.stream()
-                .sorted((l1, l2) -> {
-                    int p1 = (l1 instanceof PrioritizedListener) ? ((PrioritizedListener) l1).getPriority() : 0;
-                    int p2 = (l2 instanceof PrioritizedListener) ? ((PrioritizedListener) l2).getPriority() : 0;
-                    return Integer.compare(p2, p1); // Higher priority first
-                })
-                .collect(Collectors.toList());
+        List<AccessoryServerChangeListener> sortedListeners = changeListeners.stream().sorted((l1, l2) -> {
+            int p1 = (l1 instanceof PrioritizedListener) ? ((PrioritizedListener) l1).getPriority() : 0;
+            int p2 = (l2 instanceof PrioritizedListener) ? ((PrioritizedListener) l2).getPriority() : 0;
+            return Integer.compare(p2, p1); // Higher priority first
+        }).collect(Collectors.toList());
 
         for (AccessoryServerChangeListener listener : sortedListeners) {
             Future<Void> future = eventExecutor.submit(() -> {
@@ -827,7 +950,8 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
                 failedListeners.add(listener);
                 future.cancel(true);
             } catch (Exception e) {
-                logger.error("{}Error waiting for listener {} notification: {}", LOG_ERROR, listener, e.getMessage(), e);
+                logger.error("{}Error waiting for listener {} notification: {}", LOG_ERROR, listener, e.getMessage(),
+                        e);
                 failedListeners.add(listener);
             }
         }
@@ -845,66 +969,6 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
                 errorMessage.append("Timed out listeners: ").append(timedOutListeners);
             }
             throw new ListenerNotificationException(errorMessage.toString());
-        }
-    }
-
-    @Override
-    public void close() {
-        synchronized (stateLock) {
-            if (isShutdown) {
-                logger.debug("{}Server already shut down", LOG_SERVER);
-                return;
-            }
-            isShutdown = true;
-            logger.info("{}Initiating server shutdown", LOG_SERVER);
-
-            // Shutdown event executor
-            try {
-                if (!eventExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
-                    logger.warn("{}Event executor did not terminate gracefully, forcing shutdown", LOG_WARN);
-                    eventExecutor.shutdownNow();
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt(); // Restore interrupted status
-                logger.warn("{}Interrupted while waiting for event executor to terminate", LOG_WARN);
-                eventExecutor.shutdownNow();
-            }
-
-            // Cleanup listeners
-            cleanupListeners();
-
-            // Clear all accessories
-            List<Accessory> accessoriesToRemove;
-            synchronized (accessoryLock) {
-                accessoriesToRemove = new ArrayList<>(accessories);
-            }
-            for (Accessory accessory : accessoriesToRemove) {
-                try {
-                    removeAccessory(accessory);
-                } catch (AccessoryOperationException e) {
-                    logger.error("{}Failed to remove accessory during shutdown: {}", LOG_ERROR, e.getMessage(), e);
-                }
-            }
-
-            // Reset state
-            try {
-                setState(AccessoryServerState.STOPPED);
-                logger.info("{}Server shutdown completed successfully", LOG_SERVER);
-            } catch (HomekitServerException e) {
-                logger.error("{}Failed to set stopped state during shutdown: {}", LOG_ERROR, e.getMessage(), e);
-            }
-        }
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        try {
-            if (!isShutdown) {
-                logger.warn("{}Server was not properly closed, forcing shutdown", LOG_WARN);
-                close();
-            }
-        } finally {
-            super.finalize();
         }
     }
 
@@ -943,15 +1007,19 @@ public abstract class AbstractAccessoryServer implements AccessoryServer {
 
     private void validateEventType(AccessoryServerEventType eventType) throws ListenerNotificationException {
         if (eventType == null) {
-            throw new ListenerNotificationException("Cannot notify listeners with null event type - valid event type is required");
+            throw new ListenerNotificationException(
+                    "Cannot notify listeners with null event type - valid event type is required");
         }
     }
 
-    // ========== Validation Methods ==========
-    private void validateShutdownState(String operation) throws AccessoryOperationException {
-        if (isShutdown) {
-            throw new AccessoryOperationException(String.format("Cannot %s - server is shutting down", operation));
+    protected void handleConnection(boolean connected) throws HomekitServerException {
+        logger.debug("{}Handling connection - Connected: {}", LOG_STATE, connected);
+        synchronized (stateLock) {
+            if (connected) {
+                setState(AccessoryServerState.CONNECTED);
+            } else {
+                setState(AccessoryServerState.DISCONNECTED);
+            }
         }
     }
 }
-

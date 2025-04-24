@@ -6,4 +6,4 @@ public class InvalidStateTransitionException extends HomekitServerException {
     public InvalidStateTransitionException(AccessoryServerState current, AccessoryServerState next) {
         super(String.format("Invalid state transition from %s to %s", current, next));
     }
-} 
+}

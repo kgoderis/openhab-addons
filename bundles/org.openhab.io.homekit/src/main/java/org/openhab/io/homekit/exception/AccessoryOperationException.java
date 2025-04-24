@@ -8,4 +8,4 @@ public class AccessoryOperationException extends HomekitServerException {
     public AccessoryOperationException(String message, Throwable cause) {
         super(message, cause);
     }
-} 
+}
