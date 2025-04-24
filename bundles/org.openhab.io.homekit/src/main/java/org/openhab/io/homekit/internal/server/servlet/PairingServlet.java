@@ -11,6 +11,7 @@ import org.eclipse.jetty.http.HttpHeader;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.hap.Message;
 import org.openhab.io.homekit.api.hap.Method;
+import org.openhab.io.homekit.exception.HomekitServerException;
 import org.openhab.io.homekit.util.Byte;
 import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder;
 import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder.DecodeResult;
@@ -70,7 +71,13 @@ public class PairingServlet extends BaseServlet {
         byte[] additionalControllerLTPK = d.getBytes(Message.PUBLIC_KEY);
         byte[] additionalControllerPermissions = d.getBytes(Message.PERSMISSIONS);
 
-        server.addPairing(additionalControllerPairingIdentifier, additionalControllerLTPK);
+        try {
+            server.addPairing(additionalControllerPairingIdentifier, additionalControllerLTPK);
+        } catch (HomekitServerException e) {
+            logger.error("doAddPairing : Error adding pairing", e);
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
 
         Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
         encoder.add(Message.STATE, (short) 2);
@@ -94,7 +101,13 @@ public class PairingServlet extends BaseServlet {
         DecodeResult d = TypeLengthValueEncoderDecoder.decode(body);
 
         byte[] removedControllerPairingIdentifier = d.getBytes(Message.IDENTIFIER);
-        server.removePairing(removedControllerPairingIdentifier);
+        try {
+            server.removePairing(removedControllerPairingIdentifier);
+        } catch (HomekitServerException e) {
+            logger.error("doRemovePairing : Error removing pairing", e);
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
 
         Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
         encoder.add(Message.STATE, (short) 2);

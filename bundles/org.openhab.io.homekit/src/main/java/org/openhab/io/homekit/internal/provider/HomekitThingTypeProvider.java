@@ -128,7 +128,7 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
         return characteristicTypes.stream().filter(characteristicType -> {
             // Check if this characteristic type is associated with the service
             return homekitFactory.getService(characteristicType) != null
-                    && homekitFactory.getServiceInstanceType(characteristicType).equals(serviceType);
+                    && homekitFactory.getServiceType(characteristicType).equals(serviceType);
         }).map(characteristicType -> {
             // Get the channel type UID for this characteristic
             ChannelTypeUID channelTypeUID = homekitFactory.getChannelTypeUID(characteristicType);

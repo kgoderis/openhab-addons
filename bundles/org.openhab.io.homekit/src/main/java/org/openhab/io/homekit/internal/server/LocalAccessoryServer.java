@@ -1,9 +1,7 @@
 package org.openhab.io.homekit.internal.server;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
-import java.security.InvalidAlgorithmParameterException;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
@@ -16,15 +14,22 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.openhab.core.io.transport.mdns.MDNSService;
 import org.openhab.core.io.transport.mdns.ServiceDescription;
+import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.AccessoryCategory;
 import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.PairingFeatureFlag;
 import org.openhab.io.homekit.api.hap.PairingStatusFlag;
+import org.openhab.io.homekit.api.hap.Service;
+import org.openhab.io.homekit.api.listener.CharacteristicChangeListener;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.crypto.HomekitEncryptionEngine;
+import org.openhab.io.homekit.exception.AccessoryOperationException;
+import org.openhab.io.homekit.exception.ConfigurationException;
+import org.openhab.io.homekit.exception.HomekitServerException;
 import org.openhab.io.homekit.internal.accessory.AccessoryServerState;
-import org.openhab.io.homekit.internal.client.HomekitException;
+import org.openhab.io.homekit.internal.events.CharacteristicEvent;
+import org.openhab.io.homekit.internal.events.CharacteristicEvent.CharacteristicEventType;
 import org.openhab.io.homekit.internal.http.HomekitRequestLogHandler;
 import org.openhab.io.homekit.internal.http.jetty.HomekitHttpConnectionFactory;
 import org.openhab.io.homekit.internal.http.jetty.HomekitSessionHandler;
@@ -34,13 +39,9 @@ import org.openhab.io.homekit.internal.server.servlet.CharacteristicServlet;
 import org.openhab.io.homekit.internal.server.servlet.PairSetupServlet;
 import org.openhab.io.homekit.internal.server.servlet.PairVerificationServlet;
 import org.openhab.io.homekit.internal.server.servlet.PairingServlet;
+import org.openhab.io.homekit.util.Byte;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-//TODO : Interface AccessoryHolder -> AccessoryServer
-//                 AccessoryHolder -> AccessoryClient (iso HomekitClient)
-//       Abstract class AccesspryHolder
-//       Component AccessoryClient (die httpclient heeft)
 
 public class LocalAccessoryServer extends AbstractAccessoryServer implements CharacteristicChangeListener {
 
@@ -48,10 +49,10 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
     protected static final Logger logger = LoggerFactory.getLogger(LocalAccessoryServer.class);
 
     // ========== Server Components ==========
-    private final Server server;
+    private Server server;
+    private CharacteristicServlet characteristicServlet;
     protected final MDNSService mdnsService;
     protected ServiceDescription announcedServiceDescription;
-    private final CharacteristicServlet characteristicServlet;
 
     // ========== Synchronization ==========
     protected final Object notificationLock = new Object();
@@ -65,7 +66,7 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
     // ========== Constructors ==========
     public LocalAccessoryServer(AccessoryCategory category, InetAddress address, int port, byte[] pairingId,
             byte[] secretKey, MDNSService mdnsService, AccessoryRegistry accessoryRegistry,
-            PairingRegistry pairingRegistry) throws InvalidAlgorithmParameterException {
+            PairingRegistry pairingRegistry) throws ConfigurationException  {
         super(category, address, port, pairingId, secretKey, accessoryRegistry, pairingRegistry);
         logger.debug("{}Initializing local server - Category: {}, Address: {}, Port: {}", LOG_INIT, category, address,
                 port);
@@ -75,7 +76,7 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
 
     public LocalAccessoryServer(AccessoryCategory category, InetAddress address, int port, MDNSService mdnsService,
             AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry)
-            throws InvalidAlgorithmParameterException {
+            throws ConfigurationException, HomekitServerException {
         this(category, address, port, generatePairingId(), generateSecretKey(), mdnsService, accessoryRegistry,
                 pairingRegistry);
     }
@@ -109,8 +110,9 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
             characteristicServlet = new CharacteristicServlet(this);
             logger.debug("{}Created characteristic servlet", LOG_INIT);
 
-            ServletContextHandler servletContextHandler = new ServletContextHandler(
-                    ServletContextHandler.SESSIONS | ServletContextHandler.NO_SECURITY);
+            // ServletContextHandler servletContextHandler = new ServletContextHandler(
+            //     ServletContextHandler.SESSIONS | ServletContextHandler.NO_SECURITY);
+            ServletContextHandler servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
             servletContextHandler.setContextPath("/");
             servletContextHandler.setSessionHandler(homekitSessionHandler);
             logger.debug("{}Configured servlet context handler - Context path: {}", LOG_INIT,
@@ -131,12 +133,6 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
             throw e;
         }
 
-        // Initialize servlets if needed
-        if (characteristicServlet == null) {
-            String error = "CharacteristicServlet not initialized";
-            logger.error("{}{}", LOG_ERROR, error);
-            throw new IllegalStateException(error);
-        }
 
         // Netty - Do not Delete
 
@@ -233,7 +229,7 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
     }
 
     @Override
-    public void start() {
+    public void start()  throws HomekitServerException{
         logger.debug("{}Starting HomeKit server", LOG_SERVER);
         try {
             super.start(); // This will call initializeResources() and set state to READY
@@ -259,7 +255,7 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
     }
 
     @Override
-    public void stop() {
+    public void stop()  throws HomekitServerException{
         logger.debug("{}Stopping HomeKit server", LOG_SERVER);
         try {
             // Stop Jetty server
@@ -275,6 +271,45 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
 
         } catch (Exception e) {
             logger.error("{}Failed to stop server: {}", LOG_ERROR, e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void close()  throws HomekitServerException {
+        logger.info("{}Closing local server - Server: {}", LOG_SERVER, getUID());
+
+        try  {
+            // First stop the server to clean up active connections
+            stop();
+
+            // Clean up Jetty server resources
+            if (server != null) {
+                logger.debug("{}Destroying Jetty server - Server: {}", LOG_SERVER, getUID());
+                server.destroy();
+            }
+
+            // Clean up mDNS service registration
+            if (announcedServiceDescription != null) {
+                logger.debug("{}Unregistering mDNS service - Server: {}", LOG_SERVER, getUID());
+                mdnsService.unregisterService(announcedServiceDescription);
+                announcedServiceDescription = null;
+            }
+
+            // Clean up instance IDs
+            synchronized (instanceIdLock) {
+                logger.debug("{}Clearing instance IDs - Server: {}", LOG_SERVER, getUID());
+                usedInstanceIds.clear();
+                nextInstanceId = 1;
+            }
+
+            // Call super.close() last to ensure proper cleanup of base class resources
+            super.close();
+
+            logger.debug("{}Local server closed successfully - Server: {}", LOG_SERVER, getUID());
+        } catch (Exception e) {
+            logger.error("{}Error during local server close - Error: {}", LOG_ERROR, e.getMessage());
+            logger.debug("{}Exception details", LOG_ERROR, e);
+            throw new HomekitServerException("Error during local server close", e);
         }
     }
 
@@ -301,7 +336,7 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
 
     // ========== Pairing Management ==========
     @Override
-    public void addPairing(byte @NonNull [] destinationPairingId, byte @NonNull [] destinationPublicKey) {
+    public void addPairing(byte @NonNull [] destinationPairingId, byte @NonNull [] destinationPublicKey) throws HomekitServerException {
         logger.debug("{}Adding pairing - Destination ID: {}", LOG_PAIRING, Byte.toHexString(destinationPairingId));
         super.addPairing(destinationPairingId, destinationPublicKey);
         advertise();
@@ -309,7 +344,7 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
     }
 
     @Override
-    public void removePairing(byte @NonNull [] destinationPairingId) {
+    public void removePairing(byte @NonNull [] destinationPairingId) throws HomekitServerException {
         logger.debug("{}Removing pairing - Destination ID: {}", LOG_PAIRING, Byte.toHexString(destinationPairingId));
         super.removePairing(destinationPairingId);
         advertise();
@@ -317,32 +352,33 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
     }
 
     @Override
-    public boolean pairVerify() {
+    public boolean pairVerify() throws HomekitServerException {
         logger.debug("{}Verifying pairing", LOG_PAIRING);
         return isPaired();
     }
 
     @Override
-    public void pairRemove() throws HomekitException, IOException {
+    public void pairRemove() throws HomekitServerException {
         logger.debug("{}Remote pairing removal requested - No action needed for local server", LOG_PAIRING);
     }
 
     @Override
-    public void pairSetup() throws IOException {
+    public void pairSetup() throws HomekitServerException {
         logger.debug("{}Remote pairing setup requested - No action needed for local server", LOG_PAIRING);
     }
 
     // ========== Accessory Management ==========
     @Override
-    public void updateAccessories() throws IOException {
+    public void updateAccessories() throws AccessoryOperationException {
         logger.debug("{}Accessory update requested - No action needed for local server", LOG_ACCESSORY);
     }
 
     // ========== Setup Code Management ==========
     @Override
-    public String getSetupCode() {
+    public @NonNull String getSetupCode() {
         logger.debug("{}Getting setup code", LOG_CONFIG);
-        if (getSetupCode() == null || getSetupCode().isEmpty()) {
+        String currentCode = super.getSetupCode();
+        if (currentCode == null || currentCode.isEmpty()) {
             String newCode;
             if (logger.isDebugEnabled()) {
                 newCode = "123-12-123";
@@ -352,10 +388,15 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
                 logger.debug("{}Generated new setup code", LOG_CONFIG);
             }
             setSetupCode(newCode);
-            setState(AccessoryServerState.READY);
+            try {
+                setState(AccessoryServerState.READY);
+            } catch (HomekitServerException ex) {
+                logger.error("{}Failed to set state to READY: {}", LOG_ERROR, ex.getMessage(), ex);
+            }
             logger.info("{}Setup code set and state updated to READY", LOG_CONFIG);
+            return newCode;
         }
-        return getSetupCode();
+        return currentCode;
     }
 
     protected String generateSetupCode() {
@@ -396,9 +437,13 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
             try {
                 start();
                 logger.debug("{}Server started for advertisement", LOG_SERVER);
-            } catch (Exception e) {
+            } catch ( HomekitServerException e) {
                 logger.error("{}Failed to start server for advertisement: {}", LOG_ERROR, e.getMessage(), e);
-                setState(AccessoryServerState.STOPPED);
+                try {
+                    setState(AccessoryServerState.STOPPED);
+                } catch (HomekitServerException ex) {
+                    logger.error("{}Failed to set stopped state: {}", LOG_ERROR, ex.getMessage(), ex);
+                }
                 return;
             }
         }
@@ -436,10 +481,18 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
         // This must have a range of 1-65535 and wrap to 1 when it overflows.
         // This value must persist across reboots, power cycles, etc.
         if (getConfigurationIndex() == 65535) {
-            setConfigurationIndex(1);
+            try {
+                setConfigurationIndex(1);
+            } catch (ConfigurationException ex) {
+                logger.error("{}Failed to set configuration index: {}", LOG_ERROR, ex.getMessage(), ex);
+            }
         }
         props.put("c#", Integer.toString(getConfigurationIndex()));
-        setConfigurationIndex(getConfigurationIndex() + 1);
+        try {
+            setConfigurationIndex(getConfigurationIndex() + 1);
+        } catch (ConfigurationException ex) {
+            logger.error("{}Failed to increment configuration index: {}", LOG_ERROR, ex.getMessage(), ex);
+        }
 
         // Current state number. Required.
         // This must have a value of "1".
@@ -464,7 +517,11 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
         announcedServiceDescription.serviceProperties = props;
         mdnsService.unregisterService(announcedServiceDescription);
         mdnsService.registerService(announcedServiceDescription);
-        setState(AccessoryServerState.READY);
+        try {
+            setState(AccessoryServerState.READY);
+        } catch (HomekitServerException ex) {
+            logger.error("{}Failed to set state to READY: {}", LOG_ERROR, ex.getMessage(), ex);
+        }
         logger.info("{}Advertisement updated successfully", LOG_SERVER);
     }
 
@@ -473,7 +530,11 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
         announcedServiceDescription = new ServiceDescription(SERVICE_TYPE,
                 "openHAB " + getClass().getSimpleName() + " " + getPort(), getPort(), props);
         mdnsService.registerService(announcedServiceDescription);
-        setState(AccessoryServerState.READY);
+        try {
+            setState(AccessoryServerState.READY);
+        } catch (HomekitServerException ex) {
+            logger.error("{}Failed to set state to READY: {}", LOG_ERROR, ex.getMessage(), ex);
+        }
         logger.info("{}New advertisement created successfully", LOG_SERVER);
     }
 
@@ -483,39 +544,17 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
         logger.debug("{}Received characteristic event - Type: {}, Characteristic: {}", LOG_EVENT, event.getEventType(),
                 event.getCharacteristic().getClass().getSimpleName());
         if (event.getEventType() == CharacteristicEventType.CHARACTERISTIC_START_EVENTS) {
-            publishCharacteristicUpdate(event.getCharacteristic());
+            characteristicServlet.publishCharacteristicUpdate(event.getCharacteristic());
             logger.debug("{}Published characteristic update", LOG_EVENT);
         }
     }
 
-    protected void handleConnection(boolean connected) throws HomekitServerException {
-        logger.debug("{}Handling connection - Connected: {}", LOG_STATE, connected);
-        synchronized (stateLock) {
-            if (connected) {
-                setState(AccessoryServerState.CONNECTED);
-                logger.info("{}Connection established", LOG_STATE);
-            } else {
-                setState(AccessoryServerState.DISCONNECTED);
-                logger.info("{}Connection terminated", LOG_STATE);
-            }
-        }
-    }
+  
 
-    protected void handlePairingVerification(boolean verified) throws HomekitServerException {
-        logger.debug("{}Handling pairing verification - Verified: {}", LOG_STATE, verified);
-        synchronized (stateLock) {
-            if (verified) {
-                setState(AccessoryServerState.PAIR_VERIFIED);
-                logger.info("{}Pairing verified successfully", LOG_STATE);
-            } else {
-                setState(AccessoryServerState.PAIRED);
-                logger.info("{}Pairing verification failed", LOG_STATE);
-            }
-        }
-    }
+
 
     @Override
-    public void addAccessory(Accessory accessory) throws AccessoryOperationException {
+    public void addAccessory(@NonNull Accessory accessory) throws AccessoryOperationException {
         logger.debug("{}Adding accessory - ID: {}, Type: {}", LOG_ACCESSORY, accessory.getAccessoryId(),
                 accessory.getClass().getSimpleName());
         try {
@@ -537,7 +576,7 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
     }
 
     @Override
-    public void removeAccessory(Accessory accessory) throws AccessoryOperationException {
+    public void removeAccessory(@NonNull Accessory accessory) throws AccessoryOperationException {
         logger.debug("{}Removing accessory - ID: {}, Type: {}", LOG_ACCESSORY, accessory.getAccessoryId(),
                 accessory.getClass().getSimpleName());
         try {

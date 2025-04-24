@@ -75,6 +75,9 @@ import org.openhab.io.homekit.crypto.ChachaEncoder;
 import org.openhab.io.homekit.crypto.EdsaSigner;
 import org.openhab.io.homekit.crypto.EdsaVerifier;
 import org.openhab.io.homekit.crypto.HomekitEncryptionEngine;
+import org.openhab.io.homekit.exception.AccessoryOperationException;
+import org.openhab.io.homekit.exception.ConfigurationException;
+import org.openhab.io.homekit.exception.HomekitServerException;
 import org.openhab.io.homekit.internal.accessory.AccessoryServerState;
 import org.openhab.io.homekit.internal.accessory.GenericAccessory;
 import org.openhab.io.homekit.internal.client.HomekitClientSRP6Session;
@@ -97,6 +100,7 @@ import com.nimbusds.srp6.SRP6Exception;
 import com.nimbusds.srp6.XRoutineWithUserIdentity;
 
 import djb.Curve25519;
+import java.util.concurrent.TimeoutException;
 
 // A bridge is a special type of HAP accessory server that bridges HomeKit Accessory Protocol and different RF/transport protocols, such as ZigBee or Z-Wave. A bridge must expose all the user-addressable functionality supported by its connected devices as HAP accessory objects to the HAP controller(s). A bridge must ensure that the instance ID assigned to the HAP accessory objects exposed on behalf of its connected devices do not change for the lifetime of the server/client pairing.
 // For example, a bridge that bridges three lights would expose four HAP accessory objects: one HAP accessory object that represents the bridge itself that may include a "firmware update" service, and three additional HAP accessory objects that each contain a "lightbulb" service.
@@ -116,7 +120,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
 
     // ========== Component References and Locks ==========
     private HomekitClientSRP6Session SRP6Session;
-    private @Nullable HttpClient httpClient;
+    private HttpClient httpClient;
 
     // ========== State Management ==========
     private byte[] sessionKey;
@@ -128,56 +132,92 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
 
     // ========== Constructor ==========
     public RemoteAccessoryServer(AccessoryCategory category, InetAddress address, int port, byte[] pairingIdentifier,
-            byte[] secretKey, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry) {
+            byte[] secretKey, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry) throws ConfigurationException {
         super(category, address, port, pairingIdentifier, secretKey, accessoryRegistry, pairingRegistry);
         this.setupCode = "";
         this.isPairVerified = false;
-        this.httpClient = new HttpClient(new HomekitHttpClientTransportOverHTTP(), null);
         this.scheduler = org.openhab.core.common.ThreadPoolManager.getScheduledPool("homekit-remote");
-
-        start();
     }
 
     public RemoteAccessoryServer(AccessoryCategory category, InetAddress address, int port,
-            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry) {
+            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry)throws ConfigurationException, HomekitServerException {
         this(category, address, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry);
     }
 
     // ========== Core Lifecycle Methods ==========
     @Override
-    public void start() {
+    protected void initializeResources() throws HomekitServerException {
+        super.initializeResources();
         try {
+            httpClient = new HttpClient(new HomekitHttpClientTransportOverHTTP(), null);
+
             if (httpClient != null) {
                 logger.debug("{}Starting HTTP client initialization", LOG_INIT);
-                httpClient.start();
-                ProtocolHandlers handlers = httpClient.getProtocolHandlers();
-                handlers.clear();
-                handlers.put(new HomekitProtocolHandler(this));
-                setState(AccessoryServerState.CONNECTED);
-                logger.debug("{}HTTP client initialized successfully", LOG_INIT);
-
-                // Create a test request to check connection using the address member
-                String url = String.format("http://%s:%d", address.getHostAddress(), port);
-                logger.debug("{}Testing connection to {}", LOG_INIT, url);
-                Request request = httpClient.newRequest(url);
-                request.onRequestFailure((req, failure) -> {
-                    logger.warn("{}Connection failed - Server: {}", LOG_SERVER, new String(getPairingId()));
-                    logger.debug("{}Failure details: {}", LOG_SERVER, failure);
+                try {
+                    httpClient.start();
+                    ProtocolHandlers handlers = httpClient.getProtocolHandlers();
+                    handlers.clear();
+                    handlers.put(new HomekitProtocolHandler(this));
+                    setState(AccessoryServerState.CONNECTED);
+                    logger.debug("{}HTTP client initialized successfully", LOG_INIT);
+                } catch (Exception e) {
+                    logger.error("{}Failed to start HTTP client - Error: {}", LOG_ERROR, e.getMessage());
+                    logger.debug("{}Exception details", LOG_ERROR, e);
                     setState(AccessoryServerState.DISCONNECTED);
-                });
-                request.send();
+                    throw new HomekitServerException("Failed to start HTTP client", e);
+                }
             }
-        } catch (Exception e) {
+        } catch (  HomekitServerException e) {
             logger.error("{}Failed to start HTTP client - Error: {}", LOG_ERROR, e.getMessage());
             logger.debug("{}Exception details", LOG_ERROR, e);
-            setState(AccessoryServerState.DISCONNECTED);
+            try {
+                setState(AccessoryServerState.DISCONNECTED);
+            } catch (HomekitServerException ex) {
+                logger.error("{}Failed to set state to DISCONNECTED: {}", LOG_ERROR, ex.getMessage());
+            }
         }
 
         startConnectionMonitor();
     }
 
     @Override
-    public void stop() {
+    protected void cleanupResources() throws HomekitServerException {
+        super.cleanupResources();
+    }
+
+    @Override
+    public void start() throws HomekitServerException {
+        super.start();
+        try {
+            // Create a test request to check connection using the address member
+            String url = String.format("http://%s:%d", address.getHostAddress(), port);
+            logger.debug("{}Testing connection to {}", LOG_INIT, url);
+            Request request = httpClient.newRequest(url);
+            request.onRequestFailure((req, failure) -> {
+                logger.warn("{}Connection failed - Server: {}", LOG_SERVER, new String(getPairingId()));
+                logger.debug("{}Failure details: {}", LOG_SERVER, failure);
+                try {
+                    setState(AccessoryServerState.DISCONNECTED);
+                } catch (HomekitServerException e) {
+                    logger.error("{}Failed to set state to DISCONNECTED: {}", LOG_ERROR, e.getMessage());
+                }
+            });
+            request.send();
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            logger.error("{}Failed to start HTTP client - Error: {}", LOG_ERROR, e.getMessage());
+            logger.debug("{}Exception details", LOG_ERROR, e);
+            try {
+                setState(AccessoryServerState.DISCONNECTED);
+            } catch (HomekitServerException ex) {
+                logger.error("{}Failed to set state to DISCONNECTED: {}", LOG_ERROR, ex.getMessage());
+            }
+        }
+
+        startConnectionMonitor();
+    }
+
+    @Override
+    public void stop() throws HomekitServerException {
         stopConnectionMonitor();
 
         logger.info("{}Stopping server - Server: {}", LOG_SERVER, new String(getPairingId()));
@@ -185,25 +225,51 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
             if (isPaired()) {
                 pairRemove();
             }
-        } catch (HomekitException | IOException e) {
+        } catch (HomekitServerException e) {
             logger.warn("{}Error removing pairing during stop - Error: {}", LOG_SERVER, e.getMessage());
             logger.debug("{}Exception details", LOG_SERVER, e);
+            throw e;
         }
 
         try {
             if (httpClient != null) {
                 httpClient.stop();
             }
-            setState(AccessoryServerState.STOPPED);
         } catch (Exception e) {
             logger.error("{}Error stopping HTTP client - Error: {}", LOG_ERROR, e.getMessage());
             logger.debug("{}Exception details", LOG_ERROR, e);
         }
+
+        super.stop();
     }
 
     @Override
     public void close() throws Exception {
-        // ... existing close() implementation ...
+        logger.info("{}Closing server - Server: {}", LOG_SERVER, new String(getPairingId()));
+
+        try {
+            // First stop the server to clean up active connections
+            stop();
+
+            // Clean up HTTP client resources
+            if (httpClient != null) {
+                logger.debug("{}Destroying HTTP client - Server: {}", LOG_SERVER, new String(getPairingId()));
+                httpClient.destroy();
+                httpClient = null;
+            }
+
+            // Reset pairing state
+            resetPairingState();
+
+            // Call super.close() last to ensure proper cleanup of base class resources
+            super.close();
+
+            logger.debug("{}Server closed successfully - Server: {}", LOG_SERVER, new String(getPairingId()));
+        } catch (Exception e) {
+            logger.error("{}Error during server close - Error: {}", LOG_ERROR, e.getMessage());
+            logger.debug("{}Exception details", LOG_ERROR, e);
+            throw e;
+        }
     }
 
     // ========== State Management Methods ==========
@@ -252,7 +318,11 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
             } catch (Exception e) {
                 logger.warn("{}Connection monitoring failed - Error: {}", LOG_SERVER, e.getMessage());
                 logger.debug("{}Exception details", LOG_SERVER, e);
-                setState(AccessoryServerState.DISCONNECTED);
+                try {
+                    setState(AccessoryServerState.DISCONNECTED);
+                } catch (HomekitServerException ex) {
+                    logger.error("{}Failed to set disconnected state: {}", LOG_ERROR, ex.getMessage());
+                }
             }
         }, 0, 60, java.util.concurrent.TimeUnit.SECONDS);
         logger.debug("{}Connection monitor scheduled", LOG_SERVER);
@@ -266,7 +336,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         }
     }
 
-    private void monitorConnection() throws HomekitException, IOException {
+    private void monitorConnection() throws HomekitServerException, IOException {
         logger.debug("{}Monitoring connection state - Server: {}", LOG_STATE, new String(getPairingId()));
 
         // Check if we were previously disconnected
@@ -279,7 +349,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
                 logger.info("{}Setting up new pairing - Server: {}", LOG_PAIRING, new String(getPairingId()));
                 try {
                     pairSetup();
-                } catch (IOException e) {
+                } catch (HomekitServerException e) {
                     logger.warn("{}Pairing setup failed - Error: {}", LOG_PAIRING, e.getMessage());
                     logger.debug("{}Exception details", LOG_PAIRING, e);
                     setState(AccessoryServerState.MISSING_SETUP_CODE);
@@ -297,7 +367,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
                 if (isPaired()) {
                     pairVerify();
                 }
-            } catch (IOException e) {
+            } catch (HomekitServerException e) {
                 logger.warn("{}Pairing setup failed - Error: {}", LOG_PAIRING, e.getMessage());
                 logger.debug("{}Exception details", LOG_PAIRING, e);
                 setState(AccessoryServerState.MISSING_SETUP_CODE);
@@ -336,7 +406,8 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
     }
 
     // ========== Pairing Methods ==========
-    public void pairSetup() throws IOException {
+    @Override
+    public void pairSetup() throws HomekitServerException {
         logger.info("{}Starting pair setup process - Server: {}", LOG_PAIRING, new String(getPairingId()));
         logger.debug("{}Current state: {}", LOG_PAIRING, currentState);
 
@@ -400,7 +471,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
             logger.info("{}Pair setup completed successfully - Server: {}", LOG_PAIRING, new String(getPairingId()));
             logger.debug("{}Final state: {}", LOG_PAIRING, currentState);
 
-        } catch (HomekitException e) {
+        } catch (HomekitServerException e) {
             logger.error("{}Pair setup failed with error: {} - Server: {}", LOG_ERROR, e.getMessage(),
                     new String(getPairingId()));
             logger.debug("{}Homekit exception details", LOG_ERROR, e);
@@ -414,7 +485,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
     }
 
     @Override
-    public boolean pairVerify() {
+    public boolean pairVerify() throws HomekitServerException {
         logger.info("{}Starting pair verify process - Server: {}", LOG_PAIRING, new String(getPairingId()));
         logger.debug("{}Current state: {}", LOG_PAIRING, currentState);
 
@@ -430,6 +501,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
             StageResult stage0Result = executePairingStage(0, () -> doPairVerifyStage0());
             if (stage0Result.isFailure()) {
                 handleVerificationFailure(0, stage0Result);
+                handlePairingVerification(false);
                 return false;
             }
             logger.debug("{}Stage 0 completed successfully - Server: {}", LOG_PAIRING, new String(getPairingId()));
@@ -439,9 +511,10 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
             setState(AccessoryServerState.PAIR_SETUP_VERIFY);
 
             // Handle stage 1 with authentication error handling
-            final StageResult stage1Result = handleStage1Verification(stage0Result);
+            final StageResult stage1Result =handleStage1Verification(stage0Result);
             if (stage1Result.isFailure()) {
                 handleVerificationFailure(1, stage1Result);
+                handlePairingVerification(false);
                 return false;
             }
             logger.debug("{}Stage 1 completed successfully - Server: {}", LOG_PAIRING, new String(getPairingId()));
@@ -453,35 +526,36 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
             StageResult stage2Result = executePairingStage(2, () -> doPairVerifyStage2(stage1Result));
             if (stage2Result.isFailure()) {
                 handleVerificationFailure(2, stage2Result);
+                handlePairingVerification(false);
                 return false;
             }
             logger.debug("{}Stage 2 completed successfully - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
             // Verification completed successfully
             isPairVerified = true;
-            setState(AccessoryServerState.PAIR_VERIFIED);
+            handlePairingVerification(true);
             logger.info("{}Pair verification completed successfully - Server: {}", LOG_PAIRING,
                     new String(getPairingId()));
             logger.debug("{}Final state: {}", LOG_PAIRING, currentState);
             return true;
 
-        } catch (HomekitException e) {
+        } catch (HomekitServerException e) {
             logger.error("{}Pair verification failed with error: {} - Server: {}", LOG_ERROR, e.getMessage(),
                     new String(getPairingId()));
             logger.debug("{}Homekit exception details", LOG_ERROR, e);
-            setState(AccessoryServerState.PAIR_UNVERIFIED);
+            handlePairingVerification(false);
             return false;
         } catch (Exception e) {
             logger.error("{}Unexpected error during pair verification: {} - Server: {}", LOG_ERROR, e.getMessage(),
                     new String(getPairingId()));
             logger.debug("{}Exception details", LOG_ERROR, e);
-            setState(AccessoryServerState.PAIR_UNVERIFIED);
+            handlePairingVerification(false);
             return false;
         }
     }
 
     @Override
-    public void pairRemove() throws HomekitException, IOException {
+    public void pairRemove() throws HomekitServerException {
         logger.info("{}Starting pair remove process - Server: {}", LOG_PAIRING, new String(getPairingId()));
         logger.debug("{}Current state: {}", LOG_PAIRING, currentState);
 
@@ -504,9 +578,14 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
             // Prepare remove pairing request
             logger.debug("{}Preparing remove pairing request - Server: {}", LOG_PAIRING, new String(getPairingId()));
             Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
-            encoder.add(Message.STATE, (short) 0x01);
-            encoder.add(Message.METHOD, Method.REMOVE_PAIRING.getKey());
-            encoder.add(Message.IDENTIFIER, getPairingId());
+            try {
+                encoder.add(Message.STATE, (short) 0x01);
+                encoder.add(Message.METHOD, Method.REMOVE_PAIRING.getKey());
+                encoder.add(Message.IDENTIFIER, getPairingId());
+            } catch (IOException e) {
+                logger.error("{}Failed to prepare remove pairing request - Error: {}", LOG_ERROR, e.getMessage());
+                throw new HomekitServerException("Failed to prepare remove pairing request", e);
+            }
 
             // Send remove pairing request
             logger.debug("{}Sending remove pairing request - Server: {}", LOG_PAIRING, new String(getPairingId()));
@@ -518,7 +597,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
             if (state != 2) {
                 logger.error("{}Invalid state in remove pairing response: {} - Server: {}", LOG_ERROR, state,
                         new String(getPairingId()));
-                throw new HomekitException("Wrong STATE");
+                throw new HomekitServerException("Wrong STATE");
             }
 
             // Check for errors in response
@@ -547,7 +626,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
                     new String(getPairingId()));
             logger.debug("{}Exception details", LOG_ERROR, e);
             setState(AccessoryServerState.PAIR_UNVERIFIED);
-            throw new HomekitException("Failed to remove pairing", e);
+            throw new HomekitServerException("Failed to remove pairing", e);
         }
     }
 
@@ -562,8 +641,18 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         logger.debug("{}Pairing state reset completed - Server: {}", LOG_PAIRING, new String(getPairingId()));
     }
 
+    private void resetVerificationState() {
+        logger.debug("'{}' : Resetting verification state", new String(getPairingId()));
+        sessionKey = null;
+        sharedSecret = null;
+        clientPublicKey = null;
+        clientPrivateKey = null;
+        isPairVerified = false;
+        logger.debug("'{}' : Verification state reset completed", new String(getPairingId()));
+    }
+
     private StageResult executePairingStage(int stage, PairingStageExecutor executor)
-            throws IOException, HomekitException, InterruptedException, ExecutionException {
+            throws HomekitServerException, InterruptedException, ExecutionException, IOException {
         logger.debug("{}Executing pair setup stage {} - preparing payload - Server: {}", LOG_PAIRING, stage,
                 new String(getPairingId()));
         byte[] payload = executor.execute();
@@ -578,7 +667,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         return result;
     }
 
-    private void handlePairingFailure(int stage, StageResult result) {
+    private void handlePairingFailure(int stage, StageResult result) throws HomekitServerException {
         logger.debug("{}Handling failure for stage {} - Server: {}", LOG_PAIRING, stage, new String(getPairingId()));
         if (result.error != null) {
             if (result.error == Error.UNAVAILABLE) {
@@ -605,10 +694,10 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
 
     @FunctionalInterface
     private interface PairingStageExecutor {
-        byte[] execute() throws IOException, HomekitException;
+        byte[] execute() throws IOException, HomekitServerException;
     }
 
-    protected byte[] doPairSetupStage0() throws IOException, HomekitException {
+    protected byte[] doPairSetupStage0() throws IOException, HomekitServerException {
         Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
         encoder.add(Message.STATE, (short) 0x01);
         encoder.add(Message.METHOD, Method.PAIR_SETUP_WITH_AUTH.getKey());
@@ -616,12 +705,12 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         return encoder.toByteArray();
     }
 
-    protected byte[] doPairSetupStage1(StageResult stageResult) throws IOException, HomekitException {
+    protected byte[] doPairSetupStage1(StageResult stageResult) throws IOException, HomekitServerException {
         logger.debug("{}Starting pair setup stage 1 - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         short state = stageResult.decodeResult.getByte(Message.STATE);
         if (state != 2) {
-            throw new HomekitException("Wrong STATE");
+            throw new HomekitServerException("Wrong STATE");
         }
 
         BigInteger publicKey = stageResult.decodeResult.getBigInt(Message.PUBLIC_KEY);
@@ -645,7 +734,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         } catch (SRP6Exception e) {
             logger.error("{}SRP6 step 2 failed - Error: {}", LOG_ERROR, e.getMessage());
             logger.debug("{}Exception details", LOG_ERROR, e);
-            throw new HomekitException("SRP6 step 2 failed", e);
+            throw new HomekitServerException("SRP6 step 2 failed", e);
         }
 
         BigInteger clientPublicKey = clientCredentials.A;
@@ -662,12 +751,30 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         return encoder.toByteArray();
     }
 
-    protected byte[] doPairSetupStage2(StageResult stageResult) throws IOException, HomekitException {
+        private StageResult handleStage1Verification(StageResult stage0Result) 
+        throws HomekitServerException, InterruptedException, ExecutionException, IOException {
+    try {
+        return executePairingStage(1, () -> doPairVerifyStage1(stage0Result));
+    } catch (HomekitServerException e) {
+        logger.error("'{}' : Authentication error in stage 1: {}", new String(getPairingId()), e.getMessage());
+        logger.debug("'{}' : Sending authentication error to accessory", new String(getPairingId()));
+        
+        // Send authentication error to accessory
+        Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
+        encoder.add(Message.STATE, (short) 0x03);
+        encoder.add(Message.ERROR, Error.AUTHENTICATION);
+        
+        Future<StageResult> errorFuture = sendPairVerifyStage(encoder.toByteArray());
+        return errorFuture.get();
+    }
+    }
+
+    protected byte[] doPairSetupStage2(StageResult stageResult) throws IOException, HomekitServerException {
         logger.debug("{}Starting pair setup stage 2 - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         short state = stageResult.decodeResult.getByte(Message.STATE);
         if (state != 4) {
-            throw new HomekitException("Wrong STATE");
+            throw new HomekitServerException("Wrong STATE");
         }
 
         BigInteger proof = stageResult.decodeResult.getBigInt(Message.PROOF);
@@ -677,7 +784,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         } catch (SRP6Exception e) {
             logger.error("{}SRP6 step 3 failed - Error: {}", LOG_ERROR, e.getMessage());
             logger.debug("{}Exception details", LOG_ERROR, e);
-            throw new HomekitException("SRP6 step 3 failed", e);
+            throw new HomekitServerException("SRP6 step 3 failed", e);
         }
 
         MessageDigest digest = SRP6Session.getCryptoParams().getMessageDigestInstance();
@@ -710,7 +817,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException e) {
             logger.error("{}Failed to sign client device info - Error: {}", LOG_ERROR, e.getMessage());
             logger.debug("{}Exception details", LOG_ERROR, e);
-            throw new HomekitException("Failed to sign client device info", e);
+            throw new HomekitServerException("Failed to sign client device info", e);
         }
         logger.debug("{}Client signature generated - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
@@ -729,12 +836,12 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         return encoder.toByteArray();
     }
 
-    protected byte[] doPairSetupStage3(StageResult stageResult) throws IOException, HomekitException {
+    protected byte[] doPairSetupStage3(StageResult stageResult) throws IOException, HomekitServerException {
         logger.debug("{}Starting pair setup stage 3 - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         short state = stageResult.decodeResult.getByte(Message.STATE);
         if (state != 6) {
-            throw new HomekitException("Wrong STATE");
+            throw new HomekitServerException("Wrong STATE");
         }
 
         byte[] messageData = new byte[stageResult.decodeResult.getLength(Message.ENCRYPTED_DATA) - 16];
@@ -772,16 +879,17 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         } catch (Exception e) {
             logger.error("{}Signature verification failed - Error: {}", LOG_ERROR, e.getMessage());
             logger.debug("{}Exception details", LOG_ERROR, e);
-            throw new HomekitException("Signature verification failed", e);
+            throw new HomekitServerException("Signature verification failed", e);
         }
 
+    
         addPairing(destinationPairingIdentifier, destinationPublicKey);
         SRP6Session = null;
 
         return null;
     }
 
-    protected byte[] doPairVerifyStage0() throws IOException, HomekitException {
+    protected byte[] doPairVerifyStage0() throws IOException, HomekitServerException {
         logger.debug("{}Starting pair verify stage 0 - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         clientPublicKey = new byte[32];
@@ -796,12 +904,12 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         return encoder.toByteArray();
     }
 
-    protected byte[] doPairVerifyStage1(StageResult stageResult) throws IOException, HomekitException {
+    protected byte[] doPairVerifyStage1(StageResult stageResult) throws IOException, HomekitServerException {
         logger.debug("{}Starting pair verify stage 1 - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         short state = stageResult.decodeResult.getByte(Message.STATE);
         if (state != 2) {
-            throw new HomekitException("Wrong STATE");
+            throw new HomekitServerException("Wrong STATE");
         }
 
         byte[] destinationPublicKey = stageResult.decodeResult.getBytes(Message.PUBLIC_KEY);
@@ -831,7 +939,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         } catch (Exception e) {
             logger.error("{}Failed to decode ciphertext - Error: {}", LOG_ERROR, e.getMessage());
             logger.debug("{}Exception details", LOG_ERROR, e);
-            throw new HomekitException("Ciphertext decoding failed", e);
+            throw new HomekitServerException("Ciphertext decoding failed", e);
         }
 
         DecodeResult d = TypeLengthValueEncoderDecoder.decode(plaintext);
@@ -844,7 +952,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
 
         if (accessoryPairing == null) {
             logger.error("{}Accessory is not paired - Server: {}", LOG_ERROR, new String(getPairingId()));
-            throw new HomekitException("Accessory is not paired");
+            throw new HomekitServerException("Accessory is not paired");
         } else {
             logger.debug("{}Accessory pairing found - Server: {}", LOG_PAIRING, new String(getPairingId()));
         }
@@ -857,12 +965,12 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
                     .verify(accessoryDeviceInfo, accessorySignature);
             if (!signatureVerification) {
                 logger.error("{}Signature verification failed - Server: {}", LOG_ERROR, new String(getPairingId()));
-                throw new HomekitException("Signature verification failed");
+                throw new HomekitServerException("Signature verification failed");
             }
         } catch (Exception e) {
             logger.error("{}Signature verification failed - Error: {}", LOG_ERROR, e.getMessage());
             logger.debug("{}Exception details", LOG_ERROR, e);
-            throw new HomekitException("Signature verification failed", e);
+            throw new HomekitServerException("Signature verification failed", e);
         }
 
         byte[] clientDeviceInfo = Byte.joinBytes(clientPublicKey, getPairingId(), destinationPublicKey);
@@ -874,7 +982,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException e) {
             logger.error("{}Failed to sign client device info - Error: {}", LOG_ERROR, e.getMessage());
             logger.debug("{}Exception details", LOG_ERROR, e);
-            throw new HomekitException("Failed to sign client device info", e);
+            throw new HomekitServerException("Failed to sign client device info", e);
         }
 
         Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
@@ -892,12 +1000,12 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         return encoder.toByteArray();
     }
 
-    protected byte[] doPairVerifyStage2(StageResult stageResult) throws IOException, HomekitException {
+    protected byte[] doPairVerifyStage2(StageResult stageResult) throws IOException, HomekitServerException {
         logger.debug("{}Starting pair verify stage 2 - Server: {}", LOG_PAIRING, new String(getPairingId()));
 
         short state = stageResult.decodeResult.getByte(Message.STATE);
         if (state != 4) {
-            throw new HomekitException("Wrong STATE");
+            throw new HomekitServerException("Wrong STATE");
         }
 
         byte[] writeKey = HomekitEncryptionEngine.createKey("Control-Write-Encryption-Key", sharedSecret);
@@ -1139,7 +1247,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
     }
 
     @Override
-    public void updateAccessories() throws IOException {
+    public void updateAccessories() throws AccessoryOperationException {
         if (!isPairVerified()) {
             logger.debug("{}Cannot update accessories - not paired - Server: {}", LOG_SERVER,
                     new String(getPairingId()));
@@ -1305,12 +1413,12 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
             logger.warn("{}Error updating accessories: {} - Server: {}", LOG_SERVER, e.getMessage(),
                     new String(getPairingId()));
             logger.debug("{}Exception details", LOG_SERVER, e);
-            throw new IOException("Failed to update accessories", e);
+            throw new AccessoryOperationException("Failed to update accessories", e);
         }
     }
 
     @Override
-    public void addAccessory(Accessory accessory) {
+    public void addAccessory(Accessory accessory) throws AccessoryOperationException {
         super.addAccessory(accessory);
         for (Service service : accessory.getServices()) {
             for (Characteristic<?> characteristic : service.getCharacteristics()) {
@@ -1320,7 +1428,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
     }
 
     @Override
-    public void removeAccessory(Accessory accessory) {
+    public void removeAccessory(Accessory accessory) throws AccessoryOperationException {
         super.removeAccessory(accessory);
         for (Service service : accessory.getServices()) {
             for (Characteristic<?> characteristic : service.getCharacteristics()) {
@@ -1496,12 +1604,12 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         }
     }
 
-    protected void checkPairingStatus() throws HomekitException, IOException {
+    protected void checkPairingStatus() throws HomekitServerException, IOException {
         logger.debug("{}Checking pairing status - Server: {}", LOG_STATE, new String(getPairingId()));
         // ... existing code ...
     }
 
-    protected void handleVerificationFailure(int stage, StageResult result) {
+    protected void handleVerificationFailure(int stage, StageResult result) throws HomekitServerException {
         logger.debug("{}Handling verification failure for stage {} - Server: {}", LOG_PAIRING, stage,
                 new String(getPairingId()));
         if (result.error != null) {
@@ -1518,5 +1626,10 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         setState(AccessoryServerState.PAIR_UNVERIFIED);
         logger.debug("{}State set to PAIR_UNVERIFIED after failure - Server: {}", LOG_PAIRING,
                 new String(getPairingId()));
+    }
+
+    @Override
+    public void advertise() {
+        //no Op for RemoteAccessoryServer
     }
 }

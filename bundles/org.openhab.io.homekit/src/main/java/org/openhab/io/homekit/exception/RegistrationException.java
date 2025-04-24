@@ -1,4 +1,4 @@
-package org.openhab.io.homekit.internal.factory;
+package org.openhab.io.homekit.exception;
 
 /**
  * Exception thrown when there is an error during HomeKit service or characteristic registration.

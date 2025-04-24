@@ -99,7 +99,7 @@ public class GenericAccessory implements Accessory {
             for (Object factory : factories) {
                 if (factory instanceof HomekitFactory homekitFactory) {
                     String serviceType = ((JsonObject) value).getString("type");
-                    if (homekitFactory.isServiceSupported(serviceType)) {
+                    if (homekitFactory.supportsServiceType(serviceType)) {
                         Service service = homekitFactory.createService(this, value);
                         if (service != null) {
                             return service;

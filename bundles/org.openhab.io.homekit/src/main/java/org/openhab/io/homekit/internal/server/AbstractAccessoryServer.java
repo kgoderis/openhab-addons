@@ -7,10 +7,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
-import java.util.StringBuilder;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -32,6 +30,7 @@ import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.exception.AccessoryOperationException;
 import org.openhab.io.homekit.exception.ConfigurationException;
+import org.openhab.io.homekit.exception.HomekitServerException;
 import org.openhab.io.homekit.exception.InvalidStateTransitionException;
 import org.openhab.io.homekit.exception.ListenerNotificationException;
 import org.openhab.io.homekit.internal.accessory.AccessoryServerState;
@@ -66,30 +65,31 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
     // ========== State Management ==========
-    private final Object stateLock = new Object();
+    protected final Object stateLock = new Object();
     private final Object accessoryLock = new Object();
-    private volatile AccessoryServerState currentState = AccessoryServerState.UNKNOWN;
+    protected volatile AccessoryServerState currentState = AccessoryServerState.UNKNOWN;
     private volatile int configurationIndex = 1;
     private volatile boolean isShutdown = false;
 
     /** Server state management */
     private static final Map<AccessoryServerState, Set<AccessoryServerState>> VALID_STATE_TRANSITIONS = Map.of(
-            AccessoryServerState.UNPAIRED, Set.of(AccessoryServerState.PAIRED, AccessoryServerState.RESET),
-            AccessoryServerState.PAIRED,
-            Set.of(AccessoryServerState.UNPAIRED, AccessoryServerState.PAIR_VERIFIED,
-                    AccessoryServerState.DISCONNECTED),
-            AccessoryServerState.PAIR_VERIFIED, Set.of(AccessoryServerState.PAIRED, AccessoryServerState.DISCONNECTED),
-            AccessoryServerState.DISCONNECTED, Set.of(AccessoryServerState.CONNECTED, AccessoryServerState.PAIRED),
-            AccessoryServerState.CONNECTED, Set.of(AccessoryServerState.DISCONNECTED), AccessoryServerState.RESET,
-            Set.of(AccessoryServerState.UNPAIRED));
+            AccessoryServerState.UNKNOWN, Set.of(AccessoryServerState.READY),
+            AccessoryServerState.READY, Set.of(AccessoryServerState.STOPPED, AccessoryServerState.CONNECTED),
+            AccessoryServerState.CONNECTED, Set.of(AccessoryServerState.DISCONNECTED, AccessoryServerState.PAIR_SETUP_INITIAL),
+            AccessoryServerState.DISCONNECTED, Set.of(AccessoryServerState.CONNECTED, AccessoryServerState.STOPPED),
+            AccessoryServerState.PAIR_SETUP_INITIAL, Set.of(AccessoryServerState.PAIRED, AccessoryServerState.DISCONNECTED),
+            AccessoryServerState.PAIRED, Set.of(AccessoryServerState.PAIR_UNVERIFIED, AccessoryServerState.DISCONNECTED),
+            AccessoryServerState.PAIR_UNVERIFIED, Set.of(AccessoryServerState.PAIR_VERIFIED, AccessoryServerState.DISCONNECTED),
+            AccessoryServerState.PAIR_VERIFIED, Set.of(AccessoryServerState.PAIR_UNVERIFIED, AccessoryServerState.DISCONNECTED),
+            AccessoryServerState.STOPPED, Set.of(AccessoryServerState.READY));
 
     // ========== Server Configuration ==========
     private final AccessoryCategory category;
-    private final InetAddress address;
-    private final int port;
+    protected final InetAddress address;
+    protected final int port;
     private final byte[] pairingIdentifier;
-    private final byte[] secretKey;
-    private volatile String setupCode;
+    protected final byte[] secretKey;
+    protected volatile String setupCode;
 
     // ========== Collections and Executors ==========
     private final Collection<AccessoryServerChangeListener> changeListeners = new CopyOnWriteArraySet<>();
@@ -103,7 +103,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
     // ========== Constructor ==========
     public AbstractAccessoryServer(AccessoryCategory category, InetAddress address, int port, byte[] pairingId,
             byte[] privateKey, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry)
-            throws HomekitServerException {
+            throws ConfigurationException {
         super();
         validateConstructorParameters(category, address, port, pairingId, privateKey, accessoryRegistry,
                 pairingRegistry);
@@ -124,33 +124,17 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
     private void validateConstructorParameters(AccessoryCategory category, InetAddress address, int port,
             byte[] pairingId, byte[] privateKey, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry)
             throws ConfigurationException {
-        if (category == null) {
-            throw new ConfigurationException(
-                    "HomeKit server category cannot be null - required for proper accessory type identification");
-        }
-        if (address == null) {
-            throw new ConfigurationException(
-                    "HomeKit server network address cannot be null - required for device discovery");
-        }
         if (port <= 0 || port > 65535) {
             throw new ConfigurationException(
                     String.format("HomeKit server port %d is invalid - must be between 1 and 65535", port));
         }
-        if (pairingId == null || pairingId.length == 0) {
+        if (pairingId.length == 0) {
             throw new ConfigurationException(
-                    "HomeKit server pairing ID cannot be null or empty - required for secure pairing");
+                    "HomeKit server pairing ID cannot be empty - required for secure pairing");
         }
-        if (privateKey == null || privateKey.length == 0) {
+        if (privateKey.length == 0) {
             throw new ConfigurationException(
-                    "HomeKit server private key cannot be null or empty - required for secure communication");
-        }
-        if (accessoryRegistry == null) {
-            throw new ConfigurationException(
-                    "HomeKit accessory registry cannot be null - required for accessory management");
-        }
-        if (pairingRegistry == null) {
-            throw new ConfigurationException(
-                    "HomeKit pairing registry cannot be null - required for secure pairing management");
+                    "HomeKit server private key cannot be empty - required for secure pairing");
         }
     }
 
@@ -161,7 +145,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
      * 
      * @throws Exception if initialization fails
      */
-    protected void initializeResources() throws Exception {
+    protected void initializeResources() throws HomekitServerException {
         // Base implementation does nothing
     }
 
@@ -171,7 +155,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
      * 
      * @throws Exception if cleanup fails
      */
-    protected void cleanupResources() throws Exception {
+    protected void cleanupResources() throws HomekitServerException {
         // Base implementation does nothing
     }
 
@@ -220,7 +204,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
     }
 
     @Override
-    public void stop() {
+    public void stop() throws HomekitServerException{
         synchronized (stateLock) {
             if (currentState == AccessoryServerState.STOPPED) {
                 logger.warn("{}Server is already stopped", LOG_SERVER);
@@ -229,12 +213,11 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
             try {
                 try {
                     setState(AccessoryServerState.STOPPED);
-                } catch (Exception e) {
-                    if (firstException == null)
-                        firstException = e;
+                } catch (HomekitServerException e) {
                     logger.error("{}Failed to set stopped state during shutdown: {}", LOG_ERROR, e.getMessage(), e);
+                    throw new HomekitServerException("Failed to set stopped state during shutdown", e);
                 }
-            } catch (Exception e) {
+            } catch (HomekitServerException e) {
                 logger.error("{}Failed to stop server gracefully: {}", LOG_ERROR, e.getMessage(), e);
                 forceStop();
             }
@@ -314,13 +297,9 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
         return currentState;
     }
 
-    private void validateStateTransition(AccessoryServerState newState) throws ConfigurationException {
-        if (newState == null) {
-            throw new ConfigurationException(
-                    "Cannot transition to null state - valid HomeKit server state is required");
-        }
-        if (isShutdown && newState != AccessoryServerState.STOPPED) {
-            throw new ConfigurationException("Cannot transition to " + newState + " - server is shutting down");
+    private void validateStateTransition(AccessoryServerState newState) throws InvalidStateTransitionException {
+        if (!isValidStateTransition(currentState, newState)) {
+            throw new InvalidStateTransitionException(currentState, newState);
         }
     }
 
@@ -330,6 +309,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
     }
 
     protected synchronized void setState(AccessoryServerState newState) throws HomekitServerException {
+        try {
         validateStateTransition(newState);
 
         AccessoryServerState current;
@@ -364,6 +344,10 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
                             e.getMessage()),
                     e);
         }
+    } catch (HomekitServerException e) {
+        logger.error("{}Failed to set state to {}: {}", LOG_ERROR, newState, e.getMessage());
+
+    }
     }
 
     private void notifyStateChangeListeners(AccessoryServerEvent event) throws ListenerNotificationException {
@@ -431,37 +415,25 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
 
     private void notifyListenerWithTimeout(AccessoryServerChangeListener listener, AccessoryServerEvent event)
             throws ListenerNotificationException {
-        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+        Exception lastException = null;
+        for (int retry = 0; retry <= MAX_RETRIES; retry++) {
             try {
-                listener.onAccessoryServerEvent(event);
-            } catch (ListenerNotificationException e) {
-                throw new CompletionException(e);
-            } catch (RuntimeException e) {
-                throw new CompletionException(new ListenerNotificationException(
-                        String.format("Listener %s threw unexpected runtime exception: %s", listener, e.getMessage()),
-                        e));
+                Future<Void> future = eventExecutor.submit(() -> {
+                    listener.onAccessoryServerEvent(event);
+                    return null;
+                });
+                future.get(EVENT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+                return; // Success, exit method
+            } catch (TimeoutException | InterruptedException | ExecutionException e) {
+                lastException = e;
+                if (retry < MAX_RETRIES) {
+                    logger.warn("{}Retry {} - Failed to notify listener: {}", LOG_ERROR, retry + 1, e.getMessage());
+                }
             }
-        }, eventExecutor);
-
-        try {
-            future.get(EVENT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-        } catch (TimeoutException e) {
-            future.cancel(true);
-            throw new ListenerNotificationException(String
-                    .format("Listener %s failed to process event within %dms timeout", listener, EVENT_TIMEOUT_MS), e);
-        } catch (ExecutionException e) {
-            if (e.getCause() instanceof ListenerNotificationException) {
-                throw (ListenerNotificationException) e.getCause();
-            }
-            throw new ListenerNotificationException(
-                    String.format("Listener %s failed to process event: %s", listener, e.getCause().getMessage()),
-                    e.getCause());
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt(); // Restore interrupted status
-            future.cancel(true);
-            throw new ListenerNotificationException(
-                    String.format("Interrupted while waiting for listener %s to process event", listener), e);
         }
+        // If we get here, all retries failed
+        logger.error("{}All {} retries failed for listener notification: {}", LOG_ERROR, MAX_RETRIES + 1, lastException.getMessage(), lastException);
+        throw new ListenerNotificationException("Failed to notify listener after " + (MAX_RETRIES + 1) + " attempts: " + lastException.getMessage(), lastException);
     }
 
     // ========== Configuration Management Methods ==========
@@ -481,7 +453,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
                 configurationIndex = newIndex;
                 notifyChangeListeners(AccessoryServerEventType.SERVER_STATE_CONFIGURATION_NUMBER_CHANGED);
                 logger.info("{}Configuration index updated from {} to {}", LOG_CONFIG, oldIndex, newIndex);
-            } catch (Exception e) {
+            } catch (HomekitServerException e) {
                 // Rollback on failure
                 configurationIndex = oldIndex;
                 throw new ConfigurationException(
@@ -568,25 +540,20 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
 
     @Override
     public void setSetupCode(String setupCode) {
-        if (setupCode == null || setupCode.length() != 8 || !setupCode.matches("\\d{8}")) {
-            String error = "Setup code must be an 8-digit number";
-            logger.error("{}Setup code validation error: {}", LOG_ERROR, error);
-            throw new IllegalArgumentException(error);
+        if (setupCode.length() != 8 || !setupCode.matches("\\d{8}")) {
+            throw new IllegalArgumentException("Setup code must be 8 digits");
         }
-        logger.debug("{}Setting setup code", LOG_CONFIG);
         this.setupCode = setupCode;
     }
 
     // ========== Pairing Management Methods ==========
     @Override
     public void addPairing(byte @NonNull [] pairingId, byte @NonNull [] publicKey) throws HomekitServerException {
-        if (pairingId == null || pairingId.length == 0) {
-            String error = "Pairing ID cannot be null or empty";
-            logger.error("{}Pairing validation error: {}", LOG_ERROR, error);
-            throw new HomekitServerException(error);
+        if (pairingId.length == 0) {
+            throw new HomekitServerException("Pairing ID cannot be empty");
         }
-        if (publicKey == null || publicKey.length == 0) {
-            throw new HomekitServerException("Public key cannot be null or empty");
+        if (publicKey.length == 0) {
+            throw new HomekitServerException("Public key cannot be empty");
         }
 
         // Validate pairing ID uniqueness
@@ -612,7 +579,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
             logger.debug("{}Pairing added successfully", LOG_PAIRING);
             setState(AccessoryServerState.PAIRED);
             logger.info("{}Pairing added successfully - ID: {}", LOG_PAIRING, Byte.toHexString(pairingId));
-        } catch (Exception e) {
+        } catch (HomekitServerException e) {
             String error = String.format("Failed to add pairing %s: %s", Byte.toHexString(pairingId), e.getMessage());
             logger.error("{}Pairing addition error: {}", LOG_ERROR, error, e);
             throw new HomekitServerException(error, e);
@@ -620,9 +587,12 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
     }
 
     @Override
-    public Pairing getPairing(byte @NonNull [] pairingId) {
-        logger.debug("{}Getting pairing for ID: {}", LOG_PAIRING, Byte.toHexString(pairingId));
-        return pairingRegistry.get(new PairingUID(getPairingId(), pairingId));
+    public @Nullable Pairing getPairing(byte @NonNull [] pairingId) {
+        if (pairingId.length == 0) {
+            throw new IllegalArgumentException("Pairing ID cannot be empty");
+        }
+        Collection<Pairing> pairings = pairingRegistry.get(pairingId);
+        return pairings.isEmpty() ? null : pairings.iterator().next();
     }
 
     @Override
@@ -643,11 +613,11 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
 
         try {
             PairingUID uid = new PairingUID(getPairingId(), pairingId);
-            if (pairingRegistry.remove(uid)) {
+            if (pairingRegistry.remove(uid) != null) {
                 setState(AccessoryServerState.UNPAIRED);
                 logger.info("{}Pairing removed successfully - ID: {}", LOG_PAIRING, Byte.toHexString(pairingId));
             }
-        } catch (Exception e) {
+        } catch (HomekitServerException e) {
             String error = String.format("Failed to remove pairing %s: %s", Byte.toHexString(pairingId),
                     e.getMessage());
             logger.error("{}Pairing removal error: {}", LOG_ERROR, error, e);
@@ -660,8 +630,10 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
         synchronized (stateLock) {
             if (verified) {
                 setState(AccessoryServerState.PAIR_VERIFIED);
+                logger.info("{}Pairing verified successfully", LOG_STATE);
             } else {
                 setState(AccessoryServerState.PAIRED);
+                logger.info("{}Pairing verification failed", LOG_STATE);
             }
         }
     }
@@ -695,20 +667,21 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
 
     @Override
     public @Nullable Accessory getAccessory(int accessoryId) {
-        if (accessoryId < 0) {
-            logger.warn("{}Invalid accessory ID: {}", LOG_WARN, accessoryId);
-            return null;
-        }
         synchronized (accessoryLock) {
-            return accessories.stream().filter(accessory -> accessory.getAccessoryId() == accessoryId).findFirst()
-                    .orElse(null);
+            Optional<Accessory> result = accessories.stream().filter(a -> a.getAccessoryId() == accessoryId).findFirst();
+            return result.isPresent() ? result.get() : null;
         }
     }
 
     @Override
     public void addAccessory(Accessory accessory) throws AccessoryOperationException {
         validateAccessory(accessory);
-        validateLifecycleOperation("add accessory");
+        try {
+            validateLifecycleOperation("add accessory");
+        } catch (HomekitServerException e) {
+            throw new AccessoryOperationException("Failed to validate lifecycle operation", e);
+        }
+        validateAccessoryExists(accessory);
 
         synchronized (accessoryLock) {
             logger.debug("{}Adding accessory - UID: {}, Type: {}, Server: {}", LOG_ACCESSORY, accessory.getUID(),
@@ -727,7 +700,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
                     advertise();
                     notifyChangeListeners(AccessoryServerEventType.ACCESSORY_ADDED);
                     logger.info("{}Accessory added successfully - UID: {}", LOG_ACCESSORY, accessory.getUID());
-                } catch (AccessoryOperationException e) {
+                } catch (ListenerNotificationException e) {
                     // Rollback on failure
                     accessories.remove(accessory);
                     logger.error("{}Failed to add accessory - UID: {}, Error: {}", LOG_ERROR, accessory.getUID(),
@@ -755,7 +728,11 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
     @Override
     public void removeAccessory(Accessory accessory) throws AccessoryOperationException {
         validateAccessory(accessory);
-        validateLifecycleOperation("remove accessory");
+        try {
+            validateLifecycleOperation("remove accessory");
+        } catch (HomekitServerException e) {
+            throw new AccessoryOperationException(e.getMessage(), e);
+        }
         validateAccessoryExists(accessory);
 
         synchronized (accessoryLock) {
@@ -769,7 +746,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
                     advertise();
                     notifyChangeListeners(AccessoryServerEventType.ACCESSORY_REMOVED);
                     logger.info("{}Accessory removed successfully - UID: {}", LOG_ACCESSORY, accessory.getUID());
-                } catch (AccessoryOperationException e) {
+                } catch (ListenerNotificationException e) {
                     // Rollback on failure
                     accessories.add(accessory);
                     logger.error("{}Failed to remove accessory - UID: {}, Error: {}", LOG_ERROR, accessory.getUID(),
@@ -796,43 +773,37 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
 
     private void validateAccessoryIdUniqueness(Accessory accessory) throws AccessoryOperationException {
         synchronized (accessoryLock) {
-            if (accessories.stream().anyMatch(a -> a.getAccessoryId() == accessory.getAccessoryId())) {
-                Accessory existing = accessories.stream().filter(a -> a.getAccessoryId() == accessory.getAccessoryId())
-                        .findFirst().orElse(null);
-                throw new AccessoryOperationException(String.format(
-                        "Cannot add accessory with ID %d - an accessory with this ID already exists (UID: %s, Type: %s)",
-                        accessory.getAccessoryId(), existing != null ? existing.getUID() : "unknown",
-                        existing != null ? existing.getClass().getSimpleName() : "unknown"));
+            for (Accessory existing : accessories) {
+                if (existing.getAccessoryId() == accessory.getAccessoryId()) {
+                    throw new AccessoryOperationException(String.format(
+                            "Cannot add accessory with ID %d - an accessory with this ID already exists (UID: %s, Type: %s)",
+                            accessory.getAccessoryId(), existing.getUID(),
+                            existing.getClass().getSimpleName()));
+                }
             }
         }
     }
 
     private void validateAccessoryUidUniqueness(Accessory accessory) throws AccessoryOperationException {
         synchronized (accessoryLock) {
-            if (accessories.stream().anyMatch(a -> a.getUID().equals(accessory.getUID()))) {
-                Accessory existing = accessories.stream().filter(a -> a.getUID().equals(accessory.getUID())).findFirst()
-                        .orElse(null);
-                throw new AccessoryOperationException(String.format(
-                        "Cannot add accessory with UID %s - an accessory with this UID already exists (ID: %d, Type: %s)",
-                        accessory.getUID(), existing != null ? existing.getAccessoryId() : -1,
-                        existing != null ? existing.getClass().getSimpleName() : "unknown"));
+            for (Accessory existing : accessories) {
+                if (existing.getUID().equals(accessory.getUID())) {
+                    throw new AccessoryOperationException(String.format(
+                            "Cannot add accessory with UID %s - an accessory with this UID already exists (ID: %d, Type: %s)",
+                            accessory.getUID(), existing.getAccessoryId(),
+                            existing.getClass().getSimpleName()));
+                }
             }
         }
     }
 
     private void validateAccessory(Accessory accessory) throws AccessoryOperationException {
-        if (accessory == null) {
-            throw new AccessoryOperationException("Cannot add/remove null accessory - accessory object is required");
-        }
+
         if (accessory.getAccessoryId() < 0) {
             throw new AccessoryOperationException(String
                     .format("Invalid accessory ID %d - must be a non-negative number", accessory.getAccessoryId()));
         }
-        if (accessory.getUID() == null || accessory.getUID().isEmpty()) {
-            throw new AccessoryOperationException(
-                    String.format("Invalid accessory UID for accessory ID %d - UID cannot be null or empty",
-                            accessory.getAccessoryId()));
-        }
+
         validateAccessoryIdUniqueness(accessory);
         validateAccessoryUidUniqueness(accessory);
     }
@@ -870,9 +841,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
     }
 
     private void validateListener(AccessoryServerChangeListener listener) throws ListenerNotificationException {
-        if (listener == null) {
-            throw new ListenerNotificationException("Cannot add/remove null listener - listener object is required");
-        }
+        // No need to check for null due to @NonNullByDefault
     }
 
     private void cleanupListeners() {
@@ -924,8 +893,8 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
             Future<Void> future = eventExecutor.submit(() -> {
                 try {
                     notifyListenerWithTimeout(listener, event);
-                    return null;
-                } catch (Exception e) {
+                    return (Void) null;
+                } catch (ListenerNotificationException e) {
                     logger.error("{}Failed to notify listener {}: {}", LOG_ERROR, listener, e.getMessage(), e);
                     failedListeners.add(listener);
                     throw e;
@@ -1003,13 +972,11 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
         return category == AccessoryCategory.BRIDGES;
     }
 
+    @Override
     public abstract void advertise();
 
     private void validateEventType(AccessoryServerEventType eventType) throws ListenerNotificationException {
-        if (eventType == null) {
-            throw new ListenerNotificationException(
-                    "Cannot notify listeners with null event type - valid event type is required");
-        }
+        // No need to check for null due to @NonNullByDefault
     }
 
     protected void handleConnection(boolean connected) throws HomekitServerException {
@@ -1017,8 +984,10 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
         synchronized (stateLock) {
             if (connected) {
                 setState(AccessoryServerState.CONNECTED);
+                logger.info("{}Connection established", LOG_STATE);
             } else {
                 setState(AccessoryServerState.DISCONNECTED);
+                logger.info("{}Connection terminated", LOG_STATE);
             }
         }
     }

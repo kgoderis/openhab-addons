@@ -1,5 +1,6 @@
 package org.openhab.io.homekit.internal.handler;
 
+import java.util.Collections;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
