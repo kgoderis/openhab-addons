@@ -87,7 +87,7 @@ public abstract class GenericCharacteristic<@NonNull T> implements Characteristi
     }
 
     public GenericCharacteristic(Service service, long instanceId, String format, boolean isWritable,
-            boolean isReadable, boolean hasEvents, String description) {
+            boolean isReadable, boolean hasEvents, String description, String type) {
         this.service = service;
         this.instanceId = instanceId;
         this.format = format;

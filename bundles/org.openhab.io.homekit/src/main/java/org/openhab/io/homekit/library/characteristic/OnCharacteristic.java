@@ -6,6 +6,8 @@ package org.openhab.io.homekit.library.characteristic;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
@@ -15,25 +17,20 @@ import org.openhab.io.homekit.internal.characteristic.BooleanCharacteristic;
  * @author kgoderis
  *
  */
+@NonNullByDefault
 public class OnCharacteristic extends BooleanCharacteristic {
 
     private static final String TYPE = "00000025-0000-1000-8000-0026BB765291";
 
     public OnCharacteristic(Service service, long instanceId) {
-        super(service, instanceId, true, true, true, "On");
+        super(service, instanceId, true, true, true, "On", TYPE);
     }
 
     public OnCharacteristic(Service service, JsonValue value) {
         super(service, value);
     }
 
-    @Override
     public static String getType() {
-        return TYPE;
-    }
-
-    @Override
-    public String getInstanceType() {
         return TYPE;
     }
 
@@ -42,8 +39,8 @@ public class OnCharacteristic extends BooleanCharacteristic {
     }
 
     @Override
-    public JsonObject toEventJson(Boolean value) {
-        return super.toEventJson(value);
+    public JsonObject toEventJson(@Nullable Boolean value) {
+        return super.toEventJson(value != null ? value : false);
     }
 
     @Override
@@ -52,7 +49,7 @@ public class OnCharacteristic extends BooleanCharacteristic {
     }
 
     @Override
-    public JsonValue toValueJson(Boolean value) {
+    public JsonValue toValueJson(@Nullable Boolean value) {
         return super.toValueJson(value);
     }
 
@@ -73,7 +70,7 @@ public class OnCharacteristic extends BooleanCharacteristic {
     }
 
     @Override
-    public State toState(Boolean value) {
-        return new OnOffType(value ? OnOffType.ON : OnOffType.OFF);
+    public State toState(@Nullable Boolean value) {
+        return OnOffType.from(value != null && value);
     }
 }

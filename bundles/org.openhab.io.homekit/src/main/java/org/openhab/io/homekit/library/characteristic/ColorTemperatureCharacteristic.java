@@ -3,28 +3,25 @@ package org.openhab.io.homekit.library.characteristic;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.LongCharacteristic;
 
+@NonNullByDefault
 public class ColorTemperatureCharacteristic extends LongCharacteristic {
     private static final String TYPE = "000000CE-0000-1000-8000-0026BB765291";
 
     public ColorTemperatureCharacteristic(Service service, long instanceId) {
-        super(service, instanceId, true, true, true, "Color temperature", 50L, 400L, 1L);
+        super(service, instanceId, true, true, true, "Color temperature", 50L, 400L, 1L, TYPE);
     }
 
     public ColorTemperatureCharacteristic(Service service, JsonValue value) {
         super(service, value);
     }
 
-    @Override
     public static String getType() {
-        return TYPE;
-    }
-
-    @Override
-    public String getInstanceType() {
         return TYPE;
     }
 
@@ -43,7 +40,7 @@ public class ColorTemperatureCharacteristic extends LongCharacteristic {
     }
 
     @Override
-    public JsonValue toValueJson(Long value) {
+    public JsonValue toValueJson(@Nullable Long value) {
         return super.toValueJson(value);
     }
 

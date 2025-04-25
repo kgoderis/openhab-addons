@@ -9,6 +9,7 @@ import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 @NonNullByDefault
 public abstract class LongCharacteristic extends GenericCharacteristic<Long> {
@@ -18,8 +19,8 @@ public abstract class LongCharacteristic extends GenericCharacteristic<Long> {
     private final long minStep;
 
     public LongCharacteristic(Service service, long instanceId, boolean isWritable, boolean isReadable,
-            boolean hasEvents, String description, long minValue, long maxValue, long minStep) {
-        super(service, instanceId, "uint32", isWritable, isReadable, hasEvents, description);
+            boolean hasEvents, String description, long minValue, long maxValue, long minStep, String type) {
+        super(service, instanceId, "uint32", isWritable, isReadable, hasEvents, description, type);
         this.minValue = minValue;
         this.maxValue = maxValue;
         this.minStep = minStep;
@@ -77,7 +78,7 @@ public abstract class LongCharacteristic extends GenericCharacteristic<Long> {
     }
 
     @Override
-    public JsonValue toValueJson(Long value) {
+    public JsonValue toValueJson(@Nullable Long value) {
         return super.toValueJson(value);
     }
 
@@ -90,7 +91,7 @@ public abstract class LongCharacteristic extends GenericCharacteristic<Long> {
     public Long toValue(State state) {
         DecimalType convertedState = state.as(DecimalType.class);
         if (convertedState == null) {
-            return null;
+            return minValue;
         }
         return convertedState.longValue();
     }

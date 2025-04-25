@@ -9,6 +9,7 @@ import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.types.State;
@@ -45,7 +46,7 @@ public abstract class WriteOnlyBooleanCharacteristic extends GenericCharacterist
     /** {@inheritDoc} */
     @Override
     public Boolean getValue() {
-        return null;
+        return getDefault();
     }
 
     /** {@inheritDoc} */
@@ -61,7 +62,7 @@ public abstract class WriteOnlyBooleanCharacteristic extends GenericCharacterist
     public Boolean toValue(State state) {
         OnOffType convertedState = state.as(OnOffType.class);
         if (convertedState == null) {
-            return null;
+            return getDefault();
         }
 
         return convertedState.equals(OnOffType.ON);
@@ -83,7 +84,7 @@ public abstract class WriteOnlyBooleanCharacteristic extends GenericCharacterist
     }
 
     @Override
-    public JsonValue toValueJson(Boolean value) {
+    public JsonValue toValueJson(@Nullable Boolean value) {
         return super.toValueJson(value);
     }
 

@@ -3,28 +3,26 @@ package org.openhab.io.homekit.library.characteristic;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.IntegerCharacteristic;
 
+@NonNullByDefault
 public class CurrentHorizontalTiltAngleCharacteristic extends IntegerCharacteristic {
 
     private static final String TYPE = "0000006C-0000-1000-8000-0026BB765291";
 
     public CurrentHorizontalTiltAngleCharacteristic(Service service, long instanceId) {
-        super(service, instanceId, false, true, true, "Current horizontal tilt angle", -90, 90, "arcdegrees");
+        super(service, instanceId, false, true, true, "Current horizontal tilt angle", -90, 90, "arcdegrees", TYPE);
     }
 
     public CurrentHorizontalTiltAngleCharacteristic(Service service, JsonValue value) {
         super(service, value);
     }
 
-    @Override
     public static String getType() {
-        return TYPE;
-    }
-
-    @Override
-    public String getInstanceType() {
         return TYPE;
     }
 
@@ -43,7 +41,7 @@ public class CurrentHorizontalTiltAngleCharacteristic extends IntegerCharacteris
     }
 
     @Override
-    public JsonValue toValueJson(Integer value) {
+    public JsonValue toValueJson(@Nullable Integer value) {
         return super.toValueJson(value);
     }
 

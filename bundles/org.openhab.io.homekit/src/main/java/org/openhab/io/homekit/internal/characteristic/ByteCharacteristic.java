@@ -5,6 +5,7 @@ import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
@@ -15,14 +16,12 @@ public abstract class ByteCharacteristic extends GenericCharacteristic<Byte> {
 
     private final byte minValue;
     private final byte maxValue;
-    private final String unit;
 
     public ByteCharacteristic(Service service, long instanceId, boolean isWritable, boolean isReadable,
             boolean hasEvents, String description, byte minValue, byte maxValue, String type) {
         super(service, instanceId, "uint8", isWritable, isReadable, hasEvents, description, type);
         this.minValue = minValue;
         this.maxValue = maxValue;
-        this.unit = "";
         initializeValue();
     }
 
@@ -31,7 +30,6 @@ public abstract class ByteCharacteristic extends GenericCharacteristic<Byte> {
         JsonObject jsonObject = (JsonObject) value;
         this.minValue = jsonObject.containsKey("minValue") ? (byte) jsonObject.getInt("minValue") : 0;
         this.maxValue = jsonObject.containsKey("maxValue") ? (byte) jsonObject.getInt("maxValue") : Byte.MAX_VALUE;
-        this.unit = jsonObject.containsKey("unit") ? jsonObject.getString("unit") : "";
         initializeValue();
     }
 
@@ -74,7 +72,7 @@ public abstract class ByteCharacteristic extends GenericCharacteristic<Byte> {
     public Byte toValue(State state) {
         DecimalType convertedState = state.as(DecimalType.class);
         if (convertedState == null) {
-            return null;
+            return minValue;
         }
         return (byte) convertedState.intValue();
     }
@@ -100,7 +98,7 @@ public abstract class ByteCharacteristic extends GenericCharacteristic<Byte> {
     }
 
     @Override
-    public JsonValue toValueJson(Byte value) {
+    public JsonValue toValueJson(@Nullable Byte value) {
         return super.toValueJson(value);
     }
 

@@ -3,14 +3,18 @@ package org.openhab.io.homekit.library.characteristic;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.ReadOnlyStringCharacteristic;
 
+@NonNullByDefault
 public class ManufacturerCharacteristic extends ReadOnlyStringCharacteristic {
     private static final String TYPE = "00000020-0000-1000-8000-0026BB765291";
 
     public ManufacturerCharacteristic(Service service, long instanceId) {
-        super(service, instanceId, "Manufacturer of the accessory");
+        super(service, instanceId, "Manufacturer of the accessory", TYPE);
     }
 
     public ManufacturerCharacteristic(Service service, JsonValue value) {
@@ -19,11 +23,6 @@ public class ManufacturerCharacteristic extends ReadOnlyStringCharacteristic {
 
     public static String getType() {
         return TYPE;
-    }
-
-    @Override
-    public String getInstanceType() {
-        return getType();
     }
 
     @Override
@@ -53,7 +52,7 @@ public class ManufacturerCharacteristic extends ReadOnlyStringCharacteristic {
     }
 
     @Override
-    public JsonValue toValueJson(String value) {
+    public JsonValue toValueJson(@Nullable String value) {
         return super.toValueJson(value);
     }
 

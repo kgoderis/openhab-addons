@@ -3,28 +3,24 @@ package org.openhab.io.homekit.library.characteristic;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
-import org.openhab.core.library.types.State;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.EnumCharacteristic;
 
+@NonNullByDefault
 public class PositionStateCharacteristic extends EnumCharacteristic {
     private static final String TYPE = "00000072-0000-1000-8000-0026BB765291";
 
     public PositionStateCharacteristic(Service service, long instanceId) {
-        super(service, instanceId, false, true, true, "Position state", 2);
+        super(service, instanceId, false, true, true, "Position state", 2, TYPE);
     }
 
     public PositionStateCharacteristic(Service service, JsonValue value) {
         super(service, value);
     }
 
-    @Override
     public static String getType() {
-        return TYPE;
-    }
-
-    @Override
-    public String getInstanceType() {
         return TYPE;
     }
 

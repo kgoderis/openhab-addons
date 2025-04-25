@@ -17,20 +17,14 @@ public class SaturationCharacteristic extends FloatCharacteristic {
     private static final String TYPE = "0000002F-0000-1000-8000-0026BB765291";
 
     public SaturationCharacteristic(Service service, long instanceId) {
-        super(service, instanceId, true, true, true, "Adjust saturation of the light", 0, 100, 1, "percentage");
+        super(service, instanceId, true, true, true, "Adjust saturation of the light", 0, 100, 1, "percentage", TYPE);
     }
 
     public SaturationCharacteristic(Service service, JsonValue value) {
         super(service, value);
     }
 
-    @Override
     public static String getType() {
-        return TYPE;
-    }
-
-    @Override
-    public String getInstanceType() {
         return TYPE;
     }
 

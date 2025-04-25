@@ -5,6 +5,7 @@ import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
@@ -77,7 +78,7 @@ public abstract class IntegerCharacteristic extends GenericCharacteristic<Intege
     public Integer toValue(State state) {
         DecimalType convertedState = state.as(DecimalType.class);
         if (convertedState == null) {
-            return null;
+            return minValue;
         }
         return convertedState.intValue();
     }
@@ -103,7 +104,7 @@ public abstract class IntegerCharacteristic extends GenericCharacteristic<Intege
     }
 
     @Override
-    public JsonValue toValueJson(Integer value) {
+    public JsonValue toValueJson(@Nullable Integer value) {
         return super.toValueJson(value);
     }
 

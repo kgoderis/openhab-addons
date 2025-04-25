@@ -3,28 +3,24 @@ package org.openhab.io.homekit.library.characteristic;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.IntegerCharacteristic;
 
+@NonNullByDefault
 public class TargetPositionCharacteristic extends IntegerCharacteristic {
     private static final String TYPE = "0000007C-0000-1000-8000-0026BB765291";
 
     public TargetPositionCharacteristic(Service service, long instanceId) {
-        super(service, instanceId, true, true, true, "Target position", 0, 100, "%");
+        super(service, instanceId, false, true, true, "Target position", 0, 100, "percent", TYPE);
     }
 
     public TargetPositionCharacteristic(Service service, JsonValue value) {
         super(service, value);
     }
 
-    @Override
     public static String getType() {
-        return TYPE;
-    }
-
-    @Override
-    public String getInstanceType() {
         return TYPE;
     }
 

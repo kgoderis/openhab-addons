@@ -3,30 +3,26 @@ package org.openhab.io.homekit.library.characteristic;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.library.types.OpenClosedType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.EnumCharacteristic;
 
+@NonNullByDefault
 public class ContactSensorStateCharacteristic extends EnumCharacteristic {
 
     private static final String TYPE = "0000006A-0000-1000-8000-0026BB765291";
 
     public ContactSensorStateCharacteristic(Service service, long instanceId) {
-        super(service, instanceId, false, true, true, "State of a door/window contact sensor", 1);
+        super(service, instanceId, false, true, true, "State of a door/window contact sensor", 1, TYPE);
     }
 
     public ContactSensorStateCharacteristic(Service service, JsonValue value) {
         super(service, value);
     }
 
-    @Override
     public static String getType() {
-        return TYPE;
-    }
-
-    @Override
-    public String getInstanceType() {
         return TYPE;
     }
 
@@ -35,7 +31,7 @@ public class ContactSensorStateCharacteristic extends EnumCharacteristic {
         if (state instanceof OpenClosedType) {
             return ((OpenClosedType) state) == OpenClosedType.OPEN ? 0 : 1;
         }
-        return null;
+        return super.toValue(state);
     }
 
     @Override

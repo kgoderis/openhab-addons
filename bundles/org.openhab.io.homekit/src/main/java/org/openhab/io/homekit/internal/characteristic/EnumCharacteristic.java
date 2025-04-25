@@ -4,7 +4,8 @@ import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
@@ -15,13 +16,14 @@ import org.openhab.io.homekit.api.hap.Service;
  * Homekit protocol, and classes extending this one must handle the static mapping to an Integer
  * value.
  **/
-public abstract class EnumCharacteristic extends GenericCharacteristic<@NonNull Integer> {
+@NonNullByDefault
+public abstract class EnumCharacteristic extends GenericCharacteristic<Integer> {
 
     private final int maxValue;
 
     public EnumCharacteristic(Service service, long instanceId, boolean isWritable, boolean isReadable,
-            boolean hasEvents, String description, int maxValue) {
-        super(service, instanceId, "int", isWritable, isReadable, hasEvents, description);
+            boolean hasEvents, String description, int maxValue, String type) {
+        super(service, instanceId, "int", isWritable, isReadable, hasEvents, description, type);
         this.maxValue = maxValue;
         initializeValue();
     }
@@ -72,7 +74,7 @@ public abstract class EnumCharacteristic extends GenericCharacteristic<@NonNull 
         } else if (value == JsonValue.FALSE) {
             return 0;
         } else {
-            throw new IndexOutOfBoundsException("Cannot convert " + value.getClass() + " to Integer");
+            throw new IndexOutOfBoundsException("Cannot convert " + (value != null ? value.getClass() : "null") + " to Integer");
         }
     }
 
@@ -80,7 +82,7 @@ public abstract class EnumCharacteristic extends GenericCharacteristic<@NonNull 
     public Integer toValue(State state) {
         DecimalType convertedState = state.as(DecimalType.class);
         if (convertedState == null) {
-            return null;
+            return 0;
         }
         return convertedState.intValue();
     }
@@ -106,7 +108,7 @@ public abstract class EnumCharacteristic extends GenericCharacteristic<@NonNull 
     }
 
     @Override
-    public JsonValue toValueJson(Integer value) {
+    public JsonValue toValueJson(@Nullable Integer value) {
         return super.toValueJson(value);
     }
 

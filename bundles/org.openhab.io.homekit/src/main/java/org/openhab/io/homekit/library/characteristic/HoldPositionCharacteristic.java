@@ -6,6 +6,8 @@ package org.openhab.io.homekit.library.characteristic;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.BooleanCharacteristic;
 
@@ -13,25 +15,20 @@ import org.openhab.io.homekit.internal.characteristic.BooleanCharacteristic;
  * @author kgoderis
  *
  */
+@NonNullByDefault
 public class HoldPositionCharacteristic extends BooleanCharacteristic {
 
     private static final String TYPE = "0000006F-0000-1000-8000-0026BB765291";
 
     public HoldPositionCharacteristic(Service service, long instanceId) {
-        super(service, instanceId, true, true, true, "Hold position");
+        super(service, instanceId, true, true, true, "Hold position", TYPE);
     }
 
     public HoldPositionCharacteristic(Service service, JsonValue value) {
         super(service, value);
     }
 
-    @Override
     public static String getType() {
-        return TYPE;
-    }
-
-    @Override
-    public String getInstanceType() {
         return TYPE;
     }
 

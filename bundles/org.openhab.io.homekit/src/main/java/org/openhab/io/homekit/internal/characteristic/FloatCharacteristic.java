@@ -4,11 +4,14 @@ import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 
+@NonNullByDefault
 public abstract class FloatCharacteristic extends GenericCharacteristic<Double> {
 
     private final double minValue;
@@ -17,8 +20,8 @@ public abstract class FloatCharacteristic extends GenericCharacteristic<Double> 
     private final String unit;
 
     public FloatCharacteristic(Service service, long instanceId, boolean isWritable, boolean isReadable,
-            boolean hasEvents, String description, double minValue, double maxValue, double minStep, String unit) {
-        super(service, instanceId, "float", isWritable, isReadable, hasEvents, description);
+            boolean hasEvents, String description, double minValue, double maxValue, double minStep, String unit, String type) {
+        super(service, instanceId, "float", isWritable, isReadable, hasEvents, description, type);
         this.minValue = minValue;
         this.maxValue = maxValue;
         this.minStep = minStep;
@@ -78,7 +81,7 @@ public abstract class FloatCharacteristic extends GenericCharacteristic<Double> 
     public Double toValue(State state) {
         DecimalType convertedState = state.as(DecimalType.class);
         if (convertedState == null) {
-            return null;
+            return minValue;
         }
         return convertedState.doubleValue();
     }
@@ -104,7 +107,7 @@ public abstract class FloatCharacteristic extends GenericCharacteristic<Double> 
     }
 
     @Override
-    public JsonValue toValueJson(Double value) {
+    public JsonValue toValueJson(@Nullable Double value) {
         return super.toValueJson(value);
     }
 

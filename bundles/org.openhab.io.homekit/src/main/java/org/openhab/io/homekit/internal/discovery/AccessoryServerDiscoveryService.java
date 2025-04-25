@@ -20,12 +20,10 @@ import javax.jmdns.ServiceListener;
 import org.apache.commons.lang.SystemUtils;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.core.common.SafeCaller;
 import org.openhab.core.config.discovery.AbstractDiscoveryService;
 import org.openhab.core.config.discovery.DiscoveryResultBuilder;
 import org.openhab.core.config.discovery.DiscoveryService;
 import org.openhab.core.io.transport.mdns.MDNSClient;
-import org.openhab.core.io.transport.mdns.MDNSService;
 import org.openhab.core.net.NetworkAddressService;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.ThingUID;
@@ -38,8 +36,10 @@ import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
+import org.openhab.io.homekit.exception.AccessoryOperationException;
+import org.openhab.io.homekit.exception.HomekitException;
+import org.openhab.io.homekit.exception.HomekitServerException;
 import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
-import org.openhab.io.homekit.internal.client.HomekitException;
 import org.openhab.io.homekit.internal.provider.HomekitThingTypeProvider;
 import org.openhab.io.homekit.internal.server.AccessoryServerUID;
 import org.openhab.io.homekit.internal.server.RemoteAccessoryServer;
@@ -53,186 +53,312 @@ import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Discovery service for HomeKit accessories.
+ * This service listens for HomeKit accessories on the network using mDNS and creates corresponding things in the system.
+ * 
+ * Configuration options:
+ * - auto.create.accessoryThing: Enable/disable automatic creation of accessory things (default: true)
+ * - auto.create.serviceThing: Enable/disable automatic creation of service things (default: true)
+ * 
+ * @author OpenHAB
+ */
 @NonNullByDefault
 @Component(immediate = true, service = DiscoveryService.class, configurationPid = "discovery.homekit")
 public class AccessoryServerDiscoveryService extends AbstractDiscoveryService implements ServiceListener {
+    /** Timeout for foreground scans in milliseconds */
     private static final Duration FOREGROUND_SCAN_TIMEOUT = Duration.ofMillis(200);
+    /** HomeKit service type for mDNS discovery */
     private static final String SERVICE_TYPE = "_hap._tcp.local.";
+
+    /** Configuration keys */
+    private static final String CONFIG_AUTO_CREATE_ACCESSORY = "auto.create.accessoryThing";
+    private static final String CONFIG_AUTO_CREATE_SERVICE = "auto.create.serviceThing";
+    /** Default configuration values */
+    private static final boolean DEFAULT_AUTO_CREATE_ACCESSORY = true;
+    private static final boolean DEFAULT_AUTO_CREATE_SERVICE = true;
+
+    /** Logging prefixes */
+    private static final String LOG_PREFIX = "HomeKit Discovery: ";
+    private static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    private static final String LOG_STATE = LOG_PREFIX + "State - ";
+    private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    private static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    private static final String LOG_PAIRING = LOG_PREFIX + "Pairing - ";
+    private static final String LOG_EVENT = LOG_PREFIX + "Event - ";
+    private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    private static final String LOG_SERVER = LOG_PREFIX + "Server - ";
+    private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+
     private final Logger logger = LoggerFactory.getLogger(AccessoryServerDiscoveryService.class);
 
     private final MDNSClient mdnsClient;
     private final AccessoryServerRegistry accessoryServerRegistry;
-    private Map<String, ScheduledFuture<?>> deviceRemovalTasks = new ConcurrentHashMap<>();
-    private NetworkAddressService networkAddressService;
-    private @Nullable MDNSService mdnsService;
-    private @Nullable AccessoryRegistry accessoryRegistry;
-    private @Nullable PairingRegistry pairingRegistry;
-    private @Nullable SafeCaller safeCaller;
-    private @Nullable HomekitThingTypeProvider homekitThingTypeProvider;
-    private @Nullable ConfigurationAdmin configAdmin;
+    private final Map<@Nullable String, @Nullable ScheduledFuture<?>> deviceRemovalTasks = new ConcurrentHashMap<>();
+    private final NetworkAddressService networkAddressService;
+    private final AccessoryRegistry accessoryRegistry;
+    private final PairingRegistry pairingRegistry;
+    private final HomekitThingTypeProvider homekitThingTypeProvider;
     private boolean autoCreateAccessoryThing;
     private boolean autoCreateServiceThing;
+    private ConfigurationAdmin configAdmin;
 
+    /**
+     * Constructs a new HomeKit discovery service.
+     * 
+     * @param configProperties Configuration properties for the service
+     * @param mdnsClient MDNS client for service discovery
+     * @param accessoryServerRegistry Registry for managing accessory servers
+     * @param networkAddressService Service for network address management
+     * @param accessoryRegistry Registry for managing accessories
+     * @param pairingRegistry Registry for managing pairings
+     * @param homekitThingTypeProvider Provider for HomeKit thing types
+     * @param configAdmin Configuration admin service
+     * @throws IllegalArgumentException if any required dependency is null
+     */
     @Activate
     public AccessoryServerDiscoveryService(final @Nullable Map<String, Object> configProperties,
             final @Reference MDNSClient mdnsClient, final @Reference AccessoryServerRegistry accessoryServerRegistry,
-            final @Reference NetworkAddressService networkAddressService, @Nullable MDNSService mdnsService,
-            @Nullable AccessoryRegistry accessoryRegistry, @Nullable PairingRegistry pairingRegistry,
-            @Nullable SafeCaller safeCaller, @Nullable HomekitThingTypeProvider homekitThingTypeProvider,
+            final @Reference NetworkAddressService networkAddressService,
+            @Reference AccessoryRegistry accessoryRegistry, @Reference PairingRegistry pairingRegistry,
+            @Reference HomekitThingTypeProvider homekitThingTypeProvider,
             @Reference ConfigurationAdmin configAdmin) {
         super(5);
+        logger.debug("{}Initializing HomeKit discovery service", LOG_INIT);
+
+        // Initialize dependencies
         this.mdnsClient = mdnsClient;
         this.accessoryServerRegistry = accessoryServerRegistry;
         this.networkAddressService = networkAddressService;
-        this.mdnsService = mdnsService;
         this.accessoryRegistry = accessoryRegistry;
         this.pairingRegistry = pairingRegistry;
-        this.safeCaller = safeCaller;
         this.homekitThingTypeProvider = homekitThingTypeProvider;
-        super.activate(configProperties);
+        this.configAdmin = configAdmin;
 
-        if (isBackgroundDiscoveryEnabled()) {
-            mdnsClient.addServiceListener(SERVICE_TYPE, this);
-        }
-
-        // Get binding configuration using ConfigurationAdmin
-        try {
-            if (configAdmin != null) {
-                Configuration config = configAdmin.getConfiguration("org.openhab.homekit");
-                Dictionary<String, Object> properties = config.getProperties();
-
-                if (properties != null) {
-                    // Get auto-create configuration
-                    Object autoCreateObj = properties.get("auto.create.accessoryThing");
-                    if (autoCreateObj instanceof Boolean) {
-                        autoCreateAccessoryThing = (Boolean) autoCreateObj;
-                        logger.info("Thing auto create: {}", autoCreateAccessoryThing);
-                    }
-
-                    // Get service thing auto-create configuration
-                    Object autoCreateServiceObj = properties.get("auto.create.serviceThing");
-                    if (autoCreateServiceObj instanceof Boolean) {
-                        autoCreateServiceThing = (Boolean) autoCreateServiceObj;
-                        logger.info("Service thing auto create: {}", autoCreateServiceThing);
-                    }
-                }
-            }
-        } catch (IOException e) {
-            logger.warn("Error reading HomeKit binding configuration: {}", e.getMessage());
-        }
+        // Load configuration
+        loadConfiguration();
+        
+        logger.info("{}HomeKit discovery service initialized successfully", LOG_INIT);
     }
 
+    /**
+     * Deactivates the discovery service.
+     * Stops background discovery, cancels all pending removal tasks, and cleans up resources.
+     */
     @Deactivate
     @Override
     protected void deactivate() {
-        super.deactivate();
+        logger.debug("{}Deactivating HomeKit discovery service", LOG_INIT);
+        
+        // Stop background discovery
+        stopBackgroundDiscovery();
+        
+        // Cancel all pending removal tasks
+        deviceRemovalTasks.values().forEach(task -> {
+            if (task != null) {
+                task.cancel(false);
+            }
+        });
+        deviceRemovalTasks.clear();
+        
+        // Remove all service listeners
         mdnsClient.removeServiceListener(SERVICE_TYPE, this);
+        
+        // Clean up any remaining servers
+        // accessoryServerRegistry.getAll().forEach(server -> {
+        //     try {
+        //         server.stop();
+        //     } catch (Exception e) {
+        //         logger.warn("{}Failed to stop server {} during deactivation: {}", LOG_WARN, 
+        //                 server.getUID(), e.getMessage());
+        //     }
+        // });
+        
+        super.deactivate();
+        logger.info("{}HomeKit discovery service deactivated", LOG_INIT);
     }
 
+    /**
+     * Handles configuration updates for the service.
+     * 
+     * @param configProperties Updated configuration properties
+     */
     @Modified
     @Override
     protected void modified(@Nullable Map<String, Object> configProperties) {
         super.modified(configProperties);
     }
 
+    /**
+     * Activates the discovery service.
+     * Initializes background discovery if enabled.
+     * 
+     * @param configProperties Configuration properties for activation
+     */
+    @Override
+    @Activate
+    protected void activate(@Nullable Map<String, Object> configProperties) {
+        super.activate(configProperties);
+        if (isBackgroundDiscoveryEnabled()) {
+            logger.debug("{}Enabling background discovery for service type: {}", LOG_CONFIG, SERVICE_TYPE);
+            mdnsClient.addServiceListener(SERVICE_TYPE, this);
+        }
+    }
+
+    /**
+     * Starts background discovery for HomeKit services.
+     * Registers the service listener and initiates a scan.
+     */
     @Override
     protected void startBackgroundDiscovery() {
+        logger.debug("{}Starting background discovery for service type: {}", LOG_CONFIG, SERVICE_TYPE);
         mdnsClient.addServiceListener(SERVICE_TYPE, this);
         startScan(true);
     }
 
+    /**
+     * Stops background discovery for HomeKit services.
+     * Removes the service listener.
+     */
     @Override
     protected void stopBackgroundDiscovery() {
+        logger.debug("{}Stopping background discovery for service type: {}", LOG_CONFIG, SERVICE_TYPE);
         mdnsClient.removeServiceListener(SERVICE_TYPE, this);
     }
 
+    /**
+     * Starts a foreground scan for HomeKit services.
+     */
     @Override
     protected void startScan() {
         startScan(false);
     }
 
+    /**
+     * Stops the current scan operation.
+     */
     @Override
     protected synchronized void stopScan() {
         super.stopScan();
     }
 
+    /**
+     * Initiates a scan for HomeKit services.
+     * 
+     * @param isBackground Whether the scan is running in background mode
+     */
     private void startScan(boolean isBackground) {
         scheduler.schedule(() -> {
             scan(isBackground);
         }, 0, TimeUnit.SECONDS);
     }
 
+    /**
+     * Performs the actual scan for HomeKit services.
+     * Processes discovered services and updates the registry accordingly.
+     * 
+     * @param isBackground Whether the scan is running in background mode
+     */
     private void scan(boolean isBackground) {
         long start = System.currentTimeMillis();
+        logger.debug("{}Starting {} scan for HomeKit services", LOG_SERVER, isBackground ? "background" : "foreground");
+        
         ServiceInfo[] services;
         if (isBackground) {
             services = mdnsClient.list(SERVICE_TYPE);
         } else {
             services = mdnsClient.list(SERVICE_TYPE, FOREGROUND_SCAN_TIMEOUT);
         }
-        logger.debug("{} HomeKit services found; duration: {}ms", services.length, System.currentTimeMillis() - start);
+        
+        logger.debug("{}Found {} HomeKit services in {}ms", LOG_SERVER, services.length, System.currentTimeMillis() - start);
+        
         for (ServiceInfo serviceInfo : services) {
+            logger.debug("{}Processing service: {}", LOG_SERVER, serviceInfo.getName());
             Map<String, String> properties = processService(serviceInfo);
 
             if (properties == null) {
+                logger.debug("{}Skipping service {} - no valid properties found", LOG_SERVER, serviceInfo.getName());
                 continue;
             }
 
-            String deviceId = properties.get("id");
-            // creater a AccessoryServerUID from the deviceId
+            @Nullable String deviceId = properties.get("id");
+            if (deviceId == null || deviceId.isEmpty()) {
+                logger.warn("{}Service {} has no device ID", LOG_WARN, serviceInfo.getName());
+                continue;
+            }
+
             AccessoryServerUID serverUID = new AccessoryServerUID(deviceId);
-            // get the AccessoryServer from the accessoryServerRegistry
             AccessoryServer server = accessoryServerRegistry.get(serverUID);
 
             if (server == null) {
+                logger.debug("{}No server found for device ID: {}", LOG_SERVER, deviceId);
                 continue;
             }
 
             if (server.isPaired()) {
-                logger.info("AccessoryServer {} is paired", server.getUID());
+                logger.info("{}Server {} is paired, updating accessories", LOG_PAIRING, server.getUID());
 
                 try {
                     server.updateAccessories();
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    logger.debug("{}Successfully updated accessories for server {}", LOG_ACCESSORY, server.getUID());
+                } catch (AccessoryOperationException e) {
+                    logger.warn("{}Failed to update accessories for server {}: {}", LOG_WARN, server.getUID(), e.getMessage());
                 }
-                for (Accessory accessory : server.getAccessories()) {
-                    // Check that the accessory is not already in the accessory registry
-                    if (accessoryRegistry.get(accessory.getUID()) == null) {
-                        logger.info("Accessory {} is not in the accessory registry", accessory.getUID());
-                        accessoryRegistry.add(accessory);
-                        createThingFromAccessory(server, accessory);
-                        // TODO : add code to check if a things exists for this accessory and if not create one
-                        // we need to check all accessories and all services of the accessory
-                    } else {
-                        logger.info("Accessory {} is already in the accessory registry", accessory.getUID());
+                
+                try {
+                    for (Accessory accessory : server.getAccessories()) {
+                        if (accessoryRegistry != null && accessoryRegistry.get(accessory.getUID()) == null) {
+                            logger.debug("{}Adding new accessory {} to registry", LOG_ACCESSORY, accessory.getUID());
+                            accessoryRegistry.add(accessory);
+                            try {
+                                createThingFromAccessory(server, accessory);
+                            } catch (HomekitException e) {
+                                logger.warn("{}Failed to create thing for accessory {}: {}", LOG_WARN, accessory.getUID(), e.getMessage());
+                            }
+                        } else {
+                            logger.trace("{}Accessory {} already exists in registry", LOG_ACCESSORY, accessory.getUID());
+                        }
                     }
+                } catch (AccessoryOperationException e) {
+                    logger.warn("{}Failed to process accessories for server {}: {}", LOG_WARN, server.getUID(), e.getMessage());
                 }
-
             } else {
-                logger.warn("AccessoryServer {} is not paired", server.getUID());
+                logger.warn("{}Server {} is not paired, skipping accessory processing", LOG_PAIRING, server.getUID());
             }
-
         }
     }
 
+    /**
+     * Handles the addition of a new service.
+     * 
+     * @param serviceEvent The service event containing information about the added service
+     */
     @Override
     public void serviceAdded(@NonNullByDefault({}) ServiceEvent serviceEvent) {
+        logger.debug("{}New service added: {}", LOG_EVENT, serviceEvent.getName());
         considerService(serviceEvent);
     }
 
+    /**
+     * Handles the removal of a service.
+     * Schedules the removal of the corresponding server after a grace period.
+     * 
+     * @param serviceEvent The service event containing information about the removed service
+     */
     @Override
     public void serviceRemoved(@NonNullByDefault({}) ServiceEvent serviceEvent) {
         ServiceInfo serviceInfo = serviceEvent.getInfo();
         if (serviceInfo != null) {
+            logger.debug("{}Service removed: {}", LOG_EVENT, serviceInfo.getName());
             AccessoryServerUID serverUID = new AccessoryServerUID(serviceInfo.getName());
             AccessoryServer server = accessoryServerRegistry.get(serverUID);
             if (server != null) {
                 long gracePeriod = 30; // 30 seconds grace period
                 if (gracePeriod <= 0) {
+                    logger.debug("{}Removing server {} immediately", LOG_SERVER, serverUID);
                     accessoryServerRegistry.remove(serverUID);
                 } else {
+                    logger.debug("{}Scheduling removal of server {} in {} seconds", LOG_SERVER, serverUID, gracePeriod);
                     cancelRemovalTask(serviceInfo);
                     scheduleRemovalTask(serverUID, serviceInfo, gracePeriod);
                 }
@@ -240,167 +366,201 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
         }
     }
 
+    /**
+     * Handles the resolution of a service.
+     * 
+     * @param serviceEvent The service event containing information about the resolved service
+     */
     @Override
     public void serviceResolved(@NonNullByDefault({}) ServiceEvent serviceEvent) {
+        logger.debug("{}Service resolved: {}", LOG_EVENT, serviceEvent.getName());
         considerService(serviceEvent);
     }
 
+    /**
+     * Processes a service event if background discovery is enabled.
+     * 
+     * @param serviceEvent The service event to process
+     */
     private void considerService(ServiceEvent serviceEvent) {
         if (isBackgroundDiscoveryEnabled()) {
+            logger.debug("{}Processing service in background discovery: {}", LOG_EVENT, serviceEvent.getName());
             processService(serviceEvent.getInfo());
         }
     }
 
-    private Map<String, String> processService(ServiceInfo serviceInfo) {
-        Map<String, String> properties = new HashMap<>();
-
+    /**
+     * Processes a discovered HomeKit service.
+     * Extracts service properties and creates or updates the corresponding accessory server.
+     * 
+     * @param serviceInfo The discovered service information
+     * @return Map of service properties, or null if processing failed
+     */
+    private @Nullable Map<String, String> processService(@Nullable ServiceInfo serviceInfo) {
         if (serviceInfo == null) {
+            logger.warn("{}Received null service info, skipping processing", LOG_WARN);
             return null;
         }
 
-        if (serviceInfo.hasData() && serviceInfo.getApplication().contains("hap") && serviceInfo.getPort() != 0) {
-            try {
+        Map<String, String> properties = new HashMap<>();
+        try {
+            if (!serviceInfo.hasData() || !serviceInfo.getApplication().contains("hap") || serviceInfo.getPort() == 0) {
+                return null;
+            }
 
-                Enumeration<String> serviceProperties = serviceInfo.getPropertyNames();
-                while (serviceProperties.hasMoreElements()) {
-                    String element = serviceProperties.nextElement();
+            logger.debug("{}Processing HomeKit service: {}", LOG_SERVER, serviceInfo.getName());
+
+            // Extract all service properties
+            Enumeration<@Nullable String> serviceProperties = serviceInfo.getPropertyNames();
+            while (serviceProperties.hasMoreElements()) {
+                @Nullable String element = serviceProperties.nextElement();
+                if (element != null) {
                     String value = serviceInfo.getPropertyString(element);
-                    properties.put(element, value);
+                    if (value != null) {
+                        properties.put(element, value);
+                    }
                 }
+            }
 
-                String id = serviceInfo.getPropertyString("id");
-                if (id == null) {
-                    logger.warn("Skipping service with no ID: {}", serviceInfo.getName());
-                    return null;
-                }
+            // Validate required service properties
+            String id = serviceInfo.getPropertyString("id");
+            if (id == null) {
+                throw new IllegalStateException("Service " + serviceInfo.getName() + " has no ID property");
+            }
 
-                AccessoryServerUID serverUID = new AccessoryServerUID(id.replace(":", ""));
-                AccessoryServer existingServer = accessoryServerRegistry.get(serverUID);
+            AccessoryServerUID serverUID = new AccessoryServerUID(id.replace(":", ""));
+            AccessoryServer existingServer = accessoryServerRegistry.get(serverUID);
 
-                int port = serviceInfo.getPort();
-                String deviceId = serviceInfo.getPropertyString("id");
-                String model = serviceInfo.getPropertyString("md");
-                String version = serviceInfo.getPropertyString("pv");
-                int configIndex = Integer.parseInt(serviceInfo.getPropertyString("c#"));
-                AccessoryCategory category = AccessoryCategory
-                        .fromValue(Integer.parseInt(serviceInfo.getPropertyString("ci")));
-                PairingStatusFlag pairingStatus = PairingStatusFlag
-                        .fromValue(Integer.parseInt(serviceInfo.getPropertyString("sf")));
-                int stateNumber = Integer.parseInt(serviceInfo.getPropertyString("s#"));
-                PairingFeatureFlag pairingFeatureFlag = PairingFeatureFlag
-                        .fromValue(Integer.parseInt(serviceInfo.getPropertyString("ff")));
+            // Extract and validate service configuration
+            int port = serviceInfo.getPort();
+            String deviceId = serviceInfo.getPropertyString("id");
+            String model = serviceInfo.getPropertyString("md");
+            String version = serviceInfo.getPropertyString("pv");
+            String configIndexStr = serviceInfo.getPropertyString("c#");
+            String categoryStr = serviceInfo.getPropertyString("ci");
+            String pairingStatusStr = serviceInfo.getPropertyString("sf");
+            String stateNumberStr = serviceInfo.getPropertyString("s#");
+            String pairingFeatureFlagStr = serviceInfo.getPropertyString("ff");
+
+            if (configIndexStr == null || categoryStr == null || pairingStatusStr == null || 
+                stateNumberStr == null || pairingFeatureFlagStr == null) {
+                throw new IllegalStateException("Missing required service properties for " + serviceInfo.getName());
+            }
+
+            try {
+                // Parse and validate numeric values
+                int configIndex = Integer.parseInt(configIndexStr);
+                AccessoryCategory category = AccessoryCategory.fromValue(Integer.parseInt(categoryStr));
+                PairingStatusFlag pairingStatus = PairingStatusFlag.fromValue(Integer.parseInt(pairingStatusStr));
+                int stateNumber = Integer.parseInt(stateNumberStr);
+                PairingFeatureFlag pairingFeatureFlag = PairingFeatureFlag.fromValue(Integer.parseInt(pairingFeatureFlagStr));
 
                 if (existingServer != null) {
-                    // Update configuration index if needed
+                    // Update existing server configuration if needed
                     if (existingServer.getConfigurationIndex() != configIndex) {
-                        logger.debug("Updating configuration index for server {} from {} to {}",
+                        logger.info("{}Updating configuration index for server {} from {} to {}", LOG_CONFIG,
                                 existingServer.getUID(), existingServer.getConfigurationIndex(), configIndex);
-                        existingServer.setConfigurationIndex(configIndex);
+                        try {
+                            existingServer.setConfigurationIndex(configIndex);
+                        } catch (HomekitServerException e) {
+                            logger.warn("{}Failed to update configuration index for server {}: {}", LOG_WARN, 
+                                    existingServer.getUID(), e.getMessage());
+                        }
                     }
                 } else {
-                    logger.info(
-                            "Discovered a Homekit Automation Protocol participant with id '{}', having {} IPv4 and {} IPv6 addresses",
-                            id, serviceInfo.getInet4Addresses().length, serviceInfo.getInet6Addresses().length);
+                    // Create new server for discovered accessory
+                    logger.info("{}Discovered new HomeKit server - ID: {}, Category: {}, Model: {}, Version: {}, Config Index: {}, Pairing Status: {}, Feature Flag: {}",
+                            LOG_SERVER, id, category, model, version, configIndex, pairingStatus, pairingFeatureFlag);
 
-                    String hostAddress = null;
-
-                    if (SystemUtils.IS_OS_MAC) {
-                        // Use IPv4 only - see
-                        // https://medium.com/@quelgar/java-sockets-broken-for-ipv6-on-mac-5aae72f06b21
-                        if (networkAddressService.isUseIPv6()) {
-                            logger.warn(
-                                    "IPv6 and MDNS dot no match well on MacOS - see  https://medium.com/@quelgar/java-sockets-broken-for-ipv6-on-mac-5aae72f06b21");
-                        }
-                        if (serviceInfo.getInet4Addresses().length > 0) {
-                            hostAddress = serviceInfo.getInet4Addresses()[0].getHostAddress();
-                        }
-                    } else {
-                        if (networkAddressService.isUseIPv6()) {
-                            if (serviceInfo.getInet6Addresses().length > 0) {
-                                hostAddress = serviceInfo.getInet6Addresses()[0].getHostAddress();
-                            }
-                        } else {
-                            if (serviceInfo.getInet4Addresses().length > 0) {
-                                hostAddress = serviceInfo.getInet4Addresses()[0].getHostAddress();
-                            }
-                        }
-                    }
-
+                    String hostAddress = getHostAddress(serviceInfo);
                     if (hostAddress == null) {
-                        logger.warn(
-                                "Skipping a discovered Homekit Automation Protocol participant without valid host address");
+                        logger.warn("{}No valid host address found for server {}", LOG_WARN, id);
                         return null;
                     }
 
-                    logger.info(
-                            "Found a Homekit Accessory Server with id {}, category {}, model {}, version {}, configuration index {}, pairing status {}, pairing feature flag {}",
-                            id, category, model, version, configIndex, pairingStatus, pairingFeatureFlag);
-
                     try {
-                        AccessoryServer server = null;
-                        // if (category.equals(AccessoryCategory.BRIDGES)) {
-                        // server = new BridgeRemoteAccessoryServer(InetAddress.getByName(hostAddress), port,
-                        // mdnsService, accessoryRegistry, pairingRegistry, safeCaller);
-                        // } else {
-                        server = new RemoteAccessoryServer(category, InetAddress.getByName(hostAddress), port,
+                        AccessoryServer server = new RemoteAccessoryServer(category, InetAddress.getByName(hostAddress), port,
                                 accessoryRegistry, pairingRegistry);
-                        // }
                         server.setConfigurationIndex(configIndex);
                         accessoryServerRegistry.add(server);
-                        logger.debug("Created a Remote Accessory Server {} with Setup Code {}", server.getUID(),
-                                server.getSetupCode());
-                    } catch (Exception e) {
-                        logger.error("Error creating accessory server", e);
+                        logger.info("{}Created new Remote Accessory Server - UID: {}, Setup Code: {}", LOG_SERVER,
+                                server.getUID(), server.getSetupCode());
+                    } catch (IOException e) {
+                        logger.error("{}Failed to create accessory server: {}", LOG_ERROR, e.getMessage(), e);
+                    } catch (HomekitServerException e) {
+                        logger.error("{}Failed to initialize accessory server: {}", LOG_ERROR, e.getMessage(), e);
                     }
-
                 }
 
                 cancelRemovalTask(serviceInfo);
-                return properties;
-            } catch (Exception e) {
-                logger.error("Error processing HomeKit service: {}", serviceInfo.getName(), e);
+            } catch (NumberFormatException e) {
+                throw new IllegalStateException("Invalid numeric value in service properties for " + serviceInfo.getName(), e);
             }
+        } catch (IllegalStateException e) {
+            logger.error("{}Error processing service {}: {}", LOG_ERROR, serviceInfo.getName(), e.getMessage());
+            return null;
         }
         return properties;
     }
 
+    /**
+     * Cancels a scheduled removal task for a service.
+     * 
+     * @param serviceInfo The service information for which to cancel the removal task
+     */
     private void cancelRemovalTask(ServiceInfo serviceInfo) {
         ScheduledFuture<?> deviceRemovalTask = deviceRemovalTasks.remove(serviceInfo.getQualifiedName());
         if (deviceRemovalTask != null) {
+            logger.debug("{}Cancelled removal task for service: {}", LOG_EVENT, serviceInfo.getQualifiedName());
             deviceRemovalTask.cancel(false);
         }
     }
 
+    /**
+     * Schedules a removal task for a server after a grace period.
+     * 
+     * @param serverUID The UID of the server to remove
+     * @param serviceInfo The service information
+     * @param gracePeriod The grace period in seconds before removal
+     */
     private void scheduleRemovalTask(AccessoryServerUID serverUID, ServiceInfo serviceInfo, long gracePeriod) {
+        logger.debug("{}Scheduling removal task for server {} in {} seconds", LOG_SERVER, serverUID, gracePeriod);
         deviceRemovalTasks.put(serviceInfo.getQualifiedName(), scheduler.schedule(() -> {
+            logger.info("{}Removing server {} after grace period", LOG_SERVER, serverUID);
             accessoryServerRegistry.remove(serverUID);
             cancelRemovalTask(serviceInfo);
         }, gracePeriod, TimeUnit.SECONDS));
     }
 
-    private void createThingFromAccessory(AccessoryServer server, Accessory accessory) {
-        logger.debug("Creating thing from accessory {}", accessory.getUID());
+    /**
+     * Creates a thing from an accessory.
+     * 
+     * @param server The accessory server
+     * @param accessory The accessory to create a thing for
+     * @throws HomekitException if there is an error creating the thing
+     */
+    private void createThingFromAccessory(AccessoryServer server, Accessory accessory) throws HomekitException {
+        logger.debug("{}Creating thing from accessory {} on server {}", LOG_ACCESSORY, accessory.getUID(), server.getUID());
 
-        if (autoCreateServiceThing) {
+        if (autoCreateServiceThing && homekitThingTypeProvider != null) {
             Map<String, Object> properties = new HashMap<>();
 
-            // Get the ThingTypeUID for each service in the accessory
             Collection<Service> services = accessory.getServices();
             for (Service service : services) {
                 String serviceType = service.getInstanceType();
                 ThingTypeUID thingTypeUID = homekitThingTypeProvider.getThingTypeUID(serviceType);
+ 
                 String serviceTag;
                 try {
                     serviceTag = homekitThingTypeProvider.getServiceTag(serviceType);
                 } catch (HomekitException e) {
+                    logger.warn("{}Could not get service tag for type {}, using type as fallback: {}", LOG_WARN, serviceType, e.getMessage());
                     serviceTag = serviceType;
                 }
 
-                // Create a unique ID for this accessory's service
                 ThingUID thingUID = new ThingUID(thingTypeUID, server.getUID().getPairingId() + "."
                         + accessory.getAccessoryId() + "." + service.getInstanceId());
 
-                // Build discovery result
                 DiscoveryResultBuilder builder = DiscoveryResultBuilder.create(thingUID).withProperties(properties)
                         .withProperty("accessoryId", accessory.getAccessoryId())
                         .withProperty("instanceId", service.getInstanceId())
@@ -409,24 +569,105 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
 
                 thingDiscovered(builder.build());
 
-                logger.debug("Created thing {} for HomeKit service type {}", thingUID, serviceType);
+                logger.debug("{}Discovered service - Type: {}, ID: {}, Label: {}, Accessory: {}", LOG_ACCESSORY,
+                        serviceType, thingUID, serviceTag, accessory.getUID());
             }
         }
 
         if (autoCreateAccessoryThing) {
-            // Create a unique ID for this accessory
             ThingUID thingUID = new ThingUID(HomekitBindingConstants.THING_TYPE_ACCESSORY,
                     server.getUID().getPairingId() + "." + accessory.getAccessoryId());
 
-            // Build discovery result
             DiscoveryResultBuilder builder = DiscoveryResultBuilder.create(thingUID)
                     .withProperty("accessoryId", accessory.getAccessoryId())
                     .withProperty("pairingId", new String(server.getPairingId(), StandardCharsets.UTF_8))
                     .withLabel("HomeKit " + accessory.getClass().getSimpleName());
 
             thingDiscovered(builder.build());
-            logger.debug("Created thing {} for HomeKit accessory {}", thingUID, accessory.getAccessoryId());
-
+            logger.debug("{}Created thing {} for HomeKit accessory {} on server {}", LOG_ACCESSORY, thingUID,
+                    accessory.getAccessoryId(), server.getUID());
         }
+    }
+
+    /**
+     * Loads and validates the HomeKit binding configuration.
+     * Sets default values if configuration is missing or invalid.
+     */
+    private void loadConfiguration() {
+        logger.debug("{}Loading HomeKit binding configuration", LOG_CONFIG);
+        try {
+                Configuration config = configAdmin.getConfiguration("org.openhab.homekit");
+                if (config == null) {
+                    throw new IllegalStateException("Configuration for 'org.openhab.homekit' not found");
+                }
+                
+                Dictionary<@Nullable String, @Nullable Object> properties = config.getProperties();
+                if (properties == null) {
+                    throw new IllegalStateException("Configuration properties for 'org.openhab.homekit' are null");
+                }
+
+                // Get and validate auto-create accessory configuration
+                Object autoCreateObj = properties.get(CONFIG_AUTO_CREATE_ACCESSORY);
+                if (autoCreateObj instanceof Boolean aBoolean) {
+                    autoCreateAccessoryThing = aBoolean;
+                } else if (autoCreateObj != null) {
+                    throw new IllegalArgumentException(String.format("Invalid value for %s: %s. Expected boolean.",
+                            CONFIG_AUTO_CREATE_ACCESSORY, autoCreateObj));
+                } else {
+                    autoCreateAccessoryThing = DEFAULT_AUTO_CREATE_ACCESSORY;
+                }
+                logger.info("{}Thing auto-creation enabled: {}", LOG_CONFIG, autoCreateAccessoryThing);
+
+                // Get and validate auto-create service configuration
+                Object autoCreateServiceObj = properties.get(CONFIG_AUTO_CREATE_SERVICE);
+                if (autoCreateServiceObj instanceof Boolean aBoolean) {
+                    autoCreateServiceThing = aBoolean;
+                } else if (autoCreateServiceObj != null) {
+                    throw new IllegalArgumentException(String.format("Invalid value for %s: %s. Expected boolean.",
+                            CONFIG_AUTO_CREATE_SERVICE, autoCreateServiceObj));
+                } else {
+                    autoCreateServiceThing = DEFAULT_AUTO_CREATE_SERVICE;
+                }
+                logger.info("{}Service thing auto-creation enabled: {}", LOG_CONFIG, autoCreateServiceThing);
+
+        } catch (IOException e) {
+            logger.error("{}Failed to read HomeKit binding configuration: {}. Using default values", LOG_ERROR, 
+                    e.getMessage(), e);
+            autoCreateAccessoryThing = DEFAULT_AUTO_CREATE_ACCESSORY;
+            autoCreateServiceThing = DEFAULT_AUTO_CREATE_SERVICE;
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            logger.error("{}Configuration error: {}. Using default values", LOG_ERROR, e.getMessage());
+            autoCreateAccessoryThing = DEFAULT_AUTO_CREATE_ACCESSORY;
+            autoCreateServiceThing = DEFAULT_AUTO_CREATE_SERVICE;
+        }
+    }
+
+    /**
+     * Gets the host address for a service based on system configuration.
+     * Prefers IPv4 on macOS and respects IPv6 preference on other systems.
+     * 
+     * @param serviceInfo The service information
+     * @return The host address, or null if no valid address is found
+     */
+    private @Nullable String getHostAddress(ServiceInfo serviceInfo) {
+        if (SystemUtils.IS_OS_MAC) {
+            if (networkAddressService.isUseIPv6()) {
+                logger.warn("{}IPv6 and MDNS may not work well on MacOS", LOG_WARN);
+            }
+            if (serviceInfo.getInet4Addresses().length > 0) {
+                return serviceInfo.getInet4Addresses()[0].getHostAddress();
+            }
+        } else {
+            if (networkAddressService.isUseIPv6()) {
+                if (serviceInfo.getInet6Addresses().length > 0) {
+                    return serviceInfo.getInet6Addresses()[0].getHostAddress();
+                }
+            } else {
+                if (serviceInfo.getInet4Addresses().length > 0) {
+                    return serviceInfo.getInet4Addresses()[0].getHostAddress();
+                }
+            }
+        }
+        return null;
     }
 }

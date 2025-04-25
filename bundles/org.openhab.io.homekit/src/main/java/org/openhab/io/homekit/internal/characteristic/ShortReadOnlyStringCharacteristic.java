@@ -8,6 +8,7 @@ import javax.json.JsonString;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.types.State;
@@ -38,7 +39,7 @@ public abstract class ShortReadOnlyStringCharacteristic extends GenericCharacter
 
     /** {@inheritDoc} */
     @Override
-    public void setValue(String value) throws Exception {
+    public void setValue(@Nullable String value) throws Exception {
         throw new Exception("Can not modify a readonly characteristic");
     }
 
@@ -80,7 +81,7 @@ public abstract class ShortReadOnlyStringCharacteristic extends GenericCharacter
     public String toValue(State state) {
         StringType convertedState = state.as(StringType.class);
         if (convertedState == null) {
-            return null;
+            return getDefault();
         }
         return convertedState.toFullString();
     }
@@ -101,7 +102,7 @@ public abstract class ShortReadOnlyStringCharacteristic extends GenericCharacter
     }
 
     @Override
-    public JsonValue toValueJson(String value) {
+    public JsonValue toValueJson(@Nullable String value) {
         return super.toValueJson(value);
     }
 

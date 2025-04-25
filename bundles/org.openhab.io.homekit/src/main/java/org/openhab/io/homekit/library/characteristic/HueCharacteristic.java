@@ -3,25 +3,27 @@ package org.openhab.io.homekit.library.characteristic;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.HSBType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.FloatCharacteristic;
 
+@NonNullByDefault
 public class HueCharacteristic extends FloatCharacteristic {
 
     private static final String TYPE = "00000013-0000-1000-8000-0026BB765291";
 
     public HueCharacteristic(Service service, long instanceId) {
-        super(service, instanceId, true, true, true, "Adjust hue of the light", 0, 360, 1, "arcdegrees");
+        super(service, instanceId, true, true, true, "Adjust hue of the light", 0, 360, 1, "arcdegrees", TYPE);
     }
 
     public HueCharacteristic(Service service, JsonValue value) {
         super(service, value);
     }
 
-    @Override
     public static String getType() {
         return TYPE;
     }
@@ -39,7 +41,7 @@ public class HueCharacteristic extends FloatCharacteristic {
         } else {
             DecimalType convertedState = state.as(DecimalType.class);
             if (convertedState == null) {
-                return null;
+                return minValue;
             }
             return convertedState.doubleValue();
         }
@@ -75,7 +77,7 @@ public class HueCharacteristic extends FloatCharacteristic {
     }
 
     @Override
-    public JsonValue toValueJson(Double value) {
+    public JsonValue toValueJson(@Nullable Double value) {
         return super.toValueJson(value);
     }
 
