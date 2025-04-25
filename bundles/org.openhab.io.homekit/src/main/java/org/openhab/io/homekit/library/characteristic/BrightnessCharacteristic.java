@@ -3,7 +3,9 @@ package org.openhab.io.homekit.library.characteristic;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.HSBType;
 import org.openhab.core.library.types.PercentType;
@@ -70,7 +72,7 @@ public class BrightnessCharacteristic extends IntegerCharacteristic {
     }
 
     @Override
-    public JsonValue toValueJson(Integer value) {
+    public JsonValue toValueJson(@Nullable Integer value) {
         return super.toValueJson(value);
     }
 

@@ -30,3 +30,7 @@ pom.xml.versionsBackup
 .vim
 shell.nix
 tags
+bundles/org.openhab.io.homekit/.cursor/rules/homekit-characteristic-patterns.mdc
+bundles/org.openhab.io.homekit/.cursor/rules/log-format.mdc
+bundles/org.openhab.io.homekit/.cursor/rules/logging-standards.mdc
+bundles/org.openhab.io.homekit/.cursor/rules/small-edits-rule.mdc

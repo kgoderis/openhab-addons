@@ -4,6 +4,7 @@ import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.ReadOnlyStringCharacteristic;
@@ -56,7 +57,7 @@ public class NameCharacteristic extends ReadOnlyStringCharacteristic {
     }
 
     @Override
-    public JsonValue toValueJson(String value) {
+    public JsonValue toValueJson(@Nullable String value) {
         return super.toValueJson(value);
     }
 

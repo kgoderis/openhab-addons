@@ -5,6 +5,8 @@ import java.math.BigDecimal;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.HSBType;
 import org.openhab.core.library.types.PercentType;
@@ -12,6 +14,7 @@ import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.FloatCharacteristic;
 
+@NonNullByDefault
 public class SaturationCharacteristic extends FloatCharacteristic {
 
     private static final String TYPE = "0000002F-0000-1000-8000-0026BB765291";
@@ -36,7 +39,7 @@ public class SaturationCharacteristic extends FloatCharacteristic {
         } else {
             DecimalType convertedState = state.as(DecimalType.class);
             if (convertedState == null) {
-                return null;
+                return minValue;
             }
             return convertedState.doubleValue();
         }
@@ -58,7 +61,7 @@ public class SaturationCharacteristic extends FloatCharacteristic {
     }
 
     @Override
-    public JsonValue toValueJson(Double value) {
+    public JsonValue toValueJson(@Nullable Double value) {
         return super.toValueJson(value);
     }
 

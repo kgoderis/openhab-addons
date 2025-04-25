@@ -14,7 +14,7 @@ import org.openhab.io.homekit.api.hap.Service;
 @NonNullByDefault
 public abstract class IntegerCharacteristic extends GenericCharacteristic<Integer> {
 
-    private final int minValue;
+    protected final int minValue;
     private final int maxValue;
     private final String unit;
 

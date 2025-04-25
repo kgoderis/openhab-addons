@@ -14,7 +14,7 @@ import org.openhab.io.homekit.api.hap.Service;
 @NonNullByDefault
 public abstract class FloatCharacteristic extends GenericCharacteristic<Double> {
 
-    private final double minValue;
+    protected final double minValue;
     private final double maxValue;
     private final double minStep;
     private final String unit;

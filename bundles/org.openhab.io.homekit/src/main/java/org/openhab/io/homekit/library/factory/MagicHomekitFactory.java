@@ -3,7 +3,7 @@ package org.openhab.io.homekit.library.factory;
 import org.openhab.core.magic.binding.MagicBindingConstants;
 import org.openhab.core.thing.type.ChannelTypeUID;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
-import org.openhab.io.homekit.internal.factory.BaseHomekitFactory;
+import org.openhab.io.homekit.internal.factory.AbstractHomekitFactory;
 import org.openhab.io.homekit.library.characteristic.BrightnessCharacteristic;
 import org.openhab.io.homekit.library.characteristic.CurrentTemperatureCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HueCharacteristic;
@@ -17,9 +17,10 @@ import org.openhab.io.homekit.library.service.LightBulbService;
 import org.openhab.io.homekit.library.service.ThermostatService;
 import org.openhab.io.homekit.library.service.WindowCoveringService;
 import org.osgi.service.component.annotations.Component;
+import org.openhab.io.homekit.exception.RegistrationException;
 
 @Component(immediate = true, service = HomekitFactory.class)
-public class MagicHomekitFactory extends BaseHomekitFactory {
+public class MagicHomekitFactory extends AbstractHomekitFactory {
     @Override
     protected void initializeMappers() {
         this.addService(MagicBindingConstants.THING_TYPE_ON_OFF_LIGHT, LightBulbService.class);

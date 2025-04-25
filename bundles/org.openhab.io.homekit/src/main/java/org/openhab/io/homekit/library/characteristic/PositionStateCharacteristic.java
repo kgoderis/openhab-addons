@@ -4,6 +4,7 @@ import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.EnumCharacteristic;
@@ -39,7 +40,7 @@ public class PositionStateCharacteristic extends EnumCharacteristic {
     }
 
     @Override
-    public JsonValue toValueJson(Integer value) {
+    public JsonValue toValueJson(@Nullable Integer value) {
         return super.toValueJson(value);
     }
 
