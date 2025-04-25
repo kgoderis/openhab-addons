@@ -4,11 +4,13 @@ import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 
+@NonNullByDefault
 public abstract class IntegerCharacteristic extends GenericCharacteristic<Integer> {
 
     private final int minValue;
@@ -16,11 +18,12 @@ public abstract class IntegerCharacteristic extends GenericCharacteristic<Intege
     private final String unit;
 
     public IntegerCharacteristic(Service service, long instanceId, boolean isWritable, boolean isReadable,
-            boolean hasEvents, String description, int minValue, int maxValue, String unit) {
-        super(service, instanceId, "int", isWritable, isReadable, hasEvents, description);
+            boolean hasEvents, String description, int minValue, int maxValue, String unit, String type) {
+        super(service, instanceId, "int", isWritable, isReadable, hasEvents, description, type);
         this.minValue = minValue;
         this.maxValue = maxValue;
         this.unit = unit;
+        initializeValue();
     }
 
     public IntegerCharacteristic(Service service, JsonValue value) {
@@ -29,6 +32,7 @@ public abstract class IntegerCharacteristic extends GenericCharacteristic<Intege
         this.minValue = jsonObject.containsKey("minValue") ? jsonObject.getInt("minValue") : 0;
         this.maxValue = jsonObject.containsKey("maxValue") ? jsonObject.getInt("maxValue") : Integer.MAX_VALUE;
         this.unit = jsonObject.containsKey("unit") ? jsonObject.getString("unit") : "";
+        initializeValue();
     }
 
     @Override

@@ -83,7 +83,7 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
 
     // ========== Lifecycle Methods ==========
     @Override
-    protected void initializeResources() throws Exception {
+    protected void initializeResources() throws HomekitServerException {
         logger.debug("{}Initializing server resources", LOG_INIT);
 
         super.initializeResources();
@@ -208,7 +208,7 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
     }
 
     @Override
-    protected void cleanupResources() throws Exception {
+    protected void cleanupResources() throws HomekitServerException {
         logger.debug("{}Cleaning up server resources", LOG_SERVER);
 
         super.cleanupResources();

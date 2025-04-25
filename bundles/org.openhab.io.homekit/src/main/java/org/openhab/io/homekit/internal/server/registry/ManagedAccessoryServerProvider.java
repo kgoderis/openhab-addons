@@ -1,8 +1,10 @@
 package org.openhab.io.homekit.internal.server.registry;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.AbstractManagedProvider;
 import org.openhab.core.common.registry.ManagedProvider;
 import org.openhab.core.io.transport.mdns.MDNSService;
@@ -15,6 +17,8 @@ import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.provider.AccessoryServerProvider;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
+import org.openhab.io.homekit.exception.AccessoryOperationException;
+import org.openhab.io.homekit.exception.HomekitServerException;
 import org.openhab.io.homekit.internal.accessory.AccessoryUID;
 import org.openhab.io.homekit.internal.server.AccessoryServerUID;
 import org.openhab.io.homekit.internal.server.LocalAccessoryServer;
@@ -35,6 +39,7 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial Contribution
  *
  */
+@NonNullByDefault
 @Component(immediate = true, service = { AccessoryServerProvider.class,
         ManagedAccessoryServerProvider.class }, configurationPid = "org.openhab.homekit")
 public class ManagedAccessoryServerProvider
@@ -44,6 +49,15 @@ public class ManagedAccessoryServerProvider
     private final Logger logger = LoggerFactory.getLogger(ManagedAccessoryServerProvider.class);
 
     private static final String HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER = "homekit.managedAccessoryServerProvider";
+
+    // ========== Log Message Prefixes ==========
+    protected static final String LOG_PREFIX = "HomeKit Provider: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
     private final ReadyService readyService;
     private final AccessoryRegistry accessoryRegistry;
@@ -60,9 +74,9 @@ public class ManagedAccessoryServerProvider
         this.pairingRegistry = pairingRegistry;
         this.mdnsService = mdnsService;
 
-        logger.warn("Marking the Managed Accessory Server Provider as ready");
+        logger.info("{}Marking Managed Accessory Server Provider as ready", LOG_STATE);
         ReadyMarker newMarker = new ReadyMarker(HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER, this.toString());
-        readyService.markReady(newMarker);
+        this.readyService.markReady(newMarker);
     }
 
     @Override
@@ -71,15 +85,14 @@ public class ManagedAccessoryServerProvider
     }
 
     @Override
-    protected @NonNull String keyToString(@NonNull AccessoryServerUID key) {
+    protected String keyToString(AccessoryServerUID key) {
         return key.getAsString();
     }
 
     @Override
-    protected AccessoryServer toElement(@NonNull String key, @NonNull PersistedAccessoryServer persistableElement) {
+    protected AccessoryServer toElement(String key,  PersistedAccessoryServer persistableElement) {
         try {
-
-            AccessoryServer server = null;
+            AccessoryServer server;
             if (persistableElement.getServerType() == PersistedAccessoryServer.ServerType.REMOTE) {
                 server = new RemoteAccessoryServer(persistableElement.getCategory(),
                         persistableElement.getLocalAddress(), persistableElement.getPort(),
@@ -91,39 +104,52 @@ public class ManagedAccessoryServerProvider
                         persistableElement.getPairingIdentifier(), persistableElement.getPrivateKey(), mdnsService,
                         accessoryRegistry, pairingRegistry);
             }
+           
+            logger.debug("{}Created Accessory Server - UID: {}, Setup Code: {}", LOG_ACCESSORY, 
+                server.getUID(), server.getSetupCode());
 
-            if (server != null) {
-                logger.debug("Created an Accessory Server {} with Setup Code {}", server.getUID(),
-                        server.getSetupCode());
-
-                if (accessoryRegistry != null) {
-                    Collection<String> accessoryUIDs = persistableElement.getAccessoryUIDs();
-                    for (String accessoryUID : accessoryUIDs) {
-                        Accessory accessory = accessoryRegistry.get(new AccessoryUID(accessoryUID));
-                        if (accessory != null) {
+            if (accessoryRegistry != null) {
+                Collection<String> accessoryUIDs = persistableElement.getAccessoryUIDs();
+                for (String accessoryUID : accessoryUIDs) {
+                    Accessory accessory = accessoryRegistry.get(new AccessoryUID(accessoryUID));
+                    if (accessory != null) {
+                        try {
                             server.addAccessory(accessory);
+                        } catch (AccessoryOperationException e) {
+                            logger.error("{}Failed to add accessory {}: {}", LOG_ERROR, accessoryUID, e.getMessage(), e);
                         }
                     }
                 }
-
-                return server;
-            } else {
-                logger.warn("Unable to create an Accessory Server");
-                return null;
             }
-        } catch (Exception e) {
-            logger.warn("Error creating Accessory Server", e);
+
+            return server;
+
+        } catch (HomekitServerException e) {
+            logger.error("{}Error creating Accessory Server: {}", LOG_ERROR, e.getMessage(), e);
             return null;
         }
     }
 
     @Override
-    protected @NonNull PersistedAccessoryServer toPersistableElement(@NonNull AccessoryServer element) {
+    protected @NonNull PersistedAccessoryServer toPersistableElement(AccessoryServer element) {
         PersistedAccessoryServer.ServerType serverType = element instanceof LocalAccessoryServer
                 ? PersistedAccessoryServer.ServerType.LOCAL
                 : PersistedAccessoryServer.ServerType.REMOTE;
-        return new PersistedAccessoryServer(element.getAddress(), element.getPort(), element.getPairingId(),
-                element.getSecretKey(), element.getConfigurationIndex(), element.getAccessories(),
-                AccessoryCategory.BRIDGES, serverType);
+ 
+            // get the accessories or an empty list
+            Collection<Accessory> accessories = new ArrayList<>();
+            try {
+                Collection<Accessory> serverAccessories = element.getAccessories();
+                if (serverAccessories != null) {
+                    accessories = serverAccessories;
+                }
+            } catch (AccessoryOperationException e) {
+                logger.error("{}Error getting accessories: {}", LOG_ERROR, e.getMessage(), e);
+            }
+
+            return new PersistedAccessoryServer(element.getAddress(), element.getPort(), element.getPairingId(),
+                    element.getSecretKey(), element.getConfigurationIndex(), accessories,
+                    AccessoryCategory.BRIDGES, serverType);
+ 
     }
 }

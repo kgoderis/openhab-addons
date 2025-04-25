@@ -24,6 +24,7 @@ import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.api.listener.CharacteristicChangeListener;
 import org.openhab.io.homekit.api.listener.ServiceChangeListener;
+import org.openhab.io.homekit.exception.MetadataException;
 import org.openhab.io.homekit.internal.characteristic.GenericCharacteristic;
 import org.openhab.io.homekit.internal.events.CharacteristicEvent;
 import org.openhab.io.homekit.internal.events.ServiceEvent;
@@ -102,10 +103,15 @@ public class GenericService implements Service {
             for (Object factory : factories) {
                 if (factory instanceof HomekitFactory homekitFactory) {
                     String characteristicType = ((JsonObject) value).getString("type");
-                    if (homekitFactory.isCharacteristicSupported(characteristicType)) {
-                        Characteristic<?> characteristic = homekitFactory.createCharacteristic(this, value);
-                        if (characteristic != null) {
-                            return characteristic;
+                    if (homekitFactory.supportsCharacteristicsType(characteristicType)) {
+                        try {
+                            Characteristic<?> characteristic = homekitFactory.createCharacteristic(this, value);
+                            if (characteristic != null) {
+                                return characteristic;
+                            }
+                        } catch (MetadataException e) {
+                            logger.error("Error creating characteristic: {}", e.getMessage());
+                            return null;
                         }
                     }
                 }

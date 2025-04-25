@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.http.HttpHeader;
 import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
+import org.openhab.io.homekit.exception.AccessoryOperationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,8 +35,14 @@ public class AccessoryServlet extends BaseServlet {
 
         JsonArrayBuilder accessories = Json.createArrayBuilder();
 
-        for (Accessory accessory : server.getAccessories()) {
-            accessories.add(accessory.toReducedJson());
+        try {
+            for (Accessory accessory : server.getAccessories()) {
+                accessories.add(accessory.toReducedJson());
+            }
+        } catch (AccessoryOperationException e) {
+            logger.error("Error accessing accessories: {}", e.getMessage());
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
         }
 
         JsonObjectBuilder builder = Json.createObjectBuilder().add("accessories", accessories);

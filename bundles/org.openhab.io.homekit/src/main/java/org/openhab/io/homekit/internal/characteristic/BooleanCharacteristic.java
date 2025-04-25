@@ -8,6 +8,7 @@ import javax.json.JsonObject;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.types.State;
@@ -17,15 +18,18 @@ import org.openhab.io.homekit.api.hap.Service;
  * @author Karel Goderis - Initial Contribution
  *
  */
+@NonNullByDefault
 public abstract class BooleanCharacteristic extends GenericCharacteristic<Boolean> {
 
     public BooleanCharacteristic(Service service, long instanceId, boolean isWritable, boolean isReadable,
-            boolean hasEvents, String description) {
-        super(service, instanceId, "bool", isWritable, isReadable, hasEvents, description);
+            boolean hasEvents, String description, String type) {
+        super(service, instanceId, "bool", isWritable, isReadable, hasEvents, description, type);
+        initializeValue();
     }
 
     public BooleanCharacteristic(Service service, JsonValue value) {
         super(service, value);
+        initializeValue();
     }
 
     @Override

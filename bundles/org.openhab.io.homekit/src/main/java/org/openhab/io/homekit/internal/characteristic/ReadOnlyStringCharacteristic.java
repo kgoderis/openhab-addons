@@ -7,6 +7,7 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.types.State;
@@ -16,16 +17,19 @@ import org.openhab.io.homekit.api.hap.Service;
  * @author Karel Goderis - Initial Contribution
  *
  */
+@NonNullByDefault
 public abstract class ReadOnlyStringCharacteristic extends GenericCharacteristic<String> {
 
     private static final int MAX_LEN = 255;
 
-    public ReadOnlyStringCharacteristic(Service service, long instanceId, String description) {
-        super(service, instanceId, "string", false, true, false, description);
+    public ReadOnlyStringCharacteristic(Service service, long instanceId, String description, String type) {
+        super(service, instanceId, "string", false, true, false, description, type);
+        initializeValue();
     }
 
     public ReadOnlyStringCharacteristic(Service service, JsonValue value) {
         super(service, value);
+        initializeValue();
     }
 
     @Override

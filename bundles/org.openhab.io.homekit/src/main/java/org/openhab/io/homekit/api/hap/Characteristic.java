@@ -3,7 +3,7 @@ package org.openhab.io.homekit.api.hap;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.Identifiable;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.listener.CharacteristicChangeListener;
@@ -18,7 +18,8 @@ import org.openhab.io.homekit.internal.characteristic.CharacteristicUID;
  *
  * @author Andy Lintner
  */
-public interface Characteristic<T> extends Identifiable<@NonNull CharacteristicUID>, Comparable<Characteristic<?>> {
+@NonNullByDefault
+public interface Characteristic<T> extends Identifiable<CharacteristicUID>, Comparable<Characteristic<?>> {
 
     /**
      * Characteristic Instance IDs are assigned from the same number pool that is unique within each

@@ -4,11 +4,13 @@ import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 
+@NonNullByDefault
 public abstract class ByteCharacteristic extends GenericCharacteristic<Byte> {
 
     private final byte minValue;
@@ -16,11 +18,12 @@ public abstract class ByteCharacteristic extends GenericCharacteristic<Byte> {
     private final String unit;
 
     public ByteCharacteristic(Service service, long instanceId, boolean isWritable, boolean isReadable,
-            boolean hasEvents, String description, byte minValue, byte maxValue) {
-        super(service, instanceId, "uint8", isWritable, isReadable, hasEvents, description);
+            boolean hasEvents, String description, byte minValue, byte maxValue, String type) {
+        super(service, instanceId, "uint8", isWritable, isReadable, hasEvents, description, type);
         this.minValue = minValue;
         this.maxValue = maxValue;
         this.unit = "";
+        initializeValue();
     }
 
     public ByteCharacteristic(Service service, JsonValue value) {
@@ -29,6 +32,7 @@ public abstract class ByteCharacteristic extends GenericCharacteristic<Byte> {
         this.minValue = jsonObject.containsKey("minValue") ? (byte) jsonObject.getInt("minValue") : 0;
         this.maxValue = jsonObject.containsKey("maxValue") ? (byte) jsonObject.getInt("maxValue") : Byte.MAX_VALUE;
         this.unit = jsonObject.containsKey("unit") ? jsonObject.getString("unit") : "";
+        initializeValue();
     }
 
     @Override

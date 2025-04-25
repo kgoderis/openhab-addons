@@ -4,6 +4,7 @@ import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
@@ -14,7 +15,7 @@ import org.openhab.io.homekit.api.hap.Service;
  * Homekit protocol, and classes extending this one must handle the static mapping to an Integer
  * value.
  **/
-public abstract class EnumCharacteristic extends GenericCharacteristic<Integer> {
+public abstract class EnumCharacteristic extends GenericCharacteristic<@NonNull Integer> {
 
     private final int maxValue;
 
@@ -22,12 +23,14 @@ public abstract class EnumCharacteristic extends GenericCharacteristic<Integer> 
             boolean hasEvents, String description, int maxValue) {
         super(service, instanceId, "int", isWritable, isReadable, hasEvents, description);
         this.maxValue = maxValue;
+        initializeValue();
     }
 
     public EnumCharacteristic(Service service, JsonValue value) {
         super(service, value);
         JsonObject jsonObject = (JsonObject) value;
         this.maxValue = jsonObject.containsKey("maxValue") ? jsonObject.getInt("maxValue") : 1;
+        initializeValue();
     }
 
     @Override
@@ -62,8 +65,8 @@ public abstract class EnumCharacteristic extends GenericCharacteristic<Integer> 
 
     @Override
     public Integer toValue(JsonValue value) {
-        if (value instanceof JsonNumber) {
-            return ((JsonNumber) value).intValue();
+        if (value instanceof JsonNumber jsonNumber) {
+            return jsonNumber.intValue();
         } else if (value == JsonValue.TRUE) {
             return 1; // For at least one enum type (locks), homekit will send a true instead of 1
         } else if (value == JsonValue.FALSE) {

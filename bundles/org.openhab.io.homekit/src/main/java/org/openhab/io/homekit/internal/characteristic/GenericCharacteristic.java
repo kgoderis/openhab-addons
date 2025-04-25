@@ -15,6 +15,8 @@ import javax.json.JsonString;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Service;
@@ -24,9 +26,18 @@ import org.openhab.io.homekit.internal.events.CharacteristicEvent.Characteristic
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class GenericCharacteristic<T> implements Characteristic<T> {
+@NonNullByDefault
+public abstract class GenericCharacteristic<@NonNull T> implements Characteristic<@NonNull T> {
 
     private static final Logger logger = LoggerFactory.getLogger(GenericCharacteristic.class);
+
+    protected static final String LOG_PREFIX = "HomeKit Characteristic: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    protected static final String LOG_CHARACTERISTIC = LOG_PREFIX + "Characteristic - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
     // Instance fields - final
     private final Service service;
@@ -41,12 +52,13 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     private boolean isHidden = false;
     private boolean hasEvents = false;
     private String type;
-    protected T value;
+    protected @Nullable T value = null;
+    protected @Nullable JsonValue initialValue = null;
 
     // Constructors
     public GenericCharacteristic(Service service, JsonValue value) {
         this.service = service;
-        this.value = toValue(value);
+        this.initialValue = value;
         this.instanceId = ((JsonObject) value).getInt("iid");
         this.type = ((JsonObject) value).getString("type");
         this.format = ((JsonObject) value).getString("format");
@@ -62,15 +74,9 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
             for (JsonValue perm : perms) {
                 String permString = ((JsonString) perm).getString();
                 switch (permString) {
-                    case "pw":
-                        this.isWritable = true;
-                        break;
-                    case "pr":
-                        this.isReadable = true;
-                        break;
-                    case "ev":
-                        this.hasEvents = true;
-                        break;
+                    case "pw" -> this.isWritable = true;
+                    case "pr" -> this.isReadable = true;
+                    case "ev" -> this.hasEvents = true;
                 }
             }
         }
@@ -78,13 +84,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
         if (((JsonObject) value).containsKey("ev")) {
             this.hasEvents = ((JsonObject) value).getBoolean("ev");
         }
-
-        if (((JsonObject) value).containsKey("value")) {
-            this.value = toValue(((JsonObject) value).get("value"));
-        }
     }
-
-    // TODO add constructor that takes servce, instanceid and value
 
     public GenericCharacteristic(Service service, long instanceId, String format, boolean isWritable,
             boolean isReadable, boolean hasEvents, String description) {
@@ -95,7 +95,20 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
         this.isReadable = isReadable;
         this.hasEvents = hasEvents;
         this.description = description;
-        this.value = getDefault();
+        this.type = format;
+    }
+
+    /**
+     * Initializes the value after construction. This must be called by subclasses
+     * after calling super() in their constructors.
+     */
+    public void initializeValue() {
+        if (initialValue != null) {
+            this.value = toValue(initialValue);
+            initialValue = null;
+        } else {
+            this.value = getDefault();
+        }
     }
 
     // Interface implementation methods
@@ -175,10 +188,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
         builder.add("description", description);
         builder.add("ev", hasEvents);
         JsonObject baseJson = builder.build();
-        if (getValue() != null) {
-            return enrich(baseJson, "value", getValue());
-        }
-        return baseJson;
+        return getValue() != null ? enrich(baseJson, "value", getValue()) : baseJson;
     }
 
     @Override
@@ -191,10 +201,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
         builder.add("description", description);
         builder.add("ev", hasEvents);
         JsonObject baseJson = builder.build();
-        if (getValue() != null) {
-            return enrich(baseJson, "value", getValue());
-        }
-        return baseJson;
+        return getValue() != null ? enrich(baseJson, "value", getValue()) : baseJson;
     }
 
     @Override
@@ -203,10 +210,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
         builder.add("iid", instanceId);
         builder.add("aid", service.getAccessory().getAccessoryId());
         JsonObject baseJson = builder.build();
-        if (getValue() != null) {
-            return enrich(baseJson, "value", getValue());
-        }
-        return baseJson;
+        return getValue() != null ? enrich(baseJson, "value", getValue()) : baseJson;
     }
 
     @Override
@@ -215,36 +219,30 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
         builder.add("iid", instanceId);
         builder.add("aid", service.getAccessory().getAccessoryId());
         JsonObject baseJson = builder.build();
-        if (value != null) {
-            return enrich(baseJson, "value", value);
-        }
-        return baseJson;
+        return value != null ? enrich(baseJson, "value", value) : baseJson;
     }
 
     @Override
-    public JsonValue toValueJson(T value) {
+    public JsonValue toValueJson(@Nullable T value) {
         JsonObjectBuilder builder = Json.createObjectBuilder();
         JsonObject baseJson = builder.build();
-        if (value != null) {
-            return enrich(baseJson, "value", getValue());
-        }
-        return baseJson;
+        return value != null ? enrich(baseJson, "value", value) : baseJson;
     }
 
     // Public methods
     @Override
     public T getValue() {
-        if (value != null) {
-            return value;
-        } else {
-            return getDefault();
+        if (value == null && initialValue != null) {
+            value = toValue(initialValue);
+            initialValue = null;
         }
+        return value != null ? value : getDefault();
     }
 
     @Override
-    public void setValue(T value) throws Exception {
+    public void setValue(@Nullable T value) throws Exception {
         if (isWritable) {
-            T oldValue = this.value;
+            @Nullable T oldValue = this.value;
             this.value = value;
             if (!Objects.equals(oldValue, value)) {
                 notifyValueChanged(oldValue, value);
@@ -276,15 +274,15 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     @Override
     public void removeChangeListener(CharacteristicChangeListener listener) {
         listeners.remove(listener);
-        if (listeners.size() == 0) {
+        if (listeners.isEmpty()) {
             notifyListeners(new CharacteristicEvent(this, CharacteristicEventType.CHARACTERISTIC_STOP_EVENTS));
         }
     }
 
     // Protected methods
-    protected void notifyValueChanged(T oldValue, T newValue) {
+    protected void notifyValueChanged(@Nullable T oldValue, @Nullable T newValue) {
         for (CharacteristicChangeListener listener : listeners) {
-            listener.onCharacteristicEvent(new CharacteristicEvent(this, toValueJson(oldValue), toValueJson(value)));
+            listener.onCharacteristicEvent(new CharacteristicEvent(this, toValueJson(oldValue), toValueJson(getValue())));
         }
     }
 
@@ -302,27 +300,27 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     }
 
     protected void addValue(JsonObjectBuilder builder, String name, Object value) {
-        if (value instanceof Boolean) {
-            builder.add(name, (Boolean) value);
-        } else if (value instanceof Double) {
-            builder.add(name, (Double) value);
-        } else if (value instanceof Integer) {
-            builder.add(name, (Integer) value);
-        } else if (value instanceof Long) {
-            builder.add(name, (Long) value);
-        } else if (value instanceof BigInteger) {
-            builder.add(name, (BigInteger) value);
-        } else if (value instanceof BigDecimal) {
-            builder.add(name, (BigDecimal) value);
-        } else if (value instanceof JsonValue) {
-            builder.add(name, (JsonValue) value);
-        } else if (value instanceof JsonObjectBuilder) {
-            builder.add(name, (JsonObjectBuilder) value);
-        } else if (value instanceof JsonArrayBuilder) {
-            builder.add(name, (JsonArrayBuilder) value);
-        } else if (value == null) {
-            // builder.addNull(name);
-        } else {
+        if (value instanceof Boolean aBoolean) {
+            builder.add(name, aBoolean);
+        } else if (value instanceof Double aDouble) {
+            builder.add(name, aDouble);
+        } else if (value instanceof Integer anInteger) {
+            builder.add(name, anInteger);
+        } else if (value instanceof Long aLong) {
+            builder.add(name, aLong);
+        } else if (value instanceof BigInteger aBigInteger) {
+            builder.add(name, aBigInteger);
+        } else if (value instanceof BigDecimal aBigDecimal) {
+            builder.add(name, aBigDecimal);
+        } else if (value instanceof JsonValue aJsonValue) {
+            builder.add(name, aJsonValue);
+        } else if (value instanceof JsonObjectBuilder aJsonObjectBuilder) {
+            builder.add(name, aJsonObjectBuilder);
+        } else if (value instanceof JsonArrayBuilder aJsonArrayBuilder) {
+            builder.add(name, aJsonArrayBuilder);
+        } else if (value instanceof JsonObject aJsonObject) {
+            builder.add(name, aJsonObject);
+        } else if (value != null) {
             builder.add(name, value.toString());
         }
     }
@@ -344,7 +342,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
 
     // Object methods
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         if (this == o)
             return true;
         if (o == null || getClass() != o.getClass())
@@ -364,7 +362,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     }
 
     @Override
-    public int compareTo(Characteristic<?> other) {
+    public int compareTo(@Nullable Characteristic<?> other) {
         if (other == null)
             return 1;
         if (this == other)
@@ -414,6 +412,7 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     @Override
     public abstract State toState(T value);
 
+    @Override
     public State toState(JsonValue jsonValue) {
         return toState(toValue(jsonValue));
     }
@@ -427,7 +426,8 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public void updateWith(Characteristic<?> other) {
+    @Override
+    public void updateWith(@Nullable Characteristic<?> other) {
         if (other == null)
             return;
         if (other instanceof GenericCharacteristic<?> otherGeneric) {
@@ -442,25 +442,24 @@ public abstract class GenericCharacteristic<T> implements Characteristic<T> {
                 try {
                     setValue((T) otherGeneric.getValue());
                 } catch (Exception e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    logger.error("{}Error updating characteristic value: {}", LOG_ERROR, e.getMessage(), e);
                 }
             }
         }
     }
 
-    @Override
-    public boolean isWritable() {
-        return isWritable;
-    }
+    // @Override
+    // public boolean isWritable() {
+    //     return isWritable;
+    // }
 
-    @Override
-    public boolean isReadable() {
-        return isReadable;
-    }
+    // @Override
+    // public boolean isReadable() {
+    //     return isReadable;
+    // }
 
-    @Override
-    public boolean hasEvents() {
-        return hasEvents;
-    }
+    // @Override
+    // public boolean hasEvents() {
+    //     return hasEvents;
+    // }
 }

@@ -23,6 +23,7 @@ public abstract class FloatCharacteristic extends GenericCharacteristic<Double> 
         this.maxValue = maxValue;
         this.minStep = minStep;
         this.unit = unit;
+        initializeValue();
     }
 
     public FloatCharacteristic(Service service, JsonValue value) {
@@ -32,6 +33,7 @@ public abstract class FloatCharacteristic extends GenericCharacteristic<Double> 
         this.maxValue = jsonObject.containsKey("maxValue") ? jsonObject.getJsonNumber("maxValue").doubleValue() : 100;
         this.minStep = jsonObject.containsKey("minStep") ? jsonObject.getJsonNumber("minStep").doubleValue() : 1;
         this.unit = jsonObject.containsKey("unit") ? jsonObject.getString("unit") : "";
+        initializeValue();
     }
 
     @Override

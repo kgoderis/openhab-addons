@@ -22,9 +22,9 @@ import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.api.listener.AccessoryChangeListener;
-import org.openhab.io.homekit.api.listener.ServiceChangeListener;
+import org.openhab.io.homekit.exception.AccessoryOperationException;
+import org.openhab.io.homekit.exception.MetadataException;
 import org.openhab.io.homekit.internal.events.AccessoryEvent;
-import org.openhab.io.homekit.internal.events.ServiceEvent;
 import org.openhab.io.homekit.internal.service.GenericService;
 import org.openhab.io.homekit.library.service.AccessoryInformationService;
 import org.osgi.framework.BundleContext;
@@ -36,7 +36,15 @@ import org.slf4j.LoggerFactory;
 public class GenericAccessory implements Accessory {
 
     private static final Logger logger = LoggerFactory.getLogger(GenericAccessory.class);
-    private static ServiceTracker<org.openhab.io.homekit.api.factory.HomekitFactory, org.openhab.io.homekit.api.factory.HomekitFactory> homekitFactoryTracker;
+    private static ServiceTracker<@NonNull HomekitFactory, @NonNull HomekitFactory> homekitFactoryTracker;
+
+    protected static final String LOG_PREFIX = "HomeKit Accessory: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
     private final long instanceId = 0;
     private long accessoryId = 0;
@@ -45,8 +53,8 @@ public class GenericAccessory implements Accessory {
     private long nextInstanceId = 1;
     // private final AccessoryServer server;
     private final Collection<AccessoryChangeListener> listeners = new CopyOnWriteArraySet<>();
-    private Collection<Service> services = new HashSet<Service>();
-    private @NonNull AccessoryUID accessoryUID;
+    private Collection<Service> services = new HashSet<>();
+    private AccessoryUID accessoryUID;
 
     /**
      * Creates a new GenericAccessory with a unique instance ID.
@@ -56,14 +64,22 @@ public class GenericAccessory implements Accessory {
      */
     public GenericAccessory(AccessoryServer server) {
         // this.server = server;
-        this.accessoryId = server.getNextAvailableAccessoryId();
-        logger.debug("Created new accessory with instance ID: {}", instanceId);
+        try {
+            this.accessoryId = server.getNextAvailableAccessoryId();
+        } catch (AccessoryOperationException e) {
+            logger.error("{}Error getting next available accessory ID: {}", LOG_ERROR, e.getMessage(), e);
+            this.accessoryId = 0;
+        }
+        logger.debug("{}Created new accessory with instance ID: {}", LOG_INIT, instanceId);
 
+        this.accessoryUID = new AccessoryUID(server.getUID().getPairingId(), this.accessoryId);
+        initializeServices();
+    }
+
+    private void initializeServices() {
         if (isExtensible()) {
             addServices();
         }
-
-        this.accessoryUID = new AccessoryUID(server.getUID().getPairingId(), getAccessoryId());
     }
 
     /**
@@ -76,8 +92,12 @@ public class GenericAccessory implements Accessory {
     public GenericAccessory(JsonValue value) {
         // this.server = server;
         this.accessoryId = ((JsonObject) value).getInt("aid");
-        logger.debug("Created accessory from JSON with accessory ID: {}", accessoryId);
+        logger.debug("{}Created accessory from JSON with accessory ID: {}", LOG_INIT, accessoryId);
 
+        initializeServices(value);
+    }
+
+    private void initializeServices(JsonValue value) {
         JsonArray servicesArray = ((JsonObject) value).getJsonArray("services");
         for (JsonValue serviceValue : servicesArray) {
             Service service = createService(serviceValue);
@@ -100,15 +120,19 @@ public class GenericAccessory implements Accessory {
                 if (factory instanceof HomekitFactory homekitFactory) {
                     String serviceType = ((JsonObject) value).getString("type");
                     if (homekitFactory.supportsServiceType(serviceType)) {
-                        Service service = homekitFactory.createService(this, value);
-                        if (service != null) {
-                            return service;
+                        try {
+                            Service service = homekitFactory.createService(this, value);
+                            if (service != null) {
+                                return service;
+                            }
+                        } catch (MetadataException e) {
+                            logger.error("{}Error creating service: {}", LOG_ERROR, e.getMessage(), e);
                         }
                     }
                 }
             }
         }
-        logger.warn("No HomekitFactory found to create service from JSON value");
+        logger.warn("{}No HomekitFactory found to create service from JSON value", LOG_WARN);
         return null;
     }
 
@@ -117,22 +141,17 @@ public class GenericAccessory implements Accessory {
         if (service != null && isExtensible()) {
             if (getService(service.getInstanceType()) == null) {
                 services.add(service);
-                logger.debug("Added Service '{}' (Type: {}) to Accessory '{}' (Type: {})", service.getName(),
-                        service.getInstanceType(), this.getLabel(), this.getClass().getSimpleName());
+                logger.debug("{}Added Service '{}' (Type: {}) to Accessory '{}' (Type: {})", LOG_ACCESSORY, 
+                    service.getName(), service.getInstanceType(), this.getLabel(), this.getClass().getSimpleName());
                 notifyServiceAdded(service);
 
                 // Listen for service changes
-                if (service instanceof GenericService) {
-                    ((GenericService) service).addChangeListener(new ServiceChangeListener() {
-                        @Override
-                        public void onServiceEvent(ServiceEvent event) {
-                            notifyServiceStateChanged(service);
-                        }
-                    });
+                if (service instanceof GenericService genericService) {
+                    genericService.addChangeListener(event -> notifyServiceStateChanged(service));
                 }
             } else {
-                logger.debug("Accessory '{}' (Type: {}) already contains Service '{}' (Type: {})", this.getLabel(),
-                        this.getClass().getSimpleName(), service.getName(), service.getInstanceType());
+                logger.debug("{}Accessory '{}' (Type: {}) already contains Service '{}' (Type: {})", LOG_ACCESSORY, 
+                    this.getLabel(), this.getClass().getSimpleName(), service.getName(), service.getInstanceType());
             }
         }
     }
@@ -144,13 +163,14 @@ public class GenericAccessory implements Accessory {
      *
      * @return The next available instance ID
      */
+    @Override
     public long getNextAvailableInstanceId() {
         synchronized (instanceIdLock) {
             // First try to find a recycled ID
             for (long id = 1; id < nextInstanceId; id++) {
                 if (!usedInstanceIds.contains(id)) {
                     usedInstanceIds.add(id);
-                    logger.debug("Recycled instance ID: {} for accessory: {}", id, instanceId);
+                    logger.debug("{}Recycled instance ID: {} for accessory: {}", LOG_STATE, id, instanceId);
                     return id;
                 }
             }
@@ -158,7 +178,7 @@ public class GenericAccessory implements Accessory {
             // If no recycled IDs available, use the next new ID
             long newId = nextInstanceId++;
             usedInstanceIds.add(newId);
-            logger.debug("Assigned new instance ID: {} for accessory: {}", newId, instanceId);
+            logger.debug("{}Assigned new instance ID: {} for accessory: {}", LOG_STATE, newId, instanceId);
             return newId;
         }
     }
@@ -173,9 +193,9 @@ public class GenericAccessory implements Accessory {
     public void releaseInstanceId(long id) {
         synchronized (instanceIdLock) {
             if (usedInstanceIds.remove(id)) {
-                logger.debug("Released instance ID: {} from accessory: {}", id, instanceId);
+                logger.debug("{}Released instance ID: {} from accessory: {}", LOG_STATE, id, instanceId);
             } else {
-                logger.warn("Attempted to release unused instance ID: {} from accessory: {}", id, instanceId);
+                logger.warn("{}Attempted to release unused instance ID: {} from accessory: {}", LOG_WARN, id, instanceId);
             }
         }
     }
@@ -201,7 +221,7 @@ public class GenericAccessory implements Accessory {
         releaseInstanceId(instanceId);
         services.clear();
         listeners.clear();
-        logger.debug("Cleaned up accessory with instance ID: {}", instanceId);
+        logger.debug("{}Cleaned up accessory with instance ID: {}", LOG_STATE, instanceId);
     }
 
     /**
@@ -258,7 +278,7 @@ public class GenericAccessory implements Accessory {
     }
 
     @Override
-    public Service getService(String serviceType) {
+    public Service getService(@NonNull String serviceType) {
         return services.stream().filter(s -> s.isType(serviceType) == true).findAny().orElse(null);
     }
 
@@ -283,22 +303,22 @@ public class GenericAccessory implements Accessory {
     }
 
     protected void notifyServiceAdded(Service service) {
-        logger.debug("Notifying listeners of Service '{}' (Type: {}) addition to Accessory '{}'", service.getName(),
-                service.getInstanceType(), this.getLabel());
+        logger.debug("{}Notifying listeners of Service '{}' (Type: {}) addition to Accessory '{}'", LOG_ACCESSORY, 
+            service.getName(), service.getInstanceType(), this.getLabel());
         AccessoryEvent event = new AccessoryEvent(this, service, AccessoryEvent.AccessoryEventType.SERVICE_ADDED);
         notifyListeners(event);
     }
 
     protected void notifyServiceRemoved(Service service) {
-        logger.debug("Notifying listeners of Service '{}' (Type: {}) removal from Accessory '{}'", service.getName(),
-                service.getInstanceType(), this.getLabel());
+        logger.debug("{}Notifying listeners of Service '{}' (Type: {}) removal from Accessory '{}'", LOG_ACCESSORY, 
+            service.getName(), service.getInstanceType(), this.getLabel());
         AccessoryEvent event = new AccessoryEvent(this, service, AccessoryEvent.AccessoryEventType.SERVICE_REMOVED);
         notifyListeners(event);
     }
 
     protected void notifyServiceStateChanged(Service service) {
-        logger.debug("Notifying listeners of Service '{}' (Type: {}) state change in Accessory '{}'", service.getName(),
-                service.getInstanceType(), this.getLabel());
+        logger.debug("{}Notifying listeners of Service '{}' (Type: {}) state change in Accessory '{}'", LOG_ACCESSORY, 
+            service.getName(), service.getInstanceType(), this.getLabel());
         AccessoryEvent event = new AccessoryEvent(this, service,
                 AccessoryEvent.AccessoryEventType.SERVICE_STATE_CHANGED);
         notifyListeners(event);
@@ -317,13 +337,13 @@ public class GenericAccessory implements Accessory {
     @Override
     @NonNull
     public JsonObject toJson() {
-        JsonArrayBuilder services = Json.createArrayBuilder();
+        JsonArrayBuilder jsonServices = Json.createArrayBuilder();
 
         for (Service service : getServices()) {
-            services.add(service.toJson());
+            jsonServices.add(service.toJson());
         }
 
-        JsonObjectBuilder builder = Json.createObjectBuilder().add("aid", accessoryId).add("services", services);
+        JsonObjectBuilder builder = Json.createObjectBuilder().add("aid", accessoryId).add("services", jsonServices);
 
         return builder.build();
     }
@@ -331,20 +351,20 @@ public class GenericAccessory implements Accessory {
     @Override
     @NonNull
     public JsonObject toReducedJson() {
-        JsonArrayBuilder services = Json.createArrayBuilder();
+        JsonArrayBuilder jsonServices = Json.createArrayBuilder();
 
         for (Service service : getServices()) {
-            services.add(service.toReducedJson());
+            jsonServices.add(service.toReducedJson());
         }
 
-        JsonObjectBuilder builder = Json.createObjectBuilder().add("aid", accessoryId).add("services", services);
+        JsonObjectBuilder builder = Json.createObjectBuilder().add("aid", accessoryId).add("services", jsonServices);
 
         return builder.build();
     }
 
     @Override
     public void identify() {
-        // TODO No Op?
+        // No op for virtual accessories
     }
 
     @Override
@@ -423,8 +443,8 @@ public class GenericAccessory implements Accessory {
     @Override
     public void removeService(@NonNull Service service) {
         if (services.remove(service)) {
-            logger.debug("Removed Service '{}' (Type: {}) from Accessory '{}' (Type: {})", service.getName(),
-                    service.getInstanceType(), this.getLabel(), this.getClass().getSimpleName());
+            logger.debug("{}Removed Service '{}' (Type: {}) from Accessory '{}' (Type: {})", LOG_ACCESSORY, 
+                service.getName(), service.getInstanceType(), this.getLabel(), this.getClass().getSimpleName());
             notifyServiceRemoved(service);
         }
     }

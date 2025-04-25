@@ -42,10 +42,19 @@ import org.slf4j.LoggerFactory;
 public class AccessoryRegistryImpl extends AbstractRegistry<Accessory, AccessoryUID, AccessoryProvider>
         implements AccessoryRegistry, ReadyService.ReadyTracker {
 
-    private final Logger logger = LoggerFactory.getLogger(AccessoryRegistry.class);
+    private final Logger logger = LoggerFactory.getLogger(AccessoryRegistryImpl.class);
 
     private static final String HOMEKIT_MANAGED_ACCESSORY_PROVIDER = "homekit.managedAccessoryProvider";
     private static final String HOMEKIT_ACCESSORY_REGISTRY = "homekit.accessoryRegistry";
+
+    // ========== Log Message Prefixes ==========
+    protected static final String LOG_PREFIX = "HomeKit Registry: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
     private final ReadyService readyService;
 
@@ -56,10 +65,12 @@ public class AccessoryRegistryImpl extends AbstractRegistry<Accessory, Accessory
     }
 
     @Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC)
+    @Override
     protected void setManagedProvider(ManagedProvider<Accessory, AccessoryUID> provider) {
         super.setManagedProvider(provider);
     }
 
+    @Override
     protected void unsetManagedProvider(ManagedProvider<Accessory, AccessoryUID> provider) {
         super.unsetManagedProvider(provider);
     }
@@ -68,7 +79,7 @@ public class AccessoryRegistryImpl extends AbstractRegistry<Accessory, Accessory
     @Activate
     protected void activate(final BundleContext context) {
         super.activate(context);
-
+        logger.debug("{}Activating Accessory Registry", LOG_INIT);
         readyService.registerTracker(this, new ReadyMarkerFilter().withType(HOMEKIT_MANAGED_ACCESSORY_PROVIDER));
     }
 
@@ -76,40 +87,13 @@ public class AccessoryRegistryImpl extends AbstractRegistry<Accessory, Accessory
     @Deactivate
     protected void deactivate() {
         super.deactivate();
-
+        logger.debug("{}Deactivating Accessory Registry", LOG_INIT);
         readyService.unregisterTracker(this);
     }
 
-    // @Override
-    // public Collection<Accessory> get(String serverId) {
-    // return getAll().stream().filter(a -> a.getServer().getUID().equals(serverId)).collect(Collectors.toList());
-    // }
-
-    // @Override
-    // public void added(Provider<Accessory> provider, Accessory element) {
-    // super.added(provider, element);
-    // ((AccessoryServer) element.getServer()).advertise();
-
-    // }
-
-    // @Override
-    // public void removed(Provider<Accessory> provider, Accessory element) {
-    // super.removed(provider, element);
-    // ((AccessoryServer) element.getServer()).advertise();
-
-    // }
-
-    // @Override
-    // public void updated(Provider<Accessory> provider, Accessory oldElement, Accessory element) {
-    // super.updated(provider, oldElement, element);
-    // // ((AccessoryServer) element.getServer()).advertise();
-
-    // }
-
     @Override
     public void onReadyMarkerAdded(ReadyMarker readyMarker) {
-
-        logger.debug("Receiving the ready marker {}:{}", readyMarker.getType(), readyMarker.getIdentifier());
+        logger.debug("{}Ready marker added - Type: {}, Identifier: {}", LOG_STATE, readyMarker.getType(), readyMarker.getIdentifier());
 
         if (getManagedProvider().isPresent()) {
             addProviderWithReadyMarker(getManagedProvider().get());
@@ -118,18 +102,12 @@ public class AccessoryRegistryImpl extends AbstractRegistry<Accessory, Accessory
 
     @Override
     public void onReadyMarkerRemoved(ReadyMarker readyMarker) {
+        logger.debug("{}Ready marker removed - Type: {}, Identifier: {}", LOG_STATE, readyMarker.getType(), readyMarker.getIdentifier());
     }
 
     @Override
     protected void addProvider(Provider<Accessory> provider) {
-        // if (provider instanceof ManagedAccessoryProvider) {
-        // // Skip, only do this when we get a readyMarker
-        // logger.warn("Delaying adding the Managed Accessory Provider");
-        // } else {
-        // super.addProvider(provider);
-        // }
-
-        logger.debug("Adding Provider {}", provider.toString());
+        logger.debug("{}Adding provider: {}", LOG_CONFIG, provider.toString());
 
         ReadyMarker newMarker = new ReadyMarker(HOMEKIT_MANAGED_ACCESSORY_PROVIDER, provider.toString());
 
@@ -146,16 +124,11 @@ public class AccessoryRegistryImpl extends AbstractRegistry<Accessory, Accessory
         super.addProvider(provider);
 
         for (Accessory accessory : getAll()) {
-            logger.debug("Accessory {} is available in the Accessory Registry", accessory.getUID());
+            logger.debug("{}Accessory available in registry - UID: {}", LOG_ACCESSORY, accessory.getUID());
         }
 
-        logger.warn("Marking the Accessory Registry as ready");
+        logger.info("{}Marking Accessory Registry as ready", LOG_STATE);
         ReadyMarker newMarker = new ReadyMarker(HOMEKIT_ACCESSORY_REGISTRY, this.toString());
         readyService.markReady(newMarker);
     }
-
-    // @Override
-    // public @Nullable Accessory get(ThingUID uid) {
-    // return getAll().stream().filter(a -> a.getThingUID() == uid).findFirst().get();
-    // }
 }

@@ -8,7 +8,9 @@ import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
+@NonNullByDefault
 public abstract class LongCharacteristic extends GenericCharacteristic<Long> {
 
     private final long minValue;
@@ -21,6 +23,7 @@ public abstract class LongCharacteristic extends GenericCharacteristic<Long> {
         this.minValue = minValue;
         this.maxValue = maxValue;
         this.minStep = minStep;
+        initializeValue();
     }
 
     public LongCharacteristic(Service service, JsonValue value) {
@@ -30,6 +33,7 @@ public abstract class LongCharacteristic extends GenericCharacteristic<Long> {
         this.maxValue = jsonObject.containsKey("maxValue") ? jsonObject.getJsonNumber("maxValue").longValue()
                 : Long.MAX_VALUE;
         this.minStep = jsonObject.containsKey("minStep") ? jsonObject.getJsonNumber("minStep").longValue() : 1;
+        initializeValue();
     }
 
     @Override
