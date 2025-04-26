@@ -24,7 +24,7 @@ import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.api.listener.CharacteristicChangeListener;
 import org.openhab.io.homekit.api.listener.ServiceChangeListener;
-import org.openhab.io.homekit.exception.MetadataException;
+import org.openhab.io.homekit.exception.HomekitFactoryException;
 import org.openhab.io.homekit.internal.characteristic.GenericCharacteristic;
 import org.openhab.io.homekit.internal.events.CharacteristicEvent;
 import org.openhab.io.homekit.internal.events.ServiceEvent;
@@ -109,7 +109,7 @@ public class GenericService implements Service {
                             if (characteristic != null) {
                                 return characteristic;
                             }
-                        } catch (MetadataException e) {
+                        } catch (HomekitFactoryException e) {
                             logger.error("Error creating characteristic: {}", e.getMessage());
                             return null;
                         }

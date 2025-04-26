@@ -12,7 +12,6 @@
  */
 package org.openhab.io.homekit.api.factory;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.json.JsonValue;
@@ -27,7 +26,7 @@ import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Service;
-import org.openhab.io.homekit.exception.MetadataException;
+import org.openhab.io.homekit.exception.HomekitFactoryException;
 import org.openhab.io.homekit.exception.RegistrationException;
 
 /**
@@ -59,36 +58,39 @@ public interface HomekitFactory {
 
     @Nullable
     Accessory createAccessory(Class<? extends Accessory> accessoryClass, AccessoryServer server, long instanceId,
-            boolean extend) throws RegistrationException;
+            boolean extend) throws HomekitFactoryException;
 
     @Nullable
     Accessory createAccessory(Class<? extends Accessory> accessoryClass, AccessoryServer server, long instanceId)
-            throws RegistrationException;
+            throws HomekitFactoryException;
+
+        @Nullable Accessory createAccessory(Thing thing, AccessoryServer server)
+            throws HomekitFactoryException;
 
     @Nullable
     Service createService(String serviceType, Accessory accessory, boolean extend, String serviceName)
-            throws MetadataException;
+            throws HomekitFactoryException;
 
     @Nullable
     Service createService(String serviceType, Accessory accessory, long instanceId, boolean extend, String serviceName)
-            throws MetadataException;
+            throws HomekitFactoryException;
 
     @Nullable
     Service createService(String serviceType, Accessory accessory, long instanceId, boolean extend)
-            throws MetadataException;
+            throws HomekitFactoryException;
 
     @Nullable
-    Service createService(Accessory accessory, JsonValue value) throws MetadataException;
+    Service createService(Accessory accessory, JsonValue value) throws HomekitFactoryException;
 
     @Nullable
-    Characteristic<?> createCharacteristic(String characteristicsType, Service service) throws MetadataException;
+    Characteristic<?> createCharacteristic(String characteristicsType, Service service) throws HomekitFactoryException;
 
     @Nullable
     Characteristic<?> createCharacteristic(String characteristicsType, Service service, long instanceId)
-            throws MetadataException;
+            throws HomekitFactoryException;
 
     @Nullable
-    Characteristic<?> createCharacteristic(Service service, JsonValue value) throws MetadataException;
+    Characteristic<?> createCharacteristic(Service service, JsonValue value) throws HomekitFactoryException;
 
     void addAccessory(ThingTypeUID thingTypeUID, Class<? extends Accessory> accessoryClass)
             throws RegistrationException;
@@ -103,6 +105,8 @@ public interface HomekitFactory {
 
     void addService(Class<@NonNull ? extends Service> serviceClass) throws RegistrationException;
 
+    void addServiceWithTag(String tag, Class<? extends Service> serviceClass) throws RegistrationException;
+
     void addCharacteristic(ChannelTypeUID channelTypeUID, String characteristicType) throws RegistrationException;
 
     void addCharacteristic(ChannelTypeUID channelTypeUID,
@@ -114,7 +118,11 @@ public interface HomekitFactory {
     void addCharacteristic(Class<@NonNull ? extends Characteristic<?>> characteristicClass)
             throws RegistrationException;
 
-    HashSet<String> getCharacteristicTypes(@Nullable ChannelTypeUID channelTypeUID);
+    void addCharacteristicWithTag(String tag, Class<? extends Characteristic<?>> characteristicClass)
+            throws RegistrationException;
+
+    @Nullable
+    Set<String> getCharacteristicTypes(ChannelTypeUID channelTypeUID);
 
     @Nullable
     String getCharacteristicAcceptedItemType(String characteristicType);
@@ -139,7 +147,4 @@ public interface HomekitFactory {
 
     @Nullable
     String getTagFromCharacteristicType(String characteristicType);
-
-    @Nullable
-    String getServiceType(String characteristicType);
 }

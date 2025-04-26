@@ -3,6 +3,7 @@ package org.openhab.io.homekit.library.factory;
 import org.openhab.core.magic.binding.MagicBindingConstants;
 import org.openhab.core.thing.type.ChannelTypeUID;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
+import org.openhab.io.homekit.exception.RegistrationException;
 import org.openhab.io.homekit.internal.factory.AbstractHomekitFactory;
 import org.openhab.io.homekit.library.characteristic.BrightnessCharacteristic;
 import org.openhab.io.homekit.library.characteristic.CurrentTemperatureCharacteristic;
@@ -17,15 +18,16 @@ import org.openhab.io.homekit.library.service.LightBulbService;
 import org.openhab.io.homekit.library.service.ThermostatService;
 import org.openhab.io.homekit.library.service.WindowCoveringService;
 import org.osgi.service.component.annotations.Component;
-import org.openhab.io.homekit.exception.RegistrationException;
 
 @Component(immediate = true, service = HomekitFactory.class)
 public class MagicHomekitFactory extends AbstractHomekitFactory {
+
     @Override
     protected void initializeMappers() {
-        this.addService(MagicBindingConstants.THING_TYPE_ON_OFF_LIGHT, LightBulbService.class);
-        this.addService(MagicBindingConstants.THING_TYPE_DIMMABLE_LIGHT, DimmableLightBulbService.class);
-        this.addService(MagicBindingConstants.THING_TYPE_COLOR_LIGHT, ColorLightBulbService.class);
+        try {
+            this.addService(MagicBindingConstants.THING_TYPE_ON_OFF_LIGHT, LightBulbService.class);
+            this.addService(MagicBindingConstants.THING_TYPE_DIMMABLE_LIGHT, DimmableLightBulbService.class);
+            this.addService(MagicBindingConstants.THING_TYPE_COLOR_LIGHT, ColorLightBulbService.class);
         this.addService(MagicBindingConstants.THING_TYPE_CONTACT_SENSOR, ContactSensorService.class);
         this.addService(MagicBindingConstants.THING_TYPE_THERMOSTAT, ThermostatService.class);
         this.addService(MagicBindingConstants.THING_TYPE_ROLLERSHUTTER, WindowCoveringService.class);
@@ -58,5 +60,12 @@ public class MagicHomekitFactory extends AbstractHomekitFactory {
         this.addCharacteristic(
                 new ChannelTypeUID(MagicBindingConstants.BINDING_ID, MagicBindingConstants.CHANNEL_SET_TEMPERATURE),
                 TargetTemperatureCharacteristic.class);
+        } catch (RegistrationException e) {
+                logger.error("{}Failed to initialize mappers in MagicHomekitFactory: {}", AbstractHomekitFactory.LOG_ERROR, e.getMessage(), e);
+        }
     }
+
+ 
+    
+    
 }

@@ -438,7 +438,7 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
     // super.dispose();
     // }
     // }
-
+    @Override
     protected void handleSpecificDispose() {
         // No additional cleanup needed for service handler
         synchronized (serviceLock) {
@@ -503,6 +503,7 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
     // }
     // }
 
+    @Override
     protected void validateSpecificConfiguration(Configuration config) {
         // No additional validation needed for service handler
         this.serviceId = (String) config.get(CONFIG_SERVICE_ID);
@@ -604,6 +605,7 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
     // }
     // }
 
+    @Override
     protected ThingStatus determineThingStatus() {
         if (!serverConnected) {
             return ThingStatus.OFFLINE;
@@ -618,6 +620,7 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
         return ThingStatus.ONLINE;
     }
 
+    @Override
     protected ThingStatusDetail determineThingStatusDetail() {
         if (!serverConnected) {
             return ThingStatusDetail.COMMUNICATION_ERROR;
@@ -632,6 +635,7 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
         return ThingStatusDetail.NONE;
     }
 
+    @Override
     protected String determineThingStatusDescription() {
         if (!serverConnected) {
             return "Server disconnected";
@@ -1247,6 +1251,7 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
     // }
     // }
 
+    @Override
     protected boolean validateCharacteristicBelongsToHandler(Characteristic<?> characteristic) {
         return characteristic != null && characteristic.getService().getUID().equals(service.getUID());
     }
@@ -2328,6 +2333,7 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
     // }
     // }
 
+    @Override
     protected void performSpecificRecovery() throws Exception {
         // No additional recovery steps needed for service handler
         synchronized (serviceLock) {

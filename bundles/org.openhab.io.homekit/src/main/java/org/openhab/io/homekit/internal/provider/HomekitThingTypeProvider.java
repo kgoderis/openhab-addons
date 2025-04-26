@@ -1,12 +1,10 @@
 package org.openhab.io.homekit.internal.provider;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -14,11 +12,7 @@ import org.openhab.core.storage.StorageService;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.binding.AbstractStorageBasedTypeProvider;
 import org.openhab.core.thing.binding.ThingTypeProvider;
-import org.openhab.core.thing.type.ChannelDefinition;
-import org.openhab.core.thing.type.ChannelDefinitionBuilder;
-import org.openhab.core.thing.type.ChannelGroupDefinition;
 import org.openhab.core.thing.type.ChannelGroupTypeUID;
-import org.openhab.core.thing.type.ChannelTypeUID;
 import org.openhab.core.thing.type.ThingType;
 import org.openhab.core.thing.type.ThingTypeBuilder;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
@@ -120,39 +114,39 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
         logger.debug("Created ThingType {} for HomeKit service type {}", thingTypeUID, serviceType);
     }
 
-    private List<ChannelDefinition> createChannelDefinitions(String serviceType, HomekitFactory homekitFactory) {
-        // Get all characteristic types supported by this service
-        Set<String> characteristicTypes = homekitFactory.getSupportedCharacteristicTypes();
+    // private List<ChannelDefinition> createChannelDefinitions(String serviceType, HomekitFactory homekitFactory) {
+    //     // Get all characteristic types supported by this service
+    //     Set<String> characteristicTypes = homekitFactory.getSupportedCharacteristicTypes();
 
-        // Filter to only include characteristics that are relevant to this service
-        return characteristicTypes.stream().filter(characteristicType -> {
-            // Check if this characteristic type is associated with the service
-            return homekitFactory.getService(characteristicType) != null
-                    && homekitFactory.getServiceType(characteristicType).equals(serviceType);
-        }).map(characteristicType -> {
-            // Get the channel type UID for this characteristic
-            ChannelTypeUID channelTypeUID = homekitFactory.getChannelTypeUID(characteristicType);
-            if (channelTypeUID == null) {
-                logger.warn("No ChannelTypeUID found for characteristic type: {}", characteristicType);
-                return null;
-            }
+    //     // Filter to only include characteristics that are relevant to this service
+    //     return characteristicTypes.stream().filter(characteristicType -> {
+    //         // Check if this characteristic type is associated with the service
+    //         return homekitFactory.getService(characteristicType) != null
+    //                 && homekitFactory.getServiceType(characteristicType).equals(serviceType);
+    //     }).map(characteristicType -> {
+    //         // Get the channel type UID for this characteristic
+    //         ChannelTypeUID channelTypeUID = homekitFactory.getChannelTypeUID(characteristicType);
+    //         if (channelTypeUID == null) {
+    //             logger.warn("No ChannelTypeUID found for characteristic type: {}", characteristicType);
+    //             return null;
+    //         }
 
-            // Create a channel definition
-            return new ChannelDefinitionBuilder(homekitFactory.getTagFromCharacteristicType(characteristicType),
-                    channelTypeUID).withLabel(characteristicType)
-                    .withDescription("HomeKit " + characteristicType + " Characteristic").build();
-        }).filter(def -> def != null).collect(Collectors.toList());
-    }
+    //         // Create a channel definition
+    //         return new ChannelDefinitionBuilder(homekitFactory.getTagFromCharacteristicType(characteristicType),
+    //                 channelTypeUID).withLabel(characteristicType)
+    //                 .withDescription("HomeKit " + characteristicType + " Characteristic").build();
+    //     }).filter(def -> def != null).collect(Collectors.toList());
+    // }
 
-    private List<ChannelGroupDefinition> createChannelGroupDefinitions(String serviceType,
-            HomekitFactory homekitFactory) {
-        // Create a channel group definition for this service
-        // This is a simplification - in a real implementation, you would need to determine
-        // which services should be grouped together
-        ChannelGroupTypeUID channelGroupTypeUID = getChannelGroupTypeUID(serviceType);
-        return List.of(new ChannelGroupDefinition(serviceType, channelGroupTypeUID, serviceType,
-                "HomeKit " + serviceType + " Service Group"));
-    }
+    // private List<ChannelGroupDefinition> createChannelGroupDefinitions(String serviceType,
+    //         HomekitFactory homekitFactory) {
+    //     // Create a channel group definition for this service
+    //     // This is a simplification - in a real implementation, you would need to determine
+    //     // which services should be grouped together
+    //     ChannelGroupTypeUID channelGroupTypeUID = getChannelGroupTypeUID(serviceType);
+    //     return List.of(new ChannelGroupDefinition(serviceType, channelGroupTypeUID, serviceType,
+    //             "HomeKit " + serviceType + " Service Group"));
+    // }
 
     public ThingTypeUID getThingTypeUID(String serviceType) {
         // Create a unique ID for the thing type based on the service type

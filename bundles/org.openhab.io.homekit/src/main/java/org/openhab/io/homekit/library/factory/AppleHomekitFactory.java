@@ -1,7 +1,8 @@
 package org.openhab.io.homekit.library.factory;
 
 import org.openhab.io.homekit.api.factory.HomekitFactory;
-import org.openhab.io.homekit.internal.factory.BaseHomekitFactory;
+import org.openhab.io.homekit.exception.RegistrationException;
+import org.openhab.io.homekit.internal.factory.AbstractHomekitFactory;
 import org.openhab.io.homekit.library.characteristic.BrightnessCharacteristic;
 import org.openhab.io.homekit.library.characteristic.ColorTemperatureCharacteristic;
 import org.openhab.io.homekit.library.characteristic.CurrentHeatingCoolingStateCharacteristic;
@@ -29,33 +30,37 @@ import org.openhab.io.homekit.library.service.ThermostatService;
 import org.osgi.service.component.annotations.Component;
 
 @Component(immediate = true, service = HomekitFactory.class)
-public class AppleHomekitFactory extends BaseHomekitFactory {
+public class AppleHomekitFactory extends AbstractHomekitFactory {
     @Override
     protected void initializeMappers() {
-        this.addService(AccessoryInformationService.class);
-        this.addService(HAPProtocolInformationService.class);
-        this.addService(LightBulbService.class);
-        this.addService(OutletService.class);
-        this.addService(SwitchService.class);
-        this.addService(ThermostatService.class);
-
-        this.addCharacteristic(BrightnessCharacteristic.class);
-        this.addCharacteristic(ColorTemperatureCharacteristic.class);
-        this.addCharacteristic(CurrentHeatingCoolingStateCharacteristic.class);
-        this.addCharacteristic(CurrentTemperatureCharacteristic.class);
-        this.addCharacteristic(FirmwareRevisionCharacteristic.class);
-        this.addCharacteristic(HueCharacteristic.class);
-        this.addCharacteristic(IdentifyCharacteristic.class);
-        this.addCharacteristic(ManufacturerCharacteristic.class);
-        this.addCharacteristic(ModelCharacteristic.class);
-        this.addCharacteristic(NameCharacteristic.class);
-        this.addCharacteristic(OnCharacteristic.class);
-        this.addCharacteristic(OutletInUseCharacteristic.class);
-        this.addCharacteristic(SaturationCharacteristic.class);
-        this.addCharacteristic(SerialNumberCharacteristic.class);
-        this.addCharacteristic(StatusLowBatteryCharacteristic.class);
-        this.addCharacteristic(TargetHeatingCoolingStateCharacteristic.class);
-        this.addCharacteristic(TemperatureDisplayUnitsCharacteristic.class);
-        this.addCharacteristic(VersionCharacteristic.class);
+        try {
+            this.addService(AccessoryInformationService.class);
+            this.addService(HAPProtocolInformationService.class);
+            this.addService(LightBulbService.class);
+            this.addService(OutletService.class);
+            this.addService(SwitchService.class);
+            this.addService(ThermostatService.class);
+    
+            this.addCharacteristic(BrightnessCharacteristic.class);
+            this.addCharacteristic(ColorTemperatureCharacteristic.class);
+            this.addCharacteristic(CurrentHeatingCoolingStateCharacteristic.class);
+            this.addCharacteristic(CurrentTemperatureCharacteristic.class);
+            this.addCharacteristic(FirmwareRevisionCharacteristic.class);
+            this.addCharacteristic(HueCharacteristic.class);
+            this.addCharacteristic(IdentifyCharacteristic.class);
+            this.addCharacteristic(ManufacturerCharacteristic.class);
+            this.addCharacteristic(ModelCharacteristic.class);
+            this.addCharacteristic(NameCharacteristic.class);
+            this.addCharacteristic(OnCharacteristic.class);
+            this.addCharacteristic(OutletInUseCharacteristic.class);
+            this.addCharacteristic(SaturationCharacteristic.class);
+            this.addCharacteristic(SerialNumberCharacteristic.class);
+            this.addCharacteristic(StatusLowBatteryCharacteristic.class);
+            this.addCharacteristic(TargetHeatingCoolingStateCharacteristic.class);
+            this.addCharacteristic(TemperatureDisplayUnitsCharacteristic.class);
+            this.addCharacteristic(VersionCharacteristic.class);
+        } catch (RegistrationException e) {
+            logger.error("{}Failed to initialize mappers in AppleHomekitFactory: {}", AbstractHomekitFactory.LOG_ERROR, e.getMessage(), e);
+        }
     }
 }

@@ -23,7 +23,7 @@ import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.api.listener.AccessoryChangeListener;
 import org.openhab.io.homekit.exception.AccessoryOperationException;
-import org.openhab.io.homekit.exception.MetadataException;
+import org.openhab.io.homekit.exception.HomekitFactoryException;
 import org.openhab.io.homekit.internal.events.AccessoryEvent;
 import org.openhab.io.homekit.internal.service.GenericService;
 import org.openhab.io.homekit.library.service.AccessoryInformationService;
@@ -125,7 +125,7 @@ public class GenericAccessory implements Accessory {
                             if (service != null) {
                                 return service;
                             }
-                        } catch (MetadataException e) {
+                        } catch (HomekitFactoryException e) {
                             logger.error("{}Error creating service: {}", LOG_ERROR, e.getMessage(), e);
                         }
                     }
