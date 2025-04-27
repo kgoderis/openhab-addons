@@ -16,7 +16,7 @@ import org.openhab.core.thing.type.ChannelTypeProvider;
 import org.openhab.core.thing.type.ChannelTypeUID;
 import org.openhab.core.thing.type.StateChannelTypeBuilder;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
-import org.openhab.io.homekit.internal.client.HomekitException;
+import org.openhab.io.homekit.exception.HomekitException;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;

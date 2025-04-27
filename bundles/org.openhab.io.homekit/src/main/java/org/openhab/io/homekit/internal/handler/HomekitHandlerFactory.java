@@ -14,8 +14,6 @@ package org.openhab.io.homekit.internal.handler;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -36,7 +34,6 @@ import org.openhab.io.homekit.internal.provider.HomekitChannelGroupTypeProvider;
 import org.openhab.io.homekit.internal.provider.HomekitChannelTypeProvider;
 import org.openhab.io.homekit.internal.provider.HomekitThingTypeProvider;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -56,10 +53,8 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
 
     private final Logger logger = LoggerFactory.getLogger(HomekitHandlerFactory.class);
 
-    public static Collection<ThingTypeUID> SUPPORTED_THING_TYPES;
+    public static Collection<ThingTypeUID> SUPPORTED_THING_TYPES = Collections.emptySet();
 
-    private final Map<ThingUID, @Nullable ServiceRegistration<?>> discoveryServiceRegs = new HashMap<>();
-    private final Map<ThingUID, @Nullable ServiceRegistration<?>> mdnsServiceRegs = new HashMap<>();
     protected final AccessoryRegistry accessoryRegistry;
     protected final PairingRegistry pairingRegistry;
     protected final AccessoryServerRegistry serverRegistry;
@@ -108,8 +103,8 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
         if (HomekitBindingConstants.THING_TYPE_ACCESSORY.equals(thingTypeUID)) {
-            return new AccessoryThingHandler(thing, serverRegistry, accessoryRegistry, homekitChannelTypeProvider,
-                    homekitChannelGroupTypeProvider, homekitThingTypeProvider);
+            return new AccessoryThingHandler(thing, serverRegistry, accessoryRegistry, homekitChannelTypeProvider
+                    , homekitThingTypeProvider);
         }
 
         if (SUPPORTED_THING_TYPES.contains(thingTypeUID)) {

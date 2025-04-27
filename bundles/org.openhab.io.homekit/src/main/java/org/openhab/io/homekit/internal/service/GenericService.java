@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Collectors;
 
@@ -166,10 +167,10 @@ public class GenericService implements Service {
     }
 
     @Override
-    public @NonNull List<Characteristic<?>> getCharacteristics() {
-        return Collections.unmodifiableList(characteristics.stream()
+    public @NonNull Set<Characteristic<?>> getCharacteristics() {
+        return Collections.unmodifiableSet((Set<Characteristic<?>>) characteristics.stream()
                 .sorted((o1, o2) -> Long.valueOf(o1.getInstanceId()).compareTo(Long.valueOf(o2.getInstanceId())))
-                .collect(Collectors.toList()));
+                .collect(Collectors.toCollection(java.util.LinkedHashSet::new)));
     }
 
     @Override

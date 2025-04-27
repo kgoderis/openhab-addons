@@ -2,6 +2,7 @@ package org.openhab.io.homekit.api.hap;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import javax.json.JsonObject;
 
@@ -81,7 +82,7 @@ public interface Service extends Identifiable<@NonNull ServiceUID>, Comparable<S
      * @return the list of Characteristics.
      */
     @NonNull
-    List<Characteristic<?>> getCharacteristics();
+    Set<Characteristic<?>> getCharacteristics();
 
     void removeCharacteristic(@NonNull Class<@NonNull ? extends Characteristic> characteristicClass);
 

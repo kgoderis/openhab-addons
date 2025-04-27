@@ -141,7 +141,7 @@ public class HomekitTaggedItem {
      *
      * @return The HomeKit service type if found, null otherwise
      */
-    public String getFactoryServiceType() {
+    private String getFactoryServiceType() {
         if (homekitFactoryTracker == null) {
             BundleContext context = FrameworkUtil.getBundle(HomekitTaggedItem.class).getBundleContext();
             homekitFactoryTracker = new ServiceTracker<>(context, HomekitFactory.class, null);
@@ -171,7 +171,7 @@ public class HomekitTaggedItem {
      *
      * @return The HomeKit characteristic type if found, null otherwise
      */
-    public String getFactoryCharacteristicType() {
+    private String getFactoryCharacteristicType() {
         if (homekitFactoryTracker == null) {
             BundleContext context = FrameworkUtil.getBundle(HomekitTaggedItem.class).getBundleContext();
             homekitFactoryTracker = new ServiceTracker<>(context, HomekitFactory.class, null);

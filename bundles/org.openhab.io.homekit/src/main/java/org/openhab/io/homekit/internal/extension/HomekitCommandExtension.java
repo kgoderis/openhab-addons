@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.io.console.Console;
 import org.openhab.core.io.console.extensions.AbstractConsoleCommandExtension;
 import org.openhab.core.io.console.extensions.ConsoleCommandExtension;
@@ -17,10 +19,6 @@ import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
-import org.openhab.io.homekit.internal.client.HomekitAccessoryProtocolParticipant;
-import org.openhab.io.homekit.internal.handler.HomekitAccessoryBridgeHandler;
-import org.openhab.io.homekit.internal.handler.StandAloneHomekitAccessoryHandler;
-import org.openhab.io.homekit.library.accessory.ThingAccessory;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -33,6 +31,7 @@ import org.slf4j.LoggerFactory;
  * @author Andy Lintner - Initial contribution
  */
 @Component(service = ConsoleCommandExtension.class)
+@NonNullByDefault
 public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
     private static final String CMD_HOMEKIT = "homekit";
     private static final String CMD_SERVER = "server";
@@ -164,38 +163,32 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
     }
 
     private void printAccessories(Console console) {
-        Collection<Accessory> accessories = accessoryRegistry.getAll();
+        @Nullable Collection<Accessory> accessories = accessoryRegistry.getAll();
 
         if (accessories.isEmpty()) {
             console.println("No accessories found.");
         }
 
         for (Iterator<Accessory> iter = accessories.iterator(); iter.hasNext();) {
-            Accessory accessory = iter.next();
+           @Nullable     Accessory accessory = iter.next();
 
-            if (accessory instanceof ThingAccessory) {
-                console.println(String.format("Accessory %s (Type=%s, Label=%s, Thing=%s)",
-                        accessory.getUID().toString(), accessory.getClass().getSimpleName(),
-                        ((ThingAccessory) accessory).getLabel(), ((ThingAccessory) accessory).getThingUID()));
-            } else if (accessory instanceof Accessory) {
+            if (accessory == null) {
+                continue;
+            }
+
                 console.println(String.format("Accessory %s (Type=%s, Label=%s)", accessory.getUID().toString(),
                         accessory.getClass().getSimpleName(), accessory.getLabel()));
-            }
+            
 
             for (Service service : accessory.getServices()) {
                 console.println(String.format("     Service %s (Type=%s, HAP=%s, Name=%s)", service.getUID().toString(),
                         service.getClass().getSimpleName(), service.getInstanceType(), service.getName()));
-                for (Characteristic characteristic : service.getCharacteristics()) {
-                    if (((Characteristic<?>) characteristic).getChannelUID() != null) {
-                        console.println(String.format("         Characteristic %s (Type=%s, HAP=%s, Channel=%s)",
-                                characteristic.getUID().toString(), characteristic.getClass().getSimpleName(),
-                                characteristic.getInstanceType(),
-                                ((Characteristic<?>) characteristic).getChannelUID()));
-                    } else {
+                for (Characteristic<?> characteristic : service.getCharacteristics()) {
+ 
                         console.println(String.format("         Characteristic %s (Type=%s, HAP=%s)",
                                 characteristic.getUID().toString(), characteristic.getClass().getSimpleName(),
                                 characteristic.getInstanceType()));
-                    }
+                    
                 }
             }
 
@@ -219,27 +212,27 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         ThingUID theThingUID = new ThingUID(thingUID);
         Thing theThing = thingRegistry.get(theThingUID);
 
-        if (theThing != null) {
-            ThingHandler theHandler = theThing.getHandler();
-            if (theHandler != null) {
-                if (theHandler instanceof HomekitAccessoryProtocolParticipant) {
-                    ((HomekitAccessoryProtocolParticipant) theHandler).pair(setupCode);
-                    ((HomekitAccessoryProtocolParticipant) theHandler).pairVerify();
-                    if (theHandler instanceof HomekitAccessoryBridgeHandler) {
-                        ((HomekitAccessoryBridgeHandler) theHandler).startSearch();
-                    }
-                    if (theHandler instanceof StandAloneHomekitAccessoryHandler) {
-                        ((StandAloneHomekitAccessoryHandler) theHandler).configureThing();
-                    }
-                } else {
-                    logger.warn("Thing '{}' can not be paired", thingUID);
-                }
-            } else {
-                logger.warn("Thing '{}' does not have a ThingHandler", thingUID);
-            }
-        } else {
-            logger.warn("Thing '{}' does not exist", thingUID);
-        }
+        // if (theThing != null) {
+        //     ThingHandler theHandler = theThing.getHandler();
+        //     if (theHandler != null) {
+        //         if (theHandler instanceof HomekitAccessoryProtocolParticipant) {
+        //             ((HomekitAccessoryProtocolParticipant) theHandler).pair(setupCode);
+        //             ((HomekitAccessoryProtocolParticipant) theHandler).pairVerify();
+        //             if (theHandler instanceof HomekitAccessoryBridgeHandler) {
+        //                 ((HomekitAccessoryBridgeHandler) theHandler).startSearch();
+        //             }
+        //             if (theHandler instanceof StandAloneHomekitAccessoryHandler) {
+        //                 ((StandAloneHomekitAccessoryHandler) theHandler).configureThing();
+        //             }
+        //         } else {
+        //             logger.warn("Thing '{}' can not be paired", thingUID);
+        //         }
+        //     } else {
+        //         logger.warn("Thing '{}' does not have a ThingHandler", thingUID);
+        //     }
+        // } else {
+        //     logger.warn("Thing '{}' does not exist", thingUID);
+        // }
     }
 
     // private MaxCubeBridgeHandler getHandler(String thingId) {

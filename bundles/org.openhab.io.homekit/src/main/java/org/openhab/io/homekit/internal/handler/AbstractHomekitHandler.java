@@ -3,6 +3,7 @@ package org.openhab.io.homekit.internal.handler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,7 +31,6 @@ import org.openhab.core.types.UnDefType;
 import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.hap.Characteristic;
-import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.api.listener.AccessoryChangeListener;
 import org.openhab.io.homekit.api.listener.AccessoryServerChangeListener;
 import org.openhab.io.homekit.api.listener.CharacteristicChangeListener;
@@ -191,6 +191,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
     protected abstract void handleSpecificInitialization();
 
     @Override
+    @SuppressWarnings("null")
     public void dispose() {
         synchronized (stateLock) {
             disposed = true;
@@ -276,12 +277,14 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
     protected abstract void validateSpecificConfiguration(Configuration config);
 
     @Override
+    @SuppressWarnings("null")
     public void handleConfigurationUpdate(Map<String, Object> configurationParameters) {
         try {
             if (disposed) {
                 return;
             }
 
+            Objects.requireNonNull(configurationParameters);
             Configuration newConfig = new Configuration(configurationParameters);
             validateConfiguration(newConfig);
 
@@ -291,8 +294,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
             updateConfiguration(currentConfig);
 
             // Reinitialize channels if necessary
-            if (configurationParameters.containsKey(CONFIG_SERVICE_ID)
-                    || configurationParameters.containsKey(CONFIG_ACCESSORY_ID)) {
+            if (configurationParameters.containsKey(CONFIG_ACCESSORY_ID)) {
                 initializeChannels();
             }
 
@@ -361,7 +363,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
         // Using ThreadPoolManager's pool
         eventExecutor.submit(() -> {
             try {
-                Runnable task;
+                @Nullable Runnable task;
                 synchronized (eventQueueLock) {
                     task = eventQueue.poll();
                 }
@@ -675,7 +677,11 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
      */
     private void handleCharacteristicAdded(@Nullable Characteristic<?> characteristic) {
         if (characteristic != null) {
-            addChannelForCharacteristic(characteristic);
+            try {
+                addChannelForCharacteristic(characteristic);
+            } catch (HomekitException e) {
+                logger.warn("{}Failed to add channel for characteristic: {}", LOG_CHANNEL, e.getMessage());
+            }
         }
     }
 
@@ -716,8 +722,8 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
                     synchronized (characteristicMapLock) {
                         if (characteristicMap.get(channel) == characteristic) {
                             Object value = characteristic.getValue();
-                            if (value instanceof State) {
-                                updateState(channel.getUID(), (State) value);
+                            if (value instanceof State state) {
+                                updateState(channel.getUID(), state);
                                 logger.debug("{}Channel state updated - UID: {}, Value: {}", LOG_CHANNEL,
                                         channel.getUID(), value);
                             }
@@ -776,10 +782,10 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
         synchronized (characteristicMapLock) {
             if (characteristicMap.get(channel) == characteristic) {
                 Object newValue = event.getNewValue();
-                if (newValue instanceof State) {
+                if (newValue instanceof State state) {
                     ThingStatus currentThingStatus = thing.getStatus();
                     handleChannelStateTransition(channel, characteristic, currentThingStatus, ThingStatus.ONLINE);
-                    updateState(channelUID, (State) newValue);
+                    updateState(channelUID, state);
                     logger.debug("{}Channel state updated - UID: {}, Value: {}", LOG_CHANNEL, channelUID, newValue);
                 }
             }
@@ -820,13 +826,13 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
         }
 
         try {
-            if (command instanceof State) {
+            if (command instanceof State state) {
                 @SuppressWarnings("unchecked")
                 T value = (T) command;
                 characteristic.setValue(value);
                 Channel channel = findChannelForCharacteristic(characteristic);
                 if (channel != null) {
-                    updateState(channel.getUID(), (State) command);
+                    updateState(channel.getUID(), state);
                     logger.debug("{}Command processed - Channel: {}, Value: {}", LOG_CHANNEL, channel.getUID(),
                             command);
                 }
@@ -853,11 +859,12 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
             // Step 1: Remove channels for characteristics that no longer exist
             List<Channel> channelsToRemove = new ArrayList<>();
             synchronized (characteristicMapLock) {
-                for (Map.Entry<Channel, Characteristic<?>> entry : characteristicMap.entrySet()) {
-                    if (!currentCharacteristicTypes.contains(entry.getValue().getInstanceType())) {
+                for (Map.Entry<Channel, @Nullable Characteristic<?>> entry : characteristicMap.entrySet()) {
+                    @Nullable Characteristic<?> characteristic = entry.getValue();
+                    if (characteristic != null && !currentCharacteristicTypes.contains(characteristic.getInstanceType())) {
                         channelsToRemove.add(entry.getKey());
                         logger.debug("{}Removing channel for characteristic: {}", LOG_CHANNEL,
-                                entry.getValue().getInstanceType());
+                                characteristic.getInstanceType());
                     }
                 }
 
@@ -878,7 +885,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
                 boolean channelExists = false;
                 synchronized (characteristicMapLock) {
                     for (Characteristic<?> existingCharacteristic : characteristicMap.values()) {
-                        if (existingCharacteristic.getInstanceType().equals(characteristic.getInstanceType())) {
+                        if (existingCharacteristic!=null && existingCharacteristic.getInstanceType().equals(characteristic.getInstanceType())) {
                             channelExists = true;
                             break;
                         }
@@ -899,12 +906,12 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
 
             // Step 3: Update channel states for existing characteristics
             synchronized (characteristicMapLock) {
-                for (Map.Entry<Channel, Characteristic<?>> entry : characteristicMap.entrySet()) {
-                    Channel channel = entry.getKey();
-                    Characteristic<?> characteristic = entry.getValue();
+                for (Map.Entry<Channel, @Nullable Characteristic<?>> entry : characteristicMap.entrySet()) {
+                    @Nullable Channel channel = entry.getKey();
+                    @Nullable Characteristic<?> characteristic = entry.getValue();
 
-                    if (characteristic.getValue() instanceof State) {
-                        updateState(channel.getUID(), (State) characteristic.getValue());
+                    if (characteristic != null && characteristic.getValue() instanceof State state) {
+                        updateState(channel.getUID(), state);
                         logger.debug("{}Updated state for channel {}: {}", LOG_CHANNEL, channel.getUID(),
                                 characteristic.getValue());
                     }
@@ -926,7 +933,10 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
                 // Remove all channels from the thing
                 List<Channel> channelsToRemove = new ArrayList<>(characteristicMap.keySet());
                 for (Channel channel : channelsToRemove) {
-                    removeChannelForCharacteristic(characteristicMap.get(channel));
+                    @Nullable Characteristic<?> characteristic = characteristicMap.get(channel);
+                    if (characteristic != null) {
+                        removeChannelForCharacteristic(characteristic);
+                    }
                 }
                 characteristicMap.clear();
             }
@@ -936,37 +946,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
         }
     }
 
-    protected @Nullable Channel addChannelForCharacteristic(Characteristic<?> characteristic) {
-
-
-        try {
-            // Let subclasses determine the channel ID
-            ChannelUID channelUID = getChannelUID(characteristic);
-
-            ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
-                    characteristic.getInstanceType());
-            ChannelType channelType = homekitChannelTypeProvider.getChannelType(channelTypeUID, null);
-            if (channelType == null) {
-                logger.warn("{}No ChannelType found for characteristic {}", LOG_CHANNEL, characteristic.getUID());
-                return null;
-            }
-
-            Channel channel = ChannelBuilder.create(channelUID).withType(channelTypeUID)
-                    .withLabel(characteristic.getDescription()).withDescription(characteristic.getDescription())
-                    .build();
-
-            synchronized (characteristicMapLock) {
-                characteristicMap.put(channel, characteristic);
-            }
-
-            updateThing(editThing().withChannel(channel).build());
-            return channel;
-        } catch (Exception e) {
-            logger.warn("{}Unexpected error adding channel for characteristic {}: {}", LOG_CHANNEL,
-                    characteristic.getUID(), e.getMessage());
-            return null;
-        }
-    }
+    protected abstract @Nullable Channel addChannelForCharacteristic(Characteristic<?> characteristic) throws HomekitException;
 
     protected abstract ChannelUID getChannelUID(Characteristic<?> characteristic);
 
@@ -983,10 +963,14 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
             // Find the channel associated with this characteristic
             Channel channelToRemove = null;
             synchronized (characteristicMapLock) {
-                for (Map.Entry<Channel, Characteristic<?>> entry : characteristicMap.entrySet()) {
-                    if (characteristic.equals(entry.getValue())) {
-                        channelToRemove = entry.getKey();
-                        break;
+                for (Map.Entry<Channel, @Nullable Characteristic<?>> entry : characteristicMap.entrySet()) {
+                    @Nullable Characteristic<?> entryValue = entry.getValue();
+                    if (entryValue != null && entryValue == characteristic) {
+                        @Nullable  Channel possibleChannel = entry.getKey();
+                        if (possibleChannel != null) {
+                            channelToRemove = possibleChannel;
+                            break;
+                        }
                     }
                 }
 
@@ -1054,7 +1038,8 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
                     characteristic.getInstanceType());
 
             // Check if channel type has changed
-            if (!channel.getChannelTypeUID().equals(newChannelTypeUID)) {
+            ChannelTypeUID channelTypeUID = channel.getChannelTypeUID();
+            if (channelTypeUID != null && !channelTypeUID.equals(newChannelTypeUID)) {
                 ChannelType newChannelType = homekitChannelTypeProvider.getChannelType(newChannelTypeUID, null);
                 if (newChannelType != null) {
                     // Create new channel with updated type
@@ -1082,19 +1067,17 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
 
 
         synchronized (characteristicMapLock) {
-            for (Map.Entry<Channel, Characteristic<?>> entry : characteristicMap.entrySet()) {
-                if (entry.getValue() == characteristic) {
-                    return entry.getKey();
+            for (Map.Entry<Channel, @Nullable Characteristic<?>> entry : characteristicMap.entrySet()) {
+                @Nullable Characteristic<?> entryValue = entry.getValue();
+                if (entryValue != null && entryValue == characteristic) {
+                    @Nullable Channel possibleChannel = entry.getKey();
+                    if (possibleChannel != null) {
+                        return possibleChannel;
+                    }
                 }
             }
         }
         return null;
-    }
-
-    private @Nullable Characteristic<?> findCharacteristicForChannel(Channel channel) {
-        synchronized (characteristicMapLock) {
-            return characteristicMap.get(channel);
-        }
     }
 
     private void validateEventData(AccessoryServerEvent event) {
@@ -1361,3 +1344,5 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
 
     protected abstract void initializeChannels();
 }
+
+

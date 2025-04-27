@@ -1,5 +1,5 @@
 
-package org.openhab.io.homekit.internal.http.jetty;
+package org.openhab.io.homekit.internal.http;
 
 import java.nio.ByteBuffer;
 

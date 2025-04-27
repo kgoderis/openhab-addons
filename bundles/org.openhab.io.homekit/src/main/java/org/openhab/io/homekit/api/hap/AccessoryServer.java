@@ -12,7 +12,7 @@ import org.openhab.io.homekit.exception.AccessoryOperationException;
 import org.openhab.io.homekit.exception.ConfigurationException;
 import org.openhab.io.homekit.exception.HomekitServerException;
 import org.openhab.io.homekit.exception.ListenerNotificationException;
-import org.openhab.io.homekit.internal.client.HomekitException;
+import org.openhab.io.homekit.exception.HomekitException;
 import org.openhab.io.homekit.internal.server.AccessoryServerUID;
 
 /**

@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -81,13 +82,13 @@ import org.openhab.io.homekit.exception.HomekitServerException;
 import org.openhab.io.homekit.internal.accessory.AccessoryServerState;
 import org.openhab.io.homekit.internal.accessory.GenericAccessory;
 import org.openhab.io.homekit.internal.client.HomekitClientSRP6Session;
-import org.openhab.io.homekit.internal.client.HomekitException;
+import org.openhab.io.homekit.exception.HomekitException;
 import org.openhab.io.homekit.internal.events.AccessoryServerEvent;
 import org.openhab.io.homekit.internal.events.CharacteristicEvent;
 import org.openhab.io.homekit.internal.events.CharacteristicEvent.CharacteristicEventType;
-import org.openhab.io.homekit.internal.http.jetty.HomekitHttpClientTransportOverHTTP;
-import org.openhab.io.homekit.internal.http.jetty.HomekitHttpDestinationOverHTTP;
-import org.openhab.io.homekit.internal.http.jetty.HomekitProtocolHandler;
+import org.openhab.io.homekit.internal.http.HomekitHttpClientTransportOverHTTP;
+import org.openhab.io.homekit.internal.http.HomekitHttpDestinationOverHTTP;
+import org.openhab.io.homekit.internal.http.HomekitProtocolHandler;
 import org.openhab.io.homekit.util.Byte;
 import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder;
 import org.openhab.io.homekit.util.TypeLengthValueEncoderDecoder.DecodeResult;
@@ -1341,9 +1342,9 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
                         for (Service currentService : currentAccessory.getServices()) {
                             for (Service remoteService : remoteServices) {
                                 if (currentService.getInstanceId() == remoteService.getInstanceId()) {
-                                    List<Characteristic<?>> currentCharacteristics = currentService
+                                    Set<Characteristic<?>> currentCharacteristics = currentService
                                             .getCharacteristics();
-                                    List<Characteristic<?>> remoteCharacteristics = remoteService.getCharacteristics();
+                                    Set<Characteristic<?>> remoteCharacteristics = remoteService.getCharacteristics();
 
                                     // Find new characteristics to add
                                     for (Characteristic<?> remoteCharacteristic : remoteCharacteristics) {

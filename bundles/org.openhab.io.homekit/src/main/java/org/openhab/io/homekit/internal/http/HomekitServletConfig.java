@@ -4,26 +4,37 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 
 import org.openhab.io.homekit.api.hap.AccessoryServer;
-import org.openhab.io.homekit.internal.http.netty.ConfigAdapter;
-import org.openhab.io.homekit.internal.http.netty.ServletContextImpl;
 
-public class HomekitServletConfig extends ConfigAdapter implements ServletConfig {
+public class HomekitServletConfig implements ServletConfig {
 
-    AccessoryServer server;
+    private final AccessoryServer server;
+    private final String servletName;
+    private final ServletContext servletContext;
 
-    public HomekitServletConfig(AccessoryServer server, String servletName) {
-        super(servletName);
+    public HomekitServletConfig(AccessoryServer server, String servletName, ServletContext servletContext) {
         this.server = server;
+        this.servletName = servletName;
+        this.servletContext = servletContext;
     }
 
     @Override
     public String getServletName() {
-        return super.getOwnerName();
+        return servletName;
     }
 
     @Override
     public ServletContext getServletContext() {
-        return ServletContextImpl.get();
+        return servletContext;
+    }
+
+    @Override
+    public String getInitParameter(String name) {
+        return null;
+    }
+
+    @Override
+    public java.util.Enumeration<String> getInitParameterNames() {
+        return java.util.Collections.emptyEnumeration();
     }
 
     public AccessoryServer getAccessoryServer() {

@@ -1,4 +1,4 @@
-package org.openhab.io.homekit.internal.http.jetty;
+package org.openhab.io.homekit.internal.http;
 
 import org.eclipse.jetty.http.HttpCompliance;
 import org.eclipse.jetty.http.HttpGenerator;

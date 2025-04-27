@@ -1,4 +1,4 @@
-package org.openhab.io.homekit.internal.http.jetty;
+package org.openhab.io.homekit.internal.http;
 
 import java.io.IOException;
 import java.nio.BufferOverflowException;

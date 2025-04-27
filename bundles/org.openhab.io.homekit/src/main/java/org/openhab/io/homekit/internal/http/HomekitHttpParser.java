@@ -1,5 +1,5 @@
 
-package org.openhab.io.homekit.internal.http.jetty;
+package org.openhab.io.homekit.internal.http;
 
 import static org.eclipse.jetty.http.HttpComplianceSection.*;
 
