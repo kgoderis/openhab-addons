@@ -11,6 +11,13 @@ import org.slf4j.LoggerFactory;
 public class HomekitHttpDestinationOverHTTP extends HttpDestinationOverHTTP {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpDestinationOverHTTP.class);
+    protected static final String LOG_PREFIX = "HomeKit HttpDestinationOverHTTP: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
     private byte[] decryptionKey;
     private byte[] encryptionKey;
@@ -20,23 +27,26 @@ public class HomekitHttpDestinationOverHTTP extends HttpDestinationOverHTTP {
     }
 
     public void setEncryptionKeys(byte[] decryptionKey, byte[] encryptionKey) {
-
-        logger.info("Setting Encryption Keys on {}", this);
+        logger.debug("{}setEncryptionKeys called for {}", LOG_CONFIG, this);
+        logger.info("{}Setting Encryption Keys on {}", LOG_CONFIG, this);
+        if (logger.isTraceEnabled()) {
+            logger.trace("{}DecryptionKey: {}", LOG_CONFIG, javax.xml.bind.DatatypeConverter.printHexBinary(decryptionKey));
+            logger.trace("{}EncryptionKey: {}", LOG_CONFIG, javax.xml.bind.DatatypeConverter.printHexBinary(encryptionKey));
+        }
 
         this.decryptionKey = decryptionKey;
         this.encryptionKey = encryptionKey;
 
         ConnectionPool pool = getConnectionPool();
-        if (pool instanceof DuplexConnectionPool) {
-            for (org.eclipse.jetty.client.api.Connection connection : ((DuplexConnectionPool) pool)
-                    .getIdleConnections()) {
+        if (pool instanceof HomekitConnnectionPool) {
+            var idle = ((HomekitConnnectionPool) pool).getIdleConnections();
+            var active = ((HomekitConnnectionPool) pool).getActiveConnections();
+            for (org.eclipse.jetty.client.api.Connection connection : idle) {
                 if (connection instanceof HomekitHttpConnectionOverHTTP) {
                     ((HomekitHttpConnectionOverHTTP) connection).setEncryptionKeys(decryptionKey, encryptionKey);
                 }
             }
-
-            for (org.eclipse.jetty.client.api.Connection connection : ((DuplexConnectionPool) pool)
-                    .getActiveConnections()) {
+            for (org.eclipse.jetty.client.api.Connection connection : active) {
                 if (connection instanceof HomekitHttpConnectionOverHTTP) {
                     ((HomekitHttpConnectionOverHTTP) connection).setEncryptionKeys(decryptionKey, encryptionKey);
                 }

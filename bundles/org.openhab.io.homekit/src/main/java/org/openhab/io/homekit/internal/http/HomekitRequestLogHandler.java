@@ -18,6 +18,13 @@ import org.slf4j.LoggerFactory;
 public class HomekitRequestLogHandler extends RequestLogHandler {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitRequestLogHandler.class);
+    protected static final String LOG_PREFIX = "HomeKit RequestLogHandler: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
     public HomekitRequestLogHandler() {
         // TODO Auto-generated constructor stub
@@ -32,15 +39,14 @@ public class HomekitRequestLogHandler extends RequestLogHandler {
             ResponseWrapper wrappedResponse = new ResponseWrapper(response);
 
             final String userAgent = wrappedRequest.getHeader("User-Agent");
-            logger.debug(String.format("=============Request=========="));
-            logger.debug(String.format("From %s:%s ; ua:%s", wrappedRequest.getRemoteAddr(),
-                    wrappedRequest.getRemotePort(), userAgent));
-            logger.debug(String.format("Method : %s", wrappedRequest.getMethod().toUpperCase()));
-            logger.debug(String.format("Content-Type : %s", wrappedRequest.getContentType()));
-            logger.debug(String.format("Payload-Size : %s", wrappedRequest.getContentLength()));
-            logger.debug(String.format("URI : %s", wrappedRequest.getRequestURI()));
-            logger.debug(String.format("Query : %s", wrappedRequest.getQueryString()));
-            logger.debug(String.format("Payload :"));
+            logger.debug("{}=============Request==========", LOG_STATE);
+            logger.debug("{}From {}:{} ; ua:{}", LOG_STATE, wrappedRequest.getRemoteAddr(), wrappedRequest.getRemotePort(), userAgent);
+            logger.debug("{}Method : {}", LOG_STATE, wrappedRequest.getMethod().toUpperCase());
+            logger.debug("{}Content-Type : {}", LOG_STATE, wrappedRequest.getContentType());
+            logger.debug("{}Payload-Size : {}", LOG_STATE, wrappedRequest.getContentLength());
+            logger.debug("{}URI : {}", LOG_STATE, wrappedRequest.getRequestURI());
+            logger.debug("{}Query : {}", LOG_STATE, wrappedRequest.getQueryString());
+            logger.debug("{}Payload :", LOG_STATE);
             try {
                 byte[] body = IOUtils.toByteArray(wrappedRequest.getInputStream());
 
@@ -48,35 +54,35 @@ public class HomekitRequestLogHandler extends RequestLogHandler {
                     try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
                         HexDump.dump(body, 0, stream, 0);
                         stream.flush();
-                        logger.debug("\n{}", stream.toString(StandardCharsets.UTF_8.name()));
+                        logger.trace("{}\n{}", LOG_STATE, stream.toString(StandardCharsets.UTF_8.name()));
                     }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            logger.debug(String.format("=============================="));
+            logger.debug("{}==============================", LOG_STATE);
 
             if (_handler != null) {
                 _handler.handle(target, baseRequest, wrappedRequest, wrappedResponse);
             }
 
-            logger.debug(String.format("============Response=========="));
-            logger.debug(String.format("Status : %s", wrappedResponse.getStatus()));
-            logger.debug("Response :");
+            logger.debug("{}============Response==========", LOG_STATE);
+            logger.debug("{}Status : {}", LOG_STATE, wrappedResponse.getStatus());
+            logger.debug("{}Response :", LOG_STATE);
 
             byte[] buf = wrappedResponse.getContentAsByteArray();
             if (buf.length > 0) {
                 try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
                     HexDump.dump(buf, 0, stream, 0);
                     stream.flush();
-                    logger.debug("\n{}", stream.toString(StandardCharsets.UTF_8.name()));
+                    logger.trace("{}\n{}", LOG_STATE, stream.toString(StandardCharsets.UTF_8.name()));
                 }
             }
 
             wrappedResponse.copyBodyToResponse();
 
-            logger.debug(String.format("=============================="));
+            logger.debug("{}==============================", LOG_STATE);
 
         } else {
             if (_handler != null) {

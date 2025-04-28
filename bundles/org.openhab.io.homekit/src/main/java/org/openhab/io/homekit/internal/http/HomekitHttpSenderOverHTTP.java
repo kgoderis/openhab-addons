@@ -28,6 +28,14 @@ public class HomekitHttpSenderOverHTTP extends HttpSenderOverHTTP {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpSenderOverHTTP.class);
 
+    protected static final String LOG_PREFIX = "HomeKit HttpSenderOverHTTP: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+
     private final HttpGenerator generator = new HttpGenerator();
     private final HttpClient httpClient;
     private boolean shutdown;
@@ -50,8 +58,8 @@ public class HomekitHttpSenderOverHTTP extends HttpSenderOverHTTP {
         try {
             new HeadersCallback(exchange, content, callback).iterate();
         } catch (Throwable x) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(x);
+            if (logger.isDebugEnabled()) {
+                logger.debug("{}Exception in sendHeaders", LOG_ERROR, x);
             }
             callback.failed(x);
         }
@@ -66,9 +74,8 @@ public class HomekitHttpSenderOverHTTP extends HttpSenderOverHTTP {
                 ByteBuffer contentBuffer = content.getByteBuffer();
                 boolean lastContent = content.isLast();
                 HttpGenerator.Result result = generator.generateRequest(null, null, chunk, contentBuffer, lastContent);
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Generated content ({} bytes) - {}/{}",
-                            contentBuffer == null ? -1 : contentBuffer.remaining(), result, generator);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("{}Generated content ({} bytes) - {}/{}", LOG_STATE, contentBuffer == null ? -1 : contentBuffer.remaining(), result, generator);
                 }
                 switch (result) {
                     case NEED_CHUNK: {
@@ -121,8 +128,8 @@ public class HomekitHttpSenderOverHTTP extends HttpSenderOverHTTP {
                 }
             }
         } catch (Throwable x) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(x);
+            if (logger.isDebugEnabled()) {
+                logger.debug("{}Exception in sendContent", LOG_ERROR, x);
             }
             callback.failed(x);
         }
@@ -181,8 +188,8 @@ public class HomekitHttpSenderOverHTTP extends HttpSenderOverHTTP {
     }
 
     private void shutdownOutput() {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Request shutdown output {}", getHttpExchange().getRequest());
+        if (logger.isDebugEnabled()) {
+            logger.debug("{}Request shutdown output {}", LOG_STATE, getHttpExchange().getRequest());
         }
         shutdown = true;
     }
@@ -236,8 +243,8 @@ public class HomekitHttpSenderOverHTTP extends HttpSenderOverHTTP {
             while (true) {
                 HttpGenerator.Result result = generator.generateRequest(metaData, headerBuffer, chunkBuffer,
                         contentBuffer, lastContent);
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Generated headers ({} bytes), chunk ({} bytes), content ({} bytes) - {}/{}",
+                if (logger.isDebugEnabled()) {
+                    logger.debug("{}Generated headers ({} bytes), chunk ({} bytes), content ({} bytes) - {}/{}", LOG_STATE,
                             headerBuffer == null ? -1 : headerBuffer.remaining(),
                             chunkBuffer == null ? -1 : chunkBuffer.remaining(),
                             contentBuffer == null ? -1 : contentBuffer.remaining(), result, generator);
@@ -369,7 +376,7 @@ public class HomekitHttpSenderOverHTTP extends HttpSenderOverHTTP {
     public void setEncryptionKey(byte[] encryptionKey) {
         this.encryptionKey = encryptionKey;
 
-        logger.info("Setting Encryption Key on {}", this);
+        logger.info("{}Setting Encryption Key on {}", LOG_CONFIG, this);
     }
 
     public boolean hasEncryptionKey() {

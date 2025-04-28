@@ -39,6 +39,16 @@ import org.slf4j.LoggerFactory;
 public class CharacteristicServlet extends BaseServlet {
     private static final Logger logger = LoggerFactory.getLogger(CharacteristicServlet.class);
     private static final int SC_MULTI_STATUS = 207;
+    private static final String LOG_PREFIX = "HomeKit CharacteristicServlet: ";
+    private static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    private static final String LOG_STATE = LOG_PREFIX + "State - ";
+    private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    private static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+    private static final String LOG_EVENT = LOG_PREFIX + "Event - ";
+    private static final String LOG_SERVER = LOG_PREFIX + "Server - ";
+    private static final String LOG_PAIRING = LOG_PREFIX + "Pairing - ";
 
     // Map characteristic ID to set of async contexts interested in it
     private final Map<Characteristic<?>, Set<AsyncContext>> characteristicSubscriptions = new ConcurrentHashMap<>();
@@ -87,7 +97,7 @@ public class CharacteristicServlet extends BaseServlet {
                                         .add(asyncContext));
                     }
                 } catch (AccessoryOperationException e) {
-                    logger.error("Error accessing accessory {}: {}", aid, e.getMessage());
+                    logger.error("{}Error accessing accessory {}: {}", LOG_ERROR, aid, e.getMessage());
                 }
             }
 
@@ -121,7 +131,7 @@ public class CharacteristicServlet extends BaseServlet {
         for (String id : ids) {
             String[] parts = id.split("\\.");
             if (parts.length != 2) {
-                logger.error("Unexpected characteristics request: {}", request.getRequestURI());
+                logger.error("{}Unexpected characteristics request: {}", LOG_ERROR, request.getRequestURI());
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
@@ -137,7 +147,7 @@ public class CharacteristicServlet extends BaseServlet {
                                     characteristic.toJson(includeMeta, includePermissions, includeType, includeEvent)));
                 }
             } catch (AccessoryOperationException e) {
-                logger.error("Error accessing accessory {}: {}", aid, e.getMessage());
+                logger.error("{}Error accessing accessory {}: {}", LOG_ERROR, aid, e.getMessage());
             }
         }
 
@@ -167,7 +177,7 @@ public class CharacteristicServlet extends BaseServlet {
                                 try {
                                     characteristic.setValue(characteristicWrite.get("value"));
                                 } catch (Exception e) {
-                                    logger.error("Error setting characteristic value", e);
+                                    logger.error("{}Error setting characteristic value", LOG_ERROR, e);
                                 }
                             }
                             if (characteristicWrite.containsKey("ev")) {
@@ -181,7 +191,7 @@ public class CharacteristicServlet extends BaseServlet {
             // TODO : Handle TAble 6-11 with the HAP Specification Status Codes
 
         } catch (Exception e) {
-            logger.error("Error processing characteristic update", e);
+            logger.error("{}Error processing characteristic update", LOG_ERROR, e);
             response.setStatus(SC_MULTI_STATUS);
             sendJsonResponse(response, Json.createObjectBuilder()
                     .add("characteristics", Json.createArrayBuilder().add(
@@ -244,7 +254,7 @@ public class CharacteristicServlet extends BaseServlet {
             // Clear pending updates after successful send
             updates.clear();
         } catch (IOException e) {
-            logger.debug("Failed to send batched updates to subscriber, removing subscription", e);
+            logger.debug("Failed to send batched updates to subscriber, removing subscription");
             removeSubscription(context);
         }
     }

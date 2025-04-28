@@ -48,6 +48,11 @@ public class HomekitPairingRegistry extends AbstractRegistry<Pairing, PairingUID
 
     private final Logger logger = LoggerFactory.getLogger(HomekitPairingRegistry.class);
 
+    // ========== Log Message Prefixes ==========
+    protected static final String LOG_PREFIX = "HomeKit PairingRegistry: ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+
     private static final String HOMEKIT_PAIRING_REGISTRY = "homekit.pairingRegistry";
     private static final String HOMEKIT_MANAGED_PAIRING_PROVIDER = "homekit.managedPairingProvider";
     private static final String HOMEKIT_ACCESSORY_SERVER_REGISTRY = "homekit.accessoryServerRegistry";
@@ -95,7 +100,7 @@ public class HomekitPairingRegistry extends AbstractRegistry<Pairing, PairingUID
     @Override
     protected void addProvider(Provider<Pairing> provider) {
 
-        logger.debug("Adding Provider {}", provider.toString());
+        logger.debug("{}Adding Provider {}", LOG_STATE, provider.toString());
 
         ReadyMarker newMarker = new ReadyMarker(HOMEKIT_MANAGED_PAIRING_PROVIDER, provider.toString());
 
@@ -111,7 +116,7 @@ public class HomekitPairingRegistry extends AbstractRegistry<Pairing, PairingUID
 
     @Override
     public void onReadyMarkerAdded(ReadyMarker readyMarker) {
-        logger.debug("Receiving the ready marker {}:{}", readyMarker.getType(), readyMarker.getIdentifier());
+        logger.debug("{}Receiving the ready marker {}:{}", LOG_STATE, readyMarker.getType(), readyMarker.getIdentifier());
 
         if (readyMarker.getType() == HOMEKIT_ACCESSORY_SERVER_REGISTRY) {
             accessoryServerRegistryReady = true;
@@ -126,11 +131,11 @@ public class HomekitPairingRegistry extends AbstractRegistry<Pairing, PairingUID
 
         if (accessoryServerRegistryReady && managedPairingProviderReady) {
             for (Pairing aPairing : getAll()) {
-                logger.debug("Pairing {} with Public Key {} is available in the Pairing Registry", aPairing.getUID(),
+                logger.debug("{}Pairing {} with Public Key {} is available in the Pairing Registry", LOG_STATE, aPairing.getUID(),
                         Byte.toHexString(aPairing.getPublicKey()));
             }
 
-            logger.warn("Marking the Pairing Registry as ready");
+            logger.warn("{}Marking the Pairing Registry as ready", LOG_WARN);
             ReadyMarker newMarker = new ReadyMarker(HOMEKIT_PAIRING_REGISTRY, this.toString());
             readyService.markReady(newMarker);
         }

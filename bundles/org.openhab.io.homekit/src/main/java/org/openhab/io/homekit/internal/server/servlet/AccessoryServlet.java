@@ -22,6 +22,16 @@ import org.slf4j.LoggerFactory;
 public class AccessoryServlet extends BaseServlet {
 
     protected static final Logger logger = LoggerFactory.getLogger(AccessoryServlet.class);
+    protected static final String LOG_PREFIX = "HomeKit AccessoryServlet: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+    protected static final String LOG_EVENT = LOG_PREFIX + "Event - ";
+    protected static final String LOG_SERVER = LOG_PREFIX + "Server - ";
+    protected static final String LOG_PAIRING = LOG_PREFIX + "Pairing - ";
 
     public AccessoryServlet() {
     }
@@ -40,7 +50,7 @@ public class AccessoryServlet extends BaseServlet {
                 accessories.add(accessory.toReducedJson());
             }
         } catch (AccessoryOperationException e) {
-            logger.error("Error accessing accessories: {}", e.getMessage());
+            logger.error("{}Error accessing accessories: {}", LOG_ERROR, e.getMessage());
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return;
         }
@@ -56,7 +66,7 @@ public class AccessoryServlet extends BaseServlet {
             jwr.write(builder.build());
             jwr.close();
 
-            logger.debug("Accessories : {}", baos.toString());
+            logger.debug("{}Accessories : {}", LOG_EVENT, baos.toString());
 
             response.setContentLengthLong(baos.toByteArray().length);
             response.getOutputStream().write(baos.toByteArray());

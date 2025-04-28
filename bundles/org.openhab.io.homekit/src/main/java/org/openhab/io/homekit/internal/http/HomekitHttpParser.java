@@ -1,4 +1,3 @@
-
 package org.openhab.io.homekit.internal.http;
 
 import static org.eclipse.jetty.http.HttpComplianceSection.*;
@@ -30,8 +29,8 @@ import org.eclipse.jetty.util.BufferUtil;
 import org.eclipse.jetty.util.StringUtil;
 import org.eclipse.jetty.util.Trie;
 import org.eclipse.jetty.util.Utf8StringBuilder;
-import org.eclipse.jetty.util.log.Log;
-import org.eclipse.jetty.util.log.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A Parser for 1.0 and 1.1 as defined by RFC7230
@@ -82,7 +81,14 @@ import org.eclipse.jetty.util.log.Logger;
  * @see <a href="http://tools.ietf.org/html/rfc7230">RFC 7230</a>
  */
 public class HomekitHttpParser {
-    public static final Logger LOG = Log.getLogger(HomekitHttpParser.class);
+    protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpParser.class);
+    protected static final String LOG_PREFIX = "HomeKit HttpParser: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
     @Deprecated
     public static final String __STRICT = "org.eclipse.jetty.http.HomekitHttpParser.STRICT";
     public static final int INITIAL_URI_LENGTH = 256;
@@ -149,7 +155,7 @@ public class HomekitHttpParser {
     private static final EnumSet<State> __idleStates = EnumSet.of(State.START, State.END, State.CLOSE, State.CLOSED);
     private static final EnumSet<State> __completeStates = EnumSet.of(State.END, State.CLOSE, State.CLOSED);
 
-    private final boolean debug = LOG.isDebugEnabled(); // Cache debug to help branch prediction
+    private final boolean debug = logger.isDebugEnabled(); // Cache debug to help branch prediction
     private final HttpHandler _handler;
     private final RequestHandler _requestHandler;
     private final ResponseHandler _responseHandler;
@@ -244,7 +250,7 @@ public class HomekitHttpParser {
     private static HttpCompliance compliance() {
         boolean strict = Boolean.getBoolean(__STRICT);
         if (strict) {
-            LOG.warn("Deprecated property used: " + __STRICT);
+            logger.warn("{}Deprecated property used: {}", LOG_WARN, __STRICT);
             return HttpCompliance.LEGACY;
         }
         return HttpCompliance.RFC7230;
@@ -511,7 +517,7 @@ public class HomekitHttpParser {
 
             // count this white space as a header byte to avoid DOS
             if (_maxHeaderBytes > 0 && ++_headerBytes > _maxHeaderBytes) {
-                LOG.warn("padding is too large >" + _maxHeaderBytes);
+                logger.warn("{}padding is too large >{}", LOG_WARN, _maxHeaderBytes);
                 throw new BadMessageException(HttpStatus.BAD_REQUEST_400);
             }
         }
@@ -566,17 +572,10 @@ public class HomekitHttpParser {
             }
 
             if (_maxHeaderBytes > 0 && ++_headerBytes > _maxHeaderBytes) {
-                if (_state == State.URI) {
-                    LOG.warn("URI is too large >" + _maxHeaderBytes);
-                    throw new BadMessageException(HttpStatus.URI_TOO_LONG_414);
-                } else {
-                    if (_requestHandler != null) {
-                        LOG.warn("request is too large >" + _maxHeaderBytes);
-                    } else {
-                        LOG.warn("response is too large >" + _maxHeaderBytes);
-                    }
-                    throw new BadMessageException(HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE_431);
-                }
+                boolean header = _state == State.HEADER;
+                logger.warn("{}{} is too large {}>{}", LOG_WARN, header ? "Header" : "Trailer", _headerBytes, _maxHeaderBytes);
+                throw new BadMessageException(
+                        header ? HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE_431 : HttpStatus.PAYLOAD_TOO_LARGE_413);
             }
 
             switch (_state) {
@@ -674,7 +673,7 @@ public class HomekitHttpParser {
                                     _headerBytes += len;
 
                                     if (_maxHeaderBytes > 0 && ++_headerBytes > _maxHeaderBytes) {
-                                        LOG.warn("URI is too large >" + _maxHeaderBytes);
+                                        logger.warn("{}URI is too large >{}", LOG_WARN, _maxHeaderBytes);
                                         throw new BadMessageException(HttpStatus.URI_TOO_LONG_414);
                                     }
                                     _uri.append(array, p - 1, len + 1);
@@ -1041,7 +1040,7 @@ public class HomekitHttpParser {
         try {
             return Long.parseLong(valueString);
         } catch (NumberFormatException e) {
-            LOG.ignore(e);
+            logger.debug("{}Ignored NumberFormatException for invalid Content-Length Value", LOG_ERROR, e);
             throw new BadMessageException(HttpStatus.BAD_REQUEST_400, "Invalid Content-Length Value", e);
         }
     }
@@ -1060,7 +1059,7 @@ public class HomekitHttpParser {
 
             if (_maxHeaderBytes > 0 && ++_headerBytes > _maxHeaderBytes) {
                 boolean header = _state == State.HEADER;
-                LOG.warn("{} is too large {}>{}", header ? "Header" : "Trailer", _headerBytes, _maxHeaderBytes);
+                logger.warn("{}{} is too large {}>{}", LOG_WARN, header ? "Header" : "Trailer", _headerBytes, _maxHeaderBytes);
                 throw new BadMessageException(
                         header ? HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE_431 : HttpStatus.PAYLOAD_TOO_LARGE_413);
             }
@@ -1399,7 +1398,7 @@ public class HomekitHttpParser {
      */
     public boolean parseNext(ByteBuffer buffer) {
         if (debug) {
-            LOG.debug("parseNext s={} {}", _state, BufferUtil.toDetailString(buffer));
+            logger.debug("{}parseNext s={} {}", LOG_STATE, _state, BufferUtil.toDetailString(buffer));
         }
         try {
             // Start a request/response
@@ -1466,7 +1465,7 @@ public class HomekitHttpParser {
                     ++whiteSpace;
                 }
                 if (debug && whiteSpace > 0) {
-                    LOG.debug("Discarded {} CR or LF characters", whiteSpace);
+                    logger.debug("{}Discarded {} CR or LF characters", LOG_STATE, whiteSpace);
                 }
             } else if (isClose() || isClosed()) {
                 BufferUtil.clear(buffer);
@@ -1511,7 +1510,7 @@ public class HomekitHttpParser {
 
                     default:
                         if (debug) {
-                            LOG.debug("{} EOF in {}", this, _state);
+                            logger.debug("{}EOF in {}", LOG_STATE, this, _state);
                         }
                         setState(State.CLOSED);
                         _handler.badMessage(new BadMessageException(HttpStatus.BAD_REQUEST_400));
@@ -1531,7 +1530,7 @@ public class HomekitHttpParser {
 
     protected void badMessage(BadMessageException x) {
         if (debug) {
-            LOG.debug("Parse exception: " + this + " for " + _handler, x);
+            logger.debug("{}Parse exception: {} for {}", LOG_ERROR, this, _handler, x);
         }
         setState(State.CLOSE);
         if (_headerComplete) {
@@ -1736,7 +1735,7 @@ public class HomekitHttpParser {
      */
     public void atEOF() {
         if (debug) {
-            LOG.debug("atEOF {}", this);
+            logger.debug("{}atEOF {}", LOG_STATE, this);
         }
         _eof = true;
     }
@@ -1746,14 +1745,14 @@ public class HomekitHttpParser {
      */
     public void close() {
         if (debug) {
-            LOG.debug("close {}", this);
+            logger.debug("{}close {}", LOG_STATE, this);
         }
         setState(State.CLOSE);
     }
 
     public void reset() {
         if (debug) {
-            LOG.debug("reset {}", this);
+            logger.debug("{}reset {}", LOG_STATE, this);
         }
 
         // reset state
@@ -1776,15 +1775,14 @@ public class HomekitHttpParser {
 
     protected void setState(State state) {
         if (debug) {
-            LOG.debug("{} --> {}", _state, state);
+            logger.debug("{}{}{} --> {}", LOG_STATE, _state, _field != null ? _field : _headerString != null ? _headerString : _string, state);
         }
         _state = state;
     }
 
     protected void setState(FieldState state) {
         if (debug) {
-            LOG.debug("{}:{} --> {}", _state, _field != null ? _field : _headerString != null ? _headerString : _string,
-                    state);
+            logger.debug("{}{}{} --> {}", LOG_STATE, _state, _field != null ? _field : _headerString != null ? _headerString : _string, state);
         }
         _fieldState = state;
     }
@@ -1898,9 +1896,8 @@ public class HomekitHttpParser {
     private static class IllegalCharacterException extends BadMessageException {
         private IllegalCharacterException(State state, HttpTokens.Token token, ByteBuffer buffer) {
             super(400, String.format("Illegal character %s", token));
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format("Illegal character %s in state=%s for buffer %s", token, state,
-                        BufferUtil.toDetailString(buffer)));
+            if (logger.isDebugEnabled()) {
+                logger.debug("{}Illegal character {} in state={} for buffer {}", LOG_ERROR, token, state, BufferUtil.toDetailString(buffer));
             }
         }
     }

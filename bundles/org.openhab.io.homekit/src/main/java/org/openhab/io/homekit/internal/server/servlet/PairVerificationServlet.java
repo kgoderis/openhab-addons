@@ -36,6 +36,16 @@ import djb.Curve25519;
 public class PairVerificationServlet extends BaseServlet {
 
     protected static final Logger logger = LoggerFactory.getLogger(PairVerificationServlet.class);
+    protected static final String LOG_PREFIX = "HomeKit PairVerificationServlet: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+    protected static final String LOG_EVENT = LOG_PREFIX + "Event - ";
+    protected static final String LOG_SERVER = LOG_PREFIX + "Server - ";
+    protected static final String LOG_PAIRING = LOG_PREFIX + "Pairing - ";
 
     public PairVerificationServlet() {
     }
@@ -70,54 +80,47 @@ public class PairVerificationServlet extends BaseServlet {
     protected void doStage1(HttpServletRequest request, HttpServletResponse response, byte[] body)
             throws ServletException, IOException {
 
-        logger.info("Stage 1 : Start");
-        logger.info("Stage 1 : Received Body {}", Byte.toHexString(body));
+        logger.info("{}Stage 1 Start", LOG_STATE);
+        logger.info("{}Stage 1 Received Body {}", LOG_EVENT, Byte.toHexString(body));
 
         HttpSession session = request.getSession();
 
         byte[] clientPublicKey = getClientPublicKey(body);
         session.setAttribute("clientPublicKey", clientPublicKey);
-        logger.info("Stage 1 : Client Public Key is {}", Byte.toHexString(clientPublicKey));
+        logger.info("{}Stage 1 Client Public Key is {}", LOG_ACCESSORY, Byte.toHexString(clientPublicKey));
 
         byte[] accessoryPublicKey = new byte[32];
         byte[] accessoryPrivateKey = new byte[32];
         HomekitEncryptionEngine.getSecureRandom().nextBytes(accessoryPrivateKey);
         Curve25519.keygen(accessoryPublicKey, null, accessoryPrivateKey);
         session.setAttribute("accessoryPublicKey", accessoryPublicKey);
-        logger.info("Stage 1 : Accessory Public Key is {}", Byte.toHexString(accessoryPublicKey));
-        logger.info("Stage 1 : Accessory Private Key is {}", Byte.toHexString(accessoryPrivateKey));
+        logger.info("{}Stage 1 Accessory Public Key is {}", LOG_ACCESSORY, Byte.toHexString(accessoryPublicKey));
+        logger.info("{}Stage 1 Accessory Private Key is {}", LOG_ACCESSORY, Byte.toHexString(accessoryPrivateKey));
 
         byte[] sharedSecret = new byte[32];
         Curve25519.curve(sharedSecret, accessoryPrivateKey, clientPublicKey);
         session.setAttribute("sharedSecret", sharedSecret);
-        logger.info("Stage 1 : Shared Secret is {}", Byte.toHexString(sharedSecret));
+        logger.info("{}Stage 1 Shared Secret is {}", LOG_ACCESSORY, Byte.toHexString(sharedSecret));
 
-        logger.info("Stage 1 : Accessory Pairing Id is {}", server.getPairingId());
+        logger.info("{}Stage 1 Accessory Pairing Id is {}", LOG_PAIRING, server.getPairingId());
         byte[] accessoryInfo = org.openhab.io.homekit.util.Byte.joinBytes(accessoryPublicKey, server.getPairingId(),
                 clientPublicKey);
-        logger.info("Stage 1 : Accessory Info is {}", Byte.toHexString(accessoryInfo));
+        logger.info("{}Stage 1 Accessory Info is {}", LOG_EVENT, Byte.toHexString(accessoryInfo));
 
         byte[] accessorySignature = null;
         try {
-            logger.info("Stage 1 : Accessory Private Key is {}", Byte.toHexString(server.getSecretKey()));
+            logger.info("{}Stage 1 Accessory Private Key is {}", LOG_ACCESSORY, Byte.toHexString(server.getSecretKey()));
             accessorySignature = new EdsaSigner(server.getSecretKey()).sign(accessoryInfo);
-        } catch (InvalidKeyException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (SignatureException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException e) {
+            logger.error("{}Stage 1 Error creating accessory signature", LOG_ERROR, e);
         }
 
         Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
 
-        logger.info("Stage 1 : Accessory Pairing Id is {}", server.getPairingId());
+        logger.info("{}Stage 1 Accessory Pairing Id is {}", LOG_PAIRING, server.getPairingId());
         encoder.add(Message.IDENTIFIER, server.getPairingId());
 
-        logger.info("Stage 1 : Accessory Signature is {}", Byte.toHexString(accessorySignature));
+        logger.info("{}Stage 1 Accessory Signature is {}", LOG_ACCESSORY, Byte.toHexString(accessorySignature));
         encoder.add(Message.SIGNATURE, accessorySignature);
         byte[] plaintext = encoder.toByteArray();
 
@@ -127,7 +130,7 @@ public class PairVerificationServlet extends BaseServlet {
         byte[] sessionKey = new byte[32];
         hkdf.generateBytes(sessionKey, 0, 32);
         session.setAttribute("sessionKey", sessionKey);
-        logger.info("Stage 1 : Session Key is {}", Byte.toHexString(sessionKey));
+        logger.info("{}Stage 1 Session Key is {}", LOG_ACCESSORY, Byte.toHexString(sessionKey));
 
         ChachaEncoder chacha = new ChachaEncoder(sessionKey, "PV-Msg02".getBytes(StandardCharsets.UTF_8));
         byte[] ciphertext = chacha.encodeCiphertext(plaintext);
@@ -137,34 +140,34 @@ public class PairVerificationServlet extends BaseServlet {
         encoder.add(Message.ENCRYPTED_DATA, ciphertext);
         encoder.add(Message.PUBLIC_KEY, accessoryPublicKey);
 
-        logger.info("Stage 1 : End");
+        logger.info("{}Stage 1 End", LOG_STATE);
         response.setContentType("application/pairing+tlv8");
         response.setContentLengthLong(encoder.toByteArray().length);
         response.setStatus(HttpServletResponse.SC_OK);
         response.getOutputStream().write(encoder.toByteArray());
         response.getOutputStream().flush();
-        logger.info("Stage 1 : Flushed");
+        logger.info("{}Stage 1 Flushed", LOG_STATE);
     }
 
     protected void doStage2(HttpServletRequest request, HttpServletResponse response, byte[] body)
             throws ServletException, IOException {
         try {
             boolean isError = false;
-            logger.info("Stage 2 : Start");
-            logger.info("Stage 2 : Received Body {}", Byte.toHexString(body));
+            logger.info("{}Stage 2 Start", LOG_STATE);
+            logger.info("{}Stage 2 Received Body {}", LOG_EVENT, Byte.toHexString(body));
 
             HttpSession session = request.getSession();
             byte[] sessionKey = (byte[]) session.getAttribute("sessionKey");
-            logger.info("Stage 2 : Get Session Key {} from Session", Byte.toHexString(sessionKey));
+            logger.info("{}Stage 2 Get Session Key {} from Session", LOG_ACCESSORY, Byte.toHexString(sessionKey));
 
             byte[] clientPublicKey = (byte[]) session.getAttribute("clientPublicKey");
-            logger.info("Stage 2 : Get Client Public Key {} from Session", Byte.toHexString(clientPublicKey));
+            logger.info("{}Stage 2 Get Client Public Key {} from Session", LOG_ACCESSORY, Byte.toHexString(clientPublicKey));
 
             byte[] accessoryPublicKey = (byte[]) session.getAttribute("accessoryPublicKey");
-            logger.info("Stage 2 : Get Accessory Public Key {} from Session", Byte.toHexString(accessoryPublicKey));
+            logger.info("{}Stage 2 Get Accessory Public Key {} from Session", LOG_ACCESSORY, Byte.toHexString(accessoryPublicKey));
 
             byte[] sharedSecret = (byte[]) session.getAttribute("sharedSecret");
-            logger.info("Stage 2 : Get Shared Secret {} from Session", Byte.toHexString(sharedSecret));
+            logger.info("{}Stage 2 Get Shared Secret {} from Session", LOG_ACCESSORY, Byte.toHexString(sharedSecret));
 
             Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
 
@@ -173,7 +176,7 @@ public class PairVerificationServlet extends BaseServlet {
             try {
                 plaintext = chacha.decodeCiphertext(getAuthTagData(body), getMessageData(body));
             } catch (Exception e) {
-                logger.warn("Stage 2 : Unable to decode the ciphertext");
+                logger.warn("{}Stage 2 Unable to decode the ciphertext", LOG_WARN);
                 isError = true;
             }
 
@@ -185,18 +188,17 @@ public class PairVerificationServlet extends BaseServlet {
                 DecodeResult d = TypeLengthValueEncoderDecoder.decode(plaintext);
 
                 clientPairingId = d.getBytes(Message.IDENTIFIER);
-                logger.info("Stage 2 : Client Pairing Id is {}", Byte.toHexString(clientPairingId));
+                logger.info("{}Stage 2 Client Pairing Id is {}", LOG_ACCESSORY, Byte.toHexString(clientPairingId));
 
                 clientSignature = d.getBytes(Message.SIGNATURE);
-                logger.info("Stage 2 : Client Signature is {}", Byte.toHexString(clientSignature));
+                logger.info("{}Stage 2 Client Signature is {}", LOG_ACCESSORY, Byte.toHexString(clientSignature));
 
                 clientLongtermPublicKey = server.getPublicKey(clientPairingId);
                 if (clientLongtermPublicKey == null) {
                     isError = true;
-                    logger.warn("Stage 2 : Unknown Pairing {}", new String(clientPairingId, StandardCharsets.UTF_8));
+                    logger.warn("{}Stage 2 Unknown Pairing {}", LOG_WARN, new String(clientPairingId, StandardCharsets.UTF_8));
                 } else {
-                    logger.info("Stage 2 : Client Long Term Public Key is {}",
-                            Byte.toHexString(clientLongtermPublicKey));
+                    logger.info("{}Stage 2 Client Long Term Public Key is {}", LOG_ACCESSORY, Byte.toHexString(clientLongtermPublicKey));
                 }
             }
 
@@ -214,22 +216,20 @@ public class PairVerificationServlet extends BaseServlet {
                 }
 
                 if (isError) {
-                    logger.warn("Stage 2 : Unable to verify the Client Signature");
+                    logger.warn("{}Stage 2 Unable to verify the Client Signature", LOG_WARN);
                 }
             }
 
             if (!isError) {
-                logger.info("Stage 2 : Completed pair verification");
+                logger.info("{}Stage 2 Completed pair verification", LOG_STATE);
 
                 session.setAttribute("Control-Write-Encryption-Key",
                         HomekitEncryptionEngine.createKey("Control-Write-Encryption-Key", sharedSecret));
-                logger.info("Stage 2 : Write Key is {}",
-                        Byte.toHexString((byte[]) session.getAttribute("Control-Write-Encryption-Key")));
+                logger.info("{}Stage 2 Write Key is {}", LOG_ACCESSORY, Byte.toHexString((byte[]) session.getAttribute("Control-Write-Encryption-Key")));
 
                 session.setAttribute("Control-Read-Encryption-Key",
                         HomekitEncryptionEngine.createKey("Control-Read-Encryption-Key", sharedSecret));
-                logger.info("Stage 2 : Read Key is {}",
-                        Byte.toHexString((byte[]) session.getAttribute("Control-Read-Encryption-Key")));
+                logger.info("{}Stage 2 Read Key is {}", LOG_ACCESSORY, Byte.toHexString((byte[]) session.getAttribute("Control-Read-Encryption-Key")));
 
                 request.setAttribute("HomekitEncryptionEnabled", true);
             }
@@ -241,14 +241,14 @@ public class PairVerificationServlet extends BaseServlet {
                 encoder.add(Message.STATE, (short) 0x04);
             }
 
-            logger.info("Stage 2 : End");
+            logger.info("{}Stage 2 End", LOG_STATE);
             response.setContentType("application/pairing+tlv8");
             response.setContentLengthLong(encoder.toByteArray().length);
             // response.addHeader(HttpHeader.CONNECTION.asString(), HttpHeader.KEEP_ALIVE.asString());
             response.setStatus(HttpServletResponse.SC_OK);
             response.getOutputStream().write(encoder.toByteArray());
             response.getOutputStream().flush();
-            logger.info("Stage 2 : Flushed");
+            logger.info("{}Stage 2 Flushed", LOG_STATE);
 
         } catch (Exception e) {
             e.printStackTrace();

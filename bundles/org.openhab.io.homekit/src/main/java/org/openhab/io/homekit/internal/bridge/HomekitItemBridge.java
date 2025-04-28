@@ -55,24 +55,31 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
     private static final Logger logger = LoggerFactory.getLogger(HomekitItemBridge.class);
 
+    protected static final String LOG_PREFIX = "HomeKit ItemBridge: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+
     // Error messages
-    private static final String ERROR_CREATING_ACCESSORY = "Error creating HomeKit accessory for item {}: {}";
-    private static final String ERROR_UPDATING_CHARACTERISTIC = "Error updating characteristic {}: {}";
-    private static final String ERROR_REMOVING_ACCESSORY = "Error removing accessory {}: {}";
-    private static final String NO_COMPATIBLE_FACTORY = "No compatible HomeKit factory found for item {}";
-    private static final String NO_AVAILABLE_SERVER = "No available bridge accessory server found for item {}";
-    private static final String PRIMARY_ACCESSORY_NOT_FOUND = "Primary accessory not found for item {}";
-    private static final String CHARACTERISTIC_CREATION_FAILED = "Failed to create characteristic {} for item {}";
-    private static final String SERVICE_CREATION_FAILED = "Failed to create service {} for item {}";
+    private static final String ERROR_CREATING_ACCESSORY = LOG_ERROR + "Error creating HomeKit accessory for item {}: {}";
+    private static final String ERROR_UPDATING_CHARACTERISTIC = LOG_ERROR + "Error updating characteristic {}: {}";
+    private static final String ERROR_REMOVING_ACCESSORY = LOG_ERROR + "Error removing accessory {}: {}";
+    private static final String NO_COMPATIBLE_FACTORY = LOG_WARN + "No compatible HomeKit factory found for item {}";
+    private static final String NO_AVAILABLE_SERVER = LOG_WARN + "No available bridge accessory server found for item {}";
+    private static final String CHARACTERISTIC_CREATION_FAILED = LOG_ERROR + "Failed to create characteristic {} for item {}";
+    private static final String SERVICE_CREATION_FAILED = LOG_ERROR + "Failed to create service {} for item {}";
 
     // Debug messages
-    private static final String DEBUG_CREATING_ACCESSORY = "Creating HomeKit accessory for item {}";
-    private static final String DEBUG_ACCESSORY_CREATED = "Successfully created HomeKit accessory for item {}";
-    private static final String DEBUG_UPDATING_CHARACTERISTIC = "Updating characteristic {} for item {} with value {}";
-    private static final String DEBUG_REMOVING_ACCESSORY = "Removing HomeKit accessory for item {}";
-    private static final String DEBUG_ACCESSORY_REMOVED = "Successfully removed HomeKit accessory for item {}";
-    private static final String DEBUG_FOUND_COMPATIBLE_FACTORY = "Found compatible factory {} for item {}";
-    private static final String DEBUG_FOUND_AVAILABLE_SERVER = "Found available server {} for item {}";
+    private static final String DEBUG_CREATING_ACCESSORY = LOG_ACCESSORY + "Creating HomeKit accessory for item {}";
+    private static final String DEBUG_ACCESSORY_CREATED = LOG_ACCESSORY + "Successfully created HomeKit accessory for item {}";
+    private static final String DEBUG_UPDATING_CHARACTERISTIC = LOG_STATE + "Updating characteristic {} for item {} with value {}";
+    private static final String DEBUG_REMOVING_ACCESSORY = LOG_ACCESSORY + "Removing HomeKit accessory for item {}";
+    private static final String DEBUG_ACCESSORY_REMOVED = LOG_ACCESSORY + "Successfully removed HomeKit accessory for item {}";
+    private static final String DEBUG_FOUND_COMPATIBLE_FACTORY = LOG_CONFIG + "Found compatible factory {} for item {}";
+    private static final String DEBUG_FOUND_AVAILABLE_SERVER = LOG_CONFIG + "Found available server {} for item {}";
 
     // Thread safety
     private final Object accessoryLock = new Object();
@@ -171,7 +178,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      */
     private void removeCharacteristic(String itemName, Characteristic<?> characteristic) {
         synchronized (characteristicMap) {
-            Collection<Characteristic<?>> characteristics = characteristicMap.get(itemName);
+            @Nullable Collection<Characteristic<?>> characteristics = characteristicMap.get(itemName);
             if (characteristics != null) {
                 characteristics.remove(characteristic);
                 if (characteristics.isEmpty()) {
@@ -270,7 +277,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                 }
             });
         } catch (Exception e) {
-            logger.error(ERROR_CREATING_ACCESSORY, taggedItem.getName(), e.getMessage(), e);
+            logger.warn(ERROR_CREATING_ACCESSORY, taggedItem.getName(), e.getMessage());
             // Consider adding recovery logic here
         }
     }
@@ -311,7 +318,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                 accessoryRegistry.add(accessory);
                 accessoryMap.put(taggedItem.getName(), accessory);
             }
-            logger.debug("Registered HomeKit accessory for item {} with UID {}", taggedItem.getName(),
+            logger.debug("{}Registered HomeKit accessory for item {} with UID {}", LOG_ACCESSORY, taggedItem.getName(),
                     accessory.getUID());
         } catch (Exception e) {
             logger.error(ERROR_CREATING_ACCESSORY, taggedItem.getName(), e.getMessage(), e);
@@ -332,9 +339,13 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
             if (accessory != null) {
                 try {
                     accessoryRegistry.remove(accessory.getUID());
-                    synchronized (characteristicLock) {
-                        removeCharacteristic(item.getName(), null);
-                    }
+                    accessory.getServices().forEach(service -> {
+                        service.getCharacteristics().forEach(characteristic -> {
+                            synchronized (characteristicLock) {
+                                removeCharacteristic(item.getName(), characteristic);
+                            }
+                        });
+                    });
                     logger.debug(DEBUG_ACCESSORY_REMOVED, item.getName());
                 } catch (Exception e) {
                     logger.error(ERROR_REMOVING_ACCESSORY, item.getName(), e.getMessage(), e);
@@ -351,6 +362,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      * @param server The server to add the accessory to
      * @return The created accessory, or empty if creation failed
      */
+    @SuppressWarnings("null")
     private Optional<Accessory> createAccessory(HomekitTaggedItem taggedItem, HomekitFactory serviceFactory,
             AccessoryServer server) {
         try {
@@ -398,11 +410,11 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     /**
      * Adds characteristics to the primary service.
      * 
-     * @param primaryService The service to add characteristics to
+     * @param service The service to add characteristics to
      * @param characteristicItems Map of characteristic types to items
      * @param accessory The accessory containing the service
      */
-    private void addCharacteristics(Service primaryService, Map<String, Item> characteristicItems,
+    private void addCharacteristics(Service service, Map<String, Item> characteristicItems,
             Accessory accessory) {
         for (Map.Entry<String, Item> entry : characteristicItems.entrySet()) {
             @Nullable String characteristicType = entry.getKey();
@@ -410,8 +422,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
             Optional<HomekitFactory> compatibleCharacteristicFactory = findCompatibleCharacteristicFactory(
                     characteristicType);
-            if (shouldAddCharacteristic(primaryService, characteristicType, compatibleCharacteristicFactory)) {
-                addCharacteristicToService(primaryService, characteristicType, item, accessory,
+            if (shouldAddCharacteristic(service, characteristicType, compatibleCharacteristicFactory)) {
+                addCharacteristicToService(service, characteristicType, item, accessory,
                         compatibleCharacteristicFactory.get());
             }
         }
@@ -434,19 +446,19 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     /**
      * Adds a characteristic to a service and sets up its listener.
      * 
-     * @param primaryService The service to add the characteristic to
+     * @param service The service to add the characteristic to
      * @param characteristicType The type of characteristic to add
      * @param item The item associated with the characteristic
      * @param accessory The accessory containing the service
      * @param characteristicFactory The factory to create the characteristic
      */
-    private void addCharacteristicToService(Service primaryService, String characteristicType, Item item,
+    private void addCharacteristicToService(Service service, String characteristicType, Item item,
             Accessory accessory, HomekitFactory characteristicFactory) {
         try {
             Characteristic<?> characteristic = characteristicFactory.createCharacteristic(characteristicType,
-                    primaryService, accessory.getNextAvailableInstanceId());
+                    service, accessory.getNextAvailableInstanceId());
             if (characteristic != null) {
-                primaryService.addCharacteristic(characteristic);
+                service.addCharacteristic(characteristic);
                 addCharacteristic(item.getName(), characteristic);
                 setupCharacteristicListener(characteristic, item);
             }

@@ -37,6 +37,13 @@ import org.slf4j.LoggerFactory;
 @NonNullByDefault
 @Component(service = { ChannelGroupTypeProvider.class })
 public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypeProvider {
+    protected static final String LOG_PREFIX = "HomeKit ChannelGroupTypeProvider: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
     private final Logger logger = LoggerFactory.getLogger(HomekitChannelGroupTypeProvider.class);
     private final Map<String, HomekitFactory> homekitFactories = new ConcurrentHashMap<>();
 
@@ -75,7 +82,7 @@ public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypePro
         // Create a unique ID for the channel group type
         ChannelGroupTypeUID channelGroupTypeUID = getChannelGroupTypeUID(serviceType);
         if (channelGroupTypeUID == null) {
-            logger.warn("Could not create ChannelGroupTypeUID for service type: {}", serviceType);
+            logger.warn("{}Could not create ChannelGroupTypeUID for service type: {}", LOG_WARN, serviceType);
             return;
         }
 
@@ -93,7 +100,7 @@ public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypePro
 
         // Store the channel group type
         putChannelGroupType(channelGroupType);
-        logger.debug("Created ChannelGroupType {} for HomeKit service type {}", channelGroupTypeUID, serviceType);
+        logger.debug("{}Created ChannelGroupType {} for HomeKit service type {}", LOG_CONFIG, channelGroupTypeUID, serviceType);
     }
 
     private List<ChannelDefinition> createChannelDefinitions(String serviceType, HomekitFactory homekitFactory) {
@@ -113,7 +120,7 @@ public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypePro
             // Get the channel type UID for this characteristic
             ChannelTypeUID channelTypeUID = homekitFactory.getChannelTypeUID(type);
             if (channelTypeUID == null) {
-                logger.warn("No ChannelTypeUID found for characteristic type: {}", type);
+                logger.warn("{}No ChannelTypeUID found for characteristic type: {}", LOG_WARN, type);
                 return null;
             }
 

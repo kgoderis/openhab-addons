@@ -9,6 +9,10 @@ import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.listener.CharacteristicChangeListener;
 import org.openhab.io.homekit.internal.characteristic.CharacteristicUID;
 
+//TODO https://github.com/jlusiardi/homekit_python/blob/master/homekit/model/characteristics/characteristic_types.py
+//TODO https://github.com/apple/HomeKitADK/blob/master/HAP/HAPCharacteristicTypes.h
+
+
 /**
  * Interface for the Characteristics provided by a Service.
  *

@@ -23,6 +23,16 @@ import org.slf4j.LoggerFactory;
 public class PairingServlet extends BaseServlet {
 
     protected static final Logger logger = LoggerFactory.getLogger(PairingServlet.class);
+    protected static final String LOG_PREFIX = "HomeKit PairingServlet: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+    protected static final String LOG_EVENT = LOG_PREFIX + "Event - ";
+    protected static final String LOG_SERVER = LOG_PREFIX + "Server - ";
+    protected static final String LOG_PAIRING = LOG_PREFIX + "Pairing - ";
 
     public PairingServlet() {
     }
@@ -62,8 +72,8 @@ public class PairingServlet extends BaseServlet {
 
     protected void doAddPairing(HttpServletRequest request, HttpServletResponse response, byte[] body)
             throws ServletException, IOException {
-        logger.info("doAddPairing : Start");
-        logger.info("doAddPairing : Received Body {}", Byte.toHexString(body));
+        logger.info("{}Start", LOG_PAIRING);
+        logger.info("{}Received Body {}", LOG_EVENT, Byte.toHexString(body));
 
         DecodeResult d = TypeLengthValueEncoderDecoder.decode(body);
 
@@ -74,7 +84,7 @@ public class PairingServlet extends BaseServlet {
         try {
             server.addPairing(additionalControllerPairingIdentifier, additionalControllerLTPK);
         } catch (HomekitServerException e) {
-            logger.error("doAddPairing : Error adding pairing", e);
+            logger.error("{}Error adding pairing", LOG_ERROR, e);
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
@@ -88,15 +98,15 @@ public class PairingServlet extends BaseServlet {
         response.setStatus(HttpServletResponse.SC_OK);
         response.getOutputStream().write(encoder.toByteArray());
         response.getOutputStream().flush();
-        logger.info("doAddPairing : Flushed");
+        logger.info("{}Flushed", LOG_PAIRING);
 
-        logger.info("doAddPairing : End");
+        logger.info("{}End", LOG_PAIRING);
     }
 
     protected void doRemovePairing(HttpServletRequest request, HttpServletResponse response, byte[] body)
             throws ServletException, IOException {
-        logger.info("doRemovePairing : Start");
-        logger.info("doRemovePairing : Received Body {}", Byte.toHexString(body));
+        logger.info("{}Start", LOG_PAIRING);
+        logger.info("{}Received Body {}", LOG_EVENT, Byte.toHexString(body));
 
         DecodeResult d = TypeLengthValueEncoderDecoder.decode(body);
 
@@ -104,7 +114,7 @@ public class PairingServlet extends BaseServlet {
         try {
             server.removePairing(removedControllerPairingIdentifier);
         } catch (HomekitServerException e) {
-            logger.error("doRemovePairing : Error removing pairing", e);
+            logger.error("{}Error removing pairing", LOG_ERROR, e);
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
@@ -118,15 +128,15 @@ public class PairingServlet extends BaseServlet {
         response.setStatus(HttpServletResponse.SC_OK);
         response.getOutputStream().write(encoder.toByteArray());
         response.getOutputStream().flush();
-        logger.info("doRemovePairing : Flushed");
+        logger.info("{}Flushed", LOG_PAIRING);
 
-        logger.info("doRemovePairing : End");
+        logger.info("{}End", LOG_PAIRING);
     }
 
     protected void doListPairing(HttpServletRequest request, HttpServletResponse response, byte[] body)
             throws ServletException, IOException {
-        logger.info("doListPairing : Start");
-        logger.info("doListPairing : Received Body {}", Byte.toHexString(body));
-        logger.info("doListPairing : End");
+        logger.info("{}Start", LOG_PAIRING);
+        logger.info("{}Received Body {}", LOG_EVENT, Byte.toHexString(body));
+        logger.info("{}End", LOG_PAIRING);
     }
 }

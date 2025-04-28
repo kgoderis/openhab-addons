@@ -55,6 +55,11 @@ public class PersistedAccessoryProvider
 
     private final Logger logger = LoggerFactory.getLogger(PersistedAccessoryProvider.class);
 
+    // ========== Log Message Prefixes ==========
+    protected static final String LOG_PREFIX = "HomeKit PersistedAccessoryProvider: ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+
     static final String HOMEKIT_ACCESSORY_SERVER_REGISTRY = "homekit.accessoryServerRegistry";
     static final String HOMEKIT_MANAGED_ACCESSORY_PROVIDER = "homekit. AccessoryProvider";
     private static final long INITIALIZATION_DELAY_NANOS = TimeUnit.SECONDS.toNanos(5);
@@ -99,7 +104,7 @@ public class PersistedAccessoryProvider
             executor.shutdown();
             executor = null;
 
-            logger.info("Marking the Managed Accessory Provider as ready");
+            logger.info("{}Marking the Managed Accessory Provider as ready", LOG_STATE);
             ReadyMarker newMarker = new ReadyMarker(HOMEKIT_MANAGED_ACCESSORY_PROVIDER, this.toString());
             readyService.markReady(newMarker);
         }
@@ -108,7 +113,7 @@ public class PersistedAccessoryProvider
     @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
     protected void addHomekitFactory(HomekitFactory factory) {
         homekitFactories.add(factory);
-        logger.info("Added a HomeKit Factory for Thing Types {}", Arrays.toString(factory.getSupportedThingTypes()));
+        logger.info("{}Added a HomeKit Factory for Thing Types {}", LOG_STATE, Arrays.toString(factory.getSupportedThingTypes()));
         lastUpdate = System.nanoTime();
     }
 
@@ -147,8 +152,8 @@ public class PersistedAccessoryProvider
             try {
                 clazz = Class.forName(persistableElement.getAccessoryClass());
             } catch (ClassNotFoundException e) {
-                logger.warn("Unable to find Accessory class {}, and will revert to the default GenericAccessory class",
-                        persistableElement.getAccessoryClass());
+                logger.warn("{}Unable to find Accessory class {}, and will revert to the default GenericAccessory class",
+                        LOG_WARN, persistableElement.getAccessoryClass());
                 clazz = GenericAccessory.class;
             }
 

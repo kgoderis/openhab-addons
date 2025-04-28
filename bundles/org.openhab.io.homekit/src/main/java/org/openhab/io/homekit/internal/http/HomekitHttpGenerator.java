@@ -21,8 +21,8 @@ import org.eclipse.jetty.http.MetaData;
 import org.eclipse.jetty.http.PreEncodedHttpField;
 import org.eclipse.jetty.util.BufferUtil;
 import org.eclipse.jetty.util.StringUtil;
-import org.eclipse.jetty.util.log.Log;
-import org.eclipse.jetty.util.log.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * HttpGenerator. Builds HTTP Messages.
@@ -34,7 +34,14 @@ import org.eclipse.jetty.util.log.Logger;
  */
 public class HomekitHttpGenerator extends HttpGenerator {
 
-    private final static Logger LOG = Log.getLogger(HomekitHttpGenerator.class);
+    protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpGenerator.class);
+    protected static final String LOG_PREFIX = "HomeKit HttpGenerator: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
     public final static boolean __STRICT = Boolean.getBoolean("org.eclipse.jetty.http.HttpGenerator.STRICT");
 
@@ -286,8 +293,8 @@ public class HomekitHttpGenerator extends HttpGenerator {
 
             case COMPLETING: {
                 if (BufferUtil.hasContent(content)) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("discarding content in COMPLETING");
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("{}discarding content in COMPLETING", LOG_STATE);
                     }
                     BufferUtil.clear(content);
                 }
@@ -310,8 +317,8 @@ public class HomekitHttpGenerator extends HttpGenerator {
 
             case END:
                 if (BufferUtil.hasContent(content)) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("discarding content in COMPLETING");
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("{}discarding content in COMPLETING", LOG_STATE);
                     }
                     BufferUtil.clear(content);
                 }
@@ -447,8 +454,8 @@ public class HomekitHttpGenerator extends HttpGenerator {
 
             case COMPLETING: {
                 if (BufferUtil.hasContent(content)) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("discarding content in COMPLETING");
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("{}discarding content in COMPLETING", LOG_STATE);
                     }
                     BufferUtil.clear(content);
                 }
@@ -474,8 +481,8 @@ public class HomekitHttpGenerator extends HttpGenerator {
 
             case END:
                 if (BufferUtil.hasContent(content)) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("discarding content in COMPLETING");
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("{}discarding content in COMPLETING", LOG_STATE);
                     }
                     BufferUtil.clear(content);
                 }

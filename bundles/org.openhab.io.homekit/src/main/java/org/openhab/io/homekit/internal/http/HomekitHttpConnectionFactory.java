@@ -1,4 +1,3 @@
-
 package org.openhab.io.homekit.internal.http;
 
 import org.eclipse.jetty.http.HttpCompliance;
@@ -25,6 +24,13 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
         implements HttpConfiguration.ConnectionFactory {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpConnectionFactory.class);
+    protected static final String LOG_PREFIX = "HomeKit HttpConnectionFactory: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
     private final HttpConfiguration config;
     private HttpCompliance httpCompliance;
@@ -83,7 +89,7 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
     @Override
     public Connection newConnection(Connector connector, EndPoint endPoint) {
 
-        logger.trace("[{}] Creating a new connection for Endpoint {}", endPoint.getRemoteAddress().toString(),
+        logger.trace("{}Creating a new connection for Endpoint {} {}", LOG_STATE, endPoint.getRemoteAddress().toString(),
                 endPoint.toString());
 
         String sessionId = sessionHandler
@@ -91,7 +97,7 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
                         + endPoint.getRemoteAddress().getPort());
 
         if (sessionId != null) {
-            logger.trace("[{}] Fetching Session {}", endPoint.getRemoteAddress().toString(), sessionId);
+            logger.trace("{}Fetching Session {} {}", LOG_STATE, endPoint.getRemoteAddress().toString(), sessionId);
             Session session = sessionHandler.getSession(sessionId);
 
             if (session != null) {
@@ -113,7 +119,7 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
         }
 
         if (logger.isDebugEnabled()) {
-            logger.trace("[{}] There is no existing Session", endPoint.getRemoteAddress().toString());
+            logger.trace("{}There is no existing Session {}", LOG_STATE, endPoint.getRemoteAddress().toString());
         }
 
         HttpConnection conn = new HomekitHttpConnection(config, connector, endPoint, httpCompliance,

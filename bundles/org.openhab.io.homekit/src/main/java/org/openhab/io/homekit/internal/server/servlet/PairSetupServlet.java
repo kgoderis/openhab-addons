@@ -43,6 +43,16 @@ import com.nimbusds.srp6.XRoutineWithUserIdentity;
 public class PairSetupServlet extends BaseServlet {
 
     protected static final Logger logger = LoggerFactory.getLogger(PairSetupServlet.class);
+    protected static final String LOG_PREFIX = "HomeKit PairSetupServlet: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+    protected static final String LOG_EVENT = LOG_PREFIX + "Event - ";
+    protected static final String LOG_SERVER = LOG_PREFIX + "Server - ";
+    protected static final String LOG_PAIRING = LOG_PREFIX + "Pairing - ";
 
     protected byte[] sessionKey;
 
@@ -83,8 +93,8 @@ public class PairSetupServlet extends BaseServlet {
 
     protected void doStage1(HttpServletRequest request, HttpServletResponse response, byte[] body)
             throws ServletException, IOException {
-        logger.info("Stage 1 : Start");
-        logger.info("Stage 1 : Received Body {}", Byte.toHexString(body));
+        logger.info("{}Stage 1 Start", LOG_PAIRING);
+        logger.info("{}Stage 1 Received Body {}", LOG_EVENT, Byte.toHexString(body));
 
         HttpSession session = request.getSession();
         HomekitServerSRP6Session SRP6Session = (HomekitServerSRP6Session) session.getAttribute("SRP6Session");
@@ -94,11 +104,11 @@ public class PairSetupServlet extends BaseServlet {
             SRP6Session.setClientEvidenceRoutine(new HomekitEncryptionEngine.ClientEvidenceRoutineImpl());
             SRP6Session.setServerEvidenceRoutine(new HomekitEncryptionEngine.ServerEvidenceRoutineImpl());
             session.setAttribute("SRP6Session", SRP6Session);
-            logger.info("Stage 1 : Added {} to Session", SRP6Session.toString());
+            logger.info("{}Stage 1 Added {} to Session", LOG_PAIRING, SRP6Session.toString());
         }
 
         if (SRP6Session.getState() != State.INIT) {
-            logger.error("Stage 1 : Session is not in state INIT");
+            logger.error("{}Stage 1 Session is not in state INIT", LOG_ERROR);
             response.setStatus(HttpServletResponse.SC_CONFLICT);
         } else {
             SRP6VerifierGenerator verifierGenerator = new SRP6VerifierGenerator(HomekitEncryptionEngine.SRP6Params);
@@ -106,7 +116,7 @@ public class PairSetupServlet extends BaseServlet {
 
             BigInteger salt = generateSalt();
             BigInteger verifier = verifierGenerator.generateVerifier(salt, "Pair-Setup", server.getSetupCode());
-            logger.info("Stage 1 : Verifier is {} ", Byte.toHexString(bigIntegerToUnsignedByteArray(verifier)));
+            logger.info("{}Stage 1 Verifier is {}", LOG_PAIRING, Byte.toHexString(bigIntegerToUnsignedByteArray(verifier)));
 
             Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
             encoder.add(Message.STATE, (short) 0x02);
@@ -116,33 +126,33 @@ public class PairSetupServlet extends BaseServlet {
             BigInteger publicKey = SRP6Session.step1("Pair-Setup", salt, verifier);
             encoder.add(Message.PUBLIC_KEY, publicKey);
 
-            logger.info("Stage 1 : End");
+            logger.info("{}Stage 1 End", LOG_PAIRING);
             response.setContentType("application/pairing+tlv8");
             response.setContentLengthLong(encoder.toByteArray().length);
             response.addHeader(HttpHeader.CONNECTION.asString(), HttpHeader.KEEP_ALIVE.asString());
             response.setStatus(HttpServletResponse.SC_OK);
             response.getOutputStream().write(encoder.toByteArray());
             response.getOutputStream().flush();
-            logger.info("Stage 1 : Flushed");
+            logger.info("{}Stage 1 Flushed", LOG_PAIRING);
         }
     }
 
     protected void doStage2(HttpServletRequest request, HttpServletResponse response, byte[] body)
             throws ServletException, IOException {
 
-        logger.info("Stage 2 : Start");
-        logger.info("Stage 2 : Received Body {}", Byte.toHexString(body));
+        logger.info("{}Stage 2 Start", LOG_PAIRING);
+        logger.info("{}Stage 2 Received Body {}", LOG_EVENT, Byte.toHexString(body));
 
         HttpSession session = request.getSession();
         HomekitServerSRP6Session SRP6Session = (HomekitServerSRP6Session) session.getAttribute("SRP6Session");
 
         if (SRP6Session == null) {
-            logger.info("Stage 2 : Responding {}", HttpServletResponse.SC_UNAUTHORIZED);
+            logger.info("{}Stage 2 Responding {}", LOG_PAIRING, HttpServletResponse.SC_UNAUTHORIZED);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         } else {
-            logger.info("Stage 2 : Get {} from Session", SRP6Session.toString());
+            logger.info("{}Stage 2 Get {} from Session", LOG_PAIRING, SRP6Session.toString());
             if (SRP6Session.getState() != State.STEP_1) {
-                logger.error("Stage 2 : Session is not in state Step 1");
+                logger.error("{}Stage 2 Session is not in state Step 1", LOG_ERROR);
                 response.setStatus(HttpServletResponse.SC_CONFLICT);
             } else {
                 BigInteger proof = null;
@@ -152,14 +162,14 @@ public class PairSetupServlet extends BaseServlet {
                     encoder.add(Message.STATE, (short) 0x04);
                     encoder.add(Message.PROOF, proof);
 
-                    logger.info("Stage 2 : End");
+                    logger.info("{}Stage 2 End", LOG_PAIRING);
                     response.setContentType("application/pairing+tlv8");
                     response.setContentLengthLong(encoder.toByteArray().length);
                     response.addHeader(HttpHeader.CONNECTION.asString(), HttpHeader.KEEP_ALIVE.asString());
                     response.setStatus(HttpServletResponse.SC_OK);
                     response.getOutputStream().write(encoder.toByteArray());
                     response.getOutputStream().flush();
-                    logger.info("Stage 2 : Flushed");
+                    logger.info("{}Stage 2 Flushed", LOG_PAIRING);
 
                 } catch (SRP6Exception e) {
                     e.printStackTrace();
@@ -174,44 +184,44 @@ public class PairSetupServlet extends BaseServlet {
     protected void doStage3(HttpServletRequest request, HttpServletResponse response, byte[] body)
             throws ServletException, IOException {
 
-        logger.info("Stage 3 : Start");
-        logger.info("Stage 3 : Received Body {}", Byte.toHexString(body));
+        logger.info("{}Stage 3 Start", LOG_PAIRING);
+        logger.info("{}Stage 3 Received Body {}", LOG_EVENT, Byte.toHexString(body));
 
         HttpSession session = request.getSession();
         HomekitServerSRP6Session SRP6Session = (HomekitServerSRP6Session) session.getAttribute("SRP6Session");
 
         if (SRP6Session == null) {
-            logger.info("Stage 3 : Responding {}", HttpServletResponse.SC_UNAUTHORIZED);
+            logger.info("{}Stage 3 Responding {}", LOG_PAIRING, HttpServletResponse.SC_UNAUTHORIZED);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         } else {
-            logger.info("Stage 3 : Get {} from Session", SRP6Session.toString());
+            logger.info("{}Stage 3 Get {} from Session", LOG_PAIRING, SRP6Session.toString());
             MessageDigest digest = SRP6Session.getCryptoParams().getMessageDigestInstance();
             BigInteger S = SRP6Session.getSessionKey(false);
             byte[] sBytes = bigIntegerToUnsignedByteArray(S);
-            logger.info("Stage 3 : SRP Session Key is {}", Byte.toHexString(sBytes));
+            logger.info("{}Stage 3 SRP Session Key is {}", LOG_PAIRING, Byte.toHexString(sBytes));
             byte[] sharedSecret = digest.digest(sBytes);
-            logger.info("Stage 3 : Shared Secret is {}", Byte.toHexString(sharedSecret));
+            logger.info("{}Stage 3 Shared Secret is {}", LOG_PAIRING, Byte.toHexString(sharedSecret));
 
             HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA512Digest());
             hkdf.init(new HKDFParameters(sharedSecret, "Pair-Setup-Encrypt-Salt".getBytes(StandardCharsets.UTF_8),
                     "Pair-Setup-Encrypt-Info".getBytes(StandardCharsets.UTF_8)));
             sessionKey = new byte[32];
             hkdf.generateBytes(sessionKey, 0, 32);
-            logger.info("Stage 3 : Session Key is {}", Byte.toHexString(sessionKey));
+            logger.info("{}Stage 3 Session Key is {}", LOG_PAIRING, Byte.toHexString(sessionKey));
 
             ChachaDecoder chachaDecoder = new ChachaDecoder(sessionKey, "PS-Msg05".getBytes(StandardCharsets.UTF_8));
             byte[] plaintext = chachaDecoder.decodeCiphertext(getAuthTagData(body), getMessageData(body));
-            logger.info("Stage 3 : Plaintext is {}", Byte.toHexString(plaintext));
+            logger.info("{}Stage 3 Plaintext is {}", LOG_EVENT, Byte.toHexString(plaintext));
 
             DecodeResult d = TypeLengthValueEncoderDecoder.decode(plaintext);
             byte[] clientPairingIdentifier = d.getBytes(Message.IDENTIFIER);
-            logger.info("Stage 3 : Client Pairing Id is {}", Byte.toHexString(clientPairingIdentifier));
+            logger.info("{}Stage 3 Client Pairing Id is {}", LOG_PAIRING, Byte.toHexString(clientPairingIdentifier));
 
             byte[] clientLongtermPublicKey = d.getBytes(Message.PUBLIC_KEY);
-            logger.info("Stage 3 : Client Long Term Public Key is {}", Byte.toHexString(clientLongtermPublicKey));
+            logger.info("{}Stage 3 Client Long Term Public Key is {}", LOG_PAIRING, Byte.toHexString(clientLongtermPublicKey));
 
             byte[] clientSignature = d.getBytes(Message.SIGNATURE);
-            logger.info("Stage 3 : Client Signature is {}", Byte.toHexString(clientSignature));
+            logger.info("{}Stage 3 Client Signature is {}", LOG_PAIRING, Byte.toHexString(clientSignature));
 
             hkdf = new HKDFBytesGenerator(new SHA512Digest());
             hkdf.init(
@@ -221,7 +231,7 @@ public class PairSetupServlet extends BaseServlet {
             hkdf.generateBytes(clientDeviceX, 0, 32);
 
             byte[] clientDeviceInfo = Byte.joinBytes(clientDeviceX, clientPairingIdentifier, clientLongtermPublicKey);
-            logger.info("Stage 3 : Client Device Info is {}", Byte.toHexString(clientDeviceInfo));
+            logger.info("{}Stage 3 Client Device Info is {}", LOG_PAIRING, Byte.toHexString(clientDeviceInfo));
 
             Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
 
@@ -235,13 +245,13 @@ public class PairSetupServlet extends BaseServlet {
             }
 
             if (isError) {
-                logger.info("Stage 3 : Reporting an Error");
+                logger.info("{}Stage 3 Reporting an Error", LOG_ERROR);
 
                 encoder = TypeLengthValueEncoderDecoder.getEncoder();
                 encoder.add(Message.STATE, (short) 6);
                 encoder.add(Message.ERROR, Error.AUTHENTICATION);
 
-                logger.info("Stage 3 : Removing SRP6Session");
+                logger.info("{}Stage 3 Removing SRP6Session", LOG_PAIRING);
                 session.removeAttribute("SRP6Session");
 
                 response.setContentType("application/pairing+tlv8");
@@ -250,9 +260,9 @@ public class PairSetupServlet extends BaseServlet {
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.getOutputStream().write(encoder.toByteArray());
                 response.getOutputStream().flush();
-                logger.info("Stage 3 : Flushed");
+                logger.info("{}Stage 3 Flushed", LOG_PAIRING);
             } else {
-                logger.info("Stage 3 : Adding pairing for Accessory Server");
+                logger.info("{}Stage 3 Adding pairing for Accessory Server", LOG_PAIRING);
                 try {
                     server.addPairing(clientPairingIdentifier, clientLongtermPublicKey);
                 } catch (Exception e) {
@@ -265,13 +275,13 @@ public class PairSetupServlet extends BaseServlet {
                         "Pair-Setup-Accessory-Sign-Info".getBytes(StandardCharsets.UTF_8)));
                 byte[] accessoryDeviceX = new byte[32];
                 hkdf.generateBytes(accessoryDeviceX, 0, 32);
-                logger.info("Stage 3 : Accessory Device X is {}", Byte.toHexString(accessoryDeviceX));
+                logger.info("{}Stage 3 Accessory Device X is {}", LOG_PAIRING, Byte.toHexString(accessoryDeviceX));
 
-                logger.info("Stage 3 : Server Private Key is {}", Byte.toHexString(server.getSecretKey()));
+                logger.info("{}Stage 3 Server Private Key is {}", LOG_PAIRING, Byte.toHexString(server.getSecretKey()));
                 EdsaSigner signer = new EdsaSigner(server.getSecretKey());
 
                 byte[] accessoryInfo = Byte.joinBytes(accessoryDeviceX, server.getPairingId(), signer.getPublicKey());
-                logger.info("Stage 3 : Accessory Device Info is {}", Byte.toHexString(accessoryInfo));
+                logger.info("{}Stage 3 Accessory Device Info is {}", LOG_PAIRING, Byte.toHexString(accessoryInfo));
 
                 byte[] accessorySignature = null;
                 try {
@@ -286,9 +296,9 @@ public class PairSetupServlet extends BaseServlet {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-                logger.info("Stage 3 : Accessory Signature is {}", Byte.toHexString(accessorySignature));
+                logger.info("{}Stage 3 Accessory Signature is {}", LOG_PAIRING, Byte.toHexString(accessorySignature));
 
-                logger.info("Stage 3 : Server Pairing Id is {}", server.getPairingId());
+                logger.info("{}Stage 3 Server Pairing Id is {}", LOG_PAIRING, server.getPairingId());
                 encoder.add(Message.IDENTIFIER, server.getPairingId());
                 encoder.add(Message.PUBLIC_KEY, signer.getPublicKey());
                 encoder.add(Message.SIGNATURE, accessorySignature);
@@ -302,9 +312,9 @@ public class PairSetupServlet extends BaseServlet {
                 encoder = TypeLengthValueEncoderDecoder.getEncoder();
                 encoder.add(Message.STATE, (short) 6);
                 encoder.add(Message.ENCRYPTED_DATA, ciphertext);
-                logger.info("Stage 3 : End");
+                logger.info("{}Stage 3 End", LOG_PAIRING);
 
-                logger.info("Stage 3 : Removing SRP6Session");
+                logger.info("{}Stage 3 Removing SRP6Session", LOG_PAIRING);
                 session.removeAttribute("SRP6Session");
 
                 response.setContentType("application/pairing+tlv8");
@@ -313,7 +323,7 @@ public class PairSetupServlet extends BaseServlet {
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.getOutputStream().write(encoder.toByteArray());
                 response.getOutputStream().flush();
-                logger.info("Stage 3 : Flushed");
+                logger.info("{}Stage 3 Flushed", LOG_PAIRING);
             }
         }
     }

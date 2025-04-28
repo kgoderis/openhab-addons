@@ -17,6 +17,14 @@ public class HomekitSessionHandler extends SessionHandler {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitSessionHandler.class);
 
+    protected static final String LOG_PREFIX = "HomeKit HomekitSessionHandler: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+
     protected Map<String, String> ipSessionIds = new ConcurrentHashMap<String, String>();
 
     public HomekitSessionHandler() {

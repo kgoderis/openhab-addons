@@ -20,6 +20,13 @@ import org.slf4j.LoggerFactory;
 public class LogRequestFilter implements Filter {
 
     protected static final Logger logger = LoggerFactory.getLogger(LogRequestFilter.class);
+    protected static final String LOG_PREFIX = "HomeKit LogRequestFilter: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
     public LogRequestFilter() {
         // TODO Auto-generated constructor stub
@@ -34,6 +41,7 @@ public class LogRequestFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         try {
+            logger.debug("{}Entering doFilter for request URI: {}", LOG_STATE, ((HttpServletRequest) request).getRequestURI());
             if (logger.isDebugEnabled()) {
                 final RequestWrapper wrappedRequest = new RequestWrapper((HttpServletRequest) request);
                 logPayLoad(wrappedRequest);
@@ -43,35 +51,35 @@ public class LogRequestFilter implements Filter {
             }
         } finally {
             if (logger.isDebugEnabled()) {
-                logger.debug("=======Request Processed=====");
+                logger.debug("{}=======Request Processed=====", LOG_STATE);
             }
         }
     }
 
     private void logPayLoad(HttpServletRequest request) {
         final String userAgent = request.getHeader("User-Agent");
-        logger.debug(String.format("============Request=========="));
-        logger.debug(String.format("From %s:%s ; ua:%s", request.getRemoteAddr(), request.getRemotePort(), userAgent));
-        logger.debug(String.format("Method : %s", request.getMethod().toUpperCase()));
-        logger.debug(String.format("Content-Type : %s", request.getContentType()));
-        logger.debug(String.format("Payload-Size : %s", request.getContentLength()));
-        logger.debug(String.format("URI : %s", request.getRequestURI()));
-        logger.debug(String.format("Query : %s", request.getQueryString()));
-        logger.debug(String.format("Payload :"));
+        logger.debug("{}============Request==========", LOG_STATE);
+        logger.debug("{}From {}:{} ; ua:{}", LOG_STATE, request.getRemoteAddr(), request.getRemotePort(), userAgent);
+        logger.debug("{}Method : {}", LOG_STATE, request.getMethod().toUpperCase());
+        logger.debug("{}Content-Type : {}", LOG_STATE, request.getContentType());
+        logger.debug("{}Payload-Size : {}", LOG_STATE, request.getContentLength());
+        logger.debug("{}URI : {}", LOG_STATE, request.getRequestURI());
+        logger.debug("{}Query : {}", LOG_STATE, request.getQueryString());
+        logger.debug("{}Payload :", LOG_STATE);
         try {
             byte[] body = IOUtils.toByteArray(request.getInputStream());
 
             try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
                 HexDump.dump(body, 0, stream, 0);
                 stream.flush();
-                logger.debug(stream.toString(StandardCharsets.UTF_8.name()));
+                logger.trace("{}{}", LOG_STATE, stream.toString(StandardCharsets.UTF_8.name()));
             }
 
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        logger.debug(String.format("============================="));
+        logger.debug("{}=============================", LOG_STATE);
     }
 
     @Override

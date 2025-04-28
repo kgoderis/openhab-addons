@@ -12,6 +12,13 @@ import org.slf4j.LoggerFactory;
 public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpConnectionOverHTTP.class);
+    protected static final String LOG_PREFIX = "HomeKit HttpConnectionOverHTTP: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
     private byte[] decryptionKey;
     private byte[] encryptionKey;
@@ -56,10 +63,15 @@ public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
     }
 
     public void setEncryptionKeys(byte[] decryptionKey, byte[] encryptionKey) {
+        logger.debug("{}setEncryptionKeys called for {}", LOG_CONFIG, this);
         this.decryptionKey = decryptionKey;
         this.encryptionKey = encryptionKey;
 
-        logger.info("Setting Encryption Keys on {}", this);
+        logger.info("{}Setting Encryption Keys on {}", LOG_CONFIG, this);
+        if (logger.isTraceEnabled()) {
+            logger.trace("{}DecryptionKey: {}", LOG_CONFIG, javax.xml.bind.DatatypeConverter.printHexBinary(decryptionKey));
+            logger.trace("{}EncryptionKey: {}", LOG_CONFIG, javax.xml.bind.DatatypeConverter.printHexBinary(encryptionKey));
+        }
 
         HttpChannelOverHTTP channel = this.getHttpChannel();
 

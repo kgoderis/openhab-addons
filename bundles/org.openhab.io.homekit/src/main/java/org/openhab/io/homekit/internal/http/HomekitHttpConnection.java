@@ -15,6 +15,14 @@ public class HomekitHttpConnection extends HttpConnection {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpConnection.class);
 
+    protected static final String LOG_PREFIX = "HomeKit HttpConnection: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+
     protected boolean upgradable = true;
 
     public HomekitHttpConnection(HttpConfiguration config, Connector connector, EndPoint endPoint,
@@ -32,7 +40,7 @@ public class HomekitHttpConnection extends HttpConnection {
         Connection newConnection = null;
 
         if (upgradable && getHttpChannel().getRequest().getAttribute("HomekitEncryptionEnabled") != null) {
-            logger.debug("Upgrading {} to a secured Connection", this.toString());
+            logger.debug("{}Upgrading {} to a secured Connection", LOG_STATE, this.toString());
             ConnectionFactory factory = getConnector().getConnectionFactory("HOMEKIT");
             newConnection = factory.newConnection(getConnector(), getEndPoint());
         }

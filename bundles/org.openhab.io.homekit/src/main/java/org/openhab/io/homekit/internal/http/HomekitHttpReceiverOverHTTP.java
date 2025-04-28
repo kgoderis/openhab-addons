@@ -1,4 +1,3 @@
-
 package org.openhab.io.homekit.internal.http;
 
 import java.nio.ByteBuffer;
@@ -20,6 +19,14 @@ import org.slf4j.LoggerFactory;
 public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements HomekitHttpParser.ResponseHandler {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpReceiverOverHTTP.class);
+
+    protected static final String LOG_PREFIX = "HomeKit HttpReceiverOverHTTP: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
     private final HomekitHttpParser parser;
     private final HttpClient httpClient;
@@ -196,9 +203,8 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
                     }
                 }
 
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Read {} bytes {} from {}", read, BufferUtil.toDetailString(decryptedInputBuffer),
-                            endPoint);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("{}Read {} bytes {} from {}", LOG_STATE, read, BufferUtil.toDetailString(decryptedInputBuffer), endPoint);
                 }
 
                 if (read > 0) {
@@ -226,8 +232,8 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
                 }
             }
         } catch (Throwable x) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(x);
+            if (logger.isDebugEnabled()) {
+                logger.debug("{}Exception caught in receive", LOG_ERROR, x);
             }
             BufferUtil.clear(decryptedInputBuffer);
             if (decryptedInputBuffer != null) {
@@ -249,7 +255,7 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
             boolean complete = this.complete;
             this.complete = false;
             if (logger.isDebugEnabled()) {
-                logger.debug("Parsed {}, remaining {} {}", handle, decryptedInputBuffer.remaining(), parser);
+                logger.debug("{}Parsed {}, remaining {} {}", LOG_STATE, handle, decryptedInputBuffer.remaining(), parser);
             }
             if (handle) {
                 return true;
@@ -259,8 +265,7 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
             }
             if (complete) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Discarding unexpected content after response: {}",
-                            BufferUtil.toDetailString(decryptedInputBuffer));
+                    logger.debug("{}Discarding unexpected content after response: {}", LOG_WARN, BufferUtil.toDetailString(decryptedInputBuffer));
                 }
                 BufferUtil.clear(decryptedInputBuffer);
                 return false;
@@ -365,7 +370,7 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
     public void setDecryptionKey(byte[] decryptionKey) {
         this.decryptionKey = decryptionKey;
 
-        logger.info("Setting Decryption Key on {}", this);
+        logger.info("{}Setting Decryption Key on {}", LOG_CONFIG, this);
     }
 
     public boolean hasDecryptionKey() {

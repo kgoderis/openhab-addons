@@ -81,6 +81,10 @@ public class HomekitTaggedItem {
     private final int id;
     private GroupItem parentGroupItem;
 
+    // ========== Log Message Prefixes ==========
+    protected static final String LOG_PREFIX = "HomeKit TaggedItem: ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+
     /**
      * Constructs a new HomekitTaggedItem instance for the given item.
      * Determines the item's role in HomeKit integration based on its tags and group membership.
@@ -123,7 +127,7 @@ public class HomekitTaggedItem {
             }
 
         } catch (BadItemConfigurationException e) {
-            logger.warn("Item {} was misconfigured: {}. Excluding item from homekit.", item.getName(), e.getMessage());
+            logger.warn("{}Item {} was misconfigured: {}. Excluding item from homekit.", LOG_WARN, item.getName(), e.getMessage());
             serviceType = null;
             characteristicType = null;
             parentGroupItem = null;
