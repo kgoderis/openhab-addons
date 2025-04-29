@@ -9,16 +9,7 @@ import org.eclipse.jetty.io.EndPoint;
 import org.eclipse.jetty.util.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.eclipse.jetty.client.AbstractConnectionPool;
-import org.eclipse.jetty.client.ConnectionPool;
-import org.eclipse.jetty.client.DuplexConnectionPool;
-import org.openhab.io.homekit.internal.http.HomekitConnnectionPool;
-import org.eclipse.jetty.client.ConnectionPool.Factory;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
-import java.util.ArrayList;
 
 public class HomekitHttpClientTransportOverHTTP extends HttpClientTransportOverHTTP {
 

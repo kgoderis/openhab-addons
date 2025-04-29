@@ -868,7 +868,9 @@ public class HomekitHttpGenerator extends HttpGenerator {
     // Build cache of response lines for status
     private static class PreparedResponse {
         byte[] _reason;
+        @SuppressWarnings("unused")
         byte[] _schemeCode;
+        @SuppressWarnings("unused")
         byte[] _responseLine;
     }
 

@@ -12,6 +12,9 @@
  */
 package org.openhab.io.homekit.internal.bridge;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,6 +26,9 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.core.items.GroupItem;
 import org.openhab.core.items.Item;
 import org.openhab.core.items.ItemRegistry;
+import org.openhab.core.items.Metadata;
+import org.openhab.core.items.MetadataKey;
+import org.openhab.core.items.MetadataRegistry;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
@@ -80,6 +86,9 @@ public class HomekitTaggedItem {
     private Logger logger = LoggerFactory.getLogger(HomekitTaggedItem.class);
     private final int id;
     private GroupItem parentGroupItem;
+    private final Collection<String> homekitTags;
+    private final MetadataRegistry metadataRegistry;
+    private final ItemRegistry itemRegistry;
 
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "HomeKit TaggedItem: ";
@@ -91,10 +100,14 @@ public class HomekitTaggedItem {
      *
      * @param item The openHAB item to wrap
      * @param itemRegistry The item registry to use for group lookups
+     * @param metadataRegistry The metadata registry to use for metadata lookups
      * @throws BadItemConfigurationException if the item's configuration is invalid
      */
-    public HomekitTaggedItem(Item item, ItemRegistry itemRegistry) {
+    public HomekitTaggedItem(Item item, ItemRegistry itemRegistry, MetadataRegistry metadataRegistry) {
         this.item = item;
+        this.metadataRegistry = metadataRegistry;
+        this.itemRegistry = itemRegistry;
+        this.homekitTags = getHomekitTags(item);
 
         try {
             serviceType = getFactoryServiceType();
@@ -103,27 +116,28 @@ public class HomekitTaggedItem {
                 throw new BadItemConfigurationException(
                         "Items cannot be tagged as both a characteristic and an accessory type");
             }
-            List<GroupItem> matchingGroupItems = findMyAccessoryGroups(item, itemRegistry);
+            List<GroupItem> matchingGroupItems = findMyAccessoryGroupsInternal();
 
             switch (matchingGroupItems.size()) {
-                case 0: // Does not belong to a accessory group
+                case 0 -> { // Does not belong to a accessory group
                     if (characteristicType != null) {
                         throw new BadItemConfigurationException(
                                 "Item is tagged as a characteristic, but does not belong to a root accessory group");
                     }
 
                     parentGroupItem = null;
-                    break;
-                case 1: // Belongs to exactly one accessory group
+                }
+                case 1 -> { // Belongs to exactly one accessory group
                     if (item instanceof GroupItem) {
                         throw new BadItemConfigurationException("Nested Accessory Groups are not supported");
                     }
 
                     parentGroupItem = matchingGroupItems.get(0);
-                    break;
-                default: // Belongs to more than one accessory group
+                }
+                default -> { // Belongs to more than one accessory group
                     throw new BadItemConfigurationException(
                             "Item belongs to multiple Groups which are tagged as Homekit devices.");
+                }
             }
 
         } catch (BadItemConfigurationException e) {
@@ -154,13 +168,13 @@ public class HomekitTaggedItem {
 
         Object[] factories = homekitFactoryTracker.getServices();
         if (factories != null) {
-            if (!item.getTags().isEmpty()) {
-                String firstTag = item.getTags().iterator().next();
+            if (!homekitTags.isEmpty()) {
+                String firstTag = homekitTags.iterator().next();
                 for (Object factory : factories) {
                     if (factory instanceof HomekitFactory homekitFactory) {
-                        String serviceType = homekitFactory.getServiceTypeFromTag(firstTag);
-                        if (serviceType != null) {
-                            return serviceType;
+                        String factoryServiceType = homekitFactory.getServiceTypeFromTag(firstTag);
+                        if (factoryServiceType != null) {
+                            return factoryServiceType;
                         }
                     }
                 }
@@ -184,13 +198,13 @@ public class HomekitTaggedItem {
 
         Object[] factories = homekitFactoryTracker.getServices();
         if (factories != null) {
-            if (!item.getTags().isEmpty()) {
-                String firstTag = item.getTags().iterator().next();
+            if (!homekitTags.isEmpty()) {
+                String firstTag = homekitTags.iterator().next();
                 for (Object factory : factories) {
                     if (factory instanceof HomekitFactory homekitFactory) {
-                        String characteristicType = homekitFactory.getCharacteristicTypeFromTag(firstTag);
-                        if (characteristicType != null) {
-                            return characteristicType;
+                        String factoryCharacteristicType = homekitFactory.getCharacteristicTypeFromTag(firstTag);
+                        if (factoryCharacteristicType != null) {
+                            return factoryCharacteristicType;
                         }
                     }
                 }
@@ -317,24 +331,24 @@ public class HomekitTaggedItem {
      * @return A unique identifier for the accessory
      */
     private int calculateId(Item item) {
-        int id = new HashCodeBuilder().append(item.getName()).hashCode();
-        if (id < 0) {
-            id += Integer.MAX_VALUE;
+        int calculatedId = new HashCodeBuilder().append(item.getName()).hashCode();
+        if (calculatedId < 0) {
+            calculatedId += Integer.MAX_VALUE;
         }
-        if (id < 2) {
-            id = 2; // 0 and 1 are reserved
+        if (calculatedId < 2) {
+            calculatedId = 2; // 0 and 1 are reserved
         }
-        if (CREATED_ACCESSORY_IDS.containsKey(id)) {
-            if (!CREATED_ACCESSORY_IDS.get(id).equals(item.getName())) {
+        if (CREATED_ACCESSORY_IDS.containsKey(calculatedId)) {
+            if (!CREATED_ACCESSORY_IDS.get(calculatedId).equals(item.getName())) {
                 logger.warn(
                         "Could not create homekit accessory {} because its hash conflicts with {}. This is a 1:1,000,000 chance occurrence. Change one of the names and consider playing the lottery. See https://github.com/openhab/openhab2-addons/issues/257#issuecomment-125886562",
-                        item.getName(), CREATED_ACCESSORY_IDS.get(id));
+                        item.getName(), CREATED_ACCESSORY_IDS.get(calculatedId));
                 return 0;
             }
         } else {
             CREATED_ACCESSORY_IDS.put(id, item.getName());
         }
-        return id;
+        return calculatedId;
     }
 
     /**
@@ -345,7 +359,7 @@ public class HomekitTaggedItem {
      * @param itemRegistry The item registry to use for group lookups
      * @return A list of group items that are tagged as HomeKit accessories
      */
-    public static List<GroupItem> findMyAccessoryGroups(Item item, ItemRegistry itemRegistry) {
+    public  List<GroupItem> findMyAccessoryGroups() {
         if (homekitFactoryTracker == null) {
             BundleContext context = FrameworkUtil.getBundle(HomekitTaggedItem.class).getBundleContext();
             homekitFactoryTracker = new ServiceTracker<>(context, HomekitFactory.class, null);
@@ -360,7 +374,9 @@ public class HomekitTaggedItem {
                 return Stream.empty();
             }
         }).filter(groupItem -> {
-            return groupItem.getTags().stream().anyMatch(tag -> {
+            Collection<String> groupHomekitTags = getHomekitTags(groupItem);
+
+            return groupHomekitTags.stream().anyMatch(tag -> {
                 Object[] factories = homekitFactoryTracker.getServices();
                 if (factories != null) {
                     return Stream.of(factories).filter(factory -> factory instanceof HomekitFactory)
@@ -370,5 +386,15 @@ public class HomekitTaggedItem {
                 return false;
             });
         }).collect(Collectors.toList());
+    }
+
+    private Collection<String> getHomekitTags(Item item) {
+        MetadataKey key = new MetadataKey("homekit", item.getName());
+        Metadata metadata = metadataRegistry.get(key);
+        return metadata != null ? Arrays.asList(metadata.getValue().split(",")) : Collections.emptyList();
+    }
+
+    private List<GroupItem> findMyAccessoryGroupsInternal() {
+        return findMyAccessoryGroups();
     }
 }

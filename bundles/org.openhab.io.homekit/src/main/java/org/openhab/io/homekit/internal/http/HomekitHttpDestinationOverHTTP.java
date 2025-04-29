@@ -1,7 +1,6 @@
 package org.openhab.io.homekit.internal.http;
 
 import org.eclipse.jetty.client.ConnectionPool;
-import org.eclipse.jetty.client.DuplexConnectionPool;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.Origin;
 import org.eclipse.jetty.client.http.HttpDestinationOverHTTP;

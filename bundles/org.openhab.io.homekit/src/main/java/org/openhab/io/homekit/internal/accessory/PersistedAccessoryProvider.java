@@ -1,7 +1,6 @@
 package org.openhab.io.homekit.internal.accessory;
 
 import java.io.StringReader;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -10,12 +9,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import javax.json.Json;
-import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.registry.AbstractManagedProvider;
 import org.openhab.core.service.ReadyMarker;
@@ -24,11 +23,10 @@ import org.openhab.core.service.ReadyService;
 import org.openhab.core.storage.StorageService;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.api.hap.Accessory;
-import org.openhab.io.homekit.api.hap.Characteristic;
-import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.api.provider.AccessoryProvider;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
+import org.openhab.io.homekit.exception.HomekitException;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -48,17 +46,21 @@ import org.slf4j.LoggerFactory;
  * being restored using the given {@link HomekitFactory}s.
  *
  **/
+@NonNullByDefault
 @Component(immediate = true, service = { PersistedAccessoryProvider.class, PersistedAccessoryProvider.class })
 public class PersistedAccessoryProvider
-        extends AbstractManagedProvider<Accessory, @NonNull AccessoryUID, @NonNull PersistedAccessory>
+        extends AbstractManagedProvider<Accessory,AccessoryUID, PersistedAccessory>
         implements AccessoryProvider, ReadyService.ReadyTracker {
 
-    private final Logger logger = LoggerFactory.getLogger(PersistedAccessoryProvider.class);
-
+    // ========== Constants ==========
+    private static final Logger logger = LoggerFactory.getLogger(PersistedAccessoryProvider.class);
+    
     // ========== Log Message Prefixes ==========
-    protected static final String LOG_PREFIX = "HomeKit PersistedAccessoryProvider: ";
-    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
-    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+    private static final String LOG_PREFIX = "HomeKit Accessory Provider: ";
+    private static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    private static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
     static final String HOMEKIT_ACCESSORY_SERVER_REGISTRY = "homekit.accessoryServerRegistry";
     static final String HOMEKIT_MANAGED_ACCESSORY_PROVIDER = "homekit. AccessoryProvider";
@@ -66,8 +68,7 @@ public class PersistedAccessoryProvider
 
     private final Collection<HomekitFactory> homekitFactories = new CopyOnWriteArrayList<>();
 
-    private final AccessoryServerRegistry accessoryServerRegistry;
-    private ReadyService readyService;
+    private final ReadyService readyService;
 
     private volatile long lastUpdate = System.nanoTime();
     private @Nullable ScheduledExecutorService executor;
@@ -76,10 +77,10 @@ public class PersistedAccessoryProvider
     public PersistedAccessoryProvider(@Reference StorageService storageService,
             @Reference AccessoryServerRegistry accessoryServerRegistry, @Reference ReadyService readyService) {
         super(storageService);
-        this.accessoryServerRegistry = accessoryServerRegistry;
         this.readyService = readyService;
 
-        readyService.registerTracker(this, new ReadyMarkerFilter().withType(HOMEKIT_ACCESSORY_SERVER_REGISTRY));
+        final PersistedAccessoryProvider self = this;
+        readyService.registerTracker(self, new ReadyMarkerFilter().withType(HOMEKIT_ACCESSORY_SERVER_REGISTRY));
     }
 
     @Deactivate
@@ -104,7 +105,7 @@ public class PersistedAccessoryProvider
             executor.shutdown();
             executor = null;
 
-            logger.info("{}Marking the Managed Accessory Provider as ready", LOG_STATE);
+            logger.info("{}Marking the Managed Accessory Provider as ready", LOG_INIT);
             ReadyMarker newMarker = new ReadyMarker(HOMEKIT_MANAGED_ACCESSORY_PROVIDER, this.toString());
             readyService.markReady(newMarker);
         }
@@ -113,7 +114,7 @@ public class PersistedAccessoryProvider
     @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
     protected void addHomekitFactory(HomekitFactory factory) {
         homekitFactories.add(factory);
-        logger.info("{}Added a HomeKit Factory for Thing Types {}", LOG_STATE, Arrays.toString(factory.getSupportedThingTypes()));
+        logger.info("{}Added a HomeKit Factory for Thing Types {}", LOG_INIT, Arrays.toString(factory.getSupportedThingTypes()));
         lastUpdate = System.nanoTime();
     }
 
@@ -127,130 +128,131 @@ public class PersistedAccessoryProvider
     }
 
     @Override
-    protected @NonNull String keyToString(@NonNull AccessoryUID key) {
+    protected @NonNull String keyToString( AccessoryUID key) {
         return key.getAsString();
     }
 
     @Override
-    protected Accessory toElement(@NonNull String key, @NonNull PersistedAccessory persistableElement) {
+    protected @Nullable Accessory toElement( String key, PersistedAccessory persistableElement) {
+
+        Accessory accessory = null;
 
         try {
-            JsonReader jsonReader = Json.createReader(new StringReader(persistableElement.getJson()));
-            JsonObject jsonObject = jsonReader.readObject();
-            jsonReader.close();
+            JsonObject jsonObject = null;
+            try (JsonReader jsonReader = Json.createReader(new StringReader(persistableElement.getJson()))) {
+                jsonObject = jsonReader.readObject();
+            }
 
-            // AccessoryServer server = accessoryServerRegistry.get(persistableElement.getServerUID());
-
-            // if (server != null) {
-            long aid = jsonObject.getJsonNumber("aid").longValue();
-            JsonArray services = (JsonArray) jsonObject.get("services");
-
-            Accessory accessory = null;
-
-            // if (server instanceof LocalAccessoryServer) {
-            Class<?> clazz;
+            
+            Class<?> loadedClass = null;
             try {
-                clazz = Class.forName(persistableElement.getAccessoryClass());
+                 loadedClass = Class.forName(persistableElement.getAccessoryClass());
             } catch (ClassNotFoundException e) {
-                logger.warn("{}Unable to find Accessory class {}, and will revert to the default GenericAccessory class",
-                        LOG_WARN, persistableElement.getAccessoryClass());
-                clazz = GenericAccessory.class;
+                logger.warn("Could not find accessory class {}. Falling back to GenericAccessory.",
+                        persistableElement.getAccessoryClass());
             }
 
-            // TODO : Replace with a call to a Factory in order to create the accessory ?
-            try {
-                accessory = (Accessory) clazz.getConstructor(long.class).newInstance(aid);
-            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                    | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+            if(loadedClass == null) {
+                loadedClass = GenericAccessory.class;
             }
 
-            // } else if (server instanceof RemoteAccessoryServer) {
-            // Class<?> clazz = GenericAccessory.class;
+            if(loadedClass != null) {
+                if (Accessory.class.isAssignableFrom(loadedClass)) {
+                    final Class<? extends Accessory> clazz = loadedClass.asSubclass(Accessory.class);
 
-            // try {
-            // accessory = (Accessory) clazz.getConstructor(AccessoryServer.class, long.class)
-            // .newInstance(server, aid);
-            // } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-            // | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-            // // TODO Auto-generated catch block
-            // e.printStackTrace();
-            // }
-            // }
-
-            if (accessory != null) {
-                logger.debug("Created an Accessory {} of Type {} ", accessory.getUID(),
-                        accessory.getClass().getSimpleName());
-
-                for (JsonValue service : services) {
-                    long iid = ((JsonObject) service).getJsonNumber("iid").longValue();
-                    final String serviceType = ((JsonObject) service).getString("type");
-
-                    if (accessory.getService(serviceType) == null) {
-
-                        HomekitFactory factory = homekitFactories.stream()
-                                .filter(f -> f.supportsServiceType(serviceType)).findFirst().orElse(null);
-
-                        if (factory != null) {
-                            Service newService = factory.createService(serviceType, (Accessory) accessory, iid, false);
-
-                            if (newService != null) {
-                                accessory.addService(newService);
-                                JsonArray characteristics = (JsonArray) ((JsonObject) service).get("characteristics");
-
-                                for (JsonValue characteristic : characteristics) {
-                                    iid = ((JsonObject) characteristic).getJsonNumber("iid").longValue();
-                                    final String characteristicType = ((JsonObject) characteristic).getString("type");
-
-                                    if (newService.getCharacteristic(characteristicType) == null) {
-
-                                        factory = homekitFactories.stream()
-                                                .filter(f -> f.supportsCharacteristicsType(characteristicType))
-                                                .findFirst().orElse(null);
-
-                                        if (factory != null) {
-                                            Characteristic<?> newCharacteristic = factory
-                                                    .createCharacteristic(characteristicType, newService, iid);
-                                            if (newCharacteristic != null) {
-                                                newService.addCharacteristic(newCharacteristic);
-                                            } else {
-                                                logger.warn(
-                                                        "Homekit Factory {} could not create a Characteristic of Type {}",
-                                                        factory.toString(), characteristicType);
-                                            }
-                                        } else {
-                                            logger.warn("No Homekit Factory can create a Characteristic of Type {}",
-                                                    characteristicType);
-                                        }
-                                    } else {
-                                        if (newService.getCharacteristic(characteristicType) != null) {
-                                            logger.info(
-                                                    "Service {} of Type {} already holds Characteristic {} of Type {}",
-                                                    newService.getUID(), newService.getClass().getSimpleName(),
-                                                    ((Characteristic<?>) newService
-                                                            .getCharacteristic(characteristicType)).getUID(),
-                                                    newService.getCharacteristic(characteristicType).getClass()
-                                                            .getSimpleName());
-                                        }
-                                    }
-                                }
-                            } else {
-                                logger.warn("Homekit Factory {} could not create a Service of Type {}",
-                                        factory.toString(), serviceType);
-                            }
-                        } else {
-                            logger.warn("No Homekit Factory can create a Service of Type {}", serviceType);
-                        }
-                    } else {
-                        if (accessory.getService(serviceType) != null) {
-                            logger.info("Accessory {} of Type {} already holds Service {} of Type {}",
-                                    accessory.getUID(), accessory.getClass().getSimpleName(),
-                                    ((Service) accessory.getService(serviceType)).getUID(),
-                                    accessory.getService(serviceType).getClass().getSimpleName());
-                        }
+                    @SuppressWarnings("null")
+                    HomekitFactory factory = homekitFactories.stream()
+                    .filter(f -> f.supportsAccessoryClass(clazz))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("No HomekitFactory found for accessory class"));
+       
+                    if (factory != null) {
+                       accessory = factory.createAccessory(clazz, (JsonValue)jsonObject);
                     }
-                }
+                } else {
+                    logger.warn("Class {} is not an Accessory", loadedClass.getName());
+            }
+        
+            if(accessory == null) {
+                logger.warn("Could not create accessory for class {}", loadedClass.getName());
+            }
+        }
+
+        
+
+
+            // if (accessory != null) {
+            //     logger.debug("Created an Accessory {} of Type {} ", accessory.getUID(),
+            //             accessory.getClass().getSimpleName());
+
+            //     for (JsonValue service : services) {
+            //         long iid = ((JsonObject) service).getJsonNumber("iid").longValue();
+            //         final String serviceType = ((JsonObject) service).getString("type");
+
+            //         if (accessory.getService(serviceType) == null) {
+
+            //             HomekitFactory factory = homekitFactories.stream()
+            //                     .filter(f -> f.supportsServiceType(serviceType)).findFirst().orElse(null);
+
+            //             if (factory != null) {
+            //                 Service newService = factory.createService(serviceType, (Accessory) accessory, iid, false);
+
+            //                 if (newService != null) {
+            //                     accessory.addService(newService);
+            //                     JsonArray characteristics = (JsonArray) ((JsonObject) service).get("characteristics");
+
+            //                     for (JsonValue characteristic : characteristics) {
+            //                         iid = ((JsonObject) characteristic).getJsonNumber("iid").longValue();
+            //                         final String characteristicType = ((JsonObject) characteristic).getString("type");
+
+            //                         if (newService.getCharacteristic(characteristicType) == null) {
+
+            //                             factory = homekitFactories.stream()
+            //                                     .filter(f -> f.supportsCharacteristicsType(characteristicType))
+            //                                     .findFirst().orElse(null);
+
+            //                             if (factory != null) {
+            //                                 Characteristic<?> newCharacteristic = factory
+            //                                         .createCharacteristic(characteristicType, newService, iid);
+            //                                 if (newCharacteristic != null) {
+            //                                     newService.addCharacteristic(newCharacteristic);
+            //                                 } else {
+            //                                     logger.warn(
+            //                                             "Homekit Factory {} could not create a Characteristic of Type {}",
+            //                                             factory.toString(), characteristicType);
+            //                                 }
+            //                             } else {
+            //                                 logger.warn("No Homekit Factory can create a Characteristic of Type {}",
+            //                                         characteristicType);
+            //                             }
+            //                         } else {
+            //                             if (newService.getCharacteristic(characteristicType) != null) {
+            //                                 logger.info(
+            //                                         "Service {} of Type {} already holds Characteristic {} of Type {}",
+            //                                         newService.getUID(), newService.getClass().getSimpleName(),
+            //                                         ((Characteristic<?>) newService
+            //                                                 .getCharacteristic(characteristicType)).getUID(),
+            //                                         newService.getCharacteristic(characteristicType).getClass()
+            //                                                 .getSimpleName());
+            //                             }
+            //                         }
+            //                     }
+            //                 } else {
+            //                     logger.warn("Homekit Factory {} could not create a Service of Type {}",
+            //                             factory.toString(), serviceType);
+            //                 }
+            //             } else {
+            //                 logger.warn("No Homekit Factory can create a Service of Type {}", serviceType);
+            //             }
+            //         } else {
+            //             if (accessory.getService(serviceType) != null) {
+            //                 logger.info("Accessory {} of Type {} already holds Service {} of Type {}",
+            //                         accessory.getUID(), accessory.getClass().getSimpleName(),
+            //                         ((Service) accessory.getService(serviceType)).getUID(),
+            //                         accessory.getService(serviceType).getClass().getSimpleName());
+            //             }
+            //         }
+            //     }
 
                 // if (accessory instanceof ThingAccessory) {
                 // ThingUID thingUID = new ThingUID(persistableElement.getThingUID());
@@ -285,7 +287,6 @@ public class PersistedAccessoryProvider
                 // }
                 // }
                 // }
-                // }
                 // } else {
                 // logger.warn("There is no Homekit Factory that supports ThingType {}",
                 // persistableElement.getThingUID());
@@ -297,6 +298,9 @@ public class PersistedAccessoryProvider
                 // // TODO : Remove from accessory registry? what if thingregistry is not ready?
                 // }
                 // }
+            }
+            catch ( HomekitException e) {
+                logger.error("Error creating accessory: {}", e.getMessage());
             }
 
             return accessory;
@@ -311,12 +315,7 @@ public class PersistedAccessoryProvider
             // }
 
             // return null;
-        } catch (
 
-        Exception e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
     @Override
@@ -325,15 +324,14 @@ public class PersistedAccessoryProvider
     }
 
     @Override
-    public void onReadyMarkerAdded(@NonNull ReadyMarker readyMarker) {
-
-        logger.debug("Receiving the ready marker {}:{}", readyMarker.getType(), readyMarker.getIdentifier());
-
+    public void onReadyMarkerAdded(ReadyMarker readyMarker) {
+        logger.debug("{}Ready marker added: {}", LOG_INIT, readyMarker);
         delayedInitialize();
     }
 
     @Override
-    public void onReadyMarkerRemoved(@NonNull ReadyMarker readyMarker) {
+    public void onReadyMarkerRemoved(ReadyMarker readyMarker) {
+        logger.debug("{}Ready marker removed: {}", LOG_INIT, readyMarker);
         ReadyMarker newMarker = new ReadyMarker(HOMEKIT_MANAGED_ACCESSORY_PROVIDER, this.toString());
         readyService.unmarkReady(newMarker);
     }

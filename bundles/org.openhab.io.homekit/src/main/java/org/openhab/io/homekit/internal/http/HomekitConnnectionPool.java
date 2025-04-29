@@ -4,13 +4,11 @@ import org.eclipse.jetty.client.HttpDestination;
 import org.eclipse.jetty.client.api.Connection;
 import org.eclipse.jetty.util.Callback;
 import org.eclipse.jetty.util.Pool;
-import org.eclipse.jetty.util.Promise;
 import org.eclipse.jetty.util.annotation.ManagedAttribute;
 import org.eclipse.jetty.client.AbstractConnectionPool;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 

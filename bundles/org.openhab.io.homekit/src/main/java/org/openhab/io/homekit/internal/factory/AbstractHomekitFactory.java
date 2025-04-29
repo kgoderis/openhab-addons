@@ -6,7 +6,9 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.json.JsonValue;
 
@@ -50,6 +52,25 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
     protected static final String ERROR_TYPE_LOOKUP = ERROR_PREFIX + "Type lookup error: %s";
 
     // 1. Metadata classes and mappers
+
+    private static class AccessoryMetadata {
+        private final Class<? extends Accessory> accessoryClass;
+        private final String label;
+    
+        public AccessoryMetadata(Class<? extends Accessory> accessoryClass, String label) {
+            this.accessoryClass = accessoryClass;
+            this.label = label;
+        }
+    
+        public Class<? extends Accessory> getAccessoryClass() {
+            return accessoryClass;
+        }
+    
+        public String getLabel() {
+            return label;
+        }
+    }
+
     private static class ServiceMetadata {
         final String serviceType;
         final String tag;
@@ -82,6 +103,7 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
     private final Map<ThingTypeUID, Class<? extends Accessory>> thingTypeAccessoryClassMapper = new HashMap<>();
     private final Map<ThingTypeUID, Set<String>> thingTypeServiceTypeMapper = new HashMap<>();
     private final Map<ChannelTypeUID, Set<String>> channelTypeCharacteristicTypeMapper = new HashMap<>();
+    private final Map<String, AccessoryMetadata> accessoryMetadataMapper = new HashMap<>();
     private final Map<String, @Nullable ServiceMetadata> serviceMetadataMapper = new HashMap<>();
     private final Map<String, @Nullable CharacteristicMetadata> characteristicMetadataMapper = new HashMap<>();
     private final Map<String, Set<Class<? extends Service>>> tagServiceClassMapper = new HashMap<>();
@@ -105,6 +127,34 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
     protected abstract void initializeMappers() throws HomekitFactoryException;
 
     // 3. Metadata population methods
+private void populateAccessoryMetadata(Class<? extends Accessory> accessoryClass) throws HomekitFactoryException {
+    try {
+        Method getLabelMethod = accessoryClass.getMethod("getLabel");
+        String label = (String) getLabelMethod.invoke(null);
+        registerAccessoryMetadata(accessoryClass, label);       
+    } catch (NoSuchMethodException e) {
+        String message = String.format("Accessory %s is missing required methods: %s",
+                accessoryClass.getSimpleName(), e.getMessage());
+        logger.error("{}{}", LOG_ERROR, message, e);
+        throw new HomekitFactoryException(message, e);
+    } catch (IllegalAccessException e) {
+        String message = String.format("Cannot access methods for accessory %s: %s",
+                accessoryClass.getSimpleName(), e.getMessage());
+        logger.error("{}{}", LOG_ERROR, message, e);
+        throw new HomekitFactoryException(message, e);
+    } catch (InvocationTargetException e) {
+        String message = String.format("Error invoking methods for accessory %s: %s",
+                accessoryClass.getSimpleName(), e.getMessage());
+        logger.error("{}{}", LOG_ERROR, message, e);
+        throw new HomekitFactoryException(message, e);
+    } catch (SecurityException | IllegalArgumentException e) {
+        String message = String.format("Unexpected error populating accessory metadata for %s: %s",
+                accessoryClass.getSimpleName(), e.getMessage());
+        logger.error("{}{}", LOG_ERROR, message, e);
+        throw new HomekitFactoryException(message, e);
+    }
+}
+
     private void populateServiceMetadata(Class<? extends Service> serviceClass) throws HomekitFactoryException {
         try {
             Method getTypeMethod = serviceClass.getMethod("getType");
@@ -213,6 +263,14 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
             logger.error("{}{}", LOG_ERROR, message, e);
            throw new HomekitFactoryException(message, e);
         }
+    }
+
+    protected void registerAccessoryMetadata(Class<? extends Accessory> accessoryClass, String label) {
+        logger.debug("{}Registering accessory metadata - Class: {}, Label: {}", LOG_METADATA,
+                accessoryClass.getSimpleName(), label);
+        AccessoryMetadata metadata = new AccessoryMetadata(accessoryClass, label);
+        accessoryMetadataMapper.put(accessoryClass.getName(), metadata);
+        logger.debug("{}Accessory metadata registered successfully", LOG_METADATA);
     }
 
     protected void registerServiceMetadata(Class<? extends Service> serviceClass, String serviceType, String tag) {
@@ -432,7 +490,23 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
         logger.debug("{}Adding accessory to thing type - ThingType: {}, AccessoryClass: {}", LOG_REGISTRY, thingTypeUID,
                 accessoryClass.getSimpleName());
         thingTypeAccessoryClassMapper.put(thingTypeUID, accessoryClass);
+        addAccessory(accessoryClass);
         logger.debug("{}Accessory added successfully", LOG_REGISTRY);
+    }
+
+    @Override
+    public void addAccessory(Class<? extends Accessory> accessoryClass) throws RegistrationException {
+    logger.debug("{}Adding accessory - Class: {}", LOG_REGISTRY, accessoryClass.getSimpleName());
+    try {
+        if (!accessoryMetadataMapper.containsKey(accessoryClass.getName())) {
+            populateAccessoryMetadata(accessoryClass);
+        }
+        logger.debug("{}Accessory added successfully", LOG_REGISTRY);
+    } catch (HomekitFactoryException e) {
+        String message = String.format("Failed to add accessory %s: %s", accessoryClass.getSimpleName(), e.getMessage());
+        logger.error("{}{}", LOG_ERROR, message, e);
+        throw new RegistrationException(message, e);
+    }
     }
 
     @Override
@@ -551,10 +625,37 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
         //     }
         // }
 
+        logger.debug("{}Created an Accessory {} of Type {}, with instanceId {}", LOG_REGISTRY, accessory.getUID(),
+                accessory.getClass().getSimpleName(), accessory.getAccessoryId());
         return accessory;
     }
 
 
+    @Override
+    public @Nullable Accessory createAccessory(Class<? extends Accessory> accessoryClass,JsonValue value) throws HomekitFactoryException {
+        logger.debug("{}Creating accessory - Class: {}, Value: {}", LOG_REGISTRY,
+                accessoryClass.getSimpleName(), value.toString());
+        try {
+            Constructor<? extends Accessory> constructor = accessoryClass.getConstructor(JsonValue.class);
+            if (constructor == null) {
+                throw new NoSuchMethodException("Constructor not found");
+            }
+            @Nullable Accessory accessory = constructor.newInstance(value);
+            logger.debug("{}Created an Accessory {} of Type {}, with instanceId {}", LOG_REGISTRY, accessory.getUID(),
+                    accessory.getClass().getSimpleName(), accessory.getAccessoryId());
+            return accessory;
+        } catch (NoSuchMethodException e) {
+            String message = String.format(
+                    "Accessory %s is missing a valid constructor of type (JsonValue.class)",
+                    accessoryClass.getSimpleName());
+            logger.error("{}{}", LOG_ERROR, message, e);
+            throw new RegistrationException(message, e);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            String message = String.format("Failed to create accessory %s: %s", accessoryClass.getSimpleName(),
+                    e.getMessage());
+            logger.error("{}{}", LOG_ERROR, message, e);
+            throw new RegistrationException(message, e);
+        }    }
 
 
     @Override
@@ -781,6 +882,21 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
         logger.debug("{}Checking thing type support - ThingType: {}, Supported: {}", LOG_REGISTRY, thingTypeUID,
                 supported);
         return supported;
+    }
+
+    // 11. Accessory-related methods
+    @Override
+    public boolean supportsAccessoryClass(Class<? extends Accessory> accessoryClass) {
+        return accessoryMetadataMapper.containsKey(accessoryClass.getName());
+    }
+
+    @SuppressWarnings("null")
+    @Override
+    public Set<Class<? extends Accessory>> getSupportedAccessoryClasses() {
+        return accessoryMetadataMapper.values().stream()
+                .map(metadata -> metadata.getAccessoryClass())
+                .filter(Objects::nonNull)
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     @Override

@@ -63,4 +63,8 @@ public class AppleHomekitFactory extends AbstractHomekitFactory {
             logger.error("{}Failed to initialize mappers in AppleHomekitFactory: {}", AbstractHomekitFactory.LOG_ERROR, e.getMessage(), e);
         }
     }
+
+
+
+
 }

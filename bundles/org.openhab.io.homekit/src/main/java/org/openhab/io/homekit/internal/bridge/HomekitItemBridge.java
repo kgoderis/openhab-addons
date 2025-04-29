@@ -16,6 +16,7 @@ import org.openhab.core.items.GroupItem;
 import org.openhab.core.items.Item;
 import org.openhab.core.items.ItemRegistry;
 import org.openhab.core.items.ItemRegistryChangeListener;
+import org.openhab.core.items.MetadataRegistry;
 import org.openhab.core.items.StateChangeListener;
 import org.openhab.core.items.events.ItemEventFactory;
 import org.openhab.core.types.State;
@@ -89,6 +90,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     private final ItemRegistry itemRegistry;
     private final EventPublisher eventPublisher;
     private final AccessoryRegistryImpl accessoryRegistry;
+    private final MetadataRegistry metadataRegistry;
     private final AccessoryServerRegistry accessoryServerRegistry;
     private final Map<String, HomekitFactory> homekitFactories = new ConcurrentHashMap<>();
     private final Map<String, Collection<Characteristic<?>>> characteristicMap = new ConcurrentHashMap<>();
@@ -105,12 +107,12 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     @Activate
     public HomekitItemBridge(@Reference ItemRegistry itemRegistry, @Reference EventPublisher eventPublisher,
             @Reference AccessoryRegistryImpl accessoryRegistry,
-            @Reference AccessoryServerRegistry accessoryServerRegistry) {
+            @Reference AccessoryServerRegistry accessoryServerRegistry, @Reference MetadataRegistry metadataRegistry) {
         this.itemRegistry = itemRegistry;
         this.eventPublisher = eventPublisher;
         this.accessoryRegistry = accessoryRegistry;
         this.accessoryServerRegistry = accessoryServerRegistry;
-
+        this.metadataRegistry = metadataRegistry;
         itemRegistry.addRegistryChangeListener(this);
 
         // Initialize existing HomeKit tagged items

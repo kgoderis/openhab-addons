@@ -48,6 +48,10 @@ public interface HomekitFactory {
 
     ThingTypeUID[] getSupportedThingTypes();
 
+    boolean supportsAccessoryClass(Class<? extends Accessory> accessoryClass);
+
+    Set<Class<? extends Accessory>> getSupportedAccessoryClasses();
+
     boolean supportsServiceType(String serviceType);
 
     Set<String> getSupportedServiceTypes();
@@ -66,6 +70,8 @@ public interface HomekitFactory {
 
         @Nullable Accessory createAccessory(Thing thing, AccessoryServer server)
             throws HomekitFactoryException;
+
+            public @Nullable Accessory createAccessory(Class<? extends Accessory> accessoryClass,JsonValue value) throws HomekitFactoryException;
 
     @Nullable
     Service createService(String serviceType, Accessory accessory, boolean extend, String serviceName)
@@ -94,6 +100,8 @@ public interface HomekitFactory {
 
     void addAccessory(ThingTypeUID thingTypeUID, Class<? extends Accessory> accessoryClass)
             throws RegistrationException;
+
+    void addAccessory(Class<? extends Accessory> accessoryClass) throws RegistrationException;
 
     void addService(ThingTypeUID thingTypeUID) throws RegistrationException;
 

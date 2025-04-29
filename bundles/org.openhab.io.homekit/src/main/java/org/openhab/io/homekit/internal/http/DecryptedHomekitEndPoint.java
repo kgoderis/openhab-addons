@@ -37,8 +37,10 @@ public class DecryptedHomekitEndPoint implements EndPoint {
 
     private final long created = System.currentTimeMillis();
 
+    @SuppressWarnings("unused")
     private Executor executor;
     private Connection connection;
+    @SuppressWarnings("unused")
     private Callback connectionCallback;
 
     private final ByteBufferPool bufferPool;

@@ -32,12 +32,14 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
     private final HttpClient httpClient;
     private boolean shutdown;
     private boolean complete;
+    @SuppressWarnings("unused")
     private HomekitHttpVersion version;
 
     private byte[] decryptionKey;
     private long inboundSequenceCount = 0;
     private ByteBuffer decryptedInputBuffer;
     private ByteBuffer encryptedInputBuffer;
+    @SuppressWarnings("unused")
     private ByteBuffer encryptedOutputBuffer;
 
     public HomekitHttpReceiverOverHTTP(HttpChannelOverHTTP channel) {
@@ -363,7 +365,6 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
     @SuppressWarnings("deprecation")
     @Override
     public void badMessage(int status, String reason) {
-        // TODO Auto-generated method stub
         super.badMessage(status, reason);
     }
 

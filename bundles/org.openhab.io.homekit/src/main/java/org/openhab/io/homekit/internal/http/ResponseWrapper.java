@@ -162,7 +162,7 @@ public class ResponseWrapper extends HttpServletResponseWrapper {
         if (this.content.size() > 0) {
             HttpServletResponse rawResponse = (HttpServletResponse) getResponse();
             if ((complete || this.contentLength != null) && !rawResponse.isCommitted()) {
-                rawResponse.setContentLength(complete ? this.content.size() : this.contentLength);
+                rawResponse.setContentLength(complete ? this.content.size() : (this.contentLength != null ? this.contentLength : 0));
                 this.contentLength = null;
             }
             this.content.writeTo(rawResponse.getOutputStream());
