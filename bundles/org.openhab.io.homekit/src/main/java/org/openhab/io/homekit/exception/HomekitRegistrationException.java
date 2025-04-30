@@ -3,12 +3,12 @@ package org.openhab.io.homekit.exception;
 /**
  * Exception thrown when there is an error during HomeKit service or characteristic registration.
  */
-public class RegistrationException extends HomekitFactoryException {
-    public RegistrationException(String message) {
+public class HomekitRegistrationException extends HomekitFactoryException {
+    public HomekitRegistrationException(String message) {
         super(message);
     }
 
-    public RegistrationException(String message, Throwable cause) {
+    public HomekitRegistrationException(String message, Throwable cause) {
         super(message, cause);
     }
 }

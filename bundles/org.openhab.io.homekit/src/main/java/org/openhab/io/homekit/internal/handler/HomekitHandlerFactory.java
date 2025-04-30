@@ -103,8 +103,8 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
         if (HomekitBindingConstants.THING_TYPE_ACCESSORY.equals(thingTypeUID)) {
-            return new AccessoryThingHandler(thing, serverRegistry, accessoryRegistry, homekitChannelTypeProvider
-                    , homekitThingTypeProvider);
+            return new AccessoryThingHandler(thing, serverRegistry, accessoryRegistry, homekitChannelTypeProvider,
+                    homekitThingTypeProvider);
         }
 
         if (SUPPORTED_THING_TYPES.contains(thingTypeUID)) {

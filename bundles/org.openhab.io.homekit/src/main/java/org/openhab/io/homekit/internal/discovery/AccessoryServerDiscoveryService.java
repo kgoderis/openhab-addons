@@ -36,7 +36,7 @@ import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
-import org.openhab.io.homekit.exception.AccessoryOperationException;
+import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.exception.HomekitException;
 import org.openhab.io.homekit.exception.HomekitServerException;
 import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
@@ -55,7 +55,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Discovery service for HomeKit accessories.
- * This service listens for HomeKit accessories on the network using mDNS and creates corresponding things in the system.
+ * This service listens for HomeKit accessories on the network using mDNS and creates corresponding things in the
+ * system.
  * 
  * Configuration options:
  * - auto.create.accessoryThing: Enable/disable automatic creation of accessory things (default: true)
@@ -121,8 +122,7 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
             final @Reference MDNSClient mdnsClient, final @Reference AccessoryServerRegistry accessoryServerRegistry,
             final @Reference NetworkAddressService networkAddressService,
             @Reference AccessoryRegistry accessoryRegistry, @Reference PairingRegistry pairingRegistry,
-            @Reference HomekitThingTypeProvider homekitThingTypeProvider,
-            @Reference ConfigurationAdmin configAdmin) {
+            @Reference HomekitThingTypeProvider homekitThingTypeProvider, @Reference ConfigurationAdmin configAdmin) {
         super(5);
         logger.debug("{}Initializing HomeKit discovery service", LOG_INIT);
 
@@ -137,7 +137,7 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
 
         // Load configuration
         loadConfiguration();
-        
+
         logger.info("{}HomeKit discovery service initialized successfully", LOG_INIT);
     }
 
@@ -149,10 +149,10 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
     @Override
     protected void deactivate() {
         logger.debug("{}Deactivating HomeKit discovery service", LOG_INIT);
-        
+
         // Stop background discovery
         stopBackgroundDiscovery();
-        
+
         // Cancel all pending removal tasks
         deviceRemovalTasks.values().forEach(task -> {
             if (task != null) {
@@ -160,20 +160,20 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
             }
         });
         deviceRemovalTasks.clear();
-        
+
         // Remove all service listeners
         mdnsClient.removeServiceListener(SERVICE_TYPE, this);
-        
+
         // Clean up any remaining servers
         // accessoryServerRegistry.getAll().forEach(server -> {
-        //     try {
-        //         server.stop();
-        //     } catch (Exception e) {
-        //         logger.warn("{}Failed to stop server {} during deactivation: {}", LOG_WARN, 
-        //                 server.getUID(), e.getMessage());
-        //     }
+        // try {
+        // server.stop();
+        // } catch (Exception e) {
+        // logger.warn("{}Failed to stop server {} during deactivation: {}", LOG_WARN,
+        // server.getUID(), e.getMessage());
+        // }
         // });
-        
+
         super.deactivate();
         logger.info("{}HomeKit discovery service deactivated", LOG_INIT);
     }
@@ -262,16 +262,17 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
     private void scan(boolean isBackground) {
         long start = System.currentTimeMillis();
         logger.debug("{}Starting {} scan for HomeKit services", LOG_SERVER, isBackground ? "background" : "foreground");
-        
+
         ServiceInfo[] services;
         if (isBackground) {
             services = mdnsClient.list(SERVICE_TYPE);
         } else {
             services = mdnsClient.list(SERVICE_TYPE, FOREGROUND_SCAN_TIMEOUT);
         }
-        
-        logger.debug("{}Found {} HomeKit services in {}ms", LOG_SERVER, services.length, System.currentTimeMillis() - start);
-        
+
+        logger.debug("{}Found {} HomeKit services in {}ms", LOG_SERVER, services.length,
+                System.currentTimeMillis() - start);
+
         for (ServiceInfo serviceInfo : services) {
             logger.debug("{}Processing service: {}", LOG_SERVER, serviceInfo.getName());
             Map<String, String> properties = processService(serviceInfo);
@@ -281,7 +282,8 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
                 continue;
             }
 
-            @Nullable String deviceId = properties.get("id");
+            @Nullable
+            String deviceId = properties.get("id");
             if (deviceId == null || deviceId.isEmpty()) {
                 logger.warn("{}Service {} has no device ID", LOG_WARN, serviceInfo.getName());
                 continue;
@@ -301,10 +303,11 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
                 try {
                     server.updateAccessories();
                     logger.debug("{}Successfully updated accessories for server {}", LOG_ACCESSORY, server.getUID());
-                } catch (AccessoryOperationException e) {
-                    logger.warn("{}Failed to update accessories for server {}: {}", LOG_WARN, server.getUID(), e.getMessage());
+                } catch (HomekitAccessoryOperationException e) {
+                    logger.warn("{}Failed to update accessories for server {}: {}", LOG_WARN, server.getUID(),
+                            e.getMessage());
                 }
-                
+
                 try {
                     for (Accessory accessory : server.getAccessories()) {
                         if (accessoryRegistry != null && accessoryRegistry.get(accessory.getUID()) == null) {
@@ -313,14 +316,17 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
                             try {
                                 createThingFromAccessory(server, accessory);
                             } catch (HomekitException e) {
-                                logger.warn("{}Failed to create thing for accessory {}: {}", LOG_WARN, accessory.getUID(), e.getMessage());
+                                logger.warn("{}Failed to create thing for accessory {}: {}", LOG_WARN,
+                                        accessory.getUID(), e.getMessage());
                             }
                         } else {
-                            logger.trace("{}Accessory {} already exists in registry", LOG_ACCESSORY, accessory.getUID());
+                            logger.trace("{}Accessory {} already exists in registry", LOG_ACCESSORY,
+                                    accessory.getUID());
                         }
                     }
-                } catch (AccessoryOperationException e) {
-                    logger.warn("{}Failed to process accessories for server {}: {}", LOG_WARN, server.getUID(), e.getMessage());
+                } catch (HomekitAccessoryOperationException e) {
+                    logger.warn("{}Failed to process accessories for server {}: {}", LOG_WARN, server.getUID(),
+                            e.getMessage());
                 }
             } else {
                 logger.warn("{}Server {} is not paired, skipping accessory processing", LOG_PAIRING, server.getUID());
@@ -413,7 +419,8 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
             // Extract all service properties
             Enumeration<@Nullable String> serviceProperties = serviceInfo.getPropertyNames();
             while (serviceProperties.hasMoreElements()) {
-                @Nullable String element = serviceProperties.nextElement();
+                @Nullable
+                String element = serviceProperties.nextElement();
                 if (element != null) {
                     String value = serviceInfo.getPropertyString(element);
                     if (value != null) {
@@ -442,8 +449,8 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
             String stateNumberStr = serviceInfo.getPropertyString("s#");
             String pairingFeatureFlagStr = serviceInfo.getPropertyString("ff");
 
-            if (configIndexStr == null || categoryStr == null || pairingStatusStr == null || 
-                stateNumberStr == null || pairingFeatureFlagStr == null) {
+            if (configIndexStr == null || categoryStr == null || pairingStatusStr == null || stateNumberStr == null
+                    || pairingFeatureFlagStr == null) {
                 throw new IllegalStateException("Missing required service properties for " + serviceInfo.getName());
             }
 
@@ -453,7 +460,8 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
                 AccessoryCategory category = AccessoryCategory.fromValue(Integer.parseInt(categoryStr));
                 PairingStatusFlag pairingStatus = PairingStatusFlag.fromValue(Integer.parseInt(pairingStatusStr));
                 int stateNumber = Integer.parseInt(stateNumberStr);
-                PairingFeatureFlag pairingFeatureFlag = PairingFeatureFlag.fromValue(Integer.parseInt(pairingFeatureFlagStr));
+                PairingFeatureFlag pairingFeatureFlag = PairingFeatureFlag
+                        .fromValue(Integer.parseInt(pairingFeatureFlagStr));
 
                 if (existingServer != null) {
                     // Update existing server configuration if needed
@@ -463,13 +471,14 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
                         try {
                             existingServer.setConfigurationIndex(configIndex);
                         } catch (HomekitServerException e) {
-                            logger.warn("{}Failed to update configuration index for server {}: {}", LOG_WARN, 
+                            logger.warn("{}Failed to update configuration index for server {}: {}", LOG_WARN,
                                     existingServer.getUID(), e.getMessage());
                         }
                     }
                 } else {
                     // Create new server for discovered accessory
-                    logger.info("{}Discovered new HomeKit server - ID: {}, Category: {}, Model: {}, Version: {}, Config Index: {}, Pairing Status: {}, Feature Flag: {}",
+                    logger.info(
+                            "{}Discovered new HomeKit server - ID: {}, Category: {}, Model: {}, Version: {}, Config Index: {}, Pairing Status: {}, Feature Flag: {}",
                             LOG_SERVER, id, category, model, version, configIndex, pairingStatus, pairingFeatureFlag);
 
                     String hostAddress = getHostAddress(serviceInfo);
@@ -479,8 +488,8 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
                     }
 
                     try {
-                        AccessoryServer server = new RemoteAccessoryServer(category, InetAddress.getByName(hostAddress), port,
-                                accessoryRegistry, pairingRegistry);
+                        AccessoryServer server = new RemoteAccessoryServer(category, InetAddress.getByName(hostAddress),
+                                port, accessoryRegistry, pairingRegistry);
                         server.setConfigurationIndex(configIndex);
                         accessoryServerRegistry.add(server);
                         logger.info("{}Created new Remote Accessory Server - UID: {}, Setup Code: {}", LOG_SERVER,
@@ -494,7 +503,8 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
 
                 cancelRemovalTask(serviceInfo);
             } catch (NumberFormatException e) {
-                throw new IllegalStateException("Invalid numeric value in service properties for " + serviceInfo.getName(), e);
+                throw new IllegalStateException(
+                        "Invalid numeric value in service properties for " + serviceInfo.getName(), e);
             }
         } catch (IllegalStateException e) {
             logger.error("{}Error processing service {}: {}", LOG_ERROR, serviceInfo.getName(), e.getMessage());
@@ -540,7 +550,8 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
      * @throws HomekitException if there is an error creating the thing
      */
     private void createThingFromAccessory(AccessoryServer server, Accessory accessory) throws HomekitException {
-        logger.debug("{}Creating thing from accessory {} on server {}", LOG_ACCESSORY, accessory.getUID(), server.getUID());
+        logger.debug("{}Creating thing from accessory {} on server {}", LOG_ACCESSORY, accessory.getUID(),
+                server.getUID());
 
         if (autoCreateServiceThing && homekitThingTypeProvider != null) {
             Map<String, Object> properties = new HashMap<>();
@@ -549,12 +560,13 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
             for (Service service : services) {
                 String serviceType = service.getInstanceType();
                 ThingTypeUID thingTypeUID = homekitThingTypeProvider.getThingTypeUID(serviceType);
- 
+
                 String serviceTag;
                 try {
                     serviceTag = homekitThingTypeProvider.getServiceTag(serviceType);
                 } catch (HomekitException e) {
-                    logger.warn("{}Could not get service tag for type {}, using type as fallback: {}", LOG_WARN, serviceType, e.getMessage());
+                    logger.warn("{}Could not get service tag for type {}, using type as fallback: {}", LOG_WARN,
+                            serviceType, e.getMessage());
                     serviceTag = serviceType;
                 }
 
@@ -596,42 +608,42 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
     private void loadConfiguration() {
         logger.debug("{}Loading HomeKit binding configuration", LOG_CONFIG);
         try {
-                Configuration config = configAdmin.getConfiguration("org.openhab.homekit");
-                if (config == null) {
-                    throw new IllegalStateException("Configuration for 'org.openhab.homekit' not found");
-                }
-                
-                Dictionary<@Nullable String, @Nullable Object> properties = config.getProperties();
-                if (properties == null) {
-                    throw new IllegalStateException("Configuration properties for 'org.openhab.homekit' are null");
-                }
+            Configuration config = configAdmin.getConfiguration("org.openhab.homekit");
+            if (config == null) {
+                throw new IllegalStateException("Configuration for 'org.openhab.homekit' not found");
+            }
 
-                // Get and validate auto-create accessory configuration
-                Object autoCreateObj = properties.get(CONFIG_AUTO_CREATE_ACCESSORY);
-                if (autoCreateObj instanceof Boolean aBoolean) {
-                    autoCreateAccessoryThing = aBoolean;
-                } else if (autoCreateObj != null) {
-                    throw new IllegalArgumentException(String.format("Invalid value for %s: %s. Expected boolean.",
-                            CONFIG_AUTO_CREATE_ACCESSORY, autoCreateObj));
-                } else {
-                    autoCreateAccessoryThing = DEFAULT_AUTO_CREATE_ACCESSORY;
-                }
-                logger.info("{}Thing auto-creation enabled: {}", LOG_CONFIG, autoCreateAccessoryThing);
+            Dictionary<@Nullable String, @Nullable Object> properties = config.getProperties();
+            if (properties == null) {
+                throw new IllegalStateException("Configuration properties for 'org.openhab.homekit' are null");
+            }
 
-                // Get and validate auto-create service configuration
-                Object autoCreateServiceObj = properties.get(CONFIG_AUTO_CREATE_SERVICE);
-                if (autoCreateServiceObj instanceof Boolean aBoolean) {
-                    autoCreateServiceThing = aBoolean;
-                } else if (autoCreateServiceObj != null) {
-                    throw new IllegalArgumentException(String.format("Invalid value for %s: %s. Expected boolean.",
-                            CONFIG_AUTO_CREATE_SERVICE, autoCreateServiceObj));
-                } else {
-                    autoCreateServiceThing = DEFAULT_AUTO_CREATE_SERVICE;
-                }
-                logger.info("{}Service thing auto-creation enabled: {}", LOG_CONFIG, autoCreateServiceThing);
+            // Get and validate auto-create accessory configuration
+            Object autoCreateObj = properties.get(CONFIG_AUTO_CREATE_ACCESSORY);
+            if (autoCreateObj instanceof Boolean aBoolean) {
+                autoCreateAccessoryThing = aBoolean;
+            } else if (autoCreateObj != null) {
+                throw new IllegalArgumentException(String.format("Invalid value for %s: %s. Expected boolean.",
+                        CONFIG_AUTO_CREATE_ACCESSORY, autoCreateObj));
+            } else {
+                autoCreateAccessoryThing = DEFAULT_AUTO_CREATE_ACCESSORY;
+            }
+            logger.info("{}Thing auto-creation enabled: {}", LOG_CONFIG, autoCreateAccessoryThing);
+
+            // Get and validate auto-create service configuration
+            Object autoCreateServiceObj = properties.get(CONFIG_AUTO_CREATE_SERVICE);
+            if (autoCreateServiceObj instanceof Boolean aBoolean) {
+                autoCreateServiceThing = aBoolean;
+            } else if (autoCreateServiceObj != null) {
+                throw new IllegalArgumentException(String.format("Invalid value for %s: %s. Expected boolean.",
+                        CONFIG_AUTO_CREATE_SERVICE, autoCreateServiceObj));
+            } else {
+                autoCreateServiceThing = DEFAULT_AUTO_CREATE_SERVICE;
+            }
+            logger.info("{}Service thing auto-creation enabled: {}", LOG_CONFIG, autoCreateServiceThing);
 
         } catch (IOException e) {
-            logger.error("{}Failed to read HomeKit binding configuration: {}. Using default values", LOG_ERROR, 
+            logger.error("{}Failed to read HomeKit binding configuration: {}. Using default values", LOG_ERROR,
                     e.getMessage(), e);
             autoCreateAccessoryThing = DEFAULT_AUTO_CREATE_ACCESSORY;
             autoCreateServiceThing = DEFAULT_AUTO_CREATE_SERVICE;

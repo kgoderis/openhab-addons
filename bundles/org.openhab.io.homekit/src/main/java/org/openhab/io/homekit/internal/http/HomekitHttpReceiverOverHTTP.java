@@ -206,7 +206,8 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
                 }
 
                 if (logger.isDebugEnabled()) {
-                    logger.debug("{}Read {} bytes {} from {}", LOG_STATE, read, BufferUtil.toDetailString(decryptedInputBuffer), endPoint);
+                    logger.debug("{}Read {} bytes {} from {}", LOG_STATE, read,
+                            BufferUtil.toDetailString(decryptedInputBuffer), endPoint);
                 }
 
                 if (read > 0) {
@@ -257,7 +258,8 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
             boolean complete = this.complete;
             this.complete = false;
             if (logger.isDebugEnabled()) {
-                logger.debug("{}Parsed {}, remaining {} {}", LOG_STATE, handle, decryptedInputBuffer.remaining(), parser);
+                logger.debug("{}Parsed {}, remaining {} {}", LOG_STATE, handle, decryptedInputBuffer.remaining(),
+                        parser);
             }
             if (handle) {
                 return true;
@@ -267,7 +269,8 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
             }
             if (complete) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("{}Discarding unexpected content after response: {}", LOG_WARN, BufferUtil.toDetailString(decryptedInputBuffer));
+                    logger.debug("{}Discarding unexpected content after response: {}", LOG_WARN,
+                            BufferUtil.toDetailString(decryptedInputBuffer));
                 }
                 BufferUtil.clear(decryptedInputBuffer);
                 return false;

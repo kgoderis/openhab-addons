@@ -40,7 +40,8 @@ public class HomekitRequestLogHandler extends RequestLogHandler {
 
             final String userAgent = wrappedRequest.getHeader("User-Agent");
             logger.debug("{}=============Request==========", LOG_STATE);
-            logger.debug("{}From {}:{} ; ua:{}", LOG_STATE, wrappedRequest.getRemoteAddr(), wrappedRequest.getRemotePort(), userAgent);
+            logger.debug("{}From {}:{} ; ua:{}", LOG_STATE, wrappedRequest.getRemoteAddr(),
+                    wrappedRequest.getRemotePort(), userAgent);
             logger.debug("{}Method : {}", LOG_STATE, wrappedRequest.getMethod().toUpperCase());
             logger.debug("{}Content-Type : {}", LOG_STATE, wrappedRequest.getContentType());
             logger.debug("{}Payload-Size : {}", LOG_STATE, wrappedRequest.getContentLength());

@@ -93,7 +93,8 @@ public class AccessoryRegistryImpl extends AbstractRegistry<Accessory, Accessory
 
     @Override
     public void onReadyMarkerAdded(ReadyMarker readyMarker) {
-        logger.debug("{}Ready marker added - Type: {}, Identifier: {}", LOG_STATE, readyMarker.getType(), readyMarker.getIdentifier());
+        logger.debug("{}Ready marker added - Type: {}, Identifier: {}", LOG_STATE, readyMarker.getType(),
+                readyMarker.getIdentifier());
 
         if (getManagedProvider().isPresent()) {
             addProviderWithReadyMarker(getManagedProvider().get());
@@ -102,7 +103,8 @@ public class AccessoryRegistryImpl extends AbstractRegistry<Accessory, Accessory
 
     @Override
     public void onReadyMarkerRemoved(ReadyMarker readyMarker) {
-        logger.debug("{}Ready marker removed - Type: {}, Identifier: {}", LOG_STATE, readyMarker.getType(), readyMarker.getIdentifier());
+        logger.debug("{}Ready marker removed - Type: {}, Identifier: {}", LOG_STATE, readyMarker.getType(),
+                readyMarker.getIdentifier());
     }
 
     @Override

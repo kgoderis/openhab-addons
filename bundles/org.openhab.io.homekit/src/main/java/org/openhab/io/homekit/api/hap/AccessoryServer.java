@@ -8,11 +8,11 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.registry.Identifiable;
 import org.openhab.io.homekit.api.listener.AccessoryServerChangeListener;
-import org.openhab.io.homekit.exception.AccessoryOperationException;
-import org.openhab.io.homekit.exception.ConfigurationException;
-import org.openhab.io.homekit.exception.HomekitServerException;
-import org.openhab.io.homekit.exception.ListenerNotificationException;
+import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
+import org.openhab.io.homekit.exception.HomekitConfigurationException;
 import org.openhab.io.homekit.exception.HomekitException;
+import org.openhab.io.homekit.exception.HomekitServerException;
+import org.openhab.io.homekit.exception.HomekitEventException;
 import org.openhab.io.homekit.internal.server.AccessoryServerUID;
 
 /**
@@ -64,7 +64,7 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
      *
      * @return collection of registered accessories
      */
-    Collection<Accessory> getAccessories()throws AccessoryOperationException;
+    Collection<Accessory> getAccessories() throws HomekitAccessoryOperationException;
 
     /**
      * Updates the list of accessories by fetching remote accessories and comparing with currently managed ones.
@@ -72,7 +72,7 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
      *
      * @throws IOException if an error occurs while fetching remote accessories
      */
-    void updateAccessories() throws AccessoryOperationException;
+    void updateAccessories() throws HomekitAccessoryOperationException;
 
     /**
      * Gets an accessory by its accessory ID.
@@ -81,7 +81,7 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
      * @return the accessory, or null if not found
      */
     @Nullable
-    Accessory getAccessory(int accessoryId)throws AccessoryOperationException;
+    Accessory getAccessory(int accessoryId) throws HomekitAccessoryOperationException;
 
     // /**
     // * Gets an accessory by its class type.
@@ -96,16 +96,16 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
      * Adds a new accessory to this server.
      *
      * @param accessory the accessory to add
-     * @throws AccessoryOperationException if there is an error adding the accessory
+     * @throws HomekitAccessoryOperationException if there is an error adding the accessory
      */
-    void addAccessory(Accessory accessory) throws AccessoryOperationException;
+    void addAccessory(Accessory accessory) throws HomekitAccessoryOperationException;
 
     /**
      * Removes an accessory from this server.
      *
      * @param accessory the accessory to remove
      */
-    void removeAccessory(Accessory accessory) throws AccessoryOperationException;
+    void removeAccessory(Accessory accessory) throws HomekitAccessoryOperationException;
 
     /**
      * Gets the next available accessory ID.
@@ -113,7 +113,7 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
      *
      * @return the next available accessory ID
      */
-    long getNextAvailableAccessoryId()throws AccessoryOperationException;
+    long getNextAvailableAccessoryId() throws HomekitAccessoryOperationException;
 
     // ==================== Pairing Management ====================
 
@@ -152,14 +152,14 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
      * @param pairingId the client's pairing ID
      * @param publicKey the client's public key
      */
-    void addPairing(byte[] pairingId, byte[] publicKey)  throws HomekitServerException;
+    void addPairing(byte[] pairingId, byte[] publicKey) throws HomekitServerException;
 
     /**
      * Removes a pairing with a client.
      *
      * @param pairingId the client's pairing ID to remove
      */
-    void removePairing(byte[] pairingId)  throws HomekitServerException;
+    void removePairing(byte[] pairingId) throws HomekitServerException;
 
     /**
      * Gets a pairing by its ID.
@@ -211,7 +211,7 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
      *
      * @param configurationIndex the new configuration index
      */
-    void setConfigurationIndex(int configurationIndex) throws ConfigurationException;
+    void setConfigurationIndex(int configurationIndex) throws HomekitConfigurationException;
 
     /**
      * Gets the current configuration index.
@@ -227,14 +227,14 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
      *
      * @param listener the listener to add
      */
-    void addChangeListener(AccessoryServerChangeListener listener)  throws ListenerNotificationException;
+    void addChangeListener(AccessoryServerChangeListener listener) throws HomekitEventException;
 
     /**
      * Removes a change listener from the server.
      *
      * @param listener the listener to remove
      */
-    void removeChangeListener(AccessoryServerChangeListener listener)  throws ListenerNotificationException;
+    void removeChangeListener(AccessoryServerChangeListener listener) throws HomekitEventException;
 
     // /**
     // * Adds a notification for characteristic changes.

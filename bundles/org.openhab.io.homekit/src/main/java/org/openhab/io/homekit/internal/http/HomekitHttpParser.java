@@ -573,7 +573,8 @@ public class HomekitHttpParser {
 
             if (_maxHeaderBytes > 0 && ++_headerBytes > _maxHeaderBytes) {
                 boolean header = _state == State.HEADER;
-                logger.warn("{}{} is too large {}>{}", LOG_WARN, header ? "Header" : "Trailer", _headerBytes, _maxHeaderBytes);
+                logger.warn("{}{} is too large {}>{}", LOG_WARN, header ? "Header" : "Trailer", _headerBytes,
+                        _maxHeaderBytes);
                 throw new BadMessageException(
                         header ? HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE_431 : HttpStatus.PAYLOAD_TOO_LARGE_413);
             }
@@ -1059,7 +1060,8 @@ public class HomekitHttpParser {
 
             if (_maxHeaderBytes > 0 && ++_headerBytes > _maxHeaderBytes) {
                 boolean header = _state == State.HEADER;
-                logger.warn("{}{} is too large {}>{}", LOG_WARN, header ? "Header" : "Trailer", _headerBytes, _maxHeaderBytes);
+                logger.warn("{}{} is too large {}>{}", LOG_WARN, header ? "Header" : "Trailer", _headerBytes,
+                        _maxHeaderBytes);
                 throw new BadMessageException(
                         header ? HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE_431 : HttpStatus.PAYLOAD_TOO_LARGE_413);
             }
@@ -1775,14 +1777,16 @@ public class HomekitHttpParser {
 
     protected void setState(State state) {
         if (debug) {
-            logger.debug("{}{}{} --> {}", LOG_STATE, _state, _field != null ? _field : _headerString != null ? _headerString : _string, state);
+            logger.debug("{}{}{} --> {}", LOG_STATE, _state,
+                    _field != null ? _field : _headerString != null ? _headerString : _string, state);
         }
         _state = state;
     }
 
     protected void setState(FieldState state) {
         if (debug) {
-            logger.debug("{}{}{} --> {}", LOG_STATE, _state, _field != null ? _field : _headerString != null ? _headerString : _string, state);
+            logger.debug("{}{}{} --> {}", LOG_STATE, _state,
+                    _field != null ? _field : _headerString != null ? _headerString : _string, state);
         }
         _fieldState = state;
     }
@@ -1897,7 +1901,8 @@ public class HomekitHttpParser {
         private IllegalCharacterException(State state, HttpTokens.Token token, ByteBuffer buffer) {
             super(400, String.format("Illegal character %s", token));
             if (logger.isDebugEnabled()) {
-                logger.debug("{}Illegal character {} in state={} for buffer {}", LOG_ERROR, token, state, BufferUtil.toDetailString(buffer));
+                logger.debug("{}Illegal character {} in state={} for buffer {}", LOG_ERROR, token, state,
+                        BufferUtil.toDetailString(buffer));
             }
         }
     }

@@ -115,37 +115,37 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
     }
 
     // private List<ChannelDefinition> createChannelDefinitions(String serviceType, HomekitFactory homekitFactory) {
-    //     // Get all characteristic types supported by this service
-    //     Set<String> characteristicTypes = homekitFactory.getSupportedCharacteristicTypes();
+    // // Get all characteristic types supported by this service
+    // Set<String> characteristicTypes = homekitFactory.getSupportedCharacteristicTypes();
 
-    //     // Filter to only include characteristics that are relevant to this service
-    //     return characteristicTypes.stream().filter(characteristicType -> {
-    //         // Check if this characteristic type is associated with the service
-    //         return homekitFactory.getService(characteristicType) != null
-    //                 && homekitFactory.getServiceType(characteristicType).equals(serviceType);
-    //     }).map(characteristicType -> {
-    //         // Get the channel type UID for this characteristic
-    //         ChannelTypeUID channelTypeUID = homekitFactory.getChannelTypeUID(characteristicType);
-    //         if (channelTypeUID == null) {
-    //             logger.warn("No ChannelTypeUID found for characteristic type: {}", characteristicType);
-    //             return null;
-    //         }
+    // // Filter to only include characteristics that are relevant to this service
+    // return characteristicTypes.stream().filter(characteristicType -> {
+    // // Check if this characteristic type is associated with the service
+    // return homekitFactory.getService(characteristicType) != null
+    // && homekitFactory.getServiceType(characteristicType).equals(serviceType);
+    // }).map(characteristicType -> {
+    // // Get the channel type UID for this characteristic
+    // ChannelTypeUID channelTypeUID = homekitFactory.getChannelTypeUID(characteristicType);
+    // if (channelTypeUID == null) {
+    // logger.warn("No ChannelTypeUID found for characteristic type: {}", characteristicType);
+    // return null;
+    // }
 
-    //         // Create a channel definition
-    //         return new ChannelDefinitionBuilder(homekitFactory.getTagFromCharacteristicType(characteristicType),
-    //                 channelTypeUID).withLabel(characteristicType)
-    //                 .withDescription("HomeKit " + characteristicType + " Characteristic").build();
-    //     }).filter(def -> def != null).collect(Collectors.toList());
+    // // Create a channel definition
+    // return new ChannelDefinitionBuilder(homekitFactory.getTagFromCharacteristicType(characteristicType),
+    // channelTypeUID).withLabel(characteristicType)
+    // .withDescription("HomeKit " + characteristicType + " Characteristic").build();
+    // }).filter(def -> def != null).collect(Collectors.toList());
     // }
 
     // private List<ChannelGroupDefinition> createChannelGroupDefinitions(String serviceType,
-    //         HomekitFactory homekitFactory) {
-    //     // Create a channel group definition for this service
-    //     // This is a simplification - in a real implementation, you would need to determine
-    //     // which services should be grouped together
-    //     ChannelGroupTypeUID channelGroupTypeUID = getChannelGroupTypeUID(serviceType);
-    //     return List.of(new ChannelGroupDefinition(serviceType, channelGroupTypeUID, serviceType,
-    //             "HomeKit " + serviceType + " Service Group"));
+    // HomekitFactory homekitFactory) {
+    // // Create a channel group definition for this service
+    // // This is a simplification - in a real implementation, you would need to determine
+    // // which services should be grouped together
+    // ChannelGroupTypeUID channelGroupTypeUID = getChannelGroupTypeUID(serviceType);
+    // return List.of(new ChannelGroupDefinition(serviceType, channelGroupTypeUID, serviceType,
+    // "HomeKit " + serviceType + " Service Group"));
     // }
 
     public ThingTypeUID getThingTypeUID(String serviceType) {

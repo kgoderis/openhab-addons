@@ -89,8 +89,8 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
     @Override
     public Connection newConnection(Connector connector, EndPoint endPoint) {
 
-        logger.trace("{}Creating a new connection for Endpoint {} {}", LOG_STATE, endPoint.getRemoteAddress().toString(),
-                endPoint.toString());
+        logger.trace("{}Creating a new connection for Endpoint {} {}", LOG_STATE,
+                endPoint.getRemoteAddress().toString(), endPoint.toString());
 
         String sessionId = sessionHandler
                 .getSessionId(endPoint.getRemoteAddress().getAddress().getHostAddress().toString() + ":"

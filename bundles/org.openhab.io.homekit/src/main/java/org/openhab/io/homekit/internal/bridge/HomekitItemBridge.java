@@ -1,10 +1,12 @@
 package org.openhab.io.homekit.internal.bridge;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
@@ -16,6 +18,8 @@ import org.openhab.core.items.GroupItem;
 import org.openhab.core.items.Item;
 import org.openhab.core.items.ItemRegistry;
 import org.openhab.core.items.ItemRegistryChangeListener;
+import org.openhab.core.items.Metadata;
+import org.openhab.core.items.MetadataKey;
 import org.openhab.core.items.MetadataRegistry;
 import org.openhab.core.items.StateChangeListener;
 import org.openhab.core.items.events.ItemEventFactory;
@@ -29,6 +33,11 @@ import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
 import org.openhab.io.homekit.internal.accessory.AccessoryRegistryImpl;
 import org.openhab.io.homekit.internal.accessory.GenericAccessory;
 import org.openhab.io.homekit.internal.characteristic.GenericCharacteristic;
+import org.openhab.io.homekit.internal.events.CharacteristicEvent;
+import org.openhab.io.homekit.internal.events.HomekitEvent;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
+import org.openhab.io.homekit.internal.events.HomekitEventSubscriber;
+import org.openhab.io.homekit.internal.events.HomekitEventType;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -39,16 +48,42 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link HomekitItemBridge} listens for new Items that are added to openHAB and creates HomeKit accessories
- * for tagged items. It also handles state changes and updates characteristics accordingly.
+ * The {@link HomekitItemBridge} manages the integration between openHAB items and HomeKit accessories.
+ * It handles the complete lifecycle of HomeKit accessories, including creation, updates, and removal.
  * 
  * <p>
- * This class implements both {@link ItemRegistryChangeListener} and {@link StateChangeListener} to handle
- * item lifecycle events and state changes. It maintains thread-safe collections of accessories,
- * characteristics, and factories.
+ * This class implements both {@link ItemRegistryChangeListener} and {@link StateChangeListener} to handle:
+ * <ul>
+ * <li>Item lifecycle events (addition, removal, updates)</li>
+ * <li>State changes for HomeKit-enabled items</li>
+ * <li>Characteristic value updates</li>
+ * <li>Accessory registration and cleanup</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * The bridge maintains thread-safe collections for:
+ * <ul>
+ * <li>Accessories ({@link #accessoryMap})</li>
+ * <li>Characteristics ({@link #characteristicMap})</li>
+ * <li>Factories ({@link #homekitFactories})</li>
+ * </ul>
+ * Synchronization is handled through dedicated locks for each collection.
+ * </p>
+ *
+ * <p>
+ * Key features:
+ * <ul>
+ * <li>Automatic accessory creation for tagged items</li>
+ * <li>Support for group items and characteristic mapping</li>
+ * <li>Thread-safe state management</li>
+ * <li>Error handling and logging</li>
+ * <li>Resource cleanup on deactivation</li>
+ * </ul>
  * </p>
  *
  * @author Your Name - Initial contribution
+ * @since 1.0.0
  */
 @Component(service = HomekitItemBridge.class, immediate = true)
 @NonNullByDefault
@@ -56,29 +91,34 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
     private static final Logger logger = LoggerFactory.getLogger(HomekitItemBridge.class);
 
-    protected static final String LOG_PREFIX = "HomeKit ItemBridge: ";
-    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
-    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
-    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
-    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
-    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
-    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+    private static final String LOG_PREFIX = "HomeKit Bridge: ";
+    private static final String LOG_STATE = LOG_PREFIX + "State - ";
+    private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    private static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+    private static final String LOG_DEBUG = LOG_PREFIX + "Debug - ";
+    private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
 
     // Error messages
-    private static final String ERROR_CREATING_ACCESSORY = LOG_ERROR + "Error creating HomeKit accessory for item {}: {}";
+    private static final String ERROR_CREATING_ACCESSORY = LOG_ERROR
+            + "Error creating HomeKit accessory for item {}: {}";
     private static final String ERROR_UPDATING_CHARACTERISTIC = LOG_ERROR + "Error updating characteristic {}: {}";
     private static final String ERROR_REMOVING_ACCESSORY = LOG_ERROR + "Error removing accessory {}: {}";
-    private static final String NO_COMPATIBLE_FACTORY = LOG_WARN + "No compatible HomeKit factory found for item {}";
-    private static final String NO_AVAILABLE_SERVER = LOG_WARN + "No available bridge accessory server found for item {}";
-    private static final String CHARACTERISTIC_CREATION_FAILED = LOG_ERROR + "Failed to create characteristic {} for item {}";
+    private static final String NO_AVAILABLE_SERVER = LOG_WARN
+            + "No available bridge accessory server found for item {}";
+    private static final String CHARACTERISTIC_CREATION_FAILED = LOG_ERROR
+            + "Failed to create characteristic {} for item {}";
     private static final String SERVICE_CREATION_FAILED = LOG_ERROR + "Failed to create service {} for item {}";
 
     // Debug messages
-    private static final String DEBUG_CREATING_ACCESSORY = LOG_ACCESSORY + "Creating HomeKit accessory for item {}";
-    private static final String DEBUG_ACCESSORY_CREATED = LOG_ACCESSORY + "Successfully created HomeKit accessory for item {}";
-    private static final String DEBUG_UPDATING_CHARACTERISTIC = LOG_STATE + "Updating characteristic {} for item {} with value {}";
+    private static final String DEBUG_ACCESSORY_CREATED = LOG_ACCESSORY
+            + "Successfully created HomeKit accessory for item {}";
+    private static final String DEBUG_UPDATING_CHARACTERISTIC = LOG_STATE
+            + "Updating characteristic {} for item {} with value {}";
     private static final String DEBUG_REMOVING_ACCESSORY = LOG_ACCESSORY + "Removing HomeKit accessory for item {}";
-    private static final String DEBUG_ACCESSORY_REMOVED = LOG_ACCESSORY + "Successfully removed HomeKit accessory for item {}";
+    private static final String DEBUG_ACCESSORY_REMOVED = LOG_ACCESSORY
+            + "Successfully removed HomeKit accessory for item {}";
     private static final String DEBUG_FOUND_COMPATIBLE_FACTORY = LOG_CONFIG + "Found compatible factory {} for item {}";
     private static final String DEBUG_FOUND_AVAILABLE_SERVER = LOG_CONFIG + "Found available server {} for item {}";
 
@@ -95,6 +135,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     private final Map<String, HomekitFactory> homekitFactories = new ConcurrentHashMap<>();
     private final Map<String, Collection<Characteristic<?>>> characteristicMap = new ConcurrentHashMap<>();
     private final Map<String, Accessory> accessoryMap = new ConcurrentHashMap<>();
+    private final HomekitEventManager eventManager;
 
     /**
      * Activates the bridge component and initializes necessary resources.
@@ -106,22 +147,28 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      */
     @Activate
     public HomekitItemBridge(@Reference ItemRegistry itemRegistry, @Reference EventPublisher eventPublisher,
-            @Reference AccessoryRegistryImpl accessoryRegistry,
-            @Reference AccessoryServerRegistry accessoryServerRegistry, @Reference MetadataRegistry metadataRegistry) {
+            @Reference AccessoryRegistryImpl accessoryRegistry, @Reference MetadataRegistry metadataRegistry,
+            @Reference AccessoryServerRegistry accessoryServerRegistry, @Reference HomekitEventManager eventManager) {
         this.itemRegistry = itemRegistry;
         this.eventPublisher = eventPublisher;
         this.accessoryRegistry = accessoryRegistry;
-        this.accessoryServerRegistry = accessoryServerRegistry;
         this.metadataRegistry = metadataRegistry;
-        itemRegistry.addRegistryChangeListener(this);
+        this.accessoryServerRegistry = accessoryServerRegistry;
+        this.eventManager = eventManager;
+
+        initializeRegistryListener();
 
         // Initialize existing HomeKit tagged items
         for (Item item : itemRegistry.getItems()) {
-            HomekitTaggedItem taggedItem = new HomekitTaggedItem(item, itemRegistry);
+            HomekitTaggedItem taggedItem = new HomekitTaggedItem(item, itemRegistry, metadataRegistry);
             if (taggedItem.isTagged()) {
                 createAccessoryForItem(taggedItem);
             }
         }
+    }
+
+    private void initializeRegistryListener() {
+        itemRegistry.addRegistryChangeListener(this);
     }
 
     /**
@@ -129,8 +176,23 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      */
     @Deactivate
     protected void deactivate() {
-        itemRegistry.removeRegistryChangeListener(this);
-        cleanup();
+        try {
+            itemRegistry.removeRegistryChangeListener(this);
+            cleanup();
+        } catch (Exception e) {
+            logger.error("Error during deactivation: {}", e.getMessage(), e);
+        } finally {
+            // Ensure all resources are cleaned up
+            synchronized (accessoryLock) {
+                accessoryMap.clear();
+            }
+            synchronized (characteristicLock) {
+                characteristicMap.clear();
+            }
+            synchronized (factoryLock) {
+                homekitFactories.clear();
+            }
+        }
     }
 
     /**
@@ -141,9 +203,13 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
         synchronized (accessoryLock) {
             accessoryMap.values().forEach(accessory -> {
                 try {
-                    accessoryRegistry.remove(accessory.getUID());
+                    if (accessory != null) {
+                        accessoryRegistry.remove(accessory.getUID());
+                    }
                 } catch (Exception e) {
-                    logger.error(ERROR_REMOVING_ACCESSORY, accessory.getUID(), e.getMessage(), e);
+                    if (accessory != null) {
+                        logger.error(ERROR_REMOVING_ACCESSORY, accessory.getUID(), e.getMessage(), e);
+                    }
                 }
             });
             accessoryMap.clear();
@@ -166,8 +232,11 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      * @param characteristic The characteristic to add
      */
     private void addCharacteristic(String itemName, Characteristic<?> characteristic) {
-        synchronized (characteristicMap) {
-            java.util.Objects.requireNonNull(characteristicMap.computeIfAbsent(itemName, k -> new ArrayList<>())).add(characteristic);
+        synchronized (characteristicLock) {
+            @SuppressWarnings("null")
+            Collection<Characteristic<?>> characteristics = characteristicMap.computeIfAbsent(itemName,
+                    k -> new ArrayList<>());
+            characteristics.add(characteristic);
         }
     }
 
@@ -179,8 +248,9 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      * @param characteristic The characteristic to remove
      */
     private void removeCharacteristic(String itemName, Characteristic<?> characteristic) {
-        synchronized (characteristicMap) {
-            @Nullable Collection<Characteristic<?>> characteristics = characteristicMap.get(itemName);
+        synchronized (characteristicLock) {
+            @Nullable
+            Collection<Characteristic<?>> characteristics = characteristicMap.get(itemName);
             if (characteristics != null) {
                 characteristics.remove(characteristic);
                 if (characteristics.isEmpty()) {
@@ -203,7 +273,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
         }
 
         // Check existing items for compatibility with new factory
-        itemRegistry.getItems().stream().map(item -> new HomekitTaggedItem(item, itemRegistry))
+        itemRegistry.getItems().stream().map(item -> new HomekitTaggedItem(item, itemRegistry, metadataRegistry))
                 .filter(HomekitTaggedItem::isTagged).filter(taggedItem -> {
                     synchronized (accessoryLock) {
                         return !accessoryMap.containsKey(taggedItem.getName());
@@ -230,12 +300,15 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      * @return Optional containing the compatible factory if found
      */
     private Optional<HomekitFactory> findCompatibleFactory(HomekitTaggedItem taggedItem) {
-        if (taggedItem == null || taggedItem.getServiceType() == null) {
+
+        String serviceType = taggedItem.getServiceType();
+        if (serviceType == null) {
             return Optional.empty();
         }
+
         synchronized (factoryLock) {
-            return homekitFactories.values().stream()
-                    .filter(factory -> factory.supportsServiceType(taggedItem.getServiceType())).findFirst();
+            return homekitFactories.values().stream().filter(factory -> factory.supportsServiceType(serviceType))
+                    .findFirst();
         }
     }
 
@@ -246,8 +319,10 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      * @return Optional containing the compatible factory if found
      */
     private Optional<HomekitFactory> findCompatibleCharacteristicFactory(String characteristicType) {
-        return homekitFactories.values().stream()
-                .filter(factory -> factory.supportsCharacteristicsType(characteristicType)).findFirst();
+        synchronized (factoryLock) {
+            return homekitFactories.values().stream()
+                    .filter(factory -> factory.supportsCharacteristicsType(characteristicType)).findFirst();
+        }
     }
 
     /**
@@ -257,13 +332,28 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      * @param taggedItem The item to create an accessory for
      */
     private void createAccessoryForItem(HomekitTaggedItem taggedItem) {
+        logger.trace("{}Entering createAccessoryForItem for item: {}", LOG_TRACE, taggedItem.getName());
+
         try {
-            logger.debug(DEBUG_CREATING_ACCESSORY, taggedItem.getName());
+            logger.debug("{}Starting factory compatibility check for item: {}", LOG_DEBUG, taggedItem.getName());
+            logger.trace("{}Item details - Type: {}, Tags: {}", LOG_TRACE, taggedItem.getItem().getType(),
+                    taggedItem.getHomekitTags());
 
             Optional<HomekitFactory> compatibleFactory = findCompatibleFactory(taggedItem);
             if (!compatibleFactory.isPresent()) {
-                logger.warn(NO_COMPATIBLE_FACTORY, taggedItem.getName());
+                logger.warn("{}No compatible factory found for item: {} (type: {})", LOG_ERROR, taggedItem.getName(),
+                        taggedItem.getItem().getType());
+                logger.debug("{}Skipping item processing due to missing factory", LOG_DEBUG);
+                logger.trace("{}Exiting createAccessoryForItem early due to missing factory", LOG_TRACE);
                 return;
+            }
+
+            if (compatibleFactory.isPresent()) {
+                @SuppressWarnings("null")
+                HomekitFactory factory = compatibleFactory.get();
+                logger.debug("{}Found compatible factory: {}", LOG_DEBUG, factory.getClass().getSimpleName());
+                logger.trace("{}Factory details - Class: {}, Supported types: {}", LOG_TRACE,
+                        factory.getClass().getName(), factory.getSupportedThingTypes());
             }
 
             compatibleFactory.ifPresent(serviceFactory -> {
@@ -278,9 +368,17 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                     logger.warn(NO_AVAILABLE_SERVER, taggedItem.getName());
                 }
             });
+
+            logger.debug("{}Successfully processed item: {}", LOG_DEBUG, taggedItem.getName());
+            logger.trace("{}Exiting createAccessoryForItem successfully", LOG_TRACE);
+
         } catch (Exception e) {
-            logger.warn(ERROR_CREATING_ACCESSORY, taggedItem.getName(), e.getMessage());
-            // Consider adding recovery logic here
+            logger.warn("{}Failed to process item {}: {}", LOG_ERROR, taggedItem.getName(), e.getMessage());
+            Throwable cause = e.getCause();
+            logger.debug("{}Error details - Type: {}, Cause: {}", LOG_DEBUG, e.getClass().getSimpleName(),
+                    cause != null ? cause.getMessage() : "none");
+            logger.trace("{}Stack trace for item processing failure:", LOG_TRACE, e);
+            logger.trace("{}Exiting createAccessoryForItem with error", LOG_TRACE);
         }
     }
 
@@ -294,7 +392,10 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      */
     private void createAndRegisterAccessory(HomekitTaggedItem taggedItem, HomekitFactory serviceFactory,
             AccessoryServer server) {
+        logger.trace("{}Entering createAndRegisterAccessory", LOG_TRACE);
+
         try {
+            logger.debug("{}Creating accessory for item: {}", LOG_DEBUG, taggedItem.getName());
             Optional<Accessory> accessory = createAccessory(taggedItem, serviceFactory, server);
             if (accessory.isPresent()) {
                 synchronized (accessoryLock) {
@@ -302,8 +403,11 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                 }
                 logger.debug(DEBUG_ACCESSORY_CREATED, taggedItem.getName());
             }
+            logger.debug("{}Successfully processed item with factory", LOG_DEBUG);
+            logger.trace("{}Exiting createAndRegisterAccessory successfully", LOG_TRACE);
         } catch (Exception e) {
             logger.error(ERROR_CREATING_ACCESSORY, taggedItem.getName(), e.getMessage(), e);
+            logger.trace("{}Exiting createAndRegisterAccessory with error", LOG_TRACE);
         }
     }
 
@@ -337,7 +441,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
         logger.debug(DEBUG_REMOVING_ACCESSORY, item.getName());
 
         synchronized (accessoryLock) {
-            @Nullable Accessory accessory = accessoryMap.remove(item.getName());
+            @Nullable
+            Accessory accessory = accessoryMap.remove(item.getName());
             if (accessory != null) {
                 try {
                     accessoryRegistry.remove(accessory.getUID());
@@ -350,7 +455,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                     });
                     logger.debug(DEBUG_ACCESSORY_REMOVED, item.getName());
                 } catch (Exception e) {
-                    logger.error(ERROR_REMOVING_ACCESSORY, item.getName(), e.getMessage(), e);
+                    logger.error(ERROR_REMOVING_ACCESSORY, accessory.getUID(), e.getMessage(), e);
+
                 }
             }
         }
@@ -367,24 +473,33 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     @SuppressWarnings("null")
     private Optional<Accessory> createAccessory(HomekitTaggedItem taggedItem, HomekitFactory serviceFactory,
             AccessoryServer server) {
+        logger.trace("{}Entering createAccessory", LOG_TRACE);
+
         try {
-            @Nullable HomekitTaggedItem primaryAccessory = getPrimaryAccessory(taggedItem, taggedItem.getServiceType(),
+            logger.debug("{}Creating accessory for item: {}", LOG_DEBUG, taggedItem.getName());
+            @Nullable
+            HomekitTaggedItem primaryAccessory = getPrimaryAccessory(taggedItem, taggedItem.getServiceType(),
                     itemRegistry).orElse(null);
             Map<String, Item> characteristicItems = getCharacteristicTypeItemMap(taggedItem);
 
             if (primaryAccessory != null) {
                 Accessory accessory = new GenericAccessory(server);
-                Optional<Service> primaryService = createPrimaryService(serviceFactory, primaryAccessory, accessory, taggedItem);
+                Optional<Service> primaryService = createPrimaryService(serviceFactory, primaryAccessory, accessory,
+                        taggedItem);
                 if (primaryService.isPresent()) {
                     accessory.addService(primaryService.get());
                     addCharacteristics(primaryService.get(), characteristicItems, accessory);
                     return Optional.of(accessory);
                 }
             }
+            logger.debug("{}Successfully processed item with factory", LOG_DEBUG);
+            logger.trace("{}Exiting createAccessory successfully", LOG_TRACE);
+            return Optional.empty();
         } catch (Exception e) {
             logger.warn(ERROR_CREATING_ACCESSORY, taggedItem.getName(), e.getMessage());
+            logger.trace("{}Exiting createAccessory with error", LOG_TRACE);
+            return Optional.empty();
         }
-        return Optional.empty();
     }
 
     /**
@@ -399,12 +514,19 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     @SuppressWarnings("null")
     private Optional<Service> createPrimaryService(HomekitFactory serviceFactory, HomekitTaggedItem primaryAccessory,
             Accessory accessory, HomekitTaggedItem taggedItem) {
+        logger.trace("{}Entering createPrimaryService", LOG_TRACE);
+
         try {
-            Service primaryService = serviceFactory.createService(primaryAccessory.getServiceType(), accessory,  
-                    accessory.getNextAvailableInstanceId(), true, "Primary Service for " + taggedItem.getItem().getName());
+            logger.debug("{}Creating primary service for item: {}", LOG_DEBUG, taggedItem.getName());
+            Service primaryService = serviceFactory.createService(primaryAccessory.getServiceType(), accessory,
+                    accessory.getNextAvailableInstanceId(), true,
+                    "Primary Service for " + taggedItem.getItem().getName());
+            logger.debug("{}Successfully created primary service for item: {}", LOG_DEBUG, taggedItem.getName());
+            logger.trace("{}Exiting createPrimaryService successfully", LOG_TRACE);
             return Optional.ofNullable(primaryService);
         } catch (org.openhab.io.homekit.exception.HomekitFactoryException e) {
             logger.warn(SERVICE_CREATION_FAILED, primaryAccessory.getServiceType(), taggedItem.getName());
+            logger.trace("{}Exiting createPrimaryService with error", LOG_TRACE);
             return Optional.empty();
         }
     }
@@ -416,11 +538,12 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      * @param characteristicItems Map of characteristic types to items
      * @param accessory The accessory containing the service
      */
-    private void addCharacteristics(Service service, Map<String, Item> characteristicItems,
-            Accessory accessory) {
+    private void addCharacteristics(Service service, Map<String, Item> characteristicItems, Accessory accessory) {
         for (Map.Entry<String, Item> entry : characteristicItems.entrySet()) {
-            @Nullable String characteristicType = entry.getKey();
-            @Nullable Item item = entry.getValue();
+            @Nullable
+            String characteristicType = entry.getKey();
+            @Nullable
+            Item item = entry.getValue();
 
             Optional<HomekitFactory> compatibleCharacteristicFactory = findCompatibleCharacteristicFactory(
                     characteristicType);
@@ -454,16 +577,18 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      * @param accessory The accessory containing the service
      * @param characteristicFactory The factory to create the characteristic
      */
-    private void addCharacteristicToService(Service service, String characteristicType, Item item,
-            Accessory accessory, HomekitFactory characteristicFactory) {
+    private void addCharacteristicToService(Service service, String characteristicType, Item item, Accessory accessory,
+            HomekitFactory characteristicFactory) {
         try {
-            Characteristic<?> characteristic = characteristicFactory.createCharacteristic(characteristicType,
-                    service, accessory.getNextAvailableInstanceId());
+            logger.debug("{}Adding characteristic {} to service", LOG_DEBUG, characteristicType);
+            Characteristic<?> characteristic = characteristicFactory.createCharacteristic(characteristicType, service,
+                    accessory.getNextAvailableInstanceId());
             if (characteristic != null) {
                 service.addCharacteristic(characteristic);
                 addCharacteristic(item.getName(), characteristic);
-                setupCharacteristicListener(characteristic, item);
+                subscribeToEvents(characteristic, item);
             }
+            logger.debug("{}Successfully added characteristic {} to service", LOG_DEBUG, characteristicType);
         } catch (org.openhab.io.homekit.exception.HomekitFactoryException e) {
             logger.warn(CHARACTERISTIC_CREATION_FAILED, characteristicType, item.getName());
         }
@@ -475,13 +600,29 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      * @param characteristic The characteristic to set up the listener for
      * @param item The item associated with the characteristic
      */
-    private void setupCharacteristicListener(Characteristic<?> characteristic, Item item) {
-        characteristic.addChangeListener(event -> {
-            State state = characteristic.toState(event.getNewValue());
-            if (state != null) {
-                eventPublisher.post(ItemEventFactory.createStateEvent(item.getName(), state));
-            }
-        });
+    private void subscribeToEvents(Characteristic<?> characteristic, Item item) {
+        if (!(characteristic instanceof GenericCharacteristic<?> genericCharacteristic)) {
+            return;
+        }
+        eventManager.subscribe(
+            HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
+            genericCharacteristic.getSourceUID(),
+            event -> handleCharacteristicStateChangedEvent(event, item)
+        );
+    }
+
+    private void handleCharacteristicStateChangedEvent(HomekitEvent event, Item item) {
+        if (event.getType() != HomekitEventType.CHARACTERISTIC_STATE_CHANGED) {
+            return;
+        }
+        if (!(event instanceof CharacteristicEvent characteristicEvent)) {
+            return;
+        }
+        Characteristic<?> eventCharacteristic = (Characteristic<?>) characteristicEvent.getCharacteristic();
+        State state = eventCharacteristic.toState(characteristicEvent.getNewValue());
+        if (state != null) {
+            eventPublisher.post(ItemEventFactory.createStateEvent(item.getName(), state));
+        }
     }
 
     /**
@@ -492,6 +633,10 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      * @param state The new state value
      */
     private void updateCharacteristicValue(Characteristic<?> characteristic, State state) {
+        if (characteristic == null || state == null) {
+            return;
+        }
+
         try {
             if (characteristic instanceof GenericCharacteristic) {
                 @SuppressWarnings("unchecked")
@@ -520,23 +665,21 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      */
     private Optional<HomekitTaggedItem> getPrimaryAccessory(HomekitTaggedItem taggedItem, String serviceType,
             ItemRegistry itemRegistry) {
+        if (taggedItem == null || serviceType == null || itemRegistry == null) {
+            return Optional.empty();
+        }
+
         logger.debug("{}: isGroup? {}, isMember? {}", taggedItem.getName(), taggedItem.isGroup(),
                 taggedItem.isMemberOfAccessoryGroup());
+
         if (taggedItem.isGroup()) {
             GroupItem groupItem = (GroupItem) taggedItem.getItem();
-            Object[] factories = homekitFactories.values().toArray();
-            if (factories != null) {
-                for (Object factory : factories) {
-                    if (factory instanceof HomekitFactory) {
-                        String tag = ((HomekitFactory) factory).getTagFromServiceType(serviceType);
-                        if (tag != null) {
-                            return groupItem.getMembers().stream().filter(item -> item.hasTag(tag)).findFirst()
-                                    .map(item -> new HomekitTaggedItem(item, itemRegistry));
-                        }
-                    }
-                }
-            }
-        } else if (taggedItem.getServiceType() == serviceType) {
+            return homekitFactories.values().stream().filter(Objects::nonNull)
+                    .map(factory -> factory.getTagFromServiceType(serviceType)).filter(Objects::nonNull)
+                    .flatMap(tag -> groupItem.getMembers().stream().filter(item -> item.hasTag(tag))
+                            .map(item -> new HomekitTaggedItem(item, itemRegistry, metadataRegistry)))
+                    .findFirst();
+        } else if (serviceType.equals(taggedItem.getServiceType())) {
             return Optional.of(taggedItem);
         }
         return Optional.empty();
@@ -553,7 +696,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
             GroupItem groupItem = (GroupItem) taggedItem.getItem();
             Map<String, Item> characteristicItems = new HashMap<>();
             groupItem.getMembers().forEach(item -> {
-                String type = item.getTags().stream().map(tag -> {
+                String type = getHomekitTags(item).stream().map(tag -> {
                     Object[] factories = homekitFactories.values().toArray();
                     if (factories != null) {
                         return Stream.of(factories).filter(factory -> factory instanceof HomekitFactory)
@@ -566,7 +709,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                 if (type != null) {
                     if (characteristicItems.containsKey(type)) {
                         logger.warn("incorrect configuration for {} detected: {} and {} are tagged as {}, skipping {}",
-                                taggedItem.getItem().getUID(), java.util.Objects.requireNonNull(characteristicItems.get(type)).getUID(), item.getUID(),
+                                taggedItem.getItem().getUID(),
+                                java.util.Objects.requireNonNull(characteristicItems.get(type)).getUID(), item.getUID(),
                                 type, item.getUID());
                     } else {
                         characteristicItems.put(type, item);
@@ -589,7 +733,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      */
     @Override
     public void added(Item item) {
-        HomekitTaggedItem taggedItem = new HomekitTaggedItem(item, itemRegistry);
+        HomekitTaggedItem taggedItem = new HomekitTaggedItem(item, itemRegistry, metadataRegistry);
         if (taggedItem.isTagged()) {
             createAccessoryForItem(taggedItem);
         }
@@ -616,7 +760,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     @Override
     public void updated(Item oldItem, Item item) {
         removeAccessoryForItem(oldItem);
-        HomekitTaggedItem taggedItem = new HomekitTaggedItem(item, itemRegistry);
+        HomekitTaggedItem taggedItem = new HomekitTaggedItem(item, itemRegistry, metadataRegistry);
         if (taggedItem.isTagged()) {
             createAccessoryForItem(taggedItem);
         }
@@ -630,7 +774,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      */
     @Override
     public void allItemsChanged(Collection<String> oldItemNames) {
-        // Remove all old accessories
+        // Potential concurrent modification if items are added/removed during iteration
         oldItemNames.forEach(itemName -> {
             Item item = itemRegistry.get(itemName);
             if (item != null) {
@@ -639,7 +783,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
         });
 
         // Create new accessories for all tagged items
-        itemRegistry.getItems().stream().map(item -> new HomekitTaggedItem(item, itemRegistry))
+        itemRegistry.getItems().stream().map(item -> new HomekitTaggedItem(item, itemRegistry, metadataRegistry))
                 .filter(HomekitTaggedItem::isTagged).forEach(this::createAccessoryForItem);
     }
 
@@ -654,8 +798,21 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      */
     @Override
     public void stateChanged(Item item, State oldState, State newState) {
-        Optional.ofNullable(characteristicMap.get(item.getName()))
-                .ifPresent(characteristics -> characteristics.forEach(c -> updateCharacteristicValue(c, newState)));
+        if (item == null || newState == null) {
+            return;
+        }
+
+        @Nullable
+        Collection<Characteristic<?>> characteristics = characteristicMap.get(item.getName());
+        if (characteristics != null) {
+            characteristics.forEach(c -> {
+                try {
+                    updateCharacteristicValue(c, newState);
+                } catch (Exception e) {
+                    logger.error(ERROR_UPDATING_CHARACTERISTIC, c.getInstanceType(), e.getMessage(), e);
+                }
+            });
+        }
     }
 
     /**
@@ -670,4 +827,11 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
         Optional.ofNullable(characteristicMap.get(item.getName()))
                 .ifPresent(characteristics -> characteristics.forEach(c -> updateCharacteristicValue(c, state)));
     }
+
+    private Collection<String> getHomekitTags(Item item) {
+        MetadataKey key = new MetadataKey("homekit", item.getName());
+        Metadata metadata = metadataRegistry.get(key);
+        return metadata != null ? Arrays.asList(metadata.getValue().split(",")) : Collections.emptyList();
+    }  
 }
+

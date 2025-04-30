@@ -1,14 +1,16 @@
 package org.openhab.io.homekit.internal.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Collectors;
 
 import javax.json.Json;
@@ -19,15 +21,20 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Service;
-import org.openhab.io.homekit.api.listener.CharacteristicChangeListener;
-import org.openhab.io.homekit.api.listener.ServiceChangeListener;
 import org.openhab.io.homekit.exception.HomekitFactoryException;
 import org.openhab.io.homekit.internal.characteristic.GenericCharacteristic;
 import org.openhab.io.homekit.internal.events.CharacteristicEvent;
+import org.openhab.io.homekit.internal.events.HomekitEvent;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
+import org.openhab.io.homekit.internal.events.HomekitEventPublisher;
+import org.openhab.io.homekit.internal.events.HomekitEventSubscriber;
+import org.openhab.io.homekit.internal.events.HomekitEventType;
 import org.openhab.io.homekit.internal.events.ServiceEvent;
 import org.openhab.io.homekit.library.characteristic.ServiceNameCharacteristic;
 import org.osgi.framework.BundleContext;
@@ -36,10 +43,14 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GenericService implements Service {
+@NonNullByDefault
+public class GenericService implements Service, HomekitEventPublisher, HomekitEventSubscriber {
 
     protected static final Logger logger = LoggerFactory.getLogger(GenericService.class);
-    private static ServiceTracker<org.openhab.io.homekit.api.factory.HomekitFactory, org.openhab.io.homekit.api.factory.HomekitFactory> homekitFactoryTracker;
+    @Nullable
+    private static ServiceTracker<HomekitFactory, HomekitFactory> homekitFactoryTracker;
+    @Nullable
+    private static ServiceTracker<HomekitEventManager, HomekitEventManager> eventManagerTracker;
 
     private final Accessory accessory;
     private final long instanceId;
@@ -48,27 +59,14 @@ public class GenericService implements Service {
     private boolean isHidden;
     private boolean isPrimary;
     private final List<Characteristic<?>> characteristics = new LinkedList<>();
-    private final Collection<ServiceChangeListener> listeners = new CopyOnWriteArraySet<>();
     private final boolean isExtensible;
 
-    public GenericService(@NonNull Accessory accessory, long instanceId, boolean extend, String name) {
+    public GenericService(Accessory accessory, long instanceId, boolean extend, String name) {
         this.accessory = accessory;
         this.instanceId = instanceId;
         this.name = name;
         this.isExtensible = extend;
-
-        if (isExtensible()) {
-            addCharacteristics();
-        }
-
-        Characteristic<?> nameCharacteristic = getCharacteristic(ServiceNameCharacteristic.class);
-        if (nameCharacteristic != null) {
-            try {
-                ((ServiceNameCharacteristic) nameCharacteristic).setValue(name);
-            } catch (Exception e) {
-                logger.error("Error setting name characteristic value", e);
-            }
-        }
+        initialise();
     }
 
     public GenericService(Accessory accessory, JsonValue value, String name) {
@@ -80,11 +78,78 @@ public class GenericService implements Service {
 
         JsonArray characteristicsArray = ((JsonObject) value).getJsonArray("characteristics");
         for (JsonValue characteristicValue : characteristicsArray) {
-            Characteristic<?> characteristic = createCharacteristic(characteristicValue);
-            if (characteristic != null) {
-                addCharacteristic(characteristic);
+            createCharacteristic(characteristicValue).ifPresent(this::addCharacteristic);
+        }
+    }
+
+    /**
+     * Call this after construction to perform any initialisation that requires overridable methods.
+     */
+    @SuppressWarnings("null")
+    final public void initialise() {
+        if (isExtensible()) {
+            addCharacteristics();
+        }
+        @Nullable
+        Characteristic<?> nameCharacteristic = getCharacteristic(ServiceNameCharacteristic.class).orElse(null);
+        if (nameCharacteristic != null) {
+            try {
+                ((ServiceNameCharacteristic) nameCharacteristic).setValue(name);
+            } catch (Exception e) {
+                logger.error("Error setting name characteristic value", e);
             }
         }
+    }
+
+    @Override
+    @SuppressWarnings("unused")
+    public HomekitEventManager getEventManager() {
+        @Nullable
+        ServiceTracker<HomekitEventManager, HomekitEventManager> tracker = getEventManagerTracker();
+        if (tracker != null) {
+            @Nullable
+            HomekitEventManager manager = tracker.getService();
+            if (manager != null) {
+                return manager;
+            }
+        }
+        throw new IllegalStateException("HomekitEventManager service is not available");
+    }
+
+    @SuppressWarnings("null")
+    private static ServiceTracker<HomekitEventManager, HomekitEventManager> getEventManagerTracker() {
+        if (eventManagerTracker == null) {
+            BundleContext context = FrameworkUtil.getBundle(GenericService.class).getBundleContext();
+            eventManagerTracker = new ServiceTracker<>(context, HomekitEventManager.class, null);
+            eventManagerTracker.open();
+        }
+
+        return eventManagerTracker;
+    }
+
+    @SuppressWarnings("null")
+    protected static Set<HomekitFactory> getHomekitFactories() {
+        ServiceTracker<HomekitFactory, HomekitFactory> tracker = getHomekitFactoryTracker();
+        if (tracker != null && tracker.getServices() != null) {
+            return Arrays.stream(tracker.getServices()).filter(HomekitFactory.class::isInstance)
+                    .map(HomekitFactory.class::cast).collect(Collectors.toSet());
+        }
+        return Collections.emptySet();
+    }
+
+    @Nullable
+    private static ServiceTracker<HomekitFactory, HomekitFactory> getHomekitFactoryTracker() {
+        if (homekitFactoryTracker == null) {
+            BundleContext context = FrameworkUtil.getBundle(GenericService.class).getBundleContext();
+            homekitFactoryTracker = new ServiceTracker<>(context, HomekitFactory.class, null);
+            homekitFactoryTracker.open();
+        }
+        return homekitFactoryTracker;
+    }
+
+    @Override
+    public String getSourceUID() {
+        return getUID().toString();
     }
 
     @Override
@@ -92,34 +157,23 @@ public class GenericService implements Service {
         addCharacteristic(new ServiceNameCharacteristic(this, getAccessory().getAccessoryId()));
     }
 
-    private Characteristic<?> createCharacteristic(JsonValue value) {
-        if (homekitFactoryTracker == null) {
-            BundleContext context = FrameworkUtil.getBundle(GenericService.class).getBundleContext();
-            homekitFactoryTracker = new ServiceTracker<>(context, HomekitFactory.class, null);
-            homekitFactoryTracker.open();
-        }
-
-        Object[] factories = homekitFactoryTracker.getServices();
-        if (factories != null) {
-            for (Object factory : factories) {
-                if (factory instanceof HomekitFactory homekitFactory) {
-                    String characteristicType = ((JsonObject) value).getString("type");
-                    if (homekitFactory.supportsCharacteristicsType(characteristicType)) {
-                        try {
-                            Characteristic<?> characteristic = homekitFactory.createCharacteristic(this, value);
-                            if (characteristic != null) {
-                                return characteristic;
-                            }
-                        } catch (HomekitFactoryException e) {
-                            logger.error("Error creating characteristic: {}", e.getMessage());
-                            return null;
-                        }
+    private Optional<Characteristic<?>> createCharacteristic(JsonValue value) {
+        for (HomekitFactory factory : getHomekitFactories()) {
+            String characteristicType = ((JsonObject) value).getString("type");
+            if (factory.supportsCharacteristicsType(characteristicType)) {
+                try {
+                    Characteristic<?> characteristic = factory.createCharacteristic(this, value);
+                    if (characteristic != null) {
+                        return Optional.of(characteristic);
                     }
+                } catch (HomekitFactoryException e) {
+                    logger.error("Error creating characteristic: {}", e.getMessage());
+                    return Optional.empty();
                 }
             }
         }
         logger.warn("No HomekitFactory found to create characteristic from JSON value");
-        return null;
+        return Optional.empty();
     }
 
     @Override
@@ -167,31 +221,42 @@ public class GenericService implements Service {
     }
 
     @Override
-    public @NonNull Set<Characteristic<?>> getCharacteristics() {
-        return Collections.unmodifiableSet((Set<Characteristic<?>>) characteristics.stream()
-                .sorted((o1, o2) -> Long.valueOf(o1.getInstanceId()).compareTo(Long.valueOf(o2.getInstanceId())))
-                .collect(Collectors.toCollection(java.util.LinkedHashSet::new)));
+    public Set<Characteristic<?>> getCharacteristics() {
+        Set<Characteristic<?>> set = characteristics.stream().filter(Objects::nonNull)
+                .sorted((o1, o2) -> Long.compare(o1.getInstanceId(), o2.getInstanceId()))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        return Collections.unmodifiableSet(set);
     }
 
     @Override
-    public Characteristic<?> getCharacteristic(long iid) {
-        return characteristics.stream().filter(c -> c.getInstanceId() == iid).findFirst().orElse(null);
+    public Optional<Characteristic<?>> getCharacteristic(long iid) {
+        return characteristics.stream().filter(c -> c.getInstanceId() == iid).findFirst();
     }
 
     @Override
-    public Characteristic<?> getCharacteristic(String characteristicType) {
-        return characteristics.stream().filter(s -> s.isType(characteristicType) == true).findAny().orElse(null);
+    public Optional<Characteristic<?>> getCharacteristic(String characteristicType) {
+        return characteristics.stream().filter(s -> s.isType(characteristicType)).findAny();
     }
 
     @Override
-    public Characteristic<?> getCharacteristic(@NonNull Class<@NonNull ? extends Characteristic> characteristicClass) {
-        return characteristics.stream().filter(c -> c.getClass() == characteristicClass).findFirst().get();
+    public Optional<Characteristic<?>> getCharacteristic(Class<? extends Characteristic<?>> characteristicClass) {
+        return characteristics.stream().filter(c -> c.getClass() == characteristicClass).findFirst();
     }
 
     @Override
-    public void removeCharacteristic(@NonNull Class<@NonNull ? extends Characteristic> characteristicClass) {
-        for (Characteristic<?> characteristic : characteristics.stream()
-                .filter(c -> c.getClass() == characteristicClass).collect(Collectors.toList())) {
+    @SuppressWarnings("unused")
+    public void removeCharacteristic(Class<? extends Characteristic<?>> characteristicClass) {
+        // Create a copy to avoid ConcurrentModificationException
+        List<Characteristic<?>> toRemove = new ArrayList<>();
+        for (Characteristic<?> characteristic : characteristics) {
+            if (characteristic != null && characteristic.getClass() == characteristicClass) {
+                toRemove.add(characteristic);
+            }
+        }
+        for (Characteristic<?> characteristic : toRemove) {
+            if (characteristic == null) {
+                continue;
+            }
             characteristics.remove(characteristic);
             String description = characteristic instanceof GenericCharacteristic ? characteristic.getDescription()
                     : characteristic.getInstanceType();
@@ -201,14 +266,17 @@ public class GenericService implements Service {
         }
     }
 
+    @Override
     public void removeCharacteristic(Characteristic<?> characteristic) {
         boolean removed = characteristics.remove(characteristic);
         if (removed) {
-            String description = characteristic instanceof GenericCharacteristic ? characteristic.getDescription()
-                    : characteristic.getInstanceType();
-            logger.debug("Removed Characteristic '{}' (Type: {}) from Service '{}' (Type: {})", description,
-                    characteristic.getInstanceType(), this.getName(), this.getInstanceType());
-            notifyCharacteristicRemoved(characteristic);
+            if (characteristic != null) {
+                String description = characteristic instanceof GenericCharacteristic ? characteristic.getDescription()
+                        : characteristic.getInstanceType();
+                logger.debug("Removed Characteristic '{}' (Type: {}) from Service '{}' (Type: {})", description,
+                        characteristic.getInstanceType(), this.getName(), this.getInstanceType());
+                notifyCharacteristicRemoved(characteristic);
+            }
         }
     }
 
@@ -225,21 +293,20 @@ public class GenericService implements Service {
      */
     @Override
     public void addCharacteristic(Characteristic<?> characteristic) {
-        if (getCharacteristic(characteristic.getInstanceType()) == null && isExtensible()) {
+        if (getCharacteristic(characteristic.getInstanceType()).isEmpty() && isExtensible()) {
             characteristics.add(characteristic);
             logger.debug("Added Characteristic '{}' (Type: {}) to Service '{}' (Type: {})",
                     characteristic.getDescription(), characteristic.getInstanceType(), this.getName(),
                     this.getInstanceType());
             notifyCharacteristicAdded(characteristic);
 
-            // Listen for characteristic value changes
-
-            characteristic.addChangeListener(new CharacteristicChangeListener() {
-                @Override
-                public void onCharacteristicEvent(CharacteristicEvent event) {
-                    notifyCharacteristicStateChanged(characteristic);
-                }
-            });
+            if (characteristic instanceof GenericCharacteristic) {
+                String sourceUID = ((GenericCharacteristic<?>) characteristic).getSourceUID();
+                getEventManager().subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, sourceUID, this);
+            } else {
+                logger.warn("Characteristic '{}' (Type: {}) is not a HomekitEventPublisher",
+                        characteristic.getDescription(), characteristic.getInstanceType());
+            }
 
         } else {
             logger.debug("Service '{}' (Type: {}) already contains Characteristic '{}' (Type: {})", this.getName(),
@@ -248,28 +315,40 @@ public class GenericService implements Service {
     }
 
     @Override
+    public void onEvent(HomekitEvent event) {
+        if (event instanceof CharacteristicEvent characteristicEvent) {
+            notifyCharacteristicStateChanged(characteristicEvent.getCharacteristic());
+        }
+    }
+
+    @Override
+    public void onEventError(HomekitEvent event, Exception e) {
+        logger.error("Error processing event: {}", e.getMessage());
+    }
+
+    @Override
     public JsonObject toJson() {
-        JsonArrayBuilder characteristics = Json.createArrayBuilder();
+        JsonArrayBuilder jsonCharacteristics = Json.createArrayBuilder();
         for (Characteristic<?> characteristic : getCharacteristics()) {
-            characteristics.add(characteristic.toJson());
+            jsonCharacteristics.add(characteristic.toJson());
         }
 
         JsonObjectBuilder builder = Json.createObjectBuilder().add("iid", getInstanceId())
-                .add("type", getInstanceType()).add("characteristics", characteristics);
+                .add("type", getInstanceType()).add("characteristics", jsonCharacteristics);
 
         return builder.build();
     }
 
     @Override
     public JsonObject toReducedJson() {
-        JsonArrayBuilder characteristics = Json.createArrayBuilder();
+        JsonArrayBuilder jsonCharacteristics = Json.createArrayBuilder();
         for (Characteristic<?> characteristic : getCharacteristics()) {
-            characteristics.add(characteristic.toReducedJson());
+            jsonCharacteristics.add(characteristic.toReducedJson());
         }
 
         JsonObjectBuilder builder = Json.createObjectBuilder().add("iid", getInstanceId())
                 .add("type", getInstanceType().replaceAll("^0*([0-9a-fA-F]+)-0000-1000-8000-0026BB765291$", "$1"))
-                .add("characteristics", characteristics);
+                .add("characteristics", jsonCharacteristics);
 
         return builder.build();
     }
@@ -286,60 +365,39 @@ public class GenericService implements Service {
 
     @Override
     public Collection<Service> getLinkedServices() {
-        return new HashSet<Service>();
+        return new HashSet<>();
     }
 
-    @Override
-    public void addChangeListener(ServiceChangeListener listener) {
-        listeners.add(listener);
-    }
-
-    @Override
-    public void removeChangeListener(ServiceChangeListener listener) {
-        listeners.remove(listener);
-    }
-
-    protected void notifyCharacteristicAdded(Characteristic characteristic) {
+    protected void notifyCharacteristicAdded(Characteristic<?> characteristic) {
         logger.debug("Notifying listeners of Characteristic '{}' (Type: {}) addition to Service '{}'",
                 characteristic.getDescription(), characteristic.getInstanceType(), this.getName());
-        ServiceEvent event = new ServiceEvent(this, characteristic, ServiceEvent.ServiceEventType.CHARACTERISTIC_ADDED);
-        notifyListeners(event);
+        ServiceEvent event = new ServiceEvent(HomekitEventType.CHARACTERISTIC_ADDED, this, characteristic);
+        getEventManager().publishEvent(event);
     }
 
-    protected void notifyCharacteristicRemoved(Characteristic characteristic) {
+    protected void notifyCharacteristicRemoved(Characteristic<?> characteristic) {
         logger.debug("Notifying listeners of Characteristic '{}' (Type: {}) removal from Service '{}'",
                 characteristic.getDescription(), characteristic.getInstanceType(), this.getName());
-        ServiceEvent event = new ServiceEvent(this, characteristic,
-                ServiceEvent.ServiceEventType.CHARACTERISTIC_REMOVED);
-        notifyListeners(event);
+        ServiceEvent event = new ServiceEvent(HomekitEventType.CHARACTERISTIC_REMOVED, this, characteristic);
+        getEventManager().publishEvent(event);
     }
 
-    protected void notifyCharacteristicStateChanged(Characteristic characteristic) {
+    protected void notifyCharacteristicStateChanged(Characteristic<?> characteristic) {
         logger.debug("Notifying listeners of Characteristic '{}' (Type: {}) state change in Service '{}'",
                 characteristic.getDescription(), characteristic.getInstanceType(), this.getName());
-        ServiceEvent event = new ServiceEvent(this, characteristic,
-                ServiceEvent.ServiceEventType.CHARACTERISTIC_STATE_CHANGED);
-        notifyListeners(event);
+        ServiceEvent event = new ServiceEvent(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, this, characteristic);
+        getEventManager().publishEvent(event);
     }
 
-    private void notifyListeners(ServiceEvent event) {
-        for (ServiceChangeListener listener : listeners) {
-            try {
-                listener.onServiceEvent(event);
-            } catch (Exception e) {
-                logger.error("Error notifying listener of service event", e);
-            }
-        }
-    }
-
+    @SuppressWarnings("null")
     @Override
-    public boolean equals(Object o) {
-        if (this == o)
+    public boolean equals(@Nullable Object obj) {
+        if (this == obj)
             return true;
-        if (o == null || getClass() != o.getClass())
+        if (obj == null || getClass() != obj.getClass())
             return false;
 
-        GenericService that = (GenericService) o;
+        GenericService that = (GenericService) obj;
 
         // Compare basic fields
         if (instanceId != that.instanceId)
@@ -377,8 +435,9 @@ public class GenericService implements Service {
         return Objects.hash(instanceId, getInstanceType(), isHidden, isPrimary, characteristics);
     }
 
+    @SuppressWarnings("null")
     @Override
-    public int compareTo(Service other) {
+    public int compareTo(@Nullable Service other) {
         if (other == null)
             return 1;
         if (this == other)

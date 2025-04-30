@@ -10,7 +10,6 @@ import org.eclipse.jetty.util.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class HomekitHttpClientTransportOverHTTP extends HttpClientTransportOverHTTP {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpClientTransportOverHTTP.class);
@@ -24,14 +23,16 @@ public class HomekitHttpClientTransportOverHTTP extends HttpClientTransportOverH
 
     public HomekitHttpClientTransportOverHTTP() {
         super();
-        setConnectionPoolFactory(destination -> new HomekitConnnectionPool(destination, getHttpClient().getMaxConnectionsPerDestination(), destination));
+        setConnectionPoolFactory(destination -> new HomekitConnnectionPool(destination,
+                getHttpClient().getMaxConnectionsPerDestination(), destination));
     }
 
     @Override
     protected HttpConnectionOverHTTP newHttpConnection(EndPoint endPoint, HttpDestination destination,
             Promise<Connection> promise) {
 
-        logger.debug("{}newHttpConnection called for Endpoint {} and destination {}", LOG_CONFIG, endPoint.toString(), destination.toString());
+        logger.debug("{}newHttpConnection called for Endpoint {} and destination {}", LOG_CONFIG, endPoint.toString(),
+                destination.toString());
         logger.info("{}Creating a new connection for Endpoint {} for destination {}", LOG_STATE,
                 endPoint.getRemoteAddress().toString(), endPoint.toString(), destination.toString());
 
@@ -50,8 +51,10 @@ public class HomekitHttpClientTransportOverHTTP extends HttpClientTransportOverH
             logger.info("{}Setting the encryption keys on connection {} for destination {}", LOG_CONFIG,
                     endPoint.getRemoteAddress().toString(), newConnection.toString(), destination.toString());
             if (logger.isTraceEnabled()) {
-                logger.trace("{}DecryptionKey: {}", LOG_CONFIG, javax.xml.bind.DatatypeConverter.printHexBinary(((HomekitHttpDestinationOverHTTP) destination).getDecryptionKey()));
-                logger.trace("{}EncryptionKey: {}", LOG_CONFIG, javax.xml.bind.DatatypeConverter.printHexBinary(((HomekitHttpDestinationOverHTTP) destination).getEncryptionKey()));
+                logger.trace("{}DecryptionKey: {}", LOG_CONFIG, javax.xml.bind.DatatypeConverter
+                        .printHexBinary(((HomekitHttpDestinationOverHTTP) destination).getDecryptionKey()));
+                logger.trace("{}EncryptionKey: {}", LOG_CONFIG, javax.xml.bind.DatatypeConverter
+                        .printHexBinary(((HomekitHttpDestinationOverHTTP) destination).getEncryptionKey()));
             }
             newConnection.setEncryptionKeys(((HomekitHttpDestinationOverHTTP) destination).getDecryptionKey(),
                     ((HomekitHttpDestinationOverHTTP) destination).getEncryptionKey());
@@ -59,7 +62,8 @@ public class HomekitHttpClientTransportOverHTTP extends HttpClientTransportOverH
             // appEndPoint.setConnection(appConnection);
         } else {
             if (logger.isInfoEnabled()) {
-                logger.info("{}There are no encryption keys set for Endpoint {}", LOG_STATE, endPoint.getRemoteAddress().toString());
+                logger.info("{}There are no encryption keys set for Endpoint {}", LOG_STATE,
+                        endPoint.getRemoteAddress().toString());
             }
         }
 

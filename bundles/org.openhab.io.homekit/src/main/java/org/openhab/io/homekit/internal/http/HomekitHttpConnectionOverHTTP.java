@@ -69,8 +69,10 @@ public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
 
         logger.info("{}Setting Encryption Keys on {}", LOG_CONFIG, this);
         if (logger.isTraceEnabled()) {
-            logger.trace("{}DecryptionKey: {}", LOG_CONFIG, javax.xml.bind.DatatypeConverter.printHexBinary(decryptionKey));
-            logger.trace("{}EncryptionKey: {}", LOG_CONFIG, javax.xml.bind.DatatypeConverter.printHexBinary(encryptionKey));
+            logger.trace("{}DecryptionKey: {}", LOG_CONFIG,
+                    javax.xml.bind.DatatypeConverter.printHexBinary(decryptionKey));
+            logger.trace("{}EncryptionKey: {}", LOG_CONFIG,
+                    javax.xml.bind.DatatypeConverter.printHexBinary(encryptionKey));
         }
 
         HttpChannelOverHTTP channel = this.getHttpChannel();

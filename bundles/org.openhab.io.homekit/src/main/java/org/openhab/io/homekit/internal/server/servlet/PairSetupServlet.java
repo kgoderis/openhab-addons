@@ -116,7 +116,8 @@ public class PairSetupServlet extends BaseServlet {
 
             BigInteger salt = generateSalt();
             BigInteger verifier = verifierGenerator.generateVerifier(salt, "Pair-Setup", server.getSetupCode());
-            logger.info("{}Stage 1 Verifier is {}", LOG_PAIRING, Byte.toHexString(bigIntegerToUnsignedByteArray(verifier)));
+            logger.info("{}Stage 1 Verifier is {}", LOG_PAIRING,
+                    Byte.toHexString(bigIntegerToUnsignedByteArray(verifier)));
 
             Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
             encoder.add(Message.STATE, (short) 0x02);
@@ -218,7 +219,8 @@ public class PairSetupServlet extends BaseServlet {
             logger.info("{}Stage 3 Client Pairing Id is {}", LOG_PAIRING, Byte.toHexString(clientPairingIdentifier));
 
             byte[] clientLongtermPublicKey = d.getBytes(Message.PUBLIC_KEY);
-            logger.info("{}Stage 3 Client Long Term Public Key is {}", LOG_PAIRING, Byte.toHexString(clientLongtermPublicKey));
+            logger.info("{}Stage 3 Client Long Term Public Key is {}", LOG_PAIRING,
+                    Byte.toHexString(clientLongtermPublicKey));
 
             byte[] clientSignature = d.getBytes(Message.SIGNATURE);
             logger.info("{}Stage 3 Client Signature is {}", LOG_PAIRING, Byte.toHexString(clientSignature));

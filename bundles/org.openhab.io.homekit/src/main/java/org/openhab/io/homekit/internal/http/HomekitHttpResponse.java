@@ -1,4 +1,5 @@
 package org.openhab.io.homekit.internal.http;
+
 // package org.openhab.io.homekit.internal.http.jetty;
 //
 // import java.util.ArrayList;

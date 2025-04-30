@@ -27,7 +27,7 @@ import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.exception.HomekitFactoryException;
-import org.openhab.io.homekit.exception.RegistrationException;
+import org.openhab.io.homekit.exception.HomekitRegistrationException;
 
 /**
  * The {@link HomekitFactory} is responsible for creating {@link Accessory}s based on {@link Thing}s. Therefore
@@ -68,10 +68,11 @@ public interface HomekitFactory {
     Accessory createAccessory(Class<? extends Accessory> accessoryClass, AccessoryServer server, long instanceId)
             throws HomekitFactoryException;
 
-        @Nullable Accessory createAccessory(Thing thing, AccessoryServer server)
-            throws HomekitFactoryException;
+    @Nullable
+    Accessory createAccessory(Thing thing, AccessoryServer server) throws HomekitFactoryException;
 
-            public @Nullable Accessory createAccessory(Class<? extends Accessory> accessoryClass,JsonValue value) throws HomekitFactoryException;
+    public @Nullable Accessory createAccessory(Class<? extends Accessory> accessoryClass, JsonValue value)
+            throws HomekitFactoryException;
 
     @Nullable
     Service createService(String serviceType, Accessory accessory, boolean extend, String serviceName)
@@ -99,35 +100,35 @@ public interface HomekitFactory {
     Characteristic<?> createCharacteristic(Service service, JsonValue value) throws HomekitFactoryException;
 
     void addAccessory(ThingTypeUID thingTypeUID, Class<? extends Accessory> accessoryClass)
-            throws RegistrationException;
+            throws HomekitRegistrationException;
 
-    void addAccessory(Class<? extends Accessory> accessoryClass) throws RegistrationException;
+    void addAccessory(Class<? extends Accessory> accessoryClass) throws HomekitRegistrationException;
 
-    void addService(ThingTypeUID thingTypeUID) throws RegistrationException;
+    void addService(ThingTypeUID thingTypeUID) throws HomekitRegistrationException;
 
-    void addService(ThingTypeUID thingTypeUID, String serviceType) throws RegistrationException;
+    void addService(ThingTypeUID thingTypeUID, String serviceType) throws HomekitRegistrationException;
 
-    void addService(ThingTypeUID thingTypeUID, Class<? extends Service> serviceClass) throws RegistrationException;
+    void addService(ThingTypeUID thingTypeUID, Class<? extends Service> serviceClass) throws HomekitRegistrationException;
 
-    void addService(String serviceType, Class<? extends Service> serviceClass) throws RegistrationException;
+    void addService(String serviceType, Class<? extends Service> serviceClass) throws HomekitRegistrationException;
 
-    void addService(Class<@NonNull ? extends Service> serviceClass) throws RegistrationException;
+    void addService(Class<@NonNull ? extends Service> serviceClass) throws HomekitRegistrationException;
 
-    void addServiceWithTag(String tag, Class<? extends Service> serviceClass) throws RegistrationException;
+    void addServiceWithTag(String tag, Class<? extends Service> serviceClass) throws HomekitRegistrationException;
 
-    void addCharacteristic(ChannelTypeUID channelTypeUID, String characteristicType) throws RegistrationException;
+    void addCharacteristic(ChannelTypeUID channelTypeUID, String characteristicType) throws HomekitRegistrationException;
 
     void addCharacteristic(ChannelTypeUID channelTypeUID,
-            Class<@NonNull ? extends Characteristic<?>> characteristicClass) throws RegistrationException;
+            Class<@NonNull ? extends Characteristic<?>> characteristicClass) throws HomekitRegistrationException;
 
     void addCharacteristic(String characteristicType, Class<? extends Characteristic<?>> characteristicClass)
-            throws RegistrationException;
+            throws HomekitRegistrationException;
 
     void addCharacteristic(Class<@NonNull ? extends Characteristic<?>> characteristicClass)
-            throws RegistrationException;
+            throws HomekitRegistrationException;
 
     void addCharacteristicWithTag(String tag, Class<? extends Characteristic<?>> characteristicClass)
-            throws RegistrationException;
+            throws HomekitRegistrationException;
 
     @Nullable
     Set<String> getCharacteristicTypes(ChannelTypeUID channelTypeUID);

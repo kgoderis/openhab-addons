@@ -41,7 +41,8 @@ public class LogRequestFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         try {
-            logger.debug("{}Entering doFilter for request URI: {}", LOG_STATE, ((HttpServletRequest) request).getRequestURI());
+            logger.debug("{}Entering doFilter for request URI: {}", LOG_STATE,
+                    ((HttpServletRequest) request).getRequestURI());
             if (logger.isDebugEnabled()) {
                 final RequestWrapper wrappedRequest = new RequestWrapper((HttpServletRequest) request);
                 logPayLoad(wrappedRequest);

@@ -24,8 +24,8 @@ import org.openhab.io.homekit.api.listener.CharacteristicChangeListener;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.crypto.HomekitEncryptionEngine;
-import org.openhab.io.homekit.exception.AccessoryOperationException;
-import org.openhab.io.homekit.exception.ConfigurationException;
+import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
+import org.openhab.io.homekit.exception.HomekitConfigurationException;
 import org.openhab.io.homekit.exception.HomekitServerException;
 import org.openhab.io.homekit.internal.accessory.AccessoryServerState;
 import org.openhab.io.homekit.internal.events.CharacteristicEvent;
@@ -76,7 +76,7 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
     // ========== Constructors ==========
     public LocalAccessoryServer(AccessoryCategory category, InetAddress address, int port, byte[] pairingId,
             byte[] secretKey, MDNSService mdnsService, AccessoryRegistry accessoryRegistry,
-            PairingRegistry pairingRegistry) throws ConfigurationException  {
+            PairingRegistry pairingRegistry) throws HomekitConfigurationException {
         super(category, address, port, pairingId, secretKey, accessoryRegistry, pairingRegistry);
         logger.debug("{}Initializing local server - Category: {}, Address: {}, Port: {}", LOG_INIT, category, address,
                 port);
@@ -86,7 +86,7 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
 
     public LocalAccessoryServer(AccessoryCategory category, InetAddress address, int port, MDNSService mdnsService,
             AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry)
-            throws ConfigurationException, HomekitServerException {
+            throws HomekitConfigurationException, HomekitServerException {
         this(category, address, port, generatePairingId(), generateSecretKey(), mdnsService, accessoryRegistry,
                 pairingRegistry);
     }
@@ -121,7 +121,7 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
             logger.debug("{}Created characteristic servlet", LOG_INIT);
 
             // ServletContextHandler servletContextHandler = new ServletContextHandler(
-            //     ServletContextHandler.SESSIONS | ServletContextHandler.NO_SECURITY);
+            // ServletContextHandler.SESSIONS | ServletContextHandler.NO_SECURITY);
             ServletContextHandler servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
             servletContextHandler.setContextPath("/");
             servletContextHandler.setSessionHandler(homekitSessionHandler);
@@ -142,7 +142,6 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
             logger.error("{}Failed to initialize server resources: {}", LOG_ERROR, e.getMessage(), e);
             throw e;
         }
-
 
         // Netty - Do not Delete
 
@@ -239,7 +238,7 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
     }
 
     @Override
-    public void start()  throws HomekitServerException{
+    public void start() throws HomekitServerException {
         logger.debug("{}Starting HomeKit server", LOG_SERVER);
         try {
             super.start(); // This will call initializeResources() and set state to READY
@@ -265,7 +264,7 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
     }
 
     @Override
-    public void stop()  throws HomekitServerException{
+    public void stop() throws HomekitServerException {
         logger.debug("{}Stopping HomeKit server", LOG_SERVER);
         try {
             // Stop Jetty server
@@ -285,10 +284,10 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
     }
 
     @Override
-    public void close()  throws HomekitServerException {
+    public void close() throws HomekitServerException {
         logger.info("{}Closing local server - Server: {}", LOG_SERVER, getUID());
 
-        try  {
+        try {
             // First stop the server to clean up active connections
             stop();
 
@@ -346,7 +345,8 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
 
     // ========== Pairing Management ==========
     @Override
-    public void addPairing(byte @NonNull [] destinationPairingId, byte @NonNull [] destinationPublicKey) throws HomekitServerException {
+    public void addPairing(byte @NonNull [] destinationPairingId, byte @NonNull [] destinationPublicKey)
+            throws HomekitServerException {
         logger.debug("{}Adding pairing - Destination ID: {}", LOG_PAIRING, Byte.toHexString(destinationPairingId));
         super.addPairing(destinationPairingId, destinationPublicKey);
         advertise();
@@ -379,7 +379,7 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
 
     // ========== Accessory Management ==========
     @Override
-    public void updateAccessories() throws AccessoryOperationException {
+    public void updateAccessories() throws HomekitAccessoryOperationException {
         logger.debug("{}Accessory update requested - No action needed for local server", LOG_ACCESSORY);
     }
 
@@ -447,7 +447,7 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
             try {
                 start();
                 logger.debug("{}Server started for advertisement", LOG_SERVER);
-            } catch ( HomekitServerException e) {
+            } catch (HomekitServerException e) {
                 logger.error("{}Failed to start server for advertisement: {}", LOG_ERROR, e.getMessage(), e);
                 try {
                     setState(AccessoryServerState.STOPPED);
@@ -493,14 +493,14 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
         if (getConfigurationIndex() == 65535) {
             try {
                 setConfigurationIndex(1);
-            } catch (ConfigurationException ex) {
+            } catch (HomekitConfigurationException ex) {
                 logger.error("{}Failed to set configuration index: {}", LOG_ERROR, ex.getMessage(), ex);
             }
         }
         props.put("c#", Integer.toString(getConfigurationIndex()));
         try {
             setConfigurationIndex(getConfigurationIndex() + 1);
-        } catch (ConfigurationException ex) {
+        } catch (HomekitConfigurationException ex) {
             logger.error("{}Failed to increment configuration index: {}", LOG_ERROR, ex.getMessage(), ex);
         }
 
@@ -559,12 +559,8 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
         }
     }
 
-  
-
-
-
     @Override
-    public void addAccessory(@NonNull Accessory accessory) throws AccessoryOperationException {
+    public void addAccessory(@NonNull Accessory accessory) throws HomekitAccessoryOperationException {
         logger.debug("{}Adding accessory - ID: {}, Type: {}", LOG_ACCESSORY, accessory.getAccessoryId(),
                 accessory.getClass().getSimpleName());
         try {
@@ -581,12 +577,12 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
             logger.info("{}Accessory added successfully - ID: {}", LOG_ACCESSORY, accessory.getAccessoryId());
         } catch (HomekitServerException e) {
             logger.error("{}Failed to add accessory: {}", LOG_ERROR, e.getMessage(), e);
-            throw new AccessoryOperationException("Failed to add accessory: " + e.getMessage(), e);
+            throw new HomekitAccessoryOperationException("Failed to add accessory: " + e.getMessage(), e);
         }
     }
 
     @Override
-    public void removeAccessory(@NonNull Accessory accessory) throws AccessoryOperationException {
+    public void removeAccessory(@NonNull Accessory accessory) throws HomekitAccessoryOperationException {
         logger.debug("{}Removing accessory - ID: {}, Type: {}", LOG_ACCESSORY, accessory.getAccessoryId(),
                 accessory.getClass().getSimpleName());
         try {
@@ -603,7 +599,7 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
             logger.info("{}Accessory removed successfully - ID: {}", LOG_ACCESSORY, accessory.getAccessoryId());
         } catch (HomekitServerException e) {
             logger.error("{}Failed to remove accessory: {}", LOG_ERROR, e.getMessage(), e);
-            throw new AccessoryOperationException("Failed to remove accessory: " + e.getMessage(), e);
+            throw new HomekitAccessoryOperationException("Failed to remove accessory: " + e.getMessage(), e);
         }
     }
 }

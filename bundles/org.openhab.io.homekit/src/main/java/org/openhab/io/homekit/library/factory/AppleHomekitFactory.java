@@ -1,7 +1,7 @@
 package org.openhab.io.homekit.library.factory;
 
 import org.openhab.io.homekit.api.factory.HomekitFactory;
-import org.openhab.io.homekit.exception.RegistrationException;
+import org.openhab.io.homekit.exception.HomekitRegistrationException;
 import org.openhab.io.homekit.internal.factory.AbstractHomekitFactory;
 import org.openhab.io.homekit.library.characteristic.BrightnessCharacteristic;
 import org.openhab.io.homekit.library.characteristic.ColorTemperatureCharacteristic;
@@ -40,7 +40,7 @@ public class AppleHomekitFactory extends AbstractHomekitFactory {
             this.addService(OutletService.class);
             this.addService(SwitchService.class);
             this.addService(ThermostatService.class);
-    
+
             this.addCharacteristic(BrightnessCharacteristic.class);
             this.addCharacteristic(ColorTemperatureCharacteristic.class);
             this.addCharacteristic(CurrentHeatingCoolingStateCharacteristic.class);
@@ -59,12 +59,9 @@ public class AppleHomekitFactory extends AbstractHomekitFactory {
             this.addCharacteristic(TargetHeatingCoolingStateCharacteristic.class);
             this.addCharacteristic(TemperatureDisplayUnitsCharacteristic.class);
             this.addCharacteristic(VersionCharacteristic.class);
-        } catch (RegistrationException e) {
-            logger.error("{}Failed to initialize mappers in AppleHomekitFactory: {}", AbstractHomekitFactory.LOG_ERROR, e.getMessage(), e);
+        } catch (HomekitRegistrationException e) {
+            logger.error("{}Failed to initialize mappers in AppleHomekitFactory: {}", AbstractHomekitFactory.LOG_ERROR,
+                    e.getMessage(), e);
         }
     }
-
-
-
-
 }

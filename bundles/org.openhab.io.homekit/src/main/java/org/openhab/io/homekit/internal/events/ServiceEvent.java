@@ -1,23 +1,18 @@
 package org.openhab.io.homekit.internal.events;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Service;
 
-public class ServiceEvent {
+@NonNullByDefault
+public class ServiceEvent extends AbstractHomekitEvent {
     private final Service service;
     private final Characteristic<?> characteristic;
-    private final ServiceEventType type;
 
-    public enum ServiceEventType {
-        CHARACTERISTIC_ADDED,
-        CHARACTERISTIC_REMOVED,
-        CHARACTERISTIC_STATE_CHANGED
-    }
-
-    public ServiceEvent(Service service, Characteristic<?> characteristic, ServiceEventType type) {
+    public ServiceEvent(HomekitEventType type, Service service, Characteristic<?> characteristic) {
+        super(service.getUID().toString(), type);
         this.service = service;
         this.characteristic = characteristic;
-        this.type = type;
     }
 
     public Service getService() {
@@ -28,7 +23,8 @@ public class ServiceEvent {
         return characteristic;
     }
 
-    public ServiceEventType getType() {
-        return type;
+    @Override
+    public String toString() {
+        return "ServiceEvent[type=" + getType() + ", service=" + service + ", characteristic=" + characteristic + "]";
     }
 }

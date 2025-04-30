@@ -15,7 +15,8 @@ public class CurrentVerticalTiltAngleCharacteristic extends IntegerCharacteristi
     private static final String TYPE = "0000006E-0000-1000-8000-0026BB765291";
 
     public CurrentVerticalTiltAngleCharacteristic(Service service, long instanceId) {
-        super(service, instanceId, false, true, true, "The current angle of vertical slats", -90, 90, "arcdegrees", TYPE);
+        super(service, instanceId, false, true, true, "The current angle of vertical slats", -90, 90, "arcdegrees",
+                TYPE);
     }
 
     public CurrentVerticalTiltAngleCharacteristic(Service service, JsonValue value) {

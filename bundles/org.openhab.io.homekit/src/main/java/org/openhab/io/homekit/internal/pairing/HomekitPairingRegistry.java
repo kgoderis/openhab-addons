@@ -116,7 +116,8 @@ public class HomekitPairingRegistry extends AbstractRegistry<Pairing, PairingUID
 
     @Override
     public void onReadyMarkerAdded(ReadyMarker readyMarker) {
-        logger.debug("{}Receiving the ready marker {}:{}", LOG_STATE, readyMarker.getType(), readyMarker.getIdentifier());
+        logger.debug("{}Receiving the ready marker {}:{}", LOG_STATE, readyMarker.getType(),
+                readyMarker.getIdentifier());
 
         if (readyMarker.getType() == HOMEKIT_ACCESSORY_SERVER_REGISTRY) {
             accessoryServerRegistryReady = true;
@@ -131,8 +132,8 @@ public class HomekitPairingRegistry extends AbstractRegistry<Pairing, PairingUID
 
         if (accessoryServerRegistryReady && managedPairingProviderReady) {
             for (Pairing aPairing : getAll()) {
-                logger.debug("{}Pairing {} with Public Key {} is available in the Pairing Registry", LOG_STATE, aPairing.getUID(),
-                        Byte.toHexString(aPairing.getPublicKey()));
+                logger.debug("{}Pairing {} with Public Key {} is available in the Pairing Registry", LOG_STATE,
+                        aPairing.getUID(), Byte.toHexString(aPairing.getPublicKey()));
             }
 
             logger.warn("{}Marking the Pairing Registry as ready", LOG_WARN);

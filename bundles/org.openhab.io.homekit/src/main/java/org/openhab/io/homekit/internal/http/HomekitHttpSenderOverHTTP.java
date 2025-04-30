@@ -75,7 +75,8 @@ public class HomekitHttpSenderOverHTTP extends HttpSenderOverHTTP {
                 boolean lastContent = content.isLast();
                 HttpGenerator.Result result = generator.generateRequest(null, null, chunk, contentBuffer, lastContent);
                 if (logger.isDebugEnabled()) {
-                    logger.debug("{}Generated content ({} bytes) - {}/{}", LOG_STATE, contentBuffer == null ? -1 : contentBuffer.remaining(), result, generator);
+                    logger.debug("{}Generated content ({} bytes) - {}/{}", LOG_STATE,
+                            contentBuffer == null ? -1 : contentBuffer.remaining(), result, generator);
                 }
                 switch (result) {
                     case NEED_CHUNK: {
@@ -244,8 +245,8 @@ public class HomekitHttpSenderOverHTTP extends HttpSenderOverHTTP {
                 HttpGenerator.Result result = generator.generateRequest(metaData, headerBuffer, chunkBuffer,
                         contentBuffer, lastContent);
                 if (logger.isDebugEnabled()) {
-                    logger.debug("{}Generated headers ({} bytes), chunk ({} bytes), content ({} bytes) - {}/{}", LOG_STATE,
-                            headerBuffer == null ? -1 : headerBuffer.remaining(),
+                    logger.debug("{}Generated headers ({} bytes), chunk ({} bytes), content ({} bytes) - {}/{}",
+                            LOG_STATE, headerBuffer == null ? -1 : headerBuffer.remaining(),
                             chunkBuffer == null ? -1 : chunkBuffer.remaining(),
                             contentBuffer == null ? -1 : contentBuffer.remaining(), result, generator);
                 }

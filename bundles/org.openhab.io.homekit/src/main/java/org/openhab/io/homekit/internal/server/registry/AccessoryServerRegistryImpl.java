@@ -18,9 +18,9 @@ import org.openhab.io.homekit.api.provider.AccessoryServerProvider;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
-import org.openhab.io.homekit.exception.AccessoryOperationException;
+import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.exception.HomekitServerException;
-import org.openhab.io.homekit.exception.ListenerNotificationException;
+import org.openhab.io.homekit.exception.HomekitEventException;
 import org.openhab.io.homekit.internal.events.AccessoryServerEvent;
 import org.openhab.io.homekit.internal.server.AccessoryServerUID;
 import org.openhab.io.homekit.internal.server.RemoteAccessoryServer;
@@ -44,8 +44,7 @@ import org.slf4j.LoggerFactory;
 @Component(immediate = true, service = AccessoryServerRegistry.class)
 public class AccessoryServerRegistryImpl
         extends AbstractRegistry<AccessoryServer, AccessoryServerUID, AccessoryServerProvider>
-        implements AccessoryServerRegistry, ReadyService.ReadyTracker,
-        AccessoryServerChangeListener {
+        implements AccessoryServerRegistry, ReadyService.ReadyTracker, AccessoryServerChangeListener {
 
     private static final String HOMEKIT_ACCESSORY_SERVER_REGISTRY = "homekit.accessoryServerRegistry";
     private static final String HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER = "homekit.managedAccessoryServerProvider";
@@ -69,8 +68,8 @@ public class AccessoryServerRegistryImpl
 
     @Activate
     public AccessoryServerRegistryImpl(@Reference ReadyService readyService,
-            @Reference NetworkAddressService networkAddressService,
-            @Reference AccessoryRegistry accessoryRegistry, @Reference PairingRegistry pairingRegistry) {
+            @Reference NetworkAddressService networkAddressService, @Reference AccessoryRegistry accessoryRegistry,
+            @Reference PairingRegistry pairingRegistry) {
         super(AccessoryServerProvider.class);
         this.readyService = readyService;
         this.networkAddressService = networkAddressService;
@@ -131,7 +130,7 @@ public class AccessoryServerRegistryImpl
                     highestPortNumber = server.getPort();
                 }
             }
-        } catch (AccessoryOperationException e) {
+        } catch (HomekitAccessoryOperationException e) {
             logger.error("{}Error accessing server accessories: {}", LOG_ERROR, e.getMessage(), e);
             return null;
         }
@@ -151,9 +150,9 @@ public class AccessoryServerRegistryImpl
             try {
                 if (availableServer.getAccessory(1) == null) {
                     try {
-                        logger.info("{}Adding Bridge Accessory to Server - UID: {}, Type: {}, Port: {}, Setup Code: {}", 
-                            LOG_ACCESSORY, availableServer.getUID(), availableServer.getClass().getSimpleName(),
-                            availableServer.getPort(), availableServer.getSetupCode());
+                        logger.info("{}Adding Bridge Accessory to Server - UID: {}, Type: {}, Port: {}, Setup Code: {}",
+                                LOG_ACCESSORY, availableServer.getUID(), availableServer.getClass().getSimpleName(),
+                                availableServer.getPort(), availableServer.getSetupCode());
                         BridgeAccessory bridgeAccessory = new BridgeAccessory(availableServer, true);
                         availableServer.addAccessory(bridgeAccessory);
                     } catch (Exception e) {
@@ -161,11 +160,11 @@ public class AccessoryServerRegistryImpl
                     }
                 }
 
-                logger.info("{}Found Accessory Server - UID: {}, Type: {}, Port: {}, Setup Code: {}, Accessories: {}", 
-                    LOG_STATE, availableServer.getUID(), availableServer.getClass().getSimpleName(), 
-                    availableServer.getPort(), availableServer.getSetupCode(), 
-                    availableServer.getAccessories().size());
-            } catch (AccessoryOperationException e) {
+                logger.info("{}Found Accessory Server - UID: {}, Type: {}, Port: {}, Setup Code: {}, Accessories: {}",
+                        LOG_STATE, availableServer.getUID(), availableServer.getClass().getSimpleName(),
+                        availableServer.getPort(), availableServer.getSetupCode(),
+                        availableServer.getAccessories().size());
+            } catch (HomekitAccessoryOperationException e) {
                 logger.error("{}Error accessing server accessories: {}", LOG_ERROR, e.getMessage(), e);
             }
         }
@@ -175,7 +174,8 @@ public class AccessoryServerRegistryImpl
 
     @Override
     public void onReadyMarkerAdded(ReadyMarker readyMarker) {
-        logger.debug("{}Ready marker added - Type: {}, Identifier: {}", LOG_STATE, readyMarker.getType(), readyMarker.getIdentifier());
+        logger.debug("{}Ready marker added - Type: {}, Identifier: {}", LOG_STATE, readyMarker.getType(),
+                readyMarker.getIdentifier());
 
         if (getManagedProvider().isPresent()) {
             addProviderWithReadyMarker(getManagedProvider().get());
@@ -184,16 +184,17 @@ public class AccessoryServerRegistryImpl
 
     @Override
     public void onReadyMarkerRemoved(ReadyMarker readyMarker) {
-        logger.debug("{}Ready marker removed - Type: {}, Identifier: {}", LOG_STATE, readyMarker.getType(), readyMarker.getIdentifier());
+        logger.debug("{}Ready marker removed - Type: {}, Identifier: {}", LOG_STATE, readyMarker.getType(),
+                readyMarker.getIdentifier());
     }
 
     @Override
     public void onAccessoryServerEvent(AccessoryServerEvent event) {
         switch (event.getType()) {
-                    case SERVER_UPDATED -> this.update(event.getServer());
-                    default -> {
-                        // No Op
-                    } 
+            case SERVER_UPDATED -> this.update(event.getServer());
+            default -> {
+                // No Op
+            }
         }
     }
 
@@ -201,8 +202,8 @@ public class AccessoryServerRegistryImpl
         super.addProvider(provider);
 
         for (AccessoryServer aServer : getAll()) {
-            logger.debug("{}Accessory Server available - UID: {}, Setup Code: {}", LOG_ACCESSORY, 
-                aServer.getUID(), aServer.getSetupCode());
+            logger.debug("{}Accessory Server available - UID: {}, Setup Code: {}", LOG_ACCESSORY, aServer.getUID(),
+                    aServer.getSetupCode());
             if (aServer instanceof AccessoryServer accessoryServer) {
                 accessoryServer.advertise();
             }
@@ -218,7 +219,7 @@ public class AccessoryServerRegistryImpl
         try {
             element.addChangeListener(this);
             super.added(provider, element);
-        } catch (ListenerNotificationException e) {
+        } catch (HomekitEventException e) {
             logger.error("{}Error adding change listener: {}", LOG_ERROR, e.getMessage(), e);
         }
     }
@@ -228,7 +229,7 @@ public class AccessoryServerRegistryImpl
         try {
             element.removeChangeListener(this);
             super.removed(provider, element);
-        } catch (ListenerNotificationException e) {
+        } catch (HomekitEventException e) {
             logger.error("{}Error removing change listener: {}", LOG_ERROR, e.getMessage(), e);
         }
     }

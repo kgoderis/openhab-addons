@@ -1,13 +1,12 @@
 package org.openhab.io.homekit.api.hap;
 
 import java.util.Collection;
+import java.util.Optional;
 
 import javax.json.JsonObject;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.registry.Identifiable;
-import org.openhab.io.homekit.api.listener.AccessoryChangeListener;
 import org.openhab.io.homekit.internal.accessory.AccessoryUID;
 
 /**
@@ -20,6 +19,12 @@ import org.openhab.io.homekit.internal.accessory.AccessoryUID;
 @NonNullByDefault
 public interface Accessory extends Identifiable<AccessoryUID>, Comparable<Accessory> {
 
+    /**
+     * Returns the unique identifier for the accessory.
+     *
+     * @return the unique identifier for the accessory.
+     */
+    @Override
     AccessoryUID getUID();
 
     /**
@@ -91,8 +96,7 @@ public interface Accessory extends Identifiable<AccessoryUID>, Comparable<Access
      */
     Collection<Service> getServices();
 
-    @Nullable
-    Service getService(String serviceType);
+    Optional<Service> getService(String serviceType);
 
     /**
      * Accessory should list one of its Services as the primary Service. The primary Service
@@ -101,22 +105,7 @@ public interface Accessory extends Identifiable<AccessoryUID>, Comparable<Access
      *
      * @return the primary Services.
      */
-    @Nullable
-    Service getPrimaryService();
-
-    /**
-     * Adds a listener to be notified of accessory changes.
-     *
-     * @param listener the listener to add
-     */
-    void addChangeListener(AccessoryChangeListener listener);
-
-    /**
-     * Removes a listener from being notified of accessory changes.
-     *
-     * @param listener the listener to remove
-     */
-    void removeChangeListener(AccessoryChangeListener listener);
+    Optional<Service> getPrimaryService();
 
     /**
      * Creates the JSON representation of the Accessory, in accordance with the Homekit Accessory

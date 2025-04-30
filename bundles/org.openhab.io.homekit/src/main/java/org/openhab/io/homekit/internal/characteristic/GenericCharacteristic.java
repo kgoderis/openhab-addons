@@ -2,9 +2,7 @@ package org.openhab.io.homekit.internal.characteristic;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Collection;
 import java.util.Objects;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -20,14 +18,18 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Service;
-import org.openhab.io.homekit.api.listener.CharacteristicChangeListener;
 import org.openhab.io.homekit.internal.events.CharacteristicEvent;
-import org.openhab.io.homekit.internal.events.CharacteristicEvent.CharacteristicEventType;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
+import org.openhab.io.homekit.internal.events.HomekitEventPublisher;
+import org.openhab.io.homekit.internal.events.HomekitEventType;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @NonNullByDefault
-public abstract class GenericCharacteristic<@NonNull T> implements Characteristic<@NonNull T> {
+public abstract class GenericCharacteristic<@NonNull T> implements Characteristic<@NonNull T>, HomekitEventPublisher {
 
     private static final Logger logger = LoggerFactory.getLogger(GenericCharacteristic.class);
 
@@ -44,7 +46,8 @@ public abstract class GenericCharacteristic<@NonNull T> implements Characteristi
     private final long instanceId;
     private String format;
     private String description;
-    private final Collection<CharacteristicChangeListener> listeners = new CopyOnWriteArraySet<>();
+    @Nullable
+    private static ServiceTracker<HomekitEventManager, HomekitEventManager> eventManagerTracker;
 
     // Instance fields - mutable
     private boolean isWritable = false;
@@ -111,6 +114,32 @@ public abstract class GenericCharacteristic<@NonNull T> implements Characteristi
         }
     }
 
+    @Override
+    @SuppressWarnings("unused")
+    public HomekitEventManager getEventManager() {
+        @Nullable
+        ServiceTracker<HomekitEventManager, HomekitEventManager> tracker = getEventManagerTracker();
+        if (tracker != null) {
+            @Nullable
+            HomekitEventManager manager = tracker.getService();
+            if (manager != null) {
+                return manager;
+            }
+        }
+        throw new IllegalStateException("HomekitEventManager service is not available");
+    }
+
+    @SuppressWarnings("null")
+    private static ServiceTracker<HomekitEventManager, HomekitEventManager> getEventManagerTracker() {
+        if (eventManagerTracker == null) {
+            BundleContext context = FrameworkUtil.getBundle(GenericCharacteristic.class).getBundleContext();
+            eventManagerTracker = new ServiceTracker<>(context, HomekitEventManager.class, null);
+            eventManagerTracker.open();
+        }
+
+        return eventManagerTracker;
+    }
+
     // Interface implementation methods
     @Override
     public Service getService() {
@@ -150,6 +179,11 @@ public abstract class GenericCharacteristic<@NonNull T> implements Characteristi
     @Override
     public void setHasEvents(boolean value) {
         this.hasEvents = value;
+    }
+
+    @Override
+    public String getSourceUID() {
+        return getUID().toString();
     }
 
     @Override
@@ -242,7 +276,8 @@ public abstract class GenericCharacteristic<@NonNull T> implements Characteristi
     @Override
     public void setValue(@Nullable T value) throws Exception {
         if (isWritable) {
-            @Nullable T oldValue = this.value;
+            @Nullable
+            T oldValue = this.value;
             this.value = value;
             if (!Objects.equals(oldValue, value)) {
                 notifyValueChanged(oldValue, value);
@@ -263,33 +298,10 @@ public abstract class GenericCharacteristic<@NonNull T> implements Characteristi
         }
     }
 
-    @Override
-    public void addChangeListener(CharacteristicChangeListener listener) {
-        listeners.add(listener);
-        if (listeners.size() == 1) {
-            notifyListeners(new CharacteristicEvent(this, CharacteristicEventType.CHARACTERISTIC_START_EVENTS));
-        }
-    }
-
-    @Override
-    public void removeChangeListener(CharacteristicChangeListener listener) {
-        listeners.remove(listener);
-        if (listeners.isEmpty()) {
-            notifyListeners(new CharacteristicEvent(this, CharacteristicEventType.CHARACTERISTIC_STOP_EVENTS));
-        }
-    }
-
     // Protected methods
     protected void notifyValueChanged(@Nullable T oldValue, @Nullable T newValue) {
-        for (CharacteristicChangeListener listener : listeners) {
-            listener.onCharacteristicEvent(new CharacteristicEvent(this, toValueJson(oldValue), toValueJson(getValue())));
-        }
-    }
-
-    protected void notifyListeners(CharacteristicEvent event) {
-        for (CharacteristicChangeListener listener : listeners) {
-            listener.onCharacteristicEvent(event);
-        }
+        getEventManager().publishEvent(new CharacteristicEvent(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, this,
+                toValueJson(oldValue), toValueJson(getValue())));
     }
 
     protected JsonObject enrich(JsonObject source, String key, Object value) {
@@ -450,16 +462,16 @@ public abstract class GenericCharacteristic<@NonNull T> implements Characteristi
 
     // @Override
     // public boolean isWritable() {
-    //     return isWritable;
+    // return isWritable;
     // }
 
     // @Override
     // public boolean isReadable() {
-    //     return isReadable;
+    // return isReadable;
     // }
 
     // @Override
     // public boolean hasEvents() {
-    //     return hasEvents;
+    // return hasEvents;
     // }
 }

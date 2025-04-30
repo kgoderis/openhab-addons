@@ -30,7 +30,7 @@ import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.StatusCode;
-import org.openhab.io.homekit.exception.AccessoryOperationException;
+import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.util.Debouncer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,13 +90,14 @@ public class CharacteristicServlet extends BaseServlet {
                 try {
                     Accessory accessory = server.getAccessory(aid);
                     if (accessory != null) {
-                        accessory.getServices().stream().map(service -> (Characteristic<?>) service.getCharacteristic(iid))
+                        accessory.getServices().stream()
+                                .map(service -> (Characteristic<?>) service.getCharacteristic(iid))
                                 .filter(characteristic -> characteristic != null).findFirst()
                                 .ifPresent(characteristic -> characteristicSubscriptions
                                         .computeIfAbsent(characteristic, c -> ConcurrentHashMap.newKeySet())
                                         .add(asyncContext));
                     }
-                } catch (AccessoryOperationException e) {
+                } catch (HomekitAccessoryOperationException e) {
                     logger.error("{}Error accessing accessory {}: {}", LOG_ERROR, aid, e.getMessage());
                 }
             }
@@ -143,10 +144,11 @@ public class CharacteristicServlet extends BaseServlet {
                 Accessory accessory = server.getAccessory(aid);
                 if (accessory != null) {
                     accessory.getServices().stream().map(service -> (Characteristic<?>) service.getCharacteristic(iid))
-                            .filter(characteristic -> characteristic != null).forEach(characteristic -> characteristics.add(
+                            .filter(characteristic -> characteristic != null)
+                            .forEach(characteristic -> characteristics.add(
                                     characteristic.toJson(includeMeta, includePermissions, includeType, includeEvent)));
                 }
-            } catch (AccessoryOperationException e) {
+            } catch (HomekitAccessoryOperationException e) {
                 logger.error("{}Error accessing accessory {}: {}", LOG_ERROR, aid, e.getMessage());
             }
         }

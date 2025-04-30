@@ -100,7 +100,8 @@ public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypePro
 
         // Store the channel group type
         putChannelGroupType(channelGroupType);
-        logger.debug("{}Created ChannelGroupType {} for HomeKit service type {}", LOG_CONFIG, channelGroupTypeUID, serviceType);
+        logger.debug("{}Created ChannelGroupType {} for HomeKit service type {}", LOG_CONFIG, channelGroupTypeUID,
+                serviceType);
     }
 
     private List<ChannelDefinition> createChannelDefinitions(String serviceType, HomekitFactory homekitFactory) {

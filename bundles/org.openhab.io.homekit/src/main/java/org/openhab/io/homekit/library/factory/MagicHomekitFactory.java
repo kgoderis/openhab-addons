@@ -3,7 +3,7 @@ package org.openhab.io.homekit.library.factory;
 import org.openhab.core.magic.binding.MagicBindingConstants;
 import org.openhab.core.thing.type.ChannelTypeUID;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
-import org.openhab.io.homekit.exception.RegistrationException;
+import org.openhab.io.homekit.exception.HomekitRegistrationException;
 import org.openhab.io.homekit.internal.factory.AbstractHomekitFactory;
 import org.openhab.io.homekit.library.characteristic.BrightnessCharacteristic;
 import org.openhab.io.homekit.library.characteristic.CurrentTemperatureCharacteristic;
@@ -28,44 +28,41 @@ public class MagicHomekitFactory extends AbstractHomekitFactory {
             this.addService(MagicBindingConstants.THING_TYPE_ON_OFF_LIGHT, LightBulbService.class);
             this.addService(MagicBindingConstants.THING_TYPE_DIMMABLE_LIGHT, DimmableLightBulbService.class);
             this.addService(MagicBindingConstants.THING_TYPE_COLOR_LIGHT, ColorLightBulbService.class);
-        this.addService(MagicBindingConstants.THING_TYPE_CONTACT_SENSOR, ContactSensorService.class);
-        this.addService(MagicBindingConstants.THING_TYPE_THERMOSTAT, ThermostatService.class);
-        this.addService(MagicBindingConstants.THING_TYPE_ROLLERSHUTTER, WindowCoveringService.class);
+            this.addService(MagicBindingConstants.THING_TYPE_CONTACT_SENSOR, ContactSensorService.class);
+            this.addService(MagicBindingConstants.THING_TYPE_THERMOSTAT, ThermostatService.class);
+            this.addService(MagicBindingConstants.THING_TYPE_ROLLERSHUTTER, WindowCoveringService.class);
 
-        this.addCharacteristic(
-                new ChannelTypeUID(MagicBindingConstants.BINDING_ID, MagicBindingConstants.CHANNEL_SWITCH),
-                OnCharacteristic.class);
+            this.addCharacteristic(
+                    new ChannelTypeUID(MagicBindingConstants.BINDING_ID, MagicBindingConstants.CHANNEL_SWITCH),
+                    OnCharacteristic.class);
 
-        this.addCharacteristic(
-                new ChannelTypeUID(MagicBindingConstants.BINDING_ID, MagicBindingConstants.CHANNEL_BRIGHTNESS),
-                BrightnessCharacteristic.class);
+            this.addCharacteristic(
+                    new ChannelTypeUID(MagicBindingConstants.BINDING_ID, MagicBindingConstants.CHANNEL_BRIGHTNESS),
+                    BrightnessCharacteristic.class);
 
-        this.addCharacteristic(
-                new ChannelTypeUID(MagicBindingConstants.BINDING_ID, MagicBindingConstants.CHANNEL_COLOR),
-                HueCharacteristic.class);
-        this.addCharacteristic(
-                new ChannelTypeUID(MagicBindingConstants.BINDING_ID, MagicBindingConstants.CHANNEL_COLOR),
-                SaturationCharacteristic.class);
-        this.addCharacteristic(
-                new ChannelTypeUID(MagicBindingConstants.BINDING_ID, MagicBindingConstants.CHANNEL_COLOR),
-                BrightnessCharacteristic.class);
+            this.addCharacteristic(
+                    new ChannelTypeUID(MagicBindingConstants.BINDING_ID, MagicBindingConstants.CHANNEL_COLOR),
+                    HueCharacteristic.class);
+            this.addCharacteristic(
+                    new ChannelTypeUID(MagicBindingConstants.BINDING_ID, MagicBindingConstants.CHANNEL_COLOR),
+                    SaturationCharacteristic.class);
+            this.addCharacteristic(
+                    new ChannelTypeUID(MagicBindingConstants.BINDING_ID, MagicBindingConstants.CHANNEL_COLOR),
+                    BrightnessCharacteristic.class);
 
-        this.addCharacteristic(
-                new ChannelTypeUID(MagicBindingConstants.BINDING_ID, MagicBindingConstants.CHANNEL_CONTACT),
-                OnCharacteristic.class);
+            this.addCharacteristic(
+                    new ChannelTypeUID(MagicBindingConstants.BINDING_ID, MagicBindingConstants.CHANNEL_CONTACT),
+                    OnCharacteristic.class);
 
-        this.addCharacteristic(
-                new ChannelTypeUID(MagicBindingConstants.BINDING_ID, MagicBindingConstants.CHANNEL_TEMPERATURE),
-                CurrentTemperatureCharacteristic.class);
-        this.addCharacteristic(
-                new ChannelTypeUID(MagicBindingConstants.BINDING_ID, MagicBindingConstants.CHANNEL_SET_TEMPERATURE),
-                TargetTemperatureCharacteristic.class);
-        } catch (RegistrationException e) {
-                logger.error("{}Failed to initialize mappers in MagicHomekitFactory: {}", AbstractHomekitFactory.LOG_ERROR, e.getMessage(), e);
+            this.addCharacteristic(
+                    new ChannelTypeUID(MagicBindingConstants.BINDING_ID, MagicBindingConstants.CHANNEL_TEMPERATURE),
+                    CurrentTemperatureCharacteristic.class);
+            this.addCharacteristic(
+                    new ChannelTypeUID(MagicBindingConstants.BINDING_ID, MagicBindingConstants.CHANNEL_SET_TEMPERATURE),
+                    TargetTemperatureCharacteristic.class);
+        } catch (HomekitRegistrationException e) {
+            logger.error("{}Failed to initialize mappers in MagicHomekitFactory: {}", AbstractHomekitFactory.LOG_ERROR,
+                    e.getMessage(), e);
         }
     }
-
- 
-    
-    
 }

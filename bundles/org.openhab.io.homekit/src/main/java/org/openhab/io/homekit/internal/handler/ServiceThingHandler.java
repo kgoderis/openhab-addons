@@ -19,11 +19,10 @@ import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
+import org.openhab.io.homekit.exception.HomekitException;
 import org.openhab.io.homekit.internal.accessory.AccessoryUID;
 import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
-import org.openhab.io.homekit.exception.HomekitException;
 import org.openhab.io.homekit.internal.events.AccessoryEvent;
-import org.openhab.io.homekit.internal.provider.HomekitChannelGroupTypeProvider;
 import org.openhab.io.homekit.internal.provider.HomekitChannelTypeProvider;
 import org.openhab.io.homekit.internal.provider.HomekitThingTypeProvider;
 
@@ -310,7 +309,8 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
 
         // Verify ThingType matches Service type
         String thingType = thing.getThingTypeUID().getId();
-        @Nullable String serviceTag = null;
+        @Nullable
+        String serviceTag = null;
         Service currentService = getService();
         if (currentService == null) {
             throw new IllegalArgumentException("No Service found for serviceId: " + serviceId);
@@ -322,8 +322,7 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
         }
 
         if (!thingType.equals(serviceTag)) {
-            throw new IllegalArgumentException(
-                    "ThingType " + thingType + " does not match Service type " + serviceTag);
+            throw new IllegalArgumentException("ThingType " + thingType + " does not match Service type " + serviceTag);
         }
         setService(currentService);
         serviceAvailable = true;
@@ -331,7 +330,6 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
     }
 
     protected @Nullable Channel addChannelForCharacteristic(Characteristic<?> characteristic) {
-
 
         try {
             // Let subclasses determine the channel ID
@@ -1238,12 +1236,11 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
     protected ChannelUID getChannelUID(Characteristic<?> characteristic) {
         try {
             return new ChannelUID(thing.getUID(),
-                    homekitChannelTypeProvider.getCharacteristicTag(characteristic.getInstanceType())); 
+                    homekitChannelTypeProvider.getCharacteristicTag(characteristic.getInstanceType()));
         } catch (HomekitException e) {
             throw new IllegalArgumentException("Characteristic type could not be determined", e);
         }
     }
-
 
     /**
      * Removes a channel associated with a characteristic.
@@ -1301,7 +1298,7 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
         if (charService.getUID() == null || service.getUID() == null) {
             return false;
         }
-            
+
         return charService.getUID().equals(service.getUID());
     }
 
@@ -1865,10 +1862,10 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
      * - No synchronization needed as this is a validation-only method
      * - Thread-safe validation
      * </p>
-     // *
-     // * @param event The AccessoryEvent to validate
-     // * @throws IllegalArgumentException if event data is invalid
-     // *
+     * // *
+     * // * @param event The AccessoryEvent to validate
+     * // * @throws IllegalArgumentException if event data is invalid
+     * // *
      */
     // private void validateEventData(AccessoryEvent event) {
     // if (event == null) {
@@ -2171,8 +2168,8 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
      * - Thread-safe server retrieval
      * </p>
      * 
-     // * @return The current HomeKit server instance, or null if not set
-     // *
+     * // * @return The current HomeKit server instance, or null if not set
+     * // *
      */
     // private @Nullable AccessoryServer getServer() {
     // synchronized (serverLock) {

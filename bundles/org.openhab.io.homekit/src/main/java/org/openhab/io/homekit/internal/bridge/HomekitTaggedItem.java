@@ -61,10 +61,24 @@ import org.slf4j.LoggerFactory;
  * @author Andy Lintner - Initial contribution
  */
 public class HomekitTaggedItem {
-    /**
-     * Exception thrown when an item's configuration is invalid for HomeKit integration.
-     * This includes cases where items are incorrectly tagged or grouped.
-     */
+    // 1. Constants and static fields
+    private static ServiceTracker<@NonNull HomekitFactory, @NonNull HomekitFactory> homekitFactoryTracker;
+    private static final Map<Integer, String> CREATED_ACCESSORY_IDS = new ConcurrentHashMap<>();
+    protected static final String LOG_PREFIX = "HomeKit TaggedItem: ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+
+    // 2. Instance fields
+    private final Item item;
+    private final ItemRegistry itemRegistry;
+    private final MetadataRegistry metadataRegistry;
+    private final Collection<String> homekitTags;
+    private final int id;
+    private String serviceType;
+    private String characteristicType;
+    private GroupItem parentGroupItem;
+    private final Logger logger = LoggerFactory.getLogger(HomekitTaggedItem.class);
+
+    // 3. Inner classes
     class BadItemConfigurationException extends Exception {
         private static final long serialVersionUID = 2199765638404197193L;
 
@@ -72,27 +86,6 @@ public class HomekitTaggedItem {
             super(reason);
         }
     }
-
-    private static ServiceTracker<@NonNull HomekitFactory, @NonNull HomekitFactory> homekitFactoryTracker;
-    private static final Map<Integer, String> CREATED_ACCESSORY_IDS = new ConcurrentHashMap<>();
-
-    /**
-     * The type of HomekitDevice we've decided this was. If the item is question is the member of a group which is a
-     * HomekitDevice, then this is null.
-     */
-    private String serviceType;
-    private String characteristicType;
-    private final Item item;
-    private Logger logger = LoggerFactory.getLogger(HomekitTaggedItem.class);
-    private final int id;
-    private GroupItem parentGroupItem;
-    private final Collection<String> homekitTags;
-    private final MetadataRegistry metadataRegistry;
-    private final ItemRegistry itemRegistry;
-
-    // ========== Log Message Prefixes ==========
-    protected static final String LOG_PREFIX = "HomeKit TaggedItem: ";
-    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
     /**
      * Constructs a new HomekitTaggedItem instance for the given item.
@@ -107,7 +100,7 @@ public class HomekitTaggedItem {
         this.item = item;
         this.metadataRegistry = metadataRegistry;
         this.itemRegistry = itemRegistry;
-        this.homekitTags = getHomekitTags(item);
+        this.homekitTags = getHomekitTagsFromMetaRegistry(item);
 
         try {
             serviceType = getFactoryServiceType();
@@ -141,7 +134,8 @@ public class HomekitTaggedItem {
             }
 
         } catch (BadItemConfigurationException e) {
-            logger.warn("{}Item {} was misconfigured: {}. Excluding item from homekit.", LOG_WARN, item.getName(), e.getMessage());
+            logger.warn("{}Item {} was misconfigured: {}. Excluding item from homekit.", LOG_WARN, item.getName(),
+                    e.getMessage());
             serviceType = null;
             characteristicType = null;
             parentGroupItem = null;
@@ -323,6 +317,57 @@ public class HomekitTaggedItem {
     }
 
     /**
+     * Finds all accessory groups that contain the given item.
+     * An accessory group is a group item that is tagged as a HomeKit accessory.
+     *
+     * @param item The item to find groups for
+     * @param itemRegistry The item registry to use for group lookups
+     * @return A list of group items that are tagged as HomeKit accessories
+     */
+    public List<GroupItem> findMyAccessoryGroups() {
+        if (homekitFactoryTracker == null) {
+            BundleContext context = FrameworkUtil.getBundle(HomekitTaggedItem.class).getBundleContext();
+            homekitFactoryTracker = new ServiceTracker<>(context, HomekitFactory.class, null);
+            homekitFactoryTracker.open();
+        }
+
+        return item.getGroupNames().stream().flatMap(name -> {
+            Item groupItem = itemRegistry.get(name);
+            if ((groupItem != null) && (groupItem instanceof GroupItem)) {
+                return Stream.of((GroupItem) groupItem);
+            } else {
+                return Stream.empty();
+            }
+        }).filter(groupItem -> {
+            Collection<String> groupHomekitTags = getHomekitTagsFromMetaRegistry(groupItem);
+
+            return groupHomekitTags.stream().anyMatch(tag -> {
+                Object[] factories = homekitFactoryTracker.getServices();
+                if (factories != null) {
+                    return Stream.of(factories).filter(factory -> factory instanceof HomekitFactory)
+                            .map(factory -> (HomekitFactory) factory)
+                            .anyMatch(homekitFactory -> homekitFactory.getServiceTypeFromTag(tag) != null);
+                }
+                return false;
+            });
+        }).collect(Collectors.toList());
+    }
+
+    public Collection<String> getHomekitTags() {
+        return homekitTags;
+    }
+
+    private Collection<String> getHomekitTagsFromMetaRegistry(Item item) {
+        MetadataKey key = new MetadataKey("homekit", item.getName());
+        Metadata metadata = metadataRegistry.get(key);
+        return metadata != null ? Arrays.asList(metadata.getValue().split(",")) : Collections.emptyList();
+    }
+
+    private List<GroupItem> findMyAccessoryGroupsInternal() {
+        return findMyAccessoryGroups();
+    }
+
+    /**
      * Calculates a unique identifier for the HomeKit accessory.
      * The ID is based on the item's name and is guaranteed to be unique within the system.
      * IDs 0 and 1 are reserved for special purposes.
@@ -349,52 +394,5 @@ public class HomekitTaggedItem {
             CREATED_ACCESSORY_IDS.put(id, item.getName());
         }
         return calculatedId;
-    }
-
-    /**
-     * Finds all accessory groups that contain the given item.
-     * An accessory group is a group item that is tagged as a HomeKit accessory.
-     *
-     * @param item The item to find groups for
-     * @param itemRegistry The item registry to use for group lookups
-     * @return A list of group items that are tagged as HomeKit accessories
-     */
-    public  List<GroupItem> findMyAccessoryGroups() {
-        if (homekitFactoryTracker == null) {
-            BundleContext context = FrameworkUtil.getBundle(HomekitTaggedItem.class).getBundleContext();
-            homekitFactoryTracker = new ServiceTracker<>(context, HomekitFactory.class, null);
-            homekitFactoryTracker.open();
-        }
-
-        return item.getGroupNames().stream().flatMap(name -> {
-            Item groupItem = itemRegistry.get(name);
-            if ((groupItem != null) && (groupItem instanceof GroupItem)) {
-                return Stream.of((GroupItem) groupItem);
-            } else {
-                return Stream.empty();
-            }
-        }).filter(groupItem -> {
-            Collection<String> groupHomekitTags = getHomekitTags(groupItem);
-
-            return groupHomekitTags.stream().anyMatch(tag -> {
-                Object[] factories = homekitFactoryTracker.getServices();
-                if (factories != null) {
-                    return Stream.of(factories).filter(factory -> factory instanceof HomekitFactory)
-                            .map(factory -> (HomekitFactory) factory)
-                            .anyMatch(homekitFactory -> homekitFactory.getServiceTypeFromTag(tag) != null);
-                }
-                return false;
-            });
-        }).collect(Collectors.toList());
-    }
-
-    private Collection<String> getHomekitTags(Item item) {
-        MetadataKey key = new MetadataKey("homekit", item.getName());
-        Metadata metadata = metadataRegistry.get(key);
-        return metadata != null ? Arrays.asList(metadata.getValue().split(",")) : Collections.emptyList();
-    }
-
-    private List<GroupItem> findMyAccessoryGroupsInternal() {
-        return findMyAccessoryGroups();
     }
 }

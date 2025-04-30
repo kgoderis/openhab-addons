@@ -109,7 +109,8 @@ public class PairVerificationServlet extends BaseServlet {
 
         byte[] accessorySignature = null;
         try {
-            logger.info("{}Stage 1 Accessory Private Key is {}", LOG_ACCESSORY, Byte.toHexString(server.getSecretKey()));
+            logger.info("{}Stage 1 Accessory Private Key is {}", LOG_ACCESSORY,
+                    Byte.toHexString(server.getSecretKey()));
             accessorySignature = new EdsaSigner(server.getSecretKey()).sign(accessoryInfo);
         } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException e) {
             logger.error("{}Stage 1 Error creating accessory signature", LOG_ERROR, e);
@@ -161,10 +162,12 @@ public class PairVerificationServlet extends BaseServlet {
             logger.info("{}Stage 2 Get Session Key {} from Session", LOG_ACCESSORY, Byte.toHexString(sessionKey));
 
             byte[] clientPublicKey = (byte[]) session.getAttribute("clientPublicKey");
-            logger.info("{}Stage 2 Get Client Public Key {} from Session", LOG_ACCESSORY, Byte.toHexString(clientPublicKey));
+            logger.info("{}Stage 2 Get Client Public Key {} from Session", LOG_ACCESSORY,
+                    Byte.toHexString(clientPublicKey));
 
             byte[] accessoryPublicKey = (byte[]) session.getAttribute("accessoryPublicKey");
-            logger.info("{}Stage 2 Get Accessory Public Key {} from Session", LOG_ACCESSORY, Byte.toHexString(accessoryPublicKey));
+            logger.info("{}Stage 2 Get Accessory Public Key {} from Session", LOG_ACCESSORY,
+                    Byte.toHexString(accessoryPublicKey));
 
             byte[] sharedSecret = (byte[]) session.getAttribute("sharedSecret");
             logger.info("{}Stage 2 Get Shared Secret {} from Session", LOG_ACCESSORY, Byte.toHexString(sharedSecret));
@@ -196,9 +199,11 @@ public class PairVerificationServlet extends BaseServlet {
                 clientLongtermPublicKey = server.getPublicKey(clientPairingId);
                 if (clientLongtermPublicKey == null) {
                     isError = true;
-                    logger.warn("{}Stage 2 Unknown Pairing {}", LOG_WARN, new String(clientPairingId, StandardCharsets.UTF_8));
+                    logger.warn("{}Stage 2 Unknown Pairing {}", LOG_WARN,
+                            new String(clientPairingId, StandardCharsets.UTF_8));
                 } else {
-                    logger.info("{}Stage 2 Client Long Term Public Key is {}", LOG_ACCESSORY, Byte.toHexString(clientLongtermPublicKey));
+                    logger.info("{}Stage 2 Client Long Term Public Key is {}", LOG_ACCESSORY,
+                            Byte.toHexString(clientLongtermPublicKey));
                 }
             }
 
@@ -225,11 +230,13 @@ public class PairVerificationServlet extends BaseServlet {
 
                 session.setAttribute("Control-Write-Encryption-Key",
                         HomekitEncryptionEngine.createKey("Control-Write-Encryption-Key", sharedSecret));
-                logger.info("{}Stage 2 Write Key is {}", LOG_ACCESSORY, Byte.toHexString((byte[]) session.getAttribute("Control-Write-Encryption-Key")));
+                logger.info("{}Stage 2 Write Key is {}", LOG_ACCESSORY,
+                        Byte.toHexString((byte[]) session.getAttribute("Control-Write-Encryption-Key")));
 
                 session.setAttribute("Control-Read-Encryption-Key",
                         HomekitEncryptionEngine.createKey("Control-Read-Encryption-Key", sharedSecret));
-                logger.info("{}Stage 2 Read Key is {}", LOG_ACCESSORY, Byte.toHexString((byte[]) session.getAttribute("Control-Read-Encryption-Key")));
+                logger.info("{}Stage 2 Read Key is {}", LOG_ACCESSORY,
+                        Byte.toHexString((byte[]) session.getAttribute("Control-Read-Encryption-Key")));
 
                 request.setAttribute("HomekitEncryptionEnabled", true);
             }

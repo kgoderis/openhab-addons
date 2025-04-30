@@ -13,7 +13,6 @@ import org.openhab.core.io.console.extensions.ConsoleCommandExtension;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingRegistry;
 import org.openhab.core.thing.ThingUID;
-import org.openhab.core.thing.binding.ThingHandler;
 import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Service;
@@ -163,32 +162,33 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
     }
 
     private void printAccessories(Console console) {
-        @Nullable Collection<Accessory> accessories = accessoryRegistry.getAll();
+        @Nullable
+        Collection<Accessory> accessories = accessoryRegistry.getAll();
 
         if (accessories.isEmpty()) {
             console.println("No accessories found.");
         }
 
         for (Iterator<Accessory> iter = accessories.iterator(); iter.hasNext();) {
-           @Nullable     Accessory accessory = iter.next();
+            @Nullable
+            Accessory accessory = iter.next();
 
             if (accessory == null) {
                 continue;
             }
 
-                console.println(String.format("Accessory %s (Type=%s, Label=%s)", accessory.getUID().toString(),
-                        accessory.getClass().getSimpleName(), accessory.getLabel()));
-            
+            console.println(String.format("Accessory %s (Type=%s, Label=%s)", accessory.getUID().toString(),
+                    accessory.getClass().getSimpleName(), accessory.getLabel()));
 
             for (Service service : accessory.getServices()) {
                 console.println(String.format("     Service %s (Type=%s, HAP=%s, Name=%s)", service.getUID().toString(),
                         service.getClass().getSimpleName(), service.getInstanceType(), service.getName()));
                 for (Characteristic<?> characteristic : service.getCharacteristics()) {
- 
-                        console.println(String.format("         Characteristic %s (Type=%s, HAP=%s)",
-                                characteristic.getUID().toString(), characteristic.getClass().getSimpleName(),
-                                characteristic.getInstanceType()));
-                    
+
+                    console.println(String.format("         Characteristic %s (Type=%s, HAP=%s)",
+                            characteristic.getUID().toString(), characteristic.getClass().getSimpleName(),
+                            characteristic.getInstanceType()));
+
                 }
             }
 
@@ -213,25 +213,25 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         Thing theThing = thingRegistry.get(theThingUID);
 
         // if (theThing != null) {
-        //     ThingHandler theHandler = theThing.getHandler();
-        //     if (theHandler != null) {
-        //         if (theHandler instanceof HomekitAccessoryProtocolParticipant) {
-        //             ((HomekitAccessoryProtocolParticipant) theHandler).pair(setupCode);
-        //             ((HomekitAccessoryProtocolParticipant) theHandler).pairVerify();
-        //             if (theHandler instanceof HomekitAccessoryBridgeHandler) {
-        //                 ((HomekitAccessoryBridgeHandler) theHandler).startSearch();
-        //             }
-        //             if (theHandler instanceof StandAloneHomekitAccessoryHandler) {
-        //                 ((StandAloneHomekitAccessoryHandler) theHandler).configureThing();
-        //             }
-        //         } else {
-        //             logger.warn("Thing '{}' can not be paired", thingUID);
-        //         }
-        //     } else {
-        //         logger.warn("Thing '{}' does not have a ThingHandler", thingUID);
-        //     }
+        // ThingHandler theHandler = theThing.getHandler();
+        // if (theHandler != null) {
+        // if (theHandler instanceof HomekitAccessoryProtocolParticipant) {
+        // ((HomekitAccessoryProtocolParticipant) theHandler).pair(setupCode);
+        // ((HomekitAccessoryProtocolParticipant) theHandler).pairVerify();
+        // if (theHandler instanceof HomekitAccessoryBridgeHandler) {
+        // ((HomekitAccessoryBridgeHandler) theHandler).startSearch();
+        // }
+        // if (theHandler instanceof StandAloneHomekitAccessoryHandler) {
+        // ((StandAloneHomekitAccessoryHandler) theHandler).configureThing();
+        // }
         // } else {
-        //     logger.warn("Thing '{}' does not exist", thingUID);
+        // logger.warn("Thing '{}' can not be paired", thingUID);
+        // }
+        // } else {
+        // logger.warn("Thing '{}' does not have a ThingHandler", thingUID);
+        // }
+        // } else {
+        // logger.warn("Thing '{}' does not exist", thingUID);
         // }
     }
 

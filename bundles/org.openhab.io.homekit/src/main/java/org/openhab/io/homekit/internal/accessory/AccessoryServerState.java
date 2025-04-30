@@ -1,6 +1,6 @@
 package org.openhab.io.homekit.internal.accessory;
 
-import org.openhab.io.homekit.internal.events.AccessoryServerEvent.AccessoryServerEventType;
+import org.openhab.io.homekit.internal.events.HomekitEventType;
 
 /**
  * Extended version of accessory state using the Enum extension pattern.
@@ -9,11 +9,10 @@ import org.openhab.io.homekit.internal.events.AccessoryServerEvent.AccessoryServ
 public class AccessoryServerState {
     private final String name;
     private final String description;
-    private final AccessoryServerEventType eventType;
+    private final HomekitEventType eventType;
     private final boolean isTransient;
 
-    private AccessoryServerState(String name, String description, AccessoryServerEventType eventType,
-            boolean isTransient) {
+    private AccessoryServerState(String name, String description, HomekitEventType eventType, boolean isTransient) {
         this.name = name;
         this.description = description;
         this.eventType = eventType;
@@ -21,59 +20,59 @@ public class AccessoryServerState {
     }
 
     public static final AccessoryServerState UNKNOWN = new AccessoryServerState("UNKNOWN", "Unknown state",
-            AccessoryServerEventType.SERVER_UPDATED, false);
+            HomekitEventType.SERVER_UPDATED, false);
 
     public static final AccessoryServerState CONNECTED = new AccessoryServerState("CONNECTED",
-            "Connected to controller", AccessoryServerEventType.SERVER_STATE_CONNECTED, false);
+            "Connected to controller", HomekitEventType.SERVER_STATE_CONNECTED, false);
 
     public static final AccessoryServerState DISCONNECTED = new AccessoryServerState("DISCONNECTED",
-            "Disconnected from controller", AccessoryServerEventType.SERVER_STATE_DISCONNECTED, false);
+            "Disconnected from controller", HomekitEventType.SERVER_STATE_DISCONNECTED, false);
 
     public static final AccessoryServerState PAIRED = new AccessoryServerState("PAIRED", "Paired with controller",
-            AccessoryServerEventType.SERVER_STATE_PAIRED, false);
+            HomekitEventType.SERVER_STATE_PAIRED, false);
 
     public static final AccessoryServerState PAIR_VERIFIED = new AccessoryServerState("PAIR_VERIFIED",
-            "Pairing verified with controller", AccessoryServerEventType.SERVER_STATE_PAIR_VERIFIED, false);
+            "Pairing verified with controller", HomekitEventType.SERVER_STATE_PAIR_VERIFIED, false);
 
     public static final AccessoryServerState PAIR_UNVERIFIED = new AccessoryServerState("PAIR_UNVERIFIED",
-            "Pairing exists but not verified", AccessoryServerEventType.SERVER_STATE_PAIR_UNVERIFIED, false);
+            "Pairing exists but not verified", HomekitEventType.SERVER_STATE_PAIR_UNVERIFIED, false);
 
     public static final AccessoryServerState UNPAIRED = new AccessoryServerState("UNPAIRED",
-            "Not paired with any controller", AccessoryServerEventType.SERVER_STATE_UNPAIRED, false);
+            "Not paired with any controller", HomekitEventType.SERVER_STATE_UNPAIRED, false);
 
     public static final AccessoryServerState PAIRED_TO_OTHER_CONTROLLER = new AccessoryServerState(
-            "PAIRED_TO_OTHER_CONTROLLER", "Paired with another controller",
-            AccessoryServerEventType.SERVER_STATE_PAIRED, false);
+            "PAIRED_TO_OTHER_CONTROLLER", "Paired with another controller", HomekitEventType.SERVER_STATE_PAIRED,
+            false);
 
     public static final AccessoryServerState PAIRING_MISSING = new AccessoryServerState("PAIRING_MISSING",
-            "Pairing information is missing", AccessoryServerEventType.SERVER_STATE_PAIRING_MISSING, false);
+            "Pairing information is missing", HomekitEventType.SERVER_STATE_PAIRING_MISSING, false);
 
     public static final AccessoryServerState MISSING_SETUP_CODE = new AccessoryServerState("MISSING_SETUP_CODE",
-            "Setup code is missing or invalid", AccessoryServerEventType.SERVER_STATE_MISSING_SETUP_CODE, false);
+            "Setup code is missing or invalid", HomekitEventType.SERVER_STATE_MISSING_SETUP_CODE, false);
 
     public static final AccessoryServerState AUTHENTICATING = new AccessoryServerState("AUTHENTICATING",
-            "Authenticating with controller", AccessoryServerEventType.SERVER_UPDATED, true);
+            "Authenticating with controller", HomekitEventType.SERVER_UPDATED, true);
 
     public static final AccessoryServerState READY = new AccessoryServerState("READY", "Ready for operation",
-            AccessoryServerEventType.SERVER_UPDATED, false);
+            HomekitEventType.SERVER_UPDATED, false);
 
     public static final AccessoryServerState STOPPED = new AccessoryServerState("STOPPED", "Server stopped",
-            AccessoryServerEventType.SERVER_UPDATED, false);
+            HomekitEventType.SERVER_UPDATED, false);
 
     public static final AccessoryServerState RESET = new AccessoryServerState("RESET",
-            "Accessory has been factory reset", AccessoryServerEventType.SERVER_UPDATED, false);
+            "Accessory has been factory reset", HomekitEventType.SERVER_UPDATED, false);
 
     public static final AccessoryServerState PAIR_SETUP_INITIAL = new AccessoryServerState("PAIR_SETUP_INITIAL",
-            "Starting pair setup process", AccessoryServerEventType.SERVER_UPDATED, true);
+            "Starting pair setup process", HomekitEventType.SERVER_UPDATED, true);
 
     public static final AccessoryServerState PAIR_SETUP_SRP = new AccessoryServerState("PAIR_SETUP_SRP",
-            "Executing SRP protocol exchange", AccessoryServerEventType.SERVER_UPDATED, true);
+            "Executing SRP protocol exchange", HomekitEventType.SERVER_UPDATED, true);
 
     public static final AccessoryServerState PAIR_SETUP_VERIFY = new AccessoryServerState("PAIR_SETUP_VERIFY",
-            "Verifying pairing proof", AccessoryServerEventType.SERVER_UPDATED, true);
+            "Verifying pairing proof", HomekitEventType.SERVER_UPDATED, true);
 
     public static final AccessoryServerState PAIR_SETUP_EXCHANGE = new AccessoryServerState("PAIR_SETUP_EXCHANGE",
-            "Exchanging encryption keys", AccessoryServerEventType.SERVER_UPDATED, true);
+            "Exchanging encryption keys", HomekitEventType.SERVER_UPDATED, true);
 
     public String getName() {
         return name;
@@ -83,7 +82,7 @@ public class AccessoryServerState {
         return description;
     }
 
-    public AccessoryServerEventType getEventType() {
+    public HomekitEventType getEventType() {
         return eventType;
     }
 

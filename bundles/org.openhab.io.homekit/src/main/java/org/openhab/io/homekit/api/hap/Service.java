@@ -1,14 +1,14 @@
 package org.openhab.io.homekit.api.hap;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.json.JsonObject;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.Identifiable;
-import org.openhab.io.homekit.api.listener.ServiceChangeListener;
 import org.openhab.io.homekit.internal.service.ServiceUID;
 
 /**
@@ -16,8 +16,10 @@ import org.openhab.io.homekit.internal.service.ServiceUID;
  *
  * @author Andy Lintner
  */
-public interface Service extends Identifiable<@NonNull ServiceUID>, Comparable<Service> {
+@NonNullByDefault
+public interface Service extends Identifiable<ServiceUID>, Comparable<Service> {
 
+    @Override
     @NonNull
     ServiceUID getUID();
 
@@ -68,11 +70,11 @@ public interface Service extends Identifiable<@NonNull ServiceUID>, Comparable<S
 
     void removeCharacteristic(Characteristic<?> characteristic);
 
-    Characteristic<?> getCharacteristic(long iid);
+    Optional<Characteristic<?>> getCharacteristic(long iid);
 
-    Characteristic<?> getCharacteristic(String characteristicType);
+    Optional<Characteristic<?>> getCharacteristic(String characteristicType);
 
-    Characteristic<?> getCharacteristic(@NonNull Class<@NonNull ? extends Characteristic> characteristicClass);
+    Optional<Characteristic<?>> getCharacteristic(Class<? extends Characteristic<?>> characteristicClass);
 
     /**
      * Characteristics are the variables offered for reading, updating, and eventing by the Service
@@ -81,10 +83,9 @@ public interface Service extends Identifiable<@NonNull ServiceUID>, Comparable<S
      *
      * @return the list of Characteristics.
      */
-    @NonNull
     Set<Characteristic<?>> getCharacteristics();
 
-    void removeCharacteristic(@NonNull Class<@NonNull ? extends Characteristic> characteristicClass);
+    void removeCharacteristic(Class<? extends Characteristic<?>> characteristicClass);
 
     String getInstanceType();
 
@@ -111,20 +112,6 @@ public interface Service extends Identifiable<@NonNull ServiceUID>, Comparable<S
     boolean isPrimary();
 
     void setPrimary(boolean isPrimary);
-
-    /**
-     * Adds a listener to be notified of service changes.
-     *
-     * @param listener the listener to add
-     */
-    void addChangeListener(ServiceChangeListener listener);
-
-    /**
-     * Removes a listener from being notified of service changes.
-     *
-     * @param listener the listener to remove
-     */
-    void removeChangeListener(ServiceChangeListener listener);
 
     /**
      * Creates the JSON representation of the Service, in accordance with the Homekit Accessory

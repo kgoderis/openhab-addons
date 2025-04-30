@@ -1,45 +1,25 @@
 package org.openhab.io.homekit.internal.events;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Service;
 
-public class AccessoryServerEvent {
+@NonNullByDefault
+public class AccessoryServerEvent extends AbstractHomekitEvent {
     private final AccessoryServer server;
     private final Accessory accessory;
     private final Service service;
     private final Characteristic<?> characteristic;
-    private final AccessoryServerEventType type;
 
-    public enum AccessoryServerEventType {
-        SERVER_UPDATED,
-        ACCESSORY_ADDED,
-        ACCESSORY_REMOVED,
-        SERVICE_ADDED,
-        SERVICE_REMOVED,
-        CHARACTERISTIC_ADDED,
-        CHARACTERISTIC_REMOVED,
-        CHARACTERISTIC_STATE_CHANGED,
-        CHARACTERISTIC_UPDATED,
-        SERVER_STATE_DISCONNECTED,
-        SERVER_STATE_CONNECTED,
-        SERVER_STATE_PAIRED,
-        SERVER_STATE_PAIR_VERIFIED,
-        SERVER_STATE_MISSING_SETUP_CODE,
-        SERVER_STATE_PAIRING_MISSING,
-        SERVER_STATE_UNPAIRED,
-        SERVER_STATE_PAIR_UNVERIFIED,
-        SERVER_STATE_CONFIGURATION_NUMBER_CHANGED
-    }
-
-    public AccessoryServerEvent(AccessoryServer server, Accessory accessory, Service service,
-            Characteristic<?> characteristic, AccessoryServerEventType type) {
+    public AccessoryServerEvent(String sourceUid, HomekitEventType type, AccessoryServer server, Accessory accessory,
+            Service service, Characteristic<?> characteristic) {
+        super(sourceUid, type);
         this.server = server;
         this.accessory = accessory;
         this.service = service;
         this.characteristic = characteristic;
-        this.type = type;
     }
 
     public AccessoryServer getServer() {
@@ -58,7 +38,9 @@ public class AccessoryServerEvent {
         return characteristic;
     }
 
-    public AccessoryServerEventType getType() {
-        return type;
+    @Override
+    public String toString() {
+        return "AccessoryServerEvent[type=" + getType() + ", server=" + server + ", accessory=" + accessory
+                + ", service=" + service + ", characteristic=" + characteristic + "]";
     }
 }

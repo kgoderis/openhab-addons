@@ -17,7 +17,7 @@ import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.provider.AccessoryServerProvider;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
-import org.openhab.io.homekit.exception.AccessoryOperationException;
+import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.exception.HomekitServerException;
 import org.openhab.io.homekit.internal.accessory.AccessoryUID;
 import org.openhab.io.homekit.internal.server.AccessoryServerUID;
@@ -90,7 +90,7 @@ public class ManagedAccessoryServerProvider
     }
 
     @Override
-    protected AccessoryServer toElement(String key,  PersistedAccessoryServer persistableElement) {
+    protected AccessoryServer toElement(String key, PersistedAccessoryServer persistableElement) {
         try {
             AccessoryServer server;
             if (persistableElement.getServerType() == PersistedAccessoryServer.ServerType.REMOTE) {
@@ -104,9 +104,9 @@ public class ManagedAccessoryServerProvider
                         persistableElement.getPairingIdentifier(), persistableElement.getPrivateKey(), mdnsService,
                         accessoryRegistry, pairingRegistry);
             }
-           
-            logger.debug("{}Created Accessory Server - UID: {}, Setup Code: {}", LOG_ACCESSORY, 
-                server.getUID(), server.getSetupCode());
+
+            logger.debug("{}Created Accessory Server - UID: {}, Setup Code: {}", LOG_ACCESSORY, server.getUID(),
+                    server.getSetupCode());
 
             if (accessoryRegistry != null) {
                 Collection<String> accessoryUIDs = persistableElement.getAccessoryUIDs();
@@ -115,8 +115,9 @@ public class ManagedAccessoryServerProvider
                     if (accessory != null) {
                         try {
                             server.addAccessory(accessory);
-                        } catch (AccessoryOperationException e) {
-                            logger.error("{}Failed to add accessory {}: {}", LOG_ERROR, accessoryUID, e.getMessage(), e);
+                        } catch (HomekitAccessoryOperationException e) {
+                            logger.error("{}Failed to add accessory {}: {}", LOG_ERROR, accessoryUID, e.getMessage(),
+                                    e);
                         }
                     }
                 }
@@ -135,21 +136,20 @@ public class ManagedAccessoryServerProvider
         PersistedAccessoryServer.ServerType serverType = element instanceof LocalAccessoryServer
                 ? PersistedAccessoryServer.ServerType.LOCAL
                 : PersistedAccessoryServer.ServerType.REMOTE;
- 
-            // get the accessories or an empty list
-            Collection<Accessory> accessories = new ArrayList<>();
-            try {
-                Collection<Accessory> serverAccessories = element.getAccessories();
-                if (serverAccessories != null) {
-                    accessories = serverAccessories;
-                }
-            } catch (AccessoryOperationException e) {
-                logger.error("{}Error getting accessories: {}", LOG_ERROR, e.getMessage(), e);
-            }
 
-            return new PersistedAccessoryServer(element.getAddress(), element.getPort(), element.getPairingId(),
-                    element.getSecretKey(), element.getConfigurationIndex(), accessories,
-                    AccessoryCategory.BRIDGES, serverType);
- 
+        // get the accessories or an empty list
+        Collection<Accessory> accessories = new ArrayList<>();
+        try {
+            Collection<Accessory> serverAccessories = element.getAccessories();
+            if (serverAccessories != null) {
+                accessories = serverAccessories;
+            }
+        } catch (HomekitAccessoryOperationException e) {
+            logger.error("{}Error getting accessories: {}", LOG_ERROR, e.getMessage(), e);
+        }
+
+        return new PersistedAccessoryServer(element.getAddress(), element.getPort(), element.getPairingId(),
+                element.getSecretKey(), element.getConfigurationIndex(), accessories, AccessoryCategory.BRIDGES,
+                serverType);
     }
 }

@@ -28,14 +28,14 @@ import org.openhab.io.homekit.api.hap.Pairing;
 import org.openhab.io.homekit.api.listener.AccessoryServerChangeListener;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
-import org.openhab.io.homekit.exception.AccessoryOperationException;
-import org.openhab.io.homekit.exception.ConfigurationException;
+import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
+import org.openhab.io.homekit.exception.HomekitConfigurationException;
 import org.openhab.io.homekit.exception.HomekitServerException;
-import org.openhab.io.homekit.exception.InvalidStateTransitionException;
-import org.openhab.io.homekit.exception.ListenerNotificationException;
+import org.openhab.io.homekit.exception.HomekitInvalidStateTransitionException;
+import org.openhab.io.homekit.exception.HomekitEventException;
 import org.openhab.io.homekit.internal.accessory.AccessoryServerState;
 import org.openhab.io.homekit.internal.events.AccessoryServerEvent;
-import org.openhab.io.homekit.internal.events.AccessoryServerEvent.AccessoryServerEventType;
+import org.openhab.io.homekit.internal.events.HomekitEventType;
 import org.openhab.io.homekit.internal.pairing.HomekitPairing;
 import org.openhab.io.homekit.internal.pairing.PairingUID;
 import org.openhab.io.homekit.util.Byte;
@@ -73,14 +73,17 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
 
     /** Server state management */
     private static final Map<AccessoryServerState, Set<AccessoryServerState>> VALID_STATE_TRANSITIONS = Map.of(
-            AccessoryServerState.UNKNOWN, Set.of(AccessoryServerState.READY),
-            AccessoryServerState.READY, Set.of(AccessoryServerState.STOPPED, AccessoryServerState.CONNECTED),
-            AccessoryServerState.CONNECTED, Set.of(AccessoryServerState.DISCONNECTED, AccessoryServerState.PAIR_SETUP_INITIAL),
+            AccessoryServerState.UNKNOWN, Set.of(AccessoryServerState.READY), AccessoryServerState.READY,
+            Set.of(AccessoryServerState.STOPPED, AccessoryServerState.CONNECTED), AccessoryServerState.CONNECTED,
+            Set.of(AccessoryServerState.DISCONNECTED, AccessoryServerState.PAIR_SETUP_INITIAL),
             AccessoryServerState.DISCONNECTED, Set.of(AccessoryServerState.CONNECTED, AccessoryServerState.STOPPED),
-            AccessoryServerState.PAIR_SETUP_INITIAL, Set.of(AccessoryServerState.PAIRED, AccessoryServerState.DISCONNECTED),
-            AccessoryServerState.PAIRED, Set.of(AccessoryServerState.PAIR_UNVERIFIED, AccessoryServerState.DISCONNECTED),
-            AccessoryServerState.PAIR_UNVERIFIED, Set.of(AccessoryServerState.PAIR_VERIFIED, AccessoryServerState.DISCONNECTED),
-            AccessoryServerState.PAIR_VERIFIED, Set.of(AccessoryServerState.PAIR_UNVERIFIED, AccessoryServerState.DISCONNECTED),
+            AccessoryServerState.PAIR_SETUP_INITIAL,
+            Set.of(AccessoryServerState.PAIRED, AccessoryServerState.DISCONNECTED), AccessoryServerState.PAIRED,
+            Set.of(AccessoryServerState.PAIR_UNVERIFIED, AccessoryServerState.DISCONNECTED),
+            AccessoryServerState.PAIR_UNVERIFIED,
+            Set.of(AccessoryServerState.PAIR_VERIFIED, AccessoryServerState.DISCONNECTED),
+            AccessoryServerState.PAIR_VERIFIED,
+            Set.of(AccessoryServerState.PAIR_UNVERIFIED, AccessoryServerState.DISCONNECTED),
             AccessoryServerState.STOPPED, Set.of(AccessoryServerState.READY));
 
     // ========== Server Configuration ==========
@@ -103,7 +106,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
     // ========== Constructor ==========
     public AbstractAccessoryServer(AccessoryCategory category, InetAddress address, int port, byte[] pairingId,
             byte[] privateKey, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry)
-            throws ConfigurationException {
+            throws HomekitConfigurationException {
         super();
         validateConstructorParameters(category, address, port, pairingId, privateKey, accessoryRegistry,
                 pairingRegistry);
@@ -123,17 +126,16 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
 
     private void validateConstructorParameters(AccessoryCategory category, InetAddress address, int port,
             byte[] pairingId, byte[] privateKey, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry)
-            throws ConfigurationException {
+            throws HomekitConfigurationException {
         if (port <= 0 || port > 65535) {
-            throw new ConfigurationException(
+            throw new HomekitConfigurationException(
                     String.format("HomeKit server port %d is invalid - must be between 1 and 65535", port));
         }
         if (pairingId.length == 0) {
-            throw new ConfigurationException(
-                    "HomeKit server pairing ID cannot be empty - required for secure pairing");
+            throw new HomekitConfigurationException("HomeKit server pairing ID cannot be empty - required for secure pairing");
         }
         if (privateKey.length == 0) {
-            throw new ConfigurationException(
+            throw new HomekitConfigurationException(
                     "HomeKit server private key cannot be empty - required for secure pairing");
         }
     }
@@ -168,7 +170,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
         for (Accessory accessory : accessoriesToRemove) {
             try {
                 removeAccessory(accessory);
-            } catch (AccessoryOperationException e) {
+            } catch (HomekitAccessoryOperationException e) {
                 logger.error("{}Failed to remove accessory during shutdown: {}", LOG_ERROR, e.getMessage(), e);
             }
         }
@@ -204,7 +206,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
     }
 
     @Override
-    public void stop() throws HomekitServerException{
+    public void stop() throws HomekitServerException {
         synchronized (stateLock) {
             if (currentState == AccessoryServerState.STOPPED) {
                 logger.warn("{}Server is already stopped", LOG_SERVER);
@@ -297,9 +299,9 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
         return currentState;
     }
 
-    private void validateStateTransition(AccessoryServerState newState) throws InvalidStateTransitionException {
+    private void validateStateTransition(AccessoryServerState newState) throws HomekitInvalidStateTransitionException {
         if (!isValidStateTransition(currentState, newState)) {
-            throw new InvalidStateTransitionException(currentState, newState);
+            throw new HomekitInvalidStateTransitionException(currentState, newState);
         }
     }
 
@@ -310,47 +312,47 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
 
     protected synchronized void setState(AccessoryServerState newState) throws HomekitServerException {
         try {
-        validateStateTransition(newState);
+            validateStateTransition(newState);
 
-        AccessoryServerState current;
-        synchronized (stateLock) {
-            current = currentState;
-            if (!isValidStateTransition(current, newState)) {
-                throw new InvalidStateTransitionException(
-                        String.format("Invalid state transition from %s to %s - Valid transitions from %s are: %s",
-                                current, newState, current, VALID_STATE_TRANSITIONS.get(current)));
-            }
-
-            if (!current.equals(newState)) {
-                logger.debug("{}State changing from {} to {}", LOG_STATE, current, newState);
-                currentState = newState;
-            } else {
-                return; // No state change needed
-            }
-        }
-
-        // Notify listeners outside of stateLock to prevent deadlocks
-        AccessoryServerEvent event = new AccessoryServerEvent(this, null, null, null, newState.getEventType());
-        try {
-            notifyStateChangeListeners(event);
-            logger.debug("{}State change completed", LOG_STATE);
-        } catch (ListenerNotificationException e) {
-            // Rollback state change
+            AccessoryServerState current;
             synchronized (stateLock) {
-                currentState = current;
+                current = currentState;
+                if (!isValidStateTransition(current, newState)) {
+                    throw new HomekitInvalidStateTransitionException(
+                            String.format("Invalid state transition from %s to %s - Valid transitions from %s are: %s",
+                                    current, newState, current, VALID_STATE_TRANSITIONS.get(current)));
+                }
+
+                if (!current.equals(newState)) {
+                    logger.debug("{}State changing from {} to {}", LOG_STATE, current, newState);
+                    currentState = newState;
+                } else {
+                    return; // No state change needed
+                }
             }
-            throw new ListenerNotificationException(
-                    String.format("Failed to notify listeners of state change from %s to %s: %s", current, newState,
-                            e.getMessage()),
-                    e);
+
+            // Notify listeners outside of stateLock to prevent deadlocks
+            AccessoryServerEvent event = new AccessoryServerEvent(this, null, null, null, newState.getEventType());
+            try {
+                notifyStateChangeListeners(event);
+                logger.debug("{}State change completed", LOG_STATE);
+            } catch (HomekitEventException e) {
+                // Rollback state change
+                synchronized (stateLock) {
+                    currentState = current;
+                }
+                throw new HomekitEventException(
+                        String.format("Failed to notify listeners of state change from %s to %s: %s", current, newState,
+                                e.getMessage()),
+                        e);
+            }
+        } catch (HomekitServerException e) {
+            logger.error("{}Failed to set state to {}: {}", LOG_ERROR, newState, e.getMessage());
+
         }
-    } catch (HomekitServerException e) {
-        logger.error("{}Failed to set state to {}: {}", LOG_ERROR, newState, e.getMessage());
-
-    }
     }
 
-    private void notifyStateChangeListeners(AccessoryServerEvent event) throws ListenerNotificationException {
+    private void notifyStateChangeListeners(AccessoryServerEvent event) throws HomekitEventException {
         List<AccessoryServerChangeListener> listeners;
         synchronized (stateLock) {
             listeners = new ArrayList<>(changeListeners);
@@ -409,12 +411,12 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
                 }
                 errorMessage.append("Timed out listeners: ").append(timedOutListeners);
             }
-            throw new ListenerNotificationException(errorMessage.toString());
+            throw new HomekitEventException(errorMessage.toString());
         }
     }
 
     private void notifyListenerWithTimeout(AccessoryServerChangeListener listener, AccessoryServerEvent event)
-            throws ListenerNotificationException {
+            throws HomekitEventException {
         Exception lastException = null;
         for (int retry = 0; retry <= MAX_RETRIES; retry++) {
             try {
@@ -432,8 +434,11 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
             }
         }
         // If we get here, all retries failed
-        logger.error("{}All {} retries failed for listener notification: {}", LOG_ERROR, MAX_RETRIES + 1, lastException.getMessage(), lastException);
-        throw new ListenerNotificationException("Failed to notify listener after " + (MAX_RETRIES + 1) + " attempts: " + lastException.getMessage(), lastException);
+        logger.error("{}All {} retries failed for listener notification: {}", LOG_ERROR, MAX_RETRIES + 1,
+                lastException.getMessage(), lastException);
+        throw new HomekitEventException(
+                "Failed to notify listener after " + (MAX_RETRIES + 1) + " attempts: " + lastException.getMessage(),
+                lastException);
     }
 
     // ========== Configuration Management Methods ==========
@@ -445,29 +450,29 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
     }
 
     @Override
-    public void setConfigurationIndex(int newIndex) throws ConfigurationException {
+    public void setConfigurationIndex(int newIndex) throws HomekitConfigurationException {
         synchronized (stateLock) {
             validateConfigurationIndex(newIndex);
             int oldIndex = configurationIndex;
             try {
                 configurationIndex = newIndex;
-                notifyChangeListeners(AccessoryServerEventType.SERVER_STATE_CONFIGURATION_NUMBER_CHANGED);
+                notifyChangeListeners(HomekitEventType.SERVER_STATE_CONFIGURATION_NUMBER_CHANGED);
                 logger.info("{}Configuration index updated from {} to {}", LOG_CONFIG, oldIndex, newIndex);
             } catch (HomekitServerException e) {
                 // Rollback on failure
                 configurationIndex = oldIndex;
-                throw new ConfigurationException(
+                throw new HomekitConfigurationException(
                         String.format("Failed to update configuration index from %d to %d", oldIndex, newIndex), e);
             }
         }
     }
 
-    private void validateConfigurationIndex(int newIndex) throws ConfigurationException {
+    private void validateConfigurationIndex(int newIndex) throws HomekitConfigurationException {
         if (newIndex <= 0) {
-            throw new ConfigurationException("Configuration index must be positive");
+            throw new HomekitConfigurationException("Configuration index must be positive");
         }
         if (newIndex == configurationIndex) {
-            throw new ConfigurationException("New configuration index is the same as current index");
+            throw new HomekitConfigurationException("New configuration index is the same as current index");
         }
     }
 
@@ -668,18 +673,19 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
     @Override
     public @Nullable Accessory getAccessory(int accessoryId) {
         synchronized (accessoryLock) {
-            Optional<Accessory> result = accessories.stream().filter(a -> a.getAccessoryId() == accessoryId).findFirst();
+            Optional<Accessory> result = accessories.stream().filter(a -> a.getAccessoryId() == accessoryId)
+                    .findFirst();
             return result.isPresent() ? result.get() : null;
         }
     }
 
     @Override
-    public void addAccessory(Accessory accessory) throws AccessoryOperationException {
+    public void addAccessory(Accessory accessory) throws HomekitAccessoryOperationException {
         validateAccessory(accessory);
         try {
             validateLifecycleOperation("add accessory");
         } catch (HomekitServerException e) {
-            throw new AccessoryOperationException("Failed to validate lifecycle operation", e);
+            throw new HomekitAccessoryOperationException("Failed to validate lifecycle operation", e);
         }
         validateAccessoryExists(accessory);
 
@@ -698,40 +704,40 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
                     }
                     incrementConfigurationIndex();
                     advertise();
-                    notifyChangeListeners(AccessoryServerEventType.ACCESSORY_ADDED);
+                    notifyChangeListeners(HomekitEventType.ACCESSORY_ADDED);
                     logger.info("{}Accessory added successfully - UID: {}", LOG_ACCESSORY, accessory.getUID());
-                } catch (ListenerNotificationException e) {
+                } catch (HomekitEventException e) {
                     // Rollback on failure
                     accessories.remove(accessory);
                     logger.error("{}Failed to add accessory - UID: {}, Error: {}", LOG_ERROR, accessory.getUID(),
                             e.getMessage());
-                    throw new AccessoryOperationException(
+                    throw new HomekitAccessoryOperationException(
                             String.format("Failed to add accessory %s: %s", accessory.getUID(), e.getMessage()), e);
                 } catch (RuntimeException e) {
                     // Rollback on failure
                     accessories.remove(accessory);
                     logger.error("{}Failed to add accessory due to runtime error - UID: {}, Error: {}", LOG_ERROR,
                             accessory.getUID(), e.getMessage());
-                    throw new AccessoryOperationException(
+                    throw new HomekitAccessoryOperationException(
                             String.format("Failed to add accessory %s due to runtime error: %s", accessory.getUID(),
                                     e.getMessage()),
                             e);
                 }
             } else {
                 logger.warn("{}Accessory already exists - UID: {}", LOG_WARN, accessory.getUID());
-                throw new AccessoryOperationException(
+                throw new HomekitAccessoryOperationException(
                         String.format("Accessory with UID %s already exists", accessory.getUID()));
             }
         }
     }
 
     @Override
-    public void removeAccessory(Accessory accessory) throws AccessoryOperationException {
+    public void removeAccessory(Accessory accessory) throws HomekitAccessoryOperationException {
         validateAccessory(accessory);
         try {
             validateLifecycleOperation("remove accessory");
         } catch (HomekitServerException e) {
-            throw new AccessoryOperationException(e.getMessage(), e);
+            throw new HomekitAccessoryOperationException(e.getMessage(), e);
         }
         validateAccessoryExists(accessory);
 
@@ -744,63 +750,61 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
                     accessoryRegistry.remove(accessory.getUID());
                     incrementConfigurationIndex();
                     advertise();
-                    notifyChangeListeners(AccessoryServerEventType.ACCESSORY_REMOVED);
+                    notifyChangeListeners(HomekitEventType.ACCESSORY_REMOVED);
                     logger.info("{}Accessory removed successfully - UID: {}", LOG_ACCESSORY, accessory.getUID());
-                } catch (ListenerNotificationException e) {
+                } catch (HomekitEventException e) {
                     // Rollback on failure
                     accessories.add(accessory);
                     logger.error("{}Failed to remove accessory - UID: {}, Error: {}", LOG_ERROR, accessory.getUID(),
                             e.getMessage());
-                    throw new AccessoryOperationException(
+                    throw new HomekitAccessoryOperationException(
                             String.format("Failed to remove accessory %s: %s", accessory.getUID(), e.getMessage()), e);
                 } catch (RuntimeException e) {
                     // Rollback on failure
                     accessories.add(accessory);
                     logger.error("{}Failed to remove accessory due to runtime error - UID: {}, Error: {}", LOG_ERROR,
                             accessory.getUID(), e.getMessage());
-                    throw new AccessoryOperationException(
+                    throw new HomekitAccessoryOperationException(
                             String.format("Failed to remove accessory %s due to runtime error: %s", accessory.getUID(),
                                     e.getMessage()),
                             e);
                 }
             } else {
                 logger.warn("{}Accessory not found - UID: {}", LOG_WARN, accessory.getUID());
-                throw new AccessoryOperationException(
+                throw new HomekitAccessoryOperationException(
                         String.format("Accessory with UID %s not found", accessory.getUID()));
             }
         }
     }
 
-    private void validateAccessoryIdUniqueness(Accessory accessory) throws AccessoryOperationException {
+    private void validateAccessoryIdUniqueness(Accessory accessory) throws HomekitAccessoryOperationException {
         synchronized (accessoryLock) {
             for (Accessory existing : accessories) {
                 if (existing.getAccessoryId() == accessory.getAccessoryId()) {
-                    throw new AccessoryOperationException(String.format(
+                    throw new HomekitAccessoryOperationException(String.format(
                             "Cannot add accessory with ID %d - an accessory with this ID already exists (UID: %s, Type: %s)",
-                            accessory.getAccessoryId(), existing.getUID(),
-                            existing.getClass().getSimpleName()));
+                            accessory.getAccessoryId(), existing.getUID(), existing.getClass().getSimpleName()));
                 }
             }
         }
     }
 
-    private void validateAccessoryUidUniqueness(Accessory accessory) throws AccessoryOperationException {
+    private void validateAccessoryUidUniqueness(Accessory accessory) throws HomekitAccessoryOperationException {
         synchronized (accessoryLock) {
             for (Accessory existing : accessories) {
                 if (existing.getUID().equals(accessory.getUID())) {
-                    throw new AccessoryOperationException(String.format(
+                    throw new HomekitAccessoryOperationException(String.format(
                             "Cannot add accessory with UID %s - an accessory with this UID already exists (ID: %d, Type: %s)",
-                            accessory.getUID(), existing.getAccessoryId(),
-                            existing.getClass().getSimpleName()));
+                            accessory.getUID(), existing.getAccessoryId(), existing.getClass().getSimpleName()));
                 }
             }
         }
     }
 
-    private void validateAccessory(Accessory accessory) throws AccessoryOperationException {
+    private void validateAccessory(Accessory accessory) throws HomekitAccessoryOperationException {
 
         if (accessory.getAccessoryId() < 0) {
-            throw new AccessoryOperationException(String
+            throw new HomekitAccessoryOperationException(String
                     .format("Invalid accessory ID %d - must be a non-negative number", accessory.getAccessoryId()));
         }
 
@@ -808,10 +812,10 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
         validateAccessoryUidUniqueness(accessory);
     }
 
-    private void validateAccessoryExists(Accessory accessory) throws AccessoryOperationException {
+    private void validateAccessoryExists(Accessory accessory) throws HomekitAccessoryOperationException {
         synchronized (stateLock) {
             if (!accessories.contains(accessory)) {
-                throw new AccessoryOperationException(String.format(
+                throw new HomekitAccessoryOperationException(String.format(
                         "Cannot remove accessory with ID %d - accessory not found", accessory.getAccessoryId()));
             }
         }
@@ -819,7 +823,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
 
     // ========== Event Listener Management Methods ==========
     @Override
-    public void addChangeListener(AccessoryServerChangeListener listener) throws ListenerNotificationException {
+    public void addChangeListener(AccessoryServerChangeListener listener) throws HomekitEventException {
         validateListener(listener);
         logger.debug("{}Adding change listener: {}", LOG_EVENT, listener);
         synchronized (stateLock) {
@@ -830,7 +834,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
     }
 
     @Override
-    public void removeChangeListener(AccessoryServerChangeListener listener) throws ListenerNotificationException {
+    public void removeChangeListener(AccessoryServerChangeListener listener) throws HomekitEventException {
         validateListener(listener);
         logger.debug("{}Removing change listener: {}", LOG_EVENT, listener);
         synchronized (stateLock) {
@@ -840,7 +844,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
         }
     }
 
-    private void validateListener(AccessoryServerChangeListener listener) throws ListenerNotificationException {
+    private void validateListener(AccessoryServerChangeListener listener) throws HomekitEventException {
         // No need to check for null due to @NonNullByDefault
     }
 
@@ -852,7 +856,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
                 for (AccessoryServerChangeListener listener : listenersToRemove) {
                     try {
                         removeChangeListener(listener);
-                    } catch (ListenerNotificationException e) {
+                    } catch (HomekitEventException e) {
                         logger.error("{}Failed to remove listener during cleanup: {}", LOG_ERROR, e.getMessage(), e);
                     }
                 }
@@ -863,21 +867,21 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
         }
     }
 
-    protected void notifyChangeListeners(AccessoryServerEventType eventType) throws ListenerNotificationException {
+    protected void notifyChangeListeners(HomekitEventType eventType) throws HomekitEventException {
         validateEventType(eventType);
         logger.debug("{}Notifying listeners of event type: {}", LOG_EVENT, eventType);
         AccessoryServerEvent event = new AccessoryServerEvent(this, null, null, null, eventType);
         notifyListenersAsync(event);
     }
 
-    protected void notifyChangeListeners() throws ListenerNotificationException {
+    protected void notifyChangeListeners() throws HomekitEventException {
         logger.debug("{}Notifying listeners of server update", LOG_EVENT);
         AccessoryServerEvent event = new AccessoryServerEvent(this, null, null, null,
-                AccessoryServerEvent.AccessoryServerEventType.SERVER_UPDATED);
+                HomekitEventType.SERVER_UPDATED);
         notifyListenersAsync(event);
     }
 
-    private void notifyListenersAsync(AccessoryServerEvent event) throws ListenerNotificationException {
+    private void notifyListenersAsync(AccessoryServerEvent event) throws HomekitEventException {
         List<Future<Void>> futures = new ArrayList<>();
         List<AccessoryServerChangeListener> failedListeners = new ArrayList<>();
         List<AccessoryServerChangeListener> timedOutListeners = new ArrayList<>();
@@ -894,7 +898,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
                 try {
                     notifyListenerWithTimeout(listener, event);
                     return (Void) null;
-                } catch (ListenerNotificationException e) {
+                } catch (HomekitEventException e) {
                     logger.error("{}Failed to notify listener {}: {}", LOG_ERROR, listener, e.getMessage(), e);
                     failedListeners.add(listener);
                     throw e;
@@ -937,7 +941,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
                 }
                 errorMessage.append("Timed out listeners: ").append(timedOutListeners);
             }
-            throw new ListenerNotificationException(errorMessage.toString());
+            throw new HomekitEventException(errorMessage.toString());
         }
     }
 
@@ -975,7 +979,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
     @Override
     public abstract void advertise();
 
-    private void validateEventType(AccessoryServerEventType eventType) throws ListenerNotificationException {
+    private void validateEventType(HomekitEventType eventType) throws HomekitEventException {
         // No need to check for null due to @NonNullByDefault
     }
 

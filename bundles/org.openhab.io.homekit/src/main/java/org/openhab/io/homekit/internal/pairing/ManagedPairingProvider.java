@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.internal.pairing;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.AbstractManagedProvider;
 import org.openhab.core.service.ReadyMarker;
 import org.openhab.core.service.ReadyService;
@@ -20,6 +21,7 @@ import org.osgi.service.component.annotations.Reference;
  * a {@link StorageService}.
  *
  **/
+@NonNullByDefault
 @Component(immediate = true, service = { PairingProvider.class, ManagedPairingProvider.class })
 public class ManagedPairingProvider extends AbstractManagedProvider<Pairing, PairingUID, Pairing>
         implements PairingProvider {
@@ -43,12 +45,12 @@ public class ManagedPairingProvider extends AbstractManagedProvider<Pairing, Pai
     }
 
     @Override
-    protected @NonNull String keyToString(@NonNull PairingUID key) {
+    protected @NonNull String keyToString(PairingUID key) {
         return key.getAsString();
     }
 
     @Override
-    protected Pairing toElement(@NonNull String key, @NonNull Pairing persistableElement) {
+    protected Pairing toElement(String key, Pairing persistableElement) {
         return persistableElement;
     }
 

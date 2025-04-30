@@ -6,13 +6,11 @@ import javax.json.JsonValue;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.Identifiable;
 import org.openhab.core.types.State;
-import org.openhab.io.homekit.api.listener.CharacteristicChangeListener;
 import org.openhab.io.homekit.internal.characteristic.CharacteristicUID;
 
 //TODO https://github.com/jlusiardi/homekit_python/blob/master/homekit/model/characteristics/characteristic_types.py
 //TODO https://github.com/apple/HomeKitADK/blob/master/HAP/HAPCharacteristicTypes.h
 //TODO https://github.com/apple/HomeKitADK/blob/master/HAP/HAPCharacteristicTypes.h
-
 
 /**
  * Interface for the Characteristics provided by a Service.
@@ -78,20 +76,6 @@ public interface Characteristic<T> extends Identifiable<CharacteristicUID>, Comp
      * @param value true to enable events, false to disable
      */
     void setHasEvents(boolean value);
-
-    /**
-     * Adds a listener to be notified of characteristic changes.
-     *
-     * @param listener the listener to add
-     */
-    void addChangeListener(CharacteristicChangeListener listener);
-
-    /**
-     * Removes a listener from being notified of characteristic changes.
-     *
-     * @param listener the listener to remove
-     */
-    void removeChangeListener(CharacteristicChangeListener listener);
 
     /**
      * Creates a JSON representation of the Characteristic with specified fields included.

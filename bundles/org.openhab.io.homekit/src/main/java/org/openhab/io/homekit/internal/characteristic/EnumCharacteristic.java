@@ -74,7 +74,8 @@ public abstract class EnumCharacteristic extends GenericCharacteristic<Integer> 
         } else if (value == JsonValue.FALSE) {
             return 0;
         } else {
-            throw new IndexOutOfBoundsException("Cannot convert " + (value != null ? value.getClass() : "null") + " to Integer");
+            throw new IndexOutOfBoundsException(
+                    "Cannot convert " + (value != null ? value.getClass() : "null") + " to Integer");
         }
     }
 

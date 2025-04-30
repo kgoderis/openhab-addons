@@ -20,7 +20,8 @@ public abstract class FloatCharacteristic extends GenericCharacteristic<Double> 
     private final String unit;
 
     public FloatCharacteristic(Service service, long instanceId, boolean isWritable, boolean isReadable,
-            boolean hasEvents, String description, double minValue, double maxValue, double minStep, String unit, String type) {
+            boolean hasEvents, String description, double minValue, double maxValue, double minStep, String unit,
+            String type) {
         super(service, instanceId, "float", isWritable, isReadable, hasEvents, description, type);
         this.minValue = minValue;
         this.maxValue = maxValue;

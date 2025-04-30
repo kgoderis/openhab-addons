@@ -36,6 +36,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeoutException;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -76,13 +77,13 @@ import org.openhab.io.homekit.crypto.ChachaEncoder;
 import org.openhab.io.homekit.crypto.EdsaSigner;
 import org.openhab.io.homekit.crypto.EdsaVerifier;
 import org.openhab.io.homekit.crypto.HomekitEncryptionEngine;
-import org.openhab.io.homekit.exception.AccessoryOperationException;
-import org.openhab.io.homekit.exception.ConfigurationException;
+import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
+import org.openhab.io.homekit.exception.HomekitConfigurationException;
+import org.openhab.io.homekit.exception.HomekitException;
 import org.openhab.io.homekit.exception.HomekitServerException;
 import org.openhab.io.homekit.internal.accessory.AccessoryServerState;
 import org.openhab.io.homekit.internal.accessory.GenericAccessory;
 import org.openhab.io.homekit.internal.client.HomekitClientSRP6Session;
-import org.openhab.io.homekit.exception.HomekitException;
 import org.openhab.io.homekit.internal.events.AccessoryServerEvent;
 import org.openhab.io.homekit.internal.events.CharacteristicEvent;
 import org.openhab.io.homekit.internal.events.CharacteristicEvent.CharacteristicEventType;
@@ -101,7 +102,6 @@ import com.nimbusds.srp6.SRP6Exception;
 import com.nimbusds.srp6.XRoutineWithUserIdentity;
 
 import djb.Curve25519;
-import java.util.concurrent.TimeoutException;
 
 // A bridge is a special type of HAP accessory server that bridges HomeKit Accessory Protocol and different RF/transport protocols, such as ZigBee or Z-Wave. A bridge must expose all the user-addressable functionality supported by its connected devices as HAP accessory objects to the HAP controller(s). A bridge must ensure that the instance ID assigned to the HAP accessory objects exposed on behalf of its connected devices do not change for the lifetime of the server/client pairing.
 // For example, a bridge that bridges three lights would expose four HAP accessory objects: one HAP accessory object that represents the bridge itself that may include a "firmware update" service, and three additional HAP accessory objects that each contain a "lightbulb" service.
@@ -137,7 +137,8 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
 
     // ========== Constructor ==========
     public RemoteAccessoryServer(AccessoryCategory category, InetAddress address, int port, byte[] pairingIdentifier,
-            byte[] secretKey, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry) throws ConfigurationException {
+            byte[] secretKey, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry)
+            throws HomekitConfigurationException {
         super(category, address, port, pairingIdentifier, secretKey, accessoryRegistry, pairingRegistry);
         this.setupCode = "";
         this.isPairVerified = false;
@@ -145,7 +146,8 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
     }
 
     public RemoteAccessoryServer(AccessoryCategory category, InetAddress address, int port,
-            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry)throws ConfigurationException, HomekitServerException {
+            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry)
+            throws HomekitConfigurationException, HomekitServerException {
         this(category, address, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry);
     }
 
@@ -172,7 +174,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
                     throw new HomekitServerException("Failed to start HTTP client", e);
                 }
             }
-        } catch (  HomekitServerException e) {
+        } catch (HomekitServerException e) {
             logger.error("{}Failed to start HTTP client - Error: {}", LOG_ERROR, e.getMessage());
             logger.debug("{}Exception details", LOG_ERROR, e);
             try {
@@ -516,7 +518,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
             setState(AccessoryServerState.PAIR_SETUP_VERIFY);
 
             // Handle stage 1 with authentication error handling
-            final StageResult stage1Result =handleStage1Verification(stage0Result);
+            final StageResult stage1Result = handleStage1Verification(stage0Result);
             if (stage1Result.isFailure()) {
                 handleVerificationFailure(1, stage1Result);
                 handlePairingVerification(false);
@@ -525,8 +527,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
             logger.debug("{}Stage 1 completed successfully - Server: {}", LOG_STATE, new String(getPairingId()));
 
             // Stage 2: Final Verification
-            logger.debug("{}Starting Stage 2 - Final Verification - Server: {}", LOG_STATE,
-                    new String(getPairingId()));
+            logger.debug("{}Starting Stage 2 - Final Verification - Server: {}", LOG_STATE, new String(getPairingId()));
             setState(AccessoryServerState.PAIR_SETUP_EXCHANGE);
             StageResult stage2Result = executePairingStage(2, () -> doPairVerifyStage2(stage1Result));
             if (stage2Result.isFailure()) {
@@ -666,8 +667,8 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         Future<StageResult> stageFuture = sendPairSetupStage(payload);
 
         StageResult result = stageFuture.get();
-        logger.debug("{}Stage {} - received response, success: {} - Server: {}", LOG_STATE, stage,
-                !result.isFailure(), new String(getPairingId()));
+        logger.debug("{}Stage {} - received response, success: {} - Server: {}", LOG_STATE, stage, !result.isFailure(),
+                new String(getPairingId()));
 
         return result;
     }
@@ -756,22 +757,22 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         return encoder.toByteArray();
     }
 
-        private StageResult handleStage1Verification(StageResult stage0Result) 
-        throws HomekitServerException, InterruptedException, ExecutionException, IOException {
-    try {
-        return executePairingStage(1, () -> doPairVerifyStage1(stage0Result));
-    } catch (HomekitServerException e) {
-        logger.error("'{}' : Authentication error in stage 1: {}", new String(getPairingId()), e.getMessage());
-        logger.debug("'{}' : Sending authentication error to accessory", new String(getPairingId()));
-        
-        // Send authentication error to accessory
-        Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
-        encoder.add(Message.STATE, (short) 0x03);
-        encoder.add(Message.ERROR, Error.AUTHENTICATION);
-        
-        Future<StageResult> errorFuture = sendPairVerifyStage(encoder.toByteArray());
-        return errorFuture.get();
-    }
+    private StageResult handleStage1Verification(StageResult stage0Result)
+            throws HomekitServerException, InterruptedException, ExecutionException, IOException {
+        try {
+            return executePairingStage(1, () -> doPairVerifyStage1(stage0Result));
+        } catch (HomekitServerException e) {
+            logger.error("'{}' : Authentication error in stage 1: {}", new String(getPairingId()), e.getMessage());
+            logger.debug("'{}' : Sending authentication error to accessory", new String(getPairingId()));
+
+            // Send authentication error to accessory
+            Encoder encoder = TypeLengthValueEncoderDecoder.getEncoder();
+            encoder.add(Message.STATE, (short) 0x03);
+            encoder.add(Message.ERROR, Error.AUTHENTICATION);
+
+            Future<StageResult> errorFuture = sendPairVerifyStage(encoder.toByteArray());
+            return errorFuture.get();
+        }
     }
 
     protected byte[] doPairSetupStage2(StageResult stageResult) throws IOException, HomekitServerException {
@@ -887,7 +888,6 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
             throw new HomekitServerException("Signature verification failed", e);
         }
 
-    
         addPairing(destinationPairingIdentifier, destinationPublicKey);
         SRP6Session = null;
 
@@ -1252,7 +1252,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
     }
 
     @Override
-    public void updateAccessories() throws AccessoryOperationException {
+    public void updateAccessories() throws HomekitAccessoryOperationException {
         if (!isPairVerified()) {
             logger.debug("{}Cannot update accessories - not paired - Server: {}", LOG_STATE,
                     new String(getPairingId()));
@@ -1338,8 +1338,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
                                 logger.info("{}Removing service {} from accessory {} - Server: {}", LOG_STATE,
                                         currentService, currentAccessory, new String(getPairingId()));
                                 currentAccessory.removeService(currentService);
-                                notifyChangeListeners(
-                                        AccessoryServerEvent.AccessoryServerEventType.SERVICE_REMOVED);
+                                notifyChangeListeners(AccessoryServerEvent.AccessoryServerEventType.SERVICE_REMOVED);
                             }
                         }
 
@@ -1347,8 +1346,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
                         for (Service currentService : currentAccessory.getServices()) {
                             for (Service remoteService : remoteServices) {
                                 if (currentService.getInstanceId() == remoteService.getInstanceId()) {
-                                    Set<Characteristic<?>> currentCharacteristics = currentService
-                                            .getCharacteristics();
+                                    Set<Characteristic<?>> currentCharacteristics = currentService.getCharacteristics();
                                     Set<Characteristic<?>> remoteCharacteristics = remoteService.getCharacteristics();
 
                                     // Find new characteristics to add
@@ -1419,12 +1417,12 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
             logger.warn("{}Error updating accessories: {} - Server: {}", LOG_STATE, e.getMessage(),
                     new String(getPairingId()));
             logger.debug("{}Exception details", LOG_STATE, e);
-            throw new AccessoryOperationException("Failed to update accessories", e);
+            throw new HomekitAccessoryOperationException("Failed to update accessories", e);
         }
     }
 
     @Override
-    public void addAccessory(Accessory accessory) throws AccessoryOperationException {
+    public void addAccessory(Accessory accessory) throws HomekitAccessoryOperationException {
         super.addAccessory(accessory);
         for (Service service : accessory.getServices()) {
             for (Characteristic<?> characteristic : service.getCharacteristics()) {
@@ -1434,7 +1432,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
     }
 
     @Override
-    public void removeAccessory(Accessory accessory) throws AccessoryOperationException {
+    public void removeAccessory(Accessory accessory) throws HomekitAccessoryOperationException {
         super.removeAccessory(accessory);
         for (Service service : accessory.getServices()) {
             for (Characteristic<?> characteristic : service.getCharacteristics()) {
@@ -1636,6 +1634,6 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
 
     @Override
     public void advertise() {
-        //no Op for RemoteAccessoryServer
+        // no Op for RemoteAccessoryServer
     }
 }
