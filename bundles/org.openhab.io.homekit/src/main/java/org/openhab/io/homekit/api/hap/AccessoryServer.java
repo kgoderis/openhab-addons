@@ -10,9 +10,9 @@ import org.openhab.core.common.registry.Identifiable;
 import org.openhab.io.homekit.api.listener.AccessoryServerChangeListener;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.exception.HomekitConfigurationException;
+import org.openhab.io.homekit.exception.HomekitEventException;
 import org.openhab.io.homekit.exception.HomekitException;
 import org.openhab.io.homekit.exception.HomekitServerException;
-import org.openhab.io.homekit.exception.HomekitEventException;
 import org.openhab.io.homekit.internal.server.AccessoryServerUID;
 
 /**
@@ -219,37 +219,6 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
      * @return the configuration index
      */
     int getConfigurationIndex();
-
-    // ==================== Event Handling ====================
-
-    /**
-     * Adds a change listener to the server.
-     *
-     * @param listener the listener to add
-     */
-    void addChangeListener(AccessoryServerChangeListener listener) throws HomekitEventException;
-
-    /**
-     * Removes a change listener from the server.
-     *
-     * @param listener the listener to remove
-     */
-    void removeChangeListener(AccessoryServerChangeListener listener) throws HomekitEventException;
-
-    // /**
-    // * Adds a notification for characteristic changes.
-    // *
-    // * @param characteristic the characteristic to monitor
-    // * @param connection the HTTP connection to notify
-    // */
-    // void addNotification(Characteristic<?> characteristic, HttpConnection connection);
-
-    // /**
-    // * Removes a notification for characteristic changes.
-    // *
-    // * @param characteristic the characteristic to stop monitoring
-    // */
-    // void removeNotification(Characteristic<?> characteristic);
 
     // ==================== Pairing Operations ====================
 

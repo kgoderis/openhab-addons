@@ -190,7 +190,7 @@ public class GenericAccessory implements Accessory, HomekitEventPublisher, Homek
                 logger.debug("{}Added Service '{}' (Type: {}) to Accessory '{}' (Type: {})", LOG_ACCESSORY,
                         service.getName(), service.getInstanceType(), this.getLabel(), this.getClass().getSimpleName());
                 // Send event via HomekitEventManager
-                getEventManager().publishEvent(new AccessoryEvent(this, service, HomekitEventType.SERVICE_ADDED));
+                getEventManager().publishEvent(new AccessoryEvent(HomekitEventType.SERVICE_ADDED, this, service, null));
 
                 // Subscribe to service state change events
                 if (service instanceof GenericService genericService) {
@@ -464,7 +464,7 @@ public class GenericAccessory implements Accessory, HomekitEventPublisher, Homek
             logger.debug("{}Removed Service '{}' (Type: {}) from Accessory '{}' (Type: {})", LOG_ACCESSORY,
                     service.getName(), service.getInstanceType(), this.getLabel(), this.getClass().getSimpleName());
             // Send event via HomekitEventManager
-            getEventManager().publishEvent(new AccessoryEvent(this, service, HomekitEventType.SERVICE_REMOVED));
+            getEventManager().publishEvent(new AccessoryEvent(HomekitEventType.SERVICE_REMOVED, this, service, null));
 
             if (service instanceof GenericService genericService) {
                 getEventManager().unsubscribe(

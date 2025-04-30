@@ -36,7 +36,6 @@ import org.openhab.io.homekit.internal.characteristic.GenericCharacteristic;
 import org.openhab.io.homekit.internal.events.CharacteristicEvent;
 import org.openhab.io.homekit.internal.events.HomekitEvent;
 import org.openhab.io.homekit.internal.events.HomekitEventManager;
-import org.openhab.io.homekit.internal.events.HomekitEventSubscriber;
 import org.openhab.io.homekit.internal.events.HomekitEventType;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -604,11 +603,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
         if (!(characteristic instanceof GenericCharacteristic<?> genericCharacteristic)) {
             return;
         }
-        eventManager.subscribe(
-            HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
-            genericCharacteristic.getSourceUID(),
-            event -> handleCharacteristicStateChangedEvent(event, item)
-        );
+        eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, genericCharacteristic.getSourceUID(),
+                event -> handleCharacteristicStateChangedEvent(event, item));
     }
 
     private void handleCharacteristicStateChangedEvent(HomekitEvent event, Item item) {
@@ -618,7 +614,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
         if (!(event instanceof CharacteristicEvent characteristicEvent)) {
             return;
         }
-        Characteristic<?> eventCharacteristic = (Characteristic<?>) characteristicEvent.getCharacteristic();
+        Characteristic<?> eventCharacteristic = characteristicEvent.getCharacteristic().get();
         State state = eventCharacteristic.toState(characteristicEvent.getNewValue());
         if (state != null) {
             eventPublisher.post(ItemEventFactory.createStateEvent(item.getName(), state));
@@ -832,6 +828,5 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
         MetadataKey key = new MetadataKey("homekit", item.getName());
         Metadata metadata = metadataRegistry.get(key);
         return metadata != null ? Arrays.asList(metadata.getValue().split(",")) : Collections.emptyList();
-    }  
+    }
 }
-

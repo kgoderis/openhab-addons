@@ -1,25 +1,31 @@
 package org.openhab.io.homekit.internal.events;
 
-import javax.json.JsonValue;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.hap.Characteristic;
+
+import javax.json.JsonValue;
+
 
 @NonNullByDefault
 public class CharacteristicEvent extends AbstractHomekitEvent {
-    private final Characteristic<?> characteristic;
+    private final Optional<Characteristic<?>> characteristic;
     private final JsonValue oldValue;
     private final JsonValue newValue;
 
-    public CharacteristicEvent(HomekitEventType type, Characteristic<?> characteristic, JsonValue oldValue,
-            JsonValue newValue) {
-        super(characteristic.getUID().toString(), type);
-        this.characteristic = characteristic;
+    public CharacteristicEvent(HomekitEventType type,
+                               @Nullable Characteristic<?> characteristic,
+                               JsonValue oldValue,
+                               JsonValue newValue) {
+        super(characteristic != null ? characteristic.getUID().toString() : "unknown", type);
+        this.characteristic = Optional.ofNullable(characteristic);
         this.oldValue = oldValue;
         this.newValue = newValue;
     }
 
-    public Characteristic<?> getCharacteristic() {
+    public Optional<Characteristic<?>> getCharacteristic() {
         return characteristic;
     }
 
@@ -33,7 +39,13 @@ public class CharacteristicEvent extends AbstractHomekitEvent {
 
     @Override
     public String toString() {
-        return "CharacteristicEvent[type=" + getType() + ", characteristic=" + characteristic + ", oldValue=" + oldValue
-                + ", newValue=" + newValue + "]";
+        return "CharacteristicEvent{" +
+                "type=" + getType() +
+                ", sourceUid=" + getSourceUid() +
+                ", timestamp=" + getTimestamp() +
+                ", characteristic=" + characteristic +
+                ", oldValue=" + oldValue +
+                ", newValue=" + newValue +
+                '}';
     }
 }

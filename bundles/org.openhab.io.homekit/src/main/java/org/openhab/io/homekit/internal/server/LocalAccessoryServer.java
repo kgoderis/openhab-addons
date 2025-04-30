@@ -2,8 +2,10 @@ package org.openhab.io.homekit.internal.server;
 
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
@@ -20,7 +22,6 @@ import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.PairingFeatureFlag;
 import org.openhab.io.homekit.api.hap.PairingStatusFlag;
 import org.openhab.io.homekit.api.hap.Service;
-import org.openhab.io.homekit.api.listener.CharacteristicChangeListener;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.crypto.HomekitEncryptionEngine;
@@ -29,7 +30,6 @@ import org.openhab.io.homekit.exception.HomekitConfigurationException;
 import org.openhab.io.homekit.exception.HomekitServerException;
 import org.openhab.io.homekit.internal.accessory.AccessoryServerState;
 import org.openhab.io.homekit.internal.events.CharacteristicEvent;
-import org.openhab.io.homekit.internal.events.CharacteristicEvent.CharacteristicEventType;
 import org.openhab.io.homekit.internal.http.HomekitHttpConnectionFactory;
 import org.openhab.io.homekit.internal.http.HomekitRequestLogHandler;
 import org.openhab.io.homekit.internal.http.HomekitSessionHandler;
@@ -42,8 +42,11 @@ import org.openhab.io.homekit.internal.server.servlet.PairingServlet;
 import org.openhab.io.homekit.util.Byte;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
+import org.openhab.io.homekit.internal.events.HomekitEventSubscription;
+import org.openhab.io.homekit.internal.events.HomekitEventType;
 
-public class LocalAccessoryServer extends AbstractAccessoryServer implements CharacteristicChangeListener {
+public class LocalAccessoryServer extends AbstractAccessoryServer {
 
     // ========== Constants ==========
     protected static final Logger logger = LoggerFactory.getLogger(LocalAccessoryServer.class);
@@ -73,11 +76,14 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
     private final Set<Long> usedInstanceIds = new HashSet<>();
     private long nextInstanceId = 1;
 
+    // ========== Event Handling ==========
+    private final List<HomekitEventSubscription> eventSubscriptions = new ArrayList<>();
+
     // ========== Constructors ==========
     public LocalAccessoryServer(AccessoryCategory category, InetAddress address, int port, byte[] pairingId,
             byte[] secretKey, MDNSService mdnsService, AccessoryRegistry accessoryRegistry,
-            PairingRegistry pairingRegistry) throws HomekitConfigurationException {
-        super(category, address, port, pairingId, secretKey, accessoryRegistry, pairingRegistry);
+            PairingRegistry pairingRegistry, HomekitEventManager eventManager) throws HomekitConfigurationException {
+        super(category, address, port, pairingId, secretKey, accessoryRegistry, pairingRegistry, eventManager);
         logger.debug("{}Initializing local server - Category: {}, Address: {}, Port: {}", LOG_INIT, category, address,
                 port);
         this.mdnsService = mdnsService;
@@ -85,10 +91,11 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
     }
 
     public LocalAccessoryServer(AccessoryCategory category, InetAddress address, int port, MDNSService mdnsService,
-            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry)
+            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry, HomekitEventManager eventManager)
             throws HomekitConfigurationException, HomekitServerException {
-        this(category, address, port, generatePairingId(), generateSecretKey(), mdnsService, accessoryRegistry,
-                pairingRegistry);
+        super(category, address, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry,
+                eventManager);
+                this.mdnsService = mdnsService;
     }
 
     // ========== Lifecycle Methods ==========
@@ -549,12 +556,12 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
     }
 
     // ========== Event Handling ==========
-    @Override
-    public void onCharacteristicEvent(CharacteristicEvent event) {
-        logger.debug("{}Received characteristic event - Type: {}, Characteristic: {}", LOG_EVENT, event.getEventType(),
+    
+    protected void handleCharacteristicEvent(CharacteristicEvent event) {
+        logger.debug("{}Received characteristic event - Type: {}, Characteristic: {}", LOG_EVENT, event.getType(),
                 event.getCharacteristic().getClass().getSimpleName());
-        if (event.getEventType() == CharacteristicEventType.CHARACTERISTIC_START_EVENTS) {
-            characteristicServlet.publishCharacteristicUpdate(event.getCharacteristic());
+        if (event.getType() == HomekitEventType.CHARACTERISTIC_STATE_CHANGED && event.getCharacteristic().isPresent()) {
+            characteristicServlet.publishCharacteristicUpdate(event.getCharacteristic().get());
             logger.debug("{}Published characteristic update", LOG_EVENT);
         }
     }
@@ -566,12 +573,15 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
         try {
             validateLifecycleOperation("add accessory");
             super.addAccessory(accessory);
-            // Add characteristic listeners
+
+            // Subscribe to characteristic events using HomekitEventManager
             for (Service service : accessory.getServices()) {
                 for (Characteristic<?> characteristic : service.getCharacteristics()) {
-                    characteristic.addChangeListener(this);
-                    logger.debug("{}Added change listener for characteristic: {}", LOG_ACCESSORY,
-                            characteristic.getClass().getSimpleName());
+                    eventSubscriptions.add(eventManager.subscribe(
+                        HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
+                        characteristic.getUID().toString(),
+                        event -> handleCharacteristicEvent((CharacteristicEvent) event)));
+                    logger.debug("{}Subscribed to events for characteristic: {}", LOG_ACCESSORY, characteristic.getClass().getSimpleName());
                 }
             }
             logger.info("{}Accessory added successfully - ID: {}", LOG_ACCESSORY, accessory.getAccessoryId());
@@ -588,14 +598,29 @@ public class LocalAccessoryServer extends AbstractAccessoryServer implements Cha
         try {
             validateLifecycleOperation("remove accessory");
             super.removeAccessory(accessory);
-            // Remove characteristic listeners
+
+            // Collect all characteristic UIDs for this accessory
+            Set<String> characteristicUids = new HashSet<>();
             for (Service service : accessory.getServices()) {
                 for (Characteristic<?> characteristic : service.getCharacteristics()) {
-                    characteristic.removeChangeListener(this);
-                    logger.debug("{}Removed change listener for characteristic: {}", LOG_ACCESSORY,
-                            characteristic.getClass().getSimpleName());
+                    characteristicUids.add(characteristic.getUID().toString());
                 }
             }
+
+            // Remove and unsubscribe only those subscriptions that match
+            eventSubscriptions.removeIf(subscription -> {
+                if (characteristicUids.contains(subscription.sourceUid)) {
+                    eventManager.unsubscribe(
+                        HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
+                        subscription.sourceUid,
+                        subscription.subscriber
+                    );
+                    logger.debug("{}Unsubscribed from events for sourceUid: {}", LOG_ACCESSORY, subscription.sourceUid);
+                    return true;
+                }
+                return false;
+            });
+
             logger.info("{}Accessory removed successfully - ID: {}", LOG_ACCESSORY, accessory.getAccessoryId());
         } catch (HomekitServerException e) {
             logger.error("{}Failed to remove accessory: {}", LOG_ERROR, e.getMessage(), e);

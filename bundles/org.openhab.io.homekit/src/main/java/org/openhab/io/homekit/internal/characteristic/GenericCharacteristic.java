@@ -300,8 +300,8 @@ public abstract class GenericCharacteristic<@NonNull T> implements Characteristi
 
     // Protected methods
     protected void notifyValueChanged(@Nullable T oldValue, @Nullable T newValue) {
-        getEventManager().publishEvent(new CharacteristicEvent(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, this,
-                toValueJson(oldValue), toValueJson(getValue())));
+        getEventManager().publishEvent(new CharacteristicEvent(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, (Characteristic<?>) this,
+                toValueJson(oldValue), toValueJson(newValue)));
     }
 
     protected JsonObject enrich(JsonObject source, String key, Object value) {

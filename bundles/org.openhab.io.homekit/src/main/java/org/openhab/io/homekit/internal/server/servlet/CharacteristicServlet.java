@@ -91,7 +91,7 @@ public class CharacteristicServlet extends BaseServlet {
                     Accessory accessory = server.getAccessory(aid);
                     if (accessory != null) {
                         accessory.getServices().stream()
-                                .map(service -> (Characteristic<?>) service.getCharacteristic(iid))
+                                .map(service -> (Characteristic<?>) service.getCharacteristic(iid).get())
                                 .filter(characteristic -> characteristic != null).findFirst()
                                 .ifPresent(characteristic -> characteristicSubscriptions
                                         .computeIfAbsent(characteristic, c -> ConcurrentHashMap.newKeySet())
@@ -143,7 +143,7 @@ public class CharacteristicServlet extends BaseServlet {
             try {
                 Accessory accessory = server.getAccessory(aid);
                 if (accessory != null) {
-                    accessory.getServices().stream().map(service -> (Characteristic<?>) service.getCharacteristic(iid))
+                    accessory.getServices().stream().map(service -> (Characteristic<?>) service.getCharacteristic(iid).get())
                             .filter(characteristic -> characteristic != null)
                             .forEach(characteristic -> characteristics.add(
                                     characteristic.toJson(includeMeta, includePermissions, includeType, includeEvent)));
@@ -173,7 +173,7 @@ public class CharacteristicServlet extends BaseServlet {
                     continue;
                 }
 
-                accessory.getServices().stream().map(service -> (Characteristic<?>) service.getCharacteristic(iid))
+                accessory.getServices().stream().map(service -> (Characteristic<?>) service.getCharacteristic(iid).get())
                         .filter(characteristic -> characteristic != null).forEach(characteristic -> {
                             if (characteristicWrite.containsKey("value")) {
                                 try {
@@ -189,8 +189,6 @@ public class CharacteristicServlet extends BaseServlet {
             }
 
             response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-
-            // TODO : Handle TAble 6-11 with the HAP Specification Status Codes
 
         } catch (Exception e) {
             logger.error("{}Error processing characteristic update", LOG_ERROR, e);

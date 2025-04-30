@@ -317,7 +317,7 @@ public class GenericService implements Service, HomekitEventPublisher, HomekitEv
     @Override
     public void onEvent(HomekitEvent event) {
         if (event instanceof CharacteristicEvent characteristicEvent) {
-            notifyCharacteristicStateChanged(characteristicEvent.getCharacteristic());
+            notifyCharacteristicStateChanged(characteristicEvent.getCharacteristic().get());
         }
     }
 

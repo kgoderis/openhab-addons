@@ -1,6 +1,9 @@
 package org.openhab.io.homekit.internal.events;
 
+import java.util.Optional;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.hap.Characteristic;
@@ -9,38 +12,45 @@ import org.openhab.io.homekit.api.hap.Service;
 @NonNullByDefault
 public class AccessoryServerEvent extends AbstractHomekitEvent {
     private final AccessoryServer server;
-    private final Accessory accessory;
-    private final Service service;
-    private final Characteristic<?> characteristic;
+    private final Optional<Accessory> accessory;
+    private final Optional<Service> service;
+    private final Optional<Characteristic<?>> characteristic;
 
-    public AccessoryServerEvent(String sourceUid, HomekitEventType type, AccessoryServer server, Accessory accessory,
-            Service service, Characteristic<?> characteristic) {
-        super(sourceUid, type);
+    public AccessoryServerEvent(HomekitEventType type, AccessoryServer server, @Nullable Accessory accessory,
+            @Nullable Service service, @Nullable Characteristic<?> characteristic) {
+        super(server.getUID().toString(), type);
         this.server = server;
-        this.accessory = accessory;
-        this.service = service;
-        this.characteristic = characteristic;
+        this.accessory = Optional.ofNullable(accessory);
+        this.service = Optional.ofNullable(service);
+        this.characteristic = Optional.ofNullable(characteristic);
     }
 
     public AccessoryServer getServer() {
         return server;
     }
 
-    public Accessory getAccessory() {
+    public Optional<Accessory> getAccessory() {
         return accessory;
     }
 
-    public Service getService() {
+    public Optional<Service> getService() {
         return service;
     }
 
-    public Characteristic<?> getCharacteristic() {
+    public Optional<Characteristic<?>> getCharacteristic() {
         return characteristic;
     }
 
     @Override
     public String toString() {
-        return "AccessoryServerEvent[type=" + getType() + ", server=" + server + ", accessory=" + accessory
-                + ", service=" + service + ", characteristic=" + characteristic + "]";
+        return "AccessoryServerEvent{" +
+                "type=" + getType() +
+                ", sourceUid=" + getSourceUid() +
+                ", timestamp=" + getTimestamp() +
+                ", server=" + server +
+                ", accessory=" + accessory +
+                ", service=" + service +
+                ", characteristic=" + characteristic +
+                '}';
     }
 }

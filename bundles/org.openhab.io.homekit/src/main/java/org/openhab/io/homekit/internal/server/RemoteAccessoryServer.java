@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -37,6 +38,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeoutException;
+import java.util.Objects;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -51,6 +53,7 @@ import javax.json.JsonValue.ValueType;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.ProtocolHandlers;
@@ -86,7 +89,9 @@ import org.openhab.io.homekit.internal.accessory.GenericAccessory;
 import org.openhab.io.homekit.internal.client.HomekitClientSRP6Session;
 import org.openhab.io.homekit.internal.events.AccessoryServerEvent;
 import org.openhab.io.homekit.internal.events.CharacteristicEvent;
-import org.openhab.io.homekit.internal.events.CharacteristicEvent.CharacteristicEventType;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
+import org.openhab.io.homekit.internal.events.HomekitEventSubscription;
+import org.openhab.io.homekit.internal.events.HomekitEventType;
 import org.openhab.io.homekit.internal.http.HomekitHttpClientTransportOverHTTP;
 import org.openhab.io.homekit.internal.http.HomekitHttpDestinationOverHTTP;
 import org.openhab.io.homekit.internal.http.HomekitProtocolHandler;
@@ -107,6 +112,7 @@ import djb.Curve25519;
 // For example, a bridge that bridges three lights would expose four HAP accessory objects: one HAP accessory object that represents the bridge itself that may include a "firmware update" service, and three additional HAP accessory objects that each contain a "lightbulb" service.
 // A bridge must not expose more than 150 HAP accessory objects. The HAP accessory object with an instance ID of 1 is considered the primary HAP accessory object. For bridges, this must be the bridge itself.
 
+@NonNullByDefault
 public class RemoteAccessoryServer extends AbstractAccessoryServer implements CharacteristicChangeListener {
 
     // ========== Constants ==========
@@ -124,8 +130,8 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
     private final ScheduledExecutorService scheduler;
 
     // ========== Component References and Locks ==========
-    private HomekitClientSRP6Session SRP6Session;
-    private HttpClient httpClient;
+    private Optional<HomekitClientSRP6Session> SRP6Session = Optional.empty();
+    @Nullable private HttpClient httpClient;
 
     // ========== State Management ==========
     private byte[] sessionKey;
@@ -135,20 +141,24 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
     private boolean isPairVerified;
     private @Nullable ScheduledFuture<?> connectionMonitorJob;
 
+    private final List<HomekitEventSubscription> eventSubscriptions = new ArrayList<>();
+
+
     // ========== Constructor ==========
+    @SuppressWarnings("null")
     public RemoteAccessoryServer(AccessoryCategory category, InetAddress address, int port, byte[] pairingIdentifier,
-            byte[] secretKey, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry)
+            byte[] secretKey, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry, HomekitEventManager eventManager)
             throws HomekitConfigurationException {
-        super(category, address, port, pairingIdentifier, secretKey, accessoryRegistry, pairingRegistry);
+        super(category, address, port, pairingIdentifier, secretKey, accessoryRegistry, pairingRegistry, eventManager);
         this.setupCode = "";
         this.isPairVerified = false;
         this.scheduler = org.openhab.core.common.ThreadPoolManager.getScheduledPool("homekit-remote");
     }
 
     public RemoteAccessoryServer(AccessoryCategory category, InetAddress address, int port,
-            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry)
+            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry, HomekitEventManager eventManager)
             throws HomekitConfigurationException, HomekitServerException {
-        this(category, address, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry);
+        this(category, address, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry, eventManager);
     }
 
     // ========== Core Lifecycle Methods ==========
@@ -174,6 +184,13 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
                     throw new HomekitServerException("Failed to start HTTP client", e);
                 }
             }
+
+                SRP6Session = Optional.of(new HomekitClientSRP6Session());
+                SRP6Session.get().setClientEvidenceRoutine(new HomekitEncryptionEngine.ClientEvidenceRoutineImpl());
+                SRP6Session.get().setServerEvidenceRoutine(new HomekitEncryptionEngine.ServerEvidenceRoutineImpl());
+                SRP6Session.get().setXRoutine(new XRoutineWithUserIdentity());
+            
+
         } catch (HomekitServerException e) {
             logger.error("{}Failed to start HTTP client - Error: {}", LOG_ERROR, e.getMessage());
             logger.debug("{}Exception details", LOG_ERROR, e);
@@ -596,7 +613,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
             // Send remove pairing request
             logger.debug("{}Sending remove pairing request - Server: {}", LOG_STATE, new String(getPairingId()));
             Future<StageResult> stageFuture = sendPairing(encoder.toByteArray());
-            StageResult stageResult = stageFuture.get();
+            StageResult stageResult = Objects.requireNonNull(stageFuture.get(), "StageResult is null");
 
             // Verify response state
             short state = stageResult.decodeResult.getByte(Message.STATE);
@@ -637,6 +654,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
     }
 
     // ========== Pairing Stage Methods ==========
+    @SuppressWarnings("null")
     private void resetPairingState() {
         logger.debug("{}Resetting pairing state - Server: {}", LOG_STATE, new String(getPairingId()));
         sessionKey = null;
@@ -647,6 +665,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         logger.debug("{}Pairing state reset completed - Server: {}", LOG_STATE, new String(getPairingId()));
     }
 
+    @SuppressWarnings("null")
     private void resetVerificationState() {
         logger.debug("'{}' : Resetting verification state", new String(getPairingId()));
         sessionKey = null;
@@ -657,6 +676,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         logger.debug("'{}' : Verification state reset completed", new String(getPairingId()));
     }
 
+    @SuppressWarnings("null")
     private StageResult executePairingStage(int stage, PairingStageExecutor executor)
             throws HomekitServerException, InterruptedException, ExecutionException, IOException {
         logger.debug("{}Executing pair setup stage {} - preparing payload - Server: {}", LOG_STATE, stage,
@@ -666,7 +686,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         logger.debug("{}Stage {} - sending payload - Server: {}", LOG_STATE, stage, new String(getPairingId()));
         Future<StageResult> stageFuture = sendPairSetupStage(payload);
 
-        StageResult result = stageFuture.get();
+        StageResult result = Objects.requireNonNull(stageFuture.get(), "StageResult is null");
         logger.debug("{}Stage {} - received response, success: {} - Server: {}", LOG_STATE, stage, !result.isFailure(),
                 new String(getPairingId()));
 
@@ -711,6 +731,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         return encoder.toByteArray();
     }
 
+    @SuppressWarnings("null")
     protected byte[] doPairSetupStage1(StageResult stageResult) throws IOException, HomekitServerException {
         logger.debug("{}Starting pair setup stage 1 - Server: {}", LOG_STATE, new String(getPairingId()));
 
@@ -725,18 +746,18 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         BigInteger salt = stageResult.decodeResult.getBigInt(Message.SALT);
         logger.debug("{}Salt received - Server: {}", LOG_STATE, new String(getPairingId()));
 
-        if (SRP6Session == null) {
-            SRP6Session = new HomekitClientSRP6Session();
-            SRP6Session.setClientEvidenceRoutine(new HomekitEncryptionEngine.ClientEvidenceRoutineImpl());
-            SRP6Session.setServerEvidenceRoutine(new HomekitEncryptionEngine.ServerEvidenceRoutineImpl());
-            SRP6Session.setXRoutine(new XRoutineWithUserIdentity());
+        if (SRP6Session.isEmpty()) {
+            SRP6Session = Optional.of(new HomekitClientSRP6Session());
+            SRP6Session.orElseThrow(() -> new HomekitServerException("SRP6 session not found")).setClientEvidenceRoutine(new HomekitEncryptionEngine.ClientEvidenceRoutineImpl());
+            SRP6Session.orElseThrow(() -> new HomekitServerException("SRP6 session not found")).setServerEvidenceRoutine(new HomekitEncryptionEngine.ServerEvidenceRoutineImpl());
+            SRP6Session.orElseThrow(() -> new HomekitServerException("SRP6 session not found")).setXRoutine(new XRoutineWithUserIdentity());
         }
 
-        SRP6Session.step1("Pair-Setup", setupCode);
+        SRP6Session.orElseThrow(() -> new HomekitServerException("SRP6 session not found")).step1("Pair-Setup", setupCode);
 
         SRP6ClientCredentials clientCredentials = null;
         try {
-            clientCredentials = SRP6Session.step2(HomekitEncryptionEngine.SRP6Params, salt, publicKey);
+            clientCredentials = SRP6Session.orElseThrow(() -> new HomekitServerException("SRP6 session not found")).step2(HomekitEncryptionEngine.SRP6Params, salt, publicKey);
         } catch (SRP6Exception e) {
             logger.error("{}SRP6 step 2 failed - Error: {}", LOG_ERROR, e.getMessage());
             logger.debug("{}Exception details", LOG_ERROR, e);
@@ -771,10 +792,11 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
             encoder.add(Message.ERROR, Error.AUTHENTICATION);
 
             Future<StageResult> errorFuture = sendPairVerifyStage(encoder.toByteArray());
-            return errorFuture.get();
+            return Objects.requireNonNull(errorFuture.get(), "StageResult is null");
         }
     }
 
+    @SuppressWarnings("null")
     protected byte[] doPairSetupStage2(StageResult stageResult) throws IOException, HomekitServerException {
         logger.debug("{}Starting pair setup stage 2 - Server: {}", LOG_STATE, new String(getPairingId()));
 
@@ -786,15 +808,15 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         BigInteger proof = stageResult.decodeResult.getBigInt(Message.PROOF);
 
         try {
-            SRP6Session.step3(proof);
+            SRP6Session.orElseThrow(() -> new HomekitServerException("SRP6 session not found")).step3(proof);
         } catch (SRP6Exception e) {
             logger.error("{}SRP6 step 3 failed - Error: {}", LOG_ERROR, e.getMessage());
             logger.debug("{}Exception details", LOG_ERROR, e);
             throw new HomekitServerException("SRP6 step 3 failed", e);
         }
 
-        MessageDigest digest = SRP6Session.getCryptoParams().getMessageDigestInstance();
-        BigInteger S = SRP6Session.getSessionKey(false);
+        MessageDigest digest = SRP6Session.orElseThrow(() -> new HomekitServerException("SRP6 session not found")).getCryptoParams().getMessageDigestInstance();
+        BigInteger S = SRP6Session.orElseThrow(() -> new HomekitServerException("SRP6 session not found")).getSessionKey(false);
         byte[] sBytes = Byte.toByteArray(S);
         logger.debug("{}SRP session key generated - Server: {}", LOG_STATE, new String(getPairingId()));
         sharedSecret = digest.digest(sBytes);
@@ -889,9 +911,9 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         }
 
         addPairing(destinationPairingIdentifier, destinationPublicKey);
-        SRP6Session = null;
+        SRP6Session = Optional.empty();
 
-        return null;
+        return new byte[0];
     }
 
     protected byte[] doPairVerifyStage0() throws IOException, HomekitServerException {
@@ -1005,49 +1027,58 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         return encoder.toByteArray();
     }
 
+    @SuppressWarnings("null")
     protected byte[] doPairVerifyStage2(StageResult stageResult) throws IOException, HomekitServerException {
         logger.debug("{}Starting pair verify stage 2 - Server: {}", LOG_STATE, new String(getPairingId()));
 
-        short state = stageResult.decodeResult.getByte(Message.STATE);
-        if (state != 4) {
-            throw new HomekitServerException("Wrong STATE");
+        if(stageResult != null && stageResult.result != null) {
+            short state = stageResult.decodeResult.getByte(Message.STATE);
+            if (state != 4) {
+                throw new HomekitServerException("Wrong STATE");
+            }
+        
+
+            byte[] writeKey = HomekitEncryptionEngine.createKey("Control-Write-Encryption-Key", sharedSecret);
+            logger.debug("{}Write key generated - Server: {}", LOG_STATE, new String(getPairingId()));
+
+            byte[] readKey = HomekitEncryptionEngine.createKey("Control-Read-Encryption-Key", sharedSecret);
+            logger.debug("{}Read key generated - Server: {}", LOG_STATE, new String(getPairingId()));
+
+            HomekitHttpDestinationOverHTTP destination = (HomekitHttpDestinationOverHTTP) httpClient.getDestination(
+                    stageResult.result.getRequest().getScheme(), stageResult.result.getRequest().getHost(),
+                    stageResult.result.getRequest().getPort());
+            logger.debug("{}Setting encryption keys on destination - Server: {}", LOG_STATE, new String(getPairingId()));
+            destination.setEncryptionKeys(readKey, writeKey);
         }
 
-        byte[] writeKey = HomekitEncryptionEngine.createKey("Control-Write-Encryption-Key", sharedSecret);
-        logger.debug("{}Write key generated - Server: {}", LOG_STATE, new String(getPairingId()));
-
-        byte[] readKey = HomekitEncryptionEngine.createKey("Control-Read-Encryption-Key", sharedSecret);
-        logger.debug("{}Read key generated - Server: {}", LOG_STATE, new String(getPairingId()));
-
-        HomekitHttpDestinationOverHTTP destination = (HomekitHttpDestinationOverHTTP) httpClient.getDestination(
-                stageResult.result.getRequest().getScheme(), stageResult.result.getRequest().getHost(),
-                stageResult.result.getRequest().getPort());
-        logger.debug("{}Setting encryption keys on destination - Server: {}", LOG_STATE, new String(getPairingId()));
-        destination.setEncryptionKeys(readKey, writeKey);
-
-        return null;
+        return new byte[0];
     }
 
     // ========== Communication Methods ==========
-    protected Future<StageResult> sendPairSetupStage(byte[] request) throws InterruptedException {
+    protected Future<StageResult> sendPairSetupStage(byte[] request) throws InterruptedException, HomekitServerException {
         return sendStage(request, "/pair-setup");
     }
 
-    protected Future<StageResult> sendPairVerifyStage(byte[] request) throws InterruptedException {
+    protected Future<StageResult> sendPairVerifyStage(byte[] request) throws InterruptedException, HomekitServerException {
         return sendStage(request, "/pair-verify");
     }
 
-    protected Future<StageResult> sendPairing(byte[] request) throws InterruptedException {
+    protected Future<StageResult> sendPairing(byte[] request) throws InterruptedException, HomekitServerException {
         return sendStage(request, "/pairings");
     }
 
-    protected Future<StageResult> sendStage(byte[] request, String url) throws InterruptedException {
+    @SuppressWarnings("null")
+    protected Future<StageResult> sendStage(byte[] request, String url) throws InterruptedException, HomekitServerException {
         URI uri = null;
         try {
             uri = new URI("http", null, address.getHostAddress(), port, url, null, null);
         } catch (URISyntaxException e1) {
             logger.error("{}Failed to create URI - Error: {}", LOG_ERROR, e1.getMessage());
             logger.debug("{}Exception details", LOG_ERROR, e1);
+        }
+
+        if (uri == null) {
+            throw new HomekitServerException("URI must not be null");
         }
 
         CompletableFuture<StageResult> completableFuture = new CompletableFuture<>();
@@ -1065,7 +1096,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
                                 DecodeResult d = TypeLengthValueEncoderDecoder.decode(body);
 
                                 if (d.getBytes(Message.ERROR) != null) {
-                                    SRP6Session = null;
+                                    SRP6Session = Optional.empty();
                                     StageResult stageResult = new StageResult(Error.get(d.getByte(Message.ERROR)));
                                     completableFuture.complete(stageResult);
                                     return;
@@ -1078,7 +1109,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
                                 StageResult stageResult = new StageResult(d, result);
                                 completableFuture.complete(stageResult);
                             } catch (IOException e) {
-                                SRP6Session = null;
+                                SRP6Session = Optional.empty();
                                 logger.error("{}Failed to decode response - Error: {}", LOG_ERROR, e.getMessage());
                                 logger.debug("{}Exception details", LOG_ERROR, e);
                             }
@@ -1101,28 +1132,36 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
             logger.debug("{}Exception details", LOG_ERROR, e1);
         }
 
+        if (uri == null) {
+            throw new IllegalStateException("URI must not be null");
+        }
+
         CompletableFuture<ContentResult> completableFuture = new CompletableFuture<>();
 
+        if(httpClient != null) {
         httpClient.newRequest(uri.toString()).method(HttpMethod.GET)
                 .send(new BufferingResponseListener(8 * 1024 * 1024) {
                     @Override
-                    public void onComplete(Result result) {
-                        if (!result.isFailed()) {
+                    public void onComplete(@Nullable Result result) {
+                        if (result != null && !result.isFailed()) {
                             byte[] body = getContent();
                             ContentResult stageResult = new ContentResult(body, result);
                             completableFuture.complete(stageResult);
                         } else {
-                            ContentResult stageResult = new ContentResult(
+                            if(result!=null) {
+                                ContentResult stageResult = new ContentResult(
                                     result.getResponseFailure().getMessage().getBytes(), result);
-                            completableFuture.complete(stageResult);
+                                completableFuture.complete(stageResult);
+                            }
                         }
                     }
                 });
+        }
 
         return completableFuture;
     }
 
-    protected Future<ContentResult> putContent(String url, byte[] body) throws InterruptedException {
+    protected Future<ContentResult> putContent(String url, byte[] body) throws InterruptedException, HomekitServerException {
         URI uri = null;
         try {
             uri = new URI("http", null, address.getHostAddress(), port, url, null, null);
@@ -1131,25 +1170,33 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
             logger.debug("{}Exception details", LOG_ERROR, e1);
         }
 
+        if (uri == null) {
+            throw new HomekitServerException("URI must not be null");
+        }
+
         CompletableFuture<ContentResult> completableFuture = new CompletableFuture<>();
 
+        if(httpClient != null) {
         httpClient.newRequest(uri.toString()).method(HttpMethod.PUT)
                 .content(new BytesContentProvider(body), "application/pairing+json")
                 .header(HttpHeader.CONNECTION.asString(), HttpHeader.KEEP_ALIVE.asString())
                 .send(new BufferingResponseListener(8 * 1024 * 1024) {
                     @Override
-                    public void onComplete(Result result) {
-                        if (!result.isFailed()) {
+                    public void onComplete(@Nullable Result result) {
+                        if (result != null && !result.isFailed()) {
                             byte[] body = getContent();
                             ContentResult stageResult = new ContentResult(body, result);
                             completableFuture.complete(stageResult);
                         } else {
-                            ContentResult stageResult = new ContentResult(
+                            if(result!=null) {
+                                ContentResult stageResult = new ContentResult(
                                     result.getResponseFailure().getMessage().getBytes(), result);
-                            completableFuture.complete(stageResult);
+                                completableFuture.complete(stageResult);
+                            }
                         }
                     }
                 });
+        }
 
         return completableFuture;
     }
@@ -1167,12 +1214,12 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
 
     @Override
     public void onCharacteristicEvent(CharacteristicEvent event) {
-        if (event.getEventType() == CharacteristicEventType.CHARACTERISTIC_START_EVENTS) {
+        if (event.getType() == HomekitEventType.CHARACTERISTIC_START_EVENTS && event.getCharacteristic().isPresent()) {
             logger.debug("{}Starting events for characteristic - Server: {}", LOG_STATE, new String(getPairingId()));
-            subscriveEvents(event.getCharacteristic(), true);
-        } else if (event.getEventType() == CharacteristicEventType.CHARACTERISTIC_STOP_EVENTS) {
+            subscribeEvents(event.getCharacteristic().get() , true);
+        } else if (event.getType() == HomekitEventType.CHARACTERISTIC_STOP_EVENTS && event.getCharacteristic().isPresent()) {
             logger.debug("{}Stopping events for characteristic - Server: {}", LOG_STATE, new String(getPairingId()));
-            subscriveEvents(event.getCharacteristic(), false);
+            subscribeEvents(event.getCharacteristic().get() , false);
         }
     }
 
@@ -1190,7 +1237,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
             ContentResult contentResult = null;
             try {
                 contentFuture = getContent("/accessories");
-                contentResult = contentFuture.get();
+                contentResult = Objects.requireNonNull(contentFuture.get(), "ContentResult is null");
             } catch (InterruptedException | ExecutionException e) {
                 logger.error("{}Error getting remote accessories - Error: {}", LOG_ERROR, e.getMessage());
                 logger.debug("{}Exception details", LOG_ERROR, e);
@@ -1198,7 +1245,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
 
             logger.info("{}Received accessories data - Server: {}", LOG_STATE, new String(getPairingId()));
 
-            if (contentResult != null && contentResult.result.getResponse().getStatus() == 200) {
+            if (contentResult != null && contentResult.result != null && contentResult.result.getResponse().getStatus() == 200) {
                 JsonArray accessories = Json.createReader(new ByteArrayInputStream(contentResult.body)).readObject()
                         .getJsonArray("accessories");
                 for (JsonValue value : accessories) {
@@ -1210,7 +1257,8 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         return result;
     }
 
-    public boolean subscriveEvents(Characteristic<?> characteristic, boolean subscribe) {
+    @SuppressWarnings("null")
+    public boolean subscribeEvents(Characteristic<?> characteristic, boolean subscribe) {
         if (!isPairVerified()) {
             logger.debug("{}Cannot subscribe to events - not paired - Server: {}", LOG_STATE,
                     new String(getPairingId()));
@@ -1231,20 +1279,24 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
             // Send the subscription request
             Future<ContentResult> contentFuture = putContent("/characteristics",
                     requestBuilder.build().toString().getBytes(StandardCharsets.UTF_8));
-            ContentResult contentResult = contentFuture.get();
+            ContentResult contentResult = Objects.requireNonNull(contentFuture.get(), "ContentResult is null");
 
-            if (contentResult.result.getResponse().getStatus() == 204) {
-                logger.debug("{}Successfully subscribed to events for characteristic {} - Server: {}", LOG_STATE,
-                        characteristic.getUID(), new String(getPairingId()));
-                characteristic.setHasEvents(true);
-                return true;
-            } else {
-                logger.warn("{}Failed to subscribe to events for characteristic {} - Status: {} - Server: {}",
-                        LOG_STATE, characteristic.getUID(), contentResult.result.getResponse().getStatus(),
-                        new String(getPairingId()));
-                return false;
-            }
-        } catch (InterruptedException | ExecutionException e) {
+
+                if (contentResult.result != null && contentResult.result.getResponse().getStatus() == 204) {
+                    logger.debug("{}Successfully subscribed to events for characteristic {} - Server: {}", LOG_STATE,
+                            characteristic.getUID(), new String(getPairingId()));
+                    characteristic.setHasEvents(true);
+                    return true;
+                } else {
+                    if(contentResult.result != null) {
+                        logger.warn("{}Failed to subscribe to events for characteristic {} - Status: {} - Server: {}",
+                                LOG_STATE, characteristic.getUID(), contentResult.result.getResponse().getStatus(),
+                                new String(getPairingId()));
+                    }
+                    return false;
+                }
+            
+        } catch (InterruptedException | ExecutionException | HomekitServerException e) {
             logger.error("{}Error subscribing to events for characteristic {}: {} - Server: {}", LOG_ERROR,
                     characteristic.getUID(), e.getMessage(), new String(getPairingId()));
             return false;
@@ -1279,7 +1331,8 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
                     logger.info("{}Adding new accessory {} - Server: {}", LOG_STATE, remoteAccessory,
                             new String(getPairingId()));
                     addAccessory(remoteAccessory);
-                    notifyChangeListeners(AccessoryServerEvent.AccessoryServerEventType.ACCESSORY_ADDED);
+                    eventManager.publishEvent(new AccessoryServerEvent(
+                        HomekitEventType.ACCESSORY_ADDED, this, remoteAccessory, null, null));
                 }
             }
 
@@ -1296,7 +1349,8 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
                     logger.info("{}Removing accessory {} - Server: {}", LOG_STATE, currentAccessory,
                             new String(getPairingId()));
                     removeAccessory(currentAccessory);
-                    notifyChangeListeners(AccessoryServerEvent.AccessoryServerEventType.ACCESSORY_REMOVED);
+                    eventManager.publishEvent(new AccessoryServerEvent(
+                        HomekitEventType.ACCESSORY_REMOVED, this, currentAccessory, null, null));
                 }
             }
 
@@ -1321,7 +1375,8 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
                                 logger.info("{}Adding new service {} to accessory {} - Server: {}", LOG_STATE,
                                         remoteService, currentAccessory, new String(getPairingId()));
                                 currentAccessory.addService(remoteService);
-                                notifyChangeListeners(AccessoryServerEvent.AccessoryServerEventType.SERVICE_ADDED);
+                                eventManager.publishEvent(new AccessoryServerEvent(
+                                    HomekitEventType.SERVICE_ADDED, this, currentAccessory, remoteService, null));
                             }
                         }
 
@@ -1338,7 +1393,8 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
                                 logger.info("{}Removing service {} from accessory {} - Server: {}", LOG_STATE,
                                         currentService, currentAccessory, new String(getPairingId()));
                                 currentAccessory.removeService(currentService);
-                                notifyChangeListeners(AccessoryServerEvent.AccessoryServerEventType.SERVICE_REMOVED);
+                                eventManager.publishEvent(new AccessoryServerEvent(
+                                    HomekitEventType.SERVICE_REMOVED, this, currentAccessory, currentService, null));
                             }
                         }
 
@@ -1365,8 +1421,8 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
                                                     LOG_STATE, remoteCharacteristic, currentService, currentAccessory,
                                                     new String(getPairingId()));
                                             currentService.addCharacteristic(remoteCharacteristic);
-                                            notifyChangeListeners(
-                                                    AccessoryServerEvent.AccessoryServerEventType.CHARACTERISTIC_ADDED);
+                                            eventManager.publishEvent(new AccessoryServerEvent(
+                                                HomekitEventType.CHARACTERISTIC_ADDED, this, currentAccessory, currentService, remoteCharacteristic));
                                         }
                                     }
 
@@ -1386,8 +1442,8 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
                                                     LOG_STATE, currentCharacteristic, currentService, currentAccessory,
                                                     new String(getPairingId()));
                                             currentService.removeCharacteristic(currentCharacteristic);
-                                            notifyChangeListeners(
-                                                    AccessoryServerEvent.AccessoryServerEventType.CHARACTERISTIC_REMOVED);
+                                            eventManager.publishEvent(new AccessoryServerEvent(
+                                                HomekitEventType.CHARACTERISTIC_REMOVED, this, currentAccessory, currentService, currentCharacteristic));
                                         }
                                     }
 
@@ -1401,8 +1457,8 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
                                                             LOG_STATE, currentCharacteristic, remoteCharacteristic,
                                                             new String(getPairingId()));
                                                     currentCharacteristic.updateWith(remoteCharacteristic);
-                                                    notifyChangeListeners(
-                                                            AccessoryServerEvent.AccessoryServerEventType.CHARACTERISTIC_UPDATED);
+                                                    eventManager.publishEvent(new AccessoryServerEvent(
+                                                        HomekitEventType.CHARACTERISTIC_UPDATED, this, currentAccessory, currentService, currentCharacteristic));
                                                 }
                                             }
                                         }
@@ -1426,7 +1482,19 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         super.addAccessory(accessory);
         for (Service service : accessory.getServices()) {
             for (Characteristic<?> characteristic : service.getCharacteristics()) {
-                characteristic.addChangeListener(this);
+                eventSubscriptions.add(eventManager.subscribe(
+                    HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
+                    characteristic.getUID().toString(),
+                    event -> onCharacteristicEvent((CharacteristicEvent) event)));
+                    eventSubscriptions.add(eventManager.subscribe(
+                        HomekitEventType.CHARACTERISTIC_START_EVENTS,
+                        characteristic.getUID().toString(),
+                        event -> onCharacteristicEvent((CharacteristicEvent) event)));
+                        eventSubscriptions.add(eventManager.subscribe(
+                            HomekitEventType.CHARACTERISTIC_STOP_EVENTS,
+                            characteristic.getUID().toString(),
+                            event -> onCharacteristicEvent((CharacteristicEvent) event)));
+                logger.debug("{}Subscribed to events for characteristic: {}", LOG_ACCESSORY, characteristic.getClass().getSimpleName());
             }
         }
     }
@@ -1434,14 +1502,33 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
     @Override
     public void removeAccessory(Accessory accessory) throws HomekitAccessoryOperationException {
         super.removeAccessory(accessory);
-        for (Service service : accessory.getServices()) {
-            for (Characteristic<?> characteristic : service.getCharacteristics()) {
-                characteristic.removeChangeListener(this);
+            // Collect all characteristic UIDs for this accessory
+            Set<String> characteristicUids = new HashSet<>();
+            for (Service service : accessory.getServices()) {
+                for (Characteristic<?> characteristic : service.getCharacteristics()) {
+                    characteristicUids.add(characteristic.getUID().toString());
+                }
             }
-        }
+
+            // Remove and unsubscribe only those subscriptions that match
+            eventSubscriptions.removeIf(subscription -> {
+                if (characteristicUids.contains(subscription.sourceUid)) {
+                    eventManager.unsubscribe(
+                        HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
+                        subscription.sourceUid,
+                        subscription.subscriber
+                    );
+                    logger.debug("{}Unsubscribed from events for sourceUid: {}", LOG_ACCESSORY, subscription.sourceUid);
+                    return true;
+                }
+                return false;
+            });
+
+            logger.info("{}Accessory removed successfully - ID: {}", LOG_ACCESSORY, accessory.getAccessoryId());
     }
 
     // ========== Inner Classes ==========
+    @SuppressWarnings("null")
     protected class StageResult {
         public StageResult(DecodeResult decodeResult, Result result) {
             this.decodeResult = decodeResult;
@@ -1461,15 +1548,16 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         }
 
         public DecodeResult decodeResult;
-        public Result result;
-        public String message;
-        public Error error;
+       @Nullable public Result result;
+        @Nullable public String message;
+        @Nullable public Error error;
     }
 
+    @SuppressWarnings("null")
     public static class ContentResult {
-        public Result result;
+        @Nullable public Result result;
         public byte[] body;
-        public String message;
+        @Nullable public String message;
 
         public ContentResult(byte[] body, Result result) {
             this.body = body;
@@ -1488,48 +1576,48 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         return (T) decode(value, beanClass);
     }
 
-    private static Object decode(JsonValue jsonValue, Type targetType) {
+    private static Optional<Object> decode(JsonValue jsonValue, Type targetType) {
         if (jsonValue.getValueType() == ValueType.NULL) {
-            return null;
+            return Optional.empty();
         } else if (jsonValue.getValueType() == ValueType.TRUE || jsonValue.getValueType() == ValueType.FALSE) {
-            return decodeBoolean(jsonValue, targetType);
+            return Optional.of(decodeBoolean(jsonValue, targetType));
         } else if (jsonValue instanceof JsonNumber) {
-            return decodeNumber((JsonNumber) jsonValue, targetType);
+            return Optional.of(decodeNumber((JsonNumber) jsonValue, targetType));
         } else if (jsonValue instanceof JsonString) {
-            return decodeString((JsonString) jsonValue, targetType);
+            return Optional.of(decodeString((JsonString) jsonValue, targetType));
         } else if (jsonValue instanceof JsonArray) {
-            return decodeArray((JsonArray) jsonValue, targetType);
+            return Optional.of(decodeArray((JsonArray) jsonValue, targetType));
         } else if (jsonValue instanceof JsonObject) {
-            return decodeObject((JsonObject) jsonValue, targetType);
+            return Optional.of(decodeObject((JsonObject) jsonValue, targetType));
         } else {
             throw new UnsupportedOperationException("Unsupported json value: " + jsonValue);
         }
     }
 
-    private static Object decodeBoolean(JsonValue jsonValue, Type targetType) {
+    private static Optional<Object> decodeBoolean(JsonValue jsonValue, Type targetType) {
         if (targetType == boolean.class || targetType == Boolean.class) {
-            return Boolean.valueOf(jsonValue.toString());
+            return Optional.of(Boolean.valueOf(jsonValue.toString()));
         } else {
             throw new UnsupportedOperationException("Unsupported boolean type: " + targetType);
         }
     }
 
-    private static Object decodeNumber(JsonNumber jsonNumber, Type targetType) {
+    private static Optional<Object> decodeNumber(JsonNumber jsonNumber, Type targetType) {
         if (targetType == int.class || targetType == Integer.class) {
-            return jsonNumber.intValue();
+            return Optional.of(jsonNumber.intValue());
         } else if (targetType == long.class || targetType == Long.class) {
-            return jsonNumber.longValue();
+            return Optional.of(jsonNumber.longValue());
         } else {
             throw new UnsupportedOperationException("Unsupported number type: " + targetType);
         }
     }
 
-    private static Object decodeString(JsonString jsonString, Type targetType) {
+    private static Optional<Object> decodeString(JsonString jsonString, Type targetType) {
         if (targetType == String.class) {
-            return jsonString.getString();
+            return Optional.of(jsonString.getString());
         } else if (targetType == Date.class) {
             try {
-                return new SimpleDateFormat("MMM dd, yyyy H:mm:ss a", Locale.ENGLISH).parse(jsonString.getString());
+                return Optional.of(new SimpleDateFormat("MMM dd, yyyy H:mm:ss a", Locale.ENGLISH).parse(jsonString.getString()));
             } catch (ParseException e) {
                 throw new UnsupportedOperationException("Unsupported date format: " + jsonString.getString());
             }
@@ -1538,7 +1626,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         }
     }
 
-    private static Object decodeArray(JsonArray jsonArray, Type targetType) {
+    private static Optional<Object> decodeArray(JsonArray jsonArray, Type targetType) {
         Class<?> targetClass = (Class<?>) ((targetType instanceof ParameterizedType)
                 ? ((ParameterizedType) targetType).getRawType()
                 : targetType);
@@ -1551,7 +1639,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
                 list.add(decode(item, elementClass));
             }
 
-            return list;
+            return Optional.of(list);
         } else if (targetClass.isArray()) {
             Class<?> elementClass = targetClass.getComponentType();
             Object array = Array.newInstance(elementClass, jsonArray.size());
@@ -1560,13 +1648,13 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
                 Array.set(array, i, decode(jsonArray.get(i), elementClass));
             }
 
-            return array;
+            return Optional.of(array);
         } else {
             throw new UnsupportedOperationException("Unsupported array type: " + targetClass);
         }
     }
 
-    private static Object decodeObject(JsonObject object, Type targetType) {
+    private static Optional<Object> decodeObject(JsonObject object, Type targetType) {
         Class<?> targetClass = (Class<?>) ((targetType instanceof ParameterizedType)
                 ? ((ParameterizedType) targetType).getRawType()
                 : targetType);
@@ -1579,11 +1667,11 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
                 map.put(entry.getKey(), decode(entry.getValue(), valueClass));
             }
 
-            return map;
+            return Optional.of(map);
         } else {
             try {
-                Constructor[] ctors = targetClass.getDeclaredConstructors();
-                Constructor ctor = null;
+                Constructor<?>[] ctors = targetClass.getDeclaredConstructors();
+                Constructor<?> ctor = null;
                 for (int i = 0; i < ctors.length; i++) {
                     ctor = ctors[i];
                     if (ctor.getGenericParameterTypes().length == 0) {
@@ -1591,6 +1679,9 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
                     }
                 }
 
+                if (ctor == null) {
+                    return Optional.empty();
+                }
                 // Object bean = targetClass.newInstance(); Constructor.newInstance(targetClass);
                 Object bean = ctor.newInstance(targetClass);
 
@@ -1601,7 +1692,11 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
                     }
                 }
 
-                return bean;
+                if (bean == null) {
+                    return Optional.empty();
+                }
+
+                return Optional.of(bean);
             } catch (Exception e) {
                 throw new UnsupportedOperationException("Unsupported object type: " + targetClass, e);
             }
@@ -1636,4 +1731,6 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
     public void advertise() {
         // no Op for RemoteAccessoryServer
     }
+
+
 }

@@ -108,7 +108,8 @@ public interface HomekitFactory {
 
     void addService(ThingTypeUID thingTypeUID, String serviceType) throws HomekitRegistrationException;
 
-    void addService(ThingTypeUID thingTypeUID, Class<? extends Service> serviceClass) throws HomekitRegistrationException;
+    void addService(ThingTypeUID thingTypeUID, Class<? extends Service> serviceClass)
+            throws HomekitRegistrationException;
 
     void addService(String serviceType, Class<? extends Service> serviceClass) throws HomekitRegistrationException;
 
@@ -116,7 +117,8 @@ public interface HomekitFactory {
 
     void addServiceWithTag(String tag, Class<? extends Service> serviceClass) throws HomekitRegistrationException;
 
-    void addCharacteristic(ChannelTypeUID channelTypeUID, String characteristicType) throws HomekitRegistrationException;
+    void addCharacteristic(ChannelTypeUID channelTypeUID, String characteristicType)
+            throws HomekitRegistrationException;
 
     void addCharacteristic(ChannelTypeUID channelTypeUID,
             Class<@NonNull ? extends Characteristic<?>> characteristicClass) throws HomekitRegistrationException;

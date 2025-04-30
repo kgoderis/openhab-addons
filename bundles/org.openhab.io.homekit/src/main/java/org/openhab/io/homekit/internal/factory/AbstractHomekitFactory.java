@@ -374,7 +374,8 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
     }
 
     @Override
-    public void addServiceWithTag(String tag, Class<? extends Service> serviceClass) throws HomekitRegistrationException {
+    public void addServiceWithTag(String tag, Class<? extends Service> serviceClass)
+            throws HomekitRegistrationException {
         @Nullable
         Set<Class<? extends Service>> services = tagServiceClassMapper.get(tag);
         if (services == null || services.isEmpty()) {
@@ -441,7 +442,8 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
             try {
                 populateCharacteristicMetadata(characteristicClass);
             } catch (HomekitFactoryException e) {
-                throw new HomekitRegistrationException("Failed to populate characteristic metadata: " + e.getMessage(), e);
+                throw new HomekitRegistrationException("Failed to populate characteristic metadata: " + e.getMessage(),
+                        e);
             }
         }
     }
@@ -468,7 +470,8 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
             try {
                 populateCharacteristicMetadata(characteristicClass);
             } catch (HomekitFactoryException e) {
-                throw new HomekitRegistrationException("Failed to populate characteristic metadata: " + e.getMessage(), e);
+                throw new HomekitRegistrationException("Failed to populate characteristic metadata: " + e.getMessage(),
+                        e);
             }
         }
     }
@@ -493,7 +496,8 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
     // 6. Accessory-related methods
     @Override
     public void addAccessory(ThingTypeUID thingTypeUID,
-            Class<? extends org.openhab.io.homekit.api.hap.Accessory> accessoryClass) throws HomekitRegistrationException {
+            Class<? extends org.openhab.io.homekit.api.hap.Accessory> accessoryClass)
+            throws HomekitRegistrationException {
         logger.debug("{}Adding accessory to thing type - ThingType: {}, AccessoryClass: {}", LOG_REGISTRY, thingTypeUID,
                 accessoryClass.getSimpleName());
         thingTypeAccessoryClassMapper.put(thingTypeUID, accessoryClass);

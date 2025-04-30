@@ -20,7 +20,6 @@ public class HomekitEventLogger implements HomekitEventSubscriber {
     private static final Logger logger = LoggerFactory.getLogger(HomekitEventLogger.class);
     private static final String LOG_PREFIX = "HomeKit EventLogger: ";
     private static final String LOG_EVENT = LOG_PREFIX + "Event - ";
-    private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
     /**

@@ -37,22 +37,21 @@ import org.openhab.io.homekit.api.listener.CharacteristicChangeListener;
 import org.openhab.io.homekit.api.listener.ServiceChangeListener;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
-import org.openhab.io.homekit.exception.HomekitException;
 import org.openhab.io.homekit.exception.HomekitEventException;
+import org.openhab.io.homekit.exception.HomekitException;
 import org.openhab.io.homekit.internal.accessory.AccessoryUID;
 import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
 import org.openhab.io.homekit.internal.events.AccessoryEvent;
 import org.openhab.io.homekit.internal.events.AccessoryServerEvent;
 import org.openhab.io.homekit.internal.events.CharacteristicEvent;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
+import org.openhab.io.homekit.internal.events.HomekitEventSubscriber;
+import org.openhab.io.homekit.internal.events.HomekitEventSubscription;
+import org.openhab.io.homekit.internal.events.HomekitEventType;
 import org.openhab.io.homekit.internal.events.ServiceEvent;
 import org.openhab.io.homekit.internal.provider.HomekitChannelTypeProvider;
 import org.openhab.io.homekit.internal.provider.HomekitThingTypeProvider;
 import org.openhab.io.homekit.internal.server.AccessoryServerUID;
-import org.openhab.io.homekit.internal.events.HomekitEventManager;
-import org.openhab.io.homekit.internal.events.HomekitEventType;
-import org.openhab.io.homekit.internal.events.HomekitEventManager.HomekitEventHandler;
-import org.openhab.io.homekit.internal.events.HomekitEventSubscriber;
-import org.openhab.io.homekit.internal.events.HomekitEventSubscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,7 +125,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
     protected final Queue<Runnable> eventQueue = new ConcurrentLinkedQueue<>();
     protected final ExecutorService eventExecutor;
     private final List<HomekitEventSubscription> eventSubscriptions = new ArrayList<>();
-    
+
     protected AbstractHomekitHandler(Thing thing, AccessoryServerRegistry serverRegistry,
             AccessoryRegistry accessoryRegistry, HomekitChannelTypeProvider homekitChannelTypeProvider,
             HomekitThingTypeProvider homekitThingTypeProvider, HomekitEventManager eventManager) {
@@ -1365,16 +1364,8 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler implements
         if (accessory != null) {
             var uid = accessory.getUID();
             if (uid != null) {
-                HomekitEventSubscriber subscriber = eventManager.subscribe(
-                    HomekitEventType.SERVICE_ADDED,
-                    uid.toString(),
-                    event -> handleAccessoryEvent((AccessoryEvent) event)
-                );
-                eventSubscriptions.add(new HomekitEventSubscription(
-                    HomekitEventType.SERVICE_ADDED,
-                    uid.toString(),
-                    subscriber
-                ));
+                eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_REMOVED, uid.toString(),
+                        event -> handleAccessoryEvent((AccessoryEvent) event)));
             }
         }
         // Add more subscriptions as needed

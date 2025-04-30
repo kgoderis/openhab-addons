@@ -2,7 +2,9 @@ package org.openhab.io.homekit.internal.server.registry;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.registry.AbstractRegistry;
@@ -13,15 +15,16 @@ import org.openhab.core.service.ReadyMarkerFilter;
 import org.openhab.core.service.ReadyService;
 import org.openhab.io.homekit.api.hap.AccessoryCategory;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
-import org.openhab.io.homekit.api.listener.AccessoryServerChangeListener;
 import org.openhab.io.homekit.api.provider.AccessoryServerProvider;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.exception.HomekitServerException;
-import org.openhab.io.homekit.exception.HomekitEventException;
 import org.openhab.io.homekit.internal.events.AccessoryServerEvent;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
+import org.openhab.io.homekit.internal.events.HomekitEventSubscription;
+import org.openhab.io.homekit.internal.events.HomekitEventType;
 import org.openhab.io.homekit.internal.server.AccessoryServerUID;
 import org.openhab.io.homekit.internal.server.RemoteAccessoryServer;
 import org.openhab.io.homekit.library.accessory.BridgeAccessory;
@@ -44,7 +47,7 @@ import org.slf4j.LoggerFactory;
 @Component(immediate = true, service = AccessoryServerRegistry.class)
 public class AccessoryServerRegistryImpl
         extends AbstractRegistry<AccessoryServer, AccessoryServerUID, AccessoryServerProvider>
-        implements AccessoryServerRegistry, ReadyService.ReadyTracker, AccessoryServerChangeListener {
+        implements AccessoryServerRegistry, ReadyService.ReadyTracker {
 
     private static final String HOMEKIT_ACCESSORY_SERVER_REGISTRY = "homekit.accessoryServerRegistry";
     private static final String HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER = "homekit.managedAccessoryServerProvider";
@@ -65,16 +68,19 @@ public class AccessoryServerRegistryImpl
     private final NetworkAddressService networkAddressService;
     private final AccessoryRegistry accessoryRegistry;
     private final PairingRegistry pairingRegistry;
-
+    private final HomekitEventManager eventManager;
+    private final List<HomekitEventSubscription> eventSubscriptions = new ArrayList<>();
+    
     @Activate
     public AccessoryServerRegistryImpl(@Reference ReadyService readyService,
             @Reference NetworkAddressService networkAddressService, @Reference AccessoryRegistry accessoryRegistry,
-            @Reference PairingRegistry pairingRegistry) {
+            @Reference PairingRegistry pairingRegistry, @Reference HomekitEventManager eventManager) {
         super(AccessoryServerProvider.class);
         this.readyService = readyService;
         this.networkAddressService = networkAddressService;
         this.accessoryRegistry = accessoryRegistry;
         this.pairingRegistry = pairingRegistry;
+        this.eventManager = eventManager;
     }
 
     @Override
@@ -141,7 +147,7 @@ public class AccessoryServerRegistryImpl
             try {
                 availableServer = new RemoteAccessoryServer(AccessoryCategory.BRIDGES,
                         InetAddress.getByName(networkAddressService.getPrimaryIpv4HostAddress()), highestPortNumber++,
-                        accessoryRegistry, pairingRegistry);
+                        accessoryRegistry, pairingRegistry, eventManager);
             } catch (UnknownHostException | HomekitServerException e) {
                 logger.error("{}Failed to create RemoteAccessoryServer: {}", LOG_ERROR, e.getMessage(), e);
                 return null;
@@ -188,8 +194,7 @@ public class AccessoryServerRegistryImpl
                 readyMarker.getIdentifier());
     }
 
-    @Override
-    public void onAccessoryServerEvent(AccessoryServerEvent event) {
+    public void handleAccessoryServerEvent(AccessoryServerEvent event) {
         switch (event.getType()) {
             case SERVER_UPDATED -> this.update(event.getServer());
             default -> {
@@ -216,20 +221,28 @@ public class AccessoryServerRegistryImpl
 
     @Override
     public void added(Provider<AccessoryServer> provider, AccessoryServer element) {
-        try {
-            element.addChangeListener(this);
-            super.added(provider, element);
-        } catch (HomekitEventException e) {
-            logger.error("{}Error adding change listener: {}", LOG_ERROR, e.getMessage(), e);
-        }
+        
+            eventSubscriptions.add(eventManager.subscribe(
+                HomekitEventType.SERVER_STATE_CHANGED,
+                element.getUID().toString(),
+                event -> handleAccessoryServerEvent((AccessoryServerEvent) event))); 
+        super.added(provider, element);
+
     }
 
     @Override
     public void removed(Provider<AccessoryServer> provider, AccessoryServer element) {
         try {
-            element.removeChangeListener(this);
+            // get all the subscriptions for this accessory server
+            List<HomekitEventSubscription> subscriptions = eventSubscriptions.stream()
+                .filter(subscription -> subscription.sourceUid.equals(element.getUID().toString()))
+                .collect(Collectors.toList());
+
+            // unsubscribe from the events
+            subscriptions.forEach(subscription -> eventManager.unsubscribe(subscription.eventType, subscription.sourceUid, subscription.subscriber));
+
             super.removed(provider, element);
-        } catch (HomekitEventException e) {
+        } catch (Exception e) {
             logger.error("{}Error removing change listener: {}", LOG_ERROR, e.getMessage(), e);
         }
     }
