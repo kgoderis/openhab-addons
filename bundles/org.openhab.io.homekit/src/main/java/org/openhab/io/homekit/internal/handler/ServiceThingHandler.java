@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.internal.handler;
 
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -20,9 +21,11 @@ import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
 import org.openhab.io.homekit.exception.HomekitException;
-import org.openhab.io.homekit.internal.accessory.AccessoryUID;
 import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
 import org.openhab.io.homekit.internal.events.AccessoryEvent;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
+import org.openhab.io.homekit.internal.events.HomekitEventType;
+import org.openhab.io.homekit.internal.events.ServiceEvent;
 import org.openhab.io.homekit.internal.provider.HomekitChannelTypeProvider;
 import org.openhab.io.homekit.internal.provider.HomekitThingTypeProvider;
 
@@ -67,8 +70,10 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
      * @param homekitChannelGroupTypeProvider Provider for HomeKit channel group types
      */
     public ServiceThingHandler(Thing thing, AccessoryServerRegistry serverRegistry, AccessoryRegistry accessoryRegistry,
-            HomekitChannelTypeProvider homekitChannelTypeProvider, HomekitThingTypeProvider homekitThingTypeProvider) {
-        super(thing, serverRegistry, accessoryRegistry, homekitChannelTypeProvider, homekitThingTypeProvider);
+            HomekitChannelTypeProvider homekitChannelTypeProvider, HomekitThingTypeProvider homekitThingTypeProvider,
+            HomekitEventManager eventManager) {
+        super(thing, serverRegistry, accessoryRegistry, homekitChannelTypeProvider, homekitThingTypeProvider,
+                eventManager);
         // // Parse configuration
         // Configuration config = thing.getConfiguration();
         // validateConfiguration(config);
@@ -222,14 +227,40 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
     // }
     // }
 
-    protected void handleSpecificInitialization() {
-        initializeChannels();
+    @Override
+    protected void intializeSpecificComponents() {
         try {
             initializeService();
+            initializeChannels();
         } catch (HomekitException e) {
             logger.error("{}Failed to initialize service: {}", LOG_INIT, e.getMessage(), e);
             updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, e.getMessage());
         }
+    }
+
+    protected void initializeService() throws HomekitException {
+
+        // Verify ThingType matches Service type
+        String thingType = thing.getThingTypeUID().getId();
+        @Nullable
+        String serviceTag = null;
+        Service currentService = getService();
+        if (currentService == null) {
+            throw new IllegalArgumentException("No Service found for serviceId: " + serviceId);
+        }
+        try {
+            serviceTag = homekitThingTypeProvider.getServiceTag(currentService.getInstanceType());
+        } catch (org.openhab.io.homekit.exception.HomekitException e) {
+            throw new IllegalArgumentException("Service type could not be determined", e);
+        }
+
+        if (!thingType.equals(serviceTag)) {
+            throw new IllegalArgumentException("ThingType " + thingType + " does not match Service type " + serviceTag);
+        }
+        setService(currentService);
+        serviceAvailable = true;
+        eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED,
+                currentService.getUID().toString(), event -> onServiceEvent((ServiceEvent) event)));
     }
 
     /**
@@ -258,77 +289,51 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
      */
     @Override
     protected void initializeChannels() {
-        try {
-            synchronized (characteristicMapLock) {
-                characteristicMap.clear();
-            }
 
-            Service currentService = getService();
-            if (currentService == null) {
-                throw new IllegalStateException("Service is not initialized");
-            }
-
-            if (thing.getChannels().isEmpty()) {
-                // If no channels configured, add all characteristics as channels
-                for (Characteristic<?> characteristic : currentService.getCharacteristics()) {
-                    addChannelForCharacteristic(characteristic);
-                }
-            } else {
-                // Compare existing channels with characteristics
-                for (Channel channel : thing.getChannels()) {
-                    String channelTag = channel.getUID().getIdWithoutGroup();
-                    String characteristicType;
-                    try {
-                        characteristicType = homekitChannelTypeProvider.getCharacteristicTypeFromTag(channelTag);
-                    } catch (HomekitException e) {
-                        handleRecoverableError(ThingStatusDetail.CONFIGURATION_ERROR,
-                                "Characteristic type could not be determined for channel " + channel.getUID(), e);
-                        continue;
-                    }
-
-                    Characteristic<?> characteristic = currentService.getCharacteristic(characteristicType);
-                    if (characteristic == null) {
-                        handleRecoverableError(ThingStatusDetail.CONFIGURATION_ERROR, "Characteristic "
-                                + characteristicType + " not found in Service " + currentService.getUID(), null);
-                    } else {
-                        synchronized (characteristicMapLock) {
-                            characteristicMap.put(channel, characteristic);
-                        }
-                        handleChannelTypeChange(channel, characteristic);
-                        updateThing(editThing().withChannel(channel).build());
-                    }
-                }
-            }
-        } catch (Exception e) {
-            handleError(ThingStatusDetail.CONFIGURATION_ERROR, "Failed to initialize channels: " + e.getMessage(), e);
-            throw new IllegalStateException("Failed to initialize channels: " + e.getMessage(), e);
+        synchronized (characteristicMapLock) {
+            characteristicMap.clear();
         }
-    }
 
-    protected void initializeService() throws HomekitException {
-
-        // Verify ThingType matches Service type
-        String thingType = thing.getThingTypeUID().getId();
-        @Nullable
-        String serviceTag = null;
         Service currentService = getService();
         if (currentService == null) {
-            throw new IllegalArgumentException("No Service found for serviceId: " + serviceId);
-        }
-        try {
-            serviceTag = homekitThingTypeProvider.getServiceTag(currentService.getInstanceType());
-        } catch (org.openhab.io.homekit.exception.HomekitException e) {
-            throw new IllegalArgumentException("Service type could not be determined", e);
+            throw new IllegalStateException("Service is not initialized");
         }
 
-        if (!thingType.equals(serviceTag)) {
-            throw new IllegalArgumentException("ThingType " + thingType + " does not match Service type " + serviceTag);
+        if (thing.getChannels().isEmpty()) {
+            // If no channels configured, add all characteristics as channels
+            for (Characteristic<?> characteristic : currentService.getCharacteristics()) {
+                addChannelForCharacteristic(characteristic);
+            }
+        } else {
+            // Compare existing channels with characteristics
+            for (Channel channel : thing.getChannels()) {
+                String channelTag = channel.getUID().getIdWithoutGroup();
+                String characteristicType;
+                try {
+                    characteristicType = homekitChannelTypeProvider.getCharacteristicTypeFromTag(channelTag);
+                } catch (HomekitException e) {
+                    handleRecoverableError(ThingStatusDetail.CONFIGURATION_ERROR,
+                            "Characteristic type could not be determined for channel " + channel.getUID(), e);
+                    continue;
+                }
+
+                Optional<Characteristic<?>> characteristic = currentService.getCharacteristic(characteristicType);
+                if (characteristic.isEmpty()) {
+                    handleRecoverableError(ThingStatusDetail.CONFIGURATION_ERROR,
+                            "Characteristic " + characteristicType + " not found in Service " + currentService.getUID(),
+                            null);
+                } else {
+                    synchronized (characteristicMapLock) {
+                        characteristicMap.put(channel, characteristic.get());
+                    }
+                    handleChannelTypeChange(channel, characteristic.get());
+                    updateThing(editThing().withChannel(channel).build());
+                }
+            }
         }
-        setService(currentService);
-        serviceAvailable = true;
-        currentService.addChangeListener(this);
     }
 
+    @Override
     protected @Nullable Channel addChannelForCharacteristic(Characteristic<?> characteristic) {
 
         try {
@@ -475,7 +480,7 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
         synchronized (serviceLock) {
             if (service != null) {
                 try {
-                    service.removeChangeListener(this);
+                    tearDownSubscriptionsForPublisher(service.getUID().toString());
                     logger.debug("{}Removed service change listener", LOG_CLEANUP);
                 } catch (Exception e) {
                     logger.warn("{}Failed to remove service change listener: {}", LOG_CLEANUP, e.getMessage());
@@ -682,36 +687,61 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
 
     @Override
     protected void handleAccessoryServiceAdded(AccessoryEvent event) {
-        synchronized (accessoryLock) {
-            if (accessory == null) {
-                Accessory foundAccessory = accessoryRegistry.get(new AccessoryUID(accessoryId));
-                if (foundAccessory != null) {
-                    setAccessory(foundAccessory);
-                    foundAccessory.addChangeListener(this);
-                    accessoryAvailable = true;
-                    validateAndUpdateState();
-                } else {
-                    logger.warn("{}Accessory not found in registry after add event", LOG_EVENT);
-                    accessoryAvailable = false;
-                    updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Accessory not found");
-                }
-            }
 
-            synchronized (serviceLock) {
-                if (service == null && accessory != null) {
-                    Service foundService = accessory.getService(serviceId);
-                    if (foundService != null) {
-                        setService(foundService);
-                        serviceAvailable = true;
-                        foundService.addChangeListener(this);
+        try {
+            synchronized (accessoryLock) {
+                event.getAccessory().ifPresentOrElse(eventAccessory -> {
+                    Accessory foundAccessory = accessoryRegistry.get(eventAccessory.getUID());
+                    if (foundAccessory != null) {
+                        setAccessory(foundAccessory);
+
+                        // eventManager.subscribe(HomekitEventType.ACCESSORY_STATE_CHANGED,
+                        // foundAccessory.getUID().toString(), this);
+
+                        // TODO : What should a thing do if it receives an accessory state changed event for an
+                        // accessory that is not found in the registry?
+                        // TODO : What wiht the added service ? Subscribe to its events ?
+
+                        eventSubscriptions.add(eventManager.subscribe(HomekitEventType.ACCESSORY_STATE_CHANGED,
+                                foundAccessory.getUID().toString(),
+                                someEvent -> onAccessoryEvent((AccessoryEvent) someEvent)));
+
+                        handleServiceAdded();
                         validateAndUpdateState();
                     } else {
-                        serviceAvailable = false;
-                        logger.warn("{}Service not found in accessory after add event", LOG_EVENT);
-                        updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Service not found");
+                        logger.warn("{}Accessory not found in registry after add event", LOG_EVENT);
+                        setAccessory(null);
+                        validateAndUpdateState();
                     }
+
+                }, () -> {
+                    logger.warn("{}Received event with null accessory", LOG_EVENT);
+                });
+            }
+
+            Accessory currentAccessory = getAccessory();
+
+            if (currentAccessory != null) {
+                synchronized (serviceLock) {
+                    event.getService().ifPresentOrElse(eventService -> {
+                        Optional<Service> foundService = currentAccessory.getService(serviceId);
+                        foundService.ifPresent(someService -> {
+                            setService(service);
+                            eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED,
+                                    someService.getUID().toString(),
+                                    someEvent -> onServiceEvent((ServiceEvent) someEvent)));
+                            validateAndUpdateState();
+                        });
+                        // ... handle not found if needed ...
+                    }, () -> {
+                        logger.warn("{}Received event with null service", LOG_EVENT);
+                    });
                 }
             }
+        } catch (Exception e) {
+            logger.error("{}Error handling accessory event: {}", LOG_EVENT, e.getMessage(), e);
+            handleError(ThingStatusDetail.COMMUNICATION_ERROR,
+                    String.format("Error handling accessory event: %s", e.getMessage()), e);
         }
     }
 
@@ -721,12 +751,11 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
             synchronized (accessoryLock) {
                 if (accessory != null) {
                     try {
-                        accessory.removeChangeListener(this);
+                        tearDownSubscriptionsForPublisher(accessory.getUID().toString());
                     } catch (Exception e) {
                         logger.warn("{}Failed to remove accessory change listener: {}", LOG_EVENT, e.getMessage());
                     }
-                    accessory = null;
-                    accessoryAvailable = false;
+                    setAccessory(null);
                     updateState(ThingStatus.OFFLINE, ThingStatusDetail.GONE, "Accessory removed");
                 }
             }
@@ -734,12 +763,11 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
             synchronized (serviceLock) {
                 if (service != null) {
                     try {
-                        service.removeChangeListener(this);
+                        tearDownSubscriptionsForPublisher(service.getUID().toString());
                     } catch (Exception e) {
                         logger.warn("{}Failed to remove service change listener: {}", LOG_EVENT, e.getMessage());
                     }
-                    service = null;
-                    serviceAvailable = false;
+                    setService(null);
                     updateState(ThingStatus.OFFLINE, ThingStatusDetail.GONE, "Service removed");
                 }
             }
@@ -748,37 +776,8 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
     }
 
     @Override
-    protected void handleAccessoryServiceStateChanged(AccessoryEvent event) {
-        synchronized (accessoryLock) {
-            if (accessory != null) {
-                Service foundService = accessory.getService(serviceId);
-                if (foundService != null) {
-                    accessoryAvailable = true;
-                    validateAndUpdateState();
-                    synchronizeChannels();
-                } else {
-                    logger.warn("{}Service not found in accessory after change event", LOG_EVENT);
-                    accessoryAvailable = false;
-                    updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Accessory not found");
-                }
-            }
-        }
-
-        synchronized (serviceLock) {
-            if (service != null && accessory != null) {
-                Service foundService = accessory.getService(serviceId);
-                if (foundService != null) {
-                    setService(foundService);
-                    serviceAvailable = true;
-                    validateAndUpdateState();
-                    synchronizeChannels();
-                } else {
-                    serviceAvailable = false;
-                    logger.warn("{}Service not found in accessory after change event", LOG_EVENT);
-                    updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Service not found");
-                }
-            }
-        }
+    protected void handleAccessoryStateChanged(AccessoryEvent event) {
+        // TODO : Handle the accessory state changed event
     }
 
     /**
@@ -2383,17 +2382,17 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
         // No additional recovery steps needed for service handler
         synchronized (serviceLock) {
             if (service == null && accessory != null) {
-                Service foundService = accessory.getService(serviceId);
-                if (foundService != null) {
-                    setService(foundService);
-                    serviceAvailable = true;
-                    foundService.addChangeListener(this);
+                Optional<Service> foundService = accessory.getService(serviceId);
+                foundService.ifPresentOrElse(someService -> {
+                    setService(someService);
+                    eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED,
+                            someService.getUID().toString(), someEvent -> onServiceEvent((ServiceEvent) someEvent)));
                     logger.debug("{}Recovered service connection", LOG_INIT);
-                } else {
-                    serviceAvailable = false;
+                }, () -> {
+                    setService(null);
                     logger.warn("{}Service not found in accessory after recovery", LOG_EVENT);
                     updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Service not found");
-                }
+                });
             }
         }
     }

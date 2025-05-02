@@ -43,14 +43,8 @@ public class AccessoryServerEvent extends AbstractHomekitEvent {
 
     @Override
     public String toString() {
-        return "AccessoryServerEvent{" +
-                "type=" + getType() +
-                ", sourceUid=" + getSourceUid() +
-                ", timestamp=" + getTimestamp() +
-                ", server=" + server +
-                ", accessory=" + accessory +
-                ", service=" + service +
-                ", characteristic=" + characteristic +
-                '}';
+        return "AccessoryServerEvent{" + "type=" + getType() + ", sourceUid=" + getSourceUid() + ", timestamp="
+                + getTimestamp() + ", server=" + server + ", accessory=" + accessory + ", service=" + service
+                + ", characteristic=" + characteristic + '}';
     }
 }

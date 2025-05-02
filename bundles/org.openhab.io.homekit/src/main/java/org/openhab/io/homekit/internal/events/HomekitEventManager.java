@@ -175,7 +175,7 @@ public class HomekitEventManager {
         List<HomekitEventSubscription> matchingSubs = new ArrayList<>();
         for (HomekitEventSubscription sub : subscriptions) {
             if (sub.eventType == event.getType()
-                    && (sub.sourceUid.equals("*") || sub.sourceUid.equals(event.getSourceUid()))) {
+                    && (sub.publisherUID.equals("*") || sub.publisherUID.equals(event.getSourceUid()))) {
                 matchingSubs.add(sub);
             }
         }
@@ -214,14 +214,17 @@ public class HomekitEventManager {
      * Subscribes a {@link HomekitEventSubscriber} to a specific event type and source UID.
      *
      * @param eventType the event type to subscribe to
-     * @param sourceUid the source UID to subscribe to (or "*" for all sources)
+     * @param publishedUID the source UID to subscribe to (or "*" for all sources)
      * @param subscriber the subscriber to notify
      */
-    public HomekitEventSubscription subscribe(HomekitEventType eventType, String sourceUid,
+    public HomekitEventSubscription subscribe(HomekitEventType eventType, String publishedUID,
             HomekitEventSubscriber subscriber) {
-        HomekitEventSubscription subscription = new HomekitEventSubscription(eventType, sourceUid, subscriber);
+
+        // TODO : Check if sub already exists, and if so, return that one instead of creating a new one
+
+        HomekitEventSubscription subscription = new HomekitEventSubscription(eventType, publishedUID, subscriber);
         subscriptions.add(subscription);
-        logger.debug("{}Subscriber added for event type {} and source UID {}", LOG_SUBSCRIBER, eventType, sourceUid);
+        logger.debug("{}Subscriber added for event type {} and source UID {}", LOG_SUBSCRIBER, eventType, publishedUID);
         return subscription;
     }
 
@@ -247,14 +250,15 @@ public class HomekitEventManager {
     public void unsubscribe(HomekitEventSubscription subscription) {
         subscriptions.remove(subscription);
         logger.debug("{}Subscriber removed for event type {} and source UID {}", LOG_SUBSCRIBER, subscription.eventType,
-                subscription.sourceUid);
+                subscription.publisherUID);
     }
 
     // Unsubscribe using eventType, sourceUid, and subscriber (for compatibility)
-    public void unsubscribe(HomekitEventType eventType, String sourceUid, HomekitEventSubscriber subscriber) {
-        subscriptions.removeIf(
-                sub -> sub.eventType == eventType && sub.sourceUid.equals(sourceUid) && sub.subscriber == subscriber);
-        logger.debug("{}Subscriber removed for event type {} and source UID {}", LOG_SUBSCRIBER, eventType, sourceUid);
+    public void unsubscribe(HomekitEventType eventType, String publishedUID, HomekitEventSubscriber subscriber) {
+        subscriptions.removeIf(sub -> sub.eventType == eventType && sub.publisherUID.equals(publishedUID)
+                && sub.subscriber == subscriber);
+        logger.debug("{}Subscriber removed for event type {} and source UID {}", LOG_SUBSCRIBER, eventType,
+                publishedUID);
     }
 
     /**

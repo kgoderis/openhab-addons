@@ -69,7 +69,8 @@ public class ManagedAccessoryServerProvider
     @Activate
     public ManagedAccessoryServerProvider(@Reference StorageService storageService,
             @Reference ReadyService readyService, @Reference AccessoryRegistry accessoryRegistry,
-            @Reference PairingRegistry pairingRegistry, @Reference MDNSService mdnsService, @Reference HomekitEventManager eventManager) {
+            @Reference PairingRegistry pairingRegistry, @Reference MDNSService mdnsService,
+            @Reference HomekitEventManager eventManager) {
         super(storageService);
         this.readyService = readyService;
         this.accessoryRegistry = accessoryRegistry;

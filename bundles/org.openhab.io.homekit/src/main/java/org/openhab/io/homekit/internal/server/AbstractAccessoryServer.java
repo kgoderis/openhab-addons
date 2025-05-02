@@ -293,7 +293,8 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
     }
 
     private boolean isValidStateTransition(AccessoryServerState current, AccessoryServerState next) {
-        @Nullable Set<AccessoryServerState> validNextStates = VALID_STATE_TRANSITIONS.get(current);
+        @Nullable
+        Set<AccessoryServerState> validNextStates = VALID_STATE_TRANSITIONS.get(current);
         return validNextStates != null && validNextStates.contains(next);
     }
 

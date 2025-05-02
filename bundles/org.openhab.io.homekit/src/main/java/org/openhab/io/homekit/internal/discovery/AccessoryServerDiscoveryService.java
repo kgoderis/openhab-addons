@@ -105,6 +105,7 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
     private boolean autoCreateServiceThing;
     private ConfigurationAdmin configAdmin;
     private HomekitEventManager eventManager;
+
     /**
      * Constructs a new HomeKit discovery service.
      * 
@@ -124,7 +125,7 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
             final @Reference NetworkAddressService networkAddressService,
             @Reference AccessoryRegistry accessoryRegistry, @Reference PairingRegistry pairingRegistry,
             @Reference HomekitThingTypeProvider homekitThingTypeProvider, @Reference ConfigurationAdmin configAdmin,
-            @Reference HomekitEventManager eventManager ) {
+            @Reference HomekitEventManager eventManager) {
         super(5);
         logger.debug("{}Initializing HomeKit discovery service", LOG_INIT);
 

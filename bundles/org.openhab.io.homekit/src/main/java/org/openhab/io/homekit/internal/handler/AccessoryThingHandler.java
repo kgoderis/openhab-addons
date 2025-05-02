@@ -2,6 +2,7 @@ package org.openhab.io.homekit.internal.handler;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -21,6 +22,7 @@ import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
 import org.openhab.io.homekit.exception.HomekitException;
 import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
 import org.openhab.io.homekit.internal.provider.HomekitChannelTypeProvider;
 import org.openhab.io.homekit.internal.provider.HomekitThingTypeProvider;
 
@@ -30,13 +32,14 @@ public class AccessoryThingHandler extends AbstractHomekitHandler {
 
     public AccessoryThingHandler(Thing thing, AccessoryServerRegistry serverRegistry,
             AccessoryRegistry accessoryRegistry, HomekitChannelTypeProvider homekitChannelTypeProvider,
-            HomekitThingTypeProvider homekitThingTypeProvider) {
-        super(thing, serverRegistry, accessoryRegistry, homekitChannelTypeProvider, homekitThingTypeProvider);
+            HomekitThingTypeProvider homekitThingTypeProvider, HomekitEventManager eventManager) {
+        super(thing, serverRegistry, accessoryRegistry, homekitChannelTypeProvider, homekitThingTypeProvider,
+                eventManager);
     }
 
     // ========== Core Lifecycle Methods ==========
     @Override
-    protected void handleSpecificInitialization() {
+    protected void intializeSpecificComponents() {
         initializeChannels();
     }
 
@@ -91,16 +94,16 @@ public class AccessoryThingHandler extends AbstractHomekitHandler {
                         continue;
                     }
 
-                    Service service = currentAccessory.getService(serviceType);
-                    if (service == null) {
+                    Optional<Service> service = currentAccessory.getService(serviceType);
+                    if (service.isEmpty()) {
                         logger.warn("Service {} not found in accessory", serviceTag);
                         continue;
                     }
 
                     // verify that the serviceId matches the serviceId of the service
-                    if (service.getInstanceId() != Long.parseLong(serviceId)) {
+                    if (service.get().getInstanceId() != Long.parseLong(serviceId)) {
                         logger.warn("Service ID {} does not match service ID {} for service {}", serviceId,
-                                service.getInstanceId(), serviceTag);
+                                service.get().getInstanceId(), serviceTag);
                         continue;
                     }
 
@@ -114,17 +117,17 @@ public class AccessoryThingHandler extends AbstractHomekitHandler {
                         continue;
                     }
 
-                    Characteristic<?> characteristic = service.getCharacteristic(characteristicType);
-                    if (characteristic == null) {
+                    Optional<Characteristic<?>> characteristic = service.get().getCharacteristic(characteristicType);
+                    if (characteristic.isEmpty()) {
                         logger.warn("Characteristic {} not found in service {}", characteristicType, serviceTag);
                         continue;
                     }
                     synchronized (characteristicMapLock) {
-                        characteristicMap.put(channel, characteristic);
+                        characteristicMap.put(channel, characteristic.get());
                     }
                 }
             }
-        } catch (Exception e) {
+        } catch (HomekitException | IllegalStateException e) {
             handleError(ThingStatusDetail.CONFIGURATION_ERROR, "Failed to initialize channels: " + e.getMessage(), e);
             throw new IllegalStateException("Failed to initialize channels: " + e.getMessage(), e);
         }
@@ -155,7 +158,7 @@ public class AccessoryThingHandler extends AbstractHomekitHandler {
 
             updateThing(editThing().withChannel(channel).build());
             return channel;
-        } catch (Exception e) {
+        } catch (HomekitException e) {
             logger.warn("{}Unexpected error adding channel for characteristic {}: {}", LOG_CHANNEL,
                     characteristic.getUID(), e.getMessage());
             throw new HomekitException("Unexpected error adding channel for characteristic " + characteristic.getUID(),

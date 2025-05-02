@@ -2,9 +2,11 @@ package org.openhab.io.homekit.internal.server.registry;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.registry.AbstractRegistry;
@@ -69,8 +71,8 @@ public class AccessoryServerRegistryImpl
     private final AccessoryRegistry accessoryRegistry;
     private final PairingRegistry pairingRegistry;
     private final HomekitEventManager eventManager;
-    private final List<HomekitEventSubscription> eventSubscriptions = new ArrayList<>();
-    
+    private final Set<HomekitEventSubscription> eventSubscriptions = new HashSet<>();
+
     @Activate
     public AccessoryServerRegistryImpl(@Reference ReadyService readyService,
             @Reference NetworkAddressService networkAddressService, @Reference AccessoryRegistry accessoryRegistry,
@@ -221,13 +223,10 @@ public class AccessoryServerRegistryImpl
 
     @Override
     public void added(Provider<AccessoryServer> provider, AccessoryServer element) {
-        
-            eventSubscriptions.add(eventManager.subscribe(
-                HomekitEventType.SERVER_STATE_CHANGED,
-                element.getUID().toString(),
-                event -> handleAccessoryServerEvent((AccessoryServerEvent) event))); 
-        super.added(provider, element);
 
+        eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVER_STATE_CHANGED,
+                element.getUID().toString(), event -> handleAccessoryServerEvent((AccessoryServerEvent) event)));
+        super.added(provider, element);
     }
 
     @Override
@@ -235,11 +234,12 @@ public class AccessoryServerRegistryImpl
         try {
             // get all the subscriptions for this accessory server
             List<HomekitEventSubscription> subscriptions = eventSubscriptions.stream()
-                .filter(subscription -> subscription.sourceUid.equals(element.getUID().toString()))
-                .collect(Collectors.toList());
+                    .filter(subscription -> subscription.getPublisherUID().equals(element.getUID().toString()))
+                    .collect(Collectors.toList());
 
             // unsubscribe from the events
-            subscriptions.forEach(subscription -> eventManager.unsubscribe(subscription.eventType, subscription.sourceUid, subscription.subscriber));
+            subscriptions.forEach(subscription -> eventManager.unsubscribe(subscription.getEventType(),
+                    subscription.getPublisherUID(), subscription.getSubscriber()));
 
             super.removed(provider, element);
         } catch (Exception e) {
