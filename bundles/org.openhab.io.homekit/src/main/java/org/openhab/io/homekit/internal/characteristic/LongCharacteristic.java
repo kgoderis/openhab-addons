@@ -10,6 +10,7 @@ import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
 
 @NonNullByDefault
 public abstract class LongCharacteristic extends GenericCharacteristic<Long> {
@@ -19,16 +20,16 @@ public abstract class LongCharacteristic extends GenericCharacteristic<Long> {
     private final long minStep;
 
     public LongCharacteristic(Service service, long instanceId, boolean isWritable, boolean isReadable,
-            boolean hasEvents, String description, long minValue, long maxValue, long minStep, String type) {
-        super(service, instanceId, "uint32", isWritable, isReadable, hasEvents, description, type);
+            boolean hasEvents, String description, long minValue, long maxValue, long minStep, String type, HomekitEventManager eventManager) {
+        super(service, instanceId, "uint32", isWritable, isReadable, hasEvents, description, type, eventManager);
         this.minValue = minValue;
         this.maxValue = maxValue;
         this.minStep = minStep;
         initializeValue();
     }
 
-    public LongCharacteristic(Service service, JsonValue value) {
-        super(service, value);
+    public LongCharacteristic(Service service, JsonValue value, HomekitEventManager eventManager) {
+        super(service, value, eventManager);
         JsonObject jsonObject = (JsonObject) value;
         this.minValue = jsonObject.containsKey("minValue") ? jsonObject.getJsonNumber("minValue").longValue() : 0;
         this.maxValue = jsonObject.containsKey("maxValue") ? jsonObject.getJsonNumber("maxValue").longValue()

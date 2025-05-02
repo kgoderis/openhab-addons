@@ -64,6 +64,7 @@ import org.eclipse.jetty.client.util.BufferingResponseListener;
 import org.eclipse.jetty.client.util.BytesContentProvider;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
+import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.AccessoryCategory;
 import org.openhab.io.homekit.api.hap.Characteristic;
@@ -148,18 +149,20 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
     @SuppressWarnings("null")
     public RemoteAccessoryServer(AccessoryCategory category, InetAddress address, int port, byte[] pairingIdentifier,
             byte[] secretKey, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry,
-            HomekitEventManager eventManager) throws HomekitConfigurationException {
-        super(category, address, port, pairingIdentifier, secretKey, accessoryRegistry, pairingRegistry, eventManager);
+            HomekitEventManager eventManager, Set<HomekitFactory> homekitFactories)
+            throws HomekitConfigurationException {
+        super(category, address, port, pairingIdentifier, secretKey, accessoryRegistry, pairingRegistry, eventManager,
+                homekitFactories);
         this.setupCode = "";
         this.isPairVerified = false;
         this.scheduler = org.openhab.core.common.ThreadPoolManager.getScheduledPool("homekit-remote");
     }
 
     public RemoteAccessoryServer(AccessoryCategory category, InetAddress address, int port,
-            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry, HomekitEventManager eventManager)
-            throws HomekitConfigurationException, HomekitServerException {
+            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry, HomekitEventManager eventManager,
+            Set<HomekitFactory> homekitFactories) throws HomekitConfigurationException, HomekitServerException {
         this(category, address, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry,
-                eventManager);
+                eventManager, homekitFactories);
     }
 
     // ========== Core Lifecycle Methods ==========
@@ -676,7 +679,6 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         logger.debug("'{}' : Verification state reset completed", new String(getPairingId()));
     }
 
-    @SuppressWarnings("null")
     private StageResult executePairingStage(int stage, PairingStageExecutor executor)
             throws HomekitServerException, InterruptedException, ExecutionException, IOException {
         logger.debug("{}Executing pair setup stage {} - preparing payload - Server: {}", LOG_STATE, stage,
@@ -1262,7 +1264,7 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
                 JsonArray accessories = Json.createReader(new ByteArrayInputStream(contentResult.body)).readObject()
                         .getJsonArray("accessories");
                 for (JsonValue value : accessories) {
-                    result.add(new GenericAccessory(value));
+                    result.add(new GenericAccessory(value, eventManager, homekitFactories));
                 }
             }
         }
@@ -1528,7 +1530,8 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
             if (characteristicUids.contains(subscription.getPublisherUID())) {
                 eventManager.unsubscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, subscription.getPublisherUID(),
                         subscription.getSubscriber());
-                logger.debug("{}Unsubscribed from events for sourceUid: {}", LOG_ACCESSORY, subscription.getPublisherUID());
+                logger.debug("{}Unsubscribed from events for sourceUid: {}", LOG_ACCESSORY,
+                        subscription.getPublisherUID());
                 return true;
             }
             return false;

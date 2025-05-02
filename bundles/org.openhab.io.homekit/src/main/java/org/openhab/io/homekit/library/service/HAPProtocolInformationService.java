@@ -1,29 +1,33 @@
 package org.openhab.io.homekit.library.service;
 
+import java.util.Collection;
+
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.api.hap.Accessory;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
 import org.openhab.io.homekit.internal.service.GenericService;
 import org.openhab.io.homekit.library.characteristic.VersionCharacteristic;
 
 public class HAPProtocolInformationService extends GenericService {
+    private static final String TYPE = "000000A2-0000-1000-8000-0026BB765291";
 
-    public HAPProtocolInformationService(Accessory accessory, long instanceId, boolean extend,
-            @NonNull String serviceName) throws Exception {
-        super(accessory, instanceId, extend, serviceName);
+    public HAPProtocolInformationService(Accessory accessory, long instanceId, boolean extend, @NonNull String serviceName, HomekitEventManager eventManager, Collection<HomekitFactory> factories)
+             {
+        super(accessory, instanceId, extend, serviceName, TYPE, eventManager, factories);
     }
 
-    public HAPProtocolInformationService(Accessory accessory, JsonValue value, String name) {
-        super(accessory, value, name);
+    public HAPProtocolInformationService(Accessory accessory, JsonValue value, String name, HomekitEventManager eventManager, Collection<HomekitFactory> factories) {
+        super(accessory, value, name, eventManager, factories);
     }
 
     @Override
     public void addCharacteristics() {
-        VersionCharacteristic characteristic = new VersionCharacteristic(this,
-                getAccessory().getNextAvailableInstanceId());
-        characteristic.setVersion("01.01.00");
-        addCharacteristic(characteristic);
+        super.addCharacteristics();
+        addCharacteristic(
+                new VersionCharacteristic(this, ((Accessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
     }
 
     @Override
@@ -32,12 +36,7 @@ public class HAPProtocolInformationService extends GenericService {
     }
 
     public static String getType() {
-        return "000000A2-0000-1000-8000-0026BB765291";
-    }
-
-    @Override
-    public String getInstanceType() {
-        return getType();
+        return TYPE;
     }
 
     public static String getTag() {

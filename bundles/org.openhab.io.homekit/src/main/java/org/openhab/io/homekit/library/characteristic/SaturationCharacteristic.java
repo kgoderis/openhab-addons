@@ -13,18 +13,19 @@ import org.openhab.core.library.types.PercentType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.FloatCharacteristic;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
 
 @NonNullByDefault
 public class SaturationCharacteristic extends FloatCharacteristic {
 
     private static final String TYPE = "0000002F-0000-1000-8000-0026BB765291";
 
-    public SaturationCharacteristic(Service service, long instanceId) {
-        super(service, instanceId, true, true, true, "Adjust saturation of the light", 0, 100, 1, "percentage", TYPE);
+    public SaturationCharacteristic(Service service, long instanceId, HomekitEventManager eventManager) {
+        super(service, instanceId, true, true, true, "Adjust saturation of the light", 0, 100, 1, "percentage", TYPE, eventManager);
     }
 
-    public SaturationCharacteristic(Service service, JsonValue value) {
-        super(service, value);
+    public SaturationCharacteristic(Service service, JsonValue value, HomekitEventManager eventManager) {
+        super(service, value, eventManager);
     }
 
     public static String getType() {

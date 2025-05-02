@@ -2,6 +2,7 @@ package org.openhab.io.homekit.internal.server.registry;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -11,6 +12,7 @@ import org.openhab.core.io.transport.mdns.MDNSService;
 import org.openhab.core.service.ReadyMarker;
 import org.openhab.core.service.ReadyService;
 import org.openhab.core.storage.StorageService;
+import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.AccessoryCategory;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
@@ -65,18 +67,20 @@ public class ManagedAccessoryServerProvider
     private final PairingRegistry pairingRegistry;
     private final MDNSService mdnsService;
     private final HomekitEventManager eventManager;
+    private final Set<HomekitFactory> homekitFactories;
 
     @Activate
     public ManagedAccessoryServerProvider(@Reference StorageService storageService,
             @Reference ReadyService readyService, @Reference AccessoryRegistry accessoryRegistry,
             @Reference PairingRegistry pairingRegistry, @Reference MDNSService mdnsService,
-            @Reference HomekitEventManager eventManager) {
+            @Reference HomekitEventManager eventManager, @Reference Set<HomekitFactory> homekitFactories) {
         super(storageService);
         this.readyService = readyService;
         this.accessoryRegistry = accessoryRegistry;
         this.pairingRegistry = pairingRegistry;
         this.mdnsService = mdnsService;
         this.eventManager = eventManager;
+        this.homekitFactories = homekitFactories;
 
         logger.info("{}Marking Managed Accessory Server Provider as ready", LOG_STATE);
         ReadyMarker newMarker = new ReadyMarker(HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER, this.toString());
@@ -102,12 +106,12 @@ public class ManagedAccessoryServerProvider
                 server = new RemoteAccessoryServer(persistableElement.getCategory(),
                         persistableElement.getLocalAddress(), persistableElement.getPort(),
                         persistableElement.getPairingIdentifier(), persistableElement.getPrivateKey(),
-                        accessoryRegistry, pairingRegistry, eventManager);
+                        accessoryRegistry, pairingRegistry, eventManager, homekitFactories);
             } else {
                 server = new LocalAccessoryServer(persistableElement.getCategory(),
                         persistableElement.getLocalAddress(), persistableElement.getPort(),
                         persistableElement.getPairingIdentifier(), persistableElement.getPrivateKey(), mdnsService,
-                        accessoryRegistry, pairingRegistry, eventManager);
+                        accessoryRegistry, pairingRegistry, eventManager, homekitFactories);
             }
 
             logger.debug("{}Created Accessory Server - UID: {}, Setup Code: {}", LOG_ACCESSORY, server.getUID(),

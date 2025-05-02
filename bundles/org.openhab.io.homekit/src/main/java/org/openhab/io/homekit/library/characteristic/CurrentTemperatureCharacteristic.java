@@ -8,19 +8,19 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.FloatCharacteristic;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
 
 @NonNullByDefault
 public class CurrentTemperatureCharacteristic extends FloatCharacteristic {
 
     private static final String TYPE = "00000011-0000-1000-8000-0026BB765291";
 
-    public CurrentTemperatureCharacteristic(Service service, long instanceId) {
-        super(service, instanceId, false, true, true, "Current temperature of the environment in Celsius", 0, 100, 0.1,
-                "celcius", TYPE);
+    public CurrentTemperatureCharacteristic(Service service, long instanceId, HomekitEventManager eventManager) {
+        super(service, instanceId, false, true, true, "Current Temperature", 0, 100, 0.1, "°C", TYPE, eventManager);
     }
 
-    public CurrentTemperatureCharacteristic(Service service, JsonValue value) {
-        super(service, value);
+    public CurrentTemperatureCharacteristic(Service service, JsonValue value, HomekitEventManager eventManager) {
+        super(service, value, eventManager);
     }
 
     public static String getType() {

@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.core.items.GroupItem;
 import org.openhab.core.items.Item;
 import org.openhab.core.items.ItemRegistry;
@@ -30,9 +29,6 @@ import org.openhab.core.items.Metadata;
 import org.openhab.core.items.MetadataKey;
 import org.openhab.core.items.MetadataRegistry;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +58,6 @@ import org.slf4j.LoggerFactory;
  */
 public class HomekitTaggedItem {
     // 1. Constants and static fields
-    private static ServiceTracker<@NonNull HomekitFactory, @NonNull HomekitFactory> homekitFactoryTracker;
     private static final Map<Integer, String> CREATED_ACCESSORY_IDS = new ConcurrentHashMap<>();
     protected static final String LOG_PREFIX = "HomeKit TaggedItem: ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
@@ -77,6 +72,7 @@ public class HomekitTaggedItem {
     private String characteristicType;
     private GroupItem parentGroupItem;
     private final Logger logger = LoggerFactory.getLogger(HomekitTaggedItem.class);
+    private final Collection<HomekitFactory> homekitFactories;
 
     // 3. Inner classes
     class BadItemConfigurationException extends Exception {
@@ -96,11 +92,13 @@ public class HomekitTaggedItem {
      * @param metadataRegistry The metadata registry to use for metadata lookups
      * @throws BadItemConfigurationException if the item's configuration is invalid
      */
-    public HomekitTaggedItem(Item item, ItemRegistry itemRegistry, MetadataRegistry metadataRegistry) {
+    public HomekitTaggedItem(Item item, ItemRegistry itemRegistry, MetadataRegistry metadataRegistry,
+            Collection<HomekitFactory> homekitFactories) {
         this.item = item;
         this.metadataRegistry = metadataRegistry;
         this.itemRegistry = itemRegistry;
         this.homekitTags = getHomekitTagsFromMetaRegistry(item);
+        this.homekitFactories = homekitFactories;
 
         try {
             serviceType = getFactoryServiceType();
@@ -154,26 +152,18 @@ public class HomekitTaggedItem {
      * @return The HomeKit service type if found, null otherwise
      */
     private String getFactoryServiceType() {
-        if (homekitFactoryTracker == null) {
-            BundleContext context = FrameworkUtil.getBundle(HomekitTaggedItem.class).getBundleContext();
-            homekitFactoryTracker = new ServiceTracker<>(context, HomekitFactory.class, null);
-            homekitFactoryTracker.open();
-        }
-
-        Object[] factories = homekitFactoryTracker.getServices();
-        if (factories != null) {
-            if (!homekitTags.isEmpty()) {
-                String firstTag = homekitTags.iterator().next();
-                for (Object factory : factories) {
-                    if (factory instanceof HomekitFactory homekitFactory) {
-                        String factoryServiceType = homekitFactory.getServiceTypeFromTag(firstTag);
-                        if (factoryServiceType != null) {
-                            return factoryServiceType;
-                        }
+        if (!homekitTags.isEmpty()) {
+            String firstTag = homekitTags.iterator().next();
+            for (HomekitFactory factory : homekitFactories) {
+                if (factory instanceof HomekitFactory homekitFactory) {
+                    String factoryServiceType = homekitFactory.getServiceTypeFromTag(firstTag);
+                    if (factoryServiceType != null) {
+                        return factoryServiceType;
                     }
                 }
             }
         }
+
         return null;
     }
 
@@ -184,26 +174,19 @@ public class HomekitTaggedItem {
      * @return The HomeKit characteristic type if found, null otherwise
      */
     private String getFactoryCharacteristicType() {
-        if (homekitFactoryTracker == null) {
-            BundleContext context = FrameworkUtil.getBundle(HomekitTaggedItem.class).getBundleContext();
-            homekitFactoryTracker = new ServiceTracker<>(context, HomekitFactory.class, null);
-            homekitFactoryTracker.open();
-        }
 
-        Object[] factories = homekitFactoryTracker.getServices();
-        if (factories != null) {
-            if (!homekitTags.isEmpty()) {
-                String firstTag = homekitTags.iterator().next();
-                for (Object factory : factories) {
-                    if (factory instanceof HomekitFactory homekitFactory) {
-                        String factoryCharacteristicType = homekitFactory.getCharacteristicTypeFromTag(firstTag);
-                        if (factoryCharacteristicType != null) {
-                            return factoryCharacteristicType;
-                        }
+        if (!homekitTags.isEmpty()) {
+            String firstTag = homekitTags.iterator().next();
+            for (HomekitFactory factory : homekitFactories) {
+                if (factory instanceof HomekitFactory homekitFactory) {
+                    String factoryCharacteristicType = homekitFactory.getCharacteristicTypeFromTag(firstTag);
+                    if (factoryCharacteristicType != null) {
+                        return factoryCharacteristicType;
                     }
                 }
             }
         }
+
         return null;
     }
 
@@ -325,11 +308,6 @@ public class HomekitTaggedItem {
      * @return A list of group items that are tagged as HomeKit accessories
      */
     public List<GroupItem> findMyAccessoryGroups() {
-        if (homekitFactoryTracker == null) {
-            BundleContext context = FrameworkUtil.getBundle(HomekitTaggedItem.class).getBundleContext();
-            homekitFactoryTracker = new ServiceTracker<>(context, HomekitFactory.class, null);
-            homekitFactoryTracker.open();
-        }
 
         return item.getGroupNames().stream().flatMap(name -> {
             Item groupItem = itemRegistry.get(name);
@@ -342,13 +320,9 @@ public class HomekitTaggedItem {
             Collection<String> groupHomekitTags = getHomekitTagsFromMetaRegistry(groupItem);
 
             return groupHomekitTags.stream().anyMatch(tag -> {
-                Object[] factories = homekitFactoryTracker.getServices();
-                if (factories != null) {
-                    return Stream.of(factories).filter(factory -> factory instanceof HomekitFactory)
-                            .map(factory -> (HomekitFactory) factory)
-                            .anyMatch(homekitFactory -> homekitFactory.getServiceTypeFromTag(tag) != null);
-                }
-                return false;
+                return Stream.of(homekitFactories).filter(factory -> factory instanceof HomekitFactory)
+                        .map(factory -> (HomekitFactory) factory)
+                        .anyMatch(homekitFactory -> homekitFactory.getServiceTypeFromTag(tag) != null);
             });
         }).collect(Collectors.toList());
     }

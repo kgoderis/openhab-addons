@@ -14,6 +14,7 @@ import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
 
 /**
  * @author Karel Goderis - Initial Contribution
@@ -22,13 +23,13 @@ import org.openhab.io.homekit.api.hap.Service;
 @NonNullByDefault
 public abstract class WriteOnlyBooleanCharacteristic extends GenericCharacteristic<Boolean> {
 
-    public WriteOnlyBooleanCharacteristic(Service service, long instanceId, String description, String type) {
-        super(service, instanceId, "bool", true, false, false, description, type);
+    public WriteOnlyBooleanCharacteristic(Service service, long instanceId, String description, String type, HomekitEventManager eventManager) {
+        super(service, instanceId, "bool", true, false, false, description, type, eventManager);
         initializeValue();
     }
 
-    public WriteOnlyBooleanCharacteristic(Service service, JsonValue value) {
-        super(service, value);
+    public WriteOnlyBooleanCharacteristic(Service service, JsonValue value, HomekitEventManager eventManager) {
+        super(service, value, eventManager);
         initializeValue();
     }
 

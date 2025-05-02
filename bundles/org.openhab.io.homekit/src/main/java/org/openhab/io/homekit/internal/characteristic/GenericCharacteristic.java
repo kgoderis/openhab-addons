@@ -20,16 +20,12 @@ import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.events.CharacteristicEvent;
 import org.openhab.io.homekit.internal.events.HomekitEventManager;
-import org.openhab.io.homekit.internal.events.HomekitEventPublisher;
 import org.openhab.io.homekit.internal.events.HomekitEventType;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @NonNullByDefault
-public abstract class GenericCharacteristic<@NonNull T> implements Characteristic<@NonNull T>, HomekitEventPublisher {
+public abstract class GenericCharacteristic<@NonNull T> implements Characteristic<@NonNull T> {
 
     private static final Logger logger = LoggerFactory.getLogger(GenericCharacteristic.class);
 
@@ -46,8 +42,6 @@ public abstract class GenericCharacteristic<@NonNull T> implements Characteristi
     private final long instanceId;
     private String format;
     private String description;
-    @Nullable
-    private static ServiceTracker<HomekitEventManager, HomekitEventManager> eventManagerTracker;
 
     // Instance fields - mutable
     private boolean isWritable = false;
@@ -57,11 +51,13 @@ public abstract class GenericCharacteristic<@NonNull T> implements Characteristi
     private String type;
     protected @Nullable T value = null;
     protected @Nullable JsonValue initialValue = null;
+    private HomekitEventManager eventManager;
 
     // Constructors
-    public GenericCharacteristic(Service service, JsonValue value) {
+    public GenericCharacteristic(Service service, JsonValue value, HomekitEventManager eventManager) {
         this.service = service;
         this.initialValue = value;
+        this.eventManager = eventManager;
         this.instanceId = ((JsonObject) value).getInt("iid");
         this.type = ((JsonObject) value).getString("type");
         this.format = ((JsonObject) value).getString("format");
@@ -90,7 +86,7 @@ public abstract class GenericCharacteristic<@NonNull T> implements Characteristi
     }
 
     public GenericCharacteristic(Service service, long instanceId, String format, boolean isWritable,
-            boolean isReadable, boolean hasEvents, String description, String type) {
+            boolean isReadable, boolean hasEvents, String description, String type, HomekitEventManager eventManager) {
         this.service = service;
         this.instanceId = instanceId;
         this.format = format;
@@ -99,6 +95,7 @@ public abstract class GenericCharacteristic<@NonNull T> implements Characteristi
         this.hasEvents = hasEvents;
         this.description = description;
         this.type = format;
+        this.eventManager = eventManager;
     }
 
     /**
@@ -112,32 +109,6 @@ public abstract class GenericCharacteristic<@NonNull T> implements Characteristi
         } else {
             this.value = getDefault();
         }
-    }
-
-    @Override
-    @SuppressWarnings("unused")
-    public HomekitEventManager getEventManager() {
-        @Nullable
-        ServiceTracker<HomekitEventManager, HomekitEventManager> tracker = getEventManagerTracker();
-        if (tracker != null) {
-            @Nullable
-            HomekitEventManager manager = tracker.getService();
-            if (manager != null) {
-                return manager;
-            }
-        }
-        throw new IllegalStateException("HomekitEventManager service is not available");
-    }
-
-    @SuppressWarnings("null")
-    private static ServiceTracker<HomekitEventManager, HomekitEventManager> getEventManagerTracker() {
-        if (eventManagerTracker == null) {
-            BundleContext context = FrameworkUtil.getBundle(GenericCharacteristic.class).getBundleContext();
-            eventManagerTracker = new ServiceTracker<>(context, HomekitEventManager.class, null);
-            eventManagerTracker.open();
-        }
-
-        return eventManagerTracker;
     }
 
     // Interface implementation methods
@@ -179,11 +150,6 @@ public abstract class GenericCharacteristic<@NonNull T> implements Characteristi
     @Override
     public void setHasEvents(boolean value) {
         this.hasEvents = value;
-    }
-
-    @Override
-    public String getSourceUID() {
-        return getUID().toString();
     }
 
     @Override
@@ -300,7 +266,7 @@ public abstract class GenericCharacteristic<@NonNull T> implements Characteristi
 
     // Protected methods
     protected void notifyValueChanged(@Nullable T oldValue, @Nullable T newValue) {
-        getEventManager().publishEvent(new CharacteristicEvent(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
+        eventManager.publishEvent(new CharacteristicEvent(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
                 (Characteristic<?>) this, toValueJson(oldValue), toValueJson(newValue)));
     }
 

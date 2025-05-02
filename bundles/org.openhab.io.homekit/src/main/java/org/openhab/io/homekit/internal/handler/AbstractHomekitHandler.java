@@ -509,8 +509,9 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
                     if (foundAccessory != null) {
                         setAccessory(foundAccessory);
 
-                        // eventManager.subscribe(HomekitEventType.ACCESSORY_STATE_CHANGED,
-                        // foundAccessory.getUID().toString(), this);
+                        eventSubscriptions.add(eventManager.subscribe(HomekitEventType.ACCESSORY_STATE_CHANGED,
+                                foundAccessory.getUID().toString(),
+                                someEvent -> onAccessoryEvent((AccessoryEvent) someEvent)));
 
                         // TODO : What should a thing do if it receives an accessory state changed event for an
                         // accessory that is not found in the registry?

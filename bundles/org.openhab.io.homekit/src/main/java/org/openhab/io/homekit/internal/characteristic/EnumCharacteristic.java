@@ -10,6 +10,7 @@ import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
 
 /**
  * * Characteristic that exposes an Enum value. Enums are represented as an Integer value in the
@@ -22,14 +23,14 @@ public abstract class EnumCharacteristic extends GenericCharacteristic<Integer> 
     private final int maxValue;
 
     public EnumCharacteristic(Service service, long instanceId, boolean isWritable, boolean isReadable,
-            boolean hasEvents, String description, int maxValue, String type) {
-        super(service, instanceId, "int", isWritable, isReadable, hasEvents, description, type);
+            boolean hasEvents, String description, int maxValue, String type, HomekitEventManager eventManager) {
+        super(service, instanceId, "int", isWritable, isReadable, hasEvents, description, type, eventManager);
         this.maxValue = maxValue;
         initializeValue();
     }
 
-    public EnumCharacteristic(Service service, JsonValue value) {
-        super(service, value);
+    public EnumCharacteristic(Service service, JsonValue value, HomekitEventManager eventManager) {
+        super(service, value, eventManager);
         JsonObject jsonObject = (JsonObject) value;
         this.maxValue = jsonObject.containsKey("maxValue") ? jsonObject.getInt("maxValue") : 1;
         initializeValue();

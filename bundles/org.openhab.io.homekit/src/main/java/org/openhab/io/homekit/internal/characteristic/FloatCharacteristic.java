@@ -10,6 +10,7 @@ import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
 
 @NonNullByDefault
 public abstract class FloatCharacteristic extends GenericCharacteristic<Double> {
@@ -21,8 +22,8 @@ public abstract class FloatCharacteristic extends GenericCharacteristic<Double> 
 
     public FloatCharacteristic(Service service, long instanceId, boolean isWritable, boolean isReadable,
             boolean hasEvents, String description, double minValue, double maxValue, double minStep, String unit,
-            String type) {
-        super(service, instanceId, "float", isWritable, isReadable, hasEvents, description, type);
+            String type, HomekitEventManager eventManager) {
+        super(service, instanceId, "float", isWritable, isReadable, hasEvents, description, type, eventManager);
         this.minValue = minValue;
         this.maxValue = maxValue;
         this.minStep = minStep;
@@ -30,8 +31,8 @@ public abstract class FloatCharacteristic extends GenericCharacteristic<Double> 
         initializeValue();
     }
 
-    public FloatCharacteristic(Service service, JsonValue value) {
-        super(service, value);
+    public FloatCharacteristic(Service service, JsonValue value, HomekitEventManager eventManager) {
+        super(service, value, eventManager);
         JsonObject jsonObject = (JsonObject) value;
         this.minValue = jsonObject.containsKey("minValue") ? jsonObject.getJsonNumber("minValue").doubleValue() : 0;
         this.maxValue = jsonObject.containsKey("maxValue") ? jsonObject.getJsonNumber("maxValue").doubleValue() : 100;

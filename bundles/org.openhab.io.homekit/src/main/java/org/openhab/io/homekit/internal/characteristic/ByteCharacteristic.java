@@ -10,6 +10,7 @@ import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
 
 @NonNullByDefault
 public abstract class ByteCharacteristic extends GenericCharacteristic<Byte> {
@@ -18,15 +19,15 @@ public abstract class ByteCharacteristic extends GenericCharacteristic<Byte> {
     private final byte maxValue;
 
     public ByteCharacteristic(Service service, long instanceId, boolean isWritable, boolean isReadable,
-            boolean hasEvents, String description, byte minValue, byte maxValue, String type) {
-        super(service, instanceId, "uint8", isWritable, isReadable, hasEvents, description, type);
+            boolean hasEvents, String description, byte minValue, byte maxValue, String type, HomekitEventManager eventManager) {
+        super(service, instanceId, "uint8", isWritable, isReadable, hasEvents, description, type, eventManager);
         this.minValue = minValue;
         this.maxValue = maxValue;
         initializeValue();
     }
 
-    public ByteCharacteristic(Service service, JsonValue value) {
-        super(service, value);
+    public ByteCharacteristic(Service service, JsonValue value, HomekitEventManager eventManager) {
+        super(service, value, eventManager);
         JsonObject jsonObject = (JsonObject) value;
         this.minValue = jsonObject.containsKey("minValue") ? (byte) jsonObject.getInt("minValue") : 0;
         this.maxValue = jsonObject.containsKey("maxValue") ? (byte) jsonObject.getInt("maxValue") : Byte.MAX_VALUE;

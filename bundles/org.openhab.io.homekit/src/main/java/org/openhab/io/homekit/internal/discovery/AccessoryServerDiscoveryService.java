@@ -9,6 +9,7 @@ import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -27,6 +28,7 @@ import org.openhab.core.io.transport.mdns.MDNSClient;
 import org.openhab.core.net.NetworkAddressService;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.ThingUID;
+import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.AccessoryCategory;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
@@ -105,6 +107,7 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
     private boolean autoCreateServiceThing;
     private ConfigurationAdmin configAdmin;
     private HomekitEventManager eventManager;
+    private Set<HomekitFactory> homekitFactories;
 
     /**
      * Constructs a new HomeKit discovery service.
@@ -125,7 +128,7 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
             final @Reference NetworkAddressService networkAddressService,
             @Reference AccessoryRegistry accessoryRegistry, @Reference PairingRegistry pairingRegistry,
             @Reference HomekitThingTypeProvider homekitThingTypeProvider, @Reference ConfigurationAdmin configAdmin,
-            @Reference HomekitEventManager eventManager) {
+            @Reference HomekitEventManager eventManager, @Reference Set<HomekitFactory> homekitFactories) {
         super(5);
         logger.debug("{}Initializing HomeKit discovery service", LOG_INIT);
 
@@ -138,6 +141,7 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
         this.homekitThingTypeProvider = homekitThingTypeProvider;
         this.configAdmin = configAdmin;
         this.eventManager = eventManager;
+        this.homekitFactories = homekitFactories;
         // Load configuration
         loadConfiguration();
 
@@ -492,7 +496,7 @@ public class AccessoryServerDiscoveryService extends AbstractDiscoveryService im
 
                     try {
                         AccessoryServer server = new RemoteAccessoryServer(category, InetAddress.getByName(hostAddress),
-                                port, accessoryRegistry, pairingRegistry, eventManager);
+                                port, accessoryRegistry, pairingRegistry, eventManager, homekitFactories);
                         server.setConfigurationIndex(configIndex);
                         accessoryServerRegistry.add(server);
                         logger.info("{}Created new Remote Accessory Server - UID: {}, Setup Code: {}", LOG_SERVER,

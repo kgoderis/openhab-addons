@@ -14,6 +14,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.openhab.core.io.transport.mdns.MDNSService;
 import org.openhab.core.io.transport.mdns.ServiceDescription;
+import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.AccessoryCategory;
 import org.openhab.io.homekit.api.hap.Characteristic;
@@ -80,8 +81,10 @@ public class LocalAccessoryServer extends AbstractAccessoryServer {
     // ========== Constructors ==========
     public LocalAccessoryServer(AccessoryCategory category, InetAddress address, int port, byte[] pairingId,
             byte[] secretKey, MDNSService mdnsService, AccessoryRegistry accessoryRegistry,
-            PairingRegistry pairingRegistry, HomekitEventManager eventManager) throws HomekitConfigurationException {
-        super(category, address, port, pairingId, secretKey, accessoryRegistry, pairingRegistry, eventManager);
+            PairingRegistry pairingRegistry, HomekitEventManager eventManager, Set<HomekitFactory> homekitFactories)
+            throws HomekitConfigurationException {
+        super(category, address, port, pairingId, secretKey, accessoryRegistry, pairingRegistry, eventManager,
+                homekitFactories);
         logger.debug("{}Initializing local server - Category: {}, Address: {}, Port: {}", LOG_INIT, category, address,
                 port);
         this.mdnsService = mdnsService;
@@ -89,10 +92,10 @@ public class LocalAccessoryServer extends AbstractAccessoryServer {
     }
 
     public LocalAccessoryServer(AccessoryCategory category, InetAddress address, int port, MDNSService mdnsService,
-            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry, HomekitEventManager eventManager)
-            throws HomekitConfigurationException, HomekitServerException {
+            AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry, HomekitEventManager eventManager,
+            Set<HomekitFactory> homekitFactories) throws HomekitConfigurationException, HomekitServerException {
         super(category, address, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry,
-                eventManager);
+                eventManager, homekitFactories);
         this.mdnsService = mdnsService;
     }
 
@@ -607,10 +610,11 @@ public class LocalAccessoryServer extends AbstractAccessoryServer {
 
             // Remove and unsubscribe only those subscriptions that match
             eventSubscriptions.removeIf(subscription -> {
-                if (characteristicUids.contains(subscription.sourceUid)) {
-                    eventManager.unsubscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, subscription.sourceUid,
-                            subscription.subscriber);
-                    logger.debug("{}Unsubscribed from events for sourceUid: {}", LOG_ACCESSORY, subscription.sourceUid);
+                if (characteristicUids.contains(subscription.getPublisherUID())) {
+                    eventManager.unsubscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
+                            subscription.getPublisherUID(), subscription.getSubscriber());
+                    logger.debug("{}Unsubscribed from events for sourceUid: {}", LOG_ACCESSORY,
+                            subscription.getPublisherUID());
                     return true;
                 }
                 return false;

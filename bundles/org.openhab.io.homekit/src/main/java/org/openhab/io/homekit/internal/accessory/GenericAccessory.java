@@ -1,9 +1,7 @@
 package org.openhab.io.homekit.internal.accessory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -30,25 +28,16 @@ import org.openhab.io.homekit.exception.HomekitFactoryException;
 import org.openhab.io.homekit.internal.events.AccessoryEvent;
 import org.openhab.io.homekit.internal.events.HomekitEvent;
 import org.openhab.io.homekit.internal.events.HomekitEventManager;
-import org.openhab.io.homekit.internal.events.HomekitEventPublisher;
-import org.openhab.io.homekit.internal.events.HomekitEventSubscriber;
+import org.openhab.io.homekit.internal.events.HomekitEventSubscription;
 import org.openhab.io.homekit.internal.events.HomekitEventType;
-import org.openhab.io.homekit.internal.service.GenericService;
 import org.openhab.io.homekit.library.service.AccessoryInformationService;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @NonNullByDefault
-public class GenericAccessory implements Accessory, HomekitEventPublisher, HomekitEventSubscriber {
+public class GenericAccessory implements Accessory {
 
     private static final Logger logger = LoggerFactory.getLogger(GenericAccessory.class);
-    @Nullable
-    private static ServiceTracker<HomekitFactory, HomekitFactory> homekitFactoryTracker;
-    @Nullable
-    private static ServiceTracker<HomekitEventManager, HomekitEventManager> eventManagerTracker;
 
     protected static final String LOG_PREFIX = "HomeKit Accessory: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
@@ -67,6 +56,10 @@ public class GenericAccessory implements Accessory, HomekitEventPublisher, Homek
     private Collection<Service> services = new HashSet<>();
     @Nullable
     private AccessoryUID accessoryUID;
+    private final HomekitEventManager eventManager;
+    private final Collection<HomekitFactory> homekitFactories;
+
+    private final Set<HomekitEventSubscription> eventSubscriptions = new HashSet<>();
 
     /**
      * Creates a new GenericAccessory with a unique instance ID.
@@ -74,8 +67,12 @@ public class GenericAccessory implements Accessory, HomekitEventPublisher, Homek
      *
      * @param server The accessory server this accessory belongs to
      */
-    public GenericAccessory(AccessoryServer server) {
+    public GenericAccessory(AccessoryServer server, HomekitEventManager eventManager,
+            Collection<HomekitFactory> homekitFactories) {
         // this.server = server;
+        this.eventManager = eventManager;
+        this.homekitFactories = homekitFactories;
+
         try {
             this.accessoryId = server.getNextAvailableAccessoryId();
         } catch (HomekitAccessoryOperationException e) {
@@ -101,8 +98,12 @@ public class GenericAccessory implements Accessory, HomekitEventPublisher, Homek
      * @param server The accessory server this accessory belongs to
      * @param value The JSON value containing the accessory data
      */
-    public GenericAccessory(JsonValue value) {
+    public GenericAccessory(JsonValue value, HomekitEventManager eventManager,
+            Collection<HomekitFactory> homekitFactories) {
         // this.server = server;
+        this.eventManager = eventManager;
+        this.homekitFactories = homekitFactories;
+
         this.accessoryId = ((JsonObject) value).getInt("aid");
         logger.debug("{}Created accessory from JSON with accessory ID: {}", LOG_INIT, accessoryId);
 
@@ -116,54 +117,8 @@ public class GenericAccessory implements Accessory, HomekitEventPublisher, Homek
         }
     }
 
-    @Override
-    @SuppressWarnings("unused")
-    public HomekitEventManager getEventManager() {
-        @Nullable
-        ServiceTracker<HomekitEventManager, HomekitEventManager> tracker = getEventManagerTracker();
-        if (tracker != null) {
-            @Nullable
-            HomekitEventManager manager = tracker.getService();
-            if (manager != null) {
-                return manager;
-            }
-        }
-        throw new IllegalStateException("HomekitEventManager service is not available");
-    }
-
-    @SuppressWarnings("null")
-    private static ServiceTracker<HomekitEventManager, HomekitEventManager> getEventManagerTracker() {
-        if (eventManagerTracker == null) {
-            BundleContext context = FrameworkUtil.getBundle(GenericAccessory.class).getBundleContext();
-            eventManagerTracker = new ServiceTracker<>(context, HomekitEventManager.class, null);
-            eventManagerTracker.open();
-        }
-
-        return eventManagerTracker;
-    }
-
-    @SuppressWarnings("null")
-    protected static Set<HomekitFactory> getHomekitFactories() {
-        ServiceTracker<HomekitFactory, HomekitFactory> tracker = getHomekitFactoryTracker();
-        if (tracker != null && tracker.getServices() != null) {
-            return Arrays.stream(tracker.getServices()).filter(HomekitFactory.class::isInstance)
-                    .map(HomekitFactory.class::cast).collect(Collectors.toSet());
-        }
-        return Collections.emptySet();
-    }
-
-    @Nullable
-    private static ServiceTracker<HomekitFactory, HomekitFactory> getHomekitFactoryTracker() {
-        if (homekitFactoryTracker == null) {
-            BundleContext context = FrameworkUtil.getBundle(GenericAccessory.class).getBundleContext();
-            homekitFactoryTracker = new ServiceTracker<>(context, HomekitFactory.class, null);
-            homekitFactoryTracker.open();
-        }
-        return homekitFactoryTracker;
-    }
-
     private Optional<Service> createService(JsonValue value) {
-        for (HomekitFactory factory : getHomekitFactories()) {
+        for (HomekitFactory factory : homekitFactories) {
             if (factory instanceof HomekitFactory homekitFactory) {
                 String serviceType = ((JsonObject) value).getString("type");
                 if (homekitFactory.supportsServiceType(serviceType)) {
@@ -190,19 +145,38 @@ public class GenericAccessory implements Accessory, HomekitEventPublisher, Homek
                 logger.debug("{}Added Service '{}' (Type: {}) to Accessory '{}' (Type: {})", LOG_ACCESSORY,
                         service.getName(), service.getInstanceType(), this.getLabel(), this.getClass().getSimpleName());
                 // Send event via HomekitEventManager
-                getEventManager().publishEvent(new AccessoryEvent(HomekitEventType.SERVICE_ADDED, this, service, null));
+                eventManager.publishEvent(new AccessoryEvent(HomekitEventType.SERVICE_ADDED, this, service, null));
 
                 // Subscribe to service state change events
-                if (service instanceof GenericService genericService) {
-                    getEventManager().subscribe(
-                            org.openhab.io.homekit.internal.events.HomekitEventType.SERVICE_STATE_CHANGED,
-                            genericService.getSourceUID(), this);
-                }
+                eventSubscriptions.add(eventManager.subscribe(
+                        org.openhab.io.homekit.internal.events.HomekitEventType.SERVICE_STATE_CHANGED,
+                        service.getUID().toString(), event -> onEvent(event)));
             } else {
                 logger.debug("{}Accessory '{}' (Type: {}) already contains Service '{}' (Type: {})", LOG_ACCESSORY,
                         this.getLabel(), this.getClass().getSimpleName(), service.getName(), service.getInstanceType());
             }
         }
+    }
+
+    @Override
+    public void removeService(Service service) {
+        if (services.remove(service)) {
+            logger.debug("{}Removed Service '{}' (Type: {}) from Accessory '{}' (Type: {})", LOG_ACCESSORY,
+                    service.getName(), service.getInstanceType(), this.getLabel(), this.getClass().getSimpleName());
+            // Send event via HomekitEventManager
+            eventManager.publishEvent(new AccessoryEvent(HomekitEventType.SERVICE_REMOVED, this, service, null));
+
+            Set<HomekitEventSubscription> subscriptions = eventSubscriptions.stream()
+                    .filter(subscription -> subscription.getPublisherUID().equals(service.getUID().toString()))
+                    .collect(Collectors.toSet());
+            subscriptions.forEach(subscription -> eventManager.unsubscribe(subscription));
+            eventSubscriptions.removeAll(subscriptions);
+        }
+    }
+
+    // Handle events from HomekitEventManager
+    public void onEvent(HomekitEvent event) {
+        // No Op?
     }
 
     /**
@@ -276,21 +250,17 @@ public class GenericAccessory implements Accessory, HomekitEventPublisher, Homek
     /**
      * Adds default services to the accessory. Subclasses can override this method
      * to provide additional services.
-     */
-    @Override
-    public void addServices() {
-        addService(new AccessoryInformationService(this, getNextAvailableInstanceId(), true, getLabel()));
+          * @throws Exception 
+          */
+         @Override
+         public void addServices()  {
+            addService(new AccessoryInformationService(this, getNextAvailableInstanceId(), true, getLabel(), eventManager, homekitFactories));
     }
 
     @Override
     @NonNull
     public AccessoryUID getUID() {
         return accessoryUID;
-    }
-
-    @Override
-    public String getSourceUID() {
-        return getUID().toString();
     }
 
     @Override
@@ -456,32 +426,5 @@ public class GenericAccessory implements Accessory, HomekitEventPublisher, Homek
         }
 
         return 0;
-    }
-
-    @Override
-    public void removeService(Service service) {
-        if (services.remove(service)) {
-            logger.debug("{}Removed Service '{}' (Type: {}) from Accessory '{}' (Type: {})", LOG_ACCESSORY,
-                    service.getName(), service.getInstanceType(), this.getLabel(), this.getClass().getSimpleName());
-            // Send event via HomekitEventManager
-            getEventManager().publishEvent(new AccessoryEvent(HomekitEventType.SERVICE_REMOVED, this, service, null));
-
-            if (service instanceof GenericService genericService) {
-                getEventManager().unsubscribe(
-                        org.openhab.io.homekit.internal.events.HomekitEventType.SERVICE_STATE_CHANGED,
-                        genericService.getSourceUID(), this);
-            }
-        }
-    }
-
-    // Handle events from HomekitEventManager
-    @Override
-    public void onEvent(HomekitEvent event) {
-        // No Op?
-    }
-
-    @Override
-    public void onEventError(HomekitEvent event, Exception e) {
-        logger.error("Error processing event: {}", e.getMessage());
     }
 }

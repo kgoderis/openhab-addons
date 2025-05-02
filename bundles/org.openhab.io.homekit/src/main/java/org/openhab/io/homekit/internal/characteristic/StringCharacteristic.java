@@ -13,6 +13,7 @@ import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
 
 /**
  * @author Karel Goderis - Initial Contribution
@@ -23,13 +24,13 @@ public abstract class StringCharacteristic extends GenericCharacteristic<String>
 
     private static final int MAX_LEN = 64;
 
-    public StringCharacteristic(Service service, long instanceId, String description, String type) {
-        super(service, instanceId, "string", true, true, true, description, type);
+    public StringCharacteristic(Service service, long instanceId, String description, String type, HomekitEventManager eventManager) {
+        super(service, instanceId, "string", true, true, true, description, type, eventManager);
         initializeValue();
     }
 
-    public StringCharacteristic(Service service, JsonValue value) {
-        super(service, value);
+    public StringCharacteristic(Service service, JsonValue value, HomekitEventManager eventManager) {
+        super(service, value, eventManager);
         initializeValue();
     }
 

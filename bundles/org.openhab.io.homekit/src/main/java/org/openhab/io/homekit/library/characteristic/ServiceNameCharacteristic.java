@@ -8,18 +8,19 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.ReadOnlyStringCharacteristic;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
 
 @NonNullByDefault
 public class ServiceNameCharacteristic extends ReadOnlyStringCharacteristic {
 
     private static final String TYPE = "00000023-0000-1000-8000-0026BB765291";
 
-    public ServiceNameCharacteristic(Service service, long instanceId) {
-        super(service, instanceId, "Name of the service", TYPE);
+    public ServiceNameCharacteristic(Service service, long instanceId, HomekitEventManager eventManager) {
+        super(service, instanceId, "Service Name", TYPE, eventManager);
     }
 
-    public ServiceNameCharacteristic(Service service, JsonValue value) {
-        super(service, value);
+    public ServiceNameCharacteristic(Service service, JsonValue value, HomekitEventManager eventManager) {
+        super(service, value, eventManager);
     }
 
     public static String getType() {

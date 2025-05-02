@@ -5,11 +5,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -131,7 +132,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     private final AccessoryRegistryImpl accessoryRegistry;
     private final MetadataRegistry metadataRegistry;
     private final AccessoryServerRegistry accessoryServerRegistry;
-    private final Map<String, HomekitFactory> homekitFactories = new ConcurrentHashMap<>();
+    private final Set<HomekitFactory> homekitFactories = Collections.synchronizedSet(new HashSet<>());
     private final Map<String, Collection<Characteristic<?>>> characteristicMap = new ConcurrentHashMap<>();
     private final Map<String, Accessory> accessoryMap = new ConcurrentHashMap<>();
     private final HomekitEventManager eventManager;
@@ -159,7 +160,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
         // Initialize existing HomeKit tagged items
         for (Item item : itemRegistry.getItems()) {
-            HomekitTaggedItem taggedItem = new HomekitTaggedItem(item, itemRegistry, metadataRegistry);
+            HomekitTaggedItem taggedItem = new HomekitTaggedItem(item, itemRegistry, metadataRegistry,
+                    homekitFactories);
             if (taggedItem.isTagged()) {
                 createAccessoryForItem(taggedItem);
             }
@@ -268,11 +270,12 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
     protected void addHomekitFactory(HomekitFactory homekitFactory) {
         synchronized (factoryLock) {
-            homekitFactories.put(homekitFactory.getClass().getName(), homekitFactory);
+            homekitFactories.add(homekitFactory);
         }
 
         // Check existing items for compatibility with new factory
-        itemRegistry.getItems().stream().map(item -> new HomekitTaggedItem(item, itemRegistry, metadataRegistry))
+        itemRegistry.getItems().stream()
+                .map(item -> new HomekitTaggedItem(item, itemRegistry, metadataRegistry, homekitFactories))
                 .filter(HomekitTaggedItem::isTagged).filter(taggedItem -> {
                     synchronized (accessoryLock) {
                         return !accessoryMap.containsKey(taggedItem.getName());
@@ -288,7 +291,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      */
     protected void removeHomekitFactory(HomekitFactory homekitFactory) {
         synchronized (factoryLock) {
-            homekitFactories.remove(homekitFactory.getClass().getName());
+            homekitFactories.remove(homekitFactory);
         }
     }
 
@@ -299,15 +302,13 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      * @return Optional containing the compatible factory if found
      */
     private Optional<HomekitFactory> findCompatibleFactory(HomekitTaggedItem taggedItem) {
-
         String serviceType = taggedItem.getServiceType();
         if (serviceType == null) {
             return Optional.empty();
         }
 
         synchronized (factoryLock) {
-            return homekitFactories.values().stream().filter(factory -> factory.supportsServiceType(serviceType))
-                    .findFirst();
+            return homekitFactories.stream().filter(factory -> factory.supportsServiceType(serviceType)).findFirst();
         }
     }
 
@@ -319,8 +320,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      */
     private Optional<HomekitFactory> findCompatibleCharacteristicFactory(String characteristicType) {
         synchronized (factoryLock) {
-            return homekitFactories.values().stream()
-                    .filter(factory -> factory.supportsCharacteristicsType(characteristicType)).findFirst();
+            return homekitFactories.stream().filter(factory -> factory.supportsCharacteristicsType(characteristicType))
+                    .findFirst();
         }
     }
 
@@ -482,7 +483,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
             Map<String, Item> characteristicItems = getCharacteristicTypeItemMap(taggedItem);
 
             if (primaryAccessory != null) {
-                Accessory accessory = new GenericAccessory(server);
+                Accessory accessory = new GenericAccessory(server, eventManager, homekitFactories);
                 Optional<Service> primaryService = createPrimaryService(serviceFactory, primaryAccessory, accessory,
                         taggedItem);
                 if (primaryService.isPresent()) {
@@ -603,7 +604,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
         if (!(characteristic instanceof GenericCharacteristic<?> genericCharacteristic)) {
             return;
         }
-        eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, genericCharacteristic.getSourceUID(),
+        eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, genericCharacteristic.getUID().toString(),
                 event -> handleCharacteristicStateChangedEvent(event, item));
     }
 
@@ -670,10 +671,10 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
         if (taggedItem.isGroup()) {
             GroupItem groupItem = (GroupItem) taggedItem.getItem();
-            return homekitFactories.values().stream().filter(Objects::nonNull)
+            return homekitFactories.stream().filter(Objects::nonNull)
                     .map(factory -> factory.getTagFromServiceType(serviceType)).filter(Objects::nonNull)
                     .flatMap(tag -> groupItem.getMembers().stream().filter(item -> item.hasTag(tag))
-                            .map(item -> new HomekitTaggedItem(item, itemRegistry, metadataRegistry)))
+                            .map(item -> new HomekitTaggedItem(item, itemRegistry, metadataRegistry, homekitFactories)))
                     .findFirst();
         } else if (serviceType.equals(taggedItem.getServiceType())) {
             return Optional.of(taggedItem);
@@ -693,15 +694,9 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
             Map<String, Item> characteristicItems = new HashMap<>();
             groupItem.getMembers().forEach(item -> {
                 String type = getHomekitTags(item).stream().map(tag -> {
-                    Object[] factories = homekitFactories.values().toArray();
-                    if (factories != null) {
-                        return Stream.of(factories).filter(factory -> factory instanceof HomekitFactory)
-                                .map(factory -> (HomekitFactory) factory)
-                                .map(factory -> factory.getCharacteristicTypeFromTag(tag)).filter(t -> t != null)
-                                .findFirst().orElse(null);
-                    }
-                    return null;
-                }).filter(t -> t != null).findFirst().orElse(null);
+                    return homekitFactories.stream().map(factory -> factory.getCharacteristicTypeFromTag(tag))
+                            .filter(Objects::nonNull).findFirst().orElse(null);
+                }).filter(Objects::nonNull).findFirst().orElse(null);
                 if (type != null) {
                     if (characteristicItems.containsKey(type)) {
                         logger.warn("incorrect configuration for {} detected: {} and {} are tagged as {}, skipping {}",
@@ -715,7 +710,6 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
             });
             return Collections.unmodifiableMap(characteristicItems);
         } else {
-            // do nothing; only accessory groups have characteristic items
             return Collections.emptyMap();
         }
     }
@@ -729,7 +723,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      */
     @Override
     public void added(Item item) {
-        HomekitTaggedItem taggedItem = new HomekitTaggedItem(item, itemRegistry, metadataRegistry);
+        HomekitTaggedItem taggedItem = new HomekitTaggedItem(item, itemRegistry, metadataRegistry, homekitFactories);
         if (taggedItem.isTagged()) {
             createAccessoryForItem(taggedItem);
         }
@@ -756,7 +750,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     @Override
     public void updated(Item oldItem, Item item) {
         removeAccessoryForItem(oldItem);
-        HomekitTaggedItem taggedItem = new HomekitTaggedItem(item, itemRegistry, metadataRegistry);
+        HomekitTaggedItem taggedItem = new HomekitTaggedItem(item, itemRegistry, metadataRegistry, homekitFactories);
         if (taggedItem.isTagged()) {
             createAccessoryForItem(taggedItem);
         }
@@ -779,7 +773,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
         });
 
         // Create new accessories for all tagged items
-        itemRegistry.getItems().stream().map(item -> new HomekitTaggedItem(item, itemRegistry, metadataRegistry))
+        itemRegistry.getItems().stream()
+                .map(item -> new HomekitTaggedItem(item, itemRegistry, metadataRegistry, homekitFactories))
                 .filter(HomekitTaggedItem::isTagged).forEach(this::createAccessoryForItem);
     }
 

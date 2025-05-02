@@ -1,7 +1,6 @@
 package org.openhab.io.homekit.internal.service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -32,25 +31,17 @@ import org.openhab.io.homekit.internal.characteristic.GenericCharacteristic;
 import org.openhab.io.homekit.internal.events.CharacteristicEvent;
 import org.openhab.io.homekit.internal.events.HomekitEvent;
 import org.openhab.io.homekit.internal.events.HomekitEventManager;
-import org.openhab.io.homekit.internal.events.HomekitEventPublisher;
-import org.openhab.io.homekit.internal.events.HomekitEventSubscriber;
+import org.openhab.io.homekit.internal.events.HomekitEventSubscription;
 import org.openhab.io.homekit.internal.events.HomekitEventType;
 import org.openhab.io.homekit.internal.events.ServiceEvent;
 import org.openhab.io.homekit.library.characteristic.ServiceNameCharacteristic;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @NonNullByDefault
-public class GenericService implements Service, HomekitEventPublisher, HomekitEventSubscriber {
+public class GenericService implements Service {
 
     protected static final Logger logger = LoggerFactory.getLogger(GenericService.class);
-    @Nullable
-    private static ServiceTracker<HomekitFactory, HomekitFactory> homekitFactoryTracker;
-    @Nullable
-    private static ServiceTracker<HomekitEventManager, HomekitEventManager> eventManagerTracker;
 
     private final Accessory accessory;
     private final long instanceId;
@@ -60,21 +51,33 @@ public class GenericService implements Service, HomekitEventPublisher, HomekitEv
     private boolean isPrimary;
     private final List<Characteristic<?>> characteristics = new LinkedList<>();
     private final boolean isExtensible;
+    protected final HomekitEventManager eventManager;
+    protected final Collection<HomekitFactory> factories;
 
-    public GenericService(Accessory accessory, long instanceId, boolean extend, String name) {
+    private final Set<HomekitEventSubscription> eventSubscriptions = new HashSet<>();
+
+    public GenericService(Accessory accessory, long instanceId, boolean extend, String name, String type,
+            HomekitEventManager eventManager, Collection<HomekitFactory> factories) {
         this.accessory = accessory;
         this.instanceId = instanceId;
         this.name = name;
+        this.type = type;
         this.isExtensible = extend;
+        this.eventManager = eventManager;
+        this.factories = factories;
+
         initialise();
     }
 
-    public GenericService(Accessory accessory, JsonValue value, String name) {
+    public GenericService(Accessory accessory, JsonValue value, String name, HomekitEventManager eventManager,
+            Collection<HomekitFactory> factories) {
         this.accessory = accessory;
         this.instanceId = ((JsonObject) value).getInt("iid");
         this.type = ((JsonObject) value).getString("type");
         this.name = name;
         this.isExtensible = false; // Not extensible when created from JSON
+        this.eventManager = eventManager;
+        this.factories = factories;
 
         JsonArray characteristicsArray = ((JsonObject) value).getJsonArray("characteristics");
         for (JsonValue characteristicValue : characteristicsArray) {
@@ -102,63 +105,12 @@ public class GenericService implements Service, HomekitEventPublisher, HomekitEv
     }
 
     @Override
-    @SuppressWarnings("unused")
-    public HomekitEventManager getEventManager() {
-        @Nullable
-        ServiceTracker<HomekitEventManager, HomekitEventManager> tracker = getEventManagerTracker();
-        if (tracker != null) {
-            @Nullable
-            HomekitEventManager manager = tracker.getService();
-            if (manager != null) {
-                return manager;
-            }
-        }
-        throw new IllegalStateException("HomekitEventManager service is not available");
-    }
-
-    @SuppressWarnings("null")
-    private static ServiceTracker<HomekitEventManager, HomekitEventManager> getEventManagerTracker() {
-        if (eventManagerTracker == null) {
-            BundleContext context = FrameworkUtil.getBundle(GenericService.class).getBundleContext();
-            eventManagerTracker = new ServiceTracker<>(context, HomekitEventManager.class, null);
-            eventManagerTracker.open();
-        }
-
-        return eventManagerTracker;
-    }
-
-    @SuppressWarnings("null")
-    protected static Set<HomekitFactory> getHomekitFactories() {
-        ServiceTracker<HomekitFactory, HomekitFactory> tracker = getHomekitFactoryTracker();
-        if (tracker != null && tracker.getServices() != null) {
-            return Arrays.stream(tracker.getServices()).filter(HomekitFactory.class::isInstance)
-                    .map(HomekitFactory.class::cast).collect(Collectors.toSet());
-        }
-        return Collections.emptySet();
-    }
-
-    @Nullable
-    private static ServiceTracker<HomekitFactory, HomekitFactory> getHomekitFactoryTracker() {
-        if (homekitFactoryTracker == null) {
-            BundleContext context = FrameworkUtil.getBundle(GenericService.class).getBundleContext();
-            homekitFactoryTracker = new ServiceTracker<>(context, HomekitFactory.class, null);
-            homekitFactoryTracker.open();
-        }
-        return homekitFactoryTracker;
-    }
-
-    @Override
-    public String getSourceUID() {
-        return getUID().toString();
-    }
-
-    @Override
     public void addCharacteristics() {
-        addCharacteristic(new ServiceNameCharacteristic(this, getAccessory().getAccessoryId()));
+        addCharacteristic(new ServiceNameCharacteristic(this, getAccessory().getAccessoryId(), eventManager));
     }
 
     private Optional<Characteristic<?>> createCharacteristic(JsonValue value) {
-        for (HomekitFactory factory : getHomekitFactories()) {
+        for (HomekitFactory factory : factories) {
             String characteristicType = ((JsonObject) value).getString("type");
             if (factory.supportsCharacteristicsType(characteristicType)) {
                 try {
@@ -301,8 +253,9 @@ public class GenericService implements Service, HomekitEventPublisher, HomekitEv
             notifyCharacteristicAdded(characteristic);
 
             if (characteristic instanceof GenericCharacteristic) {
-                String sourceUID = ((GenericCharacteristic<?>) characteristic).getSourceUID();
-                getEventManager().subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, sourceUID, this);
+                String sourceUID = ((GenericCharacteristic<?>) characteristic).getUID().toString();
+                eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, sourceUID,
+                        event -> onEvent(event)));
             } else {
                 logger.warn("Characteristic '{}' (Type: {}) is not a HomekitEventPublisher",
                         characteristic.getDescription(), characteristic.getInstanceType());
@@ -314,16 +267,10 @@ public class GenericService implements Service, HomekitEventPublisher, HomekitEv
         }
     }
 
-    @Override
     public void onEvent(HomekitEvent event) {
         if (event instanceof CharacteristicEvent characteristicEvent) {
             notifyCharacteristicStateChanged(characteristicEvent.getCharacteristic().get());
         }
-    }
-
-    @Override
-    public void onEventError(HomekitEvent event, Exception e) {
-        logger.error("Error processing event: {}", e.getMessage());
     }
 
     @Override
@@ -372,21 +319,21 @@ public class GenericService implements Service, HomekitEventPublisher, HomekitEv
         logger.debug("Notifying listeners of Characteristic '{}' (Type: {}) addition to Service '{}'",
                 characteristic.getDescription(), characteristic.getInstanceType(), this.getName());
         ServiceEvent event = new ServiceEvent(HomekitEventType.CHARACTERISTIC_ADDED, this, characteristic);
-        getEventManager().publishEvent(event);
+        eventManager.publishEvent(event);
     }
 
     protected void notifyCharacteristicRemoved(Characteristic<?> characteristic) {
         logger.debug("Notifying listeners of Characteristic '{}' (Type: {}) removal from Service '{}'",
                 characteristic.getDescription(), characteristic.getInstanceType(), this.getName());
         ServiceEvent event = new ServiceEvent(HomekitEventType.CHARACTERISTIC_REMOVED, this, characteristic);
-        getEventManager().publishEvent(event);
+        eventManager.publishEvent(event);
     }
 
     protected void notifyCharacteristicStateChanged(Characteristic<?> characteristic) {
         logger.debug("Notifying listeners of Characteristic '{}' (Type: {}) state change in Service '{}'",
                 characteristic.getDescription(), characteristic.getInstanceType(), this.getName());
         ServiceEvent event = new ServiceEvent(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, this, characteristic);
-        getEventManager().publishEvent(event);
+        eventManager.publishEvent(event);
     }
 
     @SuppressWarnings("null")

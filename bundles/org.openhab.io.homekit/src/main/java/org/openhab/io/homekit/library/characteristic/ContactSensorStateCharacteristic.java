@@ -9,18 +9,19 @@ import org.openhab.core.library.types.OpenClosedType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.EnumCharacteristic;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
 
 @NonNullByDefault
 public class ContactSensorStateCharacteristic extends EnumCharacteristic {
 
     private static final String TYPE = "0000006A-0000-1000-8000-0026BB765291";
 
-    public ContactSensorStateCharacteristic(Service service, long instanceId) {
-        super(service, instanceId, false, true, true, "State of a door/window contact sensor", 1, TYPE);
+    public ContactSensorStateCharacteristic(Service service, long instanceId, HomekitEventManager eventManager) {
+        super(service, instanceId, false, true, true, "Contact Sensor State", 1, TYPE, eventManager);
     }
 
-    public ContactSensorStateCharacteristic(Service service, JsonValue value) {
-        super(service, value);
+    public ContactSensorStateCharacteristic(Service service, JsonValue value, HomekitEventManager eventManager) {
+        super(service, value, eventManager);
     }
 
     public static String getType() {

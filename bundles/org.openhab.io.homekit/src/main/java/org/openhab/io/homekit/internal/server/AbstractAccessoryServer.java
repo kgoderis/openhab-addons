@@ -14,6 +14,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.api.hap.Accessory;
 import org.openhab.io.homekit.api.hap.AccessoryCategory;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
@@ -94,11 +95,13 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
     private final AccessoryRegistry accessoryRegistry;
     private final PairingRegistry pairingRegistry;
     protected final HomekitEventManager eventManager;
+    protected final Set<HomekitFactory> homekitFactories;
 
     // ========== Constructor ==========
     public AbstractAccessoryServer(AccessoryCategory category, InetAddress address, int port, byte[] pairingId,
             byte[] privateKey, AccessoryRegistry accessoryRegistry, PairingRegistry pairingRegistry,
-            HomekitEventManager eventManager) throws HomekitConfigurationException {
+            HomekitEventManager eventManager, Set<HomekitFactory> homekitFactories)
+            throws HomekitConfigurationException {
         super();
         validateConstructorParameters(category, address, port, pairingId, privateKey, accessoryRegistry,
                 pairingRegistry);
@@ -114,6 +117,7 @@ public abstract class AbstractAccessoryServer implements AccessoryServer, AutoCl
         this.pairingIdentifier = pairingId;
         this.setupCode = "";
         this.eventManager = eventManager;
+        this.homekitFactories = homekitFactories;
         logger.debug("{}HomeKit server initialization completed", LOG_INIT);
     }
 

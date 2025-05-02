@@ -15,6 +15,7 @@ import org.openhab.core.net.NetworkAddressService;
 import org.openhab.core.service.ReadyMarker;
 import org.openhab.core.service.ReadyMarkerFilter;
 import org.openhab.core.service.ReadyService;
+import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.api.hap.AccessoryCategory;
 import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.provider.AccessoryServerProvider;
@@ -23,13 +24,13 @@ import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.exception.HomekitServerException;
+import org.openhab.io.homekit.internal.accessory.GenericAccessory;
 import org.openhab.io.homekit.internal.events.AccessoryServerEvent;
 import org.openhab.io.homekit.internal.events.HomekitEventManager;
 import org.openhab.io.homekit.internal.events.HomekitEventSubscription;
 import org.openhab.io.homekit.internal.events.HomekitEventType;
 import org.openhab.io.homekit.internal.server.AccessoryServerUID;
 import org.openhab.io.homekit.internal.server.RemoteAccessoryServer;
-import org.openhab.io.homekit.library.accessory.BridgeAccessory;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -72,17 +73,20 @@ public class AccessoryServerRegistryImpl
     private final PairingRegistry pairingRegistry;
     private final HomekitEventManager eventManager;
     private final Set<HomekitEventSubscription> eventSubscriptions = new HashSet<>();
+    private final Set<HomekitFactory> homekitFactories;
 
     @Activate
     public AccessoryServerRegistryImpl(@Reference ReadyService readyService,
             @Reference NetworkAddressService networkAddressService, @Reference AccessoryRegistry accessoryRegistry,
-            @Reference PairingRegistry pairingRegistry, @Reference HomekitEventManager eventManager) {
+            @Reference PairingRegistry pairingRegistry, @Reference HomekitEventManager eventManager,
+            @Reference Set<HomekitFactory> homekitFactories) {
         super(AccessoryServerProvider.class);
         this.readyService = readyService;
         this.networkAddressService = networkAddressService;
         this.accessoryRegistry = accessoryRegistry;
         this.pairingRegistry = pairingRegistry;
         this.eventManager = eventManager;
+        this.homekitFactories = homekitFactories;
     }
 
     @Override
@@ -149,7 +153,7 @@ public class AccessoryServerRegistryImpl
             try {
                 availableServer = new RemoteAccessoryServer(AccessoryCategory.BRIDGES,
                         InetAddress.getByName(networkAddressService.getPrimaryIpv4HostAddress()), highestPortNumber++,
-                        accessoryRegistry, pairingRegistry, eventManager);
+                        accessoryRegistry, pairingRegistry, eventManager, homekitFactories);
             } catch (UnknownHostException | HomekitServerException e) {
                 logger.error("{}Failed to create RemoteAccessoryServer: {}", LOG_ERROR, e.getMessage(), e);
                 return null;
@@ -161,7 +165,7 @@ public class AccessoryServerRegistryImpl
                         logger.info("{}Adding Bridge Accessory to Server - UID: {}, Type: {}, Port: {}, Setup Code: {}",
                                 LOG_ACCESSORY, availableServer.getUID(), availableServer.getClass().getSimpleName(),
                                 availableServer.getPort(), availableServer.getSetupCode());
-                        BridgeAccessory bridgeAccessory = new BridgeAccessory(availableServer, true);
+                        GenericAccessory bridgeAccessory = new GenericAccessory(availableServer, eventManager, homekitFactories);
                         availableServer.addAccessory(bridgeAccessory);
                     } catch (Exception e) {
                         logger.error("{}Error adding bridge accessory: {}", LOG_ERROR, e.getMessage(), e);

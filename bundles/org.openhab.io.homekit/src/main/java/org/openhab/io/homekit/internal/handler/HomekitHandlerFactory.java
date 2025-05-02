@@ -30,6 +30,7 @@ import org.openhab.io.homekit.api.registry.AccessoryRegistry;
 import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
 import org.openhab.io.homekit.api.registry.PairingRegistry;
 import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
 import org.openhab.io.homekit.internal.provider.HomekitChannelGroupTypeProvider;
 import org.openhab.io.homekit.internal.provider.HomekitChannelTypeProvider;
 import org.openhab.io.homekit.internal.provider.HomekitThingTypeProvider;
@@ -62,13 +63,15 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
     protected final HomekitThingTypeProvider homekitThingTypeProvider;
     protected final HomekitChannelTypeProvider homekitChannelTypeProvider;
     protected final HomekitChannelGroupTypeProvider homekitChannelGroupTypeProvider;
+    protected final HomekitEventManager eventManager;
 
     @Activate
     public HomekitHandlerFactory(ComponentContext componentContext, @Reference AccessoryRegistry accessoryRegistry,
             @Reference PairingRegistry pairingRegistry, @Reference AccessoryServerRegistry serverRegistry,
             @Reference HomekitThingTypeProvider homekitThingTypeProvider,
             @Reference HomekitChannelTypeProvider homekitChannelTypeProvider,
-            @Reference HomekitChannelGroupTypeProvider homekitChannelGroupTypeProvider) {
+            @Reference HomekitChannelGroupTypeProvider homekitChannelGroupTypeProvider,
+            @Reference HomekitEventManager eventManager) {
         super.activate(componentContext);
         this.bundleContext = componentContext.getBundleContext();
         this.accessoryRegistry = accessoryRegistry;
@@ -77,6 +80,7 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
         this.homekitThingTypeProvider = homekitThingTypeProvider;
         this.homekitChannelTypeProvider = homekitChannelTypeProvider;
         this.homekitChannelGroupTypeProvider = homekitChannelGroupTypeProvider;
+        this.eventManager = eventManager;
 
         SUPPORTED_THING_TYPES = Collections.unmodifiableSet(homekitThingTypeProvider.getThingTypes(null).stream()
                 .map(ThingType::getUID).collect(Collectors.toSet()));
@@ -104,12 +108,12 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
 
         if (HomekitBindingConstants.THING_TYPE_ACCESSORY.equals(thingTypeUID)) {
             return new AccessoryThingHandler(thing, serverRegistry, accessoryRegistry, homekitChannelTypeProvider,
-                    homekitThingTypeProvider);
+                    homekitThingTypeProvider, eventManager);
         }
 
         if (SUPPORTED_THING_TYPES.contains(thingTypeUID)) {
             return new ServiceThingHandler(thing, serverRegistry, accessoryRegistry, homekitChannelTypeProvider,
-                    homekitThingTypeProvider);
+                    homekitThingTypeProvider, eventManager);
         }
 
         logger.debug("Unsupported thing {}", thing.getThingTypeUID());

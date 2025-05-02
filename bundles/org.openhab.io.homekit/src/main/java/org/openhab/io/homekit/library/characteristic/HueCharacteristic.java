@@ -10,18 +10,19 @@ import org.openhab.core.library.types.HSBType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.FloatCharacteristic;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
 
 @NonNullByDefault
 public class HueCharacteristic extends FloatCharacteristic {
 
     private static final String TYPE = "00000013-0000-1000-8000-0026BB765291";
 
-    public HueCharacteristic(Service service, long instanceId) {
-        super(service, instanceId, true, true, true, "Adjust hue of the light", 0, 360, 1, "arcdegrees", TYPE);
+    public HueCharacteristic(Service service, long instanceId, HomekitEventManager eventManager) {
+        super(service, instanceId, true, true, true, "Adjust hue of the light", 0, 360, 1, "arcdegrees", TYPE, eventManager);
     }
 
-    public HueCharacteristic(Service service, JsonValue value) {
-        super(service, value);
+    public HueCharacteristic(Service service, JsonValue value, HomekitEventManager eventManager) {
+        super(service, value, eventManager);
     }
 
     public static String getType() {

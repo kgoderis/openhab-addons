@@ -8,17 +8,18 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.IntegerCharacteristic;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
 
 @NonNullByDefault
 public class CurrentPositionCharacteristic extends IntegerCharacteristic {
     private static final String TYPE = "0000006D-0000-1000-8000-0026BB765291";
 
-    public CurrentPositionCharacteristic(Service service, long instanceId) {
-        super(service, instanceId, false, true, true, "Current position", 0, 100, "percent", TYPE);
+    public CurrentPositionCharacteristic(Service service, long instanceId, HomekitEventManager eventManager) {
+        super(service, instanceId, false, true, true, "Current Position", 0, 100, "%", TYPE, eventManager);
     }
 
-    public CurrentPositionCharacteristic(Service service, JsonValue value) {
-        super(service, value);
+    public CurrentPositionCharacteristic(Service service, JsonValue value, HomekitEventManager eventManager) {
+        super(service, value, eventManager);
     }
 
     public static String getType() {

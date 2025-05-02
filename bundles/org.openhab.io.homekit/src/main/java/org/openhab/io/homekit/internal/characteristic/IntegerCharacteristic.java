@@ -10,6 +10,7 @@ import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
 
 @NonNullByDefault
 public abstract class IntegerCharacteristic extends GenericCharacteristic<Integer> {
@@ -19,16 +20,16 @@ public abstract class IntegerCharacteristic extends GenericCharacteristic<Intege
     private final String unit;
 
     public IntegerCharacteristic(Service service, long instanceId, boolean isWritable, boolean isReadable,
-            boolean hasEvents, String description, int minValue, int maxValue, String unit, String type) {
-        super(service, instanceId, "int", isWritable, isReadable, hasEvents, description, type);
+            boolean hasEvents, String description, int minValue, int maxValue, String unit, String type, HomekitEventManager eventManager) {
+        super(service, instanceId, "int", isWritable, isReadable, hasEvents, description, type, eventManager);
         this.minValue = minValue;
         this.maxValue = maxValue;
         this.unit = unit;
         initializeValue();
     }
 
-    public IntegerCharacteristic(Service service, JsonValue value) {
-        super(service, value);
+    public IntegerCharacteristic(Service service, JsonValue value, HomekitEventManager eventManager) {
+        super(service, value, eventManager);
         JsonObject jsonObject = (JsonObject) value;
         this.minValue = jsonObject.containsKey("minValue") ? jsonObject.getInt("minValue") : 0;
         this.maxValue = jsonObject.containsKey("maxValue") ? jsonObject.getInt("maxValue") : Integer.MAX_VALUE;

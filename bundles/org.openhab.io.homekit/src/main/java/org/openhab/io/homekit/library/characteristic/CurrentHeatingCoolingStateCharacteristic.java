@@ -8,18 +8,19 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.ByteCharacteristic;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
 
 @NonNullByDefault
 public class CurrentHeatingCoolingStateCharacteristic extends ByteCharacteristic {
 
     private static final String TYPE = "0000000F-0000-1000-8000-0026BB765291";
 
-    public CurrentHeatingCoolingStateCharacteristic(Service service, long instanceId) {
-        super(service, instanceId, false, true, true, "Current heating cooling state", (byte) 0, (byte) 3, TYPE);
+    public CurrentHeatingCoolingStateCharacteristic(Service service, long instanceId, HomekitEventManager eventManager) {
+        super(service, instanceId, false, true, true, "Current Heating Cooling State", (byte) 0, (byte) 2, TYPE, eventManager);
     }
 
-    public CurrentHeatingCoolingStateCharacteristic(Service service, JsonValue value) {
-        super(service, value);
+    public CurrentHeatingCoolingStateCharacteristic(Service service, JsonValue value, HomekitEventManager eventManager) {
+        super(service, value, eventManager);
     }
 
     public static String getType() {

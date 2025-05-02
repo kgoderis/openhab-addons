@@ -8,17 +8,18 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.ReadOnlyStringCharacteristic;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
 
 @NonNullByDefault
 public class FirmwareRevisionCharacteristic extends ReadOnlyStringCharacteristic {
     private static final String TYPE = "00000052-0000-1000-8000-0026BB765291";
 
-    public FirmwareRevisionCharacteristic(Service service, long instanceId) {
-        super(service, instanceId, "Firmware revision of the accessory", TYPE);
+    public FirmwareRevisionCharacteristic(Service service, long instanceId, HomekitEventManager eventManager) {
+        super(service, instanceId, "Firmware Revision", TYPE, eventManager);
     }
 
-    public FirmwareRevisionCharacteristic(Service service, JsonValue value) {
-        super(service, value);
+    public FirmwareRevisionCharacteristic(Service service, JsonValue value, HomekitEventManager eventManager) {
+        super(service, value, eventManager);
     }
 
     public static String getType() {

@@ -8,17 +8,18 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.EnumCharacteristic;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
 
 @NonNullByDefault
 public class PositionStateCharacteristic extends EnumCharacteristic {
     private static final String TYPE = "00000072-0000-1000-8000-0026BB765291";
 
-    public PositionStateCharacteristic(Service service, long instanceId) {
-        super(service, instanceId, false, true, true, "Position state", 2, TYPE);
+    public PositionStateCharacteristic(Service service, long instanceId, HomekitEventManager eventManager) {
+        super(service, instanceId, false, true, true, "Position State", 2, TYPE, eventManager);
     }
 
-    public PositionStateCharacteristic(Service service, JsonValue value) {
-        super(service, value);
+    public PositionStateCharacteristic(Service service, JsonValue value, HomekitEventManager eventManager) {
+        super(service, value, eventManager);
     }
 
     public static String getType() {

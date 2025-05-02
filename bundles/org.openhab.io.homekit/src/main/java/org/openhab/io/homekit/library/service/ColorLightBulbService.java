@@ -1,37 +1,51 @@
 package org.openhab.io.homekit.library.service;
 
+import java.util.Collection;
+
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.api.hap.Accessory;
-import org.openhab.io.homekit.library.characteristic.ColorTemperatureCharacteristic;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
+import org.openhab.io.homekit.internal.service.GenericService;
+import org.openhab.io.homekit.library.characteristic.BrightnessCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HueCharacteristic;
+import org.openhab.io.homekit.library.characteristic.OnCharacteristic;
 import org.openhab.io.homekit.library.characteristic.SaturationCharacteristic;
 
-public class ColorLightBulbService extends LightBulbService {
+public class ColorLightBulbService extends GenericService {
+    private static final String TYPE = "00000043-0000-1000-8000-0026BB765291";
 
-    public ColorLightBulbService(Accessory accessory, long instanceId, boolean extend, @NonNull String serviceName)
-            throws Exception {
-        super(accessory, instanceId, extend, serviceName);
+    public ColorLightBulbService(Accessory accessory, long instanceId, boolean extend, @NonNull String serviceName, HomekitEventManager eventManager, Collection<HomekitFactory> factories)
+            {
+        super(accessory, instanceId, extend, serviceName, TYPE, eventManager, factories);
     }
 
-    public ColorLightBulbService(Accessory accessory, JsonValue value, String name) {
-        super(accessory, value, name);
+    public ColorLightBulbService(Accessory accessory, JsonValue value, String name, HomekitEventManager eventManager, Collection<HomekitFactory> factories) {
+        super(accessory, value, name, eventManager, factories);
     }
 
     @Override
     public void addCharacteristics() {
         super.addCharacteristics();
-        addCharacteristic(new HueCharacteristic(this, ((Accessory) getAccessory()).getNextAvailableInstanceId()));
         addCharacteristic(
-                new SaturationCharacteristic(this, ((Accessory) getAccessory()).getNextAvailableInstanceId()));
+                new OnCharacteristic(this, ((Accessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
         addCharacteristic(
-                new ColorTemperatureCharacteristic(this, ((Accessory) getAccessory()).getNextAvailableInstanceId()));
+                new BrightnessCharacteristic(this, ((Accessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
+        addCharacteristic(
+                new HueCharacteristic(this, ((Accessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
+        addCharacteristic(
+                new SaturationCharacteristic(this, ((Accessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
     }
 
     @Override
-    public String getInstanceType() {
-        return getType();
+    public boolean isExtensible() {
+        return false;
+    }
+
+    public static String getType() {
+        return TYPE;
     }
 
     public static String getTag() {

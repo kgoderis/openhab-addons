@@ -8,18 +8,19 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.IntegerCharacteristic;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
 
 @NonNullByDefault
 public class CurrentHorizontalTiltAngleCharacteristic extends IntegerCharacteristic {
 
     private static final String TYPE = "0000006C-0000-1000-8000-0026BB765291";
 
-    public CurrentHorizontalTiltAngleCharacteristic(Service service, long instanceId) {
-        super(service, instanceId, false, true, true, "Current horizontal tilt angle", -90, 90, "arcdegrees", TYPE);
+    public CurrentHorizontalTiltAngleCharacteristic(Service service, long instanceId, HomekitEventManager eventManager) {
+        super(service, instanceId, false, true, true, "Current Horizontal Tilt Angle", -90, 90, "arcdegrees", TYPE, eventManager);
     }
 
-    public CurrentHorizontalTiltAngleCharacteristic(Service service, JsonValue value) {
-        super(service, value);
+    public CurrentHorizontalTiltAngleCharacteristic(Service service, JsonValue value, HomekitEventManager eventManager) {
+        super(service, value, eventManager);
     }
 
     public static String getType() {

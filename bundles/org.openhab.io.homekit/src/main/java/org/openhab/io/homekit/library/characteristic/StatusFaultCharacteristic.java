@@ -7,17 +7,18 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Service;
 import org.openhab.io.homekit.internal.characteristic.EnumCharacteristic;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
 
 @NonNullByDefault
 public class StatusFaultCharacteristic extends EnumCharacteristic {
     private static final String TYPE = "00000077-0000-1000-8000-0026BB765291";
 
-    public StatusFaultCharacteristic(Service service, long instanceId) {
-        super(service, instanceId, false, true, true, "Status fault", 1, TYPE);
+    public StatusFaultCharacteristic(Service service, long instanceId, HomekitEventManager eventManager) {
+        super(service, instanceId, false, true, true, "Status Fault", 1, TYPE, eventManager);
     }
 
-    public StatusFaultCharacteristic(Service service, JsonValue value) {
-        super(service, value);
+    public StatusFaultCharacteristic(Service service, JsonValue value, HomekitEventManager eventManager) {
+        super(service, value, eventManager);
     }
 
     public static String getType() {
