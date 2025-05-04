@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.json.Json;
@@ -48,14 +49,14 @@ public class GenericAccessory implements Accessory {
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
     private final long instanceId = 0;
-    private long accessoryId = 0;
+    private @Nullable Long accessoryId = null;
     private final Object instanceIdLock = new Object();
     private final Set<Long> usedInstanceIds = new HashSet<>();
     private long nextInstanceId = 1;
     // private final AccessoryServer server;
     private Collection<Service> services = new HashSet<>();
-    @Nullable
-    private AccessoryUID accessoryUID;
+    private @Nullable AccessoryUID accessoryUID;
+    private final String tempUID = "unassigned:" + UUID.randomUUID();
     private final HomekitEventManager eventManager;
     private final Collection<HomekitFactory> homekitFactories;
 
@@ -65,49 +66,84 @@ public class GenericAccessory implements Accessory {
      * Creates a new GenericAccessory with a unique instance ID.
      * The instance ID is automatically assigned and managed to avoid conflicts.
      *
-     * @param server The accessory server this accessory belongs to
+     * @param eventManager The event manager for handling events
+     * @param homekitFactories The factories for creating services
      */
-    public GenericAccessory(AccessoryServer server, HomekitEventManager eventManager,
+    public GenericAccessory(HomekitEventManager eventManager, Collection<HomekitFactory> homekitFactories) {
+        this.eventManager = eventManager;
+        this.homekitFactories = homekitFactories;
+        logger.debug("{}Created new accessory with instance ID: {}", LOG_INIT, instanceId);
+
+        initializeServices();
+    }
+
+    /**
+     * Creates a new GenericAccessory from a JSON value.
+     * The instance ID is taken from the JSON data.
+     * AID is restored from JSON to maintain consistency across reboots.
+     *
+     * @param value The JSON value containing the accessory data
+     * @param eventManager The event manager for handling events
+     * @param homekitFactories The factories for creating services
+     */
+    public GenericAccessory(JsonValue value, HomekitEventManager eventManager,
             Collection<HomekitFactory> homekitFactories) {
-        // this.server = server;
         this.eventManager = eventManager;
         this.homekitFactories = homekitFactories;
 
-        try {
-            this.accessoryId = server.getNextAvailableAccessoryId();
-        } catch (HomekitAccessoryOperationException e) {
-            logger.error("{}Error getting next available accessory ID: {}", LOG_ERROR, e.getMessage(), e);
-            this.accessoryId = 0;
+        JsonObject jsonObject = (JsonObject) value;
+        if (jsonObject.containsKey("aid")) {
+            this.accessoryId = (long) jsonObject.getInt("aid");
+            // UID will be set when assigned to a server
+            logger.debug("{}Restored accessory from JSON with AID: {}", LOG_INIT, accessoryId);
+        } else {
+            logger.debug("{}Created new accessory from JSON (no AID)", LOG_INIT);
         }
-        logger.debug("{}Created new accessory with instance ID: {}", LOG_INIT, instanceId);
 
-        this.accessoryUID = new AccessoryUID(server.getUID().getPairingId(), this.accessoryId);
-        initializeServices();
+        initializeServices(value);
+    }
+
+    /**
+     * Assigns this accessory to a server, setting its UID.
+     * If the accessory already has an AID, it will be preserved.
+     * This method should be called by the server when adding the accessory.
+     *
+     * @param server The server to assign this accessory to
+     * @throws HomekitAccessoryOperationException if the accessory is already assigned
+     */
+    public void assignToServer(AccessoryServer server) throws HomekitAccessoryOperationException {
+        if (isAssigned()) {
+            throw new HomekitAccessoryOperationException("Accessory is already assigned to a server");
+        }
+        
+        // If we don't have an AID, get one from the server
+        if (accessoryId == null) {
+            this.accessoryId = server.getNextAvailableAccessoryId();
+        }
+        
+        // Create UID using the AID (either restored or newly assigned)
+        AccessoryUID newUID = new AccessoryUID(server.getUID().getPairingId(), this.accessoryId);
+        
+        // Notify event manager of UID change to migrate subscriptions
+        eventManager.notifyUIDChange(tempUID, newUID.toString());
+        
+        this.accessoryUID = newUID;
+        logger.debug("{}Assigned accessory to server with AID: {}", LOG_STATE, accessoryId);
+    }
+
+    /**
+     * Checks if this accessory is assigned to a server.
+     *
+     * @return true if the accessory has an AID and UID, false otherwise
+     */
+    public boolean isAssigned() {
+        return accessoryId != null && accessoryUID != null;
     }
 
     private void initializeServices() {
         if (isExtensible()) {
             addServices();
         }
-    }
-
-    /**
-     * Creates a new GenericAccessory from a JSON value.
-     * The instance ID is taken from the JSON data.
-     *
-     * @param server The accessory server this accessory belongs to
-     * @param value The JSON value containing the accessory data
-     */
-    public GenericAccessory(JsonValue value, HomekitEventManager eventManager,
-            Collection<HomekitFactory> homekitFactories) {
-        // this.server = server;
-        this.eventManager = eventManager;
-        this.homekitFactories = homekitFactories;
-
-        this.accessoryId = ((JsonObject) value).getInt("aid");
-        logger.debug("{}Created accessory from JSON with accessory ID: {}", LOG_INIT, accessoryId);
-
-        initializeServices(value);
     }
 
     private void initializeServices(JsonValue value) {
@@ -144,13 +180,14 @@ public class GenericAccessory implements Accessory {
                 services.add(service);
                 logger.debug("{}Added Service '{}' (Type: {}) to Accessory '{}' (Type: {})", LOG_ACCESSORY,
                         service.getName(), service.getInstanceType(), this.getLabel(), this.getClass().getSimpleName());
-                // Send event via HomekitEventManager
+                
+                // Send event via HomekitEventManager using current UID (temporary or real)
                 eventManager.publishEvent(new AccessoryEvent(HomekitEventType.SERVICE_ADDED, this, service, null));
 
-                // Subscribe to service state change events
+                // Subscribe to service state change events using current UID
                 eventSubscriptions.add(eventManager.subscribe(
-                        org.openhab.io.homekit.internal.events.HomekitEventType.SERVICE_STATE_CHANGED,
-                        service.getUID().toString(), event -> onEvent(event)));
+                        HomekitEventType.SERVICE_STATE_CHANGED,
+                        service.getUID().toString(), getUID().toString(), event -> GenericAccessory.this.onEvent(event)));
             } else {
                 logger.debug("{}Accessory '{}' (Type: {}) already contains Service '{}' (Type: {})", LOG_ACCESSORY,
                         this.getLabel(), this.getClass().getSimpleName(), service.getName(), service.getInstanceType());
@@ -260,18 +297,26 @@ public class GenericAccessory implements Accessory {
     @Override
     @NonNull
     public AccessoryUID getUID() {
-        return accessoryUID;
+        AccessoryUID uid = this.accessoryUID;
+        if (uid == null) {
+            return new AccessoryUID(tempUID);
+        }
+        return uid;
     }
 
     @Override
     public long getAccessoryId() {
-        return accessoryId;
+        Long aid = this.accessoryId;
+        if (aid == null) {
+            throw new IllegalStateException("Accessory ID has not been set");
+        }
+        return aid;
     }
 
     @Override
     @NonNull
     public String getSerialNumber() {
-        return getUID().getAsString();
+        return getUID().toString();
     }
 
     @Override
@@ -325,7 +370,13 @@ public class GenericAccessory implements Accessory {
             jsonServices.add(service.toJson());
         }
 
-        JsonObjectBuilder builder = Json.createObjectBuilder().add("aid", accessoryId).add("services", jsonServices);
+        JsonObjectBuilder builder = Json.createObjectBuilder()
+                .add("services", jsonServices);
+
+        // Always include AID in JSON to maintain consistency across reboots
+        if (accessoryId != null) {
+            builder.add("aid", accessoryId);
+        }
 
         return builder.build();
     }
@@ -339,7 +390,13 @@ public class GenericAccessory implements Accessory {
             jsonServices.add(service.toReducedJson());
         }
 
-        JsonObjectBuilder builder = Json.createObjectBuilder().add("aid", accessoryId).add("services", jsonServices);
+        JsonObjectBuilder builder = Json.createObjectBuilder()
+                .add("services", jsonServices);
+
+        // Always include AID in reduced JSON to maintain consistency
+        if (accessoryId != null) {
+            builder.add("aid", accessoryId);
+        }
 
         return builder.build();
     }
@@ -426,5 +483,34 @@ public class GenericAccessory implements Accessory {
         }
 
         return 0;
+    }
+
+    /**
+     * Sets the accessory ID and updates the UID accordingly.
+     * @param accessoryId The new accessory ID
+     * @param pairingId The pairing ID to use for the UID
+     */
+    public void setAccessoryId(long accessoryId, String pairingId) {
+        this.accessoryId = accessoryId;
+        this.accessoryUID = new AccessoryUID(pairingId, accessoryId);
+        logger.debug("{}Set accessory ID to {} with pairing ID {}", LOG_STATE, accessoryId, pairingId);
+    }
+
+    /**
+     * Sets the accessory UID directly.
+     * @param accessoryUID The new accessory UID
+     */
+    public void setAccessoryUID(AccessoryUID accessoryUID) {
+        this.accessoryUID = accessoryUID;
+        this.accessoryId = Long.parseLong(accessoryUID.toString().split(":")[3]);
+        logger.debug("{}Set accessory UID to {}", LOG_STATE, accessoryUID);
+    }
+
+    /**
+     * Checks if the accessory has a valid ID and UID.
+     * @return true if both ID and UID are set, false otherwise
+     */
+    public boolean hasValidId() {
+        return accessoryId != null && accessoryUID != null;
     }
 }

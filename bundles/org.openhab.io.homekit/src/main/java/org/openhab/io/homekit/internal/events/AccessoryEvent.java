@@ -14,13 +14,34 @@ public class AccessoryEvent extends AbstractHomekitEvent {
     private final Optional<Accessory> accessory;
     private final Optional<Service> service;
     private final Optional<Characteristic<?>> characteristic;
+    private final String oldUID;
+    private final String newUID;
 
     public AccessoryEvent(HomekitEventType type, @Nullable Accessory accessory, @Nullable Service service,
             @Nullable Characteristic<?> characteristic) {
-        super(accessory != null ? accessory.getUID().toString() : "unknown", type);
+        super(type, accessory != null ? accessory.getUID().toString() : "unknown");
         this.accessory = Optional.ofNullable(accessory);
         this.service = Optional.ofNullable(service);
         this.characteristic = Optional.ofNullable(characteristic);
+        this.oldUID = null;
+        this.newUID = null;
+    }
+
+    /**
+     * Creates a new AccessoryEvent for UID changes.
+     * This constructor is used when an accessory's UID changes, typically when it is assigned to a server.
+     *
+     * @param type The event type (should be ACCESSORY_UID_CHANGED)
+     * @param oldUID The old UID that is being replaced
+     * @param newUID The new UID assigned by the server
+     */
+    public AccessoryEvent(HomekitEventType type, String oldUID, String newUID) {
+        super(type, oldUID);
+        this.accessory = Optional.empty();
+        this.service = Optional.empty();
+        this.characteristic = Optional.empty();
+        this.oldUID = oldUID;
+        this.newUID = newUID;
     }
 
     public Optional<Accessory> getAccessory() {
@@ -35,9 +56,25 @@ public class AccessoryEvent extends AbstractHomekitEvent {
         return characteristic;
     }
 
+    /**
+     * Gets the old UID that was replaced.
+     * @return The old UID
+     */
+    public String getOldUID() {
+        return oldUID;
+    }
+
+    /**
+     * Gets the new UID that was assigned.
+     * @return The new UID
+     */
+    public String getNewUID() {
+        return newUID;
+    }
+
     @Override
     public String toString() {
-        return "AccessoryEvent{" + "type=" + getType() + ", sourceUid=" + getSourceUid() + ", timestamp="
+        return "AccessoryEvent{" + "type=" + getType() + ", publisherUID=" + getPublisherUID() + ", timestamp="
                 + getTimestamp() + ", accessory=" + accessory + ", service=" + service + ", characteristic="
                 + characteristic + '}';
     }

@@ -18,7 +18,7 @@ public class AccessoryServerEvent extends AbstractHomekitEvent {
 
     public AccessoryServerEvent(HomekitEventType type, AccessoryServer server, @Nullable Accessory accessory,
             @Nullable Service service, @Nullable Characteristic<?> characteristic) {
-        super(server.getUID().toString(), type);
+        super(type, server.getUID().toString());
         this.server = server;
         this.accessory = Optional.ofNullable(accessory);
         this.service = Optional.ofNullable(service);
@@ -43,7 +43,7 @@ public class AccessoryServerEvent extends AbstractHomekitEvent {
 
     @Override
     public String toString() {
-        return "AccessoryServerEvent{" + "type=" + getType() + ", sourceUid=" + getSourceUid() + ", timestamp="
+        return "AccessoryServerEvent{" + "type=" + getType() + ", publisherUID=" + getPublisherUID() + ", timestamp="
                 + getTimestamp() + ", server=" + server + ", accessory=" + accessory + ", service=" + service
                 + ", characteristic=" + characteristic + '}';
     }

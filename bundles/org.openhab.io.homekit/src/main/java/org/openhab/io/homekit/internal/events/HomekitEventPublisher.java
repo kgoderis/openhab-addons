@@ -9,7 +9,7 @@ public interface HomekitEventPublisher {
     HomekitEventManager getEventManager();
 
     default void publishEvent(HomekitEvent event) {
-        event.setSourceUid(getSourceUID());
+        event.setPublisherUID(getSourceUID());
         getEventManager().publishEvent(event);
     }
 }

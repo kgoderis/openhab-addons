@@ -579,7 +579,7 @@ public class LocalAccessoryServer extends AbstractAccessoryServer {
             for (Service service : accessory.getServices()) {
                 for (Characteristic<?> characteristic : service.getCharacteristics()) {
                     eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
-                            characteristic.getUID().toString(),
+                            characteristic.getUID().toString(), getUID().toString(),
                             event -> handleCharacteristicEvent((CharacteristicEvent) event)));
                     logger.debug("{}Subscribed to events for characteristic: {}", LOG_ACCESSORY,
                             characteristic.getClass().getSimpleName());

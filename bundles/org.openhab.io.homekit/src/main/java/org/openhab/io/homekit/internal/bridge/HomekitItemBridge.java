@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -136,6 +137,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     private final Map<String, Collection<Characteristic<?>>> characteristicMap = new ConcurrentHashMap<>();
     private final Map<String, Accessory> accessoryMap = new ConcurrentHashMap<>();
     private final HomekitEventManager eventManager;
+    private final String subscriberUID = "bridge:" + UUID.randomUUID().toString();
 
     /**
      * Activates the bridge component and initializes necessary resources.
@@ -483,7 +485,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
             Map<String, Item> characteristicItems = getCharacteristicTypeItemMap(taggedItem);
 
             if (primaryAccessory != null) {
-                Accessory accessory = new GenericAccessory(server, eventManager, homekitFactories);
+                Accessory accessory = new GenericAccessory(eventManager, homekitFactories);
+                accessory.assignToServer(server);
                 Optional<Service> primaryService = createPrimaryService(serviceFactory, primaryAccessory, accessory,
                         taggedItem);
                 if (primaryService.isPresent()) {
@@ -604,7 +607,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
         if (!(characteristic instanceof GenericCharacteristic<?> genericCharacteristic)) {
             return;
         }
-        eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, genericCharacteristic.getUID().toString(),
+        eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, genericCharacteristic.getUID().toString(),subscriberUID,
                 event -> handleCharacteristicStateChangedEvent(event, item));
     }
 

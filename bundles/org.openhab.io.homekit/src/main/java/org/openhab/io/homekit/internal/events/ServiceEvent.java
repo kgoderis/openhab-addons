@@ -13,7 +13,7 @@ public class ServiceEvent extends AbstractHomekitEvent {
     private final Optional<Characteristic<?>> characteristic;
 
     public ServiceEvent(HomekitEventType type, @Nullable Service service, @Nullable Characteristic<?> characteristic) {
-        super(service != null ? service.getUID().toString() : "unknown", type);
+        super(type, service != null ? service.getUID().toString() : "unknown");
         this.service = Optional.ofNullable(service);
         this.characteristic = Optional.ofNullable(characteristic);
     }
@@ -28,7 +28,7 @@ public class ServiceEvent extends AbstractHomekitEvent {
 
     @Override
     public String toString() {
-        return "ServiceEvent{" + "type=" + getType() + ", sourceUid=" + getSourceUid() + ", timestamp=" + getTimestamp()
-                + ", service=" + service + ", characteristic=" + characteristic + '}';
+        return "ServiceEvent{" + "type=" + getType() + ", publisherUID=" + getPublisherUID() + ", timestamp="
+                + getTimestamp() + ", service=" + service + ", characteristic=" + characteristic + '}';
     }
 }

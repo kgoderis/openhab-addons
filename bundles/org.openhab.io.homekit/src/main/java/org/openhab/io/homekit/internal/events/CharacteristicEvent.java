@@ -16,7 +16,7 @@ public class CharacteristicEvent extends AbstractHomekitEvent {
 
     public CharacteristicEvent(HomekitEventType type, @Nullable Characteristic<?> characteristic, JsonValue oldValue,
             JsonValue newValue) {
-        super(characteristic != null ? characteristic.getUID().toString() : "unknown", type);
+        super(type, characteristic != null ? characteristic.getUID().toString() : "unknown");
         this.characteristic = Optional.ofNullable(characteristic);
         this.oldValue = oldValue;
         this.newValue = newValue;
@@ -36,7 +36,7 @@ public class CharacteristicEvent extends AbstractHomekitEvent {
 
     @Override
     public String toString() {
-        return "CharacteristicEvent{" + "type=" + getType() + ", sourceUid=" + getSourceUid() + ", timestamp="
+        return "CharacteristicEvent{" + "type=" + getType() + ", publisherUID=" + getPublisherUID() + ", timestamp="
                 + getTimestamp() + ", characteristic=" + characteristic + ", oldValue=" + oldValue + ", newValue="
                 + newValue + '}';
     }

@@ -7,6 +7,7 @@ import javax.json.JsonObject;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.Identifiable;
+import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.internal.accessory.AccessoryUID;
 
 /**
@@ -123,7 +124,25 @@ public interface Accessory extends Identifiable<AccessoryUID>, Comparable<Access
      */
     void identify();
 
-    public long getNextAvailableInstanceId();
+    /**
+     * Gets the next available instance ID for this accessory.
+     *
+     * @return the next available instance ID
+     */
+    long getNextAvailableInstanceId();
 
-    // public long getCurrentInstanceId();
+    /**
+     * Assigns this accessory to a server.
+     *
+     * @param server The server to assign to
+     * @throws HomekitAccessoryOperationException If there is an error assigning the accessory
+     */
+    void assignToServer(AccessoryServer server) throws HomekitAccessoryOperationException;
+
+    /**
+     * Checks if this accessory is assigned to a server.
+     *
+     * @return true if assigned, false otherwise
+     */
+    boolean isAssigned();
 }

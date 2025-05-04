@@ -1,25 +1,38 @@
 package org.openhab.io.homekit.internal.service;
 
-import org.openhab.core.thing.UID;
+import org.openhab.io.homekit.internal.events.HomekitUID;
 
-public class ServiceUID extends UID {
+/**
+ * Represents a unique identifier for a HomeKit service.
+ * The UID format is: homekit:service:{pairingId}:{accessoryId}:{serviceId}
+ */
+public class ServiceUID extends HomekitUID {
 
     // server id : accessory instance id : service id
 
     @Override
     protected int getMinimalNumberOfSegments() {
-        return 5;
+        return 5; // homekit:service:pairingId:accessoryId:serviceId
     }
 
     /**
-     * Instantiates a new thing UID.
+     * Instantiates a new service UID.
      *
-     * @param pairingId the the hexidecimal pre-generated id of the accessory
+     * @param pairingId the hexidecimal pre-generated id of the accessory
      * @param accessoryId the accessory instance id
      * @param serviceId the service instance id
      */
     public ServiceUID(String pairingId, long accessoryId, long serviceId) {
-        super("homekit", "service", pairingId, Long.toString(accessoryId), Long.toString(serviceId));
+        super("service", "homekit:service:" + pairingId + ":" + accessoryId + ":" + serviceId);
+    }
+
+    /**
+     * Returns the service ID part of this service UID.
+     *
+     * @return The service ID
+     */
+    public String getServiceId() {
+        return getSegment(4);
     }
 
     // /**

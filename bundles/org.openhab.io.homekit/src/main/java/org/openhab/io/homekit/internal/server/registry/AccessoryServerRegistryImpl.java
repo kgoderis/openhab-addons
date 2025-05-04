@@ -5,6 +5,7 @@ import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -64,6 +65,7 @@ public class AccessoryServerRegistryImpl
     protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+    private final String subscriberUID = "registry:" + UUID.randomUUID().toString();
 
     private final Logger logger = LoggerFactory.getLogger(AccessoryServerRegistryImpl.class);
 
@@ -165,8 +167,8 @@ public class AccessoryServerRegistryImpl
                         logger.info("{}Adding Bridge Accessory to Server - UID: {}, Type: {}, Port: {}, Setup Code: {}",
                                 LOG_ACCESSORY, availableServer.getUID(), availableServer.getClass().getSimpleName(),
                                 availableServer.getPort(), availableServer.getSetupCode());
-                        GenericAccessory bridgeAccessory = new GenericAccessory(availableServer, eventManager, homekitFactories);
-                        availableServer.addAccessory(bridgeAccessory);
+                        GenericAccessory bridgeAccessory = new GenericAccessory(eventManager, homekitFactories);
+                        bridgeAccessory.assignToServer(availableServer);
                     } catch (Exception e) {
                         logger.error("{}Error adding bridge accessory: {}", LOG_ERROR, e.getMessage(), e);
                     }
@@ -202,7 +204,7 @@ public class AccessoryServerRegistryImpl
 
     public void handleAccessoryServerEvent(AccessoryServerEvent event) {
         switch (event.getType()) {
-            case SERVER_UPDATED -> this.update(event.getServer());
+            case SERVER_STATE_CHANGED -> this.update(event.getServer());
             default -> {
                 // No Op
             }
@@ -229,7 +231,7 @@ public class AccessoryServerRegistryImpl
     public void added(Provider<AccessoryServer> provider, AccessoryServer element) {
 
         eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVER_STATE_CHANGED,
-                element.getUID().toString(), event -> handleAccessoryServerEvent((AccessoryServerEvent) event)));
+                element.getUID().toString(), subscriberUID, event -> handleAccessoryServerEvent((AccessoryServerEvent) event)));
         super.added(provider, element);
     }
 

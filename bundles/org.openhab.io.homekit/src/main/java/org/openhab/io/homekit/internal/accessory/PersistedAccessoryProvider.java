@@ -129,7 +129,7 @@ public class PersistedAccessoryProvider extends AbstractManagedProvider<Accessor
 
     @Override
     protected @NonNull String keyToString(AccessoryUID key) {
-        return key.getAsString();
+        return key.toString();
     }
 
     @Override

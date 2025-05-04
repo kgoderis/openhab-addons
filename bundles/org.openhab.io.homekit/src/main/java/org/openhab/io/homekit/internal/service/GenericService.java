@@ -31,6 +31,7 @@ import org.openhab.io.homekit.internal.characteristic.GenericCharacteristic;
 import org.openhab.io.homekit.internal.events.CharacteristicEvent;
 import org.openhab.io.homekit.internal.events.HomekitEvent;
 import org.openhab.io.homekit.internal.events.HomekitEventManager;
+import org.openhab.io.homekit.internal.events.HomekitEventSubscriber;
 import org.openhab.io.homekit.internal.events.HomekitEventSubscription;
 import org.openhab.io.homekit.internal.events.HomekitEventType;
 import org.openhab.io.homekit.internal.events.ServiceEvent;
@@ -255,7 +256,17 @@ public class GenericService implements Service {
             if (characteristic instanceof GenericCharacteristic) {
                 String sourceUID = ((GenericCharacteristic<?>) characteristic).getUID().toString();
                 eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, sourceUID,
-                        event -> onEvent(event)));
+                        new HomekitEventSubscriber() {
+                            @Override
+                            public void onEvent(HomekitEvent event) {
+                                GenericService.this.onEvent(event);
+                            }
+
+                            @Override
+                            public void onEventError(HomekitEvent event, Exception e) {
+                                logger.error("Error handling characteristic event: {}", event, e);
+                            }
+                        }));
             } else {
                 logger.warn("Characteristic '{}' (Type: {}) is not a HomekitEventPublisher",
                         characteristic.getDescription(), characteristic.getInstanceType());

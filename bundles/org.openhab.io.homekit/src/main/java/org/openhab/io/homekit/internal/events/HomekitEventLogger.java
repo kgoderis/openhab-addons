@@ -58,8 +58,8 @@ public class HomekitEventLogger implements HomekitEventSubscriber {
      * @param event the event to log
      */
     private void logEvent(HomekitEvent event) {
-        logger.debug("{}Received event: Type={}, Source={}, Timestamp={}, Data={}", LOG_EVENT, event.getType(),
-                event.getSourceUid(), event.getTimestamp(), event.toString());
+        logger.debug("{}Received event: Type={}, Publisher={}, Timestamp={}, Data={}", LOG_EVENT, event.getType(),
+                event.getPublisherUID(), event.getTimestamp(), event.toString());
     }
 
     /**

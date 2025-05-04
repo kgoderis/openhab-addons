@@ -20,7 +20,7 @@ public class AccessoryServerState {
     }
 
     public static final AccessoryServerState UNKNOWN = new AccessoryServerState("UNKNOWN", "Unknown state",
-            HomekitEventType.SERVER_UPDATED, false);
+            HomekitEventType.SERVER_STATE_CONNECTED, false);
 
     public static final AccessoryServerState CONNECTED = new AccessoryServerState("CONNECTED",
             "Connected to controller", HomekitEventType.SERVER_STATE_CONNECTED, false);
@@ -51,28 +51,28 @@ public class AccessoryServerState {
             "Setup code is missing or invalid", HomekitEventType.SERVER_STATE_MISSING_SETUP_CODE, false);
 
     public static final AccessoryServerState AUTHENTICATING = new AccessoryServerState("AUTHENTICATING",
-            "Authenticating with controller", HomekitEventType.SERVER_UPDATED, true);
+            "Authenticating with controller", HomekitEventType.SERVER_STATE_CONNECTED, true);
 
     public static final AccessoryServerState READY = new AccessoryServerState("READY", "Ready for operation",
-            HomekitEventType.SERVER_UPDATED, false);
+            HomekitEventType.SERVER_STATE_CONNECTED, false);
 
     public static final AccessoryServerState STOPPED = new AccessoryServerState("STOPPED", "Server stopped",
-            HomekitEventType.SERVER_UPDATED, false);
+            HomekitEventType.SERVER_STATE_CONNECTED, false);
 
     public static final AccessoryServerState RESET = new AccessoryServerState("RESET",
-            "Accessory has been factory reset", HomekitEventType.SERVER_UPDATED, false);
+            "Accessory has been factory reset", HomekitEventType.SERVER_STATE_CONNECTED, false);
 
     public static final AccessoryServerState PAIR_SETUP_INITIAL = new AccessoryServerState("PAIR_SETUP_INITIAL",
-            "Starting pair setup process", HomekitEventType.SERVER_UPDATED, true);
+            "Starting pair setup process", HomekitEventType.SERVER_STATE_CONNECTED, true);
 
     public static final AccessoryServerState PAIR_SETUP_SRP = new AccessoryServerState("PAIR_SETUP_SRP",
-            "Executing SRP protocol exchange", HomekitEventType.SERVER_UPDATED, true);
+            "Executing SRP protocol exchange", HomekitEventType.SERVER_STATE_CONNECTED, true);
 
     public static final AccessoryServerState PAIR_SETUP_VERIFY = new AccessoryServerState("PAIR_SETUP_VERIFY",
-            "Verifying pairing proof", HomekitEventType.SERVER_UPDATED, true);
+            "Verifying pairing proof", HomekitEventType.SERVER_STATE_CONNECTED, true);
 
     public static final AccessoryServerState PAIR_SETUP_EXCHANGE = new AccessoryServerState("PAIR_SETUP_EXCHANGE",
-            "Exchanging encryption keys", HomekitEventType.SERVER_UPDATED, true);
+            "Exchanging encryption keys", HomekitEventType.SERVER_STATE_CONNECTED, true);
 
     public String getName() {
         return name;

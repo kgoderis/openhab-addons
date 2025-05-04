@@ -13,23 +13,23 @@
 package org.openhab.io.homekit.internal.server;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.core.thing.UID;
+import org.openhab.io.homekit.internal.events.HomekitUID;
 
 /**
  * {@link AccessoryServerUID} represents a unique identifier for accessory servers.
- * The UID format is "homekit:server:pairingId".
+ * The UID format is: homekit:server:{pairingId}
  *
  * @author Your Name - Initial contribution
  */
 @NonNullByDefault
-public class AccessoryServerUID extends UID {
+public class AccessoryServerUID extends HomekitUID {
 
     /**
      * Default constructor in package scope only. Will allow to instantiate this
      * class by reflection. Not intended to be used for normal instantiation.
      */
     AccessoryServerUID() {
-        super();
+        super("server", "homekit:server:");
     }
 
     /**
@@ -38,7 +38,7 @@ public class AccessoryServerUID extends UID {
      * @param pairingId the pairing ID of the accessory server
      */
     public AccessoryServerUID(String pairingId) {
-        super("homekit", "server", pairingId);
+        super("server", "homekit:server:" + pairingId);
     }
 
     /**
@@ -52,6 +52,6 @@ public class AccessoryServerUID extends UID {
 
     @Override
     protected int getMinimalNumberOfSegments() {
-        return 3;
+        return 3; // homekit:server:pairingId
     }
 }

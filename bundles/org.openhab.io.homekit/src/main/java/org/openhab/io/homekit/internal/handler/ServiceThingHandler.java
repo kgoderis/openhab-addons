@@ -260,7 +260,7 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
         setService(currentService);
         serviceAvailable = true;
         eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED,
-                currentService.getUID().toString(), event -> onServiceEvent((ServiceEvent) event)));
+                currentService.getUID().toString(), thing.getUID().toString(), event -> onServiceEvent((ServiceEvent) event)));
     }
 
     /**
@@ -703,7 +703,7 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
                         // TODO : What wiht the added service ? Subscribe to its events ?
 
                         eventSubscriptions.add(eventManager.subscribe(HomekitEventType.ACCESSORY_STATE_CHANGED,
-                                foundAccessory.getUID().toString(),
+                                foundAccessory.getUID().toString(),thing.getUID().toString(),
                                 someEvent -> onAccessoryEvent((AccessoryEvent) someEvent)));
 
                         handleServiceAdded();
@@ -728,7 +728,7 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
                         foundService.ifPresent(someService -> {
                             setService(service);
                             eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED,
-                                    someService.getUID().toString(),
+                                    someService.getUID().toString(), thing.getUID().toString(),
                                     someEvent -> onServiceEvent((ServiceEvent) someEvent)));
                             validateAndUpdateState();
                         });
@@ -2386,7 +2386,7 @@ public class ServiceThingHandler extends AbstractHomekitHandler {
                 foundService.ifPresentOrElse(someService -> {
                     setService(someService);
                     eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED,
-                            someService.getUID().toString(), someEvent -> onServiceEvent((ServiceEvent) someEvent)));
+                            someService.getUID().toString(), thing.getUID().toString(), someEvent -> onServiceEvent((ServiceEvent) someEvent)));
                     logger.debug("{}Recovered service connection", LOG_INIT);
                 }, () -> {
                     setService(null);
