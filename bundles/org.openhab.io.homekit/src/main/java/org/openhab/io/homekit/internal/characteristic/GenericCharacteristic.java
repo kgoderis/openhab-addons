@@ -83,6 +83,8 @@ public abstract class GenericCharacteristic<@NonNull T> implements Characteristi
         if (((JsonObject) value).containsKey("ev")) {
             this.hasEvents = ((JsonObject) value).getBoolean("ev");
         }
+
+        setupSubscription();
     }
 
     public GenericCharacteristic(Service service, long instanceId, String format, boolean isWritable,
@@ -96,6 +98,8 @@ public abstract class GenericCharacteristic<@NonNull T> implements Characteristi
         this.description = description;
         this.type = format;
         this.eventManager = eventManager;
+
+        setupSubscription();
     }
 
     /**
@@ -109,6 +113,28 @@ public abstract class GenericCharacteristic<@NonNull T> implements Characteristi
         } else {
             this.value = getDefault();
         }
+    }
+
+    @SuppressWarnings("null")
+    protected final void setupSubscription() {
+        eventManager.subscribe(
+            HomekitEventType.CHARACTERISTIC_CHANGE_VALUE, // or CHARACTERISTIC_VALUE_CHANGED, as appropriate
+            "*",                     // publisherUID: the UID of this characteristic
+            getUID().toString(),                     // subscriberUID: also this characteristic (or a unique handler UID)
+            event -> {
+                    if (event instanceof CharacteristicEvent characteristicEvent && characteristicEvent.getCharacteristic().isPresent()) {
+                        // Optionally check if the event is for this characteristic
+                        if (characteristicEvent.getCharacteristic().get().equals(GenericCharacteristic.this)) {
+                            // Update the value in response to the event
+                            try {
+                                GenericCharacteristic.this.setValue(characteristicEvent.getNewValue());
+                            } catch (Exception e) {
+                                // Handle error
+                            }
+                        }
+                    }
+            }
+        );
     }
 
     // Interface implementation methods

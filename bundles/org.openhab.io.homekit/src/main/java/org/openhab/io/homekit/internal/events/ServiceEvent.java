@@ -18,6 +18,12 @@ public class ServiceEvent extends AbstractHomekitEvent {
         this.characteristic = Optional.ofNullable(characteristic);
     }
 
+    public ServiceEvent(HomekitEventType type, @Nullable Service service, @Nullable Characteristic<?> characteristic, String subscriberUID) {
+        super(type, service != null ? service.getUID().toString() : "unknown", subscriberUID);
+        this.service = Optional.ofNullable(service);
+        this.characteristic = Optional.ofNullable(characteristic);
+    }
+
     public Optional<org.openhab.io.homekit.api.hap.Service> getService() {
         return service;
     }

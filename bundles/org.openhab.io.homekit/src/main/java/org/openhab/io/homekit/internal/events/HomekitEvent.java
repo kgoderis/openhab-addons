@@ -42,4 +42,8 @@ public interface HomekitEvent {
 
     @Override
     String toString();
+
+    String getSubscriberUID();
+
+    void setSubscriberUID(String uid);
 }

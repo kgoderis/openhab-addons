@@ -19,6 +19,7 @@ public abstract class AbstractHomekitEvent implements HomekitEvent {
     
     private final HomekitEventType type;
     private String publisherUID;
+    private String subscriberUID;
     private final EventMetadata metadata;
     private final long timestamp;
     private final boolean isValid;
@@ -29,12 +30,17 @@ public abstract class AbstractHomekitEvent implements HomekitEvent {
      * @param type the event type
      * @param publisherUID the UID of the publisher
      */
-    protected AbstractHomekitEvent(HomekitEventType type, String publisherUID) {
+    protected AbstractHomekitEvent(HomekitEventType type, String publisherUID, String subscriberUID) {    
         this.type = type;
         this.publisherUID = publisherUID;
+        this.subscriberUID = subscriberUID;
         this.metadata = new EventMetadata(publisherUID, null, publisherUID, Set.of());
         this.timestamp = System.currentTimeMillis();
         this.isValid = true; // New events are always valid
+    }
+
+    protected AbstractHomekitEvent(HomekitEventType type, String publisherUID) {
+        this(type, publisherUID, "*");
     }
 
     /**
@@ -46,9 +52,10 @@ public abstract class AbstractHomekitEvent implements HomekitEvent {
      * @param publisherUID the UID of the publisher
      * @param originalMetadata the metadata from the original event
      */
-    protected AbstractHomekitEvent(HomekitEventType type, String publisherUID, EventMetadata originalMetadata) {
+    protected AbstractHomekitEvent(HomekitEventType type, String publisherUID, String subscriberUID, EventMetadata originalMetadata) {
         this.type = type;
         this.publisherUID = publisherUID;
+        this.subscriberUID = subscriberUID;
         this.metadata = new EventMetadata(originalMetadata, publisherUID);
         this.timestamp = System.currentTimeMillis();
         
@@ -68,6 +75,10 @@ public abstract class AbstractHomekitEvent implements HomekitEvent {
         }
     }
 
+    protected AbstractHomekitEvent(HomekitEventType type, String publisherUID, EventMetadata originalMetadata) {
+        this(type, publisherUID, "*", originalMetadata );
+    }
+
     @Override
     public HomekitEventType getType() {
         return type;
@@ -81,6 +92,16 @@ public abstract class AbstractHomekitEvent implements HomekitEvent {
     @Override
     public void setPublisherUID(String uid) {
         this.publisherUID = uid;
+    }
+
+    @Override
+    public String getSubscriberUID() {
+        return subscriberUID;
+    }
+
+    @Override
+    public void setSubscriberUID(String uid) {
+        this.subscriberUID = uid;
     }
 
     @Override

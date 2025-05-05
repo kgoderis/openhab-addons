@@ -294,9 +294,10 @@ public class HomekitEventManager {
             }
 
             if (queued) {
-                logger.debug("{}Event queued: type={}, publisherUID={}, timestamp={}, eventId={}, hopCount={}", LOG_EVENT,
-                        event.getType(), publisherUID, event.getTimestamp(), event.getMetadata().getEventId(),
-                        event.getMetadata().getHopCount());
+                logger.debug("{}Event queued: type={}, publisherUID={}, timestamp={}, eventId={}, hopCount={}, destination={}", 
+                        LOG_EVENT, event.getType(), publisherUID, event.getTimestamp(), 
+                        event.getMetadata().getEventId(), event.getMetadata().getHopCount(),
+                        event.getSubscriberUID());
             } else {
                 logger.warn("{}Failed to queue event after timeout, event discarded", LOG_QUEUE);
             }
@@ -329,18 +330,35 @@ public class HomekitEventManager {
 
     private CompletableFuture<Void> publishEventToSubscribers(HomekitEvent event, int retryCount, boolean retry) {
         List<HomekitEventSubscription> matchingSubs = new ArrayList<>();
-        for (HomekitEventSubscription sub : subscriptions) {
-            if (sub.eventType.matches(event.getType())
-                    && matchesPublisherPattern(sub.publisherUID, event.getPublisherUID())
-                    && sub.getExpectedEventClass().isAssignableFrom(event.getClass())
-                    && sub.filter.test(event)) {
-                matchingSubs.add(sub);
+        
+        // Get the destination UID from the event metadata if present
+        String destinationUID = event.getSubscriberUID();
+        
+        // If we have a specific destination, only match subscriptions for that subscriber
+        if (destinationUID != null && !destinationUID.equals("*")) {
+            matchingSubs = getSubscriptionsBySubscriberUid(destinationUID)
+                .stream()
+                .filter(sub -> sub.eventType.matches(event.getType())
+                        && sub.getExpectedEventClass().isAssignableFrom(event.getClass())
+                        && sub.filter.test(event))
+                .collect(Collectors.toList());
+        } else {
+            // Broadcast case - match all relevant subscriptions
+            for (HomekitEventSubscription sub : subscriptions) {
+                if (sub.eventType.matches(event.getType())
+                        && matchesPublisherPattern(sub.publisherUID, event.getPublisherUID())
+                        && sub.getExpectedEventClass().isAssignableFrom(event.getClass())
+                        && sub.filter.test(event)) {
+                    matchingSubs.add(sub);
+                }
             }
         }
+
         List<CompletableFuture<Void>> futures = createSubscriberFutures(event, matchingSubs, retryCount, retry);
 
         return CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new))
-                .orTimeout(EVENT_TIMEOUT_MS, TimeUnit.MILLISECONDS).exceptionally(throwable -> {
+                .orTimeout(EVENT_TIMEOUT_MS, TimeUnit.MILLISECONDS)
+                .exceptionally(throwable -> {
                     logger.error("{}Error during synchronized event publishing: {}", LOG_ERROR, throwable.getMessage(),
                             throwable);
                     return null;

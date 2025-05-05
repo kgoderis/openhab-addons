@@ -27,6 +27,16 @@ public class AccessoryEvent extends AbstractHomekitEvent {
         this.newUID = null;
     }
 
+    public AccessoryEvent(HomekitEventType type, @Nullable Accessory accessory, @Nullable Service service,
+            @Nullable Characteristic<?> characteristic, String subscriberUID) {
+        super(type, accessory != null ? accessory.getUID().toString() : "unknown", subscriberUID);
+        this.accessory = Optional.ofNullable(accessory);
+        this.service = Optional.ofNullable(service);
+        this.characteristic = Optional.ofNullable(characteristic);
+        this.oldUID = null;
+        this.newUID = null;
+    }
+
     /**
      * Creates a new AccessoryEvent for UID changes.
      * This constructor is used when an accessory's UID changes, typically when it is assigned to a server.
@@ -37,6 +47,15 @@ public class AccessoryEvent extends AbstractHomekitEvent {
      */
     public AccessoryEvent(HomekitEventType type, String oldUID, String newUID) {
         super(type, oldUID);
+        this.accessory = Optional.empty();
+        this.service = Optional.empty();
+        this.characteristic = Optional.empty();
+        this.oldUID = oldUID;
+        this.newUID = newUID;
+    }
+
+    public AccessoryEvent(HomekitEventType type, String oldUID, String newUID, String subscriberUID) {
+        super(type, oldUID, subscriberUID);
         this.accessory = Optional.empty();
         this.service = Optional.empty();
         this.characteristic = Optional.empty();

@@ -15004,3 +15004,9 @@ Let me know if you want a code example of a factory/registry pattern for these o
 
 ---
 
+##########
+
+Replace subscriberID etc with UID based classes
+
+##########
+
