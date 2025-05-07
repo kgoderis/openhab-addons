@@ -6,46 +6,155 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.core.thing.UID;
 
 /**
- * Metadata for tracking event propagation and preventing loops.
- * <p>
- * This class maintains:
- * <ul>
- * <li>A unique event ID to track event instances</li>
- * <li>A hop count to limit event propagation</li>
- * <li>The original publisher UID to identify event origin</li>
- * <li>A history of event IDs to detect loops</li>
- * </ul>
- * </p>
+ * EventMetadata encapsulates all contextual and propagation information for a HomeKit event.
+ * 
+ * This class is central to the event loop prevention, correlation, and diagnostics mechanisms
+ * in the OpenHAB HomeKit integration. It tracks the origin, propagation path, correlation, and
+ * peer relationships of an event as it traverses the system.
+ * 
+ * Key Responsibilities:
+ * - Event Uniqueness: Assigns a globally unique event ID to each event instance
+ * - Origin Tracking: Records the original publisher and immediate originator
+ * - Hop Count: Maintains a hop count to limit event propagation
+ * - Event History: Stores a history of event IDs to detect cycles
+ * - Correlation: Supports correlation IDs for grouping related events
+ * - Peer Group Awareness: Tracks peer identifiers for trusted components
+ * - Diagnostics: Optional detailed event history for debugging
+ * 
+ * Field Descriptions:
+ * 
+ * eventId:
+ *   A globally unique identifier for this event instance.
+ *   Format: homekit:event:{uuid}
+ *   Used to distinguish events and track their propagation.
+ * 
+ * originalPublisherUid:
+ *   The UID of the component that originally published the event.
+ *   Remains constant throughout the event's lifetime.
+ * 
+ * hopCount:
+ *   The number of times this event has been propagated ("hops").
+ *   Incremented with each forwarding to prevent infinite loops.
+ * 
+ * timestamp:
+ *   The creation time of the event metadata (milliseconds since epoch).
+ *   Used for time-based diagnostics and correlation expiry.
+ * 
+ * eventHistory:
+ *   An ordered set of event IDs representing the propagation path.
+ *   Used to detect cycles and provide traceability.
+ * 
+ * detailedEventHistory:
+ *   (Debug mode only) A list of HomekitEvent objects representing
+ *   the full propagation chain for in-depth diagnostics.
+ * 
+ * correlationId:
+ *   (Optional) An identifier used to correlate related events
+ *   (e.g., request/response pairs, state synchronizations).
+ * 
+ * processedCorrelationIds:
+ *   A set of correlation IDs that have already been processed,
+ *   to prevent duplicate handling.
+ * 
+ * correlationTimestamp:
+ *   The timestamp when the correlation ID was first set.
+ *   Used to expire old correlations and clean up state.
+ * 
+ * immediateOrigin:
+ *   (Optional) The UID of the component that most recently propagated
+ *   or created this event. Useful for hop-by-hop diagnostics.
+ * 
+ * peerIdentifiers:
+ *   A set of UIDs representing components considered "peers"
+ *   for loop prevention and trust relationships.
+ * 
+ * Usage Patterns:
+ * - When an event is first created, a new EventMetadata is instantiated with the original
+ *   publisher UID and (optionally) a correlation ID and peer group.
+ * - Each time the event is propagated, a new EventMetadata is created from the previous one,
+ *   incrementing the hop count and updating the immediate origin.
+ * - Event consumers can use the hop count, event history, and peer group to decide whether
+ *   to process, forward, or drop the event.
+ * - Correlation IDs allow grouping of related events for state synchronization,
+ *   request/response flows, or deduplication.
+ * - Debug mode enables detailed tracing of event propagation for diagnostics.
+ * 
+ * Best Practices:
+ * - Always use the provided methods to check for loops, hop limits, and peer group membership
+ * - Use correlation IDs for any multi-step or distributed workflows
+ * - Enable debug mode only in development or troubleshooting scenarios
+ * 
+ * @author OpenHAB
+ * @since 3.x
  */
 @NonNullByDefault
 public class EventMetadata {
+    // =============== Constants ===============
+    
+    /** Maximum number of event IDs to keep in history */
     private static final int MAX_HISTORY_SIZE = 100;
+    
+    /** Maximum number of hops an event can make before being dropped */
     private static final int MAX_HOPS = 10;
-    private static final boolean DEBUG_MODE = false; // Set to true to enable detailed event history
-    private static final long CORRELATION_ID_EXPIRY_MS = 300000; // 5 minutes
     
-    private final String eventId;
-    private final String originalPublisherUid;
-    private int hopCount;
+    /** Enable detailed event history tracking for debugging */
+    private static final boolean DEBUG_MODE = false;
+    
+    /** Time after which correlation IDs expire (5 minutes) */
+    private static final long CORRELATION_ID_EXPIRY_MS = 300000;
+
+    /** Prefix for event IDs */
+    private static final String EVENT_ID_PREFIX = "homekit:event:";
+
+    // =============== Core Event Fields ===============
+    
+    /** Unique identifier for this event instance */
+    private final HomekitUID eventId;
+    
+    /** Creation timestamp of this metadata */
     private final long timestamp;
-    private final Set<String> eventHistory = new LinkedHashSet<>();
-    private final List<HomekitEvent> detailedEventHistory = DEBUG_MODE ? new ArrayList<>() : null;
     
-    // Correlation tracking
-    private final @Nullable String correlationId;
-    private final Set<String> processedCorrelationIds = new HashSet<>();
+    /** Number of times this event has been propagated */
+    private int hopCount;
+
+    // =============== Origin Tracking ===============
+    
+    /** UID of the component that originally published the event */
+    private final UID originalPublisherUid;
+    
+    /** UID of the component that most recently propagated this event */
+    private final @Nullable UID immediateOrigin;
+    
+    /** Set of UIDs representing peer components */
+    private final Set<UID> peerIdentifiers = new HashSet<>();
+
+    // =============== Correlation Tracking ===============
+    
+    /** Optional correlation ID for grouping related events */
+    private final @Nullable UID correlationId;
+    
+    /** Set of correlation IDs that have been processed */
+    private final Set<UID> processedCorrelationIds = new HashSet<>();
+    
+    /** Timestamp when correlation tracking began */
     private final long correlationTimestamp;
+
+    // =============== History Management ===============
     
-    // Origin tracking
-    private final @Nullable String immediateOrigin;
-    private final Set<String> peerIdentifiers = new HashSet<>();
+    /** Ordered set of event IDs in the propagation chain */
+    private final Set<UID> eventHistory = new LinkedHashSet<>();
+    
+    /** Detailed event history for debugging (null if DEBUG_MODE is false) */
+    private final List<HomekitEvent> detailedEventHistory = DEBUG_MODE ? new ArrayList<>() : null;
+
+    // =============== Constructors ===============
 
     /**
      * Creates new event metadata with a unique ID and initial hop count.
@@ -55,9 +164,9 @@ public class EventMetadata {
      * @param immediateOrigin optional identifier of the immediate event creator
      * @param peerIdentifiers optional set of identifiers for components that should be treated as peers
      */
-    public EventMetadata(String publisherUid, @Nullable String correlationId, @Nullable String immediateOrigin,
-            Set<String> peerIdentifiers) {
-        this.eventId = UUID.randomUUID().toString();
+    public EventMetadata(UID publisherUid, @Nullable UID correlationId, @Nullable UID immediateOrigin,
+            Set<UID> peerIdentifiers) {
+        this.eventId = new HomekitUID("event");
         this.originalPublisherUid = publisherUid;
         this.hopCount = 0;
         this.timestamp = System.currentTimeMillis();
@@ -81,7 +190,7 @@ public class EventMetadata {
      * @param original the original metadata to copy
      * @param immediateOrigin optional identifier of the immediate event creator
      */
-    public EventMetadata(EventMetadata original, @Nullable String immediateOrigin) {
+    public EventMetadata(EventMetadata original, @Nullable UID immediateOrigin) {
         this.eventId = original.eventId;
         this.originalPublisherUid = original.originalPublisherUid;
         this.hopCount = original.hopCount + 1;
@@ -97,22 +206,15 @@ public class EventMetadata {
         }
     }
 
+    // =============== Core Event Methods ===============
+
     /**
      * Returns the unique event ID.
      *
      * @return the event ID
      */
-    public String getEventId() {
+    public UID getEventId() {
         return eventId;
-    }
-
-    /**
-     * Returns the original publisher UID.
-     *
-     * @return the publisher UID
-     */
-    public String getOriginalPublisherUid() {
-        return originalPublisherUid;
     }
 
     /**
@@ -134,15 +236,6 @@ public class EventMetadata {
     }
 
     /**
-     * Returns an unmodifiable view of the event history.
-     *
-     * @return the event history
-     */
-    public Set<String> getEventHistory() {
-        return Collections.unmodifiableSet(eventHistory);
-    }
-
-    /**
      * Checks if the event has exceeded the maximum hop count.
      *
      * @return true if the hop count exceeds the maximum
@@ -151,74 +244,15 @@ public class EventMetadata {
         return hopCount >= MAX_HOPS;
     }
 
-    /**
-     * Checks if an event ID is in the history.
-     *
-     * @param eventId the event ID to check
-     * @return true if the event ID is in the history
-     */
-    public boolean isInHistory(String eventId) {
-        return eventHistory.contains(eventId);
-    }
+    // =============== Origin Tracking Methods ===============
 
     /**
-     * Returns the maximum allowed hop count.
+     * Returns the original publisher UID.
      *
-     * @return the maximum hop count
+     * @return the publisher UID
      */
-    public static int getMaxHops() {
-        return MAX_HOPS;
-    }
-
-    /**
-     * Returns the maximum event history size.
-     *
-     * @return the maximum history size
-     */
-    public static int getMaxHistory() {
-        return MAX_HISTORY_SIZE;
-    }
-
-    public void addToHistory(HomekitEvent event) {
-        if (eventHistory.size() >= MAX_HISTORY_SIZE) {
-            String oldestId = eventHistory.iterator().next();
-            eventHistory.remove(oldestId);
-            if (DEBUG_MODE) {
-                detailedEventHistory.remove(0);
-            }
-        }
-        eventHistory.add(event.getMetadata().getEventId());
-        if (DEBUG_MODE) {
-            detailedEventHistory.add(event);
-        }
-    }
-
-    public List<HomekitEvent> getDetailedEventHistory() {
-        return DEBUG_MODE ? Collections.unmodifiableList(detailedEventHistory) : null;
-    }
-
-    public String getEventHistoryAsString() {
-        if (DEBUG_MODE) {
-            return detailedEventHistory.stream()
-                .map(event -> event != null ? 
-                    String.format("%s[%s] -> %s", 
-                        event.getType(), 
-                        event.getPublisherUID(), 
-                        event.getMetadata().getEventId()) : 
-                    "INITIAL")
-                .collect(Collectors.joining(" -> "));
-        } else {
-            return String.join(" -> ", eventHistory);
-        }
-    }
-
-    /**
-     * Returns the correlation ID if present.
-     *
-     * @return the correlation ID or null
-     */
-    public @Nullable String getCorrelationId() {
-        return correlationId;
+    public UID getOriginalPublisherUID() {
+        return originalPublisherUid;
     }
 
     /**
@@ -226,7 +260,7 @@ public class EventMetadata {
      *
      * @return the immediate origin or null
      */
-    public @Nullable String getImmediateOrigin() {
+    public @Nullable UID getImmediateOrigin() {
         return immediateOrigin;
     }
 
@@ -235,7 +269,7 @@ public class EventMetadata {
      *
      * @return the peer identifiers
      */
-    public Set<String> getPeerIdentifiers() {
+    public Set<UID> getPeerIdentifiers() {
         return Collections.unmodifiableSet(peerIdentifiers);
     }
 
@@ -254,8 +288,29 @@ public class EventMetadata {
      * @param componentId the component ID to check
      * @return true if the event was created by the component
      */
-    public boolean isCreatedBy(String componentId) {
+    public boolean isCreatedBy(UID componentId) {
         return componentId.equals(immediateOrigin);
+    }
+
+    /**
+     * Checks if the event is from a peer group.
+     *
+     * @param peerGroup the set of peer identifiers to check against
+     * @return true if the event is from a peer in the group
+     */
+    public boolean isFromPeerGroup(Set<UID> peerGroup) {
+        return peerGroup.contains(immediateOrigin);
+    }
+
+    // =============== Correlation Methods ===============
+
+    /**
+     * Returns the correlation ID if present.
+     *
+     * @return the correlation ID or null
+     */
+    public @Nullable UID getCorrelationId() {
+        return correlationId;
     }
 
     /**
@@ -264,7 +319,7 @@ public class EventMetadata {
      * @param correlationId the correlation ID to check
      * @return true if the correlation ID has been processed
      */
-    public boolean hasProcessedCorrelationId(String correlationId) {
+    public boolean hasProcessedCorrelationId(UID correlationId) {
         return processedCorrelationIds.contains(correlationId);
     }
 
@@ -273,7 +328,7 @@ public class EventMetadata {
      *
      * @param correlationId the correlation ID to add
      */
-    public void addProcessedCorrelationId(String correlationId) {
+    public void addProcessedCorrelationId(UID correlationId) {
         processedCorrelationIds.add(correlationId);
     }
 
@@ -293,5 +348,94 @@ public class EventMetadata {
         if (hasCorrelationExpired()) {
             processedCorrelationIds.clear();
         }
+    }
+
+    // =============== History Management Methods ===============
+
+    /**
+     * Returns an unmodifiable view of the event history.
+     *
+     * @return the event history
+     */
+    public Set<UID> getEventHistory() {
+        return Collections.unmodifiableSet(eventHistory);
+    }
+
+    /**
+     * Checks if an event ID is in the history.
+     *
+     * @param eventId the event ID to check
+     * @return true if the event ID is in the history
+     */
+    public boolean isInHistory(UID eventId) {
+        return eventHistory.contains(eventId);
+    }
+
+    /**
+     * Adds an event to the history.
+     *
+     * @param event the event to add
+     */
+    public void addToHistory(HomekitEvent event) {
+        if (eventHistory.size() >= MAX_HISTORY_SIZE) {
+            UID oldestId = eventHistory.iterator().next();
+            eventHistory.remove(oldestId);
+            if (DEBUG_MODE) {
+                detailedEventHistory.remove(0);
+            }
+        }
+        eventHistory.add(event.getMetadata().getEventId());
+        if (DEBUG_MODE) {
+            detailedEventHistory.add(event);
+        }
+    }
+
+    /**
+     * Returns the detailed event history if debug mode is enabled.
+     *
+     * @return the detailed event history or null if debug mode is disabled
+     */
+    public List<HomekitEvent> getDetailedEventHistory() {
+        return DEBUG_MODE ? Collections.unmodifiableList(detailedEventHistory) : null;
+    }
+
+    /**
+     * Returns a string representation of the event history.
+     *
+     * @return the event history as a string
+     */
+    public String getEventHistoryAsString() {
+        if (DEBUG_MODE) {
+            return detailedEventHistory.stream()
+                .map(event -> event != null ? 
+                    String.format("%s[%s] -> %s", 
+                        event.getType(), 
+                        event.getPublisherUID(), 
+                        event.getMetadata().getEventId()) : 
+                    "INITIAL")
+                .collect(Collectors.joining(" -> "));
+        } else {
+            return String.join(" -> ", eventHistory.stream().map(UID::toString).collect(Collectors.toList()));
+        }
+    }
+
+    // =============== Static Methods ===============
+
+    /**
+     * Returns the maximum allowed hop count.
+     *
+     * @return the maximum hop count
+     */
+    public static int getMaxHops() {
+        return MAX_HOPS;
+    }
+
+    /**
+     * Returns the maximum event history size.
+     *
+     * @return the maximum history size
+     */
+    public static int getMaxHistory() {
+        return MAX_HISTORY_SIZE;
     }
 } 

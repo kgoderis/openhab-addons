@@ -1,29 +1,35 @@
 package org.openhab.io.homekit.internal.events;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
+import java.util.Collections;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.thing.UID;
+
+/**
+ * Represents an event when a subscription fails in the HomeKit integration.
+ */
 @NonNullByDefault
 public class SubscriptionFailureEvent extends AbstractHomekitEvent {
-    private final String subscriberUID;
-    private final HomekitEventType eventType;
+    private final UID subscriberUid;
+    private final HomekitEventType failedEventType;
     private final String errorMessage;
     private final Throwable cause;
 
-    public SubscriptionFailureEvent(String subscriberUID, String publisherUID, HomekitEventType eventType,
+    public SubscriptionFailureEvent(UID publisherUid, UID subscriberUid, HomekitEventType failedEventType,
             String errorMessage, Throwable cause) {
-        super(HomekitEventType.SUBSCRIPTION_FAILED, publisherUID);
-        this.subscriberUID = subscriberUID;
-        this.eventType = eventType;
+        super(HomekitEventType.SUBSCRIPTION_FAILED, publisherUid, HomekitUID.WILDCARD_UID, new EventMetadata(publisherUid, null, null, Collections.emptySet()));
+        this.subscriberUid = subscriberUid;
+        this.failedEventType = failedEventType;
         this.errorMessage = errorMessage;
         this.cause = cause;
     }
 
-    public String getSubscriberUID() {
-        return subscriberUID;
+    public UID getSubscriberUid() {
+        return subscriberUid;
     }
 
     public HomekitEventType getFailedEventType() {
-        return eventType;
+        return failedEventType;
     }
 
     public String getErrorMessage() {
@@ -36,8 +42,7 @@ public class SubscriptionFailureEvent extends AbstractHomekitEvent {
 
     @Override
     public String toString() {
-        return "SubscriptionFailureEvent{" + "subscriberUID='" + subscriberUID + '\'' + ", publisherUID='" + getPublisherUID()
-                + '\'' + ", eventType=" + eventType + ", errorMessage='" + errorMessage + '\'' + ", cause=" + cause
-                + '}';
+        return "SubscriptionFailureEvent{" + "subscriberUid=" + subscriberUid + ", errorMessage='" + errorMessage + '\''
+                + ", failedEventType=" + failedEventType + ", timestamp=" + getTimestamp() + '}';
     }
 } 

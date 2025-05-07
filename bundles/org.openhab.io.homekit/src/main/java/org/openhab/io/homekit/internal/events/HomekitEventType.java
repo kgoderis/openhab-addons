@@ -12,6 +12,7 @@ public enum HomekitEventType {
     CHARACTERISTIC_START_EVENTS,
     CHARACTERISTIC_STOP_EVENTS,
     CHARACTERISTIC_ANY, // Matches any characteristic event
+    CHARACTERISTIC_CHANGE_VALUE,
 
     // Service events
     SERVICE_STATE_CHANGED,

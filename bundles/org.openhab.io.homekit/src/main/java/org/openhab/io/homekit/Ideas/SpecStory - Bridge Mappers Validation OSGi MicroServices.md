@@ -15010,3 +15010,9 @@ Replace subscriberID etc with UID based classes
 
 ##########
 
+Split binding in two
+
+
+###########
+
+Move parameters to configuration file

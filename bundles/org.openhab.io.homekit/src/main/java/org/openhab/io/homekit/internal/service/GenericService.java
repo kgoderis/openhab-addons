@@ -31,7 +31,6 @@ import org.openhab.io.homekit.internal.characteristic.GenericCharacteristic;
 import org.openhab.io.homekit.internal.events.CharacteristicEvent;
 import org.openhab.io.homekit.internal.events.HomekitEvent;
 import org.openhab.io.homekit.internal.events.HomekitEventManager;
-import org.openhab.io.homekit.internal.events.HomekitEventSubscriber;
 import org.openhab.io.homekit.internal.events.HomekitEventSubscription;
 import org.openhab.io.homekit.internal.events.HomekitEventType;
 import org.openhab.io.homekit.internal.events.ServiceEvent;
@@ -210,12 +209,7 @@ public class GenericService implements Service {
             if (characteristic == null) {
                 continue;
             }
-            characteristics.remove(characteristic);
-            String description = characteristic instanceof GenericCharacteristic ? characteristic.getDescription()
-                    : characteristic.getInstanceType();
-            logger.debug("Removed Characteristic '{}' (Type: {}) from Service '{}' (Type: {})", description,
-                    characteristic.getInstanceType(), this.getName(), this.getInstanceType());
-            notifyCharacteristicRemoved(characteristic);
+            removeCharacteristic(characteristic);
         }
     }
 
@@ -226,6 +220,7 @@ public class GenericService implements Service {
             if (characteristic != null) {
                 String description = characteristic instanceof GenericCharacteristic ? characteristic.getDescription()
                         : characteristic.getInstanceType();
+                eventSubscriptions.removeIf(subscription -> subscription.getPublisherUID().equals(characteristic.getUID()));
                 logger.debug("Removed Characteristic '{}' (Type: {}) from Service '{}' (Type: {})", description,
                         characteristic.getInstanceType(), this.getName(), this.getInstanceType());
                 notifyCharacteristicRemoved(characteristic);
@@ -254,19 +249,7 @@ public class GenericService implements Service {
             notifyCharacteristicAdded(characteristic);
 
             if (characteristic instanceof GenericCharacteristic) {
-                String sourceUID = ((GenericCharacteristic<?>) characteristic).getUID().toString();
-                eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, sourceUID,
-                        new HomekitEventSubscriber() {
-                            @Override
-                            public void onEvent(HomekitEvent event) {
-                                GenericService.this.onEvent(event);
-                            }
-
-                            @Override
-                            public void onEventError(HomekitEvent event, Exception e) {
-                                logger.error("Error handling characteristic event: {}", event, e);
-                            }
-                        }));
+                eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,  characteristic.getUID(), getUID(), event -> { onEvent(event); }));
             } else {
                 logger.warn("Characteristic '{}' (Type: {}) is not a HomekitEventPublisher",
                         characteristic.getDescription(), characteristic.getInstanceType());

@@ -4,6 +4,7 @@ import java.util.function.Predicate;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.Identifiable;
+import org.openhab.core.thing.UID;
 
 /**
  * Represents a subscription to HomeKit events.
@@ -20,8 +21,8 @@ import org.openhab.core.common.registry.Identifiable;
 @NonNullByDefault
 public class HomekitEventSubscription {
     public final HomekitEventType eventType;
-    public final String publisherUID;
-    public final String subscriberUID;
+    public final UID publisherUID;
+    public final UID subscriberUID;
     public final HomekitEventSubscriber subscriber;
     public final Class<? extends HomekitEvent> expectedEventClass;
     public final Predicate<HomekitEvent> filter;
@@ -37,7 +38,7 @@ public class HomekitEventSubscription {
      * @param expectedEventClass the expected class of events
      * @param filter a predicate to filter events
      */
-    public HomekitEventSubscription(HomekitEventType eventType, String publisherUID, String subscriberUID,
+    public HomekitEventSubscription(HomekitEventType eventType, UID publisherUID, UID subscriberUID,
             HomekitEventSubscriber subscriber, Class<? extends HomekitEvent> expectedEventClass,
             Predicate<HomekitEvent> filter) {
         this.eventType = eventType;
@@ -58,7 +59,7 @@ public class HomekitEventSubscription {
      * @param expectedEventClass the expected class of events
      * @param filter a predicate to filter events
      */
-    public HomekitEventSubscription(HomekitEventType eventType, String publisherUID,
+    public HomekitEventSubscription(HomekitEventType eventType, UID publisherUID,
             HomekitEventSubscriber subscriber, Class<? extends HomekitEvent> expectedEventClass,
             Predicate<HomekitEvent> filter) {
         this(eventType, publisherUID, null, subscriber, expectedEventClass, filter);
@@ -72,7 +73,7 @@ public class HomekitEventSubscription {
      * @param subscriber the subscriber that will receive the events
      * @param filter a predicate to filter events
      */
-    public HomekitEventSubscription(HomekitEventType eventType, String publisherUID,
+    public HomekitEventSubscription(HomekitEventType eventType, UID publisherUID,
             HomekitEventSubscriber subscriber, Predicate<HomekitEvent> filter) {
         this(eventType, publisherUID, null, subscriber, HomekitEvent.class, filter);
     }
@@ -84,7 +85,7 @@ public class HomekitEventSubscription {
      * @param publisherUID the UID of the publisher to receive events from
      * @param subscriber the subscriber that will receive the events
      */
-    public HomekitEventSubscription(HomekitEventType eventType, String publisherUID,
+    public HomekitEventSubscription(HomekitEventType eventType, UID publisherUID,
             HomekitEventSubscriber subscriber) {
         this(eventType, publisherUID, null, subscriber, HomekitEvent.class, event -> true);
     }
@@ -97,7 +98,7 @@ public class HomekitEventSubscription {
      * @param subscriberUID the UID of the subscriber
      * @param subscriber the subscriber that will receive the events
      */
-    public HomekitEventSubscription(HomekitEventType eventType, String publisherUID, String subscriberUID,
+    public HomekitEventSubscription(HomekitEventType eventType, UID publisherUID, UID subscriberUID,
             HomekitEventSubscriber subscriber) {
         this(eventType, publisherUID, subscriberUID, subscriber, HomekitEvent.class, event -> true);
     }
@@ -111,7 +112,7 @@ public class HomekitEventSubscription {
      * @param subscriber the subscriber that will receive the events
      * @param expectedEventClass the expected class of events
      */
-    public HomekitEventSubscription(HomekitEventType eventType, String publisherUID, String subscriberUID,
+    public HomekitEventSubscription(HomekitEventType eventType, UID publisherUID, UID subscriberUID,
             HomekitEventSubscriber subscriber, Class<? extends HomekitEvent> expectedEventClass) {
         this(eventType, publisherUID, subscriberUID, subscriber, expectedEventClass, event -> true);
     }
@@ -124,12 +125,12 @@ public class HomekitEventSubscription {
      * @param subscriber the subscriber that will receive the events
      * @param expectedEventClass the expected class of events
      */
-    public HomekitEventSubscription(HomekitEventType eventType, String publisherUID,
+    public HomekitEventSubscription(HomekitEventType eventType, UID publisherUID,
             HomekitEventSubscriber subscriber, Class<? extends HomekitEvent> expectedEventClass) {
         this(eventType, publisherUID, null, subscriber, expectedEventClass, event -> true);
     }
 
-    public String getPublisherUID() {
+    public UID getPublisherUID() {
         return publisherUID;
     }
 
@@ -141,7 +142,7 @@ public class HomekitEventSubscription {
         return subscriber;
     }
 
-    public String getSubscriberUID() {
+    public UID getSubscriberUID() {
         return subscriberUID;
     }
 
@@ -165,8 +166,13 @@ public class HomekitEventSubscription {
      * @param subscriber the subscriber to generate an ID for
      * @return a unique identifier for the subscriber
      */
-    private static String generateSubscriberUid(HomekitEventSubscriber subscriber) {
-        return subscriber instanceof Identifiable ? ((Identifiable<?>) subscriber).getUID().toString() 
-            : Integer.toHexString(System.identityHashCode(subscriber));
+    private static UID generateSubscriberUid(HomekitEventSubscriber subscriber) {
+        if (subscriber instanceof Identifiable) {
+            Identifiable<?> identifiable = (Identifiable<?>) subscriber;
+            if (identifiable.getUID() instanceof UID uid) {
+                return uid;
+            }
+        }
+        return new HomekitUID("homekit:subscriber:" + Integer.toHexString(System.identityHashCode(subscriber)));
     }
 }

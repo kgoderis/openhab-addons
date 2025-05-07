@@ -5,7 +5,6 @@ import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -30,6 +29,7 @@ import org.openhab.io.homekit.internal.events.AccessoryServerEvent;
 import org.openhab.io.homekit.internal.events.HomekitEventManager;
 import org.openhab.io.homekit.internal.events.HomekitEventSubscription;
 import org.openhab.io.homekit.internal.events.HomekitEventType;
+import org.openhab.io.homekit.internal.events.HomekitUID;
 import org.openhab.io.homekit.internal.server.AccessoryServerUID;
 import org.openhab.io.homekit.internal.server.RemoteAccessoryServer;
 import org.osgi.framework.BundleContext;
@@ -65,7 +65,7 @@ public class AccessoryServerRegistryImpl
     protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
-    private final String subscriberUID = "registry:" + UUID.randomUUID().toString();
+    private final HomekitUID subscriberUID = new HomekitUID("registry:");
 
     private final Logger logger = LoggerFactory.getLogger(AccessoryServerRegistryImpl.class);
 
@@ -204,7 +204,11 @@ public class AccessoryServerRegistryImpl
 
     public void handleAccessoryServerEvent(AccessoryServerEvent event) {
         switch (event.getType()) {
-            case SERVER_STATE_CHANGED -> this.update(event.getServer());
+            case SERVER_STATE_CHANGED -> {
+                if (event.getServer() != null && event.getServer().isPresent()) {
+                    this.update(event.getServer().get());
+                }
+            }
             default -> {
                 // No Op
             }
@@ -231,7 +235,7 @@ public class AccessoryServerRegistryImpl
     public void added(Provider<AccessoryServer> provider, AccessoryServer element) {
 
         eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVER_STATE_CHANGED,
-                element.getUID().toString(), subscriberUID, event -> handleAccessoryServerEvent((AccessoryServerEvent) event)));
+                element.getUID(), subscriberUID, event -> handleAccessoryServerEvent((AccessoryServerEvent) event)));
         super.added(provider, element);
     }
 

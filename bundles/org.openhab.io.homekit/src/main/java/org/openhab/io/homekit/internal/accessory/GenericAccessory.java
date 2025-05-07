@@ -56,7 +56,7 @@ public class GenericAccessory implements Accessory {
     // private final AccessoryServer server;
     private Collection<Service> services = new HashSet<>();
     private @Nullable AccessoryUID accessoryUID;
-    private final String tempUID = "unassigned:" + UUID.randomUUID();
+    private final AccessoryUID tempUID = new AccessoryUID(UUID.randomUUID().toString());
     private final HomekitEventManager eventManager;
     private final Collection<HomekitFactory> homekitFactories;
 
@@ -125,7 +125,7 @@ public class GenericAccessory implements Accessory {
         AccessoryUID newUID = new AccessoryUID(server.getUID().getPairingId(), this.accessoryId);
         
         // Notify event manager of UID change to migrate subscriptions
-        eventManager.notifyUIDChange(tempUID, newUID.toString());
+        eventManager.notifyUIDChange(tempUID, newUID);
         
         this.accessoryUID = newUID;
         logger.debug("{}Assigned accessory to server with AID: {}", LOG_STATE, accessoryId);
@@ -187,7 +187,7 @@ public class GenericAccessory implements Accessory {
                 // Subscribe to service state change events using current UID
                 eventSubscriptions.add(eventManager.subscribe(
                         HomekitEventType.SERVICE_STATE_CHANGED,
-                        service.getUID().toString(), getUID().toString(), event -> GenericAccessory.this.onEvent(event)));
+                        service.getUID(), getUID(), event -> GenericAccessory.this.onEvent(event)));
             } else {
                 logger.debug("{}Accessory '{}' (Type: {}) already contains Service '{}' (Type: {})", LOG_ACCESSORY,
                         this.getLabel(), this.getClass().getSimpleName(), service.getName(), service.getInstanceType());
@@ -299,7 +299,7 @@ public class GenericAccessory implements Accessory {
     public AccessoryUID getUID() {
         AccessoryUID uid = this.accessoryUID;
         if (uid == null) {
-            return new AccessoryUID(tempUID);
+            return tempUID;
         }
         return uid;
     }

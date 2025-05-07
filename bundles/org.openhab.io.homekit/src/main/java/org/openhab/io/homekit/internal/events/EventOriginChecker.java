@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.internal.events;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.thing.UID;
 
 /**
  * Utility class for checking event origins and preventing unauthorized event propagation.
@@ -18,8 +19,8 @@ public class EventOriginChecker {
      * @param publisherUID the publisher UID to check against
      * @return true if the event originated from the specified publisher
      */
-    public static boolean isOriginalPublisher(HomekitEvent event, String publisherUID) {
-        return event.getMetadata().getOriginalPublisherUid().equals(publisherUID);
+    public static boolean isOriginalPublisher(HomekitEvent event, UID publisherUID) {    
+        return event.getMetadata().getOriginalPublisherUID().equals(publisherUID);
     }
 
     /**
@@ -29,9 +30,9 @@ public class EventOriginChecker {
      * @param publisherUID the publisher UID to check for
      * @return true if the event has passed through the specified publisher
      */
-    public static boolean hasPassedThrough(HomekitEvent event, String publisherUID) {
+    public static boolean hasPassedThrough(HomekitEvent event, UID publisherUID) {
         return event.getMetadata().getEventHistory().stream()
-                .anyMatch(id -> id.contains(publisherUID));
+                .anyMatch(id -> id.equals(publisherUID));
     }
 
     /**
@@ -41,9 +42,9 @@ public class EventOriginChecker {
      * @param bridgeUID the bridge UID to check against
      * @return true if the event originated from the specified bridge
      */
-    public static boolean isFromBridge(HomekitEvent event, String bridgeUID) {
-        String originalPublisher = event.getMetadata().getOriginalPublisherUid();
-        return originalPublisher.startsWith("bridge:" + bridgeUID + ":");
+    public static boolean isFromBridge(HomekitEvent event, UID bridgeUID) {
+        UID originalPublisher = event.getMetadata().getOriginalPublisherUID();
+        return originalPublisher.toString().startsWith("bridge:" + bridgeUID + ":");
     }
 
     /**
@@ -55,8 +56,8 @@ public class EventOriginChecker {
      * @return true if the event originated from the specified accessory on the bridge
      */
     public static boolean isFromAccessory(HomekitEvent event, String bridgeUID, String accessoryUID) {
-        String originalPublisher = event.getMetadata().getOriginalPublisherUid();
-        return originalPublisher.equals("bridge:" + bridgeUID + ":accessory:" + accessoryUID);
+        UID originalPublisher = event.getMetadata().getOriginalPublisherUID();
+        return originalPublisher.toString().equals("bridge:" + bridgeUID + ":accessory:" + accessoryUID);
     }
 
     /**
@@ -69,8 +70,8 @@ public class EventOriginChecker {
      * @return true if the event originated from the specified service
      */
     public static boolean isFromService(HomekitEvent event, String bridgeUID, String accessoryUID, String serviceUID) {
-        String originalPublisher = event.getMetadata().getOriginalPublisherUid();
-        return originalPublisher.equals("bridge:" + bridgeUID + ":accessory:" + accessoryUID + ":service:" + serviceUID);
+        UID originalPublisher = event.getMetadata().getOriginalPublisherUID();
+        return originalPublisher.toString().equals("bridge:" + bridgeUID + ":accessory:" + accessoryUID + ":service:" + serviceUID);
     }
 
     /**
@@ -85,8 +86,8 @@ public class EventOriginChecker {
      */
     public static boolean isFromCharacteristic(HomekitEvent event, String bridgeUID, String accessoryUID,
             String serviceUID, String characteristicUID) {
-        String originalPublisher = event.getMetadata().getOriginalPublisherUid();
-        return originalPublisher.equals("bridge:" + bridgeUID + ":accessory:" + accessoryUID + ":service:" + serviceUID
+        UID originalPublisher = event.getMetadata().getOriginalPublisherUID();
+        return originalPublisher.toString().equals("bridge:" + bridgeUID + ":accessory:" + accessoryUID + ":service:" + serviceUID
                 + ":characteristic:" + characteristicUID);
     }
 
@@ -107,7 +108,7 @@ public class EventOriginChecker {
      * @param componentId the component ID to check
      * @return true if the event was created by the component
      */
-    public static boolean isCreatedBy(HomekitEvent event, String componentId) {
+    public static boolean isCreatedBy(HomekitEvent event, UID componentId) {
         return event.getMetadata().isCreatedBy(componentId);
     }
 
@@ -119,8 +120,8 @@ public class EventOriginChecker {
      * @return true if the events share the same correlation ID
      */
     public static boolean isCorrelated(HomekitEvent event1, HomekitEvent event2) {
-        String correlationId1 = event1.getMetadata().getCorrelationId();
-        String correlationId2 = event2.getMetadata().getCorrelationId();
+        UID correlationId1 = event1.getMetadata().getCorrelationId();
+        UID correlationId2 = event2.getMetadata().getCorrelationId();
         return correlationId1 != null && correlationId1.equals(correlationId2);
     }
 
@@ -132,7 +133,7 @@ public class EventOriginChecker {
      * @param componentId the ID of the component that would process the event
      * @return true if the event should be processed
      */
-    public static boolean shouldProcess(HomekitEvent event, String componentId) {
+    public static boolean shouldProcess(HomekitEvent event, UID componentId) {
         // Don't process events created by this component
         if (isCreatedBy(event, componentId)) {
             return false;

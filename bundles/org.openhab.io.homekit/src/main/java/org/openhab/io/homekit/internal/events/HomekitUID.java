@@ -18,6 +18,9 @@ public class HomekitUID extends UID {
     private static final String HOMEKIT_PREFIX = "homekit";
     private final String prefix;
 
+    /** Wildcard UID that matches any subscriber */
+    public static final UID WILDCARD_UID = new HomekitUID("*");
+
     /**
      * Creates a new HomekitUID with the specified prefix.
      * The actual UID will be in the format: homekit:{prefix}:{uuid}

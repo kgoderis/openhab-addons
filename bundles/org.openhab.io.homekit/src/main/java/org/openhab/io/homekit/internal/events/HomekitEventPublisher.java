@@ -1,10 +1,11 @@
 package org.openhab.io.homekit.internal.events;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.thing.UID;
 
 @NonNullByDefault
 public interface HomekitEventPublisher {
-    String getSourceUID();
+    UID getSourceUID();
 
     HomekitEventManager getEventManager();
 

@@ -18,7 +18,10 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.Service;
-import org.openhab.io.homekit.internal.events.CharacteristicEvent;
+import org.openhab.io.homekit.internal.events.AbstractHomekitEvent;
+import org.openhab.io.homekit.internal.events.CharacteristicChangeValueEvent;
+import org.openhab.io.homekit.internal.events.CharacteristicValueChangedEvent;
+import org.openhab.io.homekit.internal.events.EventMetadata;
 import org.openhab.io.homekit.internal.events.HomekitEventManager;
 import org.openhab.io.homekit.internal.events.HomekitEventType;
 import org.slf4j.Logger;
@@ -118,16 +121,17 @@ public abstract class GenericCharacteristic<@NonNull T> implements Characteristi
     @SuppressWarnings("null")
     protected final void setupSubscription() {
         eventManager.subscribe(
-            HomekitEventType.CHARACTERISTIC_CHANGE_VALUE, // or CHARACTERISTIC_VALUE_CHANGED, as appropriate
-            "*",                     // publisherUID: the UID of this characteristic
-            getUID().toString(),                     // subscriberUID: also this characteristic (or a unique handler UID)
+            HomekitEventType.CHARACTERISTIC_CHANGE_VALUE,
+            AbstractHomekitEvent.WILDCARD_UID,
+            getUID(),
             event -> {
-                    if (event instanceof CharacteristicEvent characteristicEvent && characteristicEvent.getCharacteristic().isPresent()) {
+                    if (event instanceof CharacteristicChangeValueEvent) {
+                        CharacteristicChangeValueEvent changeEvent = (CharacteristicChangeValueEvent) event;
                         // Optionally check if the event is for this characteristic
-                        if (characteristicEvent.getCharacteristic().get().equals(GenericCharacteristic.this)) {
+                        if (changeEvent.getCharacteristic().get().equals(GenericCharacteristic.this)) {
                             // Update the value in response to the event
                             try {
-                                GenericCharacteristic.this.setValue(characteristicEvent.getNewValue());
+                                GenericCharacteristic.this.setValue(changeEvent.getNewValue().get(), event.getMetadata());
                             } catch (Exception e) {
                                 // Handle error
                             }
@@ -255,6 +259,11 @@ public abstract class GenericCharacteristic<@NonNull T> implements Characteristi
         return value != null ? enrich(baseJson, "value", value) : baseJson;
     }
 
+    @Override
+    public JsonValue toValueJson(State state) {
+        return toValueJson(toValue(state));
+    }
+
     // Public methods
     @Override
     public T getValue() {
@@ -267,33 +276,54 @@ public abstract class GenericCharacteristic<@NonNull T> implements Characteristi
 
     @Override
     public void setValue(@Nullable T value) throws Exception {
-        if (isWritable) {
-            @Nullable
-            T oldValue = this.value;
-            this.value = value;
-            if (!Objects.equals(oldValue, value)) {
-                notifyValueChanged(oldValue, value);
-            }
+        if (!isWritable) {
+            throw new Exception("Cannot modify a readonly characteristic");
         }
+        @Nullable T oldValue = this.value;
+        setValueInternal(value);
+        notifyValueChanged(oldValue, this.value);
     }
 
     @Override
     public final void setValue(JsonValue jsonValue) throws Exception {
-        if (isWritable) {
-            try {
-                setValue(toValue(jsonValue));
-            } catch (Exception e) {
-                logger.error("Error while setting JSON value", e);
-            }
-        } else {
-            throw new Exception("Can not modify a readonly characteristic");
+        if (!isWritable) {
+            throw new Exception("Cannot modify a readonly characteristic");
         }
+        try {
+            setValue(toValue(jsonValue));
+        } catch (Exception e) {
+            logger.error("{}Error while setting JSON value: {}", LOG_ERROR, e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    protected void setValue(JsonValue value, EventMetadata metadata) throws Exception {
+        if (!isWritable) {
+            throw new Exception("Cannot modify a readonly characteristic");
+        }
+        try {
+            @Nullable T oldValue = this.value;
+            setValueInternal(toValue(value));
+            notifyValueChanged(oldValue, this.value, metadata);
+        } catch (Exception e) {
+            logger.error("{}Error while setting value with metadata: {}", LOG_ERROR, e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    protected void setValueInternal(@Nullable T value) throws Exception {
+        this.value = value;
     }
 
     // Protected methods
     protected void notifyValueChanged(@Nullable T oldValue, @Nullable T newValue) {
-        eventManager.publishEvent(new CharacteristicEvent(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
+        eventManager.publishEvent(new CharacteristicValueChangedEvent(
                 (Characteristic<?>) this, toValueJson(oldValue), toValueJson(newValue)));
+    }
+
+    protected void notifyValueChanged(@Nullable T oldValue, @Nullable T newValue, EventMetadata metadata) {
+        eventManager.publishEvent(new CharacteristicValueChangedEvent(
+                (Characteristic<?>) this, toValueJson(oldValue), toValueJson(newValue), metadata));
     }
 
     protected JsonObject enrich(JsonObject source, String key, Object value) {

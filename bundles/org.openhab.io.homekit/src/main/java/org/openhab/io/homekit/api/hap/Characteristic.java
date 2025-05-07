@@ -121,6 +121,8 @@ public interface Characteristic<T> extends Identifiable<CharacteristicUID>, Comp
 
     JsonValue toValueJson(T value);
 
+    JsonValue toValueJson(State state);
+
     /**
      * Gets the current value of the characteristic.
      *

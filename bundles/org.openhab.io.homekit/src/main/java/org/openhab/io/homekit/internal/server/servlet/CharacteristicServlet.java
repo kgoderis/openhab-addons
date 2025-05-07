@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +32,11 @@ import org.openhab.io.homekit.api.hap.AccessoryServer;
 import org.openhab.io.homekit.api.hap.Characteristic;
 import org.openhab.io.homekit.api.hap.StatusCode;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
+import org.openhab.io.homekit.internal.characteristic.GenericCharacteristic;
+import org.openhab.io.homekit.internal.events.CharacteristicChangeValueEvent;
+import org.openhab.io.homekit.internal.events.EventMetadata;
+import org.openhab.io.homekit.internal.events.HomekitEvent;
+import org.openhab.io.homekit.internal.events.HomekitEventManager;
 import org.openhab.io.homekit.util.Debouncer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,9 +63,11 @@ public class CharacteristicServlet extends BaseServlet {
     private final Map<AsyncContext, Debouncer> debouncers = new ConcurrentHashMap<>();
     private final Map<AsyncContext, List<JsonObject>> pendingUpdates = new ConcurrentHashMap<>();
     private static final Duration DEBOUNCE_DELAY = Duration.ofSeconds(1);
+    private final HomekitEventManager eventManager;
 
-    public CharacteristicServlet(AccessoryServer server) {
+    public CharacteristicServlet(AccessoryServer server, HomekitEventManager eventManager) {
         super(server);
+        this.eventManager = eventManager;
     }
 
     @Override
@@ -179,7 +187,17 @@ public class CharacteristicServlet extends BaseServlet {
                         .filter(characteristic -> characteristic != null).forEach(characteristic -> {
                             if (characteristicWrite.containsKey("value")) {
                                 try {
-                                    characteristic.setValue(characteristicWrite.get("value"));
+                                    if (characteristic instanceof GenericCharacteristic<?> genericCharacteristic) {
+                                        HomekitEvent newEvent = new CharacteristicChangeValueEvent(
+                                            server.getUID(),
+                                            genericCharacteristic.getUID(),
+                                            genericCharacteristic,
+                                            JsonValue.NULL,
+                                            characteristicWrite.get("value"),
+                                            new EventMetadata(server.getUID(), null, server.getUID(), Collections.emptySet())
+                                        );
+                                        eventManager.publishEvent(newEvent);
+                                    }
                                 } catch (Exception e) {
                                     logger.error("{}Error setting characteristic value", LOG_ERROR, e);
                                 }
@@ -191,7 +209,6 @@ public class CharacteristicServlet extends BaseServlet {
             }
 
             response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-
         } catch (Exception e) {
             logger.error("{}Error processing characteristic update", LOG_ERROR, e);
             response.setStatus(SC_MULTI_STATUS);

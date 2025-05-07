@@ -125,8 +125,13 @@ public class LocalAccessoryServer extends AbstractAccessoryServer {
                     http.getIdleTimeout());
 
             server.addConnector(http);
-            characteristicServlet = new CharacteristicServlet(this);
-            logger.debug("{}Created characteristic servlet", LOG_INIT);
+            try {
+                characteristicServlet = new CharacteristicServlet(this, eventManager);
+                logger.debug("{}Created characteristic servlet", LOG_INIT);
+            } catch (Exception e) {
+                logger.error("{}Failed to create characteristic servlet: {}", LOG_ERROR, e.getMessage(), e);
+                throw e;
+            }
 
             // ServletContextHandler servletContextHandler = new ServletContextHandler(
             // ServletContextHandler.SESSIONS | ServletContextHandler.NO_SECURITY);
@@ -561,7 +566,7 @@ public class LocalAccessoryServer extends AbstractAccessoryServer {
     protected void handleCharacteristicEvent(CharacteristicEvent event) {
         logger.debug("{}Received characteristic event - Type: {}, Characteristic: {}", LOG_EVENT, event.getType(),
                 event.getCharacteristic().getClass().getSimpleName());
-        if (event.getType() == HomekitEventType.CHARACTERISTIC_STATE_CHANGED && event.getCharacteristic().isPresent()) {
+        if (event.getType() == HomekitEventType.CHARACTERISTIC_STATE_CHANGED && event.getCharacteristic() != null) {
             characteristicServlet.publishCharacteristicUpdate(event.getCharacteristic().get());
             logger.debug("{}Published characteristic update", LOG_EVENT);
         }
@@ -579,7 +584,7 @@ public class LocalAccessoryServer extends AbstractAccessoryServer {
             for (Service service : accessory.getServices()) {
                 for (Characteristic<?> characteristic : service.getCharacteristics()) {
                     eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
-                            characteristic.getUID().toString(), getUID().toString(),
+                            characteristic.getUID(), getUID(),
                             event -> handleCharacteristicEvent((CharacteristicEvent) event)));
                     logger.debug("{}Subscribed to events for characteristic: {}", LOG_ACCESSORY,
                             characteristic.getClass().getSimpleName());

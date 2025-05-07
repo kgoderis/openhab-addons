@@ -1,6 +1,8 @@
 package org.openhab.io.homekit.internal.events;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.core.thing.UID;
 
 /**
  * Interface for all HomeKit events.
@@ -22,14 +24,30 @@ public interface HomekitEvent {
      *
      * @return the publisher UID
      */
-    String getPublisherUID();
+    UID getPublisherUID();
 
     /**
-     * Returns the metadata for this event.
+     * Sets the UID of the publisher of this event.
+     * Note: This is typically only used when forwarding events.
      *
-     * @return the event metadata
+     * @param uid the publisher UID to set
      */
-    EventMetadata getMetadata();
+    void setPublisherUID(UID uid);
+
+    /**
+     * Returns the UID of the subscriber of this event.
+     *
+     * @return the subscriber UID, or null if not set
+     */
+    @Nullable
+    UID getSubscriberUID();
+
+    /**
+     * Sets the UID of the subscriber of this event.
+     *
+     * @param uid the subscriber UID to set
+     */
+    void setSubscriberUID(UID uid);
 
     /**
      * Returns the timestamp when this event was created.
@@ -38,12 +56,13 @@ public interface HomekitEvent {
      */
     long getTimestamp();
 
-    void setPublisherUID(String uid);
+    /**
+     * Returns the metadata for this event.
+     *
+     * @return the event metadata
+     */
+    EventMetadata getMetadata();
 
     @Override
     String toString();
-
-    String getSubscriberUID();
-
-    void setSubscriberUID(String uid);
 }

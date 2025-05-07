@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.hap.Accessory;
@@ -13,6 +12,7 @@ import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.internal.events.HomekitEventManager;
 import org.openhab.io.homekit.internal.events.HomekitEventSubscription;
 import org.openhab.io.homekit.internal.events.HomekitEventType;
+import org.openhab.io.homekit.internal.events.HomekitUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 public class HomekitAccessoryBridge {
     private static final Logger logger = LoggerFactory.getLogger(HomekitAccessoryBridge.class);
     private static final String LOG_PREFIX = "HomeKit Bridge: ";
-    private final String subscriberUID = "bridge:" + UUID.randomUUID().toString();
+    private final HomekitUID bridgeUID = new HomekitUID("bridge");
 
     private final HomekitEventManager eventManager;
     private final Map<Accessory, BridgeContext> bridgedAccessories = new HashMap<>();
@@ -63,7 +63,7 @@ public class HomekitAccessoryBridge {
             List<HomekitEventSubscription> remoteSubs = eventManager.subscribe(
                     Set.of(HomekitEventType.CHARACTERISTIC_VALUE_CHANGED, HomekitEventType.SERVICE_ADDED,
                             HomekitEventType.SERVICE_REMOVED, HomekitEventType.ACCESSORY_STATE_CHANGED),
-                    remoteAccessory.getUID().toString(), subscriberUID, event -> {
+                    remoteAccessory.getUID(), bridgeUID, event -> {
                         logger.debug("{}Forwarding event from remote to local: {}", LOG_PREFIX, event);
                         // The local server will handle the event through its event manager
                         eventManager.publishEvent(event);
@@ -72,7 +72,7 @@ public class HomekitAccessoryBridge {
             // Set up command forwarding from local to remote
             List<HomekitEventSubscription> localSubs = eventManager.subscribe(
                     Set.of(HomekitEventType.CHARACTERISTIC_VALUE_CHANGED),
-                    localAccessory.getUID().toString(), subscriberUID, event -> { // Use local accessory UID for local events
+                    localAccessory.getUID(), bridgeUID, event -> { // Use local accessory UID for local events
                         logger.debug("{}Forwarding command from local to remote: {}", LOG_PREFIX, event);
                             logger.debug("{}Forwarding command from local to remote: {}", LOG_PREFIX, event);
                             // The remote server will handle the event through its event manager

@@ -1500,13 +1500,13 @@ public class RemoteAccessoryServer extends AbstractAccessoryServer implements Ch
         for (Service service : accessory.getServices()) {
             for (Characteristic<?> characteristic : service.getCharacteristics()) {
                 eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
-                        characteristic.getUID().toString(), getUID().toString(),
+                        characteristic.getUID(), getUID(),
                         event -> onCharacteristicEvent((CharacteristicEvent) event)));
                 eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_START_EVENTS,
-                        characteristic.getUID().toString(), getUID().toString(),
+                        characteristic.getUID(), getUID(),
                         event -> onCharacteristicEvent((CharacteristicEvent) event)));
                 eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STOP_EVENTS,
-                        characteristic.getUID().toString(), getUID().toString(),
+                        characteristic.getUID(), getUID(),
                         event -> onCharacteristicEvent((CharacteristicEvent) event)));
                 logger.debug("{}Subscribed to events for characteristic: {}", LOG_ACCESSORY,
                         characteristic.getClass().getSimpleName());
