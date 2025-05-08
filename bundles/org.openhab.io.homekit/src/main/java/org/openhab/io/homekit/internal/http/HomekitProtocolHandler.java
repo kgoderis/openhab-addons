@@ -6,13 +6,13 @@ import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.client.api.Response.Listener;
 import org.eclipse.jetty.client.api.Result;
 import org.eclipse.jetty.client.util.BufferingResponseListener;
-import org.openhab.io.homekit.internal.server.RemoteAccessoryServer;
+import org.openhab.io.homekit.internal.server.HomekitRemoteAccessoryServer;
 
 public class HomekitProtocolHandler implements ProtocolHandler {
 
-    protected RemoteAccessoryServer server;
+    protected HomekitRemoteAccessoryServer server;
 
-    public HomekitProtocolHandler(RemoteAccessoryServer server) {
+    public HomekitProtocolHandler(HomekitRemoteAccessoryServer server) {
         this.server = server;
     }
 

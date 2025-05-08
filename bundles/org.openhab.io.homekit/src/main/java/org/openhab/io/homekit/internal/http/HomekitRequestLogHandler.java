@@ -22,7 +22,7 @@ public class HomekitRequestLogHandler extends RequestLogHandler {
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
-    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
@@ -35,14 +35,14 @@ public class HomekitRequestLogHandler extends RequestLogHandler {
             throws IOException, ServletException {
 
         if (logger.isDebugEnabled()) {
-            final RequestWrapper wrappedRequest = new RequestWrapper(request);
-            ResponseWrapper wrappedResponse = new ResponseWrapper(response);
+            final HomekitRequestWrapper wrappedRequest = new HomekitRequestWrapper(request);
+            HomekitResponseWrapper wrappedResponse = new HomekitResponseWrapper(response);
 
             final String userAgent = wrappedRequest.getHeader("User-Agent");
             logger.debug("{}=============Request==========", LOG_STATE);
             logger.debug("{}From {}:{} ; ua:{}", LOG_STATE, wrappedRequest.getRemoteAddr(),
                     wrappedRequest.getRemotePort(), userAgent);
-            logger.debug("{}Method : {}", LOG_STATE, wrappedRequest.getMethod().toUpperCase());
+            logger.debug("{}HomekitMethod : {}", LOG_STATE, wrappedRequest.getMethod().toUpperCase());
             logger.debug("{}Content-Type : {}", LOG_STATE, wrappedRequest.getContentType());
             logger.debug("{}Payload-Size : {}", LOG_STATE, wrappedRequest.getContentLength());
             logger.debug("{}URI : {}", LOG_STATE, wrappedRequest.getRequestURI());

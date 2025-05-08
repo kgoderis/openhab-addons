@@ -59,9 +59,8 @@ public class HomekitEventSubscription {
      * @param expectedEventClass the expected class of events
      * @param filter a predicate to filter events
      */
-    public HomekitEventSubscription(HomekitEventType eventType, UID publisherUID,
-            HomekitEventSubscriber subscriber, Class<? extends HomekitEvent> expectedEventClass,
-            Predicate<HomekitEvent> filter) {
+    public HomekitEventSubscription(HomekitEventType eventType, UID publisherUID, HomekitEventSubscriber subscriber,
+            Class<? extends HomekitEvent> expectedEventClass, Predicate<HomekitEvent> filter) {
         this(eventType, publisherUID, null, subscriber, expectedEventClass, filter);
     }
 
@@ -73,8 +72,8 @@ public class HomekitEventSubscription {
      * @param subscriber the subscriber that will receive the events
      * @param filter a predicate to filter events
      */
-    public HomekitEventSubscription(HomekitEventType eventType, UID publisherUID,
-            HomekitEventSubscriber subscriber, Predicate<HomekitEvent> filter) {
+    public HomekitEventSubscription(HomekitEventType eventType, UID publisherUID, HomekitEventSubscriber subscriber,
+            Predicate<HomekitEvent> filter) {
         this(eventType, publisherUID, null, subscriber, HomekitEvent.class, filter);
     }
 
@@ -85,8 +84,7 @@ public class HomekitEventSubscription {
      * @param publisherUID the UID of the publisher to receive events from
      * @param subscriber the subscriber that will receive the events
      */
-    public HomekitEventSubscription(HomekitEventType eventType, UID publisherUID,
-            HomekitEventSubscriber subscriber) {
+    public HomekitEventSubscription(HomekitEventType eventType, UID publisherUID, HomekitEventSubscriber subscriber) {
         this(eventType, publisherUID, null, subscriber, HomekitEvent.class, event -> true);
     }
 
@@ -125,8 +123,8 @@ public class HomekitEventSubscription {
      * @param subscriber the subscriber that will receive the events
      * @param expectedEventClass the expected class of events
      */
-    public HomekitEventSubscription(HomekitEventType eventType, UID publisherUID,
-            HomekitEventSubscriber subscriber, Class<? extends HomekitEvent> expectedEventClass) {
+    public HomekitEventSubscription(HomekitEventType eventType, UID publisherUID, HomekitEventSubscriber subscriber,
+            Class<? extends HomekitEvent> expectedEventClass) {
         this(eventType, publisherUID, null, subscriber, expectedEventClass, event -> true);
     }
 

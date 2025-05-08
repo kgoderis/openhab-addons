@@ -60,8 +60,8 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
         ThingTypeUID thingTypeUID = new ThingTypeUID("homekit", "accessory");
 
         // Create the thing type
-        ThingType thingType = ThingTypeBuilder.instance(thingTypeUID, "Homekit Accessory")
-                .withDescription("HomeKit Accessory").withCategory("homekit").build();
+        ThingType thingType = ThingTypeBuilder.instance(thingTypeUID, "Homekit HomekitAccessory")
+                .withDescription("HomeKit HomekitAccessory").withCategory("homekit").build();
 
         // Store the thing type
         putThingType(thingType);
@@ -107,7 +107,7 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
 
         // Create the thing type
         ThingType thingType = ThingTypeBuilder.instance(thingTypeUID, serviceName)
-                .withDescription("HomeKit " + serviceName + " Service").withCategory("homekit").build();
+                .withDescription("HomeKit " + serviceName + " HomekitService").withCategory("homekit").build();
 
         // Store the thing type
         putThingType(thingType);
@@ -134,7 +134,7 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
     // // Create a channel definition
     // return new ChannelDefinitionBuilder(homekitFactory.getTagFromCharacteristicType(characteristicType),
     // channelTypeUID).withLabel(characteristicType)
-    // .withDescription("HomeKit " + characteristicType + " Characteristic").build();
+    // .withDescription("HomeKit " + characteristicType + " HomekitCharacteristic").build();
     // }).filter(def -> def != null).collect(Collectors.toList());
     // }
 
@@ -145,7 +145,7 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
     // // which services should be grouped together
     // ChannelGroupTypeUID channelGroupTypeUID = getChannelGroupTypeUID(serviceType);
     // return List.of(new ChannelGroupDefinition(serviceType, channelGroupTypeUID, serviceType,
-    // "HomeKit " + serviceType + " Service Group"));
+    // "HomeKit " + serviceType + " HomekitService Group"));
     // }
 
     public ThingTypeUID getThingTypeUID(String serviceType) {

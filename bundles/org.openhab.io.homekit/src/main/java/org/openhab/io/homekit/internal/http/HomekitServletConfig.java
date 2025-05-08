@@ -3,15 +3,15 @@ package org.openhab.io.homekit.internal.http;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 
-import org.openhab.io.homekit.api.hap.AccessoryServer;
+import org.openhab.io.homekit.api.hap.HomekitAccessoryServer;
 
 public class HomekitServletConfig implements ServletConfig {
 
-    private final AccessoryServer server;
+    private final HomekitAccessoryServer server;
     private final String servletName;
     private final ServletContext servletContext;
 
-    public HomekitServletConfig(AccessoryServer server, String servletName, ServletContext servletContext) {
+    public HomekitServletConfig(HomekitAccessoryServer server, String servletName, ServletContext servletContext) {
         this.server = server;
         this.servletName = servletName;
         this.servletContext = servletContext;
@@ -37,7 +37,7 @@ public class HomekitServletConfig implements ServletConfig {
         return java.util.Collections.emptyEnumeration();
     }
 
-    public AccessoryServer getAccessoryServer() {
+    public HomekitAccessoryServer getAccessoryServer() {
         return server;
     }
 }

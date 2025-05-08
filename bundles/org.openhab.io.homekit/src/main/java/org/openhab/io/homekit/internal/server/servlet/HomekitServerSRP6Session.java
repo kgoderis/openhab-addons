@@ -14,7 +14,7 @@ import com.nimbusds.srp6.URoutineContext;
 /**
  * This is a slightly modified version of the SRP6ServerSession class included with nimbus.
  *
- * Pairing uses Stanfordʼs Secure Remote Password protocol with the following modifications:
+ * HomekitPairing uses Stanfordʼs Secure Remote Password protocol with the following modifications:
  * * SHA-512 is used as the hash function, replacing SHA-1. If the SRP reference implementation provided by Stanford is
  * being used then the function that generates the Session Key, K, from the Premaster Secret, S, must be changed from
  * Mask Generation Function 1, t_mgf1(), to the specified hash function, SHA-512.

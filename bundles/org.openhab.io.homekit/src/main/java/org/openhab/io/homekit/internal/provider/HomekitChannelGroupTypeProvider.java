@@ -41,7 +41,7 @@ public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypePro
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
-    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
     private final Logger logger = LoggerFactory.getLogger(HomekitChannelGroupTypeProvider.class);
@@ -95,7 +95,7 @@ public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypePro
 
         // Create the channel group type
         ChannelGroupType channelGroupType = ChannelGroupTypeBuilder.instance(channelGroupTypeUID, serviceName)
-                .withDescription("HomeKit " + serviceName + " Service").withChannelDefinitions(channelDefinitions)
+                .withDescription("HomeKit " + serviceName + " HomekitService").withChannelDefinitions(channelDefinitions)
                 .build();
 
         // Store the channel group type
@@ -127,7 +127,7 @@ public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypePro
 
             // Create a channel definition
             return new ChannelDefinitionBuilder(type, channelTypeUID).withLabel(type)
-                    .withDescription("HomeKit " + type + " Characteristic").build();
+                    .withDescription("HomeKit " + type + " HomekitCharacteristic").build();
         }).filter(def -> def != null).collect(Collectors.toList());
     }
 

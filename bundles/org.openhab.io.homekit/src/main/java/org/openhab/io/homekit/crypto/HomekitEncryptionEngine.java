@@ -16,8 +16,9 @@ import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
 import org.bouncycastle.util.Pack;
 import org.eclipse.jetty.util.BufferUtil;
-import org.openhab.io.homekit.util.Byte;
-import org.openhab.io.homekit.util.ByteBufferOutputStream;
+import org.openhab.io.homekit.util.HomekitByte;
+import org.openhab.io.homekit.util.HomekitByteBufferOutputStream;
+import org.openhab.io.homekit.util.HomekitByte;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +53,7 @@ public class HomekitEncryptionEngine {
 
         logger.trace("DecryptBuffer : cipherTextBuffer = {}", BufferUtil.toDetailString(cipherTextBuffer));
         logger.trace("DecryptBuffer : decryptedBuffer = {}", BufferUtil.toDetailString(decryptedBuffer));
-        logger.trace("DecryptBuffer : key = {}", Byte.toHexString(writeKey));
+        logger.trace("DecryptBuffer : key = {}", HomekitByte.toHexString(writeKey));
         logger.trace("DecryptBuffer : sequenceNumber = {}", sequenceNumber);
 
         int currentPosition = cipherTextBuffer.position();
@@ -77,7 +78,7 @@ public class HomekitEncryptionEngine {
         }
 
         if (!results.isEmpty()) {
-            try (ByteBufferOutputStream decrypted = new ByteBufferOutputStream(decryptedBuffer, true)) {
+            try (HomekitByteBufferOutputStream decrypted = new HomekitByteBufferOutputStream(decryptedBuffer, true)) {
                 for (byte[] msg : results) {
                     try {
                         decrypted.write(decrypt(msg, writeKey, currentSequenceNumber++));
@@ -100,7 +101,7 @@ public class HomekitEncryptionEngine {
 
         logger.trace("EncryptBuffer : Input = {}", BufferUtil.toDetailString(plainTextBuffer));
         logger.trace("EncryptBuffer : Output = {}", BufferUtil.toDetailString(encryptedBuffer));
-        logger.trace("EncryptBuffer : Key = {}", Byte.toHexString(readKey));
+        logger.trace("EncryptBuffer : Key = {}", HomekitByte.toHexString(readKey));
         logger.trace("EncryptBuffer : sequenceNumber = {}", sequenceNumber);
 
         long currentSequenceNumber = sequenceNumber;
@@ -109,7 +110,7 @@ public class HomekitEncryptionEngine {
         ByteBuffer dummy = plainTextBuffer.duplicate();
         logger.trace("EncryptBuffer : Encrypting '{}'", BufferUtil.toUTF8String(dummy));
 
-        try (ByteBufferOutputStream encrypted = new ByteBufferOutputStream(encryptedBuffer, true)) {
+        try (HomekitByteBufferOutputStream encrypted = new HomekitByteBufferOutputStream(encryptedBuffer, true)) {
             while (plainTextBuffer.hasRemaining()) {
                 short length = (short) Math.min(plainTextBuffer.remaining(), 0x400);
                 logger.trace("EncryptBuffer : Encrypting {} bytes out of {} remaining in the input buffer", length,
@@ -127,7 +128,7 @@ public class HomekitEncryptionEngine {
                 byte[] plaintext = new byte[length];
                 plainTextBuffer.get(plaintext, 0, length);
 
-                byte[] ciphertext = new ChachaEncoder(readKey, nonce).encodeCiphertext(plaintext, lengthBytes);
+                byte[] ciphertext = new HomekitChachaEncoder(readKey, nonce).encodeCiphertext(plaintext, lengthBytes);
 
                 encrypted.write(ciphertext);
                 logger.trace("EncryptBuffer : Wrote Sequence {} ({} bytes) (Output={})", currentSequenceNumber,
@@ -146,8 +147,8 @@ public class HomekitEncryptionEngine {
     }
 
     private static byte[] decrypt(byte[] msg, byte[] key, long sequenceNumber) {
-        logger.trace("Decrypt : key {}", org.openhab.io.homekit.util.Byte.toHexString(key));
-        logger.trace("Decrypt : content {}", org.openhab.io.homekit.util.Byte.toHexString(msg));
+        logger.trace("Decrypt : key {}", org.openhab.io.homekit.util.HomekitByte.toHexString(key));
+        logger.trace("Decrypt : content {}", org.openhab.io.homekit.util.HomekitByte.toHexString(msg));
         logger.trace("Decrypt : sequence {}", sequenceNumber);
 
         byte[] mac = new byte[16];
@@ -162,7 +163,7 @@ public class HomekitEncryptionEngine {
 
                 nonce = Pack.longToLittleEndian(sequenceNumber);
             }
-            return new ChachaDecoder(key, nonce).decodeCiphertext(mac, additionalData, ciphertext);
+            return new HomekitChachaDecoder(key, nonce).decodeCiphertext(mac, additionalData, ciphertext);
         } catch (Exception e) {
             if (e instanceof org.bouncycastle.tls.TlsFatalAlert) {
                 logger.error("Decrypt : Exception while decrypting : Description = {}",
@@ -192,10 +193,10 @@ public class HomekitEncryptionEngine {
             } catch (NoSuchAlgorithmException e) {
                 throw new RuntimeException("Could not locate requested algorithm", e);
             }
-            digest.update(Byte.toByteArray(cryptoParams.N));
+            digest.update(HomekitByte.toByteArray(cryptoParams.N));
             byte[] hN = digest.digest();
 
-            digest.update(Byte.toByteArray(cryptoParams.g));
+            digest.update(HomekitByte.toByteArray(cryptoParams.g));
             byte[] hg = digest.digest();
 
             byte[] hNhg = xor(hN, hg);
@@ -203,14 +204,14 @@ public class HomekitEncryptionEngine {
             digest.update(ctx.userID.getBytes(StandardCharsets.UTF_8));
             byte[] hu = digest.digest();
 
-            digest.update(Byte.toByteArray(ctx.S));
+            digest.update(HomekitByte.toByteArray(ctx.S));
             byte[] hS = digest.digest();
 
             digest.update(hNhg);
             digest.update(hu);
-            digest.update(Byte.toByteArray(ctx.s));
-            digest.update(Byte.toByteArray(ctx.A));
-            digest.update(Byte.toByteArray(ctx.B));
+            digest.update(HomekitByte.toByteArray(ctx.s));
+            digest.update(HomekitByte.toByteArray(ctx.A));
+            digest.update(HomekitByte.toByteArray(ctx.B));
             digest.update(hS);
             BigInteger ret = new BigInteger(1, digest.digest());
             return ret;
@@ -237,10 +238,10 @@ public class HomekitEncryptionEngine {
                 throw new RuntimeException("Could not locate requested algorithm", e);
             }
 
-            byte[] hS = digest.digest(Byte.toByteArray(ctx.S));
+            byte[] hS = digest.digest(HomekitByte.toByteArray(ctx.S));
 
-            digest.update(Byte.toByteArray(ctx.A));
-            digest.update(Byte.toByteArray(ctx.M1));
+            digest.update(HomekitByte.toByteArray(ctx.A));
+            digest.update(HomekitByte.toByteArray(ctx.M1));
             digest.update(hS);
 
             return new BigInteger(1, digest.digest());

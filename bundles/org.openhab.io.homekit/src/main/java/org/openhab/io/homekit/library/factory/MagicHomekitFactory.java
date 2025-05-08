@@ -5,18 +5,18 @@ import org.openhab.core.thing.type.ChannelTypeUID;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.exception.HomekitRegistrationException;
 import org.openhab.io.homekit.internal.factory.AbstractHomekitFactory;
-import org.openhab.io.homekit.library.characteristic.BrightnessCharacteristic;
-import org.openhab.io.homekit.library.characteristic.CurrentTemperatureCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HueCharacteristic;
-import org.openhab.io.homekit.library.characteristic.OnCharacteristic;
-import org.openhab.io.homekit.library.characteristic.SaturationCharacteristic;
-import org.openhab.io.homekit.library.characteristic.TargetTemperatureCharacteristic;
-import org.openhab.io.homekit.library.service.ColorLightBulbService;
-import org.openhab.io.homekit.library.service.ContactSensorService;
-import org.openhab.io.homekit.library.service.DimmableLightBulbService;
-import org.openhab.io.homekit.library.service.LightBulbService;
-import org.openhab.io.homekit.library.service.ThermostatService;
-import org.openhab.io.homekit.library.service.WindowCoveringService;
+import org.openhab.io.homekit.library.characteristic.HomekitBrightnessCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitCurrentTemperatureCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitHueCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitOnCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitSaturationCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitTargetTemperatureCharacteristic;
+import org.openhab.io.homekit.library.service.HomekitColorLightBulbService;
+import org.openhab.io.homekit.library.service.HomekitContactSensorService;
+import org.openhab.io.homekit.library.service.HomekitDimmableLightBulbService;
+import org.openhab.io.homekit.library.service.HomekitLightBulbService;
+import org.openhab.io.homekit.library.service.HomekitThermostatService;
+import org.openhab.io.homekit.library.service.HomekitWindowCoveringService;
 import org.osgi.service.component.annotations.Component;
 
 @Component(immediate = true, service = HomekitFactory.class)
@@ -25,41 +25,41 @@ public class MagicHomekitFactory extends AbstractHomekitFactory {
     @Override
     protected void initializeMappers() {
         try {
-            this.addService(MagicBindingConstants.THING_TYPE_ON_OFF_LIGHT, LightBulbService.class);
-            this.addService(MagicBindingConstants.THING_TYPE_DIMMABLE_LIGHT, DimmableLightBulbService.class);
-            this.addService(MagicBindingConstants.THING_TYPE_COLOR_LIGHT, ColorLightBulbService.class);
-            this.addService(MagicBindingConstants.THING_TYPE_CONTACT_SENSOR, ContactSensorService.class);
-            this.addService(MagicBindingConstants.THING_TYPE_THERMOSTAT, ThermostatService.class);
-            this.addService(MagicBindingConstants.THING_TYPE_ROLLERSHUTTER, WindowCoveringService.class);
+            this.addService(MagicBindingConstants.THING_TYPE_ON_OFF_LIGHT, HomekitLightBulbService.class);
+            this.addService(MagicBindingConstants.THING_TYPE_DIMMABLE_LIGHT, HomekitDimmableLightBulbService.class);
+            this.addService(MagicBindingConstants.THING_TYPE_COLOR_LIGHT, HomekitColorLightBulbService.class);
+            this.addService(MagicBindingConstants.THING_TYPE_CONTACT_SENSOR, HomekitContactSensorService.class);
+            this.addService(MagicBindingConstants.THING_TYPE_THERMOSTAT, HomekitThermostatService.class);
+            this.addService(MagicBindingConstants.THING_TYPE_ROLLERSHUTTER, HomekitWindowCoveringService.class);
 
             this.addCharacteristic(
                     new ChannelTypeUID(MagicBindingConstants.BINDING_ID, MagicBindingConstants.CHANNEL_SWITCH),
-                    OnCharacteristic.class);
+                    HomekitOnCharacteristic.class);
 
             this.addCharacteristic(
                     new ChannelTypeUID(MagicBindingConstants.BINDING_ID, MagicBindingConstants.CHANNEL_BRIGHTNESS),
-                    BrightnessCharacteristic.class);
+                    HomekitBrightnessCharacteristic.class);
 
             this.addCharacteristic(
                     new ChannelTypeUID(MagicBindingConstants.BINDING_ID, MagicBindingConstants.CHANNEL_COLOR),
-                    HueCharacteristic.class);
+                    HomekitHueCharacteristic.class);
             this.addCharacteristic(
                     new ChannelTypeUID(MagicBindingConstants.BINDING_ID, MagicBindingConstants.CHANNEL_COLOR),
-                    SaturationCharacteristic.class);
+                    HomekitSaturationCharacteristic.class);
             this.addCharacteristic(
                     new ChannelTypeUID(MagicBindingConstants.BINDING_ID, MagicBindingConstants.CHANNEL_COLOR),
-                    BrightnessCharacteristic.class);
+                    HomekitBrightnessCharacteristic.class);
 
             this.addCharacteristic(
                     new ChannelTypeUID(MagicBindingConstants.BINDING_ID, MagicBindingConstants.CHANNEL_CONTACT),
-                    OnCharacteristic.class);
+                    HomekitOnCharacteristic.class);
 
             this.addCharacteristic(
                     new ChannelTypeUID(MagicBindingConstants.BINDING_ID, MagicBindingConstants.CHANNEL_TEMPERATURE),
-                    CurrentTemperatureCharacteristic.class);
+                    HomekitCurrentTemperatureCharacteristic.class);
             this.addCharacteristic(
                     new ChannelTypeUID(MagicBindingConstants.BINDING_ID, MagicBindingConstants.CHANNEL_SET_TEMPERATURE),
-                    TargetTemperatureCharacteristic.class);
+                    HomekitTargetTemperatureCharacteristic.class);
         } catch (HomekitRegistrationException e) {
             logger.error("{}Failed to initialize mappers in MagicHomekitFactory: {}", AbstractHomekitFactory.LOG_ERROR,
                     e.getMessage(), e);

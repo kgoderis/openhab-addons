@@ -20,9 +20,9 @@
 // import org.openhab.core.net.NetworkAddressService;
 // import org.openhab.core.thing.ThingTypeUID;
 // import org.openhab.core.thing.ThingUID;
-// import org.openhab.io.homekit.api.AccessoryServer;
-// import org.openhab.io.homekit.api.AccessoryServerRegistry;
-// import org.openhab.io.homekit.internal.server.AccessoryServerUID;
+// import org.openhab.io.homekit.api.HomekitAccessoryServer;
+// import org.openhab.io.homekit.api.HomekitAccessoryServerRegistry;
+// import org.openhab.io.homekit.internal.server.HomekitAccessoryServerUID;
 // import org.osgi.service.component.annotations.Activate;
 // import org.osgi.service.component.annotations.Component;
 // import org.osgi.service.component.annotations.Reference;
@@ -36,12 +36,12 @@
 //
 // private static final String HAP_SERVICE_TYPE = "_hap._tcp.local.";
 //
-// private final AccessoryServerRegistry accessoryServerRegistry;
+// private final HomekitAccessoryServerRegistry accessoryServerRegistry;
 // private final NetworkAddressService networkAddressService;
 // private final Map<String, ThingUID> cachedServices;
 //
 // @Activate
-// public HomekitAccessoryDiscoveryParticipant(@Reference AccessoryServerRegistry accessoryServerRegistry,
+// public HomekitAccessoryDiscoveryParticipant(@Reference HomekitAccessoryServerRegistry accessoryServerRegistry,
 // @Reference NetworkAddressService networkAddressService) {
 // this.accessoryServerRegistry = accessoryServerRegistry;
 // this.networkAddressService = networkAddressService;
@@ -73,11 +73,11 @@
 // "Discovered a Homekit Automation Protocol participant with id '{}', having {} IPv4 and {} IPv6 addresses",
 // id, service.getInet4Addresses().length, service.getInet6Addresses().length);
 //
-// AccessoryServer accessoryServer = accessoryServerRegistry
-// .get(new AccessoryServerUID("BridgeAccessoryServer", id.replace(":", "")));
+// HomekitAccessoryServer accessoryServer = accessoryServerRegistry
+// .get(new HomekitAccessoryServerUID("BridgeAccessoryServer", id.replace(":", "")));
 //
 // if (accessoryServer != null) {
-// logger.debug("Skipping the discovery for an existing openHAB Accessory Server '{}'",
+// logger.debug("Skipping the discovery for an existing openHAB HomekitAccessory Server '{}'",
 // accessoryServer.getUID());
 // } else {
 // ThingUID uid = getThingUID(service);
@@ -145,9 +145,9 @@
 // String category = service.getPropertyString("ci");
 //
 // if (category.equals("2")) {
-// return builder.withLabel("Homekit Accessory Bridge").build();
+// return builder.withLabel("Homekit HomekitAccessory Bridge").build();
 // } else {
-// return builder.withLabel("Homekit StandAlone Accessory").build();
+// return builder.withLabel("Homekit StandAlone HomekitAccessory").build();
 // }
 // }
 // }
@@ -160,7 +160,7 @@
 // // logger.warn("Skipping a service without service data");
 // // }
 // // if (!service.getApplication().contains("hap")) {
-// // logger.warn("Skipping a service unrelated to the Homekit Accessory Protocol");
+// // logger.warn("Skipping a service unrelated to the Homekit HomekitAccessory Protocol");
 // // }
 // }
 // return null;

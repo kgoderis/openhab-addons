@@ -97,25 +97,25 @@ Let me check some key files to provide more specific details about the split.
 | `src/main/java/org/openhab/io/homekit/internal/server/registry/AccessoryServerRegistryImpl.java` | L152-186 |
 | `src/main/java/org/openhab/io/homekit/internal/bridge/HomekitAccessoryBridge.java` | L23-51 |
 | `src/main/java/org/openhab/io/homekit/internal/handler/HomekitAccessoryHandler.java` | L1-46 |
-| `src/main/java/org/openhab/io/homekit/internal/accessory/BridgedAccessory.java` | L1-59 |
+| `src/main/java/org/openhab/io/homekit/internal/accessory/HomekitBridgedAccessory.java` | L1-59 |
 | `src/main/java/org/openhab/io/homekit/library/accessory/BridgeAccessory.java` | L1-23 |
 | `src/main/java/org/openhab/io/homekit/internal/handler/HomekitAccessoryBridgeHandler.java` | L1-539 |
 | `src/main/java/org/openhab/io/homekit/internal/bridge/HomekitItemBridge.java` | L149-199 |
 | `src/main/java/org/openhab/io/homekit/internal/bridge/HomekitItemBridge.java` | L88-119 |
 | `src/main/java/org/openhab/io/homekit/internal/bridge/HomekitAccessoryBridge.java` | L1-23 |
 | `src/main/java/org/openhab/io/homekit/internal/client/HomekitAccessoryDiscoveryParticipant.java` | L1-192 |
-| `src/main/java/org/openhab/io/homekit/internal/server/LocalAccessoryServer.java` | L508-544 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitLocalAccessoryServer.java` | L508-544 |
 | `src/main/java/org/openhab/io/homekit/Ideas/SpecStory Events.md` | L2420-2460 |
 | `src/main/java/org/openhab/io/homekit/internal/bridge/HomekitItemBridge.java` | L394-434 |
 | `src/main/java/org/openhab/io/homekit/internal/bridge/HomekitItemBridge.java` | L1-44 |
-| `src/main/java/org/openhab/io/homekit/internal/server/AbstractAccessoryServer.java` | L723-764 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitAbstractAccessoryServer.java` | L723-764 |
 | `src/main/java/org/openhab/io/homekit/internal/server/registry/AccessoryServerRegistryImpl.java` | L115-152 |
-| `src/main/java/org/openhab/io/homekit/internal/accessory/BridgedAccessory.java` | L59-137 |
+| `src/main/java/org/openhab/io/homekit/internal/accessory/HomekitBridgedAccessory.java` | L59-137 |
 | `src/main/java/org/openhab/io/homekit/internal/bridge/HomekitAccessoryBridge.java` | L101-146 |
 | `src/main/java/org/openhab/io/homekit/internal/bridge/HomekitAccessoryBridge.java` | L51-72 |
 | `src/main/java/org/openhab/io/homekit/internal/bridge/HomekitItemBridge.java` | L434-474 |
 | `src/main/java/org/openhab/io/homekit/internal/client/HomekitAccessoryBridgeDiscoveryService.java` | L1-144 |
-| `src/main/java/org/openhab/io/homekit/internal/server/registry/ManagedAccessoryServerProvider.java` | L137-164 |
+| `src/main/java/org/openhab/io/homekit/internal/server/registry/HomekitManagedAccessoryServerProvider.java` | L137-164 |
 | `src/main/java/org/openhab/io/homekit/internal/bridge/HomekitItemBridge.java` | L199-252 |
 | `src/main/java/org/openhab/io/homekit/internal/bridge/HomekitAccessoryBridge.java` | L72-101 |
 
@@ -138,13 +138,13 @@ Based on the codebase analysis, I can provide a detailed proposal for splitting 
 2. **org.openhab.io.homekit** (IO Bundle):
    - Core Components:
      - `HomekitItemBridge` - Bridges OpenHAB items to HomeKit accessories
-     - `AccessoryServerRegistry` - Manages HomeKit accessory servers
-     - `LocalAccessoryServer` - Implements the local HomeKit server
-     - `RemoteAccessoryServer` - Handles communication with remote HomeKit devices
+     - `HomekitAccessoryServerRegistry` - Manages HomeKit accessory servers
+     - `HomekitLocalAccessoryServer` - Implements the local HomeKit server
+     - `HomekitRemoteAccessoryServer` - Handles communication with remote HomeKit devices
      - `HomekitEventManager` - Manages HomeKit events and subscriptions
      - `HomekitFactory` - Factory for creating HomeKit accessories
-     - `AccessoryRegistry` - Registry for managing HomeKit accessories
-     - `PairingRegistry` - Manages HomeKit pairing information
+     - `HomekitAccessoryRegistry` - Registry for managing HomeKit accessories
+     - `HomekitPairingRegistry` - Manages HomeKit pairing information
 
 The split would work as follows:
 
@@ -161,14 +161,14 @@ The split would work as follows:
    - Item to accessory mapping
    - HomeKit protocol implementation
    - Event management
-   - Accessory registration
+   - HomekitAccessory registration
    - Security and authentication
-   - Service discovery
+   - HomekitService discovery
 
 The key interfaces between the bundles would be:
 
 1. **Binding to IO Communication**:
-   - The binding would use the IO bundle's `AccessoryServerRegistry` to register and manage servers
+   - The binding would use the IO bundle's `HomekitAccessoryServerRegistry` to register and manage servers
    - The binding would use the IO bundle's `HomekitEventManager` for event handling
    - The binding would use the IO bundle's `HomekitFactory` to create accessories
 
@@ -222,10 +222,10 @@ I'll elaborate on the dependencies and interfaces between the bundles with code 
 + import java.util.Collection;
 + 
 + import org.eclipse.jdt.annotation.NonNullByDefault;
-+ import org.openhab.io.homekit.api.hap.Accessory;
-+ import org.openhab.io.homekit.api.hap.AccessoryServer;
-+ import org.openhab.io.homekit.api.hap.Characteristic;
-+ import org.openhab.io.homekit.api.hap.Service;
++ import org.openhab.io.homekit.api.hap.HomekitAccessory;
++ import org.openhab.io.homekit.api.hap.HomekitAccessoryServer;
++ import org.openhab.io.homekit.api.hap.HomekitCharacteristic;
++ import org.openhab.io.homekit.api.hap.HomekitService;
 + 
 + /**
 +  * Interface for HomeKit server functionality that can be used by both the binding and IO bundles.
@@ -250,35 +250,35 @@ I'll elaborate on the dependencies and interfaces between the bundles with code 
 +     /**
 +      * Get all accessories registered with this server
 +      */
-+     Collection<Accessory> getAccessories() throws HomekitAccessoryOperationException;
++     Collection<HomekitAccessory> getAccessories() throws HomekitAccessoryOperationException;
 + 
 +     /**
 +      * Add an accessory to the server
 +      */
-+     void addAccessory(Accessory accessory) throws HomekitAccessoryOperationException;
++     void addAccessory(HomekitAccessory accessory) throws HomekitAccessoryOperationException;
 + 
 +     /**
 +      * Remove an accessory from the server
 +      */
-+     void removeAccessory(Accessory accessory) throws HomekitAccessoryOperationException;
++     void removeAccessory(HomekitAccessory accessory) throws HomekitAccessoryOperationException;
 + 
 +     /**
 +      * Get a specific accessory by its ID
 +      */
 +     @Nullable
-+     Accessory getAccessory(long id) throws HomekitAccessoryOperationException;
++     HomekitAccessory getAccessory(long id) throws HomekitAccessoryOperationException;
 + 
 +     /**
 +      * Get a specific service by its ID
 +      */
 +     @Nullable
-+     Service getService(long id) throws HomekitAccessoryOperationException;
++     HomekitService getService(long id) throws HomekitAccessoryOperationException;
 + 
 +     /**
 +      * Get a specific characteristic by its ID
 +      */
 +     @Nullable
-+     Characteristic getCharacteristic(long id) throws HomekitAccessoryOperationException;
++     HomekitCharacteristic getCharacteristic(long id) throws HomekitAccessoryOperationException;
 + 
 +     /**
 +      * Start the server
@@ -372,7 +372,7 @@ Now let's look at how the binding would use these interfaces. Here's an example 
 + import org.openhab.io.homekit.api.HomekitAccessoryFactory;
 + import org.openhab.io.homekit.api.HomekitEventManager;
 + import org.openhab.io.homekit.api.HomekitServer;
-+ import org.openhab.io.homekit.api.hap.Accessory;
++ import org.openhab.io.homekit.api.hap.HomekitAccessory;
 + import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 + import org.openhab.io.homekit.exception.HomekitServerException;
 + import org.osgi.service.component.annotations.Activate;
@@ -409,7 +409,7 @@ Now let's look at how the binding would use these interfaces. Here's an example 
 +             homekitServer.start();
 +             
 +             // Create and add the bridge accessory
-+             Accessory bridgeAccessory = accessoryFactory.createBridgeAccessory(homekitServer);
++             HomekitAccessory bridgeAccessory = accessoryFactory.createBridgeAccessory(homekitServer);
 +             homekitServer.addAccessory(bridgeAccessory);
 +             
 +             // Set up event subscriptions
@@ -447,21 +447,21 @@ Now let's look at how the binding would use these interfaces. Here's an example 
 +     /**
 +      * Add a new accessory to the bridge
 +      */
-+     public void addAccessory(Accessory accessory) throws HomekitAccessoryOperationException {
++     public void addAccessory(HomekitAccessory accessory) throws HomekitAccessoryOperationException {
 +         homekitServer.addAccessory(accessory);
 +     }
 + 
 +     /**
 +      * Remove an accessory from the bridge
 +      */
-+     public void removeAccessory(Accessory accessory) throws HomekitAccessoryOperationException {
++     public void removeAccessory(HomekitAccessory accessory) throws HomekitAccessoryOperationException {
 +         homekitServer.removeAccessory(accessory);
 +     }
 + 
 +     /**
 +      * Get all accessories on the bridge
 +      */
-+     public Collection<Accessory> getAccessories() throws HomekitAccessoryOperationException {
++     public Collection<HomekitAccessory> getAccessories() throws HomekitAccessoryOperationException {
 +         return homekitServer.getAccessories();
 +     }
 + 
@@ -469,7 +469,7 @@ Now let's look at how the binding would use these interfaces. Here's an example 
 +      * Get a specific accessory by ID
 +      */
 +     @Nullable
-+     public Accessory getAccessory(long id) throws HomekitAccessoryOperationException {
++     public HomekitAccessory getAccessory(long id) throws HomekitAccessoryOperationException {
 +         return homekitServer.getAccessory(id);
 +     }
 + } 
@@ -484,8 +484,8 @@ Let me fix the linter errors by adding the necessary imports and fixing the type
 
 ```diff
   import org.openhab.io.homekit.api.HomekitServer;
-  import org.openhab.io.homekit.api.hap.Accessory;
-+ import org.openhab.io.homekit.api.hap.AccessoryServer;
+  import org.openhab.io.homekit.api.hap.HomekitAccessory;
++ import org.openhab.io.homekit.api.hap.HomekitAccessoryServer;
   import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
   import org.openhab.io.homekit.exception.HomekitServerException;
 + import org.openhab.io.homekit.internal.events.HomekitEvent;
@@ -497,8 +497,8 @@ Let me fix the linter errors by adding the necessary imports and fixing the type
 ```diff
               
               // Create and add the bridge accessory
--             Accessory bridgeAccessory = accessoryFactory.createBridgeAccessory(homekitServer);
-+             Accessory bridgeAccessory = accessoryFactory.createBridgeAccessory((AccessoryServer) homekitServer);
+-             HomekitAccessory bridgeAccessory = accessoryFactory.createBridgeAccessory(homekitServer);
++             HomekitAccessory bridgeAccessory = accessoryFactory.createBridgeAccessory((HomekitAccessoryServer) homekitServer);
               homekitServer.addAccessory(bridgeAccessory);
               
 ```
@@ -546,10 +546,10 @@ Now let's look at how the IO bundle would implement these interfaces. Here's an 
 + import org.eclipse.jdt.annotation.NonNullByDefault;
 + import org.eclipse.jdt.annotation.Nullable;
 + import org.openhab.io.homekit.api.HomekitServer;
-+ import org.openhab.io.homekit.api.hap.Accessory;
-+ import org.openhab.io.homekit.api.hap.AccessoryServer;
-+ import org.openhab.io.homekit.api.hap.Characteristic;
-+ import org.openhab.io.homekit.api.hap.Service;
++ import org.openhab.io.homekit.api.hap.HomekitAccessory;
++ import org.openhab.io.homekit.api.hap.HomekitAccessoryServer;
++ import org.openhab.io.homekit.api.hap.HomekitCharacteristic;
++ import org.openhab.io.homekit.api.hap.HomekitService;
 + import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 + import org.openhab.io.homekit.exception.HomekitServerException;
 + import org.osgi.service.component.annotations.Activate;
@@ -562,8 +562,8 @@ Now let's look at how the IO bundle would implement these interfaces. Here's an 
 +  * Implementation of the HomeKit server interface.
 +  */
 + @NonNullByDefault
-+ @Component(service = { HomekitServer.class, AccessoryServer.class })
-+ public class LocalHomekitServer implements HomekitServer, AccessoryServer {
++ @Component(service = { HomekitServer.class, HomekitAccessoryServer.class })
++ public class LocalHomekitServer implements HomekitServer, HomekitAccessoryServer {
 +     private static final Logger logger = LoggerFactory.getLogger(LocalHomekitServer.class);
 + 
 +     private final String uid;
@@ -571,7 +571,7 @@ Now let's look at how the IO bundle would implement these interfaces. Here's an 
 +     private final int port;
 +     private final byte[] pairingId;
 +     private final byte[] secretKey;
-+     private final Map<Long, Accessory> accessories = new ConcurrentHashMap<>();
++     private final Map<Long, HomekitAccessory> accessories = new ConcurrentHashMap<>();
 +     private boolean running = false;
 + 
 +     @Activate
@@ -599,12 +599,12 @@ Now let's look at how the IO bundle would implement these interfaces. Here's an 
 +     }
 + 
 +     @Override
-+     public Collection<Accessory> getAccessories() throws HomekitAccessoryOperationException {
++     public Collection<HomekitAccessory> getAccessories() throws HomekitAccessoryOperationException {
 +         return Collections.unmodifiableCollection(accessories.values());
 +     }
 + 
 +     @Override
-+     public void addAccessory(Accessory accessory) throws HomekitAccessoryOperationException {
++     public void addAccessory(HomekitAccessory accessory) throws HomekitAccessoryOperationException {
 +         if (!running) {
 +             throw new HomekitAccessoryOperationException("Server is not running");
 +         }
@@ -613,7 +613,7 @@ Now let's look at how the IO bundle would implement these interfaces. Here's an 
 +     }
 + 
 +     @Override
-+     public void removeAccessory(Accessory accessory) throws HomekitAccessoryOperationException {
++     public void removeAccessory(HomekitAccessory accessory) throws HomekitAccessoryOperationException {
 +         if (!running) {
 +             throw new HomekitAccessoryOperationException("Server is not running");
 +         }
@@ -623,15 +623,15 @@ Now let's look at how the IO bundle would implement these interfaces. Here's an 
 + 
 +     @Override
 +     @Nullable
-+     public Accessory getAccessory(long id) throws HomekitAccessoryOperationException {
++     public HomekitAccessory getAccessory(long id) throws HomekitAccessoryOperationException {
 +         return accessories.get(id);
 +     }
 + 
 +     @Override
 +     @Nullable
-+     public Service getService(long id) throws HomekitAccessoryOperationException {
-+         for (Accessory accessory : accessories.values()) {
-+             for (Service service : accessory.getServices()) {
++     public HomekitService getService(long id) throws HomekitAccessoryOperationException {
++         for (HomekitAccessory accessory : accessories.values()) {
++             for (HomekitService service : accessory.getServices()) {
 +                 if (service.getInstanceId() == id) {
 +                     return service;
 +                 }
@@ -642,10 +642,10 @@ Now let's look at how the IO bundle would implement these interfaces. Here's an 
 + 
 +     @Override
 +     @Nullable
-+     public Characteristic getCharacteristic(long id) throws HomekitAccessoryOperationException {
-+         for (Accessory accessory : accessories.values()) {
-+             for (Service service : accessory.getServices()) {
-+                 for (Characteristic characteristic : service.getCharacteristics()) {
++     public HomekitCharacteristic getCharacteristic(long id) throws HomekitAccessoryOperationException {
++         for (HomekitAccessory accessory : accessories.values()) {
++             for (HomekitService service : accessory.getServices()) {
++                 for (HomekitCharacteristic characteristic : service.getCharacteristics()) {
 +                     if (characteristic.getInstanceId() == id) {
 +                         return characteristic;
 +                     }
@@ -725,13 +725,13 @@ Now let's look at how the IO bundle would implement these interfaces. Here's an 
 
 ---
 
-Let me fix the linter errors by implementing the missing methods from the AccessoryServer interface:
+Let me fix the linter errors by implementing the missing methods from the HomekitAccessoryServer interface:
 
 
 ---
 
 ```diff
-      private final Map<Long, Accessory> accessories = new ConcurrentHashMap<>();
+      private final Map<Long, HomekitAccessory> accessories = new ConcurrentHashMap<>();
       private boolean running = false;
 +     private int configurationIndex = 0;
   
@@ -894,7 +894,7 @@ Let me fix the remaining linter errors by implementing the missing methods and f
 + 
 +     @Override
 +     @Nullable
-+     public Accessory getAccessory(int id) throws HomekitAccessoryOperationException {
++     public HomekitAccessory getAccessory(int id) throws HomekitAccessoryOperationException {
 +         return accessories.get((long) id);
 +     }
   
@@ -913,8 +913,8 @@ Let me fix the remaining linter errors by adjusting the return types and excepti
       @Override
 -     public String getUID() {
 -         return uid;
-+     public AccessoryServerUID getUID() {
-+         return new AccessoryServerUID("local", uid);
++     public HomekitAccessoryServerUID getUID() {
++         return new HomekitAccessoryServerUID("local", uid);
       }
   
 ```
@@ -986,10 +986,10 @@ I see that we need to properly handle the interfaces and their return types. Let
 ---
 
 ```diff
-  import org.openhab.io.homekit.api.hap.AccessoryServer;
-  import org.openhab.io.homekit.api.hap.Characteristic;
-+ import org.openhab.io.homekit.api.hap.Pairing;
-  import org.openhab.io.homekit.api.hap.Service;
+  import org.openhab.io.homekit.api.hap.HomekitAccessoryServer;
+  import org.openhab.io.homekit.api.hap.HomekitCharacteristic;
++ import org.openhab.io.homekit.api.hap.HomekitPairing;
+  import org.openhab.io.homekit.api.hap.HomekitService;
   import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 ```
 
@@ -998,8 +998,8 @@ I see that we need to properly handle the interfaces and their return types. Let
   
 +     // HomekitServer interface methods
       @Override
--     public AccessoryServerUID getUID() {
--         return new AccessoryServerUID("local", uid);
+-     public HomekitAccessoryServerUID getUID() {
+-         return new HomekitAccessoryServerUID("local", uid);
 +     public String getUID() {
 +         return uid;
       }
@@ -1010,10 +1010,10 @@ I see that we need to properly handle the interfaces and their return types. Let
           return false;
       }
 + 
-+     // AccessoryServer interface methods
++     // HomekitAccessoryServer interface methods
 +     @Override
-+     public AccessoryServerUID getUID() {
-+         return new AccessoryServerUID(uid);
++     public HomekitAccessoryServerUID getUID() {
++         return new HomekitAccessoryServerUID(uid);
 +     }
   
       @Override
@@ -1023,15 +1023,15 @@ I see that we need to properly handle the interfaces and their return types. Let
   
       @Override
 -     public byte[] getPairing(byte[] pairingId) {
-+     public Pairing getPairing(byte[] pairingId) {
++     public HomekitPairing getPairing(byte[] pairingId) {
           // Implementation of get pairing
 -         return new byte[0];
-+         return new Pairing(pairingId, new byte[32]);
++         return new HomekitPairing(pairingId, new byte[32]);
       }
   
       @Override
 -     public Collection<byte[]> getPairings() {
-+     public Collection<Pairing> getPairings() {
++     public Collection<HomekitPairing> getPairings() {
           // Implementation of get pairings
           return Collections.emptyList();
 ```
@@ -1046,7 +1046,7 @@ I see the issue now. We have a conflict between the two interfaces' `getUID()` m
 ```diff
   
       private final String uid;
-+     private final AccessoryServerUID serverUID;
++     private final HomekitAccessoryServerUID serverUID;
       private final InetAddress address;
       private final int port;
 ```
@@ -1054,24 +1054,24 @@ I see the issue now. We have a conflict between the two interfaces' `getUID()` m
 ```diff
       public LocalHomekitServer() throws HomekitServerException {
           this.uid = "local-" + System.currentTimeMillis();
-+         this.serverUID = new AccessoryServerUID(uid);
++         this.serverUID = new HomekitAccessoryServerUID(uid);
           this.address = InetAddress.getLoopbackAddress();
           this.port = 9123; // Default port
 ```
 
 ```diff
       @Override
-      public AccessoryServerUID getUID() {
--         return new AccessoryServerUID(uid);
+      public HomekitAccessoryServerUID getUID() {
+-         return new HomekitAccessoryServerUID(uid);
 +         return serverUID;
       }
   
 ```
 
 ```diff
-      public Pairing getPairing(byte[] pairingId) {
+      public HomekitPairing getPairing(byte[] pairingId) {
           // Implementation of get pairing
--         return new Pairing(pairingId, new byte[32]);
+-         return new HomekitPairing(pairingId, new byte[32]);
 +         return new SimplePairing(pairingId, new byte[32]);
       }
   
@@ -1081,7 +1081,7 @@ I see the issue now. We have a conflict between the two interfaces' `getUID()` m
           return new byte[32];
       }
 + 
-+     private static class SimplePairing implements Pairing {
++     private static class SimplePairing implements HomekitPairing {
 +         private final byte[] pairingId;
 +         private final byte[] publicKey;
 + 
@@ -1105,29 +1105,29 @@ I see the issue now. We have a conflict between the two interfaces' `getUID()` m
 
 ---
 
-I see we still have some issues to resolve. Let me check the `Pairing` interface to understand what methods we need to implement:
+I see we still have some issues to resolve. Let me check the `HomekitPairing` interface to understand what methods we need to implement:
 
 
 ---
 
 <details>
-            <summary>Searched codebase "interface Pairing" • **25** results</summary>
+            <summary>Searched codebase "interface HomekitPairing" • **25** results</summary>
         
 | File | Lines |
 |------|-------|
-| `src/main/java/org/openhab/io/homekit/api/hap/Pairing.java` | L1-15 |
-| `src/main/java/org/openhab/io/homekit/api/registry/PairingRegistry.java` | L1-28 |
-| `src/main/java/org/openhab/io/homekit/api/provider/PairingProvider.java` | L1-10 |
+| `src/main/java/org/openhab/io/homekit/api/hap/HomekitPairing.java` | L1-15 |
+| `src/main/java/org/openhab/io/homekit/api/registry/HomekitPairingRegistry.java` | L1-28 |
+| `src/main/java/org/openhab/io/homekit/api/provider/HomekitPairingProvider.java` | L1-10 |
 | `src/main/java/org/openhab/io/homekit/internal/pairing/HomekitPairing.java` | L1-45 |
-| `src/main/java/org/openhab/io/homekit/internal/pairing/PairingUID.java` | L1-49 |
+| `src/main/java/org/openhab/io/homekit/internal/pairing/HomekitPairingUID.java` | L1-49 |
 | `src/main/java/org/openhab/io/homekit/internal/pairing/ManagedPairingProvider.java` | L23-61 |
-| `src/main/java/org/openhab/io/homekit/api/hap/AccessoryServer.java` | L175-239 |
-| `src/main/java/org/openhab/io/homekit/internal/server/AbstractAccessoryServer.java` | L461-497 |
+| `src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessoryServer.java` | L175-239 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitAbstractAccessoryServer.java` | L461-497 |
 | `src/main/java/org/openhab/io/homekit/api/hap/PairingType.java` | L1-58 |
 | `src/main/java/org/openhab/io/homekit/internal/client/HomekitAccessoryProtocolParticipant.java` | L1-16 |
 | `src/main/java/org/openhab/io/homekit/api/hap/PairingStatusFlag.java` | L1-19 |
-| `src/main/java/org/openhab/io/homekit/api/hap/AccessoryServer.java` | L98-175 |
-| `src/main/java/org/openhab/io/homekit/internal/server/AbstractAccessoryServer.java` | L497-534 |
+| `src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessoryServer.java` | L98-175 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitAbstractAccessoryServer.java` | L497-534 |
 | `src/main/java/org/openhab/io/homekit/internal/pairing/HomekitPairingRegistry.java` | L43-92 |
 | `src/main/java/org/openhab/io/homekit/api/HomekitServer.java` | L75-101 |
 | `src/main/java/org/openhab/io/homekit/internal/pairing/HomekitPairingRegistry.java` | L92-143 |
@@ -1136,16 +1136,16 @@ I see we still have some issues to resolve. Let me check the `Pairing` interface
 | `src/main/java/org/openhab/io/homekit/internal/pairing/HomekitPairingRegistry.java` | L1-43 |
 | `src/main/java/org/openhab/io/homekit/internal/pairing/ManagedPairingProvider.java` | L1-23 |
 | `src/main/java/org/openhab/io/homekit/api/hap/PairingStatusFlag.java` | L19-69 |
-| `src/main/java/org/openhab/io/homekit/internal/server/LocalAccessoryServer.java` | L333-376 |
-| `src/main/java/org/openhab/io/homekit/internal/server/RemoteAccessoryServer.java` | L696-726 |
-| `src/main/java/org/openhab/io/homekit/internal/server/RemoteAccessoryServer.java` | L638-680 |
-| `src/main/java/org/openhab/io/homekit/api/hap/AccessoryServer.java` | L239-253 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitLocalAccessoryServer.java` | L333-376 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitRemoteAccessoryServer.java` | L696-726 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitRemoteAccessoryServer.java` | L638-680 |
+| `src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessoryServer.java` | L239-253 |
 
 </details>
 
 ---
 
-Now I understand the issue better. The `Pairing` interface extends `Identifiable<PairingUID>` and requires several methods to be implemented. Let me fix the implementation:
+Now I understand the issue better. The `HomekitPairing` interface extends `Identifiable<HomekitPairingUID>` and requires several methods to be implemented. Let me fix the implementation:
 
 
 ---
@@ -1153,13 +1153,13 @@ Now I understand the issue better. The `Pairing` interface extends `Identifiable
 ```diff
   import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
   import org.openhab.io.homekit.exception.HomekitServerException;
-+ import org.openhab.io.homekit.internal.pairing.PairingUID;
++ import org.openhab.io.homekit.internal.pairing.HomekitPairingUID;
   import org.osgi.service.component.annotations.Activate;
   import org.osgi.service.component.annotations.Component;
 ```
 
 ```diff
-      public Pairing getPairing(byte[] pairingId) {
+      public HomekitPairing getPairing(byte[] pairingId) {
           // Implementation of get pairing
 -         return new SimplePairing(pairingId, new byte[32]);
 +         return new SimplePairing(this.pairingId, pairingId, new byte[32]);
@@ -1169,12 +1169,12 @@ Now I understand the issue better. The `Pairing` interface extends `Identifiable
 
 ```diff
   
-      private static class SimplePairing implements Pairing {
+      private static class SimplePairing implements HomekitPairing {
 -         private final byte[] pairingId;
 +         private final byte[] sourceId;
 +         private final byte[] destinationId;
           private final byte[] publicKey;
-+         private final PairingUID uid;
++         private final HomekitPairingUID uid;
   
 -         SimplePairing(byte[] pairingId, byte[] publicKey) {
 -             this.pairingId = pairingId;
@@ -1182,11 +1182,11 @@ Now I understand the issue better. The `Pairing` interface extends `Identifiable
 +             this.sourceId = sourceId;
 +             this.destinationId = destinationId;
               this.publicKey = publicKey;
-+             this.uid = new PairingUID(sourceId, destinationId);
++             this.uid = new HomekitPairingUID(sourceId, destinationId);
 +         }
 + 
 +         @Override
-+         public PairingUID getUID() {
++         public HomekitPairingUID getUID() {
 +             return uid;
 +         }
 + 
@@ -1206,47 +1206,47 @@ Now I understand the issue better. The `Pairing` interface extends `Identifiable
 
 ---
 
-I see we still have an issue with the `getUID()` method conflict between the two interfaces. Let me check the `AccessoryServerUID` class to understand how to properly implement it:
+I see we still have an issue with the `getUID()` method conflict between the two interfaces. Let me check the `HomekitAccessoryServerUID` class to understand how to properly implement it:
 
 
 ---
 
 <details>
-            <summary>Searched codebase "class AccessoryServerUID" • **25** results</summary>
+            <summary>Searched codebase "class HomekitAccessoryServerUID" • **25** results</summary>
         
 | File | Lines |
 |------|-------|
-| `src/main/java/org/openhab/io/homekit/internal/server/AccessoryServerUID.java` | L1-57 |
-| `src/main/java/org/openhab/io/homekit/internal/accessory/GenericAccessory.java` | L113-154 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitAccessoryServerUID.java` | L1-57 |
+| `src/main/java/org/openhab/io/homekit/internal/accessory/HomekitGenericAccessory.java` | L113-154 |
 | `src/main/java/org/openhab/io/homekit/api/HomekitServer.java` | L1-75 |
-| `src/main/java/org/openhab/io/homekit/internal/accessory/AccessoryUID.java` | L1-44 |
-| `src/main/java/org/openhab/io/homekit/internal/accessory/BridgedAccessory.java` | L1-59 |
-| `src/main/java/org/openhab/io/homekit/api/hap/Accessory.java` | L1-70 |
-| `src/main/java/org/openhab/io/homekit/api/hap/AccessoryServer.java` | L1-22 |
-| `src/main/java/org/openhab/io/homekit/internal/accessory/GenericAccessory.java` | L78-113 |
-| `src/main/java/org/openhab/io/homekit/api/hap/AccessoryServer.java` | L22-98 |
-| `src/main/java/org/openhab/io/homekit/internal/events/AccessoryServerEvent.java` | L1-50 |
-| `src/main/java/org/openhab/io/homekit/internal/server/registry/ManagedAccessoryServerProvider.java` | L98-137 |
-| `src/main/java/org/openhab/io/homekit/internal/server/AbstractAccessoryServer.java` | L1-40 |
+| `src/main/java/org/openhab/io/homekit/internal/accessory/HomekitAccessoryUID.java` | L1-44 |
+| `src/main/java/org/openhab/io/homekit/internal/accessory/HomekitBridgedAccessory.java` | L1-59 |
+| `src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessory.java` | L1-70 |
+| `src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessoryServer.java` | L1-22 |
+| `src/main/java/org/openhab/io/homekit/internal/accessory/HomekitGenericAccessory.java` | L78-113 |
+| `src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessoryServer.java` | L22-98 |
+| `src/main/java/org/openhab/io/homekit/internal/events/HomekitAccessoryServerEvent.java` | L1-50 |
+| `src/main/java/org/openhab/io/homekit/internal/server/registry/HomekitManagedAccessoryServerProvider.java` | L98-137 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitAbstractAccessoryServer.java` | L1-40 |
 | `src/main/java/org/openhab/io/homekit/internal/server/registry/AccessoryServerRegistryImpl.java` | L39-77 |
-| `src/main/java/org/openhab/io/homekit/internal/server/AbstractAccessoryServer.java` | L684-723 |
-| `src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java` | L268-305 |
-| `src/main/java/org/openhab/io/homekit/internal/accessory/GenericAccessory.java` | L36-78 |
-| `src/main/java/org/openhab/io/homekit/internal/accessory/PersistedAccessory.java` | L1-48 |
-| `src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java` | L418-457 |
-| `src/main/java/org/openhab/io/homekit/internal/accessory/GenericAccessory.java` | L275-352 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitAbstractAccessoryServer.java` | L684-723 |
+| `src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java` | L268-305 |
+| `src/main/java/org/openhab/io/homekit/internal/accessory/HomekitGenericAccessory.java` | L36-78 |
+| `src/main/java/org/openhab/io/homekit/internal/accessory/HomekitPersistedAccessory.java` | L1-48 |
+| `src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java` | L418-457 |
+| `src/main/java/org/openhab/io/homekit/internal/accessory/HomekitGenericAccessory.java` | L275-352 |
 | `src/main/java/org/openhab/io/homekit/internal/server/registry/AccessoryServerRegistryImpl.java` | L1-39 |
 | `src/main/java/org/openhab/io/homekit/internal/service/ServiceUID.java` | L1-47 |
-| `src/main/java/org/openhab/io/homekit/internal/server/AbstractAccessoryServer.java` | L40-68 |
-| `src/main/java/org/openhab/io/homekit/internal/server/AbstractAccessoryServer.java` | L570-588 |
-| `src/main/java/org/openhab/io/homekit/internal/server/PersistedAccessoryServer.java` | L1-58 |
-| `src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java` | L594-614 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitAbstractAccessoryServer.java` | L40-68 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitAbstractAccessoryServer.java` | L570-588 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitPersistedAccessoryServer.java` | L1-58 |
+| `src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java` | L594-614 |
 
 </details>
 
 ---
 
-Now I understand the issue better. The `AccessoryServerUID` class is used to represent a unique identifier for an accessory server, and it extends `HomekitUID`. Let me fix the implementation:
+Now I understand the issue better. The `HomekitAccessoryServerUID` class is used to represent a unique identifier for an accessory server, and it extends `HomekitUID`. Let me fix the implementation:
 
 
 ---
@@ -1280,7 +1280,7 @@ I see that we need to handle the method conflict differently. Let me try one mor
       private static final Logger logger = LoggerFactory.getLogger(LocalHomekitServer.class);
   
 -     private final String uid;
-      private final AccessoryServerUID serverUID;
+      private final HomekitAccessoryServerUID serverUID;
       private final InetAddress address;
 ```
 
@@ -1289,7 +1289,7 @@ I see that we need to handle the method conflict differently. Let me try one mor
       public LocalHomekitServer() throws HomekitServerException {
 -         this.uid = "local-" + System.currentTimeMillis();
 +         String uid = "local-" + System.currentTimeMillis();
-          this.serverUID = new AccessoryServerUID(uid);
+          this.serverUID = new HomekitAccessoryServerUID(uid);
           this.address = InetAddress.getLoopbackAddress();
 ```
 
@@ -1307,35 +1307,35 @@ I see that we're still having issues with the method conflict. Let me check the 
 |------|-------|
 | `src/main/java/org/openhab/io/homekit/api/HomekitServer.java` | L1-75 |
 | `src/main/java/org/openhab/io/homekit/api/HomekitServer.java` | L75-101 |
-| `src/main/java/org/openhab/io/homekit/api/hap/AccessoryServer.java` | L239-253 |
-| `src/main/java/org/openhab/io/homekit/api/hap/AccessoryServer.java` | L175-239 |
-| `src/main/java/org/openhab/io/homekit/api/hap/AccessoryServer.java` | L22-98 |
-| `src/main/java/org/openhab/io/homekit/api/hap/AccessoryServer.java` | L1-22 |
-| `src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java` | L418-457 |
+| `src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessoryServer.java` | L239-253 |
+| `src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessoryServer.java` | L175-239 |
+| `src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessoryServer.java` | L22-98 |
+| `src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessoryServer.java` | L1-22 |
+| `src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java` | L418-457 |
 | `src/main/java/org/openhab/io/homekit/internal/handler/AbstractHomekitHandler.java` | L110-131 |
 | `src/main/java/org/openhab/io/homekit/exception/HomekitServerException.java` | L1-20 |
-| `src/main/java/org/openhab/io/homekit/api/hap/AccessoryServer.java` | L98-175 |
+| `src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessoryServer.java` | L98-175 |
 | `src/main/java/org/openhab/io/homekit/internal/server/registry/AccessoryServerRegistryImpl.java` | L39-77 |
-| `src/main/java/org/openhab/io/homekit/internal/server/AbstractAccessoryServer.java` | L40-68 |
-| `src/main/java/org/openhab/io/homekit/internal/server/LocalAccessoryServer.java` | L1-38 |
-| `src/main/java/org/openhab/io/homekit/internal/server/AbstractAccessoryServer.java` | L100-122 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitAbstractAccessoryServer.java` | L40-68 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitLocalAccessoryServer.java` | L1-38 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitAbstractAccessoryServer.java` | L100-122 |
 | `src/main/java/org/openhab/io/homekit/internal/extension/HomekitCommandExtension.java` | L31-63 |
-| `src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java` | L69-102 |
+| `src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java` | L69-102 |
 | `src/main/java/org/openhab/binding/homekit/internal/handler/HomekitBridgeHandler.java` | L30-80 |
 | `src/main/java/org/openhab/io/homekit/internal/handler/AbstractHomekitHandler.java` | L1-44 |
-| `src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java` | L1-45 |
+| `src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java` | L1-45 |
 | `src/main/java/org/openhab/io/homekit/internal/handler/AbstractHomekitHandler.java` | L44-73 |
-| `src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java` | L268-305 |
-| `src/main/java/org/openhab/io/homekit/internal/server/AbstractAccessoryServer.java` | L1-40 |
-| `src/main/java/org/openhab/io/homekit/internal/server/AbstractAccessoryServer.java` | L122-160 |
-| `src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java` | L102-124 |
+| `src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java` | L268-305 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitAbstractAccessoryServer.java` | L1-40 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitAbstractAccessoryServer.java` | L122-160 |
+| `src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java` | L102-124 |
 | `src/main/java/org/openhab/io/homekit/api/factory/AccessoryServerFactory.java` | L1-73 |
 
 </details>
 
 ---
 
-I see the issue now. The `HomekitServer` interface requires `getUID()` to return a `String`, while the `AccessoryServer` interface requires it to return an `AccessoryServerUID`. We need to implement both interfaces correctly. Let me try a different approach:
+I see the issue now. The `HomekitServer` interface requires `getUID()` to return a `String`, while the `HomekitAccessoryServer` interface requires it to return an `HomekitAccessoryServerUID`. We need to implement both interfaces correctly. Let me try a different approach:
 
 
 ---
@@ -1374,7 +1374,7 @@ I see that we can't rename the method since it's part of the interface contract.
 +         return serverUID.toString();
 +     }
 + 
-+     private AccessoryServerUID getUIDAsAccessoryServerUID() {
++     private HomekitAccessoryServerUID getUIDAsAccessoryServerUID() {
 +         return serverUID;
 +     }
   
@@ -1383,7 +1383,7 @@ I see that we can't rename the method since it's part of the interface contract.
 
 ```diff
       @Override
-      public AccessoryServerUID getUID() {
+      public HomekitAccessoryServerUID getUID() {
 -         return serverUID;
 +         return getUIDAsAccessoryServerUID();
       }
@@ -1412,9 +1412,9 @@ Cancelled
 
 I see that we're still having issues with the method conflict. Since we've tried three different approaches and still have linter errors, I should explain the situation to you:
 
-The issue is that we have two interfaces (`HomekitServer` and `AccessoryServer`) that both define a `getUID()` method with different return types:
+The issue is that we have two interfaces (`HomekitServer` and `HomekitAccessoryServer`) that both define a `getUID()` method with different return types:
 - `HomekitServer.getUID()` returns a `String`
-- `AccessoryServer.getUID()` returns an `AccessoryServerUID`
+- `HomekitAccessoryServer.getUID()` returns an `HomekitAccessoryServerUID`
 
 This is a fundamental conflict in the interface design. We have a few options:
 
@@ -1450,17 +1450,17 @@ Certainly! Here’s an outline and a list of what needs to be changed to **split
 
 ### **A. IO Bundle (`org.openhab.io.homekit`)**
 - **Responsibilities:**
-  - Implements the HomeKit server (AccessoryServer, HomekitServer)
+  - Implements the HomeKit server (HomekitAccessoryServer, HomekitServer)
   - Handles HomeKit protocol, pairing, encryption, mDNS advertisement, etc.
   - Exposes a generic API for registering/unregistering accessories/services/characteristics
   - Provides a registry for accessories and pairings
   - Contains the HomeKit event manager and server lifecycle management
 
 - **Key Classes/Interfaces:**
-  - `AccessoryServer`, `HomekitServer`, `Accessory`, `Service`, `Characteristic`, `Pairing`
-  - `AccessoryRegistry`, `PairingRegistry`, `AccessoryServerRegistry`
+  - `HomekitAccessoryServer`, `HomekitServer`, `HomekitAccessory`, `HomekitService`, `HomekitCharacteristic`, `HomekitPairing`
+  - `HomekitAccessoryRegistry`, `HomekitPairingRegistry`, `HomekitAccessoryServerRegistry`
   - `HomekitEventManager`
-  - Server implementations (e.g., `LocalHomekitServer`, `AbstractAccessoryServer`)
+  - Server implementations (e.g., `LocalHomekitServer`, `HomekitAbstractAccessoryServer`)
   - mDNS/advertising utilities
 
 ### **B. Binding Bundle (`org.openhab.binding.homekit`)**
@@ -1523,7 +1523,7 @@ Certainly! Here’s an outline and a list of what needs to be changed to **split
 |------------------------|--------------------------------------|------------------------------------------------|
 | HomeKit Protocol       | Yes                                  | No                                             |
 | Server Implementation  | Yes                                  | No                                             |
-| Accessory/Pairing Reg. | Yes                                  | No                                             |
+| HomekitAccessory/HomekitPairing Reg. | Yes                                  | No                                             |
 | ThingHandlers          | No                                   | Yes                                            |
 | Discovery              | No                                   | Yes                                            |
 | OpenHAB Config         | No                                   | Yes                                            |
@@ -1548,13 +1548,13 @@ If you want, I can help you generate a detailed file move/refactor plan or start
 
 _**User**_
 
-What would be the difference between HomekitServer and AccessoryServer ? 
+What would be the difference between HomekitServer and HomekitAccessoryServer ? 
 
 ---
 
 _**Assistant**_
 
-Great question! Here’s a clear comparison of **HomekitServer** vs **AccessoryServer** in the context of your modular split:
+Great question! Here’s a clear comparison of **HomekitServer** vs **HomekitAccessoryServer** in the context of your modular split:
 
 ---
 
@@ -1584,24 +1584,24 @@ Great question! Here’s a clear comparison of **HomekitServer** vs **AccessoryS
 - `int getPort()`
 - `void start()`
 - `void stop()`
-- `Collection<Accessory> getAccessories()`
-- `void addAccessory(Accessory accessory)`
-- `void removeAccessory(Accessory accessory)`
+- `Collection<HomekitAccessory> getAccessories()`
+- `void addAccessory(HomekitAccessory accessory)`
+- `void removeAccessory(HomekitAccessory accessory)`
 - `boolean isRunning()`
 - `boolean isPaired()`
 - `boolean isPairVerified()`
 
 ---
 
-## **AccessoryServer**
+## **HomekitAccessoryServer**
 
 **Purpose:**  
-- Represents a *concrete* HomeKit Accessory Server as defined by the HomeKit Accessory Protocol (HAP).
+- Represents a *concrete* HomeKit HomekitAccessory Server as defined by the HomeKit HomekitAccessory Protocol (HAP).
 - Provides a more detailed, protocol-level interface for managing HomeKit accessories, pairings, and server state.
 - Used internally by the IO bundle and for advanced integrations.
 
 **Typical Responsibilities:**  
-- Provide a unique server identifier as an `AccessoryServerUID` (not just a string).
+- Provide a unique server identifier as an `HomekitAccessoryServerUID` (not just a string).
 - Manage the full lifecycle of HomeKit accessories, including configuration index, factory reset, and secure communication.
 - Handle all aspects of pairing, including adding/removing pairings, retrieving pairings, and managing public/private keys.
 - Expose lower-level server operations (advertising, updating accessories, etc.).
@@ -1612,7 +1612,7 @@ Great question! Here’s a clear comparison of **HomekitServer** vs **AccessoryS
 - Not intended for general use by the binding or other OpenHAB components.
 
 **Example Methods:**  
-- `AccessoryServerUID getUID()`
+- `HomekitAccessoryServerUID getUID()`
 - `void updateAccessories()`
 - `void factoryReset()`
 - `void advertise()`
@@ -1620,8 +1620,8 @@ Great question! Here’s a clear comparison of **HomekitServer** vs **AccessoryS
 - `int getConfigurationIndex()`
 - `void addPairing(byte[] pairingId, byte[] publicKey)`
 - `void removePairing(byte[] pairingId)`
-- `Pairing getPairing(byte[] pairingId)`
-- `Collection<Pairing> getPairings()`
+- `HomekitPairing getPairing(byte[] pairingId)`
+- `Collection<HomekitPairing> getPairings()`
 - `byte[] getPublicKey(byte[] pairingId)`
 - `boolean isSecure()`
 - `void pairSetup()`
@@ -1632,12 +1632,12 @@ Great question! Here’s a clear comparison of **HomekitServer** vs **AccessoryS
 
 ## **Summary Table**
 
-| Aspect                | HomekitServer (IO API)         | AccessoryServer (HAP/Protocol)      |
+| Aspect                | HomekitServer (IO API)         | HomekitAccessoryServer (HAP/Protocol)      |
 |-----------------------|--------------------------------|-------------------------------------|
-| UID Type              | String                         | AccessoryServerUID                  |
+| UID Type              | String                         | HomekitAccessoryServerUID                  |
 | Audience              | Binding, general OpenHAB       | IO bundle, protocol internals       |
-| Pairing Management    | High-level                     | Full protocol-level                 |
-| Accessory Management  | High-level                     | Detailed, protocol-specific         |
+| HomekitPairing Management    | High-level                     | Full protocol-level                 |
+| HomekitAccessory Management  | High-level                     | Detailed, protocol-specific         |
 | Protocol Operations   | Abstracted                     | Exposed (advertise, factoryReset)   |
 | Security/Keys         | Abstracted                     | Exposed (public/private keys)       |
 | Configuration Index   | Not exposed                    | Exposed                             |
@@ -1648,7 +1648,7 @@ Great question! Here’s a clear comparison of **HomekitServer** vs **AccessoryS
 ## **In Practice**
 
 - **HomekitServer** is the *public API* for the IO bundle, used by the binding to interact with HomeKit.
-- **AccessoryServer** is the *internal/protocol API* for the IO bundle, used to implement the actual HomeKit server logic and protocol compliance.
+- **HomekitAccessoryServer** is the *internal/protocol API* for the IO bundle, used to implement the actual HomeKit server logic and protocol compliance.
 
 **The IO bundle implements both, but only exposes HomekitServer to the binding bundle.**
 
@@ -1666,7 +1666,7 @@ yes, please provide code examples
 
 _**Assistant**_
 
-Certainly! Here are **code examples** that illustrate the difference between `HomekitServer` and `AccessoryServer`, and how the IO bundle would expose only the `HomekitServer` interface to the binding bundle.
+Certainly! Here are **code examples** that illustrate the difference between `HomekitServer` and `HomekitAccessoryServer`, and how the IO bundle would expose only the `HomekitServer` interface to the binding bundle.
 
 ---
 
@@ -1679,9 +1679,9 @@ package org.openhab.io.homekit.api;
 import java.net.InetAddress;
 import java.util.Collection;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.io.homekit.api.hap.Accessory;
-import org.openhab.io.homekit.api.hap.Service;
-import org.openhab.io.homekit.api.hap.Characteristic;
+import org.openhab.io.homekit.api.hap.HomekitAccessory;
+import org.openhab.io.homekit.api.hap.HomekitService;
+import org.openhab.io.homekit.api.hap.HomekitCharacteristic;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.exception.HomekitServerException;
 
@@ -1690,13 +1690,13 @@ public interface HomekitServer {
     InetAddress getAddress();
     int getPort();
 
-    Collection<Accessory> getAccessories() throws HomekitAccessoryOperationException;
-    void addAccessory(Accessory accessory) throws HomekitAccessoryOperationException;
-    void removeAccessory(Accessory accessory) throws HomekitAccessoryOperationException;
+    Collection<HomekitAccessory> getAccessories() throws HomekitAccessoryOperationException;
+    void addAccessory(HomekitAccessory accessory) throws HomekitAccessoryOperationException;
+    void removeAccessory(HomekitAccessory accessory) throws HomekitAccessoryOperationException;
 
-    @Nullable Accessory getAccessory(long id) throws HomekitAccessoryOperationException;
-    @Nullable Service getService(long id) throws HomekitAccessoryOperationException;
-    @Nullable Characteristic getCharacteristic(long id) throws HomekitAccessoryOperationException;
+    @Nullable HomekitAccessory getAccessory(long id) throws HomekitAccessoryOperationException;
+    @Nullable HomekitService getService(long id) throws HomekitAccessoryOperationException;
+    @Nullable HomekitCharacteristic getCharacteristic(long id) throws HomekitAccessoryOperationException;
 
     void start() throws HomekitServerException;
     void stop() throws HomekitServerException;
@@ -1708,10 +1708,10 @@ public interface HomekitServer {
 
 ---
 
-## 2. **AccessoryServer Interface (Protocol/Internal, Not Exposed to Binding)**
+## 2. **HomekitAccessoryServer Interface (Protocol/Internal, Not Exposed to Binding)**
 
 ```java
-// In org.openhab.io.homekit.api.hap.AccessoryServer.java
+// In org.openhab.io.homekit.api.hap.HomekitAccessoryServer.java
 package org.openhab.io.homekit.api.hap;
 
 import java.net.InetAddress;
@@ -1719,19 +1719,19 @@ import java.util.Collection;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.exception.HomekitServerException;
-import org.openhab.io.homekit.internal.server.AccessoryServerUID;
+import org.openhab.io.homekit.internal.server.HomekitAccessoryServerUID;
 
-public interface AccessoryServer {
-    AccessoryServerUID getUID();
+public interface HomekitAccessoryServer {
+    HomekitAccessoryServerUID getUID();
     InetAddress getAddress();
     int getPort();
     boolean isSecure();
 
-    Collection<Accessory> getAccessories() throws HomekitAccessoryOperationException;
+    Collection<HomekitAccessory> getAccessories() throws HomekitAccessoryOperationException;
     void updateAccessories() throws HomekitAccessoryOperationException;
-    @Nullable Accessory getAccessory(int accessoryId) throws HomekitAccessoryOperationException;
-    void addAccessory(Accessory accessory) throws HomekitAccessoryOperationException;
-    void removeAccessory(Accessory accessory) throws HomekitAccessoryOperationException;
+    @Nullable HomekitAccessory getAccessory(int accessoryId) throws HomekitAccessoryOperationException;
+    void addAccessory(HomekitAccessory accessory) throws HomekitAccessoryOperationException;
+    void removeAccessory(HomekitAccessory accessory) throws HomekitAccessoryOperationException;
     long getNextAvailableAccessoryId() throws HomekitAccessoryOperationException;
 
     String getSetupCode();
@@ -1741,8 +1741,8 @@ public interface AccessoryServer {
 
     void addPairing(byte[] pairingId, byte[] publicKey) throws HomekitServerException;
     void removePairing(byte[] pairingId) throws HomekitServerException;
-    @Nullable Pairing getPairing(byte[] pairingId) throws HomekitServerException;
-    Collection<Pairing> getPairings() throws HomekitServerException;
+    @Nullable HomekitPairing getPairing(byte[] pairingId) throws HomekitServerException;
+    Collection<HomekitPairing> getPairings() throws HomekitServerException;
     byte @Nullable [] getPublicKey(byte[] pairingId);
 
     void factoryReset();
@@ -1766,14 +1766,14 @@ public interface AccessoryServer {
 package org.openhab.io.homekit.internal.server;
 
 import org.openhab.io.homekit.api.HomekitServer;
-import org.openhab.io.homekit.api.hap.AccessoryServer;
+import org.openhab.io.homekit.api.hap.HomekitAccessoryServer;
 
 // Implements both interfaces, but only HomekitServer is exposed to the binding bundle
-public class LocalHomekitServer implements HomekitServer, AccessoryServer {
-    private final AccessoryServerUID serverUID;
+public class LocalHomekitServer implements HomekitServer, HomekitAccessoryServer {
+    private final HomekitAccessoryServerUID serverUID;
 
     public LocalHomekitServer() {
-        this.serverUID = new AccessoryServerUID("local-1234");
+        this.serverUID = new HomekitAccessoryServerUID("local-1234");
     }
 
     // HomekitServer method
@@ -1782,9 +1782,9 @@ public class LocalHomekitServer implements HomekitServer, AccessoryServer {
         return serverUID.toString();
     }
 
-    // AccessoryServer method
+    // HomekitAccessoryServer method
     @Override
-    public AccessoryServerUID getUID() {
+    public HomekitAccessoryServerUID getUID() {
         return serverUID;
     }
 
@@ -1803,7 +1803,7 @@ public class LocalHomekitServer implements HomekitServer, AccessoryServer {
 import org.osgi.service.component.annotations.Component;
 
 @Component(service = HomekitServer.class)
-public class LocalHomekitServer implements HomekitServer, AccessoryServer {
+public class LocalHomekitServer implements HomekitServer, HomekitAccessoryServer {
     // ...implementation...
 }
 ```
@@ -1836,7 +1836,7 @@ public class HomekitBridgeHandler extends BaseBridgeHandler {
 ## **Summary**
 
 - The **IO bundle** implements both interfaces, but only registers/exposes `HomekitServer` as an OSGi service.
-- The **Binding bundle** only depends on and uses the `HomekitServer` interface, never seeing the protocol details of `AccessoryServer`.
+- The **Binding bundle** only depends on and uses the `HomekitServer` interface, never seeing the protocol details of `HomekitAccessoryServer`.
 - This keeps the protocol details encapsulated and the API boundary clean.
 
 ---
@@ -1860,7 +1860,7 @@ Here’s how you should approach it:
 
 ---
 
-## 1. **No Singleton OSGi Service for HomekitServer**
+## 1. **No Singleton OSGi HomekitService for HomekitServer**
 
 - **Do NOT** register `LocalHomekitServer` or `RemoteHomekitServer` as a singleton OSGi service.
 - Instead, use a **factory/service registry** pattern:
@@ -1878,7 +1878,7 @@ Here’s how you should approach it:
 package org.openhab.io.homekit.api;
 
 import java.net.InetAddress;
-import org.openhab.io.homekit.api.hap.AccessoryServer;
+import org.openhab.io.homekit.api.hap.HomekitAccessoryServer;
 
 public interface HomekitServerFactory {
     /**
@@ -2152,7 +2152,7 @@ Splitting the HomeKit solution into two bundles (`org.openhab.io.homekit` and `o
 
 ---
 
-### 5. **Service Registration and Discovery**
+### 5. **HomekitService Registration and Discovery**
 - **Challenge:**  
   - How does the binding find and use the IO bundle’s services?
 - **Solution:**  
@@ -2232,7 +2232,7 @@ Splitting the HomeKit solution into two bundles (`org.openhab.io.homekit` and `o
 | Lifecycle                 | Orphaned servers, memory leaks                   |
 | Config Synchronization    | Race conditions, stale config                    |
 | Classloader/Dependency    | Cycles, NoClassDefFoundError                     |
-| Service Registration      | OSGi wiring, missing services                    |
+| HomekitService Registration      | OSGi wiring, missing services                    |
 | Exception Handling        | Uncaught exceptions, unclear error mapping       |
 | Logging                   | Inconsistent, missing context                    |
 | Testing                   | Hard-to-mock, brittle integration                |
@@ -2437,7 +2437,7 @@ A: Yes, any openHAB Item or Thing can be exposed as a HomeKit accessory in clien
 ## References
 
 - [openHAB HomeKit Add-on Documentation](https://www.openhab.org/addons/integrations/homekit/)
-- [Apple HomeKit Accessory Protocol Specification](https://developer.apple.com/homekit/)
+- [Apple HomeKit HomekitAccessory Protocol Specification](https://developer.apple.com/homekit/)
 - [openHAB Thing and Item Concepts](https://www.openhab.org/docs/concepts/things.html)
 
 ---
@@ -2693,7 +2693,7 @@ I see we need to create the documentation directory. Let me create the operating
 + ## References
 + 
 + - [openHAB HomeKit Add-on Documentation](https://www.openhab.org/addons/integrations/homekit/)
-+ - [Apple HomeKit Accessory Protocol Specification](https://developer.apple.com/homekit/)
++ - [Apple HomeKit HomekitAccessory Protocol Specification](https://developer.apple.com/homekit/)
 + - [openHAB Thing and Item Concepts](https://www.openhab.org/docs/concepts/things.html) 
 ```
 
@@ -2738,34 +2738,34 @@ I'll create an architecture document that maps out the current solution. First, 
 ---
 
 <details>
-            <summary>Searched codebase "interface HomekitServer OR interface AccessoryServer OR class LocalHomekitServer OR class AbstractAccessoryServer" • **25** results</summary>
+            <summary>Searched codebase "interface HomekitServer OR interface HomekitAccessoryServer OR class LocalHomekitServer OR class HomekitAbstractAccessoryServer" • **25** results</summary>
         
 | File | Lines |
 |------|-------|
-| `src/main/java/org/openhab/io/homekit/internal/server/AbstractAccessoryServer.java` | L40-68 |
-| `src/main/java/org/openhab/io/homekit/internal/server/AbstractAccessoryServer.java` | L100-122 |
-| `src/main/java/org/openhab/io/homekit/internal/server/LocalAccessoryServer.java` | L1-38 |
-| `src/main/java/org/openhab/io/homekit/internal/server/AbstractAccessoryServer.java` | L1-40 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitAbstractAccessoryServer.java` | L40-68 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitAbstractAccessoryServer.java` | L100-122 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitLocalAccessoryServer.java` | L1-38 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitAbstractAccessoryServer.java` | L1-40 |
 | `src/main/java/org/openhab/io/homekit/internal/handler/AbstractHomekitHandler.java` | L110-131 |
-| `src/main/java/org/openhab/io/homekit/internal/server/LocalAccessoryServer.java` | L38-76 |
-| `src/main/java/org/openhab/io/homekit/internal/server/registry/ManagedAccessoryServerProvider.java` | L1-44 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitLocalAccessoryServer.java` | L38-76 |
+| `src/main/java/org/openhab/io/homekit/internal/server/registry/HomekitManagedAccessoryServerProvider.java` | L1-44 |
 | `src/main/java/org/openhab/io/homekit/internal/handler/AbstractHomekitHandler.java` | L1380-1412 |
-| `src/main/java/org/openhab/io/homekit/api/hap/AccessoryServer.java` | L22-98 |
-| `src/main/java/org/openhab/io/homekit/api/hap/AccessoryServer.java` | L1-22 |
-| `src/main/java/org/openhab/io/homekit/internal/server/LocalAccessoryServer.java` | L246-292 |
-| `src/main/java/org/openhab/io/homekit/internal/server/LocalAccessoryServer.java` | L76-102 |
+| `src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessoryServer.java` | L22-98 |
+| `src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessoryServer.java` | L1-22 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitLocalAccessoryServer.java` | L246-292 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitLocalAccessoryServer.java` | L76-102 |
 | `src/main/java/org/openhab/io/homekit/internal/handler/AbstractHomekitHandler.java` | L44-73 |
-| `src/main/java/org/openhab/io/homekit/internal/server/AbstractAccessoryServer.java` | L122-160 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitAbstractAccessoryServer.java` | L122-160 |
 | `src/main/java/org/openhab/io/homekit/internal/server/registry/AccessoryServerRegistryImpl.java` | L1-39 |
 | `src/main/java/org/openhab/io/homekit/internal/factory/AbstractHomekitFactory.java` | L552-582 |
 | `src/main/java/org/openhab/io/homekit/internal/accessory/AbstractManagedAccessory.java` | L2-107 |
-| `src/main/java/org/openhab/io/homekit/api/hap/AccessoryServer.java` | L239-253 |
-| `src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java` | L69-102 |
-| `src/main/java/org/openhab/io/homekit/internal/server/AbstractAccessoryServer.java` | L160-204 |
-| `src/main/java/org/openhab/io/homekit/internal/server/LocalAccessoryServer.java` | L449-478 |
+| `src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessoryServer.java` | L239-253 |
+| `src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java` | L69-102 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitAbstractAccessoryServer.java` | L160-204 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitLocalAccessoryServer.java` | L449-478 |
 | `src/main/java/org/openhab/io/homekit/internal/factory/AbstractHomekitFactory.java` | L526-552 |
 | `src/main/java/org/openhab/io/homekit/internal/server/factory/LocalAccessoryServerFactory.java` | L1-107 |
-| `src/main/java/org/openhab/io/homekit/internal/events/AccessoryServerEvent.java` | L1-50 |
+| `src/main/java/org/openhab/io/homekit/internal/events/HomekitAccessoryServerEvent.java` | L1-50 |
 | `src/main/java/org/openhab/io/homekit/internal/server/registry/AccessoryServerRegistryImpl.java` | L39-77 |
 
 </details>
@@ -2804,7 +2804,7 @@ Let me create an architecture document that explains the current solution. I'll 
 + The architecture follows a modular design with clear separation of concerns between:
 + - Protocol implementation
 + - Server management
-+ - Accessory handling
++ - HomekitAccessory handling
 + - Event management
 + - Configuration management
 + 
@@ -2814,29 +2814,29 @@ Let me create an architecture document that explains the current solution. I'll 
 + 
 + ### 1. Server Components
 + 
-+ #### AccessoryServer
++ #### HomekitAccessoryServer
 + - Interface defining the core server functionality
 + - Handles accessory management, pairing, and server lifecycle
 + - Implemented by:
-+   - `AbstractAccessoryServer` - Base implementation
-+   - `LocalAccessoryServer` - Local server implementation
-+   - `RemoteAccessoryServer` - Remote server implementation
++   - `HomekitAbstractAccessoryServer` - Base implementation
++   - `HomekitLocalAccessoryServer` - Local server implementation
++   - `HomekitRemoteAccessoryServer` - Remote server implementation
 + 
-+ #### AccessoryServerRegistry
++ #### HomekitAccessoryServerRegistry
 + - Manages the lifecycle of accessory servers
 + - Provides server discovery and registration
 + - Implemented by `AccessoryServerRegistryImpl`
 + 
-+ ### 2. Accessory Components
++ ### 2. HomekitAccessory Components
 + 
-+ #### Accessory
++ #### HomekitAccessory
 + - Interface representing a HomeKit accessory
 + - Defines services and characteristics
 + - Implemented by:
 +   - `AbstractManagedAccessory` - Base implementation
-+   - `GenericAccessory` - Generic accessory implementation
++   - `HomekitGenericAccessory` - Generic accessory implementation
 + 
-+ #### AccessoryRegistry
++ #### HomekitAccessoryRegistry
 + - Manages the lifecycle of accessories
 + - Handles accessory registration and discovery
 + 
@@ -2845,9 +2845,9 @@ Let me create an architecture document that explains the current solution. I'll 
 + #### HomekitEventManager
 + - Manages event subscriptions and notifications
 + - Handles different event types:
-+   - Accessory events
-+   - Characteristic events
-+   - Service events
++   - HomekitAccessory events
++   - HomekitCharacteristic events
++   - HomekitService events
 + 
 + #### HomekitEventSubscription
 + - Represents an event subscription
@@ -2867,12 +2867,12 @@ Let me create an architecture document that explains the current solution. I'll 
 + ### 1. Server Interfaces
 + 
 + ```java
-+ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
-+     AccessoryServerUID getUID();
++ public interface HomekitAccessoryServer extends Identifiable<HomekitAccessoryServerUID> {
++     HomekitAccessoryServerUID getUID();
 +     InetAddress getAddress();
 +     int getPort();
 +     boolean isSecure();
-+     Collection<Accessory> getAccessories();
++     Collection<HomekitAccessory> getAccessories();
 +     void updateAccessories();
 +     void start();
 +     void stop();
@@ -2880,13 +2880,13 @@ Let me create an architecture document that explains the current solution. I'll 
 + }
 + ```
 + 
-+ ### 2. Accessory Interfaces
++ ### 2. HomekitAccessory Interfaces
 + 
 + ```java
-+ public interface Accessory extends Identifiable<AccessoryUID> {
++ public interface HomekitAccessory extends Identifiable<HomekitAccessoryUID> {
 +     long getAccessoryId();
-+     AccessoryCategory getCategory();
-+     Collection<Service> getServices();
++     HomekitAccessoryCategory getCategory();
++     Collection<HomekitService> getServices();
 +     // ... other methods
 + }
 + ```
@@ -2908,19 +2908,19 @@ Let me create an architecture document that explains the current solution. I'll 
 + 
 + ### 1. Server Implementation
 + 
-+ The `LocalAccessoryServer` extends `AbstractAccessoryServer` and provides:
++ The `HomekitLocalAccessoryServer` extends `HomekitAbstractAccessoryServer` and provides:
 + - HTTP server implementation using Jetty
 + - mDNS service advertisement
 + - Secure pairing and verification
-+ - Accessory management
++ - HomekitAccessory management
 + 
-+ ### 2. Accessory Implementation
++ ### 2. HomekitAccessory Implementation
 + 
 + The `AbstractManagedAccessory` provides:
-+ - Service management
++ - HomekitService management
 + - Instance ID handling
 + - Event subscription management
-+ - Characteristic value handling
++ - HomekitCharacteristic value handling
 + 
 + ### 3. Event System
 + 
@@ -2936,22 +2936,22 @@ Let me create an architecture document that explains the current solution. I'll 
 + 
 + 1. **Server Initialization**
 +    ```
-+    AccessoryServerRegistry -> AccessoryServerFactory -> LocalAccessoryServer
++    HomekitAccessoryServerRegistry -> AccessoryServerFactory -> HomekitLocalAccessoryServer
 +    ```
 + 
-+ 2. **Accessory Management**
++ 2. **HomekitAccessory Management**
 +    ```
-+    AccessoryServer -> AccessoryRegistry -> AbstractManagedAccessory
++    HomekitAccessoryServer -> HomekitAccessoryRegistry -> AbstractManagedAccessory
 +    ```
 + 
 + 3. **Event Handling**
 +    ```
-+    Accessory -> HomekitEventManager -> HomekitEventSubscription
++    HomekitAccessory -> HomekitEventManager -> HomekitEventSubscription
 +    ```
 + 
 + 4. **Configuration Updates**
 +    ```
-+    Configuration -> AccessoryServer -> Accessory -> Characteristic
++    Configuration -> HomekitAccessoryServer -> HomekitAccessory -> HomekitCharacteristic
 +    ```
 + 
 + ---
@@ -2982,11 +2982,11 @@ Let me create an architecture document that explains the current solution. I'll 
 + 1. **Server Configuration**
 +    - Network settings
 +    - Security parameters
-+    - Accessory limits
++    - HomekitAccessory limits
 + 
-+ 2. **Accessory Configuration**
-+    - Service definitions
-+    - Characteristic mappings
++ 2. **HomekitAccessory Configuration**
++    - HomekitService definitions
++    - HomekitCharacteristic mappings
 +    - Metadata
 + 
 + 3. **Factory Configuration**
@@ -2998,7 +2998,7 @@ Let me create an architecture document that explains the current solution. I'll 
 + 
 + ## References
 + 
-+ - [HomeKit Accessory Protocol Specification](https://developer.apple.com/homekit/)
++ - [HomeKit HomekitAccessory Protocol Specification](https://developer.apple.com/homekit/)
 + - [OpenHAB Core Architecture](https://www.openhab.org/docs/developer/architecture/)
 + - [Java Design Patterns](https://refactoring.guru/design-patterns/java) 
 ```
@@ -3009,8 +3009,8 @@ I've created a comprehensive architecture document that explains the current Hom
 
 1. **Overview** - Explains the two-bundle structure and modular design
 2. **Core Components** - Details the main components:
-   - Server components (AccessoryServer, AccessoryServerRegistry)
-   - Accessory components (Accessory, AccessoryRegistry)
+   - Server components (HomekitAccessoryServer, HomekitAccessoryServerRegistry)
+   - HomekitAccessory components (HomekitAccessory, HomekitAccessoryRegistry)
    - Event management (HomekitEventManager)
    - Factory components (HomekitFactory)
 
@@ -3080,28 +3080,28 @@ Let me create two new documents to split this content appropriately:
 + 
 + The system supports several types of events:
 + 
-+ 1. **Accessory Events**
-+    - Accessory state changes
-+    - Accessory addition/removal
-+    - Accessory configuration updates
++ 1. **HomekitAccessory Events**
++    - HomekitAccessory state changes
++    - HomekitAccessory addition/removal
++    - HomekitAccessory configuration updates
 + 
-+ 2. **Characteristic Events**
-+    - Characteristic value changes
-+    - Characteristic metadata updates
-+    - Characteristic configuration changes
++ 2. **HomekitCharacteristic Events**
++    - HomekitCharacteristic value changes
++    - HomekitCharacteristic metadata updates
++    - HomekitCharacteristic configuration changes
 + 
-+ 3. **Service Events**
-+    - Service state changes
-+    - Service addition/removal
-+    - Service configuration updates
++ 3. **HomekitService Events**
++    - HomekitService state changes
++    - HomekitService addition/removal
++    - HomekitService configuration updates
 + 
 + ## Event Metadata
 + 
-+ The `EventMetadata` class provides the foundation for event tracking:
++ The `HomekitEventMetadata` class provides the foundation for event tracking:
 + 
 + ```java
 + // Create new event metadata
-+ EventMetadata metadata = new EventMetadata(
++ HomekitEventMetadata metadata = new HomekitEventMetadata(
 +     "publisher:123",          // Original publisher UID
 +     "correlation:456",        // Optional correlation ID
 +     "bridge:789",             // Immediate origin (creator)
@@ -3109,7 +3109,7 @@ Let me create two new documents to split this content appropriately:
 + );
 + 
 + // Create event metadata from existing metadata
-+ EventMetadata newMetadata = new EventMetadata(originalMetadata, "newCreator");
++ HomekitEventMetadata newMetadata = new HomekitEventMetadata(originalMetadata, "newCreator");
 + ```
 + 
 + ## Event Origin Concepts
@@ -3131,15 +3131,15 @@ Let me create two new documents to split this content appropriately:
 + Example:
 + ```java
 + // Bridge creates an event
-+ EventMetadata metadata1 = new EventMetadata(
++ HomekitEventMetadata metadata1 = new HomekitEventMetadata(
 +     "bridge:123",    // Original publisher
 +     null,            // No correlation ID
 +     "bridge:123",    // Immediate origin (same as publisher)
 +     Set.of()         // No peers
 + );
 + 
-+ // Accessory forwards the event
-+ EventMetadata metadata2 = new EventMetadata(
++ // HomekitAccessory forwards the event
++ HomekitEventMetadata metadata2 = new HomekitEventMetadata(
 +     metadata1,       // Preserve original publisher
 +     "accessory:456"  // New immediate origin
 + );
@@ -3205,7 +3205,7 @@ Let me create two new documents to split this content appropriately:
 + ```java
 + // Initial event with correlation ID
 + String correlationId = UUID.randomUUID().toString();
-+ EventMetadata metadata = new EventMetadata(
++ HomekitEventMetadata metadata = new HomekitEventMetadata(
 +     "bridge:123",
 +     correlationId,    // Set correlation ID
 +     "bridge:123",
@@ -3213,7 +3213,7 @@ Let me create two new documents to split this content appropriately:
 + );
 + 
 + // Related event reuses correlation ID
-+ EventMetadata related = new EventMetadata(
++ HomekitEventMetadata related = new HomekitEventMetadata(
 +     "accessory:456",
 +     correlationId,    // Same correlation ID
 +     "accessory:456",
@@ -3245,7 +3245,7 @@ Let me create two new documents to split this content appropriately:
 + 
 + ## References
 + 
-+ - [HomeKit Accessory Protocol Specification](https://developer.apple.com/homekit/)
++ - [HomeKit HomekitAccessory Protocol Specification](https://developer.apple.com/homekit/)
 + - [OpenHAB Event System](https://www.openhab.org/docs/developer/architecture/events.html) 
 ```
 
@@ -3307,9 +3307,9 @@ Now let me create the second document focusing on loop prevention:
 + 
   ```java
 - // Bridge creates an event
-- EventMetadata metadata1 = new EventMetadata(
+- HomekitEventMetadata metadata1 = new HomekitEventMetadata(
 + // Event with history and hop count
-+ EventMetadata metadata = new EventMetadata(
++ HomekitEventMetadata metadata = new HomekitEventMetadata(
       "bridge:123",    // Original publisher
       null,            // No correlation ID
 -     "bridge:123",    // Immediate origin (same as publisher)
@@ -3317,8 +3317,8 @@ Now let me create the second document focusing on loop prevention:
       Set.of()         // No peers
   );
   
-- // Accessory forwards the event
-- EventMetadata metadata2 = new EventMetadata(
+- // HomekitAccessory forwards the event
+- HomekitEventMetadata metadata2 = new HomekitEventMetadata(
 -     metadata1,       // Preserve original publisher
 -     "accessory:456"  // New immediate origin
 - );
@@ -3340,7 +3340,7 @@ Now let me create the second document focusing on loop prevention:
 - 
 - Example:
 + // When forwarding, hop count increases
-+ EventMetadata forwarded = new EventMetadata(metadata, "accessory:456");
++ HomekitEventMetadata forwarded = new HomekitEventMetadata(metadata, "accessory:456");
 + // Hop count is now 1, history includes original event
 + ```
 + 
@@ -3363,11 +3363,11 @@ Now let me create the second document focusing on loop prevention:
 - 
 - ## Event Metadata
 - 
-- The `EventMetadata` class provides the foundation for event tracking:
+- The `HomekitEventMetadata` class provides the foundation for event tracking:
 - 
 - ```java
 - // Create new event metadata
-- EventMetadata metadata = new EventMetadata(
+- HomekitEventMetadata metadata = new HomekitEventMetadata(
 -     "publisher:123",          // Original publisher UID
 -     "correlation:456",        // Optional correlation ID
 -     "bridge:789",             // Immediate origin (creator)
@@ -3375,7 +3375,7 @@ Now let me create the second document focusing on loop prevention:
 - );
 - 
 - // Create event metadata from existing metadata
-- EventMetadata newMetadata = new EventMetadata(originalMetadata, "newCreator");
+- HomekitEventMetadata newMetadata = new HomekitEventMetadata(originalMetadata, "newCreator");
 - ```
 - 
 - ## Event Origin Checking
@@ -3405,7 +3405,7 @@ Now let me create the second document focusing on loop prevention:
 - - **Example**:
 - ```java
 - // Event with history and hop count
-- EventMetadata metadata = new EventMetadata(
+- HomekitEventMetadata metadata = new HomekitEventMetadata(
 -     "bridge:123",    // Original publisher
 -     null,            // No correlation ID
 -     "bridge:123",    // Immediate origin
@@ -3413,19 +3413,19 @@ Now let me create the second document focusing on loop prevention:
 - );
 - 
 - // When forwarding, hop count increases
-- EventMetadata forwarded = new EventMetadata(metadata, "accessory:456");
+- HomekitEventMetadata forwarded = new HomekitEventMetadata(metadata, "accessory:456");
 - // Hop count is now 1, history includes original event
 - ```
 - 
 - ### 2. Correlation ID Tracking
 - - **Purpose**: Link related events and prevent processing the same logical event multiple times
-- - **Implementation**: Events share correlation IDs, tracked in EventMetadata
+- - **Implementation**: Events share correlation IDs, tracked in HomekitEventMetadata
 - - **When Used**: When events are part of the same logical flow
 - - **Example**:
 - ```java
 - // Initial event with correlation ID
 - String correlationId = UUID.randomUUID().toString();
-- EventMetadata metadata = new EventMetadata(
+- HomekitEventMetadata metadata = new HomekitEventMetadata(
 -     "bridge:123",
 -     correlationId,    // Set correlation ID
 -     "bridge:123",
@@ -3433,7 +3433,7 @@ Now let me create the second document focusing on loop prevention:
 - );
 - 
 - // Related event reuses correlation ID
-- EventMetadata related = new EventMetadata(
+- HomekitEventMetadata related = new HomekitEventMetadata(
 -     "accessory:456",
 -     correlationId,    // Same correlation ID
 -     "accessory:456",
@@ -3449,7 +3449,7 @@ Now let me create the second document focusing on loop prevention:
 - ```java
 - // Bridge and its accessories are peers
 - Set<String> peers = Set.of("bridge:123", "accessory:456", "accessory:789");
-- EventMetadata metadata = new EventMetadata(
+- HomekitEventMetadata metadata = new HomekitEventMetadata(
 -     "bridge:123",
 -     null,
 -     "bridge:123",
@@ -3517,7 +3517,7 @@ Now let me create the second document focusing on loop prevention:
 - }
 - ```
 - 
-- ## Comprehensive Example: Accessory Event Processing
+- ## Comprehensive Example: HomekitAccessory Event Processing
 - 
 - Here's how an accessory might process events:
 +             handleProcessingError(e);
@@ -3526,7 +3526,7 @@ Now let me create the second document focusing on loop prevention:
 + }
 + ```
 + 
-+ ### Accessory Event Processing with Loop Prevention
++ ### HomekitAccessory Event Processing with Loop Prevention
   
   ```java
 ```
@@ -3564,7 +3564,7 @@ Now let me create the second document focusing on loop prevention:
 +                 HomekitEvent responseEvent = new MyEvent(
 +                     HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
                       "accessory:" + accessoryId,
-                      new EventMetadata(
+                      new HomekitEventMetadata(
                           event.getMetadata(),
                           accessoryId,
 -                         event.getMetadata().getCorrelationId(),
@@ -3909,7 +3909,7 @@ Now let me create the second document focusing on loop prevention:
 - 
 - ## Common Loop Scenarios and Prevention
 - 
-- ### 1. Bridge-Accessory Feedback Loop
+- ### 1. Bridge-HomekitAccessory Feedback Loop
 - **Scenario**: Bridge updates accessory, accessory updates bridge, creating a loop.
 - 
 - **Prevention**:
@@ -3932,10 +3932,10 @@ Now let me create the second document focusing on loop prevention:
 -         correlationId = UUID.randomUUID().toString();
 -     }
 -     
--     HomekitEvent newEvent = new CharacteristicEvent(
+-     HomekitEvent newEvent = new HomekitCharacteristicEvent(
 -         HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
 -         myBridgeId,
--         new EventMetadata(
+-         new HomekitEventMetadata(
 -             myBridgeId,
 -             correlationId,
 -             myBridgeId,
@@ -3965,8 +3965,8 @@ Now let me create the second document focusing on loop prevention:
 -     }
 -     
 -     // Process event and forward with increased hop count
--     EventMetadata newMetadata = new EventMetadata(event.getMetadata(), myComponentId);
--     HomekitEvent newEvent = new CharacteristicEvent(
+-     HomekitEventMetadata newMetadata = new HomekitEventMetadata(event.getMetadata(), myComponentId);
+-     HomekitEvent newEvent = new HomekitCharacteristicEvent(
 -         event.getType(),
 -         myComponentId,
 -         newMetadata
@@ -3988,7 +3988,7 @@ Now let me create the second document focusing on loop prevention:
 -     }
 -     
 -     // Add subscription with peer awareness
--     EventMetadata metadata = new EventMetadata(
+-     HomekitEventMetadata metadata = new HomekitEventMetadata(
 -         publisher,
 -         null,
 -         publisher,
@@ -4019,7 +4019,7 @@ Now let me create the second document focusing on loop prevention:
 - 3. **Define Appropriate Peer Groups**:
 -    ```java
 -    Set<String> peers = Set.of("bridge:123", "accessory:456");
--    EventMetadata metadata = new EventMetadata(publisher, null, publisher, peers);
+-    HomekitEventMetadata metadata = new HomekitEventMetadata(publisher, null, publisher, peers);
 -    ```
 - 
 - 4. **Monitor Event Metrics**:
@@ -4071,7 +4071,7 @@ Now let me create the second document focusing on loop prevention:
 -    ```java
 -    // When creating a root event (not in response to another event)
 -    String correlationId = UUID.randomUUID().toString();
--    EventMetadata metadata = new EventMetadata(
+-    HomekitEventMetadata metadata = new HomekitEventMetadata(
 -        "bridge:123",
 -        correlationId,    // New correlation ID
 -        "bridge:123",
@@ -4083,7 +4083,7 @@ Now let me create the second document focusing on loop prevention:
 -    if (correlationId == null) {
 -        correlationId = UUID.randomUUID().toString();
 -    }
--    EventMetadata metadata = new EventMetadata(
+-    HomekitEventMetadata metadata = new HomekitEventMetadata(
 -        "accessory:456",
 -        correlationId,    // Reuse correlation ID
 -        "accessory:456",
@@ -4102,10 +4102,10 @@ Now let me create the second document focusing on loop prevention:
 -        processEvent(event);
 -        
 -        // Create new event with same correlation ID
--        HomekitEvent newEvent = new CharacteristicEvent(
+-        HomekitEvent newEvent = new HomekitCharacteristicEvent(
 -            event.getType(),
 -            "bridge:123",
--            new EventMetadata(
+-            new HomekitEventMetadata(
 -                "bridge:123",
 -                correlationId,    // Propagate correlation ID
 -                "bridge:123",
@@ -4157,7 +4157,7 @@ Now let me create the second document focusing on loop prevention:
 -            if (correlationId != null) {
 -                Long timestamp = correlationTimestamps.get(correlationId);
 -                if (timestamp != null && 
--                    System.currentTimeMillis() - timestamp < EventMetadata.CORRELATION_ID_EXPIRY_MS) {
+-                    System.currentTimeMillis() - timestamp < HomekitEventMetadata.CORRELATION_ID_EXPIRY_MS) {
 -                    logger.debug("Event with correlation ID {} already processed", correlationId);
 -                    return;
 -                }
@@ -4259,14 +4259,14 @@ Now let me create the second document focusing on loop prevention:
 - 
 - ### Common Correlation ID Scenarios
 - 
-- 1. **Bridge-Accessory Communication**:
+- 1. **Bridge-HomekitAccessory Communication**:
 -    ```java
 -    // Bridge sends event to accessory
 -    String correlationId = UUID.randomUUID().toString();
--    HomekitEvent bridgeEvent = new CharacteristicEvent(
+-    HomekitEvent bridgeEvent = new HomekitCharacteristicEvent(
 -        HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
 -        "bridge:123",
--        new EventMetadata(
+-        new HomekitEventMetadata(
 -            "bridge:123",
 -            correlationId,
 -            "bridge:123",
@@ -4274,14 +4274,14 @@ Now let me create the second document focusing on loop prevention:
 -        )
 -    );
 -    
--    // Accessory processes event and responds
+-    // HomekitAccessory processes event and responds
 -    public void onEvent(HomekitEvent event) {
 -        String correlationId = event.getMetadata().getCorrelationId();
 -        // Process event
--        HomekitEvent response = new CharacteristicEvent(
+-        HomekitEvent response = new HomekitCharacteristicEvent(
 -            event.getType(),
 -            "accessory:456",
--            new EventMetadata(
+-            new HomekitEventMetadata(
 -                "accessory:456",
 -                correlationId,    // Use same correlation ID
 -                "accessory:456",
@@ -4295,10 +4295,10 @@ Now let me create the second document focusing on loop prevention:
 -    ```java
 -    // Initial event
 -    String correlationId = UUID.randomUUID().toString();
--    HomekitEvent initialEvent = new CharacteristicEvent(
+-    HomekitEvent initialEvent = new HomekitCharacteristicEvent(
 -        HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
 -        "bridge:123",
--        new EventMetadata(
+-        new HomekitEventMetadata(
 -            "bridge:123",
 -            correlationId,
 -            "bridge:123",
@@ -4310,10 +4310,10 @@ Now let me create the second document focusing on loop prevention:
 -    public void processStep(HomekitEvent event) {
 -        String correlationId = event.getMetadata().getCorrelationId();
 -        // Process step
--        HomekitEvent nextStep = new CharacteristicEvent(
+-        HomekitEvent nextStep = new HomekitCharacteristicEvent(
 -            event.getType(),
 -            "processor:789",
--            new EventMetadata(
+-            new HomekitEventMetadata(
 -                "processor:789",
 -                correlationId,    // Maintain correlation ID
 -                "processor:789",
@@ -4356,11 +4356,11 @@ Now let me create the second document focusing on loop prevention:
 - 
 - ```java
 - // Create an event with a specific destination
-- HomekitEvent event = new CharacteristicEvent(
+- HomekitEvent event = new HomekitCharacteristicEvent(
 -     HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
 -     "bridge:123",
 -     "accessory:456",  // Set specific subscriber UID
--     new EventMetadata(
+-     new HomekitEventMetadata(
 -         "bridge:123",
 -         null,
 -         "bridge:123",
@@ -4382,11 +4382,11 @@ Now let me create the second document focusing on loop prevention:
 - 
 - ```java
 - // Create a broadcast event using explicit wildcard
-- HomekitEvent event1 = new CharacteristicEvent(
+- HomekitEvent event1 = new HomekitCharacteristicEvent(
 -     HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
 -     "bridge:123",
 -     "*",  // Explicit wildcard subscriberUID
--     new EventMetadata(
+-     new HomekitEventMetadata(
 -         "bridge:123",
 -         null,
 -         "bridge:123",
@@ -4395,11 +4395,11 @@ Now let me create the second document focusing on loop prevention:
 - );
 - 
 - // Create a broadcast event by omitting subscriberUID
-- HomekitEvent event2 = new CharacteristicEvent(
+- HomekitEvent event2 = new HomekitCharacteristicEvent(
 -     HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
 -     "bridge:123",
 -     null,  // Omitted subscriberUID = broadcast
--     new EventMetadata(
+-     new HomekitEventMetadata(
 -         "bridge:123",
 -         null,
 -         "bridge:123",
@@ -4445,11 +4445,11 @@ Now let me create the second document focusing on loop prevention:
 - 
 - ```java
 - // Create a broadcast event
-- HomekitEvent event = new CharacteristicEvent(
+- HomekitEvent event = new HomekitCharacteristicEvent(
 -     HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
 -     "bridge:123",
 -     "*",  // Use wildcard for broadcast
--     new EventMetadata(
+-     new HomekitEventMetadata(
 -         "bridge:123",
 -         null,
 -         "bridge:123",
@@ -4472,7 +4472,7 @@ Now let me create the second document focusing on loop prevention:
 - 1. **Targeted Delivery**:
 -    ```java
 -    // Event is delivered only to the specified subscriber
--    HomekitEvent event = new CharacteristicEvent(
+-    HomekitEvent event = new HomekitCharacteristicEvent(
 -        eventType,
 -        publisherUID,
 -        "specific-subscriber",  // Set specific subscriber UID
@@ -4494,7 +4494,7 @@ Now let me create the second document focusing on loop prevention:
 - 3. **Explicit Path Control**:
 -    ```java
 -    // Control the event propagation path
--    HomekitEvent newEvent = new CharacteristicEvent(
+-    HomekitEvent newEvent = new HomekitCharacteristicEvent(
 -        event.getType(),
 -        event.getPublisherUID(),
 -        "next-hop",  // Set next hop as subscriber
@@ -4565,7 +4565,7 @@ Now let me create the second document focusing on loop prevention:
 - 
 - ## Common Loop Scenarios and Prevention
 - 
-- ### 1. Bridge-Accessory Feedback Loop
+- ### 1. Bridge-HomekitAccessory Feedback Loop
 - **Scenario**: Bridge updates accessory, accessory updates bridge, creating a loop.
 - 
 - **Prevention**:
@@ -4588,10 +4588,10 @@ Now let me create the second document focusing on loop prevention:
 -         correlationId = UUID.randomUUID().toString();
 -     }
 -     
--     HomekitEvent newEvent = new CharacteristicEvent(
+-     HomekitEvent newEvent = new HomekitCharacteristicEvent(
 -         HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
 -         myBridgeId,
--         new EventMetadata(
+-         new HomekitEventMetadata(
 -             myBridgeId,
 -             correlationId,
 -             myBridgeId,
@@ -4621,8 +4621,8 @@ Now let me create the second document focusing on loop prevention:
 -     }
 -     
 -     // Process event and forward with increased hop count
--     EventMetadata newMetadata = new EventMetadata(event.getMetadata(), myComponentId);
--     HomekitEvent newEvent = new CharacteristicEvent(
+-     HomekitEventMetadata newMetadata = new HomekitEventMetadata(event.getMetadata(), myComponentId);
+-     HomekitEvent newEvent = new HomekitCharacteristicEvent(
 -         event.getType(),
 -         myComponentId,
 -         newMetadata
@@ -4644,7 +4644,7 @@ Now let me create the second document focusing on loop prevention:
 -     }
 -     
 -     // Add subscription with peer awareness
--     EventMetadata metadata = new EventMetadata(
+-     HomekitEventMetadata metadata = new HomekitEventMetadata(
 -         publisher,
 -         null,
 -         publisher,
@@ -4675,7 +4675,7 @@ Now let me create the second document focusing on loop prevention:
 - 3. **Define Appropriate Peer Groups**:
 -    ```java
 -    Set<String> peers = Set.of("bridge:123", "accessory:456");
--    EventMetadata metadata = new EventMetadata(publisher, null, publisher, peers);
+-    HomekitEventMetadata metadata = new HomekitEventMetadata(publisher, null, publisher, peers);
 -    ```
 - 
 - 4. **Monitor Event Metrics**:
@@ -4727,7 +4727,7 @@ Now let me create the second document focusing on loop prevention:
 -    ```java
 -    // When creating a root event (not in response to another event)
 -    String correlationId = UUID.randomUUID().toString();
--    EventMetadata metadata = new EventMetadata(
+-    HomekitEventMetadata metadata = new HomekitEventMetadata(
 -        "bridge:123",
 -        correlationId,    // New correlation ID
 -        "bridge:123",
@@ -4739,7 +4739,7 @@ Now let me create the second document focusing on loop prevention:
 -    if (correlationId == null) {
 -        correlationId = UUID.randomUUID().toString();
 -    }
--    EventMetadata metadata = new EventMetadata(
+-    HomekitEventMetadata metadata = new HomekitEventMetadata(
 -        "accessory:456",
 -        correlationId,    // Reuse correlation ID
 -        "accessory:456",
@@ -4758,10 +4758,10 @@ Now let me create the second document focusing on loop prevention:
 -        processEvent(event);
 -        
 -        // Create new event with same correlation ID
--        HomekitEvent newEvent = new CharacteristicEvent(
+-        HomekitEvent newEvent = new HomekitCharacteristicEvent(
 -            event.getType(),
 -            "bridge:123",
--            new EventMetadata(
+-            new HomekitEventMetadata(
 -                "bridge:123",
 -                correlationId,    // Propagate correlation ID
 -                "bridge:123",
@@ -4813,7 +4813,7 @@ Now let me create the second document focusing on loop prevention:
 -            if (correlationId != null) {
 -                Long timestamp = correlationTimestamps.get(correlationId);
 -                if (timestamp != null && 
--                    System.currentTimeMillis() - timestamp < EventMetadata.CORRELATION_ID_EXPIRY_MS) {
+-                    System.currentTimeMillis() - timestamp < HomekitEventMetadata.CORRELATION_ID_EXPIRY_MS) {
 -                    logger.debug("Event with correlation ID {} already processed", correlationId);
 -                    return;
 -                }
@@ -4915,14 +4915,14 @@ Now let me create the second document focusing on loop prevention:
 - 
 - ### Common Correlation ID Scenarios
 - 
-- 1. **Bridge-Accessory Communication**:
+- 1. **Bridge-HomekitAccessory Communication**:
 -    ```java
 -    // Bridge sends event to accessory
 -    String correlationId = UUID.randomUUID().toString();
--    HomekitEvent bridgeEvent = new CharacteristicEvent(
+-    HomekitEvent bridgeEvent = new HomekitCharacteristicEvent(
 -        HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
 -        "bridge:123",
--        new EventMetadata(
+-        new HomekitEventMetadata(
 -            "bridge:123",
 -            correlationId,
 -            "bridge:123",
@@ -4930,14 +4930,14 @@ Now let me create the second document focusing on loop prevention:
 -        )
 -    );
 -    
--    // Accessory processes event and responds
+-    // HomekitAccessory processes event and responds
 -    public void onEvent(HomekitEvent event) {
 -        String correlationId = event.getMetadata().getCorrelationId();
 -        // Process event
--        HomekitEvent response = new CharacteristicEvent(
+-        HomekitEvent response = new HomekitCharacteristicEvent(
 -            event.getType(),
 -            "accessory:456",
--            new EventMetadata(
+-            new HomekitEventMetadata(
 -                "accessory:456",
 -                correlationId,    // Use same correlation ID
 -                "accessory:456",
@@ -4951,10 +4951,10 @@ Now let me create the second document focusing on loop prevention:
 -    ```java
 -    // Initial event
 -    String correlationId = UUID.randomUUID().toString();
--    HomekitEvent initialEvent = new CharacteristicEvent(
+-    HomekitEvent initialEvent = new HomekitCharacteristicEvent(
 -        HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
 -        "bridge:123",
--        new EventMetadata(
+-        new HomekitEventMetadata(
 -            "bridge:123",
 -            correlationId,
 -            "bridge:123",
@@ -4966,10 +4966,10 @@ Now let me create the second document focusing on loop prevention:
 -    public void processStep(HomekitEvent event) {
 -        String correlationId = event.getMetadata().getCorrelationId();
 -        // Process step
--        HomekitEvent nextStep = new CharacteristicEvent(
+-        HomekitEvent nextStep = new HomekitCharacteristicEvent(
 -            event.getType(),
 -            "processor:789",
--            new EventMetadata(
+-            new HomekitEventMetadata(
 -                "processor:789",
 -                correlationId,    // Maintain correlation ID
 -                "processor:789",
@@ -5000,7 +5000,7 @@ Now let me create the second document focusing on loop prevention:
 -    ``` 
 + ## References
 + 
-+ - [HomeKit Accessory Protocol Specification](https://developer.apple.com/homekit/)
++ - [HomeKit HomekitAccessory Protocol Specification](https://developer.apple.com/homekit/)
 + - [OpenHAB Event System](https://www.openhab.org/docs/developer/architecture/events.html) 
 ```
 
@@ -5082,7 +5082,7 @@ I'll help preserve the text about enhancements. Let me add a section about poten
 ---
 
 ```diff
-  - [HomeKit Accessory Protocol Specification](https://developer.apple.com/homekit/)
+  - [HomeKit HomekitAccessory Protocol Specification](https://developer.apple.com/homekit/)
   - [OpenHAB Event System](https://www.openhab.org/docs/developer/architecture/events.html)
 + 
 + ## Potential Enhancements Analysis
@@ -5792,7 +5792,7 @@ with open('my.items', 'w') as out:
 
 ## 4. **Summary Table**
 
-| Direction                | Method                                    |
+| Direction                | HomekitMethod                                    |
 |--------------------------|-------------------------------------------|
 | 2.x Items/Metadata → YAML| Parse `.items` or REST API, output YAML   |
 | YAML → 2.x Items/Metadata| Parse YAML, generate `.items` lines       |

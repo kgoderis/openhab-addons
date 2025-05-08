@@ -6,7 +6,7 @@
 // import org.openhab.core.thing.Thing;
 // import org.openhab.core.thing.ThingStatus;
 // import org.openhab.core.thing.ThingTypeUID;
-// import org.openhab.io.homekit.api.hap.Accessory;
+// import org.openhab.io.homekit.api.hap.HomekitAccessory;
 // import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
 // import org.osgi.framework.BundleContext;
 // import org.slf4j.Logger;
@@ -30,17 +30,17 @@
 // : null;
 
 // if (bridgeHandler != null) {
-// Accessory accessory = bridgeHandler.getAccessory(Long.parseLong(getThing().getUID().getId()));
+// HomekitAccessory accessory = bridgeHandler.getAccessory(Long.parseLong(getThing().getUID().getId()));
 
 // if (accessory != null) {
 // this.configureThing(accessory);
 // updateStatus(ThingStatus.ONLINE);
 // } else {
-// logger.warn("{}' : The Homekit Accessory Bridge Handler does not manage an Accessory with Id {}",
+// logger.warn("{}' : The Homekit HomekitAccessory Bridge Handler does not manage an HomekitAccessory with Id {}",
 // getThing().getUID(), getThing().getUID().getId());
 // }
 // } else {
-// logger.warn("{}' : There is no Homekit Accessory Bridge Handler", getThing().getUID());
+// logger.warn("{}' : There is no Homekit HomekitAccessory Bridge Handler", getThing().getUID());
 // }
 // }
 // }

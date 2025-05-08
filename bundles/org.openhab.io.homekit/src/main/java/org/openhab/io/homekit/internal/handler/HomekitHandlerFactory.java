@@ -26,9 +26,9 @@ import org.openhab.core.thing.binding.BaseThingHandlerFactory;
 import org.openhab.core.thing.binding.ThingHandler;
 import org.openhab.core.thing.binding.ThingHandlerFactory;
 import org.openhab.core.thing.type.ThingType;
-import org.openhab.io.homekit.api.registry.AccessoryRegistry;
-import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
-import org.openhab.io.homekit.api.registry.PairingRegistry;
+import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
+import org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry;
+import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
 import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
 import org.openhab.io.homekit.internal.events.HomekitEventManager;
 import org.openhab.io.homekit.internal.provider.HomekitChannelGroupTypeProvider;
@@ -56,9 +56,9 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
 
     public static Collection<ThingTypeUID> SUPPORTED_THING_TYPES = Collections.emptySet();
 
-    protected final AccessoryRegistry accessoryRegistry;
-    protected final PairingRegistry pairingRegistry;
-    protected final AccessoryServerRegistry serverRegistry;
+    protected final HomekitAccessoryRegistry accessoryRegistry;
+    protected final HomekitPairingRegistry pairingRegistry;
+    protected final HomekitAccessoryServerRegistry serverRegistry;
     protected final @NonNullByDefault({}) BundleContext bundleContext;
     protected final HomekitThingTypeProvider homekitThingTypeProvider;
     protected final HomekitChannelTypeProvider homekitChannelTypeProvider;
@@ -66,8 +66,8 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
     protected final HomekitEventManager eventManager;
 
     @Activate
-    public HomekitHandlerFactory(ComponentContext componentContext, @Reference AccessoryRegistry accessoryRegistry,
-            @Reference PairingRegistry pairingRegistry, @Reference AccessoryServerRegistry serverRegistry,
+    public HomekitHandlerFactory(ComponentContext componentContext, @Reference HomekitAccessoryRegistry accessoryRegistry,
+            @Reference HomekitPairingRegistry pairingRegistry, @Reference HomekitAccessoryServerRegistry serverRegistry,
             @Reference HomekitThingTypeProvider homekitThingTypeProvider,
             @Reference HomekitChannelTypeProvider homekitChannelTypeProvider,
             @Reference HomekitChannelGroupTypeProvider homekitChannelGroupTypeProvider,
@@ -107,12 +107,12 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
         if (HomekitBindingConstants.THING_TYPE_ACCESSORY.equals(thingTypeUID)) {
-            return new AccessoryThingHandler(thing, serverRegistry, accessoryRegistry, homekitChannelTypeProvider,
+            return new HomekitAccessoryThingHandler(thing, serverRegistry, accessoryRegistry, homekitChannelTypeProvider,
                     homekitThingTypeProvider, eventManager);
         }
 
         if (SUPPORTED_THING_TYPES.contains(thingTypeUID)) {
-            return new ServiceThingHandler(thing, serverRegistry, accessoryRegistry, homekitChannelTypeProvider,
+            return new HomekitServiceThingHandler(thing, serverRegistry, accessoryRegistry, homekitChannelTypeProvider,
                     homekitThingTypeProvider, eventManager);
         }
 

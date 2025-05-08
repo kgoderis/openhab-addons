@@ -29,9 +29,9 @@
 // import org.openhab.core.types.Command;
 // import org.openhab.core.types.RefreshType;
 // import org.openhab.io.homekit.api.factory.HomekitFactory;
-// import org.openhab.io.homekit.api.hap.Accessory;
-// import org.openhab.io.homekit.api.hap.Characteristic;
-// import org.openhab.io.homekit.api.hap.Service;
+// import org.openhab.io.homekit.api.hap.HomekitAccessory;
+// import org.openhab.io.homekit.api.hap.HomekitCharacteristic;
+// import org.openhab.io.homekit.api.hap.HomekitService;
 // import org.openhab.io.homekit.internal.client.HomekitAccessoryConfiguration;
 // import org.osgi.framework.BundleContext;
 // import org.osgi.util.tracker.ServiceTracker;
@@ -129,12 +129,12 @@
 // //
 // // }
 
-// public void configureThing(Accessory accessory) {
+// public void configureThing(HomekitAccessory accessory) {
 
 // List<Channel> channels = new ArrayList<>(thing.getChannels());
 
-// for (Service service : accessory.getServices()) {
-// for (Characteristic characteristic : service.getCharacteristics()) {
+// for (HomekitService service : accessory.getServices()) {
+// for (HomekitCharacteristic characteristic : service.getCharacteristics()) {
 
 // String tempUID = accessory.getAccessoryId() + ":" + service.getInstanceId() + ":"
 // + characteristic.getInstanceId();
@@ -157,12 +157,12 @@
 // .getCharacteristicAcceptedItemType(characteristic.getInstanceType());
 // ChannelTypeUID channelTypeUID = factory.getChannelTypeUID(characteristic.getInstanceType());
 
-// Class<? extends Service> serviceClass = factory.getService(service.getInstanceType());
+// Class<? extends HomekitService> serviceClass = factory.getService(service.getInstanceType());
 // if (serviceClass == null) {
 // serviceClass = service.getClass();
 // }
 
-// Class<? extends Characteristic> characteristicClass = factory
+// Class<? extends HomekitCharacteristic> characteristicClass = factory
 // .getCharacteristic(characteristic.getInstanceType());
 // if (characteristicClass == null) {
 // characteristicClass = characteristic.getClass();
@@ -176,7 +176,7 @@
 // channels.removeIf(c -> c.getUID().getId().equals(channel.getUID().getId()));
 // channels.add(channel);
 // logger.info(
-// "'{}' : Accessory/Service/Characteristic {}/{}/{} of type {}/{} ({}/{}) is associated with Channel {}",
+// "'{}' : HomekitAccessory/HomekitService/HomekitCharacteristic {}/{}/{} of type {}/{} ({}/{}) is associated with Channel {}",
 // getThing().getUID(), accessory.getAccessoryId(), service.getInstanceId(),
 // characteristic.getInstanceId(), serviceClass.getSimpleName(),
 // characteristicClass.getSimpleName(),
@@ -187,7 +187,7 @@
 // channel.getUID());
 // } else {
 // logger.warn(
-// "'{}' : Accessory/Service/Characteristic {}/{}/{} of type {}/{} is not supported by any Homekit Factory",
+// "'{}' : HomekitAccessory/HomekitService/HomekitCharacteristic {}/{}/{} of type {}/{} is not supported by any Homekit Factory",
 // getThing().getUID(), accessory.getAccessoryId(), service.getInstanceId(),
 // characteristic.getInstanceId(),
 // service.getInstanceType().replaceAll("^0*([0-9a-fA-F]+)-0000-1000-8000-0026BB765291$",
@@ -199,19 +199,19 @@
 // HomekitFactory factory = getHomekitFactory(characteristic.getInstanceType());
 // if (factory != null) {
 
-// Class<? extends Service> serviceClass = factory.getService(service.getInstanceType());
+// Class<? extends HomekitService> serviceClass = factory.getService(service.getInstanceType());
 // if (serviceClass == null) {
 // serviceClass = service.getClass();
 // }
 
-// Class<? extends Characteristic> characteristicClass = factory
+// Class<? extends HomekitCharacteristic> characteristicClass = factory
 // .getCharacteristic(characteristic.getInstanceType());
 // if (characteristicClass == null) {
 // characteristicClass = characteristic.getClass();
 // }
 
 // logger.warn(
-// "'{}' : Accessory/Service/Characteristic {}/{}/{} of type {}/{} ({}/{}) is already associated with Channel {}",
+// "'{}' : HomekitAccessory/HomekitService/HomekitCharacteristic {}/{}/{} of type {}/{} ({}/{}) is already associated with Channel {}",
 // getThing().getUID(), accessory.getAccessoryId(), service.getInstanceId(),
 // characteristic.getInstanceId(), serviceClass.getSimpleName(),
 // characteristicClass.getSimpleName(),

@@ -23,7 +23,7 @@ The HomeKit integration consists of two main bundles:
 The architecture follows a modular design with clear separation of concerns between:
 - Protocol implementation
 - Server management
-- Accessory handling
+- HomekitAccessory handling
 - Event management
 - Configuration management
 
@@ -33,29 +33,29 @@ The architecture follows a modular design with clear separation of concerns betw
 
 ### 1. Server Components
 
-#### AccessoryServer
+#### HomekitAccessoryServer
 - Interface defining the core server functionality
 - Handles accessory management, pairing, and server lifecycle
 - Implemented by:
-  - `AbstractAccessoryServer` - Base implementation
-  - `LocalAccessoryServer` - Local server implementation
-  - `RemoteAccessoryServer` - Remote server implementation
+  - `HomekitAbstractAccessoryServer` - Base implementation
+  - `HomekitLocalAccessoryServer` - Local server implementation
+  - `HomekitRemoteAccessoryServer` - Remote server implementation
 
-#### AccessoryServerRegistry
+#### HomekitAccessoryServerRegistry
 - Manages the lifecycle of accessory servers
 - Provides server discovery and registration
 - Implemented by `AccessoryServerRegistryImpl`
 
-### 2. Accessory Components
+### 2. HomekitAccessory Components
 
-#### Accessory
+#### HomekitAccessory
 - Interface representing a HomeKit accessory
 - Defines services and characteristics
 - Implemented by:
   - `AbstractManagedAccessory` - Base implementation
-  - `GenericAccessory` - Generic accessory implementation
+  - `HomekitGenericAccessory` - Generic accessory implementation
 
-#### AccessoryRegistry
+#### HomekitAccessoryRegistry
 - Manages the lifecycle of accessories
 - Handles accessory registration and discovery
 
@@ -64,9 +64,9 @@ The architecture follows a modular design with clear separation of concerns betw
 #### HomekitEventManager
 - Manages event subscriptions and notifications
 - Handles different event types:
-  - Accessory events
-  - Characteristic events
-  - Service events
+  - HomekitAccessory events
+  - HomekitCharacteristic events
+  - HomekitService events
 
 #### HomekitEventSubscription
 - Represents an event subscription
@@ -86,12 +86,12 @@ The architecture follows a modular design with clear separation of concerns betw
 ### 1. Server Interfaces
 
 ```java
-public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
-    AccessoryServerUID getUID();
+public interface HomekitAccessoryServer extends Identifiable<HomekitAccessoryServerUID> {
+    HomekitAccessoryServerUID getUID();
     InetAddress getAddress();
     int getPort();
     boolean isSecure();
-    Collection<Accessory> getAccessories();
+    Collection<HomekitAccessory> getAccessories();
     void updateAccessories();
     void start();
     void stop();
@@ -99,13 +99,13 @@ public interface AccessoryServer extends Identifiable<AccessoryServerUID> {
 }
 ```
 
-### 2. Accessory Interfaces
+### 2. HomekitAccessory Interfaces
 
 ```java
-public interface Accessory extends Identifiable<AccessoryUID> {
+public interface HomekitAccessory extends Identifiable<HomekitAccessoryUID> {
     long getAccessoryId();
-    AccessoryCategory getCategory();
-    Collection<Service> getServices();
+    HomekitAccessoryCategory getCategory();
+    Collection<HomekitService> getServices();
     // ... other methods
 }
 ```
@@ -127,19 +127,19 @@ public interface HomekitEventManager {
 
 ### 1. Server Implementation
 
-The `LocalAccessoryServer` extends `AbstractAccessoryServer` and provides:
+The `HomekitLocalAccessoryServer` extends `HomekitAbstractAccessoryServer` and provides:
 - HTTP server implementation using Jetty
 - mDNS service advertisement
 - Secure pairing and verification
-- Accessory management
+- HomekitAccessory management
 
-### 2. Accessory Implementation
+### 2. HomekitAccessory Implementation
 
 The `AbstractManagedAccessory` provides:
-- Service management
+- HomekitService management
 - Instance ID handling
 - Event subscription management
-- Characteristic value handling
+- HomekitCharacteristic value handling
 
 ### 3. Event System
 
@@ -155,22 +155,22 @@ The event system uses:
 
 1. **Server Initialization**
    ```
-   AccessoryServerRegistry -> AccessoryServerFactory -> LocalAccessoryServer
+   HomekitAccessoryServerRegistry -> AccessoryServerFactory -> HomekitLocalAccessoryServer
    ```
 
-2. **Accessory Management**
+2. **HomekitAccessory Management**
    ```
-   AccessoryServer -> AccessoryRegistry -> AbstractManagedAccessory
+   HomekitAccessoryServer -> HomekitAccessoryRegistry -> AbstractManagedAccessory
    ```
 
 3. **Event Handling**
    ```
-   Accessory -> HomekitEventManager -> HomekitEventSubscription
+   HomekitAccessory -> HomekitEventManager -> HomekitEventSubscription
    ```
 
 4. **Configuration Updates**
    ```
-   Configuration -> AccessoryServer -> Accessory -> Characteristic
+   Configuration -> HomekitAccessoryServer -> HomekitAccessory -> HomekitCharacteristic
    ```
 
 ---
@@ -201,11 +201,11 @@ The system uses a comprehensive error handling approach:
 1. **Server Configuration**
    - Network settings
    - Security parameters
-   - Accessory limits
+   - HomekitAccessory limits
 
-2. **Accessory Configuration**
-   - Service definitions
-   - Characteristic mappings
+2. **HomekitAccessory Configuration**
+   - HomekitService definitions
+   - HomekitCharacteristic mappings
    - Metadata
 
 3. **Factory Configuration**
@@ -217,6 +217,6 @@ The system uses a comprehensive error handling approach:
 
 ## References
 
-- [HomeKit Accessory Protocol Specification](https://developer.apple.com/homekit/)
+- [HomeKit HomekitAccessory Protocol Specification](https://developer.apple.com/homekit/)
 - [OpenHAB Core Architecture](https://www.openhab.org/docs/developer/architecture/)
 - [Java Design Patterns](https://refactoring.guru/design-patterns/java) 

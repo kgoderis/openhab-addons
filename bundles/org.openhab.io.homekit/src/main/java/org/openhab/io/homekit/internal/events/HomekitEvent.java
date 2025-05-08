@@ -61,7 +61,7 @@ public interface HomekitEvent {
      *
      * @return the event metadata
      */
-    EventMetadata getMetadata();
+    HomekitEventMetadata getMetadata();
 
     @Override
     String toString();

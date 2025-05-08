@@ -81,27 +81,27 @@ Let me search for configuration-related files and classes.
 | File | Lines |
 |------|-------|
 | `src/main/resources/OH-INF/config/config.xml` | L41-79 |
-| `src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java` | L614-649 |
+| `src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java` | L614-649 |
 | `src/main/java/org/openhab/io/homekit/internal/client/HomekitAccessoryConfiguration.java` | L1-23 |
 | `src/main/resources/OH-INF/config/config.xml` | L79-96 |
 | `src/main/resources/OH-INF/config/config.xml` | L1-41 |
-| `src/main/java/org/openhab/io/homekit/internal/server/LocalAccessoryServer.java` | L478-508 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitLocalAccessoryServer.java` | L478-508 |
 | `src/main/resources/OH-INF/i18n/homekit_xx_XX.properties` | L1-18 |
 | `.settings/org.eclipse.jdt.core.prefs` | L1-21 |
 | `.settings/org.eclipse.jdt.apt.core.prefs` | L1-5 |
-| `src/main/java/org/openhab/io/homekit/internal/server/LocalAccessoryServer.java` | L508-544 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitLocalAccessoryServer.java` | L508-544 |
 | `.cursor/rules/log-format.mdc` | L1-27 |
-| `src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java` | L69-102 |
+| `src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java` | L69-102 |
 | `.settings/org.eclipse.m2e.core.prefs` | L1-5 |
 | `.settings/org.eclipse.core.resources.prefs` | L1-6 |
 | `src/main/java/org/openhab/io/homekit/internal/handler/AbstractHomekitHandler.java` | L237-287 |
 | `src/main/java/org/openhab/io/homekit/internal/provider/HomekitConfigDescriptionProvider.java` | L1-66 |
-| `src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java` | L102-124 |
-| `src/main/java/org/openhab/io/homekit/internal/server/AbstractAccessoryServer.java` | L40-68 |
+| `src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java` | L102-124 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitAbstractAccessoryServer.java` | L40-68 |
 | `src/main/java/org/openhab/io/homekit/internal/handler/AbstractHomekitHandler.java` | L44-73 |
-| `src/main/java/org/openhab/io/homekit/internal/handler/ServiceThingHandler.java` | L555-596 |
-| `src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java` | L45-69 |
-| `src/main/java/org/openhab/io/homekit/internal/server/registry/ManagedAccessoryServerProvider.java` | L44-70 |
+| `src/main/java/org/openhab/io/homekit/internal/handler/HomekitServiceThingHandler.java` | L555-596 |
+| `src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java` | L45-69 |
+| `src/main/java/org/openhab/io/homekit/internal/server/registry/HomekitManagedAccessoryServerProvider.java` | L44-70 |
 | `src/main/java/org/openhab/io/homekit/internal/client/HomekitBindingConstants.java` | L1-41 |
 | `pom.xml` | L1-25 |
 | `src/main/java/org/openhab/io/homekit/Ideas/SpecStory Bridget Mappers Validation OSGi MicroServices.md` | L14261-14332 |
@@ -129,7 +129,7 @@ Based on my analysis of the codebase, I can identify several configurable parame
      - `thermostatCurrentModeCooling`: Value for COOLING state (default: "Cooling")
      - `thermostatCurrentModeOff`: Value for OFF state (default: "Off")
 
-3. **Discovery Service Configuration**:
+3. **Discovery HomekitService Configuration**:
   
 
 ---
@@ -190,20 +190,20 @@ Let me try a more targeted search.
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events%20part%202.md` | L395 | `- **Static Analysis:** You can analyze the system at configuration or startup time.` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events%20part%202.md` | L910 | `- **Use it only when adding/removing subscriptions** (i.e., at configuration/change time).` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events%20part%202.md` | L917 | `- **Advanced:** Provide a configuration option to reject cycles for safety-critical deployments.` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/AccessoryServer.java` | L10 | `import org.openhab.io.homekit.exception.HomekitConfigurationException;` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/AccessoryServer.java` | L197 | `* Performs a factory reset, removing all pairings and restoring default settings.` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/AccessoryServer.java` | L207 | `* Sets the configuration index.` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/AccessoryServer.java` | L209 | `* @param configurationIndex the new configuration index` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/AccessoryServer.java` | L211 | `void setConfigurationIndex(int configurationIndex) throws HomekitConfigurationException;` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/AccessoryServer.java` | L214 | `* Gets the current configuration index.` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/AccessoryServer.java` | L216 | `* @return the configuration index` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/AccessoryServer.java` | L218 | `int getConfigurationIndex();` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessoryServer.java` | L10 | `import org.openhab.io.homekit.exception.HomekitConfigurationException;` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessoryServer.java` | L197 | `* Performs a factory reset, removing all pairings and restoring default settings.` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessoryServer.java` | L207 | `* Sets the configuration index.` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessoryServer.java` | L209 | `* @param configurationIndex the new configuration index` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessoryServer.java` | L211 | `void setConfigurationIndex(int configurationIndex) throws HomekitConfigurationException;` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessoryServer.java` | L214 | `* Gets the current configuration index.` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessoryServer.java` | L216 | `* @return the configuration index` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessoryServer.java` | L218 | `int getConfigurationIndex();` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/exception/HomekitConfigurationException.java` | L3 | `* Exception thrown when there is an error with HomeKit server configuration.` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/exception/HomekitConfigurationException.java` | L5 | `public class HomekitConfigurationException extends HomekitServerException {` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/exception/HomekitConfigurationException.java` | L8 | `public HomekitConfigurationException(String message) {` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/exception/HomekitConfigurationException.java` | L12 | `public HomekitConfigurationException(String message, Throwable cause) {` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/exception/HomekitConfigurationException.java` | L16 | `public HomekitConfigurationException(Throwable cause) {` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L4 | `⟪ 216 characters skipped ⟫cessoryServer. How would you tackle the configuration? Alternatively, you can imagine a ProxyThing Thing class that belongs to the Homekit binding, that in essence takes a Homekit Service and regular Thing UID as configuration parameter. A ProxyThingHandler would then liase between openHAB's event bus, and a LocalAccessoryServer. Would you offload communication to this new HomekitThingBridge? if so, how? how would you configure ProxyThing in the DSL .things configuration files? what about wildcards to select all Things of a given kind in one batch. How would this HomekitThingBridge look like? provide sample code for all ideas. Do you see another architec` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L4 | `⟪ 216 characters skipped ⟫cessoryServer. How would you tackle the configuration? Alternatively, you can imagine a ProxyThing Thing class that belongs to the Homekit binding, that in essence takes a Homekit HomekitService and regular Thing UID as configuration parameter. A ProxyThingHandler would then liase between openHAB's event bus, and a HomekitLocalAccessoryServer. Would you offload communication to this new HomekitThingBridge? if so, how? how would you configure ProxyThing in the DSL .things configuration files? what about wildcards to select all Things of a given kind in one batch. How would this HomekitThingBridge look like? provide sample code for all ideas. Do you see another architec` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L10 | `⟪ 156 characters skipped ⟫ pros/cons, and provide sample code and configuration ideas.` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L22 | `### **Configuration**` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L88 | `### **Configuration Example**` |
@@ -231,7 +231,7 @@ Let me try a more targeted search.
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L912 | `updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L917 | `updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L1069 | `- For more complex bindings (e.g., Z-Wave, MQTT), you may need to inspect channel configuration or metadata to determine the best mapping.` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L1123 | `- **Read the configuration** to determine which HomeKit Service and Characteristics to expose, and which openHAB channels to map.` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L1123 | `- **Read the configuration** to determine which HomeKit HomekitService and Characteristics to expose, and which openHAB channels to map.` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L1177 | `- Recreate mappers with the new configuration.` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L1231 | `⟪ 205 characters skipped ⟫The handler manages their lifecycle and configuration.` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L1489 | `⟪ 105 characters skipped ⟫tic) from openHAB Things, Channels, and configuration.` |
@@ -350,43 +350,43 @@ Let me search for functionality toggles and logging configurations in the codeba
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/target/spotless-index` | L82 | `src/main/java/org/openhab/io/homekit/internal/client/HomekitAccessoryBridgeDiscoveryService.java 2025-04-11T17:23:16.368284441Z` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/target/spotless-index` | L111 | `src/main/java/org/openhab/io/homekit/internal/handler/HomekitAccessoryBridgeHandler.java 2025-04-16T17:07:50.293746811Z` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/target/spotless-index` | L174 | `src/main/java/org/openhab/io/homekit/library/accessory/BridgeAccessory.java 2025-04-16T07:06:34.213918382Z` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/TODO` | L7 | `- The ID of an accessory used in a bridge must be greater than 1 (AbstractAccessoryServer)` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/TODO` | L7 | `- The ID of an accessory used in a bridge must be greater than 1 (HomekitAbstractAccessoryServer)` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/exception/HomekitMetadataException.java` | L3 | `* Exception thrown when there is an error with HomeKit metadata.` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/exception/HomekitMetadataException.java` | L5 | `public class HomekitMetadataException extends HomekitFactoryException {` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/exception/HomekitMetadataException.java` | L6 | `public HomekitMetadataException(String message) {` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/exception/HomekitMetadataException.java` | L10 | `public HomekitMetadataException(String message, Throwable cause) {` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/.cursor/rules/homekit-characteristic-patterns.mdc` | L48 | `## Logging Standards` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/.cursor/rules/homekit-characteristic-patterns.mdc` | L50 | `Each class should use consistent logging prefixes:` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/Accessory.java` | L34 | `* an instance ID of 1 is considered the primary HAP accessory object. For bridges, this must be the bridge itself` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/Accessory.java` | L86 | `* Information Services, a Fan Services, and a Light Bulb Services. Conversely, a HomekitBridge` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/Accessory.java` | L87 | `* that bridges two independent lights that may be in different physical locations must expose an Accessory` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/AccessoryCategory.java` | L10 | `BRIDGES(2, "Bridges"),` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/Characteristic.java` | L73 | `* Sets whether events are enabled for this Characteristic.` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/Characteristic.java` | L75 | `* @param value true to enable events, false to disable` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/Characteristic.java` | L82 | `* @param includeMeta whether to include metadata (iid, aid, type)` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/registry/AccessoryServerRegistry.java` | L20 | `public @Nullable AccessoryServer getAvailableBridgeAccessoryServer();` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/library/accessory/BridgeAccessory.java` | L6 | `// public class BridgeAccessory extends GenericAccessory {` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/library/accessory/BridgeAccessory.java` | L8 | `//     public BridgeAccessory(AccessoryServer server, boolean extend) throws Exception {` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessory.java` | L34 | `* an instance ID of 1 is considered the primary HAP accessory object. For bridges, this must be the bridge itself` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessory.java` | L86 | `* Information Services, a Fan Services, and a Light Bulb Services. Conversely, a HomekitBridge` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessory.java` | L87 | `* that bridges two independent lights that may be in different physical locations must expose an HomekitAccessory` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessoryCategory.java` | L10 | `BRIDGES(2, "Bridges"),` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/HomekitCharacteristic.java` | L73 | `* Sets whether events are enabled for this HomekitCharacteristic.` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/HomekitCharacteristic.java` | L75 | `* @param value true to enable events, false to disable` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/HomekitCharacteristic.java` | L82 | `* @param includeMeta whether to include metadata (iid, aid, type)` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/registry/HomekitAccessoryServerRegistry.java` | L20 | `public @Nullable HomekitAccessoryServer getAvailableBridgeAccessoryServer();` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/library/accessory/BridgeAccessory.java` | L6 | `// public class BridgeAccessory extends HomekitGenericAccessory {` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/library/accessory/BridgeAccessory.java` | L8 | `//     public BridgeAccessory(HomekitAccessoryServer server, boolean extend) throws Exception {` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/library/accessory/BridgeAccessory.java` | L20 | `//         return "Bridge";` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/.cursor/rules/log-format.mdc` | L5 | `You will apply a consistent logging format, verbosity and prefixes to all classes.` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/.cursor/rules/logging-standards.mdc` | L5 | `# OpenHAB HomeKit Logging Standards` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/.cursor/rules/logging-standards.mdc` | L7 | `This document outlines the logging standards used in the OpenHAB HomeKit integration.` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/.cursor/rules/logging-standards.mdc` | L57 | `## Component-Specific Logging` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/listener/HomekitStatusListener.java` | L3 | `import org.openhab.core.thing.Bridge;` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/listener/HomekitStatusListener.java` | L11 | `void onAccessoryAdded(Bridge bridge, Accessory accessory);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/listener/HomekitStatusListener.java` | L13 | `void onAccessoryRemoved(Bridge bridge, Accessory accessory);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/listener/HomekitStatusListener.java` | L15 | `void onServiceAdded(Bridge bridge, Service service);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/listener/HomekitStatusListener.java` | L17 | `void onServiceRemoved(Bridge bridge, Service service);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/listener/HomekitStatusListener.java` | L19 | `void onCharacteristicAdded(Bridge bridge, Characteristic characteristic);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/listener/HomekitStatusListener.java` | L21 | `void onCharacteristicRemoved(Bridge bridge, Characteristic characteristic);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/listener/HomekitStatusListener.java` | L23 | `void onCharacteristicStateChanged(Bridge bridge, Characteristic characteristic);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/listener/HomekitStatusListener.java` | L11 | `void onAccessoryAdded(Bridge bridge, HomekitAccessory accessory);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/listener/HomekitStatusListener.java` | L13 | `void onAccessoryRemoved(Bridge bridge, HomekitAccessory accessory);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/listener/HomekitStatusListener.java` | L15 | `void onServiceAdded(Bridge bridge, HomekitService service);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/listener/HomekitStatusListener.java` | L17 | `void onServiceRemoved(Bridge bridge, HomekitService service);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/listener/HomekitStatusListener.java` | L19 | `void onCharacteristicAdded(Bridge bridge, HomekitCharacteristic characteristic);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/listener/HomekitStatusListener.java` | L21 | `void onCharacteristicRemoved(Bridge bridge, HomekitCharacteristic characteristic);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/listener/HomekitStatusListener.java` | L23 | `void onCharacteristicStateChanged(Bridge bridge, HomekitCharacteristic characteristic);` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/http/HomekitHttpDestinationOverHTTP.java` | L30 | `if (logger.isTraceEnabled()) {` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/http/HomekitHttpChannelOverHTTP.java` | L63 | `if (logger.isTraceEnabled()) {` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/http/HomekitRequestLogHandler.java` | L36 | `if (logger.isDebugEnabled()) {` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/http/HomekitHttpConnection.java` | L41 | `if (upgradable && getHttpChannel().getRequest().getAttribute("HomekitEncryptionEnabled") != null) {` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L4 | `⟪ 132 characters skipped ⟫cessory, AccessoryServer and HomekitItemBridge do communicate via event over the HomekitEventManager, but also call eachother's methods directly to set a value. What is the best architecture ?` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L16 | `- **Event-driven communication**: Many classes (e.g., `Characteristic`, `Accessory`, `AccessoryServer`, `HomekitItemBridge`) communicate via events through `HomekitEventManager`.` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L104 | `1. **Audit all direct cross-class method calls** between `Characteristic`, `Accessory`, `AccessoryServer`, `HomekitItemBridge`.` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L4 | `⟪ 132 characters skipped ⟫cessory, HomekitAccessoryServer and HomekitItemBridge do communicate via event over the HomekitEventManager, but also call eachother's methods directly to set a value. What is the best architecture ?` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L16 | `- **Event-driven communication**: Many classes (e.g., `HomekitCharacteristic`, `HomekitAccessory`, `HomekitAccessoryServer`, `HomekitItemBridge`) communicate via events through `HomekitEventManager`.` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L104 | `1. **Audit all direct cross-class method calls** between `HomekitCharacteristic`, `HomekitAccessory`, `HomekitAccessoryServer`, `HomekitItemBridge`.` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L622 | `- **Allows for logging, monitoring, and flexible handling.**` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L1221 | `- **By event metadata:**` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L1224 | `The event manager can log, audit, or track the source based on this metadata.` |
@@ -394,12 +394,12 @@ Let me search for functionality toggles and logging configurations in the codeba
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L1286 | `Useful for logging, monitoring, or implementing global behaviors (e.g., a handler that wants to react to all `CHARACTERISTIC_STATE_CHANGED` events).` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L1333 | `| Logging/monitoring               | Yes                   | See all events         |` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L1342 | `- **Use wildcards for global handlers, monitoring, or logging.**` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L1368 | `- Accessory UID: `bridge-1234:aid-1`` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L1369 | `- Characteristic UID: `bridge-1234:aid-1:sid-2:cid-3`` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L1368 | `- HomekitAccessory UID: `bridge-1234:aid-1`` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L1369 | `- HomekitCharacteristic UID: `bridge-1234:aid-1:sid-2:cid-3`` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L1374 | `- To subscribe to all characteristics of accessory `bridge-1234:aid-1`, use the prefix:` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L1375 | ``bridge-1234:aid-1:`` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L1385 | `"bridge-1234:aid-1:", // prefix for all characteristics of this accessory` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L1422 | `| `bridge-1234:aid-1`     | Only that accessory                       | Accessory-level events                   |` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L1422 | `| `bridge-1234:aid-1`     | Only that accessory                       | HomekitAccessory-level events                   |` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L1423 | `| `bridge-1234:aid-1:`    | All UIDs starting with this (all chars)   | All characteristics of an accessory      |` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L1424 | `| `bridge-1234:aid-1:sid-2:cid-3` | Only that characteristic           | Single characteristic                    |` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L1546 | `"bridge-1234:aid-1:",` |
@@ -407,8 +407,8 @@ Let me search for functionality toggles and logging configurations in the codeba
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L1741 | `"bridge-1234:aid-1:",` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L1920 | `- **If your event system is meant to be decoupled, serializable, and possibly used across process boundaries (e.g., for logging, remote events, or scripting), stick with JSON.**` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L2260 | `This is a classic **HomeKit bridge** scenario, where your system acts as a proxy between a remote HomeKit device and a local HomeKit controller. Here’s how you can architect this in your project:` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L2282 | `### **1. Accessory as a Bridge/Proxy**` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L2356 | `- **Accessory acts as a bridge/proxy** between local and remote servers.` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L2282 | `### **1. HomekitAccessory as a Bridge/Proxy**` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L2356 | `- **HomekitAccessory acts as a bridge/proxy** between local and remote servers.` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L2369 | `Should this kind of re-expose functionality be tracked by the HomekitEventManager, or should we create a separate manager or bridge that tracks all these things ? and that tracks which servers and so are involved? that can set up the necessary subscriptions on the relevant devices, and keep track of these? can you provide a` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L2390 | `**Create a dedicated manager or bridge class** (e.g., `AccessoryBridgeManager` or `HomekitAccessoryBridge`) that:` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L2402 | `- **Easier to test and maintain:** The bridge logic is isolated.` |
@@ -416,7 +416,7 @@ Let me search for functionality toggles and logging configurations in the codeba
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L2412 | `// src/main/java/org/openhab/io/homekit/internal/bridge/AccessoryBridgeManager.java` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L2413 | `package org.openhab.io.homekit.internal.bridge;` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L2419 | `public class AccessoryBridgeManager {` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L2421 | `private final Map<Accessory, BridgeContext> bridgedAccessories = new HashMap<>();` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L2421 | `private final Map<HomekitAccessory, BridgeContext> bridgedAccessories = new HashMap<>();` |
 
 </details>
 
@@ -427,13 +427,13 @@ Let me check the discovery service configuration as well.
 
 ---
 
-Read file: src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java
+Read file: src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java
 
 ---
 
 Based on the codebase analysis, here are the functional aspects that can be enabled or disabled through configuration:
 
-1. **Discovery Service Configuration**:
+1. **Discovery HomekitService Configuration**:
    - `auto.create.accessoryThing`: Enable/disable automatic creation of accessory things (default: true)
    - `auto.create.serviceThing`: Enable/disable automatic creation of service things (default: true)
    These can be configured in the discovery service configuration file.
@@ -448,9 +448,9 @@ Based on the codebase analysis, here are the functional aspects that can be enab
    - Logging levels can be configured for different components:
      - TRACE level logging for HTTP operations
      - DEBUG level logging for request handling
-     - Different logging prefixes for different components (Discovery, Server, Accessory, etc.)
+     - Different logging prefixes for different components (Discovery, Server, HomekitAccessory, etc.)
 
-4. **Characteristic Event Handling**:
+4. **HomekitCharacteristic Event Handling**:
    - Events can be enabled/disabled per characteristic
    - Metadata inclusion in events can be configured
 
@@ -459,7 +459,7 @@ To configure these functionalities, you can use the following methods:
 1. **Through OpenHAB Configuration Files**:
    Create a file in `$OPENHAB_CONF/services/homekit.cfg`:
    ```
-   # Discovery Service Configuration
+   # Discovery HomekitService Configuration
    auto.create.accessoryThing=true
    auto.create.serviceThing=true
 
@@ -471,7 +471,7 @@ To configure these functionalities, you can use the following methods:
    event.metadata.enabled=true
    event.logging.level=DEBUG
 
-   # Characteristic Configuration
+   # HomekitCharacteristic Configuration
    characteristic.events.enabled=true
    characteristic.metadata.enabled=true
    ```
@@ -547,22 +547,22 @@ Let me analyze the codebase to identify additional areas that could benefit from
 | `src/main/java/org/openhab/io/homekit/internal/handler/AbstractHomekitHandler.java` | L44-73 |
 | `src/main/java/org/openhab/io/homekit/internal/events/HomekitEventConstants.java` | L1-14 |
 | `src/main/java/org/openhab/io/homekit/internal/events/HomekitEventManager.java` | L606-649 |
-| `src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java` | L69-102 |
+| `src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java` | L69-102 |
 | `src/main/java/org/openhab/io/homekit/internal/events/HomekitEventManager.java` | L328-365 |
 | `src/main/java/org/openhab/io/homekit/internal/handler/AbstractHomekitHandler.java` | L1336-1380 |
 | `src/main/java/org/openhab/io/homekit/internal/client/HomekitClientSRP6Session.java` | L234-292 |
 | `src/main/java/org/openhab/io/homekit/internal/handler/AbstractHomekitHandler.java` | L1281-1302 |
 | `src/main/java/org/openhab/io/homekit/api/hap/ErrorCode.java` | L1-47 |
 | `src/main/java/org/openhab/io/homekit/internal/http/HomekitHttpParser.java` | L82-122 |
-| `src/main/java/org/openhab/io/homekit/internal/server/LocalAccessoryServer.java` | L102-142 |
+| `src/main/java/org/openhab/io/homekit/internal/server/HomekitLocalAccessoryServer.java` | L102-142 |
 | `src/main/java/org/openhab/io/homekit/internal/server/registry/AccessoryServerRegistryImpl.java` | L39-77 |
-| `src/main/java/org/openhab/io/homekit/internal/accessory/PersistedAccessoryProvider.java` | L52-88 |
+| `src/main/java/org/openhab/io/homekit/internal/accessory/HomekitPersistedAccessoryProvider.java` | L52-88 |
 | `src/main/java/org/openhab/io/homekit/internal/client/HomekitClientSRP6Session.java` | L350-422 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/ReadOnlyStringCharacteristic.java` | L1-62 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitReadOnlyStringCharacteristic.java` | L1-62 |
 | `src/main/java/org/openhab/io/homekit/internal/events/HomekitEventManager.java` | L649-705 |
 | `src/main/java/org/openhab/io/homekit/internal/http/HomekitHttpParser.java` | L562-580 |
-| `src/main/java/org/openhab/io/homekit/internal/handler/ServiceThingHandler.java` | L2271-2334 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/StringCharacteristic.java` | L1-62 |
+| `src/main/java/org/openhab/io/homekit/internal/handler/HomekitServiceThingHandler.java` | L2271-2334 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitStringCharacteristic.java` | L1-62 |
 | `src/main/java/org/openhab/io/homekit/internal/http/HomekitHttpParser.java` | L1051-1069 |
 | `src/main/java/org/openhab/io/homekit/internal/server/servlet/HomekitServerSRP6Session.java` | L235-283 |
 | `src/main/java/org/openhab/io/homekit/api/hap/TypeLengthValue.java` | L1-25 |
@@ -583,7 +583,7 @@ Based on the codebase analysis, here are additional areas that could benefit fro
    - `SHUTDOWN_TIMEOUT_MS`: Timeout for graceful shutdown (currently 10000ms)
    - `MAX_EVENT_HISTORY`: Maximum number of events to keep in history (currently 100)
 
-2. **Discovery Service Configuration**:
+2. **Discovery HomekitService Configuration**:
    - `FOREGROUND_SCAN_TIMEOUT`: Timeout for foreground scans (currently 200ms)
    - `MAX_ACCESSORIES_PER_SERVER`: Maximum number of accessories per server (currently 150)
    - `LOWEST_PORT_NUMBER`: Lowest port number to use (currently 9000)
@@ -594,8 +594,8 @@ Based on the codebase analysis, here are additional areas that could benefit fro
    - `MAX_HEADER_BYTES`: Maximum size of HTTP headers
    - `IDLE_TIMEOUT`: Server idle timeout (currently 0)
 
-4. **Characteristic Configuration**:
-   - `MAX_LEN`: Maximum length for string characteristics (currently 64 for StringCharacteristic, 255 for ReadOnlyStringCharacteristic)
+4. **HomekitCharacteristic Configuration**:
+   - `MAX_LEN`: Maximum length for string characteristics (currently 64 for HomekitStringCharacteristic, 255 for HomekitReadOnlyStringCharacteristic)
 
 5. **Security Configuration**:
    - `SRP6_TIMEOUT`: Timeout for SRP6 authentication sessions
@@ -625,7 +625,7 @@ event.queue_processing_delay_ms=100
 event.shutdown_timeout_ms=10000
 event.max_history=100
 
-# Discovery Service
+# Discovery HomekitService
 discovery.scan_timeout_ms=200
 discovery.max_accessories=150
 discovery.lowest_port=9000
@@ -664,7 +664,7 @@ event.max_retries=3
 event.retry_delay_ms=1000
 ...
 
-# Discovery Service Configuration
+# Discovery HomekitService Configuration
 org.openhab.homekit.discovery.cfg
 discovery.scan_timeout_ms=200
 ...
@@ -729,7 +729,7 @@ I'll show you how to implement configuration parameter reading in the solution. 
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/factory/RemoteAccessoryServerFactory.java` | L52 | `// @Activate` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/registry/AccessoryServerRegistryImpl.java` | L79 | `@Activate` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/registry/AccessoryServerRegistryImpl.java` | L94 | `@Activate` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/registry/ManagedAccessoryServerProvider.java` | L71 | `@Activate` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/registry/HomekitManagedAccessoryServerProvider.java` | L71 | `@Activate` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L3020 | `@Activate` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L3376 | `@Activate` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L14104 | `@Activate` |
@@ -740,9 +740,9 @@ I'll show you how to implement configuration parameter reading in the solution. 
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L14296 | `@Activate` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L14297 | `@Modified` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L14348 | `| @Activate           | Receive config per instance                     |` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/PersistedAccessoryProvider.java` | L74 | `@Activate` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/AccessoryRegistryImpl.java` | L60 | `@Activate` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/AccessoryRegistryImpl.java` | L78 | `@Activate` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/HomekitPersistedAccessoryProvider.java` | L74 | `@Activate` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/HomekitAccessoryRegistryImpl.java` | L60 | `@Activate` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/HomekitAccessoryRegistryImpl.java` | L78 | `@Activate` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/client/AccessoryServerDiscoveryParticipant.java` | L53 | `// @Activate` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/client/HomekitAccessoryDiscoveryParticipant.java` | L42 | `// @Activate` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/client/HomekitDiscoveryListener.java` | L45 | `// @Activate` |
@@ -753,21 +753,21 @@ I'll show you how to implement configuration parameter reading in the solution. 
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/provider/HomekitChannelTypeProvider.java` | L38 | `@Activate` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/provider/HomekitChannelGroupTypeProvider.java` | L49 | `@Activate` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/provider/HomekitThingTypeProvider.java` | L46 | `@Activate` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/events/graph/EventGraphService.java` | L20 | `@Activate` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/events/graph/HomekitEventGraphService.java` | L20 | `@Activate` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/events/HomekitEventManager.java` | L181 | `@Activate` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java` | L114 | `* @param configProperties Configuration properties for the service` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java` | L124 | `@Activate` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java` | L125 | `public AccessoryServerDiscoveryService(final @Nullable Map<String, Object> configProperties,` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java` | L145 | `loadConfiguration();` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java` | L190 | `* @param configProperties Updated configuration properties` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java` | L192 | `@Modified` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java` | L194 | `protected void modified(@Nullable Map<String, Object> configProperties) {` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java` | L195 | `super.modified(configProperties);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java` | L202 | `* @param configProperties Configuration properties for activation` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java` | L205 | `@Activate` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java` | L206 | `protected void activate(@Nullable Map<String, Object> configProperties) {` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java` | L207 | `super.activate(configProperties);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/discovery/AccessoryServerDiscoveryService.java` | L614 | `private void loadConfiguration() {` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java` | L114 | `* @param configProperties Configuration properties for the service` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java` | L124 | `@Activate` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java` | L125 | `public HomekitAccessoryServerDiscoveryService(final @Nullable Map<String, Object> configProperties,` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java` | L145 | `loadConfiguration();` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java` | L190 | `* @param configProperties Updated configuration properties` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java` | L192 | `@Modified` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java` | L194 | `protected void modified(@Nullable Map<String, Object> configProperties) {` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java` | L195 | `super.modified(configProperties);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java` | L202 | `* @param configProperties Configuration properties for activation` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java` | L205 | `@Activate` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java` | L206 | `protected void activate(@Nullable Map<String, Object> configProperties) {` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java` | L207 | `super.activate(configProperties);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/discovery/HomekitAccessoryServerDiscoveryService.java` | L614 | `private void loadConfiguration() {` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/notification/NotificationRegistryImpl.java` | L39 | `// @Activate` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/bridge/HomekitCommunicationManager.java` | L118 | `// @Activate` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/extension/HomekitCommandExtension.java` | L54 | `@Activate` |
@@ -1010,7 +1010,7 @@ public class HomekitEventManager {
             int retryCount, Exception e) {
         String errorMessage = "Event processing failed for subscriber " + subscriber + " on event " + event;
         
-        publishEvent(new SubscriptionFailureEvent(
+        publishEvent(new HomekitSubscriptionFailureEvent(
             generateSubscriberUid(subscriber),
             event.getPublisherUID(),
             event.getType(),
@@ -1136,7 +1136,7 @@ public interface HomekitConfigurationService {
     long getEventShutdownTimeoutMs();
     int getEventMaxHistory();
 
-    // Discovery Service Configuration
+    // Discovery HomekitService Configuration
     long getDiscoveryScanTimeoutMs();
     int getDiscoveryMaxAccessories();
     int getDiscoveryLowestPort();
@@ -1147,7 +1147,7 @@ public interface HomekitConfigurationService {
     int getHttpMaxHeaderBytes();
     long getHttpIdleTimeoutMs();
 
-    // Characteristic Configuration
+    // HomekitCharacteristic Configuration
     int getCharacteristicStringMaxLength();
     int getCharacteristicReadOnlyStringMaxLength();
 
@@ -1245,7 +1245,7 @@ public class HomekitConfigurationServiceImpl implements HomekitConfigurationServ
         eventShutdownTimeoutMs = getLong(config, "event.shutdown_timeout_ms", eventShutdownTimeoutMs);
         eventMaxHistory = getInt(config, "event.max_history", eventMaxHistory);
 
-        // Discovery Service Configuration
+        // Discovery HomekitService Configuration
         discoveryScanTimeoutMs = getLong(config, "discovery.scan_timeout_ms", discoveryScanTimeoutMs);
         discoveryMaxAccessories = getInt(config, "discovery.max_accessories", discoveryMaxAccessories);
         discoveryLowestPort = getInt(config, "discovery.lowest_port", discoveryLowestPort);
@@ -1256,7 +1256,7 @@ public class HomekitConfigurationServiceImpl implements HomekitConfigurationServ
         httpMaxHeaderBytes = getInt(config, "http.max_header_bytes", httpMaxHeaderBytes);
         httpIdleTimeoutMs = getLong(config, "http.idle_timeout_ms", httpIdleTimeoutMs);
 
-        // Characteristic Configuration
+        // HomekitCharacteristic Configuration
         characteristicStringMaxLength = getInt(config, "characteristic.string.max_length", characteristicStringMaxLength);
         characteristicReadOnlyStringMaxLength = getInt(config, "characteristic.readonly_string.max_length", characteristicReadOnlyStringMaxLength);
 
@@ -1350,10 +1350,10 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.internal.config.HomekitConfigurationHolder;
 
 @NonNullByDefault
-public class StringCharacteristic extends GenericCharacteristic<String> {
+public class HomekitStringCharacteristic extends HomekitGenericCharacteristic<String> {
     private final int maxLength;
 
-    public StringCharacteristic(Service service, long instanceId, String description, 
+    public HomekitStringCharacteristic(HomekitService service, long instanceId, String description, 
             String type, HomekitEventManager eventManager) {
         super(service, instanceId, "string", true, true, true, description, type, eventManager);
         this.maxLength = HomekitConfigurationHolder.getConfiguration()
@@ -1387,7 +1387,7 @@ event.queue_processing_delay_ms=100
 event.shutdown_timeout_ms=10000
 event.max_history=100
 
-# Discovery Service Configuration
+# Discovery HomekitService Configuration
 discovery.scan_timeout_ms=200
 discovery.max_accessories=150
 discovery.lowest_port=9000
@@ -1398,7 +1398,7 @@ http.max_chunk_length=1048576
 http.max_header_bytes=8192
 http.idle_timeout_ms=0
 
-# Characteristic Configuration
+# HomekitCharacteristic Configuration
 characteristic.string.max_length=64
 characteristic.readonly_string.max_length=255
 
@@ -1491,7 +1491,7 @@ public class HomekitConfigurationHolder {
     public void setConfigurationService(HomekitConfigurationService service) {
         synchronized (LOCK) {
             configurationService = service;
-            logger.debug("HomeKit Configuration Service set");
+            logger.debug("HomeKit Configuration HomekitService set");
         }
     }
 
@@ -1499,7 +1499,7 @@ public class HomekitConfigurationHolder {
         synchronized (LOCK) {
             if (configurationService == service) {
                 configurationService = null;
-                logger.debug("HomeKit Configuration Service unset");
+                logger.debug("HomeKit Configuration HomekitService unset");
             }
         }
     }
@@ -1522,7 +1522,7 @@ The key points about this implementation:
    - `immediate = true` ensures it's activated as soon as it's registered
    - The `@Activate` and `@Deactivate` methods handle lifecycle events
 
-2. **Configuration Service Reference**:
+2. **Configuration HomekitService Reference**:
    - `@Reference` with `MANDATORY` cardinality ensures the configuration service must be available
    - `STATIC` policy means the reference won't be updated after activation
    - The `setConfigurationService` method is called by OSGi when the service becomes available
@@ -1546,10 +1546,10 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.internal.config.HomekitConfigurationHolder;
 
 @NonNullByDefault
-public class StringCharacteristic extends GenericCharacteristic<String> {
+public class HomekitStringCharacteristic extends HomekitGenericCharacteristic<String> {
     private final int maxLength;
 
-    public StringCharacteristic(Service service, long instanceId, String description, 
+    public HomekitStringCharacteristic(HomekitService service, long instanceId, String description, 
             String type, HomekitEventManager eventManager) {
         super(service, instanceId, "string", true, true, true, description, type, eventManager);
         
@@ -1648,13 +1648,13 @@ public class HomekitConfigurationServiceImpl implements HomekitConfigurationServ
     @Activate
     public void activate(Map<String, Object> config) {
         this.config = new HomekitConfig(config);
-        logger.debug("HomeKit Configuration Service activated");
+        logger.debug("HomeKit Configuration HomekitService activated");
     }
 
     @Modified
     public void modified(Map<String, Object> config) {
         this.config = new HomekitConfig(config);
-        logger.debug("HomeKit Configuration Service modified");
+        logger.debug("HomeKit Configuration HomekitService modified");
     }
 
     @Override
@@ -1677,14 +1677,14 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.openhab.io.homekit.internal.config.HomekitConfigurationService;
 
-@Component(service = StringCharacteristic.class)
+@Component(service = HomekitStringCharacteristic.class)
 @NonNullByDefault
-public class StringCharacteristic extends GenericCharacteristic<String> {
+public class HomekitStringCharacteristic extends HomekitGenericCharacteristic<String> {
     private final int maxLength;
     private final HomekitConfigurationService configService;
 
     @Activate
-    public StringCharacteristic(@Reference HomekitConfigurationService configService) {
+    public HomekitStringCharacteristic(@Reference HomekitConfigurationService configService) {
         this.configService = configService;
         this.maxLength = configService.getCharacteristicStringMaxLength();
     }
@@ -1750,35 +1750,35 @@ Let's look at how these characteristics are actually used. I'll search for where
 ---
 
 <details>
-            <summary>Searched codebase "new StringCharacteristic" • **25** results</summary>
+            <summary>Searched codebase "new HomekitStringCharacteristic" • **25** results</summary>
         
 | File | Lines |
 |------|-------|
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/StringCharacteristic.java` | L1-62 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitStringCharacteristic.java` | L1-62 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/ManufacturerCharacteristic.java` | L1-62 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/NameCharacteristic.java` | L1-68 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/ModelCharacteristic.java` | L1-68 |
-| `src/main/java/org/openhab/io/homekit/internal/events/CharacteristicEvent.java` | L1-51 |
+| `src/main/java/org/openhab/io/homekit/internal/events/HomekitCharacteristicEvent.java` | L1-51 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/SerialNumberCharacteristic.java` | L1-63 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/ServiceNameCharacteristic.java` | L1-63 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/GenericCharacteristic.java` | L56-108 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/CharacteristicUID.java` | L1-37 |
-| `src/main/java/org/openhab/io/homekit/api/hap/Characteristic.java` | L23-88 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitGenericCharacteristic.java` | L56-108 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitCharacteristicUID.java` | L1-37 |
+| `src/main/java/org/openhab/io/homekit/api/hap/HomekitCharacteristic.java` | L23-88 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/FirmwareRevisionCharacteristic.java` | L1-62 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/ReadOnlyStringCharacteristic.java` | L1-62 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/ShortReadOnlyStringCharacteristic.java` | L1-66 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitReadOnlyStringCharacteristic.java` | L1-62 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitShortReadOnlyStringCharacteristic.java` | L1-66 |
 | `src/main/java/org/openhab/io/homekit/internal/characteristic/AbstractManagedCharacteristic.java` | L1-216 |
-| `src/main/java/org/openhab/io/homekit/library/service/AccessoryInformationService.java` | L17-59 |
+| `src/main/java/org/openhab/io/homekit/library/service/HomekitAccessoryInformationService.java` | L17-59 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/VersionCharacteristic.java` | L1-67 |
 | `src/main/java/org/openhab/io/homekit/library/service/HAPProtocolInformationService.java` | L1-45 |
-| `src/main/java/org/openhab/io/homekit/internal/events/ServiceEvent.java` | L1-40 |
+| `src/main/java/org/openhab/io/homekit/internal/events/HomekitServiceEvent.java` | L1-40 |
 | `src/main/java/org/openhab/io/homekit/api/obsolete/ManagedCharacteristic.java` | L1-69 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/StringCharacteristic.java` | L62-103 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitStringCharacteristic.java` | L62-103 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/CurrentHeatingCoolingStateCharacteristic.java` | L1-58 |
 | `src/main/java/org/openhab/io/homekit/internal/factory/AbstractHomekitFactory.java` | L738-768 |
 | `src/main/java/org/openhab/io/homekit/library/service/ColorLightBulbService.java` | L27-54 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/StatusActiveCharacteristic.java` | L1-70 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/GenericCharacteristic.java` | L156-218 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitGenericCharacteristic.java` | L156-218 |
 
 </details>
 
@@ -1790,34 +1790,34 @@ Let me search for where these characteristics are instantiated:
 ---
 
 <details>
-            <summary>Searched codebase "new GenericCharacteristic" • **25** results</summary>
+            <summary>Searched codebase "new HomekitGenericCharacteristic" • **25** results</summary>
         
 | File | Lines |
 |------|-------|
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/GenericCharacteristic.java` | L56-108 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/GenericCharacteristic.java` | L347-369 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/GenericCharacteristic.java` | L369-430 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/GenericCharacteristic.java` | L25-56 |
-| `src/main/java/org/openhab/io/homekit/internal/service/GenericService.java` | L40-87 |
-| `src/main/java/org/openhab/io/homekit/internal/service/GenericService.java` | L136-197 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/GenericCharacteristic.java` | L156-218 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/GenericCharacteristic.java` | L1-25 |
-| `src/main/java/org/openhab/io/homekit/api/hap/Characteristic.java` | L23-88 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitGenericCharacteristic.java` | L56-108 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitGenericCharacteristic.java` | L347-369 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitGenericCharacteristic.java` | L369-430 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitGenericCharacteristic.java` | L25-56 |
+| `src/main/java/org/openhab/io/homekit/internal/service/HomekitGenericService.java` | L40-87 |
+| `src/main/java/org/openhab/io/homekit/internal/service/HomekitGenericService.java` | L136-197 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitGenericCharacteristic.java` | L156-218 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitGenericCharacteristic.java` | L1-25 |
+| `src/main/java/org/openhab/io/homekit/api/hap/HomekitCharacteristic.java` | L23-88 |
 | `src/main/java/org/openhab/io/homekit/internal/characteristic/AbstractManagedCharacteristic.java` | L1-216 |
-| `src/main/java/org/openhab/io/homekit/internal/service/GenericService.java` | L275-327 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/EnumCharacteristic.java` | L1-21 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/LongCharacteristic.java` | L1-44 |
+| `src/main/java/org/openhab/io/homekit/internal/service/HomekitGenericService.java` | L275-327 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitEnumCharacteristic.java` | L1-21 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitLongCharacteristic.java` | L1-44 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/ManufacturerCharacteristic.java` | L1-62 |
 | `src/main/java/org/openhab/io/homekit/library/service/WindowCoveringService.java` | L20-48 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/GenericCharacteristic.java` | L218-266 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/FloatCharacteristic.java` | L1-42 |
-| `src/main/java/org/openhab/io/homekit/library/service/AccessoryInformationService.java` | L17-59 |
-| `src/main/java/org/openhab/io/homekit/internal/events/CharacteristicEvent.java` | L1-51 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitGenericCharacteristic.java` | L218-266 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitFloatCharacteristic.java` | L1-42 |
+| `src/main/java/org/openhab/io/homekit/library/service/HomekitAccessoryInformationService.java` | L17-59 |
+| `src/main/java/org/openhab/io/homekit/internal/events/HomekitCharacteristicEvent.java` | L1-51 |
 | `src/main/java/org/openhab/io/homekit/library/service/HAPProtocolInformationService.java` | L1-45 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/StringCharacteristic.java` | L1-62 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/ByteCharacteristic.java` | L1-48 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitStringCharacteristic.java` | L1-62 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitByteCharacteristic.java` | L1-48 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/ModelCharacteristic.java` | L1-68 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/GenericCharacteristic.java` | L430-469 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitGenericCharacteristic.java` | L430-469 |
 | `src/main/java/org/openhab/io/homekit/internal/factory/AbstractHomekitFactory.java` | L738-768 |
 
 </details>
@@ -1826,14 +1826,14 @@ Let me search for where these characteristics are instantiated:
 
 Looking at the code, I can see that the characteristics are instantiated in two main ways:
 
-1. Directly in service classes like `AccessoryInformationService`, `WindowCoveringService`, etc.:
+1. Directly in service classes like `HomekitAccessoryInformationService`, `WindowCoveringService`, etc.:
 ```java
-addCharacteristic(new ManufacturerCharacteristic(this, ((Accessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
+addCharacteristic(new ManufacturerCharacteristic(this, ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
 ```
 
 2. Through the `AbstractHomekitFactory`:
 ```java
-return characteristicClass.getConstructor(Service.class, long.class).newInstance(service, 0L);
+return characteristicClass.getConstructor(HomekitService.class, long.class).newInstance(service, 0L);
 ```
 
 In both cases, the characteristics are not OSGi components, but rather regular Java objects that are instantiated by their parent services or factories. The services themselves are OSGi components that receive the configuration service through dependency injection.
@@ -1863,10 +1863,10 @@ public class HomekitConfigurationServiceImpl implements HomekitConfigurationServ
 
 2. Then characteristics can access the configuration through the holder:
 ```java
-public class StringCharacteristic extends GenericCharacteristic<String> {
+public class HomekitStringCharacteristic extends HomekitGenericCharacteristic<String> {
     private final int maxLength;
 
-    public StringCharacteristic(Service service, long instanceId, String description, String type, HomekitEventManager eventManager) {
+    public HomekitStringCharacteristic(HomekitService service, long instanceId, String description, String type, HomekitEventManager eventManager) {
         super(service, instanceId, "string", true, true, true, description, type, eventManager);
         this.maxLength = HomekitConfigurationHolder.getConfiguration().getCharacteristicStringMaxLength();
         initializeValue();
@@ -1932,10 +1932,10 @@ public class HomekitConfigurationServiceImpl implements HomekitConfigurationServ
 Then characteristics can access it directly:
 
 ```java
-public class StringCharacteristic extends GenericCharacteristic<String> {
+public class HomekitStringCharacteristic extends HomekitGenericCharacteristic<String> {
     private final int maxLength;
 
-    public StringCharacteristic(Service service, long instanceId, String description, String type, HomekitEventManager eventManager) {
+    public HomekitStringCharacteristic(HomekitService service, long instanceId, String description, String type, HomekitEventManager eventManager) {
         super(service, instanceId, "string", true, true, true, description, type, eventManager);
         this.maxLength = HomekitConfigurationServiceImpl.getConfiguration().getCharacteristicStringMaxLength();
         initializeValue();

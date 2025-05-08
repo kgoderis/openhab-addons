@@ -71,4 +71,4 @@ public class HomekitUID extends UID {
     protected int getMinimalNumberOfSegments() {
         return 3; // homekit:prefix:uuid
     }
-} 
+}

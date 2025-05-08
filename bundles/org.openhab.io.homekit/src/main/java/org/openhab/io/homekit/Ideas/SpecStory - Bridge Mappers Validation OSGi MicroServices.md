@@ -2,7 +2,7 @@
 
 _**User**_
 
-Imagine I want to expose all the openHAB Things to Homekit. One way to do it is to create a HomekitThingBridge that will listen for new Things being exposed, then create subscriptions / publications to/from a LocalAccessoryServer. How would you tackle the configuration? Alternatively, you can imagine a ProxyThing Thing class that belongs to the Homekit binding, that in essence takes a Homekit Service and regular Thing UID as configuration parameter. A ProxyThingHandler would then liase between openHAB's event bus, and a LocalAccessoryServer. Would you offload communication to this new HomekitThingBridge? if so, how? how would you configure ProxyThing in the DSL .things configuration files? what about wildcards to select all Things of a given kind in one batch. How would this HomekitThingBridge look like? provide sample code for all ideas. Do you see another architecture to bridge between regular openHAB Things and Hoemkit Accessories ? 
+Imagine I want to expose all the openHAB Things to Homekit. One way to do it is to create a HomekitThingBridge that will listen for new Things being exposed, then create subscriptions / publications to/from a HomekitLocalAccessoryServer. How would you tackle the configuration? Alternatively, you can imagine a ProxyThing Thing class that belongs to the Homekit binding, that in essence takes a Homekit HomekitService and regular Thing UID as configuration parameter. A ProxyThingHandler would then liase between openHAB's event bus, and a HomekitLocalAccessoryServer. Would you offload communication to this new HomekitThingBridge? if so, how? how would you configure ProxyThing in the DSL .things configuration files? what about wildcards to select all Things of a given kind in one batch. How would this HomekitThingBridge look like? provide sample code for all ideas. Do you see another architecture to bridge between regular openHAB Things and Hoemkit Accessories ? 
 
 ---
 
@@ -17,7 +17,7 @@ This is a great architectural question and touches on several advanced openHAB a
 ### **Concept**
 - A `HomekitThingBridge` acts as a central manager.
 - It listens for new openHAB Things (via the ThingRegistry or events).
-- For each eligible Thing, it creates a HomeKit Accessory (via a `LocalAccessoryServer`).
+- For each eligible Thing, it creates a HomeKit HomekitAccessory (via a `HomekitLocalAccessoryServer`).
 - Handles subscriptions/publications between openHAB and HomeKit.
 
 ### **Configuration**
@@ -32,7 +32,7 @@ This is a great architectural question and touches on several advanced openHAB a
 ### **Sample Bridge Handler Skeleton**
 ```java
 public class HomekitThingBridgeHandler extends BaseBridgeHandler {
-    private LocalAccessoryServer accessoryServer;
+    private HomekitLocalAccessoryServer accessoryServer;
 
     @Override
     public void initialize() {
@@ -84,7 +84,7 @@ public class HomekitThingBridgeHandler extends BaseBridgeHandler {
 - Each openHAB Thing you want to expose to HomeKit is paired with a `ProxyThing` (a new Thing type in the HomeKit binding).
 - The `ProxyThing` is configured with:
     - The UID of the real Thing to proxy.
-    - The HomeKit Service type to expose.
+    - The HomeKit HomekitService type to expose.
 
 ### **Configuration Example**
 In `.things`:
@@ -98,7 +98,7 @@ Thing homekit:proxything:mySensor [ thingUID="mqtt:topic:mysensor", serviceType=
 public class ProxyThingHandler extends BaseThingHandler {
     private ThingUID targetThingUID;
     private String serviceType;
-    private LocalAccessoryServer accessoryServer;
+    private HomekitLocalAccessoryServer accessoryServer;
 
     @Override
     public void initialize() {
@@ -148,7 +148,7 @@ public class ProxyThingHandler extends BaseThingHandler {
 - **If using ProxyThings:**  
   The `ProxyThingHandler` could delegate all HomeKit communication to the `HomekitThingBridge` (if present), e.g.:
     - The handler registers itself with the bridge.
-    - The bridge manages the `LocalAccessoryServer` and event routing.
+    - The bridge manages the `HomekitLocalAccessoryServer` and event routing.
     - This allows for shared resources and avoids duplicate servers.
 
 - **Sample Delegation:**
@@ -199,7 +199,7 @@ Thing homekit:proxything:allLights [ thingUID="zwave:*", serviceType="Lightbulb"
 **Skeleton:**
 ```java
 public class HomekitThingBridgeHandler extends BaseBridgeHandler {
-    private LocalAccessoryServer accessoryServer;
+    private HomekitLocalAccessoryServer accessoryServer;
     private Map<ThingUID, HomekitAccessory> accessories = new HashMap<>();
 
     @Override
@@ -322,7 +322,7 @@ Thing mqtt:topic:mysensor "My Sensor" @ "Living Room" [ ... ]
 
 ## Summary Table
 
-| Method         | Supported in .things? | Notes                                      |
+| HomekitMethod         | Supported in .things? | Notes                                      |
 |----------------|----------------------|---------------------------------------------|
 | `tags` field   | ❌                   | Not supported in .things files              |
 | Custom config  | ✅                   | Use custom config params as pseudo-tags     |
@@ -403,7 +403,7 @@ This is a safe and common pattern for extending openHAB configuration in a backw
 
 _**User**_
 
-in case of metadata tagging, how would you pass a Service definition to it ? And how would you map Thing Channels onto Homekit Characteristics ? 
+in case of metadata tagging, how would you pass a HomekitService definition to it ? And how would you map Thing Channels onto Homekit Characteristics ? 
 
 ---
 
@@ -413,9 +413,9 @@ Excellent questions! Here’s how you can approach both:
 
 ---
 
-## 1. **Passing a Service Definition via Metadata**
+## 1. **Passing a HomekitService Definition via Metadata**
 
-Since openHAB metadata is key-value based, you can use a structured value (e.g., JSON or a simple string) to define the HomeKit Service you want to expose for a Thing.
+Since openHAB metadata is key-value based, you can use a structured value (e.g., JSON or a simple string) to define the HomeKit HomekitService you want to expose for a Thing.
 
 **Example using openHAB MainUI or REST API:**
 ```yaml
@@ -520,7 +520,7 @@ If you want to map all channels of a certain type:
 
 ## **Summary**
 
-- **Service definition** can be passed as a JSON object in metadata or as custom config parameters.
+- **HomekitService definition** can be passed as a JSON object in metadata or as custom config parameters.
 - **Channel-to-characteristic mapping** is defined in the same structure.
 - Your binding or rule reads this mapping and synchronizes state between openHAB and HomeKit.
 
@@ -590,9 +590,9 @@ Thing homekit:proxything:myLight "HomeKit Light" [ thingUID="zwave:node3", servi
 
 ## 2. **How Does Proxying Work?**
 
-### **A. From openHAB Channel to HomeKit Characteristic**
+### **A. From openHAB Channel to HomeKit HomekitCharacteristic**
 - When the *target* Thing’s channel changes (e.g., via a command or state update), the ProxyThingHandler listens for this event (using the event bus or channel linking).
-- The handler updates the corresponding HomeKit characteristic via the LocalAccessoryServer.
+- The handler updates the corresponding HomeKit characteristic via the HomekitLocalAccessoryServer.
 
 **Pseudocode:**
 ```java
@@ -602,7 +602,7 @@ eventPublisher.subscribe(targetThingUID, mappedChannel, (event) -> {
 });
 ```
 
-### **B. From HomeKit Characteristic to openHAB Channel**
+### **B. From HomeKit HomekitCharacteristic to openHAB Channel**
 - When HomeKit sends a command (e.g., user toggles a light in the Home app), the ProxyThingHandler receives the update.
 - The handler sends a command to the mapped openHAB channel of the target Thing.
 
@@ -705,21 +705,21 @@ If you want a full working example (XML, handler, and config), just ask!
 
 _**User**_
 
-Should the proxying not go over Accessory, Service and Characteristic, instead of directly between the ProxythingHandler and a LocalAccessoryServer ? e.g. should we not create an Accessory to match the ProxyThing instead, and do similar as what we doe with the ServiceThingHandler and AccessoryThingHandler ? 
+Should the proxying not go over HomekitAccessory, HomekitService and HomekitCharacteristic, instead of directly between the ProxythingHandler and a HomekitLocalAccessoryServer ? e.g. should we not create an HomekitAccessory to match the ProxyThing instead, and do similar as what we doe with the HomekitServiceThingHandler and HomekitAccessoryThingHandler ? 
 
 ---
 
 _**Assistant**_
 
 **Excellent insight!**  
-Yes, for a robust, extensible, and idiomatic HomeKit/openHAB integration, **the proxying should indeed go through the Accessory, Service, and Characteristic abstraction layers**—not directly between the `ProxyThingHandler` and the `LocalAccessoryServer`.
+Yes, for a robust, extensible, and idiomatic HomeKit/openHAB integration, **the proxying should indeed go through the HomekitAccessory, HomekitService, and HomekitCharacteristic abstraction layers**—not directly between the `ProxyThingHandler` and the `HomekitLocalAccessoryServer`.
 
 ---
 
-## **Why Use Accessory/Service/Characteristic Abstractions?**
+## **Why Use HomekitAccessory/HomekitService/HomekitCharacteristic Abstractions?**
 
 - **Encapsulation:**  
-  HomeKit’s model is hierarchical: Accessory → Service(s) → Characteristic(s).  
+  HomeKit’s model is hierarchical: HomekitAccessory → HomekitService(s) → HomekitCharacteristic(s).  
   openHAB’s model is: Thing → Channel(s).  
   Mapping these via the abstraction layers keeps the code clean and maintainable.
 
@@ -727,7 +727,7 @@ Yes, for a robust, extensible, and idiomatic HomeKit/openHAB integration, **the 
   New HomeKit services/characteristics or openHAB channel types can be added without rewriting the proxy logic.
 
 - **Consistency:**  
-  This matches how other HomeKit bindings (and openHAB’s own architecture) work, e.g., `ServiceThingHandler`, `AccessoryThingHandler`.
+  This matches how other HomeKit bindings (and openHAB’s own architecture) work, e.g., `HomekitServiceThingHandler`, `HomekitAccessoryThingHandler`.
 
 - **Event Routing:**  
   The abstraction layers can handle event subscriptions, state updates, and command routing in a uniform way.
@@ -737,18 +737,18 @@ Yes, for a robust, extensible, and idiomatic HomeKit/openHAB integration, **the 
 ## **How Should It Work?**
 
 ### **1. For Each ProxyThing:**
-- Create a corresponding **Accessory** object.
-- Add one or more **Service** objects to the Accessory, based on the HomeKit service type(s) you want to expose.
-- For each Service, add **Characteristic** objects, mapping each to a specific openHAB channel (as per config/metadata).
+- Create a corresponding **HomekitAccessory** object.
+- Add one or more **HomekitService** objects to the HomekitAccessory, based on the HomeKit service type(s) you want to expose.
+- For each HomekitService, add **HomekitCharacteristic** objects, mapping each to a specific openHAB channel (as per config/metadata).
 
 ### **2. Event Flow:**
-- **openHAB Channel → Characteristic:**  
-  When the openHAB channel state changes, update the corresponding HomeKit Characteristic.
-- **Characteristic → openHAB Channel:**  
-  When HomeKit writes to a Characteristic, send a command to the mapped openHAB channel.
+- **openHAB Channel → HomekitCharacteristic:**  
+  When the openHAB channel state changes, update the corresponding HomeKit HomekitCharacteristic.
+- **HomekitCharacteristic → openHAB Channel:**  
+  When HomeKit writes to a HomekitCharacteristic, send a command to the mapped openHAB channel.
 
 ### **3. Registration:**
-- The Accessory is registered with the `LocalAccessoryServer` (or whatever HomeKit server implementation you use).
+- The HomekitAccessory is registered with the `HomekitLocalAccessoryServer` (or whatever HomeKit server implementation you use).
 
 ---
 
@@ -757,13 +757,13 @@ Yes, for a robust, extensible, and idiomatic HomeKit/openHAB integration, **the 
 ```plaintext
 ProxyThingHandler
    |
-   |-- creates Accessory (e.g., HomekitProxyAccessory)
+   |-- creates HomekitAccessory (e.g., HomekitProxyAccessory)
          |
-         |-- adds Service(s) (e.g., LightbulbService)
+         |-- adds HomekitService(s) (e.g., LightbulbService)
                |
-               |-- adds Characteristic(s) (e.g., OnCharacteristic, BrightnessCharacteristic)
+               |-- adds HomekitCharacteristic(s) (e.g., OnCharacteristic, BrightnessCharacteristic)
                      |
-                     |-- each Characteristic is mapped to a Thing Channel
+                     |-- each HomekitCharacteristic is mapped to a Thing Channel
 ```
 
 ---
@@ -780,10 +780,10 @@ public class ProxyThingHandler extends BaseThingHandler {
         String serviceType = getConfig().get("serviceType");
         Map<String, String> channelMap = ...; // e.g., "On" -> "switch_binary"
 
-        // Create Accessory
+        // Create HomekitAccessory
         accessory = new HomekitProxyAccessory(getThing().getUID(), getThing().getLabel());
 
-        // Create Service
+        // Create HomekitService
         HomekitService service = HomekitServiceFactory.create(serviceType);
 
         // For each characteristic, map to channel
@@ -807,7 +807,7 @@ public class ProxyThingHandler extends BaseThingHandler {
 
         accessory.addService(service);
 
-        // Register with LocalAccessoryServer
+        // Register with HomekitLocalAccessoryServer
         localAccessoryServer.addAccessory(accessory);
     }
 }
@@ -820,15 +820,15 @@ public class ProxyThingHandler extends BaseThingHandler {
 | Approach                        | Pros                                         | Cons                        |
 |----------------------------------|----------------------------------------------|-----------------------------|
 | Direct ProxyThingHandler → Server| Simple, quick to implement                   | Harder to extend, not idiomatic, bypasses HomeKit model |
-| Via Accessory/Service/Characteristic | Clean, extensible, matches HomeKit/openHAB model | Slightly more boilerplate   |
+| Via HomekitAccessory/HomekitService/HomekitCharacteristic | Clean, extensible, matches HomeKit/openHAB model | Slightly more boilerplate   |
 
 ---
 
 ## **Summary**
 
-- **Yes, you should create an Accessory for each ProxyThing, and build up Services and Characteristics as per the HomeKit model.**
-- This is the same pattern as `ServiceThingHandler` and `AccessoryThingHandler`.
-- The mapping between openHAB channels and HomeKit characteristics should be handled at the Characteristic level, not by bypassing the abstraction.
+- **Yes, you should create an HomekitAccessory for each ProxyThing, and build up Services and Characteristics as per the HomeKit model.**
+- This is the same pattern as `HomekitServiceThingHandler` and `HomekitAccessoryThingHandler`.
+- The mapping between openHAB channels and HomeKit characteristics should be handled at the HomekitCharacteristic level, not by bypassing the abstraction.
 
 ---
 
@@ -838,7 +838,7 @@ public class ProxyThingHandler extends BaseThingHandler {
 
 _**User**_
 
-In case of ProxyThing, when a Service is defined, check need to be made that the defined Thing Channels correspond with the Characteristics of the Service. Also, Homekit Service have mandatory Characteristics. How to deal with that? What to do if a mandatory Characteristic is not mapped by a Thing Channel? Will it continue to operate ? 
+In case of ProxyThing, when a HomekitService is defined, check need to be made that the defined Thing Channels correspond with the Characteristics of the HomekitService. Also, Homekit HomekitService have mandatory Characteristics. How to deal with that? What to do if a mandatory HomekitCharacteristic is not mapped by a Thing Channel? Will it continue to operate ? 
 
 ---
 
@@ -848,21 +848,21 @@ This is a crucial design and user experience question for a HomeKit ProxyThing i
 
 ---
 
-## 1. **Validation: Thing Channels vs. HomeKit Service Characteristics**
+## 1. **Validation: Thing Channels vs. HomeKit HomekitService Characteristics**
 
-When a user configures a ProxyThing to expose a HomeKit Service, you must ensure:
-- All **mandatory HomeKit Characteristics** for that Service are mapped to openHAB channels.
+When a user configures a ProxyThing to expose a HomeKit HomekitService, you must ensure:
+- All **mandatory HomeKit Characteristics** for that HomekitService are mapped to openHAB channels.
 - The mapped channels exist on the target Thing.
 
 ### **How to Validate**
 - When initializing the ProxyThingHandler:
-  1. **Look up the HomeKit Service definition** (e.g., Lightbulb, ContactSensor) and get its list of mandatory characteristics.
+  1. **Look up the HomeKit HomekitService definition** (e.g., Lightbulb, ContactSensor) and get its list of mandatory characteristics.
   2. **Check the ProxyThing’s config/metadata** for mappings for each mandatory characteristic.
   3. **Check that the mapped channel exists** on the target Thing.
 
 ---
 
-## 2. **What if a Mandatory Characteristic is Not Mapped?**
+## 2. **What if a Mandatory HomekitCharacteristic is Not Mapped?**
 
 ### **Best Practice: Fail Fast and Informative**
 - **Do NOT allow the ProxyThing to initialize successfully.**
@@ -884,7 +884,7 @@ When a user configures a ProxyThing to expose a HomeKit Service, you must ensure
 
 ---
 
-## 4. **What if an Optional Characteristic is Not Mapped?**
+## 4. **What if an Optional HomekitCharacteristic is Not Mapped?**
 
 - That’s fine! Optional characteristics can be omitted.
 - You may allow the user to map them if desired.
@@ -1007,7 +1007,7 @@ public interface CharacteristicChannelMapper {
 }
 ```
 
-### **3. Example Factory for Switch/On Characteristic**
+### **3. Example Factory for Switch/On HomekitCharacteristic**
 
 ```java
 public class SwitchOnCharacteristicFactory implements CharacteristicChannelFactory {
@@ -1121,7 +1121,7 @@ Great follow-up! Here’s how you would use these `CharacteristicChannelMapper` 
 
 When your handler (e.g., `ProxyThingHandler`) is initialized:
 
-- **Read the configuration** to determine which HomeKit Service and Characteristics to expose, and which openHAB channels to map.
+- **Read the configuration** to determine which HomeKit HomekitService and Characteristics to expose, and which openHAB channels to map.
 - **For each mapping** (e.g., `"On"` → `"switch_binary"`), find the appropriate `CharacteristicChannelFactory` and create a `CharacteristicChannelMapper`.
 
 **Example (Pseudocode):**
@@ -1223,7 +1223,7 @@ public class HomekitBridgeHandler extends BaseBridgeHandler {
 | Handler Role         | Mapper Role                                 |
 |----------------------|---------------------------------------------|
 | Orchestrates mapping | Handles event translation and subscription  |
-| Manages lifecycle    | Manages one mapping (Characteristic↔Channel)|
+| Manages lifecycle    | Manages one mapping (HomekitCharacteristic↔Channel)|
 | Reads config         | Knows how to map a specific type            |
 
 ---
@@ -1480,17 +1480,17 @@ How can the existing HomekitFactory be integrated in these architectures ?
 
 _**Assistant**_
 
-Great question! The existing `HomekitFactory` (as seen in openHAB’s HomeKit add-on) is designed to create HomeKit `Accessory`, `Service`, and `Characteristic` objects, often based on openHAB Thing or Channel information. Integrating it into the ProxyThing/Mapper/Bridge architectures can provide a clean, extensible, and DRY solution.
+Great question! The existing `HomekitFactory` (as seen in openHAB’s HomeKit add-on) is designed to create HomeKit `HomekitAccessory`, `HomekitService`, and `HomekitCharacteristic` objects, often based on openHAB Thing or Channel information. Integrating it into the ProxyThing/Mapper/Bridge architectures can provide a clean, extensible, and DRY solution.
 
 ---
 
 ## **How HomekitFactory Fits In**
 
 ### **1. Central Role**
-- The `HomekitFactory` is responsible for creating HomeKit model objects (Accessory, Service, Characteristic) from openHAB Things, Channels, and configuration.
+- The `HomekitFactory` is responsible for creating HomeKit model objects (HomekitAccessory, HomekitService, HomekitCharacteristic) from openHAB Things, Channels, and configuration.
 - In the ProxyThing or Bridge approach, the Factory can be used to:
-  - Create the correct HomeKit Service for a given Thing or mapping.
-  - Create the correct HomeKit Characteristic for a given Channel or mapping.
+  - Create the correct HomeKit HomekitService for a given Thing or mapping.
+  - Create the correct HomeKit HomekitCharacteristic for a given Channel or mapping.
   - Optionally, provide the mapping logic (or at least the instantiation logic) for the Mapper classes.
 
 ---
@@ -1499,13 +1499,13 @@ Great question! The existing `HomekitFactory` (as seen in openHAB’s HomeKit ad
 
 ### **A. In the ProxyThingHandler or BridgeHandler**
 
-- When initializing, the handler uses the `HomekitFactory` to create the HomeKit Service and Characteristics for the Thing/Channel mappings.
+- When initializing, the handler uses the `HomekitFactory` to create the HomeKit HomekitService and Characteristics for the Thing/Channel mappings.
 - The handler then wires up the Mappers to connect the openHAB Channels to the HomeKit Characteristics.
 
 **Example:**
 ```java
 public void initialize() {
-    // 1. Use HomekitFactory to create Service
+    // 1. Use HomekitFactory to create HomekitService
     HomekitService service = homekitFactory.createService(serviceType, config);
 
     // 2. For each characteristic mapping
@@ -1513,7 +1513,7 @@ public void initialize() {
         String characteristicType = entry.getKey();
         String channelId = entry.getValue();
 
-        // 3. Use HomekitFactory to create Characteristic
+        // 3. Use HomekitFactory to create HomekitCharacteristic
         HomekitCharacteristic characteristic = homekitFactory.createCharacteristic(characteristicType, config);
 
         // 4. Add to service
@@ -1531,7 +1531,7 @@ public void initialize() {
 
 ### **B. In the Mapper Factory**
 
-- The Mapper Factory can use the `HomekitFactory` to ensure the correct Characteristic instance is created for a given mapping.
+- The Mapper Factory can use the `HomekitFactory` to ensure the correct HomekitCharacteristic instance is created for a given mapping.
 
 ---
 
@@ -1575,7 +1575,7 @@ public class ProxyThingHandler extends BaseThingHandler {
 
 ## **5. Advanced: Factory as a Mapper Provider**
 
-- The `HomekitFactory` could also provide a method to create a Mapper for a given Channel/Characteristic pair, encapsulating the mapping logic.
+- The `HomekitFactory` could also provide a method to create a Mapper for a given Channel/HomekitCharacteristic pair, encapsulating the mapping logic.
 
 ```java
 CharacteristicChannelMapper mapper = homekitFactory.createMapper(channel, characteristic, thingHandler);
@@ -1587,8 +1587,8 @@ CharacteristicChannelMapper mapper = homekitFactory.createMapper(channel, charac
 
 | Integration Point         | How HomekitFactory is Used                        |
 |--------------------------|---------------------------------------------------|
-| ProxyThingHandler        | Creates Service/Characteristic objects            |
-| MapperFactory            | Ensures correct Characteristic instance           |
+| ProxyThingHandler        | Creates HomekitService/HomekitCharacteristic objects            |
+| MapperFactory            | Ensures correct HomekitCharacteristic instance           |
 | Validation               | Ensures mandatory characteristics are present     |
 | Extensibility            | Add new services/characteristics in one place     |
 
@@ -1622,7 +1622,7 @@ Yes, using `ChannelType` or `ChannelTypeUID` as input to the Mapper (and/or Fact
 ## **Why Use ChannelType or ChannelTypeUID?**
 
 - **Abstraction:**  
-  The mapping between a HomeKit Characteristic and an openHAB Channel should be based on the *type* of the channel, not its specific instance. This allows for generic, reusable mappers and factories.
+  The mapping between a HomeKit HomekitCharacteristic and an openHAB Channel should be based on the *type* of the channel, not its specific instance. This allows for generic, reusable mappers and factories.
 - **Extensibility:**  
   You can support new bindings and channel types by simply adding new mappings for their types, without caring about the specific Thing or Channel instance.
 - **Validation:**  
@@ -1649,7 +1649,7 @@ boolean supports(String homekitCharacteristic, ChannelType channelType);
 
 ### **2. Mapper Creation**
 
-When creating a Mapper, you can pass the ChannelTypeUID (or ChannelType) and the HomeKit Characteristic type:
+When creating a Mapper, you can pass the ChannelTypeUID (or ChannelType) and the HomeKit HomekitCharacteristic type:
 
 ```java
 CharacteristicChannelMapper createMapper(String homekitCharacteristic, ChannelTypeUID channelTypeUID, Channel channel, ThingHandler handler);
@@ -2174,8 +2174,8 @@ This approach is powerful, flexible, and often more user-friendly for existing i
 
 ## 1. **How It Works**
 
-- **You add metadata to existing Things** (and/or their Channels) to indicate which HomeKit Service/Characteristic to expose, and how to map them.
-- The HomeKit binding (or a rule, or a bridge handler) reads this metadata and dynamically creates the HomeKit Accessory, Service, and Characteristic objects, and sets up the mapping logic.
+- **You add metadata to existing Things** (and/or their Channels) to indicate which HomeKit HomekitService/HomekitCharacteristic to expose, and how to map them.
+- The HomeKit binding (or a rule, or a bridge handler) reads this metadata and dynamically creates the HomeKit HomekitAccessory, HomekitService, and HomekitCharacteristic objects, and sets up the mapping logic.
 
 ---
 
@@ -2220,7 +2220,7 @@ metadata:
 - On startup or when a Thing is updated, the binding scans for Things with `homekit` metadata.
 - For each such Thing, it:
   - Reads the service and characteristic mapping.
-  - Creates the HomeKit Accessory, Service, and Characteristics.
+  - Creates the HomeKit HomekitAccessory, HomekitService, and Characteristics.
   - Sets up event listeners and mapping logic (as described in previous answers).
 
 ---
@@ -2311,7 +2311,7 @@ Yes, integrating with openHAB’s `ChannelTypeRegistry` and related provider cla
 
 ### **A. Reduce Configuration Parameters**
 
-- **Automatic Characteristic Mapping:**  
+- **Automatic HomekitCharacteristic Mapping:**  
   If you know the channel’s type (e.g., `Switch`), you can infer the most likely HomeKit characteristic (`On`).
 - **Automatic Value Scaling:**  
   If the channel’s state description provides min/max, you can auto-scale to HomeKit’s expected range (e.g., 0-100 for brightness).
@@ -2439,12 +2439,12 @@ The `ThingTypeRegistry` is another powerful openHAB core service that can furthe
 
 ## 2. **How Can It Help with HomeKit Mapping?**
 
-### **A. Suggesting HomeKit Service Types**
+### **A. Suggesting HomeKit HomekitService Types**
 
 - By knowing the Thing’s type (e.g., `zwave:device`, `hue:0100`), you can suggest or auto-select the most appropriate HomeKit service (e.g., Lightbulb, Switch, Outlet, Sensor).
 - You can maintain a mapping table (or use heuristics) to map Thing types to HomeKit services.
 
-### **B. Automating Channel-to-Characteristic Mapping**
+### **B. Automating Channel-to-HomekitCharacteristic Mapping**
 
 - The ThingType tells you all the channels a Thing can have, and their types.
 - You can use this to:
@@ -2982,7 +2982,7 @@ Certainly! Here’s how you would implement **dynamic mapping file loading and m
 
 ---
 
-## 2. **OSGi Service Component Example**
+## 2. **OSGi HomekitService Component Example**
 
 Below is a simplified OSGi Declarative Services (DS) component that:
 - Loads and merges mapping files (default + user)
@@ -3716,11 +3716,11 @@ You do not strictly need a "mapper" class for Services and Things in the same se
 ## 1. **Why Mapper Classes for Services and Things?**
 
 - **Encapsulation:**  
-  They encapsulate the logic for mapping an openHAB Thing to a HomeKit Accessory, and a set of Channels to HomeKit Services.
+  They encapsulate the logic for mapping an openHAB Thing to a HomeKit HomekitAccessory, and a set of Channels to HomeKit Services.
 - **Separation of concerns:**  
   Keeps the orchestration (e.g., in a Bridge or Handler) clean, delegating the details of mapping and instantiation.
 - **Extensibility:**  
-  Makes it easy to support new Thing types, Service types, or custom mapping logic.
+  Makes it easy to support new Thing types, HomekitService types, or custom mapping logic.
 
 ---
 
@@ -3730,11 +3730,11 @@ You do not strictly need a "mapper" class for Services and Things in the same se
   - An openHAB Thing (or a set of Channels)
   - Mapping configuration (from YAML, metadata, etc.)
 - **Responsibilities:**  
-  - Determine which HomeKit Service(s) to create for the Thing.
-  - Instantiate the HomeKit Service(s).
-  - For each Service, determine which Channels map to which Characteristics.
+  - Determine which HomeKit HomekitService(s) to create for the Thing.
+  - Instantiate the HomeKit HomekitService(s).
+  - For each HomekitService, determine which Channels map to which Characteristics.
   - Instantiate the appropriate CharacteristicChannelMappers for each mapping.
-  - Return the fully constructed HomeKit Service(s) with all characteristics wired up.
+  - Return the fully constructed HomeKit HomekitService(s) with all characteristics wired up.
 
 **Example:**
 ```java
@@ -3757,9 +3757,9 @@ public class ServiceMapper {
   - An openHAB Thing
   - Mapping configuration
 - **Responsibilities:**  
-  - Determine which HomeKit Accessory to create (Accessory type, label, etc.)
+  - Determine which HomeKit HomekitAccessory to create (HomekitAccessory type, label, etc.)
   - Use ServiceMapper(s) to create and add the appropriate HomeKit Services.
-  - Return the fully constructed HomeKit Accessory.
+  - Return the fully constructed HomeKit HomekitAccessory.
 
 **Example:**
 ```java
@@ -3779,12 +3779,12 @@ public class ThingMapper {
 ## 4. **What Would These Classes Actually Do?**
 
 - **ThingMapper:**  
-  - Orchestrates the mapping of a Thing to an Accessory.
+  - Orchestrates the mapping of a Thing to an HomekitAccessory.
   - Handles accessory-level metadata (name, serial, manufacturer, etc.).
   - Delegates to ServiceMapper for each service.
 
 - **ServiceMapper:**  
-  - Maps a set of channels (or a channel group) to a HomeKit Service.
+  - Maps a set of channels (or a channel group) to a HomeKit HomekitService.
   - Handles service-level metadata (type, label).
   - Delegates to CharacteristicChannelMapper for each characteristic.
 
@@ -3805,9 +3805,9 @@ public class ThingMapper {
 
 | Mapper Class         | Responsibility                                      |
 |----------------------|-----------------------------------------------------|
-| ThingMapper          | Thing ↔ Accessory, orchestrates services            |
-| ServiceMapper        | Channels ↔ Service, orchestrates characteristics    |
-| CharacteristicChannelMapper | Channel ↔ Characteristic, event logic        |
+| ThingMapper          | Thing ↔ HomekitAccessory, orchestrates services            |
+| ServiceMapper        | Channels ↔ HomekitService, orchestrates characteristics    |
+| CharacteristicChannelMapper | Channel ↔ HomekitCharacteristic, event logic        |
 
 ---
 
@@ -3832,9 +3832,9 @@ _**Assistant**_
 
 Certainly! Here’s a **modular, extensible implementation** of the three Mapper classes for a HomeKit/openHAB integration:
 
-- `ThingMapper` (maps an openHAB Thing to a HomeKit Accessory)
-- `ServiceMapper` (maps a set of Channels to a HomeKit Service)
-- `CharacteristicChannelMapper` (maps a Channel to a HomeKit Characteristic)
+- `ThingMapper` (maps an openHAB Thing to a HomeKit HomekitAccessory)
+- `ServiceMapper` (maps a set of Channels to a HomeKit HomekitService)
+- `CharacteristicChannelMapper` (maps a Channel to a HomeKit HomekitCharacteristic)
 
 This example assumes you have:
 - A HomeKit API with `HomekitAccessory`, `HomekitService`, and `HomekitCharacteristic` classes.
@@ -4018,9 +4018,9 @@ HomekitAccessory accessory = thingMapper.mapThing();
 
 ## 5. **Summary**
 
-- **ThingMapper**: Maps a Thing to a HomeKit Accessory, orchestrates ServiceMappers.
-- **ServiceMapper**: Maps a set of Channels to a HomeKit Service, orchestrates CharacteristicChannelMappers.
-- **CharacteristicChannelMapper**: Handles the runtime event logic for a single Channel↔Characteristic mapping.
+- **ThingMapper**: Maps a Thing to a HomeKit HomekitAccessory, orchestrates ServiceMappers.
+- **ServiceMapper**: Maps a set of Channels to a HomeKit HomekitService, orchestrates CharacteristicChannelMappers.
+- **CharacteristicChannelMapper**: Handles the runtime event logic for a single Channel↔HomekitCharacteristic mapping.
 
 ---
 
@@ -4058,7 +4058,7 @@ Great question!
 - Implement a `CharacteristicChannelMapperFactory` (or registry) that knows about all available mappers—both generic and binding-specific.
 - When a mapping is needed, the factory/registry selects the most appropriate mapper based on:
   - Channel type
-  - Characteristic type
+  - HomekitCharacteristic type
   - (Optionally) Thing type, binding ID, or config
 
 **Example:**
@@ -4186,7 +4186,7 @@ Let’s address both:
 
 The config files (YAML/JSON) should allow users to specify:
 
-- Which openHAB Thing/Channel maps to which HomeKit Service/Characteristic
+- Which openHAB Thing/Channel maps to which HomeKit HomekitService/HomekitCharacteristic
 - (Optionally) Which mapper/factory to use for a mapping (for binding-specific or custom logic)
 - Any transformation or mapping rules
 
@@ -4287,7 +4287,7 @@ protected void removeCharacteristicChannelMapperFactory(CharacteristicChannelMap
 
 | Config File Feature         | Example Syntax/Value                        | Purpose                        |
 |----------------------------|---------------------------------------------|--------------------------------|
-| Thing/Service/Characteristic mapping | See above YAML examples           | Declarative mapping            |
+| Thing/HomekitService/HomekitCharacteristic mapping | See above YAML examples           | Declarative mapping            |
 | Mapper/factory selection    | `mapper: ZWaveEnergyCharacteristicMapper`   | Use binding-specific logic     |
 | Transformation rules        | `mapping: scale:0-10000:0-100`              | Value transformation           |
 | Mapper registry             | List of mappers/factories                   | For advanced/extensible setups |
@@ -4910,7 +4910,7 @@ if (item.getType().equals("Switch")) {
 ```
 **Replace this with:**
 - A registry/factory of `CharacteristicMapper` classes.
-- For each Item/Characteristic mapping, instantiate the appropriate mapper.
+- For each Item/HomekitCharacteristic mapping, instantiate the appropriate mapper.
 
 ---
 
@@ -4919,10 +4919,10 @@ if (item.getType().equals("Switch")) {
 **A. On Initialization:**
 - For each Item to be exposed:
   1. Determine the HomeKit characteristic (from config, metadata, or mapping table).
-  2. Use a `CharacteristicMapperFactory` to get the right mapper for the Item/Characteristic pair.
+  2. Use a `CharacteristicMapperFactory` to get the right mapper for the Item/HomekitCharacteristic pair.
   3. Register the mapper (subscribe to events, etc.).
 
-**B. On Item/Characteristic Event:**
+**B. On Item/HomekitCharacteristic Event:**
 - The mapper handles the event, performs any transformation, and updates the other side.
 
 ---
@@ -4996,7 +4996,7 @@ public class SwitchOnCharacteristicMapper implements CharacteristicMapper {
 | Bridge Role                | Mapper Role                                 |
 |----------------------------|---------------------------------------------|
 | Orchestrates mapping       | Handles event translation and subscription  |
-| Manages lifecycle          | Manages one mapping (Characteristic↔Item)   |
+| Manages lifecycle          | Manages one mapping (HomekitCharacteristic↔Item)   |
 | Reads config/metadata      | Knows how to map a specific type            |
 
 ---
@@ -5005,7 +5005,7 @@ public class SwitchOnCharacteristicMapper implements CharacteristicMapper {
 
 - **Yes, HomekitItemBridge can and should use CharacteristicMapper and related classes.**
 - This will make the codebase more modular, extensible, and maintainable.
-- Integration is straightforward: instantiate and manage mappers for each Item/Characteristic mapping, using a factory/registry pattern.
+- Integration is straightforward: instantiate and manage mappers for each Item/HomekitCharacteristic mapping, using a factory/registry pattern.
 
 ---
 
@@ -5038,7 +5038,7 @@ Yes, you are correct to focus on `HomekitItemBridge.java`—and you’ve provide
 ### **1. What Would Change?**
 
 - **Encapsulation:**  
-  Instead of handling event subscription and value translation inline, you would instantiate a `CharacteristicChannelMapper` (or `CharacteristicItemMapper`) for each Item↔Characteristic mapping.
+  Instead of handling event subscription and value translation inline, you would instantiate a `CharacteristicChannelMapper` (or `CharacteristicItemMapper`) for each Item↔HomekitCharacteristic mapping.
 - **Lifecycle:**  
   The bridge would manage the lifecycle of these mappers (create, store, dispose).
 - **Event Handling:**  
@@ -5049,7 +5049,7 @@ Yes, you are correct to focus on `HomekitItemBridge.java`—and you’ve provide
 ### **2. Where to Integrate?**
 
 - **When adding a characteristic to a service** (see `addCharacteristicToService`), instead of just subscribing to events, you would:
-  - Instantiate a mapper for the Item↔Characteristic pair.
+  - Instantiate a mapper for the Item↔HomekitCharacteristic pair.
   - Store the mapper in a collection for later disposal.
 - **On state changes** (see `stateChanged` and `stateUpdated`), you could delegate to the mapper, or let the mapper handle the subscription directly.
 
@@ -5064,7 +5064,7 @@ Add a field to store mappers:
 private final Map<String, CharacteristicChannelMapper> mapperMap = new ConcurrentHashMap<>();
 ```
 
-#### **B. When Adding a Characteristic**
+#### **B. When Adding a HomekitCharacteristic**
 
 In `addCharacteristicToService`, after adding the characteristic:
 ```java
@@ -5080,9 +5080,9 @@ You can let the mapper handle the subscription, or, if you want to keep the brid
 ```java
 @Override
 public void stateChanged(Item item, State oldState, State newState) {
-    Collection<Characteristic<?>> characteristics = characteristicMap.get(item.getName());
+    Collection<HomekitCharacteristic<?>> characteristics = characteristicMap.get(item.getName());
     if (characteristics != null) {
-        for (Characteristic<?> c : characteristics) {
+        for (HomekitCharacteristic<?> c : characteristics) {
             CharacteristicChannelMapper mapper = mapperMap.get(item.getName() + ":" + c.getInstanceType());
             if (mapper != null) {
                 mapper.updateCharacteristicFromItemState(newState);
@@ -5109,11 +5109,11 @@ mapperMap.clear();
 ```java
 public class CharacteristicItemMapper {
     private final Item item;
-    private final Characteristic<?> characteristic;
+    private final HomekitCharacteristic<?> characteristic;
     private final EventPublisher eventPublisher;
     private final HomekitEventManager eventManager;
 
-    public CharacteristicItemMapper(Item item, Characteristic<?> characteristic, EventPublisher eventPublisher, HomekitEventManager eventManager) {
+    public CharacteristicItemMapper(Item item, HomekitCharacteristic<?> characteristic, EventPublisher eventPublisher, HomekitEventManager eventManager) {
         this.item = item;
         this.characteristic = characteristic;
         this.eventPublisher = eventPublisher;
@@ -5146,7 +5146,7 @@ public class CharacteristicItemMapper {
 
 - **Yes, the right class is `HomekitItemBridge.java`.**
 - Integrating a `CharacteristicChannelMapper` abstraction would:
-  - Encapsulate mapping logic for each Item↔Characteristic pair.
+  - Encapsulate mapping logic for each Item↔HomekitCharacteristic pair.
   - Simplify event subscription and translation.
   - Make the bridge more modular and maintainable.
 - The bridge would manage the lifecycle of these mappers, creating them when characteristics are added and disposing them when removed.
@@ -5172,7 +5172,7 @@ Here’s how a `CharacteristicChannelMapper` (or `CharacteristicItemMapper`) wou
 
 ## 1. **Subscription Responsibilities**
 
-A mapper for an Item↔Characteristic mapping should:
+A mapper for an Item↔HomekitCharacteristic mapping should:
 
 - **Subscribe to openHAB Item state changes** (to update the HomeKit characteristic when the Item changes).
 - **Subscribe to HomeKit characteristic changes** (to update the openHAB Item when HomeKit changes the value).
@@ -5204,19 +5204,19 @@ eventPublisher.subscribe(item.getName(), event -> {
 
 ---
 
-## 3. **How to Subscribe to HomeKit Characteristic Changes**
+## 3. **How to Subscribe to HomeKit HomekitCharacteristic Changes**
 
 - The mapper should subscribe to HomeKit characteristic changes using the `HomekitEventManager`.
-- When a HomeKit characteristic changes (e.g., via the Home app), a `HomekitEvent` (often a `CharacteristicEvent`) is published.
+- When a HomeKit characteristic changes (e.g., via the Home app), a `HomekitEvent` (often a `HomekitCharacteristicEvent`) is published.
 - The mapper subscribes to these events for the relevant characteristic UID.
 
 **Example:**
 ```java
 public void subscribeToCharacteristicUpdates() {
-    String characteristicUID = ((GenericCharacteristic<?>) characteristic).getUID().toString();
+    String characteristicUID = ((HomekitGenericCharacteristic<?>) characteristic).getUID().toString();
     eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, characteristicUID, event -> {
-        if (event instanceof CharacteristicEvent) {
-            Object newValue = ((CharacteristicEvent) event).getNewValue();
+        if (event instanceof HomekitCharacteristicEvent) {
+            Object newValue = ((HomekitCharacteristicEvent) event).getNewValue();
             updateItemFromCharacteristic(newValue);
         }
     });
@@ -5231,9 +5231,9 @@ public void subscribeToCharacteristicUpdates() {
 ```java
 public void updateCharacteristicFromItemState(State state) {
     // Convert openHAB State to HomeKit value
-    Object value = ((GenericCharacteristic<?>) characteristic).toValue(state);
+    Object value = ((HomekitGenericCharacteristic<?>) characteristic).toValue(state);
     if (value != null) {
-        ((GenericCharacteristic<?>) characteristic).setValue(value);
+        ((HomekitGenericCharacteristic<?>) characteristic).setValue(value);
     }
 }
 ```
@@ -5242,7 +5242,7 @@ public void updateCharacteristicFromItemState(State state) {
 ```java
 public void updateItemFromCharacteristic(Object newValue) {
     // Convert HomeKit value to openHAB State
-    State state = ((GenericCharacteristic<?>) characteristic).toState(newValue);
+    State state = ((HomekitGenericCharacteristic<?>) characteristic).toState(newValue);
     if (state != null) {
         eventPublisher.post(ItemEventFactory.createStateEvent(item.getName(), state));
     }
@@ -5256,11 +5256,11 @@ public void updateItemFromCharacteristic(Object newValue) {
 ```java
 public class CharacteristicItemMapper {
     private final Item item;
-    private final GenericCharacteristic<?> characteristic;
+    private final HomekitGenericCharacteristic<?> characteristic;
     private final EventPublisher eventPublisher;
     private final HomekitEventManager eventManager;
 
-    public CharacteristicItemMapper(Item item, GenericCharacteristic<?> characteristic,
+    public CharacteristicItemMapper(Item item, HomekitGenericCharacteristic<?> characteristic,
                                     EventPublisher eventPublisher, HomekitEventManager eventManager) {
         this.item = item;
         this.characteristic = characteristic;
@@ -5277,8 +5277,8 @@ public class CharacteristicItemMapper {
     public void subscribeToCharacteristicUpdates() {
         String characteristicUID = characteristic.getUID().toString();
         eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, characteristicUID, event -> {
-            if (event instanceof CharacteristicEvent) {
-                Object newValue = ((CharacteristicEvent) event).getNewValue();
+            if (event instanceof HomekitCharacteristicEvent) {
+                Object newValue = ((HomekitCharacteristicEvent) event).getNewValue();
                 updateItemFromCharacteristic(newValue);
             }
         });
@@ -5310,7 +5310,7 @@ public class CharacteristicItemMapper {
 
 ## 6. **Summary Table**
 
-| Direction         | Subscription Mechanism         | Mapper Method Called                |
+| Direction         | Subscription Mechanism         | Mapper HomekitMethod Called                |
 |-------------------|-------------------------------|-------------------------------------|
 | openHAB → HomeKit | ItemRegistry/StateChangeListener | `updateCharacteristicFromItemState` |
 | HomeKit → openHAB | HomekitEventManager           | `updateItemFromCharacteristic`      |
@@ -5423,23 +5423,23 @@ The choice between using the `ItemRegistry` (with a `StateChangeListener`) and t
 
 _**User**_
 
-Should setting the value of the Characteristic not happen with an HomekitEvent? to really descouple everything, given that the Characteristic in turn will be communicating with a LocalAccessoryServer, which will publish the update to the Homekit Controller
+Should setting the value of the HomekitCharacteristic not happen with an HomekitEvent? to really descouple everything, given that the HomekitCharacteristic in turn will be communicating with a HomekitLocalAccessoryServer, which will publish the update to the Homekit Controller
 
 ---
 
 _**Assistant**_
 
 **Excellent architectural insight!**  
-Yes, for maximum decoupling and extensibility, **setting the value of a HomeKit Characteristic should ideally be done by publishing a `HomekitEvent`** (e.g., `CHARACTERISTIC_STATE_CHANGED`) to the `HomekitEventManager`, rather than calling `setValue()` directly on the Characteristic.
+Yes, for maximum decoupling and extensibility, **setting the value of a HomeKit HomekitCharacteristic should ideally be done by publishing a `HomekitEvent`** (e.g., `CHARACTERISTIC_STATE_CHANGED`) to the `HomekitEventManager`, rather than calling `setValue()` directly on the HomekitCharacteristic.
 
 ---
 
 ## **Why is this preferred?**
 
 - **Decoupling:**  
-  The code that detects an openHAB Item state change does not need to know about the internals of the Characteristic or how it communicates with the HomeKit server.
+  The code that detects an openHAB Item state change does not need to know about the internals of the HomekitCharacteristic or how it communicates with the HomeKit server.
 - **Event-driven architecture:**  
-  All interested parties (including the Characteristic, the LocalAccessoryServer, and any listeners) can react to the event in a uniform way.
+  All interested parties (including the HomekitCharacteristic, the HomekitLocalAccessoryServer, and any listeners) can react to the event in a uniform way.
 - **Extensibility:**  
   New features (logging, transformation, validation, etc.) can be added by subscribing to the event stream, without changing the core logic.
 - **Consistency:**  
@@ -5451,13 +5451,13 @@ Yes, for maximum decoupling and extensibility, **setting the value of a HomeKit 
 
 ### **1. When an openHAB Item state changes:**
 
-- The Mapper (or the bridge) publishes a `HomekitEvent` (e.g., `CharacteristicEvent`) to the `HomekitEventManager`, indicating the new value for the Characteristic.
+- The Mapper (or the bridge) publishes a `HomekitEvent` (e.g., `HomekitCharacteristicEvent`) to the `HomekitEventManager`, indicating the new value for the HomekitCharacteristic.
 
 ```java
 public void updateCharacteristicFromItemState(State state) {
     Object value = characteristic.toValue(state);
     if (value != null) {
-        HomekitEvent event = new CharacteristicEvent(
+        HomekitEvent event = new HomekitCharacteristicEvent(
             HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
             characteristic.getUID().toString(),
             value
@@ -5467,28 +5467,28 @@ public void updateCharacteristicFromItemState(State state) {
 }
 ```
 
-### **2. The Characteristic subscribes to its own events:**
+### **2. The HomekitCharacteristic subscribes to its own events:**
 
-- The `GenericCharacteristic` (or similar) subscribes to `CHARACTERISTIC_STATE_CHANGED` events for its UID.
-- When it receives such an event, it updates its internal value and notifies the LocalAccessoryServer.
+- The `HomekitGenericCharacteristic` (or similar) subscribes to `CHARACTERISTIC_STATE_CHANGED` events for its UID.
+- When it receives such an event, it updates its internal value and notifies the HomekitLocalAccessoryServer.
 
 ```java
 eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, this.getUID().toString(), event -> {
-    if (event instanceof CharacteristicEvent) {
-        this.setValue(((CharacteristicEvent) event).getNewValue());
+    if (event instanceof HomekitCharacteristicEvent) {
+        this.setValue(((HomekitCharacteristicEvent) event).getNewValue());
     }
 });
 ```
 
-### **3. The LocalAccessoryServer is notified:**
+### **3. The HomekitLocalAccessoryServer is notified:**
 
-- The Characteristic, upon updating its value, notifies the LocalAccessoryServer, which in turn updates the HomeKit Controller.
+- The HomekitCharacteristic, upon updating its value, notifies the HomekitLocalAccessoryServer, which in turn updates the HomeKit Controller.
 
 ---
 
 ## **Benefits**
 
-- **Loose coupling:** The Mapper does not need a direct reference to the Characteristic.
+- **Loose coupling:** The Mapper does not need a direct reference to the HomekitCharacteristic.
 - **Uniform event flow:** All updates (from openHAB, HomeKit, or elsewhere) are handled the same way.
 - **Easier testing and extension:** You can add logging, validation, or transformation by subscribing to the event stream.
 
@@ -5498,15 +5498,15 @@ eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, this.getUI
 
 | Action                        | How?                                   | Benefit                |
 |-------------------------------|----------------------------------------|------------------------|
-| Update Characteristic value   | Publish HomekitEvent to EventManager   | Decoupling, extensibility |
-| Characteristic value changes  | Subscribes to EventManager             | Uniform event handling |
-| Notify HomeKit Controller     | Characteristic notifies server         | Consistency            |
+| Update HomekitCharacteristic value   | Publish HomekitEvent to EventManager   | Decoupling, extensibility |
+| HomekitCharacteristic value changes  | Subscribes to EventManager             | Uniform event handling |
+| Notify HomeKit Controller     | HomekitCharacteristic notifies server         | Consistency            |
 
 ---
 
 ## **Conclusion**
 
-- **Yes, setting the value of a Characteristic should be done via a HomekitEvent, not by direct method call.**
+- **Yes, setting the value of a HomekitCharacteristic should be done via a HomekitEvent, not by direct method call.**
 - This approach maximizes decoupling, extensibility, and maintainability in your HomeKit integration.
 
 ---
@@ -5543,8 +5543,8 @@ import org.openhab.core.items.ItemRegistry;
 import org.openhab.core.items.StateChangeListener;
 import org.openhab.core.events.EventPublisher;
 import org.openhab.core.types.State;
-import org.openhab.io.homekit.internal.characteristic.GenericCharacteristic;
-import org.openhab.io.homekit.internal.events.CharacteristicEvent;
+import org.openhab.io.homekit.internal.characteristic.HomekitGenericCharacteristic;
+import org.openhab.io.homekit.internal.events.HomekitCharacteristicEvent;
 import org.openhab.io.homekit.internal.events.HomekitEvent;
 import org.openhab.io.homekit.internal.events.HomekitEventManager;
 import org.openhab.io.homekit.internal.events.HomekitEventType;
@@ -5553,7 +5553,7 @@ import org.openhab.core.items.events.ItemEventFactory;
 public class CharacteristicItemMapper {
 
     private final Item item;
-    private final GenericCharacteristic<?> characteristic;
+    private final HomekitGenericCharacteristic<?> characteristic;
     private final ItemRegistry itemRegistry;
     private final EventPublisher eventPublisher;
     private final HomekitEventManager eventManager;
@@ -5562,7 +5562,7 @@ public class CharacteristicItemMapper {
     private final String characteristicUID;
 
     public CharacteristicItemMapper(Item item,
-                                    GenericCharacteristic<?> characteristic,
+                                    HomekitGenericCharacteristic<?> characteristic,
                                     ItemRegistry itemRegistry,
                                     EventPublisher eventPublisher,
                                     HomekitEventManager eventManager) {
@@ -5587,8 +5587,8 @@ public class CharacteristicItemMapper {
 
         // Subscribe to HomeKit characteristic changes via HomekitEventManager
         eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, characteristicUID, event -> {
-            if (event instanceof CharacteristicEvent) {
-                Object newValue = ((CharacteristicEvent) event).getNewValue();
+            if (event instanceof HomekitCharacteristicEvent) {
+                Object newValue = ((HomekitCharacteristicEvent) event).getNewValue();
                 updateItemFromCharacteristic(newValue);
             }
         });
@@ -5603,7 +5603,7 @@ public class CharacteristicItemMapper {
     public void updateCharacteristicFromItemState(State state) {
         Object value = characteristic.toValue(state);
         if (value != null) {
-            HomekitEvent event = new CharacteristicEvent(
+            HomekitEvent event = new HomekitCharacteristicEvent(
                 HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
                 characteristicUID,
                 value
@@ -5631,7 +5631,7 @@ When you add a characteristic to a service for an Item, create and subscribe the
 ```java
 CharacteristicItemMapper mapper = new CharacteristicItemMapper(
     item, 
-    (GenericCharacteristic<?>) characteristic, 
+    (HomekitGenericCharacteristic<?>) characteristic, 
     itemRegistry, 
     eventPublisher, 
     eventManager
@@ -5646,13 +5646,13 @@ mapper.subscribe();
 
 - **Decoupling:** The mapper does not call `setValue()` on the characteristic directly; it publishes a `HomekitEvent`.
 - **Event-driven:** Both openHAB and HomeKit changes are handled via event subscriptions.
-- **Lifecycle:** The mapper can be subscribed/unsubscribed as needed (e.g., when the Item or Characteristic is removed).
+- **Lifecycle:** The mapper can be subscribed/unsubscribed as needed (e.g., when the Item or HomekitCharacteristic is removed).
 
 ---
 
 ## **Summary Table**
 
-| Direction         | Mechanism                        | Method in Mapper                  |
+| Direction         | Mechanism                        | HomekitMethod in Mapper                  |
 |-------------------|----------------------------------|-----------------------------------|
 | openHAB → HomeKit | Publish HomekitEvent             | `updateCharacteristicFromItemState` |
 | HomeKit → openHAB | Post ItemEvent via EventPublisher| `updateItemFromCharacteristic`    |
@@ -5682,7 +5682,7 @@ Let’s bring together the HomekitThingBridge/ProxyThing architecture and show w
 
 - **HomekitThingBridge**: Orchestrates the mapping between openHAB Things/Channels and HomeKit Accessories/Services/Characteristics, using configuration (YAML/JSON/metadata).
 - **ProxyThing**: A virtual Thing in openHAB that represents a HomeKit accessory, mapping its channels to HomeKit characteristics.
-- **Mapper class**: Handles the runtime event subscription and translation between a specific openHAB Channel and a HomeKit Characteristic.
+- **Mapper class**: Handles the runtime event subscription and translation between a specific openHAB Channel and a HomeKit HomekitCharacteristic.
 
 ---
 
@@ -5695,7 +5695,7 @@ Let’s bring together the HomekitThingBridge/ProxyThing architecture and show w
 
 ## **Example: ChannelCharacteristicMapper**
 
-Here’s a **generic Mapper class** for a Channel↔Characteristic mapping in the HomekitThingBridge/ProxyThing context:
+Here’s a **generic Mapper class** for a Channel↔HomekitCharacteristic mapping in the HomekitThingBridge/ProxyThing context:
 
 ```java
 package org.openhab.io.homekit.internal.mapper;
@@ -5705,8 +5705,8 @@ import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingHandler;
 import org.openhab.core.events.EventPublisher;
 import org.openhab.core.types.State;
-import org.openhab.io.homekit.internal.characteristic.GenericCharacteristic;
-import org.openhab.io.homekit.internal.events.CharacteristicEvent;
+import org.openhab.io.homekit.internal.characteristic.HomekitGenericCharacteristic;
+import org.openhab.io.homekit.internal.events.HomekitCharacteristicEvent;
 import org.openhab.io.homekit.internal.events.HomekitEvent;
 import org.openhab.io.homekit.internal.events.HomekitEventManager;
 import org.openhab.io.homekit.internal.events.HomekitEventType;
@@ -5716,14 +5716,14 @@ public class ChannelCharacteristicMapper {
 
     private final Thing thing;
     private final Channel channel;
-    private final GenericCharacteristic<?> characteristic;
+    private final HomekitGenericCharacteristic<?> characteristic;
     private final EventPublisher eventPublisher;
     private final HomekitEventManager eventManager;
     private final String characteristicUID;
 
     public ChannelCharacteristicMapper(Thing thing,
                                        Channel channel,
-                                       GenericCharacteristic<?> characteristic,
+                                       HomekitGenericCharacteristic<?> characteristic,
                                        EventPublisher eventPublisher,
                                        HomekitEventManager eventManager) {
         this.thing = thing;
@@ -5744,8 +5744,8 @@ public class ChannelCharacteristicMapper {
 
         // Subscribe to HomeKit characteristic changes via HomekitEventManager
         eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, characteristicUID, event -> {
-            if (event instanceof CharacteristicEvent) {
-                Object newValue = ((CharacteristicEvent) event).getNewValue();
+            if (event instanceof HomekitCharacteristicEvent) {
+                Object newValue = ((HomekitCharacteristicEvent) event).getNewValue();
                 updateChannelFromCharacteristic(newValue);
             }
         });
@@ -5755,7 +5755,7 @@ public class ChannelCharacteristicMapper {
     public void updateCharacteristicFromChannelState(State state) {
         Object value = characteristic.toValue(state);
         if (value != null) {
-            HomekitEvent event = new CharacteristicEvent(
+            HomekitEvent event = new HomekitCharacteristicEvent(
                 HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
                 characteristicUID,
                 value
@@ -5785,14 +5785,14 @@ public class ChannelCharacteristicMapper {
 ## **How to Use in HomekitThingBridge or ProxyThingHandler**
 
 - When initializing a ProxyThing or mapping a Thing/Channel to HomeKit:
-    1. For each Channel↔Characteristic mapping, instantiate a `ChannelCharacteristicMapper`.
+    1. For each Channel↔HomekitCharacteristic mapping, instantiate a `ChannelCharacteristicMapper`.
     2. Call `subscribe(handler)` to set up event listeners.
     3. Store the mapper for later disposal.
 
 **Example:**
 ```java
 ChannelCharacteristicMapper mapper = new ChannelCharacteristicMapper(
-    thing, channel, (GenericCharacteristic<?>) characteristic, eventPublisher, eventManager
+    thing, channel, (HomekitGenericCharacteristic<?>) characteristic, eventPublisher, eventManager
 );
 mapper.subscribe(thingHandler);
 ```
@@ -5803,13 +5803,13 @@ mapper.subscribe(thingHandler);
 
 - **Decoupling:** The Mapper does not call `setValue()` directly; it publishes a HomekitEvent.
 - **Event-driven:** Both openHAB and HomeKit changes are handled via event subscriptions.
-- **Lifecycle:** The Mapper can be subscribed/unsubscribed as needed (e.g., when the Thing/Channel/Characteristic is removed).
+- **Lifecycle:** The Mapper can be subscribed/unsubscribed as needed (e.g., when the Thing/Channel/HomekitCharacteristic is removed).
 
 ---
 
 ## **Summary Table**
 
-| Direction         | Mechanism                        | Mapper Method Called                  |
+| Direction         | Mechanism                        | Mapper HomekitMethod Called                  |
 |-------------------|----------------------------------|---------------------------------------|
 | openHAB → HomeKit | Publish HomekitEvent             | `updateCharacteristicFromChannelState`|
 | HomeKit → openHAB | Post ChannelEvent via EventPublisher | `updateChannelFromCharacteristic` |
@@ -5840,12 +5840,12 @@ This ensures:
 
 ## **How Would the Mapper Change?**
 
-### **1. openHAB → HomeKit (Channel State Change → HomeKit Characteristic)**
+### **1. openHAB → HomeKit (Channel State Change → HomeKit HomekitCharacteristic)**
 
 - The Mapper still subscribes to channel state changes (via the handler or registry).
 - When the channel state changes, the Mapper publishes a `HomekitEvent` as before.
 
-### **2. HomeKit → openHAB (HomeKit Characteristic Change → Channel Command)**
+### **2. HomeKit → openHAB (HomeKit HomekitCharacteristic Change → Channel Command)**
 
 - Instead of posting to the event bus, the Mapper calls `ThingHandler.handleCommand(ChannelUID, Command)`.
 
@@ -5861,8 +5861,8 @@ import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingHandler;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.State;
-import org.openhab.io.homekit.internal.characteristic.GenericCharacteristic;
-import org.openhab.io.homekit.internal.events.CharacteristicEvent;
+import org.openhab.io.homekit.internal.characteristic.HomekitGenericCharacteristic;
+import org.openhab.io.homekit.internal.events.HomekitCharacteristicEvent;
 import org.openhab.io.homekit.internal.events.HomekitEvent;
 import org.openhab.io.homekit.internal.events.HomekitEventManager;
 import org.openhab.io.homekit.internal.events.HomekitEventType;
@@ -5871,14 +5871,14 @@ public class ChannelCharacteristicMapper {
 
     private final Thing thing;
     private final Channel channel;
-    private final GenericCharacteristic<?> characteristic;
+    private final HomekitGenericCharacteristic<?> characteristic;
     private final HomekitEventManager eventManager;
     private final String characteristicUID;
     private final ThingHandler handler;
 
     public ChannelCharacteristicMapper(Thing thing,
                                        Channel channel,
-                                       GenericCharacteristic<?> characteristic,
+                                       HomekitGenericCharacteristic<?> characteristic,
                                        HomekitEventManager eventManager,
                                        ThingHandler handler) {
         this.thing = thing;
@@ -5899,8 +5899,8 @@ public class ChannelCharacteristicMapper {
 
         // Subscribe to HomeKit characteristic changes via HomekitEventManager
         eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, characteristicUID, event -> {
-            if (event instanceof CharacteristicEvent) {
-                Object newValue = ((CharacteristicEvent) event).getNewValue();
+            if (event instanceof HomekitCharacteristicEvent) {
+                Object newValue = ((HomekitCharacteristicEvent) event).getNewValue();
                 updateChannelFromCharacteristic(newValue);
             }
         });
@@ -5910,7 +5910,7 @@ public class ChannelCharacteristicMapper {
     public void updateCharacteristicFromChannelState(State state) {
         Object value = characteristic.toValue(state);
         if (value != null) {
-            HomekitEvent event = new CharacteristicEvent(
+            HomekitEvent event = new HomekitCharacteristicEvent(
                 HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
                 characteristicUID,
                 value
@@ -5946,7 +5946,7 @@ public class ChannelCharacteristicMapper {
 
 ## **Summary Table**
 
-| Direction         | Mechanism                        | Mapper Method Called                  |
+| Direction         | Mechanism                        | Mapper HomekitMethod Called                  |
 |-------------------|----------------------------------|---------------------------------------|
 | openHAB → HomeKit | Publish HomekitEvent             | `updateCharacteristicFromChannelState`|
 | HomeKit → openHAB | Call `ThingHandler.handleCommand`| `updateChannelFromCharacteristic`     |
@@ -5982,8 +5982,8 @@ Absolutely! You’ve covered a lot of ground and are already converging on a rob
   Use events (like `HomekitEvent`) for all cross-component communication, not just for HomeKit characteristic updates. This enables loose coupling, easy extension, and better testability.
 - **Layer separation:**  
   - **Discovery/Orchestration Layer:** Handles mapping config, registry watching, and lifecycle.
-  - **Mapping Layer:** Contains all Mapper classes (Thing, Service, Characteristic).
-  - **Transport Layer:** Handles actual communication with HomeKit (AccessoryServer) and openHAB (ThingHandler, ItemRegistry).
+  - **Mapping Layer:** Contains all Mapper classes (Thing, HomekitService, HomekitCharacteristic).
+  - **Transport Layer:** Handles actual communication with HomeKit (HomekitAccessoryServer) and openHAB (ThingHandler, ItemRegistry).
 
 ---
 
@@ -6108,7 +6108,7 @@ Provide code example of the layer separation, taking into account the discussion
 
 _**Assistant**_
 
-Absolutely! Here’s a **code-oriented example of a layered, event-driven architecture** for HomeKit/openHAB integration, taking into account your existing classes (like `HomekitItemBridge`, `GenericCharacteristic`, `HomekitEventManager`, etc.) and the best practices discussed.
+Absolutely! Here’s a **code-oriented example of a layered, event-driven architecture** for HomeKit/openHAB integration, taking into account your existing classes (like `HomekitItemBridge`, `HomekitGenericCharacteristic`, `HomekitEventManager`, etc.) and the best practices discussed.
 
 ---
 
@@ -6121,7 +6121,7 @@ Absolutely! Here’s a **code-oriented example of a layered, event-driven archit
    (e.g., `CharacteristicItemMapper`, `ChannelCharacteristicMapper`)  
    - Encapsulates the logic for mapping between openHAB Items/Channels and HomeKit Characteristics.
 3. **Transport/Event Layer**  
-   (e.g., `HomekitEventManager`, `GenericCharacteristic`, `AccessoryServer`)  
+   (e.g., `HomekitEventManager`, `HomekitGenericCharacteristic`, `HomekitAccessoryServer`)  
    - Handles event publication/subscription and communication with HomeKit and openHAB.
 
 ---
@@ -6136,17 +6136,17 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     private final Map<String, CharacteristicItemMapper> mapperMap = new ConcurrentHashMap<>();
 
     // Called when a new Item is tagged for HomeKit
-    private void addCharacteristicToService(Service service, String characteristicType, Item item, Accessory accessory, HomekitFactory characteristicFactory) {
+    private void addCharacteristicToService(HomekitService service, String characteristicType, Item item, HomekitAccessory accessory, HomekitFactory characteristicFactory) {
         try {
-            Characteristic<?> characteristic = characteristicFactory.createCharacteristic(characteristicType, service, accessory.getNextAvailableInstanceId());
+            HomekitCharacteristic<?> characteristic = characteristicFactory.createCharacteristic(characteristicType, service, accessory.getNextAvailableInstanceId());
             if (characteristic != null) {
                 service.addCharacteristic(characteristic);
                 addCharacteristic(item.getName(), characteristic);
 
-                // Create and subscribe a mapper for this Item↔Characteristic pair
+                // Create and subscribe a mapper for this Item↔HomekitCharacteristic pair
                 CharacteristicItemMapper mapper = new CharacteristicItemMapper(
                     item, 
-                    (GenericCharacteristic<?>) characteristic, 
+                    (HomekitGenericCharacteristic<?>) characteristic, 
                     itemRegistry, 
                     eventPublisher, 
                     eventManager
@@ -6175,14 +6175,14 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 ```java
 public class CharacteristicItemMapper {
     private final Item item;
-    private final GenericCharacteristic<?> characteristic;
+    private final HomekitGenericCharacteristic<?> characteristic;
     private final ItemRegistry itemRegistry;
     private final EventPublisher eventPublisher;
     private final HomekitEventManager eventManager;
     private final String characteristicUID;
     private final StateChangeListener itemStateListener;
 
-    public CharacteristicItemMapper(Item item, GenericCharacteristic<?> characteristic, ItemRegistry itemRegistry, EventPublisher eventPublisher, HomekitEventManager eventManager) {
+    public CharacteristicItemMapper(Item item, HomekitGenericCharacteristic<?> characteristic, ItemRegistry itemRegistry, EventPublisher eventPublisher, HomekitEventManager eventManager) {
         this.item = item;
         this.characteristic = characteristic;
         this.itemRegistry = itemRegistry;
@@ -6199,8 +6199,8 @@ public class CharacteristicItemMapper {
     public void subscribe() {
         itemRegistry.addStateChangeListener(item.getName(), itemStateListener);
         eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, characteristicUID, event -> {
-            if (event instanceof CharacteristicEvent) {
-                Object newValue = ((CharacteristicEvent) event).getNewValue();
+            if (event instanceof HomekitCharacteristicEvent) {
+                Object newValue = ((HomekitCharacteristicEvent) event).getNewValue();
                 updateItemFromCharacteristic(newValue);
             }
         });
@@ -6214,7 +6214,7 @@ public class CharacteristicItemMapper {
     private void updateCharacteristicFromItemState(State state) {
         Object value = characteristic.toValue(state);
         if (value != null) {
-            HomekitEvent event = new CharacteristicEvent(
+            HomekitEvent event = new HomekitCharacteristicEvent(
                 HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
                 characteristicUID,
                 value
@@ -6234,7 +6234,7 @@ public class CharacteristicItemMapper {
 
 ---
 
-## **3. Transport/Event Layer: HomekitEventManager & GenericCharacteristic**
+## **3. Transport/Event Layer: HomekitEventManager & HomekitGenericCharacteristic**
 
 **HomekitEventManager** (already exists, but here’s how it’s used):
 
@@ -6252,17 +6252,17 @@ public class HomekitEventManager {
 }
 ```
 
-**GenericCharacteristic** (already exists, but now subscribes to its own events):
+**HomekitGenericCharacteristic** (already exists, but now subscribes to its own events):
 
 ```java
-public class GenericCharacteristic<T> extends Characteristic<T> {
+public class HomekitGenericCharacteristic<T> extends HomekitCharacteristic<T> {
     // ... existing fields ...
 
     public void subscribeToEvents(HomekitEventManager eventManager) {
         eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, this.getUID().toString(), event -> {
-            if (event instanceof CharacteristicEvent) {
-                this.setValue((T) ((CharacteristicEvent) event).getNewValue());
-                // Notify LocalAccessoryServer, etc.
+            if (event instanceof HomekitCharacteristicEvent) {
+                this.setValue((T) ((HomekitCharacteristicEvent) event).getNewValue());
+                // Notify HomekitLocalAccessoryServer, etc.
             }
         });
     }
@@ -6273,8 +6273,8 @@ public class GenericCharacteristic<T> extends Characteristic<T> {
 
 ## **4. How It All Flows**
 
-- **Item state changes** → `CharacteristicItemMapper` publishes a `HomekitEvent` → `GenericCharacteristic` receives event and updates value → Notifies HomeKit server.
-- **HomeKit characteristic changes** → `GenericCharacteristic` (or server) publishes a `HomekitEvent` → `CharacteristicItemMapper` receives event and updates openHAB Item via `EventPublisher`.
+- **Item state changes** → `CharacteristicItemMapper` publishes a `HomekitEvent` → `HomekitGenericCharacteristic` receives event and updates value → Notifies HomeKit server.
+- **HomeKit characteristic changes** → `HomekitGenericCharacteristic` (or server) publishes a `HomekitEvent` → `CharacteristicItemMapper` receives event and updates openHAB Item via `EventPublisher`.
 
 ---
 
@@ -6291,7 +6291,7 @@ public class GenericCharacteristic<T> extends Characteristic<T> {
 |-------------------|-----------------------------------------------------|------------------------------|
 | Orchestration     | Lifecycle, config, registry, mapping management     | HomekitItemBridge            |
 | Mapping           | Event subscription, value translation, transformation | CharacteristicItemMapper     |
-| Transport/Event   | Event publication/subscription, HomeKit comms       | HomekitEventManager, GenericCharacteristic |
+| Transport/Event   | Event publication/subscription, HomeKit comms       | HomekitEventManager, HomekitGenericCharacteristic |
 
 ---
 
@@ -6346,7 +6346,7 @@ Thing mqtt:topic:mysensor "My Sensor" @ "Hallway" {
 
 - **What goes here:**  
   - Per-Thing or per-ThingType HomeKit mapping
-  - Per-Channel to Characteristic mapping
+  - Per-Channel to HomekitCharacteristic mapping
   - Transformation rules (e.g., scaling, inverting, mapping values)
   - Mapper/factory selection (for binding-specific logic)
   - Global defaults and batch rules
@@ -6406,7 +6406,7 @@ metadata:
 | Thing/Channel definition     |      ✅      |           ❌           |         ❌          |
 | Per-Thing HomeKit mapping    |      ❌      |           ✅           |         ✅          |
 | Per-ThingType mapping        |      ❌      |           ✅           |         ❌          |
-| Channel→Characteristic map   |      ❌      |           ✅           |         ✅          |
+| Channel→HomekitCharacteristic map   |      ❌      |           ✅           |         ✅          |
 | Transformation rules         |      ❌      |           ✅           |         ✅          |
 | Mapper/factory selection     |      ❌      |           ✅           |         ❌          |
 | Batch/wildcard mapping       |      ❌      |           ✅           |         ❌          |
@@ -6733,9 +6733,9 @@ for (Item item : itemRegistry.getItems()) {
 
 ---
 
-### **6. Default Characteristic Mapping Table**
+### **6. Default HomekitCharacteristic Mapping Table**
 
-| Item Type | Default HomeKit Service | Default Characteristic |
+| Item Type | Default HomeKit HomekitService | Default HomekitCharacteristic |
 |-----------|------------------------|-----------------------|
 | Switch    | Lightbulb/Outlet       | On                    |
 | Dimmer    | Lightbulb              | Brightness            |
@@ -6814,8 +6814,8 @@ If you use **metadata** (as in the current implementation of `HomekitItemBridge.
 
 ### **2. What Can Be Specified in Metadata?**
 
-- **Service type** (e.g., `"Lightbulb"`, `"Outlet"`, `"ContactSensor"`)
-- **Characteristic** (e.g., `"On"`, `"Brightness"`, `"ContactSensorState"`)
+- **HomekitService type** (e.g., `"Lightbulb"`, `"Outlet"`, `"ContactSensor"`)
+- **HomekitCharacteristic** (e.g., `"On"`, `"Brightness"`, `"ContactSensorState"`)
 - **Transformation rules** (e.g., scaling, inverting, mapping values)
 - **Custom mapping logic** (if your bridge supports it)
 - **Multiple characteristics** (for more complex Items)
@@ -7097,7 +7097,7 @@ private @Nullable String getHomekitBindingConfig(Item item) {
 
 ---
 
-## **3. Using the Binding Config in Accessory/Service/Characteristic Creation**
+## **3. Using the Binding Config in HomekitAccessory/HomekitService/HomekitCharacteristic Creation**
 
 In your bridge logic, when processing each Item:
 
@@ -7107,13 +7107,13 @@ for (Item item : itemRegistry.getItems()) {
     if (config != null) {
         HomekitBindingConfig hkConfig = HomekitBindingConfig.parse(config);
 
-        // Create the HomeKit Accessory/Service for this Item
-        Accessory accessory = new GenericAccessory(...);
-        Service service = homekitFactory.createService(hkConfig.service, accessory, ...);
+        // Create the HomeKit HomekitAccessory/HomekitService for this Item
+        HomekitAccessory accessory = new HomekitGenericAccessory(...);
+        HomekitService service = homekitFactory.createService(hkConfig.service, accessory, ...);
 
         // Add characteristics as specified
         for (String characteristicType : hkConfig.characteristics) {
-            Characteristic<?> characteristic = homekitFactory.createCharacteristic(characteristicType, service, ...);
+            HomekitCharacteristic<?> characteristic = homekitFactory.createCharacteristic(characteristicType, service, ...);
             service.addCharacteristic(characteristic);
             // Set up mappers/subscriptions as usual
         }
@@ -7137,11 +7137,11 @@ if (config != null) {
     // hkConfig.service == "WindowCovering"
     // hkConfig.characteristics == ["WindowCovering.CurrentPosition", "WindowCovering.TargetPosition", "WindowCovering.PositionState"]
 
-    Accessory accessory = new GenericAccessory(...);
-    Service service = homekitFactory.createService(hkConfig.service, accessory, ...);
+    HomekitAccessory accessory = new HomekitGenericAccessory(...);
+    HomekitService service = homekitFactory.createService(hkConfig.service, accessory, ...);
 
     for (String characteristicType : hkConfig.characteristics) {
-        Characteristic<?> characteristic = homekitFactory.createCharacteristic(characteristicType, service, ...);
+        HomekitCharacteristic<?> characteristic = homekitFactory.createCharacteristic(characteristicType, service, ...);
         service.addCharacteristic(characteristic);
         // Set up event mappers/subscriptions
     }
@@ -7412,7 +7412,7 @@ String rawDef = provider.getRawItemDefinition(item);
 
 ## **5. Summary Table**
 
-| Method                      | Purpose                                  |
+| HomekitMethod                      | Purpose                                  |
 |-----------------------------|------------------------------------------|
 | addRawItemDefinition(line)  | Store the raw definition for each item   |
 | getRawItemDefinition(item)  | Retrieve the raw definition by item name |
@@ -7563,7 +7563,7 @@ Here’s how you can do it:
 ```items
 Rollershutter window_covering "Window Rollershutter" {homekit="WindowCovering, WindowCovering.CurrentPosition, WindowCovering.TargetPosition, WindowCovering.PositionState"}
 ```
-- **Service:** `WindowCovering`
+- **HomekitService:** `WindowCovering`
 - **Characteristics:** `WindowCovering.CurrentPosition`, `WindowCovering.TargetPosition`, `WindowCovering.PositionState`
 
 ---
@@ -8085,7 +8085,7 @@ things:
 ### **3. At Runtime**
 
 - Your HomeKit bridge reads the `homekit` metadata from each Thing (or Channel).
-- It uses this to set up the HomeKit Accessory, Service, and Characteristic mappings.
+- It uses this to set up the HomeKit HomekitAccessory, HomekitService, and HomekitCharacteristic mappings.
 
 ---
 
@@ -8256,7 +8256,7 @@ Absolutely—there are several **additional considerations** to ensure a robust,
 
 ---
 
-## 1. **Accessory/Service/Characteristic Uniqueness**
+## 1. **HomekitAccessory/HomekitService/HomekitCharacteristic Uniqueness**
 
 - **HomeKit requires unique accessory IDs and unique characteristic instance IDs.**
 - Ensure that, across both bridges, you do not accidentally create duplicate accessories or characteristics with the same UID or instance ID.
@@ -8264,7 +8264,7 @@ Absolutely—there are several **additional considerations** to ensure a robust,
 
 ---
 
-## 2. **Consistent Accessory Naming and Room Assignment**
+## 2. **Consistent HomekitAccessory Naming and Room Assignment**
 
 - If both bridges are used, ensure that accessory names and room assignments in HomeKit are consistent and user-friendly.
 - Allow users to override names/rooms via metadata or mapping config.
@@ -8570,7 +8570,7 @@ Great question!
   For each Item/Thing, show what HomeKit service/characteristics it is mapped to, and by which bridge.
 - **Validation errors/warnings:**  
   List all mapping issues found during validation.
-- **Accessory/characteristic registry:**  
+- **HomekitAccessory/characteristic registry:**  
   Show all currently exposed HomeKit accessories and their details.
 - **Suggestions:**  
   Offer actionable suggestions for fixing mapping issues.
@@ -9051,24 +9051,24 @@ for (ValidationResult result : results) {
 
 _**User**_
 
-MandatoryCharacteristicValidator could use the existing @HomekitFactory.java and classes imheriting from @GenericService.java to detect which Characteristics are linked to a given @Service.java. Type() of the Characterstics could be used to check if a characteristic of a given type is present. Provide an implementation
+MandatoryCharacteristicValidator could use the existing @HomekitFactory.java and classes imheriting from @HomekitGenericService.java to detect which Characteristics are linked to a given @HomekitService.java. Type() of the Characterstics could be used to check if a characteristic of a given type is present. Provide an implementation
 
 ---
 
 _**Assistant**_
 
-Absolutely! Here’s a **concrete implementation** of `MandatoryCharacteristicValidator` that leverages the existing `HomekitFactory` and the `Service`/`GenericService`/`Characteristic` APIs to validate that all mandatory characteristics for a HomeKit service are present in the actual `Service` instance.
+Absolutely! Here’s a **concrete implementation** of `MandatoryCharacteristicValidator` that leverages the existing `HomekitFactory` and the `HomekitService`/`HomekitGenericService`/`HomekitCharacteristic` APIs to validate that all mandatory characteristics for a HomeKit service are present in the actual `HomekitService` instance.
 
-This approach is more robust than just parsing metadata, as it checks the actual runtime state of the Service and its Characteristics.
+This approach is more robust than just parsing metadata, as it checks the actual runtime state of the HomekitService and its Characteristics.
 
 ---
 
 ## **Assumptions**
 
 - You have access to a `HomekitFactory` instance (injected or passed in).
-- You have a way to get the `Service` instance for the Item (e.g., via the bridge or accessory registry).
+- You have a way to get the `HomekitService` instance for the Item (e.g., via the bridge or accessory registry).
 - The `HomekitFactory` can provide the set of mandatory characteristic types for a given service type.
-- The `Service` instance exposes its characteristics via `getCharacteristics()`.
+- The `HomekitService` instance exposes its characteristics via `getCharacteristics()`.
 
 ---
 
@@ -9078,8 +9078,8 @@ This approach is more robust than just parsing metadata, as it checks the actual
 import org.openhab.core.items.Item;
 import org.openhab.core.items.Metadata;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
-import org.openhab.io.homekit.api.hap.Service;
-import org.openhab.io.homekit.api.hap.Characteristic;
+import org.openhab.io.homekit.api.hap.HomekitService;
+import org.openhab.io.homekit.api.hap.HomekitCharacteristic;
 import org.osgi.service.component.annotations.Component;
 
 import java.util.*;
@@ -9099,7 +9099,7 @@ public class MandatoryCharacteristicValidator implements HomekitMappingValidator
     public ValidationResult validate(Item item, Metadata meta, MapperFactoryRegistry registry) {
         String itemName = item.getName();
         String serviceType = null;
-        Service service = null;
+        HomekitService service = null;
 
         // 1. Extract service type from metadata
         try {
@@ -9113,10 +9113,10 @@ public class MandatoryCharacteristicValidator implements HomekitMappingValidator
             return new ValidationResult(ValidationResult.Status.ERROR, itemName, "No 'service' specified in HomeKit metadata.");
         }
 
-        // 2. Get the Service instance for this Item (this depends on your bridge/accessory registry)
+        // 2. Get the HomekitService instance for this Item (this depends on your bridge/accessory registry)
         service = getServiceForItem(item, serviceType);
         if (service == null) {
-            return new ValidationResult(ValidationResult.Status.ERROR, itemName, "No Service instance found for service type: " + serviceType);
+            return new ValidationResult(ValidationResult.Status.ERROR, itemName, "No HomekitService instance found for service type: " + serviceType);
         }
 
         // 3. Get the set of mandatory characteristic types for this service type
@@ -9124,9 +9124,9 @@ public class MandatoryCharacteristicValidator implements HomekitMappingValidator
             .filter(type -> homekitFactory.supportsServiceType(serviceType) && isMandatoryForService(serviceType, type))
             .collect(Collectors.toSet());
 
-        // 4. Get the set of actual characteristic types present in the Service
+        // 4. Get the set of actual characteristic types present in the HomekitService
         Set<String> presentTypes = service.getCharacteristics().stream()
-            .map(Characteristic::getInstanceType)
+            .map(HomekitCharacteristic::getInstanceType)
             .collect(Collectors.toSet());
 
         // 5. Check for missing mandatory characteristics
@@ -9146,12 +9146,12 @@ public class MandatoryCharacteristicValidator implements HomekitMappingValidator
     }
 
     /**
-     * Utility to get the Service instance for an Item and service type.
+     * Utility to get the HomekitService instance for an Item and service type.
      * This is a placeholder; actual implementation depends on your bridge/accessory registry.
      */
-    private Service getServiceForItem(Item item, String serviceType) {
+    private HomekitService getServiceForItem(Item item, String serviceType) {
         // Example: look up the accessory for the item, then get the service by type
-        // Accessory accessory = accessoryRegistry.getByItem(item);
+        // HomekitAccessory accessory = accessoryRegistry.getByItem(item);
         // return accessory.getServices().stream().filter(s -> s.isType(serviceType)).findFirst().orElse(null);
         return null; // Implement as needed
     }
@@ -9174,7 +9174,7 @@ public class MandatoryCharacteristicValidator implements HomekitMappingValidator
 ## **Key Points**
 
 - **Uses HomekitFactory** to determine which characteristics are supported/mandatory for a service.
-- **Inspects the actual Service instance** to see which characteristics are present.
+- **Inspects the actual HomekitService instance** to see which characteristics are present.
 - **Reports missing mandatory characteristics** as errors.
 - **Pluggable as an OSGi component** for extensibility.
 
@@ -9184,13 +9184,13 @@ public class MandatoryCharacteristicValidator implements HomekitMappingValidator
 
 - Register this validator as an OSGi component.
 - Inject `HomekitFactory` (and any other needed services) via OSGi.
-- Call `validate()` for each Item/Service mapping during validation.
+- Call `validate()` for each Item/HomekitService mapping during validation.
 
 ---
 
 ## **Extending for Real-World Use**
 
-- Implement `getServiceForItem()` to look up the actual Service instance for the Item.
+- Implement `getServiceForItem()` to look up the actual HomekitService instance for the Item.
 - Implement `isMandatoryForService()` to use a real registry or config of mandatory characteristics per service type (possibly extending `HomekitFactory`).
 
 ---
@@ -9208,7 +9208,7 @@ public class MandatoryCharacteristicValidator implements HomekitMappingValidator
 
 _**User**_
 
-How can the mandatory Characteristics for a Service be detected? can java reflection be used on the Service.class ? Mandatory Characteristics are added via the addCharacteristics() method of Service
+How can the mandatory Characteristics for a HomekitService be detected? can java reflection be used on the HomekitService.class ? Mandatory Characteristics are added via the addCharacteristics() method of HomekitService
 
 ---
 
@@ -9216,17 +9216,17 @@ _**Assistant**_
 
 Excellent and very insightful question!
 
-### **How can mandatory Characteristics for a Service be detected?**
+### **How can mandatory Characteristics for a HomekitService be detected?**
 
 #### **1. Theoretical Approach**
 
-- In HomeKit, each Service type (e.g., Lightbulb, Outlet, WindowCovering) has a set of mandatory characteristics, as defined by the HomeKit Accessory Protocol (HAP) specification.
-- In your codebase, these mandatory characteristics are typically added in the `addCharacteristics()` method of each concrete `Service` class (which extends or implements `Service` or `GenericService`).
+- In HomeKit, each HomekitService type (e.g., Lightbulb, Outlet, WindowCovering) has a set of mandatory characteristics, as defined by the HomeKit HomekitAccessory Protocol (HAP) specification.
+- In your codebase, these mandatory characteristics are typically added in the `addCharacteristics()` method of each concrete `HomekitService` class (which extends or implements `HomekitService` or `HomekitGenericService`).
 
 #### **2. Can Java Reflection Be Used?**
 
 **Yes, but with caveats:**
-- You can use reflection to inspect the `addCharacteristics()` method of a `Service` class.
+- You can use reflection to inspect the `addCharacteristics()` method of a `HomekitService` class.
 - If the method is not overridden, or if it uses dynamic logic (e.g., based on config), reflection may not give you a static list.
 - If the method is overridden and calls `addCharacteristic(new OnCharacteristic(...))`, you can parse the method body (with bytecode analysis or source parsing), but this is complex and brittle.
 
@@ -9250,8 +9250,8 @@ public static Set<String> getMandatoryCharacteristics(String serviceType) {
 }
 ```
 
-##### **B. Use HomekitFactory or Service Metadata**
-- If your `HomekitFactory` or `Service` classes expose a method like `getMandatoryCharacteristicTypes()`, use that.
+##### **B. Use HomekitFactory or HomekitService Metadata**
+- If your `HomekitFactory` or `HomekitService` classes expose a method like `getMandatoryCharacteristicTypes()`, use that.
 
 ##### **C. Reflection (Not Recommended for This Use Case)**
 - You could use reflection to:
@@ -9260,7 +9260,7 @@ public static Set<String> getMandatoryCharacteristics(String serviceType) {
   - You would need bytecode analysis (e.g., ASM, Javassist) or source code parsing, which is complex and fragile.
 
 ##### **D. Annotations (If You Control the Code)**
-- If you annotate mandatory characteristics in your Service classes, you could use reflection to read those annotations.
+- If you annotate mandatory characteristics in your HomekitService classes, you could use reflection to read those annotations.
 
 ---
 
@@ -9279,7 +9279,7 @@ public static Set<String> getMandatoryCharacteristics(String serviceType) {
 ### **Conclusion**
 
 - **Do NOT rely on Java reflection to detect mandatory characteristics by inspecting method bodies.**
-- **Use a static registry/map, or expose the info via your HomekitFactory or Service classes.**
+- **Use a static registry/map, or expose the info via your HomekitFactory or HomekitService classes.**
 - This is robust, maintainable, and matches how HomeKit libraries and the HAP spec are structured.
 
 ---
@@ -9297,7 +9297,7 @@ Assume we create a static map of mandatory characteristics, how would you map it
 _**Assistant**_
 
 Great question!  
-The **best practice** is to use **the same identifier you use at runtime to look up and compare characteristics**. In openHAB HomeKit, this is typically the **characteristic type string** (e.g., `"On"`, `"CurrentPosition"`, `"TargetPosition"`), which matches the HomeKit/HAP specification and is used by your Service and Characteristic APIs.
+The **best practice** is to use **the same identifier you use at runtime to look up and compare characteristics**. In openHAB HomeKit, this is typically the **characteristic type string** (e.g., `"On"`, `"CurrentPosition"`, `"TargetPosition"`), which matches the HomeKit/HAP specification and is used by your HomekitService and HomekitCharacteristic APIs.
 
 ---
 
@@ -9315,7 +9315,7 @@ The **best practice** is to use **the same identifier you use at runtime to look
 ## **Why Use Type Strings?**
 
 - **Consistency:**  
-  Your `Service` and `Characteristic` classes already use type strings for identification (see `getInstanceType()` and `isType(String)`).
+  Your `HomekitService` and `HomekitCharacteristic` classes already use type strings for identification (see `getInstanceType()` and `isType(String)`).
 - **Portability:**  
   Type strings are stable across refactoring and can be used in config, metadata, and mapping files.
 - **Alignment with HomeKit Spec:**  
@@ -9342,7 +9342,7 @@ public static Set<String> getMandatoryCharacteristics(String serviceType) {
 ```java
 Set<String> mandatory = getMandatoryCharacteristics(service.getInstanceType());
 Set<String> present = service.getCharacteristics().stream()
-    .map(Characteristic::getInstanceType)
+    .map(HomekitCharacteristic::getInstanceType)
     .collect(Collectors.toSet());
 for (String m : mandatory) {
     if (!present.contains(m)) {
@@ -9398,7 +9398,7 @@ You are correct: in openHAB HomeKit (and in the HAP specification), the **canoni
 
 ## **How to Use in Your Static Map**
 
-- **Key:** Service type UUID (e.g., `"00000043-0000-1000-8000-0026BB765291"` for Lightbulb)
+- **Key:** HomekitService type UUID (e.g., `"00000043-0000-1000-8000-0026BB765291"` for Lightbulb)
 - **Value:** Set of mandatory characteristic type UUIDs (e.g., `"00000025-0000-1000-8000-0026BB765291"` for "CurrentPosition")
 
 **Example:**
@@ -9425,7 +9425,7 @@ public static Set<String> getMandatoryCharacteristics(String serviceTypeUUID) {
 String serviceTypeUUID = service.getInstanceType(); // or service.getType()
 Set<String> mandatory = getMandatoryCharacteristics(serviceTypeUUID);
 Set<String> present = service.getCharacteristics().stream()
-    .map(Characteristic::getType) // or getInstanceType(), as appropriate
+    .map(HomekitCharacteristic::getType) // or getInstanceType(), as appropriate
     .collect(Collectors.toSet());
 for (String m : mandatory) {
     if (!present.contains(m)) {
@@ -9472,8 +9472,8 @@ This is a great idea and is possible with a bit of Java reflection and classpath
 ## **1. What You Want to Do**
 
 - **Automatically generate a `Map<String, Set<String>>`** where:
-  - The key is the service type UUID (from each Service class, e.g., `getType()` or a static `TYPE` field).
-  - The value is the set of characteristic type UUIDs that are added as mandatory in the `addCharacteristics()` method of that Service.
+  - The key is the service type UUID (from each HomekitService class, e.g., `getType()` or a static `TYPE` field).
+  - The value is the set of characteristic type UUIDs that are added as mandatory in the `addCharacteristics()` method of that HomekitService.
 
 ---
 
@@ -9481,15 +9481,15 @@ This is a great idea and is possible with a bit of Java reflection and classpath
 
 ### **A. Classpath Scanning**
 
-- Use a library like [Reflections](https://github.com/ronmamo/reflections) to scan for all classes in your `org.openhab.io.homekit.library.service` package that extend `GenericService` or implement `Service`.
+- Use a library like [Reflections](https://github.com/ronmamo/reflections) to scan for all classes in your `org.openhab.io.homekit.library.service` package that extend `HomekitGenericService` or implement `HomekitService`.
 
-### **B. Reflection to Get Service Type**
+### **B. Reflection to Get HomekitService Type**
 
-- For each Service class, get the static `TYPE` field (or call `getType()` if static).
+- For each HomekitService class, get the static `TYPE` field (or call `getType()` if static).
 
 ### **C. Reflection to Get Mandatory Characteristics**
 
-- Instantiate the Service (with dummy arguments if needed).
+- Instantiate the HomekitService (with dummy arguments if needed).
 - Call `addCharacteristics()` (or inspect the constructor if characteristics are added there).
 - After calling `addCharacteristics()`, call `getCharacteristics()` to get the set of characteristics.
 - For each characteristic, get its type UUID (via `getType()` or similar).
@@ -9502,9 +9502,9 @@ This is a great idea and is possible with a bit of Java reflection and classpath
 
 ```java
 import org.reflections.Reflections;
-import org.openhab.io.homekit.api.hap.Service;
-import org.openhab.io.homekit.api.hap.Characteristic;
-import org.openhab.io.homekit.internal.service.GenericService;
+import org.openhab.io.homekit.api.hap.HomekitService;
+import org.openhab.io.homekit.api.hap.HomekitCharacteristic;
+import org.openhab.io.homekit.internal.service.HomekitGenericService;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -9514,11 +9514,11 @@ public class MandatoryCharacteristicMapGenerator {
     public static Map<String, Set<String>> generate() {
         Map<String, Set<String>> result = new HashMap<>();
 
-        // Scan for all Service classes in the library
+        // Scan for all HomekitService classes in the library
         Reflections reflections = new Reflections("org.openhab.io.homekit.library.service");
-        Set<Class<? extends GenericService>> serviceClasses = reflections.getSubTypesOf(GenericService.class);
+        Set<Class<? extends HomekitGenericService>> serviceClasses = reflections.getSubTypesOf(HomekitGenericService.class);
 
-        for (Class<? extends GenericService> serviceClass : serviceClasses) {
+        for (Class<? extends HomekitGenericService> serviceClass : serviceClasses) {
             try {
                 // Get the static TYPE field
                 Field typeField = serviceClass.getDeclaredField("TYPE");
@@ -9527,7 +9527,7 @@ public class MandatoryCharacteristicMapGenerator {
 
                 // Instantiate the service with dummy arguments
                 // (You may need to adjust this for your constructors)
-                Service service = serviceClass.getConstructor(/* appropriate args */)
+                HomekitService service = serviceClass.getConstructor(/* appropriate args */)
                         .newInstance(/* dummy args */);
 
                 // Call addCharacteristics()
@@ -9535,7 +9535,7 @@ public class MandatoryCharacteristicMapGenerator {
 
                 // Get the set of characteristic type UUIDs
                 Set<String> charTypes = new HashSet<>();
-                for (Characteristic<?> c : service.getCharacteristics()) {
+                for (HomekitCharacteristic<?> c : service.getCharacteristics()) {
                     charTypes.add(c.getType());
                 }
 
@@ -9555,9 +9555,9 @@ public class MandatoryCharacteristicMapGenerator {
 ## **4. Caveats and Notes**
 
 - **Constructor Arguments:**  
-  You may need to provide dummy or mock arguments to instantiate each Service. If this is not possible, you may need to use a custom test harness or manually list the services.
+  You may need to provide dummy or mock arguments to instantiate each HomekitService. If this is not possible, you may need to use a custom test harness or manually list the services.
 - **Dynamic Characteristics:**  
-  If a Service adds characteristics based on config or constructor arguments, you may not get the full set of mandatory characteristics unless you simulate the correct environment.
+  If a HomekitService adds characteristics based on config or constructor arguments, you may not get the full set of mandatory characteristics unless you simulate the correct environment.
 - **Performance:**  
   This approach is best used as a build-time or test-time tool, not at runtime in production.
 
@@ -9565,7 +9565,7 @@ public class MandatoryCharacteristicMapGenerator {
 
 ## **5. Alternative: Annotation or Static List**
 
-- If you control the codebase, consider adding an annotation or static method to each Service class listing its mandatory characteristics. This is more robust and easier to maintain.
+- If you control the codebase, consider adding an annotation or static method to each HomekitService class listing its mandatory characteristics. This is more robust and easier to maintain.
 
 ---
 
@@ -9604,12 +9604,12 @@ _**Assistant**_
 | `src/main/java/org/openhab/io/homekit/library/service/ContactSensorService.java` | L16-57 |
 | `src/main/java/org/openhab/io/homekit/library/service/ColorLightBulbService.java` | L27-54 |
 | `src/main/java/org/openhab/io/homekit/library/service/OutletService.java` | L1-48 |
-| `src/main/java/org/openhab/io/homekit/library/service/AccessoryInformationService.java` | L17-59 |
+| `src/main/java/org/openhab/io/homekit/library/service/HomekitAccessoryInformationService.java` | L17-59 |
 | `src/main/java/org/openhab/io/homekit/library/service/ThermostatService.java` | L16-58 |
 | `src/main/java/org/openhab/io/homekit/library/service/WindowCoveringService.java` | L48-65 |
 | `src/main/java/org/openhab/io/homekit/library/service/WindowCoveringService.java` | L20-48 |
 | `src/main/java/org/openhab/io/homekit/library/service/ContactSensorService.java` | L1-16 |
-| `src/main/java/org/openhab/io/homekit/library/service/AccessoryInformationService.java` | L1-17 |
+| `src/main/java/org/openhab/io/homekit/library/service/HomekitAccessoryInformationService.java` | L1-17 |
 | `src/main/java/org/openhab/io/homekit/library/service/WindowCoveringService.java` | L1-20 |
 | `src/main/java/org/openhab/io/homekit/library/service/ThermostatService.java` | L1-16 |
 
@@ -9623,7 +9623,7 @@ _**Assistant**_
 | File | Lines |
 |------|-------|
 | `src/main/java/org/openhab/io/homekit/library/service/HAPProtocolInformationService.java` | L1-45 |
-| `src/main/java/org/openhab/io/homekit/library/service/AccessoryInformationService.java` | L17-59 |
+| `src/main/java/org/openhab/io/homekit/library/service/HomekitAccessoryInformationService.java` | L17-59 |
 | `src/main/java/org/openhab/io/homekit/library/service/ColorLightBulbService.java` | L27-54 |
 | `src/main/java/org/openhab/io/homekit/library/service/WindowCoveringService.java` | L20-48 |
 | `src/main/java/org/openhab/io/homekit/library/service/DimmableLightBulbService.java` | L1-48 |
@@ -9633,7 +9633,7 @@ _**Assistant**_
 | `src/main/java/org/openhab/io/homekit/library/service/SwitchService.java` | L1-45 |
 | `src/main/java/org/openhab/io/homekit/library/service/BatteryService.java` | L1-45 |
 | `src/main/java/org/openhab/io/homekit/library/service/OutletService.java` | L1-48 |
-| `src/main/java/org/openhab/io/homekit/library/service/AccessoryInformationService.java` | L1-17 |
+| `src/main/java/org/openhab/io/homekit/library/service/HomekitAccessoryInformationService.java` | L1-17 |
 | `src/main/java/org/openhab/io/homekit/library/service/ContactSensorService.java` | L1-16 |
 | `src/main/java/org/openhab/io/homekit/library/service/ColorLightBulbService.java` | L1-27 |
 | `src/main/java/org/openhab/io/homekit/library/service/WindowCoveringService.java` | L48-65 |
@@ -9645,14 +9645,14 @@ _**Assistant**_
 
 ---
 
-Based on the actual Java source code in your solution, here is a proposed `Map<String, Set<String>>` that maps each HomeKit Service TYPE UUID to the set of mandatory Characteristics (by their class name, but you could use their `TYPE` string as well if you prefer):
+Based on the actual Java source code in your solution, here is a proposed `Map<String, Set<String>>` that maps each HomeKit HomekitService TYPE UUID to the set of mandatory Characteristics (by their class name, but you could use their `TYPE` string as well if you prefer):
 
 ```java
 import java.util.*;
 
 public class MandatoryCharacteristicsMap {
     public static final Map<String, Set<String>> SERVICE_TO_MANDATORY_CHARACTERISTICS = Map.ofEntries(
-        // Accessory Information Service
+        // HomekitAccessory Information HomekitService
         Map.entry("0000003E-0000-1000-8000-0026BB765291", Set.of(
             "IdentifyCharacteristic",
             "ManufacturerCharacteristic",
@@ -9718,7 +9718,7 @@ public class MandatoryCharacteristicsMap {
 ```
 
 **Notes:**
-- The keys are the Service TYPE UUIDs as defined in each service class.
+- The keys are the HomekitService TYPE UUIDs as defined in each service class.
 - The values are the set of mandatory characteristic class names as seen in the `addCharacteristics()` method of each service.
 - For services like `LightBulbService`, `DimmableLightBulbService`, and `ColorLightBulbService`, you may want to further distinguish by subclass or add additional logic if you want to enforce extra characteristics for dimmable/color bulbs.
 - If you want to use the characteristic `TYPE` UUIDs instead of class names, you can extract those from the characteristic classes in a similar way.
@@ -9781,7 +9781,7 @@ import java.util.*;
 
 public class MandatoryCharacteristicsMap {
     public static final Map<String, Set<String>> SERVICE_TO_MANDATORY_CHARACTERISTICS = Map.ofEntries(
-        // Accessory Information Service
+        // HomekitAccessory Information HomekitService
         Map.entry("0000003E-0000-1000-8000-0026BB765291", Set.of(
             "00000014-0000-1000-8000-0026BB765291", // IdentifyCharacteristic
             "00000020-0000-1000-8000-0026BB765291", // ManufacturerCharacteristic
@@ -9872,15 +9872,15 @@ Below is a **comprehensive list of Validator types** you should consider impleme
 ## **Core Validator Types**
 
 ### 1. **MandatoryCharacteristicValidator**
-- **Purpose:** Ensures all mandatory HomeKit characteristics are present for each Service.
-- **Checks:** Each Service instance has all required characteristics (by TYPE UID).
+- **Purpose:** Ensures all mandatory HomeKit characteristics are present for each HomekitService.
+- **Checks:** Each HomekitService instance has all required characteristics (by TYPE UID).
 
 ### 2. **ChannelCharacteristicMappingValidator**
-- **Purpose:** Ensures every mapped HomeKit Characteristic is correctly linked to an openHAB Channel (and vice versa).
+- **Purpose:** Ensures every mapped HomeKit HomekitCharacteristic is correctly linked to an openHAB Channel (and vice versa).
 - **Checks:** No unmapped mandatory characteristics; no orphaned channels.
 
 ### 3. **TypeCompatibilityValidator**
-- **Purpose:** Ensures the data types of openHAB Channels/Items are compatible with the mapped HomeKit Characteristic types.
+- **Purpose:** Ensures the data types of openHAB Channels/Items are compatible with the mapped HomeKit HomekitCharacteristic types.
 - **Checks:** E.g., a Switch channel is mapped to a Boolean characteristic, not a String.
 
 ### 4. **DuplicateMappingValidator**
@@ -9901,7 +9901,7 @@ Below is a **comprehensive list of Validator types** you should consider impleme
 
 ### 8. **ConfigurationCompletenessValidator**
 - **Purpose:** Ensures all required configuration parameters are set for each mapped entity.
-- **Checks:** E.g., Service name, instanceId, etc., are not missing.
+- **Checks:** E.g., HomekitService name, instanceId, etc., are not missing.
 
 ### 9. **EventSubscriptionValidator**
 - **Purpose:** Ensures all mapped characteristics/channels are properly subscribed to openHAB events and HomeKit events.
@@ -9989,7 +9989,7 @@ public class ValidationResult {
     public enum Severity { ERROR, WARNING, INFO }
     private final Severity severity;
     private final String message;
-    // Optionally: reference to the affected object (Item, Channel, Characteristic, etc.)
+    // Optionally: reference to the affected object (Item, Channel, HomekitCharacteristic, etc.)
 
     public ValidationResult(Severity severity, String message) {
         this.severity = severity;
@@ -10021,7 +10021,7 @@ public class MandatoryCharacteristicValidator implements MappingValidator {
                 if (!present.contains(req)) {
                     results.add(new ValidationResult(
                         ValidationResult.Severity.ERROR,
-                        "Service " + service.getType() + " is missing mandatory characteristic " + req
+                        "HomekitService " + service.getType() + " is missing mandatory characteristic " + req
                     ));
                 }
             }
@@ -10045,7 +10045,7 @@ public class ChannelCharacteristicMappingValidator implements MappingValidator {
                 if (!service.hasChannelForCharacteristic(charType)) {
                     results.add(new ValidationResult(
                         ValidationResult.Severity.ERROR,
-                        "Characteristic " + charType + " in service " + service.getType() + " is not mapped to any channel"
+                        "HomekitCharacteristic " + charType + " in service " + service.getType() + " is not mapped to any channel"
                     ));
                 }
             }
@@ -10136,7 +10136,7 @@ public class OptionalCharacteristicValidator implements MappingValidator {
                 if (!present.contains(opt)) {
                     results.add(new ValidationResult(
                         ValidationResult.Severity.INFO,
-                        "Service " + service.getType() + " is missing optional characteristic " + opt
+                        "HomekitService " + service.getType() + " is missing optional characteristic " + opt
                     ));
                 }
             }
@@ -10209,7 +10209,7 @@ public class ConfigurationCompletenessValidator implements MappingValidator {
             if (service.getServiceName() == null || service.getServiceName().isEmpty()) {
                 results.add(new ValidationResult(
                     ValidationResult.Severity.ERROR,
-                    "Service " + service.getType() + " is missing a service name"
+                    "HomekitService " + service.getType() + " is missing a service name"
                 ));
             }
             // Add more checks as needed
@@ -10298,7 +10298,7 @@ import java.util.Set;
 
 public class TypeCompatibilityUtil {
 
-    // Map HomeKit Characteristic TYPE UID → Set of compatible openHAB channel types
+    // Map HomeKit HomekitCharacteristic TYPE UID → Set of compatible openHAB channel types
     private static final Map<String, Set<String>> CHARACTERISTIC_TYPE_TO_CHANNEL_TYPES = Map.ofEntries(
         // OnCharacteristic (Switch, Dimmer, etc.)
         Map.entry("00000025-0000-1000-8000-0026BB765291", Set.of("Switch", "Dimmer", "Contact")),
@@ -10385,7 +10385,7 @@ import java.util.*;
 
 public class TypeCompatibilityUtil {
 
-    // Map HomeKit Characteristic TYPE UID → Set of compatible openHAB channel types
+    // Map HomeKit HomekitCharacteristic TYPE UID → Set of compatible openHAB channel types
     private static final Map<String, Set<String>> CHARACTERISTIC_TYPE_TO_CHANNEL_TYPES = Map.ofEntries(
         // OnCharacteristic (Switch, Dimmer, Contact)
         Map.entry("00000025-0000-1000-8000-0026BB765291", Set.of("Switch", "Dimmer", "Contact")),
@@ -10410,7 +10410,7 @@ public class TypeCompatibilityUtil {
         Map.entry("default", Set.of("Switch", "Dimmer", "Number", "Contact", "Color", "Rollershutter", "String"))
     );
 
-    // Map HomeKit Characteristic TYPE UID → Set of compatible openHAB Item types
+    // Map HomeKit HomekitCharacteristic TYPE UID → Set of compatible openHAB Item types
     private static final Map<String, Set<String>> CHARACTERISTIC_TYPE_TO_ITEM_TYPES = Map.ofEntries(
         // OnCharacteristic
         Map.entry("00000025-0000-1000-8000-0026BB765291", Set.of("Switch", "Contact", "Dimmer")),
@@ -10538,7 +10538,7 @@ import java.util.Set;
 
 public class TypeCompatibilityUtil {
 
-    // HomeKit Characteristic TYPE UID → Set of compatible openHAB channel types
+    // HomeKit HomekitCharacteristic TYPE UID → Set of compatible openHAB channel types
     private static final Map<String, Set<String>> CHARACTERISTIC_TYPE_TO_CHANNEL_TYPES = Map.ofEntries(
         // OnCharacteristic
         Map.entry("00000025-0000-1000-8000-0026BB765291", Set.of("Switch", "Dimmer", "Contact")),
@@ -10562,7 +10562,7 @@ public class TypeCompatibilityUtil {
         Map.entry("default", Set.of("Switch", "Dimmer", "Number", "Contact", "Color", "Rollershutter", "String"))
     );
 
-    // HomeKit Characteristic TYPE UID → Set of compatible openHAB Item types
+    // HomeKit HomekitCharacteristic TYPE UID → Set of compatible openHAB Item types
     private static final Map<String, Set<String>> CHARACTERISTIC_TYPE_TO_ITEM_TYPES = Map.ofEntries(
         // OnCharacteristic
         Map.entry("00000025-0000-1000-8000-0026BB765291", Set.of("Switch", "Contact", "Dimmer")),
@@ -10665,7 +10665,7 @@ import java.util.Set;
 
 public class TypeCompatibilityUtil {
 
-    // HomeKit Characteristic TYPE UID → Set of compatible openHAB channel types
+    // HomeKit HomekitCharacteristic TYPE UID → Set of compatible openHAB channel types
     private static final Map<String, Set<String>> CHARACTERISTIC_TYPE_TO_CHANNEL_TYPES = Map.ofEntries(
         // OnCharacteristic
         Map.entry("00000025-0000-1000-8000-0026BB765291", Set.of("Switch", "Dimmer", "Contact")),
@@ -10689,7 +10689,7 @@ public class TypeCompatibilityUtil {
         Map.entry("default", Set.of("Switch", "Dimmer", "Number", "Contact", "Color", "Rollershutter", "String"))
     );
 
-    // HomeKit Characteristic TYPE UID → Set of compatible openHAB Item types
+    // HomeKit HomekitCharacteristic TYPE UID → Set of compatible openHAB Item types
     private static final Map<String, Set<String>> CHARACTERISTIC_TYPE_TO_ITEM_TYPES = Map.ofEntries(
         // OnCharacteristic
         Map.entry("00000025-0000-1000-8000-0026BB765291", Set.of("Switch", "Contact", "Dimmer")),
@@ -10863,9 +10863,9 @@ public List<ValidationResult> getValidationResults() {
 
 **Console/Log:**
 ```
-ERROR: Service 00000043-0000-1000-8000-0026BB765291 is missing mandatory characteristic 00000008-0000-1000-8000-0026BB765291
+ERROR: HomekitService 00000043-0000-1000-8000-0026BB765291 is missing mandatory characteristic 00000008-0000-1000-8000-0026BB765291
 WARNING: Channel window_position in service 0000008C-0000-1000-8000-0026BB765291 is not mapped to any characteristic
-INFO: Service 00000043-0000-1000-8000-0026BB765291 is missing optional characteristic 00000013-0000-1000-8000-0026BB765291
+INFO: HomekitService 00000043-0000-1000-8000-0026BB765291 is missing optional characteristic 00000013-0000-1000-8000-0026BB765291
 ```
 
 **UI/REST:**
@@ -10889,7 +10889,7 @@ INFO: Service 00000043-0000-1000-8000-0026BB765291 is missing optional character
 
 ---
 
-## **5. Example: Full Processing Method**
+## **5. Example: Full Processing HomekitMethod**
 
 ```java
 public void processValidationResults(List<ValidationResult> results) {
@@ -11130,7 +11130,7 @@ public class ThingMapping {
 
 ## **3. ServiceMapping**
 
-Represents a HomeKit Service mapped to a Thing or Item.
+Represents a HomeKit HomekitService mapped to a Thing or Item.
 
 ```java
 import java.util.List;
@@ -11139,7 +11139,7 @@ import java.util.stream.Collectors;
 
 public class ServiceMapping {
     private final String serviceName;
-    private final String type; // HomeKit Service TYPE UID
+    private final String type; // HomeKit HomekitService TYPE UID
     private final List<MappingEntry> mappings;
 
     public ServiceMapping(String serviceName, String type, List<MappingEntry> mappings) {
@@ -11186,7 +11186,7 @@ public class ServiceMapping {
 
 ## **4. MappingEntry**
 
-Represents a mapping between a HomeKit Characteristic and an openHAB Channel (or Item).
+Represents a mapping between a HomeKit HomekitCharacteristic and an openHAB Channel (or Item).
 
 ```java
 public class MappingEntry {
@@ -11494,7 +11494,7 @@ Great question!
 
 ### **E. Aggregation and Grouping**
 
-- Group results by Thing, Service, or Channel for user-friendly reporting.
+- Group results by Thing, HomekitService, or Channel for user-friendly reporting.
 - Aggregate similar issues for summary reporting.
 
 ---
@@ -11587,7 +11587,7 @@ public class ValidationResult {
 
 ## **5. User Feedback and Reporting**
 
-- **Group and summarize** results for the user (e.g., all issues for a Thing or Service).
+- **Group and summarize** results for the user (e.g., all issues for a Thing or HomekitService).
 - **Explain root causes** and suppress noise from cascading errors.
 - **Highlight blocking errors** that must be fixed before proceeding.
 
@@ -11759,12 +11759,12 @@ Ensuring **Synchronization & Consistency** between openHAB and HomeKit is critic
 ## **1. Event-Driven, Bidirectional Synchronization**
 
 - **Subscribe to openHAB Events:** Listen for state changes on Items/Channels (using the event bus or registry listeners).
-- **Subscribe to HomeKit Events:** Listen for HomeKit characteristic updates (e.g., via the LocalAccessoryServer or HAP callbacks).
+- **Subscribe to HomeKit Events:** Listen for HomeKit characteristic updates (e.g., via the HomekitLocalAccessoryServer or HAP callbacks).
 - **Update the Other Side:** When an event is received from one system, propagate the change to the other, but avoid feedback loops.
 
 **Example:**
-- openHAB Item changes → Update HomeKit Characteristic
-- HomeKit Characteristic changes (via Siri/app) → Send command to openHAB Item/Channel
+- openHAB Item changes → Update HomeKit HomekitCharacteristic
+- HomeKit HomekitCharacteristic changes (via Siri/app) → Send command to openHAB Item/Channel
 
 ---
 
@@ -12169,7 +12169,7 @@ Let me know if you want a concrete code sample for a full event handler or integ
 
 _**User**_
 
-Does this answer work given the actual implementations of @AccessoryServerUID.java @AccessoryUID.java @CharacteristicUID.java @ThingUIDItem 
+Does this answer work given the actual implementations of @HomekitAccessoryServerUID.java @HomekitAccessoryUID.java @HomekitCharacteristicUID.java @ThingUIDItem 
 
 ---
 
@@ -12183,13 +12183,13 @@ Let’s break down why, using your provided classes:
 
 ## **1. UID Structure in Your Classes**
 
-- **AccessoryServerUID**:  
+- **HomekitAccessoryServerUID**:  
   - Format: `"homekit:server:pairingId"`
   - Example: `"homekit:server:123456"`
-- **AccessoryUID**:  
+- **HomekitAccessoryUID**:  
   - Format: `"homekit:accessory:pairingId:accessoryId"`
   - Example: `"homekit:accessory:123456:1"`
-- **CharacteristicUID**:  
+- **HomekitCharacteristicUID**:  
   - Format: `"homekit:characteristic:pairingId:accessoryId:serviceId:characteristicId"`
   - Example: `"homekit:characteristic:123456:1:2:3"`
 - **ThingUID** (from openHAB core):  
@@ -12269,7 +12269,7 @@ You can reliably derive the origin and context of any event using the UID struct
 
 ---
 
-**If you want, I can provide a utility class that works directly with your `AccessoryServerUID`, `AccessoryUID`, `CharacteristicUID`, and openHAB `ThingUID` classes for even more type safety. Let me know!**
+**If you want, I can provide a utility class that works directly with your `HomekitAccessoryServerUID`, `HomekitAccessoryUID`, `HomekitCharacteristicUID`, and openHAB `ThingUID` classes for even more type safety. Let me know!**
 
 ---
 
@@ -12415,12 +12415,12 @@ This is especially important if:
 
 - Both bridges can publish and subscribe to a **management event bus** (could be openHAB’s event bus, OSGi EventAdmin, or a dedicated internal bus).
 - Events can be used for:
-  - **Discovery/Announcement:** “I am exposing Item X as HomeKit Accessory Y.”
+  - **Discovery/Announcement:** “I am exposing Item X as HomeKit HomekitAccessory Y.”
   - **Conflict Resolution:** “Thing Z is already exposed, do not expose its Items.”
-  - **State/Health Reporting:** “I am online/offline,” “Accessory registration failed,” etc.
+  - **State/Health Reporting:** “I am online/offline,” “HomekitAccessory registration failed,” etc.
   - **Migration/Sync:** “Please migrate Item X to Thing-based exposure.”
 
-### **B. Shared Registry or Coordination Service**
+### **B. Shared Registry or Coordination HomekitService**
 
 - Both bridges can register what they are exposing in a **shared registry** (e.g., a singleton service, or a distributed map).
 - Before exposing a new entity, each bridge checks the registry to avoid conflicts.
@@ -13310,7 +13310,7 @@ Absolutely—there are several architectural patterns and integration strategies
 ---
 
 ## **3. ProxyThing/ProxyAccessory Pattern**
-- **How:** Create a special “ProxyThing” or “ProxyAccessory” in openHAB that acts as a bridge, mapping a HomeKit Service/Characteristic to a specific Thing/Channel or Item.
+- **How:** Create a special “ProxyThing” or “ProxyAccessory” in openHAB that acts as a bridge, mapping a HomeKit HomekitService/HomekitCharacteristic to a specific Thing/Channel or Item.
 - **Pros:**  
   - Highly flexible, supports custom mappings and transformations.
   - Can be used for advanced scenarios (e.g., virtual/grouped accessories).
@@ -13354,7 +13354,7 @@ Absolutely—there are several architectural patterns and integration strategies
 
 ---
 
-## **7. External Bridge/Proxy (Standalone Service)**
+## **7. External Bridge/Proxy (Standalone HomekitService)**
 - **How:** Run a separate process (e.g., Node.js HAP-NodeJS, Homebridge, or a custom Java service) that connects to openHAB via REST/MQTT and exposes HomeKit accessories.
 - **Pros:**  
   - Decouples HomeKit logic from openHAB runtime.
@@ -13405,7 +13405,7 @@ Absolutely—there are several architectural patterns and integration strategies
 |-------------------------|---------------------------------|-------------------------------|
 | Item-based              | Simplicity, fine control        | Verbose for large setups      |
 | Thing/Channel-based     | Modern, bulk mapping            | Needs richer mapping logic    |
-| ProxyThing/Accessory    | Advanced, custom scenarios      | Complex config                |
+| ProxyThing/HomekitAccessory    | Advanced, custom scenarios      | Complex config                |
 | Metadata-driven         | Centralized, versioned config   | Needs parser/validation       |
 | UI/REST-driven          | User-friendly, dynamic          | UI/API development            |
 | Binding-specific        | Deep integration                | Duplication, maintenance      |
@@ -13430,14 +13430,14 @@ Absolutely—there are several architectural patterns and integration strategies
 
 _**User**_
 
-What are alternatives for the current architecture which is based on decoupled LocalAccessoryServer/RemoteAccessoryServer, the Accessory/Service/Characteristic hiarchy, the various HomekitBridges ?
+What are alternatives for the current architecture which is based on decoupled HomekitLocalAccessoryServer/HomekitRemoteAccessoryServer, the HomekitAccessory/HomekitService/HomekitCharacteristic hiarchy, the various HomekitBridges ?
 
 ---
 
 _**Assistant**_
 
 Great question!  
-The current architecture—based on a decoupled `LocalAccessoryServer`/`RemoteAccessoryServer`, the Accessory/Service/Characteristic hierarchy, and various HomekitBridges—is **modular, extensible, and closely follows the HomeKit Accessory Protocol (HAP) model**.  
+The current architecture—based on a decoupled `HomekitLocalAccessoryServer`/`HomekitRemoteAccessoryServer`, the HomekitAccessory/HomekitService/HomekitCharacteristic hierarchy, and various HomekitBridges—is **modular, extensible, and closely follows the HomeKit HomekitAccessory Protocol (HAP) model**.  
 However, there are alternative architectural patterns you could consider, each with its own trade-offs.
 
 ---
@@ -13459,10 +13459,10 @@ Instead of multiple bridges and servers, have a single, monolithic HomeKit bridg
 
 ---
 
-## **2. Flat Accessory Model (No Hierarchy)**
+## **2. Flat HomekitAccessory Model (No Hierarchy)**
 
 **Description:**  
-Flatten the Accessory/Service/Characteristic hierarchy into a single “exposed entity” abstraction, mapping directly from openHAB Items/Things/Channels to HomeKit endpoints.
+Flatten the HomekitAccessory/HomekitService/HomekitCharacteristic hierarchy into a single “exposed entity” abstraction, mapping directly from openHAB Items/Things/Channels to HomeKit endpoints.
 
 **Pros:**
 - Simpler mapping logic.
@@ -13630,25 +13630,25 @@ Absolutely! Here’s how you would **apply an Event-Driven Microservices archite
 
 ### **A. Example Microservices**
 
-- **Discovery Service:**  
+- **Discovery HomekitService:**  
   Listens for new openHAB Things/Items/Channels, publishes “entity discovered” events.
 
-- **Mapping Service:**  
+- **Mapping HomekitService:**  
   Subscribes to discovery events, applies mapping rules (from YAML, UI, etc.), and publishes “entity mapped” events.
 
-- **Accessory Service:**  
-  Subscribes to “entity mapped” events, creates HomeKit Accessory/Service/Characteristic objects, and manages their lifecycle.
+- **HomekitAccessory HomekitService:**  
+  Subscribes to “entity mapped” events, creates HomeKit HomekitAccessory/HomekitService/HomekitCharacteristic objects, and manages their lifecycle.
 
-- **Event Translation Service:**  
+- **Event Translation HomekitService:**  
   Listens for openHAB state/command events and HomeKit characteristic events, translates and republishes as needed.
 
-- **Management/Coordination Service:**  
+- **Management/Coordination HomekitService:**  
   Handles management events (e.g., conflict resolution, health checks, diagnostics).
 
-- **Diagnostics/Monitoring Service:**  
+- **Diagnostics/Monitoring HomekitService:**  
   Subscribes to all events, aggregates logs, metrics, and health status.
 
-- **UI/API Service (optional):**  
+- **UI/API HomekitService (optional):**  
   Provides a REST or Web UI for configuration, diagnostics, and manual control.
 
 ### **B. Event Bus**
@@ -13664,13 +13664,13 @@ Absolutely! Here’s how you would **apply an Event-Driven Microservices archite
 
 ### **C. Example Event Flow**
 
-1. **Discovery Service** detects a new openHAB Thing.
+1. **Discovery HomekitService** detects a new openHAB Thing.
 2. Publishes `EntityDiscoveredEvent` on the bus.
-3. **Mapping Service** receives the event, applies mapping rules, and publishes `EntityMappedEvent`.
-4. **Accessory Service** receives the mapping, creates the HomeKit accessory, and publishes `AccessoryCreatedEvent`.
-5. **Event Translation Service** listens for openHAB state changes and HomeKit characteristic changes, translating and publishing events as needed.
-6. **Management Service** listens for all events, detects conflicts, and publishes `ConflictDetectedEvent` if needed.
-7. **Diagnostics Service** aggregates all events for monitoring and troubleshooting.
+3. **Mapping HomekitService** receives the event, applies mapping rules, and publishes `EntityMappedEvent`.
+4. **HomekitAccessory HomekitService** receives the mapping, creates the HomeKit accessory, and publishes `AccessoryCreatedEvent`.
+5. **Event Translation HomekitService** listens for openHAB state changes and HomeKit characteristic changes, translating and publishing events as needed.
+6. **Management HomekitService** listens for all events, detects conflicts, and publishes `ConflictDetectedEvent` if needed.
+7. **Diagnostics HomekitService** aggregates all events for monitoring and troubleshooting.
 
 ---
 
@@ -13682,7 +13682,7 @@ Absolutely! Here’s how you would **apply an Event-Driven Microservices archite
 
 ---
 
-## **4. Example: Service Skeletons**
+## **4. Example: HomekitService Skeletons**
 
 ```java
 // DiscoveryService.java
@@ -13748,23 +13748,23 @@ public class AccessoryService {
 [openHAB Registry] 
       |
       v
-[Discovery Service] --(EntityDiscoveredEvent)--> [Mapping Service] --(EntityMappedEvent)--> [Accessory Service]
+[Discovery HomekitService] --(EntityDiscoveredEvent)--> [Mapping HomekitService] --(EntityMappedEvent)--> [HomekitAccessory HomekitService]
       |                                                                                           |
       |                                                                                           v
-      |<-------------------(AccessoryCreatedEvent, etc.)-------------------[Event Translation Service]
+      |<-------------------(AccessoryCreatedEvent, etc.)-------------------[Event Translation HomekitService]
       |
-[Management/Diagnostics Service] <---(all events)---+
+[Management/Diagnostics HomekitService] <---(all events)---+
 ```
 
 ---
 
 ## **Summary Table**
 
-| Service                | Responsibility                        | Example Event(s) Published/Subscribed |
+| HomekitService                | Responsibility                        | Example Event(s) Published/Subscribed |
 |------------------------|---------------------------------------|---------------------------------------|
 | Discovery              | Detect new Things/Items                | EntityDiscoveredEvent                 |
 | Mapping                | Apply mapping rules                    | EntityMappedEvent                     |
-| Accessory              | Manage HomeKit objects                 | AccessoryCreatedEvent                 |
+| HomekitAccessory              | Manage HomeKit objects                 | AccessoryCreatedEvent                 |
 | Event Translation      | Translate openHAB/HomeKit events       | CharacteristicStateChangedEvent       |
 | Management/Coordination| Conflict, health, diagnostics          | ConflictDetectedEvent, HealthStatus   |
 | Diagnostics/Monitoring | Logging, metrics, health               | All events                            |
@@ -13790,52 +13790,52 @@ How would the AccessoryServers fit into to this ?
 _**Assistant**_
 
 Excellent follow-up!  
-In an **Event-Driven Microservices architecture**, the `AccessoryServer` (both `LocalAccessoryServer` and `RemoteAccessoryServer`) would become **dedicated, focused services** responsible for managing the lifecycle, communication, and protocol handling for HomeKit accessories. Here’s how they would fit in:
+In an **Event-Driven Microservices architecture**, the `HomekitAccessoryServer` (both `HomekitLocalAccessoryServer` and `HomekitRemoteAccessoryServer`) would become **dedicated, focused services** responsible for managing the lifecycle, communication, and protocol handling for HomeKit accessories. Here’s how they would fit in:
 
 ---
 
-## **1. AccessoryServer as a Dedicated Service**
+## **1. HomekitAccessoryServer as a Dedicated HomekitService**
 
 - **Role:**  
-  The `AccessoryServer` is responsible for:
+  The `HomekitAccessoryServer` is responsible for:
   - Hosting and serving HomeKit accessories to HomeKit controllers (iOS devices, HomePods, etc.).
   - Managing the HAP protocol (pairing, authentication, encryption, etc.).
   - Handling incoming HomeKit requests and publishing relevant events to the event bus.
   - Receiving events from the bus to update accessory state.
 
 - **Deployment:**  
-  - Each `AccessoryServer` can be a standalone microservice (or OSGi bundle/module).
+  - Each `HomekitAccessoryServer` can be a standalone microservice (or OSGi bundle/module).
   - You may have one or more servers, e.g., for different network segments, remote access, or scaling.
 
 ---
 
-## **2. Event Flows Involving AccessoryServer**
+## **2. Event Flows Involving HomekitAccessoryServer**
 
 ### **A. From openHAB to HomeKit (State Change)**
 
-1. **Event Translation Service** receives an openHAB state change (e.g., Item/Channel update).
+1. **Event Translation HomekitService** receives an openHAB state change (e.g., Item/Channel update).
 2. Publishes a `CharacteristicStateChangedEvent` (or similar) on the event bus.
-3. **AccessoryServer** subscribes to these events, updates the corresponding HomeKit characteristic, and notifies HomeKit controllers.
+3. **HomekitAccessoryServer** subscribes to these events, updates the corresponding HomeKit characteristic, and notifies HomeKit controllers.
 
 ### **B. From HomeKit to openHAB (User Action/Siri Command)**
 
-1. **AccessoryServer** receives a write request from a HomeKit controller (e.g., user toggles a light).
+1. **HomekitAccessoryServer** receives a write request from a HomeKit controller (e.g., user toggles a light).
 2. Publishes a `HomeKitCommandEvent` (or similar) on the event bus.
-3. **Event Translation Service** subscribes to these events, translates them into openHAB commands, and sends them to the appropriate Item/Channel.
+3. **Event Translation HomekitService** subscribes to these events, translates them into openHAB commands, and sends them to the appropriate Item/Channel.
 
-### **C. Accessory Lifecycle**
+### **C. HomekitAccessory Lifecycle**
 
-- **Accessory Service** (or Mapping Service) publishes events like `AccessoryCreatedEvent`, `AccessoryRemovedEvent`.
-- **AccessoryServer** subscribes to these events to add/remove accessories from its registry.
+- **HomekitAccessory HomekitService** (or Mapping HomekitService) publishes events like `AccessoryCreatedEvent`, `AccessoryRemovedEvent`.
+- **HomekitAccessoryServer** subscribes to these events to add/remove accessories from its registry.
 
 ---
 
-## **3. Example: Event-Driven AccessoryServer Skeleton**
+## **3. Example: Event-Driven HomekitAccessoryServer Skeleton**
 
 ```java
 public class AccessoryServerService {
     private final EventBus eventBus;
-    private final Map<String, Accessory> accessories = new HashMap<>();
+    private final Map<String, HomekitAccessory> accessories = new HashMap<>();
 
     public AccessoryServerService(EventBus eventBus) {
         this.eventBus = eventBus;
@@ -13896,14 +13896,14 @@ public class AccessoryServerService {
 [openHAB Registry] 
       |
       v
-[Discovery Service] --(EntityDiscoveredEvent)--> [Mapping Service] --(EntityMappedEvent)--> [Accessory Service]
+[Discovery HomekitService] --(EntityDiscoveredEvent)--> [Mapping HomekitService] --(EntityMappedEvent)--> [HomekitAccessory HomekitService]
       |                                                                                           |
       |                                                                                           v
-      |<-------------------(AccessoryCreatedEvent, etc.)-------------------[AccessoryServer(s)]
+      |<-------------------(AccessoryCreatedEvent, etc.)-------------------[HomekitAccessoryServer(s)]
       |                                                                                           |
-      |<-------------------(HomeKitCommandEvent, etc.)---------------------[Event Translation Service]
+      |<-------------------(HomeKitCommandEvent, etc.)---------------------[Event Translation HomekitService]
       |
-[Management/Diagnostics Service] <---(all events)---+
+[Management/Diagnostics HomekitService] <---(all events)---+
 ```
 
 ---
@@ -13912,8 +13912,8 @@ public class AccessoryServerService {
 
 | Component         | Responsibility                                 | Event Bus Role                |
 |-------------------|------------------------------------------------|-------------------------------|
-| AccessoryServer   | HAP protocol, HomeKit comms, accessory hosting | Subscribes to lifecycle/state |
-| Accessory Service | Accessory creation/removal                     | Publishes lifecycle events    |
+| HomekitAccessoryServer   | HAP protocol, HomeKit comms, accessory hosting | Subscribes to lifecycle/state |
+| HomekitAccessory HomekitService | HomekitAccessory creation/removal                     | Publishes lifecycle events    |
 | Event Translation | openHAB ↔ HomeKit state/command translation    | Publishes/subscribes to state |
 | Management        | Health, diagnostics, conflict resolution       | Subscribes to all events      |
 
@@ -13921,7 +13921,7 @@ public class AccessoryServerService {
 
 ## **Best Practice**
 
-- **Keep AccessoryServer stateless where possible** (all state comes from events).
+- **Keep HomekitAccessoryServer stateless where possible** (all state comes from events).
 - **Filter events by accessory/server ID** to avoid unnecessary processing.
 - **Document event types and flows** for maintainability.
 
@@ -13932,51 +13932,51 @@ public class AccessoryServerService {
 - They subscribe to lifecycle and state events, and publish command events as needed.
 - This makes the system modular, scalable, and robust.
 
-Let me know if you want a more detailed code example or advice on refactoring your current AccessoryServer implementation!
+Let me know if you want a more detailed code example or advice on refactoring your current HomekitAccessoryServer implementation!
 
 ---
 
 _**User**_
 
-And what use would the @AccessoryRegistry.java and @AccessoryServerRegistry.java have in this archutecture ? 
+And what use would the @HomekitAccessoryRegistry.java and @HomekitAccessoryServerRegistry.java have in this archutecture ? 
 
 ---
 
 _**Assistant**_
 
 Great question!  
-In an **Event-Driven Microservices architecture**, both `AccessoryRegistry` and `AccessoryServerRegistry` remain highly relevant, but their roles become more focused on **service discovery, lifecycle management, and coordination** rather than direct, tightly-coupled access.
+In an **Event-Driven Microservices architecture**, both `HomekitAccessoryRegistry` and `HomekitAccessoryServerRegistry` remain highly relevant, but their roles become more focused on **service discovery, lifecycle management, and coordination** rather than direct, tightly-coupled access.
 
 Here’s how they would fit in and what their responsibilities would be:
 
 ---
 
-## **1. AccessoryRegistry**
+## **1. HomekitAccessoryRegistry**
 
 ### **Role in Microservices Architecture**
 - **Central Directory:**  
   Acts as a central directory of all known HomeKit Accessories, regardless of which service or process created or manages them.
-- **Service Discovery:**  
-  Allows any service (e.g., AccessoryServer, Diagnostics, Management) to discover and enumerate all accessories.
+- **HomekitService Discovery:**  
+  Allows any service (e.g., HomekitAccessoryServer, Diagnostics, Management) to discover and enumerate all accessories.
 - **Lifecycle Management:**  
   Tracks addition, removal, and updates of accessories, possibly emitting events (e.g., `AccessoryAddedEvent`, `AccessoryRemovedEvent`).
 - **Listener Support:**  
   Other services can register as listeners to be notified of accessory changes (e.g., for diagnostics, UI updates, or dynamic reconfiguration).
 
 ### **How It’s Used**
-- **Accessory Service** registers new accessories as they are created.
-- **AccessoryServer Service** queries the registry to know which accessories it should serve.
+- **HomekitAccessory HomekitService** registers new accessories as they are created.
+- **HomekitAccessoryServer HomekitService** queries the registry to know which accessories it should serve.
 - **Diagnostics/Management Services** use the registry to report on the current state of the HomeKit ecosystem.
 - **Bridges** (ItemBridge, ThingBridge, etc.) check the registry to avoid duplicate exposure.
 
 ---
 
-## **2. AccessoryServerRegistry**
+## **2. HomekitAccessoryServerRegistry**
 
 ### **Role in Microservices Architecture**
 - **Central Directory of Servers:**  
-  Maintains a list of all running `AccessoryServer` instances (local, remote, cloud, etc.).
-- **Service Discovery:**  
+  Maintains a list of all running `HomekitAccessoryServer` instances (local, remote, cloud, etc.).
+- **HomekitService Discovery:**  
   Allows services to find available servers for new accessories, load balancing, or failover.
 - **Lifecycle Management:**  
   Tracks server addition, removal, and status changes, possibly emitting events (e.g., `ServerAvailableEvent`, `ServerUnavailableEvent`).
@@ -13984,8 +13984,8 @@ Here’s how they would fit in and what their responsibilities would be:
   Other services can register as listeners to be notified of server changes (e.g., for dynamic assignment of accessories).
 
 ### **How It’s Used**
-- **Accessory Service** queries the registry to find an available server when creating a new accessory.
-- **AccessoryServer** registers itself on startup and deregisters on shutdown.
+- **HomekitAccessory HomekitService** queries the registry to find an available server when creating a new accessory.
+- **HomekitAccessoryServer** registers itself on startup and deregisters on shutdown.
 - **Management/Diagnostics Services** use the registry to monitor server health and capacity.
 - **Bridges** can use the registry to select the best server for a new accessory (e.g., based on load, location, or capabilities).
 
@@ -14000,25 +14000,25 @@ Here’s how they would fit in and what their responsibilities would be:
 
 ## **4. Example Event Flows**
 
-- **Accessory Creation:**
-  1. Accessory Service creates a new accessory.
-  2. Registers it with `AccessoryRegistry`.
+- **HomekitAccessory Creation:**
+  1. HomekitAccessory HomekitService creates a new accessory.
+  2. Registers it with `HomekitAccessoryRegistry`.
   3. Publishes `AccessoryAddedEvent` on the event bus.
-  4. AccessoryServer subscribes to this event and adds the accessory to its served set.
+  4. HomekitAccessoryServer subscribes to this event and adds the accessory to its served set.
 
 - **Server Availability:**
-  1. New AccessoryServer starts up, registers with `AccessoryServerRegistry`.
+  1. New HomekitAccessoryServer starts up, registers with `HomekitAccessoryServerRegistry`.
   2. Publishes `ServerAvailableEvent`.
-  3. Accessory Service or Management Service may assign accessories to this server.
+  3. HomekitAccessory HomekitService or Management HomekitService may assign accessories to this server.
 
 ---
 
 ## **5. Visual Diagram**
 
 ```
-[Accessory Service] --register--> [AccessoryRegistry] --(AccessoryAddedEvent)--> [AccessoryServer]
-[AccessoryServer] --register--> [AccessoryServerRegistry] --(ServerAvailableEvent)--> [Accessory Service]
-[Diagnostics/Management] <--query-- [AccessoryRegistry] / [AccessoryServerRegistry]
+[HomekitAccessory HomekitService] --register--> [HomekitAccessoryRegistry] --(AccessoryAddedEvent)--> [HomekitAccessoryServer]
+[HomekitAccessoryServer] --register--> [HomekitAccessoryServerRegistry] --(ServerAvailableEvent)--> [HomekitAccessory HomekitService]
+[Diagnostics/Management] <--query-- [HomekitAccessoryRegistry] / [HomekitAccessoryServerRegistry]
 ```
 
 ---
@@ -14027,8 +14027,8 @@ Here’s how they would fit in and what their responsibilities would be:
 
 | Registry                | Responsibility                                 | Used By                        |
 |-------------------------|------------------------------------------------|---------------------------------|
-| AccessoryRegistry       | Track all accessories, notify on changes       | AccessoryServer, Diagnostics, Bridges, UI |
-| AccessoryServerRegistry | Track all servers, notify on changes           | Accessory Service, Management, Diagnostics |
+| HomekitAccessoryRegistry       | Track all accessories, notify on changes       | HomekitAccessoryServer, Diagnostics, Bridges, UI |
+| HomekitAccessoryServerRegistry | Track all servers, notify on changes           | HomekitAccessory HomekitService, Management, Diagnostics |
 
 ---
 
@@ -14042,7 +14042,7 @@ Here’s how they would fit in and what their responsibilities would be:
 ---
 
 **In summary:**  
-- `AccessoryRegistry` and `AccessoryServerRegistry` become central coordination and discovery points in your microservices architecture.
+- `HomekitAccessoryRegistry` and `HomekitAccessoryServerRegistry` become central coordination and discovery points in your microservices architecture.
 - They enable dynamic, event-driven management of HomeKit accessories and servers, supporting scalability, resilience, and extensibility.
 
 Let me know if you want a concrete code example for event-driven registry integration, or advice on refactoring your current registries for microservices!
@@ -14051,33 +14051,33 @@ Let me know if you want a concrete code example for event-driven registry integr
 
 _**User**_
 
-How would the instantiaion of OSGI AccessoryServer work in practice? 
+How would the instantiaion of OSGI HomekitAccessoryServer work in practice? 
 
 ---
 
 _**Assistant**_
 
 Great question!  
-Instantiating an OSGi-based `AccessoryServer` in practice involves leveraging OSGi’s **service component model** (Declarative Services, a.k.a. SCR/DS) to manage the lifecycle, configuration, and registration of your server. Here’s how it typically works in an openHAB or OSGi-based environment:
+Instantiating an OSGi-based `HomekitAccessoryServer` in practice involves leveraging OSGi’s **service component model** (Declarative Services, a.k.a. SCR/DS) to manage the lifecycle, configuration, and registration of your server. Here’s how it typically works in an openHAB or OSGi-based environment:
 
 ---
 
-## **1. Define the AccessoryServer as an OSGi Component**
+## **1. Define the HomekitAccessoryServer as an OSGi Component**
 
-You annotate your `AccessoryServer` implementation with `@Component`, so OSGi will manage its lifecycle and register it as a service.
+You annotate your `HomekitAccessoryServer` implementation with `@Component`, so OSGi will manage its lifecycle and register it as a service.
 
 ```java
 import org.osgi.service.component.annotations.Component;
-import org.openhab.io.homekit.api.hap.AccessoryServer;
+import org.openhab.io.homekit.api.hap.HomekitAccessoryServer;
 
-@Component(service = AccessoryServer.class, immediate = true)
-public class LocalAccessoryServer implements AccessoryServer {
+@Component(service = HomekitAccessoryServer.class, immediate = true)
+public class HomekitLocalAccessoryServer implements HomekitAccessoryServer {
     // ... implementation ...
 }
 ```
 
 - `immediate = true` means the component is activated as soon as possible.
-- The `service = AccessoryServer.class` part tells OSGi to register this implementation as an OSGi service.
+- The `service = HomekitAccessoryServer.class` part tells OSGi to register this implementation as an OSGi service.
 
 ---
 
@@ -14093,12 +14093,12 @@ import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.metatype.annotations.Designate;
 
 @Component(
-    service = AccessoryServer.class,
+    service = HomekitAccessoryServer.class,
     configurationPolicy = ConfigurationPolicy.REQUIRE,
     immediate = true
 )
 @Designate(ocd = LocalAccessoryServerConfig.class)
-public class LocalAccessoryServer implements AccessoryServer {
+public class HomekitLocalAccessoryServer implements HomekitAccessoryServer {
     private int port;
     private String pairingId;
 
@@ -14116,18 +14116,18 @@ Where `LocalAccessoryServerConfig` is an OSGi metatype interface.
 
 ---
 
-## **3. Registration in the AccessoryServerRegistry**
+## **3. Registration in the HomekitAccessoryServerRegistry**
 
-When the OSGi container activates your `AccessoryServer`, it is automatically registered as an OSGi service.  
-If you use a registry (like your `AccessoryServerRegistry`), you can inject it and register the server instance:
+When the OSGi container activates your `HomekitAccessoryServer`, it is automatically registered as an OSGi service.  
+If you use a registry (like your `HomekitAccessoryServerRegistry`), you can inject it and register the server instance:
 
 ```java
 import org.osgi.service.component.annotations.Reference;
 
-@Component(service = AccessoryServer.class, immediate = true)
-public class LocalAccessoryServer implements AccessoryServer {
+@Component(service = HomekitAccessoryServer.class, immediate = true)
+public class HomekitLocalAccessoryServer implements HomekitAccessoryServer {
     @Reference
-    private AccessoryServerRegistry serverRegistry;
+    private HomekitAccessoryServerRegistry serverRegistry;
 
     @Activate
     public void activate() {
@@ -14145,17 +14145,17 @@ public class LocalAccessoryServer implements AccessoryServer {
 
 ## **4. Discovery and Use by Other Components**
 
-Other OSGi components (e.g., your AccessoryService, ManagementService, etc.) can get a reference to the `AccessoryServer` via:
+Other OSGi components (e.g., your AccessoryService, ManagementService, etc.) can get a reference to the `HomekitAccessoryServer` via:
 
-- **OSGi Service Injection:**  
+- **OSGi HomekitService Injection:**  
   ```java
   @Reference
-  private AccessoryServer accessoryServer;
+  private HomekitAccessoryServer accessoryServer;
   ```
   or
   ```java
   @Reference
-  private AccessoryServerRegistry serverRegistry;
+  private HomekitAccessoryServerRegistry serverRegistry;
   ```
 
 - **Dynamic Lookup:**  
@@ -14165,10 +14165,10 @@ Other OSGi components (e.g., your AccessoryService, ManagementService, etc.) can
 
 ## **5. Multiple Servers**
 
-If you want to support multiple `AccessoryServer` instances (e.g., for different network interfaces or remote access):
+If you want to support multiple `HomekitAccessoryServer` instances (e.g., for different network interfaces or remote access):
 
 - Each server is registered as a separate OSGi service.
-- The registry (`AccessoryServerRegistry`) tracks all instances.
+- The registry (`HomekitAccessoryServerRegistry`) tracks all instances.
 - Components can query the registry for available servers, select by criteria (e.g., load, location), and assign accessories accordingly.
 
 ---
@@ -14176,9 +14176,9 @@ If you want to support multiple `AccessoryServer` instances (e.g., for different
 ## **6. Example: Full Lifecycle**
 
 1. **Bundle is deployed.**
-2. OSGi SCR instantiates `LocalAccessoryServer` as an OSGi component.
+2. OSGi SCR instantiates `HomekitLocalAccessoryServer` as an OSGi component.
 3. If configuration is required, OSGi ConfigAdmin injects config.
-4. The server registers itself with `AccessoryServerRegistry`.
+4. The server registers itself with `HomekitAccessoryServerRegistry`.
 5. Other components discover the server via OSGi service injection or the registry.
 6. On shutdown, the server unregisters from the registry and OSGi.
 
@@ -14190,10 +14190,10 @@ If you want to support multiple `AccessoryServer` instances (e.g., for different
 [OSGi Container]
       |
       v
-[LocalAccessoryServer] (OSGi Component)
+[HomekitLocalAccessoryServer] (OSGi Component)
       |
       v
-[AccessoryServerRegistry] (OSGi Service)
+[HomekitAccessoryServerRegistry] (OSGi HomekitService)
       |
       v
 [Other Components] (inject or query registry)
@@ -14214,42 +14214,42 @@ If you want to support multiple `AccessoryServer` instances (e.g., for different
 ---
 
 **In summary:**  
-- OSGi instantiates and manages your `AccessoryServer` as a component.
+- OSGi instantiates and manages your `HomekitAccessoryServer` as a component.
 - It is registered as a service and (optionally) in your registry.
 - Other components discover and use it via OSGi injection or the registry.
 - This pattern is robust, dynamic, and supports multiple servers and dynamic reconfiguration.
 
-Let me know if you want a concrete code template for a full OSGi-configurable `AccessoryServer`!
+Let me know if you want a concrete code template for a full OSGi-configurable `HomekitAccessoryServer`!
 
 ---
 
 _**User**_
 
-How can you create multiple instances of an OSGI AccessoryServer ?
+How can you create multiple instances of an OSGI HomekitAccessoryServer ?
 
 ---
 
 _**Assistant**_
 
 Great question!  
-To create **multiple instances of an OSGi component** (such as `AccessoryServer`), you use the **OSGi Declarative Services (DS) "factory component" pattern**. This is a standard way in OSGi to support dynamic, configurable, and independently managed component instances.
+To create **multiple instances of an OSGi component** (such as `HomekitAccessoryServer`), you use the **OSGi Declarative Services (DS) "factory component" pattern**. This is a standard way in OSGi to support dynamic, configurable, and independently managed component instances.
 
 ---
 
-## **How to Create Multiple OSGi AccessoryServer Instances**
+## **How to Create Multiple OSGi HomekitAccessoryServer Instances**
 
 ### **1. Use the @Component(factory=...) Annotation**
 
-Annotate your `AccessoryServer` implementation with a `factory` attribute:
+Annotate your `HomekitAccessoryServer` implementation with a `factory` attribute:
 
 ```java
 import org.osgi.service.component.annotations.Component;
 
 @Component(
-    service = AccessoryServer.class,
+    service = HomekitAccessoryServer.class,
     factory = "org.openhab.homekit.AccessoryServerFactory"
 )
-public class LocalAccessoryServer implements AccessoryServer {
+public class HomekitLocalAccessoryServer implements HomekitAccessoryServer {
     // ...
 }
 ```
@@ -14266,9 +14266,9 @@ Use OSGi Metatype annotations to define a configuration for each instance:
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 
-@ObjectClassDefinition(name = "HomeKit Accessory Server")
+@ObjectClassDefinition(name = "HomeKit HomekitAccessory Server")
 public @interface AccessoryServerConfig {
-    @AttributeDefinition(name = "Pairing ID")
+    @AttributeDefinition(name = "HomekitPairing ID")
     String pairingId();
 
     @AttributeDefinition(name = "Port")
@@ -14287,10 +14287,10 @@ import org.osgi.service.metatype.annotations.Designate;
 
 @Designate(ocd = AccessoryServerConfig.class, factory = true)
 @Component(
-    service = AccessoryServer.class,
+    service = HomekitAccessoryServer.class,
     factory = "org.openhab.homekit.AccessoryServerFactory"
 )
-public class LocalAccessoryServer implements AccessoryServer {
+public class HomekitLocalAccessoryServer implements HomekitAccessoryServer {
     private String pairingId;
     private int port;
 
@@ -14309,7 +14309,7 @@ public class LocalAccessoryServer implements AccessoryServer {
 
 ### **4. Create Instances via OSGi ConfigAdmin**
 
-- Each **configuration instance** (e.g., in `org.openhab.homekit.AccessoryServerFactory-<ID>.cfg`) will result in a new `LocalAccessoryServer` instance.
+- Each **configuration instance** (e.g., in `org.openhab.homekit.AccessoryServerFactory-<ID>.cfg`) will result in a new `HomekitLocalAccessoryServer` instance.
 - In openHAB, you can create these via the UI (in the "Configuration" → "Things" or "Services" section), or by placing config files in the appropriate directory.
 
 **Example config file:**
@@ -14333,9 +14333,9 @@ port=9124
 - You can inject all instances using:
   ```java
   @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
-  private volatile List<AccessoryServer> accessoryServers;
+  private volatile List<HomekitAccessoryServer> accessoryServers;
   ```
-- Or, use your `AccessoryServerRegistry` to track and manage them.
+- Or, use your `HomekitAccessoryServerRegistry` to track and manage them.
 
 ---
 
@@ -14354,9 +14354,9 @@ port=9124
 ## **Visual Diagram**
 
 ```
-[ConfigAdmin] --(config1)--> [AccessoryServer instance 1]
-            --(config2)--> [AccessoryServer instance 2]
-            --(configN)--> [AccessoryServer instance N]
+[ConfigAdmin] --(config1)--> [HomekitAccessoryServer instance 1]
+            --(config2)--> [HomekitAccessoryServer instance 2]
+            --(configN)--> [HomekitAccessoryServer instance N]
 ```
 
 ---
@@ -14380,14 +14380,14 @@ Let me know if you want a full code template or a sample configuration file!
 
 _**User**_
 
-And what if you want to create new OSGi AccessoryServer on the fly, programetically, given that there is a limit of 150 Accessories per server ? 
+And what if you want to create new OSGi HomekitAccessoryServer on the fly, programetically, given that there is a limit of 150 Accessories per server ? 
 
 ---
 
 _**Assistant**_
 
 Excellent, advanced question!  
-If you want to **dynamically create new OSGi AccessoryServer instances at runtime (programmatically)**—for example, when you reach the HomeKit limit of 150 accessories per server—you need to use the **OSGi Configuration Admin service** to create new factory component instances on the fly.
+If you want to **dynamically create new OSGi HomekitAccessoryServer instances at runtime (programmatically)**—for example, when you reach the HomeKit limit of 150 accessories per server—you need to use the **OSGi Configuration Admin service** to create new factory component instances on the fly.
 
 Here’s how you do it:
 
@@ -14395,12 +14395,12 @@ Here’s how you do it:
 
 ## **1. Prerequisites**
 
-- Your `AccessoryServer` is a **factory component** (as described in the previous answer).
+- Your `HomekitAccessoryServer` is a **factory component** (as described in the previous answer).
 - You have a configuration interface annotated with `@ObjectClassDefinition` and `@Designate(factory = true)`.
 
 ---
 
-## **2. Obtain the OSGi ConfigurationAdmin Service**
+## **2. Obtain the OSGi ConfigurationAdmin HomekitService**
 
 You can inject it into your OSGi component:
 
@@ -14439,14 +14439,14 @@ public void createNewAccessoryServer(String pairingId, int port) {
 }
 ```
 
-- Each call to `createFactoryConfiguration` creates a new instance of your `AccessoryServer` component with the given configuration.
+- Each call to `createFactoryConfiguration` creates a new instance of your `HomekitAccessoryServer` component with the given configuration.
 
 ---
 
 ## **4. Automatic Management**
 
-- The OSGi framework will instantiate the new `AccessoryServer` and inject the configuration.
-- Your registry (e.g., `AccessoryServerRegistry`) will be notified of the new instance.
+- The OSGi framework will instantiate the new `HomekitAccessoryServer` and inject the configuration.
+- Your registry (e.g., `HomekitAccessoryServerRegistry`) will be notified of the new instance.
 - You can now assign new accessories to this server.
 
 ---
@@ -14454,8 +14454,8 @@ public void createNewAccessoryServer(String pairingId, int port) {
 ## **5. Example: Dynamic Scaling Logic**
 
 ```java
-public void assignAccessoryToServer(Accessory accessory) {
-    AccessoryServer server = findServerWithCapacity();
+public void assignAccessoryToServer(HomekitAccessory accessory) {
+    HomekitAccessoryServer server = findServerWithCapacity();
     if (server == null) {
         // No server with capacity, create a new one
         String newPairingId = generateUniquePairingId();
@@ -14487,7 +14487,7 @@ public void assignAccessoryToServer(Accessory accessory) {
 | Inject ConfigAdmin  | `@Reference ConfigurationAdmin`                 |
 | Create config       | `configAdmin.createFactoryConfiguration(...)`    |
 | Set properties      | `config.update(props)`                          |
-| OSGi instantiates   | New AccessoryServer instance appears            |
+| OSGi instantiates   | New HomekitAccessoryServer instance appears            |
 | Registry updated    | Registry sees new server                        |
 | Delete config       | `config.delete()` to remove instance            |
 
@@ -14503,7 +14503,7 @@ public void assignAccessoryToServer(Accessory accessory) {
 
 ## **In summary:**  
 - Use OSGi ConfigurationAdmin to programmatically create new factory component instances.
-- Each config instance results in a new `AccessoryServer`.
+- Each config instance results in a new `HomekitAccessoryServer`.
 - This allows you to scale out servers dynamically, e.g., when you hit the 150-accessory limit.
 
 Let me know if you want a full code example, or advice on managing server assignment and cleanup!
@@ -14512,7 +14512,7 @@ Let me know if you want a full code example, or advice on managing server assign
 
 _**User**_
 
-How would :Your registry (e.g., AccessoryServerRegistry) will be notified of the new instance." work? and what is the implementation of waitForServerRegistration ?
+How would :Your registry (e.g., HomekitAccessoryServerRegistry) will be notified of the new instance." work? and what is the implementation of waitForServerRegistration ?
 
 ---
 
@@ -14523,16 +14523,16 @@ Let’s address both:
 
 ---
 
-## **1. How is AccessoryServerRegistry Notified of New Instances?**
+## **1. How is HomekitAccessoryServerRegistry Notified of New Instances?**
 
-### **A. OSGi Service Registration**
+### **A. OSGi HomekitService Registration**
 
-- When you create a new `AccessoryServer` instance via the OSGi factory component mechanism, **OSGi automatically registers it as a service** (because of `@Component(service = AccessoryServer.class, ...)`).
-- If your `AccessoryServerRegistry` is implemented as an OSGi service that tracks all `AccessoryServer` services, it will be notified of new instances via OSGi’s **service binding/injection**.
+- When you create a new `HomekitAccessoryServer` instance via the OSGi factory component mechanism, **OSGi automatically registers it as a service** (because of `@Component(service = HomekitAccessoryServer.class, ...)`).
+- If your `HomekitAccessoryServerRegistry` is implemented as an OSGi service that tracks all `HomekitAccessoryServer` services, it will be notified of new instances via OSGi’s **service binding/injection**.
 
 ### **B. Typical Registry Implementation**
 
-Your `AccessoryServerRegistry` might look like this:
+Your `HomekitAccessoryServerRegistry` might look like this:
 
 ```java
 import org.osgi.service.component.annotations.Component;
@@ -14542,25 +14542,25 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Component(service = AccessoryServerRegistry.class)
-public class AccessoryServerRegistryImpl implements AccessoryServerRegistry {
+@Component(service = HomekitAccessoryServerRegistry.class)
+public class AccessoryServerRegistryImpl implements HomekitAccessoryServerRegistry {
 
-    private final Map<AccessoryServerUID, AccessoryServer> servers = new ConcurrentHashMap<>();
+    private final Map<HomekitAccessoryServerUID, HomekitAccessoryServer> servers = new ConcurrentHashMap<>();
 
     @Reference(
         cardinality = ReferenceCardinality.MULTIPLE,
         policy = ReferencePolicy.DYNAMIC
     )
-    protected void addAccessoryServer(AccessoryServer server) {
+    protected void addAccessoryServer(HomekitAccessoryServer server) {
         servers.put(server.getUID(), server);
     }
 
-    protected void removeAccessoryServer(AccessoryServer server) {
+    protected void removeAccessoryServer(HomekitAccessoryServer server) {
         servers.remove(server.getUID());
     }
 
     @Override
-    public AccessoryServer getAvailableBridgeAccessoryServer() {
+    public HomekitAccessoryServer getAvailableBridgeAccessoryServer() {
         // Your logic to select a server with available capacity
         return servers.values().stream().findFirst().orElse(null);
     }
@@ -14569,7 +14569,7 @@ public class AccessoryServerRegistryImpl implements AccessoryServerRegistry {
 }
 ```
 
-- OSGi will call `addAccessoryServer()` when a new `AccessoryServer` is registered, and `removeAccessoryServer()` when it is unregistered.
+- OSGi will call `addAccessoryServer()` when a new `HomekitAccessoryServer` is registered, and `removeAccessoryServer()` when it is unregistered.
 - This is **automatic**—no polling or manual notification is needed.
 
 ---
@@ -14582,16 +14582,16 @@ You may need to **wait for the registry to see the new server** before assigning
 ### **A. Simple Polling Implementation**
 
 ```java
-public AccessoryServer waitForServerRegistration(String pairingId, long timeoutMillis) throws InterruptedException {
+public HomekitAccessoryServer waitForServerRegistration(String pairingId, long timeoutMillis) throws InterruptedException {
     long start = System.currentTimeMillis();
     while (System.currentTimeMillis() - start < timeoutMillis) {
-        AccessoryServer server = registry.findByPairingId(pairingId);
+        HomekitAccessoryServer server = registry.findByPairingId(pairingId);
         if (server != null) {
             return server;
         }
         Thread.sleep(100); // Wait a bit before checking again
     }
-    throw new IllegalStateException("AccessoryServer with pairingId " + pairingId + " not registered in time");
+    throw new IllegalStateException("HomekitAccessoryServer with pairingId " + pairingId + " not registered in time");
 }
 ```
 
@@ -14602,13 +14602,13 @@ public AccessoryServer waitForServerRegistration(String pairingId, long timeoutM
 If your registry or event bus supports listeners or events, you can **subscribe to server registration events** and block/wait until the event is received.
 
 ```java
-public AccessoryServer waitForServerRegistration(String pairingId, long timeoutMillis) throws InterruptedException {
+public HomekitAccessoryServer waitForServerRegistration(String pairingId, long timeoutMillis) throws InterruptedException {
     final Object lock = new Object();
-    final AccessoryServer[] result = new AccessoryServer[1];
+    final HomekitAccessoryServer[] result = new HomekitAccessoryServer[1];
 
     registry.addListener(new AccessoryServerListener() {
         @Override
-        public void serverAdded(AccessoryServer server) {
+        public void serverAdded(HomekitAccessoryServer server) {
             if (server.getPairingId().equals(pairingId)) {
                 result[0] = server;
                 synchronized (lock) {
@@ -14625,7 +14625,7 @@ public AccessoryServer waitForServerRegistration(String pairingId, long timeoutM
         }
     }
     if (result[0] == null) {
-        throw new IllegalStateException("AccessoryServer with pairingId " + pairingId + " not registered in time");
+        throw new IllegalStateException("HomekitAccessoryServer with pairingId " + pairingId + " not registered in time");
     }
     return result[0];
 }
@@ -14689,20 +14689,20 @@ This is a common pattern in OSGi and other event-driven systems.
 ### **Example Implementation**
 
 ```java
-public AccessoryServer waitForServerRegistration(String pairingId, long timeoutMillis) throws InterruptedException {
+public HomekitAccessoryServer waitForServerRegistration(String pairingId, long timeoutMillis) throws InterruptedException {
     // 1. Immediate check
-    AccessoryServer server = registry.findByPairingId(pairingId);
+    HomekitAccessoryServer server = registry.findByPairingId(pairingId);
     if (server != null) {
         return server;
     }
 
     // 2. If not found, set up listener and wait
     final Object lock = new Object();
-    final AccessoryServer[] result = new AccessoryServer[1];
+    final HomekitAccessoryServer[] result = new HomekitAccessoryServer[1];
 
     AccessoryServerListener listener = new AccessoryServerListener() {
         @Override
-        public void serverAdded(AccessoryServer s) {
+        public void serverAdded(HomekitAccessoryServer s) {
             if (s.getPairingId().equals(pairingId)) {
                 result[0] = s;
                 synchronized (lock) {
@@ -14721,7 +14721,7 @@ public AccessoryServer waitForServerRegistration(String pairingId, long timeoutM
             }
         }
         if (result[0] == null) {
-            throw new IllegalStateException("AccessoryServer with pairingId " + pairingId + " not registered in time");
+            throw new IllegalStateException("HomekitAccessoryServer with pairingId " + pairingId + " not registered in time");
         }
         return result[0];
     } finally {
@@ -14795,10 +14795,10 @@ The registry itself must provide a method that **atomically**:
 
 ### **2. Example: Atomic Listener Registration API**
 
-You would add a method like this to your `AccessoryServerRegistry`:
+You would add a method like this to your `HomekitAccessoryServerRegistry`:
 
 ```java
-public interface AccessoryServerRegistry {
+public interface HomekitAccessoryServerRegistry {
     /**
      * Atomically registers a listener and checks for the server.
      * If the server is already present, the listener is immediately notified.
@@ -14811,7 +14811,7 @@ public interface AccessoryServerRegistry {
 ```java
 public void addListenerAndCheck(AccessoryServerListener listener, String pairingId) {
     synchronized (this) {
-        AccessoryServer server = findByPairingId(pairingId);
+        HomekitAccessoryServer server = findByPairingId(pairingId);
         addListener(listener);
         if (server != null) {
             // Immediately notify the listener
@@ -14829,11 +14829,11 @@ public void addListenerAndCheck(AccessoryServerListener listener, String pairing
 
 ```java
 final Object lock = new Object();
-final AccessoryServer[] result = new AccessoryServer[1];
+final HomekitAccessoryServer[] result = new HomekitAccessoryServer[1];
 
 AccessoryServerListener listener = new AccessoryServerListener() {
     @Override
-    public void serverAdded(AccessoryServer s) {
+    public void serverAdded(HomekitAccessoryServer s) {
         if (s.getPairingId().equals(pairingId)) {
             result[0] = s;
             synchronized (lock) {
@@ -14854,7 +14854,7 @@ synchronized (lock) {
 registry.removeListener(listener);
 
 if (result[0] == null) {
-    throw new IllegalStateException("AccessoryServer with pairingId " + pairingId + " not registered in time");
+    throw new IllegalStateException("HomekitAccessoryServer with pairingId " + pairingId + " not registered in time");
 }
 return result[0];
 ```
@@ -14905,7 +14905,7 @@ Let me know if you want a full implementation or advice on retrofitting your reg
 
 _**User**_
 
-Should the Accessory/Service/Characteristic all be indiividual OSGI compoments ? 
+Should the HomekitAccessory/HomekitService/HomekitCharacteristic all be indiividual OSGI compoments ? 
 
 ---
 
@@ -14913,7 +14913,7 @@ _**Assistant**_
 
 **Excellent architectural question!**  
 The short answer is:  
-**No, Accessory, Service, and Characteristic should NOT be individual OSGi components in most cases.**
+**No, HomekitAccessory, HomekitService, and HomekitCharacteristic should NOT be individual OSGi components in most cases.**
 
 Here’s why, with a detailed explanation:
 
@@ -14927,9 +14927,9 @@ OSGi components (Declarative Services) are best used for:
 
 ---
 
-## **2. Accessory/Service/Characteristic: What Are They?**
+## **2. HomekitAccessory/HomekitService/HomekitCharacteristic: What Are They?**
 
-- **Accessory, Service, and Characteristic** are typically:
+- **HomekitAccessory, HomekitService, and HomekitCharacteristic** are typically:
   - **Short-lived, fine-grained domain objects** representing the HomeKit model.
   - Created and destroyed dynamically as the user’s openHAB configuration changes.
   - Often have a 1:1 or 1:few relationship with openHAB Items, Things, or Channels.
@@ -14942,8 +14942,8 @@ OSGi components (Declarative Services) are best used for:
 - OSGi components are managed by the OSGi runtime, which adds lifecycle and service registry overhead.
 - You may have hundreds or thousands of characteristics in a large system—this would overwhelm the OSGi service registry and slow down the system.
 
-### **B. No Need for Service Discovery**
-- These objects are typically only used within the context of their parent Accessory/Service.
+### **B. No Need for HomekitService Discovery**
+- These objects are typically only used within the context of their parent HomekitAccessory/HomekitService.
 - They do not need to be injected or discovered by other OSGi components.
 
 ### **C. Simpler Lifecycle Management**
@@ -14957,8 +14957,8 @@ OSGi components (Declarative Services) are best used for:
 
 ## **4. What Should Be OSGi Components?**
 
-- **AccessoryServer**: Yes (as discussed earlier).
-- **AccessoryRegistry, AccessoryServerRegistry**: Yes.
+- **HomekitAccessoryServer**: Yes (as discussed earlier).
+- **HomekitAccessoryRegistry, HomekitAccessoryServerRegistry**: Yes.
 - **Bridges (ItemBridge, ThingBridge, etc.)**: Yes.
 - **Event Managers, Protocol Handlers, Factories**: Yes.
 - **Management/Diagnostics Services**: Yes.
@@ -14977,7 +14977,7 @@ OSGi components (Declarative Services) are best used for:
 
 - Use OSGi components for **factories** that create Accessories, Services, and Characteristics.
 - Use **registries** (which are OSGi components) to track and manage them.
-- Keep the actual Accessory/Service/Characteristic instances as POJOs.
+- Keep the actual HomekitAccessory/HomekitService/HomekitCharacteristic instances as POJOs.
 
 ---
 
@@ -14985,18 +14985,18 @@ OSGi components (Declarative Services) are best used for:
 
 | Entity                | OSGi Component? | Why/Why Not                                 |
 |-----------------------|-----------------|---------------------------------------------|
-| AccessoryServer       | Yes             | Infrastructure, needs discovery/injection   |
-| AccessoryRegistry     | Yes             | Central registry, needs discovery/injection |
-| Accessory             | No              | Fine-grained, many instances, POJO is best  |
-| Service               | No              | Same as above                               |
-| Characteristic        | No              | Same as above                               |
+| HomekitAccessoryServer       | Yes             | Infrastructure, needs discovery/injection   |
+| HomekitAccessoryRegistry     | Yes             | Central registry, needs discovery/injection |
+| HomekitAccessory             | No              | Fine-grained, many instances, POJO is best  |
+| HomekitService               | No              | Same as above                               |
+| HomekitCharacteristic        | No              | Same as above                               |
 | Factories             | Yes             | Extensible, plugin-based creation           |
 | Bridges/Managers      | Yes             | Coordination, lifecycle, config             |
 
 ---
 
 ## **In summary:**  
-- **Do NOT make Accessory, Service, or Characteristic individual OSGi components.**
+- **Do NOT make HomekitAccessory, HomekitService, or HomekitCharacteristic individual OSGi components.**
 - **Keep them as POJOs, managed by OSGi component factories and registries.**
 - **Use OSGi components for infrastructure, coordination, and extension points.**
 

@@ -1,15 +1,15 @@
 TODO:
  - Remove HomekitCommunicationManager
  - Use Characterstic Listeners in the code base
- - Move the state from ManagedCharacteristic to the Characteristic class
- - Move the conversion from ManagedCharacteristic to Characteristic class
+ - Move the state from ManagedCharacteristic to the HomekitCharacteristic class
+ - Move the conversion from ManagedCharacteristic to HomekitCharacteristic class
  - Replace servicetrackers withs HomekitServiceTracker
  - Check factory so that it add char and svc to root catalogue with or without tags and all the rest
- - The ID of an accessory used in a bridge must be greater than 1 (AbstractAccessoryServer)
+ - The ID of an accessory used in a bridge must be greater than 1 (HomekitAbstractAccessoryServer)
  - Sync the loading of the PErsistedPRoviders so that all get populated well. Use markers ? 
  - Create a ThingProvider that can be used to create things from the HomekitServiceThingTypeProvider and HomekitAccessoryThingTypeProvider
- - Decouple AccessoryServerDiscoveryParticipant from Thing creation in the inbox, and store discovery results in the AccessoryServerRegistry instead. Make a separate descovery result proicessor that generates potenntial things from the accessoryservers and put that in the inbox
- - Create a configurable ThingProvider that can create Things using the AccessoryServerRegistry
- - Create a ThingProvider that can be used to create ThingTypes using the AccessoryServerRegistry 
+ - Decouple AccessoryServerDiscoveryParticipant from Thing creation in the inbox, and store discovery results in the HomekitAccessoryServerRegistry instead. Make a separate descovery result proicessor that generates potenntial things from the accessoryservers and put that in the inbox
+ - Create a configurable ThingProvider that can create Things using the HomekitAccessoryServerRegistry
+ - Create a ThingProvider that can be used to create ThingTypes using the HomekitAccessoryServerRegistry 
   - Extend the CommandExtension to support Homekit specific commands to see the discovered AccessoryServers, imlcuding DeviceIds
   - Add a new command to the CommandExtension to trigger a discovery of accessory servers

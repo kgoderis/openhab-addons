@@ -1,6 +1,5 @@
 package org.openhab.io.homekit.internal.events;
 
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.thing.UID;
@@ -20,11 +19,11 @@ public abstract class AbstractHomekitEvent implements HomekitEvent {
 
     /** Wildcard UID that matches any subscriber */
     public static final UID WILDCARD_UID = new HomekitUID("*");
-    
+
     private final HomekitEventType type;
     private final UID publisherUID;
     private @Nullable UID subscriberUID;
-    private final EventMetadata metadata;
+    private final HomekitEventMetadata metadata;
     private final long timestamp;
     private final boolean isValid;
 
@@ -38,28 +37,32 @@ public abstract class AbstractHomekitEvent implements HomekitEvent {
      * @param subscriberUID the UID of the subscriber
      * @param originalMetadata the metadata from the original event
      */
-    protected AbstractHomekitEvent(HomekitEventType type, UID publisherUID, UID subscriberUID, EventMetadata originalMetadata) {
+    protected AbstractHomekitEvent(HomekitEventType type, UID publisherUID, UID subscriberUID,
+            HomekitEventMetadata originalMetadata) {
         this.type = type;
         this.publisherUID = publisherUID;
         this.subscriberUID = subscriberUID;
-        this.metadata = new EventMetadata(originalMetadata, publisherUID);
+        this.metadata = new HomekitEventMetadata(originalMetadata, publisherUID);
         this.timestamp = System.currentTimeMillis();
-        
+
         // Check for loops and hop count
-        if (this.metadata.isInHistory(this.metadata.getEventId())) {
-            logger.warn("{}Event loop detected - Event ID: {}, Type: {}, Publisher: {}, Hop Count: {}\nEvent History: {}",
+        if (this.metadata.isInEventHistory(this.metadata.getEventId())) {
+            logger.warn(
+                    "{}Event loop detected - Event ID: {}, Type: {}, Publisher: {}, Hop Count: {}\nEvent History: {}",
                     LOG_PREFIX, this.metadata.getEventId(), type, publisherUID, this.metadata.getHopCount(),
                     this.metadata.getEventHistoryAsString());
             this.isValid = false;
         } else if (this.metadata.hasExceededMaxHops()) {
-            logger.warn("{}Event exceeded maximum hop count - Event ID: {}, Type: {}, Publisher: {}, Hop Count: {}, Max Hops: {}\nEvent History: {}",
+            logger.warn(
+                    "{}Event exceeded maximum hop count - Event ID: {}, Type: {}, Publisher: {}, Hop Count: {}, Max Hops: {}\nEvent History: {}",
                     LOG_PREFIX, this.metadata.getEventId(), type, publisherUID, this.metadata.getHopCount(),
-                    EventMetadata.getMaxHops(), this.metadata.getEventHistoryAsString());
+                    HomekitEventMetadata.getMaxHops(), this.metadata.getEventHistoryAsString());
             this.isValid = false;
         } else {
             this.isValid = true;
         }
     }
+
     /**
      * Checks if a UID is a wildcard UID that matches any subscriber.
      *
@@ -107,7 +110,7 @@ public abstract class AbstractHomekitEvent implements HomekitEvent {
     }
 
     @Override
-    public EventMetadata getMetadata() {
+    public HomekitEventMetadata getMetadata() {
         return metadata;
     }
 
@@ -128,7 +131,7 @@ public abstract class AbstractHomekitEvent implements HomekitEvent {
 
     @Override
     public String toString() {
-        return String.format("%s{type=%s, publisherUID=%s, subscriberUID=%s, timestamp=%d}",
-                getClass().getSimpleName(), type, publisherUID, subscriberUID, timestamp);
+        return String.format("%s{type=%s, publisherUID=%s, subscriberUID=%s, timestamp=%d}", getClass().getSimpleName(),
+                type, publisherUID, subscriberUID, timestamp);
     }
 }

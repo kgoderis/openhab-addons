@@ -21,11 +21,11 @@ package org.openhab.io.homekit.internal.provider;
 // import org.openhab.core.thing.ThingRegistryChangeListener;
 // import org.openhab.io.homekit.api.ManagedAccessory;
 // import org.openhab.io.homekit.api.factory.HomekitFactory;
-// import org.openhab.io.homekit.api.hap.Accessory;
-// import org.openhab.io.homekit.api.hap.AccessoryServer;
-// import org.openhab.io.homekit.api.registry.AccessoryRegistry;
-// import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
-// import org.openhab.io.homekit.api.server.LocalAccessoryServer;
+// import org.openhab.io.homekit.api.hap.HomekitAccessory;
+// import org.openhab.io.homekit.api.hap.HomekitAccessoryServer;
+// import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
+// import org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry;
+// import org.openhab.io.homekit.api.server.HomekitLocalAccessoryServer;
 // import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
 // import org.openhab.io.homekit.library.accessory.ThingAccessory;
 // import org.osgi.service.component.annotations.Activate;
@@ -51,8 +51,8 @@ package org.openhab.io.homekit.internal.provider;
 // private static final long INITIALIZATION_DELAY_NANOS = TimeUnit.SECONDS.toNanos(5);
 
 // private final ThingRegistry thingRegistry;
-// private final AccessoryRegistry accessoryRegistry;
-// private final AccessoryServerRegistry serverRegistry;
+// private final HomekitAccessoryRegistry accessoryRegistry;
+// private final HomekitAccessoryServerRegistry serverRegistry;
 // private final ReadyService readyService;
 // private final Collection<HomekitFactory> homekitFactories = new CopyOnWriteArrayList<>();
 
@@ -62,7 +62,7 @@ package org.openhab.io.homekit.internal.provider;
 
 // @Activate
 // public HomekitThingRegistryChangeListener(@Reference ThingRegistry thingRegistry,
-// @Reference AccessoryRegistry accessoryRegistry, @Reference AccessoryServerRegistry serverRegistry,
+// @Reference HomekitAccessoryRegistry accessoryRegistry, @Reference HomekitAccessoryServerRegistry serverRegistry,
 // @Reference ReadyService readyService) {
 // this.thingRegistry = thingRegistry;
 // this.accessoryRegistry = accessoryRegistry;
@@ -106,16 +106,16 @@ package org.openhab.io.homekit.internal.provider;
 // initialized = true;
 
 // for (Thing aThing : thingRegistry.getAll()) {
-// logger.debug("Initializing an Accessory for Thing {}", aThing.getUID());
+// logger.debug("Initializing an HomekitAccessory for Thing {}", aThing.getUID());
 // added(aThing);
 // }
 
-// logger.debug("Advertising Accessory Servers");
+// logger.debug("Advertising HomekitAccessory Servers");
 
-// for (AccessoryServer server : serverRegistry.getAll()) {
+// for (HomekitAccessoryServer server : serverRegistry.getAll()) {
 // logger.debug("Advertising {} with Setup Code {} ", server.getUID(), server.getSetupCode());
-// if (server instanceof LocalAccessoryServer) {
-// ((LocalAccessoryServer) server).advertise();
+// if (server instanceof HomekitLocalAccessoryServer) {
+// ((HomekitLocalAccessoryServer) server).advertise();
 // }
 // }
 
@@ -146,8 +146,8 @@ package org.openhab.io.homekit.internal.provider;
 // }
 
 // boolean accessoryExists = false;
-// Accessory foundAccessory = null;
-// for (Accessory accessory : accessoryRegistry.getAll()) {
+// HomekitAccessory foundAccessory = null;
+// for (HomekitAccessory accessory : accessoryRegistry.getAll()) {
 // if (accessory instanceof ThingAccessory) {
 // if (((ThingAccessory) accessory).getThingUID() != null) {
 // if (((ThingAccessory) accessory).getThingUID().toString().equals(thing.getUID().toString())) {
@@ -162,7 +162,7 @@ package org.openhab.io.homekit.internal.provider;
 // if (!accessoryExists) {
 // HomekitFactory factory = homekitFactories.stream().filter(f -> f.supportsThingType(thing.getThingTypeUID()))
 // .findFirst().orElse(null);
-// LocalAccessoryServer server = serverRegistry.getAvailableBridgeAccessoryServer();
+// HomekitLocalAccessoryServer server = serverRegistry.getAvailableBridgeAccessoryServer();
 
 // if (factory != null) {
 // if (server != null) {
@@ -170,21 +170,21 @@ package org.openhab.io.homekit.internal.provider;
 // try {
 // accessory = factory.createAccessory(thing, server);
 // if (accessory != null) {
-// logger.debug("Added an Accessory {} of Type {} for Thing {}", accessory.getUID(),
+// logger.debug("Added an HomekitAccessory {} of Type {} for Thing {}", accessory.getUID(),
 // accessory.getClass().getSimpleName(), thing.getUID());
 // server.addAccessory(accessory);
 // }
 // } catch (Exception e) {
-// logger.error("Exception adding an Accessory for Thing {} : {}", thing.getUID(), e.getMessage());
+// logger.error("Exception adding an HomekitAccessory for Thing {} : {}", thing.getUID(), e.getMessage());
 // }
 // } else {
-// logger.warn("There is no Accessory Server available");
+// logger.warn("There is no HomekitAccessory Server available");
 // }
 // } else {
-// logger.warn("No Accessory Factory supports ThingType {}", thing.getThingTypeUID());
+// logger.warn("No HomekitAccessory Factory supports ThingType {}", thing.getThingTypeUID());
 // }
 // } else {
-// logger.warn("The Accessory Registry already containts a Thing Accessory {} for Thing {}",
+// logger.warn("The HomekitAccessory Registry already containts a Thing HomekitAccessory {} for Thing {}",
 // foundAccessory.getUID(), thing.getUID());
 // }
 // }
@@ -195,10 +195,10 @@ package org.openhab.io.homekit.internal.provider;
 // return;
 // }
 
-// for (Accessory accessory : accessoryRegistry.getAll()) {
+// for (HomekitAccessory accessory : accessoryRegistry.getAll()) {
 // if (accessory instanceof ThingAccessory) {
 // if (((ThingAccessory) accessory).getThingUID().toString().equals(thing.getUID().toString())) {
-// AccessoryServer server = accessory.getServer();
+// HomekitAccessoryServer server = accessory.getServer();
 // server.removeAccessory(accessory);
 // }
 // }

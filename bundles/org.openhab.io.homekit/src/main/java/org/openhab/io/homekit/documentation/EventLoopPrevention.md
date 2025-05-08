@@ -7,10 +7,11 @@ This document describes the mechanisms for preventing event loops and managing e
 The event system includes several features to prevent loops and manage event propagation:
 
 1. **Event History Tracking**: Each event maintains a history of its propagation path
-2. **Hop Count Limiting**: Events are limited to a maximum number of hops
-3. **Origin Tracking**: Events track their original publisher and immediate creator
-4. **Correlation IDs**: Related events can be linked using correlation IDs
-5. **Peer Identification**: Components can identify related peers to prevent feedback loops
+2. **Publisher History Tracking**: Each event maintains an ordered list of publishers in its propagation chain
+3. **Hop Count Limiting**: Events are limited to a maximum number of hops
+4. **Origin Tracking**: Events track their original publisher and immediate creator
+5. **Correlation IDs**: Related events can be linked using correlation IDs
+6. **Peer Identification**: Components can identify related peers to prevent feedback loops
 
 ## Event Origin Concepts
 
@@ -28,21 +29,28 @@ Events track two types of origins:
    - Updated each time the event is forwarded
    - Used to prevent immediate feedback loops
 
+3. **Publisher History**: The ordered list of all publishers in the event's propagation chain
+   - Stored in `publisherHistory`
+   - Updated each time the event is forwarded
+   - Used to detect publisher-based loops and provide publisher traceability
+
 Example:
 ```java
 // Bridge creates an event
-EventMetadata metadata1 = new EventMetadata(
+HomekitEventMetadata metadata1 = new HomekitEventMetadata(
     "bridge:123",    // Original publisher
     null,            // No correlation ID
     "bridge:123",    // Immediate origin (same as publisher)
     Set.of()         // No peers
 );
+// publisherHistory = ["bridge:123"]
 
-// Accessory forwards the event
-EventMetadata metadata2 = new EventMetadata(
+// HomekitAccessory forwards the event
+HomekitEventMetadata metadata2 = new HomekitEventMetadata(
     metadata1,       // Preserve original publisher
     "accessory:456"  // New immediate origin
 );
+// publisherHistory = ["bridge:123", "accessory:456"]
 ```
 
 ### Peer Identification
@@ -69,7 +77,7 @@ Set<String> bridgePeers = Set.of(
 );
 
 // Create event with peer identification
-EventMetadata metadata = new EventMetadata(
+HomekitEventMetadata metadata = new HomekitEventMetadata(
     "bridge:123",    // Original publisher
     null,            // No correlation ID
     "bridge:123",    // Immediate origin
@@ -91,11 +99,11 @@ Common peer scenarios:
 
 ## Event Metadata
 
-The `EventMetadata` class provides the foundation for event tracking:
+The `HomekitEventMetadata` class provides the foundation for event tracking:
 
 ```java
 // Create new event metadata
-EventMetadata metadata = new EventMetadata(
+HomekitEventMetadata metadata = new HomekitEventMetadata(
     "publisher:123",          // Original publisher UID
     "correlation:456",        // Optional correlation ID
     "bridge:789",             // Immediate origin (creator)
@@ -103,7 +111,7 @@ EventMetadata metadata = new EventMetadata(
 );
 
 // Create event metadata from existing metadata
-EventMetadata newMetadata = new EventMetadata(originalMetadata, "newCreator");
+HomekitEventMetadata newMetadata = new HomekitEventMetadata(originalMetadata, "newCreator");
 ```
 
 ## Event Origin Checking
@@ -133,7 +141,7 @@ The HomeKit event system uses multiple complementary mechanisms to prevent event
 - **Example**:
 ```java
 // Event with history and hop count
-EventMetadata metadata = new EventMetadata(
+HomekitEventMetadata metadata = new HomekitEventMetadata(
     "bridge:123",    // Original publisher
     null,            // No correlation ID
     "bridge:123",    // Immediate origin
@@ -141,19 +149,39 @@ EventMetadata metadata = new EventMetadata(
 );
 
 // When forwarding, hop count increases
-EventMetadata forwarded = new EventMetadata(metadata, "accessory:456");
+HomekitEventMetadata forwarded = new HomekitEventMetadata(metadata, "accessory:456");
 // Hop count is now 1, history includes original event
+// Publisher history is ["bridge:123", "accessory:456"]
 ```
 
-### 2. Correlation ID Tracking
+### 2. Publisher History
+- **Purpose**: Detect publisher-based loops and provide publisher traceability
+- **Implementation**: Each event maintains an ordered list of publishers
+- **When Used**: Every time an event is forwarded
+- **Example**:
+```java
+// Check for publisher-based loops
+if (event.getMetadata().hasLoop()) {
+    // Publisher appears more than once in history
+    return;
+}
+
+// Check if we've already published this event
+if (event.getMetadata().isInPublisherHistory(myPublisherId)) {
+    // We're already in the publisher chain
+    return;
+}
+```
+
+### 3. Correlation ID Tracking
 - **Purpose**: Link related events and prevent processing the same logical event multiple times
-- **Implementation**: Events share correlation IDs, tracked in EventMetadata
+- **Implementation**: Events share correlation IDs, tracked in HomekitEventMetadata
 - **When Used**: When events are part of the same logical flow
 - **Example**:
 ```java
 // Initial event with correlation ID
 String correlationId = UUID.randomUUID().toString();
-EventMetadata metadata = new EventMetadata(
+HomekitEventMetadata metadata = new HomekitEventMetadata(
     "bridge:123",
     correlationId,    // Set correlation ID
     "bridge:123",
@@ -161,7 +189,7 @@ EventMetadata metadata = new EventMetadata(
 );
 
 // Related event reuses correlation ID
-EventMetadata related = new EventMetadata(
+HomekitEventMetadata related = new HomekitEventMetadata(
     "accessory:456",
     correlationId,    // Same correlation ID
     "accessory:456",
@@ -169,7 +197,7 @@ EventMetadata related = new EventMetadata(
 );
 ```
 
-### 3. Origin and Peer Tracking
+### 4. Origin and Peer Tracking
 - **Purpose**: Prevent feedback loops between related components
 - **Implementation**: Track original publisher, immediate origin, and peer identifiers
 - **When Used**: When processing events from related components
@@ -177,7 +205,7 @@ EventMetadata related = new EventMetadata(
 ```java
 // Bridge and its accessories are peers
 Set<String> peers = Set.of("bridge:123", "accessory:456", "accessory:789");
-EventMetadata metadata = new EventMetadata(
+HomekitEventMetadata metadata = new HomekitEventMetadata(
     "bridge:123",
     null,
     "bridge:123",
@@ -189,6 +217,119 @@ if (metadata.isFromPeer()) {
     // Handle peer event differently
 }
 ```
+
+# Event Loop Prevention
+
+## Overview
+
+This document describes the mechanisms used to prevent event loops in the HomeKit integration.
+
+## Peer Groups vs Original Publisher Check
+
+### Original Publisher Check
+```java
+if (event.getMetadata().getOriginalPublisher().equals(getUID())) {
+    // Skip processing - this event originated from us
+    return;
+}
+```
+
+### Peer Group Check
+```java
+if (event.getMetadata().isFromPeerGroup(Set.of(
+    new HomekitPeerGroupUID("openhab-homekit"),
+    getUID(),
+    service.getUID()
+))) {
+    // Skip processing
+    return;
+}
+```
+
+### When to Use Each Approach
+
+1. **Use Original Publisher Check When**:
+   - Simple loop prevention is needed
+   - Event chain is linear
+   - Component relationships are simple
+   - Performance is critical
+
+2. **Use Peer Groups When**:
+   - Complex system architecture exists
+   - Multiple component types interact
+   - System boundaries need enforcement
+   - Flexible routing rules are needed
+   - Security boundaries are important
+
+### Advantages of Peer Groups
+
+1. **Component Relationships**:
+   - Can represent hierarchical relationships
+   - Can group related components
+   - Can represent system-wide boundaries
+
+2. **Event Routing Control**:
+   - Can control event flow between component types
+   - Can prevent cross-boundary events
+   - Can implement domain-specific routing rules
+
+3. **System Architecture**:
+   - Better represents system structure
+   - Can enforce architectural boundaries
+   - Can implement security boundaries
+
+4. **Flexibility**:
+   - Can add/remove components from groups
+   - Can change routing rules without code changes
+   - Can implement complex routing scenarios
+
+### Example Scenarios Where Peer Groups Are Better
+
+1. **System Boundary Control**:
+```java
+// Prevent events from crossing system boundaries
+if (event.getMetadata().isFromPeerGroup(Set.of(new HomekitPeerGroupUID("external-system")))) {
+    // Block events from external systems
+    return;
+}
+```
+
+2. **Component Type Control**:
+```java
+// Control events between component types
+if (event.getMetadata().isFromPeerGroup(Set.of(new HomekitPeerGroupUID("homekit-bridge")))) {
+    // Handle bridge-specific events
+    return;
+}
+```
+
+3. **Domain-Specific Routing**:
+```java
+// Implement domain-specific routing
+if (event.getMetadata().isFromPeerGroup(Set.of(new HomekitPeerGroupUID("security-domain")))) {
+    // Handle security-related events
+    return;
+}
+```
+
+4. **Architectural Boundaries**:
+```java
+// Enforce architectural boundaries
+if (event.getMetadata().isFromPeerGroup(Set.of(new HomekitPeerGroupUID("presentation-layer")))) {
+    // Handle presentation layer events
+    return;
+}
+```
+
+### Conclusion
+
+While the original publisher check is simpler, peer groups provide more powerful and flexible control over event routing and system architecture. In a complex system like HomeKit integration, peer groups are likely the better choice because they:
+1. Better represent the system architecture
+2. Provide more control over event routing
+3. Can enforce system boundaries
+4. Are more flexible for future changes
+
+## Event Chain Analysis 
 
 ### 4. Event Graph Analysis
 - **Purpose**: Detect potential loops in subscription patterns
@@ -239,7 +380,7 @@ public class HomeKitBridge {
                 HomekitEvent newEvent = new MyEvent(
                     event.getType(),
                     "bridge:" + bridgeId,
-                    new EventMetadata(
+                    new HomekitEventMetadata(
                         event.getMetadata(),
                         bridgeId,
                         newCorrelationId,
@@ -269,7 +410,7 @@ public class HomeKitBridge {
 }
 ```
 
-## Comprehensive Example: Accessory Event Processing
+## Comprehensive Example: HomekitAccessory Event Processing
 
 Here's how an accessory might process events:
 
@@ -300,7 +441,7 @@ public class HomeKitAccessory {
                 HomekitEvent responseEvent = new ResponseEvent(
                     "response:" + event.getType(),
                     "accessory:" + accessoryId,
-                    new EventMetadata(
+                    new HomekitEventMetadata(
                         event.getMetadata(),
                         accessoryId,
                         event.getMetadata().getCorrelationId(),
@@ -615,7 +756,7 @@ These enhancements would provide significant benefits while maintaining OpenHAB'
 
 ## Common Loop Scenarios and Prevention
 
-### 1. Bridge-Accessory Feedback Loop
+### 1. Bridge-HomekitAccessory Feedback Loop
 **Scenario**: Bridge updates accessory, accessory updates bridge, creating a loop.
 
 **Prevention**:
@@ -638,10 +779,10 @@ public void onEvent(HomekitEvent event) {
         correlationId = UUID.randomUUID().toString();
     }
     
-    HomekitEvent newEvent = new CharacteristicEvent(
+    HomekitEvent newEvent = new HomekitCharacteristicEvent(
         HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
         myBridgeId,
-        new EventMetadata(
+        new HomekitEventMetadata(
             myBridgeId,
             correlationId,
             myBridgeId,
@@ -671,8 +812,8 @@ public void onEvent(HomekitEvent event) {
     }
     
     // Process event and forward with increased hop count
-    EventMetadata newMetadata = new EventMetadata(event.getMetadata(), myComponentId);
-    HomekitEvent newEvent = new CharacteristicEvent(
+    HomekitEventMetadata newMetadata = new HomekitEventMetadata(event.getMetadata(), myComponentId);
+    HomekitEvent newEvent = new HomekitCharacteristicEvent(
         event.getType(),
         myComponentId,
         newMetadata
@@ -694,7 +835,7 @@ public void addSubscription(HomekitEventType type, String publisher, String subs
     }
     
     // Add subscription with peer awareness
-    EventMetadata metadata = new EventMetadata(
+    HomekitEventMetadata metadata = new HomekitEventMetadata(
         publisher,
         null,
         publisher,
@@ -725,7 +866,7 @@ public void addSubscription(HomekitEventType type, String publisher, String subs
 3. **Define Appropriate Peer Groups**:
    ```java
    Set<String> peers = Set.of("bridge:123", "accessory:456");
-   EventMetadata metadata = new EventMetadata(publisher, null, publisher, peers);
+   HomekitEventMetadata metadata = new HomekitEventMetadata(publisher, null, publisher, peers);
    ```
 
 4. **Monitor Event Metrics**:
@@ -744,7 +885,13 @@ public void addSubscription(HomekitEventType type, String publisher, String subs
    logger.debug("Event history: {}", history);
    ```
 
-2. **Monitor Correlation IDs**:
+2. **Check Publisher History**:
+   ```java
+   String publisherHistory = event.getMetadata().getPublisherHistoryAsString();
+   logger.debug("Publisher history: {}", publisherHistory);
+   ```
+
+3. **Monitor Correlation IDs**:
    ```java
    String correlationId = event.getMetadata().getCorrelationId();
    if (correlationId != null) {
@@ -752,14 +899,14 @@ public void addSubscription(HomekitEventType type, String publisher, String subs
    }
    ```
 
-3. **Verify Peer Relationships**:
+4. **Verify Peer Relationships**:
    ```java
    if (event.getMetadata().isFromPeer()) {
        logger.debug("Event from peer: {}", event.getMetadata().getImmediateOrigin());
    }
    ```
 
-4. **Analyze Subscription Graph**:
+5. **Analyze Subscription Graph**:
    ```java
    if (eventGraph.hasCycle()) {
        String cyclePath = eventGraph.getCyclePath();
@@ -777,7 +924,7 @@ Correlation IDs are a powerful mechanism for tracking related events and prevent
    ```java
    // When creating a root event (not in response to another event)
    String correlationId = UUID.randomUUID().toString();
-   EventMetadata metadata = new EventMetadata(
+   HomekitEventMetadata metadata = new HomekitEventMetadata(
        "bridge:123",
        correlationId,    // New correlation ID
        "bridge:123",
@@ -789,7 +936,7 @@ Correlation IDs are a powerful mechanism for tracking related events and prevent
    if (correlationId == null) {
        correlationId = UUID.randomUUID().toString();
    }
-   EventMetadata metadata = new EventMetadata(
+   HomekitEventMetadata metadata = new HomekitEventMetadata(
        "accessory:456",
        correlationId,    // Reuse correlation ID
        "accessory:456",
@@ -808,10 +955,10 @@ Correlation IDs are a powerful mechanism for tracking related events and prevent
        processEvent(event);
        
        // Create new event with same correlation ID
-       HomekitEvent newEvent = new CharacteristicEvent(
+       HomekitEvent newEvent = new HomekitCharacteristicEvent(
            event.getType(),
            "bridge:123",
-           new EventMetadata(
+           new HomekitEventMetadata(
                "bridge:123",
                correlationId,    // Propagate correlation ID
                "bridge:123",
@@ -863,7 +1010,7 @@ Correlation IDs are a powerful mechanism for tracking related events and prevent
            if (correlationId != null) {
                Long timestamp = correlationTimestamps.get(correlationId);
                if (timestamp != null && 
-                   System.currentTimeMillis() - timestamp < EventMetadata.CORRELATION_ID_EXPIRY_MS) {
+                   System.currentTimeMillis() - timestamp < HomekitEventMetadata.CORRELATION_ID_EXPIRY_MS) {
                    logger.debug("Event with correlation ID {} already processed", correlationId);
                    return;
                }
@@ -965,14 +1112,14 @@ Correlation IDs are a powerful mechanism for tracking related events and prevent
 
 ### Common Correlation ID Scenarios
 
-1. **Bridge-Accessory Communication**:
+1. **Bridge-HomekitAccessory Communication**:
    ```java
    // Bridge sends event to accessory
    String correlationId = UUID.randomUUID().toString();
-   HomekitEvent bridgeEvent = new CharacteristicEvent(
+   HomekitEvent bridgeEvent = new HomekitCharacteristicEvent(
        HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
        "bridge:123",
-       new EventMetadata(
+       new HomekitEventMetadata(
            "bridge:123",
            correlationId,
            "bridge:123",
@@ -980,14 +1127,14 @@ Correlation IDs are a powerful mechanism for tracking related events and prevent
        )
    );
    
-   // Accessory processes event and responds
+   // HomekitAccessory processes event and responds
    public void onEvent(HomekitEvent event) {
        String correlationId = event.getMetadata().getCorrelationId();
        // Process event
-       HomekitEvent response = new CharacteristicEvent(
+       HomekitEvent response = new HomekitCharacteristicEvent(
            event.getType(),
            "accessory:456",
-           new EventMetadata(
+           new HomekitEventMetadata(
                "accessory:456",
                correlationId,    // Use same correlation ID
                "accessory:456",
@@ -1001,10 +1148,10 @@ Correlation IDs are a powerful mechanism for tracking related events and prevent
    ```java
    // Initial event
    String correlationId = UUID.randomUUID().toString();
-   HomekitEvent initialEvent = new CharacteristicEvent(
+   HomekitEvent initialEvent = new HomekitCharacteristicEvent(
        HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
        "bridge:123",
-       new EventMetadata(
+       new HomekitEventMetadata(
            "bridge:123",
            correlationId,
            "bridge:123",
@@ -1016,10 +1163,10 @@ Correlation IDs are a powerful mechanism for tracking related events and prevent
    public void processStep(HomekitEvent event) {
        String correlationId = event.getMetadata().getCorrelationId();
        // Process step
-       HomekitEvent nextStep = new CharacteristicEvent(
+       HomekitEvent nextStep = new HomekitCharacteristicEvent(
            event.getType(),
            "processor:789",
-           new EventMetadata(
+           new HomekitEventMetadata(
                "processor:789",
                correlationId,    // Maintain correlation ID
                "processor:789",
@@ -1049,8 +1196,6 @@ Correlation IDs are a powerful mechanism for tracking related events and prevent
    }
    ```
 
-
-
 ### Loop Prevention with Direct Routing
 
 Direct routing provides additional loop prevention benefits:
@@ -1058,7 +1203,7 @@ Direct routing provides additional loop prevention benefits:
 1. **Targeted Delivery**:
    ```java
    // Event is delivered only to the specified subscriber
-   HomekitEvent event = new CharacteristicEvent(
+   HomekitEvent event = new HomekitCharacteristicEvent(
        eventType,
        publisherUID,
        "specific-subscriber",  // Set specific subscriber UID
@@ -1080,7 +1225,7 @@ Direct routing provides additional loop prevention benefits:
 3. **Explicit Path Control**:
    ```java
    // Control the event propagation path
-   HomekitEvent newEvent = new CharacteristicEvent(
+   HomekitEvent newEvent = new HomekitCharacteristicEvent(
        event.getType(),
        event.getPublisherUID(),
        "next-hop",  // Set next hop as subscriber
@@ -1137,11 +1282,9 @@ Broadcast routing requires additional loop prevention measures:
    - Monitor event delivery paths
    - Watch for routing-related loops
 
-
-
 ## Common Loop Scenarios and Prevention
 
-### 1. Bridge-Accessory Feedback Loop
+### 1. Bridge-HomekitAccessory Feedback Loop
 **Scenario**: Bridge updates accessory, accessory updates bridge, creating a loop.
 
 **Prevention**:
@@ -1164,10 +1307,10 @@ public void onEvent(HomekitEvent event) {
         correlationId = UUID.randomUUID().toString();
     }
     
-    HomekitEvent newEvent = new CharacteristicEvent(
+    HomekitEvent newEvent = new HomekitCharacteristicEvent(
         HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
         myBridgeId,
-        new EventMetadata(
+        new HomekitEventMetadata(
             myBridgeId,
             correlationId,
             myBridgeId,
@@ -1197,8 +1340,8 @@ public void onEvent(HomekitEvent event) {
     }
     
     // Process event and forward with increased hop count
-    EventMetadata newMetadata = new EventMetadata(event.getMetadata(), myComponentId);
-    HomekitEvent newEvent = new CharacteristicEvent(
+    HomekitEventMetadata newMetadata = new HomekitEventMetadata(event.getMetadata(), myComponentId);
+    HomekitEvent newEvent = new HomekitCharacteristicEvent(
         event.getType(),
         myComponentId,
         newMetadata
@@ -1220,7 +1363,7 @@ public void addSubscription(HomekitEventType type, String publisher, String subs
     }
     
     // Add subscription with peer awareness
-    EventMetadata metadata = new EventMetadata(
+    HomekitEventMetadata metadata = new HomekitEventMetadata(
         publisher,
         null,
         publisher,
@@ -1251,7 +1394,7 @@ public void addSubscription(HomekitEventType type, String publisher, String subs
 3. **Define Appropriate Peer Groups**:
    ```java
    Set<String> peers = Set.of("bridge:123", "accessory:456");
-   EventMetadata metadata = new EventMetadata(publisher, null, publisher, peers);
+   HomekitEventMetadata metadata = new HomekitEventMetadata(publisher, null, publisher, peers);
    ```
 
 4. **Monitor Event Metrics**:
@@ -1270,7 +1413,13 @@ public void addSubscription(HomekitEventType type, String publisher, String subs
    logger.debug("Event history: {}", history);
    ```
 
-2. **Monitor Correlation IDs**:
+2. **Check Publisher History**:
+   ```java
+   String publisherHistory = event.getMetadata().getPublisherHistoryAsString();
+   logger.debug("Publisher history: {}", publisherHistory);
+   ```
+
+3. **Monitor Correlation IDs**:
    ```java
    String correlationId = event.getMetadata().getCorrelationId();
    if (correlationId != null) {
@@ -1278,14 +1427,14 @@ public void addSubscription(HomekitEventType type, String publisher, String subs
    }
    ```
 
-3. **Verify Peer Relationships**:
+4. **Verify Peer Relationships**:
    ```java
    if (event.getMetadata().isFromPeer()) {
        logger.debug("Event from peer: {}", event.getMetadata().getImmediateOrigin());
    }
    ```
 
-4. **Analyze Subscription Graph**:
+5. **Analyze Subscription Graph**:
    ```java
    if (eventGraph.hasCycle()) {
        String cyclePath = eventGraph.getCyclePath();
@@ -1303,7 +1452,7 @@ Correlation IDs are a powerful mechanism for tracking related events and prevent
    ```java
    // When creating a root event (not in response to another event)
    String correlationId = UUID.randomUUID().toString();
-   EventMetadata metadata = new EventMetadata(
+   HomekitEventMetadata metadata = new HomekitEventMetadata(
        "bridge:123",
        correlationId,    // New correlation ID
        "bridge:123",
@@ -1315,7 +1464,7 @@ Correlation IDs are a powerful mechanism for tracking related events and prevent
    if (correlationId == null) {
        correlationId = UUID.randomUUID().toString();
    }
-   EventMetadata metadata = new EventMetadata(
+   HomekitEventMetadata metadata = new HomekitEventMetadata(
        "accessory:456",
        correlationId,    // Reuse correlation ID
        "accessory:456",
@@ -1334,10 +1483,10 @@ Correlation IDs are a powerful mechanism for tracking related events and prevent
        processEvent(event);
        
        // Create new event with same correlation ID
-       HomekitEvent newEvent = new CharacteristicEvent(
+       HomekitEvent newEvent = new HomekitCharacteristicEvent(
            event.getType(),
            "bridge:123",
-           new EventMetadata(
+           new HomekitEventMetadata(
                "bridge:123",
                correlationId,    // Propagate correlation ID
                "bridge:123",
@@ -1389,7 +1538,7 @@ Correlation IDs are a powerful mechanism for tracking related events and prevent
            if (correlationId != null) {
                Long timestamp = correlationTimestamps.get(correlationId);
                if (timestamp != null && 
-                   System.currentTimeMillis() - timestamp < EventMetadata.CORRELATION_ID_EXPIRY_MS) {
+                   System.currentTimeMillis() - timestamp < HomekitEventMetadata.CORRELATION_ID_EXPIRY_MS) {
                    logger.debug("Event with correlation ID {} already processed", correlationId);
                    return;
                }
@@ -1491,14 +1640,14 @@ Correlation IDs are a powerful mechanism for tracking related events and prevent
 
 ### Common Correlation ID Scenarios
 
-1. **Bridge-Accessory Communication**:
+1. **Bridge-HomekitAccessory Communication**:
    ```java
    // Bridge sends event to accessory
    String correlationId = UUID.randomUUID().toString();
-   HomekitEvent bridgeEvent = new CharacteristicEvent(
+   HomekitEvent bridgeEvent = new HomekitCharacteristicEvent(
        HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
        "bridge:123",
-       new EventMetadata(
+       new HomekitEventMetadata(
            "bridge:123",
            correlationId,
            "bridge:123",
@@ -1506,14 +1655,14 @@ Correlation IDs are a powerful mechanism for tracking related events and prevent
        )
    );
    
-   // Accessory processes event and responds
+   // HomekitAccessory processes event and responds
    public void onEvent(HomekitEvent event) {
        String correlationId = event.getMetadata().getCorrelationId();
        // Process event
-       HomekitEvent response = new CharacteristicEvent(
+       HomekitEvent response = new HomekitCharacteristicEvent(
            event.getType(),
            "accessory:456",
-           new EventMetadata(
+           new HomekitEventMetadata(
                "accessory:456",
                correlationId,    // Use same correlation ID
                "accessory:456",
@@ -1527,10 +1676,10 @@ Correlation IDs are a powerful mechanism for tracking related events and prevent
    ```java
    // Initial event
    String correlationId = UUID.randomUUID().toString();
-   HomekitEvent initialEvent = new CharacteristicEvent(
+   HomekitEvent initialEvent = new HomekitCharacteristicEvent(
        HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
        "bridge:123",
-       new EventMetadata(
+       new HomekitEventMetadata(
            "bridge:123",
            correlationId,
            "bridge:123",
@@ -1542,10 +1691,10 @@ Correlation IDs are a powerful mechanism for tracking related events and prevent
    public void processStep(HomekitEvent event) {
        String correlationId = event.getMetadata().getCorrelationId();
        // Process step
-       HomekitEvent nextStep = new CharacteristicEvent(
+       HomekitEvent nextStep = new HomekitCharacteristicEvent(
            event.getType(),
            "processor:789",
-           new EventMetadata(
+           new HomekitEventMetadata(
                "processor:789",
                correlationId,    // Maintain correlation ID
                "processor:789",

@@ -172,5 +172,5 @@ A: Yes, any openHAB Item or Thing can be exposed as a HomeKit accessory in clien
 ## References
 
 - [openHAB HomeKit Add-on Documentation](https://www.openhab.org/addons/integrations/homekit/)
-- [Apple HomeKit Accessory Protocol Specification](https://developer.apple.com/homekit/)
+- [Apple HomeKit HomekitAccessory Protocol Specification](https://developer.apple.com/homekit/)
 - [openHAB Thing and Item Concepts](https://www.openhab.org/docs/concepts/things.html) 

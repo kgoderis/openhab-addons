@@ -16,7 +16,7 @@ _**Assistant**_
 | File | Lines |
 |------|-------|
 | `src/main/java/org/openhab/io/homekit/internal/events/HomekitEventType.java` | L1-54 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/EnumCharacteristic.java` | L67-120 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitEnumCharacteristic.java` | L67-120 |
 | `src/main/java/org/openhab/io/homekit/internal/events/HomekitEventConstants.java` | L1-14 |
 | `src/main/java/org/openhab/io/homekit/internal/events/HomekitEvent.java` | L1-49 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/StatusTamperedCharacteristic.java` | L1-62 |
@@ -24,22 +24,22 @@ _**Assistant**_
 | `src/main/java/org/openhab/io/homekit/internal/handler/AbstractHomekitHandler.java` | L1-44 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/OnCharacteristic.java` | L1-66 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/StatusFaultCharacteristic.java` | L1-67 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/EnumCharacteristic.java` | L21-67 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/BooleanCharacteristic.java` | L64-105 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitEnumCharacteristic.java` | L21-67 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitBooleanCharacteristic.java` | L64-105 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/ObstructionDetectedCharacteristic.java` | L1-65 |
 | `src/main/java/org/openhab/io/homekit/documentation/EventMechanism.md` | L1-69 |
-| `src/main/java/org/openhab/io/homekit/internal/accessory/AccessoryServerState.java` | L1-38 |
+| `src/main/java/org/openhab/io/homekit/internal/accessory/HomekitAccessoryServerState.java` | L1-38 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/SerialNumberCharacteristic.java` | L1-63 |
 | `src/main/java/org/openhab/io/homekit/exception/HomekitEventException.java` | L1-11 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/IntegerCharacteristic.java` | L43-115 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/GenericCharacteristic.java` | L56-108 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitIntegerCharacteristic.java` | L43-115 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitGenericCharacteristic.java` | L56-108 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/StatusActiveCharacteristic.java` | L1-70 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/PositionStateCharacteristic.java` | L1-62 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/StatusLowBatteryCharacteristic.java` | L1-69 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/ShortReadOnlyStringCharacteristic.java` | L66-113 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitShortReadOnlyStringCharacteristic.java` | L66-113 |
 | `src/main/java/org/openhab/io/homekit/internal/events/HomekitUID.java` | L1-62 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/TargetTemperatureCharacteristic.java` | L1-63 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/WriteOnlyBooleanCharacteristic.java` | L70-111 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitWriteOnlyBooleanCharacteristic.java` | L70-111 |
 
 </details>
 
@@ -52,10 +52,10 @@ _**Assistant**_
 |------|-------|
 | `src/main/java/org/openhab/io/homekit/internal/events/HomekitEventConstants.java` | L1-14 |
 | `src/main/java/org/openhab/io/homekit/internal/events/HomekitEventType.java` | L1-54 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/EnumCharacteristic.java` | L67-120 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitEnumCharacteristic.java` | L67-120 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/StatusTamperedCharacteristic.java` | L1-62 |
 | `src/main/java/org/openhab/io/homekit/internal/events/HomekitEvent.java` | L1-49 |
-| `src/main/java/org/openhab/io/homekit/internal/accessory/AccessoryServerState.java` | L1-38 |
+| `src/main/java/org/openhab/io/homekit/internal/accessory/HomekitAccessoryServerState.java` | L1-38 |
 | `src/main/java/org/openhab/io/homekit/internal/events/HomekitUID.java` | L1-62 |
 | `src/main/java/org/openhab/io/homekit/exception/HomekitEventException.java` | L1-11 |
 | `src/main/java/org/openhab/io/homekit/internal/handler/AbstractHomekitHandler.java` | L1-44 |
@@ -65,14 +65,14 @@ _**Assistant**_
 | `src/main/java/org/openhab/io/homekit/library/characteristic/HoldPositionCharacteristic.java` | L1-70 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/SerialNumberCharacteristic.java` | L1-63 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/StatusActiveCharacteristic.java` | L1-70 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/EnumCharacteristic.java` | L21-67 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitEnumCharacteristic.java` | L21-67 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/OnCharacteristic.java` | L1-66 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/ServiceNameCharacteristic.java` | L1-63 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/ObstructionDetectedCharacteristic.java` | L1-65 |
 | `src/main/java/org/openhab/io/homekit/internal/events/AbstractHomekitEvent.java` | L46-68 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/PositionStateCharacteristic.java` | L1-62 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/SaturationCharacteristic.java` | L1-57 |
-| `src/main/java/org/openhab/io/homekit/internal/characteristic/EnumCharacteristic.java` | L1-21 |
+| `src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitEnumCharacteristic.java` | L1-21 |
 | `src/main/java/org/openhab/io/homekit/library/characteristic/ModelCharacteristic.java` | L1-68 |
 | `src/main/java/org/openhab/io/homekit/documentation/EventMechanism.md` | L1-69 |
 
@@ -85,67 +85,67 @@ _**Assistant**_
         
 | File | Line | Match |
 |------|------|-------|
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/events/SubscriptionAddedEvent.java` | L9 | `super(HomekitEventType.SUBSCRIPTION_ADDED, subscription.getPublisherUID());` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/service/GenericService.java` | L257 | `eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, sourceUID,` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/service/GenericService.java` | L331 | `ServiceEvent event = new ServiceEvent(HomekitEventType.CHARACTERISTIC_ADDED, this, characteristic);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/service/GenericService.java` | L338 | `ServiceEvent event = new ServiceEvent(HomekitEventType.CHARACTERISTIC_REMOVED, this, characteristic);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/service/GenericService.java` | L345 | `ServiceEvent event = new ServiceEvent(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, this, characteristic);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/AccessoryServerState.java` | L22 | `HomekitEventType.SERVER_STATE_CONNECTED, false);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/AccessoryServerState.java` | L25 | `"Connected to controller", HomekitEventType.SERVER_STATE_CONNECTED, false);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/AccessoryServerState.java` | L28 | `"Disconnected from controller", HomekitEventType.SERVER_STATE_DISCONNECTED, false);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/AccessoryServerState.java` | L31 | `HomekitEventType.SERVER_STATE_PAIRED, false);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/AccessoryServerState.java` | L34 | `"Pairing verified with controller", HomekitEventType.SERVER_STATE_PAIR_VERIFIED, false);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/AccessoryServerState.java` | L37 | `"Pairing exists but not verified", HomekitEventType.SERVER_STATE_PAIR_UNVERIFIED, false);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/AccessoryServerState.java` | L40 | `"Not paired with any controller", HomekitEventType.SERVER_STATE_UNPAIRED, false);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/AccessoryServerState.java` | L43 | `"PAIRED_TO_OTHER_CONTROLLER", "Paired with another controller", HomekitEventType.SERVER_STATE_PAIRED,` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/AccessoryServerState.java` | L47 | `"Pairing information is missing", HomekitEventType.SERVER_STATE_PAIRING_MISSING, false);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/AccessoryServerState.java` | L50 | `"Setup code is missing or invalid", HomekitEventType.SERVER_STATE_MISSING_SETUP_CODE, false);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/AccessoryServerState.java` | L53 | `"Authenticating with controller", HomekitEventType.SERVER_STATE_CONNECTED, true);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/AccessoryServerState.java` | L56 | `HomekitEventType.SERVER_STATE_CONNECTED, false);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/AccessoryServerState.java` | L59 | `HomekitEventType.SERVER_STATE_CONNECTED, false);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/AccessoryServerState.java` | L62 | `"Accessory has been factory reset", HomekitEventType.SERVER_STATE_CONNECTED, false);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/AccessoryServerState.java` | L65 | `"Starting pair setup process", HomekitEventType.SERVER_STATE_CONNECTED, true);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/AccessoryServerState.java` | L68 | `"Executing SRP protocol exchange", HomekitEventType.SERVER_STATE_CONNECTED, true);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/AccessoryServerState.java` | L71 | `"Verifying pairing proof", HomekitEventType.SERVER_STATE_CONNECTED, true);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/AccessoryServerState.java` | L74 | `"Exchanging encryption keys", HomekitEventType.SERVER_STATE_CONNECTED, true);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/events/SubscriptionRemovedEvent.java` | L9 | `super(HomekitEventType.SUBSCRIPTION_REMOVED, subscription.getPublisherUID());` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/events/SubscriptionFailureEvent.java` | L13 | `super(HomekitEventType.SUBSCRIPTION_FAILED, publisherUID);` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/GenericAccessory.java` | L184 | `eventManager.publishEvent(new AccessoryEvent(HomekitEventType.SERVICE_ADDED, this, service, null));` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/GenericAccessory.java` | L188 | `HomekitEventType.SERVICE_STATE_CHANGED,` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/GenericAccessory.java` | L203 | `eventManager.publishEvent(new AccessoryEvent(HomekitEventType.SERVICE_REMOVED, this, service, null));` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/events/HomekitSubscriptionAddedEvent.java` | L9 | `super(HomekitEventType.SUBSCRIPTION_ADDED, subscription.getPublisherUID());` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/service/HomekitGenericService.java` | L257 | `eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, sourceUID,` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/service/HomekitGenericService.java` | L331 | `HomekitServiceEvent event = new HomekitServiceEvent(HomekitEventType.CHARACTERISTIC_ADDED, this, characteristic);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/service/HomekitGenericService.java` | L338 | `HomekitServiceEvent event = new HomekitServiceEvent(HomekitEventType.CHARACTERISTIC_REMOVED, this, characteristic);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/service/HomekitGenericService.java` | L345 | `HomekitServiceEvent event = new HomekitServiceEvent(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, this, characteristic);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/HomekitAccessoryServerState.java` | L22 | `HomekitEventType.SERVER_STATE_CONNECTED, false);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/HomekitAccessoryServerState.java` | L25 | `"Connected to controller", HomekitEventType.SERVER_STATE_CONNECTED, false);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/HomekitAccessoryServerState.java` | L28 | `"Disconnected from controller", HomekitEventType.SERVER_STATE_DISCONNECTED, false);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/HomekitAccessoryServerState.java` | L31 | `HomekitEventType.SERVER_STATE_PAIRED, false);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/HomekitAccessoryServerState.java` | L34 | `"HomekitPairing verified with controller", HomekitEventType.SERVER_STATE_PAIR_VERIFIED, false);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/HomekitAccessoryServerState.java` | L37 | `"HomekitPairing exists but not verified", HomekitEventType.SERVER_STATE_PAIR_UNVERIFIED, false);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/HomekitAccessoryServerState.java` | L40 | `"Not paired with any controller", HomekitEventType.SERVER_STATE_UNPAIRED, false);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/HomekitAccessoryServerState.java` | L43 | `"PAIRED_TO_OTHER_CONTROLLER", "Paired with another controller", HomekitEventType.SERVER_STATE_PAIRED,` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/HomekitAccessoryServerState.java` | L47 | `"HomekitPairing information is missing", HomekitEventType.SERVER_STATE_PAIRING_MISSING, false);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/HomekitAccessoryServerState.java` | L50 | `"Setup code is missing or invalid", HomekitEventType.SERVER_STATE_MISSING_SETUP_CODE, false);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/HomekitAccessoryServerState.java` | L53 | `"Authenticating with controller", HomekitEventType.SERVER_STATE_CONNECTED, true);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/HomekitAccessoryServerState.java` | L56 | `HomekitEventType.SERVER_STATE_CONNECTED, false);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/HomekitAccessoryServerState.java` | L59 | `HomekitEventType.SERVER_STATE_CONNECTED, false);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/HomekitAccessoryServerState.java` | L62 | `"HomekitAccessory has been factory reset", HomekitEventType.SERVER_STATE_CONNECTED, false);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/HomekitAccessoryServerState.java` | L65 | `"Starting pair setup process", HomekitEventType.SERVER_STATE_CONNECTED, true);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/HomekitAccessoryServerState.java` | L68 | `"Executing SRP protocol exchange", HomekitEventType.SERVER_STATE_CONNECTED, true);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/HomekitAccessoryServerState.java` | L71 | `"Verifying pairing proof", HomekitEventType.SERVER_STATE_CONNECTED, true);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/HomekitAccessoryServerState.java` | L74 | `"Exchanging encryption keys", HomekitEventType.SERVER_STATE_CONNECTED, true);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/events/HomekitSubscriptionRemovedEvent.java` | L9 | `super(HomekitEventType.SUBSCRIPTION_REMOVED, subscription.getPublisherUID());` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/events/HomekitSubscriptionFailureEvent.java` | L13 | `super(HomekitEventType.SUBSCRIPTION_FAILED, publisherUID);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/HomekitGenericAccessory.java` | L184 | `eventManager.publishEvent(new HomekitAccessoryEvent(HomekitEventType.SERVICE_ADDED, this, service, null));` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/HomekitGenericAccessory.java` | L188 | `HomekitEventType.SERVICE_STATE_CHANGED,` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/accessory/HomekitGenericAccessory.java` | L203 | `eventManager.publishEvent(new HomekitAccessoryEvent(HomekitEventType.SERVICE_REMOVED, this, service, null));` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/events/HomekitEventManager.java` | L50 | `*     <li>Subscribe to all events: {@code subscribe(HomekitEventType.ANY, "*", subscriber)}</li>` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/events/HomekitEventManager.java` | L51 | `*     <li>Subscribe to all events from a specific publisher: {@code subscribe(HomekitEventType.ANY, "publisherId", subscriber)}</li>` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/events/HomekitEventManager.java` | L106 | `*     <li>Subscribe to event type categories: {@code subscribe(HomekitEventType.CHARACTERISTIC_ANY, publisherUID, subscriber)}</li>` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/events/HomekitEventManager.java` | L107 | `*     <li>Subscribe to all events: {@code subscribe(HomekitEventType.ANY, publisherUID, subscriber)}</li>` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/events/HomekitEventManager.java` | L202 | `for (HomekitEventType type : HomekitEventType.values()) {` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/events/HomekitEventManager.java` | L767 | `publishEvent(new AccessoryEvent(HomekitEventType.ACCESSORY_UID_CHANGED, oldUID, newUID));` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/events/HomekitEventManager.java` | L767 | `publishEvent(new HomekitAccessoryEvent(HomekitEventType.ACCESSORY_UID_CHANGED, oldUID, newUID));` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/registry/AccessoryServerRegistryImpl.java` | L232 | `eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVER_STATE_CHANGED,` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/LocalAccessoryServer.java` | L563 | `if (event.getType() == HomekitEventType.CHARACTERISTIC_STATE_CHANGED && event.getCharacteristic().isPresent()) {` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/LocalAccessoryServer.java` | L580 | `eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/LocalAccessoryServer.java` | L613 | `eventManager.unsubscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/characteristic/GenericCharacteristic.java` | L120 | `HomekitEventType.CHARACTERISTIC_CHANGE_VALUE, // or CHARACTERISTIC_VALUE_CHANGED, as appropriate` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/characteristic/GenericCharacteristic.java` | L294 | `eventManager.publishEvent(new CharacteristicEvent(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/AbstractAccessoryServer.java` | L347 | `new AccessoryServerEvent(HomekitEventType.SERVER_STATE_CONFIGURATION_NUMBER_CHANGED, this,` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/AbstractAccessoryServer.java` | L596 | `eventManager.publishEvent(new AccessoryServerEvent(HomekitEventType.ACCESSORY_ADDED, this,` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/AbstractAccessoryServer.java` | L644 | `eventManager.publishEvent(new AccessoryServerEvent(HomekitEventType.ACCESSORY_REMOVED, this,` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/HomekitLocalAccessoryServer.java` | L563 | `if (event.getType() == HomekitEventType.CHARACTERISTIC_STATE_CHANGED && event.getCharacteristic().isPresent()) {` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/HomekitLocalAccessoryServer.java` | L580 | `eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/HomekitLocalAccessoryServer.java` | L613 | `eventManager.unsubscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitGenericCharacteristic.java` | L120 | `HomekitEventType.CHARACTERISTIC_CHANGE_VALUE, // or CHARACTERISTIC_VALUE_CHANGED, as appropriate` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/characteristic/HomekitGenericCharacteristic.java` | L294 | `eventManager.publishEvent(new HomekitCharacteristicEvent(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/HomekitAbstractAccessoryServer.java` | L347 | `new HomekitAccessoryServerEvent(HomekitEventType.SERVER_STATE_CONFIGURATION_NUMBER_CHANGED, this,` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/HomekitAbstractAccessoryServer.java` | L596 | `eventManager.publishEvent(new HomekitAccessoryServerEvent(HomekitEventType.ACCESSORY_ADDED, this,` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/HomekitAbstractAccessoryServer.java` | L644 | `eventManager.publishEvent(new HomekitAccessoryServerEvent(HomekitEventType.ACCESSORY_REMOVED, this,` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/bridge/HomekitItemBridge.java` | L609 | `eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, genericCharacteristic.getUID().toString(),subscriberUID,` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/bridge/HomekitItemBridge.java` | L614 | `if (event.getType() != HomekitEventType.CHARACTERISTIC_STATE_CHANGED) {` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/bridge/HomekitAccessoryBridge.java` | L63 | `Set.of(HomekitEventType.CHARACTERISTIC_VALUE_CHANGED, HomekitEventType.SERVICE_ADDED,` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/bridge/HomekitAccessoryBridge.java` | L64 | `HomekitEventType.SERVICE_REMOVED, HomekitEventType.ACCESSORY_STATE_CHANGED),` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/bridge/HomekitAccessoryBridge.java` | L73 | `Set.of(HomekitEventType.CHARACTERISTIC_VALUE_CHANGED),` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/RemoteAccessoryServer.java` | L1229 | `if (event.getType() == HomekitEventType.CHARACTERISTIC_START_EVENTS && event.getCharacteristic().isPresent()) {` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/RemoteAccessoryServer.java` | L1232 | `} else if (event.getType() == HomekitEventType.CHARACTERISTIC_STOP_EVENTS` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/RemoteAccessoryServer.java` | L1347 | `eventManager.publishEvent(new AccessoryServerEvent(HomekitEventType.ACCESSORY_ADDED, this,` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/RemoteAccessoryServer.java` | L1365 | `eventManager.publishEvent(new AccessoryServerEvent(HomekitEventType.ACCESSORY_REMOVED, this,` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/RemoteAccessoryServer.java` | L1391 | `eventManager.publishEvent(new AccessoryServerEvent(HomekitEventType.SERVICE_ADDED, this,` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/RemoteAccessoryServer.java` | L1409 | `eventManager.publishEvent(new AccessoryServerEvent(HomekitEventType.SERVICE_REMOVED,` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/RemoteAccessoryServer.java` | L1438 | `HomekitEventType.CHARACTERISTIC_ADDED, this, currentAccessory,` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/RemoteAccessoryServer.java` | L1460 | `HomekitEventType.CHARACTERISTIC_REMOVED, this, currentAccessory,` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/RemoteAccessoryServer.java` | L1476 | `HomekitEventType.CHARACTERISTIC_STATE_CHANGED, this,` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/RemoteAccessoryServer.java` | L1501 | `eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/RemoteAccessoryServer.java` | L1504 | `eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_START_EVENTS,` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/RemoteAccessoryServer.java` | L1507 | `eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STOP_EVENTS,` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/RemoteAccessoryServer.java` | L1530 | `eventManager.unsubscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, subscription.getPublisherUID(),` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/HomekitRemoteAccessoryServer.java` | L1229 | `if (event.getType() == HomekitEventType.CHARACTERISTIC_START_EVENTS && event.getCharacteristic().isPresent()) {` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/HomekitRemoteAccessoryServer.java` | L1232 | `} else if (event.getType() == HomekitEventType.CHARACTERISTIC_STOP_EVENTS` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/HomekitRemoteAccessoryServer.java` | L1347 | `eventManager.publishEvent(new HomekitAccessoryServerEvent(HomekitEventType.ACCESSORY_ADDED, this,` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/HomekitRemoteAccessoryServer.java` | L1365 | `eventManager.publishEvent(new HomekitAccessoryServerEvent(HomekitEventType.ACCESSORY_REMOVED, this,` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/HomekitRemoteAccessoryServer.java` | L1391 | `eventManager.publishEvent(new HomekitAccessoryServerEvent(HomekitEventType.SERVICE_ADDED, this,` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/HomekitRemoteAccessoryServer.java` | L1409 | `eventManager.publishEvent(new HomekitAccessoryServerEvent(HomekitEventType.SERVICE_REMOVED,` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/HomekitRemoteAccessoryServer.java` | L1438 | `HomekitEventType.CHARACTERISTIC_ADDED, this, currentAccessory,` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/HomekitRemoteAccessoryServer.java` | L1460 | `HomekitEventType.CHARACTERISTIC_REMOVED, this, currentAccessory,` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/HomekitRemoteAccessoryServer.java` | L1476 | `HomekitEventType.CHARACTERISTIC_STATE_CHANGED, this,` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/HomekitRemoteAccessoryServer.java` | L1501 | `eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/HomekitRemoteAccessoryServer.java` | L1504 | `eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_START_EVENTS,` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/HomekitRemoteAccessoryServer.java` | L1507 | `eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STOP_EVENTS,` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/server/HomekitRemoteAccessoryServer.java` | L1530 | `eventManager.unsubscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, subscription.getPublisherUID(),` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/handler/AbstractHomekitHandler.java` | L511 | `eventSubscriptions.add(eventManager.subscribe(HomekitEventType.ACCESSORY_STATE_CHANGED,` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/handler/AbstractHomekitHandler.java` | L546 | `// eventManager.unsubscribe(HomekitEventType.ACCESSORY_STATE_CHANGED,` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/handler/AbstractHomekitHandler.java` | L647 | `eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,` |
@@ -163,11 +163,11 @@ _**Assistant**_
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/handler/AbstractHomekitHandler.java` | L1429 | `eventSubscriptions.add(eventManager.subscribe(HomekitEventType.ACCESSORY_STATE_CHANGED,` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/handler/AbstractHomekitHandler.java` | L1435 | `eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED,` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/handler/AbstractHomekitHandler.java` | L1440 | `eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/handler/ServiceThingHandler.java` | L261 | `eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED,` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/handler/ServiceThingHandler.java` | L697 | `// eventManager.subscribe(HomekitEventType.ACCESSORY_STATE_CHANGED,` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/handler/ServiceThingHandler.java` | L704 | `eventSubscriptions.add(eventManager.subscribe(HomekitEventType.ACCESSORY_STATE_CHANGED,` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/handler/ServiceThingHandler.java` | L729 | `eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED,` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/handler/ServiceThingHandler.java` | L2387 | `eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED,` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/handler/HomekitServiceThingHandler.java` | L261 | `eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED,` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/handler/HomekitServiceThingHandler.java` | L697 | `// eventManager.subscribe(HomekitEventType.ACCESSORY_STATE_CHANGED,` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/handler/HomekitServiceThingHandler.java` | L704 | `eventSubscriptions.add(eventManager.subscribe(HomekitEventType.ACCESSORY_STATE_CHANGED,` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/handler/HomekitServiceThingHandler.java` | L729 | `eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED,` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/handler/HomekitServiceThingHandler.java` | L2387 | `eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED,` |
 
 </details>
 
@@ -181,24 +181,24 @@ _**Assistant**_
 | `src/main/java/org/openhab/io/homekit/internal/events/HomekitEvent.java` | L1-49 |
 | `src/main/java/org/openhab/io/homekit/internal/events/AbstractHomekitEvent.java` | L46-68 |
 | `src/main/java/org/openhab/io/homekit/internal/events/AbstractHomekitEvent.java` | L68-119 |
-| `src/main/java/org/openhab/io/homekit/internal/events/graph/EventGraphUpdatedEvent.java` | L1-46 |
+| `src/main/java/org/openhab/io/homekit/internal/events/graph/HomekitEventGraphUpdatedEvent.java` | L1-46 |
 | `src/main/java/org/openhab/io/homekit/internal/events/AbstractHomekitEvent.java` | L1-46 |
-| `src/main/java/org/openhab/io/homekit/internal/events/graph/EventCycleDetectedEvent.java` | L1-40 |
-| `src/main/java/org/openhab/io/homekit/internal/events/EventMetadata.java` | L1-48 |
+| `src/main/java/org/openhab/io/homekit/internal/events/graph/HomekitEventCycleDetectedEvent.java` | L1-40 |
+| `src/main/java/org/openhab/io/homekit/internal/events/HomekitEventMetadata.java` | L1-48 |
 | `src/main/java/org/openhab/io/homekit/documentation/EventMechanism.md` | L1-69 |
 | `src/main/java/org/openhab/io/homekit/internal/events/HomekitEventSubscription.java` | L1-39 |
 | `src/main/java/org/openhab/io/homekit/internal/events/EventOriginChecker.java` | L1-47 |
-| `src/main/java/org/openhab/io/homekit/internal/events/EventMetadata.java` | L48-83 |
+| `src/main/java/org/openhab/io/homekit/internal/events/HomekitEventMetadata.java` | L48-83 |
 | `src/main/java/org/openhab/io/homekit/internal/events/HomekitEventSubscriber.java` | L1-10 |
 | `src/main/java/org/openhab/io/homekit/documentation/EventMechanism.md` | L151-220 |
-| `src/main/java/org/openhab/io/homekit/internal/events/ServiceEvent.java` | L1-40 |
+| `src/main/java/org/openhab/io/homekit/internal/events/HomekitServiceEvent.java` | L1-40 |
 | `src/main/java/org/openhab/io/homekit/documentation/EventMechanism.md` | L69-151 |
 | `src/main/java/org/openhab/io/homekit/internal/events/HomekitEventPublisher.java` | L1-15 |
-| `src/main/java/org/openhab/io/homekit/internal/events/AccessoryEvent.java` | L1-38 |
-| `src/main/java/org/openhab/io/homekit/internal/events/graph/EventGraphProcessor.java` | L1-56 |
+| `src/main/java/org/openhab/io/homekit/internal/events/HomekitAccessoryEvent.java` | L1-38 |
+| `src/main/java/org/openhab/io/homekit/internal/events/graph/HomekitEventGraphProcessor.java` | L1-56 |
 | `src/main/java/org/openhab/io/homekit/internal/events/HomekitEventLogger.java` | L1-63 |
 | `src/main/java/org/openhab/io/homekit/internal/events/HomekitEventManager.java` | L246-280 |
-| `src/main/java/org/openhab/io/homekit/internal/events/CharacteristicEvent.java` | L1-51 |
+| `src/main/java/org/openhab/io/homekit/internal/events/HomekitCharacteristicEvent.java` | L1-51 |
 | `src/main/java/org/openhab/io/homekit/internal/events/HomekitEventManager.java` | L280-328 |
 | `src/main/java/org/openhab/io/homekit/internal/events/HomekitEventConstants.java` | L1-14 |
 | `src/main/java/org/openhab/io/homekit/internal/events/HomekitEventManager.java` | L211-246 |
@@ -215,11 +215,11 @@ Here’s a comprehensive analysis of **additional useful events** that could or 
 ## 1. **Current Event Coverage**
 
 `HomekitEventType` already covers:
-- **Characteristic events:** value/state changed, added/removed, start/stop events
-- **Service events:** state changed, added/removed
-- **Accessory events:** state changed, added/removed, UID changed
+- **HomekitCharacteristic events:** value/state changed, added/removed, start/stop events
+- **HomekitService events:** state changed, added/removed
+- **HomekitAccessory events:** state changed, added/removed, UID changed
 - **Server events:** state/config changed, connected/disconnected, pairing states, setup code missing, etc.
-- **Pairing events:** state changed
+- **HomekitPairing events:** state changed
 - **Subscription events:** added/removed/failed/orphaned
 - **Wildcard events:** for all, or by category
 
@@ -269,10 +269,10 @@ From the codebase, the following event types or situations are referenced or wou
 
 ### **F. Graph/Loop Detection Events**
 - **EVENT_GRAPH_UPDATED**  
-  *When the event processing graph is updated (see `EventGraphUpdatedEvent`).*
+  *When the event processing graph is updated (see `HomekitEventGraphUpdatedEvent`).*
 
 - **EVENT_CYCLE_DETECTED**  
-  *When a cycle/loop is detected in event propagation (see `EventCycleDetectedEvent`).*
+  *When a cycle/loop is detected in event propagation (see `HomekitEventCycleDetectedEvent`).*
 
 ### **G. Security/Authentication Events**
 - **AUTHENTICATION_FAILED**  
@@ -293,9 +293,9 @@ From the codebase, the following event types or situations are referenced or wou
 ## 3. **Events in Documentation but Not in Enum**
 
 The documentation and event mechanism markdown mention:
-- **Accessory configuration updates**
-- **Characteristic metadata updates**
-- **Service configuration updates**
+- **HomekitAccessory configuration updates**
+- **HomekitCharacteristic metadata updates**
+- **HomekitService configuration updates**
 
 These are not explicitly present in the enum and could be added as:
 - `ACCESSORY_CONFIG_CHANGED`
@@ -322,21 +322,21 @@ These are not explicitly present in the enum and could be added as:
 | CONFIGURATION_ERROR                | Config error detected                                 |
 | DISCOVERY_STARTED / STOPPED        | Device discovery lifecycle                            |
 | DISCOVERY_RESULT / ERROR           | Device found or discovery failed                      |
-| ACCESSORY_HEALTH_CHANGED           | Accessory health/fault/tamper/battery                 |
-| SERVICE_HEALTH_CHANGED             | Service health/fault                                  |
-| CHARACTERISTIC_HEALTH_CHANGED      | Characteristic fault/tamper                           |
+| ACCESSORY_HEALTH_CHANGED           | HomekitAccessory health/fault/tamper/battery                 |
+| SERVICE_HEALTH_CHANGED             | HomekitService health/fault                                  |
+| CHARACTERISTIC_HEALTH_CHANGED      | HomekitCharacteristic fault/tamper                           |
 | COMMAND_RECEIVED                   | Command from HomeKit UI                               |
 | COMMAND_EXECUTED / FAILED          | Command result                                        |
 | SYNC_STARTED / COMPLETED / ERROR   | Full sync lifecycle                                   |
 | EVENT_GRAPH_UPDATED                | Event graph topology changed                          |
 | EVENT_CYCLE_DETECTED               | Event loop/cycle detected                             |
-| AUTHENTICATION_FAILED              | Pairing/auth failure                                  |
+| AUTHENTICATION_FAILED              | HomekitPairing/auth failure                                  |
 | ACCESS_DENIED                      | Permission denied                                     |
 | FACTORY_RESET                      | Factory reset occurred                                |
 | FIRMWARE_UPDATE_AVAILABLE/APPLIED  | Firmware update events                                |
-| ACCESSORY_CONFIG_CHANGED           | Accessory config/metadata changed                     |
-| CHARACTERISTIC_METADATA_CHANGED    | Characteristic metadata changed                       |
-| SERVICE_CONFIG_CHANGED             | Service config changed                                |
+| ACCESSORY_CONFIG_CHANGED           | HomekitAccessory config/metadata changed                     |
+| CHARACTERISTIC_METADATA_CHANGED    | HomekitCharacteristic metadata changed                       |
+| SERVICE_CONFIG_CHANGED             | HomekitService config changed                                |
 | BRIDGE_STATE_CHANGED               | Bridge-specific state changes                         |
 | ITEM_LINKED / ITEM_UNLINKED        | Item mapping changes                                  |
 
@@ -352,7 +352,7 @@ These are not explicitly present in the enum and could be added as:
 
 ## 7. **References in Codebase**
 
-- `EventGraphUpdatedEvent` and `EventCycleDetectedEvent` are already implemented as separate classes (not in the enum).
+- `HomekitEventGraphUpdatedEvent` and `HomekitEventCycleDetectedEvent` are already implemented as separate classes (not in the enum).
 - Health/fault/tamper characteristics exist (e.g., `StatusFaultCharacteristic`, `StatusTamperedCharacteristic`) but do not emit dedicated events.
 - Configuration and sync events are not yet present but are common in event-driven systems.
 

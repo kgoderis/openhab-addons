@@ -12,14 +12,14 @@
 // import org.openhab.core.thing.Thing;
 // import org.openhab.core.thing.ThingStatus;
 // import org.openhab.core.thing.ThingTypeUID;
-// import org.openhab.io.homekit.api.hap.Accessory;
-// import org.openhab.io.homekit.api.hap.AccessoryServer;
-// import org.openhab.io.homekit.api.registry.PairingRegistry;
+// import org.openhab.io.homekit.api.hap.HomekitAccessory;
+// import org.openhab.io.homekit.api.hap.HomekitAccessoryServer;
+// import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
 // import org.openhab.io.homekit.internal.client.HomekitAccessoryConfiguration;
 // import org.openhab.io.homekit.internal.client.HomekitAccessoryProtocolParticipant;
 // import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
 // import org.openhab.io.homekit.internal.client.HomekitException;
-// import org.openhab.io.homekit.internal.server.RemoteAccessoryServer;
+// import org.openhab.io.homekit.internal.server.HomekitRemoteAccessoryServer;
 // import org.osgi.framework.BundleContext;
 // import org.slf4j.Logger;
 // import org.slf4j.LoggerFactory;
@@ -33,11 +33,11 @@
 // .singleton(HomekitBindingConstants.THING_TYPE_STANDALONE_ACCESSORY);
 
 // private @Nullable HomekitAccessoryConfiguration config;
-// private AccessoryServer homekitClient;
-// private final PairingRegistry pairingRegistry;
+// private HomekitAccessoryServer homekitClient;
+// private final HomekitPairingRegistry pairingRegistry;
 // // private Collection<HomekitFactory> homekitFactories = new CopyOnWriteArrayList<>();
 
-// public StandAloneHomekitAccessoryHandler(Thing thing, PairingRegistry pairingRegistry, BundleContext context) {
+// public StandAloneHomekitAccessoryHandler(Thing thing, HomekitPairingRegistry pairingRegistry, BundleContext context) {
 // super(thing, context);
 // this.pairingRegistry = pairingRegistry;
 // }
@@ -119,11 +119,11 @@
 // logger.info("'{}' : Creating a Homekit client using an existing Id '{}'", getThing().getUID(),
 // new String(clientPairingId));
 
-// homekitClient = new RemoteAccessoryServer(InetAddress.getByName(config.host), config.port,
+// homekitClient = new HomekitRemoteAccessoryServer(InetAddress.getByName(config.host), config.port,
 // clientPairingId, clientLongtermSecretKey, accessoryPairingId, pairingRegistry);
 
 // } else {
-// homekitClient = new RemoteAccessoryServer(InetAddress.getByName(config.host), config.port,
+// homekitClient = new HomekitRemoteAccessoryServer(InetAddress.getByName(config.host), config.port,
 // pairingRegistry);
 
 // logger.info("'{}' : Creating a Homekit client using a newly generated Id '{}'", getThing().getUID(),
@@ -140,14 +140,14 @@
 // if (homekitClient != null) {
 // if (config.setupCode != null) {
 // if (!homekitClient.isPaired()) {
-// logger.info("'{}' : Pairing the Homekit Accessory using an existing Setup Code",
+// logger.info("'{}' : HomekitPairing the Homekit HomekitAccessory using an existing Setup Code",
 // getThing().getUID());
 // pair(config.setupCode);
 // } else {
-// logger.info("'{}' : The Homekit Accessory is already paired", getThing().getUID());
+// logger.info("'{}' : The Homekit HomekitAccessory is already paired", getThing().getUID());
 // }
 // } else {
-// logger.info("'{}' : The Homekit Accessory can not be paired without a Setup Code",
+// logger.info("'{}' : The Homekit HomekitAccessory can not be paired without a Setup Code",
 // getThing().getUID());
 // }
 
@@ -187,7 +187,7 @@
 // @Override
 // public void pair(String setupCode) {
 // if (homekitClient != null) {
-// logger.info("'{}' : Pairing the Homekit Accessory using Setup Code {}", getThing().getUID(), setupCode);
+// logger.info("'{}' : HomekitPairing the Homekit HomekitAccessory using Setup Code {}", getThing().getUID(), setupCode);
 
 // Configuration config = editConfiguration();
 // config.put(HomekitAccessoryConfiguration.SETUP_CODE, setupCode);
@@ -196,7 +196,7 @@
 // homekitClient.setSetupCode(setupCode);
 
 // if (homekitClient.isPaired()) {
-// logger.info("'{}' : Removing an existing pairing with the Homekit Accessory", getThing().getUID());
+// logger.info("'{}' : Removing an existing pairing with the Homekit HomekitAccessory", getThing().getUID());
 // try {
 // homekitClient.pairRemove();
 // } catch (HomekitException | IOException e) {
@@ -206,7 +206,7 @@
 // updateStatus(ThingStatus.OFFLINE);
 // }
 
-// logger.info("'{}' : Setting up a new pairing with the Homekit Accessory", getThing().getUID());
+// logger.info("'{}' : Setting up a new pairing with the Homekit HomekitAccessory", getThing().getUID());
 // try {
 // homekitClient.pairSetup();
 // } catch (IOException e) {
@@ -225,7 +225,7 @@
 // updateConfiguration(config);
 // } else {
 // updateStatus(ThingStatus.OFFLINE);
-// logger.warn("'{}' : Pairing with the Homekit Accessory failed", getThing().getUID());
+// logger.warn("'{}' : HomekitPairing with the Homekit HomekitAccessory failed", getThing().getUID());
 // }
 
 // }
@@ -235,16 +235,16 @@
 // public void pairVerify() {
 // if (homekitClient != null) {
 // if (homekitClient.isPaired() && !homekitClient.isPairVerified()) {
-// logger.info("'{}' : Verifying the Homekit Accessory pairing", getThing().getUID());
+// logger.info("'{}' : Verifying the Homekit HomekitAccessory pairing", getThing().getUID());
 
 // homekitClient.pairVerify();
 
 // if (homekitClient.isPairVerified()) {
 // updateStatus(ThingStatus.ONLINE);
-// logger.info("'{}' : Verification of the Homekit Accessory pairing is successfull",
+// logger.info("'{}' : Verification of the Homekit HomekitAccessory pairing is successfull",
 // getThing().getUID());
 // } else {
-// logger.warn("'{}' : Verification of the Homekit Accessory pairing failed. Removing the pairing",
+// logger.warn("'{}' : Verification of the Homekit HomekitAccessory pairing failed. Removing the pairing",
 // getThing().getUID());
 // try {
 // homekitClient.pairRemove();
@@ -256,7 +256,7 @@
 // }
 // } else {
 // logger.info(
-// "'{}' : Verification of the Homekit Accessory pairing failed because it is {} paired and/or the pairing was {}
+// "'{}' : Verification of the Homekit HomekitAccessory pairing failed because it is {} paired and/or the pairing was {}
 // verified before",
 // getThing().getUID(), homekitClient.isPaired() ? "already" : "not",
 // homekitClient.isPairVerified() ? "already" : "not");
@@ -268,16 +268,16 @@
 // }
 
 // public void configureThing() {
-// Collection<Accessory> accessories = homekitClient.getAccessories();
+// Collection<HomekitAccessory> accessories = homekitClient.getAccessories();
 
 // if (accessories.size() > 1) {
-// logger.warn("'{}' : A Standalone Homekit Accessory should not expose more than 1 Accessory");
+// logger.warn("'{}' : A Standalone Homekit HomekitAccessory should not expose more than 1 HomekitAccessory");
 // }
 
 // if (accessories.size() > 0) {
-// logger.info("'{}' : Configuring the Thing using Accessory {}",
-// ((Accessory) accessories.toArray()[0]).getAccessoryId());
-// configureThing((Accessory) accessories.toArray()[0]);
+// logger.info("'{}' : Configuring the Thing using HomekitAccessory {}",
+// ((HomekitAccessory) accessories.toArray()[0]).getAccessoryId());
+// configureThing((HomekitAccessory) accessories.toArray()[0]);
 // }
 // }
 // }

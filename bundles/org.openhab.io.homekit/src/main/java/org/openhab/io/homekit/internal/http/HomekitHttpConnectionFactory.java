@@ -28,7 +28,7 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
-    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
@@ -103,7 +103,7 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
             if (session != null) {
                 if (session.getAttribute("Control-Read-Encryption-Key") != null) {
 
-                    DecryptedHomekitEndPoint appEndPoint = new DecryptedHomekitEndPoint(endPoint,
+                    HomekitDecryptedHomekitEndPoint appEndPoint = new HomekitDecryptedHomekitEndPoint(endPoint,
                             connector.getExecutor(), connector.getByteBufferPool(), isDirectBuffers(),
                             (byte[]) session.getAttribute("Control-Read-Encryption-Key"),
                             (byte[]) session.getAttribute("Control-Write-Encryption-Key"));

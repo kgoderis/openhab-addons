@@ -73,7 +73,7 @@
 
 // if (theThing.getStatus() == ThingStatus.OFFLINE) {
 // theThing.setStatusInfo(new ThingStatusInfo(ThingStatus.UNKNOWN,
-// ThingStatusDetail.CONFIGURATION_PENDING, "Homekit Accessory is discovered"));
+// ThingStatusDetail.CONFIGURATION_PENDING, "Homekit HomekitAccessory is discovered"));
 // }
 
 // InetAddress currentHost = null;
@@ -94,7 +94,7 @@
 
 // try {
 // if (currentHost != null && !currentHost.equals(discoveredHost) || currentPort != discoveredPort) {
-// logger.info("'{}' : The Homekit Accessory's destination changed from {}:{} to {}:{}",
+// logger.info("'{}' : The Homekit HomekitAccessory's destination changed from {}:{} to {}:{}",
 // theThing.getUID(), currentHost, currentPort,
 // result.getProperties().get(HomekitAccessoryConfiguration.HOST),
 // result.getProperties().get(HomekitAccessoryConfiguration.PORT));
@@ -121,7 +121,7 @@
 // Thing thing = thingRegistry.get(thingUID);
 // if (thing != null) {
 // thing.setStatusInfo(new ThingStatusInfo(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
-// "The Homekit Accessory can not be discovered"));
+// "The Homekit HomekitAccessory can not be discovered"));
 // }
 // }
 

@@ -72,7 +72,7 @@
 // if (!currentHost.equals(result.getProperties().get(HomekitAccessoryConfiguration.HOST_ADDRESS))
 // || currentPort != Integer
 // .parseInt((String) result.getProperties().get(HomekitAccessoryConfiguration.PORT))) {
-// logger.info("'{}' : The Homekit Accessory's destination changed from {}:{} to {}:{}",
+// logger.info("'{}' : The Homekit HomekitAccessory's destination changed from {}:{} to {}:{}",
 // theThing.getUID(), currentHost, currentPort,
 // result.getProperties().get(HomekitAccessoryConfiguration.HOST_ADDRESS),
 // result.getProperties().get(HomekitAccessoryConfiguration.PORT));

@@ -67,11 +67,11 @@ package org.openhab.io.homekit.internal.bridge;
 // import org.openhab.io.homekit.api.ManagedCharacteristic;
 // import org.openhab.io.homekit.api.Notification;
 // import org.openhab.io.homekit.api.NotificationRegistry;
-// import org.openhab.io.homekit.api.hap.Accessory;
-// import org.openhab.io.homekit.api.hap.Characteristic;
-// import org.openhab.io.homekit.api.hap.Service;
-// import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
-// import org.openhab.io.homekit.api.server.AccessoryServer;
+// import org.openhab.io.homekit.api.hap.HomekitAccessory;
+// import org.openhab.io.homekit.api.hap.HomekitCharacteristic;
+// import org.openhab.io.homekit.api.hap.HomekitService;
+// import org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry;
+// import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 // import org.openhab.io.homekit.internal.notification.NotificationUID;
 // import org.osgi.service.component.annotations.Activate;
 // import org.osgi.service.component.annotations.Component;
@@ -97,7 +97,7 @@ package org.openhab.io.homekit.internal.bridge;
 // private final ItemChannelLinkRegistry itemChannelLinkRegistry;
 // private final ItemStateConverter itemStateConverter;
 // private final EventPublisher eventPublisher;
-// private final AccessoryServerRegistry accessoryServerRegistry;
+// private final HomekitAccessoryServerRegistry accessoryServerRegistry;
 // private final NotificationRegistry notificationRegistry;
 // private final SafeCaller safeCaller;
 // // TODO : Discuss making SystemProfileFacgtory public
@@ -120,7 +120,7 @@ package org.openhab.io.homekit.internal.bridge;
 // public HomekitCommunicationManager(@Reference ThingRegistry thingRegistry, @Reference ItemRegistry itemRegistry,
 // @Reference ItemChannelLinkRegistry itemChannelLinkRegistry,
 // @Reference ItemStateConverter itemStateConverter, @Reference EventPublisher eventPublisher,
-// @Reference AccessoryServerRegistry accessoryServerRegistry,
+// @Reference HomekitAccessoryServerRegistry accessoryServerRegistry,
 // @Reference NotificationRegistry notificationRegistry, @Reference SafeCaller safeCaller,
 // @Reference ChannelTypeRegistry channelTypeRegistry) {
 // this.thingRegistry = thingRegistry;
@@ -695,10 +695,10 @@ package org.openhab.io.homekit.internal.bridge;
 // // if (thing != null) {
 // // Channel channel = thing.getChannel(channelUID.getId());
 // // if (channel != null) {
-// // for (AccessoryServer server : accessoryServerRegistry.getAll()) {
-// // for (Accessory accessory : server.getAccessories()) {
-// // for (Service service : accessory.getServices()) {
-// // for (Characteristic<?> characteristic : service.getCharacteristics()) {
+// // for (HomekitAccessoryServer server : accessoryServerRegistry.getAll()) {
+// // for (HomekitAccessory accessory : server.getAccessories()) {
+// // for (HomekitService service : accessory.getServices()) {
+// // for (HomekitCharacteristic<?> characteristic : service.getCharacteristics()) {
 // // if (channelUID.equals(characteristic.getChannelUID())) {
 // // handleUpdate(characteristic.getUID(), characteristic.toEventJson(state));
 // // }
@@ -773,10 +773,10 @@ package org.openhab.io.homekit.internal.bridge;
 
 // @Override
 // public void handleUpdate(State state) {
-// for (AccessoryServer server : accessoryServerRegistry.getAll()) {
-// for (Accessory accessory : server.getAccessories()) {
-// for (Service service : accessory.getServices()) {
-// for (Characteristic characteristic : service.getCharacteristics()) {
+// for (HomekitAccessoryServer server : accessoryServerRegistry.getAll()) {
+// for (HomekitAccessory accessory : server.getAccessories()) {
+// for (HomekitService service : accessory.getServices()) {
+// for (HomekitCharacteristic characteristic : service.getCharacteristics()) {
 // if (link.getLinkedUID()
 // .equals(((ManagedCharacteristic<?>) characteristic).getChannelUID())) {
 // Notification notification = notificationRegistry.get(new NotificationUID(
@@ -910,7 +910,7 @@ package org.openhab.io.homekit.internal.bridge;
 // // });
 // // }
 
-// // public void handleUpdate(CharacteristicUID characteristicUID, JsonObject jsonObject) {
+// // public void handleUpdate(HomekitCharacteristicUID characteristicUID, JsonObject jsonObject) {
 // // Notification notification = notificationRegistry.get(new NotificationUID(characteristicUID.toString()));
 // //
 // // if (notification != null) {

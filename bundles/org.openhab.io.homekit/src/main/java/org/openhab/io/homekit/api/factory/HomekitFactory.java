@@ -22,15 +22,15 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.type.ChannelTypeUID;
-import org.openhab.io.homekit.api.hap.Accessory;
-import org.openhab.io.homekit.api.hap.AccessoryServer;
-import org.openhab.io.homekit.api.hap.Characteristic;
-import org.openhab.io.homekit.api.hap.Service;
+import org.openhab.io.homekit.api.hap.HomekitAccessory;
+import org.openhab.io.homekit.api.hap.HomekitAccessoryServer;
+import org.openhab.io.homekit.api.hap.HomekitCharacteristic;
+import org.openhab.io.homekit.api.hap.HomekitService;
 import org.openhab.io.homekit.exception.HomekitFactoryException;
 import org.openhab.io.homekit.exception.HomekitRegistrationException;
 
 /**
- * The {@link HomekitFactory} is responsible for creating {@link Accessory}s based on {@link Thing}s. Therefore
+ * The {@link HomekitFactory} is responsible for creating {@link HomekitAccessory}s based on {@link Thing}s. Therefore
  * the
  * factory must be registered as OSGi service.
  *
@@ -48,9 +48,9 @@ public interface HomekitFactory {
 
     ThingTypeUID[] getSupportedThingTypes();
 
-    boolean supportsAccessoryClass(Class<? extends Accessory> accessoryClass);
+    boolean supportsAccessoryClass(Class<? extends HomekitAccessory> accessoryClass);
 
-    Set<Class<? extends Accessory>> getSupportedAccessoryClasses();
+    Set<Class<? extends HomekitAccessory>> getSupportedAccessoryClasses();
 
     boolean supportsServiceType(String serviceType);
 
@@ -61,75 +61,75 @@ public interface HomekitFactory {
     Set<String> getSupportedCharacteristicTypes();
 
     @Nullable
-    Accessory createAccessory(Class<? extends Accessory> accessoryClass, AccessoryServer server, long instanceId,
+    HomekitAccessory createAccessory(Class<? extends HomekitAccessory> accessoryClass, HomekitAccessoryServer server, long instanceId,
             boolean extend) throws HomekitFactoryException;
 
     @Nullable
-    Accessory createAccessory(Class<? extends Accessory> accessoryClass, AccessoryServer server, long instanceId)
+    HomekitAccessory createAccessory(Class<? extends HomekitAccessory> accessoryClass, HomekitAccessoryServer server, long instanceId)
             throws HomekitFactoryException;
 
     @Nullable
-    Accessory createAccessory(Thing thing, AccessoryServer server) throws HomekitFactoryException;
+    HomekitAccessory createAccessory(Thing thing, HomekitAccessoryServer server) throws HomekitFactoryException;
 
-    public @Nullable Accessory createAccessory(Class<? extends Accessory> accessoryClass, JsonValue value)
+    public @Nullable HomekitAccessory createAccessory(Class<? extends HomekitAccessory> accessoryClass, JsonValue value)
             throws HomekitFactoryException;
 
     @Nullable
-    Service createService(String serviceType, Accessory accessory, boolean extend, String serviceName)
+    HomekitService createService(String serviceType, HomekitAccessory accessory, boolean extend, String serviceName)
             throws HomekitFactoryException;
 
     @Nullable
-    Service createService(String serviceType, Accessory accessory, long instanceId, boolean extend, String serviceName)
+    HomekitService createService(String serviceType, HomekitAccessory accessory, long instanceId, boolean extend, String serviceName)
             throws HomekitFactoryException;
 
     @Nullable
-    Service createService(String serviceType, Accessory accessory, long instanceId, boolean extend)
+    HomekitService createService(String serviceType, HomekitAccessory accessory, long instanceId, boolean extend)
             throws HomekitFactoryException;
 
     @Nullable
-    Service createService(Accessory accessory, JsonValue value) throws HomekitFactoryException;
+    HomekitService createService(HomekitAccessory accessory, JsonValue value) throws HomekitFactoryException;
 
     @Nullable
-    Characteristic<?> createCharacteristic(String characteristicsType, Service service) throws HomekitFactoryException;
+    HomekitCharacteristic<?> createCharacteristic(String characteristicsType, HomekitService service) throws HomekitFactoryException;
 
     @Nullable
-    Characteristic<?> createCharacteristic(String characteristicsType, Service service, long instanceId)
+    HomekitCharacteristic<?> createCharacteristic(String characteristicsType, HomekitService service, long instanceId)
             throws HomekitFactoryException;
 
     @Nullable
-    Characteristic<?> createCharacteristic(Service service, JsonValue value) throws HomekitFactoryException;
+    HomekitCharacteristic<?> createCharacteristic(HomekitService service, JsonValue value) throws HomekitFactoryException;
 
-    void addAccessory(ThingTypeUID thingTypeUID, Class<? extends Accessory> accessoryClass)
+    void addAccessory(ThingTypeUID thingTypeUID, Class<? extends HomekitAccessory> accessoryClass)
             throws HomekitRegistrationException;
 
-    void addAccessory(Class<? extends Accessory> accessoryClass) throws HomekitRegistrationException;
+    void addAccessory(Class<? extends HomekitAccessory> accessoryClass) throws HomekitRegistrationException;
 
     void addService(ThingTypeUID thingTypeUID) throws HomekitRegistrationException;
 
     void addService(ThingTypeUID thingTypeUID, String serviceType) throws HomekitRegistrationException;
 
-    void addService(ThingTypeUID thingTypeUID, Class<? extends Service> serviceClass)
+    void addService(ThingTypeUID thingTypeUID, Class<? extends HomekitService> serviceClass)
             throws HomekitRegistrationException;
 
-    void addService(String serviceType, Class<? extends Service> serviceClass) throws HomekitRegistrationException;
+    void addService(String serviceType, Class<? extends HomekitService> serviceClass) throws HomekitRegistrationException;
 
-    void addService(Class<@NonNull ? extends Service> serviceClass) throws HomekitRegistrationException;
+    void addService(Class<@NonNull ? extends HomekitService> serviceClass) throws HomekitRegistrationException;
 
-    void addServiceWithTag(String tag, Class<? extends Service> serviceClass) throws HomekitRegistrationException;
+    void addServiceWithTag(String tag, Class<? extends HomekitService> serviceClass) throws HomekitRegistrationException;
 
     void addCharacteristic(ChannelTypeUID channelTypeUID, String characteristicType)
             throws HomekitRegistrationException;
 
     void addCharacteristic(ChannelTypeUID channelTypeUID,
-            Class<@NonNull ? extends Characteristic<?>> characteristicClass) throws HomekitRegistrationException;
+            Class<@NonNull ? extends HomekitCharacteristic<?>> characteristicClass) throws HomekitRegistrationException;
 
-    void addCharacteristic(String characteristicType, Class<? extends Characteristic<?>> characteristicClass)
+    void addCharacteristic(String characteristicType, Class<? extends HomekitCharacteristic<?>> characteristicClass)
             throws HomekitRegistrationException;
 
-    void addCharacteristic(Class<@NonNull ? extends Characteristic<?>> characteristicClass)
+    void addCharacteristic(Class<@NonNull ? extends HomekitCharacteristic<?>> characteristicClass)
             throws HomekitRegistrationException;
 
-    void addCharacteristicWithTag(String tag, Class<? extends Characteristic<?>> characteristicClass)
+    void addCharacteristicWithTag(String tag, Class<? extends HomekitCharacteristic<?>> characteristicClass)
             throws HomekitRegistrationException;
 
     @Nullable
@@ -142,10 +142,10 @@ public interface HomekitFactory {
     ChannelTypeUID getChannelTypeUID(String characteristicType);
 
     @Nullable
-    Class<? extends Service> getService(String serviceType);
+    Class<? extends HomekitService> getService(String serviceType);
 
     @Nullable
-    Class<? extends Characteristic<?>> getCharacteristic(String characteristicType);
+    Class<? extends HomekitCharacteristic<?>> getCharacteristic(String characteristicType);
 
     @Nullable
     String getServiceTypeFromTag(String tag);

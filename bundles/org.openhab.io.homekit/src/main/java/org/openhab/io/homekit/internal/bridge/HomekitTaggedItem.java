@@ -40,8 +40,8 @@ import org.slf4j.LoggerFactory;
  * <p>
  * The class handles two main types of items:
  * <ul>
- * <li>Accessory items: Items that represent complete HomeKit accessories (e.g., lights, switches)</li>
- * <li>Characteristic items: Items that represent specific characteristics of an accessory (e.g., brightness,
+ * <li>HomekitAccessory items: Items that represent complete HomeKit accessories (e.g., lights, switches)</li>
+ * <li>HomekitCharacteristic items: Items that represent specific characteristics of an accessory (e.g., brightness,
  * color)</li>
  * </ul>
  * </p>
@@ -120,7 +120,7 @@ public class HomekitTaggedItem {
                 }
                 case 1 -> { // Belongs to exactly one accessory group
                     if (item instanceof GroupItem) {
-                        throw new BadItemConfigurationException("Nested Accessory Groups are not supported");
+                        throw new BadItemConfigurationException("Nested HomekitAccessory Groups are not supported");
                     }
 
                     parentGroupItem = matchingGroupItems.get(0);
@@ -232,7 +232,7 @@ public class HomekitTaggedItem {
     /**
      * Checks if this item represents a complete HomeKit accessory.
      * An item is considered an accessory if it has a service type defined.
-     * Accessory items must belong to a root accessory group.
+     * HomekitAccessory items must belong to a root accessory group.
      *
      * @return true if the item represents a HomeKit accessory, false otherwise
      */
@@ -243,7 +243,7 @@ public class HomekitTaggedItem {
     /**
      * Checks if this item represents a HomeKit characteristic.
      * An item is considered a characteristic if it has a characteristic type defined.
-     * Characteristic items must belong to a root accessory group.
+     * HomekitCharacteristic items must belong to a root accessory group.
      *
      * @return true if the item represents a HomeKit characteristic, false otherwise
      */
@@ -291,7 +291,7 @@ public class HomekitTaggedItem {
 
     /**
      * Checks if this item belongs to a HomeKit accessory group.
-     * Characteristic items must belong to an accessory group.
+     * HomekitCharacteristic items must belong to an accessory group.
      *
      * @return true if the item belongs to a HomeKit accessory group, false otherwise
      */

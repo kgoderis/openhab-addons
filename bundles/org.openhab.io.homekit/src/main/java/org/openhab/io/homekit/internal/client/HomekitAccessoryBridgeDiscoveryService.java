@@ -15,9 +15,9 @@
 // import org.openhab.core.thing.Bridge;
 // import org.openhab.core.thing.ThingTypeUID;
 // import org.openhab.core.thing.ThingUID;
-// import org.openhab.io.homekit.api.hap.Accessory;
-// import org.openhab.io.homekit.api.hap.Characteristic;
-// import org.openhab.io.homekit.api.hap.Service;
+// import org.openhab.io.homekit.api.hap.HomekitAccessory;
+// import org.openhab.io.homekit.api.hap.HomekitCharacteristic;
+// import org.openhab.io.homekit.api.hap.HomekitService;
 // import org.openhab.io.homekit.api.listener.HomekitStatusListener;
 // import org.openhab.io.homekit.internal.handler.HomekitAccessoryBridgeHandler;
 // import org.openhab.io.homekit.internal.handler.HomekitAccessoryHandler;
@@ -47,9 +47,9 @@
 // protected void startScan() {
 // // TO DO : clear the list in the BridgeHandler when the inbox is cleared. Can we capture that event?
 // // homekitBridgeHandler.startSearch();
-// Collection<Accessory> accessories = homekitBridgeHandler.getAccessories();
+// Collection<HomekitAccessory> accessories = homekitBridgeHandler.getAccessories();
 
-// for (Accessory accessory : accessories) {
+// for (HomekitAccessory accessory : accessories) {
 // onAccessoryAdded(homekitBridgeHandler.getThing(), accessory);
 // }
 // }
@@ -76,7 +76,7 @@
 // }
 
 // @Override
-// public void onAccessoryRemoved(Bridge bridge, Accessory accessory) {
+// public void onAccessoryRemoved(Bridge bridge, HomekitAccessory accessory) {
 // if (accessory.getAccessoryId() == 1) {
 // // String id = bridge.getUID().getId().replace(":", "");
 // // ThingUID uid = new ThingUID(HomekitBindingConstants.THING_TYPE_BRIDGE, id);
@@ -84,21 +84,21 @@
 // } else {
 // ThingUID uid = new ThingUID(HomekitBindingConstants.THING_TYPE_ACCESSORY, bridge.getUID(),
 // String.valueOf(accessory.getAccessoryId()));
-// logger.info("Accessory {} was removed. The affiliated Thing {} will equally be removed",
+// logger.info("HomekitAccessory {} was removed. The affiliated Thing {} will equally be removed",
 // accessory.getAccessoryId(), uid);
 // thingRemoved(uid);
 // }
 // }
 
 // @Override
-// public void onAccessoryAdded(Bridge bridge, Accessory accessory) {
+// public void onAccessoryAdded(Bridge bridge, HomekitAccessory accessory) {
 // if (accessory.getAccessoryId() == 1) {
 // // String id = bridge.getUID().getId().replace(":", "");
 // // ThingUID uid = new ThingUID(HomekitBindingConstants.THING_TYPE_BRIDGE, id);
 // //
 // // DiscoveryResult discoveryResult = DiscoveryResultBuilder.create(uid)
 // // .withThingType(HomekitBindingConstants.THING_TYPE_BRIDGE)
-// // .withRepresentationProperty(HomekitBindingConstants.DEVICE_ID).withLabel("Homekit Accessory Bridge")
+// // .withRepresentationProperty(HomekitBindingConstants.DEVICE_ID).withLabel("Homekit HomekitAccessory Bridge")
 // // .build();
 // //
 // // thingDiscovered(discoveryResult);
@@ -108,9 +108,9 @@
 
 // DiscoveryResult discoveryResult = DiscoveryResultBuilder.create(uid)
 // .withThingType(HomekitBindingConstants.THING_TYPE_ACCESSORY).withBridge(bridge.getUID())
-// .withLabel("Homekit Accessory").build();
+// .withLabel("Homekit HomekitAccessory").build();
 
-// logger.info("Accessory {} was added. A Discovery result for Thing {} will be reported",
+// logger.info("HomekitAccessory {} was added. A Discovery result for Thing {} will be reported",
 // accessory.getAccessoryId(), uid);
 
 // thingDiscovered(discoveryResult);
@@ -118,27 +118,27 @@
 // }
 
 // @Override
-// public void onCharacteristicRemoved(@Nullable Bridge bridge, @NonNull Characteristic characteristic) {
+// public void onCharacteristicRemoved(@Nullable Bridge bridge, @NonNull HomekitCharacteristic characteristic) {
 // // TODO Auto-generated method stub
 // }
 
 // @Override
-// public void onCharacteristicAdded(@Nullable Bridge bridge, @NonNull Characteristic characteristic) {
+// public void onCharacteristicAdded(@Nullable Bridge bridge, @NonNull HomekitCharacteristic characteristic) {
 // // TODO Auto-generated method stub
 // }
 
 // @Override
-// public void onCharacteristicStateChanged(@Nullable Bridge bridge, @NonNull Characteristic characteristic) {
+// public void onCharacteristicStateChanged(@Nullable Bridge bridge, @NonNull HomekitCharacteristic characteristic) {
 // // TODO Auto-generated method stub
 // }
 
 // @Override
-// public void onServiceAdded(@Nullable Bridge bridge, @NonNull Service service) {
+// public void onServiceAdded(@Nullable Bridge bridge, @NonNull HomekitService service) {
 // // TODO Auto-generated method stub
 // }
 
 // @Override
-// public void onServiceRemoved(@Nullable Bridge bridge, @NonNull Service service) {
+// public void onServiceRemoved(@Nullable Bridge bridge, @NonNull HomekitService service) {
 // // TODO Auto-generated method stub
 // }
 // }

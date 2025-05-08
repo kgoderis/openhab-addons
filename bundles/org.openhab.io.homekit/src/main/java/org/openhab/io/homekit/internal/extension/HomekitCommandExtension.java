@@ -13,11 +13,11 @@ import org.openhab.core.io.console.extensions.ConsoleCommandExtension;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingRegistry;
 import org.openhab.core.thing.ThingUID;
-import org.openhab.io.homekit.api.hap.Accessory;
-import org.openhab.io.homekit.api.hap.Characteristic;
-import org.openhab.io.homekit.api.hap.Service;
-import org.openhab.io.homekit.api.registry.AccessoryRegistry;
-import org.openhab.io.homekit.api.registry.AccessoryServerRegistry;
+import org.openhab.io.homekit.api.hap.HomekitAccessory;
+import org.openhab.io.homekit.api.hap.HomekitCharacteristic;
+import org.openhab.io.homekit.api.hap.HomekitService;
+import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
+import org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -49,13 +49,13 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
     private final Logger logger = LoggerFactory.getLogger(HomekitCommandExtension.class);
 
     private final ThingRegistry thingRegistry;
-    private final AccessoryServerRegistry accessoryServerRegistry;
-    private final AccessoryRegistry accessoryRegistry;
+    private final HomekitAccessoryServerRegistry accessoryServerRegistry;
+    private final HomekitAccessoryRegistry accessoryRegistry;
 
     @Activate
     public HomekitCommandExtension(@Reference ThingRegistry thingRegistry,
-            @Reference AccessoryServerRegistry accessoryServerRegistry,
-            @Reference AccessoryRegistry accessoryRegistry) {
+            @Reference HomekitAccessoryServerRegistry accessoryServerRegistry,
+            @Reference HomekitAccessoryRegistry accessoryRegistry) {
         super(CMD_HOMEKIT, "Interact with HomeKit.");
         this.thingRegistry = thingRegistry;
         this.accessoryServerRegistry = accessoryServerRegistry;
@@ -163,29 +163,29 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
 
     private void printAccessories(Console console) {
         @Nullable
-        Collection<Accessory> accessories = accessoryRegistry.getAll();
+        Collection<HomekitAccessory> accessories = accessoryRegistry.getAll();
 
         if (accessories.isEmpty()) {
             console.println("No accessories found.");
         }
 
-        for (Iterator<Accessory> iter = accessories.iterator(); iter.hasNext();) {
+        for (Iterator<HomekitAccessory> iter = accessories.iterator(); iter.hasNext();) {
             @Nullable
-            Accessory accessory = iter.next();
+            HomekitAccessory accessory = iter.next();
 
             if (accessory == null) {
                 continue;
             }
 
-            console.println(String.format("Accessory %s (Type=%s, Label=%s)", accessory.getUID().toString(),
+            console.println(String.format("HomekitAccessory %s (Type=%s, Label=%s)", accessory.getUID().toString(),
                     accessory.getClass().getSimpleName(), accessory.getLabel()));
 
-            for (Service service : accessory.getServices()) {
-                console.println(String.format("     Service %s (Type=%s, HAP=%s, Name=%s)", service.getUID().toString(),
+            for (HomekitService service : accessory.getServices()) {
+                console.println(String.format("     HomekitService %s (Type=%s, HAP=%s, Name=%s)", service.getUID().toString(),
                         service.getClass().getSimpleName(), service.getInstanceType(), service.getName()));
-                for (Characteristic<?> characteristic : service.getCharacteristics()) {
+                for (HomekitCharacteristic<?> characteristic : service.getCharacteristics()) {
 
-                    console.println(String.format("         Characteristic %s (Type=%s, HAP=%s)",
+                    console.println(String.format("         HomekitCharacteristic %s (Type=%s, HAP=%s)",
                             characteristic.getUID().toString(), characteristic.getClass().getSimpleName(),
                             characteristic.getInstanceType()));
 

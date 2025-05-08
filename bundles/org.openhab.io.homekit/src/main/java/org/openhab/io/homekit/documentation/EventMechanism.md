@@ -15,28 +15,28 @@ The event system in the HomeKit integration provides a robust mechanism for:
 
 The system supports several types of events:
 
-1. **Accessory Events**
-   - Accessory state changes
-   - Accessory addition/removal
-   - Accessory configuration updates
+1. **HomekitAccessory Events**
+   - HomekitAccessory state changes
+   - HomekitAccessory addition/removal
+   - HomekitAccessory configuration updates
 
-2. **Characteristic Events**
-   - Characteristic value changes
-   - Characteristic metadata updates
-   - Characteristic configuration changes
+2. **HomekitCharacteristic Events**
+   - HomekitCharacteristic value changes
+   - HomekitCharacteristic metadata updates
+   - HomekitCharacteristic configuration changes
 
-3. **Service Events**
-   - Service state changes
-   - Service addition/removal
-   - Service configuration updates
+3. **HomekitService Events**
+   - HomekitService state changes
+   - HomekitService addition/removal
+   - HomekitService configuration updates
 
 ## Event Metadata
 
-The `EventMetadata` class provides the foundation for event tracking:
+The `HomekitEventMetadata` class provides the foundation for event tracking:
 
 ```java
 // Create new event metadata
-EventMetadata metadata = new EventMetadata(
+HomekitEventMetadata metadata = new HomekitEventMetadata(
     "publisher:123",          // Original publisher UID
     "correlation:456",        // Optional correlation ID
     "bridge:789",             // Immediate origin (creator)
@@ -44,7 +44,7 @@ EventMetadata metadata = new EventMetadata(
 );
 
 // Create event metadata from existing metadata
-EventMetadata newMetadata = new EventMetadata(originalMetadata, "newCreator");
+HomekitEventMetadata newMetadata = new HomekitEventMetadata(originalMetadata, "newCreator");
 ```
 
 ## Event Origin Concepts
@@ -66,15 +66,15 @@ Events track two types of origins:
 Example:
 ```java
 // Bridge creates an event
-EventMetadata metadata1 = new EventMetadata(
+HomekitEventMetadata metadata1 = new HomekitEventMetadata(
     "bridge:123",    // Original publisher
     null,            // No correlation ID
     "bridge:123",    // Immediate origin (same as publisher)
     Set.of()         // No peers
 );
 
-// Accessory forwards the event
-EventMetadata metadata2 = new EventMetadata(
+// HomekitAccessory forwards the event
+HomekitEventMetadata metadata2 = new HomekitEventMetadata(
     metadata1,       // Preserve original publisher
     "accessory:456"  // New immediate origin
 );
@@ -140,7 +140,7 @@ Events can be correlated to track related state changes:
 ```java
 // Initial event with correlation ID
 String correlationId = UUID.randomUUID().toString();
-EventMetadata metadata = new EventMetadata(
+HomekitEventMetadata metadata = new HomekitEventMetadata(
     "bridge:123",
     correlationId,    // Set correlation ID
     "bridge:123",
@@ -148,7 +148,7 @@ EventMetadata metadata = new EventMetadata(
 );
 
 // Related event reuses correlation ID
-EventMetadata related = new EventMetadata(
+HomekitEventMetadata related = new HomekitEventMetadata(
     "accessory:456",
     correlationId,    // Same correlation ID
     "accessory:456",
@@ -191,11 +191,11 @@ Direct routing is used when an event should be delivered to a specific subscribe
 
 ```java
 // Create an event with a specific destination
-HomekitEvent event = new CharacteristicEvent(
+HomekitEvent event = new HomekitCharacteristicEvent(
     HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
     "bridge:123",
     "accessory:456",  // Set specific subscriber UID
-    new EventMetadata(
+    new HomekitEventMetadata(
         "bridge:123",
         null,
         "bridge:123",
@@ -217,11 +217,11 @@ The event system uses "*" as a special subscriberUID to indicate broadcast routi
 
 ```java
 // Create a broadcast event using explicit wildcard
-HomekitEvent event1 = new CharacteristicEvent(
+HomekitEvent event1 = new HomekitCharacteristicEvent(
     HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
     "bridge:123",
     "*",  // Explicit wildcard subscriberUID
-    new EventMetadata(
+    new HomekitEventMetadata(
         "bridge:123",
         null,
         "bridge:123",
@@ -230,11 +230,11 @@ HomekitEvent event1 = new CharacteristicEvent(
 );
 
 // Create a broadcast event by omitting subscriberUID
-HomekitEvent event2 = new CharacteristicEvent(
+HomekitEvent event2 = new HomekitCharacteristicEvent(
     HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
     "bridge:123",
     null,  // Omitted subscriberUID = broadcast
-    new EventMetadata(
+    new HomekitEventMetadata(
         "bridge:123",
         null,
         "bridge:123",
@@ -280,11 +280,11 @@ Broadcast routing is used when an event should be delivered to all matching subs
 
 ```java
 // Create a broadcast event
-HomekitEvent event = new CharacteristicEvent(
+HomekitEvent event = new HomekitCharacteristicEvent(
     HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
     "bridge:123",
     "*",  // Use wildcard for broadcast
-    new EventMetadata(
+    new HomekitEventMetadata(
         "bridge:123",
         null,
         "bridge:123",
@@ -302,7 +302,7 @@ Key aspects of broadcast routing:
 
 ## References
 
-- [HomeKit Accessory Protocol Specification](https://developer.apple.com/homekit/)
+- [HomeKit HomekitAccessory Protocol Specification](https://developer.apple.com/homekit/)
 - [OpenHAB Event System](https://www.openhab.org/docs/developer/architecture/events.html) 
 
 ## Recommendation

@@ -19,16 +19,16 @@
 // import org.openhab.core.thing.ThingTypeUID;
 // import org.openhab.core.thing.binding.BaseBridgeHandler;
 // import org.openhab.core.types.Command;
-// import org.openhab.io.homekit.api.hap.Accessory;
-// import org.openhab.io.homekit.api.hap.Characteristic;
-// import org.openhab.io.homekit.api.hap.Service;
+// import org.openhab.io.homekit.api.hap.HomekitAccessory;
+// import org.openhab.io.homekit.api.hap.HomekitCharacteristic;
+// import org.openhab.io.homekit.api.hap.HomekitService;
 // import org.openhab.io.homekit.api.listener.HomekitStatusListener;
-// import org.openhab.io.homekit.api.registry.PairingRegistry;
+// import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
 // import org.openhab.io.homekit.internal.client.HomekitAccessoryConfiguration;
 // import org.openhab.io.homekit.internal.client.HomekitAccessoryProtocolParticipant;
 // import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
 // import org.openhab.io.homekit.internal.client.HomekitException;
-// import org.openhab.io.homekit.internal.server.RemoteAccessoryServer;
+// import org.openhab.io.homekit.internal.server.HomekitRemoteAccessoryServer;
 // import org.slf4j.Logger;
 // import org.slf4j.LoggerFactory;
 
@@ -43,13 +43,13 @@
 // private static final String STATE_REMOVED = "removed";
 
 // private @Nullable HomekitAccessoryConfiguration config;
-// private RemoteAccessoryServer accessoryServer;
-// private final PairingRegistry pairingRegistry;
+// private HomekitRemoteAccessoryServer accessoryServer;
+// private final HomekitPairingRegistry pairingRegistry;
 
 // private final List<HomekitStatusListener> homekitStatusListeners = new CopyOnWriteArrayList<>();
-// Collection<Accessory> lastAccessories;
+// Collection<HomekitAccessory> lastAccessories;
 
-// public HomekitAccessoryBridgeHandler(Bridge bridge, PairingRegistry pairingRegistry) {
+// public HomekitAccessoryBridgeHandler(Bridge bridge, HomekitPairingRegistry pairingRegistry) {
 // super(bridge);
 // this.pairingRegistry = pairingRegistry;
 // }
@@ -101,7 +101,7 @@
 // public void initialize() {
 // // logger.debug("Start initializing!");
 // config = getConfigAs(HomekitAccessoryConfiguration.class);
-// lastAccessories = new HashSet<Accessory>();
+// lastAccessories = new HashSet<HomekitAccessory>();
 
 // // TODO: Initialize the handler.
 // // The framework requires you to return from this method quickly. Also, before leaving this method a thing
@@ -147,11 +147,11 @@
 // logger.info("'{}' : Creating a Homekit client using an existing Id '{}'", getThing().getUID(),
 // new String(clientPairingId));
 
-// accessoryServer = new RemoteAccessoryServer(InetAddress.getByName(config.host),
+// accessoryServer = new HomekitRemoteAccessoryServer(InetAddress.getByName(config.host),
 // config.port, clientPairingId, clientLongtermSecretKey, accessoryPairingId, pairingRegistry);
 
 // } else {
-// accessoryServer = new RemoteAccessoryServer(InetAddress.getByName(config.host),
+// accessoryServer = new HomekitRemoteAccessoryServer(InetAddress.getByName(config.host),
 // config.port, pairingRegistry);
 
 // logger.info("'{}' : Creating a Homekit client using a newly generated Id '{}'", getThing().getUID(),
@@ -168,14 +168,14 @@
 // if (accessoryServer != null) {
 // if (config.setupCode != null) {
 // if (!accessoryServer.isPaired()) {
-// logger.info("'{}' : Pairing the Homekit Accessory using an existing Setup Code",
+// logger.info("'{}' : HomekitPairing the Homekit HomekitAccessory using an existing Setup Code",
 // getThing().getUID());
 // pair(config.setupCode);
 // } else {
-// logger.info("'{}' : The Homekit Accessory is already paired", getThing().getUID());
+// logger.info("'{}' : The Homekit HomekitAccessory is already paired", getThing().getUID());
 // }
 // } else {
-// logger.info("'{}' : The Homekit Accessory can not be paired without a Setup Code",
+// logger.info("'{}' : The Homekit HomekitAccessory can not be paired without a Setup Code",
 // getThing().getUID());
 // }
 
@@ -213,7 +213,7 @@
 // @Override
 // public void pair(String setupCode) {
 // if (accessoryServer != null) {
-// logger.info("'{}' : Pairing the Homekit Accessory using Setup Code {}", getThing().getUID(), setupCode);
+// logger.info("'{}' : HomekitPairing the Homekit HomekitAccessory using Setup Code {}", getThing().getUID(), setupCode);
 
 // Configuration config = editConfiguration();
 // config.put(HomekitAccessoryConfiguration.SETUP_CODE, setupCode);
@@ -223,9 +223,9 @@
 // accessoryServer.start();
 
 // // if (accessoryServer.isPaired()) {
-// // logger.info("'{}' : Removing an existing pairing with the Homekit Accessory", getThing().getUID());
+// // logger.info("'{}' : Removing an existing pairing with the Homekit HomekitAccessory", getThing().getUID());
 // // if (accessoryServer.isPaired()) {
-// // logger.info("'{}' : Removing an existing pairing with the Homekit Accessory", getThing().getUID());
+// // logger.info("'{}' : Removing an existing pairing with the Homekit HomekitAccessory", getThing().getUID());
 // // try {
 // // accessoryServer.pairRemove();
 // // } catch (HomekitException | IOException e) {
@@ -235,7 +235,7 @@
 // // updateStatus(ThingStatus.OFFLINE);
 // // }
 
-// // logger.info("'{}' : Setting up a new pairing with the Homekit Accessory", getThing().getUID());
+// // logger.info("'{}' : Setting up a new pairing with the Homekit HomekitAccessory", getThing().getUID());
 // // try {
 // // accessoryServer.pairSetup();
 // // } catch (IOException e) {
@@ -254,7 +254,7 @@
 // updateConfiguration(config);
 // } else {
 // updateStatus(ThingStatus.OFFLINE);
-// logger.warn("'{}' : Pairing with the Homekit Accessory failed", getThing().getUID());
+// logger.warn("'{}' : HomekitPairing with the Homekit HomekitAccessory failed", getThing().getUID());
 // }
 
 // }
@@ -264,16 +264,16 @@
 // public void pairVerify() {
 // if (accessoryServer != null) {
 // if (accessoryServer.isPaired() && !accessoryServer.isPairVerified()) {
-// logger.info("'{}' : Verifying the Homekit Accessory pairing", getThing().getUID());
+// logger.info("'{}' : Verifying the Homekit HomekitAccessory pairing", getThing().getUID());
 
 // accessoryServer.pairVerify();
 
 // if (accessoryServer.isPairVerified()) {
 // updateStatus(ThingStatus.ONLINE);
-// logger.info("'{}' : Verification of the Homekit Accessory pairing is successfull",
+// logger.info("'{}' : Verification of the Homekit HomekitAccessory pairing is successfull",
 // getThing().getUID());
 // } else {
-// logger.warn("'{}' : Verification of the Homekit Accessory pairing failed. Removing the pairing",
+// logger.warn("'{}' : Verification of the Homekit HomekitAccessory pairing failed. Removing the pairing",
 // getThing().getUID());
 // try {
 // accessoryServer.pairRemove();
@@ -285,7 +285,7 @@
 // }
 // } else {
 // logger.info(
-// "'{}' : Verification of the Homekit Accessory pairing failed because it is {} paired and/or the pairing was {}
+// "'{}' : Verification of the Homekit HomekitAccessory pairing failed because it is {} paired and/or the pairing was {}
 // verified before",
 // getThing().getUID(), accessoryServer.isPaired() ? "already" : "not",
 // accessoryServer.isPairVerified() ? "already" : "not");
@@ -297,11 +297,11 @@
 // }
 
 // public void startSearch() {
-// Collection<Accessory> accessories = accessoryServer.getAccessories();
+// Collection<HomekitAccessory> accessories = accessoryServer.getAccessories();
 
-// for (Accessory accessory : accessories) {
+// for (HomekitAccessory accessory : accessories) {
 // boolean doesExist = false;
-// for (Accessory existingAccessory : lastAccessories) {
+// for (HomekitAccessory existingAccessory : lastAccessories) {
 // if (accessory.getUID() == existingAccessory.getUID()) {
 // doesExist = true;
 // break;
@@ -312,12 +312,12 @@
 // }
 // }
 
-// for (Accessory accessory : accessories) {
-// for (Service service : accessory.getServices()) {
+// for (HomekitAccessory accessory : accessories) {
+// for (HomekitService service : accessory.getServices()) {
 // boolean doesExist = false;
-// for (Accessory existingAccessory : lastAccessories) {
+// for (HomekitAccessory existingAccessory : lastAccessories) {
 // if (accessory.getUID() == existingAccessory.getUID()) {
-// for (Service existingService : existingAccessory.getServices()) {
+// for (HomekitService existingService : existingAccessory.getServices()) {
 // if (service.getInstanceId() == existingService.getInstanceId()) {
 // doesExist = true;
 // break;
@@ -334,14 +334,14 @@
 // }
 // }
 
-// for (Accessory accessory : accessories) {
-// for (Service service : accessory.getServices()) {
-// for (Characteristic characteristic : service.getCharacteristics()) {
+// for (HomekitAccessory accessory : accessories) {
+// for (HomekitService service : accessory.getServices()) {
+// for (HomekitCharacteristic characteristic : service.getCharacteristics()) {
 // boolean doesExist = false;
-// for (Accessory existingAccessory : lastAccessories) {
+// for (HomekitAccessory existingAccessory : lastAccessories) {
 // if (accessory.getUID() == existingAccessory.getUID()) {
-// for (Service existingService : existingAccessory.getServices()) {
-// for (Characteristic existingCharacteristic : service.getCharacteristics()) {
+// for (HomekitService existingService : existingAccessory.getServices()) {
+// for (HomekitCharacteristic existingCharacteristic : service.getCharacteristics()) {
 // if (characteristic.getInstanceId() == existingCharacteristic.getInstanceId()) {
 // doesExist = true;
 // break;
@@ -363,9 +363,9 @@
 // }
 // }
 
-// for (Accessory existingAccessory : lastAccessories) {
+// for (HomekitAccessory existingAccessory : lastAccessories) {
 // boolean isRemoved = true;
-// for (Accessory accessory : accessories) {
+// for (HomekitAccessory accessory : accessories) {
 // if (accessory.getUID() == existingAccessory.getUID()) {
 // isRemoved = false;
 // break;
@@ -376,12 +376,12 @@
 // }
 // }
 
-// for (Accessory existingAccessory : lastAccessories) {
-// for (Service existingService : existingAccessory.getServices()) {
+// for (HomekitAccessory existingAccessory : lastAccessories) {
+// for (HomekitService existingService : existingAccessory.getServices()) {
 // boolean isRemoved = true;
-// for (Accessory accessory : accessories) {
+// for (HomekitAccessory accessory : accessories) {
 // if (accessory.getUID() == existingAccessory.getUID()) {
-// for (Service service : accessory.getServices()) {
+// for (HomekitService service : accessory.getServices()) {
 // if (service.getInstanceId() == existingService.getInstanceId()) {
 // isRemoved = false;
 // break;
@@ -398,14 +398,14 @@
 // }
 // }
 
-// for (Accessory existingAccessory : lastAccessories) {
-// for (Service existingService : existingAccessory.getServices()) {
-// for (Characteristic existingCharacteristic : existingService.getCharacteristics()) {
+// for (HomekitAccessory existingAccessory : lastAccessories) {
+// for (HomekitService existingService : existingAccessory.getServices()) {
+// for (HomekitCharacteristic existingCharacteristic : existingService.getCharacteristics()) {
 // boolean isRemoved = true;
-// for (Accessory accessory : accessories) {
+// for (HomekitAccessory accessory : accessories) {
 // if (accessory.getUID() == existingAccessory.getUID()) {
-// for (Service service : accessory.getServices()) {
-// for (Characteristic characteristic : service.getCharacteristics()) {
+// for (HomekitService service : accessory.getServices()) {
+// for (HomekitCharacteristic characteristic : service.getCharacteristics()) {
 // if (characteristic.getInstanceId() == existingCharacteristic.getInstanceId()) {
 // isRemoved = false;
 // break;
@@ -438,9 +438,9 @@
 // homekitStatusListeners.remove(homekitListener);
 // }
 
-// private void notifyHomekitStatusListeners(final Accessory accessory, final String type) {
+// private void notifyHomekitStatusListeners(final HomekitAccessory accessory, final String type) {
 // if (homekitStatusListeners.isEmpty()) {
-// logger.debug("No Homekit status listeners to notify of change for Accessory '{}'", accessory.getUID());
+// logger.debug("No Homekit status listeners to notify of change for HomekitAccessory '{}'", accessory.getUID());
 // return;
 // }
 
@@ -448,11 +448,11 @@
 // try {
 // switch (type) {
 // case STATE_ADDED:
-// logger.debug("Sending accessoryAdded for Accessory '{}'", accessory.getUID());
+// logger.debug("Sending accessoryAdded for HomekitAccessory '{}'", accessory.getUID());
 // homekitStatusListener.onAccessoryAdded(getThing(), accessory);
 // break;
 // case STATE_REMOVED:
-// logger.debug("Sending accessoryRemoved for Accessory '{}'", accessory.getUID());
+// logger.debug("Sending accessoryRemoved for HomekitAccessory '{}'", accessory.getUID());
 // homekitStatusListener.onAccessoryRemoved(getThing(), accessory);
 // break;
 // default:
@@ -465,9 +465,9 @@
 // }
 // }
 
-// private void notifyHomekitStatusListeners(final Service service, final String type) {
+// private void notifyHomekitStatusListeners(final HomekitService service, final String type) {
 // if (homekitStatusListeners.isEmpty()) {
-// logger.debug("No Homekit status listeners to notify of change for Service '{}'", service.getInstanceId());
+// logger.debug("No Homekit status listeners to notify of change for HomekitService '{}'", service.getInstanceId());
 // return;
 // }
 
@@ -475,11 +475,11 @@
 // try {
 // switch (type) {
 // case STATE_ADDED:
-// logger.debug("Sending serviceAdded for Service '{}'", service.getInstanceId());
+// logger.debug("Sending serviceAdded for HomekitService '{}'", service.getInstanceId());
 // homekitStatusListener.onServiceAdded(getThing(), service);
 // break;
 // case STATE_REMOVED:
-// logger.debug("Sending serviceRemoved for Service '{}'", service.getInstanceId());
+// logger.debug("Sending serviceRemoved for HomekitService '{}'", service.getInstanceId());
 // homekitStatusListener.onServiceRemoved(getThing(), service);
 // break;
 // default:
@@ -492,9 +492,9 @@
 // }
 // }
 
-// private void notifyHomekitStatusListeners(final Characteristic characteristic, final String type) {
+// private void notifyHomekitStatusListeners(final HomekitCharacteristic characteristic, final String type) {
 // if (homekitStatusListeners.isEmpty()) {
-// logger.debug("No Homekit status listeners to notify of change for Characteristic '{}'",
+// logger.debug("No Homekit status listeners to notify of change for HomekitCharacteristic '{}'",
 // characteristic.getInstanceId());
 // return;
 // }
@@ -503,11 +503,11 @@
 // try {
 // switch (type) {
 // case STATE_ADDED:
-// logger.debug("Sending characteristicAdded for Service '{}'", characteristic.getInstanceId());
+// logger.debug("Sending characteristicAdded for HomekitService '{}'", characteristic.getInstanceId());
 // homekitStatusListener.onCharacteristicAdded(getThing(), characteristic);
 // break;
 // case STATE_REMOVED:
-// logger.debug("Sending characteristicRemoved for Service '{}'", characteristic.getInstanceId());
+// logger.debug("Sending characteristicRemoved for HomekitService '{}'", characteristic.getInstanceId());
 // homekitStatusListener.onCharacteristicRemoved(getThing(), characteristic);
 // break;
 // default:
@@ -521,9 +521,9 @@
 // }
 
 // @Nullable
-// public Accessory getAccessory(long id) {
+// public HomekitAccessory getAccessory(long id) {
 // startSearch();
-// for (Accessory accessory : lastAccessories) {
+// for (HomekitAccessory accessory : lastAccessories) {
 // if (accessory.getUID() == id) {
 // return accessory;
 // }
@@ -532,7 +532,7 @@
 // return null;
 // }
 
-// public Collection<Accessory> getAccessories() {
+// public Collection<HomekitAccessory> getAccessories() {
 // startSearch();
 // return lastAccessories;
 // }

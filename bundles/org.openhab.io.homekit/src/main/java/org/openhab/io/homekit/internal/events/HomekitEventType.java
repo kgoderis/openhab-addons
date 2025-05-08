@@ -4,7 +4,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 
 @NonNullByDefault
 public enum HomekitEventType {
-    // Characteristic events
+    // HomekitCharacteristic events
     CHARACTERISTIC_VALUE_CHANGED,
     CHARACTERISTIC_STATE_CHANGED,
     CHARACTERISTIC_ADDED,
@@ -14,13 +14,13 @@ public enum HomekitEventType {
     CHARACTERISTIC_ANY, // Matches any characteristic event
     CHARACTERISTIC_CHANGE_VALUE,
 
-    // Service events
+    // HomekitService events
     SERVICE_STATE_CHANGED,
     SERVICE_ADDED,
     SERVICE_REMOVED,
     SERVICE_ANY, // Matches any service event
 
-    // Accessory events
+    // HomekitAccessory events
     ACCESSORY_STATE_CHANGED,
     ACCESSORY_ADDED,
     ACCESSORY_REMOVED,
@@ -40,7 +40,7 @@ public enum HomekitEventType {
     SERVER_STATE_MISSING_SETUP_CODE,
     SERVER_ANY, // Matches any server event
 
-    // Pairing events
+    // HomekitPairing events
     PAIRING_STATE_CHANGED,
     PAIRING_ANY, // Matches any pairing event
 
