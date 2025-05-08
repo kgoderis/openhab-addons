@@ -8,10 +8,10 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.api.hap.HomekitAccessory;
 import org.openhab.io.homekit.internal.events.HomekitEventManager;
-import org.openhab.io.homekit.internal.service.HomekitGenericService;
+import org.openhab.io.homekit.internal.service.HomekitBaseService;
 import org.openhab.io.homekit.library.characteristic.HomekitVersionCharacteristic;
 
-public class HomekitHAPProtocolInformationService extends HomekitGenericService {
+public class HomekitHAPProtocolInformationService extends HomekitBaseService {
     private static final String TYPE = "000000A2-0000-1000-8000-0026BB765291";
 
     public HomekitHAPProtocolInformationService(HomekitAccessory accessory, long instanceId, boolean extend, @NonNull String serviceName, HomekitEventManager eventManager, Collection<HomekitFactory> factories)

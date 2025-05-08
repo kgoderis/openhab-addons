@@ -7,9 +7,9 @@ import org.eclipse.jetty.client.http.HttpDestinationOverHTTP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HomekitHttpDestinationOverHTTP extends HttpDestinationOverHTTP {
+public class HomekitHttpDestination extends HttpDestinationOverHTTP {
 
-    protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpDestinationOverHTTP.class);
+    protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpDestination.class);
     protected static final String LOG_PREFIX = "Homekit HttpDestinationOverHTTP: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
@@ -21,7 +21,7 @@ public class HomekitHttpDestinationOverHTTP extends HttpDestinationOverHTTP {
     private byte[] decryptionKey;
     private byte[] encryptionKey;
 
-    public HomekitHttpDestinationOverHTTP(HttpClient client, Origin origin) {
+    public HomekitHttpDestination(HttpClient client, Origin origin) {
         super(client, origin);
     }
 
@@ -39,9 +39,9 @@ public class HomekitHttpDestinationOverHTTP extends HttpDestinationOverHTTP {
         this.encryptionKey = encryptionKey;
 
         ConnectionPool pool = getConnectionPool();
-        if (pool instanceof HomekitConnnectionPool) {
-            var idle = ((HomekitConnnectionPool) pool).getIdleConnections();
-            var active = ((HomekitConnnectionPool) pool).getActiveConnections();
+        if (pool instanceof HomekitConnectionPool) {
+            var idle = ((HomekitConnectionPool) pool).getIdleConnections();
+            var active = ((HomekitConnectionPool) pool).getActiveConnections();
             for (org.eclipse.jetty.client.api.Connection connection : idle) {
                 if (connection instanceof HomekitHttpConnectionOverHTTP) {
                     ((HomekitHttpConnectionOverHTTP) connection).setEncryptionKeys(decryptionKey, encryptionKey);

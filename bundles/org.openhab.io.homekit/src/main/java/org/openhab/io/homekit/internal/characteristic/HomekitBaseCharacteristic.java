@@ -19,8 +19,8 @@ import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.hap.HomekitCharacteristic;
 import org.openhab.io.homekit.api.hap.HomekitService;
 import org.openhab.io.homekit.internal.events.AbstractHomekitEvent;
-import org.openhab.io.homekit.internal.events.HomekitCharacteristicChangeValueEvent;
-import org.openhab.io.homekit.internal.events.HomekitCharacteristicValueChangedEvent;
+import org.openhab.io.homekit.internal.events.HomekitCharacteristicUpdateEvent;
+import org.openhab.io.homekit.internal.events.HomekitCharacteristicChangedEvent;
 import org.openhab.io.homekit.internal.events.HomekitEventMetadata;
 import org.openhab.io.homekit.internal.events.HomekitEventManager;
 import org.openhab.io.homekit.internal.events.HomekitEventType;
@@ -28,9 +28,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @NonNullByDefault
-public abstract class HomekitGenericCharacteristic<@NonNull T> implements HomekitCharacteristic<@NonNull T> {
+public abstract class HomekitBaseCharacteristic<@NonNull T> implements HomekitCharacteristic<@NonNull T> {
 
-    private static final Logger logger = LoggerFactory.getLogger(HomekitGenericCharacteristic.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitBaseCharacteristic.class);
 
     protected static final String LOG_PREFIX = "Homekit HomekitCharacteristic: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
@@ -57,7 +57,7 @@ public abstract class HomekitGenericCharacteristic<@NonNull T> implements Homeki
     private HomekitEventManager eventManager;
 
     // Constructors
-    public HomekitGenericCharacteristic(HomekitService service, JsonValue value, HomekitEventManager eventManager) {
+    public HomekitBaseCharacteristic(HomekitService service, JsonValue value, HomekitEventManager eventManager) {
         this.service = service;
         this.initialValue = value;
         this.eventManager = eventManager;
@@ -90,7 +90,7 @@ public abstract class HomekitGenericCharacteristic<@NonNull T> implements Homeki
         setupSubscription();
     }
 
-    public HomekitGenericCharacteristic(HomekitService service, long instanceId, String format, boolean isWritable,
+    public HomekitBaseCharacteristic(HomekitService service, long instanceId, String format, boolean isWritable,
             boolean isReadable, boolean hasEvents, String description, String type, HomekitEventManager eventManager) {
         this.service = service;
         this.instanceId = instanceId;
@@ -122,13 +122,13 @@ public abstract class HomekitGenericCharacteristic<@NonNull T> implements Homeki
     protected final void setupSubscription() {
         eventManager.subscribe(HomekitEventType.CHARACTERISTIC_CHANGE_VALUE, AbstractHomekitEvent.WILDCARD_UID,
                 getUID(), event -> {
-                    if (event instanceof HomekitCharacteristicChangeValueEvent) {
-                        HomekitCharacteristicChangeValueEvent changeEvent = (HomekitCharacteristicChangeValueEvent) event;
+                    if (event instanceof HomekitCharacteristicUpdateEvent) {
+                        HomekitCharacteristicUpdateEvent changeEvent = (HomekitCharacteristicUpdateEvent) event;
                         // Optionally check if the event is for this characteristic
-                        if (changeEvent.getCharacteristic().get().equals(HomekitGenericCharacteristic.this)) {
+                        if (changeEvent.getCharacteristic().get().equals(HomekitBaseCharacteristic.this)) {
                             // Update the value in response to the event
                             try {
-                                HomekitGenericCharacteristic.this.setValue(changeEvent.getNewValue().get(),
+                                HomekitBaseCharacteristic.this.setValue(changeEvent.getNewValue().get(),
                                         event.getMetadata());
                             } catch (Exception e) {
                                 // Handle error
@@ -316,12 +316,12 @@ public abstract class HomekitGenericCharacteristic<@NonNull T> implements Homeki
 
     // Protected methods
     protected void notifyValueChanged(@Nullable T oldValue, @Nullable T newValue) {
-        eventManager.publishEvent(new HomekitCharacteristicValueChangedEvent((HomekitCharacteristic<?>) this, toValueJson(oldValue),
+        eventManager.publishEvent(new HomekitCharacteristicChangedEvent((HomekitCharacteristic<?>) this, toValueJson(oldValue),
                 toValueJson(newValue)));
     }
 
     protected void notifyValueChanged(@Nullable T oldValue, @Nullable T newValue, HomekitEventMetadata metadata) {
-        eventManager.publishEvent(new HomekitCharacteristicValueChangedEvent((HomekitCharacteristic<?>) this, toValueJson(oldValue),
+        eventManager.publishEvent(new HomekitCharacteristicChangedEvent((HomekitCharacteristic<?>) this, toValueJson(oldValue),
                 toValueJson(newValue), metadata));
     }
 
@@ -381,7 +381,7 @@ public abstract class HomekitGenericCharacteristic<@NonNull T> implements Homeki
         if (o == null || getClass() != o.getClass())
             return false;
 
-        HomekitGenericCharacteristic<?> that = (HomekitGenericCharacteristic<?>) o;
+        HomekitBaseCharacteristic<?> that = (HomekitBaseCharacteristic<?>) o;
 
         // Compare fields in the same order as compareTo
         return instanceId == that.instanceId && getInstanceType().equals(that.getInstanceType())
@@ -412,27 +412,27 @@ public abstract class HomekitGenericCharacteristic<@NonNull T> implements Homeki
             return typeCompare;
 
         // Compare by format
-        int formatCompare = this.format.compareTo(((HomekitGenericCharacteristic<?>) other).format);
+        int formatCompare = this.format.compareTo(((HomekitBaseCharacteristic<?>) other).format);
         if (formatCompare != 0)
             return formatCompare;
 
         // Compare by isWritable
-        int writableCompare = Boolean.compare(this.isWritable, ((HomekitGenericCharacteristic<?>) other).isWritable);
+        int writableCompare = Boolean.compare(this.isWritable, ((HomekitBaseCharacteristic<?>) other).isWritable);
         if (writableCompare != 0)
             return writableCompare;
 
         // Compare by isReadable
-        int readableCompare = Boolean.compare(this.isReadable, ((HomekitGenericCharacteristic<?>) other).isReadable);
+        int readableCompare = Boolean.compare(this.isReadable, ((HomekitBaseCharacteristic<?>) other).isReadable);
         if (readableCompare != 0)
             return readableCompare;
 
         // Compare by hasEvents
-        int eventsCompare = Boolean.compare(this.hasEvents, ((HomekitGenericCharacteristic<?>) other).hasEvents);
+        int eventsCompare = Boolean.compare(this.hasEvents, ((HomekitBaseCharacteristic<?>) other).hasEvents);
         if (eventsCompare != 0)
             return eventsCompare;
 
         // Finally compare by description
-        return this.description.compareTo(((HomekitGenericCharacteristic<?>) other).description);
+        return this.description.compareTo(((HomekitBaseCharacteristic<?>) other).description);
     }
 
     // Abstract methods
@@ -463,7 +463,7 @@ public abstract class HomekitGenericCharacteristic<@NonNull T> implements Homeki
     public void updateWith(@Nullable HomekitCharacteristic<?> other) {
         if (other == null)
             return;
-        if (other instanceof HomekitGenericCharacteristic<?> otherGeneric) {
+        if (other instanceof HomekitBaseCharacteristic<?> otherGeneric) {
             if (this.getInstanceType().equals(otherGeneric.getInstanceType())
                     && this.instanceId == otherGeneric.getInstanceId()) {
                 this.isWritable = otherGeneric.isWritable;

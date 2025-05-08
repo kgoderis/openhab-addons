@@ -19,9 +19,9 @@ import org.openhab.io.homekit.util.HomekitByte;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HomekitDecryptedHomekitEndPoint implements EndPoint {
+public class HomekitDecryptedEndPoint implements EndPoint {
 
-    protected static final Logger logger = LoggerFactory.getLogger(HomekitDecryptedHomekitEndPoint.class);
+    protected static final Logger logger = LoggerFactory.getLogger(HomekitDecryptedEndPoint.class);
     protected static final String LOG_PREFIX = "Homekit DecryptedHomekitEndPoint: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
@@ -59,7 +59,7 @@ public class HomekitDecryptedHomekitEndPoint implements EndPoint {
 
     private final EndPoint encryptedEndPoint;
 
-    public HomekitDecryptedHomekitEndPoint(EndPoint encryptedEndpoint, Executor executor, ByteBufferPool byteBufferPool,
+    public HomekitDecryptedEndPoint(EndPoint encryptedEndpoint, Executor executor, ByteBufferPool byteBufferPool,
             boolean useDirectBuffers, byte[] encryptionKey, byte[] decryptionKey) {
         this.encryptedEndPoint = encryptedEndpoint;
         this.bufferPool = byteBufferPool;

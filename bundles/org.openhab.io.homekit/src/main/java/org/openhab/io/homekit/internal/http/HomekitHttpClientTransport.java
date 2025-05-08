@@ -10,9 +10,9 @@ import org.eclipse.jetty.util.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HomekitHttpClientTransportOverHTTP extends HttpClientTransportOverHTTP {
+public class HomekitHttpClientTransport extends HttpClientTransportOverHTTP {
 
-    protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpClientTransportOverHTTP.class);
+    protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpClientTransport.class);
     protected static final String LOG_PREFIX = "Homekit HttpClientTransportOverHTTP: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
@@ -21,9 +21,9 @@ public class HomekitHttpClientTransportOverHTTP extends HttpClientTransportOverH
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
-    public HomekitHttpClientTransportOverHTTP() {
+    public HomekitHttpClientTransport() {
         super();
-        setConnectionPoolFactory(destination -> new HomekitConnnectionPool(destination,
+        setConnectionPoolFactory(destination -> new HomekitConnectionPool(destination,
                 getHttpClient().getMaxConnectionsPerDestination(), destination));
     }
 
@@ -38,8 +38,8 @@ public class HomekitHttpClientTransportOverHTTP extends HttpClientTransportOverH
 
         HomekitHttpConnectionOverHTTP newConnection = new HomekitHttpConnectionOverHTTP(endPoint, destination, promise);
 
-        if (destination instanceof HomekitHttpDestinationOverHTTP
-                && ((HomekitHttpDestinationOverHTTP) destination).hasEncryptionKeys()) {
+        if (destination instanceof HomekitHttpDestination
+                && ((HomekitHttpDestination) destination).hasEncryptionKeys()) {
             // DecryptedHomekitEndPoint appEndPoint = new DecryptedHomekitEndPoint(endPoint,
             // getHttpClient().getExecutor(),
             // getHttpClient().getByteBufferPool(), true,
@@ -52,12 +52,12 @@ public class HomekitHttpClientTransportOverHTTP extends HttpClientTransportOverH
                     endPoint.getRemoteAddress().toString(), newConnection.toString(), destination.toString());
             if (logger.isTraceEnabled()) {
                 logger.trace("{}DecryptionKey: {}", LOG_CONFIG, javax.xml.bind.DatatypeConverter
-                        .printHexBinary(((HomekitHttpDestinationOverHTTP) destination).getDecryptionKey()));
+                        .printHexBinary(((HomekitHttpDestination) destination).getDecryptionKey()));
                 logger.trace("{}EncryptionKey: {}", LOG_CONFIG, javax.xml.bind.DatatypeConverter
-                        .printHexBinary(((HomekitHttpDestinationOverHTTP) destination).getEncryptionKey()));
+                        .printHexBinary(((HomekitHttpDestination) destination).getEncryptionKey()));
             }
-            newConnection.setEncryptionKeys(((HomekitHttpDestinationOverHTTP) destination).getDecryptionKey(),
-                    ((HomekitHttpDestinationOverHTTP) destination).getEncryptionKey());
+            newConnection.setEncryptionKeys(((HomekitHttpDestination) destination).getDecryptionKey(),
+                    ((HomekitHttpDestination) destination).getEncryptionKey());
             // appConnection.setUpgradable(false);
             // appEndPoint.setConnection(appConnection);
         } else {
@@ -72,6 +72,6 @@ public class HomekitHttpClientTransportOverHTTP extends HttpClientTransportOverH
 
     @Override
     public HttpDestination newHttpDestination(Origin origin) {
-        return new HomekitHttpDestinationOverHTTP(getHttpClient(), origin);
+        return new HomekitHttpDestination(getHttpClient(), origin);
     }
 }

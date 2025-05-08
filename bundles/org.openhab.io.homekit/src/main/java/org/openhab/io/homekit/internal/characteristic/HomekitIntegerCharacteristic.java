@@ -13,7 +13,7 @@ import org.openhab.io.homekit.api.hap.HomekitService;
 import org.openhab.io.homekit.internal.events.HomekitEventManager;
 
 @NonNullByDefault
-public abstract class HomekitIntegerCharacteristic extends HomekitGenericCharacteristic<Integer> {
+public abstract class HomekitIntegerCharacteristic extends HomekitBaseCharacteristic<Integer> {
 
     protected final int minValue;
     private final int maxValue;

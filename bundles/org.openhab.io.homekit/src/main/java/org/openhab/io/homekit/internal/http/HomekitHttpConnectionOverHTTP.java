@@ -28,18 +28,18 @@ public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
     }
 
     @Override
-    protected HomekitHttpChannelOverHTTP newHttpChannel() {
-        return new HomekitHttpChannelOverHTTP(this);
+    protected HomekitHttpChannel newHttpChannel() {
+        return new HomekitHttpChannel(this);
     }
 
     @Override
     public long getMessagesIn() {
-        return ((HomekitHttpChannelOverHTTP) getHttpChannel()).getMessagesIn();
+        return ((HomekitHttpChannel) getHttpChannel()).getMessagesIn();
     }
 
     @Override
     public long getMessagesOut() {
-        return ((HomekitHttpChannelOverHTTP) getHttpChannel()).getMessagesOut();
+        return ((HomekitHttpChannel) getHttpChannel()).getMessagesOut();
     }
 
     @Override
@@ -77,8 +77,8 @@ public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
 
         HttpChannelOverHTTP channel = this.getHttpChannel();
 
-        if (channel instanceof HomekitHttpChannelOverHTTP) {
-            ((HomekitHttpChannelOverHTTP) channel).setEncryptionKeys(decryptionKey, encryptionKey);
+        if (channel instanceof HomekitHttpChannel) {
+            ((HomekitHttpChannel) channel).setEncryptionKeys(decryptionKey, encryptionKey);
         }
     }
 

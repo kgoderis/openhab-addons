@@ -153,7 +153,7 @@ public class HomekitPersistedAccessoryProvider
             }
 
             if (loadedClass == null) {
-                loadedClass = HomekitGenericAccessory.class;
+                loadedClass = HomekitBaseAccessory.class;
             }
 
             if (loadedClass != null) {

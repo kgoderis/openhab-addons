@@ -11,13 +11,13 @@ import org.openhab.io.homekit.api.hap.HomekitCharacteristic;
  * This event is published when a characteristic's value has been changed.
  */
 @NonNullByDefault
-public class HomekitCharacteristicValueChangedEvent extends HomekitCharacteristicEvent {
+public class HomekitCharacteristicChangedEvent extends HomekitCharacteristicEvent {
 
-    public HomekitCharacteristicValueChangedEvent(HomekitCharacteristic<?> characteristic, @Nullable JsonValue oldValue, @Nullable JsonValue newValue) {
+    public HomekitCharacteristicChangedEvent(HomekitCharacteristic<?> characteristic, @Nullable JsonValue oldValue, @Nullable JsonValue newValue) {
         super(HomekitEventType.CHARACTERISTIC_VALUE_CHANGED, characteristic, oldValue, newValue);
     }
 
-    public HomekitCharacteristicValueChangedEvent(HomekitCharacteristic<?> characteristic, @Nullable JsonValue oldValue, @Nullable JsonValue newValue,
+    public HomekitCharacteristicChangedEvent(HomekitCharacteristic<?> characteristic, @Nullable JsonValue oldValue, @Nullable JsonValue newValue,
             HomekitEventMetadata metadata) {
         super(HomekitEventType.CHARACTERISTIC_VALUE_CHANGED, characteristic, oldValue, newValue, metadata);
     }

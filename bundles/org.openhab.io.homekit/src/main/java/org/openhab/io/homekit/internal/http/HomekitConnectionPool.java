@@ -15,20 +15,20 @@ import org.eclipse.jetty.util.annotation.ManagedAttribute;
 /**
  * Custom DuplexConnectionPool that exposes all connections (idle and active).
  */
-public class HomekitConnnectionPool extends AbstractConnectionPool {
+public class HomekitConnectionPool extends AbstractConnectionPool {
     private final List<Connection> idleConnections = new CopyOnWriteArrayList<>();
     private final List<Connection> activeConnections = new CopyOnWriteArrayList<>();
 
-    public HomekitConnnectionPool(HttpDestination destination, int maxConnections, Callback requester) {
+    public HomekitConnectionPool(HttpDestination destination, int maxConnections, Callback requester) {
         this(destination, maxConnections, false, requester);
     }
 
-    public HomekitConnnectionPool(HttpDestination destination, int maxConnections, boolean cache, Callback requester) {
+    public HomekitConnectionPool(HttpDestination destination, int maxConnections, boolean cache, Callback requester) {
         super(destination, Pool.StrategyType.FIRST, maxConnections, cache, requester);
     }
 
     @Deprecated
-    public HomekitConnnectionPool(HttpDestination destination, Pool<Connection> pool, Callback requester) {
+    public HomekitConnectionPool(HttpDestination destination, Pool<Connection> pool, Callback requester) {
         super(destination, pool, requester);
     }
 

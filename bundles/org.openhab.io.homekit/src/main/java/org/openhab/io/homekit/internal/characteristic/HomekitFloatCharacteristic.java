@@ -13,7 +13,7 @@ import org.openhab.io.homekit.api.hap.HomekitService;
 import org.openhab.io.homekit.internal.events.HomekitEventManager;
 
 @NonNullByDefault
-public abstract class HomekitFloatCharacteristic extends HomekitGenericCharacteristic<Double> {
+public abstract class HomekitFloatCharacteristic extends HomekitBaseCharacteristic<Double> {
 
     protected final double minValue;
     private final double maxValue;

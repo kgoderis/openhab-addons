@@ -7,9 +7,9 @@ import org.eclipse.jetty.client.http.HttpSenderOverHTTP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HomekitHttpChannelOverHTTP extends HttpChannelOverHTTP {
+public class HomekitHttpChannel extends HttpChannelOverHTTP {
 
-    protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpChannelOverHTTP.class);
+    protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpChannel.class);
     protected static final String LOG_PREFIX = "Homekit HttpChannelOverHTTP: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
@@ -21,18 +21,18 @@ public class HomekitHttpChannelOverHTTP extends HttpChannelOverHTTP {
     protected byte[] decryptionKey;
     protected byte[] encryptionKey;
 
-    public HomekitHttpChannelOverHTTP(HttpConnectionOverHTTP connection) {
+    public HomekitHttpChannel(HttpConnectionOverHTTP connection) {
         super(connection);
     }
 
     @Override
     protected HttpSenderOverHTTP newHttpSender() {
-        return new HomekitHttpSenderOverHTTP(this);
+        return new HomekitHttpSender(this);
     }
 
     @Override
     protected HttpReceiverOverHTTP newHttpReceiver() {
-        return new HomekitHttpReceiverOverHTTP(this);
+        return new HomekitHttpReceiver(this);
     }
 
     @Override
@@ -46,13 +46,13 @@ public class HomekitHttpChannelOverHTTP extends HttpChannelOverHTTP {
     }
 
     @Override
-    protected HomekitHttpReceiverOverHTTP getHttpReceiver() {
-        return (HomekitHttpReceiverOverHTTP) super.getHttpReceiver();
+    protected HomekitHttpReceiver getHttpReceiver() {
+        return (HomekitHttpReceiver) super.getHttpReceiver();
     }
 
     @Override
-    protected HomekitHttpSenderOverHTTP getHttpSender() {
-        return (HomekitHttpSenderOverHTTP) super.getHttpSender();
+    protected HomekitHttpSender getHttpSender() {
+        return (HomekitHttpSender) super.getHttpSender();
     }
 
     public void setEncryptionKeys(byte[] decryptionKey, byte[] encryptionKey) {
@@ -70,14 +70,14 @@ public class HomekitHttpChannelOverHTTP extends HttpChannelOverHTTP {
 
         HttpSenderOverHTTP sender = this.getHttpSender();
 
-        if (sender instanceof HomekitHttpSenderOverHTTP) {
-            ((HomekitHttpSenderOverHTTP) sender).setEncryptionKey(encryptionKey);
+        if (sender instanceof HomekitHttpSender) {
+            ((HomekitHttpSender) sender).setEncryptionKey(encryptionKey);
         }
 
         HttpReceiverOverHTTP receiver = this.getHttpReceiver();
 
-        if (receiver instanceof HomekitHttpReceiverOverHTTP) {
-            ((HomekitHttpReceiverOverHTTP) receiver).setDecryptionKey(decryptionKey);
+        if (receiver instanceof HomekitHttpReceiver) {
+            ((HomekitHttpReceiver) receiver).setDecryptionKey(decryptionKey);
         }
     }
 

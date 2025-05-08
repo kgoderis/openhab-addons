@@ -8,7 +8,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.api.hap.HomekitAccessory;
 import org.openhab.io.homekit.internal.events.HomekitEventManager;
-import org.openhab.io.homekit.internal.service.HomekitGenericService;
+import org.openhab.io.homekit.internal.service.HomekitBaseService;
 import org.openhab.io.homekit.library.characteristic.HomekitCurrentHorizontalTiltAngleCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitCurrentPositionCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitCurrentVerticalTiltAngleCharacteristic;
@@ -19,7 +19,7 @@ import org.openhab.io.homekit.library.characteristic.HomekitTargetHorizontalTilt
 import org.openhab.io.homekit.library.characteristic.HomekitTargetPositionCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitTargetVerticalTiltAngleCharacteristic;
 
-public class HomekitWindowCoveringService extends HomekitGenericService {
+public class HomekitWindowCoveringService extends HomekitBaseService {
     private static final String TYPE = "0000008C-0000-1000-8000-0026BB765291";
 
     public HomekitWindowCoveringService(HomekitAccessory accessory, long instanceId, boolean extend, @NonNull String serviceName, HomekitEventManager eventManager, Collection<HomekitFactory> factories)

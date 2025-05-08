@@ -86,15 +86,15 @@ import org.openhab.io.homekit.exception.HomekitConfigurationException;
 import org.openhab.io.homekit.exception.HomekitException;
 import org.openhab.io.homekit.exception.HomekitServerException;
 import org.openhab.io.homekit.internal.accessory.HomekitAccessoryServerState;
-import org.openhab.io.homekit.internal.accessory.HomekitGenericAccessory;
+import org.openhab.io.homekit.internal.accessory.HomekitBaseAccessory;
 import org.openhab.io.homekit.internal.client.HomekitClientSRP6Session;
 import org.openhab.io.homekit.internal.events.HomekitAccessoryServerEvent;
 import org.openhab.io.homekit.internal.events.HomekitCharacteristicEvent;
 import org.openhab.io.homekit.internal.events.HomekitEventManager;
 import org.openhab.io.homekit.internal.events.HomekitEventSubscription;
 import org.openhab.io.homekit.internal.events.HomekitEventType;
-import org.openhab.io.homekit.internal.http.HomekitHttpClientTransportOverHTTP;
-import org.openhab.io.homekit.internal.http.HomekitHttpDestinationOverHTTP;
+import org.openhab.io.homekit.internal.http.HomekitHttpClientTransport;
+import org.openhab.io.homekit.internal.http.HomekitHttpDestination;
 import org.openhab.io.homekit.internal.http.HomekitProtocolHandler;
 import org.openhab.io.homekit.util.HomekitByte;
 import org.openhab.io.homekit.util.HomekitTypeLengthValueEncoderDecoder;
@@ -170,7 +170,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     protected void initializeResources() throws HomekitServerException {
         super.initializeResources();
         try {
-            httpClient = new HttpClient(new HomekitHttpClientTransportOverHTTP(), null);
+            httpClient = new HttpClient(new HomekitHttpClientTransport(), null);
 
             if (httpClient != null) {
                 logger.debug("{}Starting HTTP client initialization", LOG_INIT);
@@ -322,8 +322,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         if (httpClient != null && address != null && port != 0) {
             Destination destination = httpClient.getDestination(HTTP_SCHEME, address.getHostAddress(), port);
 
-            if (destination instanceof HomekitHttpDestinationOverHTTP) {
-                return ((HomekitHttpDestinationOverHTTP) destination).hasEncryptionKeys();
+            if (destination instanceof HomekitHttpDestination) {
+                return ((HomekitHttpDestination) destination).hasEncryptionKeys();
             }
         }
 
@@ -1052,7 +1052,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             byte[] readKey = HomekitEncryptionEngine.createKey("Control-Read-Encryption-Key", sharedSecret);
             logger.debug("{}Read key generated - Server: {}", LOG_STATE, new String(getPairingId()));
 
-            HomekitHttpDestinationOverHTTP destination = (HomekitHttpDestinationOverHTTP) httpClient.getDestination(
+            HomekitHttpDestination destination = (HomekitHttpDestination) httpClient.getDestination(
                     stageResult.result.getRequest().getScheme(), stageResult.result.getRequest().getHost(),
                     stageResult.result.getRequest().getPort());
             logger.debug("{}Setting encryption keys on destination - Server: {}", LOG_STATE,
@@ -1264,7 +1264,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 JsonArray accessories = Json.createReader(new ByteArrayInputStream(contentResult.body)).readObject()
                         .getJsonArray("accessories");
                 for (JsonValue value : accessories) {
-                    result.add(new HomekitGenericAccessory(value, eventManager, homekitFactories));
+                    result.add(new HomekitBaseAccessory(value, eventManager, homekitFactories));
                 }
             }
         }

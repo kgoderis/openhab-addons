@@ -12,17 +12,17 @@ import org.openhab.io.homekit.api.hap.HomekitCharacteristic;
  * This event is published when a characteristic's value is about to be changed.
  */
 @NonNullByDefault
-public class HomekitCharacteristicChangeValueEvent extends HomekitCharacteristicEvent {
+public class HomekitCharacteristicUpdateEvent extends HomekitCharacteristicEvent {
 
-    public HomekitCharacteristicChangeValueEvent(UID publisherUID, UID subscriberUID,HomekitCharacteristic<?> characteristic, @Nullable JsonValue oldValue, @Nullable JsonValue newValue,HomekitEventMetadata metadata) {
+    public HomekitCharacteristicUpdateEvent(UID publisherUID, UID subscriberUID,HomekitCharacteristic<?> characteristic, @Nullable JsonValue oldValue, @Nullable JsonValue newValue,HomekitEventMetadata metadata) {
         super(HomekitEventType.CHARACTERISTIC_CHANGE_VALUE, publisherUID, subscriberUID, characteristic, oldValue, newValue,metadata);
     }
 
-    public HomekitCharacteristicChangeValueEvent(HomekitCharacteristic<?> characteristic, @Nullable JsonValue oldValue, @Nullable JsonValue newValue) {
+    public HomekitCharacteristicUpdateEvent(HomekitCharacteristic<?> characteristic, @Nullable JsonValue oldValue, @Nullable JsonValue newValue) {
         super(HomekitEventType.CHARACTERISTIC_CHANGE_VALUE, characteristic, oldValue, newValue);
     }
 
-    public HomekitCharacteristicChangeValueEvent(HomekitCharacteristic<?> characteristic, @Nullable JsonValue oldValue, @Nullable JsonValue newValue,
+    public HomekitCharacteristicUpdateEvent(HomekitCharacteristic<?> characteristic, @Nullable JsonValue oldValue, @Nullable JsonValue newValue,
             HomekitEventMetadata metadata) {
         super(HomekitEventType.CHARACTERISTIC_CHANGE_VALUE, characteristic, oldValue, newValue, metadata);
     }

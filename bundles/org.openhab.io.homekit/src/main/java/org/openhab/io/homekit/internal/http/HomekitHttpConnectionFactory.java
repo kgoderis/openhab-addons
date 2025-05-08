@@ -103,7 +103,7 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
             if (session != null) {
                 if (session.getAttribute("Control-Read-Encryption-Key") != null) {
 
-                    HomekitDecryptedHomekitEndPoint appEndPoint = new HomekitDecryptedHomekitEndPoint(endPoint,
+                    HomekitDecryptedEndPoint appEndPoint = new HomekitDecryptedEndPoint(endPoint,
                             connector.getExecutor(), connector.getByteBufferPool(), isDirectBuffers(),
                             (byte[]) session.getAttribute("Control-Read-Encryption-Key"),
                             (byte[]) session.getAttribute("Control-Write-Encryption-Key"));

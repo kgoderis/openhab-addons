@@ -13,7 +13,7 @@ import org.openhab.io.homekit.api.hap.HomekitService;
 import org.openhab.io.homekit.internal.events.HomekitEventManager;
 
 @NonNullByDefault
-public abstract class HomekitByteCharacteristic extends HomekitGenericCharacteristic<Byte> {
+public abstract class HomekitByteCharacteristic extends HomekitBaseCharacteristic<Byte> {
 
     private final byte minValue;
     private final byte maxValue;

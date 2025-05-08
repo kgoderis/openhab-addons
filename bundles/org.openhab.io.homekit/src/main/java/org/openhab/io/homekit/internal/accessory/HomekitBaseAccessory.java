@@ -36,9 +36,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @NonNullByDefault
-public class HomekitGenericAccessory implements HomekitAccessory {
+public class HomekitBaseAccessory implements HomekitAccessory {
 
-    private static final Logger logger = LoggerFactory.getLogger(HomekitGenericAccessory.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitBaseAccessory.class);
 
     protected static final String LOG_PREFIX = "Homekit HomekitAccessory: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
@@ -69,7 +69,7 @@ public class HomekitGenericAccessory implements HomekitAccessory {
      * @param eventManager The event manager for handling events
      * @param homekitFactories The factories for creating services
      */
-    public HomekitGenericAccessory(HomekitEventManager eventManager, Collection<HomekitFactory> homekitFactories) {
+    public HomekitBaseAccessory(HomekitEventManager eventManager, Collection<HomekitFactory> homekitFactories) {
         this.eventManager = eventManager;
         this.homekitFactories = homekitFactories;
         logger.debug("{}Created new accessory with instance ID: {}", LOG_INIT, instanceId);
@@ -86,7 +86,7 @@ public class HomekitGenericAccessory implements HomekitAccessory {
      * @param eventManager The event manager for handling events
      * @param homekitFactories The factories for creating services
      */
-    public HomekitGenericAccessory(JsonValue value, HomekitEventManager eventManager,
+    public HomekitBaseAccessory(JsonValue value, HomekitEventManager eventManager,
             Collection<HomekitFactory> homekitFactories) {
         this.eventManager = eventManager;
         this.homekitFactories = homekitFactories;
@@ -186,7 +186,7 @@ public class HomekitGenericAccessory implements HomekitAccessory {
 
                 // Subscribe to service state change events using current UID
                 eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED, service.getUID(),
-                        getUID(), event -> HomekitGenericAccessory.this.onEvent(event)));
+                        getUID(), event -> HomekitBaseAccessory.this.onEvent(event)));
             } else {
                 logger.debug("{}HomekitAccessory '{}' (Type: {}) already contains HomekitService '{}' (Type: {})", LOG_ACCESSORY,
                         this.getLabel(), this.getClass().getSimpleName(), service.getName(), service.getInstanceType());
@@ -413,7 +413,7 @@ public class HomekitGenericAccessory implements HomekitAccessory {
         if (o == null || getClass() != o.getClass())
             return false;
 
-        HomekitGenericAccessory that = (HomekitGenericAccessory) o;
+        HomekitBaseAccessory that = (HomekitBaseAccessory) o;
 
         // Compare accessory ID
         if (accessoryId != that.accessoryId)
@@ -457,7 +457,7 @@ public class HomekitGenericAccessory implements HomekitAccessory {
             return idCompare;
 
         // Compare services
-        HomekitGenericAccessory that = (HomekitGenericAccessory) other;
+        HomekitBaseAccessory that = (HomekitBaseAccessory) other;
         List<HomekitService> thisServices = new ArrayList<>(this.services);
         List<HomekitService> thatServices = new ArrayList<>(that.services);
 

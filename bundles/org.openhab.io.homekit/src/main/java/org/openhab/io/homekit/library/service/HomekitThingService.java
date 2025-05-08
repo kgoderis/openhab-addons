@@ -7,10 +7,10 @@ import javax.json.JsonValue;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.api.hap.HomekitAccessory;
 import org.openhab.io.homekit.internal.events.HomekitEventManager;
-import org.openhab.io.homekit.internal.service.HomekitGenericService;
+import org.openhab.io.homekit.internal.service.HomekitBaseService;
 import org.openhab.io.homekit.util.HomekitUUID5;
 
-public class HomekitThingService extends HomekitGenericService {
+public class HomekitThingService extends HomekitBaseService {
     private static final String TYPE = HomekitUUID5
             .fromNamespaceAndString(HomekitUUID5.NAMESPACE_SERVICE, HomekitThingService.class.getName()).toString();
 

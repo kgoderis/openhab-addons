@@ -32,8 +32,8 @@ import org.openhab.io.homekit.api.hap.HomekitAccessoryServer;
 import org.openhab.io.homekit.api.hap.HomekitCharacteristic;
 import org.openhab.io.homekit.api.hap.HomekitStatusCode;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
-import org.openhab.io.homekit.internal.characteristic.HomekitGenericCharacteristic;
-import org.openhab.io.homekit.internal.events.HomekitCharacteristicChangeValueEvent;
+import org.openhab.io.homekit.internal.characteristic.HomekitBaseCharacteristic;
+import org.openhab.io.homekit.internal.events.HomekitCharacteristicUpdateEvent;
 import org.openhab.io.homekit.internal.events.HomekitEvent;
 import org.openhab.io.homekit.internal.events.HomekitEventManager;
 import org.openhab.io.homekit.internal.events.HomekitEventMetadata;
@@ -187,8 +187,8 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
                         .filter(characteristic -> characteristic != null).forEach(characteristic -> {
                             if (characteristicWrite.containsKey("value")) {
                                 try {
-                                    if (characteristic instanceof HomekitGenericCharacteristic<?> genericCharacteristic) {
-                                        HomekitEvent newEvent = new HomekitCharacteristicChangeValueEvent(server.getUID(),
+                                    if (characteristic instanceof HomekitBaseCharacteristic<?> genericCharacteristic) {
+                                        HomekitEvent newEvent = new HomekitCharacteristicUpdateEvent(server.getUID(),
                                                 genericCharacteristic.getUID(), genericCharacteristic, JsonValue.NULL,
                                                 characteristicWrite.get("value"), new HomekitEventMetadata(server.getUID(),
                                                         null, server.getUID(), Collections.emptySet()));

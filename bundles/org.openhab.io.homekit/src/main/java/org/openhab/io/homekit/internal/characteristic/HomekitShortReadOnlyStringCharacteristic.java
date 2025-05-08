@@ -20,7 +20,7 @@ import org.openhab.io.homekit.internal.events.HomekitEventManager;
  *
  */
 @NonNullByDefault
-public abstract class HomekitShortReadOnlyStringCharacteristic extends HomekitGenericCharacteristic<String> {
+public abstract class HomekitShortReadOnlyStringCharacteristic extends HomekitBaseCharacteristic<String> {
 
     private static final int MAX_LEN = 64;
 

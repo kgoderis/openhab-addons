@@ -24,9 +24,9 @@ import org.openhab.io.homekit.crypto.HomekitEncryptionEngine.SequenceBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HomekitHttpSenderOverHTTP extends HttpSenderOverHTTP {
+public class HomekitHttpSender extends HttpSenderOverHTTP {
 
-    protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpSenderOverHTTP.class);
+    protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpSender.class);
 
     protected static final String LOG_PREFIX = "Homekit HttpSenderOverHTTP: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
@@ -43,7 +43,7 @@ public class HomekitHttpSenderOverHTTP extends HttpSenderOverHTTP {
     private byte[] encryptionKey;
     private long outboundSequenceCount = 0;
 
-    public HomekitHttpSenderOverHTTP(HomekitHttpChannelOverHTTP channel) {
+    public HomekitHttpSender(HomekitHttpChannel channel) {
         super(channel);
         httpClient = channel.getHttpDestination().getHttpClient();
     }

@@ -26,7 +26,7 @@ import org.openhab.io.homekit.api.hap.HomekitService;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.exception.HomekitFactoryException;
 import org.openhab.io.homekit.exception.HomekitRegistrationException;
-import org.openhab.io.homekit.internal.accessory.HomekitGenericAccessory;
+import org.openhab.io.homekit.internal.accessory.HomekitBaseAccessory;
 import org.openhab.io.homekit.internal.client.HomekitBindingConstants;
 import org.openhab.io.homekit.util.HomekitUUID5;
 import org.slf4j.Logger;
@@ -590,7 +590,7 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
 
         // Fallback to HomekitGenericAccessory if no mapping exists
         if (accessoryClass == null) {
-            accessoryClass = HomekitGenericAccessory.class;
+            accessoryClass = HomekitBaseAccessory.class;
         }
 
         HomekitAccessory accessory = null;

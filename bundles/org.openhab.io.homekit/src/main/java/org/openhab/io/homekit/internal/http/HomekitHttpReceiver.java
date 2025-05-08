@@ -16,9 +16,9 @@ import org.openhab.io.homekit.crypto.HomekitEncryptionEngine.SequenceBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements HomekitHttpParser.ResponseHandler {
+public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements HomekitHttpParser.ResponseHandler {
 
-    protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpReceiverOverHTTP.class);
+    protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpReceiver.class);
 
     protected static final String LOG_PREFIX = "Homekit HttpReceiverOverHTTP: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
@@ -42,15 +42,15 @@ public class HomekitHttpReceiverOverHTTP extends HttpReceiverOverHTTP implements
     @SuppressWarnings("unused")
     private ByteBuffer encryptedOutputBuffer;
 
-    public HomekitHttpReceiverOverHTTP(HttpChannelOverHTTP channel) {
+    public HomekitHttpReceiver(HttpChannelOverHTTP channel) {
         super(channel);
         httpClient = channel.getHttpDestination().getHttpClient();
         parser = new HomekitHttpParser(this, -1, httpClient.getHttpCompliance());
     }
 
     @Override
-    public HomekitHttpChannelOverHTTP getHttpChannel() {
-        return (HomekitHttpChannelOverHTTP) super.getHttpChannel();
+    public HomekitHttpChannel getHttpChannel() {
+        return (HomekitHttpChannel) super.getHttpChannel();
     }
 
     private HomekitHttpConnectionOverHTTP getHttpConnection() {

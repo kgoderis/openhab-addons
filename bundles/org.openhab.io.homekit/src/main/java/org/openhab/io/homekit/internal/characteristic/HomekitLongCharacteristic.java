@@ -13,7 +13,7 @@ import org.openhab.io.homekit.api.hap.HomekitService;
 import org.openhab.io.homekit.internal.events.HomekitEventManager;
 
 @NonNullByDefault
-public abstract class HomekitLongCharacteristic extends HomekitGenericCharacteristic<Long> {
+public abstract class HomekitLongCharacteristic extends HomekitBaseCharacteristic<Long> {
 
     private final long minValue;
     private final long maxValue;

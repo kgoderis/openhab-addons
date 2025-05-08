@@ -24,7 +24,7 @@ import org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry;
 import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.exception.HomekitServerException;
-import org.openhab.io.homekit.internal.accessory.HomekitGenericAccessory;
+import org.openhab.io.homekit.internal.accessory.HomekitBaseAccessory;
 import org.openhab.io.homekit.internal.events.HomekitAccessoryServerEvent;
 import org.openhab.io.homekit.internal.events.HomekitEventManager;
 import org.openhab.io.homekit.internal.events.HomekitEventSubscription;
@@ -167,7 +167,7 @@ public class HomekitAccessoryServerRegistryImpl
                         logger.info("{}Adding Bridge HomekitAccessory to Server - UID: {}, Type: {}, Port: {}, Setup Code: {}",
                                 LOG_ACCESSORY, availableServer.getUID(), availableServer.getClass().getSimpleName(),
                                 availableServer.getPort(), availableServer.getSetupCode());
-                        HomekitGenericAccessory bridgeAccessory = new HomekitGenericAccessory(eventManager, homekitFactories);
+                        HomekitBaseAccessory bridgeAccessory = new HomekitBaseAccessory(eventManager, homekitFactories);
                         bridgeAccessory.assignToServer(availableServer);
                     } catch (Exception e) {
                         logger.error("{}Error adding bridge accessory: {}", LOG_ERROR, e.getMessage(), e);

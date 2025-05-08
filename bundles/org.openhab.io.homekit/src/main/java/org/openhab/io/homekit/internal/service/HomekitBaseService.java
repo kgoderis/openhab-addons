@@ -28,7 +28,7 @@ import org.openhab.io.homekit.api.hap.HomekitAccessory;
 import org.openhab.io.homekit.api.hap.HomekitCharacteristic;
 import org.openhab.io.homekit.api.hap.HomekitService;
 import org.openhab.io.homekit.exception.HomekitFactoryException;
-import org.openhab.io.homekit.internal.characteristic.HomekitGenericCharacteristic;
+import org.openhab.io.homekit.internal.characteristic.HomekitBaseCharacteristic;
 import org.openhab.io.homekit.internal.events.HomekitCharacteristicEvent;
 import org.openhab.io.homekit.internal.events.HomekitEvent;
 import org.openhab.io.homekit.internal.events.HomekitEventManager;
@@ -40,9 +40,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @NonNullByDefault
-public class HomekitGenericService implements HomekitService {
+public class HomekitBaseService implements HomekitService {
 
-    protected static final Logger logger = LoggerFactory.getLogger(HomekitGenericService.class);
+    protected static final Logger logger = LoggerFactory.getLogger(HomekitBaseService.class);
 
     private final HomekitAccessory accessory;
     private final long instanceId;
@@ -57,7 +57,7 @@ public class HomekitGenericService implements HomekitService {
 
     private final Set<HomekitEventSubscription> eventSubscriptions = new HashSet<>();
 
-    public HomekitGenericService(HomekitAccessory accessory, long instanceId, boolean extend, String serviceName, String type,
+    public HomekitBaseService(HomekitAccessory accessory, long instanceId, boolean extend, String serviceName, String type,
             HomekitEventManager eventManager, Collection<HomekitFactory> factories) {
         this.accessory = accessory;
         this.instanceId = instanceId;
@@ -70,7 +70,7 @@ public class HomekitGenericService implements HomekitService {
         initialise();
     }
 
-    public HomekitGenericService(HomekitAccessory accessory, JsonValue value, String name, HomekitEventManager eventManager,
+    public HomekitBaseService(HomekitAccessory accessory, JsonValue value, String name, HomekitEventManager eventManager,
             Collection<HomekitFactory> factories) {
         this.accessory = accessory;
         this.instanceId = ((JsonObject) value).getInt("iid");
@@ -219,7 +219,7 @@ public class HomekitGenericService implements HomekitService {
         boolean removed = characteristics.remove(characteristic);
         if (removed) {
             if (characteristic != null) {
-                String description = characteristic instanceof HomekitGenericCharacteristic ? characteristic.getDescription()
+                String description = characteristic instanceof HomekitBaseCharacteristic ? characteristic.getDescription()
                         : characteristic.getInstanceType();
                 eventSubscriptions
                         .removeIf(subscription -> subscription.getPublisherUID().equals(characteristic.getUID()));
@@ -250,7 +250,7 @@ public class HomekitGenericService implements HomekitService {
                     this.getInstanceType());
             notifyCharacteristicAdded(characteristic);
 
-            if (characteristic instanceof HomekitGenericCharacteristic) {
+            if (characteristic instanceof HomekitBaseCharacteristic) {
                 eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
                         characteristic.getUID(), getUID(), event -> {
                             onEvent(event);
@@ -343,7 +343,7 @@ public class HomekitGenericService implements HomekitService {
         if (obj == null || getClass() != obj.getClass())
             return false;
 
-        HomekitGenericService that = (HomekitGenericService) obj;
+        HomekitBaseService that = (HomekitBaseService) obj;
 
         // Compare basic fields
         if (instanceId != that.instanceId)
@@ -410,7 +410,7 @@ public class HomekitGenericService implements HomekitService {
             return primaryCompare;
 
         // Compare characteristics
-        HomekitGenericService that = (HomekitGenericService) other;
+        HomekitBaseService that = (HomekitBaseService) other;
         List<HomekitCharacteristic<?>> thisChars = new ArrayList<>(this.characteristics);
         List<HomekitCharacteristic<?>> thatChars = new ArrayList<>(that.characteristics);
 

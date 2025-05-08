@@ -21,7 +21,7 @@ import org.openhab.io.homekit.internal.events.HomekitEventManager;
  *
  */
 @NonNullByDefault
-public abstract class HomekitBooleanCharacteristic extends HomekitGenericCharacteristic<Boolean> {
+public abstract class HomekitBooleanCharacteristic extends HomekitBaseCharacteristic<Boolean> {
 
     public HomekitBooleanCharacteristic(HomekitService service, long instanceId, boolean isWritable, boolean isReadable,
             boolean hasEvents, String description, String type, HomekitEventManager eventManager) {

@@ -18,7 +18,7 @@ import org.openhab.io.homekit.internal.events.HomekitEventManager;
  * value.
  **/
 @NonNullByDefault
-public abstract class HomekitEnumCharacteristic extends HomekitGenericCharacteristic<Integer> {
+public abstract class HomekitEnumCharacteristic extends HomekitBaseCharacteristic<Integer> {
 
     private final int maxValue;
 
