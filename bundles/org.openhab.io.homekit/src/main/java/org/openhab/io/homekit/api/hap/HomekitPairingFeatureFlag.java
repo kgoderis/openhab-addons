@@ -3,7 +3,7 @@ package org.openhab.io.homekit.api.hap;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * Enum representing HomeKit feature flags as defined by Apple's HomeKit HomekitAccessory Protocol.
+ * Enum representing Homekit feature flags as defined by Apple's Homekit HomekitAccessory Protocol.
  * Each flag is represented by a bit mask in a byte.
  */
 @NonNullByDefault

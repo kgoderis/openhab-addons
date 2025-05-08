@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 @NonNullByDefault
 public class HomekitAccessoryBridge {
     private static final Logger logger = LoggerFactory.getLogger(HomekitAccessoryBridge.class);
-    private static final String LOG_PREFIX = "HomeKit Bridge: ";
+    private static final String LOG_PREFIX = "Homekit Bridge: ";
     private final HomekitUID bridgeUID = new HomekitUID("bridge");
 
     private final HomekitEventManager eventManager;

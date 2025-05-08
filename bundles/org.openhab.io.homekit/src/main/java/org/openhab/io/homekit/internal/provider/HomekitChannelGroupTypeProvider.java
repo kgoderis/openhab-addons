@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 @NonNullByDefault
 @Component(service = { ChannelGroupTypeProvider.class })
 public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypeProvider {
-    protected static final String LOG_PREFIX = "HomeKit ChannelGroupTypeProvider: ";
+    protected static final String LOG_PREFIX = "Homekit ChannelGroupTypeProvider: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
@@ -95,12 +95,12 @@ public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypePro
 
         // Create the channel group type
         ChannelGroupType channelGroupType = ChannelGroupTypeBuilder.instance(channelGroupTypeUID, serviceName)
-                .withDescription("HomeKit " + serviceName + " HomekitService").withChannelDefinitions(channelDefinitions)
+                .withDescription("Homekit " + serviceName + " HomekitService").withChannelDefinitions(channelDefinitions)
                 .build();
 
         // Store the channel group type
         putChannelGroupType(channelGroupType);
-        logger.debug("{}Created ChannelGroupType {} for HomeKit service type {}", LOG_CONFIG, channelGroupTypeUID,
+        logger.debug("{}Created ChannelGroupType {} for Homekit service type {}", LOG_CONFIG, channelGroupTypeUID,
                 serviceType);
     }
 
@@ -127,7 +127,7 @@ public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypePro
 
             // Create a channel definition
             return new ChannelDefinitionBuilder(type, channelTypeUID).withLabel(type)
-                    .withDescription("HomeKit " + type + " HomekitCharacteristic").build();
+                    .withDescription("Homekit " + type + " HomekitCharacteristic").build();
         }).filter(def -> def != null).collect(Collectors.toList());
     }
 

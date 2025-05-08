@@ -6,7 +6,7 @@ import java.util.List;
 import org.openhab.io.homekit.internal.events.HomekitUID;
 
 /**
- * Represents a unique identifier for a HomeKit pairing.
+ * Represents a unique identifier for a Homekit pairing.
  * The UID format is: homekit:pairing:{sourcePairingId}:{destinationPairingId}
  */
 public class HomekitPairingUID extends HomekitUID {

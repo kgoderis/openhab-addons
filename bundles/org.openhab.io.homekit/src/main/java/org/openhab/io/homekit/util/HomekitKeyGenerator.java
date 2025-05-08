@@ -23,7 +23,7 @@ import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
 import net.i2p.crypto.eddsa.spec.EdDSAParameterSpec;
 
 /**
- * Utility class for generating HomeKit keys and identifiers.
+ * Utility class for generating Homekit keys and identifiers.
  *
  * @author Your Name - Initial contribution
  */
@@ -31,7 +31,7 @@ import net.i2p.crypto.eddsa.spec.EdDSAParameterSpec;
 public class HomekitKeyGenerator {
 
     /**
-     * Generates a secret key for HomeKit encryption.
+     * Generates a secret key for Homekit encryption.
      *
      * @return the generated secret key
      */
@@ -43,7 +43,7 @@ public class HomekitKeyGenerator {
     }
 
     /**
-     * Generates a pairing ID for HomeKit accessories.
+     * Generates a pairing ID for Homekit accessories.
      *
      * @return the generated pairing ID
      */

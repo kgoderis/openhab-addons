@@ -3,7 +3,7 @@ package org.openhab.io.homekit.internal.characteristic;
 import org.openhab.io.homekit.internal.events.HomekitUID;
 
 /**
- * Represents a unique identifier for a HomeKit characteristic.
+ * Represents a unique identifier for a Homekit characteristic.
  * The UID format is: homekit:characteristic:{pairingId}:{accessoryId}:{serviceId}:{characteristicId}
  */
 public class HomekitCharacteristicUID extends HomekitUID {
@@ -26,10 +26,10 @@ public class HomekitCharacteristicUID extends HomekitUID {
     }
 
     /**
-     * Returns the HomeKit ID part of this characteristic UID.
+     * Returns the Homekit ID part of this characteristic UID.
      * This is the last 4 segments joined with the separator.
      *
-     * @return The HomeKit ID in the format: pairingId:accessoryId:serviceId:characteristicId
+     * @return The Homekit ID in the format: pairingId:accessoryId:serviceId:characteristicId
      */
     public String getHomekitId() {
         return String.join(SEPARATOR, getAllSegments().subList(getAllSegments().size() - 4, getAllSegments().size()));

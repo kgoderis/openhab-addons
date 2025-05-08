@@ -3,7 +3,7 @@ package org.openhab.io.homekit.api.hap;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * Enum representing HomeKit TLV (Type-Length-Value) types as defined by Apple's HomeKit HomekitAccessory Protocol.
+ * Enum representing Homekit TLV (Type-Length-Value) types as defined by Apple's Homekit HomekitAccessory Protocol.
  */
 @NonNullByDefault
 public enum HomekitTypeLengthValue {

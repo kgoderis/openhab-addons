@@ -61,11 +61,11 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
 
         // Create the thing type
         ThingType thingType = ThingTypeBuilder.instance(thingTypeUID, "Homekit HomekitAccessory")
-                .withDescription("HomeKit HomekitAccessory").withCategory("homekit").build();
+                .withDescription("Homekit HomekitAccessory").withCategory("homekit").build();
 
         // Store the thing type
         putThingType(thingType);
-        logger.debug("Created ThingType {} for HomeKit", thingTypeUID);
+        logger.debug("Created ThingType {} for Homekit", thingTypeUID);
     }
 
     @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
@@ -107,11 +107,11 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
 
         // Create the thing type
         ThingType thingType = ThingTypeBuilder.instance(thingTypeUID, serviceName)
-                .withDescription("HomeKit " + serviceName + " HomekitService").withCategory("homekit").build();
+                .withDescription("Homekit " + serviceName + " HomekitService").withCategory("homekit").build();
 
         // Store the thing type
         putThingType(thingType);
-        logger.debug("Created ThingType {} for HomeKit service type {}", thingTypeUID, serviceType);
+        logger.debug("Created ThingType {} for Homekit service type {}", thingTypeUID, serviceType);
     }
 
     // private List<ChannelDefinition> createChannelDefinitions(String serviceType, HomekitFactory homekitFactory) {
@@ -134,7 +134,7 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
     // // Create a channel definition
     // return new ChannelDefinitionBuilder(homekitFactory.getTagFromCharacteristicType(characteristicType),
     // channelTypeUID).withLabel(characteristicType)
-    // .withDescription("HomeKit " + characteristicType + " HomekitCharacteristic").build();
+    // .withDescription("Homekit " + characteristicType + " HomekitCharacteristic").build();
     // }).filter(def -> def != null).collect(Collectors.toList());
     // }
 
@@ -145,7 +145,7 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
     // // which services should be grouped together
     // ChannelGroupTypeUID channelGroupTypeUID = getChannelGroupTypeUID(serviceType);
     // return List.of(new ChannelGroupDefinition(serviceType, channelGroupTypeUID, serviceType,
-    // "HomeKit " + serviceType + " HomekitService Group"));
+    // "Homekit " + serviceType + " HomekitService Group"));
     // }
 
     public ThingTypeUID getThingTypeUID(String serviceType) {

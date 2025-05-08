@@ -4,7 +4,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.UID;
 
 /**
- * Represents a unique identifier for a HomeKit event.
+ * Represents a unique identifier for a Homekit event.
  * The UID format is: homekit:event:{eventType}:{uuid}
  */
 @NonNullByDefault

@@ -57,8 +57,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Discovery service for HomeKit accessories.
- * This service listens for HomeKit accessories on the network using mDNS and creates corresponding things in the
+ * Discovery service for Homekit accessories.
+ * This service listens for Homekit accessories on the network using mDNS and creates corresponding things in the
  * system.
  * 
  * Configuration options:
@@ -72,7 +72,7 @@ import org.slf4j.LoggerFactory;
 public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoveryService implements ServiceListener {
     /** Timeout for foreground scans in milliseconds */
     private static final Duration FOREGROUND_SCAN_TIMEOUT = Duration.ofMillis(200);
-    /** HomeKit service type for mDNS discovery */
+    /** Homekit service type for mDNS discovery */
     private static final String SERVICE_TYPE = "_hap._tcp.local.";
 
     /** Configuration keys */
@@ -83,7 +83,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
     private static final boolean DEFAULT_AUTO_CREATE_SERVICE = true;
 
     /** Logging prefixes */
-    private static final String LOG_PREFIX = "HomeKit Discovery: ";
+    private static final String LOG_PREFIX = "Homekit Discovery: ";
     private static final String LOG_INIT = LOG_PREFIX + "Init - ";
     private static final String LOG_STATE = LOG_PREFIX + "State - ";
     private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
@@ -110,7 +110,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
     private Set<HomekitFactory> homekitFactories;
 
     /**
-     * Constructs a new HomeKit discovery service.
+     * Constructs a new Homekit discovery service.
      * 
      * @param configProperties Configuration properties for the service
      * @param mdnsClient MDNS client for service discovery
@@ -118,7 +118,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
      * @param networkAddressService HomekitService for network address management
      * @param accessoryRegistry Registry for managing accessories
      * @param pairingRegistry Registry for managing pairings
-     * @param homekitThingTypeProvider Provider for HomeKit thing types
+     * @param homekitThingTypeProvider Provider for Homekit thing types
      * @param configAdmin Configuration admin service
      * @throws IllegalArgumentException if any required dependency is null
      */
@@ -130,7 +130,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
             @Reference HomekitThingTypeProvider homekitThingTypeProvider, @Reference ConfigurationAdmin configAdmin,
             @Reference HomekitEventManager eventManager, @Reference Set<HomekitFactory> homekitFactories) {
         super(5);
-        logger.debug("{}Initializing HomeKit discovery service", LOG_INIT);
+        logger.debug("{}Initializing Homekit discovery service", LOG_INIT);
 
         // Initialize dependencies
         this.mdnsClient = mdnsClient;
@@ -145,7 +145,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
         // Load configuration
         loadConfiguration();
 
-        logger.info("{}HomeKit discovery service initialized successfully", LOG_INIT);
+        logger.info("{}Homekit discovery service initialized successfully", LOG_INIT);
     }
 
     /**
@@ -155,7 +155,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
     @Deactivate
     @Override
     protected void deactivate() {
-        logger.debug("{}Deactivating HomeKit discovery service", LOG_INIT);
+        logger.debug("{}Deactivating Homekit discovery service", LOG_INIT);
 
         // Stop background discovery
         stopBackgroundDiscovery();
@@ -182,7 +182,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
         // });
 
         super.deactivate();
-        logger.info("{}HomeKit discovery service deactivated", LOG_INIT);
+        logger.info("{}Homekit discovery service deactivated", LOG_INIT);
     }
 
     /**
@@ -213,7 +213,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
     }
 
     /**
-     * Starts background discovery for HomeKit services.
+     * Starts background discovery for Homekit services.
      * Registers the service listener and initiates a scan.
      */
     @Override
@@ -224,7 +224,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
     }
 
     /**
-     * Stops background discovery for HomeKit services.
+     * Stops background discovery for Homekit services.
      * Removes the service listener.
      */
     @Override
@@ -234,7 +234,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
     }
 
     /**
-     * Starts a foreground scan for HomeKit services.
+     * Starts a foreground scan for Homekit services.
      */
     @Override
     protected void startScan() {
@@ -250,7 +250,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
     }
 
     /**
-     * Initiates a scan for HomeKit services.
+     * Initiates a scan for Homekit services.
      * 
      * @param isBackground Whether the scan is running in background mode
      */
@@ -261,14 +261,14 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
     }
 
     /**
-     * Performs the actual scan for HomeKit services.
+     * Performs the actual scan for Homekit services.
      * Processes discovered services and updates the registry accordingly.
      * 
      * @param isBackground Whether the scan is running in background mode
      */
     private void scan(boolean isBackground) {
         long start = System.currentTimeMillis();
-        logger.debug("{}Starting {} scan for HomeKit services", LOG_SERVER, isBackground ? "background" : "foreground");
+        logger.debug("{}Starting {} scan for Homekit services", LOG_SERVER, isBackground ? "background" : "foreground");
 
         ServiceInfo[] services;
         if (isBackground) {
@@ -277,7 +277,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
             services = mdnsClient.list(SERVICE_TYPE, FOREGROUND_SCAN_TIMEOUT);
         }
 
-        logger.debug("{}Found {} HomeKit services in {}ms", LOG_SERVER, services.length,
+        logger.debug("{}Found {} Homekit services in {}ms", LOG_SERVER, services.length,
                 System.currentTimeMillis() - start);
 
         for (ServiceInfo serviceInfo : services) {
@@ -403,7 +403,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
     }
 
     /**
-     * Processes a discovered HomeKit service.
+     * Processes a discovered Homekit service.
      * Extracts service properties and creates or updates the corresponding accessory server.
      * 
      * @param serviceInfo The discovered service information
@@ -421,7 +421,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                 return null;
             }
 
-            logger.debug("{}Processing HomeKit service: {}", LOG_SERVER, serviceInfo.getName());
+            logger.debug("{}Processing Homekit service: {}", LOG_SERVER, serviceInfo.getName());
 
             // Extract all service properties
             Enumeration<@Nullable String> serviceProperties = serviceInfo.getPropertyNames();
@@ -485,7 +485,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                 } else {
                     // Create new server for discovered accessory
                     logger.info(
-                            "{}Discovered new HomeKit server - ID: {}, Category: {}, Model: {}, Version: {}, Config Index: {}, HomekitPairing Status: {}, Feature Flag: {}",
+                            "{}Discovered new Homekit server - ID: {}, Category: {}, Model: {}, Version: {}, Config Index: {}, HomekitPairing Status: {}, Feature Flag: {}",
                             LOG_SERVER, id, category, model, version, configIndex, pairingStatus, pairingFeatureFlag);
 
                     String hostAddress = getHostAddress(serviceInfo);
@@ -584,7 +584,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                         .withProperty("accessoryId", accessory.getAccessoryId())
                         .withProperty("instanceId", service.getInstanceId())
                         .withProperty("pairingId", new String(server.getPairingId(), StandardCharsets.UTF_8))
-                        .withLabel("HomeKit " + serviceTag);
+                        .withLabel("Homekit " + serviceTag);
 
                 thingDiscovered(builder.build());
 
@@ -600,20 +600,20 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
             DiscoveryResultBuilder builder = DiscoveryResultBuilder.create(thingUID)
                     .withProperty("accessoryId", accessory.getAccessoryId())
                     .withProperty("pairingId", new String(server.getPairingId(), StandardCharsets.UTF_8))
-                    .withLabel("HomeKit " + accessory.getClass().getSimpleName());
+                    .withLabel("Homekit " + accessory.getClass().getSimpleName());
 
             thingDiscovered(builder.build());
-            logger.debug("{}Created thing {} for HomeKit accessory {} on server {}", LOG_ACCESSORY, thingUID,
+            logger.debug("{}Created thing {} for Homekit accessory {} on server {}", LOG_ACCESSORY, thingUID,
                     accessory.getAccessoryId(), server.getUID());
         }
     }
 
     /**
-     * Loads and validates the HomeKit binding configuration.
+     * Loads and validates the Homekit binding configuration.
      * Sets default values if configuration is missing or invalid.
      */
     private void loadConfiguration() {
-        logger.debug("{}Loading HomeKit binding configuration", LOG_CONFIG);
+        logger.debug("{}Loading Homekit binding configuration", LOG_CONFIG);
         try {
             Configuration config = configAdmin.getConfiguration("org.openhab.homekit");
             if (config == null) {
@@ -650,7 +650,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
             logger.info("{}HomekitService thing auto-creation enabled: {}", LOG_CONFIG, autoCreateServiceThing);
 
         } catch (IOException e) {
-            logger.error("{}Failed to read HomeKit binding configuration: {}. Using default values", LOG_ERROR,
+            logger.error("{}Failed to read Homekit binding configuration: {}. Using default values", LOG_ERROR,
                     e.getMessage(), e);
             autoCreateAccessoryThing = DEFAULT_AUTO_CREATE_ACCESSORY;
             autoCreateServiceThing = DEFAULT_AUTO_CREATE_SERVICE;

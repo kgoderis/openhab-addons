@@ -13,10 +13,10 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.thing.UID;
 
 /**
- * HomekitEventMetadata encapsulates all contextual and propagation information for a HomeKit event.
+ * HomekitEventMetadata encapsulates all contextual and propagation information for a Homekit event.
  * 
  * This class is central to the event loop prevention, correlation, and diagnostics mechanisms
- * in the OpenHAB HomeKit integration. It tracks the origin, propagation path, correlation, and
+ * in the OpenHAB Homekit integration. It tracks the origin, propagation path, correlation, and
  * peer relationships of an event as it traverses the system.
  * 
  * Key Responsibilities:

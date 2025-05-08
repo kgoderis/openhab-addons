@@ -25,7 +25,7 @@
 
 		<parameter name="port" type="integer" required="true" groupName="core">
 			<label>Port</label>
-			<description>Defines the port the HomeKit integration listens on.</description>
+			<description>Defines the port the Homekit integration listens on.</description>
 			<default>9124</default>
 		</parameter>
 		<parameter name="pin" type="text" pattern="\d{3}-\d{2}-\d{3}" required="true" groupName="core">
@@ -35,12 +35,12 @@
 		</parameter>
 		<parameter name="networkInterface" type="text" required="false" groupName="core">
 			<label>Network Interface</label>
-			<description>Defines the IP address of the network interface to expose the HomeKit integration on.</description>
+			<description>Defines the IP address of the network interface to expose the Homekit integration on.</description>
 		</parameter>
 
 		<parameter name="useFahrenheitTemperature" type="boolean" required="true" groupName="thermostat">
 			<label>Use Fahrenheit Temperature</label>
-			<description>Defines whether or not to direct HomeKit clients to use fahrenheit temperatures instead of celsius.</description>
+			<description>Defines whether or not to direct Homekit clients to use fahrenheit temperatures instead of celsius.</description>
 			<default>false</default>
 		</parameter>
 

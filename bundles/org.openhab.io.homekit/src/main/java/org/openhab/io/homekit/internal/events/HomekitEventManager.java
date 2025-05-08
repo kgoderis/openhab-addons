@@ -32,7 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Manages HomeKit event publishing and subscription for the OpenHAB HomeKit integration.
+ * Manages Homekit event publishing and subscription for the OpenHAB Homekit integration.
  * <p>
  * This class is responsible for:
  * <ul>
@@ -151,7 +151,7 @@ public class HomekitEventManager {
     private static final int MAX_EVENT_HISTORY = 100;
 
     private static final Logger logger = LoggerFactory.getLogger(HomekitEventManager.class);
-    private static final String LOG_PREFIX = "HomeKit EventManager: ";
+    private static final String LOG_PREFIX = "Homekit EventManager: ";
     private static final String LOG_EVENT = LOG_PREFIX + "Event - ";
     private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
@@ -189,7 +189,7 @@ public class HomekitEventManager {
     }
 
     /**
-     * Constructs and activates the HomeKit Event Manager.
+     * Constructs and activates the Homekit Event Manager.
      * Initializes the event processor.
      */
     @Activate

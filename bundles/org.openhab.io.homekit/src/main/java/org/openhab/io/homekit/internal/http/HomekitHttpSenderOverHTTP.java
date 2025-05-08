@@ -28,7 +28,7 @@ public class HomekitHttpSenderOverHTTP extends HttpSenderOverHTTP {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpSenderOverHTTP.class);
 
-    protected static final String LOG_PREFIX = "HomeKit HttpSenderOverHTTP: ";
+    protected static final String LOG_PREFIX = "Homekit HttpSenderOverHTTP: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";

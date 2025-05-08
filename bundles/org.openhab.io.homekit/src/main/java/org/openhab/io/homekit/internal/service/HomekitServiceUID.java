@@ -3,7 +3,7 @@ package org.openhab.io.homekit.internal.service;
 import org.openhab.io.homekit.internal.events.HomekitUID;
 
 /**
- * Represents a unique identifier for a HomeKit service.
+ * Represents a unique identifier for a Homekit service.
  * The UID format is: homekit:service:{pairingId}:{accessoryId}:{serviceId}
  */
 public class HomekitServiceUID extends HomekitUID {

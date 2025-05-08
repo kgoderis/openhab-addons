@@ -11,7 +11,7 @@ import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.hap.HomekitCharacteristic;
 
 /**
- * Represents a characteristic value change event in the HomeKit integration.
+ * Represents a characteristic value change event in the Homekit integration.
  * This event is used to propagate changes in characteristic values between
  * different components of the system.
  */

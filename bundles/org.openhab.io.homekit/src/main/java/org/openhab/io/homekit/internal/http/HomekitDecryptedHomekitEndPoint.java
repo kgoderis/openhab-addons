@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 public class HomekitDecryptedHomekitEndPoint implements EndPoint {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitDecryptedHomekitEndPoint.class);
-    protected static final String LOG_PREFIX = "HomeKit DecryptedHomekitEndPoint: ";
+    protected static final String LOG_PREFIX = "Homekit DecryptedHomekitEndPoint: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";

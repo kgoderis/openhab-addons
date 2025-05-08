@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Console commands for interacting with the HomeKit integration
+ * Console commands for interacting with the Homekit integration
  *
  * @author Andy Lintner - Initial contribution
  */
@@ -56,7 +56,7 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
     public HomekitCommandExtension(@Reference ThingRegistry thingRegistry,
             @Reference HomekitAccessoryServerRegistry accessoryServerRegistry,
             @Reference HomekitAccessoryRegistry accessoryRegistry) {
-        super(CMD_HOMEKIT, "Interact with HomeKit.");
+        super(CMD_HOMEKIT, "Interact with Homekit.");
         this.thingRegistry = thingRegistry;
         this.accessoryServerRegistry = accessoryServerRegistry;
         this.accessoryRegistry = accessoryRegistry;

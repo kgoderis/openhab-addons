@@ -6,7 +6,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.UID;
 
 /**
- * Represents an event when a subscription fails in the HomeKit integration.
+ * Represents an event when a subscription fails in the Homekit integration.
  */
 @NonNullByDefault
 public class HomekitSubscriptionFailureEvent extends AbstractHomekitEvent {

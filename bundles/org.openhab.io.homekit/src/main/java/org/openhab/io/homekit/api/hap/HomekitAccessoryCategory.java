@@ -3,7 +3,7 @@ package org.openhab.io.homekit.api.hap;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * Enum representing HomeKit accessory categories as defined by Apple's HomeKit HomekitAccessory Protocol.
+ * Enum representing Homekit accessory categories as defined by Apple's Homekit HomekitAccessory Protocol.
  */
 @NonNullByDefault
 public enum HomekitAccessoryCategory {

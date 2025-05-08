@@ -7,7 +7,7 @@ import org.openhab.core.common.registry.Identifiable;
 import org.openhab.core.thing.UID;
 
 /**
- * Represents a subscription to HomeKit events.
+ * Represents a subscription to Homekit events.
  * <p>
  * This class encapsulates the details of an event subscription, including:
  * <ul>

@@ -16,7 +16,7 @@ import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
 import org.openhab.io.homekit.api.hap.HomekitAccessoryServer;
-import org.openhab.io.homekit.api.hap.HomekitError;
+import org.openhab.io.homekit.api.hap.HomekitErrorCode;
 import org.openhab.io.homekit.api.hap.HomekitMessage;
 import org.openhab.io.homekit.crypto.HomekitChachaDecoder;
 import org.openhab.io.homekit.crypto.HomekitChachaEncoder;
@@ -36,7 +36,7 @@ import djb.Curve25519;
 public class HomekitPairVerificationServlet extends HomekitBaseServlet {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitPairVerificationServlet.class);
-    protected static final String LOG_PREFIX = "HomeKit HomekitPairVerificationServlet: ";
+    protected static final String LOG_PREFIX = "Homekit HomekitPairVerificationServlet: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
@@ -243,7 +243,7 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
 
             if (isError) {
                 encoder.add(HomekitMessage.STATE, (short) 0x04);
-                encoder.add(HomekitMessage.ERROR, HomekitError.AUTHENTICATION);
+                encoder.add(HomekitMessage.ERROR, HomekitErrorCode.AUTHENTICATION);
             } else {
                 encoder.add(HomekitMessage.STATE, (short) 0x04);
             }

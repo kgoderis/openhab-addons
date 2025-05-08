@@ -4,7 +4,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.io.homekit.internal.events.HomekitUID;
 
 /**
- * Represents a unique identifier for a HomeKit accessory.
+ * Represents a unique identifier for a Homekit accessory.
  * The UID format is: homekit:accessory:{pairingId}:{accessoryId}
  */
 public class HomekitAccessoryUID extends HomekitUID {

@@ -19,7 +19,7 @@ import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
 import org.eclipse.jetty.http.HttpHeader;
 import org.openhab.io.homekit.api.hap.HomekitAccessoryServer;
-import org.openhab.io.homekit.api.hap.HomekitError;
+import org.openhab.io.homekit.api.hap.HomekitErrorCode;
 import org.openhab.io.homekit.api.hap.HomekitMessage;
 import org.openhab.io.homekit.crypto.HomekitChachaDecoder;
 import org.openhab.io.homekit.crypto.HomekitChachaEncoder;
@@ -43,7 +43,7 @@ import com.nimbusds.srp6.XRoutineWithUserIdentity;
 public class HomekitPairSetupServlet extends HomekitBaseServlet {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitPairSetupServlet.class);
-    protected static final String LOG_PREFIX = "HomeKit HomekitPairSetupServlet: ";
+    protected static final String LOG_PREFIX = "Homekit HomekitPairSetupServlet: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
@@ -251,7 +251,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
 
                 encoder = HomekitTypeLengthValueEncoderDecoder.getEncoder();
                 encoder.add(HomekitMessage.STATE, (short) 6);
-                encoder.add(HomekitMessage.ERROR, HomekitError.AUTHENTICATION);
+                encoder.add(HomekitMessage.ERROR, HomekitErrorCode.AUTHENTICATION);
 
                 logger.info("{}Stage 3 Removing SRP6Session", LOG_PAIRING);
                 session.removeAttribute("SRP6Session");

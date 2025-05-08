@@ -109,7 +109,7 @@ import com.nimbusds.srp6.XRoutineWithUserIdentity;
 
 import djb.Curve25519;
 
-// A bridge is a special type of HAP accessory server that bridges HomeKit HomekitAccessory Protocol and different RF/transport protocols, such as ZigBee or Z-Wave. A bridge must expose all the user-addressable functionality supported by its connected devices as HAP accessory objects to the HAP controller(s). A bridge must ensure that the instance ID assigned to the HAP accessory objects exposed on behalf of its connected devices do not change for the lifetime of the server/client pairing.
+// A bridge is a special type of HAP accessory server that bridges Homekit HomekitAccessory Protocol and different RF/transport protocols, such as ZigBee or Z-Wave. A bridge must expose all the user-addressable functionality supported by its connected devices as HAP accessory objects to the HAP controller(s). A bridge must ensure that the instance ID assigned to the HAP accessory objects exposed on behalf of its connected devices do not change for the lifetime of the server/client pairing.
 // For example, a bridge that bridges three lights would expose four HAP accessory objects: one HAP accessory object that represents the bridge itself that may include a "firmware update" service, and three additional HAP accessory objects that each contain a "lightbulb" service.
 // A bridge must not expose more than 150 HAP accessory objects. The HAP accessory object with an instance ID of 1 is considered the primary HAP accessory object. For bridges, this must be the bridge itself.
 
@@ -119,7 +119,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     // ========== Constants ==========
     protected static final Logger logger = LoggerFactory.getLogger(HomekitRemoteAccessoryServer.class);
     private static final String HTTP_SCHEME = "http";
-    protected static final String LOG_PREFIX = "HomeKit HomekitRemoteAccessoryServer: ";
+    protected static final String LOG_PREFIX = "Homekit HomekitRemoteAccessoryServer: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
@@ -628,7 +628,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
             // Check for errors in response
             if (stageResult.decodeResult.getBytes(HomekitMessage.ERROR) != null) {
-                HomekitErrorCode error = HomekitErrorCode.get(stageResult.decodeResult.getByte(HomekitMessage.ERROR));
+                HomekitErrorCode error = HomekitErrorCode.fromCode(stageResult.decodeResult.getByte(HomekitMessage.ERROR));
                 logger.warn("{}HomekitAccessory failed to remove pairing: {} - Server: {}", LOG_STATE, error,
                         new String(getPairingId()));
                 setState(HomekitAccessoryServerState.PAIR_UNVERIFIED);
@@ -1109,7 +1109,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
                                 if (d.getBytes(HomekitMessage.ERROR) != null) {
                                     SRP6Session = Optional.empty();
-                                    StageResult stageResult = new StageResult(HomekitErrorCode.get(d.getByte(HomekitMessage.ERROR)));
+                                    StageResult stageResult = new StageResult(HomekitErrorCode.fromCode(d.getByte(HomekitMessage.ERROR)));
                                     completableFuture.complete(stageResult);
                                     return;
                                 }

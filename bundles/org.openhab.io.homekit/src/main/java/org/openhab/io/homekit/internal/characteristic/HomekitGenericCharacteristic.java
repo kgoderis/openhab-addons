@@ -32,7 +32,7 @@ public abstract class HomekitGenericCharacteristic<@NonNull T> implements Homeki
 
     private static final Logger logger = LoggerFactory.getLogger(HomekitGenericCharacteristic.class);
 
-    protected static final String LOG_PREFIX = "HomeKit HomekitCharacteristic: ";
+    protected static final String LOG_PREFIX = "Homekit HomekitCharacteristic: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";

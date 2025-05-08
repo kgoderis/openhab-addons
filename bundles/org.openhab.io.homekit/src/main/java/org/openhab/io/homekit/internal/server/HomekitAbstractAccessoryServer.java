@@ -47,7 +47,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
     protected static final String SERVICE_TYPE = "_hap._tcp.local.";
 
     // ========== Log HomekitMessage Prefixes ==========
-    protected static final String LOG_PREFIX = "HomeKit Server: ";
+    protected static final String LOG_PREFIX = "Homekit Server: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
@@ -106,7 +106,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         validateConstructorParameters(category, address, port, pairingId, privateKey, accessoryRegistry,
                 pairingRegistry);
 
-        logger.debug("{}Initializing HomeKit server - Category: {}, Address: {}, Port: {}", LOG_INIT, category, address,
+        logger.debug("{}Initializing Homekit server - Category: {}, Address: {}, Port: {}", LOG_INIT, category, address,
                 port);
         this.category = category;
         this.address = address;
@@ -118,7 +118,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         this.setupCode = "";
         this.eventManager = eventManager;
         this.homekitFactories = homekitFactories;
-        logger.debug("{}HomeKit server initialization completed", LOG_INIT);
+        logger.debug("{}Homekit server initialization completed", LOG_INIT);
     }
 
     private void validateConstructorParameters(HomekitAccessoryCategory category, InetAddress address, int port,
@@ -126,15 +126,15 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
             throws HomekitConfigurationException {
         if (port <= 0 || port > 65535) {
             throw new HomekitConfigurationException(
-                    String.format("HomeKit server port %d is invalid - must be between 1 and 65535", port));
+                    String.format("Homekit server port %d is invalid - must be between 1 and 65535", port));
         }
         if (pairingId.length == 0) {
             throw new HomekitConfigurationException(
-                    "HomeKit server pairing ID cannot be empty - required for secure pairing");
+                    "Homekit server pairing ID cannot be empty - required for secure pairing");
         }
         if (privateKey.length == 0) {
             throw new HomekitConfigurationException(
-                    "HomeKit server private key cannot be empty - required for secure pairing");
+                    "Homekit server private key cannot be empty - required for secure pairing");
         }
     }
 

@@ -56,7 +56,7 @@ public class HomekitPersistedAccessoryProvider
     private static final Logger logger = LoggerFactory.getLogger(HomekitPersistedAccessoryProvider.class);
 
     // ========== Log HomekitMessage Prefixes ==========
-    private static final String LOG_PREFIX = "HomeKit HomekitAccessory Provider: ";
+    private static final String LOG_PREFIX = "Homekit HomekitAccessory Provider: ";
     private static final String LOG_INIT = LOG_PREFIX + "Init - ";
     private static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
     private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
@@ -114,7 +114,7 @@ public class HomekitPersistedAccessoryProvider
     @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
     protected void addHomekitFactory(HomekitFactory factory) {
         homekitFactories.add(factory);
-        logger.info("{}Added a HomeKit Factory for Thing Types {}", LOG_INIT,
+        logger.info("{}Added a Homekit Factory for Thing Types {}", LOG_INIT,
                 Arrays.toString(factory.getSupportedThingTypes()));
         lastUpdate = System.nanoTime();
     }

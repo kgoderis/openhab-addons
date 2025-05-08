@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 @NonNullByDefault
 public class HomekitBridgedAccessory implements HomekitAccessory {
     private static final Logger logger = LoggerFactory.getLogger(HomekitBridgedAccessory.class);
-    private static final String LOG_PREFIX = "HomeKit HomekitBridgedAccessory: ";
+    private static final String LOG_PREFIX = "Homekit HomekitBridgedAccessory: ";
 
     private final HomekitAccessory remoteAccessory;
     private final HomekitAccessoryServer localServer;

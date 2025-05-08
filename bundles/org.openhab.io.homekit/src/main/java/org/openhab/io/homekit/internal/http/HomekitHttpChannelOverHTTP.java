@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 public class HomekitHttpChannelOverHTTP extends HttpChannelOverHTTP {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpChannelOverHTTP.class);
-    protected static final String LOG_PREFIX = "HomeKit HttpChannelOverHTTP: ";
+    protected static final String LOG_PREFIX = "Homekit HttpChannelOverHTTP: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";

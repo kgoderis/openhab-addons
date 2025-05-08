@@ -1,6 +1,6 @@
 # Event Loop Prevention and Event Processing
 
-This document describes the mechanisms for preventing event loops and managing event processing in the HomeKit integration.
+This document describes the mechanisms for preventing event loops and managing event processing in the Homekit integration.
 
 ## Overview
 
@@ -132,7 +132,7 @@ boolean isCorrelated = EventOriginChecker.isCorrelated(event1, event2);
 
 ## Loop Prevention Mechanisms Working Together
 
-The HomeKit event system uses multiple complementary mechanisms to prevent event loops. These mechanisms work at different levels and provide overlapping protection:
+The Homekit event system uses multiple complementary mechanisms to prevent event loops. These mechanisms work at different levels and provide overlapping protection:
 
 ### 1. Event History and Hop Count
 - **Purpose**: Prevent infinite propagation of the same event
@@ -222,7 +222,7 @@ if (metadata.isFromPeer()) {
 
 ## Overview
 
-This document describes the mechanisms used to prevent event loops in the HomeKit integration.
+This document describes the mechanisms used to prevent event loops in the Homekit integration.
 
 ## Peer Groups vs Original Publisher Check
 
@@ -323,7 +323,7 @@ if (event.getMetadata().isFromPeerGroup(Set.of(new HomekitPeerGroupUID("presenta
 
 ### Conclusion
 
-While the original publisher check is simpler, peer groups provide more powerful and flexible control over event routing and system architecture. In a complex system like HomeKit integration, peer groups are likely the better choice because they:
+While the original publisher check is simpler, peer groups provide more powerful and flexible control over event routing and system architecture. In a complex system like Homekit integration, peer groups are likely the better choice because they:
 1. Better represent the system architecture
 2. Provide more control over event routing
 3. Can enforce system boundaries
@@ -348,7 +348,7 @@ subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, "accessory:456", "bridg
 Here's a complete example of how a bridge might process events:
 
 ```java
-public class HomeKitBridge {
+public class HomekitBridge {
     private final String bridgeId;
     private final HomekitEventManager eventManager;
     private final Set<String> processedCorrelationIds = new HashSet<>();
@@ -415,7 +415,7 @@ public class HomeKitBridge {
 Here's how an accessory might process events:
 
 ```java
-public class HomeKitAccessory {
+public class HomekitAccessory {
     private final String accessoryId;
     private final String bridgeId;
     private final HomekitEventManager eventManager;
@@ -982,7 +982,7 @@ Correlation IDs are a powerful mechanism for tracking related events and prevent
 
 1. **Component-Level Tracking**:
    ```java
-   public class HomeKitComponent {
+   public class HomekitComponent {
        private final Set<String> processedCorrelationIds = new HashSet<>();
        
        public void onEvent(HomekitEvent event) {
@@ -1510,7 +1510,7 @@ Correlation IDs are a powerful mechanism for tracking related events and prevent
 
 1. **Component-Level Tracking**:
    ```java
-   public class HomeKitComponent {
+   public class HomekitComponent {
        private final Set<String> processedCorrelationIds = new HashSet<>();
        
        public void onEvent(HomekitEvent event) {

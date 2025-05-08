@@ -17,7 +17,7 @@ public class HomekitSessionHandler extends SessionHandler {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitSessionHandler.class);
 
-    protected static final String LOG_PREFIX = "HomeKit HomekitSessionHandler: ";
+    protected static final String LOG_PREFIX = "Homekit HomekitSessionHandler: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";

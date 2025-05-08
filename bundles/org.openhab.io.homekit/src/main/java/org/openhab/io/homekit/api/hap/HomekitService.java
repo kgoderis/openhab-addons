@@ -92,7 +92,7 @@ public interface HomekitService extends Identifiable<HomekitServiceUID>, Compara
     boolean isType(String aType);
 
     /**
-     * Accessories may specify the Services that are to be hidden from users by a generic HomeKit application.
+     * Accessories may specify the Services that are to be hidden from users by a generic Homekit application.
      * Accessories may expose several Services that could be used to configure the HomekitAccessory or to update firmware on
      * the HomekitAccessory, these Services should be marked as hidden. When all Characteristics in a HomekitService are marked hidden
      * then the HomekitService must also be marked as hidden.

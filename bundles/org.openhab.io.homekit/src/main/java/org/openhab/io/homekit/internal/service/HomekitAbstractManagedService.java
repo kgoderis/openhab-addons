@@ -19,7 +19,7 @@
 
 // /**
 // * Creates a new instance of this class with the specified UUID and {@link ManagedAccessory}.
-// * Download and install <i>HomeKit HomekitAccessory Simulator</i> to discover the corresponding UUID for
+// * Download and install <i>Homekit HomekitAccessory Simulator</i> to discover the corresponding UUID for
 // * the specific service.
 // *
 // * <p>
@@ -27,9 +27,9 @@
 // * battery operated then it must implement {@link BatteryStatusAccessory} and {@link
 // * StatusLowBatteryCharacteristic} will be added too.
 // *
-// * @param type unique UUID of the service. This information can be obtained from HomeKit HomekitAccessory
+// * @param type unique UUID of the service. This information can be obtained from Homekit HomekitAccessory
 // * Simulator.
-// * @param accessory HomeKit accessory exposed as a service.
+// * @param accessory Homekit accessory exposed as a service.
 // * @param name name of the service. This information is usually the name of the accessory.
 // * @throws Exception
 // */

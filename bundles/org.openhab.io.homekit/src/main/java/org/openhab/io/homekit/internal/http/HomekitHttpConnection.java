@@ -15,7 +15,7 @@ public class HomekitHttpConnection extends HttpConnection {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpConnection.class);
 
-    protected static final String LOG_PREFIX = "HomeKit HttpConnection: ";
+    protected static final String LOG_PREFIX = "Homekit HttpConnection: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";

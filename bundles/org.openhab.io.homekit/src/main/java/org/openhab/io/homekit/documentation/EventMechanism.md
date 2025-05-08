@@ -1,10 +1,10 @@
-# HomeKit Event Mechanism
+# Homekit Event Mechanism
 
-This document describes the event mechanism used in the HomeKit integration, including event types, propagation, and processing.
+This document describes the event mechanism used in the Homekit integration, including event types, propagation, and processing.
 
 ## Overview
 
-The event system in the HomeKit integration provides a robust mechanism for:
+The event system in the Homekit integration provides a robust mechanism for:
 - Event creation and propagation
 - Event type management
 - Event metadata handling
@@ -107,7 +107,7 @@ HomekitEventMetadata metadata2 = new HomekitEventMetadata(
 ### Event Processing Example
 
 ```java
-public class HomeKitBridge {
+public class HomekitBridge {
     private final String bridgeId;
     private final HomekitEventManager eventManager;
 
@@ -302,7 +302,7 @@ Key aspects of broadcast routing:
 
 ## References
 
-- [HomeKit HomekitAccessory Protocol Specification](https://developer.apple.com/homekit/)
+- [Homekit HomekitAccessory Protocol Specification](https://developer.apple.com/homekit/)
 - [OpenHAB Event System](https://www.openhab.org/docs/developer/architecture/events.html) 
 
 ## Recommendation

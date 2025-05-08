@@ -8,7 +8,7 @@ import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.hap.HomekitCharacteristic;
 
 /**
- * Represents a characteristic change value event in the HomeKit integration.
+ * Represents a characteristic change value event in the Homekit integration.
  * This event is published when a characteristic's value is about to be changed.
  */
 @NonNullByDefault

@@ -3,7 +3,7 @@ package org.openhab.io.homekit.api.hap;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * Enum representing HomeKit error codes as defined by Apple's HomeKit HomekitAccessory Protocol.
+ * Enum representing Homekit error codes as defined by Apple's Homekit HomekitAccessory Protocol.
  */
 @NonNullByDefault
 public enum HomekitErrorCode {

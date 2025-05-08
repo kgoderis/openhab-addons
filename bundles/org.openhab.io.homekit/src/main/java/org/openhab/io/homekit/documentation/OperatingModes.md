@@ -1,6 +1,6 @@
-# HomeKit Integration: Operating Modes
+# Homekit Integration: Operating Modes
 
-This document describes the different operating modes of the OpenHAB HomeKit integration, including configuration approaches and advanced scenarios.
+This document describes the different operating modes of the OpenHAB Homekit integration, including configuration approaches and advanced scenarios.
 
 ---
 
@@ -8,10 +8,10 @@ This document describes the different operating modes of the OpenHAB HomeKit int
 
 1. [Overview](#overview)
 2. [Operating Modes](#operating-modes)
-    - [1. HomeKit Controller Mode (Remote Accessories)](#1-homekit-controller-mode-remote-accessories)
+    - [1. Homekit Controller Mode (Remote Accessories)](#1-homekit-controller-mode-remote-accessories)
         - [A. Item-based Configuration](#a-item-based-configuration)
         - [B. Thing-based Configuration](#b-thing-based-configuration)
-    - [2. HomeKit Client Mode (Expose openHAB to HomeKit)](#2-homekit-client-mode-expose-openhab-to-homekit)
+    - [2. Homekit Client Mode (Expose openHAB to Homekit)](#2-homekit-client-mode-expose-openhab-to-homekit)
         - [A. YAML Configuration](#a-yaml-configuration)
         - [B. Thing-based Configuration](#b-thing-based-configuration-1)
     - [3. Re-Exposing Remote Accessories](#3-re-exposing-remote-accessories)
@@ -23,19 +23,19 @@ This document describes the different operating modes of the OpenHAB HomeKit int
 
 ## Overview
 
-The OpenHAB HomeKit integration supports multiple operating modes, allowing OpenHAB to act as a HomeKit **controller** (for remote accessories), a HomeKit **client** (exposing openHAB items/things to HomeKit), or a **bridge** (re-exposing remote accessories locally). This flexibility enables a wide range of smart home scenarios.
+The OpenHAB Homekit integration supports multiple operating modes, allowing OpenHAB to act as a Homekit **controller** (for remote accessories), a Homekit **client** (exposing openHAB items/things to Homekit), or a **bridge** (re-exposing remote accessories locally). This flexibility enables a wide range of smart home scenarios.
 
 ---
 
 ## Operating Modes
 
-### 1. HomeKit Controller Mode (Remote Accessories)
+### 1. Homekit Controller Mode (Remote Accessories)
 
-In this mode, OpenHAB acts as a **HomeKit controller** (like an iPhone or iPad), discovering, pairing with, and controlling remote HomeKit accessories (e.g., lights, sensors, thermostats).
+In this mode, OpenHAB acts as a **Homekit controller** (like an iPhone or iPad), discovering, pairing with, and controlling remote Homekit accessories (e.g., lights, sensors, thermostats).
 
 #### Key Features
-- Discovers and manages remote HomeKit accessories.
-- Integrates remote HomeKit devices into OpenHAB as Things and/or Items.
+- Discovers and manages remote Homekit accessories.
+- Integrates remote Homekit devices into OpenHAB as Things and/or Items.
 - Supports two configuration approaches:
     - **A. Item-based Configuration**
     - **B. Thing-based Configuration**
@@ -62,12 +62,12 @@ In this mode, OpenHAB acts as a **HomeKit controller** (like an iPhone or iPad),
 
 ---
 
-### 2. HomeKit Client Mode (Expose openHAB to HomeKit)
+### 2. Homekit Client Mode (Expose openHAB to Homekit)
 
-In this mode, OpenHAB acts as a **HomeKit client** (accessory server), exposing its Items or Things to HomeKit controllers (e.g., iPhone Home app).
+In this mode, OpenHAB acts as a **Homekit client** (accessory server), exposing its Items or Things to Homekit controllers (e.g., iPhone Home app).
 
 #### Key Features
-- openHAB Items/Things appear as HomeKit accessories to Apple devices.
+- openHAB Items/Things appear as Homekit accessories to Apple devices.
 - Supports configuration via YAML files or Thing definitions.
 
 #### A. YAML Configuration
@@ -89,7 +89,7 @@ In this mode, OpenHAB acts as a **HomeKit client** (accessory server), exposing 
 
 #### B. Thing-based Configuration
 
-- openHAB Things are annotated or configured to be exposed to HomeKit.
+- openHAB Things are annotated or configured to be exposed to Homekit.
 - Example:
   ```ini
   Thing lightbulb livingroom [ homekit_expose="true" ]
@@ -99,17 +99,17 @@ In this mode, OpenHAB acts as a **HomeKit client** (accessory server), exposing 
 
 ### 3. Re-Exposing Remote Accessories
 
-This advanced scenario allows OpenHAB to **re-expose remote HomeKit accessories** (discovered and controlled in controller mode) as local HomeKit accessories via its own accessory server.
+This advanced scenario allows OpenHAB to **re-expose remote Homekit accessories** (discovered and controlled in controller mode) as local Homekit accessories via its own accessory server.
 
 #### Key Features
-- Acts as a HomeKit-to-HomeKit bridge.
+- Acts as a Homekit-to-Homekit bridge.
 - Useful for integrating remote accessories into Apple Home app via openHAB.
 - Configuration can be managed via YAML or Thing-based approaches, referencing remote accessories.
 
 #### Example Workflow
 1. Discover and pair with remote accessory (controller mode).
 2. Map remote accessory to a local Item or Thing.
-3. Configure the local accessory server to expose this Item/Thing back to HomeKit.
+3. Configure the local accessory server to expose this Item/Thing back to Homekit.
 
 ---
 
@@ -159,18 +159,18 @@ accessories:
 ## FAQ
 
 **Q: Can I use both controller and client modes at the same time?**  
-A: Yes, you can configure openHAB to act as both a HomeKit controller and a HomeKit accessory server.
+A: Yes, you can configure openHAB to act as both a Homekit controller and a Homekit accessory server.
 
 **Q: How do I migrate from item-based to thing-based configuration?**  
 A: Update your configuration files to define Things and link their Channels to Items, then remove the `{ homekit=... }` tags from Items.
 
-**Q: Can I re-expose non-HomeKit devices to HomeKit?**  
-A: Yes, any openHAB Item or Thing can be exposed as a HomeKit accessory in client mode.
+**Q: Can I re-expose non-Homekit devices to Homekit?**  
+A: Yes, any openHAB Item or Thing can be exposed as a Homekit accessory in client mode.
 
 ---
 
 ## References
 
-- [openHAB HomeKit Add-on Documentation](https://www.openhab.org/addons/integrations/homekit/)
-- [Apple HomeKit HomekitAccessory Protocol Specification](https://developer.apple.com/homekit/)
+- [openHAB Homekit Add-on Documentation](https://www.openhab.org/addons/integrations/homekit/)
+- [Apple Homekit HomekitAccessory Protocol Specification](https://developer.apple.com/homekit/)
 - [openHAB Thing and Item Concepts](https://www.openhab.org/docs/concepts/things.html) 

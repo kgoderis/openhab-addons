@@ -1,7 +1,7 @@
 package org.openhab.io.homekit.exception;
 
 /**
- * Base exception class for HomeKit factory related errors.
+ * Base exception class for Homekit factory related errors.
  */
 public class HomekitFactoryException extends HomekitException {
     public HomekitFactoryException(String message) {

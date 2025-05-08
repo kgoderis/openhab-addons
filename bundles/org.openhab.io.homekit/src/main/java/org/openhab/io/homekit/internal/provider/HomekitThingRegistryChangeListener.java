@@ -127,7 +127,7 @@ package org.openhab.io.homekit.internal.provider;
 // @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
 // protected void addHomekitFactory(HomekitFactory factory) {
 // homekitFactories.add(factory);
-// logger.info("Added a HomeKit Factory for Thing Types {}", Arrays.toString(factory.getSupportedThingTypes()));
+// logger.info("Added a Homekit Factory for Thing Types {}", Arrays.toString(factory.getSupportedThingTypes()));
 // lastUpdate = System.nanoTime();
 // }
 

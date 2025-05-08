@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 public class HomekitRequestLogHandler extends RequestLogHandler {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitRequestLogHandler.class);
-    protected static final String LOG_PREFIX = "HomeKit RequestLogHandler: ";
+    protected static final String LOG_PREFIX = "Homekit RequestLogHandler: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";

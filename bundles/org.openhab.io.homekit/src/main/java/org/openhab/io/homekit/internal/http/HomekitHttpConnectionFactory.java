@@ -24,7 +24,7 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
         implements HttpConfiguration.ConnectionFactory {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpConnectionFactory.class);
-    protected static final String LOG_PREFIX = "HomeKit HttpConnectionFactory: ";
+    protected static final String LOG_PREFIX = "Homekit HttpConnectionFactory: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";

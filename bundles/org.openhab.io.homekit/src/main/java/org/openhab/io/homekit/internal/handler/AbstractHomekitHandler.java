@@ -62,7 +62,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
     protected static final String DEFAULT_ACCESSORY_ID = "1";
 
     // ========== Error Messages ==========
-    protected static final String ERROR_PREFIX = "HomeKit Handler Error: ";
+    protected static final String ERROR_PREFIX = "Homekit Handler Error: ";
     protected static final String ERROR_SERVER_NOT_FOUND = ERROR_PREFIX + "Server not found for deviceId: %s";
     protected static final String ERROR_ACCESSORY_NOT_FOUND = ERROR_PREFIX + "HomekitAccessory not found for accessoryId: %s";
     protected static final String ERROR_CONFIG_INVALID = ERROR_PREFIX + "Invalid configuration: %s";
@@ -75,7 +75,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
     protected static final String ERROR_PROCESSING_SERVICE_EVENT = "Error processing service event";
 
     // ========== Log HomekitMessage Prefixes ==========
-    protected static final String LOG_PREFIX = "HomeKit Handler: ";
+    protected static final String LOG_PREFIX = "Homekit Handler: ";
     protected static final String LOG_EVENT = LOG_PREFIX + "Event - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CHANNEL = LOG_PREFIX + "Channel - ";

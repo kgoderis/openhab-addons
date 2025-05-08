@@ -82,7 +82,7 @@ import org.slf4j.LoggerFactory;
  */
 public class HomekitHttpParser {
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpParser.class);
-    protected static final String LOG_PREFIX = "HomeKit HttpParser: ";
+    protected static final String LOG_PREFIX = "Homekit HttpParser: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";

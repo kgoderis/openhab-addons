@@ -53,7 +53,7 @@ package org.openhab.io.homekit.internal.handler;
 
 // if (managedThingProvider.get(thingUID) == null) {
 // Thing thing = ThingBuilder.create(THING_TYPE_ACCESSORY_SERVER, thingUID)
-// .withLabel("HomeKit HomekitAccessory " + accessory.getUID().toString())
+// .withLabel("Homekit HomekitAccessory " + accessory.getUID().toString())
 // .build();
 // managedThingProvider.add(thing);
 // logger.debug("Created new Thing for HomekitAccessory {}", accessory.getUID());
@@ -82,7 +82,7 @@ package org.openhab.io.homekit.internal.handler;
 // logger.debug("Removed Thing for HomekitAccessory {}", accessory.getUID());
 
 // thing = ThingBuilder.create(THING_TYPE_ACCESSORY_SERVER, thingUID)
-// .withLabel("HomeKit HomekitAccessory " + newAccessory.getUID().toString())
+// .withLabel("Homekit HomekitAccessory " + newAccessory.getUID().toString())
 // .build();
 // managedThingProvider.update(thing);
 

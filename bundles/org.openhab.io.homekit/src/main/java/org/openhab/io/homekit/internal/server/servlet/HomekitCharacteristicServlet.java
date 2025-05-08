@@ -34,9 +34,9 @@ import org.openhab.io.homekit.api.hap.HomekitStatusCode;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.internal.characteristic.HomekitGenericCharacteristic;
 import org.openhab.io.homekit.internal.events.HomekitCharacteristicChangeValueEvent;
-import org.openhab.io.homekit.internal.events.HomekitEventMetadata;
 import org.openhab.io.homekit.internal.events.HomekitEvent;
 import org.openhab.io.homekit.internal.events.HomekitEventManager;
+import org.openhab.io.homekit.internal.events.HomekitEventMetadata;
 import org.openhab.io.homekit.util.HomekitDebouncer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
 public class HomekitCharacteristicServlet extends HomekitBaseServlet {
     private static final Logger logger = LoggerFactory.getLogger(HomekitCharacteristicServlet.class);
     private static final int SC_MULTI_STATUS = 207;
-    private static final String LOG_PREFIX = "HomeKit HomekitCharacteristicServlet: ";
+    private static final String LOG_PREFIX = "Homekit HomekitCharacteristicServlet: ";
     private static final String LOG_INIT = LOG_PREFIX + "Init - ";
     private static final String LOG_STATE = LOG_PREFIX + "State - ";
     private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
@@ -235,7 +235,7 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
 
             // Create or get debouncer for this context
             HomekitDebouncer debouncer = debouncers.computeIfAbsent(context,
-                    k -> new HomekitDebouncer("HomeKit-Updates-" + context.hashCode(), scheduler, DEBOUNCE_DELAY,
+                    k -> new HomekitDebouncer("Homekit-Updates-" + context.hashCode(), scheduler, DEBOUNCE_DELAY,
                             Clock.systemUTC(), () -> sendBatchedUpdates(context)));
 
             // Trigger debounced send

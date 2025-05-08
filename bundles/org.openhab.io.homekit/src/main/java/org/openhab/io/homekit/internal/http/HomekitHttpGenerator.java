@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 public class HomekitHttpGenerator extends HttpGenerator {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpGenerator.class);
-    protected static final String LOG_PREFIX = "HomeKit HttpGenerator: ";
+    protected static final String LOG_PREFIX = "Homekit HttpGenerator: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";

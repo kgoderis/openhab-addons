@@ -58,7 +58,7 @@ public class HomekitAccessoryServerRegistryImpl
     private static final int MAX_ACCESSORIES_PER_SERVER = 150;
     private static final int LOWEST_PORT_NUMBER = 9000;
 
-    protected static final String LOG_PREFIX = "HomeKit Registry: ";
+    protected static final String LOG_PREFIX = "Homekit Registry: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";

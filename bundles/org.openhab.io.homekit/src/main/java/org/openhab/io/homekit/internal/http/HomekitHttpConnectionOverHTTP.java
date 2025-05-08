@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpConnectionOverHTTP.class);
-    protected static final String LOG_PREFIX = "HomeKit HttpConnectionOverHTTP: ";
+    protected static final String LOG_PREFIX = "Homekit HttpConnectionOverHTTP: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";

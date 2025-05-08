@@ -60,14 +60,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link HomekitItemBridge} manages the integration between openHAB items and HomeKit accessories.
- * It handles the complete lifecycle of HomeKit accessories, including creation, updates, and removal.
+ * The {@link HomekitItemBridge} manages the integration between openHAB items and Homekit accessories.
+ * It handles the complete lifecycle of Homekit accessories, including creation, updates, and removal.
  * 
  * <p>
  * This class implements both {@link ItemRegistryChangeListener} and {@link StateChangeListener} to handle:
  * <ul>
  * <li>Item lifecycle events (addition, removal, updates)</li>
- * <li>State changes for HomeKit-enabled items</li>
+ * <li>State changes for Homekit-enabled items</li>
  * <li>HomekitCharacteristic value updates</li>
  * <li>HomekitAccessory registration and cleanup</li>
  * </ul>
@@ -107,7 +107,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     private static final int MAX_STATISTICS_ENTRIES = 1000;
     private static final int STATISTICS_REPORT_INTERVAL_SECONDS = 60;
 
-    private static final String LOG_PREFIX = "HomeKit Bridge: ";
+    private static final String LOG_PREFIX = "Homekit Bridge: ";
     private static final String LOG_STATE = LOG_PREFIX + "State - ";
     private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
     private static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
@@ -118,7 +118,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
     // Error messages
     private static final String ERROR_CREATING_ACCESSORY = LOG_ERROR
-            + "Error creating HomeKit accessory for item {}: {}";
+            + "Error creating Homekit accessory for item {}: {}";
     private static final String ERROR_UPDATING_CHARACTERISTIC = LOG_ERROR + "Error updating characteristic {}: {}";
     private static final String ERROR_REMOVING_ACCESSORY = LOG_ERROR + "Error removing accessory {}: {}";
     private static final String NO_AVAILABLE_SERVER = LOG_WARN
@@ -129,12 +129,12 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
     // Debug messages
     private static final String DEBUG_ACCESSORY_CREATED = LOG_ACCESSORY
-            + "Successfully created HomeKit accessory for item {}";
+            + "Successfully created Homekit accessory for item {}";
     private static final String DEBUG_UPDATING_CHARACTERISTIC = LOG_STATE
             + "Updating characteristic {} for item {} with value {}";
-    private static final String DEBUG_REMOVING_ACCESSORY = LOG_ACCESSORY + "Removing HomeKit accessory for item {}";
+    private static final String DEBUG_REMOVING_ACCESSORY = LOG_ACCESSORY + "Removing Homekit accessory for item {}";
     private static final String DEBUG_ACCESSORY_REMOVED = LOG_ACCESSORY
-            + "Successfully removed HomeKit accessory for item {}";
+            + "Successfully removed Homekit accessory for item {}";
     private static final String DEBUG_FOUND_COMPATIBLE_FACTORY = LOG_CONFIG + "Found compatible factory {} for item {}";
     private static final String DEBUG_FOUND_AVAILABLE_SERVER = LOG_CONFIG + "Found available server {} for item {}";
 
@@ -179,7 +179,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
         initializeRegistryListener();
 
-        // Initialize existing HomeKit tagged items
+        // Initialize existing Homekit tagged items
         for (Item item : itemRegistry.getItems()) {
             HomekitTaggedItem taggedItem = new HomekitTaggedItem(item, itemRegistry, metadataRegistry,
                     homekitFactories);
@@ -294,7 +294,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     }
 
     /**
-     * Adds a new HomeKit factory to the bridge.
+     * Adds a new Homekit factory to the bridge.
      * This method is synchronized to ensure thread-safe factory management.
      * 
      * @param homekitFactory The factory to add
@@ -316,7 +316,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     }
 
     /**
-     * Removes a HomeKit factory from the bridge.
+     * Removes a Homekit factory from the bridge.
      * This method is synchronized to ensure thread-safe factory management.
      * 
      * @param homekitFactory The factory to remove
@@ -456,7 +456,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                 accessoryRegistry.add(accessory);
                 accessoryMap.put(taggedItem.getName(), accessory);
             }
-            logger.debug("{}Registered HomeKit accessory for item {} with UID {}", LOG_ACCESSORY, taggedItem.getName(),
+            logger.debug("{}Registered Homekit accessory for item {} with UID {}", LOG_ACCESSORY, taggedItem.getName(),
                     accessory.getUID());
         } catch (Exception e) {
             logger.error(ERROR_CREATING_ACCESSORY, taggedItem.getName(), e.getMessage(), e);
@@ -651,7 +651,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
         // Check if event is from peer group
         if (event.getMetadata().isFromPeerGroup(peerGroup)) {
-            logger.debug("Ignoring HomeKit event from peer group: {}", event.getMetadata().getImmediateOrigin());
+            logger.debug("Ignoring Homekit event from peer group: {}", event.getMetadata().getImmediateOrigin());
             return;
         }
 
@@ -731,7 +731,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     // ========== Item Registry Change Listener Methods ==========
     /**
      * Handles the addition of a new item to the registry.
-     * If the item is tagged for HomeKit integration, creates a new accessory for it.
+     * If the item is tagged for Homekit integration, creates a new accessory for it.
      * 
      * @param item The item that was added to the registry
      */
@@ -745,7 +745,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
     /**
      * Handles the removal of an item from the registry.
-     * Removes the associated HomeKit accessory if it exists.
+     * Removes the associated Homekit accessory if it exists.
      * 
      * @param item The item that was removed from the registry
      */
@@ -756,7 +756,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
     /**
      * Handles the update of an existing item in the registry.
-     * Removes the old accessory and creates a new one if the updated item is tagged for HomeKit integration.
+     * Removes the old accessory and creates a new one if the updated item is tagged for Homekit integration.
      * 
      * @param oldItem The previous version of the item
      * @param item The updated version of the item
@@ -795,7 +795,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     // ========== State Change Listener Methods ==========
     /**
      * Handles state changes for items.
-     * Updates the corresponding HomeKit characteristic values when an item's state changes.
+     * Updates the corresponding Homekit characteristic values when an item's state changes.
      * 
      * @param item The item whose state changed
      * @param oldState The previous state of the item
@@ -850,7 +850,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
     /**
      * Handles state updates for items.
-     * Updates the corresponding HomeKit characteristic values when an item's state is updated.
+     * Updates the corresponding Homekit characteristic values when an item's state is updated.
      * 
      * @param item The item whose state was updated
      * @param state The new state of the item

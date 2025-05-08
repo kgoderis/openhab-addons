@@ -8,7 +8,7 @@ Imagine I want to expose all the openHAB Things to Homekit. One way to do it is 
 
 _**Assistant**_
 
-This is a great architectural question and touches on several advanced openHAB and HomeKit integration patterns. Let’s break down the options, discuss their pros/cons, and provide sample code and configuration ideas.
+This is a great architectural question and touches on several advanced openHAB and Homekit integration patterns. Let’s break down the options, discuss their pros/cons, and provide sample code and configuration ideas.
 
 ---
 
@@ -17,8 +17,8 @@ This is a great architectural question and touches on several advanced openHAB a
 ### **Concept**
 - A `HomekitThingBridge` acts as a central manager.
 - It listens for new openHAB Things (via the ThingRegistry or events).
-- For each eligible Thing, it creates a HomeKit HomekitAccessory (via a `HomekitLocalAccessoryServer`).
-- Handles subscriptions/publications between openHAB and HomeKit.
+- For each eligible Thing, it creates a Homekit HomekitAccessory (via a `HomekitLocalAccessoryServer`).
+- Handles subscriptions/publications between openHAB and Homekit.
 
 ### **Configuration**
 - The bridge could be configured in the `.things` file, e.g.:
@@ -51,7 +51,7 @@ public class HomekitThingBridgeHandler extends BaseBridgeHandler {
     }
 
     private void exposeThingAsAccessory(Thing thing) {
-        // Create and register HomeKit accessory
+        // Create and register Homekit accessory
         HomekitAccessory accessory = createAccessoryForThing(thing);
         accessoryServer.addAccessory(accessory);
         // Subscribe to events, etc.
@@ -81,10 +81,10 @@ public class HomekitThingBridgeHandler extends BaseBridgeHandler {
 ## 2. **ProxyThing Approach**
 
 ### **Concept**
-- Each openHAB Thing you want to expose to HomeKit is paired with a `ProxyThing` (a new Thing type in the HomeKit binding).
+- Each openHAB Thing you want to expose to Homekit is paired with a `ProxyThing` (a new Thing type in the Homekit binding).
 - The `ProxyThing` is configured with:
     - The UID of the real Thing to proxy.
-    - The HomeKit HomekitService type to expose.
+    - The Homekit HomekitService type to expose.
 
 ### **Configuration Example**
 In `.things`:
@@ -106,13 +106,13 @@ public class ProxyThingHandler extends BaseThingHandler {
         serviceType = getConfig().get("serviceType").toString();
         // Subscribe to events from target Thing
         eventPublisher.subscribe(targetThingUID, this::handleEvent);
-        // Create HomeKit accessory
+        // Create Homekit accessory
         HomekitAccessory accessory = createAccessory(serviceType, targetThingUID);
         accessoryServer.addAccessory(accessory);
     }
 
     private void handleEvent(Event event) {
-        // Translate openHAB event to HomeKit characteristic update
+        // Translate openHAB event to Homekit characteristic update
     }
 }
 ```
@@ -146,7 +146,7 @@ public class ProxyThingHandler extends BaseThingHandler {
 ## 4. **Offloading Communication**
 
 - **If using ProxyThings:**  
-  The `ProxyThingHandler` could delegate all HomeKit communication to the `HomekitThingBridge` (if present), e.g.:
+  The `ProxyThingHandler` could delegate all Homekit communication to the `HomekitThingBridge` (if present), e.g.:
     - The handler registers itself with the bridge.
     - The bridge manages the `HomekitLocalAccessoryServer` and event routing.
     - This allows for shared resources and avoids duplicate servers.
@@ -162,9 +162,9 @@ public class ProxyThingHandler extends BaseThingHandler {
 ## 5. **Alternative Architectures**
 
 - **Direct Mapping:**  
-  Each openHAB Thing implements a HomeKit interface (not recommended, as it pollutes the core model).
+  Each openHAB Thing implements a Homekit interface (not recommended, as it pollutes the core model).
 - **Dynamic Discovery:**  
-  The HomeKit binding scans all Things and exposes those with a certain tag or metadata.
+  The Homekit binding scans all Things and exposes those with a certain tag or metadata.
 - **Metadata-Driven:**  
   Use openHAB metadata to mark which Things should be exposed, e.g.:
     ```
@@ -338,7 +338,7 @@ If you need real openHAB tags, use the UI or REST API.
 
 ---
 
-### **Example for HomeKit Binding**
+### **Example for Homekit Binding**
 ```things
 Thing mqtt:topic:mysensor "My Sensor" @ "Living Room" [ homekitExpose="true", homekitServiceType="ContactSensor" ]
 ```
@@ -415,7 +415,7 @@ Excellent questions! Here’s how you can approach both:
 
 ## 1. **Passing a HomekitService Definition via Metadata**
 
-Since openHAB metadata is key-value based, you can use a structured value (e.g., JSON or a simple string) to define the HomeKit HomekitService you want to expose for a Thing.
+Since openHAB metadata is key-value based, you can use a structured value (e.g., JSON or a simple string) to define the Homekit HomekitService you want to expose for a Thing.
 
 **Example using openHAB MainUI or REST API:**
 ```yaml
@@ -424,8 +424,8 @@ metadata:
   homekit:
     value: '{ "service": "Lightbulb", "characteristics": { "On": "channel=switch_binary", "Brightness": "channel=switch_dimmer" } }'
 ```
-- Here, the `service` key defines the HomeKit service type.
-- The `characteristics` map defines how to map HomeKit characteristics to openHAB channels.
+- Here, the `service` key defines the Homekit service type.
+- The `characteristics` map defines how to map Homekit characteristics to openHAB channels.
 
 **If you want to use the `.things` file:**  
 You can’t add metadata directly, but you can use custom config parameters as a workaround:
@@ -436,9 +436,9 @@ Your binding or rule would then interpret these parameters.
 
 ---
 
-## 2. **Mapping Thing Channels to HomeKit Characteristics**
+## 2. **Mapping Thing Channels to Homekit Characteristics**
 
-You need a mapping layer (in your binding or a rule) that reads the metadata/config and connects openHAB channels to HomeKit characteristics.
+You need a mapping layer (in your binding or a rule) that reads the metadata/config and connects openHAB channels to Homekit characteristics.
 
 ### **Example Mapping Logic (Pseudocode/Java)**
 ```java
@@ -447,7 +447,7 @@ String serviceType = getThing().getConfiguration().get("homekitService");
 String onChannel = getThing().getConfiguration().get("homekitOn");
 String brightnessChannel = getThing().getConfiguration().get("homekitBrightness");
 
-// When HomeKit requests "On" characteristic:
+// When Homekit requests "On" characteristic:
 boolean onState = getThing().getChannel(onChannel).getState().as(OnOffType.class) == OnOffType.ON;
 
 // When openHAB channel changes:
@@ -481,14 +481,14 @@ String brightnessChannel = characteristics.optString("Brightness", null);
 ## 4. **How to Use in a Binding or Rule**
 
 - **Binding:**  
-  The binding reads the metadata/config, creates the HomeKit service, and sets up listeners to map channel updates to HomeKit characteristic updates and vice versa.
+  The binding reads the metadata/config, creates the Homekit service, and sets up listeners to map channel updates to Homekit characteristic updates and vice versa.
 
 - **Rule:**  
-  A rule can read the metadata/config and use the openHAB API to synchronize state between channels and HomeKit.
+  A rule can read the metadata/config and use the openHAB API to synchronize state between channels and Homekit.
 
 ---
 
-## 5. **Example: Mapping All Switch Channels to HomeKit "On"**
+## 5. **Example: Mapping All Switch Channels to Homekit "On"**
 
 **Metadata:**
 ```yaml
@@ -500,11 +500,11 @@ metadata:
 
 **Rule (DSL):**
 ```xtend
-rule "Sync HomeKit On with Switch"
+rule "Sync Homekit On with Switch"
 when
     Channel "mqtt:topic:myswitch:switch1" changed
 then
-    // Update HomeKit "On" characteristic
+    // Update Homekit "On" characteristic
 end
 ```
 
@@ -522,7 +522,7 @@ If you want to map all channels of a certain type:
 
 - **HomekitService definition** can be passed as a JSON object in metadata or as custom config parameters.
 - **Channel-to-characteristic mapping** is defined in the same structure.
-- Your binding or rule reads this mapping and synchronizes state between openHAB and HomeKit.
+- Your binding or rule reads this mapping and synchronizes state between openHAB and Homekit.
 
 ---
 
@@ -538,7 +538,7 @@ In case of the ProxyThing, what kind of Thing Channels should or could be define
 
 _**Assistant**_
 
-Great question! The design of the `ProxyThing` and its channels is central to how flexible and user-friendly your HomeKit integration will be. Here’s a detailed breakdown:
+Great question! The design of the `ProxyThing` and its channels is central to how flexible and user-friendly your Homekit integration will be. Here’s a detailed breakdown:
 
 ---
 
@@ -546,7 +546,7 @@ Great question! The design of the `ProxyThing` and its channels is central to ho
 
 ### **A. Minimalist Approach**
 - **No channels** are defined on the ProxyThing itself.
-- The ProxyThing simply proxies the state and commands between the HomeKit characteristic and the *target* Thing’s channel, as specified in its configuration or metadata.
+- The ProxyThing simply proxies the state and commands between the Homekit characteristic and the *target* Thing’s channel, as specified in its configuration or metadata.
 
 **Pros:**  
 - Simple, less duplication.
@@ -559,12 +559,12 @@ Great question! The design of the `ProxyThing` and its channels is central to ho
 ---
 
 ### **B. Explicit Channel Mapping**
-- The ProxyThing defines channels that correspond to the HomeKit characteristics it exposes (e.g., `on`, `brightness`, `temperature`).
+- The ProxyThing defines channels that correspond to the Homekit characteristics it exposes (e.g., `on`, `brightness`, `temperature`).
 - These channels are mapped (via config or metadata) to the target Thing’s channels.
 
 **Example:**
 ```things
-Thing homekit:proxything:myLight "HomeKit Light" [ thingUID="zwave:node3", serviceType="Lightbulb", onChannel="switch_binary", brightnessChannel="switch_dimmer" ]
+Thing homekit:proxything:myLight "Homekit Light" [ thingUID="zwave:node3", serviceType="Lightbulb", onChannel="switch_binary", brightnessChannel="switch_dimmer" ]
 ```
 **Channels in the ProxyThing’s XML:**
 ```xml
@@ -574,25 +574,25 @@ Thing homekit:proxything:myLight "HomeKit Light" [ thingUID="zwave:node3", servi
 
 **Pros:**  
 - ProxyThing can be used like any other Thing in openHAB (Items can link to its channels).
-- Clear mapping between HomeKit and openHAB.
+- Clear mapping between Homekit and openHAB.
 
 **Cons:**  
 - Some duplication of channels.
-- Need to keep channel types in sync with HomeKit characteristics.
+- Need to keep channel types in sync with Homekit characteristics.
 
 ---
 
 ### **C. Dynamic Channel Creation**
-- The ProxyThing dynamically creates channels based on the HomeKit service type and the mapping provided.
+- The ProxyThing dynamically creates channels based on the Homekit service type and the mapping provided.
 - This is more advanced and requires dynamic channel management in the handler.
 
 ---
 
 ## 2. **How Does Proxying Work?**
 
-### **A. From openHAB Channel to HomeKit HomekitCharacteristic**
+### **A. From openHAB Channel to Homekit HomekitCharacteristic**
 - When the *target* Thing’s channel changes (e.g., via a command or state update), the ProxyThingHandler listens for this event (using the event bus or channel linking).
-- The handler updates the corresponding HomeKit characteristic via the HomekitLocalAccessoryServer.
+- The handler updates the corresponding Homekit characteristic via the HomekitLocalAccessoryServer.
 
 **Pseudocode:**
 ```java
@@ -602,13 +602,13 @@ eventPublisher.subscribe(targetThingUID, mappedChannel, (event) -> {
 });
 ```
 
-### **B. From HomeKit HomekitCharacteristic to openHAB Channel**
-- When HomeKit sends a command (e.g., user toggles a light in the Home app), the ProxyThingHandler receives the update.
+### **B. From Homekit HomekitCharacteristic to openHAB Channel**
+- When Homekit sends a command (e.g., user toggles a light in the Home app), the ProxyThingHandler receives the update.
 - The handler sends a command to the mapped openHAB channel of the target Thing.
 
 **Pseudocode:**
 ```java
-// When HomeKit characteristic changes
+// When Homekit characteristic changes
 onHomekitCharacteristicUpdate(characteristicId, value) {
     sendCommand(targetThingUID, mappedChannel, value);
 }
@@ -621,8 +621,8 @@ onHomekitCharacteristicUpdate(characteristicId, value) {
 **Thing Type XML:**
 ```xml
 <thing-type id="proxything">
-    <label>HomeKit Proxy Thing</label>
-    <description>Proxies a HomeKit service to an openHAB Thing</description>
+    <label>Homekit Proxy Thing</label>
+    <description>Proxies a Homekit service to an openHAB Thing</description>
     <config-description>
         <parameter name="thingUID" type="text" required="true" />
         <parameter name="serviceType" type="text" required="true" />
@@ -653,18 +653,18 @@ public class ProxyThingHandler extends BaseThingHandler {
         eventPublisher.subscribe(targetThingUID, onChannel, this::handleOnUpdate);
         eventPublisher.subscribe(targetThingUID, brightnessChannel, this::handleBrightnessUpdate);
 
-        // Set up HomeKit accessory and link characteristics to these channels
+        // Set up Homekit accessory and link characteristics to these channels
     }
 
     private void handleOnUpdate(State state) {
-        // Update HomeKit "On" characteristic
+        // Update Homekit "On" characteristic
     }
 
     private void handleBrightnessUpdate(State state) {
-        // Update HomeKit "Brightness" characteristic
+        // Update Homekit "Brightness" characteristic
     }
 
-    // When HomeKit characteristic is updated
+    // When Homekit characteristic is updated
     public void onHomekitOnUpdate(boolean value) {
         // Send command to target channel
         sendCommand(targetThingUID, onChannel, value ? OnOffType.ON : OnOffType.OFF);
@@ -680,7 +680,7 @@ public class ProxyThingHandler extends BaseThingHandler {
 
 ## 4. **Summary Table**
 
-| Channel Definition | openHAB UI Visibility | HomeKit Mapping | Complexity | Recommended? |
+| Channel Definition | openHAB UI Visibility | Homekit Mapping | Complexity | Recommended? |
 |--------------------|----------------------|-----------------|------------|--------------|
 | None (minimal)     | No                   | Handler only    | Low        | For simple/hidden use |
 | Explicit           | Yes                  | Handler+Config  | Medium     | **Best for most users** |
@@ -690,14 +690,14 @@ public class ProxyThingHandler extends BaseThingHandler {
 
 ## 5. **Best Practice**
 
-- **Define explicit channels** on the ProxyThing that match the HomeKit characteristics you want to expose.
+- **Define explicit channels** on the ProxyThing that match the Homekit characteristics you want to expose.
 - Map these channels to the target Thing’s channels via configuration.
 - The handler should synchronize state and commands in both directions.
 
 ---
 
 **In summary:**  
-Define channels on the ProxyThing that correspond to the HomeKit characteristics you want to expose. Use configuration to map these to the target Thing’s channels. The handler proxies state and commands between openHAB and HomeKit in both directions.
+Define channels on the ProxyThing that correspond to the Homekit characteristics you want to expose. Use configuration to map these to the target Thing’s channels. The handler proxies state and commands between openHAB and Homekit in both directions.
 
 If you want a full working example (XML, handler, and config), just ask!
 
@@ -712,22 +712,22 @@ Should the proxying not go over HomekitAccessory, HomekitService and HomekitChar
 _**Assistant**_
 
 **Excellent insight!**  
-Yes, for a robust, extensible, and idiomatic HomeKit/openHAB integration, **the proxying should indeed go through the HomekitAccessory, HomekitService, and HomekitCharacteristic abstraction layers**—not directly between the `ProxyThingHandler` and the `HomekitLocalAccessoryServer`.
+Yes, for a robust, extensible, and idiomatic Homekit/openHAB integration, **the proxying should indeed go through the HomekitAccessory, HomekitService, and HomekitCharacteristic abstraction layers**—not directly between the `ProxyThingHandler` and the `HomekitLocalAccessoryServer`.
 
 ---
 
 ## **Why Use HomekitAccessory/HomekitService/HomekitCharacteristic Abstractions?**
 
 - **Encapsulation:**  
-  HomeKit’s model is hierarchical: HomekitAccessory → HomekitService(s) → HomekitCharacteristic(s).  
+  Homekit’s model is hierarchical: HomekitAccessory → HomekitService(s) → HomekitCharacteristic(s).  
   openHAB’s model is: Thing → Channel(s).  
   Mapping these via the abstraction layers keeps the code clean and maintainable.
 
 - **Extensibility:**  
-  New HomeKit services/characteristics or openHAB channel types can be added without rewriting the proxy logic.
+  New Homekit services/characteristics or openHAB channel types can be added without rewriting the proxy logic.
 
 - **Consistency:**  
-  This matches how other HomeKit bindings (and openHAB’s own architecture) work, e.g., `HomekitServiceThingHandler`, `HomekitAccessoryThingHandler`.
+  This matches how other Homekit bindings (and openHAB’s own architecture) work, e.g., `HomekitServiceThingHandler`, `HomekitAccessoryThingHandler`.
 
 - **Event Routing:**  
   The abstraction layers can handle event subscriptions, state updates, and command routing in a uniform way.
@@ -738,17 +738,17 @@ Yes, for a robust, extensible, and idiomatic HomeKit/openHAB integration, **the 
 
 ### **1. For Each ProxyThing:**
 - Create a corresponding **HomekitAccessory** object.
-- Add one or more **HomekitService** objects to the HomekitAccessory, based on the HomeKit service type(s) you want to expose.
+- Add one or more **HomekitService** objects to the HomekitAccessory, based on the Homekit service type(s) you want to expose.
 - For each HomekitService, add **HomekitCharacteristic** objects, mapping each to a specific openHAB channel (as per config/metadata).
 
 ### **2. Event Flow:**
 - **openHAB Channel → HomekitCharacteristic:**  
-  When the openHAB channel state changes, update the corresponding HomeKit HomekitCharacteristic.
+  When the openHAB channel state changes, update the corresponding Homekit HomekitCharacteristic.
 - **HomekitCharacteristic → openHAB Channel:**  
-  When HomeKit writes to a HomekitCharacteristic, send a command to the mapped openHAB channel.
+  When Homekit writes to a HomekitCharacteristic, send a command to the mapped openHAB channel.
 
 ### **3. Registration:**
-- The HomekitAccessory is registered with the `HomekitLocalAccessoryServer` (or whatever HomeKit server implementation you use).
+- The HomekitAccessory is registered with the `HomekitLocalAccessoryServer` (or whatever Homekit server implementation you use).
 
 ---
 
@@ -797,7 +797,7 @@ public class ProxyThingHandler extends BaseThingHandler {
                 characteristic.updateValue(state);
             });
 
-            // Listen for HomeKit writes
+            // Listen for Homekit writes
             characteristic.setWriteHandler(value -> {
                 sendCommand(channelId, value);
             });
@@ -819,16 +819,16 @@ public class ProxyThingHandler extends BaseThingHandler {
 
 | Approach                        | Pros                                         | Cons                        |
 |----------------------------------|----------------------------------------------|-----------------------------|
-| Direct ProxyThingHandler → Server| Simple, quick to implement                   | Harder to extend, not idiomatic, bypasses HomeKit model |
-| Via HomekitAccessory/HomekitService/HomekitCharacteristic | Clean, extensible, matches HomeKit/openHAB model | Slightly more boilerplate   |
+| Direct ProxyThingHandler → Server| Simple, quick to implement                   | Harder to extend, not idiomatic, bypasses Homekit model |
+| Via HomekitAccessory/HomekitService/HomekitCharacteristic | Clean, extensible, matches Homekit/openHAB model | Slightly more boilerplate   |
 
 ---
 
 ## **Summary**
 
-- **Yes, you should create an HomekitAccessory for each ProxyThing, and build up Services and Characteristics as per the HomeKit model.**
+- **Yes, you should create an HomekitAccessory for each ProxyThing, and build up Services and Characteristics as per the Homekit model.**
 - This is the same pattern as `HomekitServiceThingHandler` and `HomekitAccessoryThingHandler`.
-- The mapping between openHAB channels and HomeKit characteristics should be handled at the HomekitCharacteristic level, not by bypassing the abstraction.
+- The mapping between openHAB channels and Homekit characteristics should be handled at the HomekitCharacteristic level, not by bypassing the abstraction.
 
 ---
 
@@ -844,19 +844,19 @@ In case of ProxyThing, when a HomekitService is defined, check need to be made t
 
 _**Assistant**_
 
-This is a crucial design and user experience question for a HomeKit ProxyThing implementation. Here’s how you should approach it:
+This is a crucial design and user experience question for a Homekit ProxyThing implementation. Here’s how you should approach it:
 
 ---
 
-## 1. **Validation: Thing Channels vs. HomeKit HomekitService Characteristics**
+## 1. **Validation: Thing Channels vs. Homekit HomekitService Characteristics**
 
-When a user configures a ProxyThing to expose a HomeKit HomekitService, you must ensure:
-- All **mandatory HomeKit Characteristics** for that HomekitService are mapped to openHAB channels.
+When a user configures a ProxyThing to expose a Homekit HomekitService, you must ensure:
+- All **mandatory Homekit Characteristics** for that HomekitService are mapped to openHAB channels.
 - The mapped channels exist on the target Thing.
 
 ### **How to Validate**
 - When initializing the ProxyThingHandler:
-  1. **Look up the HomeKit HomekitService definition** (e.g., Lightbulb, ContactSensor) and get its list of mandatory characteristics.
+  1. **Look up the Homekit HomekitService definition** (e.g., Lightbulb, ContactSensor) and get its list of mandatory characteristics.
   2. **Check the ProxyThing’s config/metadata** for mappings for each mandatory characteristic.
   3. **Check that the mapped channel exists** on the target Thing.
 
@@ -867,19 +867,19 @@ When a user configures a ProxyThing to expose a HomeKit HomekitService, you must
 ### **Best Practice: Fail Fast and Informative**
 - **Do NOT allow the ProxyThing to initialize successfully.**
 - Set the Thing status to `OFFLINE` with a `CONFIGURATION_ERROR` and a clear message, e.g.:
-  > "Mandatory HomeKit characteristic 'On' for service 'Lightbulb' is not mapped to any channel."
+  > "Mandatory Homekit characteristic 'On' for service 'Lightbulb' is not mapped to any channel."
 
 - **Log a warning or error** in the logs for advanced users.
 
 ### **Why?**
-- HomeKit controllers (like the Apple Home app) expect all mandatory characteristics to be present and functional.
-- If a mandatory characteristic is missing, the accessory may be rejected, behave unpredictably, or not show up at all in HomeKit.
+- Homekit controllers (like the Apple Home app) expect all mandatory characteristics to be present and functional.
+- If a mandatory characteristic is missing, the accessory may be rejected, behave unpredictably, or not show up at all in Homekit.
 
 ---
 
 ## 3. **What if a Channel Exists but is the Wrong Type?**
 
-- Validate that the openHAB channel type is compatible with the HomeKit characteristic (e.g., a Switch channel for an "On" characteristic).
+- Validate that the openHAB channel type is compatible with the Homekit characteristic (e.g., a Switch channel for an "On" characteristic).
 - If not, set the Thing to `OFFLINE` with a clear error.
 
 ---
@@ -894,7 +894,7 @@ When a user configures a ProxyThing to expose a HomeKit HomekitService, you must
 ## 5. **Should the ProxyThing Continue to Operate?**
 
 - **No, if a mandatory characteristic is missing or misconfigured, the ProxyThing should not operate.**
-- This prevents broken or non-compliant HomeKit accessories from being exposed.
+- This prevents broken or non-compliant Homekit accessories from being exposed.
 
 ---
 
@@ -911,7 +911,7 @@ public void initialize() {
         String channelId = channelMap.get(characteristic);
         if (channelId == null) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
-                "Mandatory HomeKit characteristic '" + characteristic + "' for service '" + serviceType + "' is not mapped to any channel.");
+                "Mandatory Homekit characteristic '" + characteristic + "' for service '" + serviceType + "' is not mapped to any channel.");
             return;
         }
         if (!targetThing.hasChannel(channelId)) {
@@ -950,13 +950,13 @@ public void initialize() {
 
 ## 9. **Conclusion**
 
-- **Always validate** that all mandatory HomeKit characteristics are mapped to valid, compatible openHAB channels.
-- **Fail fast** and inform the user if not, to avoid exposing broken HomeKit accessories.
+- **Always validate** that all mandatory Homekit characteristics are mapped to valid, compatible openHAB channels.
+- **Fail fast** and inform the user if not, to avoid exposing broken Homekit accessories.
 - **Optional characteristics** can be omitted.
 
 ---
 
-**If you want a code sample for a specific HomeKit service or a validation utility, just ask!**
+**If you want a code sample for a specific Homekit service or a validation utility, just ask!**
 
 ---
 
@@ -968,15 +968,15 @@ Is an approach via Factories to map between Characteristics and Channels a good 
 
 _**Assistant**_
 
-**Yes, using a Factory-based approach to map between HomeKit Characteristics and openHAB Channels is a very good idea!**  
-This pattern is extensible, testable, and allows you to support a wide variety of openHAB bindings and HomeKit service/characteristic types in a modular way.
+**Yes, using a Factory-based approach to map between Homekit Characteristics and openHAB Channels is a very good idea!**  
+This pattern is extensible, testable, and allows you to support a wide variety of openHAB bindings and Homekit service/characteristic types in a modular way.
 
 ---
 
 ## **Why Factories?**
 
-- **Separation of concerns:** Each Factory knows how to map a specific HomeKit characteristic to a specific openHAB channel type.
-- **Extensibility:** New bindings, channel types, or HomeKit characteristics can be supported by adding new Factories, without changing the core logic.
+- **Separation of concerns:** Each Factory knows how to map a specific Homekit characteristic to a specific openHAB channel type.
+- **Extensibility:** New bindings, channel types, or Homekit characteristics can be supported by adding new Factories, without changing the core logic.
 - **Testability:** Each Factory can be unit tested in isolation.
 - **Plug-and-play:** You can register Factories at runtime, allowing for dynamic support of new types.
 
@@ -1035,12 +1035,12 @@ public class SwitchOnCharacteristicMapper implements CharacteristicChannelMapper
 
     @Override
     public void subscribeToChannelUpdates() {
-        // Listen for openHAB channel state changes and update HomeKit characteristic
+        // Listen for openHAB channel state changes and update Homekit characteristic
     }
 
     @Override
     public void subscribeToCharacteristicUpdates() {
-        // Listen for HomeKit characteristic changes and send commands to openHAB channel
+        // Listen for Homekit characteristic changes and send commands to openHAB channel
     }
 }
 ```
@@ -1048,7 +1048,7 @@ public class SwitchOnCharacteristicMapper implements CharacteristicChannelMapper
 ### **5. Factory Registration and Usage**
 
 - At startup, register all available factories (could be via OSGi, ServiceLoader, or manual list).
-- When mapping a HomeKit characteristic to a channel, iterate through factories and use the first that `supports()` the mapping.
+- When mapping a Homekit characteristic to a channel, iterate through factories and use the first that `supports()` the mapping.
 
 ```java
 for (CharacteristicChannelFactory factory : factories) {
@@ -1070,9 +1070,9 @@ for (CharacteristicChannelFactory factory : factories) {
 - For more complex bindings (e.g., Z-Wave, MQTT), you may need to inspect channel configuration or metadata to determine the best mapping.
 
 **Example:**
-- Z-Wave Switch → HomeKit "On" → Use `SwitchOnCharacteristicFactory`
-- MQTT Contact → HomeKit "ContactSensorState" → Use `ContactSensorCharacteristicFactory`
-- Hue Color → HomeKit "Hue"/"Saturation"/"Brightness" → Use `ColorCharacteristicFactory`
+- Z-Wave Switch → Homekit "On" → Use `SwitchOnCharacteristicFactory`
+- MQTT Contact → Homekit "ContactSensorState" → Use `ContactSensorCharacteristicFactory`
+- Hue Color → Homekit "Hue"/"Saturation"/"Brightness" → Use `ColorCharacteristicFactory`
 
 ---
 
@@ -1096,7 +1096,7 @@ for (CharacteristicChannelFactory factory : factories) {
 ## **Conclusion**
 
 - **A Factory-based approach is highly recommended.**
-- It allows you to support a wide range of openHAB bindings and HomeKit characteristics in a clean, extensible, and maintainable way.
+- It allows you to support a wide range of openHAB bindings and Homekit characteristics in a clean, extensible, and maintainable way.
 - You can start with a core set of Factories for common types, and add more as needed.
 
 ---
@@ -1113,7 +1113,7 @@ How would you use this Mapper classes in Handlers or elsewhere?
 
 _**Assistant**_
 
-Great follow-up! Here’s how you would use these `CharacteristicChannelMapper` classes in your openHAB binding’s handlers (such as a `ProxyThingHandler` or a HomeKit bridge handler):
+Great follow-up! Here’s how you would use these `CharacteristicChannelMapper` classes in your openHAB binding’s handlers (such as a `ProxyThingHandler` or a Homekit bridge handler):
 
 ---
 
@@ -1121,7 +1121,7 @@ Great follow-up! Here’s how you would use these `CharacteristicChannelMapper` 
 
 When your handler (e.g., `ProxyThingHandler`) is initialized:
 
-- **Read the configuration** to determine which HomeKit HomekitService and Characteristics to expose, and which openHAB channels to map.
+- **Read the configuration** to determine which Homekit HomekitService and Characteristics to expose, and which openHAB channels to map.
 - **For each mapping** (e.g., `"On"` → `"switch_binary"`), find the appropriate `CharacteristicChannelFactory` and create a `CharacteristicChannelMapper`.
 
 **Example (Pseudocode):**
@@ -1134,7 +1134,7 @@ public class ProxyThingHandler extends BaseThingHandler {
         // 1. Read config: serviceType, channel mappings
         Map<String, String> channelMap = ...; // e.g., "On" -> "switch_binary"
 
-        // 2. For each HomeKit characteristic to expose
+        // 2. For each Homekit characteristic to expose
         for (Map.Entry<String, String> entry : channelMap.entrySet()) {
             String characteristicType = entry.getKey();
             String channelId = entry.getValue();
@@ -1163,9 +1163,9 @@ public class ProxyThingHandler extends BaseThingHandler {
 
 ## **2. Event Handling**
 
-- The `CharacteristicChannelMapper` is responsible for subscribing to both openHAB channel events and HomeKit characteristic events.
-- When a channel state changes, the mapper updates the HomeKit characteristic.
-- When a HomeKit characteristic is written to, the mapper sends a command to the openHAB channel.
+- The `CharacteristicChannelMapper` is responsible for subscribing to both openHAB channel events and Homekit characteristic events.
+- When a channel state changes, the mapper updates the Homekit characteristic.
+- When a Homekit characteristic is written to, the mapper sends a command to the openHAB channel.
 
 **This keeps your handler clean and focused on orchestration, not on the details of each mapping.**
 
@@ -1181,7 +1181,7 @@ If the mapping can change at runtime (e.g., user changes config), you can:
 
 ## **4. In a Bridge Handler**
 
-If you have a central HomeKit bridge handler, you can use the same pattern:
+If you have a central Homekit bridge handler, you can use the same pattern:
 - For each Thing/ProxyThing, create mappers for all required mappings.
 - The bridge can manage the lifecycle of all mappers.
 
@@ -1229,7 +1229,7 @@ public class HomekitBridgeHandler extends BaseBridgeHandler {
 ---
 
 **In summary:**  
-You use the Mapper classes in your handler by creating them for each mapping between a HomeKit characteristic and an openHAB channel, then letting them handle the event subscription and translation logic. The handler manages their lifecycle and configuration.
+You use the Mapper classes in your handler by creating them for each mapping between a Homekit characteristic and an openHAB channel, then letting them handle the event subscription and translation logic. The handler manages their lifecycle and configuration.
 
 ---
 
@@ -1246,11 +1246,11 @@ Can you provide a concrete implementation of a Mapper, including the subscribe m
 _**Assistant**_
 
 Absolutely! Here’s a **concrete implementation** of a `CharacteristicChannelMapper` for a typical case:  
-**Mapping a HomeKit "On" characteristic to an openHAB Switch channel.**
+**Mapping a Homekit "On" characteristic to an openHAB Switch channel.**
 
 This example assumes:
 - You have access to openHAB’s event bus (for channel updates and sending commands).
-- You have a HomeKit library that lets you register listeners for characteristic changes.
+- You have a Homekit library that lets you register listeners for characteristic changes.
 
 ---
 
@@ -1292,14 +1292,14 @@ public class SwitchOnCharacteristicMapper implements CharacteristicChannelMapper
             if (event instanceof StateChangeEvent) {
                 State state = ((StateChangeEvent) event).getItemState();
                 boolean on = state == OnOffType.ON;
-                characteristic.setValue(on); // Update HomeKit
+                characteristic.setValue(on); // Update Homekit
             }
         });
     }
 
     @Override
     public void subscribeToCharacteristicUpdates() {
-        // Subscribe to HomeKit characteristic changes
+        // Subscribe to Homekit characteristic changes
         characteristicSubscription = characteristic.onValueChanged(newValue -> {
             // newValue is Boolean
             State state = ((Boolean) newValue) ? OnOffType.ON : OnOffType.OFF;
@@ -1328,7 +1328,7 @@ public class SwitchOnCharacteristicMapper implements CharacteristicChannelMapper
 
 ```java
 // In your handler initialization:
-OnCharacteristic onCharacteristic = ...; // HomeKit characteristic instance
+OnCharacteristic onCharacteristic = ...; // Homekit characteristic instance
 Channel switchChannel = thing.getChannel("switch_binary");
 SwitchOnCharacteristicMapper mapper = new SwitchOnCharacteristicMapper(
     thing.getUID(), switchChannel, onCharacteristic, eventPublisher);
@@ -1343,21 +1343,21 @@ mapper.subscribeToCharacteristicUpdates();
 
 - `eventPublisher.subscribe(...)` and `characteristic.onValueChanged(...)` are placeholders for your actual event subscription APIs.
 - The `Disposable` interface is a common pattern for unsubscribing; adapt as needed for your framework.
-- The mapping is **bidirectional**: openHAB → HomeKit and HomeKit → openHAB.
+- The mapping is **bidirectional**: openHAB → Homekit and Homekit → openHAB.
 - You can implement similar mappers for other characteristic/channel types (e.g., Dimmer ↔ Brightness, Contact ↔ ContactSensorState).
 
 ---
 
 ## **Summary Table**
 
-| Direction                | openHAB Event         | HomeKit Action         |
+| Direction                | openHAB Event         | Homekit Action         |
 |--------------------------|----------------------|-----------------------|
 | Channel state changes    | StateChangeEvent     | characteristic.setValue(on) |
-| HomeKit characteristic   | onValueChanged       | eventPublisher.send(command) |
+| Homekit characteristic   | onValueChanged       | eventPublisher.send(command) |
 
 ---
 
-**If you want a concrete implementation for a different characteristic/channel type, or for a specific openHAB or HomeKit API, let me know!**
+**If you want a concrete implementation for a different characteristic/channel type, or for a specific openHAB or Homekit API, let me know!**
 
 ---
 
@@ -1404,7 +1404,7 @@ This touches on architectural best practices and separation of concerns in openH
 ### **1. Pass a Reference to the ThingHandler**
 
 - The Mapper receives a reference to the ThingHandler (or a callback interface).
-- When a HomeKit characteristic changes, the Mapper calls `thingHandler.handleCommand(channelUID, command)`.
+- When a Homekit characteristic changes, the Mapper calls `thingHandler.handleCommand(channelUID, command)`.
 - When a channel state changes, the Mapper calls `thingHandler.updateState(channelUID, state)`.
 
 **Example:**
@@ -1480,17 +1480,17 @@ How can the existing HomekitFactory be integrated in these architectures ?
 
 _**Assistant**_
 
-Great question! The existing `HomekitFactory` (as seen in openHAB’s HomeKit add-on) is designed to create HomeKit `HomekitAccessory`, `HomekitService`, and `HomekitCharacteristic` objects, often based on openHAB Thing or Channel information. Integrating it into the ProxyThing/Mapper/Bridge architectures can provide a clean, extensible, and DRY solution.
+Great question! The existing `HomekitFactory` (as seen in openHAB’s Homekit add-on) is designed to create Homekit `HomekitAccessory`, `HomekitService`, and `HomekitCharacteristic` objects, often based on openHAB Thing or Channel information. Integrating it into the ProxyThing/Mapper/Bridge architectures can provide a clean, extensible, and DRY solution.
 
 ---
 
 ## **How HomekitFactory Fits In**
 
 ### **1. Central Role**
-- The `HomekitFactory` is responsible for creating HomeKit model objects (HomekitAccessory, HomekitService, HomekitCharacteristic) from openHAB Things, Channels, and configuration.
+- The `HomekitFactory` is responsible for creating Homekit model objects (HomekitAccessory, HomekitService, HomekitCharacteristic) from openHAB Things, Channels, and configuration.
 - In the ProxyThing or Bridge approach, the Factory can be used to:
-  - Create the correct HomeKit HomekitService for a given Thing or mapping.
-  - Create the correct HomeKit HomekitCharacteristic for a given Channel or mapping.
+  - Create the correct Homekit HomekitService for a given Thing or mapping.
+  - Create the correct Homekit HomekitCharacteristic for a given Channel or mapping.
   - Optionally, provide the mapping logic (or at least the instantiation logic) for the Mapper classes.
 
 ---
@@ -1499,8 +1499,8 @@ Great question! The existing `HomekitFactory` (as seen in openHAB’s HomeKit ad
 
 ### **A. In the ProxyThingHandler or BridgeHandler**
 
-- When initializing, the handler uses the `HomekitFactory` to create the HomeKit HomekitService and Characteristics for the Thing/Channel mappings.
-- The handler then wires up the Mappers to connect the openHAB Channels to the HomeKit Characteristics.
+- When initializing, the handler uses the `HomekitFactory` to create the Homekit HomekitService and Characteristics for the Thing/Channel mappings.
+- The handler then wires up the Mappers to connect the openHAB Channels to the Homekit Characteristics.
 
 **Example:**
 ```java
@@ -1537,8 +1537,8 @@ public void initialize() {
 
 ## **3. Benefits of Using HomekitFactory**
 
-- **Consistency:** All HomeKit objects are created in a uniform way, respecting HomeKit’s requirements (e.g., mandatory characteristics).
-- **Extensibility:** New HomeKit services/characteristics can be supported by extending the Factory.
+- **Consistency:** All Homekit objects are created in a uniform way, respecting Homekit’s requirements (e.g., mandatory characteristics).
+- **Extensibility:** New Homekit services/characteristics can be supported by extending the Factory.
 - **Centralized Validation:** The Factory can enforce that all mandatory characteristics are present, and can throw errors if not.
 
 ---
@@ -1596,7 +1596,7 @@ CharacteristicChannelMapper mapper = homekitFactory.createMapper(channel, charac
 
 ## **Conclusion**
 
-- **HomekitFactory** should be the central place for creating HomeKit model objects in your architecture.
+- **HomekitFactory** should be the central place for creating Homekit model objects in your architecture.
 - Use it in your handlers and mappers to ensure consistency, validation, and extensibility.
 - Optionally, extend it to help with Mapper creation as well.
 
@@ -1622,11 +1622,11 @@ Yes, using `ChannelType` or `ChannelTypeUID` as input to the Mapper (and/or Fact
 ## **Why Use ChannelType or ChannelTypeUID?**
 
 - **Abstraction:**  
-  The mapping between a HomeKit HomekitCharacteristic and an openHAB Channel should be based on the *type* of the channel, not its specific instance. This allows for generic, reusable mappers and factories.
+  The mapping between a Homekit HomekitCharacteristic and an openHAB Channel should be based on the *type* of the channel, not its specific instance. This allows for generic, reusable mappers and factories.
 - **Extensibility:**  
   You can support new bindings and channel types by simply adding new mappings for their types, without caring about the specific Thing or Channel instance.
 - **Validation:**  
-  You can check compatibility between HomeKit characteristics and openHAB channel types at configuration/initialization time.
+  You can check compatibility between Homekit characteristics and openHAB channel types at configuration/initialization time.
 
 ---
 
@@ -1649,7 +1649,7 @@ boolean supports(String homekitCharacteristic, ChannelType channelType);
 
 ### **2. Mapper Creation**
 
-When creating a Mapper, you can pass the ChannelTypeUID (or ChannelType) and the HomeKit HomekitCharacteristic type:
+When creating a Mapper, you can pass the ChannelTypeUID (or ChannelType) and the Homekit HomekitCharacteristic type:
 
 ```java
 CharacteristicChannelMapper createMapper(String homekitCharacteristic, ChannelTypeUID channelTypeUID, Channel channel, ThingHandler handler);
@@ -1713,7 +1713,7 @@ for (CharacteristicChannelFactory factory : factories) {
 
 ## **Conclusion**
 
-- **Yes, using `ChannelType` or `ChannelTypeUID` is a best practice** for mapping HomeKit characteristics to openHAB channels.
+- **Yes, using `ChannelType` or `ChannelTypeUID` is a best practice** for mapping Homekit characteristics to openHAB channels.
 - Factories and mappers should use the type for matching, and the instance for event handling.
 - This makes your architecture more robust, extensible, and maintainable.
 
@@ -1732,7 +1732,7 @@ How would a single Mapper class then support different openhab bindings, knowing
 _**Assistant**_
 
 Fantastic question!  
-This is at the heart of designing a **generic, reusable Mapper** for HomeKit ↔ openHAB integration.
+This is at the heart of designing a **generic, reusable Mapper** for Homekit ↔ openHAB integration.
 
 ---
 
@@ -1761,7 +1761,7 @@ This is at the heart of designing a **generic, reusable Mapper** for HomeKit ↔
 
 ### **B. Abstract State/Command Translation**
 
-- Provide a base class or utility methods for translating between openHAB states/commands and HomeKit characteristic values.
+- Provide a base class or utility methods for translating between openHAB states/commands and Homekit characteristic values.
 - Allow for extension or override for custom types.
 
 ### **C. Use Configuration or Metadata for Special Cases**
@@ -1857,7 +1857,7 @@ How would you specify a custom mapping in the config in this case ?
 _**Assistant**_
 
 Great question!  
-**Specifying a custom mapping in the config** allows you to handle cases where a standard openHAB channel type doesn’t map directly to a HomeKit characteristic, or where you need to transform values, invert logic, or handle custom semantics.
+**Specifying a custom mapping in the config** allows you to handle cases where a standard openHAB channel type doesn’t map directly to a Homekit characteristic, or where you need to transform values, invert logic, or handle custom semantics.
 
 Here’s how you can do it:
 
@@ -1869,7 +1869,7 @@ You can add custom mapping information as additional parameters in the Thing con
 For example:
 
 ```things
-Thing homekit:proxything:myFan "HomeKit Fan" [
+Thing homekit:proxything:myFan "Homekit Fan" [
     thingUID="mqtt:topic:fan",
     serviceType="Fan",
     onChannel="power",
@@ -1880,7 +1880,7 @@ Thing homekit:proxything:myFan "HomeKit Fan" [
 ```
 
 - `onMapping="invert"` tells the mapper to invert the ON/OFF logic.
-- `speedMapping="scale:0-100:1-3"` tells the mapper to scale openHAB’s 0-100% to HomeKit’s 1-3.
+- `speedMapping="scale:0-100:1-3"` tells the mapper to scale openHAB’s 0-100% to Homekit’s 1-3.
 
 ---
 
@@ -1907,7 +1907,7 @@ metadata:
 
 - The handler reads the mapping config for each characteristic.
 - When creating the Mapper, it passes the mapping info.
-- The Mapper applies the mapping logic when translating between openHAB and HomeKit.
+- The Mapper applies the mapping logic when translating between openHAB and Homekit.
 
 **Example Mapper Constructor:**
 ```java
@@ -1983,7 +1983,7 @@ public class CustomMappingCharacteristicMapper implements CharacteristicChannelM
 ---
 
 **In summary:**  
-You specify a custom mapping in the config (either as a parameter in the `.things` file or as metadata), and the Mapper reads and applies this mapping logic when translating between openHAB and HomeKit.
+You specify a custom mapping in the config (either as a parameter in the `.things` file or as metadata), and the Mapper reads and applies this mapping logic when translating between openHAB and Homekit.
 
 ---
 
@@ -1999,14 +1999,14 @@ Retake the question, but mapping applies to mapping between Channels and Charact
 
 _**Assistant**_
 
-Absolutely, let’s focus on **custom mapping between openHAB Channels and HomeKit Characteristics**, especially for custom channel definitions from specific bindings.
+Absolutely, let’s focus on **custom mapping between openHAB Channels and Homekit Characteristics**, especially for custom channel definitions from specific bindings.
 
 ---
 
 ## 1. **The Challenge**
 
 - **Standard channel types** (Switch, Dimmer, Contact, etc.) can be mapped generically.
-- **Custom channel types** (e.g., `zwave:meter_kwh`, `mqtt:custom_temperature`, `shelly:relay`, etc.) may have unique semantics, value ranges, or require transformation to fit HomeKit’s characteristic model.
+- **Custom channel types** (e.g., `zwave:meter_kwh`, `mqtt:custom_temperature`, `shelly:relay`, etc.) may have unique semantics, value ranges, or require transformation to fit Homekit’s characteristic model.
 
 ---
 
@@ -2014,17 +2014,17 @@ Absolutely, let’s focus on **custom mapping between openHAB Channels and HomeK
 
 ### **A. In the .things File (Config Parameters)**
 
-You can specify, for each mapping, not just the channel, but also the HomeKit characteristic and (optionally) a transformation or mapping type.
+You can specify, for each mapping, not just the channel, but also the Homekit characteristic and (optionally) a transformation or mapping type.
 
 **Example:**
 ```things
-Thing homekit:proxything:myEnergyMeter "HomeKit Meter" [
+Thing homekit:proxything:myEnergyMeter "Homekit Meter" [
     thingUID="zwave:device:controller:node5",
     serviceType="Outlet",
     onChannel="switch_binary",
     energyChannel="meter_kwh",
-    energyCharacteristic="CustomEnergy", // HomeKit characteristic name
-    energyMapping="scale:0-10000:0-100"  // Custom mapping: scale kWh to HomeKit percent
+    energyCharacteristic="CustomEnergy", // Homekit characteristic name
+    energyMapping="scale:0-10000:0-100"  // Custom mapping: scale kWh to Homekit percent
 ]
 ```
 
@@ -2050,7 +2050,7 @@ metadata:
 ### **A. Lookup and Validation**
 
 - At initialization, the handler reads the mapping config.
-- For each HomeKit characteristic, it looks up the mapped channel and any mapping instructions.
+- For each Homekit characteristic, it looks up the mapped channel and any mapping instructions.
 - It checks if the channel exists and what its type is (using `ChannelTypeUID`).
 
 ### **B. Factory/Mapper Selection**
@@ -2073,7 +2073,7 @@ if (isStandardChannelType(channelTypeUID)) {
 
 ### **C. Transformation Logic**
 
-- The custom Mapper uses the mapping instruction to transform values between the openHAB channel and the HomeKit characteristic.
+- The custom Mapper uses the mapping instruction to transform values between the openHAB channel and the Homekit characteristic.
 - This could be scaling, inverting, value mapping, or even a script.
 
 **Example:**
@@ -2095,10 +2095,10 @@ private Object applyMappingFromOHtoHK(State state) {
 ## 4. **Binding-Specific Support**
 
 - For complex bindings, you can provide a registry of binding-specific mappers.
-- These mappers know how to interpret the binding’s custom channel types and map them to HomeKit characteristics.
+- These mappers know how to interpret the binding’s custom channel types and map them to Homekit characteristics.
 
 **Example:**
-- Z-Wave’s `meter_kwh` channel might have a `ZWaveEnergyCharacteristicMapper` that knows how to convert kWh to a HomeKit-compatible value.
+- Z-Wave’s `meter_kwh` channel might have a `ZWaveEnergyCharacteristicMapper` that knows how to convert kWh to a Homekit-compatible value.
 
 ---
 
@@ -2122,11 +2122,11 @@ private Object applyMappingFromOHtoHK(State state) {
 
 ## 7. **Example: Custom Channel Mapping for MQTT**
 
-Suppose you have an MQTT channel that reports `"ON"`/`"OFF"` as strings, but you want to map it to a HomeKit "On" characteristic.
+Suppose you have an MQTT channel that reports `"ON"`/`"OFF"` as strings, but you want to map it to a Homekit "On" characteristic.
 
 **Config:**
 ```things
-Thing homekit:proxything:myMqttSwitch "HomeKit MQTT Switch" [
+Thing homekit:proxything:myMqttSwitch "Homekit MQTT Switch" [
     thingUID="mqtt:topic:myswitch",
     serviceType="Lightbulb",
     onChannel="power",
@@ -2149,7 +2149,7 @@ private Object applyMappingFromOHtoHK(State state) {
 
 ## 8. **Conclusion**
 
-- **Custom channel definitions** from specific bindings can be mapped to HomeKit characteristics by specifying the mapping in the config (as a parameter or metadata).
+- **Custom channel definitions** from specific bindings can be mapped to Homekit characteristics by specifying the mapping in the config (as a parameter or metadata).
 - The Mapper/Factory reads the mapping and applies the necessary transformation logic.
 - For complex cases, provide binding-specific mappers or allow users to register their own.
 
@@ -2174,15 +2174,15 @@ This approach is powerful, flexible, and often more user-friendly for existing i
 
 ## 1. **How It Works**
 
-- **You add metadata to existing Things** (and/or their Channels) to indicate which HomeKit HomekitService/HomekitCharacteristic to expose, and how to map them.
-- The HomeKit binding (or a rule, or a bridge handler) reads this metadata and dynamically creates the HomeKit HomekitAccessory, HomekitService, and HomekitCharacteristic objects, and sets up the mapping logic.
+- **You add metadata to existing Things** (and/or their Channels) to indicate which Homekit HomekitService/HomekitCharacteristic to expose, and how to map them.
+- The Homekit binding (or a rule, or a bridge handler) reads this metadata and dynamically creates the Homekit HomekitAccessory, HomekitService, and HomekitCharacteristic objects, and sets up the mapping logic.
 
 ---
 
 ## 2. **What You Can Do**
 
-- **Expose any existing Thing as a HomeKit accessory** by adding the right metadata.
-- **Map specific Channels to HomeKit Characteristics** using metadata (including custom mapping instructions).
+- **Expose any existing Thing as a Homekit accessory** by adding the right metadata.
+- **Map specific Channels to Homekit Characteristics** using metadata (including custom mapping instructions).
 - **Handle custom channel types and value transformations** by specifying mapping logic in the metadata.
 - **Batch or wildcard exposure** by using conventions or rules that scan for metadata.
 
@@ -2191,7 +2191,7 @@ This approach is powerful, flexible, and often more user-friendly for existing i
 ## 3. **What You Cannot Do**
 
 - **You cannot define new Channels** on an existing Thing via metadata (Channels are defined by the binding/ThingType).
-- **You cannot change the Thing’s core behavior**—only how it is exposed to HomeKit.
+- **You cannot change the Thing’s core behavior**—only how it is exposed to Homekit.
 
 ---
 
@@ -2211,7 +2211,7 @@ metadata:
     }'
 ```
 
-- This tells the HomeKit integration to expose this Z-Wave device as a Lightbulb, mapping the `switch_binary` channel to the HomeKit "On" characteristic, and `switch_dimmer` to "Brightness" with scaling.
+- This tells the Homekit integration to expose this Z-Wave device as a Lightbulb, mapping the `switch_binary` channel to the Homekit "On" characteristic, and `switch_dimmer` to "Brightness" with scaling.
 
 ---
 
@@ -2220,7 +2220,7 @@ metadata:
 - On startup or when a Thing is updated, the binding scans for Things with `homekit` metadata.
 - For each such Thing, it:
   - Reads the service and characteristic mapping.
-  - Creates the HomeKit HomekitAccessory, HomekitService, and Characteristics.
+  - Creates the Homekit HomekitAccessory, HomekitService, and Characteristics.
   - Sets up event listeners and mapping logic (as described in previous answers).
 
 ---
@@ -2265,7 +2265,7 @@ metadata:
 
 ## 10. **Summary Table**
 
-| Approach         | Add Channels? | Expose as HomeKit? | Custom Mapping? | Batch/Wildcard? | UI Simplicity |
+| Approach         | Add Channels? | Expose as Homekit? | Custom Mapping? | Batch/Wildcard? | UI Simplicity |
 |------------------|:-------------:|:------------------:|:---------------:|:---------------:|:-------------:|
 | ProxyThing       |     Yes       |        Yes         |      Yes        |      Yes        |   Medium      |
 | Metadata Only    |      No       |        Yes         |      Yes        |      Yes        |   High (if UI supported) |
@@ -2274,13 +2274,13 @@ metadata:
 
 ## **Conclusion**
 
-- **Yes, you can achieve HomeKit exposure and custom mapping using only metadata on existing Things and Channels.**
+- **Yes, you can achieve Homekit exposure and custom mapping using only metadata on existing Things and Channels.**
 - This is a clean, non-intrusive, and flexible approach for most use cases.
 - ProxyThings are only needed if you want to add new channels or create virtual devices.
 
 ---
 
-**If you want a concrete code sample for a metadata-driven HomeKit mapping, just ask!**
+**If you want a concrete code sample for a metadata-driven Homekit mapping, just ask!**
 
 ---
 
@@ -2293,7 +2293,7 @@ Do we need to tie into ChannelTypeRegistry and other provider classes to make it
 _**Assistant**_
 
 **Excellent, advanced question!**  
-Yes, integrating with openHAB’s `ChannelTypeRegistry` and related provider classes can make your HomeKit mapping solution more robust, user-friendly, and automated. Here’s how and why:
+Yes, integrating with openHAB’s `ChannelTypeRegistry` and related provider classes can make your Homekit mapping solution more robust, user-friendly, and automated. Here’s how and why:
 
 ---
 
@@ -2312,22 +2312,22 @@ Yes, integrating with openHAB’s `ChannelTypeRegistry` and related provider cla
 ### **A. Reduce Configuration Parameters**
 
 - **Automatic HomekitCharacteristic Mapping:**  
-  If you know the channel’s type (e.g., `Switch`), you can infer the most likely HomeKit characteristic (`On`).
+  If you know the channel’s type (e.g., `Switch`), you can infer the most likely Homekit characteristic (`On`).
 - **Automatic Value Scaling:**  
-  If the channel’s state description provides min/max, you can auto-scale to HomeKit’s expected range (e.g., 0-100 for brightness).
+  If the channel’s state description provides min/max, you can auto-scale to Homekit’s expected range (e.g., 0-100 for brightness).
 - **Default Mappings:**  
   For standard channel types, you can provide default mappings, so users only need to specify custom mappings for non-standard cases.
 
 ### **B. Automate Parts of the Mapping**
 
-- **Suggest or auto-select HomeKit characteristics** based on channel type.
+- **Suggest or auto-select Homekit characteristics** based on channel type.
 - **Auto-detect units** (e.g., Celsius vs. Fahrenheit for temperature).
-- **Auto-handle options** (e.g., mapping openHAB’s `OPEN`/`CLOSED` to HomeKit’s boolean).
+- **Auto-handle options** (e.g., mapping openHAB’s `OPEN`/`CLOSED` to Homekit’s boolean).
 
 ### **C. Validation**
 
-- **Warn or error if a channel type is not compatible** with the desired HomeKit characteristic.
-- **Check for required state/command support** (e.g., a read-only channel can’t be mapped to a writable HomeKit characteristic).
+- **Warn or error if a channel type is not compatible** with the desired Homekit characteristic.
+- **Check for required state/command support** (e.g., a read-only channel can’t be mapped to a writable Homekit characteristic).
 
 ---
 
@@ -2343,16 +2343,16 @@ String itemType = channelType.getItemType(); // e.g., "Switch", "Dimmer"
 StateDescription stateDesc = channelType.getStateDescription();
 
 if (itemType.equals("Switch")) {
-    // Map to HomeKit "On" characteristic
+    // Map to Homekit "On" characteristic
 } else if (itemType.equals("Dimmer")) {
-    // Map to HomeKit "Brightness" characteristic
+    // Map to Homekit "Brightness" characteristic
     // Use stateDesc.getMinimum() and getMaximum() for scaling
 }
 ```
 
 ### **B. In the UI or Config Generator**
 
-- When a user selects a channel, you can show/suggest the most likely HomeKit characteristic.
+- When a user selects a channel, you can show/suggest the most likely Homekit characteristic.
 - You can pre-fill mapping parameters or even hide them for standard cases.
 
 ---
@@ -2395,7 +2395,7 @@ metadata:
 
 ## 6. **Other Provider Classes**
 
-- **ThingTypeRegistry**: Can help suggest which HomeKit service to use based on Thing type.
+- **ThingTypeRegistry**: Can help suggest which Homekit service to use based on Thing type.
 - **ItemRegistry**: If you want to map via Items instead of Channels.
 - **StateDescriptionProvider**: For more detailed state/option info.
 
@@ -2404,7 +2404,7 @@ metadata:
 ## 7. **Conclusion**
 
 - **Tying into ChannelTypeRegistry and related providers is highly recommended.**
-- It enables you to automate, validate, and simplify HomeKit mapping for users.
+- It enables you to automate, validate, and simplify Homekit mapping for users.
 - You can provide smart defaults, reduce config, and catch errors early.
 
 ---
@@ -2422,7 +2422,7 @@ How would it work with ThingTypeRegistry ?
 _**Assistant**_
 
 Great follow-up!  
-The `ThingTypeRegistry` is another powerful openHAB core service that can further automate and simplify HomeKit mapping. Here’s how it can be used:
+The `ThingTypeRegistry` is another powerful openHAB core service that can further automate and simplify Homekit mapping. Here’s how it can be used:
 
 ---
 
@@ -2437,28 +2437,28 @@ The `ThingTypeRegistry` is another powerful openHAB core service that can furthe
 
 ---
 
-## 2. **How Can It Help with HomeKit Mapping?**
+## 2. **How Can It Help with Homekit Mapping?**
 
-### **A. Suggesting HomeKit HomekitService Types**
+### **A. Suggesting Homekit HomekitService Types**
 
-- By knowing the Thing’s type (e.g., `zwave:device`, `hue:0100`), you can suggest or auto-select the most appropriate HomeKit service (e.g., Lightbulb, Switch, Outlet, Sensor).
-- You can maintain a mapping table (or use heuristics) to map Thing types to HomeKit services.
+- By knowing the Thing’s type (e.g., `zwave:device`, `hue:0100`), you can suggest or auto-select the most appropriate Homekit service (e.g., Lightbulb, Switch, Outlet, Sensor).
+- You can maintain a mapping table (or use heuristics) to map Thing types to Homekit services.
 
 ### **B. Automating Channel-to-HomekitCharacteristic Mapping**
 
 - The ThingType tells you all the channels a Thing can have, and their types.
 - You can use this to:
-  - Auto-map channels to HomeKit characteristics (using ChannelTypeRegistry as well).
+  - Auto-map channels to Homekit characteristics (using ChannelTypeRegistry as well).
   - Suggest mappings in the UI or config generator.
-  - Validate that all required HomeKit characteristics can be mapped.
+  - Validate that all required Homekit characteristics can be mapped.
 
 ### **C. Reducing User Configuration**
 
-- If you know a ThingType always represents a certain device (e.g., all `hue:0100` are dimmable lights), you can pre-fill or hide the HomeKit service selection and channel mapping for the user.
+- If you know a ThingType always represents a certain device (e.g., all `hue:0100` are dimmable lights), you can pre-fill or hide the Homekit service selection and channel mapping for the user.
 
 ### **D. Batch/Wildcard Exposure**
 
-- You can expose all Things of a certain type (e.g., all `zwave:device`) as a certain HomeKit service, with default channel mappings.
+- You can expose all Things of a certain type (e.g., all `zwave:device`) as a certain Homekit service, with default channel mappings.
 
 ---
 
@@ -2476,13 +2476,13 @@ List<ChannelDefinition> channelDefs = thingType.getChannelDefinitions();
 for (ChannelDefinition channelDef : channelDefs) {
     ChannelTypeUID channelTypeUID = channelDef.getChannelTypeUID();
     // Use ChannelTypeRegistry to get more info
-    // Suggest or auto-map to HomeKit characteristic
+    // Suggest or auto-map to Homekit characteristic
 }
 ```
 
 ### **B. In the UI or Config Generator**
 
-- When a user selects a Thing, you can show the most likely HomeKit service and channel mappings based on the ThingType.
+- When a user selects a Thing, you can show the most likely Homekit service and channel mappings based on the ThingType.
 
 ---
 
@@ -2492,7 +2492,7 @@ Suppose you have a Z-Wave dimmer (`zwave:device:controller:node3`).
 
 - Use `ThingTypeRegistry` to get its type and channels.
 - See that it has a `switch_dimmer` channel of type `Dimmer`.
-- Auto-map it to HomeKit "Lightbulb" service, "Brightness" characteristic.
+- Auto-map it to Homekit "Lightbulb" service, "Brightness" characteristic.
 
 **User config could be as simple as:**
 ```yaml
@@ -2523,8 +2523,8 @@ metadata:
 
 ## 7. **Conclusion**
 
-- **ThingTypeRegistry** enables you to automate HomeKit service and characteristic mapping based on the device’s type and available channels.
-- This reduces user configuration, increases reliability, and enables batch/wildcard exposure of devices to HomeKit.
+- **ThingTypeRegistry** enables you to automate Homekit service and characteristic mapping based on the device’s type and available channels.
+- This reduces user configuration, increases reliability, and enables batch/wildcard exposure of devices to Homekit.
 
 ---
 
@@ -2534,22 +2534,22 @@ metadata:
 
 _**User**_
 
-Suggest or auto-select HomeKit characteristics based on channel type (or Things on Services) : how would you implement this? Do we need to harcode a table? can we generate a mapping table ourselves using some info? Does it need to be configured in a configuration file? how ? 
+Suggest or auto-select Homekit characteristics based on channel type (or Things on Services) : how would you implement this? Do we need to harcode a table? can we generate a mapping table ourselves using some info? Does it need to be configured in a configuration file? how ? 
 
 ---
 
 _**Assistant**_
 
-This is a key design question for a user-friendly, maintainable HomeKit integration.  
-Let’s break down the options and best practices for **auto-selecting or suggesting HomeKit characteristics based on openHAB channel types (or Thing types for Services)**.
+This is a key design question for a user-friendly, maintainable Homekit integration.  
+Let’s break down the options and best practices for **auto-selecting or suggesting Homekit characteristics based on openHAB channel types (or Thing types for Services)**.
 
 ---
 
 ## 1. **Do We Need to Hardcode a Table?**
 
 **In practice, yes, you need a mapping table somewhere**—but it doesn’t have to be hardcoded in Java.  
-- The mapping between openHAB channel types and HomeKit characteristics is not 1:1 and is not discoverable at runtime.
-- For example, a `Switch` channel usually maps to the HomeKit `"On"` characteristic, a `Dimmer` to `"Brightness"`, etc.
+- The mapping between openHAB channel types and Homekit characteristics is not 1:1 and is not discoverable at runtime.
+- For example, a `Switch` channel usually maps to the Homekit `"On"` characteristic, a `Dimmer` to `"Brightness"`, etc.
 
 ---
 
@@ -2581,7 +2581,7 @@ thingTypeToService:
 ```
 
 ### **C. Generate at Runtime?**
-- Not really possible, as there’s no metadata in openHAB or HomeKit that describes these mappings.
+- Not really possible, as there’s no metadata in openHAB or Homekit that describes these mappings.
 - You can, however, use conventions (e.g., channel ID contains "switch" → "On"), but this is less reliable.
 
 ---
@@ -2601,7 +2601,7 @@ Map<String, String> channelTypeToCharacteristic = yaml.load(inputStream).get("ch
 
 ### **B. Use the Mapping Table**
 
-- When you encounter a channel, look up its type in the map to get the HomeKit characteristic.
+- When you encounter a channel, look up its type in the map to get the Homekit characteristic.
 - When you encounter a Thing type, look up the service.
 
 **Example:**
@@ -2658,7 +2658,7 @@ How would users specify their mapping? how to find files? do we need to monitor 
 
 _**Assistant**_
 
-Great questions! Here’s how you can design a user-friendly, robust, and dynamic mapping system for HomeKit ↔ openHAB channel/service/characteristic mapping.
+Great questions! Here’s how you can design a user-friendly, robust, and dynamic mapping system for Homekit ↔ openHAB channel/service/characteristic mapping.
 
 ---
 
@@ -3149,10 +3149,10 @@ _**Assistant**_
 
 ## **Why?**
 
-- **Configuration files** (YAML, JSON, etc.) only describe *what* should be mapped (e.g., which openHAB channel maps to which HomeKit characteristic, and any transformation rules).
+- **Configuration files** (YAML, JSON, etc.) only describe *what* should be mapped (e.g., which openHAB channel maps to which Homekit characteristic, and any transformation rules).
 - The **CharacteristicChannelMapper classes** are responsible for *how* the mapping is performed at runtime:
-  - Subscribing to openHAB channel state changes and updating HomeKit characteristics.
-  - Listening for HomeKit characteristic changes and sending commands to openHAB channels.
+  - Subscribing to openHAB channel state changes and updating Homekit characteristics.
+  - Listening for Homekit characteristic changes and sending commands to openHAB channels.
   - Applying any transformation logic (e.g., scaling, inverting, value mapping) as described in the config.
   - Handling event subscription, error handling, and lifecycle management.
 
@@ -3238,18 +3238,18 @@ A `HomekitThingBridge` can centralize and orchestrate the mapping logic, but the
 ### **1. What Does a HomekitThingBridge Do?**
 
 - **Centralizes configuration and orchestration:**  
-  It can read all mapping configs, manage the lifecycle of HomeKit accessories/services/characteristics, and subscribe to openHAB events.
+  It can read all mapping configs, manage the lifecycle of Homekit accessories/services/characteristics, and subscribe to openHAB events.
 - **Acts as a manager:**  
-  It can create, update, and remove HomeKit representations as Things and Channels change in openHAB.
+  It can create, update, and remove Homekit representations as Things and Channels change in openHAB.
 - **Can handle event routing:**  
-  It can listen for all relevant openHAB and HomeKit events and perform the necessary translations.
+  It can listen for all relevant openHAB and Homekit events and perform the necessary translations.
 
 ---
 
 ### **2. What Does a CharacteristicChannelMapper Do?**
 
 - **Encapsulates the logic for a single mapping:**  
-  - Subscribes to a specific openHAB channel and a specific HomeKit characteristic.
+  - Subscribes to a specific openHAB channel and a specific Homekit characteristic.
   - Handles value transformation, scaling, inversion, etc.
   - Manages event subscription and unsubscription.
 - **Keeps code modular and testable:**  
@@ -3525,13 +3525,13 @@ public class GenericCharacteristicChannelMapper {
     }
 
     public void subscribeToChannelUpdates() {
-        // Subscribe to openHAB channel state changes and update HomeKit characteristic
+        // Subscribe to openHAB channel state changes and update Homekit characteristic
         // (Use openHAB event bus or handler registration)
     }
 
     public void subscribeToCharacteristicUpdates() {
-        // Subscribe to HomeKit characteristic changes and send commands to openHAB channel
-        // (Use HomeKit library APIs)
+        // Subscribe to Homekit characteristic changes and send commands to openHAB channel
+        // (Use Homekit library APIs)
     }
 }
 ```
@@ -3540,7 +3540,7 @@ public class GenericCharacteristicChannelMapper {
 
 ## **3. Notes**
 
-- This is a **conceptual skeleton**. In a real binding, you’d use openHAB’s event bus, ThingHandler APIs, and HomeKit library APIs for event subscription and command sending.
+- This is a **conceptual skeleton**. In a real binding, you’d use openHAB’s event bus, ThingHandler APIs, and Homekit library APIs for event subscription and command sending.
 - You can extend the `GenericCharacteristicChannelMapper` for custom transformation logic, or use a factory to instantiate different mappers based on config.
 - The mapping config can be as simple or as complex as you need (per-thing, per-channel, with transformation rules, etc.).
 
@@ -3566,8 +3566,8 @@ Can you generate three actual CharacteristicChannelMapper classes for three rand
 
 _**Assistant**_
 
-Absolutely! Here are **three concrete `CharacteristicChannelMapper` classes** for three random HomeKit characteristics from the `internal/library/characteristics` folder.  
-Each mapper will show how to translate between an openHAB channel and a HomeKit characteristic, including event subscription stubs.
+Absolutely! Here are **three concrete `CharacteristicChannelMapper` classes** for three random Homekit characteristics from the `internal/library/characteristics` folder.  
+Each mapper will show how to translate between an openHAB channel and a Homekit characteristic, including event subscription stubs.
 
 For this example, let’s pick:
 
@@ -3577,7 +3577,7 @@ For this example, let’s pick:
 
 These mappers assume you have access to:
 - The openHAB event bus or a handler for subscribing to channel updates and sending commands.
-- The HomeKit characteristic object, which supports value updates and change listeners.
+- The Homekit characteristic object, which supports value updates and change listeners.
 
 ---
 
@@ -3609,7 +3609,7 @@ public class CurrentTemperatureCharacteristicMapper implements CharacteristicCha
 
     @Override
     public void subscribeToCharacteristicUpdates() {
-        // CurrentTemperatureCharacteristic is usually read-only in HomeKit,
+        // CurrentTemperatureCharacteristic is usually read-only in Homekit,
         // but if you want to support writing, implement here.
         characteristic.onValueChanged(newValue -> {
             // Optionally send command to openHAB channel
@@ -3680,7 +3680,7 @@ public class ContactSensorStateCharacteristicMapper implements CharacteristicCha
 
     @Override
     public void subscribeToCharacteristicUpdates() {
-        // ContactSensorStateCharacteristic is read-only in HomeKit, so this is usually a no-op.
+        // ContactSensorStateCharacteristic is read-only in Homekit, so this is usually a no-op.
     }
 }
 ```
@@ -3690,7 +3690,7 @@ public class ContactSensorStateCharacteristicMapper implements CharacteristicCha
 ## **Notes**
 
 - `handler.registerChannelListener(...)` is a placeholder for your actual event subscription mechanism.
-- `characteristic.onValueChanged(...)` is a placeholder for the HomeKit characteristic’s change listener.
+- `characteristic.onValueChanged(...)` is a placeholder for the Homekit characteristic’s change listener.
 - For read-only characteristics (like temperature and contact sensors), the `subscribeToCharacteristicUpdates()` method is usually empty.
 - You can extend these mappers to support value transformation, scaling, or custom logic as needed.
 
@@ -3709,14 +3709,14 @@ Do we need an equivalent Mapper class for Services and Things ? what would that 
 _**Assistant**_
 
 **Excellent question!**  
-You do not strictly need a "mapper" class for Services and Things in the same sense as for Characteristics↔Channels, but having **ServiceMapper** and **ThingMapper** (or similar abstractions) can be very useful for modularity, extensibility, and clarity—especially in a complex integration like HomeKit.
+You do not strictly need a "mapper" class for Services and Things in the same sense as for Characteristics↔Channels, but having **ServiceMapper** and **ThingMapper** (or similar abstractions) can be very useful for modularity, extensibility, and clarity—especially in a complex integration like Homekit.
 
 ---
 
 ## 1. **Why Mapper Classes for Services and Things?**
 
 - **Encapsulation:**  
-  They encapsulate the logic for mapping an openHAB Thing to a HomeKit HomekitAccessory, and a set of Channels to HomeKit Services.
+  They encapsulate the logic for mapping an openHAB Thing to a Homekit HomekitAccessory, and a set of Channels to Homekit Services.
 - **Separation of concerns:**  
   Keeps the orchestration (e.g., in a Bridge or Handler) clean, delegating the details of mapping and instantiation.
 - **Extensibility:**  
@@ -3730,11 +3730,11 @@ You do not strictly need a "mapper" class for Services and Things in the same se
   - An openHAB Thing (or a set of Channels)
   - Mapping configuration (from YAML, metadata, etc.)
 - **Responsibilities:**  
-  - Determine which HomeKit HomekitService(s) to create for the Thing.
-  - Instantiate the HomeKit HomekitService(s).
+  - Determine which Homekit HomekitService(s) to create for the Thing.
+  - Instantiate the Homekit HomekitService(s).
   - For each HomekitService, determine which Channels map to which Characteristics.
   - Instantiate the appropriate CharacteristicChannelMappers for each mapping.
-  - Return the fully constructed HomeKit HomekitService(s) with all characteristics wired up.
+  - Return the fully constructed Homekit HomekitService(s) with all characteristics wired up.
 
 **Example:**
 ```java
@@ -3757,9 +3757,9 @@ public class ServiceMapper {
   - An openHAB Thing
   - Mapping configuration
 - **Responsibilities:**  
-  - Determine which HomeKit HomekitAccessory to create (HomekitAccessory type, label, etc.)
-  - Use ServiceMapper(s) to create and add the appropriate HomeKit Services.
-  - Return the fully constructed HomeKit HomekitAccessory.
+  - Determine which Homekit HomekitAccessory to create (HomekitAccessory type, label, etc.)
+  - Use ServiceMapper(s) to create and add the appropriate Homekit Services.
+  - Return the fully constructed Homekit HomekitAccessory.
 
 **Example:**
 ```java
@@ -3784,7 +3784,7 @@ public class ThingMapper {
   - Delegates to ServiceMapper for each service.
 
 - **ServiceMapper:**  
-  - Maps a set of channels (or a channel group) to a HomeKit HomekitService.
+  - Maps a set of channels (or a channel group) to a Homekit HomekitService.
   - Handles service-level metadata (type, label).
   - Delegates to CharacteristicChannelMapper for each characteristic.
 
@@ -3830,14 +3830,14 @@ Provide implementations of all Mapper classes
 
 _**Assistant**_
 
-Certainly! Here’s a **modular, extensible implementation** of the three Mapper classes for a HomeKit/openHAB integration:
+Certainly! Here’s a **modular, extensible implementation** of the three Mapper classes for a Homekit/openHAB integration:
 
-- `ThingMapper` (maps an openHAB Thing to a HomeKit HomekitAccessory)
-- `ServiceMapper` (maps a set of Channels to a HomeKit HomekitService)
-- `CharacteristicChannelMapper` (maps a Channel to a HomeKit HomekitCharacteristic)
+- `ThingMapper` (maps an openHAB Thing to a Homekit HomekitAccessory)
+- `ServiceMapper` (maps a set of Channels to a Homekit HomekitService)
+- `CharacteristicChannelMapper` (maps a Channel to a Homekit HomekitCharacteristic)
 
 This example assumes you have:
-- A HomeKit API with `HomekitAccessory`, `HomekitService`, and `HomekitCharacteristic` classes.
+- A Homekit API with `HomekitAccessory`, `HomekitService`, and `HomekitCharacteristic` classes.
 - openHAB’s `Thing`, `Channel`, and `ThingHandler` classes.
 - A mapping configuration (from YAML, JSON, or metadata).
 
@@ -4011,15 +4011,15 @@ You would use the mappers as follows:
 ```java
 ThingMapper thingMapper = new ThingMapper(thing, thingConfig, handler);
 HomekitAccessory accessory = thingMapper.mapThing();
-// Register accessory with HomeKit server
+// Register accessory with Homekit server
 ```
 
 ---
 
 ## 5. **Summary**
 
-- **ThingMapper**: Maps a Thing to a HomeKit HomekitAccessory, orchestrates ServiceMappers.
-- **ServiceMapper**: Maps a set of Channels to a HomeKit HomekitService, orchestrates CharacteristicChannelMappers.
+- **ThingMapper**: Maps a Thing to a Homekit HomekitAccessory, orchestrates ServiceMappers.
+- **ServiceMapper**: Maps a set of Channels to a Homekit HomekitService, orchestrates CharacteristicChannelMappers.
 - **CharacteristicChannelMapper**: Handles the runtime event logic for a single Channel↔HomekitCharacteristic mapping.
 
 ---
@@ -4037,13 +4037,13 @@ How would you mix these Mapper classes with the bindiing specific mappings ?
 _**Assistant**_
 
 Great question!  
-**Mixing the generic Mapper classes with binding-specific mappings** is essential for a flexible, extensible, and robust HomeKit integration. Here’s how you can architect this:
+**Mixing the generic Mapper classes with binding-specific mappings** is essential for a flexible, extensible, and robust Homekit integration. Here’s how you can architect this:
 
 ---
 
 ## 1. **Why Mix?**
 
-- **Generic mappers** handle standard openHAB channel types (Switch, Dimmer, Contact, etc.) and their typical HomeKit characteristic mappings.
+- **Generic mappers** handle standard openHAB channel types (Switch, Dimmer, Contact, etc.) and their typical Homekit characteristic mappings.
 - **Binding-specific mappers** are needed for:
   - Custom channel types (e.g., Z-Wave’s `meter_kwh`, Shelly’s `relay`, etc.)
   - Special value transformations or semantics unique to a binding or device type.
@@ -4108,7 +4108,7 @@ public class ServiceMapper {
 
 ## 4. **Example: Binding-Specific Mapper**
 
-Suppose you have a Z-Wave energy meter channel (`meter_kwh`) that you want to map to a HomeKit custom characteristic.
+Suppose you have a Z-Wave energy meter channel (`meter_kwh`) that you want to map to a Homekit custom characteristic.
 
 ```java
 public class ZWaveEnergyCharacteristicMapperFactory implements CharacteristicChannelMapperFactory {
@@ -4150,7 +4150,7 @@ factories.add(new ZWaveEnergyCharacteristicMapperFactory()); // binding-specific
 
 ## 7. **Best Practices**
 
-- **Keep generic mappers in the core HomeKit binding.**
+- **Keep generic mappers in the core Homekit binding.**
 - **Let bindings contribute their own mappers** (via OSGi, ServiceLoader, or explicit registration).
 - **Allow user override** (e.g., via config) for edge cases.
 - **Document** which mappers are available and how to extend.
@@ -4186,7 +4186,7 @@ Let’s address both:
 
 The config files (YAML/JSON) should allow users to specify:
 
-- Which openHAB Thing/Channel maps to which HomeKit HomekitService/HomekitCharacteristic
+- Which openHAB Thing/Channel maps to which Homekit HomekitService/HomekitCharacteristic
 - (Optionally) Which mapper/factory to use for a mapping (for binding-specific or custom logic)
 - Any transformation or mapping rules
 
@@ -4251,14 +4251,14 @@ mappers:
 ### **Why?**
 
 - **Dynamic discovery:** OSGi allows you to register and discover factories at runtime.
-- **Extensibility:** Bindings can contribute their own mappers/factories without modifying the HomeKit core.
-- **Decoupling:** Keeps the HomeKit binding generic and lets other bindings extend it.
+- **Extensibility:** Bindings can contribute their own mappers/factories without modifying the Homekit core.
+- **Decoupling:** Keeps the Homekit binding generic and lets other bindings extend it.
 
 ### **How?**
 
 - Each factory implements a common interface (e.g., `CharacteristicChannelMapperFactory`).
 - Each factory is annotated as an OSGi component (`@Component`).
-- The HomeKit binding uses OSGi’s service registry to discover all available factories.
+- The Homekit binding uses OSGi’s service registry to discover all available factories.
 
 **Example:**
 
@@ -4269,7 +4269,7 @@ public class ZWaveEnergyCharacteristicMapperFactory implements CharacteristicCha
 }
 ```
 
-**In the HomeKit binding:**
+**In the Homekit binding:**
 
 ```java
 @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
@@ -4301,7 +4301,7 @@ protected void removeCharacteristicChannelMapperFactory(CharacteristicChannelMap
 
 ## 4. **Conclusion**
 
-- **Config files** should allow mapping of Things/Channels to HomeKit Services/Characteristics, and optionally specify which mapper/factory to use.
+- **Config files** should allow mapping of Things/Channels to Homekit Services/Characteristics, and optionally specify which mapper/factory to use.
 - **Factories should be OSGi components** for maximum flexibility and extensibility in openHAB.
 
 ---
@@ -4327,7 +4327,7 @@ The choice between using `thingUID` and `thingTypeUID` in your config files depe
 
 - **Refers to a specific, unique Thing instance** in your openHAB system.
 - **Use when:**  
-  - You want to map a particular device (e.g., your living room lamp) to a specific HomeKit accessory/service/characteristic.
+  - You want to map a particular device (e.g., your living room lamp) to a specific Homekit accessory/service/characteristic.
   - You need per-device customization.
 
 **Example:**
@@ -4449,7 +4449,7 @@ No, you cannot achieve the same level of flexibility and structure as the YAML/J
 
 ### 2. **What You *Can* Do in .things Files**
 - You can define a Thing and set configuration parameters (flat key-value pairs).
-- You can use custom config parameters to indicate HomeKit mapping for that specific Thing.
+- You can use custom config parameters to indicate Homekit mapping for that specific Thing.
 
 **Example:**
 ```things
@@ -4493,7 +4493,7 @@ Thing zwave:device:controller:node3 "Living Room Lamp" @ "Living Room" [
 ## **Conclusion**
 
 - **.things files are limited to simple, per-Thing, flat configuration.**
-- **For advanced HomeKit mapping, use a dedicated mapping file (YAML/JSON) as described in previous answers.**
+- **For advanced Homekit mapping, use a dedicated mapping file (YAML/JSON) as described in previous answers.**
 
 ---
 
@@ -4509,7 +4509,7 @@ Are there any other Registry classes that can be leveraged in our discussion ?
 
 _**Assistant**_
 
-Absolutely! In addition to `ThingTypeRegistry` and `ChannelTypeRegistry`, openHAB provides several other registry and provider classes that can be leveraged to make your HomeKit mapping solution more robust, dynamic, and user-friendly.
+Absolutely! In addition to `ThingTypeRegistry` and `ChannelTypeRegistry`, openHAB provides several other registry and provider classes that can be leveraged to make your Homekit mapping solution more robust, dynamic, and user-friendly.
 
 Here’s a rundown of the most relevant ones:
 
@@ -4520,9 +4520,9 @@ Here’s a rundown of the most relevant ones:
 - **Purpose:** Keeps track of all Things currently in the system.
 - **How to use:**  
   - Query all Things for batch mapping or discovery.
-  - Listen for Thing additions/removals to dynamically update HomeKit exposure.
+  - Listen for Thing additions/removals to dynamically update Homekit exposure.
 - **Example:**  
-  - Expose all new Things with certain metadata to HomeKit as they are added.
+  - Expose all new Things with certain metadata to Homekit as they are added.
 
 ---
 
@@ -4541,10 +4541,10 @@ Here’s a rundown of the most relevant ones:
 
 - **Purpose:** Keeps track of all Items in the system.
 - **How to use:**  
-  - If you want to map HomeKit characteristics to Items (instead of Channels), or support both.
+  - If you want to map Homekit characteristics to Items (instead of Channels), or support both.
   - Useful for metadata-driven mapping (e.g., expose all Items with a certain tag or metadata).
 - **Example:**  
-  - Expose all Items tagged with `["HomeKit"]` as HomeKit characteristics.
+  - Expose all Items tagged with `["Homekit"]` as Homekit characteristics.
 
 ---
 
@@ -4552,9 +4552,9 @@ Here’s a rundown of the most relevant ones:
 
 - **Purpose:** Provides detailed state descriptions for Items and Channels (min/max, options, units, etc.).
 - **How to use:**  
-  - For value scaling, unit conversion, or mapping openHAB options to HomeKit enums.
+  - For value scaling, unit conversion, or mapping openHAB options to Homekit enums.
 - **Example:**  
-  - Map a Number channel with min/max 0-1000 to a HomeKit characteristic with 0-100, using the state description for scaling.
+  - Map a Number channel with min/max 0-1000 to a Homekit characteristic with 0-100, using the state description for scaling.
 
 ---
 
@@ -4562,10 +4562,10 @@ Here’s a rundown of the most relevant ones:
 
 - **Purpose:** Stores and provides access to metadata for Things, Channels, and Items.
 - **How to use:**  
-  - For metadata-driven HomeKit exposure (e.g., only expose Things/Channels/Items with `homekit` metadata).
+  - For metadata-driven Homekit exposure (e.g., only expose Things/Channels/Items with `homekit` metadata).
   - For storing custom mapping or transformation rules.
 - **Example:**  
-  - Use metadata to specify which HomeKit service/characteristic to expose for a given Thing or Channel.
+  - Use metadata to specify which Homekit service/characteristic to expose for a given Thing or Channel.
 
 ---
 
@@ -4573,9 +4573,9 @@ Here’s a rundown of the most relevant ones:
 
 - **Purpose:** Manages profiles, which can transform or mediate between Channels and Items.
 - **How to use:**  
-  - If you want to support advanced transformation or mediation logic between openHAB and HomeKit.
+  - If you want to support advanced transformation or mediation logic between openHAB and Homekit.
 - **Example:**  
-  - Use a profile to invert a Switch channel before exposing it to HomeKit.
+  - Use a profile to invert a Switch channel before exposing it to Homekit.
 
 ---
 
@@ -4589,13 +4589,13 @@ Here’s a rundown of the most relevant ones:
 
 ## **Summary Table**
 
-| Registry/Provider         | Use Case in HomeKit Mapping                                      |
+| Registry/Provider         | Use Case in Homekit Mapping                                      |
 |---------------------------|------------------------------------------------------------------|
 | ThingRegistry             | Discover, monitor, and manage Things                             |
 | ChannelRegistry           | Discover and manage Channels                                     |
 | ThingTypeRegistry         | Get Thing type info for auto-mapping                             |
 | ChannelTypeRegistry       | Get Channel type info for auto-mapping                           |
-| ItemRegistry              | Map HomeKit to Items, support Item-based mapping                 |
+| ItemRegistry              | Map Homekit to Items, support Item-based mapping                 |
 | StateDescriptionRegistry  | Value scaling, unit conversion, option mapping                   |
 | MetadataRegistry          | Metadata-driven mapping, custom rules                            |
 | ProfileRegistry           | Advanced transformation/mediation logic                          |
@@ -4607,12 +4607,12 @@ Here’s a rundown of the most relevant ones:
 
 ## **Conclusion**
 
-- **Leveraging these registries and providers** allows you to build a HomeKit mapping solution that is dynamic, extensible, and user-friendly.
+- **Leveraging these registries and providers** allows you to build a Homekit mapping solution that is dynamic, extensible, and user-friendly.
 - They enable auto-discovery, validation, transformation, and metadata-driven configuration.
 
 ---
 
-**If you want a code sample for using any of these registries in the context of HomeKit mapping, just ask!**
+**If you want a code sample for using any of these registries in the context of Homekit mapping, just ask!**
 
 ---
 
@@ -4624,7 +4624,7 @@ Show for each one of these registry with code how they can be leveraged in the M
 
 _**Assistant**_
 
-Absolutely! Here’s a practical code-oriented guide for leveraging each of the mentioned registries/providers in your HomeKit mapping architecture.  
+Absolutely! Here’s a practical code-oriented guide for leveraging each of the mentioned registries/providers in your Homekit mapping architecture.  
 For each, I’ll show a **code snippet** and a **typical use case**—either in a Mapper, the `HomekitThingBridge`, or a related class.
 
 ---
@@ -4639,18 +4639,18 @@ private ThingRegistry thingRegistry;
 
 // Get all Things (e.g., in HomekitThingBridge)
 for (Thing thing : thingRegistry.getAll()) {
-    // Map or expose to HomeKit
+    // Map or expose to Homekit
 }
 
 // Listen for Thing additions/removals
 thingRegistry.addThingRegistryChangeListener(new ThingRegistryChangeListener() {
     @Override
     public void thingAdded(Thing thing) {
-        // Create HomeKit accessory for this Thing
+        // Create Homekit accessory for this Thing
     }
     @Override
     public void thingRemoved(Thing thing) {
-        // Remove HomeKit accessory
+        // Remove Homekit accessory
     }
 });
 ```
@@ -4693,7 +4693,7 @@ ThingType thingType = thingTypeRegistry.getThingType(thingTypeUID);
 String label = thingType.getLabel();
 List<ChannelDefinition> channelDefs = thingType.getChannelDefinitions();
 for (ChannelDefinition def : channelDefs) {
-    // Suggest HomeKit characteristic based on channel type
+    // Suggest Homekit characteristic based on channel type
 }
 ```
 
@@ -4720,7 +4720,7 @@ StateDescription stateDesc = channelType.getStateDescription();
 
 ## 5. **ItemRegistry**
 
-**Use case:** Map HomeKit characteristics to Items, or find Items by tag.
+**Use case:** Map Homekit characteristics to Items, or find Items by tag.
 
 ```java
 @Reference
@@ -4729,9 +4729,9 @@ private ItemRegistry itemRegistry;
 // Get an Item by name (e.g., in a Mapper)
 Item item = itemRegistry.get("LivingRoom_Light");
 
-// List all Items with a tag (e.g., for batch HomeKit exposure)
-for (Item item : itemRegistry.getItemsByTag("HomeKit")) {
-    // Expose as HomeKit characteristic
+// List all Items with a tag (e.g., for batch Homekit exposure)
+for (Item item : itemRegistry.getItemsByTag("Homekit")) {
+    // Expose as Homekit characteristic
 }
 ```
 
@@ -4751,7 +4751,7 @@ if (desc != null) {
     BigDecimal min = desc.getMinimum();
     BigDecimal max = desc.getMaximum();
     String unit = desc.getPattern();
-    // Use for scaling to HomeKit range
+    // Use for scaling to Homekit range
 }
 ```
 
@@ -4786,7 +4786,7 @@ private ProfileRegistry profileRegistry;
 // Get a profile for a ChannelLink (advanced use)
 Profile profile = profileRegistry.getProfile(channelLink);
 if (profile != null) {
-    // Use profile to transform state/command before mapping to HomeKit
+    // Use profile to transform state/command before mapping to Homekit
 }
 ```
 
@@ -4802,7 +4802,7 @@ private TransformationService transformationService;
 
 // Transform a value (e.g., in a Mapper)
 String transformed = transformationService.transform("MAP", "onoff.map", "ON");
-// Use transformed value for HomeKit characteristic
+// Use transformed value for Homekit characteristic
 ```
 
 ---
@@ -4815,10 +4815,10 @@ String transformed = transformationService.transform("MAP", "onoff.map", "ON");
 @Reference
 private TagRegistry tagRegistry;
 
-// Get all Items with a tag (e.g., "HomeKit")
-Set<Item> homekitItems = tagRegistry.getItemsWithTag("HomeKit");
+// Get all Items with a tag (e.g., "Homekit")
+Set<Item> homekitItems = tagRegistry.getItemsWithTag("Homekit");
 for (Item item : homekitItems) {
-    // Expose as HomeKit characteristic
+    // Expose as Homekit characteristic
 }
 ```
 
@@ -4844,7 +4844,7 @@ for (CharacteristicChannelMapperFactory factory : factories) {
 
 ## **Summary Table**
 
-| Registry/Provider         | Example Use in HomeKit Mapping Architecture                |
+| Registry/Provider         | Example Use in Homekit Mapping Architecture                |
 |---------------------------|-----------------------------------------------------------|
 | ThingRegistry             | Discover/manage Things, listen for changes                |
 | ChannelRegistry           | Find Channels, validate mapping                           |
@@ -4862,7 +4862,7 @@ for (CharacteristicChannelMapperFactory factory : factories) {
 
 ## **Conclusion**
 
-- These registries/providers are powerful tools for building a dynamic, robust, and user-friendly HomeKit mapping solution.
+- These registries/providers are powerful tools for building a dynamic, robust, and user-friendly Homekit mapping solution.
 - They can be used in your Mapper classes, HomekitThingBridge, or any orchestration/initialization logic.
 
 ---
@@ -4880,16 +4880,16 @@ Can the current HomekitItemBridge implementation benefit from the Characteristic
 _**Assistant**_
 
 **Absolutely!**  
-The current `HomekitItemBridge` (which maps openHAB Items to HomeKit Accessories/Characteristics) can **greatly benefit** from the `CharacteristicChannelMapper` (or more generally, `CharacteristicMapper`) and related mapper classes. Here’s how and why:
+The current `HomekitItemBridge` (which maps openHAB Items to Homekit Accessories/Characteristics) can **greatly benefit** from the `CharacteristicChannelMapper` (or more generally, `CharacteristicMapper`) and related mapper classes. Here’s how and why:
 
 ---
 
 ## **Why Integrate Mapper Classes with HomekitItemBridge?**
 
 - **Separation of concerns:**  
-  The bridge focuses on orchestration and lifecycle, while mappers encapsulate the logic for translating between openHAB and HomeKit.
+  The bridge focuses on orchestration and lifecycle, while mappers encapsulate the logic for translating between openHAB and Homekit.
 - **Extensibility:**  
-  New HomeKit characteristics or openHAB Item types can be supported by adding new mappers, not by modifying the bridge.
+  New Homekit characteristics or openHAB Item types can be supported by adding new mappers, not by modifying the bridge.
 - **Transformation logic:**  
   Mappers can encapsulate value transformation, scaling, and custom rules.
 - **Testability:**  
@@ -4904,8 +4904,8 @@ The current `HomekitItemBridge` (which maps openHAB Items to HomeKit Accessories
 If `HomekitItemBridge` currently has code like:
 ```java
 if (item.getType().equals("Switch")) {
-    // map to HomeKit "On"
-    // subscribe to item events, update HomeKit, etc.
+    // map to Homekit "On"
+    // subscribe to item events, update Homekit, etc.
 }
 ```
 **Replace this with:**
@@ -4918,7 +4918,7 @@ if (item.getType().equals("Switch")) {
 
 **A. On Initialization:**
 - For each Item to be exposed:
-  1. Determine the HomeKit characteristic (from config, metadata, or mapping table).
+  1. Determine the Homekit characteristic (from config, metadata, or mapping table).
   2. Use a `CharacteristicMapperFactory` to get the right mapper for the Item/HomekitCharacteristic pair.
   3. Register the mapper (subscribe to events, etc.).
 
@@ -4971,12 +4971,12 @@ public class SwitchOnCharacteristicMapper implements CharacteristicMapper {
     @Override
     public void subscribeToItemUpdates() {
         // Subscribe to item state changes
-        // Update HomeKit characteristic
+        // Update Homekit characteristic
     }
 
     @Override
     public void subscribeToCharacteristicUpdates() {
-        // Listen for HomeKit characteristic changes
+        // Listen for Homekit characteristic changes
         // Send command to openHAB item
     }
 }
@@ -5027,8 +5027,8 @@ Yes, you are correct to focus on `HomekitItemBridge.java`—and you’ve provide
 
 ## **Current State in HomekitItemBridge**
 
-- The bridge currently manages the mapping between openHAB Items and HomeKit Characteristics/Accessories directly.
-- It subscribes to item state changes and updates HomeKit characteristics, and vice versa, using inline logic (see methods like `stateChanged`, `updateCharacteristicValue`, and `subscribeToEvents`).
+- The bridge currently manages the mapping between openHAB Items and Homekit Characteristics/Accessories directly.
+- It subscribes to item state changes and updates Homekit characteristics, and vice versa, using inline logic (see methods like `stateChanged`, `updateCharacteristicValue`, and `subscribeToEvents`).
 - The mapping logic is spread across several methods and is not encapsulated.
 
 ---
@@ -5126,7 +5126,7 @@ public class CharacteristicItemMapper {
     }
 
     public void subscribeToCharacteristicUpdates() {
-        // Subscribe to HomeKit characteristic changes (via eventManager)
+        // Subscribe to Homekit characteristic changes (via eventManager)
         // On change, post command/state to item
     }
 
@@ -5174,8 +5174,8 @@ Here’s how a `CharacteristicChannelMapper` (or `CharacteristicItemMapper`) wou
 
 A mapper for an Item↔HomekitCharacteristic mapping should:
 
-- **Subscribe to openHAB Item state changes** (to update the HomeKit characteristic when the Item changes).
-- **Subscribe to HomeKit characteristic changes** (to update the openHAB Item when HomeKit changes the value).
+- **Subscribe to openHAB Item state changes** (to update the Homekit characteristic when the Item changes).
+- **Subscribe to Homekit characteristic changes** (to update the openHAB Item when Homekit changes the value).
 
 ---
 
@@ -5204,10 +5204,10 @@ eventPublisher.subscribe(item.getName(), event -> {
 
 ---
 
-## 3. **How to Subscribe to HomeKit HomekitCharacteristic Changes**
+## 3. **How to Subscribe to Homekit HomekitCharacteristic Changes**
 
-- The mapper should subscribe to HomeKit characteristic changes using the `HomekitEventManager`.
-- When a HomeKit characteristic changes (e.g., via the Home app), a `HomekitEvent` (often a `HomekitCharacteristicEvent`) is published.
+- The mapper should subscribe to Homekit characteristic changes using the `HomekitEventManager`.
+- When a Homekit characteristic changes (e.g., via the Home app), a `HomekitEvent` (often a `HomekitCharacteristicEvent`) is published.
 - The mapper subscribes to these events for the relevant characteristic UID.
 
 **Example:**
@@ -5227,10 +5227,10 @@ public void subscribeToCharacteristicUpdates() {
 
 ## 4. **How the Mapper Handles Updates**
 
-**A. openHAB → HomeKit:**
+**A. openHAB → Homekit:**
 ```java
 public void updateCharacteristicFromItemState(State state) {
-    // Convert openHAB State to HomeKit value
+    // Convert openHAB State to Homekit value
     Object value = ((HomekitGenericCharacteristic<?>) characteristic).toValue(state);
     if (value != null) {
         ((HomekitGenericCharacteristic<?>) characteristic).setValue(value);
@@ -5238,10 +5238,10 @@ public void updateCharacteristicFromItemState(State state) {
 }
 ```
 
-**B. HomeKit → openHAB:**
+**B. Homekit → openHAB:**
 ```java
 public void updateItemFromCharacteristic(Object newValue) {
-    // Convert HomeKit value to openHAB State
+    // Convert Homekit value to openHAB State
     State state = ((HomekitGenericCharacteristic<?>) characteristic).toState(newValue);
     if (state != null) {
         eventPublisher.post(ItemEventFactory.createStateEvent(item.getName(), state));
@@ -5312,16 +5312,16 @@ public class CharacteristicItemMapper {
 
 | Direction         | Subscription Mechanism         | Mapper HomekitMethod Called                |
 |-------------------|-------------------------------|-------------------------------------|
-| openHAB → HomeKit | ItemRegistry/StateChangeListener | `updateCharacteristicFromItemState` |
-| HomeKit → openHAB | HomekitEventManager           | `updateItemFromCharacteristic`      |
+| openHAB → Homekit | ItemRegistry/StateChangeListener | `updateCharacteristicFromItemState` |
+| Homekit → openHAB | HomekitEventManager           | `updateItemFromCharacteristic`      |
 
 ---
 
 ## **Conclusion**
 
-- The mapper subscribes to both openHAB and HomeKit events.
-- It uses `HomekitEventManager` to listen for HomeKit characteristic changes, and updates the openHAB Item accordingly.
-- It listens for openHAB Item state changes and updates the HomeKit characteristic.
+- The mapper subscribes to both openHAB and Homekit events.
+- It uses `HomekitEventManager` to listen for Homekit characteristic changes, and updates the openHAB Item accordingly.
+- It listens for openHAB Item state changes and updates the Homekit characteristic.
 - This keeps the mapping logic modular, testable, and easy to extend.
 
 ---
@@ -5339,7 +5339,7 @@ What is preferred? use the ItemRegistry or the eventPublisher?
 _**Assistant**_
 
 **Great question!**  
-The choice between using the `ItemRegistry` (with a `StateChangeListener`) and the `EventPublisher` (subscribing to the event bus) depends on your goals, but in the context of openHAB and HomeKit integration, here’s a clear breakdown:
+The choice between using the `ItemRegistry` (with a `StateChangeListener`) and the `EventPublisher` (subscribing to the event bus) depends on your goals, but in the context of openHAB and Homekit integration, here’s a clear breakdown:
 
 ---
 
@@ -5376,12 +5376,12 @@ The choice between using the `ItemRegistry` (with a `StateChangeListener`) and t
 
 ---
 
-## **3. What is Preferred for HomeKit Mapping?**
+## **3. What is Preferred for Homekit Mapping?**
 
-### **For most HomeKit mapping scenarios:**
+### **For most Homekit mapping scenarios:**
 - **Use the `ItemRegistry` and `StateChangeListener` for state changes.**
-  - It’s direct, efficient, and matches the HomeKit model (which is state-based).
-  - You only care about state changes for Items mapped to HomeKit characteristics.
+  - It’s direct, efficient, and matches the Homekit model (which is state-based).
+  - You only care about state changes for Items mapped to Homekit characteristics.
 
 - **Use the `EventPublisher` if you need to handle commands or more complex event flows.**
   - For example, if you want to react to commands sent to Items (not just state changes), or if you want to support advanced features like command feedback.
@@ -5393,9 +5393,9 @@ The choice between using the `ItemRegistry` (with a `StateChangeListener`) and t
 
 ## **4. Example: HomekitItemBridge**
 
-- For updating HomeKit characteristics when an Item state changes:  
+- For updating Homekit characteristics when an Item state changes:  
   **Use `ItemRegistry` + `StateChangeListener`.**
-- For updating openHAB Items when a HomeKit characteristic changes:  
+- For updating openHAB Items when a Homekit characteristic changes:  
   **Use `EventPublisher` to post a new state or command.**
 
 ---
@@ -5430,14 +5430,14 @@ Should setting the value of the HomekitCharacteristic not happen with an Homekit
 _**Assistant**_
 
 **Excellent architectural insight!**  
-Yes, for maximum decoupling and extensibility, **setting the value of a HomeKit HomekitCharacteristic should ideally be done by publishing a `HomekitEvent`** (e.g., `CHARACTERISTIC_STATE_CHANGED`) to the `HomekitEventManager`, rather than calling `setValue()` directly on the HomekitCharacteristic.
+Yes, for maximum decoupling and extensibility, **setting the value of a Homekit HomekitCharacteristic should ideally be done by publishing a `HomekitEvent`** (e.g., `CHARACTERISTIC_STATE_CHANGED`) to the `HomekitEventManager`, rather than calling `setValue()` directly on the HomekitCharacteristic.
 
 ---
 
 ## **Why is this preferred?**
 
 - **Decoupling:**  
-  The code that detects an openHAB Item state change does not need to know about the internals of the HomekitCharacteristic or how it communicates with the HomeKit server.
+  The code that detects an openHAB Item state change does not need to know about the internals of the HomekitCharacteristic or how it communicates with the Homekit server.
 - **Event-driven architecture:**  
   All interested parties (including the HomekitCharacteristic, the HomekitLocalAccessoryServer, and any listeners) can react to the event in a uniform way.
 - **Extensibility:**  
@@ -5482,14 +5482,14 @@ eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, this.getUI
 
 ### **3. The HomekitLocalAccessoryServer is notified:**
 
-- The HomekitCharacteristic, upon updating its value, notifies the HomekitLocalAccessoryServer, which in turn updates the HomeKit Controller.
+- The HomekitCharacteristic, upon updating its value, notifies the HomekitLocalAccessoryServer, which in turn updates the Homekit Controller.
 
 ---
 
 ## **Benefits**
 
 - **Loose coupling:** The Mapper does not need a direct reference to the HomekitCharacteristic.
-- **Uniform event flow:** All updates (from openHAB, HomeKit, or elsewhere) are handled the same way.
+- **Uniform event flow:** All updates (from openHAB, Homekit, or elsewhere) are handled the same way.
 - **Easier testing and extension:** You can add logging, validation, or transformation by subscribing to the event stream.
 
 ---
@@ -5500,14 +5500,14 @@ eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, this.getUI
 |-------------------------------|----------------------------------------|------------------------|
 | Update HomekitCharacteristic value   | Publish HomekitEvent to EventManager   | Decoupling, extensibility |
 | HomekitCharacteristic value changes  | Subscribes to EventManager             | Uniform event handling |
-| Notify HomeKit Controller     | HomekitCharacteristic notifies server         | Consistency            |
+| Notify Homekit Controller     | HomekitCharacteristic notifies server         | Consistency            |
 
 ---
 
 ## **Conclusion**
 
 - **Yes, setting the value of a HomekitCharacteristic should be done via a HomekitEvent, not by direct method call.**
-- This approach maximizes decoupling, extensibility, and maintainability in your HomeKit integration.
+- This approach maximizes decoupling, extensibility, and maintainability in your Homekit integration.
 
 ---
 
@@ -5526,8 +5526,8 @@ _**Assistant**_
 Certainly! Here’s a **complete example of a Mapper class** (`CharacteristicItemMapper`) that:
 
 - Subscribes to openHAB Item state changes (using `ItemRegistry` and a `StateChangeListener`)
-- Subscribes to HomeKit characteristic changes (using `HomekitEventManager` and `HomekitEvent`)
-- Updates the HomeKit characteristic by publishing a `HomekitEvent` (not by direct method call)
+- Subscribes to Homekit characteristic changes (using `HomekitEventManager` and `HomekitEvent`)
+- Updates the Homekit characteristic by publishing a `HomekitEvent` (not by direct method call)
 - Updates the openHAB Item by posting to the `EventPublisher`
 - Is fully decoupled and event-driven
 
@@ -5585,7 +5585,7 @@ public class CharacteristicItemMapper {
         // Subscribe to openHAB Item state changes
         itemRegistry.addStateChangeListener(item.getName(), itemStateListener);
 
-        // Subscribe to HomeKit characteristic changes via HomekitEventManager
+        // Subscribe to Homekit characteristic changes via HomekitEventManager
         eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, characteristicUID, event -> {
             if (event instanceof HomekitCharacteristicEvent) {
                 Object newValue = ((HomekitCharacteristicEvent) event).getNewValue();
@@ -5599,7 +5599,7 @@ public class CharacteristicItemMapper {
         // Unsubscribe from HomekitEventManager if supported (not shown here)
     }
 
-    // openHAB → HomeKit: Publish a HomekitEvent instead of calling setValue directly
+    // openHAB → Homekit: Publish a HomekitEvent instead of calling setValue directly
     public void updateCharacteristicFromItemState(State state) {
         Object value = characteristic.toValue(state);
         if (value != null) {
@@ -5612,7 +5612,7 @@ public class CharacteristicItemMapper {
         }
     }
 
-    // HomeKit → openHAB: Post a state update to the Item
+    // Homekit → openHAB: Post a state update to the Item
     public void updateItemFromCharacteristic(Object newValue) {
         State state = characteristic.toState(newValue);
         if (state != null) {
@@ -5645,7 +5645,7 @@ mapper.subscribe();
 ## **Key Points**
 
 - **Decoupling:** The mapper does not call `setValue()` on the characteristic directly; it publishes a `HomekitEvent`.
-- **Event-driven:** Both openHAB and HomeKit changes are handled via event subscriptions.
+- **Event-driven:** Both openHAB and Homekit changes are handled via event subscriptions.
 - **Lifecycle:** The mapper can be subscribed/unsubscribed as needed (e.g., when the Item or HomekitCharacteristic is removed).
 
 ---
@@ -5654,12 +5654,12 @@ mapper.subscribe();
 
 | Direction         | Mechanism                        | HomekitMethod in Mapper                  |
 |-------------------|----------------------------------|-----------------------------------|
-| openHAB → HomeKit | Publish HomekitEvent             | `updateCharacteristicFromItemState` |
-| HomeKit → openHAB | Post ItemEvent via EventPublisher| `updateItemFromCharacteristic`    |
+| openHAB → Homekit | Publish HomekitEvent             | `updateCharacteristicFromItemState` |
+| Homekit → openHAB | Post ItemEvent via EventPublisher| `updateItemFromCharacteristic`    |
 
 ---
 
-**This pattern ensures maximum decoupling, extensibility, and maintainability for your HomeKit/openHAB integration.**
+**This pattern ensures maximum decoupling, extensibility, and maintainability for your Homekit/openHAB integration.**
 
 If you want a version that supports transformation rules or custom mapping logic, just ask!
 
@@ -5680,16 +5680,16 @@ Let’s bring together the HomekitThingBridge/ProxyThing architecture and show w
 
 ## **Context Recap**
 
-- **HomekitThingBridge**: Orchestrates the mapping between openHAB Things/Channels and HomeKit Accessories/Services/Characteristics, using configuration (YAML/JSON/metadata).
-- **ProxyThing**: A virtual Thing in openHAB that represents a HomeKit accessory, mapping its channels to HomeKit characteristics.
-- **Mapper class**: Handles the runtime event subscription and translation between a specific openHAB Channel and a HomeKit HomekitCharacteristic.
+- **HomekitThingBridge**: Orchestrates the mapping between openHAB Things/Channels and Homekit Accessories/Services/Characteristics, using configuration (YAML/JSON/metadata).
+- **ProxyThing**: A virtual Thing in openHAB that represents a Homekit accessory, mapping its channels to Homekit characteristics.
+- **Mapper class**: Handles the runtime event subscription and translation between a specific openHAB Channel and a Homekit HomekitCharacteristic.
 
 ---
 
 ## **Key Differences from Item-based Mapping**
 
-- Instead of Items, you’re mapping **Channels** (and possibly their linked Items) to HomeKit Characteristics.
-- The Mapper needs to subscribe to Channel state changes (or Item state changes if using linked Items), and to HomeKit characteristic events.
+- Instead of Items, you’re mapping **Channels** (and possibly their linked Items) to Homekit Characteristics.
+- The Mapper needs to subscribe to Channel state changes (or Item state changes if using linked Items), and to Homekit characteristic events.
 
 ---
 
@@ -5742,7 +5742,7 @@ public class ChannelCharacteristicMapper {
             }
         });
 
-        // Subscribe to HomeKit characteristic changes via HomekitEventManager
+        // Subscribe to Homekit characteristic changes via HomekitEventManager
         eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, characteristicUID, event -> {
             if (event instanceof HomekitCharacteristicEvent) {
                 Object newValue = ((HomekitCharacteristicEvent) event).getNewValue();
@@ -5751,7 +5751,7 @@ public class ChannelCharacteristicMapper {
         });
     }
 
-    // openHAB → HomeKit: Publish a HomekitEvent
+    // openHAB → Homekit: Publish a HomekitEvent
     public void updateCharacteristicFromChannelState(State state) {
         Object value = characteristic.toValue(state);
         if (value != null) {
@@ -5764,7 +5764,7 @@ public class ChannelCharacteristicMapper {
         }
     }
 
-    // HomeKit → openHAB: Post a command/state to the Channel
+    // Homekit → openHAB: Post a command/state to the Channel
     public void updateChannelFromCharacteristic(Object newValue) {
         State state = characteristic.toState(newValue);
         if (state != null) {
@@ -5784,7 +5784,7 @@ public class ChannelCharacteristicMapper {
 
 ## **How to Use in HomekitThingBridge or ProxyThingHandler**
 
-- When initializing a ProxyThing or mapping a Thing/Channel to HomeKit:
+- When initializing a ProxyThing or mapping a Thing/Channel to Homekit:
     1. For each Channel↔HomekitCharacteristic mapping, instantiate a `ChannelCharacteristicMapper`.
     2. Call `subscribe(handler)` to set up event listeners.
     3. Store the mapper for later disposal.
@@ -5802,7 +5802,7 @@ mapper.subscribe(thingHandler);
 ## **Key Points**
 
 - **Decoupling:** The Mapper does not call `setValue()` directly; it publishes a HomekitEvent.
-- **Event-driven:** Both openHAB and HomeKit changes are handled via event subscriptions.
+- **Event-driven:** Both openHAB and Homekit changes are handled via event subscriptions.
 - **Lifecycle:** The Mapper can be subscribed/unsubscribed as needed (e.g., when the Thing/Channel/HomekitCharacteristic is removed).
 
 ---
@@ -5811,8 +5811,8 @@ mapper.subscribe(thingHandler);
 
 | Direction         | Mechanism                        | Mapper HomekitMethod Called                  |
 |-------------------|----------------------------------|---------------------------------------|
-| openHAB → HomeKit | Publish HomekitEvent             | `updateCharacteristicFromChannelState`|
-| HomeKit → openHAB | Post ChannelEvent via EventPublisher | `updateChannelFromCharacteristic` |
+| openHAB → Homekit | Publish HomekitEvent             | `updateCharacteristicFromChannelState`|
+| Homekit → openHAB | Post ChannelEvent via EventPublisher | `updateChannelFromCharacteristic` |
 
 ---
 
@@ -5840,12 +5840,12 @@ This ensures:
 
 ## **How Would the Mapper Change?**
 
-### **1. openHAB → HomeKit (Channel State Change → HomeKit HomekitCharacteristic)**
+### **1. openHAB → Homekit (Channel State Change → Homekit HomekitCharacteristic)**
 
 - The Mapper still subscribes to channel state changes (via the handler or registry).
 - When the channel state changes, the Mapper publishes a `HomekitEvent` as before.
 
-### **2. HomeKit → openHAB (HomeKit HomekitCharacteristic Change → Channel Command)**
+### **2. Homekit → openHAB (Homekit HomekitCharacteristic Change → Channel Command)**
 
 - Instead of posting to the event bus, the Mapper calls `ThingHandler.handleCommand(ChannelUID, Command)`.
 
@@ -5897,7 +5897,7 @@ public class ChannelCharacteristicMapper {
             }
         });
 
-        // Subscribe to HomeKit characteristic changes via HomekitEventManager
+        // Subscribe to Homekit characteristic changes via HomekitEventManager
         eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, characteristicUID, event -> {
             if (event instanceof HomekitCharacteristicEvent) {
                 Object newValue = ((HomekitCharacteristicEvent) event).getNewValue();
@@ -5906,7 +5906,7 @@ public class ChannelCharacteristicMapper {
         });
     }
 
-    // openHAB → HomeKit: Publish a HomekitEvent
+    // openHAB → Homekit: Publish a HomekitEvent
     public void updateCharacteristicFromChannelState(State state) {
         Object value = characteristic.toValue(state);
         if (value != null) {
@@ -5919,7 +5919,7 @@ public class ChannelCharacteristicMapper {
         }
     }
 
-    // HomeKit → openHAB: Use ThingHandler to send a command to the Channel
+    // Homekit → openHAB: Use ThingHandler to send a command to the Channel
     public void updateChannelFromCharacteristic(Object newValue) {
         Command command = characteristic.toCommand(newValue);
         if (command != null) {
@@ -5940,7 +5940,7 @@ public class ChannelCharacteristicMapper {
 
 - **No direct event bus posting:** All commands to the device go through `ThingHandler.handleCommand(...)`.
 - **Binding logic is respected:** The handler can validate, transform, or reject commands as needed.
-- **Still decoupled:** HomeKit updates are still published as events, and the handler is the only path to the device.
+- **Still decoupled:** Homekit updates are still published as events, and the handler is the only path to the device.
 
 ---
 
@@ -5948,8 +5948,8 @@ public class ChannelCharacteristicMapper {
 
 | Direction         | Mechanism                        | Mapper HomekitMethod Called                  |
 |-------------------|----------------------------------|---------------------------------------|
-| openHAB → HomeKit | Publish HomekitEvent             | `updateCharacteristicFromChannelState`|
-| HomeKit → openHAB | Call `ThingHandler.handleCommand`| `updateChannelFromCharacteristic`     |
+| openHAB → Homekit | Publish HomekitEvent             | `updateCharacteristicFromChannelState`|
+| Homekit → openHAB | Call `ThingHandler.handleCommand`| `updateChannelFromCharacteristic`     |
 
 ---
 
@@ -5979,11 +5979,11 @@ Absolutely! You’ve covered a lot of ground and are already converging on a rob
 ## 1. **Adopt a Layered, Event-Driven Architecture**
 
 - **Event-driven core:**  
-  Use events (like `HomekitEvent`) for all cross-component communication, not just for HomeKit characteristic updates. This enables loose coupling, easy extension, and better testability.
+  Use events (like `HomekitEvent`) for all cross-component communication, not just for Homekit characteristic updates. This enables loose coupling, easy extension, and better testability.
 - **Layer separation:**  
   - **Discovery/Orchestration Layer:** Handles mapping config, registry watching, and lifecycle.
   - **Mapping Layer:** Contains all Mapper classes (Thing, HomekitService, HomekitCharacteristic).
-  - **Transport Layer:** Handles actual communication with HomeKit (HomekitAccessoryServer) and openHAB (ThingHandler, ItemRegistry).
+  - **Transport Layer:** Handles actual communication with Homekit (HomekitAccessoryServer) and openHAB (ThingHandler, ItemRegistry).
 
 ---
 
@@ -6010,7 +6010,7 @@ Absolutely! You’ve covered a lot of ground and are already converging on a rob
 - **Live config reload:**  
   Use directory/file watchers for mapping config, transformation scripts, and metadata changes, so the system updates without restart.
 - **Dynamic registry listeners:**  
-  Listen for Thing/Channel/Item additions/removals and update HomeKit exposure in real time.
+  Listen for Thing/Channel/Item additions/removals and update Homekit exposure in real time.
 
 ---
 
@@ -6027,7 +6027,7 @@ Absolutely! You’ve covered a lot of ground and are already converging on a rob
 
 - **Validation engine:**  
   On startup and config reload, validate all mappings:
-    - Are all mandatory HomeKit characteristics mapped?
+    - Are all mandatory Homekit characteristics mapped?
     - Are channel types compatible?
     - Are transformation rules valid?
 - **Diagnostics API/UI:**  
@@ -6064,10 +6064,10 @@ Absolutely! You’ve covered a lot of ground and are already converging on a rob
 
 ## 10. **Future-Proofing**
 
-- **Support for new HomeKit features:**  
-  Design the architecture so new HomeKit services/characteristics can be added with minimal changes.
+- **Support for new Homekit features:**  
+  Design the architecture so new Homekit services/characteristics can be added with minimal changes.
 - **Multi-user and security:**  
-  Consider how to handle multiple HomeKit controllers, permissions, and secure event handling.
+  Consider how to handle multiple Homekit controllers, permissions, and secure event handling.
 
 ---
 
@@ -6084,7 +6084,7 @@ Absolutely! You’ve covered a lot of ground and are already converging on a rob
 | Batch/wildcard mapping      | Support wildcards, tags, and patterns                  |
 | Testing/simulation          | Test harness, unit tests for mappers                   |
 | User experience             | UI helpers, auto-suggestions, comprehensive docs       |
-| Future-proofing             | Easy addition of new HomeKit features, security ready  |
+| Future-proofing             | Easy addition of new Homekit features, security ready  |
 
 ---
 
@@ -6092,7 +6092,7 @@ Absolutely! You’ve covered a lot of ground and are already converging on a rob
 
 - **You’re on the right track** with Mapper classes, event-driven design, and OSGi extensibility.
 - The next level is to make the system as **dynamic, user-friendly, and future-proof** as possible, with strong validation and diagnostics.
-- **Keep the core decoupled and modular**—this will pay off as HomeKit and openHAB evolve.
+- **Keep the core decoupled and modular**—this will pay off as Homekit and openHAB evolve.
 
 ---
 
@@ -6108,7 +6108,7 @@ Provide code example of the layer separation, taking into account the discussion
 
 _**Assistant**_
 
-Absolutely! Here’s a **code-oriented example of a layered, event-driven architecture** for HomeKit/openHAB integration, taking into account your existing classes (like `HomekitItemBridge`, `HomekitGenericCharacteristic`, `HomekitEventManager`, etc.) and the best practices discussed.
+Absolutely! Here’s a **code-oriented example of a layered, event-driven architecture** for Homekit/openHAB integration, taking into account your existing classes (like `HomekitItemBridge`, `HomekitGenericCharacteristic`, `HomekitEventManager`, etc.) and the best practices discussed.
 
 ---
 
@@ -6119,10 +6119,10 @@ Absolutely! Here’s a **code-oriented example of a layered, event-driven archit
    - Handles mapping config, registry watching, and lifecycle of accessories/services/characteristics.
 2. **Mapping Layer**  
    (e.g., `CharacteristicItemMapper`, `ChannelCharacteristicMapper`)  
-   - Encapsulates the logic for mapping between openHAB Items/Channels and HomeKit Characteristics.
+   - Encapsulates the logic for mapping between openHAB Items/Channels and Homekit Characteristics.
 3. **Transport/Event Layer**  
    (e.g., `HomekitEventManager`, `HomekitGenericCharacteristic`, `HomekitAccessoryServer`)  
-   - Handles event publication/subscription and communication with HomeKit and openHAB.
+   - Handles event publication/subscription and communication with Homekit and openHAB.
 
 ---
 
@@ -6135,7 +6135,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     // Store mappers for lifecycle management
     private final Map<String, CharacteristicItemMapper> mapperMap = new ConcurrentHashMap<>();
 
-    // Called when a new Item is tagged for HomeKit
+    // Called when a new Item is tagged for Homekit
     private void addCharacteristicToService(HomekitService service, String characteristicType, Item item, HomekitAccessory accessory, HomekitFactory characteristicFactory) {
         try {
             HomekitCharacteristic<?> characteristic = characteristicFactory.createCharacteristic(characteristicType, service, accessory.getNextAvailableInstanceId());
@@ -6273,15 +6273,15 @@ public class HomekitGenericCharacteristic<T> extends HomekitCharacteristic<T> {
 
 ## **4. How It All Flows**
 
-- **Item state changes** → `CharacteristicItemMapper` publishes a `HomekitEvent` → `HomekitGenericCharacteristic` receives event and updates value → Notifies HomeKit server.
-- **HomeKit characteristic changes** → `HomekitGenericCharacteristic` (or server) publishes a `HomekitEvent` → `CharacteristicItemMapper` receives event and updates openHAB Item via `EventPublisher`.
+- **Item state changes** → `CharacteristicItemMapper` publishes a `HomekitEvent` → `HomekitGenericCharacteristic` receives event and updates value → Notifies Homekit server.
+- **Homekit characteristic changes** → `HomekitGenericCharacteristic` (or server) publishes a `HomekitEvent` → `CharacteristicItemMapper` receives event and updates openHAB Item via `EventPublisher`.
 
 ---
 
 ## **5. Extending to ProxyThing/Channel Mapping**
 
 - Replace `Item` with `Channel` and use a `ChannelCharacteristicMapper` with the same pattern.
-- Use `ThingHandler.handleCommand()` for HomeKit → openHAB direction.
+- Use `ThingHandler.handleCommand()` for Homekit → openHAB direction.
 
 ---
 
@@ -6291,7 +6291,7 @@ public class HomekitGenericCharacteristic<T> extends HomekitCharacteristic<T> {
 |-------------------|-----------------------------------------------------|------------------------------|
 | Orchestration     | Lifecycle, config, registry, mapping management     | HomekitItemBridge            |
 | Mapping           | Event subscription, value translation, transformation | CharacteristicItemMapper     |
-| Transport/Event   | Event publication/subscription, HomeKit comms       | HomekitEventManager, HomekitGenericCharacteristic |
+| Transport/Event   | Event publication/subscription, Homekit comms       | HomekitEventManager, HomekitGenericCharacteristic |
 
 ---
 
@@ -6307,7 +6307,7 @@ Given the whole discussion, give a final recommendation on how to organise the c
 
 _**Assistant**_
 
-Here’s a **final, best-practice recommendation** for organizing configuration of Things, Channels, and Mappers in a HomeKit/openHAB integration, based on everything discussed:
+Here’s a **final, best-practice recommendation** for organizing configuration of Things, Channels, and Mappers in a Homekit/openHAB integration, based on everything discussed:
 
 ---
 
@@ -6329,23 +6329,23 @@ Thing mqtt:topic:mysensor "My Sensor" @ "Hallway" {
 }
 ```
 - **What does NOT go here:**  
-  - HomeKit-specific mapping, transformation, or exposure config
+  - Homekit-specific mapping, transformation, or exposure config
   - Batch or wildcard mapping rules
 
 ---
 
-## **2. YAML/JSON Mapping Files: For HomeKit Mapping and Transformation**
+## **2. YAML/JSON Mapping Files: For Homekit Mapping and Transformation**
 
 - **Purpose:**  
-  Define how openHAB Things/Channels are exposed to HomeKit, including:
+  Define how openHAB Things/Channels are exposed to Homekit, including:
     - Which Things/Channels are exposed
-    - How Channels map to HomeKit Services/Characteristics
+    - How Channels map to Homekit Services/Characteristics
     - Any transformation, scaling, or custom mapping logic
     - Which Mapper/factory to use (if not default)
     - Batch/wildcard/type-based mapping
 
 - **What goes here:**  
-  - Per-Thing or per-ThingType HomeKit mapping
+  - Per-Thing or per-ThingType Homekit mapping
   - Per-Channel to HomekitCharacteristic mapping
   - Transformation rules (e.g., scaling, inverting, mapping values)
   - Mapper/factory selection (for binding-specific logic)
@@ -6384,9 +6384,9 @@ thingTypes:
 ## **3. Metadata (Optional, for Advanced/Per-Item Use)**
 
 - **Purpose:**  
-  Allow users to tag specific Items/Channels/Things for HomeKit exposure or to override mapping on a per-entity basis.
+  Allow users to tag specific Items/Channels/Things for Homekit exposure or to override mapping on a per-entity basis.
 - **What goes here:**  
-  - HomeKit tags (e.g., `homekit:On`)
+  - Homekit tags (e.g., `homekit:On`)
   - Per-entity transformation or mapping hints
 
 **Example:**
@@ -6404,7 +6404,7 @@ metadata:
 | Configuration Aspect         | .things File | YAML/JSON Mapping File | Metadata (optional) |
 |-----------------------------|:------------:|:----------------------:|:-------------------:|
 | Thing/Channel definition     |      ✅      |           ❌           |         ❌          |
-| Per-Thing HomeKit mapping    |      ❌      |           ✅           |         ✅          |
+| Per-Thing Homekit mapping    |      ❌      |           ✅           |         ✅          |
 | Per-ThingType mapping        |      ❌      |           ✅           |         ❌          |
 | Channel→HomekitCharacteristic map   |      ❌      |           ✅           |         ✅          |
 | Transformation rules         |      ❌      |           ✅           |         ✅          |
@@ -6417,7 +6417,7 @@ metadata:
 ## **5. Final Recommendations**
 
 - **Keep .things files clean and focused on device topology.**
-- **Put all HomeKit mapping, transformation, and advanced logic in a dedicated YAML/JSON mapping file.**
+- **Put all Homekit mapping, transformation, and advanced logic in a dedicated YAML/JSON mapping file.**
 - **Use metadata for per-entity overrides or tagging, if you want to support advanced users or UI-driven config.**
 - **Support both per-Thing and per-ThingType mapping in your mapping file, with per-Thing taking precedence.**
 - **Allow batch/wildcard mapping and transformation rules in the mapping file for scalability.**
@@ -6426,7 +6426,7 @@ metadata:
 
 ---
 
-**This approach gives you maximum flexibility, maintainability, and user-friendliness, and is fully compatible with openHAB and HomeKit best practices.**
+**This approach gives you maximum flexibility, maintainability, and user-friendliness, and is fully compatible with openHAB and Homekit best practices.**
 
 If you want a sample mapping file schema or code for loading/merging configs, just ask!
 
@@ -6450,9 +6450,9 @@ Given the current architecture and the extensive discussion, here’s a clear, p
 
 **Why?**
 - **openHAB Items are often user-defined and dynamic.**
-- Metadata is the most natural, openHAB-native way to attach HomeKit mapping information to Items.
+- Metadata is the most natural, openHAB-native way to attach Homekit mapping information to Items.
 - It allows for:
-  - Per-Item mapping to HomeKit Services and Characteristics.
+  - Per-Item mapping to Homekit Services and Characteristics.
   - Easy UI-based configuration (MainUI supports editing metadata).
   - Fine-grained control and overrides.
 
@@ -6514,7 +6514,7 @@ Or, in openHAB MainUI, you can add a `homekit` metadata namespace with a JSON va
 
 ## **Conclusion**
 
-- **Keep using metadata for per-Item HomeKit mapping in HomekitItemBridge.**
+- **Keep using metadata for per-Item Homekit mapping in HomekitItemBridge.**
 - **Optionally supplement with a mapping file for batch/advanced use cases.**
 - This hybrid approach gives you the best of both worlds: flexibility, user-friendliness, and scalability.
 
@@ -6532,16 +6532,16 @@ Give an example of a .items file which this applied. Given an example of a mappi
 
 _**Assistant**_
 
-Certainly! Here’s a **practical example** of how you would organize your configuration using both `.items` files (with metadata for per-Item mapping) and a YAML mapping file for batch/type-based or advanced HomeKit mapping.
+Certainly! Here’s a **practical example** of how you would organize your configuration using both `.items` files (with metadata for per-Item mapping) and a YAML mapping file for batch/type-based or advanced Homekit mapping.
 
 ---
 
-## **1. Example `.items` File with HomeKit Metadata**
+## **1. Example `.items` File with Homekit Metadata**
 
 ```items
 Switch LivingRoom_Light "Living Room Light" <light> ["Lighting"]
     { channel="zwave:device:controller:node3:switch_binary" }
-    // HomeKit metadata (in MainUI or via REST API, not directly in .items syntax):
+    // Homekit metadata (in MainUI or via REST API, not directly in .items syntax):
     // homekit: { "service": "Lightbulb", "characteristic": "On" }
 
 Dimmer Bedroom_Dimmer "Bedroom Dimmer" <slider> ["Lighting"]
@@ -6575,7 +6575,7 @@ Contact Hallway_Door "Hallway Door" <door> ["Door"]
 **File:** `${OPENHAB_CONF}/homekit-mapping.yaml`
 
 ```yaml
-# Batch/type-based HomeKit mapping for Items without explicit metadata
+# Batch/type-based Homekit mapping for Items without explicit metadata
 
 itemTypes:
   - itemType: Dimmer
@@ -6601,7 +6601,7 @@ defaults:
 ```
 
 **What this does:**
-- Any `Dimmer` Item without explicit `homekit` metadata is exposed as a HomeKit Lightbulb with Brightness.
+- Any `Dimmer` Item without explicit `homekit` metadata is exposed as a Homekit Lightbulb with Brightness.
 - Any `Switch` Item without explicit metadata is exposed as an Outlet with On/Off.
 - Any `Contact` Item is exposed as a ContactSensor.
 - Any Item tagged with `Lighting` is exposed as a Lightbulb with On/Off.
@@ -6651,36 +6651,36 @@ Say that use of .items is mandatory, how would you do it? use tags ? how ?
 
 _**Assistant**_
 
-If the use of `.items` files is **mandatory** (i.e., you cannot use external YAML mapping files or UI/REST metadata), the best way to configure HomeKit mapping is to use **openHAB Item tags** and, if needed, a naming convention for tags.
+If the use of `.items` files is **mandatory** (i.e., you cannot use external YAML mapping files or UI/REST metadata), the best way to configure Homekit mapping is to use **openHAB Item tags** and, if needed, a naming convention for tags.
 
 ---
 
-## **How to Use Tags in .items Files for HomeKit Mapping**
+## **How to Use Tags in .items Files for Homekit Mapping**
 
-### **1. Tagging Items for HomeKit Exposure**
+### **1. Tagging Items for Homekit Exposure**
 
 - openHAB allows you to add tags to Items in `.items` files using square brackets.
-- You can use standard tags (e.g., `"Lighting"`, `"Switchable"`) or define your own (e.g., `"HomeKit_Lightbulb"`, `"HomeKit_Outlet"`).
+- You can use standard tags (e.g., `"Lighting"`, `"Switchable"`) or define your own (e.g., `"Homekit_Lightbulb"`, `"Homekit_Outlet"`).
 
 **Example:**
 ```items
-Switch LivingRoom_Light "Living Room Light" <light> ["HomeKit_Lightbulb"]
-Dimmer Bedroom_Dimmer "Bedroom Dimmer" <slider> ["HomeKit_Lightbulb"]
-Contact Hallway_Door "Hallway Door" <door> ["HomeKit_ContactSensor"]
-Switch Kitchen_Socket "Kitchen Socket" <poweroutlet> ["HomeKit_Outlet"]
+Switch LivingRoom_Light "Living Room Light" <light> ["Homekit_Lightbulb"]
+Dimmer Bedroom_Dimmer "Bedroom Dimmer" <slider> ["Homekit_Lightbulb"]
+Contact Hallway_Door "Hallway Door" <door> ["Homekit_ContactSensor"]
+Switch Kitchen_Socket "Kitchen Socket" <poweroutlet> ["Homekit_Outlet"]
 ```
 
 ---
 
 ### **2. Tag Naming Convention**
 
-- Use a tag format like `HomeKit_<ServiceType>` to indicate the HomeKit service you want.
-- Optionally, use a second tag for the characteristic, e.g., `HomeKit_On`, `HomeKit_Brightness`.
+- Use a tag format like `Homekit_<ServiceType>` to indicate the Homekit service you want.
+- Optionally, use a second tag for the characteristic, e.g., `Homekit_On`, `Homekit_Brightness`.
 
 **Example:**
 ```items
-Switch Garden_Light "Garden Light" <light> ["HomeKit_Lightbulb", "HomeKit_On"]
-Dimmer Desk_Lamp "Desk Lamp" <slider> ["HomeKit_Lightbulb", "HomeKit_Brightness"]
+Switch Garden_Light "Garden Light" <light> ["Homekit_Lightbulb", "Homekit_On"]
+Dimmer Desk_Lamp "Desk Lamp" <slider> ["Homekit_Lightbulb", "Homekit_Brightness"]
 ```
 
 ---
@@ -6688,7 +6688,7 @@ Dimmer Desk_Lamp "Desk Lamp" <slider> ["HomeKit_Lightbulb", "HomeKit_Brightness"
 ### **3. How the Bridge Would Resolve Mapping**
 
 - **Parse tags** for each Item.
-- The first tag matching `HomeKit_*` gives the HomeKit service type.
+- The first tag matching `Homekit_*` gives the Homekit service type.
 - The second tag (if present) gives the characteristic.
 - If only the service tag is present, use a default characteristic for the Item type (e.g., `On` for Switch, `Brightness` for Dimmer).
 
@@ -6697,10 +6697,10 @@ Dimmer Desk_Lamp "Desk Lamp" <slider> ["HomeKit_Lightbulb", "HomeKit_Brightness"
 ### **4. Example: .items File**
 
 ```items
-Switch LivingRoom_Light "Living Room Light" <light> ["HomeKit_Lightbulb"]
-Dimmer Bedroom_Dimmer "Bedroom Dimmer" <slider> ["HomeKit_Lightbulb", "HomeKit_Brightness"]
-Contact Hallway_Door "Hallway Door" <door> ["HomeKit_ContactSensor"]
-Switch Kitchen_Socket "Kitchen Socket" <poweroutlet> ["HomeKit_Outlet", "HomeKit_On"]
+Switch LivingRoom_Light "Living Room Light" <light> ["Homekit_Lightbulb"]
+Dimmer Bedroom_Dimmer "Bedroom Dimmer" <slider> ["Homekit_Lightbulb", "Homekit_Brightness"]
+Contact Hallway_Door "Hallway Door" <door> ["Homekit_ContactSensor"]
+Switch Kitchen_Socket "Kitchen Socket" <poweroutlet> ["Homekit_Outlet", "Homekit_On"]
 ```
 
 ---
@@ -6713,8 +6713,8 @@ for (Item item : itemRegistry.getItems()) {
     String serviceType = null;
     String characteristic = null;
     for (String tag : tags) {
-        if (tag.startsWith("HomeKit_")) {
-            String value = tag.substring("HomeKit_".length());
+        if (tag.startsWith("Homekit_")) {
+            String value = tag.substring("Homekit_".length());
             if (isServiceType(value)) {
                 serviceType = value;
             } else if (isCharacteristic(value)) {
@@ -6726,7 +6726,7 @@ for (Item item : itemRegistry.getItems()) {
         if (characteristic == null) {
             characteristic = getDefaultCharacteristicForItemType(item.getType());
         }
-        // Map item to HomeKit service/characteristic
+        // Map item to Homekit service/characteristic
     }
 }
 ```
@@ -6735,7 +6735,7 @@ for (Item item : itemRegistry.getItems()) {
 
 ### **6. Default HomekitCharacteristic Mapping Table**
 
-| Item Type | Default HomeKit HomekitService | Default HomekitCharacteristic |
+| Item Type | Default Homekit HomekitService | Default HomekitCharacteristic |
 |-----------|------------------------|-----------------------|
 | Switch    | Lightbulb/Outlet       | On                    |
 | Dimmer    | Lightbulb              | Brightness            |
@@ -6755,16 +6755,16 @@ for (Item item : itemRegistry.getItems()) {
 
 | What you can do with tags in .items | How to do it                |
 |-------------------------------------|-----------------------------|
-| Expose Item to HomeKit              | Add `["HomeKit_Service"]`   |
-| Specify characteristic              | Add `["HomeKit_Characteristic"]` |
+| Expose Item to Homekit              | Add `["Homekit_Service"]`   |
+| Specify characteristic              | Add `["Homekit_Characteristic"]` |
 | Use default mapping                 | Omit characteristic tag     |
 
 ---
 
 ## **Conclusion**
 
-- **If .items is mandatory, use tags to indicate HomeKit service and (optionally) characteristic.**
-- **Adopt a clear naming convention** (e.g., `HomeKit_Lightbulb`, `HomeKit_On`).
+- **If .items is mandatory, use tags to indicate Homekit service and (optionally) characteristic.**
+- **Adopt a clear naming convention** (e.g., `Homekit_Lightbulb`, `Homekit_On`).
 - **The bridge should parse tags to determine mapping.**
 - **Use sensible defaults for characteristics if not specified.**
 
@@ -6782,7 +6782,7 @@ And what if metadata is used? like in the current implementation of @HomekitItem
 
 _**Assistant**_
 
-If you use **metadata** (as in the current implementation of `HomekitItemBridge.java`), you gain much more flexibility and precision than with tags alone. Here’s how you should organize and use metadata for HomeKit mapping, and why it’s a strong approach:
+If you use **metadata** (as in the current implementation of `HomekitItemBridge.java`), you gain much more flexibility and precision than with tags alone. Here’s how you should organize and use metadata for Homekit mapping, and why it’s a strong approach:
 
 ---
 
@@ -6794,7 +6794,7 @@ If you use **metadata** (as in the current implementation of `HomekitItemBridge.
 
 ---
 
-## **How to Use Metadata for HomeKit Mapping**
+## **How to Use Metadata for Homekit Mapping**
 
 ### **1. Per-Item Metadata Example**
 
@@ -6846,7 +6846,7 @@ If you use **metadata** (as in the current implementation of `HomekitItemBridge.
 
 - On startup or when an Item is added/updated, the bridge checks for `homekit` metadata.
 - If present, it parses the JSON and uses the specified mapping to:
-  - Determine which HomeKit service and characteristic(s) to expose.
+  - Determine which Homekit service and characteristic(s) to expose.
   - Apply any transformation or mapping rules.
 - If no metadata is present, the bridge can fall back to tag-based or default mapping.
 
@@ -6896,7 +6896,7 @@ for (Item item : itemRegistry.getItems()) {
         String service = mapping.getString("service");
         String characteristic = mapping.getString("characteristic");
         // Optionally: handle transformation, multiple characteristics, etc.
-        // Map item to HomeKit service/characteristic
+        // Map item to Homekit service/characteristic
     } else {
         // Fallback to tag-based or default mapping
     }
@@ -6920,7 +6920,7 @@ for (Item item : itemRegistry.getItems()) {
 
 ## **Conclusion**
 
-- **If you can use metadata, it is the most flexible and openHAB-native way to map Items to HomeKit services and characteristics.**
+- **If you can use metadata, it is the most flexible and openHAB-native way to map Items to Homekit services and characteristics.**
 - **Keep using metadata in HomekitItemBridge for per-Item mapping.**
 - **Use tags or mapping files only for batch or fallback mapping.**
 
@@ -6939,7 +6939,7 @@ What it .items is defined as in the following example : Rollershutter    window_
 
 _**Assistant**_
 
-Great, you’re referencing the **classic openHAB 1.x style HomeKit add-on syntax** for `.items` files, where the `{homekit="..."}` binding config is used to map an Item to a HomeKit service and characteristics.
+Great, you’re referencing the **classic openHAB 1.x style Homekit add-on syntax** for `.items` files, where the `{homekit="..."}` binding config is used to map an Item to a Homekit service and characteristics.
 
 Let’s break down what this means, how it works, and how it compares to the metadata-based approach discussed earlier.
 
@@ -6956,23 +6956,23 @@ Rollershutter window_covering "Window Rollershutter" {homekit="WindowCovering, W
 - **Label:** `"Window Rollershutter"`
 - **Binding config:**  
   - `homekit="WindowCovering, WindowCovering.CurrentPosition, WindowCovering.TargetPosition, WindowCovering.PositionState"`
-    - This tells the HomeKit add-on to expose this Item as a HomeKit `WindowCovering` service, with the specified characteristics.
+    - This tells the Homekit add-on to expose this Item as a Homekit `WindowCovering` service, with the specified characteristics.
 
 ---
 
 ## **2. How Does This Compare to Metadata?**
 
-- This is a **binding config** (in curly braces) and is parsed by the HomeKit add-on.
-- It is **not** openHAB 2.x/3.x metadata, but a legacy way to attach HomeKit mapping to an Item.
+- This is a **binding config** (in curly braces) and is parsed by the Homekit add-on.
+- It is **not** openHAB 2.x/3.x metadata, but a legacy way to attach Homekit mapping to an Item.
 - It is **per-Item** and allows you to specify:
-  - The HomeKit service type (`WindowCovering`)
+  - The Homekit service type (`WindowCovering`)
   - The characteristics to expose (`CurrentPosition`, `TargetPosition`, `PositionState`)
 
 ---
 
 ## **3. How Would You Handle This in a Modern openHAB 3.x/4.x Setup?**
 
-### **A. If the HomeKit add-on supports this syntax:**
+### **A. If the Homekit add-on supports this syntax:**
 - You can keep using it, and the add-on will parse the binding config to determine the mapping.
 
 ### **B. If you want to migrate to metadata (recommended for new setups):**
@@ -7010,7 +7010,7 @@ if (bindingConfig != null) {
     String[] parts = bindingConfig.split(",");
     String service = parts[0].trim();
     List<String> characteristics = Arrays.stream(parts).skip(1).map(String::trim).collect(Collectors.toList());
-    // Map item to HomeKit service/characteristics
+    // Map item to Homekit service/characteristics
 }
 ```
 
@@ -7033,7 +7033,7 @@ if (bindingConfig != null) {
 
 ---
 
-**If you want a code sample for parsing this binding config and mapping it to HomeKit in a bridge, just ask!**
+**If you want a code sample for parsing this binding config and mapping it to Homekit in a bridge, just ask!**
 
 ---
 
@@ -7049,8 +7049,8 @@ Great question!
 If you want `HomekitItemBridge.java` to support the **openHAB 1.x binding config syntax** (e.g., `{homekit="WindowCovering, WindowCovering.CurrentPosition, WindowCovering.TargetPosition, WindowCovering.PositionState"}` in `.items` files), the implementation would need to:
 
 1. **Parse the binding config string** from each Item.
-2. **Extract the HomeKit service and characteristics** from the string.
-3. **Map the Item to the HomeKit service and characteristics** accordingly.
+2. **Extract the Homekit service and characteristics** from the string.
+3. **Map the Item to the Homekit service and characteristics** accordingly.
 4. **(Optionally) Fallback to metadata or tags if no binding config is present.**
 
 Below is a **conceptual implementation** of the relevant parts of `HomekitItemBridge.java` to support this.
@@ -7059,7 +7059,7 @@ Below is a **conceptual implementation** of the relevant parts of `HomekitItemBr
 
 ## **1. Parsing the Binding Config**
 
-You need a utility to extract the HomeKit mapping from the Item’s binding config.
+You need a utility to extract the Homekit mapping from the Item’s binding config.
 
 ```java
 private static class HomekitBindingConfig {
@@ -7107,7 +7107,7 @@ for (Item item : itemRegistry.getItems()) {
     if (config != null) {
         HomekitBindingConfig hkConfig = HomekitBindingConfig.parse(config);
 
-        // Create the HomeKit HomekitAccessory/HomekitService for this Item
+        // Create the Homekit HomekitAccessory/HomekitService for this Item
         HomekitAccessory accessory = new HomekitGenericAccessory(...);
         HomekitService service = homekitFactory.createService(hkConfig.service, accessory, ...);
 
@@ -7167,7 +7167,7 @@ If no binding config is present, you can fallback to:
 |--------------------------|--------------------------------------------------|
 | Binding config (1.x)     | Parse `{homekit="..."}` string                   |
 | Metadata (2.x/3.x)       | Parse JSON from `homekit` namespace              |
-| Tags                     | Use tag naming convention (e.g., `HomeKit_Lightbulb`) |
+| Tags                     | Use tag naming convention (e.g., `Homekit_Lightbulb`) |
 | Default                  | Use Item type to infer service/characteristic    |
 
 ---
@@ -7175,7 +7175,7 @@ If no binding config is present, you can fallback to:
 ## **Conclusion**
 
 - To support openHAB 1.x binding config syntax in `HomekitItemBridge.java`, add logic to parse the `{homekit="..."}` string from each Item.
-- Use this to drive the creation of HomeKit services and characteristics.
+- Use this to drive the creation of Homekit services and characteristics.
 - Fallback to metadata, tags, or defaults if no binding config is present.
 - This approach ensures backward compatibility with classic `.items` files while supporting modern mapping methods.
 
@@ -7206,7 +7206,7 @@ Below is an example of how you might implement this.
 
 ## **1. Custom ItemProvider Example**
 
-Suppose you want to support the `{homekit="..."}` syntax in `.items` files for HomeKit mapping.
+Suppose you want to support the `{homekit="..."}` syntax in `.items` files for Homekit mapping.
 
 ### **A. Implement a Custom ItemProvider**
 
@@ -7312,8 +7312,8 @@ for (String line : Files.readAllLines(Paths.get("items/My.items"))) {
 ## **5. Conclusion**
 
 - In openHAB 2.x/3.x, you **cannot directly access binding configs** from Items at runtime.
-- **Solution:** Parse the `.items` files yourself (via a custom `ItemProvider` or script), extract the HomeKit binding config, and store it as metadata.
-- Your bridge can then use the metadata for HomeKit mapping, just as it would for UI/REST-set metadata.
+- **Solution:** Parse the `.items` files yourself (via a custom `ItemProvider` or script), extract the Homekit binding config, and store it as metadata.
+- Your bridge can then use the metadata for Homekit mapping, just as it would for UI/REST-set metadata.
 
 ---
 
@@ -7439,7 +7439,7 @@ If you **do not want to parse the `.items` files yourself** and want to rely sol
 ## **1. openHAB 2.x/3.x+ Core Does NOT Expose Raw Binding Configs**
 
 - Once Items are loaded into the registry, their original binding config strings (e.g., `{homekit="..."}`) are **not available** via the public API.
-- The only way to get HomeKit mapping info via the openHAB API is through:
+- The only way to get Homekit mapping info via the openHAB API is through:
   - **Tags** (via `item.getTags()`)
   - **Metadata** (via `MetadataRegistry`)
   - **Item type, label, and state** (via `ItemRegistry`)
@@ -7448,9 +7448,9 @@ If you **do not want to parse the `.items` files yourself** and want to rely sol
 
 ## **2. What You CAN Do with openHAB APIs**
 
-### **A. Use Metadata (Recommended for HomeKit 2.x/3.x)**
+### **A. Use Metadata (Recommended for Homekit 2.x/3.x)**
 
-- Attach HomeKit mapping info as metadata to Items (via MainUI, REST API, or programmatically).
+- Attach Homekit mapping info as metadata to Items (via MainUI, REST API, or programmatically).
 - Retrieve it using the `MetadataRegistry`:
 
 ```java
@@ -7460,7 +7460,7 @@ private MetadataRegistry metadataRegistry;
 Metadata meta = metadataRegistry.get(new MetadataKey("homekit", item.getName()));
 if (meta != null) {
     String value = meta.getValue(); // JSON or string with mapping info
-    // Parse and use for HomeKit mapping
+    // Parse and use for Homekit mapping
 }
 ```
 
@@ -7471,7 +7471,7 @@ if (meta != null) {
 
 ```java
 Set<String> tags = item.getTags();
-if (tags.contains("HomeKit_Lightbulb")) {
+if (tags.contains("Homekit_Lightbulb")) {
     // Map as Lightbulb
 }
 ```
@@ -7489,27 +7489,27 @@ if (tags.contains("HomeKit_Lightbulb")) {
 
 ---
 
-## **4. Best Practice for HomeKit Mapping in openHAB 2.x/3.x+**
+## **4. Best Practice for Homekit Mapping in openHAB 2.x/3.x+**
 
-- **Use metadata** for all HomeKit mapping information.
+- **Use metadata** for all Homekit mapping information.
 - **Optionally use tags** for simple service/characteristic selection.
 - **Do not rely on binding configs in `.items` files**—they are a legacy 1.x feature and not supported by the core API.
 
 ---
 
-## **5. Example: Modern openHAB HomeKit Mapping Flow**
+## **5. Example: Modern openHAB Homekit Mapping Flow**
 
 ```java
 for (Item item : itemRegistry.getItems()) {
-    // 1. Check for HomeKit metadata
+    // 1. Check for Homekit metadata
     Metadata meta = metadataRegistry.get(new MetadataKey("homekit", item.getName()));
     if (meta != null) {
         // Use metadata for mapping
         continue;
     }
-    // 2. Check for HomeKit tags
+    // 2. Check for Homekit tags
     Set<String> tags = item.getTags();
-    if (tags.stream().anyMatch(tag -> tag.startsWith("HomeKit_"))) {
+    if (tags.stream().anyMatch(tag -> tag.startsWith("Homekit_"))) {
         // Use tag for mapping
         continue;
     }
@@ -7532,13 +7532,13 @@ for (Item item : itemRegistry.getItems()) {
 
 ## **Conclusion**
 
-- **If you want to use only openHAB’s official APIs, use metadata and tags for HomeKit mapping.**
+- **If you want to use only openHAB’s official APIs, use metadata and tags for Homekit mapping.**
 - **Do not rely on binding configs in `.items` files**—they are not accessible after Items are loaded.
 - This is the recommended and future-proof approach for openHAB 2.x/3.x+.
 
 ---
 
-**If you want a code sample for setting or reading HomeKit metadata/tags in openHAB, just ask!**
+**If you want a code sample for setting or reading Homekit metadata/tags in openHAB, just ask!**
 
 ---
 
@@ -7634,7 +7634,7 @@ if (meta != null) {
     JsonObject mapping = parseJson(meta.getValue());
     String service = mapping.getString("service");
     JsonArray characteristics = mapping.getJsonArray("characteristics");
-    // Use for HomeKit mapping
+    // Use for Homekit mapping
 }
 ```
 
@@ -7652,7 +7652,7 @@ if (meta != null) {
 
 ## **6. Conclusion**
 
-- **1.x binding configs can be directly mapped to HomeKit metadata in JSON format.**
+- **1.x binding configs can be directly mapped to Homekit metadata in JSON format.**
 - **Automate the migration** with a script if you have many Items.
 - **Use MainUI or REST API** for manual or small-scale migration.
 
@@ -7678,7 +7678,7 @@ Let’s clarify the **backward compatibility** of openHAB 1.x binding configs (e
 ## **1. openHAB 1.x Binding Configs in 2.x/3.x/4.x**
 
 - **openHAB 1.x bindings** (those using the old binding config syntax in `.items` files) are supported in openHAB 2.x/3.x/4.x **only if the binding is a "1.x compatibility" binding** (i.e., installed via the "1.x Compatibility Layer").
-- **openHAB 2.x/3.x/4.x bindings** (including the modern HomeKit add-on) **do not** use or parse the `{binding="..."}` syntax in `.items` files.
+- **openHAB 2.x/3.x/4.x bindings** (including the modern Homekit add-on) **do not** use or parse the `{binding="..."}` syntax in `.items` files.
 - **Modern bindings** expect configuration to be done via:
   - Thing/Channel configuration (in `.things` files or UI)
   - Metadata (via UI, REST, or programmatically)
@@ -7686,25 +7686,25 @@ Let’s clarify the **backward compatibility** of openHAB 1.x binding configs (e
 
 ---
 
-## **2. HomeKit Binding Specifics**
+## **2. Homekit Binding Specifics**
 
-- The **openHAB 1.x HomeKit add-on** (now deprecated) did parse `{homekit="..."}` in `.items` files.
-- The **openHAB 2.x/3.x/4.x HomeKit add-on** **does NOT** parse `{homekit="..."}` in `.items` files.  
-  - It expects HomeKit mapping to be done via **metadata** or **tags**.
-  - If you use `{homekit="..."}` in `.items` files with the modern HomeKit add-on, it will be ignored.
+- The **openHAB 1.x Homekit add-on** (now deprecated) did parse `{homekit="..."}` in `.items` files.
+- The **openHAB 2.x/3.x/4.x Homekit add-on** **does NOT** parse `{homekit="..."}` in `.items` files.  
+  - It expects Homekit mapping to be done via **metadata** or **tags**.
+  - If you use `{homekit="..."}` in `.items` files with the modern Homekit add-on, it will be ignored.
 
 ---
 
 ## **3. What Does "Backward Compatible" Mean Here?**
 
 - **Backward compatibility** means you can still use 1.x bindings in openHAB 2.x/3.x/4.x if you install the compatibility layer.
-- **It does NOT mean** that modern bindings (like HomeKit 2.x/3.x/4.x) will parse or use the 1.x binding config syntax.
+- **It does NOT mean** that modern bindings (like Homekit 2.x/3.x/4.x) will parse or use the 1.x binding config syntax.
 
 ---
 
 ## **4. What Should You Do?**
 
-- **If you are using the modern HomeKit add-on:**  
+- **If you are using the modern Homekit add-on:**  
   - **Do NOT rely on `{homekit="..."}` in `.items` files.**
   - **Migrate your mapping to metadata** (recommended) or tags.
 - **If you are using a 1.x binding via the compatibility layer:**  
@@ -7714,7 +7714,7 @@ Let’s clarify the **backward compatibility** of openHAB 1.x binding configs (e
 
 ## **5. Summary Table**
 
-| openHAB Version | 1.x Binding Config in .items | Modern HomeKit Add-on Parses? | Recommended? |
+| openHAB Version | 1.x Binding Config in .items | Modern Homekit Add-on Parses? | Recommended? |
 |-----------------|:---------------------------:|:-----------------------------:|:------------:|
 | 1.x             |            ✅               |             ✅                |      ❌      |
 | 2.x/3.x/4.x     |            ✅*              |             ❌                |      ❌      |
@@ -7725,8 +7725,8 @@ Let’s clarify the **backward compatibility** of openHAB 1.x binding configs (e
 
 ## **6. Conclusion**
 
-- **Modern HomeKit binding does NOT parse `{homekit="..."}` in `.items` files.**
-- **For openHAB 2.x/3.x/4.x, always use metadata or tags for HomeKit mapping.**
+- **Modern Homekit binding does NOT parse `{homekit="..."}` in `.items` files.**
+- **For openHAB 2.x/3.x/4.x, always use metadata or tags for Homekit mapping.**
 - **Migrate any 1.x binding configs to metadata for future-proofing and compatibility.**
 
 ---
@@ -7747,13 +7747,13 @@ Absolutely! Here’s a **YAML format** that brings together all the best practic
 
 - Be easy to read and write
 - Support per-Item, per-type, and tag-based mapping
-- Allow specifying HomeKit service, characteristics, transformation rules, and custom mappers
+- Allow specifying Homekit service, characteristics, transformation rules, and custom mappers
 - Be easily convertible to openHAB metadata for Items (e.g., via a script or UI)
 - Support batch and default mapping
 
 ---
 
-## **1. YAML Format for HomeKit Item Metadata Mapping**
+## **1. YAML Format for Homekit Item Metadata Mapping**
 
 ```yaml
 # Per-Item explicit mapping (overrides all else)
@@ -7879,13 +7879,13 @@ defaults:
 - **For migration:**  
   Write a script that reads this YAML and sets the corresponding metadata for each Item via the openHAB REST API.
 - **For runtime mapping:**  
-  Your bridge can load this YAML and use it to resolve HomeKit mapping for each Item, falling back from per-Item to type/tag/default as needed.
+  Your bridge can load this YAML and use it to resolve Homekit mapping for each Item, falling back from per-Item to type/tag/default as needed.
 
 ---
 
 ## **6. Extensibility**
 
-- You can add fields for custom mappers, transformation scripts, or additional HomeKit options as needed.
+- You can add fields for custom mappers, transformation scripts, or additional Homekit options as needed.
 - You can add batch mapping for groups, locations, or other criteria.
 
 ---
@@ -7930,7 +7930,7 @@ Here’s how the process works, step by step:
 ## **1. Parse the YAML Mapping File**
 
 - At system startup or on config reload, your code (or a migration script) parses the YAML mapping file.
-- For each Item, you determine the HomeKit mapping by applying the rules in order:
+- For each Item, you determine the Homekit mapping by applying the rules in order:
   1. **Per-Item mapping** (if present in `items:`)
   2. **Per-type mapping** (if present in `itemTypes:`)
   3. **Per-tag mapping** (if present in `tags:`)
@@ -7938,9 +7938,9 @@ Here’s how the process works, step by step:
 
 ---
 
-## **2. Set HomeKit Metadata on Each Item**
+## **2. Set Homekit Metadata on Each Item**
 
-- For each Item, you generate a metadata value (usually JSON) that describes the HomeKit mapping (service, characteristics, transformation, etc.).
+- For each Item, you generate a metadata value (usually JSON) that describes the Homekit mapping (service, characteristics, transformation, etc.).
 - You attach this metadata to the Item using the openHAB API (REST, MainUI, or programmatically via `MetadataRegistry`).
 
 **Example:**
@@ -7961,7 +7961,7 @@ Here’s how the process works, step by step:
 
 - At runtime, `HomekitItemBridge` (or your mapping/orchestration layer) reads the `homekit` metadata for each Item.
 - It uses this metadata to:
-  - Determine which HomeKit service and characteristics to expose for the Item.
+  - Determine which Homekit service and characteristics to expose for the Item.
   - Set up the appropriate `CharacteristicMappers` (or similar classes) for event subscription and value translation.
   - Apply any transformation or mapping rules specified in the metadata.
 
@@ -7996,7 +7996,7 @@ Here’s how the process works, step by step:
       as `homekit` metadata.
 3. **HomekitItemBridge at runtime:**
     - Reads `homekit` metadata for `LivingRoom_Light`.
-    - Sets up a HomeKit Lightbulb accessory with an On characteristic.
+    - Sets up a Homekit Lightbulb accessory with an On characteristic.
     - Instantiates a `CharacteristicItemMapper` for the mapping.
 
 ---
@@ -8007,14 +8007,14 @@ Here’s how the process works, step by step:
 |---------------------|----------------------------------------------------|
 | Parse YAML          | Apply rules to determine mapping for each Item     |
 | Set metadata        | Attach mapping as `homekit` metadata to each Item  |
-| Bridge setup        | Read metadata, set up HomeKit services/characteristics/mappers |
+| Bridge setup        | Read metadata, set up Homekit services/characteristics/mappers |
 
 ---
 
 ## **Conclusion**
 
 - **Yes, the YAML is parsed and used to set metadata on Items.**
-- **At runtime, only the metadata is used** to drive HomeKit mapping and mapper setup.
+- **At runtime, only the metadata is used** to drive Homekit mapping and mapper setup.
 - This approach is robust, maintainable, and openHAB-native.
 
 ---
@@ -8032,23 +8032,23 @@ The same principle would be used for the Things ? do we still assume that no con
 _**Assistant**_
 
 **Yes, the same principle applies to Things:**  
-You should use **metadata** (or an external YAML/JSON mapping file that is parsed into metadata) to capture HomeKit mapping for Things, rather than adding custom configuration to `.things` files.
+You should use **metadata** (or an external YAML/JSON mapping file that is parsed into metadata) to capture Homekit mapping for Things, rather than adding custom configuration to `.things` files.
 
 ---
 
-## **Why Not Use .things Files for HomeKit Mapping?**
+## **Why Not Use .things Files for Homekit Mapping?**
 
 - **.things files are for core device topology and binding config only.**
 - They do not natively support arbitrary metadata or complex mapping structures.
-- openHAB’s best practice is to keep device/binding config in `.things` and all integration/mapping logic (like HomeKit, Alexa, etc.) in metadata or external mapping files.
+- openHAB’s best practice is to keep device/binding config in `.things` and all integration/mapping logic (like Homekit, Alexa, etc.) in metadata or external mapping files.
 
 ---
 
 ## **How to Apply the Principle to Things**
 
-### **1. Use Metadata for HomeKit Mapping**
+### **1. Use Metadata for Homekit Mapping**
 
-- Attach HomeKit mapping info as metadata to the Thing (or its Channels).
+- Attach Homekit mapping info as metadata to the Thing (or its Channels).
 - This can be done via MainUI, REST API, or programmatically.
 
 **Example:**
@@ -8084,8 +8084,8 @@ things:
 
 ### **3. At Runtime**
 
-- Your HomeKit bridge reads the `homekit` metadata from each Thing (or Channel).
-- It uses this to set up the HomeKit HomekitAccessory, HomekitService, and HomekitCharacteristic mappings.
+- Your Homekit bridge reads the `homekit` metadata from each Thing (or Channel).
+- It uses this to set up the Homekit HomekitAccessory, HomekitService, and HomekitCharacteristic mappings.
 
 ---
 
@@ -8094,7 +8094,7 @@ things:
 | Configuration Aspect         | .things File | Metadata | YAML Mapping File |
 |-----------------------------|:------------:|:--------:|:-----------------:|
 | Device/binding config        |     ✅       |    ❌    |        ❌         |
-| HomeKit mapping              |     ❌       |    ✅    |        ✅         |
+| Homekit mapping              |     ❌       |    ✅    |        ✅         |
 | Batch/type-based mapping     |     ❌       |    ❌    |        ✅         |
 | Per-Thing/Channel mapping    |     ❌       |    ✅    |        ✅         |
 
@@ -8102,8 +8102,8 @@ things:
 
 ## **Conclusion**
 
-- **Do NOT add HomeKit mapping config to `.things` files.**
-- **Use metadata (or a YAML/JSON mapping file that is parsed into metadata) for all HomeKit mapping.**
+- **Do NOT add Homekit mapping config to `.things` files.**
+- **Use metadata (or a YAML/JSON mapping file that is parsed into metadata) for all Homekit mapping.**
 - This keeps your configuration clean, maintainable, and in line with openHAB best practices.
 
 ---
@@ -8128,20 +8128,20 @@ Yes, in principle, you can run both a `HomekitItemBridge` and a `HomekitThingBri
 ## **1. What Would This Look Like?**
 
 - **HomekitItemBridge**:  
-  - Exposes openHAB Items as HomeKit accessories/services/characteristics, using metadata or tags on Items.
+  - Exposes openHAB Items as Homekit accessories/services/characteristics, using metadata or tags on Items.
 - **HomekitThingBridge**:  
-  - Exposes openHAB Things (and their Channels) as HomeKit accessories/services/characteristics, using metadata or mapping files on Things/Channels.
+  - Exposes openHAB Things (and their Channels) as Homekit accessories/services/characteristics, using metadata or mapping files on Things/Channels.
 
 **Both bridges would:**
-- Register HomeKit accessories with the HomeKit server.
-- Listen for state changes and synchronize between openHAB and HomeKit.
+- Register Homekit accessories with the Homekit server.
+- Listen for state changes and synchronize between openHAB and Homekit.
 
 ---
 
 ## **2. Why Might You Want Both?**
 
 - **Legacy and migration:**  
-  - You have some Items mapped to HomeKit (legacy or UI-driven), and some Things/Channels mapped (newer, more structured).
+  - You have some Items mapped to Homekit (legacy or UI-driven), and some Things/Channels mapped (newer, more structured).
 - **Different use cases:**  
   - Some users prefer Item-based mapping (for flexibility), others prefer Thing/Channel-based mapping (for structure and batch mapping).
 - **Gradual migration:**  
@@ -8153,17 +8153,17 @@ Yes, in principle, you can run both a `HomekitItemBridge` and a `HomekitThingBri
 
 ### **A. Duplicate Exposure**
 
-- **If the same device is exposed via both an Item and a Thing/Channel, you may get duplicate HomeKit accessories or characteristics.**
-- This can confuse HomeKit controllers (e.g., the Apple Home app) and users.
+- **If the same device is exposed via both an Item and a Thing/Channel, you may get duplicate Homekit accessories or characteristics.**
+- This can confuse Homekit controllers (e.g., the Apple Home app) and users.
 
 **Example:**
-- `LivingRoom_Light` Item is mapped to HomeKit via `HomekitItemBridge`.
+- `LivingRoom_Light` Item is mapped to Homekit via `HomekitItemBridge`.
 - The underlying Thing/Channel (`zwave:device:controller:node3:switch_binary`) is also mapped via `HomekitThingBridge`.
-- Both appear as separate HomeKit accessories or as duplicate characteristics.
+- Both appear as separate Homekit accessories or as duplicate characteristics.
 
 ### **B. State Synchronization Loops**
 
-- If both bridges listen to the same underlying state changes, you could get feedback loops (e.g., a HomeKit command triggers both bridges, which both update openHAB, which triggers both bridges again).
+- If both bridges listen to the same underlying state changes, you could get feedback loops (e.g., a Homekit command triggers both bridges, which both update openHAB, which triggers both bridges again).
 
 ### **C. Resource Usage**
 
@@ -8171,7 +8171,7 @@ Yes, in principle, you can run both a `HomekitItemBridge` and a `HomekitThingBri
 
 ### **D. User Confusion**
 
-- Users may not know which bridge is responsible for a given HomeKit accessory, making troubleshooting harder.
+- Users may not know which bridge is responsible for a given Homekit accessory, making troubleshooting harder.
 
 ---
 
@@ -8252,13 +8252,13 @@ Are there any other considerations to make in this complete bridging architectur
 
 _**Assistant**_
 
-Absolutely—there are several **additional considerations** to ensure a robust, maintainable, and user-friendly HomeKit bridging architecture when supporting both Item-based and Thing/Channel-based mapping (or any advanced HomeKit integration in openHAB):
+Absolutely—there are several **additional considerations** to ensure a robust, maintainable, and user-friendly Homekit bridging architecture when supporting both Item-based and Thing/Channel-based mapping (or any advanced Homekit integration in openHAB):
 
 ---
 
 ## 1. **HomekitAccessory/HomekitService/HomekitCharacteristic Uniqueness**
 
-- **HomeKit requires unique accessory IDs and unique characteristic instance IDs.**
+- **Homekit requires unique accessory IDs and unique characteristic instance IDs.**
 - Ensure that, across both bridges, you do not accidentally create duplicate accessories or characteristics with the same UID or instance ID.
 - Consider a central registry or namespace strategy for generating UIDs.
 
@@ -8266,7 +8266,7 @@ Absolutely—there are several **additional considerations** to ensure a robust,
 
 ## 2. **Consistent HomekitAccessory Naming and Room Assignment**
 
-- If both bridges are used, ensure that accessory names and room assignments in HomeKit are consistent and user-friendly.
+- If both bridges are used, ensure that accessory names and room assignments in Homekit are consistent and user-friendly.
 - Allow users to override names/rooms via metadata or mapping config.
 
 ---
@@ -8280,21 +8280,21 @@ Absolutely—there are several **additional considerations** to ensure a robust,
 
 ## 4. **Security and Privacy**
 
-- Ensure that only intended Items/Things/Channels are exposed to HomeKit.
+- Ensure that only intended Items/Things/Channels are exposed to Homekit.
 - Consider access control for mapping configuration (e.g., only allow certain users to expose devices).
 
 ---
 
 ## 5. **Performance and Scalability**
 
-- Monitor the number of event subscriptions and the load on the HomeKit server, especially in large installations.
+- Monitor the number of event subscriptions and the load on the Homekit server, especially in large installations.
 - Consider batching updates or throttling if you have many rapid state changes.
 
 ---
 
 ## 6. **Event Loop Prevention**
 
-- As previously mentioned, ensure that state changes do not create feedback loops between openHAB and HomeKit.
+- As previously mentioned, ensure that state changes do not create feedback loops between openHAB and Homekit.
 - Implement change origin tracking or debouncing if necessary.
 
 ---
@@ -8306,9 +8306,9 @@ Absolutely—there are several **additional considerations** to ensure a robust,
 
 ---
 
-## 8. **Extensibility for New HomeKit Features**
+## 8. **Extensibility for New Homekit Features**
 
-- Design the architecture so that new HomeKit services, characteristics, or features (like scenes, automations, or camera support) can be added with minimal changes.
+- Design the architecture so that new Homekit services, characteristics, or features (like scenes, automations, or camera support) can be added with minimal changes.
 
 ---
 
@@ -8322,13 +8322,13 @@ Absolutely—there are several **additional considerations** to ensure a robust,
 ## 10. **User Experience**
 
 - Provide clear documentation and, if possible, UI helpers for mapping configuration.
-- Make it easy for users to see what is exposed to HomeKit and how.
+- Make it easy for users to see what is exposed to Homekit and how.
 
 ---
 
 ## 11. **Testing and Simulation**
 
-- Provide a way to simulate HomeKit mappings and see what would be exposed before actually publishing to HomeKit.
+- Provide a way to simulate Homekit mappings and see what would be exposed before actually publishing to Homekit.
 - Unit test mappers and bridge logic.
 
 ---
@@ -8355,8 +8355,8 @@ Absolutely—there are several **additional considerations** to ensure a robust,
 
 | Consideration                | Why It Matters                                   |
 |------------------------------|--------------------------------------------------|
-| UID uniqueness               | Prevents HomeKit errors and confusion            |
-| Naming/room assignment       | User experience in HomeKit app                   |
+| UID uniqueness               | Prevents Homekit errors and confusion            |
+| Naming/room assignment       | User experience in Homekit app                   |
 | Error handling/diagnostics   | Troubleshooting and support                      |
 | Security/privacy             | Prevents accidental exposure                     |
 | Performance/scalability      | Ensures reliability in large setups              |
@@ -8374,8 +8374,8 @@ Absolutely—there are several **additional considerations** to ensure a robust,
 
 ## **Conclusion**
 
-- **A complete HomeKit bridging architecture should address not just mapping, but also uniqueness, diagnostics, security, performance, extensibility, and user experience.**
-- **Plan for growth, migration, and future HomeKit features.**
+- **A complete Homekit bridging architecture should address not just mapping, but also uniqueness, diagnostics, security, performance, extensibility, and user experience.**
+- **Plan for growth, migration, and future Homekit features.**
 - **Document and test thoroughly.**
 
 ---
@@ -8392,15 +8392,15 @@ Forget about using the bridges at same time. Since the beginning of the discussi
 
 _**Assistant**_
 
-Absolutely! Here’s a **final checklist of additional considerations and best practices** for a robust, maintainable, and user-friendly HomeKit integration in openHAB, based on everything discussed so far—even if you only use one bridging approach (Item-based or Thing/Channel-based):
+Absolutely! Here’s a **final checklist of additional considerations and best practices** for a robust, maintainable, and user-friendly Homekit integration in openHAB, based on everything discussed so far—even if you only use one bridging approach (Item-based or Thing/Channel-based):
 
 ---
 
 ## 1. **Validation and Diagnostics**
 
 - **Validate mappings at startup and on reload:**  
-  - Ensure all mandatory HomeKit characteristics are mapped.
-  - Check for type compatibility between openHAB and HomeKit.
+  - Ensure all mandatory Homekit characteristics are mapped.
+  - Check for type compatibility between openHAB and Homekit.
   - Warn or error if a mapping is incomplete or invalid.
 - **Expose diagnostics:**  
   - Provide a REST endpoint, log output, or UI page showing current mappings, errors, and suggestions.
@@ -8418,9 +8418,9 @@ Absolutely! Here’s a **final checklist of additional considerations and best p
 ## 3. **Extensibility and Modularity**
 
 - **Pluggable mappers/factories:**  
-  - Use OSGi or a registry pattern so new HomeKit services/characteristics or openHAB channel types can be supported without core changes.
+  - Use OSGi or a registry pattern so new Homekit services/characteristics or openHAB channel types can be supported without core changes.
 - **Separation of concerns:**  
-  - Keep mapping logic, event handling, and transport (HomeKit/openHAB) decoupled.
+  - Keep mapping logic, event handling, and transport (Homekit/openHAB) decoupled.
 
 ---
 
@@ -8456,22 +8456,22 @@ Absolutely! Here’s a **final checklist of additional considerations and best p
 - **Efficient event handling:**  
   - Avoid unnecessary event subscriptions or processing.
 - **Scalability:**  
-  - Test with large numbers of Items/Things and HomeKit accessories.
+  - Test with large numbers of Items/Things and Homekit accessories.
 
 ---
 
 ## 8. **Security and Privacy**
 
 - **Restrict exposure:**  
-  - Only expose Items/Things explicitly mapped for HomeKit.
-- **Audit and log mapping changes and HomeKit exposure.**
+  - Only expose Items/Things explicitly mapped for Homekit.
+- **Audit and log mapping changes and Homekit exposure.**
 
 ---
 
 ## 9. **Testing and Simulation**
 
 - **Unit test mappers and mapping logic.**
-- **Provide a simulation or dry-run mode** to preview what will be exposed to HomeKit.
+- **Provide a simulation or dry-run mode** to preview what will be exposed to Homekit.
 
 ---
 
@@ -8498,8 +8498,8 @@ Absolutely! Here’s a **final checklist of additional considerations and best p
 
 ## 13. **Future-Proofing**
 
-- **Design for new HomeKit features:**  
-  - Make it easy to add new services, characteristics, or HomeKit features (like scenes, automations, or cameras).
+- **Design for new Homekit features:**  
+  - Make it easy to add new services, characteristics, or Homekit features (like scenes, automations, or cameras).
 
 ---
 
@@ -8519,14 +8519,14 @@ Absolutely! Here’s a **final checklist of additional considerations and best p
 | Migration           | Versioned schema, migration tools                  |
 | Localization        | Support for multiple languages                     |
 | Error handling      | Actionable logs and diagnostics                    |
-| Future-proofing     | Easy addition of new HomeKit features              |
+| Future-proofing     | Easy addition of new Homekit features              |
 
 ---
 
 ## **Conclusion**
 
 - **You’re on the right track** with a metadata-driven, event-based, modular architecture.
-- **Focus on validation, extensibility, user experience, and future-proofing** to ensure your solution remains robust and maintainable as openHAB and HomeKit evolve.
+- **Focus on validation, extensibility, user experience, and future-proofing** to ensure your solution remains robust and maintainable as openHAB and Homekit evolve.
 
 ---
 
@@ -8543,20 +8543,20 @@ How would you implement Validation & Diagnostics ?
 _**Assistant**_
 
 Great question!  
-**Validation and diagnostics** are essential for a robust HomeKit integration, especially as mapping complexity grows. Here’s a practical approach for implementing both, tailored to your HomekitItemBridge (or ThingBridge) architecture:
+**Validation and diagnostics** are essential for a robust Homekit integration, especially as mapping complexity grows. Here’s a practical approach for implementing both, tailored to your HomekitItemBridge (or ThingBridge) architecture:
 
 ---
 
 ## **1. Validation: What to Check**
 
-- **Mandatory HomeKit characteristics:**  
+- **Mandatory Homekit characteristics:**  
   Ensure all required characteristics for a given service are mapped.
 - **Type compatibility:**  
-  Check that the openHAB Item/Channel type is compatible with the HomeKit characteristic (e.g., don’t map a String Item to a Brightness characteristic).
+  Check that the openHAB Item/Channel type is compatible with the Homekit characteristic (e.g., don’t map a String Item to a Brightness characteristic).
 - **Transformation rules:**  
   Validate that any transformation or mapping rules are syntactically and semantically correct.
 - **Uniqueness:**  
-  Ensure no duplicate HomeKit accessories, services, or characteristic instance IDs.
+  Ensure no duplicate Homekit accessories, services, or characteristic instance IDs.
 - **Completeness:**  
   Warn if an Item/Thing is partially mapped (e.g., only some required characteristics are present).
 - **Conflicts:**  
@@ -8567,11 +8567,11 @@ Great question!
 ## **2. Diagnostics: What to Expose**
 
 - **Current mapping state:**  
-  For each Item/Thing, show what HomeKit service/characteristics it is mapped to, and by which bridge.
+  For each Item/Thing, show what Homekit service/characteristics it is mapped to, and by which bridge.
 - **Validation errors/warnings:**  
   List all mapping issues found during validation.
 - **HomekitAccessory/characteristic registry:**  
-  Show all currently exposed HomeKit accessories and their details.
+  Show all currently exposed Homekit accessories and their details.
 - **Suggestions:**  
   Offer actionable suggestions for fixing mapping issues.
 
@@ -8675,9 +8675,9 @@ HomekitMappingValidator validator = new HomekitMappingValidator();
 List<ValidationResult> results = validator.validateMappings(itemRegistry.getItems(), metadataRegistry);
 for (ValidationResult result : results) {
     if (result.getStatus() == ValidationResult.Status.ERROR) {
-        logger.error("HomeKit mapping error for {}: {}", result.getItemName(), result.getMessage());
+        logger.error("Homekit mapping error for {}: {}", result.getItemName(), result.getMessage());
     } else if (result.getStatus() == ValidationResult.Status.WARNING) {
-        logger.warn("HomeKit mapping warning for {}: {}", result.getItemName(), result.getMessage());
+        logger.warn("Homekit mapping warning for {}: {}", result.getItemName(), result.getMessage());
     }
 }
 ```
@@ -8704,7 +8704,7 @@ for (ValidationResult result : results) {
 
 ## **Conclusion**
 
-- **Validation and diagnostics are critical for a reliable HomeKit integration.**
+- **Validation and diagnostics are critical for a reliable Homekit integration.**
 - **Implement a validator utility, expose diagnostics via REST/UI, and log all issues clearly.**
 - **This will save you and your users countless hours of troubleshooting and support.**
 
@@ -8844,7 +8844,7 @@ public class TypeCompatibilityValidator implements HomekitMappingValidatorRule {
 
 ## **6. Example: Adding a New Validation Rule**
 
-- To add a new rule (e.g., "No duplicate HomeKit accessory names"), just implement the interface and register as an OSGi component.
+- To add a new rule (e.g., "No duplicate Homekit accessory names"), just implement the interface and register as an OSGi component.
 - The system will pick it up automatically.
 
 ---
@@ -8869,14 +8869,14 @@ provide a concrete and full implementation for MandatoryCharacteristicValidator
 
 _**Assistant**_
 
-Certainly! Here’s a **concrete, full implementation** of a pluggable OSGi `MandatoryCharacteristicValidator` for HomeKit mapping in openHAB.  
-This validator checks that all mandatory HomeKit characteristics for a given service are present in the mapping metadata for an Item.
+Certainly! Here’s a **concrete, full implementation** of a pluggable OSGi `MandatoryCharacteristicValidator` for Homekit mapping in openHAB.  
+This validator checks that all mandatory Homekit characteristics for a given service are present in the mapping metadata for an Item.
 
 ---
 
 ## **Assumptions**
 
-- You have a registry or utility that can provide the list of mandatory characteristics for a given HomeKit service (e.g., `HomekitServiceRegistry`).
+- You have a registry or utility that can provide the list of mandatory characteristics for a given Homekit service (e.g., `HomekitServiceRegistry`).
 - The mapping metadata is stored as JSON in the `homekit` namespace for each Item.
 - The validator is an OSGi component implementing a `HomekitMappingValidatorRule` interface.
 
@@ -8962,7 +8962,7 @@ public class MandatoryCharacteristicValidator implements HomekitMappingValidator
             JsonObject obj = reader.readObject();
             serviceType = obj.getString("service", null);
             if (serviceType == null) {
-                return new ValidationResult(ValidationResult.Status.ERROR, itemName, "No 'service' specified in HomeKit metadata.");
+                return new ValidationResult(ValidationResult.Status.ERROR, itemName, "No 'service' specified in Homekit metadata.");
             }
 
             // Support both "characteristics" as array or object
@@ -8979,7 +8979,7 @@ public class MandatoryCharacteristicValidator implements HomekitMappingValidator
                 }
             }
         } catch (Exception e) {
-            return new ValidationResult(ValidationResult.Status.ERROR, itemName, "Invalid HomeKit metadata JSON: " + e.getMessage());
+            return new ValidationResult(ValidationResult.Status.ERROR, itemName, "Invalid Homekit metadata JSON: " + e.getMessage());
         }
 
         // Get mandatory characteristics for the service
@@ -8999,7 +8999,7 @@ public class MandatoryCharacteristicValidator implements HomekitMappingValidator
             return new ValidationResult(
                 ValidationResult.Status.ERROR,
                 itemName,
-                "Missing mandatory HomeKit characteristics for service '" + serviceType + "': " + String.join(", ", missing)
+                "Missing mandatory Homekit characteristics for service '" + serviceType + "': " + String.join(", ", missing)
             );
         }
     }
@@ -9031,7 +9031,7 @@ HomekitMappingValidator validator = ...; // Injected or constructed
 List<ValidationResult> results = validator.validateMappings(itemRegistry.getItems(), metadataRegistry, mapperRegistry);
 for (ValidationResult result : results) {
     if (result.getStatus() == ValidationResult.Status.ERROR) {
-        logger.error("HomeKit mapping error for {}: {}", result.getItemName(), result.getMessage());
+        logger.error("Homekit mapping error for {}: {}", result.getItemName(), result.getMessage());
     }
 }
 ```
@@ -9057,7 +9057,7 @@ MandatoryCharacteristicValidator could use the existing @HomekitFactory.java and
 
 _**Assistant**_
 
-Absolutely! Here’s a **concrete implementation** of `MandatoryCharacteristicValidator` that leverages the existing `HomekitFactory` and the `HomekitService`/`HomekitGenericService`/`HomekitCharacteristic` APIs to validate that all mandatory characteristics for a HomeKit service are present in the actual `HomekitService` instance.
+Absolutely! Here’s a **concrete implementation** of `MandatoryCharacteristicValidator` that leverages the existing `HomekitFactory` and the `HomekitService`/`HomekitGenericService`/`HomekitCharacteristic` APIs to validate that all mandatory characteristics for a Homekit service are present in the actual `HomekitService` instance.
 
 This approach is more robust than just parsing metadata, as it checks the actual runtime state of the HomekitService and its Characteristics.
 
@@ -9106,11 +9106,11 @@ public class MandatoryCharacteristicValidator implements HomekitMappingValidator
             // Assume metadata value is JSON with a "service" field
             serviceType = MetadataJsonUtil.getServiceType(meta.getValue());
         } catch (Exception e) {
-            return new ValidationResult(ValidationResult.Status.ERROR, itemName, "Invalid HomeKit metadata: " + e.getMessage());
+            return new ValidationResult(ValidationResult.Status.ERROR, itemName, "Invalid Homekit metadata: " + e.getMessage());
         }
 
         if (serviceType == null) {
-            return new ValidationResult(ValidationResult.Status.ERROR, itemName, "No 'service' specified in HomeKit metadata.");
+            return new ValidationResult(ValidationResult.Status.ERROR, itemName, "No 'service' specified in Homekit metadata.");
         }
 
         // 2. Get the HomekitService instance for this Item (this depends on your bridge/accessory registry)
@@ -9140,7 +9140,7 @@ public class MandatoryCharacteristicValidator implements HomekitMappingValidator
             return new ValidationResult(
                 ValidationResult.Status.ERROR,
                 itemName,
-                "Missing mandatory HomeKit characteristics for service '" + serviceType + "': " + String.join(", ", missing)
+                "Missing mandatory Homekit characteristics for service '" + serviceType + "': " + String.join(", ", missing)
             );
         }
     }
@@ -9197,7 +9197,7 @@ public class MandatoryCharacteristicValidator implements HomekitMappingValidator
 
 ## **Conclusion**
 
-- This implementation leverages your existing HomeKit model and factory classes for robust, runtime validation.
+- This implementation leverages your existing Homekit model and factory classes for robust, runtime validation.
 - It is modular, extensible, and OSGi-friendly.
 
 ---
@@ -9220,7 +9220,7 @@ Excellent and very insightful question!
 
 #### **1. Theoretical Approach**
 
-- In HomeKit, each HomekitService type (e.g., Lightbulb, Outlet, WindowCovering) has a set of mandatory characteristics, as defined by the HomeKit HomekitAccessory Protocol (HAP) specification.
+- In Homekit, each HomekitService type (e.g., Lightbulb, Outlet, WindowCovering) has a set of mandatory characteristics, as defined by the Homekit HomekitAccessory Protocol (HAP) specification.
 - In your codebase, these mandatory characteristics are typically added in the `addCharacteristics()` method of each concrete `HomekitService` class (which extends or implements `HomekitService` or `HomekitGenericService`).
 
 #### **2. Can Java Reflection Be Used?**
@@ -9234,7 +9234,7 @@ Excellent and very insightful question!
 
 ##### **A. Static Registry/Map (Recommended)**
 - Maintain a static registry or map in your codebase that lists, for each service type, the set of mandatory characteristics.
-- This is how most HomeKit libraries (including openHAB’s) handle this, because it’s reliable and matches the HAP spec.
+- This is how most Homekit libraries (including openHAB’s) handle this, because it’s reliable and matches the HAP spec.
 
 **Example:**
 ```java
@@ -9280,7 +9280,7 @@ public static Set<String> getMandatoryCharacteristics(String serviceType) {
 
 - **Do NOT rely on Java reflection to detect mandatory characteristics by inspecting method bodies.**
 - **Use a static registry/map, or expose the info via your HomekitFactory or HomekitService classes.**
-- This is robust, maintainable, and matches how HomeKit libraries and the HAP spec are structured.
+- This is robust, maintainable, and matches how Homekit libraries and the HAP spec are structured.
 
 ---
 
@@ -9297,7 +9297,7 @@ Assume we create a static map of mandatory characteristics, how would you map it
 _**Assistant**_
 
 Great question!  
-The **best practice** is to use **the same identifier you use at runtime to look up and compare characteristics**. In openHAB HomeKit, this is typically the **characteristic type string** (e.g., `"On"`, `"CurrentPosition"`, `"TargetPosition"`), which matches the HomeKit/HAP specification and is used by your HomekitService and HomekitCharacteristic APIs.
+The **best practice** is to use **the same identifier you use at runtime to look up and compare characteristics**. In openHAB Homekit, this is typically the **characteristic type string** (e.g., `"On"`, `"CurrentPosition"`, `"TargetPosition"`), which matches the Homekit/HAP specification and is used by your HomekitService and HomekitCharacteristic APIs.
 
 ---
 
@@ -9318,7 +9318,7 @@ The **best practice** is to use **the same identifier you use at runtime to look
   Your `HomekitService` and `HomekitCharacteristic` classes already use type strings for identification (see `getInstanceType()` and `isType(String)`).
 - **Portability:**  
   Type strings are stable across refactoring and can be used in config, metadata, and mapping files.
-- **Alignment with HomeKit Spec:**  
+- **Alignment with Homekit Spec:**  
   The HAP spec defines characteristics by type string (e.g., `"On"`, `"Brightness"`, `"CurrentPosition"`).
 
 ---
@@ -9362,7 +9362,7 @@ for (String m : mandatory) {
 ## **Conclusion**
 
 - **Use characteristic type strings** (e.g., `"On"`, `"CurrentPosition"`) as the keys/values in your static map of mandatory characteristics.
-- This is robust, readable, and matches both your codebase and the HomeKit specification.
+- This is robust, readable, and matches both your codebase and the Homekit specification.
 
 ---
 
@@ -9379,7 +9379,7 @@ Almost. the Type strings are of the format "00000008-0000-1000-8000-0026BB765291
 _**Assistant**_
 
 Excellent clarification!  
-You are correct: in openHAB HomeKit (and in the HAP specification), the **canonical identifier for a characteristic or service is the type UUID string** (e.g., `"00000008-0000-1000-8000-0026BB765291"`), as returned by `getType()`.
+You are correct: in openHAB Homekit (and in the HAP specification), the **canonical identifier for a characteristic or service is the type UUID string** (e.g., `"00000008-0000-1000-8000-0026BB765291"`), as returned by `getType()`.
 
 ---
 
@@ -9453,7 +9453,7 @@ for (String m : mandatory) {
 
 ---
 
-**If you want a ready-to-use map for common HomeKit services/characteristics, just ask!**
+**If you want a ready-to-use map for common Homekit services/characteristics, just ask!**
 
 ---
 
@@ -9645,7 +9645,7 @@ _**Assistant**_
 
 ---
 
-Based on the actual Java source code in your solution, here is a proposed `Map<String, Set<String>>` that maps each HomeKit HomekitService TYPE UUID to the set of mandatory Characteristics (by their class name, but you could use their `TYPE` string as well if you prefer):
+Based on the actual Java source code in your solution, here is a proposed `Map<String, Set<String>>` that maps each Homekit HomekitService TYPE UUID to the set of mandatory Characteristics (by their class name, but you could use their `TYPE` string as well if you prefer):
 
 ```java
 import java.util.*;
@@ -9863,7 +9863,7 @@ Ok. going back to the Validators, what kind of Validators should be defined? pro
 
 _**Assistant**_
 
-Absolutely! For a robust, user-friendly, and maintainable HomeKit/openHAB integration, you should define a **suite of Validators** that check for correctness, completeness, and best practices in your mapping between openHAB Items/Things/Channels and HomeKit Accessories/Services/Characteristics.
+Absolutely! For a robust, user-friendly, and maintainable Homekit/openHAB integration, you should define a **suite of Validators** that check for correctness, completeness, and best practices in your mapping between openHAB Items/Things/Channels and Homekit Accessories/Services/Characteristics.
 
 Below is a **comprehensive list of Validator types** you should consider implementing, along with a brief description of each:
 
@@ -9872,15 +9872,15 @@ Below is a **comprehensive list of Validator types** you should consider impleme
 ## **Core Validator Types**
 
 ### 1. **MandatoryCharacteristicValidator**
-- **Purpose:** Ensures all mandatory HomeKit characteristics are present for each HomekitService.
+- **Purpose:** Ensures all mandatory Homekit characteristics are present for each HomekitService.
 - **Checks:** Each HomekitService instance has all required characteristics (by TYPE UID).
 
 ### 2. **ChannelCharacteristicMappingValidator**
-- **Purpose:** Ensures every mapped HomeKit HomekitCharacteristic is correctly linked to an openHAB Channel (and vice versa).
+- **Purpose:** Ensures every mapped Homekit HomekitCharacteristic is correctly linked to an openHAB Channel (and vice versa).
 - **Checks:** No unmapped mandatory characteristics; no orphaned channels.
 
 ### 3. **TypeCompatibilityValidator**
-- **Purpose:** Ensures the data types of openHAB Channels/Items are compatible with the mapped HomeKit HomekitCharacteristic types.
+- **Purpose:** Ensures the data types of openHAB Channels/Items are compatible with the mapped Homekit HomekitCharacteristic types.
 - **Checks:** E.g., a Switch channel is mapped to a Boolean characteristic, not a String.
 
 ### 4. **DuplicateMappingValidator**
@@ -9888,11 +9888,11 @@ Below is a **comprehensive list of Validator types** you should consider impleme
 - **Checks:** No duplicate channel/characteristic assignments.
 
 ### 5. **OptionalCharacteristicValidator**
-- **Purpose:** Warns if recommended (but not mandatory) HomeKit characteristics are missing.
-- **Checks:** Suggests adding optional characteristics for richer HomeKit experience.
+- **Purpose:** Warns if recommended (but not mandatory) Homekit characteristics are missing.
+- **Checks:** Suggests adding optional characteristics for richer Homekit experience.
 
 ### 6. **ThingTypeSupportValidator**
-- **Purpose:** Ensures the ThingType or ChannelType is supported by the HomeKit integration.
+- **Purpose:** Ensures the ThingType or ChannelType is supported by the Homekit integration.
 - **Checks:** Only supported ThingTypes/ChannelTypes are mapped.
 
 ### 7. **MetadataSyntaxValidator**
@@ -9904,7 +9904,7 @@ Below is a **comprehensive list of Validator types** you should consider impleme
 - **Checks:** E.g., HomekitService name, instanceId, etc., are not missing.
 
 ### 9. **EventSubscriptionValidator**
-- **Purpose:** Ensures all mapped characteristics/channels are properly subscribed to openHAB events and HomeKit events.
+- **Purpose:** Ensures all mapped characteristics/channels are properly subscribed to openHAB events and Homekit events.
 - **Checks:** No missing event subscriptions.
 
 ### 10. **AccessControlValidator**
@@ -9920,7 +9920,7 @@ Below is a **comprehensive list of Validator types** you should consider impleme
 - **Checks:** Suggests splitting or optimizing mappings.
 
 ### 12. **LocalizationValidator**
-- **Purpose:** Ensures that names, descriptions, and labels are properly localized for HomeKit.
+- **Purpose:** Ensures that names, descriptions, and labels are properly localized for Homekit.
 - **Checks:** All user-facing strings are localizable.
 
 ### 13. **ExtensibilityValidator**
@@ -9928,7 +9928,7 @@ Below is a **comprehensive list of Validator types** you should consider impleme
 - **Checks:** Custom types are handled gracefully.
 
 ### 14. **DeprecationValidator**
-- **Purpose:** Warns about use of deprecated HomeKit or openHAB types.
+- **Purpose:** Warns about use of deprecated Homekit or openHAB types.
 - **Checks:** Suggests migration to newer types.
 
 ### 15. **SecurityValidator**
@@ -9973,7 +9973,7 @@ provide implemtations for the core validator types
 
 _**Assistant**_
 
-Certainly! Below are **Java interface definitions and example implementations** for the core validator types, designed for a HomeKit/openHAB mapping context.  
+Certainly! Below are **Java interface definitions and example implementations** for the core validator types, designed for a Homekit/openHAB mapping context.  
 Each validator implements a common interface and returns a list of validation results (errors/warnings).
 
 ---
@@ -10165,7 +10165,7 @@ public class ThingTypeSupportValidator implements MappingValidator {
             if (!supportedThingTypeUids.contains(thing.getThingTypeUid())) {
                 results.add(new ValidationResult(
                     ValidationResult.Severity.ERROR,
-                    "ThingType " + thing.getThingTypeUid() + " is not supported by HomeKit integration"
+                    "ThingType " + thing.getThingTypeUid() + " is not supported by Homekit integration"
                 ));
             }
         }
@@ -10285,8 +10285,8 @@ Give an implemtation of the TypeCompatibilityUtil class you mentioned
 _**Assistant**_
 
 Certainly!  
-Below is a **practical implementation** of a `TypeCompatibilityUtil` class for HomeKit ↔ openHAB mapping.  
-This utility checks if an openHAB channel type (or item type) is compatible with a HomeKit characteristic TYPE UID.
+Below is a **practical implementation** of a `TypeCompatibilityUtil` class for Homekit ↔ openHAB mapping.  
+This utility checks if an openHAB channel type (or item type) is compatible with a Homekit characteristic TYPE UID.
 
 You can expand the mappings as needed for your solution.
 
@@ -10298,7 +10298,7 @@ import java.util.Set;
 
 public class TypeCompatibilityUtil {
 
-    // Map HomeKit HomekitCharacteristic TYPE UID → Set of compatible openHAB channel types
+    // Map Homekit HomekitCharacteristic TYPE UID → Set of compatible openHAB channel types
     private static final Map<String, Set<String>> CHARACTERISTIC_TYPE_TO_CHANNEL_TYPES = Map.ofEntries(
         // OnCharacteristic (Switch, Dimmer, etc.)
         Map.entry("00000025-0000-1000-8000-0026BB765291", Set.of("Switch", "Dimmer", "Contact")),
@@ -10324,10 +10324,10 @@ public class TypeCompatibilityUtil {
     );
 
     /**
-     * Checks if the given openHAB channel type is compatible with the HomeKit characteristic type UID.
+     * Checks if the given openHAB channel type is compatible with the Homekit characteristic type UID.
      *
      * @param channelType openHAB channel type (e.g., "Switch", "Number:Temperature")
-     * @param characteristicTypeUid HomeKit characteristic TYPE UID (UUID string)
+     * @param characteristicTypeUid Homekit characteristic TYPE UID (UUID string)
      * @return true if compatible, false otherwise
      */
     public static boolean isCompatible(String channelType, String characteristicTypeUid) {
@@ -10356,7 +10356,7 @@ boolean fail = TypeCompatibilityUtil.isCompatible("String", "00000025-0000-1000-
 
 ### **How to Extend**
 
-- Add more entries to the `CHARACTERISTIC_TYPE_TO_CHANNEL_TYPES` map for additional HomeKit characteristics.
+- Add more entries to the `CHARACTERISTIC_TYPE_TO_CHANNEL_TYPES` map for additional Homekit characteristics.
 - You can also create the reverse mapping if needed (channel type → allowed characteristics).
 
 ---
@@ -10376,7 +10376,7 @@ yes, give a full version and implementation
 
 _**Assistant**_
 
-Certainly! Here is a **full-featured implementation** of `TypeCompatibilityUtil` that supports both openHAB **Channel types** and **Item types**, and is easy to extend or adapt for your HomeKit integration.
+Certainly! Here is a **full-featured implementation** of `TypeCompatibilityUtil` that supports both openHAB **Channel types** and **Item types**, and is easy to extend or adapt for your Homekit integration.
 
 ---
 
@@ -10385,7 +10385,7 @@ import java.util.*;
 
 public class TypeCompatibilityUtil {
 
-    // Map HomeKit HomekitCharacteristic TYPE UID → Set of compatible openHAB channel types
+    // Map Homekit HomekitCharacteristic TYPE UID → Set of compatible openHAB channel types
     private static final Map<String, Set<String>> CHARACTERISTIC_TYPE_TO_CHANNEL_TYPES = Map.ofEntries(
         // OnCharacteristic (Switch, Dimmer, Contact)
         Map.entry("00000025-0000-1000-8000-0026BB765291", Set.of("Switch", "Dimmer", "Contact")),
@@ -10410,7 +10410,7 @@ public class TypeCompatibilityUtil {
         Map.entry("default", Set.of("Switch", "Dimmer", "Number", "Contact", "Color", "Rollershutter", "String"))
     );
 
-    // Map HomeKit HomekitCharacteristic TYPE UID → Set of compatible openHAB Item types
+    // Map Homekit HomekitCharacteristic TYPE UID → Set of compatible openHAB Item types
     private static final Map<String, Set<String>> CHARACTERISTIC_TYPE_TO_ITEM_TYPES = Map.ofEntries(
         // OnCharacteristic
         Map.entry("00000025-0000-1000-8000-0026BB765291", Set.of("Switch", "Contact", "Dimmer")),
@@ -10435,10 +10435,10 @@ public class TypeCompatibilityUtil {
     );
 
     /**
-     * Checks if the given openHAB channel type is compatible with the HomeKit characteristic type UID.
+     * Checks if the given openHAB channel type is compatible with the Homekit characteristic type UID.
      *
      * @param channelType openHAB channel type (e.g., "Switch", "Number:Temperature")
-     * @param characteristicTypeUid HomeKit characteristic TYPE UID (UUID string)
+     * @param characteristicTypeUid Homekit characteristic TYPE UID (UUID string)
      * @return true if compatible, false otherwise
      */
     public static boolean isChannelTypeCompatible(String channelType, String characteristicTypeUid) {
@@ -10450,10 +10450,10 @@ public class TypeCompatibilityUtil {
     }
 
     /**
-     * Checks if the given openHAB item type is compatible with the HomeKit characteristic type UID.
+     * Checks if the given openHAB item type is compatible with the Homekit characteristic type UID.
      *
      * @param itemType openHAB item type (e.g., "Switch", "Number", "Color")
-     * @param characteristicTypeUid HomeKit characteristic TYPE UID (UUID string)
+     * @param characteristicTypeUid Homekit characteristic TYPE UID (UUID string)
      * @return true if compatible, false otherwise
      */
     public static boolean isItemTypeCompatible(String itemType, String characteristicTypeUid) {
@@ -10465,7 +10465,7 @@ public class TypeCompatibilityUtil {
     }
 
     /**
-     * Checks if either the channel type or item type is compatible with the HomeKit characteristic type UID.
+     * Checks if either the channel type or item type is compatible with the Homekit characteristic type UID.
      * (Useful if you want to check both at once.)
      */
     public static boolean isCompatible(String channelType, String itemType, String characteristicTypeUid) {
@@ -10509,7 +10509,7 @@ Set<String> allowedItems = TypeCompatibilityUtil.getCompatibleItemTypes("0000002
 
 ### **How to Extend**
 
-- Add more entries to the maps for additional HomeKit characteristics.
+- Add more entries to the maps for additional Homekit characteristics.
 - You can load these maps from a configuration file or make them pluggable for OSGi if needed.
 
 ---
@@ -10527,7 +10527,7 @@ give the concrete implementation of TypeCompatibilityUtil
 
 _**Assistant**_
 
-Certainly! Here is a **concrete, ready-to-use implementation** of `TypeCompatibilityUtil` for your HomeKit/openHAB integration.  
+Certainly! Here is a **concrete, ready-to-use implementation** of `TypeCompatibilityUtil` for your Homekit/openHAB integration.  
 This version is self-contained, includes both channel and item type compatibility, and is easy to extend.
 
 ---
@@ -10538,7 +10538,7 @@ import java.util.Set;
 
 public class TypeCompatibilityUtil {
 
-    // HomeKit HomekitCharacteristic TYPE UID → Set of compatible openHAB channel types
+    // Homekit HomekitCharacteristic TYPE UID → Set of compatible openHAB channel types
     private static final Map<String, Set<String>> CHARACTERISTIC_TYPE_TO_CHANNEL_TYPES = Map.ofEntries(
         // OnCharacteristic
         Map.entry("00000025-0000-1000-8000-0026BB765291", Set.of("Switch", "Dimmer", "Contact")),
@@ -10562,7 +10562,7 @@ public class TypeCompatibilityUtil {
         Map.entry("default", Set.of("Switch", "Dimmer", "Number", "Contact", "Color", "Rollershutter", "String"))
     );
 
-    // HomeKit HomekitCharacteristic TYPE UID → Set of compatible openHAB Item types
+    // Homekit HomekitCharacteristic TYPE UID → Set of compatible openHAB Item types
     private static final Map<String, Set<String>> CHARACTERISTIC_TYPE_TO_ITEM_TYPES = Map.ofEntries(
         // OnCharacteristic
         Map.entry("00000025-0000-1000-8000-0026BB765291", Set.of("Switch", "Contact", "Dimmer")),
@@ -10587,7 +10587,7 @@ public class TypeCompatibilityUtil {
     );
 
     /**
-     * Checks if the given openHAB channel type is compatible with the HomeKit characteristic type UID.
+     * Checks if the given openHAB channel type is compatible with the Homekit characteristic type UID.
      */
     public static boolean isChannelTypeCompatible(String channelType, String characteristicTypeUid) {
         Set<String> compatibleTypes = CHARACTERISTIC_TYPE_TO_CHANNEL_TYPES.get(characteristicTypeUid);
@@ -10599,7 +10599,7 @@ public class TypeCompatibilityUtil {
     }
 
     /**
-     * Checks if the given openHAB item type is compatible with the HomeKit characteristic type UID.
+     * Checks if the given openHAB item type is compatible with the Homekit characteristic type UID.
      */
     public static boolean isItemTypeCompatible(String itemType, String characteristicTypeUid) {
         Set<String> compatibleTypes = CHARACTERISTIC_TYPE_TO_ITEM_TYPES.get(characteristicTypeUid);
@@ -10610,7 +10610,7 @@ public class TypeCompatibilityUtil {
     }
 
     /**
-     * Checks if either the channel type or item type is compatible with the HomeKit characteristic type UID.
+     * Checks if either the channel type or item type is compatible with the Homekit characteristic type UID.
      */
     public static boolean isCompatible(String channelType, String itemType, String characteristicTypeUid) {
         return isChannelTypeCompatible(channelType, characteristicTypeUid)
@@ -10665,7 +10665,7 @@ import java.util.Set;
 
 public class TypeCompatibilityUtil {
 
-    // HomeKit HomekitCharacteristic TYPE UID → Set of compatible openHAB channel types
+    // Homekit HomekitCharacteristic TYPE UID → Set of compatible openHAB channel types
     private static final Map<String, Set<String>> CHARACTERISTIC_TYPE_TO_CHANNEL_TYPES = Map.ofEntries(
         // OnCharacteristic
         Map.entry("00000025-0000-1000-8000-0026BB765291", Set.of("Switch", "Dimmer", "Contact")),
@@ -10689,7 +10689,7 @@ public class TypeCompatibilityUtil {
         Map.entry("default", Set.of("Switch", "Dimmer", "Number", "Contact", "Color", "Rollershutter", "String"))
     );
 
-    // HomeKit HomekitCharacteristic TYPE UID → Set of compatible openHAB Item types
+    // Homekit HomekitCharacteristic TYPE UID → Set of compatible openHAB Item types
     private static final Map<String, Set<String>> CHARACTERISTIC_TYPE_TO_ITEM_TYPES = Map.ofEntries(
         // OnCharacteristic
         Map.entry("00000025-0000-1000-8000-0026BB765291", Set.of("Switch", "Contact", "Dimmer")),
@@ -10714,7 +10714,7 @@ public class TypeCompatibilityUtil {
     );
 
     /**
-     * Checks if the given openHAB channel type is compatible with the HomeKit characteristic type UID.
+     * Checks if the given openHAB channel type is compatible with the Homekit characteristic type UID.
      */
     public static boolean isChannelTypeCompatible(String channelType, String characteristicTypeUid) {
         Set<String> compatibleTypes = CHARACTERISTIC_TYPE_TO_CHANNEL_TYPES.get(characteristicTypeUid);
@@ -10726,7 +10726,7 @@ public class TypeCompatibilityUtil {
     }
 
     /**
-     * Checks if the given openHAB item type is compatible with the HomeKit characteristic type UID.
+     * Checks if the given openHAB item type is compatible with the Homekit characteristic type UID.
      */
     public static boolean isItemTypeCompatible(String itemType, String characteristicTypeUid) {
         Set<String> compatibleTypes = CHARACTERISTIC_TYPE_TO_ITEM_TYPES.get(characteristicTypeUid);
@@ -10737,7 +10737,7 @@ public class TypeCompatibilityUtil {
     }
 
     /**
-     * Checks if either the channel type or item type is compatible with the HomeKit characteristic type UID.
+     * Checks if either the channel type or item type is compatible with the Homekit characteristic type UID.
      */
     public static boolean isCompatible(String channelType, String itemType, String characteristicTypeUid) {
         return isChannelTypeCompatible(channelType, characteristicTypeUid)
@@ -10940,26 +10940,26 @@ Excellent questions! Here’s a detailed answer for each part:
 
 ## **1. What Other Validation Rules Should Be Implemented?**
 
-Beyond the core validators, consider these **additional rules** for a robust, user-friendly HomeKit integration:
+Beyond the core validators, consider these **additional rules** for a robust, user-friendly Homekit integration:
 
 ### **A. Semantic/Contextual Validators**
-- **ValueRangeValidator:** Ensures that mapped channels/items have value ranges compatible with HomeKit characteristic constraints (e.g., temperature, brightness).
+- **ValueRangeValidator:** Ensures that mapped channels/items have value ranges compatible with Homekit characteristic constraints (e.g., temperature, brightness).
 - **UnitCompatibilityValidator:** Checks that units (e.g., °C vs. °F, % vs. 0–1) are compatible or properly converted.
-- **ReadWriteConsistencyValidator:** Ensures that read-only HomeKit characteristics are not mapped to writable channels/items, and vice versa.
-- **EventLoopValidator:** Detects and warns about possible event feedback loops (e.g., HomeKit → openHAB → HomeKit).
-- **AccessoryLimitValidator:** Warns if the number of accessories/services/characteristics exceeds HomeKit or platform limits.
+- **ReadWriteConsistencyValidator:** Ensures that read-only Homekit characteristics are not mapped to writable channels/items, and vice versa.
+- **EventLoopValidator:** Detects and warns about possible event feedback loops (e.g., Homekit → openHAB → Homekit).
+- **AccessoryLimitValidator:** Warns if the number of accessories/services/characteristics exceeds Homekit or platform limits.
 
 ### **B. Mapping/Configuration Validators**
-- **DuplicateAccessoryNameValidator:** Ensures no two accessories/services have the same name (HomeKit requires uniqueness).
+- **DuplicateAccessoryNameValidator:** Ensures no two accessories/services have the same name (Homekit requires uniqueness).
 - **MappingCompletenessValidator:** Ensures all required mappings are present for a given Thing/Item.
 - **CustomScriptValidator:** Allows users to define custom validation scripts (e.g., via Groovy, JavaScript) for advanced scenarios.
 
 ### **C. Security/Privacy Validators**
 - **SensitiveDataExposureValidator:** Warns if sensitive data (e.g., security system status, door locks) is exposed without proper safeguards.
-- **AccessControlValidator:** Ensures that only authorized users can control sensitive HomeKit characteristics.
+- **AccessControlValidator:** Ensures that only authorized users can control sensitive Homekit characteristics.
 
 ### **D. Performance/Resource Validators**
-- **UpdateFrequencyValidator:** Warns if update intervals are too frequent for HomeKit or openHAB to handle efficiently.
+- **UpdateFrequencyValidator:** Warns if update intervals are too frequent for Homekit or openHAB to handle efficiently.
 - **ResourceUsageValidator:** Checks for excessive memory or CPU usage due to mapping complexity.
 
 ---
@@ -10969,11 +10969,11 @@ Beyond the core validators, consider these **additional rules** for a robust, us
 **Yes, absolutely!**  
 Each openHAB binding (e.g., Z-Wave, Zigbee, MQTT, KNX) may have:
 - Unique channel types, value semantics, and constraints.
-- Special requirements for mapping to HomeKit (e.g., Z-Wave lock channels, Zigbee color channels).
+- Special requirements for mapping to Homekit (e.g., Z-Wave lock channels, Zigbee color channels).
 
 **How to implement:**
 - Create a `BindingSpecificValidator` interface or abstract class.
-- Implement one validator per binding, e.g., `ZWaveHomeKitValidator`, `MQTTHomeKitValidator`.
+- Implement one validator per binding, e.g., `ZWaveHomekitValidator`, `MQTTHomekitValidator`.
 - Register these as OSGi components or via a plugin mechanism.
 - These validators can check for:
   - Binding-specific channel/thing types.
@@ -10982,7 +10982,7 @@ Each openHAB binding (e.g., Z-Wave, Zigbee, MQTT, KNX) may have:
 
 **Example:**
 ```java
-public class ZWaveHomeKitValidator implements MappingValidator {
+public class ZWaveHomekitValidator implements MappingValidator {
     @Override
     public List<ValidationResult> validate(MappingContext context) {
         // Check for Z-Wave-specific issues, e.g., secure inclusion for locks
@@ -11056,7 +11056,7 @@ _**Assistant**_
 
 Great question!  
 Below are **practical, extensible Java class definitions** for `MappingContext`, `ServiceMapping`, `ThingMapping`, `MappingEntry`, and `MappingFile`—the core data structures referenced in the validator examples.  
-These are designed to be flexible for both item-based and thing-based HomeKit mapping.
+These are designed to be flexible for both item-based and thing-based Homekit mapping.
 
 ---
 
@@ -11130,7 +11130,7 @@ public class ThingMapping {
 
 ## **3. ServiceMapping**
 
-Represents a HomeKit HomekitService mapped to a Thing or Item.
+Represents a Homekit HomekitService mapped to a Thing or Item.
 
 ```java
 import java.util.List;
@@ -11139,7 +11139,7 @@ import java.util.stream.Collectors;
 
 public class ServiceMapping {
     private final String serviceName;
-    private final String type; // HomeKit HomekitService TYPE UID
+    private final String type; // Homekit HomekitService TYPE UID
     private final List<MappingEntry> mappings;
 
     public ServiceMapping(String serviceName, String type, List<MappingEntry> mappings) {
@@ -11186,14 +11186,14 @@ public class ServiceMapping {
 
 ## **4. MappingEntry**
 
-Represents a mapping between a HomeKit HomekitCharacteristic and an openHAB Channel (or Item).
+Represents a mapping between a Homekit HomekitCharacteristic and an openHAB Channel (or Item).
 
 ```java
 public class MappingEntry {
     private final String channelId; // openHAB channel ID (or item name)
     private final String channelType; // openHAB channel type (e.g., "Switch", "Number:Temperature")
     private final String itemType; // openHAB item type (optional, for item-based mapping)
-    private final String characteristicTypeUid; // HomeKit characteristic TYPE UID
+    private final String characteristicTypeUid; // Homekit characteristic TYPE UID
     private final boolean subscribed; // Is event subscription set up?
 
     public MappingEntry(String channelId, String channelType, String itemType, String characteristicTypeUid, boolean subscribed) {
@@ -11257,8 +11257,8 @@ public class MappingFile {
 ## **How They Work Together**
 
 - `MappingContext` is the root object, holding all mappings and files.
-- Each `ThingMapping` represents a Thing and its mapped HomeKit services.
-- Each `ServiceMapping` represents a HomeKit service and its mapped characteristics/channels.
+- Each `ThingMapping` represents a Thing and its mapped Homekit services.
+- Each `ServiceMapping` represents a Homekit service and its mapped characteristics/channels.
 - Each `MappingEntry` represents a single characteristic-channel (or item) mapping.
 - `MappingFile` is used for syntax validation and diagnostics.
 
@@ -11393,7 +11393,7 @@ public static MappingContext convertToMappingContext(RootDTO root) {
 If you use openHAB’s APIs (e.g., `ThingRegistry`, `ChannelTypeRegistry`, `MetadataRegistry`):
 
 - **Iterate over all Things/Items/Channels** in the registry.
-- **Read metadata** (e.g., HomeKit mappings) from each.
+- **Read metadata** (e.g., Homekit mappings) from each.
 - **Build MappingEntry, ServiceMapping, ThingMapping** objects programmatically.
 
 Example:
@@ -11402,7 +11402,7 @@ for (Thing thing : thingRegistry.getAll()) {
     String thingUID = thing.getUID().toString();
     String thingTypeUid = thing.getThingTypeUID().toString();
     List<ServiceMapping> services = new ArrayList<>();
-    // For each HomeKit service mapped to this thing (from metadata or config)
+    // For each Homekit service mapped to this thing (from metadata or config)
     // ... build ServiceMapping and MappingEntry objects
     thingMappings.add(new ThingMapping(thingUID, thingTypeUid, services));
 }
@@ -11625,7 +11625,7 @@ Now that we have covered validation, what are other concernes that needs address
 _**Assistant**_
 
 Excellent question!  
-Validation is just one (albeit crucial) aspect of a robust HomeKit/openHAB integration. Here’s a **comprehensive list of other architectural concerns** you should address for a production-quality, maintainable, and user-friendly solution:
+Validation is just one (albeit crucial) aspect of a robust Homekit/openHAB integration. Here’s a **comprehensive list of other architectural concerns** you should address for a production-quality, maintainable, and user-friendly solution:
 
 ---
 
@@ -11644,7 +11644,7 @@ Validation is just one (albeit crucial) aspect of a robust HomeKit/openHAB integ
 ---
 
 ## **3. Security & Privacy**
-- **Access Control:** Ensure only authorized users can control or view sensitive HomeKit accessories (e.g., locks, cameras).
+- **Access Control:** Ensure only authorized users can control or view sensitive Homekit accessories (e.g., locks, cameras).
 - **Data Protection:** Avoid exposing sensitive data (e.g., alarm status) unless explicitly configured.
 - **Secure Communication:** Use secure channels for any remote or cloud communication.
 
@@ -11659,7 +11659,7 @@ Validation is just one (albeit crucial) aspect of a robust HomeKit/openHAB integ
 
 ## **5. Extensibility & Modularity**
 - **Pluggable Mappers/Validators:** Allow new bindings, services, or validation rules to be added without core changes (e.g., via OSGi, SPI, or plugin system).
-- **Custom Characteristics/Services:** Support user-defined HomeKit characteristics/services for advanced use cases.
+- **Custom Characteristics/Services:** Support user-defined Homekit characteristics/services for advanced use cases.
 
 ---
 
@@ -11671,20 +11671,20 @@ Validation is just one (albeit crucial) aspect of a robust HomeKit/openHAB integ
 ---
 
 ## **7. Synchronization & Consistency**
-- **State Synchronization:** Ensure state changes in openHAB are reliably reflected in HomeKit and vice versa.
+- **State Synchronization:** Ensure state changes in openHAB are reliably reflected in Homekit and vice versa.
 - **Conflict Resolution:** Handle concurrent updates or conflicting commands gracefully.
 
 ---
 
 ## **8. Testing & Quality Assurance**
 - **Unit & Integration Tests:** Cover mapping logic, event propagation, and error handling.
-- **Simulated Devices:** Allow for testing with virtual/simulated HomeKit accessories and openHAB Things.
-- **Continuous Validation:** Run validators on every config change and before exposing to HomeKit.
+- **Simulated Devices:** Allow for testing with virtual/simulated Homekit accessories and openHAB Things.
+- **Continuous Validation:** Run validators on every config change and before exposing to Homekit.
 
 ---
 
 ## **9. Internationalization & Localization**
-- **Localized Labels/Descriptions:** Support multiple languages for HomeKit accessory names and descriptions.
+- **Localized Labels/Descriptions:** Support multiple languages for Homekit accessory names and descriptions.
 - **Unit Conversion:** Handle locale-specific units (e.g., °C/°F, %, etc.).
 
 ---
@@ -11709,7 +11709,7 @@ Validation is just one (albeit crucial) aspect of a robust HomeKit/openHAB integ
 ---
 
 ## **13. Compliance**
-- **HomeKit Certification:** If targeting official HomeKit certification, ensure all Apple requirements are met.
+- **Homekit Certification:** If targeting official Homekit certification, ensure all Apple requirements are met.
 - **openHAB Add-on Guidelines:** Follow openHAB’s best practices for add-on development.
 
 ---
@@ -11730,7 +11730,7 @@ Validation is just one (albeit crucial) aspect of a robust HomeKit/openHAB integ
 | Upgrade/Migration      | Can users upgrade without breaking things?          |
 | Monitoring             | Can admins see system health and metrics?           |
 | Documentation          | Is it easy to use and extend?                       |
-| Compliance             | Does it meet HomeKit/openHAB requirements?          |
+| Compliance             | Does it meet Homekit/openHAB requirements?          |
 
 ---
 
@@ -11752,31 +11752,31 @@ How would you ensure Synchronization & Consistency ?
 
 _**Assistant**_
 
-Ensuring **Synchronization & Consistency** between openHAB and HomeKit is critical for a seamless user experience and reliable automation. Here’s how you can address this concern in your architecture:
+Ensuring **Synchronization & Consistency** between openHAB and Homekit is critical for a seamless user experience and reliable automation. Here’s how you can address this concern in your architecture:
 
 ---
 
 ## **1. Event-Driven, Bidirectional Synchronization**
 
 - **Subscribe to openHAB Events:** Listen for state changes on Items/Channels (using the event bus or registry listeners).
-- **Subscribe to HomeKit Events:** Listen for HomeKit characteristic updates (e.g., via the HomekitLocalAccessoryServer or HAP callbacks).
+- **Subscribe to Homekit Events:** Listen for Homekit characteristic updates (e.g., via the HomekitLocalAccessoryServer or HAP callbacks).
 - **Update the Other Side:** When an event is received from one system, propagate the change to the other, but avoid feedback loops.
 
 **Example:**
-- openHAB Item changes → Update HomeKit HomekitCharacteristic
-- HomeKit HomekitCharacteristic changes (via Siri/app) → Send command to openHAB Item/Channel
+- openHAB Item changes → Update Homekit HomekitCharacteristic
+- Homekit HomekitCharacteristic changes (via Siri/app) → Send command to openHAB Item/Channel
 
 ---
 
 ## **2. Feedback Loop Prevention**
 
-- **Change Origin Tracking:** Tag updates with their origin (e.g., “from HomeKit” or “from openHAB”).
+- **Change Origin Tracking:** Tag updates with their origin (e.g., “from Homekit” or “from openHAB”).
 - **Suppress Echoes:** When propagating a change, ignore events that originated from the other system within a short time window or with a unique transaction ID.
 
 **Example:**
 ```java
 if (event.origin == Origin.HOMEKIT) {
-    // Don't send back to HomeKit
+    // Don't send back to Homekit
 }
 ```
 
@@ -11784,7 +11784,7 @@ if (event.origin == Origin.HOMEKIT) {
 
 ## **3. State Reconciliation**
 
-- **Periodic Polling:** Optionally poll openHAB and HomeKit for current states and reconcile differences.
+- **Periodic Polling:** Optionally poll openHAB and Homekit for current states and reconcile differences.
 - **Startup Sync:** On startup or reconnection, fetch the current state from both systems and ensure they match.
 
 ---
@@ -11827,14 +11827,14 @@ if (event.origin == Origin.HOMEKIT) {
 ## **Example: Synchronization Flow**
 
 ```java
-// openHAB → HomeKit
+// openHAB → Homekit
 itemRegistry.addStateChangeListener((item, newState) -> {
-    if (!isFromHomeKit(item)) {
-        updateHomeKitCharacteristic(item, newState);
+    if (!isFromHomekit(item)) {
+        updateHomekitCharacteristic(item, newState);
     }
 });
 
-// HomeKit → openHAB
+// Homekit → openHAB
 homekitServer.addCharacteristicChangeListener((characteristic, newValue) -> {
     if (!isFromOpenHAB(characteristic)) {
         sendCommandToOpenHAB(characteristic, newValue);
@@ -11880,9 +11880,9 @@ how would you tag the origin of updates given that homekitEventManager is basica
 _**Assistant**_
 
 Excellent, practical question!  
-**Tagging the origin of updates** is essential to prevent feedback loops and ensure correct synchronization between openHAB and HomeKit, especially when both use pub/sub/event bus patterns.
+**Tagging the origin of updates** is essential to prevent feedback loops and ensure correct synchronization between openHAB and Homekit, especially when both use pub/sub/event bus patterns.
 
-Below is a robust approach for both HomeKit and openHAB event flows:
+Below is a robust approach for both Homekit and openHAB event flows:
 
 ---
 
@@ -11914,14 +11914,14 @@ public class HomekitEvent {
 
 ### **B. Publish Events with Origin**
 
-- When you publish an event from openHAB to HomeKit, set `origin = OPENHAB`.
-- When you publish an event from HomeKit (e.g., via Siri), set `origin = HOMEKIT`.
+- When you publish an event from openHAB to Homekit, set `origin = OPENHAB`.
+- When you publish an event from Homekit (e.g., via Siri), set `origin = HOMEKIT`.
 
 ```java
-// openHAB → HomeKit
+// openHAB → Homekit
 homekitEventManager.publish(new HomekitEvent(HomekitEvent.Origin.OPENHAB, typeUid, value));
 
-// HomeKit → openHAB
+// Homekit → openHAB
 homekitEventManager.publish(new HomekitEvent(HomekitEvent.Origin.HOMEKIT, typeUid, value));
 ```
 
@@ -11946,10 +11946,10 @@ homekitEventManager.subscribe(event -> {
 ### **A. Use openHAB Event Properties**
 
 - openHAB events (e.g., `ItemCommandEvent`, `ItemStateChangedEvent`) can carry additional properties.
-- When sending a command/state update from HomeKit, add a custom property (e.g., `"origin=HOMEKIT"`).
+- When sending a command/state update from Homekit, add a custom property (e.g., `"origin=HOMEKIT"`).
 
 ```java
-// When sending a command from HomeKit to openHAB
+// When sending a command from Homekit to openHAB
 Map<String, String> properties = new HashMap<>();
 properties.put("origin", "HOMEKIT");
 eventPublisher.post(new ItemCommandEvent(itemName, command, properties));
@@ -11961,9 +11961,9 @@ eventPublisher.post(new ItemCommandEvent(itemName, command, properties));
 eventSubscriber.handleEvent(event -> {
     String origin = event.getProperties().get("origin");
     if ("HOMEKIT".equals(origin)) {
-        // Don't send back to HomeKit
+        // Don't send back to Homekit
     } else {
-        // Propagate to HomeKit
+        // Propagate to Homekit
     }
 });
 ```
@@ -11978,14 +11978,14 @@ eventSubscriber.handleEvent(event -> {
 ## **3. Example: Preventing Feedback Loops**
 
 ```java
-// openHAB → HomeKit
+// openHAB → Homekit
 itemRegistry.addStateChangeListener((item, newState) -> {
-    if (!isFromHomeKit(item)) {
+    if (!isFromHomekit(item)) {
         homekitEventManager.publish(new HomekitEvent(HomekitEvent.Origin.OPENHAB, getTypeUid(item), newState));
     }
 });
 
-// HomeKit → openHAB
+// Homekit → openHAB
 homekitEventManager.subscribe(event -> {
     if (event.getOrigin() == HomekitEvent.Origin.HOMEKIT) {
         sendCommandToOpenHAB(event.getCharacteristicTypeUid(), event.getValue());
@@ -12008,7 +12008,7 @@ homekitEventManager.subscribe(event -> {
 
 | System      | How to Tag Origin                | How to Check Origin                |
 |-------------|----------------------------------|------------------------------------|
-| HomeKit     | Add `origin` field to event      | Check `event.getOrigin()`          |
+| Homekit     | Add `origin` field to event      | Check `event.getOrigin()`          |
 | openHAB     | Use event properties or context  | Check `event.getProperties()`      |
 
 ---
@@ -12061,12 +12061,12 @@ public class HomekitEvent {
 
 ### **A. By UID Namespace/Prefix**
 
-- If the `publisherUid` starts with `"homekit:"`, the event originated from HomeKit.
+- If the `publisherUid` starts with `"homekit:"`, the event originated from Homekit.
 - If it starts with `"openhab:"`, `"zwave:"`, `"mqtt:"`, etc., it originated from openHAB or a specific binding.
 
 **Example:**
 ```java
-public static boolean isFromHomeKit(HomekitEvent event) {
+public static boolean isFromHomekit(HomekitEvent event) {
     return event.getPublisherUid().startsWith("homekit:");
 }
 
@@ -12089,12 +12089,12 @@ public static boolean isFromOpenHAB(HomekitEvent event) {
 public void handleHomekitEvent(HomekitEvent event, String myUid) {
     if (event.getSubscriberUid().equals(myUid)) {
         // This event is intended for me
-        if (isFromHomeKit(event)) {
+        if (isFromHomekit(event)) {
             // Only propagate to openHAB if not already from openHAB
             sendCommandToOpenHAB(event.getCharacteristicTypeUid(), event.getValue());
         } else if (isFromOpenHAB(event)) {
-            // Only propagate to HomeKit if not already from HomeKit
-            updateHomeKitCharacteristic(event.getCharacteristicTypeUid(), event.getValue());
+            // Only propagate to Homekit if not already from Homekit
+            updateHomekitCharacteristic(event.getCharacteristicTypeUid(), event.getValue());
         }
     }
 }
@@ -12104,15 +12104,15 @@ public void handleHomekitEvent(HomekitEvent event, String myUid) {
 
 ## **3. Example Event Flow**
 
-- **HomeKit → openHAB:**
+- **Homekit → openHAB:**
     - `publisherUid = "homekit:bridge:1"`
     - `subscriberUid = "openhab:item:Light1"`
-    - Handler sees publisher is HomeKit, subscriber is openHAB → propagate to openHAB.
+    - Handler sees publisher is Homekit, subscriber is openHAB → propagate to openHAB.
 
-- **openHAB → HomeKit:**
+- **openHAB → Homekit:**
     - `publisherUid = "openhab:item:Light1"`
     - `subscriberUid = "homekit:service:Lightbulb1"`
-    - Handler sees publisher is openHAB, subscriber is HomeKit → propagate to HomeKit.
+    - Handler sees publisher is openHAB, subscriber is Homekit → propagate to Homekit.
 
 - **Feedback Loop Prevention:**
     - If an event is received where `publisherUid` and `subscriberUid` are both from the same system, ignore it.
@@ -12132,7 +12132,7 @@ public void handleHomekitEvent(HomekitEvent event, String myUid) {
 
 ```java
 public class EventOriginUtil {
-    public static boolean isFromHomeKit(String uid) {
+    public static boolean isFromHomekit(String uid) {
         return uid.startsWith("homekit:");
     }
     public static boolean isFromOpenHAB(String uid) {
@@ -12151,10 +12151,10 @@ public class EventOriginUtil {
 
 | Field           | Example Value                | Meaning/Usage                        |
 |-----------------|-----------------------------|--------------------------------------|
-| publisherUid    | "homekit:bridge:1"          | Originated from HomeKit              |
+| publisherUid    | "homekit:bridge:1"          | Originated from Homekit              |
 |                 | "openhab:item:Light1"       | Originated from openHAB              |
 | subscriberUid   | "openhab:item:Light1"       | Intended for openHAB                 |
-|                 | "homekit:service:Lightbulb1"| Intended for HomeKit                 |
+|                 | "homekit:service:Lightbulb1"| Intended for Homekit                 |
 
 ---
 
@@ -12163,7 +12163,7 @@ public class EventOriginUtil {
 - Use publisher/subscriber UIDs to prevent feedback loops and ensure correct routing.
 - No need for a separate explicit origin field.
 
-Let me know if you want a concrete code sample for a full event handler or integration with a specific openHAB or HomeKit component!
+Let me know if you want a concrete code sample for a full event handler or integration with a specific openHAB or Homekit component!
 
 ---
 
@@ -12202,14 +12202,14 @@ All of these UIDs are **namespaced** and have a predictable segment structure.
 
 ## **2. Deriving Origin from UID**
 
-- If a UID starts with `"homekit:"`, it is a HomeKit-originated entity/event.
+- If a UID starts with `"homekit:"`, it is a Homekit-originated entity/event.
 - If it starts with another binding (e.g., `"zwave:"`, `"mqtt:"`, `"openhab:"`), it is from openHAB or another binding.
 - The segment structure allows you to extract the context (server, accessory, characteristic, thing, etc.) as needed.
 
 **Example Utility:**
 ```java
 public class UIDOriginUtil {
-    public static boolean isHomeKitUID(String uid) {
+    public static boolean isHomekitUID(String uid) {
         return uid != null && uid.startsWith("homekit:");
     }
     public static boolean isOpenHABUID(String uid) {
@@ -12223,7 +12223,7 @@ public class UIDOriginUtil {
 ## **3. Using Publisher/Subscriber UID for Event Origin**
 
 Given your event model:
-- **publisherUid**: The UID of the entity that originated the event (could be a HomeKit accessory, characteristic, or openHAB thing/item).
+- **publisherUid**: The UID of the entity that originated the event (could be a Homekit accessory, characteristic, or openHAB thing/item).
 - **subscriberUid**: The UID of the entity that is the intended recipient.
 
 **You can always determine the origin by inspecting the prefix and/or segment structure of the UID.**
@@ -12232,8 +12232,8 @@ Given your event model:
 
 ## **4. Feedback Loop Prevention**
 
-- If an event’s `publisherUid` and `subscriberUid` are both HomeKit UIDs, it’s a HomeKit-internal event.
-- If `publisherUid` is HomeKit and `subscriberUid` is openHAB (or vice versa), it’s a cross-system event and should be propagated.
+- If an event’s `publisherUid` and `subscriberUid` are both Homekit UIDs, it’s a Homekit-internal event.
+- If `publisherUid` is Homekit and `subscriberUid` is openHAB (or vice versa), it’s a cross-system event and should be propagated.
 - If an event is received where the `publisherUid` matches the current component’s UID, it can be ignored to prevent loops.
 
 ---
@@ -12243,10 +12243,10 @@ Given your event model:
 ```java
 public void handleEvent(HomekitEvent event, String myUid) {
     if (event.getSubscriberUid().equals(myUid)) {
-        if (UIDOriginUtil.isHomeKitUID(event.getPublisherUid())) {
-            // Event originated from HomeKit, propagate to openHAB
+        if (UIDOriginUtil.isHomekitUID(event.getPublisherUid())) {
+            // Event originated from Homekit, propagate to openHAB
         } else if (UIDOriginUtil.isOpenHABUID(event.getPublisherUid())) {
-            // Event originated from openHAB, propagate to HomeKit
+            // Event originated from openHAB, propagate to Homekit
         }
     }
 }
@@ -12289,7 +12289,7 @@ Items are uniquely identified by their **name** (a `String`), not a `UID` object
 
 ## **Implications for Origin Tracking**
 
-- **Things, Channels, and HomeKit entities**: Use UIDs (as described above).
+- **Things, Channels, and Homekit entities**: Use UIDs (as described above).
 - **Items**: Use the Item name as the identifier.
 
 ---
@@ -12310,14 +12310,14 @@ String itemEventId = "item:" + itemName;
 ### **2. Update Event Classes to Accept Item Names**
 
 - When an event involves an Item, set the publisher or subscriber UID to `"item:<itemName>"`.
-- This allows you to distinguish Items from Things, Channels, and HomeKit entities.
+- This allows you to distinguish Items from Things, Channels, and Homekit entities.
 
 **Example HomekitEvent:**
 ```java
-// HomeKit → openHAB Item
+// Homekit → openHAB Item
 new HomekitEvent("homekit:characteristic:123456:1:2:3", "item:LivingRoom_Light", typeUid, value);
 
-// openHAB Item → HomeKit
+// openHAB Item → Homekit
 new HomekitEvent("item:LivingRoom_Light", "homekit:characteristic:123456:1:2:3", typeUid, value);
 ```
 
@@ -12325,7 +12325,7 @@ new HomekitEvent("item:LivingRoom_Light", "homekit:characteristic:123456:1:2:3",
 
 ```java
 public class UIDOriginUtil {
-    public static boolean isHomeKitUID(String uid) {
+    public static boolean isHomekitUID(String uid) {
         return uid != null && uid.startsWith("homekit:");
     }
     public static boolean isOpenHABThingUID(String uid) {
@@ -12348,7 +12348,7 @@ public class UIDOriginUtil {
 
 | Entity Type      | Identifier Example                  | How to Check Origin         |
 |------------------|------------------------------------|----------------------------|
-| HomeKit          | "homekit:characteristic:..."       | startsWith("homekit:")     |
+| Homekit          | "homekit:characteristic:..."       | startsWith("homekit:")     |
 | Thing/Channel    | "zwave:device:..."                 | startsWith("zwave:")       |
 | Item             | "item:LivingRoom_Light"            | startsWith("item:")        |
 
@@ -12367,10 +12367,10 @@ public class UIDOriginUtil {
 ```java
 public void handleEvent(HomekitEvent event, String myUid) {
     if (event.getSubscriberUid().equals(myUid)) {
-        if (UIDOriginUtil.isHomeKitUID(event.getPublisherUid())) {
-            // Event from HomeKit, propagate to openHAB Item
+        if (UIDOriginUtil.isHomekitUID(event.getPublisherUid())) {
+            // Event from Homekit, propagate to openHAB Item
         } else if (UIDOriginUtil.isItemUID(event.getPublisherUid())) {
-            // Event from Item, propagate to HomeKit
+            // Event from Item, propagate to Homekit
         }
     }
 }
@@ -12395,7 +12395,7 @@ Should @HomekitItemBridge.java and a possible HomekitThingBridge communicate wit
 _**Assistant**_
 
 **Excellent, architectural question!**  
-Let’s address both the specifics of `HomekitItemBridge` and `HomekitThingBridge` communication, and the broader need for management communication in your HomeKit/openHAB integration.
+Let’s address both the specifics of `HomekitItemBridge` and `HomekitThingBridge` communication, and the broader need for management communication in your Homekit/openHAB integration.
 
 ---
 
@@ -12403,8 +12403,8 @@ Let’s address both the specifics of `HomekitItemBridge` and `HomekitThingBridg
 
 **Yes, in a robust architecture, they should be able to communicate, or at least coordinate.**  
 This is especially important if:
-- You want to avoid duplicate exposure of the same openHAB entity to HomeKit.
-- You want to provide a unified HomeKit experience (e.g., for discovery, diagnostics, or configuration).
+- You want to avoid duplicate exposure of the same openHAB entity to Homekit.
+- You want to provide a unified Homekit experience (e.g., for discovery, diagnostics, or configuration).
 - You want to support migration or hybrid operation (some Things via ThingBridge, some Items via ItemBridge).
 
 ---
@@ -12415,7 +12415,7 @@ This is especially important if:
 
 - Both bridges can publish and subscribe to a **management event bus** (could be openHAB’s event bus, OSGi EventAdmin, or a dedicated internal bus).
 - Events can be used for:
-  - **Discovery/Announcement:** “I am exposing Item X as HomeKit HomekitAccessory Y.”
+  - **Discovery/Announcement:** “I am exposing Item X as Homekit HomekitAccessory Y.”
   - **Conflict Resolution:** “Thing Z is already exposed, do not expose its Items.”
   - **State/Health Reporting:** “I am online/offline,” “HomekitAccessory registration failed,” etc.
   - **Migration/Sync:** “Please migrate Item X to Thing-based exposure.”
@@ -12434,7 +12434,7 @@ This is especially important if:
 ## **3. What Kind of Events?**
 
 ### **A. Management/Coordination Events**
-- **EXPOSED_ENTITY:** Announce that an Item/Thing/Channel is now exposed to HomeKit.
+- **EXPOSED_ENTITY:** Announce that an Item/Thing/Channel is now exposed to Homekit.
 - **UNEXPOSED_ENTITY:** Announce that an entity is no longer exposed.
 - **CONFLICT_DETECTED:** Notify about a duplicate or conflicting mapping.
 - **MIGRATION_REQUEST:** Request that an entity be migrated from one bridge to another.
@@ -12490,7 +12490,7 @@ public class HomekitManagementEvent {
 - Can entities be migrated from one bridge to another without downtime?
 
 ### **E. Centralized Registry/Directory**
-- A service or registry that tracks all exposed HomeKit entities, their source, and their status.
+- A service or registry that tracks all exposed Homekit entities, their source, and their status.
 
 ---
 
@@ -12541,7 +12541,7 @@ What bus should be used ? please advice. openHAB event bus, OSGi eventAdmin or @
 _**Assistant**_
 
 Great question!  
-Choosing the right event bus for **management and coordination** between `HomekitItemBridge`, `HomekitThingBridge`, and other HomeKit-related components is crucial for maintainability, performance, and extensibility.
+Choosing the right event bus for **management and coordination** between `HomekitItemBridge`, `HomekitThingBridge`, and other Homekit-related components is crucial for maintainability, performance, and extensibility.
 
 Let’s compare your options and provide a recommendation:
 
@@ -12560,7 +12560,7 @@ Let’s compare your options and provide a recommendation:
 - **Potential for noise**—management events could be seen by unrelated consumers.
 
 ### **Best Use**
-- For propagating state/command changes between openHAB and HomeKit.
+- For propagating state/command changes between openHAB and Homekit.
 - Not ideal for bridge-to-bridge management/coordination.
 
 ---
@@ -12579,7 +12579,7 @@ Let’s compare your options and provide a recommendation:
 - **Not as tightly integrated with openHAB’s core event model.**
 
 ### **Best Use**
-- For **internal, management, and coordination events** between HomeKit bridges, managers, and other OSGi components.
+- For **internal, management, and coordination events** between Homekit bridges, managers, and other OSGi components.
 - For events that should not be visible to end users or the openHAB UI.
 
 ---
@@ -12588,18 +12588,18 @@ Let’s compare your options and provide a recommendation:
 
 ### **Pros**
 - **Already present in your codebase.**
-- **Designed for HomeKit-specific events** (characteristic changes, etc.).
+- **Designed for Homekit-specific events** (characteristic changes, etc.).
 - **Asynchronous, thread-safe, and supports custom event types.**
 - **Can be extended to support management/coordination events.**
 
 ### **Cons**
-- **Currently focused on HomeKit runtime events** (not management/coordination).
+- **Currently focused on Homekit runtime events** (not management/coordination).
 - **Not a general-purpose bus**—may require extension for broader use.
 - **Not visible to other OSGi components by default** (unless you expose it as a service).
 
 ### **Best Use**
-- For **HomeKit runtime events** (characteristic changes, accessory state, etc.).
-- Could be extended for HomeKit-specific management events, but not for general openHAB/OSGi-wide coordination.
+- For **Homekit runtime events** (characteristic changes, accessory state, etc.).
+- Could be extended for Homekit-specific management events, but not for general openHAB/OSGi-wide coordination.
 
 ---
 
@@ -12610,14 +12610,14 @@ Let’s compare your options and provide a recommendation:
 
 - It is the most flexible, decoupled, and standard way to communicate between OSGi components (like your bridges).
 - You can define your own topics (e.g., `org/openhab/homekit/management/EXPOSED_ENTITY`) and payloads.
-- It keeps management/coordination events separate from user-facing openHAB events and HomeKit runtime events.
-- It is future-proof if you add more OSGi-based HomeKit components.
+- It keeps management/coordination events separate from user-facing openHAB events and Homekit runtime events.
+- It is future-proof if you add more OSGi-based Homekit components.
 
-### **For HomeKit Runtime Events:**
-- Continue using your `HomekitEventManager` for characteristic, accessory, and HomeKit protocol events.
+### **For Homekit Runtime Events:**
+- Continue using your `HomekitEventManager` for characteristic, accessory, and Homekit protocol events.
 
 ### **For openHAB State/Command Events:**
-- Use the openHAB event bus for propagating state/command changes between openHAB and HomeKit.
+- Use the openHAB event bus for propagating state/command changes between openHAB and Homekit.
 
 ---
 
@@ -12659,14 +12659,14 @@ public class HomekitManagementEventHandler implements EventHandler {
 |-----------------------|------------------------------------------|---------------------|------------------|------------------|
 | openHAB Event Bus     | State/command/thing events               | No                  | No               | Yes              |
 | OSGi EventAdmin       | Internal management/coordination         | **Yes**             | No               | No               |
-| HomekitEventManager   | HomeKit runtime (characteristics, etc.)  | Maybe (if extended) | **Yes**          | No               |
+| HomekitEventManager   | Homekit runtime (characteristics, etc.)  | Maybe (if extended) | **Yes**          | No               |
 
 ---
 
 ## **Best Practice**
 
 - **Use OSGi EventAdmin for management/coordination events.**
-- **Use HomekitEventManager for HomeKit runtime events.**
+- **Use HomekitEventManager for Homekit runtime events.**
 - **Use openHAB event bus for openHAB state/command/thing events.**
 - **Document your event topics and payloads for maintainability.**
 
@@ -12708,7 +12708,7 @@ Below is a practical guide on how this would look, including pros/cons and code 
 
 ---
 
-## **2. Example: Publishing a HomeKit Event**
+## **2. Example: Publishing a Homekit Event**
 
 **Old (with HomekitEventManager):**
 ```java
@@ -12731,7 +12731,7 @@ eventAdmin.postEvent(event); // or sendEvent(event) for synchronous delivery
 
 ---
 
-## **3. Example: Subscribing to HomeKit Events**
+## **3. Example: Subscribing to Homekit Events**
 
 **Old:**
 ```java
@@ -12804,8 +12804,8 @@ This allows you to keep your internal event model, but use OSGi for delivery.
 
 ## **6. When Should You Use OSGi EventAdmin?**
 
-- **If you want to decouple HomeKit event handling from your own codebase.**
-- **If you want to allow other OSGi components to participate in HomeKit event flows.**
+- **If you want to decouple Homekit event handling from your own codebase.**
+- **If you want to allow other OSGi components to participate in Homekit event flows.**
 - **If you don’t need ultra-high-frequency, low-latency event delivery.**
 - **If you want to unify management and runtime events on a single bus.**
 
@@ -12831,7 +12831,7 @@ This allows you to keep your internal event model, but use OSGi for delivery.
 
 **Best Practice:**  
 - Use **OSGi EventAdmin** for management, coordination, and integration events.
-- Use a **custom event manager** for high-frequency, type-safe, HomeKit runtime events.
+- Use a **custom event manager** for high-frequency, type-safe, Homekit runtime events.
 - If you want to unify, consider wrapping EventAdmin in a type-safe API.
 
 ---
@@ -13281,24 +13281,24 @@ Based on openHAB, the discussion and the current solution, are there any other w
 
 _**Assistant**_
 
-Absolutely—there are several architectural patterns and integration strategies for bridging openHAB and HomeKit, each with its own trade-offs. Here’s a comprehensive overview, including both what you’ve discussed and some additional approaches:
+Absolutely—there are several architectural patterns and integration strategies for bridging openHAB and Homekit, each with its own trade-offs. Here’s a comprehensive overview, including both what you’ve discussed and some additional approaches:
 
 ---
 
-## **1. Item-Based Bridging (Current openHAB HomeKit Add-on)**
-- **How:** Items are tagged or annotated (via metadata) to be exposed as HomeKit accessories/services/characteristics.
+## **1. Item-Based Bridging (Current openHAB Homekit Add-on)**
+- **How:** Items are tagged or annotated (via metadata) to be exposed as Homekit accessories/services/characteristics.
 - **Pros:**  
   - Simple for users familiar with openHAB Items.
   - Fine-grained control (expose only what you want).
   - Works well with openHAB’s event bus and UI.
 - **Cons:**  
   - Can be verbose for large installations.
-  - Mapping complex Things/Channels to HomeKit can be manual.
+  - Mapping complex Things/Channels to Homekit can be manual.
 
 ---
 
 ## **2. Thing/Channel-Based Bridging (ThingBridge)**
-- **How:** Map openHAB Things and their Channels directly to HomeKit Services/Characteristics.
+- **How:** Map openHAB Things and their Channels directly to Homekit Services/Characteristics.
 - **Pros:**  
   - More direct mapping for modern openHAB setups.
   - Can leverage ThingType/ChannelType metadata for automation.
@@ -13310,7 +13310,7 @@ Absolutely—there are several architectural patterns and integration strategies
 ---
 
 ## **3. ProxyThing/ProxyAccessory Pattern**
-- **How:** Create a special “ProxyThing” or “ProxyAccessory” in openHAB that acts as a bridge, mapping a HomeKit HomekitService/HomekitCharacteristic to a specific Thing/Channel or Item.
+- **How:** Create a special “ProxyThing” or “ProxyAccessory” in openHAB that acts as a bridge, mapping a Homekit HomekitService/HomekitCharacteristic to a specific Thing/Channel or Item.
 - **Pros:**  
   - Highly flexible, supports custom mappings and transformations.
   - Can be used for advanced scenarios (e.g., virtual/grouped accessories).
@@ -13321,7 +13321,7 @@ Absolutely—there are several architectural patterns and integration strategies
 ---
 
 ## **4. Metadata-Driven Mapping (YAML/JSON Config)**
-- **How:** Use external configuration files to define mappings between openHAB entities and HomeKit.
+- **How:** Use external configuration files to define mappings between openHAB entities and Homekit.
 - **Pros:**  
   - Centralized, version-controlled configuration.
   - Supports advanced mapping, value transformation, and custom rules.
@@ -13333,7 +13333,7 @@ Absolutely—there are several architectural patterns and integration strategies
 ---
 
 ## **5. UI/REST-Driven Mapping**
-- **How:** Use openHAB’s UI or REST API to configure which Items/Things/Channels are exposed to HomeKit and how.
+- **How:** Use openHAB’s UI or REST API to configure which Items/Things/Channels are exposed to Homekit and how.
 - **Pros:**  
   - User-friendly, discoverable, and dynamic.
   - Can provide wizards, validation, and suggestions.
@@ -13344,7 +13344,7 @@ Absolutely—there are several architectural patterns and integration strategies
 ---
 
 ## **6. Binding-Specific Adapters**
-- **How:** Implement HomeKit adapters directly in other bindings (e.g., Z-Wave, Zigbee) to expose their Things/Channels natively to HomeKit.
+- **How:** Implement Homekit adapters directly in other bindings (e.g., Z-Wave, Zigbee) to expose their Things/Channels natively to Homekit.
 - **Pros:**  
   - Deep integration, can leverage binding-specific features.
   - Potential for optimized performance and richer metadata.
@@ -13355,11 +13355,11 @@ Absolutely—there are several architectural patterns and integration strategies
 ---
 
 ## **7. External Bridge/Proxy (Standalone HomekitService)**
-- **How:** Run a separate process (e.g., Node.js HAP-NodeJS, Homebridge, or a custom Java service) that connects to openHAB via REST/MQTT and exposes HomeKit accessories.
+- **How:** Run a separate process (e.g., Node.js HAP-NodeJS, Homebridge, or a custom Java service) that connects to openHAB via REST/MQTT and exposes Homekit accessories.
 - **Pros:**  
-  - Decouples HomeKit logic from openHAB runtime.
-  - Can leverage mature HomeKit libraries (e.g., Homebridge plugins).
-  - Useful for advanced or unsupported HomeKit features.
+  - Decouples Homekit logic from openHAB runtime.
+  - Can leverage mature Homekit libraries (e.g., Homebridge plugins).
+  - Useful for advanced or unsupported Homekit features.
 - **Cons:**  
   - Adds another moving part.
   - May have latency or synchronization issues.
@@ -13367,11 +13367,11 @@ Absolutely—there are several architectural patterns and integration strategies
 
 ---
 
-## **8. MQTT/HomeKit Bridge**
-- **How:** Use MQTT as a universal bus, with a HomeKit bridge (e.g., Homebridge-MQTT) subscribing to openHAB-published topics.
+## **8. MQTT/Homekit Bridge**
+- **How:** Use MQTT as a universal bus, with a Homekit bridge (e.g., Homebridge-MQTT) subscribing to openHAB-published topics.
 - **Pros:**  
   - Decouples systems, supports other integrations.
-  - Can be used for cloud or remote HomeKit exposure.
+  - Can be used for cloud or remote Homekit exposure.
 - **Cons:**  
   - Requires MQTT setup and topic mapping.
   - May be less secure or harder to manage for some users.
@@ -13379,7 +13379,7 @@ Absolutely—there are several architectural patterns and integration strategies
 ---
 
 ## **9. Scripting/Rule-Based Bridging**
-- **How:** Use openHAB’s rule engine (ECMAScript, Jython, etc.) to script custom HomeKit exposure logic.
+- **How:** Use openHAB’s rule engine (ECMAScript, Jython, etc.) to script custom Homekit exposure logic.
 - **Pros:**  
   - Ultimate flexibility for power users.
   - Can implement custom logic, transformations, and triggers.
@@ -13437,15 +13437,15 @@ What are alternatives for the current architecture which is based on decoupled H
 _**Assistant**_
 
 Great question!  
-The current architecture—based on a decoupled `HomekitLocalAccessoryServer`/`HomekitRemoteAccessoryServer`, the HomekitAccessory/HomekitService/HomekitCharacteristic hierarchy, and various HomekitBridges—is **modular, extensible, and closely follows the HomeKit HomekitAccessory Protocol (HAP) model**.  
+The current architecture—based on a decoupled `HomekitLocalAccessoryServer`/`HomekitRemoteAccessoryServer`, the HomekitAccessory/HomekitService/HomekitCharacteristic hierarchy, and various HomekitBridges—is **modular, extensible, and closely follows the Homekit HomekitAccessory Protocol (HAP) model**.  
 However, there are alternative architectural patterns you could consider, each with its own trade-offs.
 
 ---
 
-## **1. Monolithic HomeKit Bridge**
+## **1. Monolithic Homekit Bridge**
 
 **Description:**  
-Instead of multiple bridges and servers, have a single, monolithic HomeKit bridge component that manages all accessories, services, and characteristics internally.
+Instead of multiple bridges and servers, have a single, monolithic Homekit bridge component that manages all accessories, services, and characteristics internally.
 
 **Pros:**
 - Simpler deployment and configuration.
@@ -13462,7 +13462,7 @@ Instead of multiple bridges and servers, have a single, monolithic HomeKit bridg
 ## **2. Flat HomekitAccessory Model (No Hierarchy)**
 
 **Description:**  
-Flatten the HomekitAccessory/HomekitService/HomekitCharacteristic hierarchy into a single “exposed entity” abstraction, mapping directly from openHAB Items/Things/Channels to HomeKit endpoints.
+Flatten the HomekitAccessory/HomekitService/HomekitCharacteristic hierarchy into a single “exposed entity” abstraction, mapping directly from openHAB Items/Things/Channels to Homekit endpoints.
 
 **Pros:**
 - Simpler mapping logic.
@@ -13470,16 +13470,16 @@ Flatten the HomekitAccessory/HomekitService/HomekitCharacteristic hierarchy into
 - Good for simple use cases.
 
 **Cons:**
-- Loses the richness and flexibility of the HomeKit model.
-- Harder to support advanced HomeKit features (e.g., services with multiple characteristics, accessory grouping).
-- Not future-proof for HomeKit protocol changes.
+- Loses the richness and flexibility of the Homekit model.
+- Harder to support advanced Homekit features (e.g., services with multiple characteristics, accessory grouping).
+- Not future-proof for Homekit protocol changes.
 
 ---
 
 ## **3. Event-Driven Microservices**
 
 **Description:**  
-Decompose the HomeKit integration into microservices (or OSGi modules), each responsible for a specific concern (e.g., discovery, mapping, event translation, accessory serving).
+Decompose the Homekit integration into microservices (or OSGi modules), each responsible for a specific concern (e.g., discovery, mapping, event translation, accessory serving).
 
 **Pros:**
 - Highly scalable and maintainable.
@@ -13496,7 +13496,7 @@ Decompose the HomeKit integration into microservices (or OSGi modules), each res
 ## **4. Adapter/Plugin-Based Architecture**
 
 **Description:**  
-Core HomeKit logic is in a central engine, but all mapping, transformation, and protocol bridging is handled by pluggable adapters (for openHAB, MQTT, REST, etc.).
+Core Homekit logic is in a central engine, but all mapping, transformation, and protocol bridging is handled by pluggable adapters (for openHAB, MQTT, REST, etc.).
 
 **Pros:**
 - Highly extensible—easy to add new integrations.
@@ -13509,15 +13509,15 @@ Core HomeKit logic is in a central engine, but all mapping, transformation, and 
 
 ---
 
-## **5. External HomeKit Proxy/Bridge**
+## **5. External Homekit Proxy/Bridge**
 
 **Description:**  
-Run HomeKit logic in a separate process (e.g., Homebridge, HAP-NodeJS, or a custom Java service), and communicate with openHAB via REST, MQTT, or WebSockets.
+Run Homekit logic in a separate process (e.g., Homebridge, HAP-NodeJS, or a custom Java service), and communicate with openHAB via REST, MQTT, or WebSockets.
 
 **Pros:**
-- Decouples HomeKit from openHAB runtime.
-- Can leverage mature HomeKit libraries and plugins.
-- Useful for cloud or remote HomeKit exposure.
+- Decouples Homekit from openHAB runtime.
+- Can leverage mature Homekit libraries and plugins.
+- Useful for cloud or remote Homekit exposure.
 
 **Cons:**
 - Adds another moving part.
@@ -13529,7 +13529,7 @@ Run HomeKit logic in a separate process (e.g., Homebridge, HAP-NodeJS, or a cust
 ## **6. Direct Binding Integration**
 
 **Description:**  
-Integrate HomeKit logic directly into openHAB bindings (e.g., Z-Wave, Zigbee), so each binding exposes its Things/Channels to HomeKit natively.
+Integrate Homekit logic directly into openHAB bindings (e.g., Z-Wave, Zigbee), so each binding exposes its Things/Channels to Homekit natively.
 
 **Pros:**
 - Deep integration, can leverage binding-specific features.
@@ -13545,7 +13545,7 @@ Integrate HomeKit logic directly into openHAB bindings (e.g., Z-Wave, Zigbee), s
 ## **7. Rule-Engine-Driven Mapping**
 
 **Description:**  
-Use openHAB’s rule engine to script all HomeKit exposure and mapping logic, possibly with helper libraries.
+Use openHAB’s rule engine to script all Homekit exposure and mapping logic, possibly with helper libraries.
 
 **Pros:**
 - Ultimate flexibility for power users.
@@ -13606,14 +13606,14 @@ Apply the Event-Driven Microservices architecture to the current solution. What 
 
 _**Assistant**_
 
-Absolutely! Here’s how you would **apply an Event-Driven Microservices architecture** to your current openHAB–HomeKit solution, what would change, and what the new architecture would look like.
+Absolutely! Here’s how you would **apply an Event-Driven Microservices architecture** to your current openHAB–Homekit solution, what would change, and what the new architecture would look like.
 
 ---
 
 ## **1. What Would Change?**
 
 ### **A. Decomposition into Microservices**
-- Instead of a single monolithic bundle (or a few tightly-coupled classes), you would split the HomeKit integration into **separate, independently deployable services** (or OSGi modules, or even separate JVM processes).
+- Instead of a single monolithic bundle (or a few tightly-coupled classes), you would split the Homekit integration into **separate, independently deployable services** (or OSGi modules, or even separate JVM processes).
 - Each service is responsible for a specific concern (e.g., discovery, mapping, event translation, accessory serving, management, diagnostics).
 
 ### **B. Event Bus as the Backbone**
@@ -13637,10 +13637,10 @@ Absolutely! Here’s how you would **apply an Event-Driven Microservices archite
   Subscribes to discovery events, applies mapping rules (from YAML, UI, etc.), and publishes “entity mapped” events.
 
 - **HomekitAccessory HomekitService:**  
-  Subscribes to “entity mapped” events, creates HomeKit HomekitAccessory/HomekitService/HomekitCharacteristic objects, and manages their lifecycle.
+  Subscribes to “entity mapped” events, creates Homekit HomekitAccessory/HomekitService/HomekitCharacteristic objects, and manages their lifecycle.
 
 - **Event Translation HomekitService:**  
-  Listens for openHAB state/command events and HomeKit characteristic events, translates and republishes as needed.
+  Listens for openHAB state/command events and Homekit characteristic events, translates and republishes as needed.
 
 - **Management/Coordination HomekitService:**  
   Handles management events (e.g., conflict resolution, health checks, diagnostics).
@@ -13667,8 +13667,8 @@ Absolutely! Here’s how you would **apply an Event-Driven Microservices archite
 1. **Discovery HomekitService** detects a new openHAB Thing.
 2. Publishes `EntityDiscoveredEvent` on the bus.
 3. **Mapping HomekitService** receives the event, applies mapping rules, and publishes `EntityMappedEvent`.
-4. **HomekitAccessory HomekitService** receives the mapping, creates the HomeKit accessory, and publishes `AccessoryCreatedEvent`.
-5. **Event Translation HomekitService** listens for openHAB state changes and HomeKit characteristic changes, translating and publishing events as needed.
+4. **HomekitAccessory HomekitService** receives the mapping, creates the Homekit accessory, and publishes `AccessoryCreatedEvent`.
+5. **Event Translation HomekitService** listens for openHAB state changes and Homekit characteristic changes, translating and publishing events as needed.
 6. **Management HomekitService** listens for all events, detects conflicts, and publishes `ConflictDetectedEvent` if needed.
 7. **Diagnostics HomekitService** aggregates all events for monitoring and troubleshooting.
 
@@ -13735,7 +13735,7 @@ public class AccessoryService {
 
 ## **7. Migration Path**
 
-- Start by refactoring your current monolithic HomeKit integration into logical modules/services.
+- Start by refactoring your current monolithic Homekit integration into logical modules/services.
 - Introduce an event bus abstraction (if not already present).
 - Gradually move responsibilities into separate services, communicating only via events.
 - Optionally, move some services to separate processes or containers for true microservices.
@@ -13764,8 +13764,8 @@ public class AccessoryService {
 |------------------------|---------------------------------------|---------------------------------------|
 | Discovery              | Detect new Things/Items                | EntityDiscoveredEvent                 |
 | Mapping                | Apply mapping rules                    | EntityMappedEvent                     |
-| HomekitAccessory              | Manage HomeKit objects                 | AccessoryCreatedEvent                 |
-| Event Translation      | Translate openHAB/HomeKit events       | CharacteristicStateChangedEvent       |
+| HomekitAccessory              | Manage Homekit objects                 | AccessoryCreatedEvent                 |
+| Event Translation      | Translate openHAB/Homekit events       | CharacteristicStateChangedEvent       |
 | Management/Coordination| Conflict, health, diagnostics          | ConflictDetectedEvent, HealthStatus   |
 | Diagnostics/Monitoring | Logging, metrics, health               | All events                            |
 | UI/API                 | User interaction, config, diagnostics  | (optional)                            |
@@ -13790,7 +13790,7 @@ How would the AccessoryServers fit into to this ?
 _**Assistant**_
 
 Excellent follow-up!  
-In an **Event-Driven Microservices architecture**, the `HomekitAccessoryServer` (both `HomekitLocalAccessoryServer` and `HomekitRemoteAccessoryServer`) would become **dedicated, focused services** responsible for managing the lifecycle, communication, and protocol handling for HomeKit accessories. Here’s how they would fit in:
+In an **Event-Driven Microservices architecture**, the `HomekitAccessoryServer` (both `HomekitLocalAccessoryServer` and `HomekitRemoteAccessoryServer`) would become **dedicated, focused services** responsible for managing the lifecycle, communication, and protocol handling for Homekit accessories. Here’s how they would fit in:
 
 ---
 
@@ -13798,9 +13798,9 @@ In an **Event-Driven Microservices architecture**, the `HomekitAccessoryServer` 
 
 - **Role:**  
   The `HomekitAccessoryServer` is responsible for:
-  - Hosting and serving HomeKit accessories to HomeKit controllers (iOS devices, HomePods, etc.).
+  - Hosting and serving Homekit accessories to Homekit controllers (iOS devices, HomePods, etc.).
   - Managing the HAP protocol (pairing, authentication, encryption, etc.).
-  - Handling incoming HomeKit requests and publishing relevant events to the event bus.
+  - Handling incoming Homekit requests and publishing relevant events to the event bus.
   - Receiving events from the bus to update accessory state.
 
 - **Deployment:**  
@@ -13811,16 +13811,16 @@ In an **Event-Driven Microservices architecture**, the `HomekitAccessoryServer` 
 
 ## **2. Event Flows Involving HomekitAccessoryServer**
 
-### **A. From openHAB to HomeKit (State Change)**
+### **A. From openHAB to Homekit (State Change)**
 
 1. **Event Translation HomekitService** receives an openHAB state change (e.g., Item/Channel update).
 2. Publishes a `CharacteristicStateChangedEvent` (or similar) on the event bus.
-3. **HomekitAccessoryServer** subscribes to these events, updates the corresponding HomeKit characteristic, and notifies HomeKit controllers.
+3. **HomekitAccessoryServer** subscribes to these events, updates the corresponding Homekit characteristic, and notifies Homekit controllers.
 
-### **B. From HomeKit to openHAB (User Action/Siri Command)**
+### **B. From Homekit to openHAB (User Action/Siri Command)**
 
-1. **HomekitAccessoryServer** receives a write request from a HomeKit controller (e.g., user toggles a light).
-2. Publishes a `HomeKitCommandEvent` (or similar) on the event bus.
+1. **HomekitAccessoryServer** receives a write request from a Homekit controller (e.g., user toggles a light).
+2. Publishes a `HomekitCommandEvent` (or similar) on the event bus.
 3. **Event Translation HomekitService** subscribes to these events, translates them into openHAB commands, and sends them to the appropriate Item/Channel.
 
 ### **C. HomekitAccessory Lifecycle**
@@ -13860,10 +13860,10 @@ public class AccessoryServerService {
         // Update the characteristic value in the HAP server
     }
 
-    // When a HomeKit controller writes a value:
-    public void handleHomeKitWrite(String accessoryId, String characteristicId, Object value) {
+    // When a Homekit controller writes a value:
+    public void handleHomekitWrite(String accessoryId, String characteristicId, Object value) {
         // Publish to event bus for translation to openHAB
-        eventBus.publish(new HomeKitCommandEvent(accessoryId, characteristicId, value));
+        eventBus.publish(new HomekitCommandEvent(accessoryId, characteristicId, value));
     }
 }
 ```
@@ -13880,7 +13880,7 @@ public class AccessoryServerService {
 ## **5. Benefits in Microservices Architecture**
 
 - **Separation of Concerns:**  
-  AccessoryServers focus only on HAP protocol and HomeKit communication.
+  AccessoryServers focus only on HAP protocol and Homekit communication.
 - **Scalability:**  
   You can run multiple servers for load balancing or high availability.
 - **Resilience:**  
@@ -13901,7 +13901,7 @@ public class AccessoryServerService {
       |                                                                                           v
       |<-------------------(AccessoryCreatedEvent, etc.)-------------------[HomekitAccessoryServer(s)]
       |                                                                                           |
-      |<-------------------(HomeKitCommandEvent, etc.)---------------------[Event Translation HomekitService]
+      |<-------------------(HomekitCommandEvent, etc.)---------------------[Event Translation HomekitService]
       |
 [Management/Diagnostics HomekitService] <---(all events)---+
 ```
@@ -13912,9 +13912,9 @@ public class AccessoryServerService {
 
 | Component         | Responsibility                                 | Event Bus Role                |
 |-------------------|------------------------------------------------|-------------------------------|
-| HomekitAccessoryServer   | HAP protocol, HomeKit comms, accessory hosting | Subscribes to lifecycle/state |
+| HomekitAccessoryServer   | HAP protocol, Homekit comms, accessory hosting | Subscribes to lifecycle/state |
 | HomekitAccessory HomekitService | HomekitAccessory creation/removal                     | Publishes lifecycle events    |
-| Event Translation | openHAB ↔ HomeKit state/command translation    | Publishes/subscribes to state |
+| Event Translation | openHAB ↔ Homekit state/command translation    | Publishes/subscribes to state |
 | Management        | Health, diagnostics, conflict resolution       | Subscribes to all events      |
 
 ---
@@ -13928,7 +13928,7 @@ public class AccessoryServerService {
 ---
 
 **In summary:**  
-- AccessoryServers become event-driven services focused on HAP protocol and HomeKit communication.
+- AccessoryServers become event-driven services focused on HAP protocol and Homekit communication.
 - They subscribe to lifecycle and state events, and publish command events as needed.
 - This makes the system modular, scalable, and robust.
 
@@ -13955,7 +13955,7 @@ Here’s how they would fit in and what their responsibilities would be:
 
 ### **Role in Microservices Architecture**
 - **Central Directory:**  
-  Acts as a central directory of all known HomeKit Accessories, regardless of which service or process created or manages them.
+  Acts as a central directory of all known Homekit Accessories, regardless of which service or process created or manages them.
 - **HomekitService Discovery:**  
   Allows any service (e.g., HomekitAccessoryServer, Diagnostics, Management) to discover and enumerate all accessories.
 - **Lifecycle Management:**  
@@ -13966,7 +13966,7 @@ Here’s how they would fit in and what their responsibilities would be:
 ### **How It’s Used**
 - **HomekitAccessory HomekitService** registers new accessories as they are created.
 - **HomekitAccessoryServer HomekitService** queries the registry to know which accessories it should serve.
-- **Diagnostics/Management Services** use the registry to report on the current state of the HomeKit ecosystem.
+- **Diagnostics/Management Services** use the registry to report on the current state of the Homekit ecosystem.
 - **Bridges** (ItemBridge, ThingBridge, etc.) check the registry to avoid duplicate exposure.
 
 ---
@@ -14043,7 +14043,7 @@ Here’s how they would fit in and what their responsibilities would be:
 
 **In summary:**  
 - `HomekitAccessoryRegistry` and `HomekitAccessoryServerRegistry` become central coordination and discovery points in your microservices architecture.
-- They enable dynamic, event-driven management of HomeKit accessories and servers, supporting scalability, resilience, and extensibility.
+- They enable dynamic, event-driven management of Homekit accessories and servers, supporting scalability, resilience, and extensibility.
 
 Let me know if you want a concrete code example for event-driven registry integration, or advice on refactoring your current registries for microservices!
 
@@ -14266,7 +14266,7 @@ Use OSGi Metatype annotations to define a configuration for each instance:
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 
-@ObjectClassDefinition(name = "HomeKit HomekitAccessory Server")
+@ObjectClassDefinition(name = "Homekit HomekitAccessory Server")
 public @interface AccessoryServerConfig {
     @AttributeDefinition(name = "HomekitPairing ID")
     String pairingId();
@@ -14387,7 +14387,7 @@ And what if you want to create new OSGi HomekitAccessoryServer on the fly, progr
 _**Assistant**_
 
 Excellent, advanced question!  
-If you want to **dynamically create new OSGi HomekitAccessoryServer instances at runtime (programmatically)**—for example, when you reach the HomeKit limit of 150 accessories per server—you need to use the **OSGi Configuration Admin service** to create new factory component instances on the fly.
+If you want to **dynamically create new OSGi HomekitAccessoryServer instances at runtime (programmatically)**—for example, when you reach the Homekit limit of 150 accessories per server—you need to use the **OSGi Configuration Admin service** to create new factory component instances on the fly.
 
 Here’s how you do it:
 
@@ -14930,7 +14930,7 @@ OSGi components (Declarative Services) are best used for:
 ## **2. HomekitAccessory/HomekitService/HomekitCharacteristic: What Are They?**
 
 - **HomekitAccessory, HomekitService, and HomekitCharacteristic** are typically:
-  - **Short-lived, fine-grained domain objects** representing the HomeKit model.
+  - **Short-lived, fine-grained domain objects** representing the Homekit model.
   - Created and destroyed dynamically as the user’s openHAB configuration changes.
   - Often have a 1:1 or 1:few relationship with openHAB Items, Things, or Channels.
 
@@ -14968,7 +14968,7 @@ OSGi components (Declarative Services) are best used for:
 ## **5. When Might You Consider OSGi Components for These?**
 
 - If you have a **very dynamic, plugin-based system** where third-party bundles might contribute new types of Accessories/Services/Characteristics at runtime.
-- If you want to allow **external modules to discover and interact with individual characteristics** (rare in HomeKit/openHAB context).
+- If you want to allow **external modules to discover and interact with individual characteristics** (rare in Homekit/openHAB context).
 - Even then, it’s usually better to use a **factory or registry pattern** rather than making each instance a component.
 
 ---

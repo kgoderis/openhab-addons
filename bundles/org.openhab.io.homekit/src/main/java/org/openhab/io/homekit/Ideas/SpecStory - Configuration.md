@@ -113,9 +113,9 @@ Let me search for configuration-related files and classes.
 Based on my analysis of the codebase, I can identify several configurable parameters that can be set through OpenHAB configuration files. Here's a comprehensive list:
 
 1. **Core Configuration Parameters** (in `config.xml`):
-   - `port`: The port number the HomeKit integration listens on (default: 9124)
+   - `port`: The port number the Homekit integration listens on (default: 9124)
    - `pin`: The pairing PIN in format ###-##-### (default: 031-45-154)
-   - `networkInterface`: Optional IP address of the network interface to expose HomeKit on
+   - `networkInterface`: Optional IP address of the network interface to expose Homekit on
 
 2. **Thermostat Configuration Parameters**:
    - `useFahrenheitTemperature`: Boolean to use Fahrenheit instead of Celsius (default: false)
@@ -198,7 +198,7 @@ Let me try a more targeted search.
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessoryServer.java` | L214 | `* Gets the current configuration index.` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessoryServer.java` | L216 | `* @return the configuration index` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/hap/HomekitAccessoryServer.java` | L218 | `int getConfigurationIndex();` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/exception/HomekitConfigurationException.java` | L3 | `* Exception thrown when there is an error with HomeKit server configuration.` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/exception/HomekitConfigurationException.java` | L3 | `* Exception thrown when there is an error with Homekit server configuration.` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/exception/HomekitConfigurationException.java` | L5 | `public class HomekitConfigurationException extends HomekitServerException {` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/exception/HomekitConfigurationException.java` | L8 | `public HomekitConfigurationException(String message) {` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/exception/HomekitConfigurationException.java` | L12 | `public HomekitConfigurationException(String message, Throwable cause) {` |
@@ -226,16 +226,16 @@ Let me try a more targeted search.
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L447 | `String brightnessChannel = getThing().getConfiguration().get("homekitBrightness");` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L548 | `⟪ 104 characters skipped ⟫t* Thing’s channel, as specified in its configuration or metadata.` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L693 | `- Map these channels to the target Thing’s channels via configuration.` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L699 | `Define channels on the ProxyThing that correspond to the HomeKit characteristics you want to expose. Use configuration to map these to the target Thing’s channels. The handler proxies state and commands between openHAB and HomeKit in both directions.` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L699 | `Define channels on the ProxyThing that correspond to the Homekit characteristics you want to expose. Use configuration to map these to the target Thing’s channels. The handler proxies state and commands between openHAB and Homekit in both directions.` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L868 | `- Set the Thing status to `OFFLINE` with a `CONFIGURATION_ERROR` and a clear message, e.g.:` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L912 | `updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L917 | `updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L1069 | `- For more complex bindings (e.g., Z-Wave, MQTT), you may need to inspect channel configuration or metadata to determine the best mapping.` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L1123 | `- **Read the configuration** to determine which HomeKit HomekitService and Characteristics to expose, and which openHAB channels to map.` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L1123 | `- **Read the configuration** to determine which Homekit HomekitService and Characteristics to expose, and which openHAB channels to map.` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L1177 | `- Recreate mappers with the new configuration.` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L1231 | `⟪ 205 characters skipped ⟫The handler manages their lifecycle and configuration.` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L1489 | `⟪ 105 characters skipped ⟫tic) from openHAB Things, Channels, and configuration.` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L1628 | `You can check compatibility between HomeKit characteristics and openHAB channel types at configuration/initialization time.` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L1628 | `You can check compatibility between Homekit characteristics and openHAB channel types at configuration/initialization time.` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L1766 | `### **C. Use Configuration or Metadata for Special Cases**` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L1768 | `⟪ 98 characters skipped ⟫w the user to specify this in the Thing configuration or metadata.` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L1822 | `- You can provide a registry of custom mappers or allow the user to specify a mapping strategy in the config.` |
@@ -246,7 +246,7 @@ Let me try a more targeted search.
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L2311 | `### **A. Reduce Configuration Parameters**` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L2434 | `- Supported configuration parameters` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L2454 | `### **C. Reducing User Configuration**` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L2526 | `- This reduces user configuration, increases reliability, and enables batch/wildcard exposure of devices to HomeKit.` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L2526 | `- This reduces user configuration, increases reliability, and enables batch/wildcard exposure of devices to Homekit.` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L2536 | `⟪ 210 characters skipped ⟫nfo? Does it need to be configured in a configuration file? how ?` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L2561 | `### **B. External Configuration File (Recommended)**` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Bridget%20Mappers%20Validation%20OSGi%20MicroServices.md` | L2643 | `- **External configuration file** (YAML/JSON) is the best practice for flexibility and maintainability.` |
@@ -268,9 +268,9 @@ Read file: src/main/resources/OH-INF/config/config.xml
 Based on the analysis of the codebase, here are the functional configuration aspects that can be configured through OpenHAB configuration files:
 
 1. **Core Functionality Configuration**:
-   - `port`: Controls which network port the HomeKit integration listens on (default: 9124)
-   - `pin`: Sets the pairing PIN for HomeKit devices (format: ###-##-###, default: 031-45-154)
-   - `networkInterface`: Specifies which network interface to use for HomeKit communication (optional)
+   - `port`: Controls which network port the Homekit integration listens on (default: 9124)
+   - `pin`: Sets the pairing PIN for Homekit devices (format: ###-##-###, default: 031-45-154)
+   - `networkInterface`: Specifies which network interface to use for Homekit communication (optional)
 
 2. **Thermostat Functionality**:
    - `useFahrenheitTemperature`: Controls temperature unit display (true for Fahrenheit, false for Celsius)
@@ -288,7 +288,7 @@ Based on the analysis of the codebase, here are the functional configuration asp
 These configurations can be set in the OpenHAB configuration files in the following ways:
 
 1. Through the OpenHAB UI:
-   - Navigate to Settings → Things → HomeKit Bridge
+   - Navigate to Settings → Things → Homekit Bridge
    - Configure the parameters in the UI
 
 2. Through configuration files:
@@ -311,7 +311,7 @@ These configurations can be set in the OpenHAB configuration files in the follow
    - Create a configuration file in the OSGi configuration directory with the PID `org.openhab.homekit`
    - The configuration can be managed through the OSGi Configuration Admin service
 
-The configuration changes take effect after the HomeKit binding is restarted or when the configuration is updated through the OSGi Configuration Admin service.
+The configuration changes take effect after the Homekit binding is restarted or when the configuration is updated through the OSGi Configuration Admin service.
 
 ---
 
@@ -351,7 +351,7 @@ Let me search for functionality toggles and logging configurations in the codeba
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/target/spotless-index` | L111 | `src/main/java/org/openhab/io/homekit/internal/handler/HomekitAccessoryBridgeHandler.java 2025-04-16T17:07:50.293746811Z` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/target/spotless-index` | L174 | `src/main/java/org/openhab/io/homekit/library/accessory/BridgeAccessory.java 2025-04-16T07:06:34.213918382Z` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/TODO` | L7 | `- The ID of an accessory used in a bridge must be greater than 1 (HomekitAbstractAccessoryServer)` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/exception/HomekitMetadataException.java` | L3 | `* Exception thrown when there is an error with HomeKit metadata.` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/exception/HomekitMetadataException.java` | L3 | `* Exception thrown when there is an error with Homekit metadata.` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/exception/HomekitMetadataException.java` | L5 | `public class HomekitMetadataException extends HomekitFactoryException {` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/exception/HomekitMetadataException.java` | L6 | `public HomekitMetadataException(String message) {` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/exception/HomekitMetadataException.java` | L10 | `public HomekitMetadataException(String message, Throwable cause) {` |
@@ -369,8 +369,8 @@ Let me search for functionality toggles and logging configurations in the codeba
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/library/accessory/BridgeAccessory.java` | L8 | `//     public BridgeAccessory(HomekitAccessoryServer server, boolean extend) throws Exception {` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/library/accessory/BridgeAccessory.java` | L20 | `//         return "Bridge";` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/.cursor/rules/log-format.mdc` | L5 | `You will apply a consistent logging format, verbosity and prefixes to all classes.` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/.cursor/rules/logging-standards.mdc` | L5 | `# OpenHAB HomeKit Logging Standards` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/.cursor/rules/logging-standards.mdc` | L7 | `This document outlines the logging standards used in the OpenHAB HomeKit integration.` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/.cursor/rules/logging-standards.mdc` | L5 | `# OpenHAB Homekit Logging Standards` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/.cursor/rules/logging-standards.mdc` | L7 | `This document outlines the logging standards used in the OpenHAB Homekit integration.` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/.cursor/rules/logging-standards.mdc` | L57 | `## Component-Specific Logging` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/listener/HomekitStatusListener.java` | L3 | `import org.openhab.core.thing.Bridge;` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/api/listener/HomekitStatusListener.java` | L11 | `void onAccessoryAdded(Bridge bridge, HomekitAccessory accessory);` |
@@ -406,7 +406,7 @@ Let me search for functionality toggles and logging configurations in the codeba
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L1552 | `"bridge-1234:aid-1:",` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L1741 | `"bridge-1234:aid-1:",` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L1920 | `- **If your event system is meant to be decoupled, serializable, and possibly used across process boundaries (e.g., for logging, remote events, or scripting), stick with JSON.**` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L2260 | `This is a classic **HomeKit bridge** scenario, where your system acts as a proxy between a remote HomeKit device and a local HomeKit controller. Here’s how you can architect this in your project:` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L2260 | `This is a classic **Homekit bridge** scenario, where your system acts as a proxy between a remote Homekit device and a local Homekit controller. Here’s how you can architect this in your project:` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L2282 | `### **1. HomekitAccessory as a Bridge/Proxy**` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L2356 | `- **HomekitAccessory acts as a bridge/proxy** between local and remote servers.` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/Ideas/SpecStory%20Events.md` | L2369 | `Should this kind of re-expose functionality be tracked by the HomekitEventManager, or should we create a separate manager or bridge that tracks all these things ? and that tracks which servers and so are involved? that can set up the necessary subscriptions on the relevant devices, and keep track of these? can you provide a` |
@@ -495,7 +495,7 @@ To configure these functionalities, you can use the following methods:
    ```json
    {
      "thingTypeUID": "homekit:bridge",
-     "label": "HomeKit Bridge",
+     "label": "Homekit Bridge",
      "configuration": {
        "bridge.enabled": true,
        "bridge.id": 2,
@@ -507,7 +507,7 @@ To configure these functionalities, you can use the following methods:
 4. **Through Logging Configuration**:
    Configure logging levels in `$OPENHAB_CONF/services/logging.cfg`:
    ```
-   # HomeKit Logging Configuration
+   # Homekit Logging Configuration
    log:level.org.openhab.io.homekit.internal = DEBUG
    log:level.org.openhab.io.homekit.internal.http = TRACE
    log:level.org.openhab.io.homekit.internal.discovery = INFO
@@ -520,7 +520,7 @@ These configurations allow you to:
 - Manage characteristic event handling
 - Set appropriate logging levels for different components
 
-The changes take effect after the HomeKit binding is restarted or when the configuration is updated through the OSGi Configuration Admin service.
+The changes take effect after the Homekit binding is restarted or when the configuration is updated through the OSGi Configuration Admin service.
 
 ---
 
@@ -684,7 +684,7 @@ security.srp6.timeout_ms=30000
 ```json
 {
   "thingTypeUID": "homekit:bridge",
-  "label": "HomeKit Bridge",
+  "label": "Homekit Bridge",
   "configuration": {
     "event.max_retries": 3,
     "event.timeout_ms": 5000,
@@ -703,7 +703,7 @@ These configurations would allow for:
 - Easier troubleshooting and debugging
 - Better scalability in different environments
 
-The changes would take effect after the HomeKit binding is restarted or when the configuration is updated through the OSGi Configuration Admin service.
+The changes would take effect after the Homekit binding is restarted or when the configuration is updated through the OSGi Configuration Admin service.
 
 ---
 
@@ -809,8 +809,8 @@ import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
 @ObjectClassDefinition(
-    name = "HomeKit Event Manager Configuration",
-    description = "Configuration for the HomeKit Event Manager"
+    name = "Homekit Event Manager Configuration",
+    description = "Configuration for the Homekit Event Manager"
 )
 @NonNullByDefault
 public @interface EventManagerConfig {
@@ -1226,13 +1226,13 @@ public class HomekitConfigurationServiceImpl implements HomekitConfigurationServ
     @Activate
     public void activate(Map<String, Object> config) {
         updateConfiguration(config);
-        logger.info("HomeKit configuration activated");
+        logger.info("Homekit configuration activated");
     }
 
     @Modified
     public void modified(Map<String, Object> config) {
         updateConfiguration(config);
-        logger.info("HomeKit configuration modified");
+        logger.info("Homekit configuration modified");
     }
 
     private void updateConfiguration(Map<String, Object> config) {
@@ -1275,7 +1275,7 @@ public class HomekitConfigurationServiceImpl implements HomekitConfigurationServ
         resourceThreadPoolSize = getInt(config, "resource.thread_pool_size", resourceThreadPoolSize);
         resourceConnectionPoolSize = getInt(config, "resource.connection_pool_size", resourceConnectionPoolSize);
 
-        logger.debug("Updated HomeKit configuration");
+        logger.debug("Updated Homekit configuration");
     }
 
     private int getInt(Map<String, Object> config, String key, int defaultValue) {
@@ -1334,7 +1334,7 @@ public class HomekitConfigurationHolder {
 
     public static HomekitConfigurationService getConfiguration() {
         if (configurationService == null) {
-            throw new IllegalStateException("HomeKit configuration service not available");
+            throw new IllegalStateException("Homekit configuration service not available");
         }
         return configurationService;
     }
@@ -1473,7 +1473,7 @@ public class HomekitConfigurationHolder {
 
     @Activate
     public void activate() {
-        logger.debug("HomeKit Configuration Holder activated");
+        logger.debug("Homekit Configuration Holder activated");
     }
 
     @Deactivate
@@ -1481,7 +1481,7 @@ public class HomekitConfigurationHolder {
         synchronized (LOCK) {
             configurationService = null;
         }
-        logger.debug("HomeKit Configuration Holder deactivated");
+        logger.debug("Homekit Configuration Holder deactivated");
     }
 
     @Reference(
@@ -1491,7 +1491,7 @@ public class HomekitConfigurationHolder {
     public void setConfigurationService(HomekitConfigurationService service) {
         synchronized (LOCK) {
             configurationService = service;
-            logger.debug("HomeKit Configuration HomekitService set");
+            logger.debug("Homekit Configuration HomekitService set");
         }
     }
 
@@ -1499,7 +1499,7 @@ public class HomekitConfigurationHolder {
         synchronized (LOCK) {
             if (configurationService == service) {
                 configurationService = null;
-                logger.debug("HomeKit Configuration HomekitService unset");
+                logger.debug("Homekit Configuration HomekitService unset");
             }
         }
     }
@@ -1507,7 +1507,7 @@ public class HomekitConfigurationHolder {
     public static HomekitConfigurationService getConfiguration() {
         synchronized (LOCK) {
             if (configurationService == null) {
-                throw new IllegalStateException("HomeKit configuration service not available");
+                throw new IllegalStateException("Homekit configuration service not available");
             }
             return configurationService;
         }
@@ -1648,13 +1648,13 @@ public class HomekitConfigurationServiceImpl implements HomekitConfigurationServ
     @Activate
     public void activate(Map<String, Object> config) {
         this.config = new HomekitConfig(config);
-        logger.debug("HomeKit Configuration HomekitService activated");
+        logger.debug("Homekit Configuration HomekitService activated");
     }
 
     @Modified
     public void modified(Map<String, Object> config) {
         this.config = new HomekitConfig(config);
-        logger.debug("HomeKit Configuration HomekitService modified");
+        logger.debug("Homekit Configuration HomekitService modified");
     }
 
     @Override
@@ -1914,7 +1914,7 @@ public class HomekitConfigurationServiceImpl implements HomekitConfigurationServ
     public static HomekitConfigurationService getConfiguration() {
         synchronized (LOCK) {
             if (instance == null) {
-                throw new IllegalStateException("HomeKit configuration service not available");
+                throw new IllegalStateException("Homekit configuration service not available");
             }
             return instance;
         }

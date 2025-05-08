@@ -49,7 +49,7 @@ public class HomekitPairingRegistryImpl extends AbstractRegistry<HomekitPairing,
     private final Logger logger = LoggerFactory.getLogger(HomekitPairingRegistry.class);
 
     // ========== Log HomekitMessage Prefixes ==========
-    protected static final String LOG_PREFIX = "HomeKit HomekitPairingRegistry: ";
+    protected static final String LOG_PREFIX = "Homekit HomekitPairingRegistry: ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 

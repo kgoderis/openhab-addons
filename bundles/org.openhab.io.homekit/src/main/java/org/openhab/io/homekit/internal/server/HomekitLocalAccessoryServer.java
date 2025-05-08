@@ -49,7 +49,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
 
     // ========== Constants ==========
     protected static final Logger logger = LoggerFactory.getLogger(HomekitLocalAccessoryServer.class);
-    protected static final String LOG_PREFIX = "HomeKit HomekitLocalAccessoryServer: ";
+    protected static final String LOG_PREFIX = "Homekit HomekitLocalAccessoryServer: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
@@ -112,7 +112,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
             logger.debug("{}Created Jetty server instance", LOG_INIT);
 
             HomekitSessionHandler homekitSessionHandler = new HomekitSessionHandler();
-            logger.debug("{}Created HomeKit session handler", LOG_INIT);
+            logger.debug("{}Created Homekit session handler", LOG_INIT);
 
             HttpConfiguration httpConfiguration = new HttpConfiguration();
             httpConfiguration.setIdleTimeout(0);
@@ -252,7 +252,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
 
     @Override
     public void start() throws HomekitServerException {
-        logger.debug("{}Starting HomeKit server", LOG_SERVER);
+        logger.debug("{}Starting Homekit server", LOG_SERVER);
         try {
             super.start(); // This will call initializeResources() and set state to READY
             logger.debug("{}Base server initialization completed", LOG_SERVER);
@@ -278,7 +278,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
 
     @Override
     public void stop() throws HomekitServerException {
-        logger.debug("{}Stopping HomeKit server", LOG_SERVER);
+        logger.debug("{}Stopping Homekit server", LOG_SERVER);
         try {
             // Stop Jetty server
             if (server != null && server.isStarted()) {

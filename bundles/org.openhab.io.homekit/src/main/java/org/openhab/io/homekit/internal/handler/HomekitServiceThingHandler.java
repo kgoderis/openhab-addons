@@ -63,11 +63,11 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
      * </p>
      * 
      * @param thing The thing this handler manages
-     * @param serverRegistry Registry for HomeKit accessory servers
-     * @param accessoryRegistry Registry for HomeKit accessories
-     * @param homekitChannelTypeProvider Provider for HomeKit channel types
-     * @param homekitThingTypeProvider Provider for HomeKit thing types
-     * @param homekitChannelGroupTypeProvider Provider for HomeKit channel group types
+     * @param serverRegistry Registry for Homekit accessory servers
+     * @param accessoryRegistry Registry for Homekit accessories
+     * @param homekitChannelTypeProvider Provider for Homekit channel types
+     * @param homekitThingTypeProvider Provider for Homekit thing types
+     * @param homekitChannelGroupTypeProvider Provider for Homekit channel group types
      */
     public HomekitServiceThingHandler(Thing thing, HomekitAccessoryServerRegistry serverRegistry, HomekitAccessoryRegistry accessoryRegistry,
             HomekitChannelTypeProvider homekitChannelTypeProvider, HomekitThingTypeProvider homekitThingTypeProvider,
@@ -504,7 +504,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
     // *
     // * <p>
     // * Configuration Parameters:
-    // * - deviceId: Required, identifies the HomeKit server
+    // * - deviceId: Required, identifies the Homekit server
     // * - serviceId: Required, identifies the service
     // * - accessoryId: Optional, defaults to "1"
     // * </p>
@@ -2159,7 +2159,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
     // }
 
     /**
-     * Gets the current HomeKit server instance.
+     * Gets the current Homekit server instance.
      * 
      * <p>
      * Thread Safety:
@@ -2167,7 +2167,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
      * - Thread-safe server retrieval
      * </p>
      * 
-     // * @return The current HomeKit server instance, or null if not set
+     // * @return The current Homekit server instance, or null if not set
      // *
      */
     // private @Nullable HomekitAccessoryServer getServer() {
@@ -2177,7 +2177,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
     // }
 
     // /**
-    // * Sets the HomeKit server instance.
+    // * Sets the Homekit server instance.
     // *
     // * <p>
     // * This method updates the server reference and:
@@ -2193,7 +2193,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
     // * - Thread-safe server assignment
     // * </p>
     // *
-    // * @param server The new HomeKit server instance
+    // * @param server The new Homekit server instance
     // */
     // private void setServer(@Nullable HomekitAccessoryServer server) {
     // synchronized (serverLock) {
@@ -2202,7 +2202,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
     // }
 
     // /**
-    // * Gets the current HomeKit accessory instance.
+    // * Gets the current Homekit accessory instance.
     // *
     // * <p>
     // * Thread Safety:
@@ -2210,7 +2210,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
     // * - Thread-safe accessory retrieval
     // * </p>
     // *
-    // * @return The current HomeKit accessory instance, or null if not set
+    // * @return The current Homekit accessory instance, or null if not set
     // */
     // private @Nullable HomekitAccessory getAccessory() {
     // synchronized (accessoryLock) {
@@ -2235,7 +2235,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
     // * - Thread-safe accessory assignment
     // * </p>
     // *
-    // * @param accessory The new HomeKit accessory instance
+    // * @param accessory The new Homekit accessory instance
     // */
     // private void setAccessory(@Nullable HomekitAccessory accessory) {
     // synchronized (accessoryLock) {
@@ -2422,7 +2422,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
     // }
     // }
     /**
-     * Gets the current HomeKit service instance.
+     * Gets the current Homekit service instance.
      * 
      * <p>
      * Thread Safety:
@@ -2430,7 +2430,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
      * - Thread-safe service retrieval
      * </p>
      * 
-     * @return The current HomeKit service instance, or null if not set
+     * @return The current Homekit service instance, or null if not set
      */
     private @Nullable HomekitService getService() {
         synchronized (serviceLock) {
@@ -2439,7 +2439,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
     }
 
     /**
-     * Sets the HomeKit service instance.
+     * Sets the Homekit service instance.
      * 
      * <p>
      * This method updates the service reference and:
@@ -2456,7 +2456,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
      * - Thread-safe service assignment
      * </p>
      * 
-     * @param service The new HomeKit service instance
+     * @param service The new Homekit service instance
      */
     private void setService(@Nullable HomekitService service) {
         synchronized (serviceLock) {

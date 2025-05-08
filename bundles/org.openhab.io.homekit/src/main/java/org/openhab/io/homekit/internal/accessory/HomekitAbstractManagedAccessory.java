@@ -11,7 +11,7 @@
 // /**
 // * AbstractManagedAccessory is an abstract base class that extends the HomekitGenericAccessory
 // * and implements the ManagedAccessory interface. It provides a foundation for creating
-// * managed accessories in the HomeKit integration for openHAB.
+// * managed accessories in the Homekit integration for openHAB.
 // *
 // * <p>
 // * This class handles the management of accessory services and instance IDs, and

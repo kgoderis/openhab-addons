@@ -11,7 +11,7 @@ import org.openhab.io.homekit.api.hap.HomekitService;
 import org.openhab.io.homekit.internal.accessory.HomekitAccessoryUID;
 
 /**
- * Represents an accessory-related event in the HomeKit integration.
+ * Represents an accessory-related event in the Homekit integration.
  * This event is used to propagate changes in accessories, services, and characteristics
  * between different components of the system.
  */

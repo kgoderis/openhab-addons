@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Singleton logger for HomeKit events.
+ * Singleton logger for Homekit events.
  * <p>
  * This class implements {@link HomekitEventSubscriber} and logs all received events and errors
  * using SLF4J. It is intended to be registered as a subscriber to all event types in the
@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 @NonNullByDefault
 public class HomekitEventLogger implements HomekitEventSubscriber {
     private static final Logger logger = LoggerFactory.getLogger(HomekitEventLogger.class);
-    private static final String LOG_PREFIX = "HomeKit EventLogger: ";
+    private static final String LOG_PREFIX = "Homekit EventLogger: ";
     private static final String LOG_EVENT = LOG_PREFIX + "Event - ";
     private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
@@ -43,7 +43,7 @@ public class HomekitEventLogger implements HomekitEventSubscriber {
     }
 
     /**
-     * Logs the received HomeKit event at debug level.
+     * Logs the received Homekit event at debug level.
      *
      * @param event the event to log
      */
@@ -53,7 +53,7 @@ public class HomekitEventLogger implements HomekitEventSubscriber {
     }
 
     /**
-     * Logs the details of the given HomeKit event.
+     * Logs the details of the given Homekit event.
      *
      * @param event the event to log
      */
@@ -63,7 +63,7 @@ public class HomekitEventLogger implements HomekitEventSubscriber {
     }
 
     /**
-     * Logs an error that occurred while processing a HomeKit event.
+     * Logs an error that occurred while processing a Homekit event.
      *
      * @param event the event that caused the error
      * @param exception the exception thrown during event processing

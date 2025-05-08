@@ -48,7 +48,7 @@ public class HomekitAccessoryRegistryImpl extends AbstractRegistry<HomekitAccess
     private static final String HOMEKIT_ACCESSORY_REGISTRY = "homekit.accessoryRegistry";
 
     // ========== Log HomekitMessage Prefixes ==========
-    protected static final String LOG_PREFIX = "HomeKit Registry: ";
+    protected static final String LOG_PREFIX = "Homekit Registry: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";

@@ -7,7 +7,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.hap.HomekitCharacteristic;
 
 /**
- * Represents a characteristic value changed event in the HomeKit integration.
+ * Represents a characteristic value changed event in the Homekit integration.
  * This event is published when a characteristic's value has been changed.
  */
 @NonNullByDefault

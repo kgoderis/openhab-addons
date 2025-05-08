@@ -40,7 +40,7 @@ public class HomekitGenericAccessory implements HomekitAccessory {
 
     private static final Logger logger = LoggerFactory.getLogger(HomekitGenericAccessory.class);
 
-    protected static final String LOG_PREFIX = "HomeKit HomekitAccessory: ";
+    protected static final String LOG_PREFIX = "Homekit HomekitAccessory: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";

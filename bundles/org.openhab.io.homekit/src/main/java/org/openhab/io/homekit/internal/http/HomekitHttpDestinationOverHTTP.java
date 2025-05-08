@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 public class HomekitHttpDestinationOverHTTP extends HttpDestinationOverHTTP {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpDestinationOverHTTP.class);
-    protected static final String LOG_PREFIX = "HomeKit HttpDestinationOverHTTP: ";
+    protected static final String LOG_PREFIX = "Homekit HttpDestinationOverHTTP: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";

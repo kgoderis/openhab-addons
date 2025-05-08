@@ -1,7 +1,7 @@
 package org.openhab.io.homekit.exception;
 
 /**
- * Exception thrown when there is an error with HomeKit server configuration.
+ * Exception thrown when there is an error with Homekit server configuration.
  */
 public class HomekitConfigurationException extends HomekitServerException {
     private static final long serialVersionUID = 1L;

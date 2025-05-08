@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 public class HomekitAccessoryServlet extends HomekitBaseServlet {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitAccessoryServlet.class);
-    protected static final String LOG_PREFIX = "HomeKit HomekitAccessoryServlet: ";
+    protected static final String LOG_PREFIX = "Homekit HomekitAccessoryServlet: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";

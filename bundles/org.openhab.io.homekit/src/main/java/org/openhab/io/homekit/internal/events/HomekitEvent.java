@@ -5,7 +5,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.thing.UID;
 
 /**
- * Interface for all HomeKit events.
+ * Interface for all Homekit events.
  * <p>
  * Events include metadata for tracking propagation and preventing loops.
  * </p>

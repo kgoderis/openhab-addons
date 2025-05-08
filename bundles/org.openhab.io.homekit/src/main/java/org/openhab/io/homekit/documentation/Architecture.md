@@ -1,6 +1,6 @@
-# HomeKit Integration Architecture
+# Homekit Integration Architecture
 
-This document describes the architecture of the OpenHAB HomeKit integration, including its core components, interfaces, and their relationships.
+This document describes the architecture of the OpenHAB Homekit integration, including its core components, interfaces, and their relationships.
 
 ## Table of Contents
 
@@ -16,8 +16,8 @@ This document describes the architecture of the OpenHAB HomeKit integration, inc
 
 ## Overview
 
-The HomeKit integration consists of two main bundles:
-1. `org.openhab.io.homekit` - Handles the HomeKit protocol implementation and server functionality
+The Homekit integration consists of two main bundles:
+1. `org.openhab.io.homekit` - Handles the Homekit protocol implementation and server functionality
 2. `org.openhab.binding.homekit` - Manages ThingHandlers and binding-specific functionality
 
 The architecture follows a modular design with clear separation of concerns between:
@@ -49,7 +49,7 @@ The architecture follows a modular design with clear separation of concerns betw
 ### 2. HomekitAccessory Components
 
 #### HomekitAccessory
-- Interface representing a HomeKit accessory
+- Interface representing a Homekit accessory
 - Defines services and characteristics
 - Implemented by:
   - `AbstractManagedAccessory` - Base implementation
@@ -217,6 +217,6 @@ The system uses a comprehensive error handling approach:
 
 ## References
 
-- [HomeKit HomekitAccessory Protocol Specification](https://developer.apple.com/homekit/)
+- [Homekit HomekitAccessory Protocol Specification](https://developer.apple.com/homekit/)
 - [OpenHAB Core Architecture](https://www.openhab.org/docs/developer/architecture/)
 - [Java Design Patterns](https://refactoring.guru/design-patterns/java) 

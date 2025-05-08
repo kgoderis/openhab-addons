@@ -1,7 +1,7 @@
 package org.openhab.io.homekit.exception;
 
 /**
- * Exception thrown when there is an error with HomeKit metadata.
+ * Exception thrown when there is an error with Homekit metadata.
  */
 public class HomekitMetadataException extends HomekitFactoryException {
     public HomekitMetadataException(String message) {

@@ -4,7 +4,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.UID;
 
 /**
- * Represents a unique identifier for a HomeKit peer group.
+ * Represents a unique identifier for a Homekit peer group.
  * The UID format is: homekit:peer:{peerGroup}
  */
 @NonNullByDefault

@@ -54,7 +54,7 @@ public class HomekitManagedAccessoryServerProvider
     private static final String HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER = "homekit.managedAccessoryServerProvider";
 
     // ========== Log HomekitMessage Prefixes ==========
-    protected static final String LOG_PREFIX = "HomeKit Provider: ";
+    protected static final String LOG_PREFIX = "Homekit Provider: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";

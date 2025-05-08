@@ -38,14 +38,14 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
     protected static final Logger logger = LoggerFactory.getLogger(AbstractHomekitFactory.class);
 
     // ========== Log HomekitMessage Prefixes ==========
-    protected static final String LOG_PREFIX = "HomeKit Factory: ";
+    protected static final String LOG_PREFIX = "Homekit Factory: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_METADATA = LOG_PREFIX + "Metadata - ";
     protected static final String LOG_REGISTRY = LOG_PREFIX + "Registry - ";
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
 
     // ========== Error Messages ==========
-    protected static final String ERROR_PREFIX = "HomeKit Factory Error: ";
+    protected static final String ERROR_PREFIX = "Homekit Factory Error: ";
     protected static final String ERROR_METADATA_POPULATION = ERROR_PREFIX + "Failed to populate metadata: %s";
     protected static final String ERROR_SERVICE_METADATA = ERROR_PREFIX + "HomekitService metadata error: %s";
     protected static final String ERROR_CHARACTERISTIC_METADATA = ERROR_PREFIX + "HomekitCharacteristic metadata error: %s";
@@ -111,13 +111,13 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
 
     // 2. Constructor and initialization
     protected AbstractHomekitFactory() {
-        logger.debug("{}Initializing HomeKit factory", LOG_INIT);
+        logger.debug("{}Initializing Homekit factory", LOG_INIT);
         try {
             doInitializeMappers();
         } catch (HomekitFactoryException e) {
-            throw new RuntimeException("Failed to initialize HomeKit factory: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to initialize Homekit factory: " + e.getMessage(), e);
         }
-        logger.debug("{}HomeKit factory initialization completed", LOG_INIT);
+        logger.debug("{}Homekit factory initialization completed", LOG_INIT);
     }
 
     private void doInitializeMappers() throws HomekitFactoryException {

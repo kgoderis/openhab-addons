@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Abstract base class for HomeKit events.
+ * Abstract base class for Homekit events.
  * <p>
  * Provides common functionality for all event types, including metadata tracking.
  * </p>
@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 @NonNullByDefault
 public abstract class AbstractHomekitEvent implements HomekitEvent {
     private static final Logger logger = LoggerFactory.getLogger(AbstractHomekitEvent.class);
-    private static final String LOG_PREFIX = "HomeKit Event: ";
+    private static final String LOG_PREFIX = "Homekit Event: ";
 
     /** Wildcard UID that matches any subscriber */
     public static final UID WILDCARD_UID = new HomekitUID("*");

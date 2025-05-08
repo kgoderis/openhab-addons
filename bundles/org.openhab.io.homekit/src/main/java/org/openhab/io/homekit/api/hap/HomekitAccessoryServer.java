@@ -231,9 +231,9 @@ public interface HomekitAccessoryServer extends Identifiable<HomekitAccessorySer
     void pairSetup() throws HomekitServerException;
 
     /**
-     * Verifies the pairing with a client. Pair Verify is performed for every HomeKit HomekitAccessory Protocol session. Pair
+     * Verifies the pairing with a client. Pair Verify is performed for every Homekit HomekitAccessory Protocol session. Pair
      * Verify verifies the pairing between an iOS device and an accessory and establishes an ephemeral shared secret
-     * used to secure the HomeKit HomekitAccessory Protocol session
+     * used to secure the Homekit HomekitAccessory Protocol session
      *
      * @return true if verification successful, false otherwise
      */

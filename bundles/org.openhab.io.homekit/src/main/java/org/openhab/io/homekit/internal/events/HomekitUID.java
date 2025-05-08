@@ -6,9 +6,9 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.UID;
 
 /**
- * Represents a unique identifier for a HomeKit event handler.
+ * Represents a unique identifier for a Homekit event handler.
  * This class provides a standardized way to generate and manage unique identifiers
- * for event handlers in the HomeKit integration.
+ * for event handlers in the Homekit integration.
  * 
  * The UID format is: homekit:{prefix}:{uuid}
  * Example: homekit:bridge:550e8400-e29b-41d4-a716-446655440000
