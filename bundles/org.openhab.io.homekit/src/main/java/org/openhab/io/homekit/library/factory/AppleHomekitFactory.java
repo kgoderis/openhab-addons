@@ -1,8 +1,8 @@
 package org.openhab.io.homekit.library.factory;
 
 import org.openhab.io.homekit.api.factory.HomekitFactory;
+import org.openhab.io.homekit.core.factory.AbstractHomekitFactory;
 import org.openhab.io.homekit.exception.HomekitRegistrationException;
-import org.openhab.io.homekit.internal.factory.AbstractHomekitFactory;
 import org.openhab.io.homekit.library.characteristic.HomekitBrightnessCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitColorTemperatureCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitCurrentHeatingCoolingStateCharacteristic;

@@ -1,7 +1,7 @@
 package org.openhab.io.homekit.api.listener;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.io.homekit.internal.events.HomekitCharacteristicEvent;
+import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicEvent;
 
 @NonNullByDefault
 public interface HomekitCharacteristicChangeListener {

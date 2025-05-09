@@ -2,7 +2,7 @@ package org.openhab.io.homekit.api.provider;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.Provider;
-import org.openhab.io.homekit.api.hap.HomekitPairing;
+import org.openhab.io.homekit.protocol.pairing.HomekitPairing;
 
 @NonNullByDefault
 public interface HomekitPairingProvider extends Provider<HomekitPairing> {

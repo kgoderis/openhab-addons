@@ -4,7 +4,7 @@ import java.net.InetAddress;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.io.homekit.api.hap.HomekitAccessoryServer;
+import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 
 //TODO : ServerFactory that can create AccessoryHolder for the client side
 // Rename to AccessoryHolderFactory

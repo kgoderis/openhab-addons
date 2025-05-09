@@ -9,9 +9,9 @@ import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.HSBType;
 import org.openhab.core.library.types.PercentType;
 import org.openhab.core.types.State;
-import org.openhab.io.homekit.api.hap.HomekitService;
-import org.openhab.io.homekit.internal.characteristic.HomekitIntegerCharacteristic;
-import org.openhab.io.homekit.internal.events.HomekitEventManager;
+import org.openhab.io.homekit.api.service.HomekitService;
+import org.openhab.io.homekit.core.characteristic.HomekitIntegerCharacteristic;
+import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 @NonNullByDefault
 public class HomekitBrightnessCharacteristic extends HomekitIntegerCharacteristic {

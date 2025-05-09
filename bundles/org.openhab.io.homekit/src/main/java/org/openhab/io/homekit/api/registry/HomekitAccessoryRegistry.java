@@ -2,10 +2,10 @@ package org.openhab.io.homekit.api.registry;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.Registry;
-import org.openhab.io.homekit.api.hap.HomekitAccessory;
+import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.listener.HomekitAccessoryChangeListener;
 import org.openhab.io.homekit.api.provider.HomekitAccessoryProvider;
-import org.openhab.io.homekit.internal.accessory.HomekitAccessoryUID;
+import org.openhab.io.homekit.core.accessory.HomekitAccessoryUID;
 
 /**
  * {@link HomekitAccessoryRegistry} tracks all {@link ManagedAccessory}s from different {@link HomekitAccessoryProvider}s and provides

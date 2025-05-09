@@ -2,9 +2,9 @@ package org.openhab.io.homekit.api.listener;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.Bridge;
-import org.openhab.io.homekit.api.hap.HomekitAccessory;
-import org.openhab.io.homekit.api.hap.HomekitCharacteristic;
-import org.openhab.io.homekit.api.hap.HomekitService;
+import org.openhab.io.homekit.api.accessory.HomekitAccessory;
+import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
+import org.openhab.io.homekit.api.service.HomekitService;
 
 @NonNullByDefault
 public interface HomekitStatusListener {

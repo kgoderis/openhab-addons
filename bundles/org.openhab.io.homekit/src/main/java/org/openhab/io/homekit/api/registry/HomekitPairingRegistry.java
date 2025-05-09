@@ -4,9 +4,9 @@ import java.util.Collection;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.Registry;
-import org.openhab.io.homekit.api.hap.HomekitPairing;
 import org.openhab.io.homekit.api.provider.HomekitPairingProvider;
-import org.openhab.io.homekit.internal.pairing.HomekitPairingUID;
+import org.openhab.io.homekit.network.pairing.HomekitPairingUID;
+import org.openhab.io.homekit.protocol.pairing.HomekitPairing;
 
 /**
  * {@link HomekitPairingRegistry} tracks all {@link HomekitPairing}s from different {@link HomekitPairingProvider}s and provides access to

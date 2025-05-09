@@ -4,10 +4,10 @@ import java.util.Collection;
 
 import javax.json.JsonValue;
 
+import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
-import org.openhab.io.homekit.api.hap.HomekitAccessory;
-import org.openhab.io.homekit.internal.events.HomekitEventManager;
-import org.openhab.io.homekit.internal.service.HomekitBaseService;
+import org.openhab.io.homekit.core.service.HomekitBaseService;
+import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.util.HomekitUUID5;
 
 public class HomekitThingService extends HomekitBaseService {

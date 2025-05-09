@@ -1,7 +1,7 @@
 package org.openhab.io.homekit.api.listener;
 
 import org.openhab.core.common.registry.RegistryChangeListener;
-import org.openhab.io.homekit.api.hap.HomekitAccessory;
+import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 
 /**

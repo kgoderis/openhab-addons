@@ -8,8 +8,8 @@ import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.openhab.io.homekit.api.hap.HomekitErrorCode;
-import org.openhab.io.homekit.api.hap.HomekitMessage;
+import org.openhab.io.homekit.protocol.error.HomekitErrorCode;
+import org.openhab.io.homekit.protocol.message.HomekitMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +60,7 @@ public class HomekitTypeLengthValueEncoderDecoder {
         public void add(HomekitMessage type, HomekitErrorCode e) {
             baos.write(type.getKey());
             baos.write(1);
-            baos.write(e.getKey());
+            baos.write(e.getCode());
         }
 
         public void add(HomekitMessage type, byte[] bytes) throws IOException {

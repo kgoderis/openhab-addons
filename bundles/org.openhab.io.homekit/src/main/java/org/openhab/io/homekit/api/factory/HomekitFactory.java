@@ -22,10 +22,10 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.type.ChannelTypeUID;
-import org.openhab.io.homekit.api.hap.HomekitAccessory;
-import org.openhab.io.homekit.api.hap.HomekitAccessoryServer;
-import org.openhab.io.homekit.api.hap.HomekitCharacteristic;
-import org.openhab.io.homekit.api.hap.HomekitService;
+import org.openhab.io.homekit.api.accessory.HomekitAccessory;
+import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
+import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
+import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.exception.HomekitFactoryException;
 import org.openhab.io.homekit.exception.HomekitRegistrationException;
 

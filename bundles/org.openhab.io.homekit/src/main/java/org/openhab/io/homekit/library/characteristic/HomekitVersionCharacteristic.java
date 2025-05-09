@@ -7,9 +7,9 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.OpenHAB;
 import org.openhab.core.types.State;
-import org.openhab.io.homekit.api.hap.HomekitService;
-import org.openhab.io.homekit.internal.characteristic.HomekitShortReadOnlyStringCharacteristic;
-import org.openhab.io.homekit.internal.events.HomekitEventManager;
+import org.openhab.io.homekit.api.service.HomekitService;
+import org.openhab.io.homekit.core.characteristic.HomekitShortReadOnlyStringCharacteristic;
+import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 @NonNullByDefault
 public class HomekitVersionCharacteristic extends HomekitShortReadOnlyStringCharacteristic {
