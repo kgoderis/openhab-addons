@@ -1,5 +1,10 @@
 /**
+ * HomeKit On Characteristic.
+ * This characteristic represents the on/off state of a device.
+ * When true, the device is on; when false, the device is off.
  *
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 package org.openhab.io.homekit.library.characteristic;
 
@@ -25,7 +30,11 @@ public class HomekitOnCharacteristic extends HomekitBooleanCharacteristic {
 
     public HomekitOnCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId).withPairedWrite(true).withPairedRead(true).withEvents(true).withDescription("On");
+        withInstanceId(instanceId)
+            .withPairedRead(true)
+            .withPairedWrite(true)
+            .withEvents(true)
+            .withDescription("On");
     }
 
     public HomekitOnCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {

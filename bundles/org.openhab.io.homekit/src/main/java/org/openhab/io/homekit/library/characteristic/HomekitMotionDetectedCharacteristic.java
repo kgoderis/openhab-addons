@@ -12,7 +12,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * This characteristic represents whether motion has been detected.
  * The value is an enumeration with two states: NOT_DETECTED and DETECTED.
  *
- * @see <a href="https://developer.apple.com/documentation/homekit/hmcharacteristictypemotiondetected">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/homekit/hap-characteristic-types/motion-detected">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000022-0000-1000-8000-0026BB765291", name = "Motion Detected", tag = "motionDetected")
 @NonNullByDefault
@@ -22,23 +23,23 @@ public class HomekitMotionDetectedCharacteristic extends HomekitEnumCharacterist
         NOT_DETECTED(0),
         DETECTED(1);
 
-        private final int code;
+        private final int value;
 
-        MotionDetected(int code) {
-            this.code = code;
+        MotionDetected(int value) {
+            this.value = value;
         }
 
-        public int getCode() {
-            return code;
+        public int getValue() {
+            return value;
         }
 
-        public static MotionDetected fromCode(int code) {
+        public static MotionDetected fromValue(int value) {
             for (MotionDetected state : values()) {
-                if (state.code == code) {
+                if (state.value == value) {
                     return state;
                 }
             }
-            return NOT_DETECTED;
+            throw new IllegalArgumentException("Invalid Motion Detected value: " + value);
         }
     }
 
@@ -51,7 +52,10 @@ public class HomekitMotionDetectedCharacteristic extends HomekitEnumCharacterist
      */
     public HomekitMotionDetectedCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, MotionDetected.values().length);
-        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
+        withInstanceId(instanceId)
+            .withPairedRead(true)
+            .withPairedWrite(false)
+            .withEvents(true)
             .withDescription("Motion Detected");
     }
 
@@ -68,13 +72,14 @@ public class HomekitMotionDetectedCharacteristic extends HomekitEnumCharacterist
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && (value == MotionDetected.NOT_DETECTED.getCode() || 
-                                value == MotionDetected.DETECTED.getCode());
+        return value != null && (value == MotionDetected.NOT_DETECTED.getValue() || value == MotionDetected.DETECTED.getValue());
     }
 
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(MotionDetected.NOT_DETECTED.getCode(), 
-                              MotionDetected.DETECTED.getCode());
+        return java.util.Set.of(
+            MotionDetected.NOT_DETECTED.getValue(),
+            MotionDetected.DETECTED.getValue()
+        );
     }
 } 

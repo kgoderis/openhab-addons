@@ -11,9 +11,13 @@ import org.openhab.core.types.State;
 
 /**
  * HomeKit Selected Sleep Configuration Characteristic.
- * This characteristic represents the selected sleep configuration.
+ * This characteristic represents the selected sleep configuration in TLV8 format.
+ * This is used to configure and manage sleep-related settings for a device,
+ * such as sleep schedules, power management, and device-specific sleep modes.
+ * The data is encoded in TLV8 format.
  *
- * See the official HomeKit documentation for details.
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000252-0000-1000-8000-0026BB765291", name = "Selected Sleep Configuration", tag = "selectedSleepConfiguration")
 @NonNullByDefault

@@ -10,8 +10,11 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 /**
  * HomeKit Target Humidifier Dehumidifier State Characteristic.
  * This characteristic represents the target state for a humidifier/dehumidifier.
+ * The state can be one of: HUMIDIFIER (0), DEHUMIDIFIER (1), or AUTO (2).
+ * This is used to control whether the device should humidify, dehumidify, or automatically switch between modes.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/TargetHumidifierDehumidifierState">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/homekit/hap-characteristic-types/target-humidifier-dehumidifier-state">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "000000B4-0000-1000-8000-0026BB765291", name = "Target Humidifier Dehumidifier State", tag = "targetHumidifierDehumidifierState")
 @NonNullByDefault
@@ -20,37 +23,63 @@ public class HomekitTargetHumidifierDehumidifierStateCharacteristic extends Home
         HUMIDIFIER(0),
         DEHUMIDIFIER(1),
         AUTO(2);
-        private final int code;
-        TargetHumidifierDehumidifierState(int code) { this.code = code; }
-        public int getCode() { return code; }
-        public static TargetHumidifierDehumidifierState fromCode(int code) {
-            for (TargetHumidifierDehumidifierState s : values()) {
-                if (s.code == code) return s;
+
+        private final int value;
+
+        TargetHumidifierDehumidifierState(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public static TargetHumidifierDehumidifierState fromValue(int value) {
+            for (TargetHumidifierDehumidifierState state : values()) {
+                if (state.value == value) {
+                    return state;
+                }
             }
-            return AUTO;
+            throw new IllegalArgumentException("Invalid Target Humidifier Dehumidifier State value: " + value);
         }
     }
+
     public HomekitTargetHumidifierDehumidifierStateCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
-        super(service, eventManager, TargetHumidifierDehumidifierState.values().length);
+        super(service, eventManager, 3);
         withInstanceId(instanceId)
-            .withPairedWrite(true)
             .withPairedRead(true)
+            .withPairedWrite(true)
             .withEvents(true)
             .withDescription("Target Humidifier Dehumidifier State");
     }
+
     public HomekitTargetHumidifierDehumidifierStateCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }
+
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && value >= 0 && value < TargetHumidifierDehumidifierState.values().length;
+        try {
+            return value != null && TargetHumidifierDehumidifierState.fromValue(value) != null;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
+
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(
-            TargetHumidifierDehumidifierState.HUMIDIFIER.getCode(),
-            TargetHumidifierDehumidifierState.DEHUMIDIFIER.getCode(),
-            TargetHumidifierDehumidifierState.AUTO.getCode()
-        );
+        java.util.Set<Integer> values = new java.util.HashSet<>();
+        for (TargetHumidifierDehumidifierState state : TargetHumidifierDehumidifierState.values()) {
+            values.add(state.getValue());
+        }
+        return values;
+    }
+
+    public void setValue(TargetHumidifierDehumidifierState value) {
+        try {
+            setValue(value.getValue());
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Failed to set Target Humidifier Dehumidifier State value", e);
+        }
     }
 } 

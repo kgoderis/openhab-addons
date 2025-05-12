@@ -12,6 +12,13 @@ import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitStringCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
+/**
+ * HomeKit Version Characteristic.
+ * This characteristic represents the version string for the accessory or service.
+ *
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ */
 @NonNullByDefault
 @HomekitCharacteristicType(type = "00000037-0000-1000-8000-0026BB765291", name = "Version", tag = "version")
 public class HomekitVersionCharacteristic extends HomekitStringCharacteristic {
@@ -43,41 +50,5 @@ public class HomekitVersionCharacteristic extends HomekitStringCharacteristic {
             // This should never happen since we're using setValueInternal
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public JsonObject toEventJson() {
-        return super.toEventJson();
-    }
-
-    @Override
-    public JsonObject toEventJson(String value) {
-        return super.toEventJson(value);
-    }
-
-    @Override
-    public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType,
-            boolean includeEvent) {
-        return super.toJson(includeMeta, includePermissions, includeType, includeEvent);
-    }
-
-    @Override
-    public JsonObject toJson() {
-        return super.toJson();
-    }
-
-    @Override
-    public JsonObject toReducedJson() {
-        return super.toReducedJson();
-    }
-
-    @Override
-    public State toState(String value) {
-        return super.toState(value);
-    }
-
-    @Override
-    public JsonValue toValueJson(@Nullable String value) {
-        return super.toValueJson(value);
     }
 }

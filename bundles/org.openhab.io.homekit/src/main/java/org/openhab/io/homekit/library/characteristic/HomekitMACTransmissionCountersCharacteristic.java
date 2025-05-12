@@ -10,9 +10,11 @@ import java.util.Map;
 
 /**
  * HomeKit MAC Transmission Counters Characteristic.
- * This characteristic represents MAC transmission counters in TLV8 format.
+ * This characteristic represents the MAC transmission counters in TLV8 format.
+ * It provides information about the number of successful and failed MAC transmissions.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/MACTransmissionCounters">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000248-0000-1000-8000-0026BB765291", name = "MAC Transmission Counters", tag = "macTransmissionCounters")
 @NonNullByDefault

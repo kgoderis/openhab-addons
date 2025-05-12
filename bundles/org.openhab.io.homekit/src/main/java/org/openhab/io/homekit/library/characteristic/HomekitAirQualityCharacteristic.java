@@ -7,6 +7,14 @@ import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
+/**
+ * HomeKit Air Quality Characteristic.
+ * This characteristic represents the air quality level of a device.
+ * The air quality is measured on a scale from UNKNOWN to POOR.
+ *
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ */
 @HomekitCharacteristicType(type = "00000095-0000-1000-8000-0026BB765291", name = "Air Quality", tag = "airQuality")
 @NonNullByDefault
 public class HomekitAirQualityCharacteristic extends HomekitEnumCharacteristic {
@@ -32,7 +40,10 @@ public class HomekitAirQualityCharacteristic extends HomekitEnumCharacteristic {
 
     public HomekitAirQualityCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, 6);
-        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
+        withInstanceId(instanceId)
+            .withPairedRead(true)
+            .withPairedWrite(false)
+            .withEvents(true)
             .withDescription("Air Quality");
     }
 
@@ -43,10 +54,12 @@ public class HomekitAirQualityCharacteristic extends HomekitEnumCharacteristic {
     @Override
     public boolean isAllowedValue(Integer value) {
         if (value == null) return false;
-        for (AirQuality a : AirQuality.values()) {
-            if (a.getValue() == value) return true;
+        try {
+            AirQuality.fromValue(value);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
         }
-        return false;
     }
 
     @Override

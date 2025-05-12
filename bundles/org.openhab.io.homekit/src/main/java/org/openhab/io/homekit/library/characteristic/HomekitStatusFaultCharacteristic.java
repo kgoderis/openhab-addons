@@ -13,8 +13,11 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 /**
  * HomeKit Status Fault Characteristic.
  * This characteristic indicates if the accessory has a fault.
+ * The status can be one of: NO_FAULT (0) or GENERAL_FAULT (1).
+ * This is used to report the operational status of the accessory.
  *
- * @see <a href="https://developer.apple.com/documentation/homekit/hmcharacteristicstatusfault">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000077-0000-1000-8000-0026BB765291", name = "Status Fault", tag = "statusFault")
 @NonNullByDefault
@@ -23,22 +26,32 @@ public class HomekitStatusFaultCharacteristic extends HomekitEnumCharacteristic 
     public enum StatusFault {
         NO_FAULT(0),
         GENERAL_FAULT(1);
-        private final int code;
-        StatusFault(int code) { this.code = code; }
-        public int getCode() { return code; }
-        public static StatusFault fromCode(int code) {
-            for (StatusFault s : values()) {
-                if (s.code == code) return s;
+
+        private final int value;
+
+        StatusFault(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public static StatusFault fromValue(int value) {
+            for (StatusFault status : values()) {
+                if (status.value == value) {
+                    return status;
+                }
             }
-            return NO_FAULT;
+            throw new IllegalArgumentException("Invalid Status Fault value: " + value);
         }
     }
 
     public HomekitStatusFaultCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
-        super(service, eventManager, StatusFault.values().length);
+        super(service, eventManager, 2);
         withInstanceId(instanceId)
-            .withPairedWrite(false)
             .withPairedRead(true)
+            .withPairedWrite(false)
             .withEvents(true)
             .withDescription("Status Fault");
     }
@@ -85,18 +98,27 @@ public class HomekitStatusFaultCharacteristic extends HomekitEnumCharacteristic 
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && value >= 0 && value < StatusFault.values().length;
+        if (value == null) {
+            return false;
+        }
+        try {
+            StatusFault.fromValue(value);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(
-            StatusFault.NO_FAULT.getCode(),
-            StatusFault.GENERAL_FAULT.getCode()
-        );
+        java.util.Set<Integer> allowed = new java.util.HashSet<>();
+        for (StatusFault status : StatusFault.values()) {
+            allowed.add(status.getValue());
+        }
+        return allowed;
     }
 
     public void setValue(StatusFault value) throws Exception {
-        setValue(value.getCode());
+        setValue(value.getValue());
     }
 }

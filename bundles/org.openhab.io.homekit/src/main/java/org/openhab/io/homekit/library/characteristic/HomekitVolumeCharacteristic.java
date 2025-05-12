@@ -10,22 +10,39 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 /**
  * HomeKit Volume Characteristic.
  * This characteristic represents the volume level for a device.
+ * The volume is expressed as a percentage, ranging from 0% to 100%.
+ * This is used to control the volume level of audio devices like speakers, TVs, or other media players.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/Volume">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000119-0000-1000-8000-0026BB765291", name = "Volume", tag = "volume")
 @NonNullByDefault
 public class HomekitVolumeCharacteristic extends HomekitIntegerCharacteristic {
-
+    /**
+     * Creates a new Volume characteristic.
+     * The value range is 0 to 100 percent.
+     *
+     * @param service The HomeKit service this characteristic belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param instanceId The instance ID for this characteristic
+     */
     public HomekitVolumeCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
-        super(service, eventManager, 0, 100, "%");
+        super(service, eventManager, 0, 100, "percentage");
         withInstanceId(instanceId)
-            .withPairedWrite(true)
             .withPairedRead(true)
+            .withPairedWrite(true)
             .withEvents(true)
             .withDescription("Volume");
     }
 
+    /**
+     * Creates a new Volume characteristic from a JSON value.
+     *
+     * @param service The HomeKit service this characteristic belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param value The JSON value to initialize the characteristic with
+     */
     public HomekitVolumeCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }

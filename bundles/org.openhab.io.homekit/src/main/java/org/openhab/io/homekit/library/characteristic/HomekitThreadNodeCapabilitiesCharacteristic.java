@@ -11,8 +11,11 @@ import java.util.Map;
 /**
  * HomeKit Thread Node Capabilities Characteristic.
  * This characteristic represents the Thread node capabilities in TLV8 format.
+ * This is used to describe the capabilities of a Thread network node, such as its role,
+ * supported features, and network capabilities. The data is encoded in TLV8 format.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/ThreadNodeCapabilities">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000702-0000-1000-8000-0026BB765291", name = "Thread Node Capabilities", tag = "threadNodeCapabilities")
 @NonNullByDefault

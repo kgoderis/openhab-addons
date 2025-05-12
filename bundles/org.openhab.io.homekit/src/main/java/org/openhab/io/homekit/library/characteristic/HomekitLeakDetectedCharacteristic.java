@@ -7,6 +7,14 @@ import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
+/**
+ * Leak Detected characteristic.
+ * <p>
+ * This characteristic represents whether a leak has been detected by the accessory.
+ *
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ * @author Karel Goderis - Initial contribution
+ */
 @HomekitCharacteristicType(type = "00000070-0000-1000-8000-0026BB765291", name = "Leak Detected", tag = "leakDetected")
 @NonNullByDefault
 public class HomekitLeakDetectedCharacteristic extends HomekitEnumCharacteristic {

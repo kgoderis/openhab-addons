@@ -4,47 +4,48 @@ import javax.json.JsonValue;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
-import org.openhab.io.homekit.core.characteristic.HomekitIntegerCharacteristic;
+import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Set;
 
 /**
  * HomeKit Volume Control Type Characteristic.
  * This characteristic represents the type of volume control available on a device.
+ * The type can be one of: NONE, RELATIVE, RELATIVE_WITH_CURRENT, or ABSOLUTE.
  *
- * See the official HomeKit documentation for details.
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "000000E9-0000-1000-8000-0026BB765291", name = "Volume Control Type", tag = "volumeControlType")
 @NonNullByDefault
-public class HomekitVolumeControlTypeCharacteristic extends HomekitIntegerCharacteristic {
+public class HomekitVolumeControlTypeCharacteristic extends HomekitEnumCharacteristic {
     public enum VolumeControlType {
         NONE(0),
         RELATIVE(1),
         RELATIVE_WITH_CURRENT(2),
         ABSOLUTE(3);
-        
-        private final int code;
-        
-        VolumeControlType(int code) {
-            this.code = code;
+
+        private final int value;
+
+        VolumeControlType(int value) {
+            this.value = value;
         }
-        
-        public int getCode() {
-            return code;
+
+        public int getValue() {
+            return value;
         }
-        
-        public static VolumeControlType fromCode(int code) {
-            for (VolumeControlType t : values()) {
-                if (t.code == code) {
-                    return t;
+
+        public static VolumeControlType fromValue(int value) {
+            for (VolumeControlType type : values()) {
+                if (type.value == value) {
+                    return type;
                 }
             }
-            return NONE;
+            throw new IllegalArgumentException("Invalid Volume Control Type value: " + value);
         }
     }
 
     public HomekitVolumeControlTypeCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
-        super(service, eventManager, 0, 3, "");
+        super(service, eventManager, VolumeControlType.values().length);
         withInstanceId(instanceId)
             .withPairedRead(true)
             .withPairedWrite(false)
@@ -58,16 +59,24 @@ public class HomekitVolumeControlTypeCharacteristic extends HomekitIntegerCharac
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && VolumeControlType.fromCode(value) != null;
+        if (value == null) {
+            return false;
+        }
+        try {
+            VolumeControlType.fromValue(value);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     @Override
-    public Set<Integer> getAllowedValues() {
-        return Set.of(
-            VolumeControlType.NONE.getCode(),
-            VolumeControlType.RELATIVE.getCode(),
-            VolumeControlType.RELATIVE_WITH_CURRENT.getCode(),
-            VolumeControlType.ABSOLUTE.getCode()
+    public java.util.Set<Integer> getAllowedValues() {
+        return java.util.Set.of(
+            VolumeControlType.NONE.getValue(),
+            VolumeControlType.RELATIVE.getValue(),
+            VolumeControlType.RELATIVE_WITH_CURRENT.getValue(),
+            VolumeControlType.ABSOLUTE.getValue()
         );
     }
 } 

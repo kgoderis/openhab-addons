@@ -10,8 +10,11 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 /**
  * HomeKit Target Fan State Characteristic.
  * This characteristic represents the target state for a fan.
+ * The state can be one of: MANUAL (0) or AUTO (1).
+ * This is used to control whether the fan should operate in manual mode or automatically adjust its speed.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/TargetFanState">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/homekit/hap-characteristic-types/target-fan-state">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "000000BF-0000-1000-8000-0026BB765291", name = "Target Fan State", tag = "targetFanState")
 @NonNullByDefault
@@ -19,36 +22,63 @@ public class HomekitTargetFanStateCharacteristic extends HomekitEnumCharacterist
     public enum TargetFanState {
         MANUAL(0),
         AUTO(1);
-        private final int code;
-        TargetFanState(int code) { this.code = code; }
-        public int getCode() { return code; }
-        public static TargetFanState fromCode(int code) {
-            for (TargetFanState s : values()) {
-                if (s.code == code) return s;
+
+        private final int value;
+
+        TargetFanState(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public static TargetFanState fromValue(int value) {
+            for (TargetFanState state : values()) {
+                if (state.value == value) {
+                    return state;
+                }
             }
-            return MANUAL;
+            throw new IllegalArgumentException("Invalid Target Fan State value: " + value);
         }
     }
+
     public HomekitTargetFanStateCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
-        super(service, eventManager, TargetFanState.values().length);
+        super(service, eventManager, 2);
         withInstanceId(instanceId)
-            .withPairedWrite(true)
             .withPairedRead(true)
+            .withPairedWrite(true)
             .withEvents(true)
             .withDescription("Target Fan State");
     }
+
     public HomekitTargetFanStateCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }
+
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && value >= 0 && value < TargetFanState.values().length;
+        try {
+            return value != null && TargetFanState.fromValue(value) != null;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
+
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(
-            TargetFanState.MANUAL.getCode(),
-            TargetFanState.AUTO.getCode()
-        );
+        java.util.Set<Integer> values = new java.util.HashSet<>();
+        for (TargetFanState state : TargetFanState.values()) {
+            values.add(state.getValue());
+        }
+        return values;
+    }
+
+    public void setValue(TargetFanState value) {
+        try {
+            setValue(value.getValue());
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Failed to set Target Fan State value", e);
+        }
     }
 } 

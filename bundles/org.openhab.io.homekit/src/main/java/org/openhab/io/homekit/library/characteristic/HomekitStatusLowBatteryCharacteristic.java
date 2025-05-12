@@ -17,8 +17,11 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 /**
  * HomeKit Status Low Battery Characteristic.
  * This characteristic indicates if the accessory has a low battery.
+ * The status can be one of: BATTERY_LEVEL_NORMAL (0) or BATTERY_LEVEL_LOW (1).
+ * This is used to report the battery status of the accessory.
  *
- * @see <a href="https://developer.apple.com/documentation/homekit/hmcharacteristicstatuslowbattery">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000079-0000-1000-8000-0026BB765291", name = "Status Low Battery", tag = "statusLowBattery")
 @NonNullByDefault
@@ -28,29 +31,25 @@ public class HomekitStatusLowBatteryCharacteristic extends HomekitEnumCharacteri
         BATTERY_LEVEL_NORMAL(0),
         BATTERY_LEVEL_LOW(1);
 
-        private final int code;
-
-        StatusLowBattery(int code) {
-            this.code = code;
-        }
-
-        public int getCode() {
-            return code;
-        }
-
-        public static StatusLowBattery fromCode(int code) {
-            for (StatusLowBattery state : values()) {
-                if (state.code == code) {
-                    return state;
+        private final int value;
+        StatusLowBattery(int value) { this.value = value; }
+        public int getValue() { return value; }
+        public static StatusLowBattery fromValue(int value) {
+            for (StatusLowBattery status : values()) {
+                if (status.value == value) {
+                    return status;
                 }
             }
-            return BATTERY_LEVEL_NORMAL;
+            throw new IllegalArgumentException("Invalid Status Low Battery value: " + value);
         }
     }
 
     public HomekitStatusLowBatteryCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
-        super(service, eventManager, StatusLowBattery.values().length);
-        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
+        super(service, eventManager, 2);
+        withInstanceId(instanceId)
+            .withPairedRead(true)
+            .withPairedWrite(false)
+            .withEvents(true)
             .withDescription("Status Low Battery");
     }
 
@@ -91,18 +90,25 @@ public class HomekitStatusLowBatteryCharacteristic extends HomekitEnumCharacteri
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && value >= 0 && value < StatusLowBattery.values().length;
+        if (value == null) return false;
+        try {
+            StatusLowBattery.fromValue(value);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(
-            StatusLowBattery.BATTERY_LEVEL_NORMAL.getCode(),
-            StatusLowBattery.BATTERY_LEVEL_LOW.getCode()
-        );
+        java.util.Set<Integer> allowed = new java.util.HashSet<>();
+        for (StatusLowBattery status : StatusLowBattery.values()) {
+            allowed.add(status.getValue());
+        }
+        return allowed;
     }
 
     public void setValue(StatusLowBattery value) throws Exception {
-        setValue(value.getCode());
+        setValue(value.getValue());
     }
 }

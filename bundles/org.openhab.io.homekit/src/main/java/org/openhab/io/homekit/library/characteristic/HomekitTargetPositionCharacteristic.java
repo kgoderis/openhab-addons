@@ -1,11 +1,8 @@
 package org.openhab.io.homekit.library.characteristic;
 
-import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitIntegerCharacteristic;
@@ -13,14 +10,15 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * HomeKit Target Position Characteristic.
- * This characteristic represents the target position of a door, window, or window covering (0-100%).
+ * This characteristic represents the target position for a window covering or door.
+ * The position is expressed as a percentage, where 0% means fully closed and 100% means fully open.
  *
- * @see <a href="https://developer.apple.com/documentation/homekit/hmcharacteristictargetposition">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "0000007C-0000-1000-8000-0026BB765291", name = "Target Position", tag = "targetPosition")
 @NonNullByDefault
 public class HomekitTargetPositionCharacteristic extends HomekitIntegerCharacteristic {
-
     /**
      * Creates a new Target Position characteristic.
      * The value range is 0-100 (percent).
@@ -30,8 +28,11 @@ public class HomekitTargetPositionCharacteristic extends HomekitIntegerCharacter
      * @param instanceId The instance ID for this characteristic
      */
     public HomekitTargetPositionCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
-        super(service, eventManager, 0, 100, "%");
-        withInstanceId(instanceId).withPairedWrite(true).withPairedRead(true).withEvents(true)
+        super(service, eventManager, 0, 100, "percentage");
+        withInstanceId(instanceId)
+            .withPairedRead(true)
+            .withPairedWrite(true)
+            .withEvents(true)
             .withDescription("Target Position");
     }
 
@@ -54,41 +55,5 @@ public class HomekitTargetPositionCharacteristic extends HomekitIntegerCharacter
     @Override
     public java.util.Set<Integer> getAllowedValues() {
         return java.util.Collections.emptySet(); // No specific allowed values, just a range
-    }
-
-    @Override
-    public JsonObject toEventJson(Integer value) {
-        return super.toEventJson(value);
-    }
-
-    @Override
-    public JsonObject toEventJson() {
-        return super.toEventJson();
-    }
-
-    @Override
-    public JsonValue toValueJson(@Nullable Integer value) {
-        return super.toValueJson(value);
-    }
-
-    @Override
-    public JsonObject toJson() {
-        return super.toJson();
-    }
-
-    @Override
-    public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType,
-            boolean includeEvent) {
-        return super.toJson(includeMeta, includePermissions, includeType, includeEvent);
-    }
-
-    @Override
-    public JsonObject toReducedJson() {
-        return super.toReducedJson();
-    }
-
-    @Override
-    public State toState(Integer value) {
-        return super.toState(value);
     }
 }

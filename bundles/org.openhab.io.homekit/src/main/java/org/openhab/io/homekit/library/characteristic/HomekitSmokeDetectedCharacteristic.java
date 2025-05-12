@@ -10,35 +10,29 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 /**
  * HomeKit Smoke Detected Characteristic.
  * This characteristic represents whether smoke has been detected.
- * The value is an enumeration with two states: NOT_DETECTED and DETECTED.
+ * The value can be either NOT_DETECTED (0) or DETECTED (1).
+ * This is used to indicate the presence of smoke in the environment.
  *
- * @see <a href="https://developer.apple.com/documentation/homekit/hmcharacteristictypesmokedetected">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000076-0000-1000-8000-0026BB765291", name = "Smoke Detected", tag = "smokeDetected")
 @NonNullByDefault
 public class HomekitSmokeDetectedCharacteristic extends HomekitEnumCharacteristic {
-
     public enum SmokeDetected {
         NOT_DETECTED(0),
         DETECTED(1);
 
-        private final int code;
-
-        SmokeDetected(int code) {
-            this.code = code;
-        }
-
-        public int getCode() {
-            return code;
-        }
-
-        public static SmokeDetected fromCode(int code) {
+        private final int value;
+        SmokeDetected(int value) { this.value = value; }
+        public int getValue() { return value; }
+        public static SmokeDetected fromValue(int value) {
             for (SmokeDetected state : values()) {
-                if (state.code == code) {
+                if (state.value == value) {
                     return state;
                 }
             }
-            return NOT_DETECTED;
+            throw new IllegalArgumentException("Invalid Smoke Detected value: " + value);
         }
     }
 
@@ -50,8 +44,11 @@ public class HomekitSmokeDetectedCharacteristic extends HomekitEnumCharacteristi
      * @param instanceId The instance ID for this characteristic
      */
     public HomekitSmokeDetectedCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
-        super(service, eventManager, SmokeDetected.values().length);
-        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
+        super(service, eventManager, 2);
+        withInstanceId(instanceId)
+            .withPairedRead(true)
+            .withPairedWrite(false)
+            .withEvents(true)
             .withDescription("Smoke Detected");
     }
 
@@ -68,13 +65,21 @@ public class HomekitSmokeDetectedCharacteristic extends HomekitEnumCharacteristi
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && (value == SmokeDetected.NOT_DETECTED.getCode() || 
-                                value == SmokeDetected.DETECTED.getCode());
+        if (value == null) return false;
+        try {
+            SmokeDetected.fromValue(value);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(SmokeDetected.NOT_DETECTED.getCode(), 
-                              SmokeDetected.DETECTED.getCode());
+        java.util.Set<Integer> allowed = new java.util.HashSet<>();
+        for (SmokeDetected state : SmokeDetected.values()) {
+            allowed.add(state.getValue());
+        }
+        return allowed;
     }
 } 

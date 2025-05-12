@@ -8,11 +8,12 @@ import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
- * HomeKit Carbon Dioxide Detected Characteristic.
+ * Carbon Dioxide Detected characteristic.
  * This characteristic represents whether carbon dioxide has been detected.
  * The value is an enumeration with two states: NOT_DETECTED and DETECTED.
  *
- * @see <a href="https://developer.apple.com/documentation/homekit/hmcharacteristictypecarbondioxidedetected">HomeKit Documentation</a>
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ * @author Karel Goderis - Initial contribution
  */
 @HomekitCharacteristicType(type = "00000092-0000-1000-8000-0026BB765291", name = "Carbon Dioxide Detected", tag = "carbonDioxideDetected")
 @NonNullByDefault

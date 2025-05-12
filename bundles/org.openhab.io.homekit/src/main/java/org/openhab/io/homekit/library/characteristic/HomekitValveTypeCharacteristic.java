@@ -9,50 +9,82 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * HomeKit Valve Type Characteristic.
- * This characteristic represents the type of valve (e.g., irrigation, shower).
+ * This characteristic represents the type of valve for a device.
+ * The type can be one of: GENERIC, IRRIGATION, SHOWER_HEAD, WATER_FAUCET.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/ValveType">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "000000D5-0000-1000-8000-0026BB765291", name = "Valve Type", tag = "valveType")
 @NonNullByDefault
 public class HomekitValveTypeCharacteristic extends HomekitEnumCharacteristic {
     public enum ValveType {
-        GENERIC_VALVE(0),
+        GENERIC(0),
         IRRIGATION(1),
         SHOWER_HEAD(2),
         WATER_FAUCET(3);
-        private final int code;
-        ValveType(int code) { this.code = code; }
-        public int getCode() { return code; }
-        public static ValveType fromCode(int code) {
-            for (ValveType s : values()) {
-                if (s.code == code) return s;
+
+        private final int value;
+
+        ValveType(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public static ValveType fromValue(int value) {
+            for (ValveType type : values()) {
+                if (type.value == value) {
+                    return type;
+                }
             }
-            return GENERIC_VALVE;
+            throw new IllegalArgumentException("Invalid Valve Type value: " + value);
         }
     }
+
     public HomekitValveTypeCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, ValveType.values().length);
         withInstanceId(instanceId)
-            .withPairedWrite(false)
             .withPairedRead(true)
+            .withPairedWrite(false)
             .withEvents(true)
             .withDescription("Valve Type");
     }
+
     public HomekitValveTypeCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }
+
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && value >= 0 && value < ValveType.values().length;
+        if (value == null) {
+            return false;
+        }
+        try {
+            ValveType.fromValue(value);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
+
     @Override
     public java.util.Set<Integer> getAllowedValues() {
         return java.util.Set.of(
-            ValveType.GENERIC_VALVE.getCode(),
-            ValveType.IRRIGATION.getCode(),
-            ValveType.SHOWER_HEAD.getCode(),
-            ValveType.WATER_FAUCET.getCode()
+            ValveType.GENERIC.getValue(),
+            ValveType.IRRIGATION.getValue(),
+            ValveType.SHOWER_HEAD.getValue(),
+            ValveType.WATER_FAUCET.getValue()
         );
+    }
+
+    public void setValue(ValveType value) {
+        try {
+            setValue(value.getValue());
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Failed to set Valve Type value", e);
+        }
     }
 } 

@@ -10,40 +10,38 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 /**
  * HomeKit Status Jammed Characteristic.
  * This characteristic indicates if the accessory is jammed (e.g., a lock or door).
+ * The status can be one of: NOT_JAMMED (0) or JAMMED (1).
+ * This is used to report when a mechanical device is stuck or unable to operate properly.
  *
- * @see <a href="https://developer.apple.com/documentation/homekit/hmcharacteristicstatusjammed">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000078-0000-1000-8000-0026BB765291", name = "Status Jammed", tag = "statusJammed")
 @NonNullByDefault
 public class HomekitStatusJammedCharacteristic extends HomekitEnumCharacteristic {
-
     public enum StatusJammed {
         NOT_JAMMED(0),
         JAMMED(1);
 
-        private final int code;
-
-        StatusJammed(int code) {
-            this.code = code;
-        }
-
-        public int getCode() {
-            return code;
-        }
-
-        public static StatusJammed fromCode(int code) {
-            for (StatusJammed state : values()) {
-                if (state.code == code) {
-                    return state;
+        private final int value;
+        StatusJammed(int value) { this.value = value; }
+        public int getValue() { return value; }
+        public static StatusJammed fromValue(int value) {
+            for (StatusJammed status : values()) {
+                if (status.value == value) {
+                    return status;
                 }
             }
-            return NOT_JAMMED;
+            throw new IllegalArgumentException("Invalid Status Jammed value: " + value);
         }
     }
 
     public HomekitStatusJammedCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
-        super(service, eventManager, StatusJammed.values().length);
-        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
+        super(service, eventManager, 2);
+        withInstanceId(instanceId)
+            .withPairedRead(true)
+            .withPairedWrite(false)
+            .withEvents(true)
             .withDescription("Status Jammed");
     }
 
@@ -53,13 +51,21 @@ public class HomekitStatusJammedCharacteristic extends HomekitEnumCharacteristic
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && (value == StatusJammed.NOT_JAMMED.getCode() || 
-                                value == StatusJammed.JAMMED.getCode());
+        if (value == null) return false;
+        try {
+            StatusJammed.fromValue(value);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(StatusJammed.NOT_JAMMED.getCode(), 
-                              StatusJammed.JAMMED.getCode());
+        java.util.Set<Integer> allowed = new java.util.HashSet<>();
+        for (StatusJammed status : StatusJammed.values()) {
+            allowed.add(status.getValue());
+        }
+        return allowed;
     }
 } 

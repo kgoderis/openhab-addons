@@ -11,8 +11,12 @@ import java.util.Map;
 /**
  * HomeKit NFC Access Control Point Characteristic.
  * This characteristic represents the NFC access control point in TLV8 format.
+ * This is used to manage NFC-based access control for a device, such as
+ * configuring NFC tags, managing access permissions, and handling NFC-based
+ * authentication. The data is encoded in TLV8 format.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/NFCAccessControlPoint">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000264-0000-1000-8000-0026BB765291", name = "NFC Access Control Point", tag = "nfcAccessControlPoint")
 @NonNullByDefault

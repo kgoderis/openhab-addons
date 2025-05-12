@@ -7,6 +7,14 @@ import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
+/**
+ * HomeKit Access Control Level Characteristic.
+ * This characteristic represents the access control level of a device.
+ * The levels range from 0 to 2, where 0 is the lowest level of access and 2 is the highest.
+ *
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ */
 @HomekitCharacteristicType(type = "000000E5-0000-1000-8000-0026BB765291", name = "Access Control Level", tag = "accessControlLevel")
 @NonNullByDefault
 public class HomekitAccessControlLevelCharacteristic extends HomekitEnumCharacteristic {
@@ -29,7 +37,10 @@ public class HomekitAccessControlLevelCharacteristic extends HomekitEnumCharacte
 
     public HomekitAccessControlLevelCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, 3);
-        withInstanceId(instanceId).withPairedWrite(true).withPairedRead(true).withEvents(true)
+        withInstanceId(instanceId)
+            .withPairedRead(true)
+            .withPairedWrite(true)
+            .withEvents(true)
             .withDescription("Access Control Level");
     }
 
@@ -40,10 +51,12 @@ public class HomekitAccessControlLevelCharacteristic extends HomekitEnumCharacte
     @Override
     public boolean isAllowedValue(Integer value) {
         if (value == null) return false;
-        for (AccessControlLevel l : AccessControlLevel.values()) {
-            if (l.getValue() == value) return true;
+        try {
+            AccessControlLevel.fromValue(value);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
         }
-        return false;
     }
 
     @Override

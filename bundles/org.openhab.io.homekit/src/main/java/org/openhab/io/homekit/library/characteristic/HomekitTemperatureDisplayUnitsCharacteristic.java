@@ -7,27 +7,48 @@ import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
+/**
+ * HomeKit Temperature Display Units Characteristic.
+ * This characteristic represents the temperature display units for a device.
+ * The units can be one of: CELSIUS (0) or FAHRENHEIT (1).
+ * This is used to specify whether temperature values should be displayed in Celsius or Fahrenheit.
+ *
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ */
 @HomekitCharacteristicType(type = "00000036-0000-1000-8000-0026BB765291", name = "Temperature Display Units", tag = "temperatureDisplayUnits")
 @NonNullByDefault
 public class HomekitTemperatureDisplayUnitsCharacteristic extends HomekitEnumCharacteristic {
-
     public enum TemperatureDisplayUnits {
         CELSIUS(0),
         FAHRENHEIT(1);
-        private final int code;
-        TemperatureDisplayUnits(int code) { this.code = code; }
-        public int getCode() { return code; }
-        public static TemperatureDisplayUnits fromCode(int code) {
-            for (TemperatureDisplayUnits v : values()) {
-                if (v.code == code) return v;
+
+        private final int value;
+
+        TemperatureDisplayUnits(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public static TemperatureDisplayUnits fromValue(int value) {
+            for (TemperatureDisplayUnits units : values()) {
+                if (units.value == value) {
+                    return units;
+                }
             }
-            return CELSIUS;
+            throw new IllegalArgumentException("Invalid Temperature Display Units value: " + value);
         }
     }
 
     public HomekitTemperatureDisplayUnitsCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
-        super(service, eventManager, TemperatureDisplayUnits.values().length);
-        withInstanceId(instanceId).withPairedWrite(true).withPairedRead(true).withEvents(true)
+        super(service, eventManager, 2);
+        withInstanceId(instanceId)
+            .withPairedRead(true)
+            .withPairedWrite(true)
+            .withEvents(true)
             .withDescription("Temperature Display Units");
     }
 
@@ -37,11 +58,27 @@ public class HomekitTemperatureDisplayUnitsCharacteristic extends HomekitEnumCha
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && (value == TemperatureDisplayUnits.CELSIUS.getCode() || value == TemperatureDisplayUnits.FAHRENHEIT.getCode());
+        try {
+            return value != null && TemperatureDisplayUnits.fromValue(value) != null;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(TemperatureDisplayUnits.CELSIUS.getCode(), TemperatureDisplayUnits.FAHRENHEIT.getCode());
+        java.util.Set<Integer> values = new java.util.HashSet<>();
+        for (TemperatureDisplayUnits units : TemperatureDisplayUnits.values()) {
+            values.add(units.getValue());
+        }
+        return values;
+    }
+
+    public void setValue(TemperatureDisplayUnits value) {
+        try {
+            setValue(value.getValue());
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Failed to set Temperature Display Units value", e);
+        }
     }
 }

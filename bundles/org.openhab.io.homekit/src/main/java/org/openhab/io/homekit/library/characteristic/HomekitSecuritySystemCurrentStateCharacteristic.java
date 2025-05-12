@@ -10,8 +10,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 /**
  * HomeKit Security System Current State Characteristic.
  * This characteristic represents the current state of a security system.
+ * The state can be one of: STAY_ARM (0), AWAY_ARM (1), NIGHT_ARM (2), DISARMED (3), or ALARM_TRIGGERED (4).
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/SecuritySystemCurrentState">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000066-0000-1000-8000-0026BB765291", name = "Security System Current State", tag = "securitySystemCurrentState")
 @NonNullByDefault
@@ -23,29 +25,24 @@ public class HomekitSecuritySystemCurrentStateCharacteristic extends HomekitEnum
         DISARMED(3),
         ALARM_TRIGGERED(4);
         
-        private final int code;
-        
-        SecuritySystemCurrentState(int code) {
-            this.code = code;
-        }
-        
-        public int getCode() {
-            return code;
-        }
-        
-        public static SecuritySystemCurrentState fromCode(int code) {
-            for (SecuritySystemCurrentState s : values()) {
-                if (s.code == code) return s;
+        private final int value;
+        SecuritySystemCurrentState(int value) { this.value = value; }
+        public int getValue() { return value; }
+        public static SecuritySystemCurrentState fromValue(int value) {
+            for (SecuritySystemCurrentState state : values()) {
+                if (state.value == value) {
+                    return state;
+                }
             }
-            return DISARMED;
+            throw new IllegalArgumentException("Invalid Security System Current State value: " + value);
         }
     }
 
     public HomekitSecuritySystemCurrentStateCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
-        super(service, eventManager, SecuritySystemCurrentState.values().length);
+        super(service, eventManager, 5);
         withInstanceId(instanceId)
-            .withPairedWrite(false)
             .withPairedRead(true)
+            .withPairedWrite(false)
             .withEvents(true)
             .withDescription("Security System Current State");
     }
@@ -56,17 +53,21 @@ public class HomekitSecuritySystemCurrentStateCharacteristic extends HomekitEnum
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && value >= 0 && value < SecuritySystemCurrentState.values().length;
+        if (value == null) return false;
+        try {
+            SecuritySystemCurrentState.fromValue(value);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(
-            SecuritySystemCurrentState.STAY_ARM.getCode(),
-            SecuritySystemCurrentState.AWAY_ARM.getCode(),
-            SecuritySystemCurrentState.NIGHT_ARM.getCode(),
-            SecuritySystemCurrentState.DISARMED.getCode(),
-            SecuritySystemCurrentState.ALARM_TRIGGERED.getCode()
-        );
+        java.util.Set<Integer> allowed = new java.util.HashSet<>();
+        for (SecuritySystemCurrentState state : SecuritySystemCurrentState.values()) {
+            allowed.add(state.getValue());
+        }
+        return allowed;
     }
 } 

@@ -11,8 +11,10 @@ import java.util.Map;
 /**
  * HomeKit Hardware Finish Characteristic.
  * This characteristic represents the hardware finish in TLV8 format.
+ * It provides information about the physical appearance and finish of the hardware.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/HardwareFinish">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "0000026C-0000-1000-8000-0026BB765291", name = "Hardware Finish", tag = "hardwareFinish")
 @NonNullByDefault

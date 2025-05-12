@@ -4,16 +4,21 @@ import javax.json.JsonValue;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
-import org.openhab.io.homekit.core.characteristic.HomekitIntegerCharacteristic;
+import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * HomeKit Input Source Type Characteristic.
- * @see <a href="https://developers.homebridge.io/#/characteristic/InputSourceType">HomeKit Documentation</a>
+ * This characteristic represents the type of input source for a device.
+ * The type can be one of: OTHER, HOME_SCREEN, TUNER, HDMI, COMPOSITE_VIDEO, S_VIDEO,
+ * COMPONENT_VIDEO, DVI, AIRPLAY, USB, or APPLICATION.
+ *
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/homekit/hap-characteristic-types/input-source-type">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "000000DB-0000-1000-8000-0026BB765291", name = "Input Source Type", tag = "inputSourceType")
 @NonNullByDefault
-public class HomekitInputSourceTypeCharacteristic extends HomekitIntegerCharacteristic {
+public class HomekitInputSourceTypeCharacteristic extends HomekitEnumCharacteristic {
     public enum InputSourceType {
         OTHER(0),
         HOME_SCREEN(1),
@@ -26,32 +31,32 @@ public class HomekitInputSourceTypeCharacteristic extends HomekitIntegerCharacte
         AIRPLAY(8),
         USB(9),
         APPLICATION(10);
-        
-        private final int code;
-        
-        InputSourceType(int code) {
-            this.code = code;
+
+        private final int value;
+
+        InputSourceType(int value) {
+            this.value = value;
         }
-        
-        public int getCode() {
-            return code;
+
+        public int getValue() {
+            return value;
         }
-        
-        public static InputSourceType fromCode(int code) {
-            for (InputSourceType s : values()) {
-                if (s.code == code) {
-                    return s;
+
+        public static InputSourceType fromValue(int value) {
+            for (InputSourceType type : values()) {
+                if (type.value == value) {
+                    return type;
                 }
             }
-            return OTHER;
+            throw new IllegalArgumentException("Invalid Input Source Type value: " + value);
         }
     }
 
     public HomekitInputSourceTypeCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
-        super(service, eventManager, 0, 10, "");
+        super(service, eventManager, InputSourceType.values().length);
         withInstanceId(instanceId)
-            .withPairedWrite(false)
             .withPairedRead(true)
+            .withPairedWrite(false)
             .withEvents(true)
             .withDescription("Input Source Type");
     }
@@ -62,23 +67,24 @@ public class HomekitInputSourceTypeCharacteristic extends HomekitIntegerCharacte
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && value >= 0 && value <= 10;
+        return value != null && value >= InputSourceType.OTHER.getValue() 
+            && value <= InputSourceType.APPLICATION.getValue();
     }
 
     @Override
     public java.util.Set<Integer> getAllowedValues() {
         return java.util.Set.of(
-            InputSourceType.OTHER.getCode(),
-            InputSourceType.HOME_SCREEN.getCode(),
-            InputSourceType.TUNER.getCode(),
-            InputSourceType.HDMI.getCode(),
-            InputSourceType.COMPOSITE_VIDEO.getCode(),
-            InputSourceType.S_VIDEO.getCode(),
-            InputSourceType.COMPONENT_VIDEO.getCode(),
-            InputSourceType.DVI.getCode(),
-            InputSourceType.AIRPLAY.getCode(),
-            InputSourceType.USB.getCode(),
-            InputSourceType.APPLICATION.getCode()
+            InputSourceType.OTHER.getValue(),
+            InputSourceType.HOME_SCREEN.getValue(),
+            InputSourceType.TUNER.getValue(),
+            InputSourceType.HDMI.getValue(),
+            InputSourceType.COMPOSITE_VIDEO.getValue(),
+            InputSourceType.S_VIDEO.getValue(),
+            InputSourceType.COMPONENT_VIDEO.getValue(),
+            InputSourceType.DVI.getValue(),
+            InputSourceType.AIRPLAY.getValue(),
+            InputSourceType.USB.getValue(),
+            InputSourceType.APPLICATION.getValue()
         );
     }
 } 

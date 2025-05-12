@@ -1,6 +1,5 @@
 package org.openhab.io.homekit.core.characteristic;
 
-import javax.json.JsonObject;
 import javax.json.JsonValue;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.service.HomekitService;

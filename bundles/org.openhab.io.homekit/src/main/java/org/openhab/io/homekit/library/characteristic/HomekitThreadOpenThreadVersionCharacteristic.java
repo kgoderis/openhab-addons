@@ -11,7 +11,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * HomeKit Thread OpenThread Version Characteristic.
  * This characteristic represents the OpenThread version.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/ThreadOpenThreadVersion">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000706-0000-1000-8000-0026BB765291", name = "Thread OpenThread Version", tag = "threadOpenThreadVersion")
 @NonNullByDefault

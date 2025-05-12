@@ -10,20 +10,43 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 /**
  * HomeKit Firmware Update Status Characteristic.
  * This characteristic represents the status of a firmware update.
+ * The status can be one of: IDLE, DOWNLOADING, INSTALLING, SUCCESS, or FAILED.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/FirmwareUpdateStatus">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/homekit/hap-characteristic-types/firmware-update-status">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000235-0000-1000-8000-0026BB765291", name = "Firmware Update Status", tag = "firmwareUpdateStatus")
 @NonNullByDefault
 public class HomekitFirmwareUpdateStatusCharacteristic extends HomekitEnumCharacteristic {
-    public static final int IDLE = 0;
-    public static final int DOWNLOADING = 1;
-    public static final int INSTALLING = 2;
-    public static final int SUCCESS = 3;
-    public static final int FAILED = 4;
+    public enum FirmwareUpdateStatus {
+        IDLE(0),
+        DOWNLOADING(1),
+        INSTALLING(2),
+        SUCCESS(3),
+        FAILED(4);
+
+        private final int value;
+
+        FirmwareUpdateStatus(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public static FirmwareUpdateStatus fromValue(int value) {
+            for (FirmwareUpdateStatus status : values()) {
+                if (status.value == value) {
+                    return status;
+                }
+            }
+            throw new IllegalArgumentException("Invalid firmware update status value: " + value);
+        }
+    }
 
     public HomekitFirmwareUpdateStatusCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
-        super(service, eventManager, 4);
+        super(service, eventManager, FirmwareUpdateStatus.FAILED.getValue());
         withInstanceId(instanceId)
             .withPairedRead(true)
             .withPairedWrite(false)
@@ -37,6 +60,6 @@ public class HomekitFirmwareUpdateStatusCharacteristic extends HomekitEnumCharac
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && value >= IDLE && value <= FAILED;
+        return value != null && value >= FirmwareUpdateStatus.IDLE.getValue() && value <= FirmwareUpdateStatus.FAILED.getValue();
     }
 } 

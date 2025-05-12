@@ -11,9 +11,11 @@ import org.openhab.core.types.State;
 
 /**
  * HomeKit Wake Configuration Characteristic.
- * This characteristic represents the wake configuration settings.
+ * This characteristic represents the wake configuration settings in TLV8 format.
+ * It provides information about how the device should wake up from sleep mode.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/WakeConfiguration">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000222-0000-1000-8000-0026BB765291", name = "Wake Configuration", tag = "wakeConfiguration")
 @NonNullByDefault

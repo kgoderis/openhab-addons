@@ -7,12 +7,19 @@ import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitFloatCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
+/**
+ * HomeKit Rotation Speed Characteristic.
+ * This characteristic represents the rotation speed of a device, expressed as a percentage (0-100).
+ *
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ */
 @HomekitCharacteristicType(type = "00000029-0000-1000-8000-0026BB765291", name = "Rotation Speed", tag = "rotationSpeed")
 @NonNullByDefault
 public class HomekitRotationSpeedCharacteristic extends HomekitFloatCharacteristic {
 
     public HomekitRotationSpeedCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
-        super(service, eventManager, 0.0, 100.0, 1.0, "%");
+        super(service, eventManager, 0.0, 100.0, 1.0, "percentage");
         withInstanceId(instanceId).withPairedWrite(true).withPairedRead(true).withEvents(true)
             .withDescription("Rotation Speed");
     }

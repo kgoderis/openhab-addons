@@ -14,8 +14,11 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 /**
  * HomeKit Status Tampered Characteristic.
  * This characteristic indicates if the accessory has been tampered with.
+ * The status can be one of: NOT_TAMPERED (0) or TAMPERED (1).
+ * This is used to report if the accessory has been physically tampered with.
  *
- * @see <a href="https://developer.apple.com/documentation/homekit/hmcharacteristicstatustampered">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "0000007A-0000-1000-8000-0026BB765291", name = "Status Tampered", tag = "statusTampered")
 @NonNullByDefault
@@ -24,20 +27,26 @@ public class HomekitStatusTamperedCharacteristic extends HomekitEnumCharacterist
     public enum StatusTampered {
         NOT_TAMPERED(0),
         TAMPERED(1);
-        private final int code;
-        StatusTampered(int code) { this.code = code; }
-        public int getCode() { return code; }
-        public static StatusTampered fromCode(int code) {
-            for (StatusTampered v : values()) {
-                if (v.code == code) return v;
+
+        private final int value;
+        StatusTampered(int value) { this.value = value; }
+        public int getValue() { return value; }
+        public static StatusTampered fromValue(int value) {
+            for (StatusTampered status : values()) {
+                if (status.value == value) {
+                    return status;
+                }
             }
-            return NOT_TAMPERED;
+            throw new IllegalArgumentException("Invalid Status Tampered value: " + value);
         }
     }
 
     public HomekitStatusTamperedCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
-        super(service, eventManager, StatusTampered.values().length);
-        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
+        super(service, eventManager, 2);
+        withInstanceId(instanceId)
+            .withPairedRead(true)
+            .withPairedWrite(false)
+            .withEvents(true)
             .withDescription("Status Tampered");
     }
 
@@ -83,15 +92,25 @@ public class HomekitStatusTamperedCharacteristic extends HomekitEnumCharacterist
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && (value == StatusTampered.NOT_TAMPERED.getCode() || value == StatusTampered.TAMPERED.getCode());
+        if (value == null) return false;
+        try {
+            StatusTampered.fromValue(value);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(StatusTampered.NOT_TAMPERED.getCode(), StatusTampered.TAMPERED.getCode());
+        java.util.Set<Integer> allowed = new java.util.HashSet<>();
+        for (StatusTampered status : StatusTampered.values()) {
+            allowed.add(status.getValue());
+        }
+        return allowed;
     }
 
     public void setValue(StatusTampered value) throws Exception {
-        setValue(value.getCode());
+        setValue(value.getValue());
     }
 }

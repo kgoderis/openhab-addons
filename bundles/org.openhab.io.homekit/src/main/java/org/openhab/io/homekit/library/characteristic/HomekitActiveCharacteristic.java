@@ -7,6 +7,14 @@ import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
+/**
+ * HomeKit Active Characteristic.
+ * This characteristic represents whether a device is active or inactive.
+ * When active (1), the device is functioning; when inactive (0), the device is not functioning.
+ *
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ */
 @HomekitCharacteristicType(type = "000000B0-0000-1000-8000-0026BB765291", name = "Active", tag = "active")
 @NonNullByDefault
 public class HomekitActiveCharacteristic extends HomekitEnumCharacteristic {
@@ -27,7 +35,10 @@ public class HomekitActiveCharacteristic extends HomekitEnumCharacteristic {
 
     public HomekitActiveCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, 2);
-        withInstanceId(instanceId).withPairedWrite(true).withPairedRead(true).withEvents(true)
+        withInstanceId(instanceId)
+            .withPairedRead(true)
+            .withPairedWrite(true)
+            .withEvents(true)
             .withDescription("Active");
     }
 
@@ -38,10 +49,12 @@ public class HomekitActiveCharacteristic extends HomekitEnumCharacteristic {
     @Override
     public boolean isAllowedValue(Integer value) {
         if (value == null) return false;
-        for (Active a : Active.values()) {
-            if (a.getValue() == value) return true;
+        try {
+            Active.fromValue(value);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
         }
-        return false;
     }
 
     @Override

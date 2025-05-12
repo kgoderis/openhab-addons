@@ -11,11 +11,12 @@ import org.openhab.io.homekit.core.characteristic.HomekitFloatCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
- * HomeKit Carbon Dioxide Level Characteristic.
+ * Carbon Dioxide Level characteristic.
  * This characteristic represents the current carbon dioxide level in parts per million (ppm).
  * The value range is 0-100000 ppm with 1 ppm step.
  *
- * @see <a href="https://developer.apple.com/documentation/homekit/hmcharacteristictypecarbondioxidelevel">HomeKit Documentation</a>
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ * @author Karel Goderis - Initial contribution
  */
 @NonNullByDefault
 @HomekitCharacteristicType(type = "00000093-0000-1000-8000-0026BB765291", name = "Carbon Dioxide Level", tag = "carbonDioxideLevel")

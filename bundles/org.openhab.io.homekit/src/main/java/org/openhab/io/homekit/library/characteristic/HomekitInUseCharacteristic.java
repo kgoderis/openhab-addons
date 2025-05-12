@@ -7,6 +7,13 @@ import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitBooleanCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
+/**
+ * In Use characteristic.
+ * This characteristic represents whether the accessory is currently in use.
+ *
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ * @author Karel Goderis - Initial contribution
+ */
 @HomekitCharacteristicType(type = "000000D2-0000-1000-8000-0026BB765291", name = "In Use", tag = "inUse")
 @NonNullByDefault
 public class HomekitInUseCharacteristic extends HomekitBooleanCharacteristic {

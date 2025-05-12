@@ -17,8 +17,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 /**
  * HomeKit Hold Position Characteristic.
  * This characteristic represents the hold position for a device (e.g., window covering).
+ * When true, the device should hold its current position.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/HoldPosition">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "0000006F-0000-1000-8000-0026BB765291", name = "Hold Position", tag = "holdPosition")
 @NonNullByDefault
@@ -27,8 +29,11 @@ public class HomekitHoldPositionCharacteristic extends HomekitBooleanCharacteris
     public HomekitHoldPositionCharacteristic(HomekitService service, HomekitEventManager eventManager,
             long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId).withPairedWrite(true).withPairedRead(true).withEvents(true)
-                .withDescription("Hold Position");
+        withInstanceId(instanceId)
+            .withPairedRead(true)
+            .withPairedWrite(true)
+            .withEvents(true)
+            .withDescription("Hold Position");
     }
 
     public HomekitHoldPositionCharacteristic(HomekitService service, HomekitEventManager eventManager,

@@ -10,53 +10,76 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 /**
  * HomeKit Target Air Quality Characteristic.
  * This characteristic represents the target air quality for a device.
+ * The quality can be one of: EXCELLENT, GOOD, FAIR, INFERIOR, or POOR.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/TargetAirQuality">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "000000AE-0000-1000-8000-0026BB765291", name = "Target Air Quality", tag = "targetAirQuality")
 @NonNullByDefault
 public class HomekitTargetAirQualityCharacteristic extends HomekitEnumCharacteristic {
     public enum TargetAirQuality {
-        UNKNOWN(0),
-        EXCELLENT(1),
-        GOOD(2),
-        FAIR(3),
-        INFERIOR(4),
-        POOR(5);
-        private final int code;
-        TargetAirQuality(int code) { this.code = code; }
-        public int getCode() { return code; }
-        public static TargetAirQuality fromCode(int code) {
-            for (TargetAirQuality s : values()) {
-                if (s.code == code) return s;
+        EXCELLENT(0),
+        GOOD(1),
+        FAIR(2),
+        INFERIOR(3),
+        POOR(4);
+
+        private final int value;
+
+        TargetAirQuality(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public static TargetAirQuality fromValue(int value) {
+            for (TargetAirQuality quality : values()) {
+                if (quality.value == value) {
+                    return quality;
+                }
             }
-            return UNKNOWN;
+            throw new IllegalArgumentException("Invalid Target Air Quality value: " + value);
         }
     }
+
     public HomekitTargetAirQualityCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, TargetAirQuality.values().length);
         withInstanceId(instanceId)
-            .withPairedWrite(true)
             .withPairedRead(true)
+            .withPairedWrite(true)
             .withEvents(true)
             .withDescription("Target Air Quality");
     }
+
     public HomekitTargetAirQualityCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }
+
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && value >= 0 && value < TargetAirQuality.values().length;
+        return value != null && value >= TargetAirQuality.EXCELLENT.getValue() 
+            && value <= TargetAirQuality.POOR.getValue();
     }
+
     @Override
     public java.util.Set<Integer> getAllowedValues() {
         return java.util.Set.of(
-            TargetAirQuality.UNKNOWN.getCode(),
-            TargetAirQuality.EXCELLENT.getCode(),
-            TargetAirQuality.GOOD.getCode(),
-            TargetAirQuality.FAIR.getCode(),
-            TargetAirQuality.INFERIOR.getCode(),
-            TargetAirQuality.POOR.getCode()
+            TargetAirQuality.EXCELLENT.getValue(),
+            TargetAirQuality.GOOD.getValue(),
+            TargetAirQuality.FAIR.getValue(),
+            TargetAirQuality.INFERIOR.getValue(),
+            TargetAirQuality.POOR.getValue()
         );
+    }
+
+    public void setValue(TargetAirQuality value) {
+        try {
+            setValue(value.getValue());
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Failed to set Target Air Quality value", e);
+        }
     }
 } 

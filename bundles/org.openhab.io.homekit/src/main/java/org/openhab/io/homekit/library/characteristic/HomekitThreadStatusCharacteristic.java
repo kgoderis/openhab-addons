@@ -10,9 +10,11 @@ import java.util.Map;
 
 /**
  * HomeKit Thread Status Characteristic.
- * This characteristic represents the Thread status in TLV8 format.
+ * This characteristic represents the Thread network status in TLV8 format.
+ * It provides information about the Thread network connectivity and state.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/ThreadStatus">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000703-0000-1000-8000-0026BB765291", name = "Thread Status", tag = "threadStatus")
 @NonNullByDefault

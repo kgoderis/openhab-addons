@@ -7,13 +7,24 @@ import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitFloatCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
+/**
+ * HomeKit Air Particulate Density Characteristic.
+ * This characteristic represents the density of particulate matter in the air.
+ * The value ranges from 0 to 1000 micrograms per cubic meter.
+ *
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ */
 @HomekitCharacteristicType(type = "00000064-0000-1000-8000-0026BB765291", name = "Air Particulate Density", tag = "airParticulateDensity")
 @NonNullByDefault
 public class HomekitAirParticulateDensityCharacteristic extends HomekitFloatCharacteristic {
 
     public HomekitAirParticulateDensityCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
-        super(service, eventManager, 0.0, 1000.0, 1.0, "");
-        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
+        super(service, eventManager, 0.0, 1000.0, 1.0, "micrograms");
+        withInstanceId(instanceId)
+            .withPairedRead(true)
+            .withPairedWrite(false)
+            .withEvents(true)
             .withDescription("Air Particulate Density");
     }
 

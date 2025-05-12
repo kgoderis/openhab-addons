@@ -9,9 +9,11 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * HomeKit AirPlay Enable Characteristic.
- * This characteristic represents whether AirPlay is enabled.
+ * This characteristic represents whether AirPlay is enabled on the device.
+ * When enabled, the device can receive and process AirPlay streams.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/AirPlayEnable">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/homekit/hap-characteristic-types/airplay-enable">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "0000025B-0000-1000-8000-0026BB765291", name = "AirPlay Enable", tag = "airPlayEnable")
 @NonNullByDefault
@@ -27,5 +29,10 @@ public class HomekitAirPlayEnableCharacteristic extends HomekitBooleanCharacteri
 
     public HomekitAirPlayEnableCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
+    }
+
+    @Override
+    public boolean isAllowedValue(Boolean value) {
+        return value != null;
     }
 } 

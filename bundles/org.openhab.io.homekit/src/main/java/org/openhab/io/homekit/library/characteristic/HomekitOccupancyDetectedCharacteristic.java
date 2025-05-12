@@ -8,11 +8,12 @@ import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
- * HomeKit Occupancy Detected Characteristic.
+ * Occupancy Detected characteristic.
  * This characteristic represents whether occupancy has been detected in a room or area.
  * The value is an enumeration with two states: NOT_DETECTED and DETECTED.
  *
- * @see <a href="https://developer.apple.com/documentation/homekit/hmcharacteristictypeoccupancydetected">HomeKit Documentation</a>
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ * @author Karel Goderis - Initial contribution
  */
 @HomekitCharacteristicType(type = "00000071-0000-1000-8000-0026BB765291", name = "Occupancy Detected", tag = "occupancyDetected")
 @NonNullByDefault

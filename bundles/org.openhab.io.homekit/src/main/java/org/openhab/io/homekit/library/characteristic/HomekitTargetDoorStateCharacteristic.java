@@ -10,32 +10,37 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 /**
  * HomeKit Target Door State Characteristic.
  * This characteristic represents the target state for a door.
+ * The state can be one of: OPEN (0) or CLOSED (1).
+ * This is used to set the desired state of a door.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/TargetDoorState">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000032-0000-1000-8000-0026BB765291", name = "Target Door State", tag = "targetDoorState")
 @NonNullByDefault
 public class HomekitTargetDoorStateCharacteristic extends HomekitEnumCharacteristic {
-
     public enum TargetDoorState {
         OPEN(0),
         CLOSED(1);
-        private final int code;
-        TargetDoorState(int code) { this.code = code; }
-        public int getCode() { return code; }
-        public static TargetDoorState fromCode(int code) {
-            for (TargetDoorState s : values()) {
-                if (s.code == code) return s;
+
+        private final int value;
+        TargetDoorState(int value) { this.value = value; }
+        public int getValue() { return value; }
+        public static TargetDoorState fromValue(int value) {
+            for (TargetDoorState state : values()) {
+                if (state.value == value) {
+                    return state;
+                }
             }
-            return CLOSED;
+            throw new IllegalArgumentException("Invalid Target Door State value: " + value);
         }
     }
 
     public HomekitTargetDoorStateCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
-        super(service, eventManager, TargetDoorState.values().length);
+        super(service, eventManager, 2);
         withInstanceId(instanceId)
-            .withPairedWrite(true)
             .withPairedRead(true)
+            .withPairedWrite(true)
             .withEvents(true)
             .withDescription("Target Door State");
     }
@@ -46,14 +51,29 @@ public class HomekitTargetDoorStateCharacteristic extends HomekitEnumCharacteris
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && value >= 0 && value < TargetDoorState.values().length;
+        if (value == null) return false;
+        try {
+            TargetDoorState.fromValue(value);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(
-            TargetDoorState.OPEN.getCode(),
-            TargetDoorState.CLOSED.getCode()
-        );
+        java.util.Set<Integer> allowed = new java.util.HashSet<>();
+        for (TargetDoorState state : TargetDoorState.values()) {
+            allowed.add(state.getValue());
+        }
+        return allowed;
+    }
+
+    public void setValue(TargetDoorState value) {
+        try {
+            setValue(value.getValue());
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Failed to set Target Door State value", e);
+        }
     }
 } 

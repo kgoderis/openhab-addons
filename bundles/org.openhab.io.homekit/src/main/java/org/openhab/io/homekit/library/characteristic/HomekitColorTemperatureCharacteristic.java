@@ -11,6 +11,13 @@ import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitFloatCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
+/**
+ * Color Temperature characteristic.
+ * This characteristic represents the color temperature in mireds.
+ *
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ * @author Karel Goderis - Initial contribution
+ */
 @HomekitCharacteristicType(type = "000000CE-0000-1000-8000-0026BB765291", name = "Color Temperature", tag = "colorTemperature")
 @NonNullByDefault
 public class HomekitColorTemperatureCharacteristic extends HomekitFloatCharacteristic {
@@ -33,41 +40,5 @@ public class HomekitColorTemperatureCharacteristic extends HomekitFloatCharacter
     @Override
     public java.util.Set<Double> getAllowedValues() {
         return java.util.Collections.emptySet();
-    }
-
-    @Override
-    public JsonObject toEventJson(Double value) {
-        return super.toEventJson(value);
-    }
-
-    @Override
-    public JsonObject toEventJson() {
-        return super.toEventJson();
-    }
-
-    @Override
-    public JsonValue toValueJson(@Nullable Double value) {
-        return super.toValueJson(value);
-    }
-
-    @Override
-    public State toState(Double value) {
-        return super.toState(value);
-    }
-
-    @Override
-    public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType,
-            boolean includeEvent) {
-        return super.toJson(includeMeta, includePermissions, includeType, includeEvent);
-    }
-
-    @Override
-    public JsonObject toJson() {
-        return super.toJson();
-    }
-
-    @Override
-    public JsonObject toReducedJson() {
-        return super.toReducedJson();
     }
 }

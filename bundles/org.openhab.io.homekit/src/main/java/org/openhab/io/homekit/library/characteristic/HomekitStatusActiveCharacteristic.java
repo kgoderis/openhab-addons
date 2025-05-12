@@ -1,5 +1,11 @@
 /**
+ * HomeKit Status Active Characteristic.
+ * This characteristic represents whether a service is active.
+ * The value is a boolean where true indicates the service is active and functioning normally,
+ * while false indicates the service is inactive or not functioning properly.
  *
+ * @author kgoderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 package org.openhab.io.homekit.library.characteristic;
 

@@ -7,6 +7,14 @@ import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
+/**
+ * Lock Target State characteristic.
+ * <p>
+ * This characteristic represents the target state of a lock mechanism.
+ *
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ * @author Karel Goderis - Initial contribution
+ */
 @HomekitCharacteristicType(type = "0000001E-0000-1000-8000-0026BB765291", name = "Lock Target State", tag = "lockTargetState")
 @NonNullByDefault
 public class HomekitLockTargetStateCharacteristic extends HomekitEnumCharacteristic {

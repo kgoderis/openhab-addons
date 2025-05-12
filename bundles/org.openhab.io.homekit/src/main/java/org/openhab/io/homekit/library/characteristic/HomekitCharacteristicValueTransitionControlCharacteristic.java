@@ -13,7 +13,8 @@ import org.openhab.core.types.State;
  * HomeKit Characteristic Value Transition Control Characteristic.
  * This characteristic represents the control of value transitions for characteristics.
  *
- * See the official HomeKit documentation for details.
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000143-0000-1000-8000-0026BB765291", name = "Characteristic Value Transition Control", tag = "characteristicValueTransitionControl")
 @NonNullByDefault

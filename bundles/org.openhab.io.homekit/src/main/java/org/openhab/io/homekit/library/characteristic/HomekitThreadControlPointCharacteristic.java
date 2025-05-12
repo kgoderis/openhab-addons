@@ -11,8 +11,11 @@ import java.util.Map;
 /**
  * HomeKit Thread Control Point Characteristic.
  * This characteristic represents the Thread control point in TLV8 format.
+ * This is used to send control commands to a Thread network node, such as commissioning,
+ * network management, and device configuration. The data is encoded in TLV8 format.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/ThreadControlPoint">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000704-0000-1000-8000-0026BB765291", name = "Thread Control Point", tag = "threadControlPoint")
 @NonNullByDefault

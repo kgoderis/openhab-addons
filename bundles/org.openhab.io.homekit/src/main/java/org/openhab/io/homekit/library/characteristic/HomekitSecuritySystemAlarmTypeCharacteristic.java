@@ -10,44 +10,37 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 /**
  * HomeKit Security System Alarm Type Characteristic.
  * This characteristic represents the type of alarm for a security system.
+ * The type can be one of: NO_ALARM (0), GENERAL_ALARM (1), or SMOKE_ALARM (2).
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/SecuritySystemAlarmType">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "0000008E-0000-1000-8000-0026BB765291", name = "Security System Alarm Type", tag = "securitySystemAlarmType")
 @NonNullByDefault
 public class HomekitSecuritySystemAlarmTypeCharacteristic extends HomekitEnumCharacteristic {
     public enum SecuritySystemAlarmType {
-        NONE(0),
-        GENERAL(1),
-        BURGLAR(2),
-        FIRE(3),
-        WATER(4),
-        CARBON_MONOXIDE(5),
-        POWER(6);
-        
-        private final int code;
-        
-        SecuritySystemAlarmType(int code) {
-            this.code = code;
-        }
-        
-        public int getCode() {
-            return code;
-        }
-        
-        public static SecuritySystemAlarmType fromCode(int code) {
-            for (SecuritySystemAlarmType s : values()) {
-                if (s.code == code) return s;
+        NO_ALARM(0),
+        GENERAL_ALARM(1),
+        SMOKE_ALARM(2);
+
+        private final int value;
+        SecuritySystemAlarmType(int value) { this.value = value; }
+        public int getValue() { return value; }
+        public static SecuritySystemAlarmType fromValue(int value) {
+            for (SecuritySystemAlarmType type : values()) {
+                if (type.value == value) {
+                    return type;
+                }
             }
-            return NONE;
+            throw new IllegalArgumentException("Invalid Security System Alarm Type value: " + value);
         }
     }
 
     public HomekitSecuritySystemAlarmTypeCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
-        super(service, eventManager, SecuritySystemAlarmType.values().length);
+        super(service, eventManager, 3);
         withInstanceId(instanceId)
-            .withPairedWrite(false)
             .withPairedRead(true)
+            .withPairedWrite(false)
             .withEvents(true)
             .withDescription("Security System Alarm Type");
     }
@@ -58,19 +51,21 @@ public class HomekitSecuritySystemAlarmTypeCharacteristic extends HomekitEnumCha
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && value >= 0 && value < SecuritySystemAlarmType.values().length;
+        if (value == null) return false;
+        try {
+            SecuritySystemAlarmType.fromValue(value);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(
-            SecuritySystemAlarmType.NONE.getCode(),
-            SecuritySystemAlarmType.GENERAL.getCode(),
-            SecuritySystemAlarmType.BURGLAR.getCode(),
-            SecuritySystemAlarmType.FIRE.getCode(),
-            SecuritySystemAlarmType.WATER.getCode(),
-            SecuritySystemAlarmType.CARBON_MONOXIDE.getCode(),
-            SecuritySystemAlarmType.POWER.getCode()
-        );
+        java.util.Set<Integer> allowed = new java.util.HashSet<>();
+        for (SecuritySystemAlarmType type : SecuritySystemAlarmType.values()) {
+            allowed.add(type.getValue());
+        }
+        return allowed;
     }
 } 

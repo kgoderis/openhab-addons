@@ -11,9 +11,12 @@ import org.openhab.core.types.State;
 
 /**
  * HomeKit Setup Transfer Transport Characteristic.
- * This characteristic represents the setup configuration for transfer transport.
+ * This characteristic represents the setup configuration for transfer transport in TLV8 format.
+ * It provides information about how data should be transferred between devices.
+ * The TLV8 format allows for flexible encoding of transport-specific configuration data.
  *
- * See the official HomeKit documentation for details.
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000201-0000-1000-8000-0026BB765291", name = "Setup Transfer Transport", tag = "setupTransferTransport")
 @NonNullByDefault

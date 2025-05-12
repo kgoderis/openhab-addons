@@ -9,7 +9,12 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * HomeKit Service Label Index Characteristic.
- * @see <a href="https://developers.homebridge.io/#/characteristic/ServiceLabelIndex">HomeKit Documentation</a>
+ * This characteristic represents the index of a service label.
+ * The value ranges from 1 to 255, where each number corresponds to a specific label.
+ * This is used to identify and organize services in the HomeKit ecosystem.
+ *
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "000000CB-0000-1000-8000-0026BB765291", name = "Service Label Index", tag = "serviceLabelIndex")
 @NonNullByDefault
@@ -18,8 +23,8 @@ public class HomekitServiceLabelIndexCharacteristic extends HomekitIntegerCharac
     public HomekitServiceLabelIndexCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, 1, 255, "");
         withInstanceId(instanceId)
-            .withPairedWrite(false)
             .withPairedRead(true)
+            .withPairedWrite(false)
             .withEvents(false)
             .withDescription("Service Label Index");
     }
@@ -31,5 +36,10 @@ public class HomekitServiceLabelIndexCharacteristic extends HomekitIntegerCharac
     @Override
     public boolean isAllowedValue(Integer value) {
         return value != null && value >= 1 && value <= 255;
+    }
+
+    @Override
+    public java.util.Set<Integer> getAllowedValues() {
+        return java.util.Collections.emptySet();
     }
 } 

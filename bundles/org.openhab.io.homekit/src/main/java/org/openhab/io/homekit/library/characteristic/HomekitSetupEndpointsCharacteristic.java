@@ -11,18 +11,24 @@ import org.openhab.core.types.State;
 
 /**
  * HomeKit Setup Endpoints Characteristic.
- * This characteristic represents the setup endpoints for a device.
+ * This characteristic represents the setup endpoints for a device in TLV8 format.
+ * This is used to configure and manage the communication endpoints for a device,
+ * such as setting up secure connections, managing device discovery, and handling
+ * device-specific configuration. The data is encoded in TLV8 format.
  *
- * See the official HomeKit documentation for details.
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000118-0000-1000-8000-0026BB765291", name = "Setup Endpoints", tag = "setupEndpoints")
 @NonNullByDefault
 public class HomekitSetupEndpointsCharacteristic extends HomekitTLV8Characteristic {
+
     public HomekitSetupEndpointsCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager);
         withInstanceId(instanceId)
             .withPairedWrite(true)
             .withPairedRead(true)
+            .withEvents(true)
             .withDescription("Setup Endpoints");
     }
 

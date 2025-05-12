@@ -10,45 +10,63 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 /**
  * HomeKit Sleep Discovery Mode Characteristic.
  * This characteristic represents the sleep discovery mode for a device.
+ * The mode can be one of: NOT_DISCOVERABLE (0), ALWAYS_DISCOVERABLE (1), or DISCOVERABLE_WHEN_SLEEPING (2).
+ * This determines when the device is discoverable in the HomeKit network.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/SleepDiscoveryMode">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "000000E8-0000-1000-8000-0026BB765291", name = "Sleep Discovery Mode", tag = "sleepDiscoveryMode")
 @NonNullByDefault
 public class HomekitSleepDiscoveryModeCharacteristic extends HomekitEnumCharacteristic {
     public enum SleepDiscoveryMode {
         NOT_DISCOVERABLE(0),
-        ALWAYS_DISCOVERABLE(1);
-        private final int code;
-        SleepDiscoveryMode(int code) { this.code = code; }
-        public int getCode() { return code; }
-        public static SleepDiscoveryMode fromCode(int code) {
-            for (SleepDiscoveryMode s : values()) {
-                if (s.code == code) return s;
+        ALWAYS_DISCOVERABLE(1),
+        DISCOVERABLE_WHEN_SLEEPING(2);
+
+        private final int value;
+        SleepDiscoveryMode(int value) { this.value = value; }
+        public int getValue() { return value; }
+        public static SleepDiscoveryMode fromValue(int value) {
+            for (SleepDiscoveryMode mode : values()) {
+                if (mode.value == value) {
+                    return mode;
+                }
             }
-            return NOT_DISCOVERABLE;
+            throw new IllegalArgumentException("Invalid Sleep Discovery Mode value: " + value);
         }
     }
+
     public HomekitSleepDiscoveryModeCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
-        super(service, eventManager, SleepDiscoveryMode.values().length);
+        super(service, eventManager, 3);
         withInstanceId(instanceId)
-            .withPairedWrite(true)
             .withPairedRead(true)
+            .withPairedWrite(true)
             .withEvents(true)
             .withDescription("Sleep Discovery Mode");
     }
+
     public HomekitSleepDiscoveryModeCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }
+
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && value >= 0 && value < SleepDiscoveryMode.values().length;
+        if (value == null) return false;
+        try {
+            SleepDiscoveryMode.fromValue(value);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
+
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(
-            SleepDiscoveryMode.NOT_DISCOVERABLE.getCode(),
-            SleepDiscoveryMode.ALWAYS_DISCOVERABLE.getCode()
-        );
+        java.util.Set<Integer> allowed = new java.util.HashSet<>();
+        for (SleepDiscoveryMode mode : SleepDiscoveryMode.values()) {
+            allowed.add(mode.getValue());
+        }
+        return allowed;
     }
 } 

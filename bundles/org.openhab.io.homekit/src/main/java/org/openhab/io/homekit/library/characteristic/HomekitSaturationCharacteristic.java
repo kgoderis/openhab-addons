@@ -7,13 +7,24 @@ import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitFloatCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
+/**
+ * HomeKit Saturation Characteristic.
+ * This characteristic represents the saturation level of a color.
+ * The value ranges from 0% (completely desaturated) to 100% (fully saturated).
+ *
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ */
 @HomekitCharacteristicType(type = "0000002F-0000-1000-8000-0026BB765291", name = "Saturation", tag = "saturation")
 @NonNullByDefault
 public class HomekitSaturationCharacteristic extends HomekitFloatCharacteristic {
 
     public HomekitSaturationCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, 0.0, 100.0, 1.0, "%");
-        withInstanceId(instanceId).withPairedWrite(true).withPairedRead(true).withEvents(true)
+        withInstanceId(instanceId)
+            .withPairedRead(true)
+            .withPairedWrite(true)
+            .withEvents(true)
             .withDescription("Saturation");
     }
 

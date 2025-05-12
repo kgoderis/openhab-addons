@@ -11,8 +11,10 @@ import java.util.Map;
 /**
  * HomeKit Supported Asset Types Characteristic.
  * This characteristic represents the supported asset types in TLV8 format.
+ * It provides information about the types of assets that can be managed by the device.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/SupportedAssetTypes">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000268-0000-1000-8000-0026BB765291", name = "Supported Asset Types", tag = "supportedAssetTypes")
 @NonNullByDefault

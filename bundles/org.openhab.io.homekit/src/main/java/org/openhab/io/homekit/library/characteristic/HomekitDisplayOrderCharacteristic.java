@@ -11,9 +11,15 @@ import org.openhab.core.types.State;
 
 /**
  * HomeKit Display Order Characteristic.
- * This characteristic represents the display order for a device.
+ * This characteristic represents the display order for a device in TLV8 format.
+ * The TLV8 format allows for flexible encoding of display order information,
+ * such as position indices, grouping identifiers, and custom sorting parameters.
+ * This is used to specify the order in which devices or accessories should be
+ * displayed in a user interface, allowing for custom organization and grouping
+ * of HomeKit devices.
  *
- * See the official HomeKit documentation for details.
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000136-0000-1000-8000-0026BB765291", name = "Display Order", tag = "displayOrder")
 @NonNullByDefault

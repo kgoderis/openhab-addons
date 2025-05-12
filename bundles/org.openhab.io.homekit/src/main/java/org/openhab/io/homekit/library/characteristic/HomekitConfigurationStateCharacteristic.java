@@ -12,7 +12,8 @@ import java.util.Map;
  * HomeKit Configuration State Characteristic.
  * This characteristic represents the configuration state in TLV8 format.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/ConfigurationState">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000263-0000-1000-8000-0026BB765291", name = "Configuration State", tag = "configurationState")
 @NonNullByDefault

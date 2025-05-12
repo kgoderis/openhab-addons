@@ -7,6 +7,14 @@ import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
+/**
+ * Lock Current State characteristic.
+ * <p>
+ * This characteristic represents the current state of a lock mechanism.
+ *
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ * @author Karel Goderis - Initial contribution
+ */
 @HomekitCharacteristicType(type = "0000001D-0000-1000-8000-0026BB765291", name = "Lock Current State", tag = "lockCurrentState")
 @NonNullByDefault
 public class HomekitLockCurrentStateCharacteristic extends HomekitEnumCharacteristic {

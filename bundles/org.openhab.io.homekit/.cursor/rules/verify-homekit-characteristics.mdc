@@ -1,0 +1,106 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# HomeKit Characteristics Implementation Verification
+
+## Overview
+This rule defines the requirements for implementing HomeKit characteristics in the OpenHAB HomeKit binding.
+
+## Author
+Karel Goderis
+
+## Requirements
+
+### 0. Source Information
+Cross-reference with the file @CharacteristicDefinitions.ts 
+Every file verified needs to be "touched" so that its last modified date gets updated
+
+### 1. Base Class Selection
+- For `Formats.FLOAT` → Use `HomekitFloatCharacteristic`
+- For `Formats.UINT8`, `Formats.UINT16`, `Formats.UINT32`, `Formats.INT` → Use `HomekitIntegerCharacteristic`
+- For `Formats.BOOL` → Use `HomekitBooleanCharacteristic`
+- For `Formats.STRING` → Use `HomekitStringCharacteristic`
+- For `Formats.TLV8` → Use `HomekitTLV8Characteristic`
+- For `Formats.DATA` → Use `HomekitDataCharacteristic`
+- For characteristics with `validValues` field and `format: Formats.UINT8` → Use `HomekitEnumCharacteristic`
+
+### 2. Class Structure
+- Place in `src/main/java/org/openhab/io/homekit/library/characteristic/`
+- Annotate with `@HomekitCharacteristicType` including:
+  - `type`: UUID from HAP specification
+  - `name`: Name from HAP specification
+  - `tag`: camelCase version of name
+- Implement value range, step, and unit as per HAP specification
+- For enum characteristics, define an enum class with valid values
+- Classes using `HomekitEnumCharacteristic` should implement a custom enum instead of constants
+- if `validValues` is present, then the specific enum in the class can not have more options than values in `validValues`. The names of the enum values are mentioned in the file @CharacteristicDefinitions.ts 
+- There is not need to create static fields like MIN_VALUE, MAX_VALUE or UNIT. Directly use them in the constructor calls
+- "Units" should be "celcius" ,"percentage", "arcdegrees", "lux", "seconds" and not a symbol like "C", "%",...
+ - Implement isAllowedValue for value range validation
+ - For enum characteristics, implement getAllowedValues
+ - Implement required methods for value conversion and validation
+ - Use proper null safety annotations
+ - Use with() methods in constructors
+ - Cross-check the UUID and name with what is in https://raw.githubusercontent.com/homebridge/HAP-NodeJS/4eb81ee52934b5f312ef470440a0947542b6fd5b/src/lib/definitions/CharacteristicDefinitions.ts
+ - Remove @override methods like toEventJson, toValueJson, ... that are redundant
+ - Classes inheriting from HomekitEnumCharacteristic should implement a setValue() method taking the specific enum as input parameter. This setValue method should handle any exceptions and throw any exception itself
+
+### 3. Documentation
+- Add Javadoc comment referencing the HAP specification in general to https://developer.apple.com/documentation/HomeKit (do not use a specific or non-existing url)
+- Remove any references to homebridge.io
+- Include characteristic description and purpose
+- Include an author field : "Karel Goderis"
+
+### 4. Code Quality
+- Remove unnecessary `@Override` methods that only call `super()`
+- Implement required methods for value conversion and validation
+- Use proper null safety annotations (`@NonNullByDefault`)
+- Follow Java naming conventions
+- Import all necessary classes and do not use fully qualified classnames 
+
+### 5. Permissions
+- Set permissions according to HAP specification:
+  - `pairedRead`: Based on `Perms.PAIRED_READ`
+  - `pairedWrite`: Based on `Perms.PAIRED_WRITE`
+  - `events`: Based on `Perms.NOTIFY`
+
+### 6. Value Validation
+- Implement `isAllowedValue` for value range validation
+- For enum characteristics, implement `getAllowedValues`
+- Handle null values appropriately
+
+## Example Implementation
+```java
+/**
+ * HomeKit Characteristic Name.
+ * This characteristic represents [description].
+ *
+ * @author Karel Goderis - Initial Contribution
+ */
+@HomekitCharacteristicType(type = "UUID", name = "Name", tag = "camelCaseName")
+@NonNullByDefault
+public class HomekitCharacteristicName extends HomekitBaseCharacteristic {
+    public HomekitCharacteristicName(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+        super(service, eventManager);
+        withInstanceId(instanceId)
+            .withPairedRead(true)
+            .withPairedWrite(false)
+            .withEvents(true)
+            .withDescription("Description");
+    }
+}
+```
+
+## Verification Checklist
+- [ ] UUID matches HAP specification
+- [ ] Name matches HAP specification
+- [ ] Base class matches format
+- [ ] Permissions match HAP specification
+- [ ] Documentation references HAP specification
+- [ ] No homebridge.io references
+- [ ] No unnecessary overrides
+- [ ] Proper null safety
+- [ ] Value validation implemented
+- [ ] Enum values defined if required

@@ -7,13 +7,24 @@ import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitLongCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
+/**
+ * HomeKit Active Identifier Characteristic.
+ * This characteristic represents the identifier of the currently active input or source.
+ * The value is a 32-bit unsigned integer (0 to 0xFFFFFFFF) that identifies the active input.
+ *
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ */
 @HomekitCharacteristicType(type = "000000E7-0000-1000-8000-0026BB765291", name = "Active Identifier", tag = "activeIdentifier")
 @NonNullByDefault
 public class HomekitActiveIdentifierCharacteristic extends HomekitLongCharacteristic {
 
     public HomekitActiveIdentifierCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, 0L, 0xFFFFFFFFL, 1L);
-        withInstanceId(instanceId).withPairedWrite(true).withPairedRead(true).withEvents(true)
+        withInstanceId(instanceId)
+            .withPairedRead(true)
+            .withPairedWrite(true)
+            .withEvents(true)
             .withDescription("Active Identifier");
     }
 

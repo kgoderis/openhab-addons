@@ -9,28 +9,49 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * HomeKit Target Tilt Angle Characteristic.
- * This characteristic represents the target tilt angle for a device (e.g., window covering).
+ * This characteristic represents the target tilt angle for a window covering.
+ * The angle is expressed in arc degrees, ranging from -90° to 90°.
+ * This is used to control the tilt angle of window coverings like blinds or shades.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/TargetTiltAngle">HomeKit Documentation</a>
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "000000C2-0000-1000-8000-0026BB765291", name = "Target Tilt Angle", tag = "targetTiltAngle")
 @NonNullByDefault
 public class HomekitTargetTiltAngleCharacteristic extends HomekitIntegerCharacteristic {
+    /**
+     * Creates a new Target Tilt Angle characteristic.
+     * The value range is -90 to 90 arc degrees.
+     *
+     * @param service The HomeKit service this characteristic belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param instanceId The instance ID for this characteristic
+     */
     public HomekitTargetTiltAngleCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
-        super(service, eventManager, -90, 90, "°");
+        super(service, eventManager, -90, 90, "arcdegrees");
         withInstanceId(instanceId)
-            .withPairedWrite(true)
             .withPairedRead(true)
+            .withPairedWrite(true)
             .withEvents(true)
             .withDescription("Target Tilt Angle");
     }
+
+    /**
+     * Creates a new Target Tilt Angle characteristic from a JSON value.
+     *
+     * @param service The HomeKit service this characteristic belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param value The JSON value to initialize the characteristic with
+     */
     public HomekitTargetTiltAngleCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }
+
     @Override
     public boolean isAllowedValue(Integer value) {
         return value != null && value >= -90 && value <= 90;
     }
+
     @Override
     public java.util.Set<Integer> getAllowedValues() {
         return java.util.Collections.emptySet();

@@ -4,19 +4,21 @@ import javax.json.JsonValue;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
-import org.openhab.io.homekit.core.characteristic.HomekitIntegerCharacteristic;
+import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Set;
 
 /**
  * HomeKit Remote Key Characteristic.
  * This characteristic represents the remote key commands for a device.
+ * The key can be one of: REWIND, FAST_FORWARD, NEXT_TRACK, PREVIOUS_TRACK, ARROW_UP,
+ * ARROW_DOWN, ARROW_LEFT, ARROW_RIGHT, SELECT, BACK, EXIT, PLAY_PAUSE, or INFORMATION.
  *
- * See the official HomeKit documentation for details.
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "000000E1-0000-1000-8000-0026BB765291", name = "Remote Key", tag = "remoteKey")
 @NonNullByDefault
-public class HomekitRemoteKeyCharacteristic extends HomekitIntegerCharacteristic {
+public class HomekitRemoteKeyCharacteristic extends HomekitEnumCharacteristic {
     public enum RemoteKey {
         REWIND(0),
         FAST_FORWARD(1),
@@ -30,34 +32,34 @@ public class HomekitRemoteKeyCharacteristic extends HomekitIntegerCharacteristic
         BACK(9),
         EXIT(10),
         PLAY_PAUSE(11),
-        INFORMATION(15);
-        
-        private final int code;
-        
-        RemoteKey(int code) {
-            this.code = code;
+        INFORMATION(12);
+
+        private final int value;
+
+        RemoteKey(int value) {
+            this.value = value;
         }
-        
-        public int getCode() {
-            return code;
+
+        public int getValue() {
+            return value;
         }
-        
-        public static RemoteKey fromCode(int code) {
-            for (RemoteKey k : values()) {
-                if (k.code == code) {
-                    return k;
+
+        public static RemoteKey fromValue(int value) {
+            for (RemoteKey key : values()) {
+                if (key.value == value) {
+                    return key;
                 }
             }
-            return null;
+            throw new IllegalArgumentException("Invalid Remote Key value: " + value);
         }
     }
 
     public HomekitRemoteKeyCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
-        super(service, eventManager, 0, 15, "");
+        super(service, eventManager, RemoteKey.values().length);
         withInstanceId(instanceId)
-            .withPairedRead(false)
+            .withPairedRead(true)
             .withPairedWrite(true)
-            .withEvents(false)
+            .withEvents(true)
             .withDescription("Remote Key");
     }
 
@@ -67,25 +69,33 @@ public class HomekitRemoteKeyCharacteristic extends HomekitIntegerCharacteristic
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && RemoteKey.fromCode(value) != null;
+        if (value == null) {
+            return false;
+        }
+        try {
+            RemoteKey.fromValue(value);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     @Override
-    public Set<Integer> getAllowedValues() {
-        return Set.of(
-            RemoteKey.REWIND.getCode(),
-            RemoteKey.FAST_FORWARD.getCode(),
-            RemoteKey.NEXT_TRACK.getCode(),
-            RemoteKey.PREVIOUS_TRACK.getCode(),
-            RemoteKey.ARROW_UP.getCode(),
-            RemoteKey.ARROW_DOWN.getCode(),
-            RemoteKey.ARROW_LEFT.getCode(),
-            RemoteKey.ARROW_RIGHT.getCode(),
-            RemoteKey.SELECT.getCode(),
-            RemoteKey.BACK.getCode(),
-            RemoteKey.EXIT.getCode(),
-            RemoteKey.PLAY_PAUSE.getCode(),
-            RemoteKey.INFORMATION.getCode()
+    public java.util.Set<Integer> getAllowedValues() {
+        return java.util.Set.of(
+            RemoteKey.REWIND.getValue(),
+            RemoteKey.FAST_FORWARD.getValue(),
+            RemoteKey.NEXT_TRACK.getValue(),
+            RemoteKey.PREVIOUS_TRACK.getValue(),
+            RemoteKey.ARROW_UP.getValue(),
+            RemoteKey.ARROW_DOWN.getValue(),
+            RemoteKey.ARROW_LEFT.getValue(),
+            RemoteKey.ARROW_RIGHT.getValue(),
+            RemoteKey.SELECT.getValue(),
+            RemoteKey.BACK.getValue(),
+            RemoteKey.EXIT.getValue(),
+            RemoteKey.PLAY_PAUSE.getValue(),
+            RemoteKey.INFORMATION.getValue()
         );
     }
 } 
