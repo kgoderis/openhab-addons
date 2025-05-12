@@ -43,7 +43,8 @@ import org.slf4j.LoggerFactory;
  */
 @NonNullByDefault
 @Component(immediate = true, service = HomekitPairingRegistry.class)
-public class HomekitPairingRegistryImpl extends AbstractRegistry<HomekitPairing, HomekitPairingUID, HomekitPairingProvider>
+public class HomekitPairingRegistryImpl
+        extends AbstractRegistry<HomekitPairing, HomekitPairingUID, HomekitPairingProvider>
         implements HomekitPairingRegistry, ReadyService.ReadyTracker {
 
     private final Logger logger = LoggerFactory.getLogger(HomekitPairingRegistry.class);
@@ -132,8 +133,8 @@ public class HomekitPairingRegistryImpl extends AbstractRegistry<HomekitPairing,
 
         if (accessoryServerRegistryReady && managedPairingProviderReady) {
             for (HomekitPairing aPairing : getAll()) {
-                logger.debug("{}HomekitPairing {} with Public Key {} is available in the HomekitPairing Registry", LOG_STATE,
-                        aPairing.getUID(), HomekitByte.toHexString(aPairing.getPublicKey()));
+                logger.debug("{}HomekitPairing {} with Public Key {} is available in the HomekitPairing Registry",
+                        LOG_STATE, aPairing.getUID(), HomekitByte.toHexString(aPairing.getPublicKey()));
             }
 
             logger.warn("{}Marking the HomekitPairing Registry as ready", LOG_WARN);

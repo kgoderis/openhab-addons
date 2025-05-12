@@ -15,12 +15,13 @@ import org.openhab.io.homekit.event.core.HomekitEventMetadata;
 @NonNullByDefault
 public class HomekitCharacteristicChangedEvent extends HomekitCharacteristicEvent {
 
-    public HomekitCharacteristicChangedEvent(HomekitCharacteristic<?> characteristic, @Nullable JsonValue oldValue, @Nullable JsonValue newValue) {
+    public HomekitCharacteristicChangedEvent(HomekitCharacteristic<?> characteristic, @Nullable JsonValue oldValue,
+            @Nullable JsonValue newValue) {
         super(HomekitEventType.CHARACTERISTIC_VALUE_CHANGED, characteristic, oldValue, newValue);
     }
 
-    public HomekitCharacteristicChangedEvent(HomekitCharacteristic<?> characteristic, @Nullable JsonValue oldValue, @Nullable JsonValue newValue,
-            HomekitEventMetadata metadata) {
+    public HomekitCharacteristicChangedEvent(HomekitCharacteristic<?> characteristic, @Nullable JsonValue oldValue,
+            @Nullable JsonValue newValue, HomekitEventMetadata metadata) {
         super(HomekitEventType.CHARACTERISTIC_VALUE_CHANGED, characteristic, oldValue, newValue, metadata);
     }
 }

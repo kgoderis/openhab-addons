@@ -9,33 +9,31 @@ import javax.json.JsonValue;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
+import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitBooleanCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
- * @author kgoderis
+ * HomeKit Hold Position Characteristic.
+ * This characteristic represents the hold position for a device (e.g., window covering).
  *
+ * @see <a href="https://developers.homebridge.io/#/characteristic/HoldPosition">HomeKit Documentation</a>
  */
+@HomekitCharacteristicType(type = "0000006F-0000-1000-8000-0026BB765291", name = "Hold Position", tag = "holdPosition")
 @NonNullByDefault
 public class HomekitHoldPositionCharacteristic extends HomekitBooleanCharacteristic {
 
-    private static final String TYPE = "0000006F-0000-1000-8000-0026BB765291";
-
-    public HomekitHoldPositionCharacteristic(HomekitService service, long instanceId, HomekitEventManager eventManager) {
-        super(service, instanceId, true, false, false, "Hold Position", TYPE, eventManager);
+    public HomekitHoldPositionCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
+        super(service, eventManager);
+        withInstanceId(instanceId).withPairedWrite(true).withPairedRead(true).withEvents(true)
+                .withDescription("Hold Position");
     }
 
-    public HomekitHoldPositionCharacteristic(HomekitService service, JsonValue value, HomekitEventManager eventManager) {
-        super(service, value, eventManager);
-    }
-
-    public static String getType() {
-        return TYPE;
-    }
-
-    public static String getTag() {
-        return HomekitHoldPositionCharacteristic.class.getSimpleName().replace("HomekitCharacteristic", "");
+    public HomekitHoldPositionCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
+        super(service, eventManager, value);
     }
 
     @Override

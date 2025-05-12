@@ -1,4 +1,5 @@
 package org.openhab.io.homekit.network.discovery;
+
 // package org.openhab.io.homekit.internal.client;
 //
 // import java.nio.charset.StandardCharsets;

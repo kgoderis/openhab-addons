@@ -39,7 +39,8 @@ import org.slf4j.LoggerFactory;
  */
 @NonNullByDefault
 @Component(immediate = true, service = HomekitAccessoryRegistry.class)
-public class HomekitAccessoryRegistryImpl extends AbstractRegistry<HomekitAccessory, HomekitAccessoryUID, HomekitAccessoryProvider>
+public class HomekitAccessoryRegistryImpl
+        extends AbstractRegistry<HomekitAccessory, HomekitAccessoryUID, HomekitAccessoryProvider>
         implements HomekitAccessoryRegistry, ReadyService.ReadyTracker {
 
     private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryRegistryImpl.class);

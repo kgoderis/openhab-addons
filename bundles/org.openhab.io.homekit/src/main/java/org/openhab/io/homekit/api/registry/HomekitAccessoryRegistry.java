@@ -8,9 +8,11 @@ import org.openhab.io.homekit.api.provider.HomekitAccessoryProvider;
 import org.openhab.io.homekit.core.accessory.HomekitAccessoryUID;
 
 /**
- * {@link HomekitAccessoryRegistry} tracks all {@link ManagedAccessory}s from different {@link HomekitAccessoryProvider}s and provides
+ * {@link HomekitAccessoryRegistry} tracks all {@link ManagedAccessory}s from different
+ * {@link HomekitAccessoryProvider}s and provides
  * access
- * to them. The {@link HomekitAccessoryRegistry} supports adding of listeners (see {@link HomekitAccessoryChangeListener})
+ * to them. The {@link HomekitAccessoryRegistry} supports adding of listeners (see
+ * {@link HomekitAccessoryChangeListener})
  *
  * @author Karel Goderis - Initial contribution
  */

@@ -27,9 +27,8 @@ public class HomekitEventGraphIntegrations {
     private final HomekitEventGraphVisualizer eventGraphVisualizer;
     private final EventPublisher eventPublisher;
 
-    public HomekitEventGraphIntegrations(HomekitEventGraphProcessor eventGraph, 
-                                HomekitEventGraphVisualizer eventGraphVisualizer,
-                                EventPublisher eventPublisher) {
+    public HomekitEventGraphIntegrations(HomekitEventGraphProcessor eventGraph,
+            HomekitEventGraphVisualizer eventGraphVisualizer, EventPublisher eventPublisher) {
         this.eventGraph = eventGraph;
         this.eventGraphVisualizer = eventGraphVisualizer;
         this.eventPublisher = eventPublisher;

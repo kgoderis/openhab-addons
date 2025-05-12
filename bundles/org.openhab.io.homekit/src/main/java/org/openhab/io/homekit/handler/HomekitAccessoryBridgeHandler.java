@@ -214,7 +214,8 @@ package org.openhab.io.homekit.handler;
 // @Override
 // public void pair(String setupCode) {
 // if (accessoryServer != null) {
-// logger.info("'{}' : HomekitPairing the Homekit HomekitAccessory using Setup Code {}", getThing().getUID(), setupCode);
+// logger.info("'{}' : HomekitPairing the Homekit HomekitAccessory using Setup Code {}", getThing().getUID(),
+// setupCode);
 
 // Configuration config = editConfiguration();
 // config.put(HomekitAccessoryConfiguration.SETUP_CODE, setupCode);

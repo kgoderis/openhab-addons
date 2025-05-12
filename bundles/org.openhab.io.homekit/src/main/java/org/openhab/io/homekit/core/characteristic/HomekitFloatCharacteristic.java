@@ -12,27 +12,29 @@ import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
+import java.util.Set;
+
 @NonNullByDefault
-public abstract class HomekitFloatCharacteristic extends HomekitBaseCharacteristic<Double> {
+public abstract class HomekitFloatCharacteristic extends AbstractHomekitCharacteristic<Double> {
 
     protected final double minValue;
     private final double maxValue;
     private final double minStep;
     private final String unit;
 
-    public HomekitFloatCharacteristic(HomekitService service, long instanceId, boolean isWritable, boolean isReadable,
-            boolean hasEvents, String description, double minValue, double maxValue, double minStep, String unit,
-            String type, HomekitEventManager eventManager) {
-        super(service, instanceId, "float", isWritable, isReadable, hasEvents, description, type, eventManager);
+    public HomekitFloatCharacteristic(HomekitService service, HomekitEventManager eventManager, double minValue,
+            double maxValue, double minStep, String unit) {
+        super(service, eventManager);
         this.minValue = minValue;
         this.maxValue = maxValue;
         this.minStep = minStep;
         this.unit = unit;
+        withFormat("float").withPairedWrite(true).withPairedRead(true).withEvents(true);
         initializeValue();
     }
 
-    public HomekitFloatCharacteristic(HomekitService service, JsonValue value, HomekitEventManager eventManager) {
-        super(service, value, eventManager);
+    public HomekitFloatCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+        super(service, eventManager, value);
         JsonObject jsonObject = (JsonObject) value;
         this.minValue = jsonObject.containsKey("minValue") ? jsonObject.getJsonNumber("minValue").doubleValue() : 0;
         this.maxValue = jsonObject.containsKey("maxValue") ? jsonObject.getJsonNumber("maxValue").doubleValue() : 100;
@@ -115,5 +117,15 @@ public abstract class HomekitFloatCharacteristic extends HomekitBaseCharacterist
 
     public static String getAcceptedItemType() {
         return CoreItemFactory.NUMBER;
+    }
+
+    @Override
+    public boolean isAllowedValue(Double value) {
+        return value != null && value >= minValue && value <= maxValue;
+    }
+
+    @Override
+    public Set<Double> getAllowedValues() {
+        return java.util.Collections.emptySet(); // No specific allowed values, just a range
     }
 }

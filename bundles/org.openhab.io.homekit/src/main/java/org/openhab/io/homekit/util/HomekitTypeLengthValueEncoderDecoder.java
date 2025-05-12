@@ -30,7 +30,8 @@ public class HomekitTypeLengthValueEncoderDecoder {
             byte[] part = new byte[length];
             bais.read(part);
             ret.add(type, part);
-            logger.trace("Decoded T {} L {} V {}", HomekitMessage.get(type).name(), length, HomekitByte.toHexString(part));
+            logger.trace("Decoded T {} L {} V {}", HomekitMessage.get(type).name(), length,
+                    HomekitByte.toHexString(part));
         }
         return ret;
     }

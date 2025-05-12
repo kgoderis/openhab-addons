@@ -104,7 +104,8 @@ package org.openhab.io.homekit.server.factory;
 // }
 
 // @Override
-// public @Nullable HomekitAccessoryServer createServer(@NonNull String factoryType, InetAddress address, int port, byte[] id,
+// public @Nullable HomekitAccessoryServer createServer(@NonNull String factoryType, InetAddress address, int port,
+// byte[] id,
 // byte[] privateKey, int configurationIndex) {
 
 // if (Arrays.stream(getSupportedServerTypes()).anyMatch(factoryType::equals)) {

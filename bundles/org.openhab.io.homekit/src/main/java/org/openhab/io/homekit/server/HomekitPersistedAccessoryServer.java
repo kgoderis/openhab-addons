@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryCategory;
 
 public class HomekitPersistedAccessoryServer {
@@ -37,9 +36,10 @@ public class HomekitPersistedAccessoryServer {
         serverType = ServerType.LOCAL;
     }
 
-    public HomekitPersistedAccessoryServer(@NonNull InetAddress localAddress, int port, byte[] pairingId, byte[] privateKey,
-            int configurationIndex, @NonNull Collection<org.openhab.io.homekit.api.accessory.HomekitAccessory> accessories, HomekitAccessoryCategory category,
-            ServerType serverType) {
+    public HomekitPersistedAccessoryServer(@NonNull InetAddress localAddress, int port, byte[] pairingId,
+            byte[] privateKey, int configurationIndex,
+            @NonNull Collection<org.openhab.io.homekit.api.accessory.HomekitAccessory> accessories,
+            HomekitAccessoryCategory category, ServerType serverType) {
         this.localAddress = localAddress.getHostAddress();
         this.port = Integer.toString(port);
         this.pairingIdentifier = Base64.getEncoder().encodeToString(pairingId);

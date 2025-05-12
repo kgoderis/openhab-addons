@@ -47,7 +47,7 @@ package org.openhab.io.homekit.core.characteristic;
 // }
 
 // @Override
-// public abstract String getInstanceType();
+// public abstract String getType();
 
 // @Override
 // public ChannelUID getChannelUID() {
@@ -114,9 +114,9 @@ package org.openhab.io.homekit.core.characteristic;
 // if (type) {
 // if (shortType) {
 // builder.add("type",
-// getInstanceType().replaceAll("^0*([0-9a-fA-F]+)-0000-1000-8000-0026BB765291$", "$1"));
+// getType().replaceAll("^0*([0-9a-fA-F]+)-0000-1000-8000-0026BB765291$", "$1"));
 // } else {
-// builder.add("type", getInstanceType());
+// builder.add("type", getType());
 // }
 // }
 

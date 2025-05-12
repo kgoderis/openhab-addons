@@ -1,13 +1,10 @@
 package org.openhab.io.homekit.library.service;
 
-import java.util.Collection;
-
 import javax.json.JsonValue;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
-import org.openhab.io.homekit.api.factory.HomekitFactory;
-import org.openhab.io.homekit.core.service.HomekitBaseService;
+import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
+import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.library.characteristic.HomekitFirmwareRevisionCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitIdentifyCharacteristic;
@@ -16,28 +13,48 @@ import org.openhab.io.homekit.library.characteristic.HomekitModelCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitSerialNumberCharacteristic;
 
-public class HomekitAccessoryInformationService extends HomekitBaseService {
-    private static final String TYPE = "0000003E-0000-1000-8000-0026BB765291";
+/**
+ * Service that provides accessory information like manufacturer, model, serial number etc.
+ * This is a required service for all HomeKit accessories.
+ */
+public class HomekitAccessoryInformationService extends AbstractHomekitService {
 
-    public HomekitAccessoryInformationService(HomekitAccessory accessory, long instanceId, boolean extend, @NonNull String serviceName, HomekitEventManager eventManager, Collection<HomekitFactory> factories) {
-        super(accessory, instanceId, extend, serviceName, TYPE, eventManager, factories);
+    /**
+     * Creates a new HomekitAccessoryInformationService.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     */
+    public HomekitAccessoryInformationService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory) {
+        super(accessory, eventManager, characteristicFactory);
     }
 
-    public HomekitAccessoryInformationService(HomekitAccessory accessory, JsonValue value, String name, HomekitEventManager eventManager, Collection<HomekitFactory> factories) {
-        super(accessory, value, name, eventManager, factories);
+    /**
+     * Creates a new HomekitAccessoryInformationService from a JSON value.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @param value JSON value containing service configuration
+     */
+    public HomekitAccessoryInformationService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
+        super(accessory, eventManager, characteristicFactory, value);
     }
 
     @Override
     public void addCharacteristics() {
         super.addCharacteristics();
-        addCharacteristic(new HomekitIdentifyCharacteristic(this, ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(),
-                eventManager));
+        addCharacteristic(new HomekitIdentifyCharacteristic(this,
+                ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
         addCharacteristic(new HomekitManufacturerCharacteristic(this,
                 ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
-        addCharacteristic(
-                new HomekitModelCharacteristic(this, ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
-        addCharacteristic(
-                new HomekitNameCharacteristic(this, ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
+        addCharacteristic(new HomekitModelCharacteristic(this,
+                ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
+        addCharacteristic(new HomekitNameCharacteristic(this,
+                ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
         addCharacteristic(new HomekitSerialNumberCharacteristic(this,
                 ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
         addCharacteristic(new HomekitFirmwareRevisionCharacteristic(this,
@@ -47,13 +64,5 @@ public class HomekitAccessoryInformationService extends HomekitBaseService {
     @Override
     public boolean isExtensible() {
         return false;
-    }
-
-    public static String getType() {
-        return TYPE;
-    }
-
-    public static String getTag() {
-        return HomekitAccessoryInformationService.class.getSimpleName().replace("HomekitService", "");
     }
 }

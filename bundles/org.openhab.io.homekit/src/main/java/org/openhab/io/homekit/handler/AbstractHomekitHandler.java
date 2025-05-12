@@ -36,13 +36,13 @@ import org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.accessory.HomekitAccessoryUID;
+import org.openhab.io.homekit.event.core.HomekitEventMetadata;
+import org.openhab.io.homekit.event.core.HomekitEventSubscription;
+import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.event.model.accessory.HomekitAccessoryEvent;
 import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicEvent;
 import org.openhab.io.homekit.event.model.server.HomekitAccessoryServerEvent;
 import org.openhab.io.homekit.event.model.service.HomekitServiceEvent;
-import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import org.openhab.io.homekit.event.core.HomekitEventMetadata;
-import org.openhab.io.homekit.event.core.HomekitEventSubscription;
 import org.openhab.io.homekit.exception.HomekitException;
 import org.openhab.io.homekit.network.discovery.HomekitBindingConstants;
 import org.openhab.io.homekit.provider.HomekitChannelTypeProvider;
@@ -64,7 +64,8 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
     // ========== Error Messages ==========
     protected static final String ERROR_PREFIX = "Homekit Handler Error: ";
     protected static final String ERROR_SERVER_NOT_FOUND = ERROR_PREFIX + "Server not found for deviceId: %s";
-    protected static final String ERROR_ACCESSORY_NOT_FOUND = ERROR_PREFIX + "HomekitAccessory not found for accessoryId: %s";
+    protected static final String ERROR_ACCESSORY_NOT_FOUND = ERROR_PREFIX
+            + "HomekitAccessory not found for accessoryId: %s";
     protected static final String ERROR_CONFIG_INVALID = ERROR_PREFIX + "Invalid configuration: %s";
     protected static final String ERROR_STATE_UPDATE = ERROR_PREFIX + "Failed to update state: %s";
     protected static final String ERROR_CHANNEL_OPERATION = ERROR_PREFIX + "Channel operation failed: %s";
@@ -163,7 +164,8 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
 
     protected void initializeComponents() {
         synchronized (serverLock) {
-            HomekitAccessoryServer foundServer = serverRegistry.get(new HomekitAccessoryServerUID(accessoryServerPairingId));
+            HomekitAccessoryServer foundServer = serverRegistry
+                    .get(new HomekitAccessoryServerUID(accessoryServerPairingId));
             if (foundServer == null) {
                 throw new IllegalStateException(String.format(ERROR_SERVER_NOT_FOUND, accessoryServerPairingId));
             }
@@ -492,8 +494,9 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
                     case CHARACTERISTIC_ADDED -> handleCharacteristicAdded(event);
                     case CHARACTERISTIC_REMOVED -> handleCharacteristicRemoved(event);
                     case SERVICE_STATE_CHANGED -> handleServiceStateChanged(event);
-                    default -> logger.debug("{}Debug - Type: HomekitService, HomekitMessage: Unhandled service event type: {}",
-                            LOG_PREFIX, event.getType());
+                    default ->
+                        logger.debug("{}Debug - Type: HomekitService, HomekitMessage: Unhandled service event type: {}",
+                                LOG_PREFIX, event.getType());
                 }
                 synchronizeChannels();
             }
@@ -598,7 +601,8 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
                         // } else {
                         // logger.warn("{}HomekitService not found in accessory after change event", LOG_EVENT);
                         // accessoryAvailable = false;
-                        // updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "HomekitService not found");
+                        // updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "HomekitService not
+                        // found");
                         // }
                         // }
                     } else {
@@ -751,7 +755,8 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
                     switch (event.getType()) {
                         case CHARACTERISTIC_VALUE_CHANGED -> handleCharacteristicValueChanged(event);
                         case CHARACTERISTIC_STATE_CHANGED -> handleCharacteristicStateChanged(event);
-                        default -> logger.debug("{}Debug - Type: HomekitService, HomekitMessage: Unhandled service event type: {}",
+                        default -> logger.debug(
+                                "{}Debug - Type: HomekitService, HomekitMessage: Unhandled service event type: {}",
                                 LOG_PREFIX, event.getType());
                     }
                     synchronizeChannels();
@@ -880,9 +885,9 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
                 T value = (T) command;
                 // characteristic.setValue(value);
                 // replace this with a publish event
-                HomekitCharacteristicEvent newEvent = new HomekitCharacteristicEvent(HomekitEventType.CHARACTERISTIC_CHANGE_VALUE,
-                        thing.getUID(), characteristic.getUID(), characteristic, JsonValue.NULL,
-                        characteristic.toValueJson(value),
+                HomekitCharacteristicEvent newEvent = new HomekitCharacteristicEvent(
+                        HomekitEventType.CHARACTERISTIC_CHANGE_VALUE, thing.getUID(), characteristic.getUID(),
+                        characteristic, JsonValue.NULL, characteristic.toValueJson(value),
                         new HomekitEventMetadata(thing.getUID(), null, thing.getUID(), Collections.emptySet()));
                 // TODO Define and check peergroup
                 eventManager.publishEvent(newEvent);
@@ -916,14 +921,14 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
             // Step 1: Remove channels for characteristics that no longer exist
             List<Channel> channelsToRemove = new ArrayList<>();
             synchronized (characteristicMapLock) {
-                for (Map.Entry<Channel, org.openhab.io.homekit.api.characteristic.HomekitCharacteristic<?>> entry : characteristicMap.entrySet()) {
+                for (Map.Entry<Channel, org.openhab.io.homekit.api.characteristic.HomekitCharacteristic<?>> entry : characteristicMap
+                        .entrySet()) {
                     @Nullable
                     HomekitCharacteristic<?> characteristic = entry.getValue();
-                    if (characteristic != null
-                            && !currentCharacteristicTypes.contains(characteristic.getInstanceType())) {
+                    if (characteristic != null && !currentCharacteristicTypes.contains(characteristic.getType())) {
                         channelsToRemove.add(entry.getKey());
                         logger.debug("{}Removing channel for characteristic: {}", LOG_CHANNEL,
-                                characteristic.getInstanceType());
+                                characteristic.getType());
                     }
                 }
 
@@ -946,7 +951,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
                 synchronized (characteristicMapLock) {
                     for (HomekitCharacteristic<?> existingCharacteristic : characteristicMap.values()) {
                         if (existingCharacteristic != null
-                                && existingCharacteristic.getInstanceType().equals(characteristic.getInstanceType())) {
+                                && existingCharacteristic.getType().equals(characteristic.getType())) {
                             channelExists = true;
                             break;
                         }
@@ -959,18 +964,18 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
                         eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
                                 characteristic.getUID(), thing.getUID(),
                                 event -> onCharacteristicEvent((HomekitCharacteristicEvent) event)));
-                        logger.debug("{}Added channel for characteristic: {}", LOG_CHANNEL,
-                                characteristic.getInstanceType());
+                        logger.debug("{}Added channel for characteristic: {}", LOG_CHANNEL, characteristic.getType());
                     } catch (HomekitException e) {
                         logger.warn("{}Failed to add channel for characteristic {}: {}", LOG_CHANNEL,
-                                characteristic.getInstanceType(), e.getMessage());
+                                characteristic.getType(), e.getMessage());
                     }
                 }
             }
 
             // Step 3: Update channel states for existing characteristics
             synchronized (characteristicMapLock) {
-                for (Map.Entry<Channel, org.openhab.io.homekit.api.characteristic.HomekitCharacteristic<?>> entry : characteristicMap.entrySet()) {
+                for (Map.Entry<Channel, org.openhab.io.homekit.api.characteristic.HomekitCharacteristic<?>> entry : characteristicMap
+                        .entrySet()) {
                     @Nullable
                     Channel channel = entry.getKey();
                     @Nullable
@@ -1033,7 +1038,8 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
             // Find the channel associated with this characteristic
             Channel channelToRemove = null;
             synchronized (characteristicMapLock) {
-                for (Map.Entry<Channel, org.openhab.io.homekit.api.characteristic.HomekitCharacteristic<?>> entry : characteristicMap.entrySet()) {
+                for (Map.Entry<Channel, org.openhab.io.homekit.api.characteristic.HomekitCharacteristic<?>> entry : characteristicMap
+                        .entrySet()) {
                     @Nullable
                     HomekitCharacteristic<?> entryValue = entry.getValue();
                     if (entryValue != null && entryValue == characteristic) {
@@ -1062,8 +1068,8 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
         }
     }
 
-    protected void handleChannelStateTransition(Channel channel, HomekitCharacteristic<?> characteristic, JsonValue newValue,
-            ThingStatus oldStatus, ThingStatus newStatus) {
+    protected void handleChannelStateTransition(Channel channel, HomekitCharacteristic<?> characteristic,
+            JsonValue newValue, ThingStatus oldStatus, ThingStatus newStatus) {
         try {
             if (channel == null || characteristic == null) {
                 return;
@@ -1099,7 +1105,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
             }
 
             ChannelTypeUID newChannelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
-                    characteristic.getInstanceType());
+                    characteristic.getType());
 
             // Check if channel type has changed
             ChannelTypeUID channelTypeUID = channel.getChannelTypeUID();
@@ -1122,14 +1128,15 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
                 }
             }
         } catch (Exception e) {
-            logger.warn("{}Warning - Type: Channel, HomekitMessage: Failed to handle channel type change: {}", LOG_PREFIX,
-                    e.getMessage());
+            logger.warn("{}Warning - Type: Channel, HomekitMessage: Failed to handle channel type change: {}",
+                    LOG_PREFIX, e.getMessage());
         }
     }
 
     private @Nullable Channel findChannelForCharacteristic(HomekitCharacteristic<?> characteristic) {
         synchronized (characteristicMapLock) {
-            for (Map.Entry<Channel, org.openhab.io.homekit.api.characteristic.HomekitCharacteristic<?>> entry : characteristicMap.entrySet()) {
+            for (Map.Entry<Channel, org.openhab.io.homekit.api.characteristic.HomekitCharacteristic<?>> entry : characteristicMap
+                    .entrySet()) {
                 @Nullable
                 HomekitCharacteristic<?> entryValue = entry.getValue();
                 if (entryValue != null && entryValue == characteristic) {
@@ -1447,8 +1454,9 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
             // HomekitService subscriptions
             for (HomekitService foundService : foundAccessory.getServices()) {
                 if (foundService != null && foundService.getUID() != null) {
-                    eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED,
-                            foundService.getUID(), thing.getUID(), event -> onAccessoryEvent((HomekitAccessoryEvent) event)));
+                    eventSubscriptions
+                            .add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED, foundService.getUID(),
+                                    thing.getUID(), event -> onAccessoryEvent((HomekitAccessoryEvent) event)));
 
                     for (HomekitCharacteristic<?> foundCharacteristic : foundService.getCharacteristics()) {
                         if (foundCharacteristic != null && foundCharacteristic.getUID() != null) {

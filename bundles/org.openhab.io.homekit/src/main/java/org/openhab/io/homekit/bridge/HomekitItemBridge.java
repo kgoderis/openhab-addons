@@ -41,13 +41,13 @@ import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.api.service.HomekitService;
+import org.openhab.io.homekit.core.accessory.AbstractHomekitAccessory;
 import org.openhab.io.homekit.core.accessory.HomekitAccessoryRegistryImpl;
-import org.openhab.io.homekit.core.accessory.HomekitBaseAccessory;
-import org.openhab.io.homekit.core.characteristic.HomekitBaseCharacteristic;
+import org.openhab.io.homekit.core.characteristic.AbstractHomekitCharacteristic;
+import org.openhab.io.homekit.event.core.HomekitEventMetadata;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicChangedEvent;
 import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicUpdateEvent;
-import org.openhab.io.homekit.event.core.HomekitEventMetadata;
 import org.openhab.io.homekit.event.util.HomekitPeerGroupUID;
 import org.openhab.io.homekit.util.HomekitUID;
 import org.osgi.service.component.annotations.Activate;
@@ -169,7 +169,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     @Activate
     public HomekitItemBridge(@Reference ItemRegistry itemRegistry, @Reference EventPublisher eventPublisher,
             @Reference HomekitAccessoryRegistryImpl accessoryRegistry, @Reference MetadataRegistry metadataRegistry,
-            @Reference HomekitAccessoryServerRegistry accessoryServerRegistry, @Reference HomekitEventManager eventManager) {
+            @Reference HomekitAccessoryServerRegistry accessoryServerRegistry,
+            @Reference HomekitEventManager eventManager) {
         this.itemRegistry = itemRegistry;
         this.eventPublisher = eventPublisher;
         this.accessoryRegistry = accessoryRegistry;
@@ -515,10 +516,10 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
             Map<String, Item> characteristicItems = getCharacteristicTypeItemMap(taggedItem);
 
             if (primaryAccessory != null) {
-                HomekitAccessory accessory = new HomekitBaseAccessory(eventManager, homekitFactories);
+                HomekitAccessory accessory = new AbstractHomekitAccessory(eventManager, homekitFactories);
                 accessory.assignToServer(server);
-                Optional<HomekitService> primaryService = createPrimaryService(serviceFactory, primaryAccessory, accessory,
-                        taggedItem);
+                Optional<HomekitService> primaryService = createPrimaryService(serviceFactory, primaryAccessory,
+                        accessory, taggedItem);
                 if (primaryService.isPresent()) {
                     accessory.addService(primaryService.get());
                     addCharacteristics(primaryService.get(), characteristicItems, accessory);
@@ -545,8 +546,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      * @return The created service, or empty if creation failed
      */
     @SuppressWarnings("null")
-    private Optional<HomekitService> createPrimaryService(HomekitFactory serviceFactory, HomekitTaggedItem primaryAccessory,
-            HomekitAccessory accessory, HomekitTaggedItem taggedItem) {
+    private Optional<HomekitService> createPrimaryService(HomekitFactory serviceFactory,
+            HomekitTaggedItem primaryAccessory, HomekitAccessory accessory, HomekitTaggedItem taggedItem) {
         logger.trace("{}Entering createPrimaryService", LOG_TRACE);
 
         try {
@@ -571,7 +572,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      * @param characteristicItems Map of characteristic types to items
      * @param accessory The accessory containing the service
      */
-    private void addCharacteristics(HomekitService service, Map<String, Item> characteristicItems, HomekitAccessory accessory) {
+    private void addCharacteristics(HomekitService service, Map<String, Item> characteristicItems,
+            HomekitAccessory accessory) {
         for (Map.Entry<String, Item> entry : characteristicItems.entrySet()) {
             @Nullable
             String characteristicType = entry.getKey();
@@ -597,8 +599,9 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      */
     private boolean shouldAddCharacteristic(HomekitService primaryService, String characteristicType,
             Optional<HomekitFactory> compatibleFactory) {
-        return primaryService.isExtensible() && !primaryService.getCharacteristics().stream()
-                .anyMatch(c -> c.getInstanceType().equals(characteristicType)) && compatibleFactory.isPresent();
+        return primaryService.isExtensible()
+                && !primaryService.getCharacteristics().stream().anyMatch(c -> c.getType().equals(characteristicType))
+                && compatibleFactory.isPresent();
     }
 
     /**
@@ -610,12 +613,12 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      * @param accessory The accessory containing the service
      * @param characteristicFactory The factory to create the characteristic
      */
-    private void addCharacteristicToService(HomekitService service, String characteristicType, Item item, HomekitAccessory accessory,
-            HomekitFactory characteristicFactory) {
+    private void addCharacteristicToService(HomekitService service, String characteristicType, Item item,
+            HomekitAccessory accessory, HomekitFactory characteristicFactory) {
         try {
             logger.debug("{}Adding characteristic {} to service", LOG_DEBUG, characteristicType);
-            HomekitCharacteristic<?> characteristic = characteristicFactory.createCharacteristic(characteristicType, service,
-                    accessory.getNextAvailableInstanceId());
+            HomekitCharacteristic<?> characteristic = characteristicFactory.createCharacteristic(characteristicType,
+                    service, accessory.getNextAvailableInstanceId());
             if (characteristic != null) {
                 service.addCharacteristic(characteristic);
                 addCharacteristic(item.getName(), characteristic);
@@ -634,7 +637,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      * @param item The item associated with the characteristic
      */
     private void subscribeToEvents(HomekitCharacteristic<?> characteristic, Item item) {
-        if (!(characteristic instanceof HomekitBaseCharacteristic<?> genericCharacteristic)) {
+        if (!(characteristic instanceof AbstractHomekitCharacteristic<?> genericCharacteristic)) {
             return;
         }
         eventManager.subscribe(HomekitEventType.CHARACTERISTIC_VALUE_CHANGED, genericCharacteristic.getUID(), bridgeUID,
@@ -655,7 +658,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
             return;
         }
 
-        HomekitCharacteristic<?> eventCharacteristic = ((HomekitCharacteristicChangedEvent) event).getCharacteristic().get();
+        HomekitCharacteristic<?> eventCharacteristic = ((HomekitCharacteristicChangedEvent) event).getCharacteristic()
+                .get();
         State newState = eventCharacteristic.toState(((HomekitCharacteristicChangedEvent) event).getNewValue().get());
         if (newState != null) {
             // Store the exit event
@@ -842,7 +846,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                         eventManager.publishEvent(newEvent);
                     }
                 } catch (Exception e) {
-                    logger.error(ERROR_UPDATING_CHARACTERISTIC, c.getInstanceType(), e.getMessage(), e);
+                    logger.error(ERROR_UPDATING_CHARACTERISTIC, c.getType(), e.getMessage(), e);
                 }
             });
         }
@@ -869,7 +873,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                             eventManager.publishEvent(newEvent);
                         });
                     } catch (Exception e) {
-                        logger.error(ERROR_UPDATING_CHARACTERISTIC, c.getInstanceType(), e.getMessage(), e);
+                        logger.error(ERROR_UPDATING_CHARACTERISTIC, c.getType(), e.getMessage(), e);
                     }
                 }));
     }

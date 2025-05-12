@@ -1,13 +1,11 @@
 package org.openhab.io.homekit.library.service;
 
-import java.util.Collection;
-
 import javax.json.JsonValue;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
-import org.openhab.io.homekit.api.factory.HomekitFactory;
-import org.openhab.io.homekit.core.service.HomekitBaseService;
+import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
+import org.openhab.io.homekit.api.service.HomekitServiceType;
+import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.library.characteristic.HomekitCurrentHeatingCoolingStateCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitCurrentTemperatureCharacteristic;
@@ -15,43 +13,55 @@ import org.openhab.io.homekit.library.characteristic.HomekitTargetHeatingCooling
 import org.openhab.io.homekit.library.characteristic.HomekitTargetTemperatureCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitTemperatureDisplayUnitsCharacteristic;
 
-public class HomekitThermostatService extends HomekitBaseService {
-    private static final String TYPE = "0000004A-0000-1000-8000-0026BB765291";
+/**
+ * Service that represents a thermostat in HomeKit.
+ * This service provides control over heating and cooling systems.
+ */
+@HomekitServiceType(type = "0000004A-0000-1000-8000-0026BB765291", name = "Thermostat", tag = "Thermostat")
+public class HomekitThermostatService extends AbstractHomekitService {
 
-    public HomekitThermostatService(HomekitAccessory accessory, long instanceId, boolean extend, @NonNull String serviceName, HomekitEventManager eventManager, Collection<HomekitFactory> factories)
-           {
-        super(accessory, instanceId, extend, serviceName, TYPE, eventManager, factories);
+    /**
+     * Creates a new HomekitThermostatService.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     */
+    public HomekitThermostatService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory) {
+        super(accessory, eventManager, characteristicFactory);
     }
 
-    public HomekitThermostatService(HomekitAccessory accessory, JsonValue value, String name, HomekitEventManager eventManager, Collection<HomekitFactory> factories) {
-        super(accessory, value, name, eventManager, factories);
+    /**
+     * Creates a new HomekitThermostatService from a JSON value.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @param value JSON value containing service configuration
+     */
+    public HomekitThermostatService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
+        super(accessory, eventManager, characteristicFactory, value);
     }
 
     @Override
     public void addCharacteristics() {
         super.addCharacteristics();
         addCharacteristic(new HomekitCurrentHeatingCoolingStateCharacteristic(this,
-                ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
+                getAccessory().getNextAvailableInstanceId(), eventManager));
         addCharacteristic(new HomekitTargetHeatingCoolingStateCharacteristic(this,
-                ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
-        addCharacteristic(new HomekitCurrentTemperatureCharacteristic(this,
-                ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
-        addCharacteristic(new HomekitTargetTemperatureCharacteristic(this,
-                ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
+                getAccessory().getNextAvailableInstanceId(), eventManager));
+        addCharacteristic(new HomekitCurrentTemperatureCharacteristic(this, getAccessory().getNextAvailableInstanceId(),
+                eventManager));
+        addCharacteristic(new HomekitTargetTemperatureCharacteristic(this, getAccessory().getNextAvailableInstanceId(),
+                eventManager));
         addCharacteristic(new HomekitTemperatureDisplayUnitsCharacteristic(this,
-                ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
+                getAccessory().getNextAvailableInstanceId(), eventManager));
     }
 
     @Override
     public boolean isExtensible() {
         return false;
-    }
-
-    public static String getType() {
-        return TYPE;
-    }
-
-    public static String getTag() {
-        return HomekitThermostatService.class.getSimpleName().replace("HomekitService", "");
     }
 }

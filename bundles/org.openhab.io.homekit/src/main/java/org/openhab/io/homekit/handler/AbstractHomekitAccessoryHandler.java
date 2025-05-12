@@ -151,20 +151,20 @@ package org.openhab.io.homekit.handler;
 // }
 
 // if (associatedChannel == null) {
-// HomekitFactory factory = getHomekitFactory(characteristic.getInstanceType());
+// HomekitFactory factory = getHomekitFactory(characteristic.getType());
 
 // if (factory != null) {
 // String acceptedType = factory
-// .getCharacteristicAcceptedItemType(characteristic.getInstanceType());
-// ChannelTypeUID channelTypeUID = factory.getChannelTypeUID(characteristic.getInstanceType());
+// .getCharacteristicAcceptedItemType(characteristic.getType());
+// ChannelTypeUID channelTypeUID = factory.getChannelTypeUID(characteristic.getType());
 
-// Class<? extends HomekitService> serviceClass = factory.getService(service.getInstanceType());
+// Class<? extends HomekitService> serviceClass = factory.getService(service.getType());
 // if (serviceClass == null) {
 // serviceClass = service.getClass();
 // }
 
 // Class<? extends HomekitCharacteristic> characteristicClass = factory
-// .getCharacteristic(characteristic.getInstanceType());
+// .getCharacteristic(characteristic.getType());
 // if (characteristicClass == null) {
 // characteristicClass = characteristic.getClass();
 // }
@@ -177,48 +177,51 @@ package org.openhab.io.homekit.handler;
 // channels.removeIf(c -> c.getUID().getId().equals(channel.getUID().getId()));
 // channels.add(channel);
 // logger.info(
-// "'{}' : HomekitAccessory/HomekitService/HomekitCharacteristic {}/{}/{} of type {}/{} ({}/{}) is associated with Channel {}",
+// "'{}' : HomekitAccessory/HomekitService/HomekitCharacteristic {}/{}/{} of type {}/{} ({}/{}) is associated with
+// Channel {}",
 // getThing().getUID(), accessory.getAccessoryId(), service.getInstanceId(),
 // characteristic.getInstanceId(), serviceClass.getSimpleName(),
 // characteristicClass.getSimpleName(),
-// service.getInstanceType().replaceAll("^0*([0-9a-fA-F]+)-0000-1000-8000-0026BB765291$",
+// service.getType().replaceAll("^0*([0-9a-fA-F]+)-0000-1000-8000-0026BB765291$",
 // "$1"),
-// characteristic.getInstanceType().replaceAll(
+// characteristic.getType().replaceAll(
 // "^0*([0-9a-fA-F]+)-0000-1000-8000-0026BB765291$", "$1"),
 // channel.getUID());
 // } else {
 // logger.warn(
-// "'{}' : HomekitAccessory/HomekitService/HomekitCharacteristic {}/{}/{} of type {}/{} is not supported by any Homekit Factory",
+// "'{}' : HomekitAccessory/HomekitService/HomekitCharacteristic {}/{}/{} of type {}/{} is not supported by any Homekit
+// Factory",
 // getThing().getUID(), accessory.getAccessoryId(), service.getInstanceId(),
 // characteristic.getInstanceId(),
-// service.getInstanceType().replaceAll("^0*([0-9a-fA-F]+)-0000-1000-8000-0026BB765291$",
+// service.getType().replaceAll("^0*([0-9a-fA-F]+)-0000-1000-8000-0026BB765291$",
 // "$1"),
-// characteristic.getInstanceType()
+// characteristic.getType()
 // .replaceAll("^0*([0-9a-fA-F]+)-0000-1000-8000-0026BB765291$", "$1"));
 // }
 // } else {
-// HomekitFactory factory = getHomekitFactory(characteristic.getInstanceType());
+// HomekitFactory factory = getHomekitFactory(characteristic.getType());
 // if (factory != null) {
 
-// Class<? extends HomekitService> serviceClass = factory.getService(service.getInstanceType());
+// Class<? extends HomekitService> serviceClass = factory.getService(service.getType());
 // if (serviceClass == null) {
 // serviceClass = service.getClass();
 // }
 
 // Class<? extends HomekitCharacteristic> characteristicClass = factory
-// .getCharacteristic(characteristic.getInstanceType());
+// .getCharacteristic(characteristic.getType());
 // if (characteristicClass == null) {
 // characteristicClass = characteristic.getClass();
 // }
 
 // logger.warn(
-// "'{}' : HomekitAccessory/HomekitService/HomekitCharacteristic {}/{}/{} of type {}/{} ({}/{}) is already associated with Channel {}",
+// "'{}' : HomekitAccessory/HomekitService/HomekitCharacteristic {}/{}/{} of type {}/{} ({}/{}) is already associated
+// with Channel {}",
 // getThing().getUID(), accessory.getAccessoryId(), service.getInstanceId(),
 // characteristic.getInstanceId(), serviceClass.getSimpleName(),
 // characteristicClass.getSimpleName(),
-// service.getInstanceType().replaceAll("^0*([0-9a-fA-F]+)-0000-1000-8000-0026BB765291$",
+// service.getType().replaceAll("^0*([0-9a-fA-F]+)-0000-1000-8000-0026BB765291$",
 // "$1"),
-// characteristic.getInstanceType()
+// characteristic.getType()
 // .replaceAll("^0*([0-9a-fA-F]+)-0000-1000-8000-0026BB765291$", "$1"),
 // associatedChannel.getUID());
 // }

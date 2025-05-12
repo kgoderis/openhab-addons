@@ -57,7 +57,8 @@ public class HomekitDebouncer {
      *            for testing purposes
      * @param action The action to invoke
      */
-    public HomekitDebouncer(String name, ScheduledExecutorService scheduler, Duration delay, Clock clock, Runnable action) {
+    public HomekitDebouncer(String name, ScheduledExecutorService scheduler, Duration delay, Clock clock,
+            Runnable action) {
         this.name = name;
         this.scheduler = scheduler;
         this.action = action;

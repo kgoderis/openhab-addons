@@ -14,7 +14,8 @@ public class HomekitSubscriptionAddedEvent extends AbstractHomekitEvent {
     private final HomekitEventSubscription subscription;
 
     public HomekitSubscriptionAddedEvent(HomekitEventSubscription subscription) {
-        super(HomekitEventType.SUBSCRIPTION_ADDED, subscription.getPublisherUID(), WILDCARD_UID, new HomekitEventMetadata(subscription.getPublisherUID(), null, null, Collections.emptySet()));
+        super(HomekitEventType.SUBSCRIPTION_ADDED, subscription.getPublisherUID(), WILDCARD_UID,
+                new HomekitEventMetadata(subscription.getPublisherUID(), null, null, Collections.emptySet()));
         this.subscription = subscription;
     }
 
@@ -29,7 +30,7 @@ public class HomekitSubscriptionAddedEvent extends AbstractHomekitEvent {
 
     @Override
     public String toString() {
-        return "HomekitSubscriptionAddedEvent{" + "subscription=" + subscription + ", type=" + getType() + ", timestamp="
-                + getTimestamp() + '}';
+        return "HomekitSubscriptionAddedEvent{" + "subscription=" + subscription + ", type=" + getType()
+                + ", timestamp=" + getTimestamp() + '}';
     }
 }

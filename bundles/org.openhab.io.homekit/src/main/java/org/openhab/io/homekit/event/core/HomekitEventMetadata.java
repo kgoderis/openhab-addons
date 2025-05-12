@@ -182,7 +182,7 @@ public class HomekitEventMetadata {
         this.hopCount = 0;
         this.timestamp = System.currentTimeMillis();
         this.eventHistory.add(this.eventId);
-        this.publisherHistory.add(publisherUid);  // Add initial publisher
+        this.publisherHistory.add(publisherUid); // Add initial publisher
         this.correlationId = correlationId;
         this.correlationTimestamp = System.currentTimeMillis();
         if (correlationId != null) {
@@ -208,9 +208,9 @@ public class HomekitEventMetadata {
         this.hopCount = original.hopCount + 1;
         this.timestamp = original.timestamp;
         this.eventHistory.addAll(original.eventHistory);
-        this.publisherHistory.addAll(original.publisherHistory);  // Copy publisher history
+        this.publisherHistory.addAll(original.publisherHistory); // Copy publisher history
         if (immediateOrigin != null) {
-            this.publisherHistory.add(immediateOrigin);  // Add new publisher
+            this.publisherHistory.add(immediateOrigin); // Add new publisher
         }
         this.correlationId = original.correlationId;
         this.correlationTimestamp = original.correlationTimestamp;

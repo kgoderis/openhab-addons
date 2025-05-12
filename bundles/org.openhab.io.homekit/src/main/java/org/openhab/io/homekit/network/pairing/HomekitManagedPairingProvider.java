@@ -23,15 +23,16 @@ import org.osgi.service.component.annotations.Reference;
  **/
 @NonNullByDefault
 @Component(immediate = true, service = { HomekitPairingProvider.class, HomekitManagedPairingProvider.class })
-public class HomekitManagedPairingProvider extends AbstractManagedProvider<HomekitPairing, HomekitPairingUID, HomekitPairing>
-        implements HomekitPairingProvider {
+public class HomekitManagedPairingProvider extends
+        AbstractManagedProvider<HomekitPairing, HomekitPairingUID, HomekitPairing> implements HomekitPairingProvider {
 
     private static final String HOMEKIT_MANAGED_PAIRING_PROVIDER = "homekit.managedPairingProvider";
 
     private final ReadyService readyService;
 
     @Activate
-    public HomekitManagedPairingProvider(@Reference StorageService storageService, @Reference ReadyService readyService) {
+    public HomekitManagedPairingProvider(@Reference StorageService storageService,
+            @Reference ReadyService readyService) {
         super(storageService);
         this.readyService = readyService;
 

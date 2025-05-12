@@ -53,7 +53,8 @@ package org.openhab.io.homekit.network.discovery;
 // private final HomekitAccessoryServerRegistry accessoryServerRegistry;
 
 // @Activate
-// public AccessoryServerDiscoveryParticipant(@Reference HomekitManagedAccessoryServerProvider managedAccessoryServerProvider,
+// public AccessoryServerDiscoveryParticipant(@Reference HomekitManagedAccessoryServerProvider
+// managedAccessoryServerProvider,
 // @Reference NetworkAddressService networkAddressService,
 // @Reference HomekitAccessoryServerRegistry accessoryServerRegistry) {
 // this.managedAccessoryServerProvider = managedAccessoryServerProvider;

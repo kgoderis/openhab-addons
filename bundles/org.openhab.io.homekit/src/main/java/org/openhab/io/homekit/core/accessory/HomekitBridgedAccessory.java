@@ -147,7 +147,8 @@ public class HomekitBridgedAccessory implements HomekitAccessory {
     @Override
     public void assignToServer(HomekitAccessoryServer server) throws HomekitAccessoryOperationException {
         if (server != localServer) {
-            throw new HomekitAccessoryOperationException("HomekitBridgedAccessory can only be assigned to its local server");
+            throw new HomekitAccessoryOperationException(
+                    "HomekitBridgedAccessory can only be assigned to its local server");
         }
         if (accessoryId != null) {
             throw new HomekitAccessoryOperationException("HomekitBridgedAccessory is already assigned to a server");

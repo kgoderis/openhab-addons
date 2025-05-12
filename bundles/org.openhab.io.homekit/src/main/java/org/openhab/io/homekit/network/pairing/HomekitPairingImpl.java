@@ -17,7 +17,8 @@ public class HomekitPairingImpl implements HomekitPairing {
         this.destinationLongtermPublicKey = "";
     }
 
-    public HomekitPairingImpl(byte[] sourcePairingId, byte[] destinationPairingId, byte[] destinationLongtermPublicKey) {
+    public HomekitPairingImpl(byte[] sourcePairingId, byte[] destinationPairingId,
+            byte[] destinationLongtermPublicKey) {
         this.sourcePairingId = Base64.getEncoder().encodeToString(sourcePairingId);
         this.destinationPairingId = Base64.getEncoder().encodeToString(destinationPairingId);
         this.destinationLongtermPublicKey = Base64.getEncoder().encodeToString(destinationLongtermPublicKey);

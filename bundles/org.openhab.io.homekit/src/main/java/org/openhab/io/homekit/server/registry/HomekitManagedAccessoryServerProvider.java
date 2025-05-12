@@ -45,8 +45,8 @@ import org.slf4j.LoggerFactory;
 @NonNullByDefault
 @Component(immediate = true, service = { HomekitAccessoryServerProvider.class,
         HomekitManagedAccessoryServerProvider.class }, configurationPid = "org.openhab.homekit")
-public class HomekitManagedAccessoryServerProvider
-        extends AbstractManagedProvider<HomekitAccessoryServer, HomekitAccessoryServerUID, HomekitPersistedAccessoryServer>
+public class HomekitManagedAccessoryServerProvider extends
+        AbstractManagedProvider<HomekitAccessoryServer, HomekitAccessoryServerUID, HomekitPersistedAccessoryServer>
         implements HomekitAccessoryServerProvider {
 
     private final Logger logger = LoggerFactory.getLogger(HomekitManagedAccessoryServerProvider.class);

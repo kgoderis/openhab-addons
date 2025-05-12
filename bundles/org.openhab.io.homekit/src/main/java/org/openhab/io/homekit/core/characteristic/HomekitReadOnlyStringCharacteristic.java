@@ -20,17 +20,19 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  */
 @NonNullByDefault
-public abstract class HomekitReadOnlyStringCharacteristic extends HomekitBaseCharacteristic<String> {
+public abstract class HomekitReadOnlyStringCharacteristic extends AbstractHomekitCharacteristic<String> {
 
     private static final int MAX_LEN = 255;
 
-    public HomekitReadOnlyStringCharacteristic(HomekitService service, long instanceId, String description, String type, HomekitEventManager eventManager) {
-        super(service, instanceId, "string", false, true, false, description, type, eventManager);
+    public HomekitReadOnlyStringCharacteristic(HomekitService service, HomekitEventManager eventManager) {
+        super(service, eventManager);
+        withFormat("string").withPairedWrite(false).withPairedRead(true).withEvents(false);
         initializeValue();
     }
 
-    public HomekitReadOnlyStringCharacteristic(HomekitService service, JsonValue value, HomekitEventManager eventManager) {
-        super(service, value, eventManager);
+    public HomekitReadOnlyStringCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
+        super(service, eventManager, value);
         initializeValue();
     }
 

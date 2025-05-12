@@ -47,7 +47,8 @@ package org.openhab.io.homekit.handler;
 // import org.slf4j.LoggerFactory;
 
 // @NonNullByDefault
-// public class HomekitOldAccessoryThingHandler extends BaseThingHandler implements HomekitAccessoryServerChangeListener,
+// public class HomekitOldAccessoryThingHandler extends BaseThingHandler implements
+// HomekitAccessoryServerChangeListener,
 // ServiceChangeListener, HomekitAccessoryChangeListener, HomekitCharacteristicChangeListener {
 // private final Logger logger = LoggerFactory.getLogger(OldAccessoryThingHandler.class);
 // private final HomekitAccessoryServerRegistry serverRegistry;
@@ -308,7 +309,7 @@ package org.openhab.io.homekit.handler;
 // ChannelUID channelUID = new ChannelUID(thing.getUID(), characteristic.getUID().getHomekitId());
 
 // ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
-// characteristic.getInstanceType());
+// characteristic.getType());
 // // TODO : Check consistency of channelTypeUID throughout the solution
 
 // ChannelType channelType = homekitChannelTypeProvider.getChannelType(channelTypeUID, null);
@@ -349,7 +350,8 @@ package org.openhab.io.homekit.handler;
 // }
 // }
 
-// private <T> void handleCharacteristicCommand(HomekitCharacteristic<T> characteristic, Command command) throws Exception {
+// private <T> void handleCharacteristicCommand(HomekitCharacteristic<T> characteristic, Command command) throws
+// Exception {
 // if (command instanceof State) {
 // @SuppressWarnings("unchecked")
 // T value = (T) command;
@@ -360,10 +362,10 @@ package org.openhab.io.homekit.handler;
 // private void addChannelGroupForService(HomekitService service) {
 // logger.info("Adding channel group for service: {}", service.getUID());
 // try {
-// String groupId = homekitThingTypeProvider.getServiceTag(service.getInstanceType()) + "."
+// String groupId = homekitThingTypeProvider.getServiceTag(service.getType()) + "."
 // + service.getInstanceId();
 // ChannelGroupTypeUID channelGroupTypeUID = homekitChannelGroupTypeProvider
-// .getChannelGroupTypeUID(service.getInstanceType());
+// .getChannelGroupTypeUID(service.getType());
 
 // // Create a list to hold all channels for this group
 // List<Channel> channels = new ArrayList<>();
@@ -371,9 +373,9 @@ package org.openhab.io.homekit.handler;
 // // Add channels for each characteristic
 // for (HomekitCharacteristic<?> characteristic : service.getCharacteristics()) {
 // ChannelUID channelUID = new ChannelUID(thing.getUID(), groupId,
-// homekitChannelTypeProvider.getCharacteristicTag(characteristic.getInstanceType()));
+// homekitChannelTypeProvider.getCharacteristicTag(characteristic.getType()));
 // ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
-// characteristic.getInstanceType());
+// characteristic.getType());
 
 // ChannelType channelType = homekitChannelTypeProvider.getChannelType(channelTypeUID, null);
 // if (channelType == null) {

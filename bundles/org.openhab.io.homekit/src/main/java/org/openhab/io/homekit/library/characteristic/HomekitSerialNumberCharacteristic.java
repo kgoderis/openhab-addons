@@ -6,29 +6,25 @@ import javax.json.JsonValue;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
+import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitReadOnlyStringCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 @NonNullByDefault
+@HomekitCharacteristicType(type = "00000030-0000-1000-8000-0026BB765291", name = "Serial Number", tag = "serialNumber")
 public class HomekitSerialNumberCharacteristic extends HomekitReadOnlyStringCharacteristic {
 
-    private static final String TYPE = "00000030-0000-1000-8000-0026BB765291";
-
-    public HomekitSerialNumberCharacteristic(HomekitService service, long instanceId, HomekitEventManager eventManager) {
-        super(service, instanceId, "Serial Number", TYPE, eventManager);
+    public HomekitSerialNumberCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
+        super(service, eventManager);
+        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(false)
+                .withDescription("Serial Number");
     }
 
-    public HomekitSerialNumberCharacteristic(HomekitService service, JsonValue value, HomekitEventManager eventManager) {
-        super(service, value, eventManager);
-    }
-
-    public static String getType() {
-        return TYPE;
-    }
-
-    public static String getTag() {
-        return HomekitSerialNumberCharacteristic.class.getSimpleName().replace("HomekitCharacteristic", "");
+    public HomekitSerialNumberCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
+        super(service, eventManager, value);
     }
 
     @Override

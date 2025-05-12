@@ -1,0 +1,42 @@
+package org.openhab.io.homekit.library.characteristic;
+
+import javax.json.JsonValue;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
+import org.openhab.io.homekit.api.service.HomekitService;
+import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
+import org.openhab.io.homekit.event.manager.HomekitEventManager;
+
+/**
+ * HomeKit Firmware Update Status Characteristic.
+ * This characteristic represents the status of a firmware update.
+ *
+ * @see <a href="https://developers.homebridge.io/#/characteristic/FirmwareUpdateStatus">HomeKit Documentation</a>
+ */
+@HomekitCharacteristicType(type = "00000235-0000-1000-8000-0026BB765291", name = "Firmware Update Status", tag = "firmwareUpdateStatus")
+@NonNullByDefault
+public class HomekitFirmwareUpdateStatusCharacteristic extends HomekitEnumCharacteristic {
+    public static final int IDLE = 0;
+    public static final int DOWNLOADING = 1;
+    public static final int INSTALLING = 2;
+    public static final int SUCCESS = 3;
+    public static final int FAILED = 4;
+
+    public HomekitFirmwareUpdateStatusCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+        super(service, eventManager, 4);
+        withInstanceId(instanceId)
+            .withPairedRead(true)
+            .withPairedWrite(false)
+            .withEvents(true)
+            .withDescription("Firmware Update Status");
+    }
+
+    public HomekitFirmwareUpdateStatusCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+        super(service, eventManager, value);
+    }
+
+    @Override
+    public boolean isAllowedValue(Integer value) {
+        return value != null && value >= IDLE && value <= FAILED;
+    }
+} 

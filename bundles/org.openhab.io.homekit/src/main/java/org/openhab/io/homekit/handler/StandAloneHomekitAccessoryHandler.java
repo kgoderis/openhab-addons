@@ -38,7 +38,8 @@ package org.openhab.io.homekit.handler;
 // private final HomekitPairingRegistry pairingRegistry;
 // // private Collection<HomekitFactory> homekitFactories = new CopyOnWriteArrayList<>();
 
-// public StandAloneHomekitAccessoryHandler(Thing thing, HomekitPairingRegistry pairingRegistry, BundleContext context) {
+// public StandAloneHomekitAccessoryHandler(Thing thing, HomekitPairingRegistry pairingRegistry, BundleContext context)
+// {
 // super(thing, context);
 // this.pairingRegistry = pairingRegistry;
 // }
@@ -188,7 +189,8 @@ package org.openhab.io.homekit.handler;
 // @Override
 // public void pair(String setupCode) {
 // if (homekitClient != null) {
-// logger.info("'{}' : HomekitPairing the Homekit HomekitAccessory using Setup Code {}", getThing().getUID(), setupCode);
+// logger.info("'{}' : HomekitPairing the Homekit HomekitAccessory using Setup Code {}", getThing().getUID(),
+// setupCode);
 
 // Configuration config = editConfiguration();
 // config.put(HomekitAccessoryConfiguration.SETUP_CODE, setupCode);

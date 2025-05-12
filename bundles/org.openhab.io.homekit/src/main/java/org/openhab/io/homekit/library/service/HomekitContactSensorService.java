@@ -1,57 +1,55 @@
 package org.openhab.io.homekit.library.service;
 
-import java.util.Collection;
-
 import javax.json.JsonValue;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
-import org.openhab.io.homekit.api.factory.HomekitFactory;
-import org.openhab.io.homekit.core.service.HomekitBaseService;
+import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
+import org.openhab.io.homekit.api.service.HomekitServiceType;
+import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import org.openhab.io.homekit.library.characteristic.HomekitContactSensorStateCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitStatusActiveCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitStatusFaultCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitStatusLowBatteryCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitStatusTamperedCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitContactStateCharacteristic;
 
-public class HomekitContactSensorService extends HomekitBaseService {
-    private static final String TYPE = "00000080-0000-1000-8000-0026BB765291";
+/**
+ * Service that represents a contact sensor in HomeKit.
+ * This service provides control over contact sensors and similar devices.
+ */
+@HomekitServiceType(type = "00000080-0000-1000-8000-0026BB765291", name = "ContactSensor", tag = "ContactSensor")
+public class HomekitContactSensorService extends AbstractHomekitService {
 
-    public HomekitContactSensorService(HomekitAccessory accessory, long instanceId, boolean extend, @NonNull String serviceName, HomekitEventManager eventManager, Collection<HomekitFactory> factories)
-            {
-        super(accessory, instanceId, extend, serviceName, TYPE, eventManager, factories);
+    /**
+     * Creates a new HomekitContactSensorService.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     */
+    public HomekitContactSensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory) {
+        super(accessory, eventManager, characteristicFactory);
     }
 
-    public HomekitContactSensorService(HomekitAccessory accessory, JsonValue value, String name, HomekitEventManager eventManager, Collection<HomekitFactory> factories) {
-        super(accessory, value, name, eventManager, factories);
+    /**
+     * Creates a new HomekitContactSensorService from a JSON value.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @param value JSON value containing service configuration
+     */
+    public HomekitContactSensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
+        super(accessory, eventManager, characteristicFactory, value);
     }
 
     @Override
     public void addCharacteristics() {
         super.addCharacteristics();
-        addCharacteristic(new HomekitContactSensorStateCharacteristic(this,
-                ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
-        addCharacteristic(new HomekitStatusActiveCharacteristic(this,
-                ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
-        addCharacteristic(new HomekitStatusFaultCharacteristic(this, ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(),
-                eventManager));
-        addCharacteristic(new HomekitStatusTamperedCharacteristic(this,
-                ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
-        addCharacteristic(new HomekitStatusLowBatteryCharacteristic(this,
-                ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
+        addCharacteristic(
+                new HomekitContactStateCharacteristic(this, getAccessory().getNextAvailableInstanceId(), eventManager));
     }
 
     @Override
     public boolean isExtensible() {
         return false;
-    }
-
-    public static String getType() {
-        return TYPE;
-    }
-
-    public static String getTag() {
-        return HomekitContactSensorService.class.getSimpleName().replace("HomekitService", "");
     }
 }

@@ -15,7 +15,8 @@ public class HomekitUUID5 {
 
     public static final UUID NAMESPACE_HOMEKIT = UUID.fromString("00000000-1000-2000-8000-0026BB765291");
     public static final UUID NAMESPACE_OPENHAB = HomekitUUID5.fromNamespaceAndString(NAMESPACE_HOMEKIT, "openhab.org");
-    public static final UUID NAMESPACE_SERVICE = HomekitUUID5.fromNamespaceAndString(NAMESPACE_OPENHAB, "HomekitService");
+    public static final UUID NAMESPACE_SERVICE = HomekitUUID5.fromNamespaceAndString(NAMESPACE_OPENHAB,
+            "HomekitService");
     public static final UUID NAMESPACE_CHARACTERISTIC = HomekitUUID5.fromNamespaceAndString(NAMESPACE_OPENHAB,
             "HomekitCharacteristic");
 

@@ -23,7 +23,7 @@ import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.api.service.HomekitService;
-import org.openhab.io.homekit.core.accessory.HomekitBaseAccessory;
+import org.openhab.io.homekit.core.accessory.AbstractHomekitAccessory;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.exception.HomekitFactoryException;
 import org.openhab.io.homekit.exception.HomekitRegistrationException;
@@ -48,7 +48,8 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
     protected static final String ERROR_PREFIX = "Homekit Factory Error: ";
     protected static final String ERROR_METADATA_POPULATION = ERROR_PREFIX + "Failed to populate metadata: %s";
     protected static final String ERROR_SERVICE_METADATA = ERROR_PREFIX + "HomekitService metadata error: %s";
-    protected static final String ERROR_CHARACTERISTIC_METADATA = ERROR_PREFIX + "HomekitCharacteristic metadata error: %s";
+    protected static final String ERROR_CHARACTERISTIC_METADATA = ERROR_PREFIX
+            + "HomekitCharacteristic metadata error: %s";
     protected static final String ERROR_TYPE_LOOKUP = ERROR_PREFIX + "Type lookup error: %s";
 
     // 1. Metadata classes and mappers
@@ -127,7 +128,8 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
     protected abstract void initializeMappers() throws HomekitFactoryException;
 
     // 3. Metadata population methods
-    private void populateAccessoryMetadata(Class<? extends HomekitAccessory> accessoryClass) throws HomekitFactoryException {
+    private void populateAccessoryMetadata(Class<? extends HomekitAccessory> accessoryClass)
+            throws HomekitFactoryException {
         try {
             Method getLabelMethod = accessoryClass.getMethod("getLabel");
             String label = (String) getLabelMethod.invoke(null);
@@ -166,7 +168,8 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
             if (type == null || type.isEmpty()) {
                 logger.warn("{}HomekitService {} has empty or null type, using generated UUID", LOG_METADATA,
                         serviceClass.getSimpleName());
-                type = HomekitUUID5.fromNamespaceAndString(HomekitUUID5.NAMESPACE_SERVICE, serviceClass.getName()).toString();
+                type = HomekitUUID5.fromNamespaceAndString(HomekitUUID5.NAMESPACE_SERVICE, serviceClass.getName())
+                        .toString();
             }
 
             if (tag == null || tag.isEmpty()) {
@@ -179,8 +182,8 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
             logger.debug("{}Successfully populated metadata for service {}", LOG_METADATA,
                     serviceClass.getSimpleName());
         } catch (NoSuchMethodException e) {
-            String message = String.format("HomekitService %s is missing required methods: %s", serviceClass.getSimpleName(),
-                    e.getMessage());
+            String message = String.format("HomekitService %s is missing required methods: %s",
+                    serviceClass.getSimpleName(), e.getMessage());
             logger.error("{}{}", LOG_ERROR, message, e);
             throw new HomekitFactoryException(message, e);
         } catch (IllegalAccessException e) {
@@ -217,7 +220,8 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
             if (type == null || type.isEmpty()) {
                 logger.warn("{}HomekitCharacteristic {} has empty or null type, using generated UUID", LOG_METADATA,
                         characteristicClass.getSimpleName());
-                type = HomekitUUID5.fromNamespaceAndString(HomekitUUID5.NAMESPACE_CHARACTERISTIC, characteristicClass.getName())
+                type = HomekitUUID5
+                        .fromNamespaceAndString(HomekitUUID5.NAMESPACE_CHARACTERISTIC, characteristicClass.getName())
                         .toString();
             }
 
@@ -228,8 +232,8 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
             }
 
             if (acceptedItemType == null || acceptedItemType.isEmpty()) {
-                logger.warn("{}HomekitCharacteristic {} has empty or null accepted item type, using default", LOG_METADATA,
-                        characteristicClass.getSimpleName());
+                logger.warn("{}HomekitCharacteristic {} has empty or null accepted item type, using default",
+                        LOG_METADATA, characteristicClass.getSimpleName());
                 acceptedItemType = "default";
             }
 
@@ -273,7 +277,8 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
         logger.debug("{}HomekitAccessory metadata registered successfully", LOG_METADATA);
     }
 
-    protected void registerServiceMetadata(Class<? extends HomekitService> serviceClass, String serviceType, String tag) {
+    protected void registerServiceMetadata(Class<? extends HomekitService> serviceClass, String serviceType,
+            String tag) {
         logger.debug("{}Registering service metadata - Class: {}, Type: {}, Tag: {}", LOG_METADATA,
                 serviceClass.getSimpleName(), serviceType, tag);
         ServiceMetadata metadata = new ServiceMetadata(serviceClass, serviceType, tag);
@@ -410,7 +415,8 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
     // 5. HomekitCharacteristic-related methods
     @Override
     public void addCharacteristic(ChannelTypeUID channelTypeUID,
-            Class<@NonNull ? extends HomekitCharacteristic<?>> characteristicClass) throws HomekitRegistrationException {
+            Class<@NonNull ? extends HomekitCharacteristic<?>> characteristicClass)
+            throws HomekitRegistrationException {
         logger.debug("{}Adding characteristic to channel type - ChannelType: {}, CharacteristicClass: {}", LOG_REGISTRY,
                 channelTypeUID, characteristicClass.getSimpleName());
         try {
@@ -465,7 +471,8 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
 
     @Override
     public void addCharacteristic(String characteristicType,
-            Class<@NonNull ? extends HomekitCharacteristic<?>> characteristicClass) throws HomekitRegistrationException {
+            Class<@NonNull ? extends HomekitCharacteristic<?>> characteristicClass)
+            throws HomekitRegistrationException {
         if (!characteristicMetadataMapper.containsKey(characteristicType)) {
             try {
                 populateCharacteristicMetadata(characteristicClass);
@@ -522,20 +529,20 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
     }
 
     @Override
-    public @Nullable HomekitAccessory createAccessory(Class<? extends HomekitAccessory> accessoryClass, HomekitAccessoryServer server,
-            long instanceId) throws HomekitFactoryException {
+    public @Nullable HomekitAccessory createAccessory(Class<? extends HomekitAccessory> accessoryClass,
+            HomekitAccessoryServer server, long instanceId) throws HomekitFactoryException {
         logger.debug("{}Creating accessory - Class: {}, Server: {}, InstanceId: {}", LOG_REGISTRY,
                 accessoryClass.getSimpleName(), server, instanceId);
         try {
-            Constructor<? extends HomekitAccessory> constructor = accessoryClass.getConstructor(HomekitAccessoryServer.class,
-                    long.class);
+            Constructor<? extends HomekitAccessory> constructor = accessoryClass
+                    .getConstructor(HomekitAccessoryServer.class, long.class);
             if (constructor == null) {
                 throw new NoSuchMethodException("Constructor not found");
             }
             @Nullable
             HomekitAccessory accessory = constructor.newInstance(server, instanceId);
-            logger.debug("{}Created an HomekitAccessory {} of Type {}, with instanceId {}", LOG_REGISTRY, accessory.getUID(),
-                    accessory.getClass().getSimpleName(), accessory.getAccessoryId());
+            logger.debug("{}Created an HomekitAccessory {} of Type {}, with instanceId {}", LOG_REGISTRY,
+                    accessory.getUID(), accessory.getClass().getSimpleName(), accessory.getAccessoryId());
             return accessory;
         } catch (NoSuchMethodException e) {
             String message = String.format(
@@ -552,20 +559,20 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
     }
 
     @Override
-    public HomekitAccessory createAccessory(Class<? extends HomekitAccessory> accessoryClass, HomekitAccessoryServer server, long instanceId,
-            boolean extend) throws HomekitFactoryException {
+    public HomekitAccessory createAccessory(Class<? extends HomekitAccessory> accessoryClass,
+            HomekitAccessoryServer server, long instanceId, boolean extend) throws HomekitFactoryException {
         logger.debug("{}Creating accessory - Class: {}, Server: {}, InstanceId: {}", LOG_REGISTRY,
                 accessoryClass.getSimpleName(), server, instanceId);
         try {
-            Constructor<? extends HomekitAccessory> constructor = accessoryClass.getConstructor(HomekitAccessoryServer.class,
-                    long.class, boolean.class);
+            Constructor<? extends HomekitAccessory> constructor = accessoryClass
+                    .getConstructor(HomekitAccessoryServer.class, long.class, boolean.class);
             if (constructor == null) {
                 throw new NoSuchMethodException("Constructor not found");
             }
             @Nullable
             HomekitAccessory accessory = constructor.newInstance(server, instanceId, extend);
-            logger.debug("{}Created an HomekitAccessory {} of Type {}, with instanceId {}", LOG_REGISTRY, accessory.getUID(),
-                    accessory.getClass().getSimpleName(), accessory.getAccessoryId());
+            logger.debug("{}Created an HomekitAccessory {} of Type {}, with instanceId {}", LOG_REGISTRY,
+                    accessory.getUID(), accessory.getClass().getSimpleName(), accessory.getAccessoryId());
             return accessory;
         } catch (NoSuchMethodException e) {
             String message = String.format(
@@ -583,14 +590,15 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
 
     @SuppressWarnings("unused")
     @Override
-    public @Nullable HomekitAccessory createAccessory(Thing thing, HomekitAccessoryServer server) throws HomekitFactoryException {
+    public @Nullable HomekitAccessory createAccessory(Thing thing, HomekitAccessoryServer server)
+            throws HomekitFactoryException {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
         @Nullable
         Class<? extends HomekitAccessory> accessoryClass = thingTypeAccessoryClassMapper.get(thingTypeUID);
 
         // Fallback to HomekitGenericAccessory if no mapping exists
         if (accessoryClass == null) {
-            accessoryClass = HomekitBaseAccessory.class;
+            accessoryClass = AbstractHomekitAccessory.class;
         }
 
         HomekitAccessory accessory = null;
@@ -642,8 +650,8 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
         // }
         // }
 
-        logger.debug("{}Created an HomekitAccessory {} of Type {}, with instanceId {}", LOG_REGISTRY, accessory.getUID(),
-                accessory.getClass().getSimpleName(), accessory.getAccessoryId());
+        logger.debug("{}Created an HomekitAccessory {} of Type {}, with instanceId {}", LOG_REGISTRY,
+                accessory.getUID(), accessory.getClass().getSimpleName(), accessory.getAccessoryId());
         return accessory;
     }
 
@@ -659,11 +667,12 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
             }
             @Nullable
             HomekitAccessory accessory = constructor.newInstance(value);
-            logger.debug("{}Created an HomekitAccessory {} of Type {}, with instanceId {}", LOG_REGISTRY, accessory.getUID(),
-                    accessory.getClass().getSimpleName(), accessory.getAccessoryId());
+            logger.debug("{}Created an HomekitAccessory {} of Type {}, with instanceId {}", LOG_REGISTRY,
+                    accessory.getUID(), accessory.getClass().getSimpleName(), accessory.getAccessoryId());
             return accessory;
         } catch (NoSuchMethodException e) {
-            String message = String.format("HomekitAccessory %s is missing a valid constructor of type (JsonValue.class)",
+            String message = String.format(
+                    "HomekitAccessory %s is missing a valid constructor of type (JsonValue.class)",
                     accessoryClass.getSimpleName());
             logger.error("{}{}", LOG_ERROR, message, e);
             throw new HomekitRegistrationException(message, e);
@@ -676,8 +685,8 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
     }
 
     @Override
-    public @Nullable HomekitService createService(String serviceType, HomekitAccessory accessory, boolean extend, String serviceName)
-            throws HomekitFactoryException {
+    public @Nullable HomekitService createService(String serviceType, HomekitAccessory accessory, boolean extend,
+            String serviceName) throws HomekitFactoryException {
         try {
             Class<? extends HomekitService> serviceClass = getService(serviceType);
             return serviceClass.getConstructor(HomekitAccessory.class, long.class, boolean.class, String.class)
@@ -691,8 +700,8 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
     }
 
     @Override
-    public @Nullable HomekitService createService(String serviceType, HomekitAccessory accessory, long instanceId, boolean extend,
-            String serviceName) throws HomekitFactoryException {
+    public @Nullable HomekitService createService(String serviceType, HomekitAccessory accessory, long instanceId,
+            boolean extend, String serviceName) throws HomekitFactoryException {
         try {
             Class<? extends HomekitService> serviceClass = getService(serviceType);
             return serviceClass.getConstructor(HomekitAccessory.class, long.class, boolean.class, String.class)
@@ -707,8 +716,8 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
     }
 
     @Override
-    public @Nullable HomekitService createService(String serviceType, HomekitAccessory accessory, long instanceId, boolean extend)
-            throws HomekitFactoryException {
+    public @Nullable HomekitService createService(String serviceType, HomekitAccessory accessory, long instanceId,
+            boolean extend) throws HomekitFactoryException {
         try {
             Class<? extends HomekitService> serviceClass = getService(serviceType);
             return serviceClass.getConstructor(HomekitAccessory.class, long.class, boolean.class, String.class)
@@ -723,12 +732,13 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
     }
 
     @Override
-    public @Nullable HomekitService createService(HomekitAccessory accessory, JsonValue value) throws HomekitFactoryException {
+    public @Nullable HomekitService createService(HomekitAccessory accessory, JsonValue value)
+            throws HomekitFactoryException {
         try {
             String serviceType = value.asJsonObject().getString("type");
             Class<? extends HomekitService> serviceClass = getService(serviceType);
-            return serviceClass.getConstructor(HomekitAccessory.class, JsonValue.class, String.class).newInstance(accessory,
-                    value, serviceType);
+            return serviceClass.getConstructor(HomekitAccessory.class, JsonValue.class, String.class)
+                    .newInstance(accessory, value, serviceType);
         } catch (SecurityException | IllegalArgumentException | InstantiationException | IllegalAccessException
                 | InvocationTargetException | NoSuchMethodException e) {
             String message = String.format("Failed to create service from JSON: %s", e.getMessage());
@@ -757,7 +767,8 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
             long instanceId) throws HomekitFactoryException {
         try {
             Class<? extends HomekitCharacteristic<?>> characteristicClass = getCharacteristic(characteristicsType);
-            return characteristicClass.getConstructor(HomekitService.class, long.class).newInstance(service, instanceId);
+            return characteristicClass.getConstructor(HomekitService.class, long.class).newInstance(service,
+                    instanceId);
         } catch (SecurityException | IllegalArgumentException | InstantiationException | IllegalAccessException
                 | InvocationTargetException | NoSuchMethodException e) {
             String message = String.format("Failed to create characteristic %s with instanceId %d: %s",
@@ -773,7 +784,8 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
         try {
             String characteristicType = value.asJsonObject().getString("type");
             Class<? extends HomekitCharacteristic<?>> characteristicClass = getCharacteristic(characteristicType);
-            return characteristicClass.getConstructor(HomekitService.class, JsonValue.class).newInstance(service, value);
+            return characteristicClass.getConstructor(HomekitService.class, JsonValue.class).newInstance(service,
+                    value);
         } catch (SecurityException | IllegalArgumentException | InstantiationException | IllegalAccessException
                 | InvocationTargetException | NoSuchMethodException e) {
             String message = String.format("Failed to create characteristic from JSON: %s", e.getMessage());
@@ -823,7 +835,8 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
         if (metadata != null) {
             return metadata.characteristicType;
         }
-        return HomekitUUID5.fromNamespaceAndString(HomekitUUID5.NAMESPACE_CHARACTERISTIC, characteristicClass.getName()).toString();
+        return HomekitUUID5.fromNamespaceAndString(HomekitUUID5.NAMESPACE_CHARACTERISTIC, characteristicClass.getName())
+                .toString();
     }
 
     @Override
@@ -886,7 +899,8 @@ public abstract class AbstractHomekitFactory implements HomekitFactory {
         Set<Class<? extends HomekitCharacteristic<?>>> characteristicClasses = tagCharacteristicClassMapper.get(tag);
         if (characteristicClasses != null && !characteristicClasses.isEmpty()) {
             @Nullable
-            Class<? extends HomekitCharacteristic<?>> firstCharacteristicClass = characteristicClasses.iterator().next();
+            Class<? extends HomekitCharacteristic<?>> firstCharacteristicClass = characteristicClasses.iterator()
+                    .next();
             for (Map.Entry<String, @Nullable CharacteristicMetadata> entry : characteristicMetadataMapper.entrySet()) {
                 @Nullable
                 CharacteristicMetadata e = entry.getValue();

@@ -8,7 +8,8 @@ import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.server.HomekitAccessoryServerUID;
 
 /**
- * {@link HomekitAccessoryServerRegistry} tracks all {@link HomekitAccessoryServer}s from different {@link HomekitAccessoryServerProvider}s
+ * {@link HomekitAccessoryServerRegistry} tracks all {@link HomekitAccessoryServer}s from different
+ * {@link HomekitAccessoryServerProvider}s
  * and provides access to them. The {@link HomekitAccessoryServerRegistry} supports adding of listeners (see
  * {@link HomekitAccessoryServerChangeListener})
  *

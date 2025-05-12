@@ -181,13 +181,14 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
                     accessory.getClass().getSimpleName(), accessory.getLabel()));
 
             for (HomekitService service : accessory.getServices()) {
-                console.println(String.format("     HomekitService %s (Type=%s, HAP=%s, Name=%s)", service.getUID().toString(),
-                        service.getClass().getSimpleName(), service.getInstanceType(), service.getName()));
+                console.println(
+                        String.format("     HomekitService %s (Type=%s, HAP=%s, Name=%s)", service.getUID().toString(),
+                                service.getClass().getSimpleName(), service.getType(), service.getName()));
                 for (HomekitCharacteristic<?> characteristic : service.getCharacteristics()) {
 
                     console.println(String.format("         HomekitCharacteristic %s (Type=%s, HAP=%s)",
                             characteristic.getUID().toString(), characteristic.getClass().getSimpleName(),
-                            characteristic.getInstanceType()));
+                            characteristic.getType()));
 
                 }
             }

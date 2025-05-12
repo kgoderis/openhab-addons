@@ -18,7 +18,6 @@ import org.bouncycastle.util.Pack;
 import org.eclipse.jetty.util.BufferUtil;
 import org.openhab.io.homekit.util.HomekitByte;
 import org.openhab.io.homekit.util.HomekitByteBufferOutputStream;
-import org.openhab.io.homekit.util.HomekitByte;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

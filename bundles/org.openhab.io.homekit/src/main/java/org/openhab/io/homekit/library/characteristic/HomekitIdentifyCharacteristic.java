@@ -6,24 +6,23 @@ import javax.json.JsonValue;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
+import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
-import org.openhab.io.homekit.core.characteristic.HomekitWriteOnlyBooleanCharacteristic;
+import org.openhab.io.homekit.core.characteristic.HomekitBooleanCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 @NonNullByDefault
-public class HomekitIdentifyCharacteristic extends HomekitWriteOnlyBooleanCharacteristic {
-    private static final String TYPE = "00000014-0000-1000-8000-0026BB765291";
+@HomekitCharacteristicType(type = "00000014-0000-1000-8000-0026BB765291", name = "Identify", tag = "identify")
+public class HomekitIdentifyCharacteristic extends HomekitBooleanCharacteristic {
 
-    public HomekitIdentifyCharacteristic(HomekitService service, long instanceId, HomekitEventManager eventManager) {
-        super(service, instanceId, "Identify", TYPE, eventManager);
+    public HomekitIdentifyCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+        super(service, eventManager);
+        withInstanceId(instanceId).withPairedWrite(true).withPairedRead(false).withEvents(false)
+                .withDescription("Identify");
     }
 
-    public HomekitIdentifyCharacteristic(HomekitService service, JsonValue value, HomekitEventManager eventManager) {
-        super(service, value, eventManager);
-    }
-
-    public static String getType() {
-        return TYPE;
+    public HomekitIdentifyCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+        super(service, eventManager, value);
     }
 
     @Override
@@ -37,10 +36,6 @@ public class HomekitIdentifyCharacteristic extends HomekitWriteOnlyBooleanCharac
     @Override
     public Boolean getDefault() {
         return false;
-    }
-
-    public static String getTag() {
-        return HomekitIdentifyCharacteristic.class.getSimpleName().replace("HomekitCharacteristic", "");
     }
 
     @Override

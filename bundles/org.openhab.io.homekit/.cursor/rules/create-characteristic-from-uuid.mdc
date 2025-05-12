@@ -1,0 +1,55 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Creating a HomeKit Characteristic from UUID and Name
+
+To create a new HomeKit Characteristic Java class from a provided UUID and name:
+
+1. **Reference the official HomeKit characteristic definitions:**
+   - Use the file [CharacteristicDefinitions.ts](mdc:https:/raw.githubusercontent.com/homebridge/HAP-NodeJS/4eb81ee52934b5f312ef470440a0947542b6fd5b/src/lib/definitions/CharacteristicDefinitions.ts) as the authoritative source for characteristic metadata (format, min/max, step, unit, etc).
+
+2. **Determine the Java base class:**
+   - Use the `format` field from the TypeScript definition to select the base class:
+     - `Formats.FLOAT` → `HomekitFloatCharacteristic`
+     - `Formats.UINT8`, `Formats.UINT16`, `Formats.UINT32`, `Formats.INT` → `HomekitIntegerCharacteristic` (or `HomekitLongCharacteristic` for 32-bit+)
+     - `Formats.BOOL` → `HomekitBooleanCharacteristic`
+     - `Formats.STRING` → `HomekitStringCharacteristic`
+     - `Formats.TLV8` → `HomekitTLV8Characteristic`
+     - `Formats.DATA` → `HomekitDataCharacteristic`
+
+3. **Class structure:**
+   - Place the new class in `src/main/java/org/openhab/io/homekit/library/characteristic/`.
+   - Annotate with `@HomekitCharacteristicType(type = "<UUID>", name = "<Name>", tag = "<camelCaseName>")`.
+   - Implement value range, step, and unit as per the TypeScript definition.
+   - If the characteristic has a set of valid values, define an `enum` for them.
+   - Implement `isAllowedValue`, `getAllowedValues`, and conversion methods as needed.
+   - Implement a specific enum class for classes that have a "validValues" field in @CharacteristicDefinitions.ts 
+   - Correctly import all classes referenced, and avoid using fully qualified class names
+   - Explicitely import java.util.Set
+
+
+4. **No logging required unless specified.**
+
+5. **Documentation:**
+   - Add a Javadoc comment referencing the HomeKit documentation URL for the characteristic.
+
+6. **Generation**
+   - Do not pause during generation, but generate classes for all the UUID provided. 
+   - Again, do NOT pause during generation
+   - In the documentation above the class definition you remove all references to homebridge.io
+   - do not use fully qualified classes, like for example java.util.Set, but make sure they are imported correctly, and then use only the class name
+    - do not ask to "continue unless you instruct otherwise!"
+    - do not ask for instructions
+    - do not ask "Would you like to proceed with the next batch of characteristics, or do you want to review these first?"
+
+Example:
+```java
+@HomekitCharacteristicType(type = "00000012-0000-1000-8000-0026BB765291", name = "Heating Threshold Temperature", tag = "heatingThresholdTemperature")
+public class HomekitHeatingThresholdTemperatureCharacteristic extends HomekitFloatCharacteristic {
+    // ...
+}
+```
+
+For more details, always consult the [CharacteristicDefinitions.ts](mdc:https:/raw.githubusercontent.com/homebridge/HAP-NodeJS/4eb81ee52934b5f312ef470440a0947542b6fd5b/src/lib/definitions/CharacteristicDefinitions.ts) file.

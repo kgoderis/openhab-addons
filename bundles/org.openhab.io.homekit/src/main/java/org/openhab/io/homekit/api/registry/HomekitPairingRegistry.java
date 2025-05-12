@@ -9,7 +9,8 @@ import org.openhab.io.homekit.network.pairing.HomekitPairingUID;
 import org.openhab.io.homekit.protocol.pairing.HomekitPairing;
 
 /**
- * {@link HomekitPairingRegistry} tracks all {@link HomekitPairing}s from different {@link HomekitPairingProvider}s and provides access to
+ * {@link HomekitPairingRegistry} tracks all {@link HomekitPairing}s from different {@link HomekitPairingProvider}s and
+ * provides access to
  * them. The {@link HomekitPairingRegistry} supports adding of listeners (see {@link HomekitPairingChangeListener})
  *
  * @author Karel Goderis - Initial contribution

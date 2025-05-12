@@ -1,54 +1,64 @@
 package org.openhab.io.homekit.library.service;
 
-import java.util.Collection;
-
 import javax.json.JsonValue;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
-import org.openhab.io.homekit.api.factory.HomekitFactory;
-import org.openhab.io.homekit.core.service.HomekitBaseService;
+import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
+import org.openhab.io.homekit.api.service.HomekitServiceType;
+import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.library.characteristic.HomekitBrightnessCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitHueCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitOnCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitSaturationCharacteristic;
 
-public class HomekitColorLightBulbService extends HomekitBaseService {
-    private static final String TYPE = "00000043-0000-1000-8000-0026BB765291";
+/**
+ * Service that represents a color light bulb in HomeKit.
+ * This service provides control over color light bulbs, supporting on/off, brightness, hue, and saturation.
+ */
+@HomekitServiceType(type = "xxxxxxx-0000-1000-8000-0026BB765291", name = "ColorLightBulb", tag = "ColorLightBulb")
+public class HomekitColorLightBulbService extends AbstractHomekitService {
 
-    public HomekitColorLightBulbService(HomekitAccessory accessory, long instanceId, boolean extend, @NonNull String serviceName, HomekitEventManager eventManager, Collection<HomekitFactory> factories)
-            {
-        super(accessory, instanceId, extend, serviceName, TYPE, eventManager, factories);
+    /**
+     * Creates a new HomekitColorLightBulbService.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     */
+    public HomekitColorLightBulbService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory) {
+        super(accessory, eventManager, characteristicFactory);
     }
 
-    public HomekitColorLightBulbService(HomekitAccessory accessory, JsonValue value, String name, HomekitEventManager eventManager, Collection<HomekitFactory> factories) {
-        super(accessory, value, name, eventManager, factories);
+    /**
+     * Creates a new HomekitColorLightBulbService from a JSON value.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @param value JSON value containing service configuration
+     */
+    public HomekitColorLightBulbService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
+        super(accessory, eventManager, characteristicFactory, value);
     }
 
     @Override
     public void addCharacteristics() {
         super.addCharacteristics();
-        addCharacteristic(
-                new HomekitOnCharacteristic(this, ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
-        addCharacteristic(new HomekitBrightnessCharacteristic(this, ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(),
-                eventManager));
-        addCharacteristic(
-                new HomekitHueCharacteristic(this, ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
-        addCharacteristic(new HomekitSaturationCharacteristic(this, ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(),
-                eventManager));
+        addCharacteristic(new HomekitOnCharacteristic(this,
+                ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
+        addCharacteristic(new HomekitBrightnessCharacteristic(this,
+                ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
+        addCharacteristic(new HomekitHueCharacteristic(this,
+                ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
+        addCharacteristic(new HomekitSaturationCharacteristic(this,
+                ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(), eventManager));
     }
 
     @Override
     public boolean isExtensible() {
         return false;
-    }
-
-    public static String getType() {
-        return TYPE;
-    }
-
-    public static String getTag() {
-        return HomekitColorLightBulbService.class.getSimpleName().replace("HomekitService", "");
     }
 }

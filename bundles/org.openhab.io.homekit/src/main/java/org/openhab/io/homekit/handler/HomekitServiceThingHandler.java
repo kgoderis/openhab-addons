@@ -69,9 +69,9 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
      * @param homekitThingTypeProvider Provider for Homekit thing types
      * @param homekitChannelGroupTypeProvider Provider for Homekit channel group types
      */
-    public HomekitServiceThingHandler(Thing thing, HomekitAccessoryServerRegistry serverRegistry, HomekitAccessoryRegistry accessoryRegistry,
-            HomekitChannelTypeProvider homekitChannelTypeProvider, HomekitThingTypeProvider homekitThingTypeProvider,
-            HomekitEventManager eventManager) {
+    public HomekitServiceThingHandler(Thing thing, HomekitAccessoryServerRegistry serverRegistry,
+            HomekitAccessoryRegistry accessoryRegistry, HomekitChannelTypeProvider homekitChannelTypeProvider,
+            HomekitThingTypeProvider homekitThingTypeProvider, HomekitEventManager eventManager) {
         super(thing, serverRegistry, accessoryRegistry, homekitChannelTypeProvider, homekitThingTypeProvider,
                 eventManager);
         // // Parse configuration
@@ -103,7 +103,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
         // String thingType = thing.getThingTypeUID().getId();
         // String serviceTag;
         // try {
-        // serviceTag = homekitThingTypeProvider.getServiceTag(foundService.getInstanceType());
+        // serviceTag = homekitThingTypeProvider.getServiceTag(foundService.getType());
         // if (!thingType.equals(serviceTag)) {
         // throw new IllegalArgumentException(
         // "ThingType " + thingType + " does not match HomekitService type " + serviceTag);
@@ -249,13 +249,14 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
             throw new IllegalArgumentException("No HomekitService found for serviceId: " + serviceId);
         }
         try {
-            serviceTag = homekitThingTypeProvider.getServiceTag(currentService.getInstanceType());
+            serviceTag = homekitThingTypeProvider.getServiceTag(currentService.getType());
         } catch (org.openhab.io.homekit.exception.HomekitException e) {
             throw new IllegalArgumentException("HomekitService type could not be determined", e);
         }
 
         if (!thingType.equals(serviceTag)) {
-            throw new IllegalArgumentException("ThingType " + thingType + " does not match HomekitService type " + serviceTag);
+            throw new IllegalArgumentException(
+                    "ThingType " + thingType + " does not match HomekitService type " + serviceTag);
         }
         setService(currentService);
         serviceAvailable = true;
@@ -317,11 +318,11 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
                     continue;
                 }
 
-                Optional<HomekitCharacteristic<?>> characteristic = currentService.getCharacteristic(characteristicType);
+                Optional<HomekitCharacteristic<?>> characteristic = currentService
+                        .getCharacteristic(characteristicType);
                 if (characteristic.isEmpty()) {
-                    handleRecoverableError(ThingStatusDetail.CONFIGURATION_ERROR,
-                            "HomekitCharacteristic " + characteristicType + " not found in HomekitService " + currentService.getUID(),
-                            null);
+                    handleRecoverableError(ThingStatusDetail.CONFIGURATION_ERROR, "HomekitCharacteristic "
+                            + characteristicType + " not found in HomekitService " + currentService.getUID(), null);
                 } else {
                     synchronized (characteristicMapLock) {
                         characteristicMap.put(channel, characteristic.get());
@@ -341,7 +342,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
             ChannelUID channelUID = getChannelUID(characteristic);
 
             ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
-                    characteristic.getInstanceType());
+                    characteristic.getType());
             ChannelType channelType = homekitChannelTypeProvider.getChannelType(channelTypeUID, null);
             if (channelType == null) {
                 logger.warn("{}No ChannelType found for characteristic {}", LOG_CHANNEL, characteristic.getUID());
@@ -727,9 +728,9 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
                         Optional<HomekitService> foundService = currentAccessory.getService(serviceId);
                         foundService.ifPresent(someService -> {
                             setService(service);
-                            eventSubscriptions.add(
-                                    eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED, someService.getUID(),
-                                            thing.getUID(), someEvent -> onServiceEvent((HomekitServiceEvent) someEvent)));
+                            eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED,
+                                    someService.getUID(), thing.getUID(),
+                                    someEvent -> onServiceEvent((HomekitServiceEvent) someEvent)));
                             validateAndUpdateState();
                         });
                         // ... handle not found if needed ...
@@ -899,7 +900,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
     // List<Channel> channelsToRemove = new ArrayList<>();
     // synchronized (characteristicMapLock) {
     // for (Map.Entry<Channel, HomekitCharacteristic<?>> entry : characteristicMap.entrySet()) {
-    // if (!currentCharacteristicTypes.contains(entry.getValue().getInstanceType())) {
+    // if (!currentCharacteristicTypes.contains(entry.getValue().getType())) {
     // channelsToRemove.add(entry.getKey());
     // }
     // }
@@ -914,7 +915,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
     // boolean channelExists = false;
     // synchronized (characteristicMapLock) {
     // for (HomekitCharacteristic<?> existingCharacteristic : characteristicMap.values()) {
-    // if (existingCharacteristic.getInstanceType().equals(characteristic.getInstanceType())) {
+    // if (existingCharacteristic.getType().equals(characteristic.getType())) {
     // channelExists = true;
     // break;
     // }
@@ -1038,7 +1039,8 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
     // break;
     // }
     // } catch (Exception e) {
-    // logger.warn("{}Warning - Type: Channel, HomekitMessage: Failed to handle channel state transition: {}", LOG_PREFIX,
+    // logger.warn("{}Warning - Type: Channel, HomekitMessage: Failed to handle channel state transition: {}",
+    // LOG_PREFIX,
     // e.getMessage());
     // }
     // }
@@ -1078,7 +1080,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
     // }
 
     // ChannelTypeUID newChannelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
-    // characteristic.getInstanceType());
+    // characteristic.getType());
 
     // // Check if channel type has changed
     // if (!channel.getChannelTypeUID().equals(newChannelTypeUID)) {
@@ -1190,10 +1192,10 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
 
     // try {
     // ChannelUID channelUID = new ChannelUID(thing.getUID(),
-    // homekitChannelTypeProvider.getCharacteristicTag(characteristic.getInstanceType()));
+    // homekitChannelTypeProvider.getCharacteristicTag(characteristic.getType()));
 
     // ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
-    // characteristic.getInstanceType());
+    // characteristic.getType());
     // ChannelType channelType = homekitChannelTypeProvider.getChannelType(channelTypeUID, null);
     // if (channelType == null) {
     // logger.warn("{}Warning - Type: Channel, HomekitMessage: No ChannelType found for characteristic {}",
@@ -1216,7 +1218,8 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
     // LOG_PREFIX, characteristic.getUID(), e.getMessage());
     // return null;
     // } catch (Exception e) {
-    // logger.warn("{}Warning - Type: Channel, HomekitMessage: Unexpected error adding channel for characteristic {}: {}",
+    // logger.warn("{}Warning - Type: Channel, HomekitMessage: Unexpected error adding channel for characteristic {}:
+    // {}",
     // LOG_PREFIX, characteristic.getUID(), e.getMessage());
     // return null;
     // }
@@ -1235,7 +1238,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
     protected ChannelUID getChannelUID(HomekitCharacteristic<?> characteristic) {
         try {
             return new ChannelUID(thing.getUID(),
-                    homekitChannelTypeProvider.getCharacteristicTag(characteristic.getInstanceType()));
+                    homekitChannelTypeProvider.getCharacteristicTag(characteristic.getType()));
         } catch (HomekitException e) {
             throw new IllegalArgumentException("HomekitCharacteristic type could not be determined", e);
         }
@@ -1862,9 +1865,9 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
      * - Thread-safe validation
      * </p>
      * // *
-     // * @param event The HomekitAccessoryEvent to validate
-     // * @throws IllegalArgumentException if event data is invalid
-     // *
+     * // * @param event The HomekitAccessoryEvent to validate
+     * // * @throws IllegalArgumentException if event data is invalid
+     * // *
      */
     // private void validateEventData(HomekitAccessoryEvent event) {
     // if (event == null) {
@@ -2167,8 +2170,8 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
      * - Thread-safe server retrieval
      * </p>
      * 
-     // * @return The current Homekit server instance, or null if not set
-     // *
+     * // * @return The current Homekit server instance, or null if not set
+     * // *
      */
     // private @Nullable HomekitAccessoryServer getServer() {
     // synchronized (serverLock) {
@@ -2296,8 +2299,8 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
      * 
      * @param detail The status detail for the error
      *            // * @param message The error message
-     // * @param cause The cause of the error, if any
-     // *
+     *            // * @param cause The cause of the error, if any
+     *            // *
      */
     // private void handleRecoverableError(ThingStatusDetail detail, String message, @Nullable Throwable cause) {
     // handleError(detail, message, cause);

@@ -17,7 +17,8 @@ import org.openhab.io.homekit.server.HomekitAccessoryServerUID;
 
 /**
  * Interface for an HAP HomekitAccessory Server that exposes a collection of Accessories to the HAP controller(s).
- * An HAP HomekitAccessory Server represents one endpoint of the pairing relationship established with HAP HomekitPairing.
+ * An HAP HomekitAccessory Server represents one endpoint of the pairing relationship established with HAP
+ * HomekitPairing.
  * This interface provides methods for managing accessories, handling pairing, and controlling server behavior.
  *
  * @author Karel Goderis
@@ -233,7 +234,8 @@ public interface HomekitAccessoryServer extends Identifiable<HomekitAccessorySer
     void pairSetup() throws HomekitServerException;
 
     /**
-     * Verifies the pairing with a client. Pair Verify is performed for every Homekit HomekitAccessory Protocol session. Pair
+     * Verifies the pairing with a client. Pair Verify is performed for every Homekit HomekitAccessory Protocol session.
+     * Pair
      * Verify verifies the pairing between an iOS device and an accessory and establishes an ephemeral shared secret
      * used to secure the Homekit HomekitAccessory Protocol session
      *

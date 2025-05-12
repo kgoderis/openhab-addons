@@ -23,10 +23,10 @@ import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry;
 import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
-import org.openhab.io.homekit.core.accessory.HomekitBaseAccessory;
-import org.openhab.io.homekit.event.model.server.HomekitAccessoryServerEvent;
-import org.openhab.io.homekit.event.manager.HomekitEventManager;
+import org.openhab.io.homekit.core.accessory.AbstractHomekitAccessory;
 import org.openhab.io.homekit.event.core.HomekitEventSubscription;
+import org.openhab.io.homekit.event.manager.HomekitEventManager;
+import org.openhab.io.homekit.event.model.server.HomekitAccessoryServerEvent;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.exception.HomekitServerException;
 import org.openhab.io.homekit.server.HomekitAccessoryServerUID;
@@ -79,9 +79,9 @@ public class HomekitAccessoryServerRegistryImpl
 
     @Activate
     public HomekitAccessoryServerRegistryImpl(@Reference ReadyService readyService,
-            @Reference NetworkAddressService networkAddressService, @Reference HomekitAccessoryRegistry accessoryRegistry,
-            @Reference HomekitPairingRegistry pairingRegistry, @Reference HomekitEventManager eventManager,
-            @Reference Set<HomekitFactory> homekitFactories) {
+            @Reference NetworkAddressService networkAddressService,
+            @Reference HomekitAccessoryRegistry accessoryRegistry, @Reference HomekitPairingRegistry pairingRegistry,
+            @Reference HomekitEventManager eventManager, @Reference Set<HomekitFactory> homekitFactories) {
         super(HomekitAccessoryServerProvider.class);
         this.readyService = readyService;
         this.networkAddressService = networkAddressService;
@@ -149,7 +149,8 @@ public class HomekitAccessoryServerRegistryImpl
             return null;
         }
 
-        logger.info("{}Found {} HomekitAccessory Servers, highest port: {}", LOG_STATE, getAll().size(), highestPortNumber);
+        logger.info("{}Found {} HomekitAccessory Servers, highest port: {}", LOG_STATE, getAll().size(),
+                highestPortNumber);
 
         if (availableServer == null) {
             try {
@@ -164,17 +165,20 @@ public class HomekitAccessoryServerRegistryImpl
             try {
                 if (availableServer.getAccessory(1) == null) {
                     try {
-                        logger.info("{}Adding Bridge HomekitAccessory to Server - UID: {}, Type: {}, Port: {}, Setup Code: {}",
+                        logger.info(
+                                "{}Adding Bridge HomekitAccessory to Server - UID: {}, Type: {}, Port: {}, Setup Code: {}",
                                 LOG_ACCESSORY, availableServer.getUID(), availableServer.getClass().getSimpleName(),
                                 availableServer.getPort(), availableServer.getSetupCode());
-                        HomekitBaseAccessory bridgeAccessory = new HomekitBaseAccessory(eventManager, homekitFactories);
+                        AbstractHomekitAccessory bridgeAccessory = new AbstractHomekitAccessory(eventManager,
+                                homekitFactories);
                         bridgeAccessory.assignToServer(availableServer);
                     } catch (Exception e) {
                         logger.error("{}Error adding bridge accessory: {}", LOG_ERROR, e.getMessage(), e);
                     }
                 }
 
-                logger.info("{}Found HomekitAccessory Server - UID: {}, Type: {}, Port: {}, Setup Code: {}, Accessories: {}",
+                logger.info(
+                        "{}Found HomekitAccessory Server - UID: {}, Type: {}, Port: {}, Setup Code: {}, Accessories: {}",
                         LOG_STATE, availableServer.getUID(), availableServer.getClass().getSimpleName(),
                         availableServer.getPort(), availableServer.getSetupCode(),
                         availableServer.getAccessories().size());
@@ -219,8 +223,8 @@ public class HomekitAccessoryServerRegistryImpl
         super.addProvider(provider);
 
         for (HomekitAccessoryServer aServer : getAll()) {
-            logger.debug("{}HomekitAccessory Server available - UID: {}, Setup Code: {}", LOG_ACCESSORY, aServer.getUID(),
-                    aServer.getSetupCode());
+            logger.debug("{}HomekitAccessory Server available - UID: {}, Setup Code: {}", LOG_ACCESSORY,
+                    aServer.getUID(), aServer.getSetupCode());
             if (aServer instanceof HomekitAccessoryServer accessoryServer) {
                 accessoryServer.advertise();
             }

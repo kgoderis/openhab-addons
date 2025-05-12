@@ -33,8 +33,10 @@ public class HomekitCharacteristicEvent extends AbstractHomekitEvent {
      * @param newValue the new value of the characteristic
      */
     @SuppressWarnings("null")
-    public HomekitCharacteristicEvent(HomekitEventType type, UID publisherUID, UID subscriberUID,HomekitCharacteristic<?> characteristic, @Nullable JsonValue oldValue, @Nullable JsonValue newValue,HomekitEventMetadata metadata) {
-        super(type,  publisherUID,  subscriberUID, metadata);
+    public HomekitCharacteristicEvent(HomekitEventType type, UID publisherUID, UID subscriberUID,
+            HomekitCharacteristic<?> characteristic, @Nullable JsonValue oldValue, @Nullable JsonValue newValue,
+            HomekitEventMetadata metadata) {
+        super(type, publisherUID, subscriberUID, metadata);
         this.characteristic = Optional.ofNullable(characteristic);
         this.oldValue = Optional.ofNullable(oldValue);
         this.newValue = Optional.ofNullable(newValue);
@@ -48,8 +50,13 @@ public class HomekitCharacteristicEvent extends AbstractHomekitEvent {
      * @param newValue the new value of the characteristic
      */
     @SuppressWarnings("null")
-    public HomekitCharacteristicEvent(HomekitEventType type, HomekitCharacteristic<?> characteristic, @Nullable JsonValue oldValue, @Nullable JsonValue newValue) {
-        super(type, characteristic != null ? characteristic.getUID() : new HomekitUID("characteristic"), HomekitUID.WILDCARD_UID, new HomekitEventMetadata(characteristic != null ? characteristic.getUID() : new HomekitUID("characteristic"), null, null, Collections.emptySet()));
+    public HomekitCharacteristicEvent(HomekitEventType type, HomekitCharacteristic<?> characteristic,
+            @Nullable JsonValue oldValue, @Nullable JsonValue newValue) {
+        super(type, characteristic != null ? characteristic.getUID() : new HomekitUID("characteristic"),
+                HomekitUID.WILDCARD_UID,
+                new HomekitEventMetadata(
+                        characteristic != null ? characteristic.getUID() : new HomekitUID("characteristic"), null, null,
+                        Collections.emptySet()));
         this.characteristic = Optional.ofNullable(characteristic);
         this.oldValue = Optional.ofNullable(oldValue);
         this.newValue = Optional.ofNullable(newValue);
@@ -64,9 +71,10 @@ public class HomekitCharacteristicEvent extends AbstractHomekitEvent {
      * @param metadata the event metadata
      */
     @SuppressWarnings("null")
-    public HomekitCharacteristicEvent(HomekitEventType type, HomekitCharacteristic<?> characteristic, @Nullable JsonValue oldValue, @Nullable JsonValue newValue,
-            HomekitEventMetadata metadata) {
-        super(type, characteristic != null ? characteristic.getUID() : new HomekitUID("characteristic"), HomekitUID.WILDCARD_UID, metadata);
+    public HomekitCharacteristicEvent(HomekitEventType type, HomekitCharacteristic<?> characteristic,
+            @Nullable JsonValue oldValue, @Nullable JsonValue newValue, HomekitEventMetadata metadata) {
+        super(type, characteristic != null ? characteristic.getUID() : new HomekitUID("characteristic"),
+                HomekitUID.WILDCARD_UID, metadata);
         this.characteristic = Optional.ofNullable(characteristic);
         this.oldValue = Optional.ofNullable(oldValue);
         this.newValue = Optional.ofNullable(newValue);

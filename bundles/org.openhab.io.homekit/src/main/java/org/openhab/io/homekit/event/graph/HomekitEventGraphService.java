@@ -26,16 +26,16 @@ public class HomekitEventGraphService {
             @Override
             public void registerMetrics() {
                 // Override to use our custom metrics
-                eventGraphMetrics.getAllNodeMetrics().forEach((key, value) -> 
-                    logger.info("Node metric {}: {}", key, value));
-                eventGraphMetrics.getAllEdgeMetrics().forEach((key, value) -> 
-                    logger.info("Edge metric {}: {}", key, value));
-                eventGraphMetrics.getAllCycleMetrics().forEach((key, value) -> 
-                    logger.info("Cycle metric {}: {}", key, value));
+                eventGraphMetrics.getAllNodeMetrics()
+                        .forEach((key, value) -> logger.info("Node metric {}: {}", key, value));
+                eventGraphMetrics.getAllEdgeMetrics()
+                        .forEach((key, value) -> logger.info("Edge metric {}: {}", key, value));
+                eventGraphMetrics.getAllCycleMetrics()
+                        .forEach((key, value) -> logger.info("Cycle metric {}: {}", key, value));
             }
         };
         this.eventGraphMetrics = new HomekitEventGraphMetrics();
-        
+
         logger.info("Event Graph HomekitService started");
     }
 

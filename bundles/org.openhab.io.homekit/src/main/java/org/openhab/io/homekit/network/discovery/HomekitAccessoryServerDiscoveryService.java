@@ -123,7 +123,8 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
      */
     @Activate
     public HomekitAccessoryServerDiscoveryService(final @Nullable Map<String, Object> configProperties,
-            final @Reference MDNSClient mdnsClient, final @Reference HomekitAccessoryServerRegistry accessoryServerRegistry,
+            final @Reference MDNSClient mdnsClient,
+            final @Reference HomekitAccessoryServerRegistry accessoryServerRegistry,
             final @Reference NetworkAddressService networkAddressService,
             @Reference HomekitAccessoryRegistry accessoryRegistry, @Reference HomekitPairingRegistry pairingRegistry,
             @Reference HomekitThingTypeProvider homekitThingTypeProvider, @Reference ConfigurationAdmin configAdmin,
@@ -464,7 +465,8 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                 // Parse and validate numeric values
                 int configIndex = Integer.parseInt(configIndexStr);
                 HomekitAccessoryCategory category = HomekitAccessoryCategory.fromValue(Integer.parseInt(categoryStr));
-                HomekitPairingStatusFlag pairingStatus = HomekitPairingStatusFlag.fromValue(Integer.parseInt(pairingStatusStr));
+                HomekitPairingStatusFlag pairingStatus = HomekitPairingStatusFlag
+                        .fromValue(Integer.parseInt(pairingStatusStr));
                 int stateNumber = Integer.parseInt(stateNumberStr);
                 HomekitPairingFeatureFlag pairingFeatureFlag = HomekitPairingFeatureFlag
                         .fromValue(Integer.parseInt(pairingFeatureFlagStr));
@@ -494,12 +496,13 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                     }
 
                     try {
-                        HomekitAccessoryServer server = new HomekitRemoteAccessoryServer(category, InetAddress.getByName(hostAddress),
-                                port, accessoryRegistry, pairingRegistry, eventManager, homekitFactories);
+                        HomekitAccessoryServer server = new HomekitRemoteAccessoryServer(category,
+                                InetAddress.getByName(hostAddress), port, accessoryRegistry, pairingRegistry,
+                                eventManager, homekitFactories);
                         server.setConfigurationIndex(configIndex);
                         accessoryServerRegistry.add(server);
-                        logger.info("{}Created new Remote HomekitAccessory Server - UID: {}, Setup Code: {}", LOG_SERVER,
-                                server.getUID(), server.getSetupCode());
+                        logger.info("{}Created new Remote HomekitAccessory Server - UID: {}, Setup Code: {}",
+                                LOG_SERVER, server.getUID(), server.getSetupCode());
                     } catch (IOException e) {
                         logger.error("{}Failed to create accessory server: {}", LOG_ERROR, e.getMessage(), e);
                     } catch (HomekitServerException e) {
@@ -555,7 +558,8 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
      * @param accessory The accessory to create a thing for
      * @throws HomekitException if there is an error creating the thing
      */
-    private void createThingFromAccessory(HomekitAccessoryServer server, HomekitAccessory accessory) throws HomekitException {
+    private void createThingFromAccessory(HomekitAccessoryServer server, HomekitAccessory accessory)
+            throws HomekitException {
         logger.debug("{}Creating thing from accessory {} on server {}", LOG_ACCESSORY, accessory.getUID(),
                 server.getUID());
 
@@ -564,7 +568,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
 
             Collection<HomekitService> services = accessory.getServices();
             for (HomekitService service : services) {
-                String serviceType = service.getInstanceType();
+                String serviceType = service.getType();
                 ThingTypeUID thingTypeUID = homekitThingTypeProvider.getThingTypeUID(serviceType);
 
                 String serviceTag;

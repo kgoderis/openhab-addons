@@ -95,8 +95,8 @@ public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypePro
 
         // Create the channel group type
         ChannelGroupType channelGroupType = ChannelGroupTypeBuilder.instance(channelGroupTypeUID, serviceName)
-                .withDescription("Homekit " + serviceName + " HomekitService").withChannelDefinitions(channelDefinitions)
-                .build();
+                .withDescription("Homekit " + serviceName + " HomekitService")
+                .withChannelDefinitions(channelDefinitions).build();
 
         // Store the channel group type
         putChannelGroupType(channelGroupType);

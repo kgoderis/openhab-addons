@@ -1,69 +1,47 @@
 package org.openhab.io.homekit.library.characteristic;
 
-import javax.json.JsonObject;
 import javax.json.JsonValue;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.core.types.State;
+import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
-import org.openhab.io.homekit.core.characteristic.HomekitByteCharacteristic;
+import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
+@HomekitCharacteristicType(type = "00000036-0000-1000-8000-0026BB765291", name = "Temperature Display Units", tag = "temperatureDisplayUnits")
 @NonNullByDefault
-public class HomekitTemperatureDisplayUnitsCharacteristic extends HomekitByteCharacteristic {
+public class HomekitTemperatureDisplayUnitsCharacteristic extends HomekitEnumCharacteristic {
 
-    private static final String TYPE = "00000036-0000-1000-8000-0026BB765291";
-
-    public HomekitTemperatureDisplayUnitsCharacteristic(HomekitService service, long instanceId, HomekitEventManager eventManager) {
-        super(service, instanceId, true, true, true, "Temperature Display Units", (byte) 0, (byte) 1, TYPE, eventManager);
+    public enum TemperatureDisplayUnits {
+        CELSIUS(0),
+        FAHRENHEIT(1);
+        private final int code;
+        TemperatureDisplayUnits(int code) { this.code = code; }
+        public int getCode() { return code; }
+        public static TemperatureDisplayUnits fromCode(int code) {
+            for (TemperatureDisplayUnits v : values()) {
+                if (v.code == code) return v;
+            }
+            return CELSIUS;
+        }
     }
 
-    public HomekitTemperatureDisplayUnitsCharacteristic(HomekitService service, JsonValue value, HomekitEventManager eventManager) {
-        super(service, value, eventManager);
+    public HomekitTemperatureDisplayUnitsCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+        super(service, eventManager, TemperatureDisplayUnits.values().length);
+        withInstanceId(instanceId).withPairedWrite(true).withPairedRead(true).withEvents(true)
+            .withDescription("Temperature Display Units");
     }
 
-    public static String getType() {
-        return TYPE;
-    }
-
-    public static String getTag() {
-        return HomekitTemperatureDisplayUnitsCharacteristic.class.getSimpleName().replace("HomekitCharacteristic", "");
-    }
-
-    @Override
-    public State toState(Byte value) {
-        return super.toState(value);
-    }
-
-    @Override
-    public JsonObject toEventJson(Byte value) {
-        return super.toEventJson(value);
+    public HomekitTemperatureDisplayUnitsCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+        super(service, eventManager, value);
     }
 
     @Override
-    public JsonObject toEventJson() {
-        return super.toEventJson();
+    public boolean isAllowedValue(Integer value) {
+        return value != null && (value == TemperatureDisplayUnits.CELSIUS.getCode() || value == TemperatureDisplayUnits.FAHRENHEIT.getCode());
     }
 
     @Override
-    public JsonValue toValueJson(@Nullable Byte value) {
-        return super.toValueJson(value);
-    }
-
-    @Override
-    public JsonObject toJson() {
-        return super.toJson();
-    }
-
-    @Override
-    public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType,
-            boolean includeEvent) {
-        return super.toJson(includeMeta, includePermissions, includeType, includeEvent);
-    }
-
-    @Override
-    public JsonObject toReducedJson() {
-        return super.toReducedJson();
+    public java.util.Set<Integer> getAllowedValues() {
+        return java.util.Set.of(TemperatureDisplayUnits.CELSIUS.getCode(), TemperatureDisplayUnits.FAHRENHEIT.getCode());
     }
 }

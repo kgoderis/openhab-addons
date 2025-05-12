@@ -17,7 +17,8 @@ public class HomekitCharacteristicUID extends HomekitUID {
      * @param characteristicId the characteristic instance id
      */
     public HomekitCharacteristicUID(String pairingId, long accessoryId, long serviceId, long characteristicId) {
-        super("characteristic", "homekit:characteristic:" + pairingId + ":" + accessoryId + ":" + serviceId + ":" + characteristicId);
+        super("characteristic",
+                "homekit:characteristic:" + pairingId + ":" + accessoryId + ":" + serviceId + ":" + characteristicId);
     }
 
     @Override

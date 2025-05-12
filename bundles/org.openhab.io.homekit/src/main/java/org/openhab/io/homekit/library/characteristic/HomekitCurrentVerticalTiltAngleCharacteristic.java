@@ -6,29 +6,25 @@ import javax.json.JsonValue;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
+import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitIntegerCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 @NonNullByDefault
+@HomekitCharacteristicType(type = "0000006E-0000-1000-8000-0026BB765291", name = "Current Vertical Tilt Angle", tag = "currentVerticalTiltAngle")
 public class HomekitCurrentVerticalTiltAngleCharacteristic extends HomekitIntegerCharacteristic {
 
-    private static final String TYPE = "0000006E-0000-1000-8000-0026BB765291";
-
-    public HomekitCurrentVerticalTiltAngleCharacteristic(HomekitService service, long instanceId, HomekitEventManager eventManager) {
-        super(service, instanceId, false, true, true, "Current Vertical Tilt Angle", -90, 90, "arcdegrees", TYPE, eventManager);
+    public HomekitCurrentVerticalTiltAngleCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
+        super(service, eventManager, -90, 90, "arcdegrees");
+        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
+                .withDescription("Current Vertical Tilt Angle");
     }
 
-    public HomekitCurrentVerticalTiltAngleCharacteristic(HomekitService service, JsonValue value, HomekitEventManager eventManager) {
-        super(service, value, eventManager);
-    }
-
-    public static String getType() {
-        return TYPE;
-    }
-
-    public static String getTag() {
-        return HomekitCurrentVerticalTiltAngleCharacteristic.class.getSimpleName().replace("HomekitCharacteristic", "");
+    public HomekitCurrentVerticalTiltAngleCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
+        super(service, eventManager, value);
     }
 
     @Override

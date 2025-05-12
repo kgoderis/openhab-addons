@@ -67,18 +67,18 @@ import org.eclipse.jetty.http.HttpMethod;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryCategory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
+import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.api.listener.HomekitCharacteristicChangeListener;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
 import org.openhab.io.homekit.api.service.HomekitService;
+import org.openhab.io.homekit.core.accessory.AbstractHomekitAccessory;
 import org.openhab.io.homekit.core.accessory.HomekitAccessoryServerState;
-import org.openhab.io.homekit.core.accessory.HomekitBaseAccessory;
-import org.openhab.io.homekit.event.model.server.HomekitAccessoryServerEvent;
-import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicEvent;
-import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.event.core.HomekitEventSubscription;
-import org.openhab.io.homekit.api.event.HomekitEventType;
+import org.openhab.io.homekit.event.manager.HomekitEventManager;
+import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicEvent;
+import org.openhab.io.homekit.event.model.server.HomekitAccessoryServerEvent;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.exception.HomekitConfigurationException;
 import org.openhab.io.homekit.exception.HomekitException;
@@ -114,7 +114,8 @@ import djb.Curve25519;
 // A bridge must not expose more than 150 HAP accessory objects. The HAP accessory object with an instance ID of 1 is considered the primary HAP accessory object. For bridges, this must be the bridge itself.
 
 @NonNullByDefault
-public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer implements HomekitCharacteristicChangeListener {
+public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
+        implements HomekitCharacteristicChangeListener {
 
     // ========== Constants ==========
     protected static final Logger logger = LoggerFactory.getLogger(HomekitRemoteAccessoryServer.class);
@@ -147,10 +148,10 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
     // ========== Constructor ==========
     @SuppressWarnings("null")
-    public HomekitRemoteAccessoryServer(HomekitAccessoryCategory category, InetAddress address, int port, byte[] pairingIdentifier,
-            byte[] secretKey, HomekitAccessoryRegistry accessoryRegistry, HomekitPairingRegistry pairingRegistry,
-            HomekitEventManager eventManager, Set<HomekitFactory> homekitFactories)
-            throws HomekitConfigurationException {
+    public HomekitRemoteAccessoryServer(HomekitAccessoryCategory category, InetAddress address, int port,
+            byte[] pairingIdentifier, byte[] secretKey, HomekitAccessoryRegistry accessoryRegistry,
+            HomekitPairingRegistry pairingRegistry, HomekitEventManager eventManager,
+            Set<HomekitFactory> homekitFactories) throws HomekitConfigurationException {
         super(category, address, port, pairingIdentifier, secretKey, accessoryRegistry, pairingRegistry, eventManager,
                 homekitFactories);
         this.setupCode = "";
@@ -159,8 +160,9 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     }
 
     public HomekitRemoteAccessoryServer(HomekitAccessoryCategory category, InetAddress address, int port,
-            HomekitAccessoryRegistry accessoryRegistry, HomekitPairingRegistry pairingRegistry, HomekitEventManager eventManager,
-            Set<HomekitFactory> homekitFactories) throws HomekitConfigurationException, HomekitServerException {
+            HomekitAccessoryRegistry accessoryRegistry, HomekitPairingRegistry pairingRegistry,
+            HomekitEventManager eventManager, Set<HomekitFactory> homekitFactories)
+            throws HomekitConfigurationException, HomekitServerException {
         this(category, address, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry,
                 eventManager, homekitFactories);
     }
@@ -310,7 +312,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
     @Override
     public boolean isPaired() {
-        return currentState == HomekitAccessoryServerState.PAIRED || currentState == HomekitAccessoryServerState.PAIR_VERIFIED;
+        return currentState == HomekitAccessoryServerState.PAIRED
+                || currentState == HomekitAccessoryServerState.PAIR_VERIFIED;
     }
 
     public boolean isConnected() {
@@ -628,7 +631,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
             // Check for errors in response
             if (stageResult.decodeResult.getBytes(HomekitMessage.ERROR) != null) {
-                HomekitErrorCode error = HomekitErrorCode.fromCode(stageResult.decodeResult.getByte(HomekitMessage.ERROR));
+                HomekitErrorCode error = HomekitErrorCode
+                        .fromCode(stageResult.decodeResult.getByte(HomekitMessage.ERROR));
                 logger.warn("{}HomekitAccessory failed to remove pairing: {} - Server: {}", LOG_STATE, error,
                         new String(getPairingId()));
                 setState(HomekitAccessoryServerState.PAIR_UNVERIFIED);
@@ -863,7 +867,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         encoder.add(HomekitMessage.PUBLIC_KEY, clientLongtermPublicKey);
         encoder.add(HomekitMessage.SIGNATURE, clientSignature);
 
-        HomekitChachaEncoder chachaEncoder = new HomekitChachaEncoder(sessionKey, "PS-Msg05".getBytes(StandardCharsets.UTF_8));
+        HomekitChachaEncoder chachaEncoder = new HomekitChachaEncoder(sessionKey,
+                "PS-Msg05".getBytes(StandardCharsets.UTF_8));
         byte[] ciphertext = chachaEncoder.encodeCiphertext(encoder.toByteArray());
 
         encoder = HomekitTypeLengthValueEncoderDecoder.getEncoder();
@@ -886,7 +891,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         byte[] authTagData = new byte[16];
         stageResult.decodeResult.getBytes(HomekitMessage.ENCRYPTED_DATA, authTagData, messageData.length);
 
-        HomekitChachaDecoder chachaDecoder = new HomekitChachaDecoder(sessionKey, "PS-Msg06".getBytes(StandardCharsets.UTF_8));
+        HomekitChachaDecoder chachaDecoder = new HomekitChachaDecoder(sessionKey,
+                "PS-Msg06".getBytes(StandardCharsets.UTF_8));
         byte[] plaintext = chachaDecoder.decodeCiphertext(authTagData, messageData);
         logger.debug("{}Plaintext decoded - Server: {}", LOG_STATE, new String(getPairingId()));
 
@@ -899,7 +905,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         logger.debug("{}HomekitAccessory signature received - Server: {}", LOG_STATE, new String(getPairingId()));
 
         HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA512Digest());
-        hkdf.init(new HKDFParameters(sharedSecret, "Pair-Setup-HomekitAccessory-Sign-Salt".getBytes(StandardCharsets.UTF_8),
+        hkdf.init(new HKDFParameters(sharedSecret,
+                "Pair-Setup-HomekitAccessory-Sign-Salt".getBytes(StandardCharsets.UTF_8),
                 "Pair-Setup-HomekitAccessory-Sign-Info".getBytes(StandardCharsets.UTF_8)));
         byte[] accessoryDeviceX = new byte[32];
         hkdf.generateBytes(accessoryDeviceX, 0, 32);
@@ -968,7 +975,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         logger.debug("{}Session key generated - Server: {}", LOG_STATE, new String(getPairingId()));
 
         byte[] plaintext = null;
-        HomekitChachaDecoder chachaDecoder = new HomekitChachaDecoder(sessionKey, "PV-Msg02".getBytes(StandardCharsets.UTF_8));
+        HomekitChachaDecoder chachaDecoder = new HomekitChachaDecoder(sessionKey,
+                "PV-Msg02".getBytes(StandardCharsets.UTF_8));
         try {
             plaintext = chachaDecoder.decodeCiphertext(authTagData, messageData);
             logger.debug("{}Plaintext decoded - Server: {}", LOG_STATE, new String(getPairingId()));
@@ -1109,7 +1117,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
                                 if (d.getBytes(HomekitMessage.ERROR) != null) {
                                     SRP6Session = Optional.empty();
-                                    StageResult stageResult = new StageResult(HomekitErrorCode.fromCode(d.getByte(HomekitMessage.ERROR)));
+                                    StageResult stageResult = new StageResult(
+                                            HomekitErrorCode.fromCode(d.getByte(HomekitMessage.ERROR)));
                                     completableFuture.complete(stageResult);
                                     return;
                                 }
@@ -1218,7 +1227,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     public void handleEvent(byte[] body) {
         try {
             logger.debug("{}Processing event - Server: {}", LOG_STATE, new String(getPairingId()));
-            HomekitByte.logBuffer(logger, "handleEvent", HomekitByte.toHexString(getPairingId()), ByteBuffer.wrap(body));
+            HomekitByte.logBuffer(logger, "handleEvent", HomekitByte.toHexString(getPairingId()),
+                    ByteBuffer.wrap(body));
         } catch (IOException e) {
             logger.error("{}Failed to process event - Error: {}", LOG_ERROR, e.getMessage());
             logger.debug("{}Exception details", LOG_ERROR, e);
@@ -1264,7 +1274,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 JsonArray accessories = Json.createReader(new ByteArrayInputStream(contentResult.body)).readObject()
                         .getJsonArray("accessories");
                 for (JsonValue value : accessories) {
-                    result.add(new HomekitBaseAccessory(value, eventManager, homekitFactories));
+                    result.add(new AbstractHomekitAccessory(value, eventManager, homekitFactories));
                 }
             }
         }
@@ -1299,7 +1309,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             if (contentResult.result != null && contentResult.result.getResponse().getStatus() == 204) {
                 logger.debug("{}Successfully subscribed to events for characteristic {} - Server: {}", LOG_STATE,
                         characteristic.getUID(), new String(getPairingId()));
-                characteristic.setHasEvents(true);
+                characteristic.withEvents(true);
                 return true;
             } else {
                 if (contentResult.result != null) {
@@ -1389,8 +1399,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                                 logger.info("{}Adding new service {} to accessory {} - Server: {}", LOG_STATE,
                                         remoteService, currentAccessory, new String(getPairingId()));
                                 currentAccessory.addService(remoteService);
-                                eventManager.publishEvent(new HomekitAccessoryServerEvent(HomekitEventType.SERVICE_ADDED, this,
-                                        currentAccessory, remoteService, null));
+                                eventManager.publishEvent(new HomekitAccessoryServerEvent(
+                                        HomekitEventType.SERVICE_ADDED, this, currentAccessory, remoteService, null));
                             }
                         }
 
@@ -1407,8 +1417,9 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                                 logger.info("{}Removing service {} from accessory {} - Server: {}", LOG_STATE,
                                         currentService, currentAccessory, new String(getPairingId()));
                                 currentAccessory.removeService(currentService);
-                                eventManager.publishEvent(new HomekitAccessoryServerEvent(HomekitEventType.SERVICE_REMOVED,
-                                        this, currentAccessory, currentService, null));
+                                eventManager
+                                        .publishEvent(new HomekitAccessoryServerEvent(HomekitEventType.SERVICE_REMOVED,
+                                                this, currentAccessory, currentService, null));
                             }
                         }
 
@@ -1416,8 +1427,10 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                         for (HomekitService currentService : currentAccessory.getServices()) {
                             for (HomekitService remoteService : remoteServices) {
                                 if (currentService.getInstanceId() == remoteService.getInstanceId()) {
-                                    Set<HomekitCharacteristic<?>> currentCharacteristics = currentService.getCharacteristics();
-                                    Set<HomekitCharacteristic<?>> remoteCharacteristics = remoteService.getCharacteristics();
+                                    Set<HomekitCharacteristic<?>> currentCharacteristics = currentService
+                                            .getCharacteristics();
+                                    Set<HomekitCharacteristic<?>> remoteCharacteristics = remoteService
+                                            .getCharacteristics();
 
                                     // Find new characteristics to add
                                     for (HomekitCharacteristic<?> remoteCharacteristic : remoteCharacteristics) {
@@ -1469,7 +1482,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                                             if (currentCharacteristic.getInstanceId() == remoteCharacteristic
                                                     .getInstanceId()) {
                                                 if (!currentCharacteristic.equals(remoteCharacteristic)) {
-                                                    logger.info("{}HomekitCharacteristic {} is different from {} - Server: {}",
+                                                    logger.info(
+                                                            "{}HomekitCharacteristic {} is different from {} - Server: {}",
                                                             LOG_STATE, currentCharacteristic, remoteCharacteristic,
                                                             new String(getPairingId()));
                                                     currentCharacteristic.updateWith(remoteCharacteristic);

@@ -1,0 +1,57 @@
+package org.openhab.io.homekit.library.characteristic;
+
+import javax.json.JsonValue;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
+import org.openhab.io.homekit.api.service.HomekitService;
+import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
+import org.openhab.io.homekit.event.manager.HomekitEventManager;
+
+@HomekitCharacteristicType(type = "000000E5-0000-1000-8000-0026BB765291", name = "Access Control Level", tag = "accessControlLevel")
+@NonNullByDefault
+public class HomekitAccessControlLevelCharacteristic extends HomekitEnumCharacteristic {
+
+    public enum AccessControlLevel {
+        LEVEL_0(0),
+        LEVEL_1(1),
+        LEVEL_2(2);
+
+        private final int value;
+        AccessControlLevel(int value) { this.value = value; }
+        public int getValue() { return value; }
+        public static AccessControlLevel fromValue(int value) {
+            for (AccessControlLevel l : values()) {
+                if (l.value == value) return l;
+            }
+            throw new IllegalArgumentException("Invalid AccessControlLevel value: " + value);
+        }
+    }
+
+    public HomekitAccessControlLevelCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+        super(service, eventManager, 3);
+        withInstanceId(instanceId).withPairedWrite(true).withPairedRead(true).withEvents(true)
+            .withDescription("Access Control Level");
+    }
+
+    public HomekitAccessControlLevelCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+        super(service, eventManager, value);
+    }
+
+    @Override
+    public boolean isAllowedValue(Integer value) {
+        if (value == null) return false;
+        for (AccessControlLevel l : AccessControlLevel.values()) {
+            if (l.getValue() == value) return true;
+        }
+        return false;
+    }
+
+    @Override
+    public java.util.Set<Integer> getAllowedValues() {
+        java.util.Set<Integer> allowed = new java.util.HashSet<>();
+        for (AccessControlLevel l : AccessControlLevel.values()) {
+            allowed.add(l.getValue());
+        }
+        return allowed;
+    }
+} 

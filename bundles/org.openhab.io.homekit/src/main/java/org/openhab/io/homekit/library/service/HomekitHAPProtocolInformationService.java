@@ -1,45 +1,54 @@
 package org.openhab.io.homekit.library.service;
 
-import java.util.Collection;
-
 import javax.json.JsonValue;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
-import org.openhab.io.homekit.api.factory.HomekitFactory;
-import org.openhab.io.homekit.core.service.HomekitBaseService;
+import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
+import org.openhab.io.homekit.api.service.HomekitServiceType;
+import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.library.characteristic.HomekitVersionCharacteristic;
 
-public class HomekitHAPProtocolInformationService extends HomekitBaseService {
-    private static final String TYPE = "000000A2-0000-1000-8000-0026BB765291";
-
-    public HomekitHAPProtocolInformationService(HomekitAccessory accessory, long instanceId, boolean extend, @NonNull String serviceName, HomekitEventManager eventManager, Collection<HomekitFactory> factories)
-             {
-        super(accessory, instanceId, extend, serviceName, TYPE, eventManager, factories);
+/**
+ * Service that represents the HAP Protocol Information in HomeKit.
+ * This service provides protocol version information for HomeKit accessories.
+ */
+@HomekitServiceType(type = "000000A2-0000-1000-8000-0026BB765291", name = "HAPProtocolInformation", tag = "HAPProtocolInformation")
+public class HomekitHAPProtocolInformationService extends AbstractHomekitService {
+    /**
+     * Creates a new HomekitHAPProtocolInformationService.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     */
+    public HomekitHAPProtocolInformationService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory) {
+        super(accessory, eventManager, characteristicFactory);
     }
 
-    public HomekitHAPProtocolInformationService(HomekitAccessory accessory, JsonValue value, String name, HomekitEventManager eventManager, Collection<HomekitFactory> factories) {
-        super(accessory, value, name, eventManager, factories);
+    /**
+     * Creates a new HomekitHAPProtocolInformationService from a JSON value.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @param value JSON value containing service configuration
+     */
+    public HomekitHAPProtocolInformationService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
+        super(accessory, eventManager, characteristicFactory, value);
     }
 
     @Override
     public void addCharacteristics() {
         super.addCharacteristics();
-        addCharacteristic(new HomekitVersionCharacteristic(this, ((HomekitAccessory) getAccessory()).getNextAvailableInstanceId(),
-                eventManager));
+        addCharacteristic(
+                new HomekitVersionCharacteristic(this, getAccessory().getNextAvailableInstanceId(), eventManager));
     }
 
     @Override
     public boolean isExtensible() {
         return false;
-    }
-
-    public static String getType() {
-        return TYPE;
-    }
-
-    public static String getTag() {
-        return HomekitHAPProtocolInformationService.class.getSimpleName().replace("HomekitService", "");
     }
 }

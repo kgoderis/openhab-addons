@@ -38,16 +38,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * {@link HomekitPersistedAccessoryProvider} is an OSGi service, that allows to add or remove Accessories at runtime by calling
+ * {@link HomekitPersistedAccessoryProvider} is an OSGi service, that allows to add or remove Accessories at runtime by
+ * calling
  * {@link HomekitPersistedAccessoryProvider#addAccessory(HomekitAccessory)} or
- * {@link HomekitPersistedAccessoryProvider#removeAccessory(HomekitAccessory)}. An added HomekitAccessory is automatically exposed to
+ * {@link HomekitPersistedAccessoryProvider#removeAccessory(HomekitAccessory)}. An added HomekitAccessory is
+ * automatically exposed to
  * the
- * {@link HomekitAccessoryRegistry}. Persistence of added Accessories is handled by a {@link StorageService}. Accessories are
+ * {@link HomekitAccessoryRegistry}. Persistence of added Accessories is handled by a {@link StorageService}.
+ * Accessories are
  * being restored using the given {@link HomekitFactory}s.
  *
  **/
 @NonNullByDefault
-@Component(immediate = true, service = { HomekitPersistedAccessoryProvider.class, HomekitPersistedAccessoryProvider.class })
+@Component(immediate = true, service = { HomekitPersistedAccessoryProvider.class,
+        HomekitPersistedAccessoryProvider.class })
 public class HomekitPersistedAccessoryProvider
         extends AbstractManagedProvider<HomekitAccessory, HomekitAccessoryUID, HomekitPersistedAccessory>
         implements HomekitAccessoryProvider, ReadyService.ReadyTracker {
@@ -153,7 +157,7 @@ public class HomekitPersistedAccessoryProvider
             }
 
             if (loadedClass == null) {
-                loadedClass = HomekitBaseAccessory.class;
+                loadedClass = AbstractHomekitAccessory.class;
             }
 
             if (loadedClass != null) {
@@ -303,7 +307,8 @@ public class HomekitPersistedAccessoryProvider
         // } else {
         // HomekitAccessoryUID uid = new HomekitAccessoryUID(key);
 
-        // logger.warn("HomekitAccessory Server {} hosting HomekitAccessory {} was not found in the HomekitAccessory Server Registry",
+        // logger.warn("HomekitAccessory Server {} hosting HomekitAccessory {} was not found in the HomekitAccessory
+        // Server Registry",
         // persistableElement.getServerUID(), uid);
 
         // this.remove(uid);

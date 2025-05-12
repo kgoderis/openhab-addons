@@ -1,69 +1,64 @@
 package org.openhab.io.homekit.library.service;
 
-import java.util.Collection;
-
 import javax.json.JsonValue;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
-import org.openhab.io.homekit.api.factory.HomekitFactory;
-import org.openhab.io.homekit.core.service.HomekitBaseService;
+import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
+import org.openhab.io.homekit.api.service.HomekitServiceType;
+import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import org.openhab.io.homekit.library.characteristic.HomekitCurrentHorizontalTiltAngleCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitCurrentPositionCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitCurrentVerticalTiltAngleCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitHoldPositionCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitObstructionDetectedCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitPositionStateCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitTargetHorizontalTiltAngleCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitTargetPositionCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitTargetVerticalTiltAngleCharacteristic;
 
-public class HomekitWindowCoveringService extends HomekitBaseService {
-    private static final String TYPE = "0000008C-0000-1000-8000-0026BB765291";
+/**
+ * Service that represents a window covering in HomeKit.
+ * This service provides control over window coverings like blinds, shades, and curtains.
+ */
+@HomekitServiceType(type = "0000008C-0000-1000-8000-0026BB765291", name = "WindowCovering", tag = "WindowCovering")
+public class HomekitWindowCoveringService extends AbstractHomekitService {
 
-    public HomekitWindowCoveringService(HomekitAccessory accessory, long instanceId, boolean extend, @NonNull String serviceName, HomekitEventManager eventManager, Collection<HomekitFactory> factories)
-           {
-        super(accessory, instanceId, extend, serviceName, TYPE, eventManager, factories);
+    /**
+     * Creates a new HomekitWindowCoveringService.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     */
+    public HomekitWindowCoveringService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory) {
+        super(accessory, eventManager, characteristicFactory);
     }
 
-    public HomekitWindowCoveringService(HomekitAccessory accessory, JsonValue value, String name, HomekitEventManager eventManager, Collection<HomekitFactory> factories) {
-        super(accessory, value, name, eventManager, factories);
+    /**
+     * Creates a new HomekitWindowCoveringService from a JSON value.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @param value JSON value containing service configuration
+     */
+    public HomekitWindowCoveringService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
+        super(accessory, eventManager, characteristicFactory, value);
     }
 
     @Override
     public void addCharacteristics() {
         super.addCharacteristics();
-        addCharacteristic(
-                new HomekitTargetPositionCharacteristic(this, getAccessory().getNextAvailableInstanceId(), eventManager));
-        addCharacteristic(
-                new HomekitCurrentPositionCharacteristic(this, getAccessory().getNextAvailableInstanceId(), eventManager));
-        addCharacteristic(
-                new HomekitPositionStateCharacteristic(this, getAccessory().getNextAvailableInstanceId(), eventManager));
+        addCharacteristic(new HomekitCurrentPositionCharacteristic(this, getAccessory().getNextAvailableInstanceId(),
+                eventManager));
+        addCharacteristic(new HomekitTargetPositionCharacteristic(this, getAccessory().getNextAvailableInstanceId(),
+                eventManager));
+        addCharacteristic(new HomekitPositionStateCharacteristic(this, getAccessory().getNextAvailableInstanceId(),
+                eventManager));
         addCharacteristic(
                 new HomekitHoldPositionCharacteristic(this, getAccessory().getNextAvailableInstanceId(), eventManager));
-        addCharacteristic(new HomekitCurrentHorizontalTiltAngleCharacteristic(this,
-                getAccessory().getNextAvailableInstanceId(), eventManager));
-        addCharacteristic(new HomekitTargetHorizontalTiltAngleCharacteristic(this, getAccessory().getNextAvailableInstanceId(),
-                eventManager));
-        addCharacteristic(new HomekitCurrentVerticalTiltAngleCharacteristic(this, getAccessory().getNextAvailableInstanceId(),
-                eventManager));
-        addCharacteristic(new HomekitTargetVerticalTiltAngleCharacteristic(this, getAccessory().getNextAvailableInstanceId(),
-                eventManager));
-        addCharacteristic(
-                new HomekitObstructionDetectedCharacteristic(this, getAccessory().getNextAvailableInstanceId(), eventManager));
     }
 
     @Override
     public boolean isExtensible() {
         return false;
-    }
-
-    public static String getType() {
-        return TYPE;
-    }
-
-    public static String getTag() {
-        return HomekitWindowCoveringService.class.getSimpleName().replace("HomekitService", "");
     }
 }

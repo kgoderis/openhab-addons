@@ -179,7 +179,8 @@ public class HomekitDecryptedEndPoint implements EndPoint {
                         if (encryptedInputBuffer.hasRemaining()) {
 
                             if (logger.isTraceEnabled()) {
-                                HomekitByte.logBuffer(logger, "Fill", getRemoteAddress().toString(), encryptedInputBuffer);
+                                HomekitByte.logBuffer(logger, "Fill", getRemoteAddress().toString(),
+                                        encryptedInputBuffer);
                             }
 
                             encryptedInputBufferUnderflown = false;

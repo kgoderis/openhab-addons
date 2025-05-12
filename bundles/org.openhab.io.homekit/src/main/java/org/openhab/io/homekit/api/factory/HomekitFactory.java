@@ -61,12 +61,12 @@ public interface HomekitFactory {
     Set<String> getSupportedCharacteristicTypes();
 
     @Nullable
-    HomekitAccessory createAccessory(Class<? extends HomekitAccessory> accessoryClass, HomekitAccessoryServer server, long instanceId,
-            boolean extend) throws HomekitFactoryException;
+    HomekitAccessory createAccessory(Class<? extends HomekitAccessory> accessoryClass, HomekitAccessoryServer server,
+            long instanceId, boolean extend) throws HomekitFactoryException;
 
     @Nullable
-    HomekitAccessory createAccessory(Class<? extends HomekitAccessory> accessoryClass, HomekitAccessoryServer server, long instanceId)
-            throws HomekitFactoryException;
+    HomekitAccessory createAccessory(Class<? extends HomekitAccessory> accessoryClass, HomekitAccessoryServer server,
+            long instanceId) throws HomekitFactoryException;
 
     @Nullable
     HomekitAccessory createAccessory(Thing thing, HomekitAccessoryServer server) throws HomekitFactoryException;
@@ -79,8 +79,8 @@ public interface HomekitFactory {
             throws HomekitFactoryException;
 
     @Nullable
-    HomekitService createService(String serviceType, HomekitAccessory accessory, long instanceId, boolean extend, String serviceName)
-            throws HomekitFactoryException;
+    HomekitService createService(String serviceType, HomekitAccessory accessory, long instanceId, boolean extend,
+            String serviceName) throws HomekitFactoryException;
 
     @Nullable
     HomekitService createService(String serviceType, HomekitAccessory accessory, long instanceId, boolean extend)
@@ -90,14 +90,16 @@ public interface HomekitFactory {
     HomekitService createService(HomekitAccessory accessory, JsonValue value) throws HomekitFactoryException;
 
     @Nullable
-    HomekitCharacteristic<?> createCharacteristic(String characteristicsType, HomekitService service) throws HomekitFactoryException;
+    HomekitCharacteristic<?> createCharacteristic(String characteristicsType, HomekitService service)
+            throws HomekitFactoryException;
 
     @Nullable
     HomekitCharacteristic<?> createCharacteristic(String characteristicsType, HomekitService service, long instanceId)
             throws HomekitFactoryException;
 
     @Nullable
-    HomekitCharacteristic<?> createCharacteristic(HomekitService service, JsonValue value) throws HomekitFactoryException;
+    HomekitCharacteristic<?> createCharacteristic(HomekitService service, JsonValue value)
+            throws HomekitFactoryException;
 
     void addAccessory(ThingTypeUID thingTypeUID, Class<? extends HomekitAccessory> accessoryClass)
             throws HomekitRegistrationException;
@@ -111,11 +113,13 @@ public interface HomekitFactory {
     void addService(ThingTypeUID thingTypeUID, Class<? extends HomekitService> serviceClass)
             throws HomekitRegistrationException;
 
-    void addService(String serviceType, Class<? extends HomekitService> serviceClass) throws HomekitRegistrationException;
+    void addService(String serviceType, Class<? extends HomekitService> serviceClass)
+            throws HomekitRegistrationException;
 
     void addService(Class<@NonNull ? extends HomekitService> serviceClass) throws HomekitRegistrationException;
 
-    void addServiceWithTag(String tag, Class<? extends HomekitService> serviceClass) throws HomekitRegistrationException;
+    void addServiceWithTag(String tag, Class<? extends HomekitService> serviceClass)
+            throws HomekitRegistrationException;
 
     void addCharacteristic(ChannelTypeUID channelTypeUID, String characteristicType)
             throws HomekitRegistrationException;

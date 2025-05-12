@@ -9,6 +9,7 @@ import javax.json.JsonValue;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
+import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitBooleanCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
@@ -18,24 +19,19 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  */
 @NonNullByDefault
+@HomekitCharacteristicType(type = "00000075-0000-1000-8000-0026BB765291", name = "Status Active", tag = "statusActive")
 public class HomekitStatusActiveCharacteristic extends HomekitBooleanCharacteristic {
 
-    private static final String TYPE = "00000075-0000-1000-8000-0026BB765291";
-
-    public HomekitStatusActiveCharacteristic(HomekitService service, long instanceId, HomekitEventManager eventManager) {
-        super(service, instanceId, false, true, true, "Status Active", TYPE, eventManager);
+    public HomekitStatusActiveCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
+        super(service, eventManager);
+        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
+                .withDescription("Status Active");
     }
 
-    public HomekitStatusActiveCharacteristic(HomekitService service, JsonValue value, HomekitEventManager eventManager) {
-        super(service, value, eventManager);
-    }
-
-    public static String getType() {
-        return TYPE;
-    }
-
-    public static String getTag() {
-        return HomekitStatusActiveCharacteristic.class.getSimpleName().replace("HomekitCharacteristic", "");
+    public HomekitStatusActiveCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
+        super(service, eventManager, value);
     }
 
     @Override

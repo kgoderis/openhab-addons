@@ -39,7 +39,8 @@ package org.openhab.io.homekit.server.factory;
 // private SafeCaller safeCaller;
 
 // @Activate
-// public LocalAccessoryServerFactory(@Nullable MDNSService mdnsService, @Nullable HomekitAccessoryRegistry accessoryRegistry,
+// public LocalAccessoryServerFactory(@Nullable MDNSService mdnsService, @Nullable HomekitAccessoryRegistry
+// accessoryRegistry,
 // @Nullable HomekitPairingRegistry pairingRegistry, @Nullable NetworkAddressService networkAddressService,
 // @Nullable SafeCaller safeCaller) {
 // super();
@@ -52,7 +53,8 @@ package org.openhab.io.homekit.server.factory;
 // }
 
 // @Override
-// public @Nullable HomekitAccessoryServer createServer(@NonNull String factoryType, InetAddress localAddress, int port) {
+// public @Nullable HomekitAccessoryServer createServer(@NonNull String factoryType, InetAddress localAddress, int port)
+// {
 // if (Arrays.stream(getSupportedServerTypes()).anyMatch(factoryType::equals)) {
 // BridgeLocalAccessoryServer newBridge = null;
 

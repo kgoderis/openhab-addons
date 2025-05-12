@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.api.factory;
 
 import java.net.InetAddress;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -41,9 +42,9 @@ public interface HomekitAccessoryServerFactory {
     /**
      * Returns the list of all supported HomekitAccessoryServer types of this factory.
      *
-     * @return the supported HomekitAccessoryServer types
+     * @return an unmodifiable set of supported HomekitAccessoryServer types
      */
-    String[] getSupportedServerTypes();
+    Set<String> getSupportedServerTypes();
 
     // /**
     // * This is used to salt the setup code during pairing.

@@ -62,7 +62,7 @@ package org.openhab.io.homekit.core.service;
 // }
 
 // @Override
-// public abstract String getInstanceType();
+// public abstract String getType();
 
 // protected HomekitCommunicationManager getManager() {
 // return manager;

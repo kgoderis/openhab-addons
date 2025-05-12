@@ -17,15 +17,15 @@ import org.openhab.core.io.transport.mdns.ServiceDescription;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryCategory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
+import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.accessory.HomekitAccessoryServerState;
-import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicEvent;
-import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.event.core.HomekitEventSubscription;
-import org.openhab.io.homekit.api.event.HomekitEventType;
+import org.openhab.io.homekit.event.manager.HomekitEventManager;
+import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicEvent;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.exception.HomekitConfigurationException;
 import org.openhab.io.homekit.exception.HomekitServerException;
@@ -79,10 +79,10 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     private final Set<HomekitEventSubscription> eventSubscriptions = new HashSet<>();
 
     // ========== Constructors ==========
-    public HomekitLocalAccessoryServer(HomekitAccessoryCategory category, InetAddress address, int port, byte[] pairingId,
-            byte[] secretKey, MDNSService mdnsService, HomekitAccessoryRegistry accessoryRegistry,
-            HomekitPairingRegistry pairingRegistry, HomekitEventManager eventManager, Set<HomekitFactory> homekitFactories)
-            throws HomekitConfigurationException {
+    public HomekitLocalAccessoryServer(HomekitAccessoryCategory category, InetAddress address, int port,
+            byte[] pairingId, byte[] secretKey, MDNSService mdnsService, HomekitAccessoryRegistry accessoryRegistry,
+            HomekitPairingRegistry pairingRegistry, HomekitEventManager eventManager,
+            Set<HomekitFactory> homekitFactories) throws HomekitConfigurationException {
         super(category, address, port, pairingId, secretKey, accessoryRegistry, pairingRegistry, eventManager,
                 homekitFactories);
         logger.debug("{}Initializing local server - Category: {}, Address: {}, Port: {}", LOG_INIT, category, address,
@@ -91,9 +91,10 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
         logger.debug("{}Local server initialization completed", LOG_INIT);
     }
 
-    public HomekitLocalAccessoryServer(HomekitAccessoryCategory category, InetAddress address, int port, MDNSService mdnsService,
-            HomekitAccessoryRegistry accessoryRegistry, HomekitPairingRegistry pairingRegistry, HomekitEventManager eventManager,
-            Set<HomekitFactory> homekitFactories) throws HomekitConfigurationException, HomekitServerException {
+    public HomekitLocalAccessoryServer(HomekitAccessoryCategory category, InetAddress address, int port,
+            MDNSService mdnsService, HomekitAccessoryRegistry accessoryRegistry, HomekitPairingRegistry pairingRegistry,
+            HomekitEventManager eventManager, Set<HomekitFactory> homekitFactories)
+            throws HomekitConfigurationException, HomekitServerException {
         super(category, address, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry,
                 eventManager, homekitFactories);
         this.mdnsService = mdnsService;
@@ -360,7 +361,8 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     @Override
     public void addPairing(byte @NonNull [] destinationPairingId, byte @NonNull [] destinationPublicKey)
             throws HomekitServerException {
-        logger.debug("{}Adding pairing - Destination ID: {}", LOG_PAIRING, HomekitByte.toHexString(destinationPairingId));
+        logger.debug("{}Adding pairing - Destination ID: {}", LOG_PAIRING,
+                HomekitByte.toHexString(destinationPairingId));
         super.addPairing(destinationPairingId, destinationPublicKey);
         advertise();
         logger.info("{}HomekitPairing added and server advertised", LOG_PAIRING);
@@ -368,7 +370,8 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
 
     @Override
     public void removePairing(byte @NonNull [] destinationPairingId) throws HomekitServerException {
-        logger.debug("{}Removing pairing - Destination ID: {}", LOG_PAIRING, HomekitByte.toHexString(destinationPairingId));
+        logger.debug("{}Removing pairing - Destination ID: {}", LOG_PAIRING,
+                HomekitByte.toHexString(destinationPairingId));
         super.removePairing(destinationPairingId);
         advertise();
         logger.info("{}HomekitPairing removed and server advertised", LOG_PAIRING);
@@ -486,12 +489,13 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
         Hashtable<String, String> props = new Hashtable<>();
 
         // Status flags (e.g. "0x04" for bit 3). Value should be an unsigned integer. See Table 6-8 (page 58). Required.
-        props.put("sf", Integer
-                .toString(!isPaired() ? HomekitPairingStatusFlag.NOT_PAIRED.getMask() : HomekitPairingStatusFlag.UNKNOWN.getMask()));
+        props.put("sf", Integer.toString(!isPaired() ? HomekitPairingStatusFlag.NOT_PAIRED.getMask()
+                : HomekitPairingStatusFlag.UNKNOWN.getMask()));
 
         // Device ID ("5.4 Device ID" (page 31)) of the accessory. The Device ID must be formatted as
         // "XX:XX:XX:XX:XX:XX", where "XX" is a hexadecimal string representing a byte. Required.
-        // This value is also used as the accessory's HomekitPairing Identifier. This identifier of the accessory must be a
+        // This value is also used as the accessory's HomekitPairing Identifier. This identifier of the accessory must
+        // be a
         // unique random number generated at every factory reset and must persist across reboots.
         props.put("id", new String(getPairingId(), StandardCharsets.UTF_8));
 
@@ -527,7 +531,8 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
         // Protocol version string "X.Y" (e.g. "1.0"). Required if value is not "1.0".
         // props.put("pv", "1.1");
 
-        // HomekitAccessory Category Identifier. Required. Indicates the category that best describes the primary function of
+        // HomekitAccessory Category Identifier. Required. Indicates the category that best describes the primary
+        // function of
         // the accessory. This must have a range of 1-65535. This must take values defined in "13-1 HomekitAccessory
         // Categories" (page 252). This must persist across reboots, power cycles, etc.
         props.put("ci", Integer.toString(HomekitAccessoryCategory.BRIDGES.getValue()));
@@ -564,8 +569,8 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     // ========== Event Handling ==========
 
     protected void handleCharacteristicEvent(HomekitCharacteristicEvent event) {
-        logger.debug("{}Received characteristic event - Type: {}, HomekitCharacteristic: {}", LOG_EVENT, event.getType(),
-                event.getCharacteristic().getClass().getSimpleName());
+        logger.debug("{}Received characteristic event - Type: {}, HomekitCharacteristic: {}", LOG_EVENT,
+                event.getType(), event.getCharacteristic().getClass().getSimpleName());
         if (event.getType() == HomekitEventType.CHARACTERISTIC_STATE_CHANGED && event.getCharacteristic() != null) {
             characteristicServlet.publishCharacteristicUpdate(event.getCharacteristic().get());
             logger.debug("{}Published characteristic update", LOG_EVENT);

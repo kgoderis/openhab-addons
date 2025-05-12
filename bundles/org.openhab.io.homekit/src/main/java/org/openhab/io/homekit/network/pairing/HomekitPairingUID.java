@@ -23,9 +23,8 @@ public class HomekitPairingUID extends HomekitUID {
      * @param destinationPairingId the controller/client pairing id
      */
     public HomekitPairingUID(byte[] sourcePairingId, byte[] destinationPairingId) {
-        super("pairing", "homekit:pairing:" + 
-            Base64.getEncoder().withoutPadding().encodeToString(sourcePairingId) + ":" +
-            Base64.getEncoder().withoutPadding().encodeToString(destinationPairingId));
+        super("pairing", "homekit:pairing:" + Base64.getEncoder().withoutPadding().encodeToString(sourcePairingId) + ":"
+                + Base64.getEncoder().withoutPadding().encodeToString(destinationPairingId));
     }
 
     /**

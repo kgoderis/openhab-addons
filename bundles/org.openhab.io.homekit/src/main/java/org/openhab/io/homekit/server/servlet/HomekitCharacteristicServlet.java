@@ -31,10 +31,10 @@ import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.event.HomekitEvent;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
-import org.openhab.io.homekit.core.characteristic.HomekitBaseCharacteristic;
-import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicUpdateEvent;
-import org.openhab.io.homekit.event.manager.HomekitEventManager;
+import org.openhab.io.homekit.core.characteristic.AbstractHomekitCharacteristic;
 import org.openhab.io.homekit.event.core.HomekitEventMetadata;
+import org.openhab.io.homekit.event.manager.HomekitEventManager;
+import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicUpdateEvent;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.protocol.status.HomekitStatusCode;
 import org.openhab.io.homekit.util.HomekitDebouncer;
@@ -187,11 +187,12 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
                         .filter(characteristic -> characteristic != null).forEach(characteristic -> {
                             if (characteristicWrite.containsKey("value")) {
                                 try {
-                                    if (characteristic instanceof HomekitBaseCharacteristic<?> genericCharacteristic) {
+                                    if (characteristic instanceof AbstractHomekitCharacteristic<?> genericCharacteristic) {
                                         HomekitEvent newEvent = new HomekitCharacteristicUpdateEvent(server.getUID(),
                                                 genericCharacteristic.getUID(), genericCharacteristic, JsonValue.NULL,
-                                                characteristicWrite.get("value"), new HomekitEventMetadata(server.getUID(),
-                                                        null, server.getUID(), Collections.emptySet()));
+                                                characteristicWrite.get("value"),
+                                                new HomekitEventMetadata(server.getUID(), null, server.getUID(),
+                                                        Collections.emptySet()));
                                         eventManager.publishEvent(newEvent);
                                     }
                                 } catch (Exception e) {
@@ -208,11 +209,9 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
         } catch (Exception e) {
             logger.error("{}Error processing characteristic update", LOG_ERROR, e);
             response.setStatus(SC_MULTI_STATUS);
-            sendJsonResponse(response, Json.createObjectBuilder()
-                    .add("characteristics", Json.createArrayBuilder().add(
-                            Json.createObjectBuilder().add("status", HomekitStatusCode.UNABLE_TO_PERFORM.getKey()).build())
-                            .build())
-                    .build());
+            sendJsonResponse(response, Json.createObjectBuilder().add("characteristics", Json.createArrayBuilder()
+                    .add(Json.createObjectBuilder().add("status", HomekitStatusCode.UNABLE_TO_PERFORM.getKey()).build())
+                    .build()).build());
         }
     }
 
@@ -277,13 +276,13 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
     private void handleEventSubscription(HomekitCharacteristic<?> characteristic, boolean subscribe) {
         if (subscribe) {
             // Subscription handled in doGet
-            characteristic.setHasEvents(true);
+            characteristic.withEvents(true);
         } else {
             Set<AsyncContext> subscribers = characteristicSubscriptions.get(characteristic);
             if (subscribers != null) {
                 subscribers.clear();
             }
-            characteristic.setHasEvents(false);
+            characteristic.withEvents(false);
         }
     }
 

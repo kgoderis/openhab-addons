@@ -12,25 +12,27 @@ import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
+import java.util.Set;
+
 /**
  * * HomekitCharacteristic that exposes an Enum value. Enums are represented as an Integer value in the
  * Homekit protocol, and classes extending this one must handle the static mapping to an Integer
  * value.
  **/
 @NonNullByDefault
-public abstract class HomekitEnumCharacteristic extends HomekitBaseCharacteristic<Integer> {
+public abstract class HomekitEnumCharacteristic extends AbstractHomekitCharacteristic<Integer> {
 
     private final int maxValue;
 
-    public HomekitEnumCharacteristic(HomekitService service, long instanceId, boolean isWritable, boolean isReadable,
-            boolean hasEvents, String description, int maxValue, String type, HomekitEventManager eventManager) {
-        super(service, instanceId, "int", isWritable, isReadable, hasEvents, description, type, eventManager);
+    public HomekitEnumCharacteristic(HomekitService service, HomekitEventManager eventManager, int maxValue) {
+        super(service, eventManager);
         this.maxValue = maxValue;
+        withFormat("int").withPairedWrite(true).withPairedRead(true).withEvents(true);
         initializeValue();
     }
 
-    public HomekitEnumCharacteristic(HomekitService service, JsonValue value, HomekitEventManager eventManager) {
-        super(service, value, eventManager);
+    public HomekitEnumCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+        super(service, eventManager, value);
         JsonObject jsonObject = (JsonObject) value;
         this.maxValue = jsonObject.containsKey("maxValue") ? jsonObject.getInt("maxValue") : 1;
         initializeValue();
@@ -116,5 +118,19 @@ public abstract class HomekitEnumCharacteristic extends HomekitBaseCharacteristi
 
     public static String getAcceptedItemType() {
         return CoreItemFactory.NUMBER;
+    }
+
+    @Override
+    public boolean isAllowedValue(Integer value) {
+        return value != null && value >= 0 && value < maxValue;
+    }
+
+    @Override
+    public Set<Integer> getAllowedValues() {
+        Set<Integer> values = new java.util.HashSet<>();
+        for (int i = 0; i < maxValue; i++) {
+            values.add(i);
+        }
+        return values;
     }
 }

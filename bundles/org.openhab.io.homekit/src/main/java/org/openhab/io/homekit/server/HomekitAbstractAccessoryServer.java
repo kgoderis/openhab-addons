@@ -17,6 +17,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryCategory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
+import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.api.listener.HomekitAccessoryServerChangeListener;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
@@ -24,9 +25,8 @@ import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.accessory.HomekitAccessoryServerState;
-import org.openhab.io.homekit.event.model.server.HomekitAccessoryServerEvent;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import org.openhab.io.homekit.api.event.HomekitEventType;
+import org.openhab.io.homekit.event.model.server.HomekitAccessoryServerEvent;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.exception.HomekitConfigurationException;
 import org.openhab.io.homekit.exception.HomekitInvalidStateTransitionException;
@@ -66,19 +66,23 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
     private volatile boolean isShutdown = false;
 
     /** Server state management */
-    private static final Map<HomekitAccessoryServerState, Set<HomekitAccessoryServerState>> VALID_STATE_TRANSITIONS = Map.of(
-            HomekitAccessoryServerState.UNKNOWN, Set.of(HomekitAccessoryServerState.READY), HomekitAccessoryServerState.READY,
-            Set.of(HomekitAccessoryServerState.STOPPED, HomekitAccessoryServerState.CONNECTED), HomekitAccessoryServerState.CONNECTED,
-            Set.of(HomekitAccessoryServerState.DISCONNECTED, HomekitAccessoryServerState.PAIR_SETUP_INITIAL),
-            HomekitAccessoryServerState.DISCONNECTED, Set.of(HomekitAccessoryServerState.CONNECTED, HomekitAccessoryServerState.STOPPED),
-            HomekitAccessoryServerState.PAIR_SETUP_INITIAL,
-            Set.of(HomekitAccessoryServerState.PAIRED, HomekitAccessoryServerState.DISCONNECTED), HomekitAccessoryServerState.PAIRED,
-            Set.of(HomekitAccessoryServerState.PAIR_UNVERIFIED, HomekitAccessoryServerState.DISCONNECTED),
-            HomekitAccessoryServerState.PAIR_UNVERIFIED,
-            Set.of(HomekitAccessoryServerState.PAIR_VERIFIED, HomekitAccessoryServerState.DISCONNECTED),
-            HomekitAccessoryServerState.PAIR_VERIFIED,
-            Set.of(HomekitAccessoryServerState.PAIR_UNVERIFIED, HomekitAccessoryServerState.DISCONNECTED),
-            HomekitAccessoryServerState.STOPPED, Set.of(HomekitAccessoryServerState.READY));
+    private static final Map<HomekitAccessoryServerState, Set<HomekitAccessoryServerState>> VALID_STATE_TRANSITIONS = Map
+            .of(HomekitAccessoryServerState.UNKNOWN, Set.of(HomekitAccessoryServerState.READY),
+                    HomekitAccessoryServerState.READY,
+                    Set.of(HomekitAccessoryServerState.STOPPED, HomekitAccessoryServerState.CONNECTED),
+                    HomekitAccessoryServerState.CONNECTED,
+                    Set.of(HomekitAccessoryServerState.DISCONNECTED, HomekitAccessoryServerState.PAIR_SETUP_INITIAL),
+                    HomekitAccessoryServerState.DISCONNECTED,
+                    Set.of(HomekitAccessoryServerState.CONNECTED, HomekitAccessoryServerState.STOPPED),
+                    HomekitAccessoryServerState.PAIR_SETUP_INITIAL,
+                    Set.of(HomekitAccessoryServerState.PAIRED, HomekitAccessoryServerState.DISCONNECTED),
+                    HomekitAccessoryServerState.PAIRED,
+                    Set.of(HomekitAccessoryServerState.PAIR_UNVERIFIED, HomekitAccessoryServerState.DISCONNECTED),
+                    HomekitAccessoryServerState.PAIR_UNVERIFIED,
+                    Set.of(HomekitAccessoryServerState.PAIR_VERIFIED, HomekitAccessoryServerState.DISCONNECTED),
+                    HomekitAccessoryServerState.PAIR_VERIFIED,
+                    Set.of(HomekitAccessoryServerState.PAIR_UNVERIFIED, HomekitAccessoryServerState.DISCONNECTED),
+                    HomekitAccessoryServerState.STOPPED, Set.of(HomekitAccessoryServerState.READY));
 
     // ========== Server Configuration ==========
     private final HomekitAccessoryCategory category;
@@ -98,10 +102,10 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
     protected final Set<HomekitFactory> homekitFactories;
 
     // ========== Constructor ==========
-    public HomekitAbstractAccessoryServer(HomekitAccessoryCategory category, InetAddress address, int port, byte[] pairingId,
-            byte[] privateKey, HomekitAccessoryRegistry accessoryRegistry, HomekitPairingRegistry pairingRegistry,
-            HomekitEventManager eventManager, Set<HomekitFactory> homekitFactories)
-            throws HomekitConfigurationException {
+    public HomekitAbstractAccessoryServer(HomekitAccessoryCategory category, InetAddress address, int port,
+            byte[] pairingId, byte[] privateKey, HomekitAccessoryRegistry accessoryRegistry,
+            HomekitPairingRegistry pairingRegistry, HomekitEventManager eventManager,
+            Set<HomekitFactory> homekitFactories) throws HomekitConfigurationException {
         super();
         validateConstructorParameters(category, address, port, pairingId, privateKey, accessoryRegistry,
                 pairingRegistry);
@@ -122,8 +126,8 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
     }
 
     private void validateConstructorParameters(HomekitAccessoryCategory category, InetAddress address, int port,
-            byte[] pairingId, byte[] privateKey, HomekitAccessoryRegistry accessoryRegistry, HomekitPairingRegistry pairingRegistry)
-            throws HomekitConfigurationException {
+            byte[] pairingId, byte[] privateKey, HomekitAccessoryRegistry accessoryRegistry,
+            HomekitPairingRegistry pairingRegistry) throws HomekitConfigurationException {
         if (port <= 0 || port > 65535) {
             throw new HomekitConfigurationException(
                     String.format("Homekit server port %d is invalid - must be between 1 and 65535", port));
@@ -290,7 +294,8 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         return currentState;
     }
 
-    private void validateStateTransition(HomekitAccessoryServerState newState) throws HomekitInvalidStateTransitionException {
+    private void validateStateTransition(HomekitAccessoryServerState newState)
+            throws HomekitInvalidStateTransitionException {
         if (!isValidStateTransition(currentState, newState)) {
             throw new HomekitInvalidStateTransitionException(currentState, newState);
         }
@@ -316,8 +321,8 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
                 currentState = newState;
             }
 
-            eventManager.publishEvent(new HomekitAccessoryServerEvent(newState.getEventType(), this, (HomekitAccessory) null,
-                    (HomekitService) null, (HomekitCharacteristic<?>) null));
+            eventManager.publishEvent(new HomekitAccessoryServerEvent(newState.getEventType(), this,
+                    (HomekitAccessory) null, (HomekitService) null, (HomekitCharacteristic<?>) null));
             logger.debug("{}State change completed", LOG_STATE);
         } catch (HomekitServerException e) {
             // Rollback on failure
@@ -345,8 +350,8 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
             try {
                 configurationIndex = newIndex;
                 eventManager.publishEvent(
-                        new HomekitAccessoryServerEvent(HomekitEventType.SERVER_STATE_CONFIGURATION_NUMBER_CHANGED, this,
-                                (HomekitAccessory) null, (HomekitService) null, (HomekitCharacteristic<?>) null));
+                        new HomekitAccessoryServerEvent(HomekitEventType.SERVER_STATE_CONFIGURATION_NUMBER_CHANGED,
+                                this, (HomekitAccessory) null, (HomekitService) null, (HomekitCharacteristic<?>) null));
                 logger.info("{}Configuration index updated from {} to {}", LOG_CONFIG, oldIndex, newIndex);
             } catch (Exception e) {
                 // Rollback on failure
@@ -466,16 +471,19 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
 
             if (oldPairing != null) {
                 logger.debug("{}Removed existing pairing - Destination: {}, Public Key: {}", LOG_PAIRING,
-                        HomekitByte.toHexString(oldPairing.getDestinationId()), HomekitByte.toHexString(oldPairing.getPublicKey()));
+                        HomekitByte.toHexString(oldPairing.getDestinationId()),
+                        HomekitByte.toHexString(oldPairing.getPublicKey()));
                 setState(HomekitAccessoryServerState.DISCONNECTED);
             }
 
             pairingRegistry.add(newPairing);
             logger.debug("{}HomekitPairing added successfully", LOG_PAIRING);
             setState(HomekitAccessoryServerState.PAIRED);
-            logger.info("{}HomekitPairing added successfully - ID: {}", LOG_PAIRING, HomekitByte.toHexString(pairingId));
+            logger.info("{}HomekitPairing added successfully - ID: {}", LOG_PAIRING,
+                    HomekitByte.toHexString(pairingId));
         } catch (HomekitServerException e) {
-            String error = String.format("Failed to add pairing %s: %s", HomekitByte.toHexString(pairingId), e.getMessage());
+            String error = String.format("Failed to add pairing %s: %s", HomekitByte.toHexString(pairingId),
+                    e.getMessage());
             logger.error("{}HomekitPairing addition error: {}", LOG_ERROR, error, e);
             throw new HomekitServerException(error, e);
         }
@@ -510,7 +518,8 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
             HomekitPairingUID uid = new HomekitPairingUID(getPairingId(), pairingId);
             if (pairingRegistry.remove(uid) != null) {
                 setState(HomekitAccessoryServerState.UNPAIRED);
-                logger.info("{}HomekitPairing removed successfully - ID: {}", LOG_PAIRING, HomekitByte.toHexString(pairingId));
+                logger.info("{}HomekitPairing removed successfully - ID: {}", LOG_PAIRING,
+                        HomekitByte.toHexString(pairingId));
             }
         } catch (HomekitServerException e) {
             String error = String.format("Failed to remove pairing %s: %s", HomekitByte.toHexString(pairingId),

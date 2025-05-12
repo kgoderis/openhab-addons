@@ -210,13 +210,15 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
             hkdf.generateBytes(sessionKey, 0, 32);
             logger.info("{}Stage 3 Session Key is {}", LOG_PAIRING, HomekitByte.toHexString(sessionKey));
 
-            HomekitChachaDecoder chachaDecoder = new HomekitChachaDecoder(sessionKey, "PS-Msg05".getBytes(StandardCharsets.UTF_8));
+            HomekitChachaDecoder chachaDecoder = new HomekitChachaDecoder(sessionKey,
+                    "PS-Msg05".getBytes(StandardCharsets.UTF_8));
             byte[] plaintext = chachaDecoder.decodeCiphertext(getAuthTagData(body), getMessageData(body));
             logger.info("{}Stage 3 Plaintext is {}", LOG_EVENT, HomekitByte.toHexString(plaintext));
 
             DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(plaintext);
             byte[] clientPairingIdentifier = d.getBytes(HomekitMessage.IDENTIFIER);
-            logger.info("{}Stage 3 Client HomekitPairing Id is {}", LOG_PAIRING, HomekitByte.toHexString(clientPairingIdentifier));
+            logger.info("{}Stage 3 Client HomekitPairing Id is {}", LOG_PAIRING,
+                    HomekitByte.toHexString(clientPairingIdentifier));
 
             byte[] clientLongtermPublicKey = d.getBytes(HomekitMessage.PUBLIC_KEY);
             logger.info("{}Stage 3 Client Long Term Public Key is {}", LOG_PAIRING,
@@ -232,7 +234,8 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
             byte[] clientDeviceX = new byte[32];
             hkdf.generateBytes(clientDeviceX, 0, 32);
 
-            byte[] clientDeviceInfo = HomekitByte.joinBytes(clientDeviceX, clientPairingIdentifier, clientLongtermPublicKey);
+            byte[] clientDeviceInfo = HomekitByte.joinBytes(clientDeviceX, clientPairingIdentifier,
+                    clientLongtermPublicKey);
             logger.info("{}Stage 3 Client Device Info is {}", LOG_PAIRING, HomekitByte.toHexString(clientDeviceInfo));
 
             Encoder encoder = HomekitTypeLengthValueEncoderDecoder.getEncoder();
@@ -277,13 +280,17 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
                         "Pair-Setup-HomekitAccessory-Sign-Info".getBytes(StandardCharsets.UTF_8)));
                 byte[] accessoryDeviceX = new byte[32];
                 hkdf.generateBytes(accessoryDeviceX, 0, 32);
-                logger.info("{}Stage 3 HomekitAccessory Device X is {}", LOG_PAIRING, HomekitByte.toHexString(accessoryDeviceX));
+                logger.info("{}Stage 3 HomekitAccessory Device X is {}", LOG_PAIRING,
+                        HomekitByte.toHexString(accessoryDeviceX));
 
-                logger.info("{}Stage 3 Server Private Key is {}", LOG_PAIRING, HomekitByte.toHexString(server.getSecretKey()));
+                logger.info("{}Stage 3 Server Private Key is {}", LOG_PAIRING,
+                        HomekitByte.toHexString(server.getSecretKey()));
                 HomekitEdsaSigner signer = new HomekitEdsaSigner(server.getSecretKey());
 
-                byte[] accessoryInfo = HomekitByte.joinBytes(accessoryDeviceX, server.getPairingId(), signer.getPublicKey());
-                logger.info("{}Stage 3 HomekitAccessory Device Info is {}", LOG_PAIRING, HomekitByte.toHexString(accessoryInfo));
+                byte[] accessoryInfo = HomekitByte.joinBytes(accessoryDeviceX, server.getPairingId(),
+                        signer.getPublicKey());
+                logger.info("{}Stage 3 HomekitAccessory Device Info is {}", LOG_PAIRING,
+                        HomekitByte.toHexString(accessoryInfo));
 
                 byte[] accessorySignature = null;
                 try {
@@ -298,7 +305,8 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-                logger.info("{}Stage 3 HomekitAccessory Signature is {}", LOG_PAIRING, HomekitByte.toHexString(accessorySignature));
+                logger.info("{}Stage 3 HomekitAccessory Signature is {}", LOG_PAIRING,
+                        HomekitByte.toHexString(accessorySignature));
 
                 logger.info("{}Stage 3 Server HomekitPairing Id is {}", LOG_PAIRING, server.getPairingId());
                 encoder.add(HomekitMessage.IDENTIFIER, server.getPairingId());

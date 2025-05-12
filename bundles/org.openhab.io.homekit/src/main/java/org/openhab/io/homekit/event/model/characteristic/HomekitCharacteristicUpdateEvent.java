@@ -16,16 +16,20 @@ import org.openhab.io.homekit.event.core.HomekitEventMetadata;
 @NonNullByDefault
 public class HomekitCharacteristicUpdateEvent extends HomekitCharacteristicEvent {
 
-    public HomekitCharacteristicUpdateEvent(UID publisherUID, UID subscriberUID,HomekitCharacteristic<?> characteristic, @Nullable JsonValue oldValue, @Nullable JsonValue newValue,HomekitEventMetadata metadata) {
-        super(HomekitEventType.CHARACTERISTIC_CHANGE_VALUE, publisherUID, subscriberUID, characteristic, oldValue, newValue,metadata);
+    public HomekitCharacteristicUpdateEvent(UID publisherUID, UID subscriberUID,
+            HomekitCharacteristic<?> characteristic, @Nullable JsonValue oldValue, @Nullable JsonValue newValue,
+            HomekitEventMetadata metadata) {
+        super(HomekitEventType.CHARACTERISTIC_CHANGE_VALUE, publisherUID, subscriberUID, characteristic, oldValue,
+                newValue, metadata);
     }
 
-    public HomekitCharacteristicUpdateEvent(HomekitCharacteristic<?> characteristic, @Nullable JsonValue oldValue, @Nullable JsonValue newValue) {
+    public HomekitCharacteristicUpdateEvent(HomekitCharacteristic<?> characteristic, @Nullable JsonValue oldValue,
+            @Nullable JsonValue newValue) {
         super(HomekitEventType.CHARACTERISTIC_CHANGE_VALUE, characteristic, oldValue, newValue);
     }
 
-    public HomekitCharacteristicUpdateEvent(HomekitCharacteristic<?> characteristic, @Nullable JsonValue oldValue, @Nullable JsonValue newValue,
-            HomekitEventMetadata metadata) {
+    public HomekitCharacteristicUpdateEvent(HomekitCharacteristic<?> characteristic, @Nullable JsonValue oldValue,
+            @Nullable JsonValue newValue, HomekitEventMetadata metadata) {
         super(HomekitEventType.CHARACTERISTIC_CHANGE_VALUE, characteristic, oldValue, newValue, metadata);
     }
 }

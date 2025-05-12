@@ -44,7 +44,6 @@ import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * Manages Homekit event publishing and subscription for the OpenHAB Homekit integration.
  * <p>
@@ -792,7 +791,6 @@ public class HomekitEventManager {
     /**
      * This method is kept for backward compatibility.
      */
-    @Deprecated
     public void notifyUIDChange(HomekitAccessoryUID oldUID, HomekitAccessoryUID newUID) {
         updateAccessoryUID(oldUID, newUID);
     }

@@ -7,7 +7,6 @@ import java.util.Set;
 
 import org.openhab.io.homekit.api.event.HomekitEventType;
 
-
 /**
  * Event processing graph implementation with analysis capabilities.
  */

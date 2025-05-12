@@ -21,16 +21,16 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  */
 @NonNullByDefault
-public abstract class HomekitBooleanCharacteristic extends HomekitBaseCharacteristic<Boolean> {
+public abstract class HomekitBooleanCharacteristic extends AbstractHomekitCharacteristic<Boolean> {
 
-    public HomekitBooleanCharacteristic(HomekitService service, long instanceId, boolean isWritable, boolean isReadable,
-            boolean hasEvents, String description, String type, HomekitEventManager eventManager) {
-        super(service, instanceId, "bool", isWritable, isReadable, hasEvents, description, type, eventManager);
+    public HomekitBooleanCharacteristic(HomekitService service, HomekitEventManager eventManager) {
+        super(service, eventManager);
+        withFormat("bool").withPairedWrite(true).withPairedRead(true).withEvents(true);
         initializeValue();
     }
 
-    public HomekitBooleanCharacteristic(HomekitService service, JsonValue value, HomekitEventManager eventManager) {
-        super(service, value, eventManager);
+    public HomekitBooleanCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+        super(service, eventManager, value);
         initializeValue();
     }
 

@@ -94,8 +94,10 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
         HomekitEncryptionEngine.getSecureRandom().nextBytes(accessoryPrivateKey);
         Curve25519.keygen(accessoryPublicKey, null, accessoryPrivateKey);
         session.setAttribute("accessoryPublicKey", accessoryPublicKey);
-        logger.info("{}Stage 1 HomekitAccessory Public Key is {}", LOG_ACCESSORY, HomekitByte.toHexString(accessoryPublicKey));
-        logger.info("{}Stage 1 HomekitAccessory Private Key is {}", LOG_ACCESSORY, HomekitByte.toHexString(accessoryPrivateKey));
+        logger.info("{}Stage 1 HomekitAccessory Public Key is {}", LOG_ACCESSORY,
+                HomekitByte.toHexString(accessoryPublicKey));
+        logger.info("{}Stage 1 HomekitAccessory Private Key is {}", LOG_ACCESSORY,
+                HomekitByte.toHexString(accessoryPrivateKey));
 
         byte[] sharedSecret = new byte[32];
         Curve25519.curve(sharedSecret, accessoryPrivateKey, clientPublicKey);
@@ -103,8 +105,8 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
         logger.info("{}Stage 1 Shared Secret is {}", LOG_ACCESSORY, HomekitByte.toHexString(sharedSecret));
 
         logger.info("{}Stage 1 HomekitAccessory HomekitPairing Id is {}", LOG_PAIRING, server.getPairingId());
-        byte[] accessoryInfo = org.openhab.io.homekit.util.HomekitByte.joinBytes(accessoryPublicKey, server.getPairingId(),
-                clientPublicKey);
+        byte[] accessoryInfo = org.openhab.io.homekit.util.HomekitByte.joinBytes(accessoryPublicKey,
+                server.getPairingId(), clientPublicKey);
         logger.info("{}Stage 1 HomekitAccessory Info is {}", LOG_EVENT, HomekitByte.toHexString(accessoryInfo));
 
         byte[] accessorySignature = null;
@@ -121,7 +123,8 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
         logger.info("{}Stage 1 HomekitAccessory HomekitPairing Id is {}", LOG_PAIRING, server.getPairingId());
         encoder.add(HomekitMessage.IDENTIFIER, server.getPairingId());
 
-        logger.info("{}Stage 1 HomekitAccessory Signature is {}", LOG_ACCESSORY, HomekitByte.toHexString(accessorySignature));
+        logger.info("{}Stage 1 HomekitAccessory Signature is {}", LOG_ACCESSORY,
+                HomekitByte.toHexString(accessorySignature));
         encoder.add(HomekitMessage.SIGNATURE, accessorySignature);
         byte[] plaintext = encoder.toByteArray();
 
@@ -159,7 +162,8 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
 
             HttpSession session = request.getSession();
             byte[] sessionKey = (byte[]) session.getAttribute("sessionKey");
-            logger.info("{}Stage 2 Get Session Key {} from Session", LOG_ACCESSORY, HomekitByte.toHexString(sessionKey));
+            logger.info("{}Stage 2 Get Session Key {} from Session", LOG_ACCESSORY,
+                    HomekitByte.toHexString(sessionKey));
 
             byte[] clientPublicKey = (byte[]) session.getAttribute("clientPublicKey");
             logger.info("{}Stage 2 Get Client Public Key {} from Session", LOG_ACCESSORY,
@@ -170,12 +174,14 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
                     HomekitByte.toHexString(accessoryPublicKey));
 
             byte[] sharedSecret = (byte[]) session.getAttribute("sharedSecret");
-            logger.info("{}Stage 2 Get Shared Secret {} from Session", LOG_ACCESSORY, HomekitByte.toHexString(sharedSecret));
+            logger.info("{}Stage 2 Get Shared Secret {} from Session", LOG_ACCESSORY,
+                    HomekitByte.toHexString(sharedSecret));
 
             Encoder encoder = HomekitTypeLengthValueEncoderDecoder.getEncoder();
 
             byte[] plaintext = null;
-            HomekitChachaDecoder chacha = new HomekitChachaDecoder(sessionKey, "PV-Msg03".getBytes(StandardCharsets.UTF_8));
+            HomekitChachaDecoder chacha = new HomekitChachaDecoder(sessionKey,
+                    "PV-Msg03".getBytes(StandardCharsets.UTF_8));
             try {
                 plaintext = chacha.decodeCiphertext(getAuthTagData(body), getMessageData(body));
             } catch (Exception e) {
@@ -191,10 +197,12 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
                 DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(plaintext);
 
                 clientPairingId = d.getBytes(HomekitMessage.IDENTIFIER);
-                logger.info("{}Stage 2 Client HomekitPairing Id is {}", LOG_ACCESSORY, HomekitByte.toHexString(clientPairingId));
+                logger.info("{}Stage 2 Client HomekitPairing Id is {}", LOG_ACCESSORY,
+                        HomekitByte.toHexString(clientPairingId));
 
                 clientSignature = d.getBytes(HomekitMessage.SIGNATURE);
-                logger.info("{}Stage 2 Client Signature is {}", LOG_ACCESSORY, HomekitByte.toHexString(clientSignature));
+                logger.info("{}Stage 2 Client Signature is {}", LOG_ACCESSORY,
+                        HomekitByte.toHexString(clientSignature));
 
                 clientLongtermPublicKey = server.getPublicKey(clientPairingId);
                 if (clientLongtermPublicKey == null) {
@@ -211,8 +219,8 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
                 byte[] clientDeviceInfo = HomekitByte.joinBytes(clientPublicKey, clientPairingId, accessoryPublicKey);
 
                 try {
-                    boolean signatureVerification = new HomekitEdsaVerifier(clientLongtermPublicKey).verify(clientDeviceInfo,
-                            clientSignature);
+                    boolean signatureVerification = new HomekitEdsaVerifier(clientLongtermPublicKey)
+                            .verify(clientDeviceInfo, clientSignature);
                     if (!signatureVerification) {
                         isError = true;
                     }

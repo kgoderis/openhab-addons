@@ -12,24 +12,27 @@ import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
+import java.util.Set;
+
 @NonNullByDefault
-public abstract class HomekitLongCharacteristic extends HomekitBaseCharacteristic<Long> {
+public abstract class HomekitLongCharacteristic extends AbstractHomekitCharacteristic<Long> {
 
     private final long minValue;
     private final long maxValue;
     private final long minStep;
 
-    public HomekitLongCharacteristic(HomekitService service, long instanceId, boolean isWritable, boolean isReadable,
-            boolean hasEvents, String description, long minValue, long maxValue, long minStep, String type, HomekitEventManager eventManager) {
-        super(service, instanceId, "uint32", isWritable, isReadable, hasEvents, description, type, eventManager);
+    public HomekitLongCharacteristic(HomekitService service, HomekitEventManager eventManager, long minValue,
+            long maxValue, long minStep) {
+        super(service, eventManager);
         this.minValue = minValue;
         this.maxValue = maxValue;
         this.minStep = minStep;
+        withFormat("uint32").withPairedWrite(true).withPairedRead(true).withEvents(true);
         initializeValue();
     }
 
-    public HomekitLongCharacteristic(HomekitService service, JsonValue value, HomekitEventManager eventManager) {
-        super(service, value, eventManager);
+    public HomekitLongCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+        super(service, eventManager, value);
         JsonObject jsonObject = (JsonObject) value;
         this.minValue = jsonObject.containsKey("minValue") ? jsonObject.getJsonNumber("minValue").longValue() : 0;
         this.maxValue = jsonObject.containsKey("maxValue") ? jsonObject.getJsonNumber("maxValue").longValue()
@@ -109,5 +112,15 @@ public abstract class HomekitLongCharacteristic extends HomekitBaseCharacteristi
 
     public static String getAcceptedItemType() {
         return CoreItemFactory.NUMBER;
+    }
+
+    @Override
+    public boolean isAllowedValue(Long value) {
+        return value != null && value >= minValue && value <= maxValue;
+    }
+
+    @Override
+    public Set<Long> getAllowedValues() {
+        return java.util.Collections.emptySet(); // No specific allowed values, just a range
     }
 }

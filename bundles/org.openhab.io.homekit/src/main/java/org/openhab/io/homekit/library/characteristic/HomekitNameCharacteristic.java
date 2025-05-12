@@ -6,24 +6,23 @@ import javax.json.JsonValue;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
+import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitReadOnlyStringCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 @NonNullByDefault
+@HomekitCharacteristicType(type = "00000023-0000-1000-8000-0026BB765291", name = "Name", tag = "name")
 public class HomekitNameCharacteristic extends HomekitReadOnlyStringCharacteristic {
-    private static final String TYPE = "00000023-0000-1000-8000-0026BB765291";
 
-    public HomekitNameCharacteristic(HomekitService service, long instanceId, HomekitEventManager eventManager) {
-        super(service, instanceId, "Name", TYPE, eventManager);
+    public HomekitNameCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+        super(service, eventManager);
+        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(false)
+                .withDescription("Name");
     }
 
-    public HomekitNameCharacteristic(HomekitService service, JsonValue value, HomekitEventManager eventManager) {
-        super(service, value, eventManager);
-    }
-
-    public static String getType() {
-        return TYPE;
+    public HomekitNameCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+        super(service, eventManager, value);
     }
 
     @Override
@@ -60,9 +59,5 @@ public class HomekitNameCharacteristic extends HomekitReadOnlyStringCharacterist
     @Override
     public JsonValue toValueJson(@Nullable String value) {
         return super.toValueJson(value);
-    }
-
-    public static String getTag() {
-        return HomekitNameCharacteristic.class.getSimpleName().replace("HomekitCharacteristic", "");
     }
 }

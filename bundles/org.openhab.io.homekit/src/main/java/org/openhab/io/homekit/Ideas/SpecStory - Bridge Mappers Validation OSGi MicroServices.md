@@ -5071,7 +5071,7 @@ In `addCharacteristicToService`, after adding the characteristic:
 CharacteristicChannelMapper mapper = new CharacteristicItemMapper(item, characteristic, eventPublisher, eventManager);
 mapper.subscribeToItemUpdates();
 mapper.subscribeToCharacteristicUpdates();
-mapperMap.put(item.getName() + ":" + characteristic.getInstanceType(), mapper);
+mapperMap.put(item.getName() + ":" + characteristic.getType(), mapper);
 ```
 
 #### **C. On State Change**
@@ -5083,7 +5083,7 @@ public void stateChanged(Item item, State oldState, State newState) {
     Collection<HomekitCharacteristic<?>> characteristics = characteristicMap.get(item.getName());
     if (characteristics != null) {
         for (HomekitCharacteristic<?> c : characteristics) {
-            CharacteristicChannelMapper mapper = mapperMap.get(item.getName() + ":" + c.getInstanceType());
+            CharacteristicChannelMapper mapper = mapperMap.get(item.getName() + ":" + c.getType());
             if (mapper != null) {
                 mapper.updateCharacteristicFromItemState(newState);
             } else {
@@ -6152,7 +6152,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                     eventManager
                 );
                 mapper.subscribe();
-                mapperMap.put(item.getName() + ":" + characteristic.getInstanceType(), mapper);
+                mapperMap.put(item.getName() + ":" + characteristic.getType(), mapper);
             }
         } catch (Exception e) {
             // Handle error
@@ -9315,7 +9315,7 @@ The **best practice** is to use **the same identifier you use at runtime to look
 ## **Why Use Type Strings?**
 
 - **Consistency:**  
-  Your `HomekitService` and `HomekitCharacteristic` classes already use type strings for identification (see `getInstanceType()` and `isType(String)`).
+  Your `HomekitService` and `HomekitCharacteristic` classes already use type strings for identification (see `getType()` and `isType(String)`).
 - **Portability:**  
   Type strings are stable across refactoring and can be used in config, metadata, and mapping files.
 - **Alignment with Homekit Spec:**  
@@ -9340,7 +9340,7 @@ public static Set<String> getMandatoryCharacteristics(String serviceType) {
 
 **Usage:**
 ```java
-Set<String> mandatory = getMandatoryCharacteristics(service.getInstanceType());
+Set<String> mandatory = getMandatoryCharacteristics(service.getType());
 Set<String> present = service.getCharacteristics().stream()
     .map(HomekitCharacteristic::getInstanceType)
     .collect(Collectors.toSet());
@@ -9392,7 +9392,7 @@ You are correct: in openHAB Homekit (and in the HAP specification), the **canoni
 - **Robust to localization/refactoring:**  
   Human-readable names or tags can change, but the UUID is stable.
 - **Consistent with openHAB APIs:**  
-  Methods like `getType()` and `getInstanceType()` return the UUID.
+  Methods like `getType()` and `getType()` return the UUID.
 
 ---
 
@@ -9422,10 +9422,10 @@ public static Set<String> getMandatoryCharacteristics(String serviceTypeUUID) {
 
 **Usage:**
 ```java
-String serviceTypeUUID = service.getInstanceType(); // or service.getType()
+String serviceTypeUUID = service.getType(); // or service.getType()
 Set<String> mandatory = getMandatoryCharacteristics(serviceTypeUUID);
 Set<String> present = service.getCharacteristics().stream()
-    .map(HomekitCharacteristic::getType) // or getInstanceType(), as appropriate
+    .map(HomekitCharacteristic::getType) // or getType(), as appropriate
     .collect(Collectors.toSet());
 for (String m : mandatory) {
     if (!present.contains(m)) {

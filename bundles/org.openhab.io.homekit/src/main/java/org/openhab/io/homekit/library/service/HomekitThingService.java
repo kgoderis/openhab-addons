@@ -6,19 +6,21 @@ import javax.json.JsonValue;
 
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.factory.HomekitFactory;
-import org.openhab.io.homekit.core.service.HomekitBaseService;
+import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.util.HomekitUUID5;
 
-public class HomekitThingService extends HomekitBaseService {
+public class HomekitThingService extends AbstractHomekitService {
     private static final String TYPE = HomekitUUID5
             .fromNamespaceAndString(HomekitUUID5.NAMESPACE_SERVICE, HomekitThingService.class.getName()).toString();
 
-    public HomekitThingService(HomekitAccessory accessory, long instanceId, boolean extend, String serviceName,HomekitEventManager eventManager, Collection<HomekitFactory> factories) throws Exception {
+    public HomekitThingService(HomekitAccessory accessory, long instanceId, boolean extend, String serviceName,
+            HomekitEventManager eventManager, Collection<HomekitFactory> factories) throws Exception {
         super(accessory, instanceId, extend, serviceName, TYPE, eventManager, factories);
     }
 
-    public HomekitThingService(HomekitAccessory accessory, JsonValue value, String name, HomekitEventManager eventManager, Collection<HomekitFactory> factories) {
+    public HomekitThingService(HomekitAccessory accessory, JsonValue value, String name,
+            HomekitEventManager eventManager, Collection<HomekitFactory> factories) {
         super(accessory, value, name, eventManager, factories);
     }
 

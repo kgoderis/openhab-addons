@@ -7,10 +7,10 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
-import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
-import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import org.openhab.io.homekit.event.core.HomekitEventSubscription;
 import org.openhab.io.homekit.api.event.HomekitEventType;
+import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
+import org.openhab.io.homekit.event.core.HomekitEventSubscription;
+import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.util.HomekitUID;
 import org.slf4j.Logger;
@@ -49,8 +49,9 @@ public class HomekitAccessoryBridge {
      * @param localAccessory The local accessory to be added to the local server
      * @throws HomekitAccessoryOperationException if there is an error adding or removing the accessory
      */
-    public void bridgeAccessory(HomekitAccessory remoteAccessory, HomekitAccessoryServer remoteServer, HomekitAccessoryServer localServer,
-            HomekitAccessory localAccessory) throws HomekitAccessoryOperationException {
+    public void bridgeAccessory(HomekitAccessory remoteAccessory, HomekitAccessoryServer remoteServer,
+            HomekitAccessoryServer localServer, HomekitAccessory localAccessory)
+            throws HomekitAccessoryOperationException {
         logger.debug("{}Bridging accessory {} from remote server {} to local server {}", LOG_PREFIX,
                 remoteAccessory.getUID(), remoteServer.getUID(), localServer.getUID());
 
@@ -174,7 +175,8 @@ public class HomekitAccessoryBridge {
         final HomekitAccessory localAccessory;
 
         BridgeContext(List<HomekitEventSubscription> remoteSubs, List<HomekitEventSubscription> localSubs,
-                HomekitAccessoryServer remoteServer, HomekitAccessoryServer localServer, HomekitAccessory localAccessory) {
+                HomekitAccessoryServer remoteServer, HomekitAccessoryServer localServer,
+                HomekitAccessory localAccessory) {
             this.remoteSubs = remoteSubs;
             this.localSubs = localSubs;
             this.remoteServer = remoteServer;

@@ -21,7 +21,8 @@ public class HomekitSubscriptionFailureEvent extends AbstractHomekitEvent {
 
     public HomekitSubscriptionFailureEvent(UID publisherUid, UID subscriberUid, HomekitEventType failedEventType,
             String errorMessage, Throwable cause) {
-        super(HomekitEventType.SUBSCRIPTION_FAILED, publisherUid, HomekitUID.WILDCARD_UID, new HomekitEventMetadata(publisherUid, null, null, Collections.emptySet()));
+        super(HomekitEventType.SUBSCRIPTION_FAILED, publisherUid, HomekitUID.WILDCARD_UID,
+                new HomekitEventMetadata(publisherUid, null, null, Collections.emptySet()));
         this.subscriberUid = subscriberUid;
         this.failedEventType = failedEventType;
         this.errorMessage = errorMessage;
@@ -46,7 +47,7 @@ public class HomekitSubscriptionFailureEvent extends AbstractHomekitEvent {
 
     @Override
     public String toString() {
-        return "HomekitSubscriptionFailureEvent{" + "subscriberUid=" + subscriberUid + ", errorMessage='" + errorMessage + '\''
-                + ", failedEventType=" + failedEventType + ", timestamp=" + getTimestamp() + '}';
+        return "HomekitSubscriptionFailureEvent{" + "subscriberUid=" + subscriberUid + ", errorMessage='" + errorMessage
+                + '\'' + ", failedEventType=" + failedEventType + ", timestamp=" + getTimestamp() + '}';
     }
 }

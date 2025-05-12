@@ -117,7 +117,8 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
                         continue;
                     }
 
-                    Optional<HomekitCharacteristic<?>> characteristic = service.get().getCharacteristic(characteristicType);
+                    Optional<HomekitCharacteristic<?>> characteristic = service.get()
+                            .getCharacteristic(characteristicType);
                     if (characteristic.isEmpty()) {
                         logger.warn("HomekitCharacteristic {} not found in service {}", characteristicType, serviceTag);
                         continue;
@@ -140,7 +141,7 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
             ChannelUID channelUID = getChannelUID(characteristic);
 
             ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
-                    characteristic.getInstanceType());
+                    characteristic.getType());
             ChannelType channelType = homekitChannelTypeProvider.getChannelType(channelTypeUID, null);
 
             if (channelType == null) {
@@ -173,7 +174,7 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
     // }
 
     // try {
-    // String serviceTag = homekitThingTypeProvider.getServiceTag(service.getInstanceType());
+    // String serviceTag = homekitThingTypeProvider.getServiceTag(service.getType());
     // String groupId = serviceTag + "_" + service.getInstanceId();
 
     // // // Create channel group for service
@@ -197,10 +198,10 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
     // private void addChannelGroupForService(HomekitService service) {
     // logger.info("Adding channel group for service: {}", service.getUID());
     // try {
-    // String groupId = homekitThingTypeProvider.getServiceTag(service.getInstanceType()) + "."
+    // String groupId = homekitThingTypeProvider.getServiceTag(service.getType()) + "."
     // + service.getInstanceId();
     // ChannelGroupTypeUID channelGroupTypeUID = homekitChannelGroupTypeProvider
-    // .getChannelGroupTypeUID(service.getInstanceType());
+    // .getChannelGroupTypeUID(service.getType());
 
     // // Create a list to hold all channels for this group
     // List<Channel> channels = new ArrayList<>();
@@ -208,9 +209,9 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
     // // Add channels for each characteristic
     // for (HomekitCharacteristic<?> characteristic : service.getCharacteristics()) {
     // ChannelUID channelUID = new ChannelUID(thing.getUID(), groupId,
-    // homekitChannelTypeProvider.getCharacteristicTag(characteristic.getInstanceType()));
+    // homekitChannelTypeProvider.getCharacteristicTag(characteristic.getType()));
     // ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
-    // characteristic.getInstanceType());
+    // characteristic.getType());
 
     // ChannelType channelType = homekitChannelTypeProvider.getChannelType(channelTypeUID, null);
     // if (channelType == null) {
@@ -307,7 +308,7 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
     protected ChannelUID getChannelUID(HomekitCharacteristic<?> characteristic) {
         String groupId;
         try {
-            groupId = homekitThingTypeProvider.getServiceTag(characteristic.getService().getInstanceType()) + "."
+            groupId = homekitThingTypeProvider.getServiceTag(characteristic.getService().getType()) + "."
                     + characteristic.getService().getInstanceId();
 
         } catch (HomekitException e) {
@@ -315,7 +316,7 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
         }
         String characteristicTag;
         try {
-            characteristicTag = homekitChannelTypeProvider.getCharacteristicTag(characteristic.getInstanceType());
+            characteristicTag = homekitChannelTypeProvider.getCharacteristicTag(characteristic.getType());
         } catch (HomekitException e) {
             throw new IllegalArgumentException("HomekitCharacteristic tag could not be determined", e);
         }

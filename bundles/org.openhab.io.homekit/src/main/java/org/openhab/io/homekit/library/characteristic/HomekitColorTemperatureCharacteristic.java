@@ -6,32 +6,37 @@ import javax.json.JsonValue;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
+import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
-import org.openhab.io.homekit.core.characteristic.HomekitLongCharacteristic;
+import org.openhab.io.homekit.core.characteristic.HomekitFloatCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
+@HomekitCharacteristicType(type = "000000CE-0000-1000-8000-0026BB765291", name = "Color Temperature", tag = "colorTemperature")
 @NonNullByDefault
-public class HomekitColorTemperatureCharacteristic extends HomekitLongCharacteristic {
-    private static final String TYPE = "000000CE-0000-1000-8000-0026BB765291";
+public class HomekitColorTemperatureCharacteristic extends HomekitFloatCharacteristic {
 
-    public HomekitColorTemperatureCharacteristic(HomekitService service, long instanceId, HomekitEventManager eventManager) {
-        super(service, instanceId, true, true, true, "Color Temperature", 50L, 400L, 1L, TYPE, eventManager);
+    public HomekitColorTemperatureCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+        super(service, eventManager, 140.0, 500.0, 1.0, "mired");
+        withInstanceId(instanceId).withPairedWrite(true).withPairedRead(true).withEvents(true)
+            .withDescription("Color Temperature");
     }
 
-    public HomekitColorTemperatureCharacteristic(HomekitService service, JsonValue value, HomekitEventManager eventManager) {
-        super(service, value, eventManager);
-    }
-
-    public static String getType() {
-        return TYPE;
-    }
-
-    public static String getTag() {
-        return HomekitColorTemperatureCharacteristic.class.getSimpleName().replace("HomekitCharacteristic", "");
+    public HomekitColorTemperatureCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+        super(service, eventManager, value);
     }
 
     @Override
-    public JsonObject toEventJson(Long value) {
+    public boolean isAllowedValue(Double value) {
+        return value != null && value >= 140.0 && value <= 500.0;
+    }
+
+    @Override
+    public java.util.Set<Double> getAllowedValues() {
+        return java.util.Collections.emptySet();
+    }
+
+    @Override
+    public JsonObject toEventJson(Double value) {
         return super.toEventJson(value);
     }
 
@@ -41,12 +46,12 @@ public class HomekitColorTemperatureCharacteristic extends HomekitLongCharacteri
     }
 
     @Override
-    public JsonValue toValueJson(@Nullable Long value) {
+    public JsonValue toValueJson(@Nullable Double value) {
         return super.toValueJson(value);
     }
 
     @Override
-    public State toState(Long value) {
+    public State toState(Double value) {
         return super.toState(value);
     }
 
