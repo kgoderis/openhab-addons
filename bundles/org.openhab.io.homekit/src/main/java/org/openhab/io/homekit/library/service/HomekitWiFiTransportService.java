@@ -8,63 +8,62 @@ import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import org.openhab.io.homekit.library.characteristic.HomekitProgrammableSwitchEventCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitProgrammableSwitchOutputStateCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitCurrentTransportCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitWiFiCapabilitiesCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitWiFiConfigurationControlCharacteristic;
 
 /**
- * Service that represents a stateful programmable switch in HomeKit.
- * This service provides control over programmable switch state and events.
+ * HomeKit WiFi Transport Service.
+ * This service provides WiFi transport functionality in HomeKit.
+ * For more information, see https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
- * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitServiceType(type = "00000088-0000-1000-8000-0026BB765291", name = "Stateful Programmable Switch", tag = "statefulProgrammableSwitch")
+@HomekitServiceType(type = "0000022A-0000-1000-8000-0026BB765291", name = "WiFiTransport", tag = "wifiTransport")
 @NonNullByDefault
-public class HomekitStatefulProgrammableSwitchService extends AbstractHomekitService {
+public class HomekitWiFiTransportService extends AbstractHomekitService {
 
     /**
-     * Creates a new HomekitStatefulProgrammableSwitchService.
+     * Creates a new WiFi Transport service.
      *
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
      */
-    public HomekitStatefulProgrammableSwitchService(HomekitAccessory accessory, HomekitEventManager eventManager,
+    public HomekitWiFiTransportService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Stateful Programmable Switch")
-            .withExtensible(false)
+        withName("WiFi Transport")
+            .withExtensible(true)
             .withPrimary(false)
             .withHidden(false);
     }
 
     /**
-     * Creates a new HomekitStatefulProgrammableSwitchService from a JSON value.
+     * Creates a new WiFi Transport service from a JSON configuration.
      *
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
      * @param value JSON value containing service configuration
      */
-    public HomekitStatefulProgrammableSwitchService(HomekitAccessory accessory, HomekitEventManager eventManager,
+    public HomekitWiFiTransportService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
         super(accessory, eventManager, characteristicFactory, value);
     }
 
+    /**
+     * Adds the required characteristics for this service.
+     * Required: WiFiTransportConfiguration
+     */
     @Override
     public void addCharacteristics() {
-        super.addCharacteristics();
-        addCharacteristic(new HomekitProgrammableSwitchEventCharacteristic(this, eventManager,
+        // Required characteristics
+        addCharacteristic(new HomekitCurrentTransportCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitProgrammableSwitchOutputStateCharacteristic(this, eventManager,
+        addCharacteristic(new HomekitWiFiCapabilitiesCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
+        addCharacteristic(new HomekitWiFiConfigurationControlCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
     }
-
-    @Override
-    public boolean isExtensible() {
-        return false;
-    }
-} 
+}

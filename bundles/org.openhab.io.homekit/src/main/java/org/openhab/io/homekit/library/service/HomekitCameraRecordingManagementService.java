@@ -9,25 +9,25 @@ import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.library.characteristic.HomekitActiveCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitConfiguredNameCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitSelectedCameraRecordingConfigurationCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitSupportedAudioRecordingConfigurationCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitSupportedCameraRecordingConfigurationCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitSupportedVideoRecordingConfigurationCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitSelectedAudioRecordingConfigurationCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitSelectedVideoRecordingConfigurationCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitRecordingAudioActiveCharacteristic;
 
 /**
- * Service that represents camera recording management in HomeKit.
+ * HomeKit Camera Recording Management Service.
  * This service provides control over camera recording settings and configurations.
+ * For more information, see https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
- * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitServiceType(type = "00000204-0000-1000-8000-0026BB765291", name = "Camera Recording Management", tag = "cameraRecordingManagement")
+@HomekitServiceType(type = "00000204-0000-1000-8000-0026BB765291", name = "CameraRecordingManagement", tag = "cameraRecordingManagement")
 @NonNullByDefault
 public class HomekitCameraRecordingManagementService extends AbstractHomekitService {
 
     /**
-     * Creates a new HomekitCameraRecordingManagementService.
+     * Creates a new Camera Recording Management service.
      *
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
@@ -37,13 +37,13 @@ public class HomekitCameraRecordingManagementService extends AbstractHomekitServ
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
         withName("Camera Recording Management")
-            .withExtensible(false)
+            .withExtensible(true)
             .withPrimary(false)
             .withHidden(false);
     }
 
     /**
-     * Creates a new HomekitCameraRecordingManagementService from a JSON value.
+     * Creates a new Camera Recording Management service from a JSON configuration.
      *
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
@@ -55,25 +55,28 @@ public class HomekitCameraRecordingManagementService extends AbstractHomekitServ
         super(accessory, eventManager, characteristicFactory, value);
     }
 
+    /**
+     * Adds the required and optional characteristics for this service.
+     * Required: Active, SelectedCameraRecordingConfiguration, SupportedAudioRecordingConfiguration,
+     *          SupportedCameraRecordingConfiguration, SupportedVideoRecordingConfiguration
+     * Optional: RecordingAudioActive
+     */
     @Override
     public void addCharacteristics() {
-        super.addCharacteristics();
+        // Required characteristics
         addCharacteristic(new HomekitActiveCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitConfiguredNameCharacteristic(this, eventManager,
+        addCharacteristic(new HomekitSelectedCameraRecordingConfigurationCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         addCharacteristic(new HomekitSupportedAudioRecordingConfigurationCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(new HomekitSupportedCameraRecordingConfigurationCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         addCharacteristic(new HomekitSupportedVideoRecordingConfigurationCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitSelectedAudioRecordingConfigurationCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitSelectedVideoRecordingConfigurationCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-    }
 
-    @Override
-    public boolean isExtensible() {
-        return false;
+        // Optional characteristics
+        addCharacteristic(new HomekitRecordingAudioActiveCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
     }
-} 
+}

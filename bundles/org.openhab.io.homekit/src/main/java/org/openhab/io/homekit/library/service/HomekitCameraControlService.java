@@ -8,32 +8,27 @@ import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import org.openhab.io.homekit.library.characteristic.HomekitOnCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitCurrentHorizontalTiltAngleCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitCurrentVerticalTiltAngleCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitTargetHorizontalTiltAngleCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitTargetVerticalTiltAngleCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitOpticalZoomCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitDigitalZoomCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitImageMirroringCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitImageRotationCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitObstructionDetectedCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitNightVisionCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitSelectedRTPStreamConfigurationCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitSetupEndpointsCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitStreamingStatusCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitSupportedAudioStreamConfigurationCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitSupportedRTPConfigurationCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitSupportedVideoStreamConfigurationCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitActiveCharacteristic;
 
 /**
- * Service that represents camera control in HomeKit.
- * This service provides control over camera settings and features.
+ * HomeKit Camera RTP Stream Management Service.
+ * This service provides control over camera RTP stream settings and configurations.
+ * For more information, see https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
- * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitServiceType(type = "00000110-0000-1000-8000-0026BB765291", name = "Camera Control", tag = "cameraControl")
+@HomekitServiceType(type = "00000110-0000-1000-8000-0026BB765291", name = "Camera RTP Stream Management", tag = "cameraRTPStreamManagement")
 @NonNullByDefault
 public class HomekitCameraControlService extends AbstractHomekitService {
 
     /**
-     * Creates a new HomekitCameraControlService.
+     * Creates a new Camera RTP Stream Management service.
      *
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
@@ -42,14 +37,14 @@ public class HomekitCameraControlService extends AbstractHomekitService {
     public HomekitCameraControlService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Camera Control")
+        withName("Camera RTP Stream Management")
             .withExtensible(false)
             .withPrimary(false)
             .withHidden(false);
     }
 
     /**
-     * Creates a new HomekitCameraControlService from a JSON value.
+     * Creates a new Camera RTP Stream Management service from a JSON value.
      *
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
@@ -63,30 +58,22 @@ public class HomekitCameraControlService extends AbstractHomekitService {
 
     @Override
     public void addCharacteristics() {
-        super.addCharacteristics();
-        addCharacteristic(new HomekitOnCharacteristic(this, eventManager,
+        // Required characteristics
+        addCharacteristic(new HomekitSelectedRTPStreamConfigurationCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitCurrentHorizontalTiltAngleCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitCurrentVerticalTiltAngleCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitTargetHorizontalTiltAngleCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitTargetVerticalTiltAngleCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitOpticalZoomCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitDigitalZoomCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitImageMirroringCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitImageRotationCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitObstructionDetectedCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitNightVisionCharacteristic(this, eventManager,
+        addCharacteristic(new HomekitSetupEndpointsCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(new HomekitStreamingStatusCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(new HomekitSupportedAudioStreamConfigurationCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(new HomekitSupportedRTPConfigurationCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(new HomekitSupportedVideoStreamConfigurationCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+
+        // Optional characteristics
+        addCharacteristic(new HomekitActiveCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
     }
 

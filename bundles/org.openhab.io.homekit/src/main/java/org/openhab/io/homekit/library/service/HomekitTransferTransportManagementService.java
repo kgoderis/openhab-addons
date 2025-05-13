@@ -8,56 +8,58 @@ import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import org.openhab.io.homekit.library.characteristic.HomekitAccessCodeControlPointCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitSupportedTransferTransportConfigurationCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitSetupTransferTransportCharacteristic;
 
 /**
- * HomeKit Access Code Service.
- * This service provides control over access codes in HomeKit.
+ * HomeKit Transfer Transport Management Service.
+ * This service provides transfer transport management functionality in HomeKit.
  * For more information, see https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
  */
-@HomekitServiceType(type = "00000260-0000-1000-8000-0026BB765291", name = "AccessCode", tag = "accessCode")
+@HomekitServiceType(type = "00000203-0000-1000-8000-0026BB765291", name = "TransferTransportManagement", tag = "transferTransportManagement")
 @NonNullByDefault
-public class HomekitAccessCodeService extends AbstractHomekitService {
-
+public class HomekitTransferTransportManagementService extends AbstractHomekitService {
     /**
-     * Creates a new Access Code service.
+     * Creates a new Transfer Transport Management service.
      *
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
      */
-    public HomekitAccessCodeService(HomekitAccessory accessory, HomekitEventManager eventManager,
+    public HomekitTransferTransportManagementService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Access Code")
+        withName("Transfer Transport Management")
             .withExtensible(true)
             .withPrimary(false)
             .withHidden(false);
     }
 
     /**
-     * Creates a new Access Code service from a JSON configuration.
+     * Creates a new Transfer Transport Management service from a JSON configuration.
      *
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
      * @param value JSON value containing service configuration
      */
-    public HomekitAccessCodeService(HomekitAccessory accessory, HomekitEventManager eventManager,
+    public HomekitTransferTransportManagementService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
         super(accessory, eventManager, characteristicFactory, value);
     }
 
     /**
      * Adds the required characteristics for this service.
-     * Required: AccessCodeControlPoint
+     * Required: SupportedTransferTransportConfiguration, SetupTransferTransport
      */
     @Override
     public void addCharacteristics() {
         // Required characteristics
-        addCharacteristic(new HomekitAccessCodeControlPointCharacteristic(this, eventManager,
+        addCharacteristic(new HomekitSupportedTransferTransportConfigurationCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(new HomekitSetupTransferTransportCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
     }
 }

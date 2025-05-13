@@ -18,18 +18,18 @@ import org.openhab.io.homekit.library.characteristic.HomekitStatusActiveCharacte
 import org.openhab.io.homekit.library.characteristic.HomekitStatusFaultCharacteristic;
 
 /**
- * Service that represents a lightbulb in HomeKit.
- * This service provides control over light state, brightness, and color.
+ * HomeKit Lightbulb Service.
+ * This service represents a lightbulb in HomeKit, providing control over light state, brightness, and color.
+ * For more information, see https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
- * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitServiceType(type = "00000043-0000-1000-8000-0026BB765291", name = "Lightbulb", tag = "lightbulb")
 @NonNullByDefault
 public class HomekitLightBulbService extends AbstractHomekitService {
 
     /**
-     * Creates a new HomekitLightbulbService.
+     * Creates a new Lightbulb service.
      *
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
@@ -45,7 +45,7 @@ public class HomekitLightBulbService extends AbstractHomekitService {
     }
 
     /**
-     * Creates a new HomekitLightbulbService from a JSON value.
+     * Creates a new Lightbulb service from a JSON configuration.
      *
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
@@ -57,11 +57,18 @@ public class HomekitLightBulbService extends AbstractHomekitService {
         super(accessory, eventManager, characteristicFactory, value);
     }
 
+    /**
+     * Adds the required and optional characteristics for this service.
+     * Required: On
+     * Optional: Brightness, Hue, Saturation, Color Temperature, Name, Status Active, Status Fault
+     */
     @Override
     public void addCharacteristics() {
-        super.addCharacteristics();
+        // Required characteristics
         addCharacteristic(new HomekitOnCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+
+        // Optional characteristics
         addCharacteristic(new HomekitBrightnessCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
         addCharacteristic(new HomekitHueCharacteristic(this, eventManager,
@@ -78,6 +85,12 @@ public class HomekitLightBulbService extends AbstractHomekitService {
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
     }
 
+    /**
+     * Returns whether this service is extensible.
+     * Lightbulb service is not extensible by default.
+     *
+     * @return false as this service is not extensible
+     */
     @Override
     public boolean isExtensible() {
         return false;

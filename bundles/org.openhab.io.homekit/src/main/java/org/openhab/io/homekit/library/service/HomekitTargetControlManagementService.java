@@ -8,56 +8,58 @@ import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import org.openhab.io.homekit.library.characteristic.HomekitAccessCodeControlPointCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitTargetControlSupportedConfigurationCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitTargetControlListCharacteristic;
 
 /**
- * HomeKit Access Code Service.
- * This service provides control over access codes in HomeKit.
+ * HomeKit Target Control Management Service.
+ * This service provides target control management functionality in HomeKit.
  * For more information, see https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
  */
-@HomekitServiceType(type = "00000260-0000-1000-8000-0026BB765291", name = "AccessCode", tag = "accessCode")
+@HomekitServiceType(type = "00000122-0000-1000-8000-0026BB765291", name = "TargetControlManagement", tag = "targetControlManagement")
 @NonNullByDefault
-public class HomekitAccessCodeService extends AbstractHomekitService {
-
+public class HomekitTargetControlManagementService extends AbstractHomekitService {
     /**
-     * Creates a new Access Code service.
+     * Creates a new Target Control Management service.
      *
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
      */
-    public HomekitAccessCodeService(HomekitAccessory accessory, HomekitEventManager eventManager,
+    public HomekitTargetControlManagementService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Access Code")
+        withName("Target Control Management")
             .withExtensible(true)
             .withPrimary(false)
             .withHidden(false);
     }
 
     /**
-     * Creates a new Access Code service from a JSON configuration.
+     * Creates a new Target Control Management service from a JSON configuration.
      *
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
      * @param value JSON value containing service configuration
      */
-    public HomekitAccessCodeService(HomekitAccessory accessory, HomekitEventManager eventManager,
+    public HomekitTargetControlManagementService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
         super(accessory, eventManager, characteristicFactory, value);
     }
 
     /**
      * Adds the required characteristics for this service.
-     * Required: AccessCodeControlPoint
+     * Required: TargetControlSupportedConfiguration, TargetControlList
      */
     @Override
     public void addCharacteristics() {
         // Required characteristics
-        addCharacteristic(new HomekitAccessCodeControlPointCharacteristic(this, eventManager,
+        addCharacteristic(new HomekitTargetControlSupportedConfigurationCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(new HomekitTargetControlListCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
     }
 }

@@ -4,49 +4,33 @@ JAVA_UUIDS=output/java_uuids.txt
 TS_UUIDS=output/ts_uuids.txt
 CLASSNAMES=classnames.txt
 
-if [ ! -f "$JAVA_UUIDS" ] || [ ! -f "$TS_UUIDS" ] || [ ! -f "$CLASSNAMES" ]; then
-  echo "All of $JAVA_UUIDS, $TS_UUIDS, and $CLASSNAMES must exist. Run the extraction scripts first."
+if [ ! -f "$JAVA_UUIDS" ] || [ ! -f "$TS_UUIDS" ]; then
+  echo "Both $JAVA_UUIDS and $TS_UUIDS must exist. Run the extraction scripts first."
   exit 1
 fi
 
-# Download ServiceDefinitions.ts if it doesn't exist
-if [ ! -f ServiceDefinitions.ts ]; then
-    echo "Downloading ServiceDefinitions.ts..."
-    curl -o ServiceDefinitions.ts https://raw.githubusercontent.com/homebridge/HAP-NodeJS/refs/heads/latest/src/lib/definitions/ServiceDefinitions.ts
+if [ ! -f "$CLASSNAMES" ]; then
+  echo "Class names file $CLASSNAMES not found. Run extract_classnames.sh first."
+  exit 1
 fi
 
-# Create a temporary file with UUID to name mapping from classnames.txt
-# Skip the header lines and process the table content
-awk '
-BEGIN { FS = "|" }
-NR > 2 {  # Skip header and separator lines
-    gsub(/^[ \t]+|[ \t]+$/, "", $2)  # Trim whitespace from class name
-    gsub(/^[ \t]+|[ \t]+$/, "", $3)  # Trim whitespace from UUID
-    if ($2 != "" && $3 != "") {
-        print $3 " " $2
-    }
+lookup_name() {
+  uuid="$1"
+  # Skip header lines and match UUID in the table
+  grep -A 1 "$uuid" "$CLASSNAMES" | grep -v "|--" | grep -v "UUID" | head -n 1 | sed 's/|//g' | awk '{print $1}'
 }
-' "$CLASSNAMES" > output/service_names.txt
 
-echo "UUIDs in Java but not in TypeScript:"
+echo "Classes in Java but not in TypeScript:"
 echo "-----------------------------------"
-while read -r uuid; do
-    name=$(grep "^$uuid " output/service_names.txt | awk '{print $2}')
-    if [ -n "$name" ]; then
-        echo "$uuid - $name"
-    else
-        echo "$uuid - (Unknown)"
-    fi
-done < <(comm -23 <(sort "$JAVA_UUIDS") <(sort "$TS_UUIDS"))
+comm -23 <(sort "$JAVA_UUIDS") <(sort "$TS_UUIDS") | while read -r uuid; do
+  name=$(lookup_name "$uuid")
+  echo "$name (UUID: $uuid)"
+done
 echo
 
-echo "UUIDs in TypeScript but not in Java:"
+echo "Classes in TypeScript but not in Java:"
 echo "-----------------------------------"
-while read -r uuid; do
-    name=$(grep "^$uuid " output/service_names.txt | awk '{print $2}')
-    if [ -n "$name" ]; then
-        echo "$uuid - $name"
-    else
-        echo "$uuid - (Unknown)"
-    fi
-done < <(comm -13 <(sort "$JAVA_UUIDS") <(sort "$TS_UUIDS")) 
+comm -13 <(sort "$JAVA_UUIDS") <(sort "$TS_UUIDS") | while read -r uuid; do
+  name=$(lookup_name "$uuid")
+  echo "$name (UUID: $uuid)"
+done 

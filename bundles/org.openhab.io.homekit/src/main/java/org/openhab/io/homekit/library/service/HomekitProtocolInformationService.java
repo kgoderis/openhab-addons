@@ -8,46 +8,45 @@ import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import org.openhab.io.homekit.library.characteristic.HomekitAccessoryIdentifierCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitCategoryCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitReachableCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitVersionCharacteristic;
+// import org.openhab.io.homekit.library.characteristic.HomekitSoftwareUpdateCharacteristic; // Uncomment if available
 
 /**
- * Service that represents the bridging state in HomeKit.
- * This service provides information about the state of a HomeKit bridge.
+ * HomeKit Protocol Information Service.
+ * This service provides protocol version information for HomeKit accessories.
+ * For more information, see https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
- * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitServiceType(type = "00000062-0000-1000-8000-0026BB765291", name = "Bridging State", tag = "bridgingState")
+@HomekitServiceType(type = "000000A2-0000-1000-8000-0026BB765291", name = "Protocol Information", tag = "protocolInformation")
 @NonNullByDefault
-public class HomekitBridgingStateService extends AbstractHomekitService {
+public class HomekitProtocolInformationService extends AbstractHomekitService {
 
     /**
-     * Creates a new HomekitBridgingStateService.
+     * Creates a new HomekitProtocolInformationService.
      *
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
      */
-    public HomekitBridgingStateService(HomekitAccessory accessory, HomekitEventManager eventManager,
+    public HomekitProtocolInformationService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Bridging State")
+        withName("Protocol Information")
             .withExtensible(false)
             .withPrimary(false)
             .withHidden(false);
     }
 
     /**
-     * Creates a new HomekitBridgingStateService from a JSON value.
+     * Creates a new HomekitProtocolInformationService from a JSON value.
      *
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
      * @param value JSON value containing service configuration
      */
-    public HomekitBridgingStateService(HomekitAccessory accessory, HomekitEventManager eventManager,
+    public HomekitProtocolInformationService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
         super(accessory, eventManager, characteristicFactory, value);
     }
@@ -55,12 +54,11 @@ public class HomekitBridgingStateService extends AbstractHomekitService {
     @Override
     public void addCharacteristics() {
         super.addCharacteristics();
-        addCharacteristic(new HomekitAccessoryIdentifierCharacteristic(this, eventManager,
+        addCharacteristic(new HomekitVersionCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitCategoryCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitReachableCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        // Uncomment below if SoftwareUpdate characteristic is available
+        // addCharacteristic(new HomekitSoftwareUpdateCharacteristic(this, eventManager,
+        //        getAccessory().getNextAvailableInstanceId()).withMandatory(false));
     }
 
     @Override

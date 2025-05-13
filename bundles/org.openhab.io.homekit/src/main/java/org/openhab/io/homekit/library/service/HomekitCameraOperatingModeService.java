@@ -8,24 +8,21 @@ import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import org.openhab.io.homekit.library.characteristic.HomekitEventSnapshotsActiveCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitHomeKitCameraActiveCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitPeriodicSnapshotsActiveCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitCameraOperatingModeIndicatorCharacteristic;
 
 /**
- * Service that represents camera operating mode in HomeKit.
- * This service provides control over camera operating modes and settings.
+ * HomeKit Camera Operating Mode Service.
+ * This service provides functionality for controlling camera operating modes in HomeKit.
+ * For more information, see https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
- * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitServiceType(type = "0000021A-0000-1000-8000-0026BB765291", name = "Camera Operating Mode", tag = "cameraOperatingMode")
+@HomekitServiceType(type = "0000021A-0000-1000-8000-0026BB765291", name = "CameraOperatingMode", tag = "cameraOperatingMode")
 @NonNullByDefault
 public class HomekitCameraOperatingModeService extends AbstractHomekitService {
 
     /**
-     * Creates a new HomekitCameraOperatingModeService.
+     * Creates a new Camera Operating Mode service.
      *
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
@@ -35,13 +32,13 @@ public class HomekitCameraOperatingModeService extends AbstractHomekitService {
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
         withName("Camera Operating Mode")
-            .withExtensible(false)
+            .withExtensible(true)
             .withPrimary(false)
             .withHidden(false);
     }
 
     /**
-     * Creates a new HomekitCameraOperatingModeService from a JSON value.
+     * Creates a new Camera Operating Mode service from a JSON configuration.
      *
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
@@ -53,21 +50,14 @@ public class HomekitCameraOperatingModeService extends AbstractHomekitService {
         super(accessory, eventManager, characteristicFactory, value);
     }
 
+    /**
+     * Adds the required characteristics for this service.
+     * Required: CameraOperatingModeIndicator
+     */
     @Override
     public void addCharacteristics() {
-        super.addCharacteristics();
-        addCharacteristic(new HomekitEventSnapshotsActiveCharacteristic(this, eventManager,
+        // Required characteristics
+        addCharacteristic(new HomekitCameraOperatingModeIndicatorCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitHomeKitCameraActiveCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitPeriodicSnapshotsActiveCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
     }
-
-    @Override
-    public boolean isExtensible() {
-        return false;
-    }
-} 
+}

@@ -8,56 +8,55 @@ import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import org.openhab.io.homekit.library.characteristic.HomekitAccessCodeControlPointCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitRouterStatusCharacteristic;
 
 /**
- * HomeKit Access Code Service.
- * This service provides control over access codes in HomeKit.
+ * HomeKit WiFi Router Service.
+ * This service provides WiFi router functionality in HomeKit.
  * For more information, see https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
  */
-@HomekitServiceType(type = "00000260-0000-1000-8000-0026BB765291", name = "AccessCode", tag = "accessCode")
+@HomekitServiceType(type = "0000020A-0000-1000-8000-0026BB765291", name = "WiFiRouter", tag = "wifiRouter")
 @NonNullByDefault
-public class HomekitAccessCodeService extends AbstractHomekitService {
-
+public class HomekitWiFiRouterService extends AbstractHomekitService {
     /**
-     * Creates a new Access Code service.
+     * Creates a new WiFi Router service.
      *
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
      */
-    public HomekitAccessCodeService(HomekitAccessory accessory, HomekitEventManager eventManager,
+    public HomekitWiFiRouterService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Access Code")
+        withName("WiFi Router")
             .withExtensible(true)
             .withPrimary(false)
             .withHidden(false);
     }
 
     /**
-     * Creates a new Access Code service from a JSON configuration.
+     * Creates a new WiFi Router service from a JSON configuration.
      *
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
      * @param value JSON value containing service configuration
      */
-    public HomekitAccessCodeService(HomekitAccessory accessory, HomekitEventManager eventManager,
+    public HomekitWiFiRouterService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
         super(accessory, eventManager, characteristicFactory, value);
     }
 
     /**
      * Adds the required characteristics for this service.
-     * Required: AccessCodeControlPoint
+     * Required: RouterStatus (UUID: 0000020E-0000-1000-8000-0026BB765291)
      */
     @Override
     public void addCharacteristics() {
         // Required characteristics
-        addCharacteristic(new HomekitAccessCodeControlPointCharacteristic(this, eventManager,
+        addCharacteristic(new HomekitRouterStatusCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
     }
 }
