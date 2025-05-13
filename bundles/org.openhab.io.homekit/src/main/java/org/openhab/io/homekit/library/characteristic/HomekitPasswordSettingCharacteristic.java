@@ -9,7 +9,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * HomeKit Password Setting Characteristic.
- * @see <a href="https://developers.homebridge.io/#/characteristic/PasswordSetting">HomeKit Documentation</a>
+ * This characteristic represents the password setting for a device.
+ *
+ * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
+ * @author Karel Goderis - Initial Contribution
  */
 @HomekitCharacteristicType(type = "000000E4-0000-1000-8000-0026BB765291", name = "Password Setting", tag = "passwordSetting")
 @NonNullByDefault

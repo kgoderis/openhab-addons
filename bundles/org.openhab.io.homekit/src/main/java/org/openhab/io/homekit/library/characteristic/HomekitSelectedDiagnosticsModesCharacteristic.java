@@ -11,7 +11,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * HomeKit Selected Diagnostics Modes Characteristic.
  * This characteristic represents the selected diagnostics modes.
  *
- * See the official HomeKit documentation for details.
+ * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
+ * @author Karel Goderis - Initial Contribution
  */
 @HomekitCharacteristicType(type = "0000024D-0000-1000-8000-0026BB765291", name = "Selected Diagnostics Modes", tag = "selectedDiagnosticsModes")
 @NonNullByDefault

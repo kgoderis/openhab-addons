@@ -8,19 +8,29 @@ import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
- * HomeKit Current Door State Characteristic.
+ * Current Door State characteristic.
  * This characteristic represents the current state of a door.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/CurrentDoorState">HomeKit Documentation</a>
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ * @author Karel Goderis - Initial contribution
  */
 @HomekitCharacteristicType(type = "0000000E-0000-1000-8000-0026BB765291", name = "Current Door State", tag = "currentDoorState")
 @NonNullByDefault
 public class HomekitCurrentDoorStateCharacteristic extends HomekitEnumCharacteristic {
+    /**
+     * Enum representing the possible states of a door.
+     * Each state has a corresponding integer code used in the HomeKit protocol.
+     */
     public enum DoorState {
+        /** Door is fully open */
         OPEN(0),
+        /** Door is fully closed */
         CLOSED(1),
+        /** Door is in the process of opening */
         OPENING(2),
+        /** Door is in the process of closing */
         CLOSING(3),
+        /** Door movement has been stopped */
         STOPPED(4);
         
         private final int code;
@@ -29,10 +39,22 @@ public class HomekitCurrentDoorStateCharacteristic extends HomekitEnumCharacteri
             this.code = code;
         }
         
+        /**
+         * Gets the integer code for this door state.
+         *
+         * @return the integer code
+         */
         public int getCode() {
             return code;
         }
         
+        /**
+         * Converts an integer code to the corresponding DoorState.
+         * If no matching state is found, returns STOPPED as default.
+         *
+         * @param code the integer code to convert
+         * @return the corresponding DoorState, or STOPPED if not found
+         */
         public static DoorState fromCode(int code) {
             for (DoorState s : values()) {
                 if (s.code == code) {
@@ -43,6 +65,13 @@ public class HomekitCurrentDoorStateCharacteristic extends HomekitEnumCharacteri
         }
     }
 
+    /**
+     * Creates a new Current Door State characteristic.
+     *
+     * @param service The HomeKit service this characteristic belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param instanceId The instance ID for this characteristic
+     */
     public HomekitCurrentDoorStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
             long instanceId) {
         super(service, eventManager, DoorState.values().length);
@@ -53,16 +82,34 @@ public class HomekitCurrentDoorStateCharacteristic extends HomekitEnumCharacteri
             .withDescription("Current Door State");
     }
 
+    /**
+     * Creates a new Current Door State characteristic from a JSON value.
+     *
+     * @param service The HomeKit service this characteristic belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param value The JSON value to initialize the characteristic with
+     */
     public HomekitCurrentDoorStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
             JsonValue value) {
         super(service, eventManager, value);
     }
 
+    /**
+     * Checks if the given value is a valid door state.
+     *
+     * @param value the integer value to check
+     * @return true if the value corresponds to a valid door state, false otherwise
+     */
     @Override
     public boolean isAllowedValue(Integer value) {
         return value != null && value >= 0 && value < DoorState.values().length;
     }
 
+    /**
+     * Gets the set of all valid door state values.
+     *
+     * @return a set containing all valid door state codes
+     */
     @Override
     public java.util.Set<Integer> getAllowedValues() {
         return java.util.Set.of(

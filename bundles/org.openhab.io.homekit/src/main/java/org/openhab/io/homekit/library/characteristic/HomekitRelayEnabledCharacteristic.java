@@ -9,7 +9,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * HomeKit Relay Enabled Characteristic.
- * @see <a href="https://developers.homebridge.io/#/characteristic/RelayEnabled">HomeKit Documentation</a>
+ * This characteristic represents whether the relay is enabled.
+ *
+ * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
+ * @author Karel Goderis - Initial Contribution
  */
 @HomekitCharacteristicType(type = "0000005B-0000-1000-8000-0026BB765291", name = "Relay Enabled", tag = "relayEnabled")
 @NonNullByDefault

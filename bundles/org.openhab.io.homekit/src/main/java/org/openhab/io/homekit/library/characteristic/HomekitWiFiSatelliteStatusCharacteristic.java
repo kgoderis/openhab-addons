@@ -9,13 +9,19 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * HomeKit WiFi Satellite Status Characteristic.
- * This characteristic represents the status of a WiFi satellite device.
+ * <p>
+ * This characteristic represents the status of a WiFi satellite device, as defined by the HAP specification.
+ * <p>
+ * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/WiFiSatelliteStatus">HomeKit Documentation</a>
+ * @author Karel Goderis
  */
 @HomekitCharacteristicType(type = "0000021E-0000-1000-8000-0026BB765291", name = "WiFi Satellite Status", tag = "wifiSatelliteStatus")
 @NonNullByDefault
 public class HomekitWiFiSatelliteStatusCharacteristic extends HomekitEnumCharacteristic {
+    /**
+     * Enum representing the possible WiFi satellite statuses.
+     */
     public enum WiFiSatelliteStatus {
         CONNECTED(0),
         DISCONNECTED(1),
@@ -28,10 +34,19 @@ public class HomekitWiFiSatelliteStatusCharacteristic extends HomekitEnumCharact
             this.code = code;
         }
 
+        /**
+         * Returns the integer code for this status.
+         * @return the code
+         */
         public int getCode() {
             return code;
         }
 
+        /**
+         * Returns the WiFiSatelliteStatus enum for a given code.
+         * @param code the code
+         * @return the WiFiSatelliteStatus
+         */
         public static WiFiSatelliteStatus fromCode(int code) {
             for (WiFiSatelliteStatus status : values()) {
                 if (status.code == code) {
@@ -55,11 +70,20 @@ public class HomekitWiFiSatelliteStatusCharacteristic extends HomekitEnumCharact
         super(service, eventManager, value);
     }
 
+    /**
+     * Checks if the given value is an allowed WiFi satellite status.
+     * @param value the value to check
+     * @return true if allowed, false otherwise
+     */
     @Override
     public boolean isAllowedValue(Integer value) {
         return value != null && value >= 0 && value < WiFiSatelliteStatus.values().length;
     }
 
+    /**
+     * Returns the set of allowed WiFi satellite status values.
+     * @return the set of allowed values
+     */
     @Override
     public java.util.Set<Integer> getAllowedValues() {
         return java.util.Set.of(

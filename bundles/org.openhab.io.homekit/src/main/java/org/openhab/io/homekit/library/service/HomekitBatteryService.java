@@ -2,6 +2,7 @@ package org.openhab.io.homekit.library.service;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
@@ -13,9 +14,13 @@ import org.openhab.io.homekit.library.characteristic.HomekitStatusLowBatteryChar
 
 /**
  * Service that represents a battery in HomeKit.
- * This service provides control over battery-powered devices.
+ * This service provides information about battery level, charging state, and low battery status.
+ * 
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitServiceType(type = "00000096-0000-1000-8000-0026BB765291", name = "Battery", tag = "Battery")
+@HomekitServiceType(type = "00000096-0000-1000-8000-0026BB765291", name = "Battery", tag = "battery")
+@NonNullByDefault
 public class HomekitBatteryService extends AbstractHomekitService {
 
     /**
@@ -28,6 +33,10 @@ public class HomekitBatteryService extends AbstractHomekitService {
     public HomekitBatteryService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
+        withName("Battery")
+            .withExtensible(false)
+            .withPrimary(false)
+            .withHidden(false);
     }
 
     /**
@@ -46,12 +55,12 @@ public class HomekitBatteryService extends AbstractHomekitService {
     @Override
     public void addCharacteristics() {
         super.addCharacteristics();
-        addCharacteristic(
-                new HomekitBatteryLevelCharacteristic(this, getAccessory().getNextAvailableInstanceId(), eventManager));
-        addCharacteristic(new HomekitChargingStateCharacteristic(this, getAccessory().getNextAvailableInstanceId(),
-                eventManager));
-        addCharacteristic(new HomekitStatusLowBatteryCharacteristic(this, getAccessory().getNextAvailableInstanceId(),
-                eventManager));
+        addCharacteristic(new HomekitBatteryLevelCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(new HomekitChargingStateCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(new HomekitStatusLowBatteryCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
     }
 
     @Override

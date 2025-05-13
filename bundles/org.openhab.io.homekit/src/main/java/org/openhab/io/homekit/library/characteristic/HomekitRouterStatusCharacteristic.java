@@ -12,7 +12,8 @@ import java.util.Set;
  * HomeKit Router Status Characteristic.
  * This characteristic represents the router status (READY or NOT_READY).
  *
- * See the official HomeKit documentation for details.
+ * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
+ * @author Karel Goderis - Initial Contribution
  */
 @HomekitCharacteristicType(type = "0000020E-0000-1000-8000-0026BB765291", name = "Router Status", tag = "routerStatus")
 @NonNullByDefault
@@ -33,11 +34,22 @@ public class HomekitRouterStatusCharacteristic extends HomekitIntegerCharacteris
         super(service, eventManager, value);
     }
 
+    /**
+     * Checks if the given value is a valid router status.
+     *
+     * @param value the value to check
+     * @return true if the value is READY or NOT_READY, false otherwise
+     */
     @Override
     public boolean isAllowedValue(Integer value) {
         return value != null && (value == READY || value == NOT_READY);
     }
 
+    /**
+     * Returns the set of allowed router status values.
+     *
+     * @return a set containing READY and NOT_READY
+     */
     @Override
     public Set<Integer> getAllowedValues() {
         return Set.of(READY, NOT_READY);

@@ -10,13 +10,19 @@ import java.util.Set;
 
 /**
  * HomeKit Picture Mode Characteristic.
- * This characteristic represents the picture mode for a display device.
+ * <p>
+ * This characteristic represents the picture mode for a display device, allowing the user to select between different picture modes as defined by the HAP specification.
+ * <p>
+ * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
- * See the official HomeKit documentation for details.
+ * @author Karel Goderis
  */
 @HomekitCharacteristicType(type = "000000E2-0000-1000-8000-0026BB765291", name = "Picture Mode", tag = "pictureMode")
 @NonNullByDefault
 public class HomekitPictureModeCharacteristic extends HomekitIntegerCharacteristic {
+    /**
+     * Enum representing the possible picture modes.
+     */
     public enum PictureMode {
         OTHER(0),
         STANDARD(1),
@@ -33,10 +39,19 @@ public class HomekitPictureModeCharacteristic extends HomekitIntegerCharacterist
             this.code = code;
         }
         
+        /**
+         * Returns the integer code for this picture mode.
+         * @return the code
+         */
         public int getCode() {
             return code;
         }
         
+        /**
+         * Returns the PictureMode enum for a given code.
+         * @param code the code
+         * @return the PictureMode
+         */
         public static PictureMode fromCode(int code) {
             for (PictureMode m : values()) {
                 if (m.code == code) {
@@ -60,11 +75,20 @@ public class HomekitPictureModeCharacteristic extends HomekitIntegerCharacterist
         super(service, eventManager, value);
     }
 
+    /**
+     * Checks if the given value is an allowed picture mode.
+     * @param value the value to check
+     * @return true if allowed, false otherwise
+     */
     @Override
     public boolean isAllowedValue(Integer value) {
         return value != null && value >= 0 && value <= 7;
     }
 
+    /**
+     * Returns the set of allowed picture mode values.
+     * @return the set of allowed values
+     */
     @Override
     public Set<Integer> getAllowedValues() {
         return Set.of(

@@ -1,13 +1,14 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.library.types.OpenClosedType;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import org.openhab.core.library.types.OpenClosedType;
-import org.openhab.core.types.State;
 
 /**
  * Contact Sensor State characteristic.
@@ -46,8 +47,8 @@ public class HomekitContactSensorStateCharacteristic extends HomekitEnumCharacte
 
     @Override
     public Integer toValue(State state) {
-        if (state instanceof OpenClosedType) {
-            return ((OpenClosedType) state) == OpenClosedType.OPEN ? 0 : 1;
+        if (state instanceof OpenClosedType openClosedType) {
+            return openClosedType == OpenClosedType.OPEN ? 0 : 1;
         }
         return super.toValue(state);
     }

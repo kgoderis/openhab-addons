@@ -8,10 +8,11 @@ import org.openhab.io.homekit.core.characteristic.HomekitLongCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
- * HomeKit Characteristic for Identifier.
+ * HomeKit Identifier Characteristic.
  * This characteristic represents a unique identifier for the accessory.
  *
- * @author Andy Lintner
+ * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
+ * @author Karel Goderis - Initial Contribution
  */
 @NonNullByDefault
 @HomekitCharacteristicType(type = "000000E6-0000-1000-8000-0026BB765291", name = "Identifier", tag = "identifier")

@@ -1,23 +1,33 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Map;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitTLV8Characteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Map;
-import org.openhab.core.types.State;
 
 /**
  * HomeKit Selected RTP Stream Configuration Characteristic.
- * This characteristic represents the selected RTP stream configuration.
+ * This characteristic represents the selected configuration for RTP streaming, as defined in the HomeKit Accessory Protocol (HAP) specification.
  *
- * See the official HomeKit documentation for details.
+ * @author Karel Goderis - Initial Contribution
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000117-0000-1000-8000-0026BB765291", name = "Selected RTP Stream Configuration", tag = "selectedRTPStreamConfiguration")
 @NonNullByDefault
 public class HomekitSelectedRTPStreamConfigurationCharacteristic extends HomekitTLV8Characteristic {
+    /**
+     * Constructs a new Selected RTP Stream Configuration characteristic.
+     *
+     * @param service the HomeKit service this characteristic belongs to
+     * @param eventManager the event manager for handling HomeKit events
+     * @param instanceId the instance ID for this characteristic
+     */
     public HomekitSelectedRTPStreamConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager);
         withInstanceId(instanceId)
@@ -27,35 +37,60 @@ public class HomekitSelectedRTPStreamConfigurationCharacteristic extends Homekit
             .withDescription("Selected RTP Stream Configuration");
     }
 
+    /**
+     * Constructs a new Selected RTP Stream Configuration characteristic from a JSON value.
+     *
+     * @param service the HomeKit service this characteristic belongs to
+     * @param eventManager the event manager for handling HomeKit events
+     * @param value the JSON value to initialize the characteristic with
+     */
     public HomekitSelectedRTPStreamConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }
 
+    /**
+     * Throws UnsupportedOperationException for TLV8 encoding (must be implemented for the specific device).
+     */
     @Override
     protected byte[] encodeTLV8(Map<Integer, Object> value) {
         throw new UnsupportedOperationException("TLV8 encoding must be implemented for the specific device.");
     }
 
+    /**
+     * Throws UnsupportedOperationException for TLV8 decoding (must be implemented for the specific device).
+     */
     @Override
     protected Map<Integer, Object> decodeTLV8(byte[] data) {
         throw new UnsupportedOperationException("TLV8 decoding must be implemented for the specific device.");
     }
 
+    /**
+     * Throws UnsupportedOperationException for default value (must be implemented for the specific device).
+     */
     @Override
     public Map<Integer, Object> getDefault() {
         throw new UnsupportedOperationException("Default value must be implemented for the specific device.");
     }
 
+    /**
+     * Throws UnsupportedOperationException for JSON to TLV8 conversion (must be implemented for the specific device).
+     */
     @Override
     public Map<Integer, Object> toValue(JsonValue jsonValue) {
         throw new UnsupportedOperationException("JSON to TLV8 conversion must be implemented for the specific device.");
     }
 
+    /**
+     * Throws UnsupportedOperationException for State to TLV8 conversion (must be implemented for the specific device).
+     */
     @Override
     public Map<Integer, Object> toValue(State state) {
         throw new UnsupportedOperationException("State to TLV8 conversion must be implemented for the specific device.");
     }
 
+    /**
+     * Throws UnsupportedOperationException for TLV8 to State conversion (must be implemented for the specific device).
+     */
     @Override
     public State toState(Map<Integer, Object> value) {
         throw new UnsupportedOperationException("TLV8 to State conversion must be implemented for the specific device.");

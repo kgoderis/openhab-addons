@@ -11,9 +11,12 @@ import org.openhab.core.types.State;
 
 /**
  * HomeKit Product Data Characteristic.
- * This characteristic represents the product data information.
+ * <p>
+ * This characteristic represents the product data information for a device, using TLV8 encoding as defined by the HAP specification.
+ * <p>
+ * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/ProductData">HomeKit Documentation</a>
+ * @author Karel Goderis
  */
 @HomekitCharacteristicType(type = "00000220-0000-1000-8000-0026BB765291", name = "Product Data", tag = "productData")
 @NonNullByDefault
@@ -31,31 +34,60 @@ public class HomekitProductDataCharacteristic extends HomekitTLV8Characteristic 
         super(service, eventManager, value);
     }
 
+    /**
+     * Encodes the TLV8 value for this characteristic.
+     * @param value the value to encode
+     * @return the encoded byte array
+     */
     @Override
     protected byte[] encodeTLV8(Map<Integer, Object> value) {
         throw new UnsupportedOperationException("TLV8 encoding must be implemented for the specific device.");
     }
 
+    /**
+     * Decodes the TLV8 value for this characteristic.
+     * @param data the byte array to decode
+     * @return the decoded value as a map
+     */
     @Override
     protected Map<Integer, Object> decodeTLV8(byte[] data) {
         throw new UnsupportedOperationException("TLV8 decoding must be implemented for the specific device.");
     }
 
+    /**
+     * Returns the default value for this characteristic.
+     * @return the default value
+     */
     @Override
     public Map<Integer, Object> getDefault() {
         throw new UnsupportedOperationException("Default value must be implemented for the specific device.");
     }
 
+    /**
+     * Converts a JSON value to the TLV8 value for this characteristic.
+     * @param jsonValue the JSON value
+     * @return the TLV8 value as a map
+     */
     @Override
     public Map<Integer, Object> toValue(JsonValue jsonValue) {
         throw new UnsupportedOperationException("JSON to TLV8 conversion must be implemented for the specific device.");
     }
 
+    /**
+     * Converts a State to the TLV8 value for this characteristic.
+     * @param state the State
+     * @return the TLV8 value as a map
+     */
     @Override
     public Map<Integer, Object> toValue(State state) {
         throw new UnsupportedOperationException("State to TLV8 conversion must be implemented for the specific device.");
     }
 
+    /**
+     * Converts a TLV8 value to a State for this characteristic.
+     * @param value the TLV8 value as a map
+     * @return the State
+     */
     @Override
     public State toState(Map<Integer, Object> value) {
         throw new UnsupportedOperationException("TLV8 to State conversion must be implemented for the specific device.");

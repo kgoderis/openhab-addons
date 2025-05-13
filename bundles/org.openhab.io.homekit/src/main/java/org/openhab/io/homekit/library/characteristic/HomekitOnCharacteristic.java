@@ -1,14 +1,5 @@
-/**
- * HomeKit On Characteristic.
- * This characteristic represents the on/off state of a device.
- * When true, the device is on; when false, the device is off.
- *
- * @author Karel Goderis
- * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
- */
 package org.openhab.io.homekit.library.characteristic;
 
-import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -21,8 +12,12 @@ import org.openhab.io.homekit.core.characteristic.HomekitBooleanCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
- * @author kgoderis
+ * HomeKit On Characteristic.
+ * This characteristic represents the on/off state of a device.
+ * When true, the device is on; when false, the device is off.
  *
+ * @author Karel Goderis - Initial Contribution
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @NonNullByDefault
 @HomekitCharacteristicType(type = "00000025-0000-1000-8000-0026BB765291", name = "On", tag = "on")
@@ -41,36 +36,7 @@ public class HomekitOnCharacteristic extends HomekitBooleanCharacteristic {
         super(service, eventManager, value);
     }
 
-    @Override
-    public JsonObject toEventJson(@Nullable Boolean value) {
-        return super.toEventJson(value != null ? value : false);
-    }
-
-    @Override
-    public JsonObject toEventJson() {
-        return super.toEventJson();
-    }
-
-    @Override
-    public JsonValue toValueJson(@Nullable Boolean value) {
-        return super.toValueJson(value);
-    }
-
-    @Override
-    public JsonObject toJson() {
-        return super.toJson();
-    }
-
-    @Override
-    public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType,
-            boolean includeEvent) {
-        return super.toJson(includeMeta, includePermissions, includeType, includeEvent);
-    }
-
-    @Override
-    public JsonObject toReducedJson() {
-        return super.toReducedJson();
-    }
+ 
 
     @Override
     public State toState(@Nullable Boolean value) {

@@ -2,18 +2,28 @@ package org.openhab.io.homekit.library.service;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
+import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitProgrammableSwitchEventCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitStatusActiveCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitStatusFaultCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitStatusLowBatteryCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitStatusTamperedCharacteristic;
 
 /**
  * Service that represents a doorbell in HomeKit.
- * This service provides control over doorbells and similar devices.
+ * This service provides control over doorbell events and status.
+ *
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitServiceType(type = "00000121-0000-1000-8000-0026BB765291", name = "Doorbell", tag = "Doorbell")
+@HomekitServiceType(type = "00000121-0000-1000-8000-0026BB765291", name = "Doorbell", tag = "doorbell")
+@NonNullByDefault
 public class HomekitDoorbellService extends AbstractHomekitService {
 
     /**
@@ -26,6 +36,10 @@ public class HomekitDoorbellService extends AbstractHomekitService {
     public HomekitDoorbellService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
+        withName("Doorbell")
+            .withExtensible(false)
+            .withPrimary(false)
+            .withHidden(false);
     }
 
     /**
@@ -44,8 +58,18 @@ public class HomekitDoorbellService extends AbstractHomekitService {
     @Override
     public void addCharacteristics() {
         super.addCharacteristics();
-        addCharacteristic(new HomekitProgrammableSwitchEventCharacteristic(this,
-                getAccessory().getNextAvailableInstanceId(), eventManager));
+        addCharacteristic(new HomekitProgrammableSwitchEventCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitStatusActiveCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitStatusFaultCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitStatusLowBatteryCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitStatusTamperedCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
     }
 
     @Override

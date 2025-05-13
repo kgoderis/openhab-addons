@@ -11,13 +11,23 @@ import org.openhab.core.types.State;
 
 /**
  * HomeKit Supported Data Stream Transport Configuration Characteristic.
- * This characteristic represents the supported data stream transport configuration for a device.
+ * <p>
+ * This characteristic represents the supported data stream transport configuration for a device, as defined in the HomeKit Accessory Protocol (HAP) specification.
+ * <p>
+ * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
- * See the official HomeKit documentation for details.
+ * @author Karel Goderis
  */
 @HomekitCharacteristicType(type = "00000130-0000-1000-8000-0026BB765291", name = "Supported Data Stream Transport Configuration", tag = "supportedDataStreamTransportConfiguration")
 @NonNullByDefault
 public class HomekitSupportedDataStreamTransportConfigurationCharacteristic extends HomekitTLV8Characteristic {
+    /**
+     * Constructs the characteristic for supported data stream transport configuration.
+     *
+     * @param service the Homekit service
+     * @param eventManager the event manager
+     * @param instanceId the instance id
+     */
     public HomekitSupportedDataStreamTransportConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager);
         withInstanceId(instanceId)
@@ -25,35 +35,71 @@ public class HomekitSupportedDataStreamTransportConfigurationCharacteristic exte
             .withDescription("Supported Data Stream Transport Configuration");
     }
 
+    /**
+     * Constructs the characteristic from a JSON value.
+     *
+     * @param service the Homekit service
+     * @param eventManager the event manager
+     * @param value the JSON value
+     */
     public HomekitSupportedDataStreamTransportConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }
 
+    /**
+     * Encodes the TLV8 value for this characteristic.
+     * @param value the value to encode
+     * @return the encoded byte array
+     */
     @Override
     protected byte[] encodeTLV8(Map<Integer, Object> value) {
         throw new UnsupportedOperationException("TLV8 encoding must be implemented for the specific device.");
     }
 
+    /**
+     * Decodes the TLV8 value for this characteristic.
+     * @param data the byte array to decode
+     * @return the decoded value as a map
+     */
     @Override
     protected Map<Integer, Object> decodeTLV8(byte[] data) {
         throw new UnsupportedOperationException("TLV8 decoding must be implemented for the specific device.");
     }
 
+    /**
+     * Returns the default value for this characteristic.
+     * @return the default value as a map
+     */
     @Override
     public Map<Integer, Object> getDefault() {
         throw new UnsupportedOperationException("Default value must be implemented for the specific device.");
     }
 
+    /**
+     * Converts a JSON value to a TLV8 value.
+     * @param jsonValue the JSON value
+     * @return the TLV8 value as a map
+     */
     @Override
     public Map<Integer, Object> toValue(JsonValue jsonValue) {
         throw new UnsupportedOperationException("JSON to TLV8 conversion must be implemented for the specific device.");
     }
 
+    /**
+     * Converts a State to a TLV8 value.
+     * @param state the state
+     * @return the TLV8 value as a map
+     */
     @Override
     public Map<Integer, Object> toValue(State state) {
         throw new UnsupportedOperationException("State to TLV8 conversion must be implemented for the specific device.");
     }
 
+    /**
+     * Converts a TLV8 value to a State.
+     * @param value the TLV8 value as a map
+     * @return the state
+     */
     @Override
     public State toState(Map<Integer, Object> value) {
         throw new UnsupportedOperationException("TLV8 to State conversion must be implemented for the specific device.");

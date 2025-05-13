@@ -3,15 +3,20 @@ package org.openhab.io.homekit.core.characteristic;
 import org.openhab.io.homekit.util.HomekitUID;
 
 /**
- * Represents a unique identifier for a Homekit characteristic.
+ * Represents a unique identifier for a HomeKit characteristic.
+ * <p>
  * The UID format is: homekit:characteristic:{pairingId}:{accessoryId}:{serviceId}:{characteristicId}
+ * <p>
+ * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
+ *
+ * @author Karel Goderis
  */
 public class HomekitCharacteristicUID extends HomekitUID {
 
     /**
      * Instantiates a new characteristic UID.
      *
-     * @param pairingId the hexidecimal pre-generated id of the accessory
+     * @param pairingId the hexadecimal pre-generated id of the accessory
      * @param accessoryId the accessory instance id
      * @param serviceId the service instance id
      * @param characteristicId the characteristic instance id
@@ -27,10 +32,10 @@ public class HomekitCharacteristicUID extends HomekitUID {
     }
 
     /**
-     * Returns the Homekit ID part of this characteristic UID.
+     * Returns the HomeKit ID part of this characteristic UID.
      * This is the last 4 segments joined with the separator.
      *
-     * @return The Homekit ID in the format: pairingId:accessoryId:serviceId:characteristicId
+     * @return The HomeKit ID in the format: pairingId:accessoryId:serviceId:characteristicId
      */
     public String getHomekitId() {
         return String.join(SEPARATOR, getAllSegments().subList(getAllSegments().size() - 4, getAllSegments().size()));

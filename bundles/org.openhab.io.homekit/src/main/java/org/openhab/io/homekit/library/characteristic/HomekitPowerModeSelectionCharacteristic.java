@@ -10,13 +10,19 @@ import java.util.Set;
 
 /**
  * HomeKit Power Mode Selection Characteristic.
- * This characteristic represents the power mode selection for a device.
+ * <p>
+ * This characteristic represents the power mode selection for a device, allowing the user to select between different power modes as defined by the HAP specification.
+ * <p>
+ * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
- * See the official HomeKit documentation for details.
+ * @author Karel Goderis
  */
 @HomekitCharacteristicType(type = "000000DF-0000-1000-8000-0026BB765291", name = "Power Mode Selection", tag = "powerModeSelection")
 @NonNullByDefault
 public class HomekitPowerModeSelectionCharacteristic extends HomekitIntegerCharacteristic {
+    /**
+     * Enum representing the possible power modes.
+     */
     public enum PowerMode {
         SHOW(0),
         HIDE(1);
@@ -27,10 +33,19 @@ public class HomekitPowerModeSelectionCharacteristic extends HomekitIntegerChara
             this.code = code;
         }
         
+        /**
+         * Returns the integer code for this power mode.
+         * @return the code
+         */
         public int getCode() {
             return code;
         }
         
+        /**
+         * Returns the PowerMode enum for a given code.
+         * @param code the code
+         * @return the PowerMode
+         */
         public static PowerMode fromCode(int code) {
             for (PowerMode m : values()) {
                 if (m.code == code) {
@@ -54,11 +69,20 @@ public class HomekitPowerModeSelectionCharacteristic extends HomekitIntegerChara
         super(service, eventManager, value);
     }
 
+    /**
+     * Checks if the given value is an allowed power mode.
+     * @param value the value to check
+     * @return true if allowed, false otherwise
+     */
     @Override
     public boolean isAllowedValue(Integer value) {
         return value != null && (value == PowerMode.SHOW.getCode() || value == PowerMode.HIDE.getCode());
     }
 
+    /**
+     * Returns the set of allowed power mode values.
+     * @return the set of allowed values
+     */
     @Override
     public Set<Integer> getAllowedValues() {
         return Set.of(

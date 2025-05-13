@@ -34,7 +34,7 @@ import org.openhab.io.homekit.event.core.HomekitEventSubscription;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicEvent;
 import org.openhab.io.homekit.event.model.service.HomekitServiceEvent;
-import org.openhab.io.homekit.library.characteristic.HomekitServiceNameCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -138,11 +138,11 @@ public abstract class AbstractHomekitService implements HomekitService {
         }
 
         @Nullable
-        HomekitCharacteristic<?> nameCharacteristic = getCharacteristic(HomekitServiceNameCharacteristic.class)
+        HomekitCharacteristic<?> nameCharacteristic = getCharacteristic(HomekitNameCharacteristic.class)
                 .orElse(null);
         if (nameCharacteristic != null) {
             try {
-                ((HomekitServiceNameCharacteristic) nameCharacteristic).setValue(name);
+                ((HomekitNameCharacteristic) nameCharacteristic).setValue(name);
             } catch (Exception e) {
                 logger.error("Error setting name characteristic value", e);
             }
@@ -156,7 +156,7 @@ public abstract class AbstractHomekitService implements HomekitService {
     @Override
     public void addCharacteristics() {
         addCharacteristic(
-                new HomekitServiceNameCharacteristic(this, getAccessory().getNextAvailableInstanceId(), eventManager));
+                new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId()));
     }
 
     /**

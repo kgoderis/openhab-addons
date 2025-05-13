@@ -15,7 +15,7 @@ Karel Goderis
 
 ### 0. Source Information
 Cross-reference with the file @CharacteristicDefinitions.ts 
-Every file verified needs to be "touched" so that its last modified date gets updated
+Every file verified needs to be "saved" so that its last modified date gets updated 
 
 ### 1. Base Class Selection
 - For `Formats.FLOAT` → Use `HomekitFloatCharacteristic`
@@ -52,6 +52,7 @@ Every file verified needs to be "touched" so that its last modified date gets up
 - Remove any references to homebridge.io
 - Include characteristic description and purpose
 - Include an author field : "Karel Goderis"
+- Include documentation for each method
 
 ### 4. Code Quality
 - Remove unnecessary `@Override` methods that only call `super()`
@@ -96,11 +97,28 @@ public class HomekitCharacteristicName extends HomekitBaseCharacteristic {
 ## Verification Checklist
 - [ ] UUID matches HAP specification
 - [ ] Name matches HAP specification
-- [ ] Base class matches format
-- [ ] Permissions match HAP specification
-- [ ] Documentation references HAP specification
+- [ ] Base class matches format (e.g., HomekitStringCharacteristic, HomekitBooleanCharacteristic, etc.)
+- [ ] Permissions match HAP specification (pairedRead, pairedWrite, events)
+- [ ] Documentation references HAP specification (https://developer.apple.com/documentation/HomeKit)
+- [ ] Documentation for every method
 - [ ] No homebridge.io references
-- [ ] No unnecessary overrides
-- [ ] Proper null safety
-- [ ] Value validation implemented
-- [ ] Enum values defined if required
+- [ ] No unnecessary overrides (e.g., methods that only call super())
+- [ ] Proper null safety annotations (@NonNullByDefault)
+- [ ] Value validation implemented (isAllowedValue, getAllowedValues, etc. as required)
+- [ ] Enum values defined if required (for enum characteristics, with correct valid values)
+- [ ] Author field present: "Karel Goderis"
+- [ ] Characteristic description and purpose included in Javadoc
+- [ ] Documentation for each method
+- [ ] Follows Java naming conventions
+- [ ] All necessary classes imported (no unnecessary fully qualified classnames)
+- [ ] Units, value range, and step implemented as per HAP specification (if applicable)
+- [ ] Uses with() methods in constructors
+- [ ] No static fields for min/max/unit (use directly in constructor)
+- [ ] Cross-checked UUID and name with HAP spec
+- [ ] Handles null values appropriately
+- [ ] For enum characteristics, implement getAllowedValues
+- [ ] Implement required methods for value conversion and validation
+- [ ] Remove @override methods like toEventJson, toValueJson, ... that are redundant
+- [ ] Classes inheriting from HomekitEnumCharacteristic should implement a setValue() method taking the specific enum as input parameter. This setValue method should handle any exceptions and throw any exception itself
+- [ ] Every file verified needs to be "saved" so that its last modified date gets updated 
+- [ ] Replace full qualified classes like java.util.Map with Map, or java.util.Collections and sof forth, and add an import line

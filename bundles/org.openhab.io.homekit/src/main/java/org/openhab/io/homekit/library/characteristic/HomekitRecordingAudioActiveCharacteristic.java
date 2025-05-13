@@ -12,13 +12,28 @@ import java.util.Set;
  * HomeKit Recording Audio Active Characteristic.
  * This characteristic represents whether audio recording is active or not.
  *
- * See the official HomeKit documentation for details.
+ * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
+ * @author Karel Goderis - Initial Contribution
  */
 @HomekitCharacteristicType(type = "00000226-0000-1000-8000-0026BB765291", name = "Recording Audio Active", tag = "recordingAudioActive")
 @NonNullByDefault
 public class HomekitRecordingAudioActiveCharacteristic extends HomekitIntegerCharacteristic {
-    public static final int DISABLE = 0;
-    public static final int ENABLE = 1;
+    /**
+     * Enum representing the possible states for recording audio.
+     */
+    public enum RecordingAudioState {
+        DISABLE(0),
+        ENABLE(1);
+        private final int code;
+        RecordingAudioState(int code) { this.code = code; }
+        public int getCode() { return code; }
+        public static RecordingAudioState fromCode(int code) {
+            for (RecordingAudioState s : values()) {
+                if (s.code == code) return s;
+            }
+            return DISABLE;
+        }
+    }
 
     public HomekitRecordingAudioActiveCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, 0, 1, "");
@@ -34,13 +49,24 @@ public class HomekitRecordingAudioActiveCharacteristic extends HomekitIntegerCha
         super(service, eventManager, value);
     }
 
+    /**
+     * Checks if the given value is a valid recording audio state.
+     *
+     * @param value the value to check
+     * @return true if the value is DISABLE or ENABLE, false otherwise
+     */
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && (value == DISABLE || value == ENABLE);
+        return value != null && (value == RecordingAudioState.DISABLE.getCode() || value == RecordingAudioState.ENABLE.getCode());
     }
 
+    /**
+     * Returns the set of allowed recording audio state values.
+     *
+     * @return a set containing DISABLE and ENABLE
+     */
     @Override
     public Set<Integer> getAllowedValues() {
-        return Set.of(DISABLE, ENABLE);
+        return Set.of(RecordingAudioState.DISABLE.getCode(), RecordingAudioState.ENABLE.getCode());
     }
 } 

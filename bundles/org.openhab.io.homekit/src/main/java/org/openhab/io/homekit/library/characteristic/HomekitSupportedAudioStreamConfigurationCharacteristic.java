@@ -11,16 +11,24 @@ import org.openhab.core.types.State;
 
 /**
  * HomeKit Supported Audio Stream Configuration Characteristic.
- * This characteristic represents the supported audio stream configuration for a device.
+ * <p>
+ * This characteristic represents the supported audio stream configuration for a device, such as a camera or speaker. The value is encoded as TLV8 and must be interpreted according to the HAP specification.
+ * <p>
+ * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
- * See the official HomeKit documentation for details.
- *
- * Note: TLV8 encoding/decoding must be implemented for the specific device/application.
+ * @author Karel Goderis
  */
 @HomekitCharacteristicType(type = "00000115-0000-1000-8000-0026BB765291", name = "Supported Audio Stream Configuration", tag = "supportedAudioStreamConfiguration")
 @NonNullByDefault
 public class HomekitSupportedAudioStreamConfigurationCharacteristic extends HomekitTLV8Characteristic {
 
+    /**
+     * Constructs a new Supported Audio Stream Configuration characteristic.
+     *
+     * @param service the HomeKit service this characteristic belongs to
+     * @param eventManager the event manager for handling HomeKit events
+     * @param instanceId the instance ID for this characteristic
+     */
     public HomekitSupportedAudioStreamConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager);
         withInstanceId(instanceId)
@@ -28,35 +36,83 @@ public class HomekitSupportedAudioStreamConfigurationCharacteristic extends Home
             .withDescription("Supported Audio Stream Configuration");
     }
 
+    /**
+     * Constructs a new Supported Audio Stream Configuration characteristic from a JSON value.
+     *
+     * @param service the HomeKit service this characteristic belongs to
+     * @param eventManager the event manager for handling HomeKit events
+     * @param value the JSON value to initialize the characteristic with
+     */
     public HomekitSupportedAudioStreamConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }
 
+    /**
+     * Encodes the TLV8 value for the supported audio stream configuration.
+     *
+     * @param value the value to encode
+     * @return the encoded byte array
+     * @throws UnsupportedOperationException always, must be implemented for the specific device
+     */
     @Override
     protected byte[] encodeTLV8(Map<Integer, Object> value) {
         throw new UnsupportedOperationException("TLV8 encoding must be implemented for the specific device.");
     }
 
+    /**
+     * Decodes the TLV8 value for the supported audio stream configuration.
+     *
+     * @param data the byte array to decode
+     * @return the decoded map
+     * @throws UnsupportedOperationException always, must be implemented for the specific device
+     */
     @Override
     protected Map<Integer, Object> decodeTLV8(byte[] data) {
         throw new UnsupportedOperationException("TLV8 decoding must be implemented for the specific device.");
     }
 
+    /**
+     * Gets the default value for the supported audio stream configuration.
+     *
+     * @return the default value map
+     * @throws UnsupportedOperationException always, must be implemented for the specific device
+     */
     @Override
     public Map<Integer, Object> getDefault() {
         throw new UnsupportedOperationException("Default value must be implemented for the specific device.");
     }
 
+    /**
+     * Converts a JSON value to a TLV8 value for the supported audio stream configuration.
+     *
+     * @param jsonValue the JSON value to convert
+     * @return the TLV8 value map
+     * @throws UnsupportedOperationException always, must be implemented for the specific device
+     */
     @Override
     public Map<Integer, Object> toValue(JsonValue jsonValue) {
         throw new UnsupportedOperationException("JSON to TLV8 conversion must be implemented for the specific device.");
     }
 
+    /**
+     * Converts a State to a TLV8 value for the supported audio stream configuration.
+     *
+     * @param state the state to convert
+     * @return the TLV8 value map
+     * @throws UnsupportedOperationException always, must be implemented for the specific device
+     */
     @Override
     public Map<Integer, Object> toValue(State state) {
         throw new UnsupportedOperationException("State to TLV8 conversion must be implemented for the specific device.");
     }
 
+    /**
+     * Converts a TLV8 value to a State for the supported audio stream configuration.
+     *
+     * @param value the TLV8 value map
+     * @return the corresponding State
+     * @throws UnsupportedOperationException always, must be implemented for the specific device
+     */
     @Override
     public State toState(Map<Integer, Object> value) {
         throw new UnsupportedOperationException("TLV8 to State conversion must be implemented for the specific device.");

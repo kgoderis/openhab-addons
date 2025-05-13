@@ -2,19 +2,29 @@ package org.openhab.io.homekit.library.service;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import org.openhab.io.homekit.library.characteristic.HomekitCurrentLockStateCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitTargetLockStateCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitLockCurrentStateCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitLockTargetStateCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitStatusActiveCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitStatusFaultCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitStatusJammedCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitStatusLowBatteryCharacteristic;
 
 /**
  * Service that represents a lock mechanism in HomeKit.
- * This service provides control over door locks and other locking mechanisms.
+ * This service provides control over lock state and operation.
+ *
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitServiceType(type = "00000045-0000-1000-8000-0026BB765291", name = "LockMechanism", tag = "LockMechanism")
+@HomekitServiceType(type = "00000045-0000-1000-8000-0026BB765291", name = "Lock Mechanism", tag = "lockMechanism")
+@NonNullByDefault
 public class HomekitLockMechanismService extends AbstractHomekitService {
 
     /**
@@ -27,6 +37,10 @@ public class HomekitLockMechanismService extends AbstractHomekitService {
     public HomekitLockMechanismService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
+        withName("Lock Mechanism")
+            .withExtensible(false)
+            .withPrimary(false)
+            .withHidden(false);
     }
 
     /**
@@ -45,10 +59,20 @@ public class HomekitLockMechanismService extends AbstractHomekitService {
     @Override
     public void addCharacteristics() {
         super.addCharacteristics();
-        addCharacteristic(new HomekitCurrentLockStateCharacteristic(this, getAccessory().getNextAvailableInstanceId(),
-                eventManager));
-        addCharacteristic(new HomekitTargetLockStateCharacteristic(this, getAccessory().getNextAvailableInstanceId(),
-                eventManager));
+        addCharacteristic(new HomekitLockCurrentStateCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(new HomekitLockTargetStateCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitStatusActiveCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitStatusFaultCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitStatusJammedCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitStatusLowBatteryCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
     }
 
     @Override

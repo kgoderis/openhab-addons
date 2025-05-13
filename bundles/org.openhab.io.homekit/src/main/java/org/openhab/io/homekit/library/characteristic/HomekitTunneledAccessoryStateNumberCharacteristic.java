@@ -9,7 +9,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * HomeKit Tunneled Accessory State Number Characteristic.
- * @see <a href="https://developers.homebridge.io/#/characteristic/TunneledAccessoryStateNumber">HomeKit Documentation</a>
+ * This characteristic represents the state number for a tunneled accessory, as a non-negative integer.
+ *
+ * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
+ * @author Karel Goderis - Initial Contribution
  */
 @HomekitCharacteristicType(type = "00000058-0000-1000-8000-0026BB765291", name = "Tunneled Accessory State Number", tag = "tunneledAccessoryStateNumber")
 @NonNullByDefault
@@ -28,11 +31,22 @@ public class HomekitTunneledAccessoryStateNumberCharacteristic extends HomekitIn
         super(service, eventManager, value);
     }
 
+    /**
+     * Checks if the given value is a valid tunneled accessory state number.
+     *
+     * @param value the value to check
+     * @return true if the value is non-negative, false otherwise
+     */
     @Override
     public boolean isAllowedValue(Integer value) {
         return value != null && value >= 0;
     }
 
+    /**
+     * Returns the set of allowed tunneled accessory state numbers.
+     *
+     * @return an empty set, as all non-negative integers are allowed
+     */
     @Override
     public java.util.Set<Integer> getAllowedValues() {
         return java.util.Collections.emptySet();

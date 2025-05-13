@@ -8,14 +8,21 @@ import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
- * HomeKit Current Fan State Characteristic.
+ * Current Fan State characteristic.
  * This characteristic represents the current state of a fan.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/CurrentFanState">HomeKit Documentation</a>
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ * @author Karel Goderis - Initial contribution
  */
 @HomekitCharacteristicType(type = "000000AF-0000-1000-8000-0026BB765291", name = "Current Fan State", tag = "currentFanState")
 @NonNullByDefault
 public class HomekitCurrentFanStateCharacteristic extends HomekitEnumCharacteristic {
+    /**
+     * Enum representing the possible states of a fan.
+     * INACTIVE (0): The fan is not active
+     * IDLE (1): The fan is idle
+     * BLOWING_AIR (2): The fan is actively blowing air
+     */
     public enum FanState {
         INACTIVE(0),
         IDLE(1),
@@ -41,6 +48,13 @@ public class HomekitCurrentFanStateCharacteristic extends HomekitEnumCharacteris
         }
     }
 
+    /**
+     * Creates a new Current Fan State characteristic.
+     *
+     * @param service The HomeKit service this characteristic belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param instanceId The instance ID for this characteristic
+     */
     public HomekitCurrentFanStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
             long instanceId) {
         super(service, eventManager, FanState.values().length);
@@ -51,6 +65,13 @@ public class HomekitCurrentFanStateCharacteristic extends HomekitEnumCharacteris
             .withDescription("Current Fan State");
     }
 
+    /**
+     * Creates a new Current Fan State characteristic from a JSON value.
+     *
+     * @param service The HomeKit service this characteristic belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param value The JSON value to initialize the characteristic with
+     */
     public HomekitCurrentFanStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
             JsonValue value) {
         super(service, eventManager, value);

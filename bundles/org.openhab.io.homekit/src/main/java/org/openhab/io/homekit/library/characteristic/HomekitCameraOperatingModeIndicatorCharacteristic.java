@@ -11,7 +11,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * HomeKit Camera Operating Mode Indicator Characteristic.
  * This characteristic represents whether the camera operating mode indicator is enabled or disabled.
  *
- * See the official HomeKit documentation for details.
+ * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
+ * @author Karel Goderis - Initial Contribution
  */
 @HomekitCharacteristicType(type = "0000021D-0000-1000-8000-0026BB765291", name = "Camera Operating Mode Indicator", tag = "cameraOperatingModeIndicator")
 @NonNullByDefault

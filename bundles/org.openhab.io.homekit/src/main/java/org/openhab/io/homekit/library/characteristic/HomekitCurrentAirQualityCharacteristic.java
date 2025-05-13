@@ -12,16 +12,27 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * This characteristic represents the current air quality level.
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/AirQuality">HomeKit Documentation</a>
+ * @author Karel Goderis - Initial contribution
  */
 @HomekitCharacteristicType(type = "00000095-0000-1000-8000-0026BB765291", name = "Air Quality", tag = "airQuality")
 @NonNullByDefault
 public class HomekitCurrentAirQualityCharacteristic extends HomekitEnumCharacteristic {
+    /**
+     * Enum representing the possible air quality levels.
+     * Each level has a corresponding integer code used in the HomeKit protocol.
+     */
     public enum AirQuality {
+        /** Air quality level is unknown */
         UNKNOWN(0),
+        /** Air quality is excellent */
         EXCELLENT(1),
+        /** Air quality is good */
         GOOD(2),
+        /** Air quality is fair */
         FAIR(3),
+        /** Air quality is inferior */
         INFERIOR(4),
+        /** Air quality is poor */
         POOR(5);
         
         private final int code;
@@ -30,10 +41,22 @@ public class HomekitCurrentAirQualityCharacteristic extends HomekitEnumCharacter
             this.code = code;
         }
         
+        /**
+         * Gets the integer code for this air quality level.
+         *
+         * @return the integer code
+         */
         public int getCode() {
             return code;
         }
         
+        /**
+         * Converts an integer code to the corresponding AirQuality.
+         * If no matching level is found, returns UNKNOWN as default.
+         *
+         * @param code the integer code to convert
+         * @return the corresponding AirQuality, or UNKNOWN if not found
+         */
         public static AirQuality fromCode(int code) {
             for (AirQuality s : values()) {
                 if (s.code == code) {
@@ -44,6 +67,13 @@ public class HomekitCurrentAirQualityCharacteristic extends HomekitEnumCharacter
         }
     }
 
+    /**
+     * Creates a new Current Air Quality characteristic.
+     *
+     * @param service The HomeKit service this characteristic belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param instanceId The instance ID for this characteristic
+     */
     public HomekitCurrentAirQualityCharacteristic(HomekitService service, HomekitEventManager eventManager,
             long instanceId) {
         super(service, eventManager, AirQuality.values().length);
@@ -54,16 +84,34 @@ public class HomekitCurrentAirQualityCharacteristic extends HomekitEnumCharacter
             .withDescription("Current Air Quality");
     }
 
+    /**
+     * Creates a new Current Air Quality characteristic from a JSON value.
+     *
+     * @param service The HomeKit service this characteristic belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param value The JSON value to initialize the characteristic with
+     */
     public HomekitCurrentAirQualityCharacteristic(HomekitService service, HomekitEventManager eventManager,
             JsonValue value) {
         super(service, eventManager, value);
     }
 
+    /**
+     * Checks if the given value is a valid air quality level.
+     *
+     * @param value the integer value to check
+     * @return true if the value corresponds to a valid air quality level, false otherwise
+     */
     @Override
     public boolean isAllowedValue(Integer value) {
         return value != null && value >= 0 && value < AirQuality.values().length;
     }
 
+    /**
+     * Gets the set of all valid air quality level values.
+     *
+     * @return a set containing all valid air quality level codes
+     */
     @Override
     public java.util.Set<Integer> getAllowedValues() {
         return java.util.Set.of(

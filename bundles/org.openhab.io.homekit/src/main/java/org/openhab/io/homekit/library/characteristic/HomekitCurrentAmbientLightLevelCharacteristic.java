@@ -8,19 +8,36 @@ import org.openhab.io.homekit.core.characteristic.HomekitFloatCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
- * HomeKit Current Ambient Light Level Characteristic.
+ * Current Ambient Light Level characteristic.
  * This characteristic represents the ambient light level in lux.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/CurrentAmbientLightLevel">HomeKit Documentation</a>
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ * @author Karel Goderis - Initial contribution
  */
 @HomekitCharacteristicType(type = "0000006B-0000-1000-8000-0026BB765291", name = "Current Ambient Light Level", tag = "currentAmbientLightLevel")
 @NonNullByDefault
 public class HomekitCurrentAmbientLightLevelCharacteristic extends HomekitFloatCharacteristic {
+    /**
+     * Creates a new Current Ambient Light Level characteristic.
+     * The value range is 0.0001-100000.0 lux.
+     *
+     * @param service The HomeKit service this characteristic belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param instanceId The instance ID for this characteristic
+     */
     public HomekitCurrentAmbientLightLevelCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, 0.0001, 100000.0, 0.0001, "lux");
         withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
             .withDescription("Current Ambient Light Level");
     }
+
+    /**
+     * Creates a new Current Ambient Light Level characteristic from a JSON value.
+     *
+     * @param service The HomeKit service this characteristic belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param value The JSON value to initialize the characteristic with
+     */
     public HomekitCurrentAmbientLightLevelCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }

@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.HSBType;
@@ -15,7 +16,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * This characteristic represents the hue of a light in degrees.
  * The hue value ranges from 0 to 360 degrees, where 0/360 is red, 120 is green, and 240 is blue.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000013-0000-1000-8000-0026BB765291", name = "Hue", tag = "hue")
@@ -36,8 +37,8 @@ public class HomekitHueCharacteristic extends HomekitFloatCharacteristic {
 
     @Override
     public Double toValue(State state) {
-        if (state instanceof HSBType) {
-            DecimalType hue = ((HSBType) state).getHue();
+        if (state instanceof HSBType hSBType) {
+            DecimalType hue = hSBType.getHue();
             return hue.doubleValue();
         } else {
             DecimalType convertedState = state.as(DecimalType.class);

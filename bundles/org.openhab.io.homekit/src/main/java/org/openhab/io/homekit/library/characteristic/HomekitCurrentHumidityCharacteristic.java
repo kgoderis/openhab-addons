@@ -9,21 +9,18 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * HomeKit Current Humidity Characteristic.
- * This characteristic represents the current relative humidity level.
- * The value is a percentage between 0 and 100.
+ * This characteristic represents the current relative humidity level as a percentage between 0 and 100.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/CurrentRelativeHumidity">HomeKit Documentation</a>
+ * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
+ * @author Karel Goderis - Initial Contribution
  */
 @HomekitCharacteristicType(type = "00000010-0000-1000-8000-0026BB765291", name = "Current Relative Humidity", tag = "currentRelativeHumidity")
 @NonNullByDefault
 public class HomekitCurrentHumidityCharacteristic extends HomekitFloatCharacteristic {
-    private static final double MIN_VALUE = 0.0;
-    private static final double MAX_VALUE = 100.0;
-    private static final double MIN_STEP = 1.0;
 
     public HomekitCurrentHumidityCharacteristic(HomekitService service, HomekitEventManager eventManager,
             long instanceId) {
-        super(service, eventManager, MIN_VALUE, MAX_VALUE, MIN_STEP, "%");
+        super(service, eventManager, 0.0, 100.0, 1.0, "percentage");
         withInstanceId(instanceId)
             .withPairedWrite(false)
             .withPairedRead(true)
@@ -36,8 +33,14 @@ public class HomekitCurrentHumidityCharacteristic extends HomekitFloatCharacteri
         super(service, eventManager, value);
     }
 
+    /**
+     * Checks if the given value is a valid humidity percentage.
+     *
+     * @param value the value to check
+     * @return true if the value is between 0 and 100, false otherwise
+     */
     @Override
     public boolean isAllowedValue(Double value) {
-        return value != null && value >= MIN_VALUE && value <= MAX_VALUE;
+        return value != null && value >= 0.0 && value <= 100.0;
     }
 } 

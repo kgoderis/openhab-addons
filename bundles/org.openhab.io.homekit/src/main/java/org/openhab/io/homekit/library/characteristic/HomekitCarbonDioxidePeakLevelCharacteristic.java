@@ -8,7 +8,11 @@ import org.openhab.io.homekit.core.characteristic.HomekitFloatCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
- * Carbon Dioxide Peak Level Characteristic.
+ * HomeKit Carbon Dioxide Peak Level Characteristic.
+ * This characteristic represents the peak level of carbon dioxide detected by the accessory.
+ *
+ * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
+ * @author Karel Goderis - Initial Contribution
  */
 @HomekitCharacteristicType(type = "00000094-0000-1000-8000-0026BB765291", name = "Carbon Dioxide Peak Level", tag = "carbonDioxidePeakLevel")
 @NonNullByDefault

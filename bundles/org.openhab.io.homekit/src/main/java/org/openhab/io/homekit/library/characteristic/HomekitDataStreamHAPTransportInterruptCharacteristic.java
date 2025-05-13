@@ -11,13 +11,21 @@ import org.openhab.core.types.State;
 
 /**
  * HomeKit Data Stream HAP Transport Interrupt Characteristic.
- * This characteristic represents the HAP transport interrupt configuration for data streaming.
+ * This characteristic represents the HAP transport interrupt configuration for data streaming, as defined in the HomeKit Accessory Protocol (HAP) specification.
  *
- * See the official HomeKit documentation for details.
+ * @author Karel Goderis - Initial Contribution
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000139-0000-1000-8000-0026BB765291", name = "Data Stream HAP Transport Interrupt", tag = "dataStreamHAPTransportInterrupt")
 @NonNullByDefault
 public class HomekitDataStreamHAPTransportInterruptCharacteristic extends HomekitTLV8Characteristic {
+    /**
+     * Constructs a new Data Stream HAP Transport Interrupt characteristic.
+     *
+     * @param service the HomeKit service this characteristic belongs to
+     * @param eventManager the event manager for handling HomeKit events
+     * @param instanceId the instance ID for this characteristic
+     */
     public HomekitDataStreamHAPTransportInterruptCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager);
         withInstanceId(instanceId)
@@ -27,35 +35,60 @@ public class HomekitDataStreamHAPTransportInterruptCharacteristic extends Homeki
             .withDescription("Data Stream HAP Transport Interrupt");
     }
 
+    /**
+     * Constructs a new Data Stream HAP Transport Interrupt characteristic from a JSON value.
+     *
+     * @param service the HomeKit service this characteristic belongs to
+     * @param eventManager the event manager for handling HomeKit events
+     * @param value the JSON value to initialize the characteristic with
+     */
     public HomekitDataStreamHAPTransportInterruptCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }
 
+    /**
+     * Throws UnsupportedOperationException for TLV8 encoding (must be implemented for the specific device).
+     */
     @Override
     protected byte[] encodeTLV8(Map<Integer, Object> value) {
         throw new UnsupportedOperationException("TLV8 encoding must be implemented for the specific device.");
     }
 
+    /**
+     * Throws UnsupportedOperationException for TLV8 decoding (must be implemented for the specific device).
+     */
     @Override
     protected Map<Integer, Object> decodeTLV8(byte[] data) {
         throw new UnsupportedOperationException("TLV8 decoding must be implemented for the specific device.");
     }
 
+    /**
+     * Throws UnsupportedOperationException for default value (must be implemented for the specific device).
+     */
     @Override
     public Map<Integer, Object> getDefault() {
         throw new UnsupportedOperationException("Default value must be implemented for the specific device.");
     }
 
+    /**
+     * Throws UnsupportedOperationException for JSON to TLV8 conversion (must be implemented for the specific device).
+     */
     @Override
     public Map<Integer, Object> toValue(JsonValue jsonValue) {
         throw new UnsupportedOperationException("JSON to TLV8 conversion must be implemented for the specific device.");
     }
 
+    /**
+     * Throws UnsupportedOperationException for State to TLV8 conversion (must be implemented for the specific device).
+     */
     @Override
     public Map<Integer, Object> toValue(State state) {
         throw new UnsupportedOperationException("State to TLV8 conversion must be implemented for the specific device.");
     }
 
+    /**
+     * Throws UnsupportedOperationException for TLV8 to State conversion (must be implemented for the specific device).
+     */
     @Override
     public State toState(Map<Integer, Object> value) {
         throw new UnsupportedOperationException("TLV8 to State conversion must be implemented for the specific device.");

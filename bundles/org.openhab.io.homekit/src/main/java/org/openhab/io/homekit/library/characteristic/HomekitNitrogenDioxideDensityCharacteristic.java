@@ -9,7 +9,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * HomeKit Nitrogen Dioxide Density Characteristic.
- * @see <a href="https://developers.homebridge.io/#/characteristic/NitrogenDioxideDensity">HomeKit Documentation</a>
+ * This characteristic represents the density of nitrogen dioxide in the air, measured in micrograms per cubic meter.
+ *
+ * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
+ * @author Karel Goderis - Initial Contribution
  */
 @HomekitCharacteristicType(type = "000000C4-0000-1000-8000-0026BB765291", name = "Nitrogen Dioxide Density", tag = "nitrogenDioxideDensity")
 @NonNullByDefault
@@ -28,6 +31,12 @@ public class HomekitNitrogenDioxideDensityCharacteristic extends HomekitFloatCha
         super(service, eventManager, value);
     }
 
+    /**
+     * Checks if the given value is a valid nitrogen dioxide density.
+     *
+     * @param value the value to check
+     * @return true if the value is within the allowed range, false otherwise
+     */
     @Override
     public boolean isAllowedValue(Double value) {
         return value != null && value >= 0.0 && value <= 1000.0;

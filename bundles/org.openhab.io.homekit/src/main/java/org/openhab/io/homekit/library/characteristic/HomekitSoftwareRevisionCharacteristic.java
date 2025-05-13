@@ -9,7 +9,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * HomeKit Software Revision Characteristic.
- * @see <a href="https://developers.homebridge.io/#/characteristic/SoftwareRevision">HomeKit Documentation</a>
+ * This characteristic represents the software revision of the accessory.
+ *
+ * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
+ * @author Karel Goderis - Initial Contribution
  */
 @HomekitCharacteristicType(type = "00000054-0000-1000-8000-0026BB765291", name = "Software Revision", tag = "softwareRevision")
 @NonNullByDefault

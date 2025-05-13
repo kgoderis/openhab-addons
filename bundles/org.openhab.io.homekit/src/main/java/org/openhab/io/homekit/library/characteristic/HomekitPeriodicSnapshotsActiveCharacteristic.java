@@ -11,11 +11,19 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * HomeKit Periodic Snapshots Active Characteristic.
  * This characteristic represents whether periodic snapshots are active.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/PeriodicSnapshotsActive">HomeKit Documentation</a>
+ * @author Karel Goderis - Initial Contribution
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000225-0000-1000-8000-0026BB765291", name = "Periodic Snapshots Active", tag = "periodicSnapshotsActive")
 @NonNullByDefault
 public class HomekitPeriodicSnapshotsActiveCharacteristic extends HomekitBooleanCharacteristic {
+    /**
+     * Constructs a new Periodic Snapshots Active characteristic.
+     *
+     * @param service the HomeKit service this characteristic belongs to
+     * @param eventManager the event manager for handling HomeKit events
+     * @param instanceId the instance ID for this characteristic
+     */
     public HomekitPeriodicSnapshotsActiveCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager);
         withInstanceId(instanceId)
@@ -25,6 +33,13 @@ public class HomekitPeriodicSnapshotsActiveCharacteristic extends HomekitBoolean
             .withDescription("Periodic Snapshots Active");
     }
 
+    /**
+     * Constructs a new Periodic Snapshots Active characteristic from a JSON value.
+     *
+     * @param service the HomeKit service this characteristic belongs to
+     * @param eventManager the event manager for handling HomeKit events
+     * @param value the JSON value to initialize the characteristic with
+     */
     public HomekitPeriodicSnapshotsActiveCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }

@@ -11,7 +11,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * HomeKit Programmable Switch Output State Characteristic.
  * This characteristic represents the output state for a programmable switch.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/ProgrammableSwitchOutputState">HomeKit Documentation</a>
+ * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
+ * @author Karel Goderis - Initial Contribution
  */
 @HomekitCharacteristicType(type = "00000074-0000-1000-8000-0026BB765291", name = "Programmable Switch Output State", tag = "programmableSwitchOutputState")
 @NonNullByDefault

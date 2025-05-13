@@ -8,10 +8,11 @@ import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
- * HomeKit Current Visibility State Characteristic.
- * This characteristic represents the current visibility state (e.g., for a window covering).
+ * Current Visibility State characteristic.
+ * This characteristic represents whether a window covering or similar device is currently shown or hidden.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/CurrentVisibilityState">HomeKit Documentation</a>
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ * @author Karel Goderis - Initial contribution
  */
 @HomekitCharacteristicType(type = "00000135-0000-1000-8000-0026BB765291", name = "Current Visibility State", tag = "currentVisibilityState")
 @NonNullByDefault
@@ -44,5 +45,15 @@ public class HomekitCurrentVisibilityStateCharacteristic extends HomekitEnumChar
     @Override
     public java.util.Set<Integer> getAllowedValues() {
         return java.util.Set.of(CurrentVisibilityState.SHOWN.getCode(), CurrentVisibilityState.HIDDEN.getCode());
+    }
+
+    /**
+     * Sets the value of the characteristic. Not supported for read-only characteristics.
+     *
+     * @param value the CurrentVisibilityState to set
+     * @throws UnsupportedOperationException always
+     */
+    public void setValue(CurrentVisibilityState value) throws Exception {
+        throw new UnsupportedOperationException("CurrentVisibilityStateCharacteristic is read-only");
     }
 } 

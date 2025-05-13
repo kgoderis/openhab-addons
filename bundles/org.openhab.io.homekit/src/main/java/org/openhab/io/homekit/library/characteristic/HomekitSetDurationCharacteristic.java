@@ -9,7 +9,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * HomeKit Set Duration Characteristic.
- * @see <a href="https://developers.homebridge.io/#/characteristic/SetDuration">HomeKit Documentation</a>
+ * This characteristic represents the duration to be set for a device or service.
+ *
+ * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
+ * @author Karel Goderis - Initial Contribution
  */
 @HomekitCharacteristicType(type = "000000D3-0000-1000-8000-0026BB765291", name = "Set Duration", tag = "setDuration")
 @NonNullByDefault

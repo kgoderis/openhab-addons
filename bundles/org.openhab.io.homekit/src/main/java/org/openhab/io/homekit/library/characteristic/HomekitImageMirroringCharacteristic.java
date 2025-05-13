@@ -11,7 +11,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * HomeKit Image Mirroring Characteristic.
  * This characteristic represents the image mirroring state for a device.
  *
- * See the official HomeKit documentation for details.
+ * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
+ * @author Karel Goderis - Initial Contribution
  */
 @HomekitCharacteristicType(type = "0000011F-0000-1000-8000-0026BB765291", name = "Image Mirroring", tag = "imageMirroring")
 @NonNullByDefault

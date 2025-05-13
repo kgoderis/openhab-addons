@@ -1,30 +1,56 @@
 package org.openhab.io.homekit.library.characteristic;
 
-import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitBooleanCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
+/**
+ * HomeKit Identify Characteristic.
+ * <p>
+ * This characteristic represents the identify action for a HomeKit accessory. When set to true, the accessory should perform a physical identification action (such as blinking an LED or making a sound) to help the user locate it. The value is a boolean and is write-only.
+ * <p>
+ * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
+ *
+ * @author Karel Goderis
+ */
 @NonNullByDefault
 @HomekitCharacteristicType(type = "00000014-0000-1000-8000-0026BB765291", name = "Identify", tag = "identify")
 public class HomekitIdentifyCharacteristic extends HomekitBooleanCharacteristic {
 
+    /**
+     * Constructs a new Identify characteristic.
+     *
+     * @param service the HomeKit service this characteristic belongs to
+     * @param eventManager the event manager for handling HomeKit events
+     * @param instanceId the instance ID for this characteristic
+     */
     public HomekitIdentifyCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager);
         withInstanceId(instanceId).withPairedWrite(true).withPairedRead(false).withEvents(false)
                 .withDescription("Identify");
     }
 
+    /**
+     * Constructs a new Identify characteristic from a JSON value.
+     *
+     * @param service the HomeKit service this characteristic belongs to
+     * @param eventManager the event manager for handling HomeKit events
+     * @param value the JSON value to initialize the characteristic with
+     */
     public HomekitIdentifyCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }
 
+    /**
+     * Sets the value of the Identify characteristic. If set to true, triggers the accessory's identify action.
+     *
+     * @param value the value to set (true to identify, false otherwise)
+     */
     @Override
     public void setValue(@Nullable Boolean value) {
         if (value != null && value) {
@@ -32,45 +58,13 @@ public class HomekitIdentifyCharacteristic extends HomekitBooleanCharacteristic 
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Gets the default value for the Identify characteristic.
+     *
+     * @return false (default is not to identify)
+     */
     @Override
     public Boolean getDefault() {
         return false;
-    }
-
-    @Override
-    public JsonObject toEventJson(Boolean value) {
-        return super.toEventJson(value);
-    }
-
-    @Override
-    public JsonObject toEventJson() {
-        return super.toEventJson();
-    }
-
-    @Override
-    public JsonValue toValueJson(@Nullable Boolean value) {
-        return super.toValueJson(value);
-    }
-
-    @Override
-    public JsonObject toJson() {
-        return super.toJson();
-    }
-
-    @Override
-    public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType,
-            boolean includeEvent) {
-        return super.toJson(includeMeta, includePermissions, includeType, includeEvent);
-    }
-
-    @Override
-    public JsonObject toReducedJson() {
-        return super.toReducedJson();
-    }
-
-    @Override
-    public State toState(Boolean value) {
-        return super.toState(value);
     }
 }

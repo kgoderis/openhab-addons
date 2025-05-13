@@ -2,6 +2,7 @@ package org.openhab.io.homekit.library.service;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
@@ -9,13 +10,18 @@ import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.library.characteristic.HomekitFilterChangeIndicationCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitFilterLifeLevelCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitResetFilterIndicationCharacteristic;
 
 /**
- * Service that represents a filter maintenance in HomeKit.
+ * Service that represents filter maintenance in HomeKit.
  * This service provides information about filter status and maintenance.
+ *
+ * @author Karel Goderis
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitServiceType(type = "000000BA-0000-1000-8000-0026BB765291", name = "FilterMaintenance", tag = "FilterMaintenance")
+@HomekitServiceType(type = "000000BA-0000-1000-8000-0026BB765291", name = "Filter Maintenance", tag = "filterMaintenance")
+@NonNullByDefault
 public class HomekitFilterMaintenanceService extends AbstractHomekitService {
 
     /**
@@ -28,6 +34,10 @@ public class HomekitFilterMaintenanceService extends AbstractHomekitService {
     public HomekitFilterMaintenanceService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
+        withName("Filter Maintenance")
+            .withExtensible(false)
+            .withPrimary(false)
+            .withHidden(false);
     }
 
     /**
@@ -46,12 +56,14 @@ public class HomekitFilterMaintenanceService extends AbstractHomekitService {
     @Override
     public void addCharacteristics() {
         super.addCharacteristics();
-        addCharacteristic(new HomekitFilterChangeIndicationCharacteristic(this,
-                getAccessory().getNextAvailableInstanceId(), eventManager));
-        addCharacteristic(new HomekitFilterLifeLevelCharacteristic(this, getAccessory().getNextAvailableInstanceId(),
-                eventManager));
-        addCharacteristic(new HomekitResetFilterIndicationCharacteristic(this,
-                getAccessory().getNextAvailableInstanceId(), eventManager));
+        addCharacteristic(new HomekitFilterChangeIndicationCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(new HomekitFilterLifeLevelCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(new HomekitResetFilterIndicationCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
     }
 
     @Override

@@ -8,10 +8,11 @@ import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
- * HomeKit Current Heater Cooler State Characteristic.
+ * Current Heater Cooler State characteristic.
  * This characteristic represents the current state of a heater/cooler device.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/CurrentHeaterCoolerState">HomeKit Documentation</a>
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ * @author Karel Goderis - Initial contribution
  */
 @HomekitCharacteristicType(type = "000000B1-0000-1000-8000-0026BB765291", name = "Current Heater Cooler State", tag = "currentHeaterCoolerState")
 @NonNullByDefault

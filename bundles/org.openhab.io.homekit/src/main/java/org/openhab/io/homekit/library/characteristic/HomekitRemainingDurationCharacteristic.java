@@ -9,7 +9,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * HomeKit Remaining Duration Characteristic.
- * @see <a href="https://developers.homebridge.io/#/characteristic/RemainingDuration">HomeKit Documentation</a>
+ * This characteristic represents the remaining duration for a device or service.
+ *
+ * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
+ * @author Karel Goderis - Initial Contribution
  */
 @HomekitCharacteristicType(type = "000000D4-0000-1000-8000-0026BB765291", name = "Remaining Duration", tag = "remainingDuration")
 @NonNullByDefault

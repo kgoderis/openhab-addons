@@ -93,6 +93,14 @@ public interface HomekitCharacteristic<T>
      */
     boolean isHidden();
 
+    /**
+     * Checks if this characteristic is mandatory.
+     *
+     * @return true if the characteristic is mandatory
+     */
+    boolean isMandatory();
+
+
     // Value and state management methods
     /**
      * Gets the current value of the characteristic.
@@ -232,6 +240,15 @@ public interface HomekitCharacteristic<T>
      * @return this instance for method chaining
      */
     HomekitCharacteristic<T> withHidden(boolean isHidden);
+
+    /**
+     * Sets whether this characteristic is mandatory.
+     *
+     * @param isMandatory whether the characteristic is mandatory
+     * @return this instance for method chaining
+     */
+    HomekitCharacteristic<T> withMandatory(boolean isMandatory);
+
 
     /**
      * Sets whether this characteristic has events. Enables the accessory to send notifications to

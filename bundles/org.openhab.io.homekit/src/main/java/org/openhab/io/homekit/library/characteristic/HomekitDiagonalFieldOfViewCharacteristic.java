@@ -11,11 +11,19 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * HomeKit Diagonal Field Of View Characteristic.
  * This characteristic represents the diagonal field of view in degrees.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/DiagonalFieldOfView">HomeKit Documentation</a>
+ * @author Karel Goderis - Initial Contribution
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000224-0000-1000-8000-0026BB765291", name = "Diagonal Field Of View", tag = "diagonalFieldOfView")
 @NonNullByDefault
 public class HomekitDiagonalFieldOfViewCharacteristic extends HomekitFloatCharacteristic {
+    /**
+     * Constructs a new Diagonal Field Of View characteristic.
+     *
+     * @param service the HomeKit service this characteristic belongs to
+     * @param eventManager the event manager for handling HomeKit events
+     * @param instanceId the instance ID for this characteristic
+     */
     public HomekitDiagonalFieldOfViewCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, 0.0, 360.0, 1.0, "arcdegrees");
         withInstanceId(instanceId)
@@ -25,10 +33,23 @@ public class HomekitDiagonalFieldOfViewCharacteristic extends HomekitFloatCharac
             .withDescription("Diagonal Field Of View");
     }
 
+    /**
+     * Constructs a new Diagonal Field Of View characteristic from a JSON value.
+     *
+     * @param service the HomeKit service this characteristic belongs to
+     * @param eventManager the event manager for handling HomeKit events
+     * @param value the JSON value to initialize the characteristic with
+     */
     public HomekitDiagonalFieldOfViewCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }
 
+    /**
+     * Checks if the given value is a valid diagonal field of view (0.0–360.0).
+     *
+     * @param value the value to check
+     * @return true if the value is between 0.0 and 360.0, false otherwise
+     */
     @Override
     public boolean isAllowedValue(Double value) {
         return value != null && value >= 0.0 && value <= 360.0;

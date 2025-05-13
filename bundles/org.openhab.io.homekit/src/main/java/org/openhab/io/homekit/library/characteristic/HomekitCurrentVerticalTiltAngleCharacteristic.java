@@ -1,20 +1,35 @@
 package org.openhab.io.homekit.library.characteristic;
 
-import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitIntegerCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
+import java.util.Set;
+
+/**
+ * HomeKit Current Vertical Tilt Angle Characteristic.
+ * <p>
+ * This characteristic represents the current vertical tilt angle for a device (e.g., window covering), measured in arcdegrees. The value indicates the current position of the vertical slats. See the HAP specification for valid value range and usage.
+ * <p>
+ * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
+ *
+ * @author Karel Goderis
+ */
 @NonNullByDefault
 @HomekitCharacteristicType(type = "0000006E-0000-1000-8000-0026BB765291", name = "Current Vertical Tilt Angle", tag = "currentVerticalTiltAngle")
 public class HomekitCurrentVerticalTiltAngleCharacteristic extends HomekitIntegerCharacteristic {
 
+    /**
+     * Constructs a new Current Vertical Tilt Angle characteristic.
+     *
+     * @param service the HomeKit service this characteristic belongs to
+     * @param eventManager the event manager for handling HomeKit events
+     * @param instanceId the instance ID for this characteristic
+     */
     public HomekitCurrentVerticalTiltAngleCharacteristic(HomekitService service, HomekitEventManager eventManager,
             long instanceId) {
         super(service, eventManager, -90, 90, "arcdegrees");
@@ -22,44 +37,36 @@ public class HomekitCurrentVerticalTiltAngleCharacteristic extends HomekitIntege
                 .withDescription("Current Vertical Tilt Angle");
     }
 
+    /**
+     * Constructs a new Current Vertical Tilt Angle characteristic from a JSON value.
+     *
+     * @param service the HomeKit service this characteristic belongs to
+     * @param eventManager the event manager for handling HomeKit events
+     * @param value the JSON value to initialize the characteristic with
+     */
     public HomekitCurrentVerticalTiltAngleCharacteristic(HomekitService service, HomekitEventManager eventManager,
             JsonValue value) {
         super(service, eventManager, value);
     }
 
+    /**
+     * Checks if the given value is an allowed vertical tilt angle.
+     *
+     * @param value the value to check
+     * @return true if the value is allowed, false otherwise
+     */
     @Override
-    public JsonObject toEventJson(Integer value) {
-        return super.toEventJson(value);
+    public boolean isAllowedValue(Integer value) {
+        return value != null && value >= -90 && value <= 90;
     }
 
+    /**
+     * Returns the set of allowed vertical tilt angle values (empty set for continuous range).
+     *
+     * @return the set of allowed values
+     */
     @Override
-    public JsonObject toEventJson() {
-        return super.toEventJson();
-    }
-
-    @Override
-    public JsonValue toValueJson(@Nullable Integer value) {
-        return super.toValueJson(value);
-    }
-
-    @Override
-    public JsonObject toJson() {
-        return super.toJson();
-    }
-
-    @Override
-    public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType,
-            boolean includeEvent) {
-        return super.toJson(includeMeta, includePermissions, includeType, includeEvent);
-    }
-
-    @Override
-    public JsonObject toReducedJson() {
-        return super.toReducedJson();
-    }
-
-    @Override
-    public State toState(Integer value) {
-        return super.toState(value);
+    public Set<Integer> getAllowedValues() {
+        return Set.of();
     }
 }

@@ -11,11 +11,19 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * HomeKit Manually Disabled Characteristic.
  * This characteristic represents whether the device has been manually disabled.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/ManuallyDisabled">HomeKit Documentation</a>
+ * @author Karel Goderis - Initial Contribution
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000227-0000-1000-8000-0026BB765291", name = "Manually Disabled", tag = "manuallyDisabled")
 @NonNullByDefault
 public class HomekitManuallyDisabledCharacteristic extends HomekitBooleanCharacteristic {
+    /**
+     * Constructs a new Manually Disabled characteristic.
+     *
+     * @param service the HomeKit service this characteristic belongs to
+     * @param eventManager the event manager for handling HomeKit events
+     * @param instanceId the instance ID for this characteristic
+     */
     public HomekitManuallyDisabledCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager);
         withInstanceId(instanceId)
@@ -25,6 +33,13 @@ public class HomekitManuallyDisabledCharacteristic extends HomekitBooleanCharact
             .withDescription("Manually Disabled");
     }
 
+    /**
+     * Constructs a new Manually Disabled characteristic from a JSON value.
+     *
+     * @param service the HomeKit service this characteristic belongs to
+     * @param eventManager the event manager for handling HomeKit events
+     * @param value the JSON value to initialize the characteristic with
+     */
     public HomekitManuallyDisabledCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }

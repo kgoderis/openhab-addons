@@ -8,16 +8,17 @@ import org.openhab.io.homekit.core.characteristic.HomekitIntegerCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
- * HomeKit Current Tilt Angle Characteristic.
+ * Current Tilt Angle characteristic.
  * This characteristic represents the current tilt angle for a device (e.g., window covering).
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/CurrentTiltAngle">HomeKit Documentation</a>
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ * @author Karel Goderis - Initial contribution
  */
 @HomekitCharacteristicType(type = "000000C1-0000-1000-8000-0026BB765291", name = "Current Tilt Angle", tag = "currentTiltAngle")
 @NonNullByDefault
 public class HomekitCurrentTiltAngleCharacteristic extends HomekitIntegerCharacteristic {
     public HomekitCurrentTiltAngleCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
-        super(service, eventManager, -90, 90, "°");
+        super(service, eventManager, -90, 90, "arcdegrees");
         withInstanceId(instanceId)
             .withPairedWrite(false)
             .withPairedRead(true)

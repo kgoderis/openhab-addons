@@ -1,0 +1,118 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# HomeKit Services Implementation Verification
+
+## Overview
+This rule defines the requirements for implementing HomeKit services in the OpenHAB HomeKit binding.
+
+## Author
+Karel Goderis
+
+## Requirements
+
+### 0. Source Information
+Cross-reference with the file [ServiceDefinitions.ts](mdc:https:/raw.githubusercontent.com/homebridge/HAP-NodeJS/refs/heads/latest/src/lib/definitions/ServiceDefinitions.ts)
+Every file verified needs to be "saved" so that its last modified date gets updated
+
+### 1. Base Class Selection
+- All services must extend `AbstractHomekitService`
+- Place in `src/main/java/org/openhab/io/homekit/library/service/`
+- Annotate with `@HomekitServiceType` including:
+  - `type`: UUID from HAP specification
+  - `name`: Name from HAP specification
+  - `tag`: camelCase version of name
+
+### 2. Class Structure
+- Implement required characteristics as defined in ServiceDefinitions.ts
+- Add optional characteristics if needed
+- Use proper null safety annotations (`@NonNullByDefault`)
+- Follow Java naming conventions
+- Import all necessary classes and do not use fully qualified classnames
+- Use with() methods in constructors
+- Cross-check the UUID and name with what is in ServiceDefinitions.ts
+- Remove @override methods that are redundant
+- Every file verified needs to be "saved" so that its last modified date gets updated
+- Add mandatory characteristics, and use withMandatory(true)
+- Add optional characteristics, and use withMandatory(false)
+
+### 3. Documentation
+- Add Javadoc comment referencing the HAP specification in general to https://developer.apple.com/documentation/HomeKit (do not use a specific or non-existing url)
+- Remove any references to homebridge.io
+- Include service description and purpose
+- Include an author field : "Karel Goderis"
+- Include documentation for each method
+
+### 4. Code Quality
+- Remove unnecessary `@Override` methods that only call `super()`
+- Use proper null safety annotations (`@NonNullByDefault`)
+- Follow Java naming conventions
+- Import all necessary classes and do not use fully qualified classnames
+- Replace full qualified classes like java.util.Map with Map, or java.util.Collections and so forth, and add an import line
+
+### 5. Service Configuration
+- Set required characteristics as per HAP specification
+- Add optional characteristics if needed
+- Configure service properties (isHidden, isPrimary, isExtensible) appropriately
+- Handle characteristic initialization in initialise() method
+
+## Example Implementation
+```java
+/**
+ * HomeKit Service Name.
+ * This service represents [description].
+ *
+ * @author Karel Goderis
+ */
+@HomekitServiceType(type = "UUID", name = "Name", tag = "camelCaseName")
+@NonNullByDefault
+public class HomekitServiceName extends AbstractHomekitService {
+    public HomekitServiceName(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory) {
+        super(accessory, eventManager, characteristicFactory);
+        withName("Service Name")
+            .withExtensible(true)
+            .withPrimary(false)
+            .withHidden(false);
+    }
+
+    @Override
+    public void addCharacteristics() {
+        // Add required characteristics
+        addCharacteristic(new HomekitRequiredCharacteristic(this, eventManager, 
+            getAccessory().getNextAvailableInstanceId()));
+        
+        // Add optional characteristics if needed
+        addCharacteristic(new HomekitOptionalCharacteristic(this, eventManager,
+            getAccessory().getNextAvailableInstanceId()));
+    }
+}
+```
+
+## Verification Checklist
+- [ ] UUID matches HAP specification
+- [ ] Name matches HAP specification
+- [ ] Base class extends AbstractHomekitService
+- [ ] All required characteristics are implemented
+- [ ] Optional characteristics are added if needed
+- [ ] Documentation references HAP specification (https://developer.apple.com/documentation/HomeKit)
+- [ ] Documentation for every method
+- [ ] No homebridge.io references
+- [ ] No unnecessary overrides
+- [ ] Proper null safety annotations (@NonNullByDefault)
+- [ ] Author field present: "Karel Goderis"
+- [ ] Service description and purpose included in Javadoc
+- [ ] Documentation for each method
+- [ ] Follows Java naming conventions
+- [ ] All necessary classes imported (no unnecessary fully qualified classnames)
+- [ ] Uses with() methods in constructors
+- [ ] Cross-checked UUID and name with HAP spec
+- [ ] Service properties (isHidden, isPrimary, isExtensible) set correctly
+- [ ] Characteristic initialization handled in initialise() method
+- [ ] Every file verified needs to be "saved" so that its last modified date gets updated
+- [ ] Replace full qualified classes with proper imports
+- [ ] Check that all Characteristics are added
+- [ ] All linter errors are fixed
+- [ ] The file is "touched" to update the Modified Date of the file

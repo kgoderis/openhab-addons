@@ -53,6 +53,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
     private boolean isPairedWrite = false;
     private boolean isPairedRead = false;
     private boolean isHidden = false;
+    private boolean isMandatory = false;
     private boolean hasEvents = false;
     private boolean isWriteResponse = false;
     private boolean isTimedWrite = false;
@@ -271,6 +272,17 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
     public boolean isHidden() {
         return isHidden;
     }
+
+
+    /**
+     * Checks if this characteristic is mandatory.
+     *
+     * @return true if the characteristic is mandatory
+     */
+    @Override
+    public boolean isMandatory() {
+        return isMandatory;
+    }   
 
     /**
      * Converts the characteristic to a JSON object with specified options.
@@ -679,6 +691,18 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
     @Override
     public AbstractHomekitCharacteristic<T> withHidden(boolean isHidden) {
         this.isHidden = isHidden;
+        return this;
+    }
+
+    /** 
+     * Sets whether this characteristic is mandatory.
+     * 
+     * @param isMandatory whether the characteristic is mandatory
+     * @return this instance
+     */
+    @Override
+    public AbstractHomekitCharacteristic<T> withMandatory(boolean isMandatory) {
+        this.isMandatory = isMandatory;
         return this;
     }
 

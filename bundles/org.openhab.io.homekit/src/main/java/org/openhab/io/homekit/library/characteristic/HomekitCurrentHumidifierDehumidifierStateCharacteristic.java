@@ -8,10 +8,11 @@ import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
- * HomeKit Current Humidifier Dehumidifier State Characteristic.
+ * Current Humidifier Dehumidifier State characteristic.
  * This characteristic represents the current state for a humidifier/dehumidifier.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/CurrentHumidifierDehumidifierState">HomeKit Documentation</a>
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ * @author Karel Goderis - Initial contribution
  */
 @HomekitCharacteristicType(type = "000000B3-0000-1000-8000-0026BB765291", name = "Current Humidifier Dehumidifier State", tag = "currentHumidifierDehumidifierState")
 @NonNullByDefault

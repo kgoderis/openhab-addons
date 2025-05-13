@@ -12,9 +12,12 @@ import java.util.Set;
 
 /**
  * HomeKit Streaming Status Characteristic.
- * This characteristic represents the streaming status for a device.
+ * <p>
+ * This characteristic represents the streaming status for a device, indicating whether streaming is available, active, or busy. The value is encoded as TLV8 and must be interpreted according to the HAP specification.
+ * <p>
+ * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/StreamingStatus">HomeKit Documentation</a>
+ * @author Karel Goderis
  */
 @HomekitCharacteristicType(type = "00000120-0000-1000-8000-0026BB765291", name = "Streaming Status", tag = "streamingStatus")
 @NonNullByDefault
@@ -44,6 +47,13 @@ public class HomekitStreamingStatusCharacteristic extends HomekitTLV8Characteris
         }
     }
 
+    /**
+     * Constructs a new Streaming Status characteristic.
+     *
+     * @param service the HomeKit service this characteristic belongs to
+     * @param eventManager the event manager for handling HomeKit events
+     * @param instanceId the instance ID for this characteristic
+     */
     public HomekitStreamingStatusCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager);
         withInstanceId(instanceId)
@@ -53,43 +63,95 @@ public class HomekitStreamingStatusCharacteristic extends HomekitTLV8Characteris
             .withDescription("Streaming Status");
     }
 
+    /**
+     * Constructs a new Streaming Status characteristic from a JSON value.
+     *
+     * @param service the HomeKit service this characteristic belongs to
+     * @param eventManager the event manager for handling HomeKit events
+     * @param value the JSON value to initialize the characteristic with
+     */
     public HomekitStreamingStatusCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }
 
+    /**
+     * Encodes the TLV8 value for the streaming status.
+     *
+     * @param value the value to encode
+     * @return the encoded byte array
+     * @throws UnsupportedOperationException always, must be implemented for the specific device
+     */
     @Override
     protected byte[] encodeTLV8(Map<Integer, Object> value) {
         throw new UnsupportedOperationException("Encoding not implemented");
     }
 
+    /**
+     * Decodes the TLV8 value for the streaming status.
+     *
+     * @param data the byte array to decode
+     * @return the decoded map
+     * @throws UnsupportedOperationException always, must be implemented for the specific device
+     */
     @Override
     protected Map<Integer, Object> decodeTLV8(byte[] data) {
         throw new UnsupportedOperationException("Decoding not implemented");
     }
 
+    /**
+     * Gets the default value for the streaming status.
+     *
+     * @return the default value map
+     * @throws UnsupportedOperationException always, must be implemented for the specific device
+     */
     @Override
     public Map<Integer, Object> getDefault() {
         throw new UnsupportedOperationException("Default value not implemented");
     }
 
+    /**
+     * Converts a State to a TLV8 value for the streaming status.
+     *
+     * @param state the state to convert
+     * @return the TLV8 value map
+     * @throws UnsupportedOperationException always, must be implemented for the specific device
+     */
     @Override
     public Map<Integer, Object> toValue(State state) {
         throw new UnsupportedOperationException("State to TLV8 not implemented");
     }
 
+    /**
+     * Converts a TLV8 value to a State for the streaming status.
+     *
+     * @param value the TLV8 value map
+     * @return the corresponding State
+     * @throws UnsupportedOperationException always, must be implemented for the specific device
+     */
     @Override
     public State toState(Map<Integer, Object> value) {
         throw new UnsupportedOperationException("TLV8 to State not implemented");
     }
 
+    /**
+     * Checks if the given value is an allowed streaming status value.
+     *
+     * @param value the value to check
+     * @return true if the value is allowed, false otherwise
+     */
     @Override
     public boolean isAllowedValue(Map<Integer, Object> value) {
         // Implement a proper check if you know the allowed values, otherwise:
         return true;
     }
 
+    /**
+     * Returns the set of allowed streaming status values.
+     *
+     * @return the set of allowed values
+     */
     @Override
     public Set<Map<Integer, Object>> getAllowedValues() {
-        return java.util.Collections.emptySet();
+        return Set.of();
     }
 } 

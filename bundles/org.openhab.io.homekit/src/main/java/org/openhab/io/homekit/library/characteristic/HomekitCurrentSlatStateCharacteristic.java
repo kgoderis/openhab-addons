@@ -8,14 +8,21 @@ import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
- * HomeKit Current Slat State Characteristic.
+ * Current Slat State characteristic.
  * This characteristic represents the current state of a slat (e.g., in a window blind).
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/CurrentSlatState">HomeKit Documentation</a>
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ * @author Karel Goderis - Initial contribution
  */
 @HomekitCharacteristicType(type = "000000AA-0000-1000-8000-0026BB765291", name = "Current Slat State", tag = "currentSlatState")
 @NonNullByDefault
 public class HomekitCurrentSlatStateCharacteristic extends HomekitEnumCharacteristic {
+    /**
+     * Enum representing the possible states of a slat.
+     * INACTIVE (0): The slat is not active
+     * IDLE (1): The slat is idle
+     * ROTATING (2): The slat is currently rotating
+     */
     public enum SlatState {
         INACTIVE(0),
         IDLE(1),
@@ -41,6 +48,13 @@ public class HomekitCurrentSlatStateCharacteristic extends HomekitEnumCharacteri
         }
     }
 
+    /**
+     * Creates a new Current Slat State characteristic.
+     *
+     * @param service The HomeKit service this characteristic belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param instanceId The instance ID for this characteristic
+     */
     public HomekitCurrentSlatStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
             long instanceId) {
         super(service, eventManager, SlatState.values().length);
@@ -51,6 +65,13 @@ public class HomekitCurrentSlatStateCharacteristic extends HomekitEnumCharacteri
             .withDescription("Current Slat State");
     }
 
+    /**
+     * Creates a new Current Slat State characteristic from a JSON value.
+     *
+     * @param service The HomeKit service this characteristic belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param value The JSON value to initialize the characteristic with
+     */
     public HomekitCurrentSlatStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
             JsonValue value) {
         super(service, eventManager, value);

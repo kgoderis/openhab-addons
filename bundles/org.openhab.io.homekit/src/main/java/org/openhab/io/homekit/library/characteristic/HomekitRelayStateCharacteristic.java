@@ -9,7 +9,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * HomeKit Relay State Characteristic.
- * @see <a href="https://developers.homebridge.io/#/characteristic/RelayState">HomeKit Documentation</a>
+ * This characteristic represents the state of a relay, as an integer value.
+ *
+ * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
+ * @author Karel Goderis - Initial Contribution
  */
 @HomekitCharacteristicType(type = "0000005C-0000-1000-8000-0026BB765291", name = "Relay State", tag = "relayState")
 @NonNullByDefault
@@ -28,11 +31,22 @@ public class HomekitRelayStateCharacteristic extends HomekitIntegerCharacteristi
         super(service, eventManager, value);
     }
 
+    /**
+     * Checks if the given value is a valid relay state.
+     *
+     * @param value the value to check
+     * @return true if the value is valid, false otherwise
+     */
     @Override
     public boolean isAllowedValue(Integer value) {
         return value != null && value >= 0;
     }
 
+    /**
+     * Returns the set of allowed relay state values.
+     *
+     * @return an empty set, as all non-negative integers are allowed
+     */
     @Override
     public java.util.Set<Integer> getAllowedValues() {
         return java.util.Collections.emptySet();

@@ -9,7 +9,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * HomeKit Tunneled Accessory Advertising Characteristic.
- * @see <a href="https://developers.homebridge.io/#/characteristic/TunneledAccessoryAdvertising">HomeKit Documentation</a>
+ * This characteristic represents whether a tunneled accessory is advertising.
+ *
+ * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
+ * @author Karel Goderis - Initial Contribution
  */
 @HomekitCharacteristicType(type = "00000060-0000-1000-8000-0026BB765291", name = "Tunneled Accessory Advertising", tag = "tunneledAccessoryAdvertising")
 @NonNullByDefault

@@ -9,9 +9,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * HomeKit Cooling Threshold Temperature Characteristic.
- * This characteristic is used to set the cooling threshold temperature for a thermostat (in Celsius).
+ * This characteristic is used to set the cooling threshold temperature for a thermostat, in degrees Celsius.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/CoolingThresholdTemperature">HomeKit Documentation</a>
+ * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
+ * @author Karel Goderis - Initial Contribution
  */
 @NonNullByDefault
 @HomekitCharacteristicType(type = "0000000D-0000-1000-8000-0026BB765291", name = "Cooling Threshold Temperature", tag = "coolingThresholdTemperature")
@@ -31,6 +32,12 @@ public class HomekitCoolingThresholdTemperatureCharacteristic extends HomekitFlo
         super(service, eventManager, value);
     }
 
+    /**
+     * Checks if the given value is a valid cooling threshold temperature.
+     *
+     * @param value the value to check
+     * @return true if the value is within the allowed range, false otherwise
+     */
     @Override
     public boolean isAllowedValue(Double value) {
         return value != null && value >= 10.0 && value <= 35.0;

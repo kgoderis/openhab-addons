@@ -9,9 +9,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * HomeKit Digital Zoom Characteristic.
- * This characteristic represents the digital zoom level for a device.
+ * This characteristic represents the digital zoom level for a device, typically between 0 and 100.
  *
- * See the official HomeKit documentation for details.
+ * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
+ * @author Karel Goderis - Initial Contribution
  */
 @HomekitCharacteristicType(type = "0000011D-0000-1000-8000-0026BB765291", name = "Digital Zoom", tag = "digitalZoom")
 @NonNullByDefault
@@ -30,6 +31,12 @@ public class HomekitDigitalZoomCharacteristic extends HomekitFloatCharacteristic
         super(service, eventManager, value);
     }
 
+    /**
+     * Checks if the given value is a valid digital zoom level.
+     *
+     * @param value the value to check
+     * @return true if the value is within the allowed range, false otherwise
+     */
     @Override
     public boolean isAllowedValue(Double value) {
         // No explicit min/max in spec, but typically 0-100 is a safe default

@@ -11,11 +11,12 @@ import org.openhab.io.homekit.core.characteristic.HomekitFloatCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
- * HomeKit Current Relative Humidity Characteristic.
+ * Current Relative Humidity characteristic.
  * This characteristic represents the current relative humidity of the environment.
  * The value is expressed as a percentage between 0 and 100.
  *
- * @see <a href="https://developer.apple.com/documentation/homekit/hmcharacteristictyperelativehumidity">HomeKit Documentation</a>
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ * @author Karel Goderis - Initial contribution
  */
 @NonNullByDefault
 @HomekitCharacteristicType(type = "00000010-0000-1000-8000-0026BB765291", name = "Current Relative Humidity", tag = "currentRelativeHumidity")
