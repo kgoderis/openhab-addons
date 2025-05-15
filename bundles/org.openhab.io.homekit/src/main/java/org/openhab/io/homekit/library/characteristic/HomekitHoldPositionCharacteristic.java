@@ -22,18 +22,15 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "0000006F-0000-1000-8000-0026BB765291", name = "Hold Position", tag = "holdPosition")
+@HomekitCharacteristicType(type = "0000006F-0000-1000-8000-0026BB765291", name = "Hold Position", tag = "holdPosition", acceptedItemTypes = {"Switch", "Contact"})
 @NonNullByDefault
 public class HomekitHoldPositionCharacteristic extends HomekitBooleanCharacteristic {
 
     public HomekitHoldPositionCharacteristic(HomekitService service, HomekitEventManager eventManager,
             long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withDescription("Hold Position");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true)
+                .withDescription("Hold Position");
     }
 
     public HomekitHoldPositionCharacteristic(HomekitService service, HomekitEventManager eventManager,

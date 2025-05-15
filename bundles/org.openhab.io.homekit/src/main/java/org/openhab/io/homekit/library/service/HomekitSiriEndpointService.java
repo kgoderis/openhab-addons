@@ -31,10 +31,7 @@ public class HomekitSiriEndpointService extends AbstractHomekitService {
     public HomekitSiriEndpointService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("SiriEndpoint")
-            .withExtensible(true)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("SiriEndpoint").withExtensible(true).withPrimary(false).withHidden(false);
     }
 
     /**
@@ -45,12 +42,13 @@ public class HomekitSiriEndpointService extends AbstractHomekitService {
     public void addCharacteristics() {
         // Add required characteristics based on HAP specification
         addCharacteristic(new HomekitSiriEndpointSessionStatusCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));    
-                addCharacteristic(new HomekitVersionCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));    
-                addCharacteristic(new HomekitActiveIdentifierCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));    
-                addCharacteristic(new HomekitManuallyDisabledCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));   
-            }
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(
+                new HomekitVersionCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
+        addCharacteristic(new HomekitActiveIdentifierCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitManuallyDisabledCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+    }
 }

@@ -1,12 +1,14 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Map;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitTLV8Characteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Map;
 
 /**
  * HomeKit Asset Update Progress Characteristic.
@@ -14,19 +16,18 @@ import java.util.Map;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/AssetUpdateProgress">HomeKit Documentation</a>
  */
-@HomekitCharacteristicType(type = "0000026B-0000-1000-8000-0026BB765291", name = "Asset Update Progress", tag = "assetUpdateProgress")
+@HomekitCharacteristicType(type = "0000026B-0000-1000-8000-0026BB765291", name = "Asset Update Progress", tag = "assetUpdateProgress", acceptedItemTypes = {"String"})
 @NonNullByDefault
 public class HomekitAssetUpdateProgressCharacteristic extends HomekitTLV8Characteristic {
-    public HomekitAssetUpdateProgressCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitAssetUpdateProgressCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(false)
-            .withEvents(true)
-            .withDescription("Asset Update Progress");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(true)
+                .withDescription("Asset Update Progress");
     }
 
-    public HomekitAssetUpdateProgressCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitAssetUpdateProgressCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -52,11 +53,13 @@ public class HomekitAssetUpdateProgressCharacteristic extends HomekitTLV8Charact
 
     @Override
     public Map<Integer, Object> toValue(org.openhab.core.types.State state) {
-        throw new UnsupportedOperationException("State to TLV8 conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "State to TLV8 conversion must be implemented for the specific device.");
     }
 
     @Override
     public org.openhab.core.types.State toState(Map<Integer, Object> value) {
-        throw new UnsupportedOperationException("TLV8 to State conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "TLV8 to State conversion must be implemented for the specific device.");
     }
-} 
+}

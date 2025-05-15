@@ -1,5 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Set;
+
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -8,19 +10,19 @@ import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitIntegerCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
-import java.util.Set;
-
 /**
  * HomeKit Current Vertical Tilt Angle Characteristic.
  * <p>
- * This characteristic represents the current vertical tilt angle for a device (e.g., window covering), measured in arcdegrees. The value indicates the current position of the vertical slats. See the HAP specification for valid value range and usage.
+ * This characteristic represents the current vertical tilt angle for a device (e.g., window covering), measured in
+ * arcdegrees. The value indicates the current position of the vertical slats. See the HAP specification for valid value
+ * range and usage.
  * <p>
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
  */
+@HomekitCharacteristicType(type = "0000006E-0000-1000-8000-0026BB765291", name = "Current Vertical Tilt Angle", tag = "currentVerticalTiltAngle", acceptedItemTypes = {"Number", "Rollershutter"})
 @NonNullByDefault
-@HomekitCharacteristicType(type = "0000006E-0000-1000-8000-0026BB765291", name = "Current Vertical Tilt Angle", tag = "currentVerticalTiltAngle")
 public class HomekitCurrentVerticalTiltAngleCharacteristic extends HomekitIntegerCharacteristic {
 
     /**

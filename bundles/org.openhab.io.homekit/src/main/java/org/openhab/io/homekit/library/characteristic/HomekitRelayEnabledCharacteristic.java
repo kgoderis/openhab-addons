@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -14,20 +15,19 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
  * @author Karel Goderis - Initial Contribution
  */
-@HomekitCharacteristicType(type = "0000005B-0000-1000-8000-0026BB765291", name = "Relay Enabled", tag = "relayEnabled")
+@HomekitCharacteristicType(type = "0000005B-0000-1000-8000-0026BB765291", name = "Relay Enabled", tag = "relayEnabled", acceptedItemTypes = {"Switch", "Contact"})
 @NonNullByDefault
 public class HomekitRelayEnabledCharacteristic extends HomekitBooleanCharacteristic {
 
-    public HomekitRelayEnabledCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitRelayEnabledCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedWrite(true)
-            .withPairedRead(true)
-            .withEvents(true)
-            .withDescription("Relay Enabled");
+        withInstanceId(instanceId).withPairedWrite(true).withPairedRead(true).withEvents(true)
+                .withDescription("Relay Enabled");
     }
 
-    public HomekitRelayEnabledCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitRelayEnabledCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
-} 
+}

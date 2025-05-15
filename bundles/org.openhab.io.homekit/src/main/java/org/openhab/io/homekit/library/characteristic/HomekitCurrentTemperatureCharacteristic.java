@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -14,7 +15,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  * @author Karel Goderis - Initial contribution
  */
-@HomekitCharacteristicType(type = "00000011-0000-1000-8000-0026BB765291", name = "Current Temperature", tag = "currentTemperature")
+@HomekitCharacteristicType(type = "00000011-0000-1000-8000-0026BB765291", name = "Current Temperature", tag = "currentTemperature", acceptedItemTypes = {"Number"})
 @NonNullByDefault
 public class HomekitCurrentTemperatureCharacteristic extends HomekitFloatCharacteristic {
     /**
@@ -25,13 +26,11 @@ public class HomekitCurrentTemperatureCharacteristic extends HomekitFloatCharact
      * @param eventManager The event manager for handling HomeKit events
      * @param instanceId The instance ID for this characteristic
      */
-    public HomekitCurrentTemperatureCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitCurrentTemperatureCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 0.0, 100.0, 0.1, "celsius");
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(false)
-            .withEvents(true)
-            .withDescription("Current Temperature");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(true)
+                .withDescription("Current Temperature");
     }
 
     /**
@@ -41,7 +40,8 @@ public class HomekitCurrentTemperatureCharacteristic extends HomekitFloatCharact
      * @param eventManager The event manager for handling HomeKit events
      * @param value The JSON value to initialize the characteristic with
      */
-    public HomekitCurrentTemperatureCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitCurrentTemperatureCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 }

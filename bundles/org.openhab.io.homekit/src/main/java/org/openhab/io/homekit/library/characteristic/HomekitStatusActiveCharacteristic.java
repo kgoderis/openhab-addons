@@ -25,7 +25,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  */
 @NonNullByDefault
-@HomekitCharacteristicType(type = "00000075-0000-1000-8000-0026BB765291", name = "Status Active", tag = "statusActive")
+@HomekitCharacteristicType(type = "00000075-0000-1000-8000-0026BB765291", name = "Status Active", tag = "statusActive", acceptedItemTypes = {"Switch", "Contact"})
 public class HomekitStatusActiveCharacteristic extends HomekitBooleanCharacteristic {
 
     public HomekitStatusActiveCharacteristic(HomekitService service, HomekitEventManager eventManager,

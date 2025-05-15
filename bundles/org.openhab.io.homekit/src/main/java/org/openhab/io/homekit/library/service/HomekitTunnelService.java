@@ -30,10 +30,7 @@ public class HomekitTunnelService extends AbstractHomekitService {
     public HomekitTunnelService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Tunnel")
-            .withExtensible(true)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Tunnel").withExtensible(true).withPrimary(false).withHidden(false);
     }
 
     /**

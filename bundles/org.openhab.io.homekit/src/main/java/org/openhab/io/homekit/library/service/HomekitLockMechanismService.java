@@ -37,10 +37,7 @@ public class HomekitLockMechanismService extends AbstractHomekitService {
     public HomekitLockMechanismService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Lock Mechanism")
-            .withExtensible(false)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Lock Mechanism").withPrimary(false).withHidden(false);
     }
 
     /**
@@ -58,19 +55,21 @@ public class HomekitLockMechanismService extends AbstractHomekitService {
 
     @Override
     public void addCharacteristics() {
-        super.addCharacteristics();
         addCharacteristic(new HomekitLockCurrentStateCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         addCharacteristic(new HomekitLockTargetStateCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitStatusActiveCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitStatusFaultCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitStatusJammedCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(false));
+        addCharacteristic(
+                new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        addCharacteristic(
+                new HomekitStatusFaultCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        addCharacteristic(
+                new HomekitStatusJammedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
         addCharacteristic(new HomekitStatusLowBatteryCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
     }

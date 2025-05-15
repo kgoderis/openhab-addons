@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -14,7 +15,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developers.homebridge.io/#/characteristic/CurrentHeatingCoolingState">HomeKit Documentation</a>
  * @author Karel Goderis - Initial contribution
  */
-@HomekitCharacteristicType(type = "0000000F-0000-1000-8000-0026BB765291", name = "Current Heating Cooling State", tag = "currentHeatingCoolingState")
+@HomekitCharacteristicType(type = "0000000F-0000-1000-8000-0026BB765291", name = "Current Heating Cooling State", tag = "currentHeatingCoolingState", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitCurrentHeatingCoolingStateCharacteristic extends HomekitEnumCharacteristic {
     /**
@@ -30,13 +31,13 @@ public class HomekitCurrentHeatingCoolingStateCharacteristic extends HomekitEnum
         COOL(2),
         /** System is in automatic mode */
         AUTO(3);
-        
+
         private final int code;
-        
+
         HeatingCoolingState(int code) {
             this.code = code;
         }
-        
+
         /**
          * Gets the integer code for this heating/cooling state.
          *
@@ -45,7 +46,7 @@ public class HomekitCurrentHeatingCoolingStateCharacteristic extends HomekitEnum
         public int getCode() {
             return code;
         }
-        
+
         /**
          * Converts an integer code to the corresponding HeatingCoolingState.
          * If no matching state is found, returns OFF as default.
@@ -73,11 +74,8 @@ public class HomekitCurrentHeatingCoolingStateCharacteristic extends HomekitEnum
     public HomekitCurrentHeatingCoolingStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
             long instanceId) {
         super(service, eventManager, HeatingCoolingState.values().length);
-        withInstanceId(instanceId)
-            .withPairedWrite(false)
-            .withPairedRead(true)
-            .withEvents(true)
-            .withDescription("Current Heating Cooling State");
+        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
+                .withDescription("Current Heating Cooling State");
     }
 
     /**
@@ -110,11 +108,7 @@ public class HomekitCurrentHeatingCoolingStateCharacteristic extends HomekitEnum
      */
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(
-            HeatingCoolingState.OFF.getCode(),
-            HeatingCoolingState.HEAT.getCode(),
-            HeatingCoolingState.COOL.getCode(),
-            HeatingCoolingState.AUTO.getCode()
-        );
+        return java.util.Set.of(HeatingCoolingState.OFF.getCode(), HeatingCoolingState.HEAT.getCode(),
+                HeatingCoolingState.COOL.getCode(), HeatingCoolingState.AUTO.getCode());
     }
 }

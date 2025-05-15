@@ -13,12 +13,13 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * HomeKit Supported Video Recording Configuration Characteristic.
- * This characteristic represents the supported configuration for video recording, as defined in the HomeKit Accessory Protocol (HAP) specification.
+ * This characteristic represents the supported configuration for video recording, as defined in the HomeKit Accessory
+ * Protocol (HAP) specification.
  *
  * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000206-0000-1000-8000-0026BB765291", name = "Supported Video Recording Configuration", tag = "supportedVideoRecordingConfiguration")
+@HomekitCharacteristicType(type = "00000206-0000-1000-8000-0026BB765291", name = "Supported Video Recording Configuration", tag = "supportedVideoRecordingConfiguration", acceptedItemTypes = {"String"})
 @NonNullByDefault
 public class HomekitSupportedVideoRecordingConfigurationCharacteristic extends HomekitTLV8Characteristic {
     /**
@@ -28,13 +29,11 @@ public class HomekitSupportedVideoRecordingConfigurationCharacteristic extends H
      * @param eventManager the event manager for handling HomeKit events
      * @param instanceId the instance ID for this characteristic
      */
-    public HomekitSupportedVideoRecordingConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitSupportedVideoRecordingConfigurationCharacteristic(HomekitService service,
+            HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(false)
-            .withEvents(true)
-            .withDescription("Supported Video Recording Configuration");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(true)
+                .withDescription("Supported Video Recording Configuration");
     }
 
     /**
@@ -44,7 +43,8 @@ public class HomekitSupportedVideoRecordingConfigurationCharacteristic extends H
      * @param eventManager the event manager for handling HomeKit events
      * @param value the JSON value to initialize the characteristic with
      */
-    public HomekitSupportedVideoRecordingConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitSupportedVideoRecordingConfigurationCharacteristic(HomekitService service,
+            HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -85,7 +85,8 @@ public class HomekitSupportedVideoRecordingConfigurationCharacteristic extends H
      */
     @Override
     public Map<Integer, Object> toValue(State state) {
-        throw new UnsupportedOperationException("State to TLV8 conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "State to TLV8 conversion must be implemented for the specific device.");
     }
 
     /**
@@ -93,6 +94,7 @@ public class HomekitSupportedVideoRecordingConfigurationCharacteristic extends H
      */
     @Override
     public State toState(Map<Integer, Object> value) {
-        throw new UnsupportedOperationException("TLV8 to State conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "TLV8 to State conversion must be implemented for the specific device.");
     }
-} 
+}

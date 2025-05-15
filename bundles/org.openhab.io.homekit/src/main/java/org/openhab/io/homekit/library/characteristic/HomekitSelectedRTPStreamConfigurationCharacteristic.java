@@ -13,12 +13,13 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * HomeKit Selected RTP Stream Configuration Characteristic.
- * This characteristic represents the selected configuration for RTP streaming, as defined in the HomeKit Accessory Protocol (HAP) specification.
+ * This characteristic represents the selected configuration for RTP streaming, as defined in the HomeKit Accessory
+ * Protocol (HAP) specification.
  *
  * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000117-0000-1000-8000-0026BB765291", name = "Selected RTP Stream Configuration", tag = "selectedRTPStreamConfiguration")
+@HomekitCharacteristicType(type = "00000117-0000-1000-8000-0026BB765291", name = "Selected RTP Stream Configuration", tag = "selectedRTPStreamConfiguration", acceptedItemTypes = {"String"})
 @NonNullByDefault
 public class HomekitSelectedRTPStreamConfigurationCharacteristic extends HomekitTLV8Characteristic {
     /**
@@ -28,13 +29,11 @@ public class HomekitSelectedRTPStreamConfigurationCharacteristic extends Homekit
      * @param eventManager the event manager for handling HomeKit events
      * @param instanceId the instance ID for this characteristic
      */
-    public HomekitSelectedRTPStreamConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitSelectedRTPStreamConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withDescription("Selected RTP Stream Configuration");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true)
+                .withDescription("Selected RTP Stream Configuration");
     }
 
     /**
@@ -44,7 +43,8 @@ public class HomekitSelectedRTPStreamConfigurationCharacteristic extends Homekit
      * @param eventManager the event manager for handling HomeKit events
      * @param value the JSON value to initialize the characteristic with
      */
-    public HomekitSelectedRTPStreamConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitSelectedRTPStreamConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -85,7 +85,8 @@ public class HomekitSelectedRTPStreamConfigurationCharacteristic extends Homekit
      */
     @Override
     public Map<Integer, Object> toValue(State state) {
-        throw new UnsupportedOperationException("State to TLV8 conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "State to TLV8 conversion must be implemented for the specific device.");
     }
 
     /**
@@ -93,6 +94,7 @@ public class HomekitSelectedRTPStreamConfigurationCharacteristic extends Homekit
      */
     @Override
     public State toState(Map<Integer, Object> value) {
-        throw new UnsupportedOperationException("TLV8 to State conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "TLV8 to State conversion must be implemented for the specific device.");
     }
-} 
+}

@@ -23,7 +23,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000079-0000-1000-8000-0026BB765291", name = "Status Low Battery", tag = "statusLowBattery")
+@HomekitCharacteristicType(type = "00000079-0000-1000-8000-0026BB765291", name = "Status Low Battery", tag = "statusLowBattery", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitStatusLowBatteryCharacteristic extends HomekitEnumCharacteristic {
 
@@ -32,8 +32,15 @@ public class HomekitStatusLowBatteryCharacteristic extends HomekitEnumCharacteri
         BATTERY_LEVEL_LOW(1);
 
         private final int value;
-        StatusLowBattery(int value) { this.value = value; }
-        public int getValue() { return value; }
+
+        StatusLowBattery(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
         public static StatusLowBattery fromValue(int value) {
             for (StatusLowBattery status : values()) {
                 if (status.value == value) {
@@ -44,16 +51,15 @@ public class HomekitStatusLowBatteryCharacteristic extends HomekitEnumCharacteri
         }
     }
 
-    public HomekitStatusLowBatteryCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitStatusLowBatteryCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 2);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(false)
-            .withEvents(true)
-            .withDescription("Status Low Battery");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(true)
+                .withDescription("Status Low Battery");
     }
 
-    public HomekitStatusLowBatteryCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitStatusLowBatteryCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -90,7 +96,8 @@ public class HomekitStatusLowBatteryCharacteristic extends HomekitEnumCharacteri
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        if (value == null) return false;
+        if (value == null)
+            return false;
         try {
             StatusLowBattery.fromValue(value);
             return true;

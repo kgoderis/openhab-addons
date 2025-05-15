@@ -37,10 +37,7 @@ public class HomekitInputSourceService extends AbstractHomekitService {
     public HomekitInputSourceService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Input Source")
-            .withExtensible(false)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Input Source").withPrimary(false).withHidden(false);
     }
 
     /**
@@ -58,25 +55,26 @@ public class HomekitInputSourceService extends AbstractHomekitService {
 
     @Override
     public void addCharacteristics() {
-        super.addCharacteristics();
-        addCharacteristic(new HomekitConfiguredNameCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(
+                new HomekitConfiguredNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
         addCharacteristic(new HomekitInputDeviceTypeCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         addCharacteristic(new HomekitInputSourceTypeCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitIsConfiguredCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(
+                new HomekitIsConfiguredCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
         addCharacteristic(new HomekitCurrentVisibilityStateCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
         addCharacteristic(new HomekitTargetVisibilityStateCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(false));
     }
 
     @Override
     public boolean isExtensible() {
         return false;
     }
-} 
+}

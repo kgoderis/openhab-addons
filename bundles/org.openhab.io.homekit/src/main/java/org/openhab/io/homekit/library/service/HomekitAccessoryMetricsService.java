@@ -33,10 +33,7 @@ public class HomekitAccessoryMetricsService extends AbstractHomekitService {
     public HomekitAccessoryMetricsService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Accessory Metrics")
-            .withExtensible(true)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Accessory Metrics").withExtensible(true).withPrimary(false).withHidden(false);
     }
 
     /**
@@ -59,8 +56,9 @@ public class HomekitAccessoryMetricsService extends AbstractHomekitService {
     @Override
     public void addCharacteristics() {
         // Required characteristics
-        addCharacteristic(new HomekitActiveCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(
+                new HomekitActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
         addCharacteristic(new HomekitMetricsBufferFullStateCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         addCharacteristic(new HomekitSupportedMetricsCharacteristic(this, eventManager,

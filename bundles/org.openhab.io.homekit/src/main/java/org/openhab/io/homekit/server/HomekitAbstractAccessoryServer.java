@@ -18,7 +18,6 @@ import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryCategory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.event.HomekitEventType;
-import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.api.listener.HomekitAccessoryServerChangeListener;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
@@ -99,13 +98,12 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
     private final HomekitAccessoryRegistry accessoryRegistry;
     private final HomekitPairingRegistry pairingRegistry;
     protected final HomekitEventManager eventManager;
-    protected final Set<HomekitFactory> homekitFactories;
 
     // ========== Constructor ==========
     public HomekitAbstractAccessoryServer(HomekitAccessoryCategory category, InetAddress address, int port,
             byte[] pairingId, byte[] privateKey, HomekitAccessoryRegistry accessoryRegistry,
-            HomekitPairingRegistry pairingRegistry, HomekitEventManager eventManager,
-            Set<HomekitFactory> homekitFactories) throws HomekitConfigurationException {
+            HomekitPairingRegistry pairingRegistry, HomekitEventManager eventManager)
+            throws HomekitConfigurationException {
         super();
         validateConstructorParameters(category, address, port, pairingId, privateKey, accessoryRegistry,
                 pairingRegistry);
@@ -121,7 +119,6 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         this.pairingIdentifier = pairingId;
         this.setupCode = "";
         this.eventManager = eventManager;
-        this.homekitFactories = homekitFactories;
         logger.debug("{}Homekit server initialization completed", LOG_INIT);
     }
 

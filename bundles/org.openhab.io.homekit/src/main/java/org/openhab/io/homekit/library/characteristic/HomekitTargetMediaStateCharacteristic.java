@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -15,7 +16,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000137-0000-1000-8000-0026BB765291", name = "Target Media State", tag = "targetMediaState")
+@HomekitCharacteristicType(type = "00000137-0000-1000-8000-0026BB765291", name = "Target Media State", tag = "targetMediaState", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitTargetMediaStateCharacteristic extends HomekitEnumCharacteristic {
     public enum TargetMediaState {
@@ -44,33 +45,28 @@ public class HomekitTargetMediaStateCharacteristic extends HomekitEnumCharacteri
         }
     }
 
-    public HomekitTargetMediaStateCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitTargetMediaStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, TargetMediaState.values().length);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withDescription("Target Media State");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true)
+                .withDescription("Target Media State");
     }
 
-    public HomekitTargetMediaStateCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitTargetMediaStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && value >= TargetMediaState.PLAY.getValue() 
-            && value <= TargetMediaState.FAST_FORWARD.getValue();
+        return value != null && value >= TargetMediaState.PLAY.getValue()
+                && value <= TargetMediaState.FAST_FORWARD.getValue();
     }
 
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(
-            TargetMediaState.PLAY.getValue(),
-            TargetMediaState.PAUSE.getValue(),
-            TargetMediaState.STOP.getValue(),
-            TargetMediaState.FAST_FORWARD.getValue()
-        );
+        return java.util.Set.of(TargetMediaState.PLAY.getValue(), TargetMediaState.PAUSE.getValue(),
+                TargetMediaState.STOP.getValue(), TargetMediaState.FAST_FORWARD.getValue());
     }
 
     public void setValue(TargetMediaState value) {
@@ -80,4 +76,4 @@ public class HomekitTargetMediaStateCharacteristic extends HomekitEnumCharacteri
             throw new IllegalArgumentException("Failed to set Target Media State value", e);
         }
     }
-} 
+}

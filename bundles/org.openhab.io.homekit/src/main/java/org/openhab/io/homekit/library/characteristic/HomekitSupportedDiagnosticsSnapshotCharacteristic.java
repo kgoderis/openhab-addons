@@ -1,32 +1,34 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Map;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitTLV8Characteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Map;
 
 /**
  * HomeKit Supported Diagnostics Snapshot Characteristic.
  * This characteristic represents the supported diagnostics snapshot capabilities.
  *
- * @see <a href="https://developers.homebridge.io/#/characteristic/SupportedDiagnosticsSnapshot">HomeKit Documentation</a>
+ * @see <a href="https://developers.homebridge.io/#/characteristic/SupportedDiagnosticsSnapshot">HomeKit
+ *      Documentation</a>
  */
-@HomekitCharacteristicType(type = "00000238-0000-1000-8000-0026BB765291", name = "Supported Diagnostics Snapshot", tag = "supportedDiagnosticsSnapshot")
+@HomekitCharacteristicType(type = "00000238-0000-1000-8000-0026BB765291", name = "Supported Diagnostics Snapshot", tag = "supportedDiagnosticsSnapshot", acceptedItemTypes = {"String"})
 @NonNullByDefault
 public class HomekitSupportedDiagnosticsSnapshotCharacteristic extends HomekitTLV8Characteristic {
-    public HomekitSupportedDiagnosticsSnapshotCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitSupportedDiagnosticsSnapshotCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(false)
-            .withEvents(true)
-            .withDescription("Supported Diagnostics Snapshot");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(true)
+                .withDescription("Supported Diagnostics Snapshot");
     }
 
-    public HomekitSupportedDiagnosticsSnapshotCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitSupportedDiagnosticsSnapshotCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -52,11 +54,13 @@ public class HomekitSupportedDiagnosticsSnapshotCharacteristic extends HomekitTL
 
     @Override
     public Map<Integer, Object> toValue(org.openhab.core.types.State state) {
-        throw new UnsupportedOperationException("State to TLV8 conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "State to TLV8 conversion must be implemented for the specific device.");
     }
 
     @Override
     public org.openhab.core.types.State toState(Map<Integer, Object> value) {
-        throw new UnsupportedOperationException("TLV8 to State conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "TLV8 to State conversion must be implemented for the specific device.");
     }
-} 
+}

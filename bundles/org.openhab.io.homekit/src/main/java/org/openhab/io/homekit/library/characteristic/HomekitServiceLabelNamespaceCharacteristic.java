@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -16,7 +17,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Andy Lintner
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "000000CD-0000-1000-8000-0026BB765291", name = "Service Label Namespace", tag = "serviceLabelNamespace")
+@HomekitCharacteristicType(type = "000000CD-0000-1000-8000-0026BB765291", name = "Service Label Namespace", tag = "serviceLabelNamespace", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitServiceLabelNamespaceCharacteristic extends HomekitIntegerCharacteristic {
     public enum ServiceLabelNamespace {
@@ -24,8 +25,15 @@ public class HomekitServiceLabelNamespaceCharacteristic extends HomekitIntegerCh
         ARABIC_NUMERALS(1);
 
         private final int value;
-        ServiceLabelNamespace(int value) { this.value = value; }
-        public int getValue() { return value; }
+
+        ServiceLabelNamespace(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
         public static ServiceLabelNamespace fromValue(int value) {
             for (ServiceLabelNamespace namespace : values()) {
                 if (namespace.value == value) {
@@ -36,22 +44,22 @@ public class HomekitServiceLabelNamespaceCharacteristic extends HomekitIntegerCh
         }
     }
 
-    public HomekitServiceLabelNamespaceCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitServiceLabelNamespaceCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 0, 1, "");
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(false)
-            .withEvents(true)
-            .withDescription("Service Label Namespace");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(true)
+                .withDescription("Service Label Namespace");
     }
 
-    public HomekitServiceLabelNamespaceCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitServiceLabelNamespaceCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        if (value == null) return false;
+        if (value == null)
+            return false;
         try {
             ServiceLabelNamespace.fromValue(value);
             return true;
@@ -68,4 +76,4 @@ public class HomekitServiceLabelNamespaceCharacteristic extends HomekitIntegerCh
         }
         return allowed;
     }
-} 
+}

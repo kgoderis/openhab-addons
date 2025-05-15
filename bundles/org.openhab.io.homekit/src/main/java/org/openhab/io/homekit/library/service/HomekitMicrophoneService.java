@@ -33,10 +33,7 @@ public class HomekitMicrophoneService extends AbstractHomekitService {
     public HomekitMicrophoneService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Microphone")
-            .withExtensible(false)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Microphone").withPrimary(false).withHidden(false);
     }
 
     /**
@@ -54,17 +51,17 @@ public class HomekitMicrophoneService extends AbstractHomekitService {
 
     @Override
     public void addCharacteristics() {
-        super.addCharacteristics();
-        addCharacteristic(new HomekitMuteCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitVolumeCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitMuteCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(true));
+        addCharacteristic(
+                new HomekitVolumeCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(false));
     }
 
     @Override
     public boolean isExtensible() {
         return false;
     }
-} 
+}

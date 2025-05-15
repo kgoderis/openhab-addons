@@ -9,11 +9,11 @@ import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.library.characteristic.HomekitActiveCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitRecordingAudioActiveCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitSelectedCameraRecordingConfigurationCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitSupportedAudioRecordingConfigurationCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitSupportedCameraRecordingConfigurationCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitSupportedVideoRecordingConfigurationCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitRecordingAudioActiveCharacteristic;
 
 /**
  * HomeKit Camera Recording Management Service.
@@ -36,10 +36,7 @@ public class HomekitCameraRecordingManagementService extends AbstractHomekitServ
     public HomekitCameraRecordingManagementService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Camera Recording Management")
-            .withExtensible(true)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Camera Recording Management").withExtensible(true).withPrimary(false).withHidden(false);
     }
 
     /**
@@ -58,14 +55,15 @@ public class HomekitCameraRecordingManagementService extends AbstractHomekitServ
     /**
      * Adds the required and optional characteristics for this service.
      * Required: Active, SelectedCameraRecordingConfiguration, SupportedAudioRecordingConfiguration,
-     *          SupportedCameraRecordingConfiguration, SupportedVideoRecordingConfiguration
+     * SupportedCameraRecordingConfiguration, SupportedVideoRecordingConfiguration
      * Optional: RecordingAudioActive
      */
     @Override
     public void addCharacteristics() {
         // Required characteristics
-        addCharacteristic(new HomekitActiveCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(
+                new HomekitActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
         addCharacteristic(new HomekitSelectedCameraRecordingConfigurationCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         addCharacteristic(new HomekitSupportedAudioRecordingConfigurationCharacteristic(this, eventManager,

@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -14,7 +15,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "0000024C-0000-1000-8000-0026BB765291", name = "Supported Diagnostics Modes", tag = "supportedDiagnosticsModes")
+@HomekitCharacteristicType(type = "0000024C-0000-1000-8000-0026BB765291", name = "Supported Diagnostics Modes", tag = "supportedDiagnosticsModes", acceptedItemTypes = {"Number"})
 @NonNullByDefault
 public class HomekitSupportedDiagnosticsModesCharacteristic extends HomekitIntegerCharacteristic {
 
@@ -25,13 +26,11 @@ public class HomekitSupportedDiagnosticsModesCharacteristic extends HomekitInteg
      * @param eventManager the event manager for handling HomeKit events
      * @param instanceId the instance ID for this characteristic
      */
-    public HomekitSupportedDiagnosticsModesCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitSupportedDiagnosticsModesCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 0, 255, "");
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(false)
-            .withEvents(true)
-            .withDescription("Supported Diagnostics Modes");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(true)
+                .withDescription("Supported Diagnostics Modes");
     }
 
     /**
@@ -41,7 +40,8 @@ public class HomekitSupportedDiagnosticsModesCharacteristic extends HomekitInteg
      * @param eventManager the event manager for handling HomeKit events
      * @param value the JSON value to initialize the characteristic with
      */
-    public HomekitSupportedDiagnosticsModesCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitSupportedDiagnosticsModesCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -55,4 +55,4 @@ public class HomekitSupportedDiagnosticsModesCharacteristic extends HomekitInteg
     public boolean isAllowedValue(Integer value) {
         return value != null && value >= 0 && value <= 255;
     }
-} 
+}

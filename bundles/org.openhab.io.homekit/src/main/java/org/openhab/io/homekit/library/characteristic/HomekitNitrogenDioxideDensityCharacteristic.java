@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -18,16 +19,15 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 @NonNullByDefault
 public class HomekitNitrogenDioxideDensityCharacteristic extends HomekitFloatCharacteristic {
 
-    public HomekitNitrogenDioxideDensityCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitNitrogenDioxideDensityCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 0.0, 1000.0, 1.0, "micrograms/m3");
-        withInstanceId(instanceId)
-            .withPairedWrite(false)
-            .withPairedRead(true)
-            .withEvents(true)
-            .withDescription("Nitrogen Dioxide Density");
+        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
+                .withDescription("Nitrogen Dioxide Density");
     }
 
-    public HomekitNitrogenDioxideDensityCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitNitrogenDioxideDensityCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -41,4 +41,4 @@ public class HomekitNitrogenDioxideDensityCharacteristic extends HomekitFloatCha
     public boolean isAllowedValue(Double value) {
         return value != null && value >= 0.0 && value <= 1000.0;
     }
-} 
+}

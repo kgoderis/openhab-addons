@@ -1,18 +1,22 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Map;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitTLV8Characteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Map;
-import org.openhab.core.types.State;
 
 /**
  * HomeKit Pair Setup Characteristic.
  * <p>
- * This characteristic represents the TLV8 value for HomeKit pair setup. It is used during the pairing process to securely exchange credentials between the accessory and the HomeKit controller. The value is encoded as TLV8 and must be interpreted according to the HAP specification.
+ * This characteristic represents the TLV8 value for HomeKit pair setup. It is used during the pairing process to
+ * securely exchange credentials between the accessory and the HomeKit controller. The value is encoded as TLV8 and must
+ * be interpreted according to the HAP specification.
  * <p>
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
@@ -31,11 +35,8 @@ public class HomekitPairSetupCharacteristic extends HomekitTLV8Characteristic {
      */
     public HomekitPairSetupCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedWrite(true)
-            .withPairedRead(true)
-            .withEvents(true)
-            .withDescription("Pair Setup");
+        withInstanceId(instanceId).withPairedWrite(true).withPairedRead(true).withEvents(true)
+                .withDescription("Pair Setup");
     }
 
     /**
@@ -102,4 +103,4 @@ public class HomekitPairSetupCharacteristic extends HomekitTLV8Characteristic {
     public State toState(Map<Integer, Object> value) {
         return null;
     }
-} 
+}

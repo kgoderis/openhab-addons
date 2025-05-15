@@ -1,18 +1,21 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Map;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitTLV8Characteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Map;
-import org.openhab.core.types.State;
 
 /**
  * HomeKit Target Control Supported Configuration Characteristic.
  * <p>
- * This characteristic represents the supported configuration for target control, as defined in the HomeKit Accessory Protocol (HAP) specification.
+ * This characteristic represents the supported configuration for target control, as defined in the HomeKit Accessory
+ * Protocol (HAP) specification.
  * <p>
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
@@ -29,11 +32,10 @@ public class HomekitTargetControlSupportedConfigurationCharacteristic extends Ho
      * @param eventManager the event manager
      * @param instanceId the instance id
      */
-    public HomekitTargetControlSupportedConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitTargetControlSupportedConfigurationCharacteristic(HomekitService service,
+            HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withDescription("Target Control Supported Configuration");
+        withInstanceId(instanceId).withPairedRead(true).withDescription("Target Control Supported Configuration");
     }
 
     /**
@@ -43,12 +45,14 @@ public class HomekitTargetControlSupportedConfigurationCharacteristic extends Ho
      * @param eventManager the event manager
      * @param value the JSON value
      */
-    public HomekitTargetControlSupportedConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitTargetControlSupportedConfigurationCharacteristic(HomekitService service,
+            HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }
 
     /**
      * Encodes the TLV8 value for this characteristic.
+     * 
      * @param value the value to encode
      * @return the encoded byte array
      */
@@ -59,6 +63,7 @@ public class HomekitTargetControlSupportedConfigurationCharacteristic extends Ho
 
     /**
      * Decodes the TLV8 value for this characteristic.
+     * 
      * @param data the byte array to decode
      * @return the decoded value as a map
      */
@@ -69,6 +74,7 @@ public class HomekitTargetControlSupportedConfigurationCharacteristic extends Ho
 
     /**
      * Returns the default value for this characteristic.
+     * 
      * @return the default value as a map
      */
     @Override
@@ -78,6 +84,7 @@ public class HomekitTargetControlSupportedConfigurationCharacteristic extends Ho
 
     /**
      * Converts a JSON value to a TLV8 value.
+     * 
      * @param jsonValue the JSON value
      * @return the TLV8 value as a map
      */
@@ -88,21 +95,25 @@ public class HomekitTargetControlSupportedConfigurationCharacteristic extends Ho
 
     /**
      * Converts a State to a TLV8 value.
+     * 
      * @param state the state
      * @return the TLV8 value as a map
      */
     @Override
     public Map<Integer, Object> toValue(State state) {
-        throw new UnsupportedOperationException("State to TLV8 conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "State to TLV8 conversion must be implemented for the specific device.");
     }
 
     /**
      * Converts a TLV8 value to a State.
+     * 
      * @param value the TLV8 value as a map
      * @return the state
      */
     @Override
     public State toState(Map<Integer, Object> value) {
-        throw new UnsupportedOperationException("TLV8 to State conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "TLV8 to State conversion must be implemented for the specific device.");
     }
-} 
+}

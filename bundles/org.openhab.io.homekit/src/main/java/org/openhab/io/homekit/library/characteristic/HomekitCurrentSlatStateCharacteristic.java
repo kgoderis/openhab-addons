@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -14,7 +15,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  * @author Karel Goderis - Initial contribution
  */
-@HomekitCharacteristicType(type = "000000AA-0000-1000-8000-0026BB765291", name = "Current Slat State", tag = "currentSlatState")
+@HomekitCharacteristicType(type = "000000AA-0000-1000-8000-0026BB765291", name = "Current Slat State", tag = "currentSlatState", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitCurrentSlatStateCharacteristic extends HomekitEnumCharacteristic {
     /**
@@ -27,17 +28,17 @@ public class HomekitCurrentSlatStateCharacteristic extends HomekitEnumCharacteri
         INACTIVE(0),
         IDLE(1),
         ROTATING(2);
-        
+
         private final int code;
-        
+
         SlatState(int code) {
             this.code = code;
         }
-        
+
         public int getCode() {
             return code;
         }
-        
+
         public static SlatState fromCode(int code) {
             for (SlatState s : values()) {
                 if (s.code == code) {
@@ -58,11 +59,8 @@ public class HomekitCurrentSlatStateCharacteristic extends HomekitEnumCharacteri
     public HomekitCurrentSlatStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
             long instanceId) {
         super(service, eventManager, SlatState.values().length);
-        withInstanceId(instanceId)
-            .withPairedWrite(false)
-            .withPairedRead(true)
-            .withEvents(true)
-            .withDescription("Current Slat State");
+        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
+                .withDescription("Current Slat State");
     }
 
     /**
@@ -84,10 +82,6 @@ public class HomekitCurrentSlatStateCharacteristic extends HomekitEnumCharacteri
 
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(
-            SlatState.INACTIVE.getCode(),
-            SlatState.IDLE.getCode(),
-            SlatState.ROTATING.getCode()
-        );
+        return java.util.Set.of(SlatState.INACTIVE.getCode(), SlatState.IDLE.getCode(), SlatState.ROTATING.getCode());
     }
-} 
+}

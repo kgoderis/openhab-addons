@@ -15,8 +15,9 @@ import org.openhab.core.thing.type.ChannelTypeBuilder;
 import org.openhab.core.thing.type.ChannelTypeProvider;
 import org.openhab.core.thing.type.ChannelTypeUID;
 import org.openhab.core.thing.type.StateChannelTypeBuilder;
-import org.openhab.io.homekit.api.factory.HomekitFactory;
+import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.exception.HomekitException;
+import org.openhab.io.homekit.network.discovery.HomekitBindingConstants;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -33,45 +34,31 @@ import org.slf4j.LoggerFactory;
 @NonNullByDefault
 @Component(service = { ChannelTypeProvider.class })
 public class HomekitChannelTypeProvider extends AbstractStorageBasedTypeProvider {
-    private final Logger logger = LoggerFactory.getLogger(HomekitChannelTypeProvider.class);
-    private final Map<String, HomekitFactory> homekitFactories = new ConcurrentHashMap<>();
+    private final HomekitCharacteristicFactory characteristicFactory;
 
     @Activate
-    public HomekitChannelTypeProvider(@Reference StorageService storageService) {
+    public HomekitChannelTypeProvider(@Reference StorageService storageService,
+            @Reference HomekitCharacteristicFactory characteristicFactory) {
         super(storageService);
+        this.characteristicFactory = characteristicFactory;
+        addFactoryDependentChannelTypes();
     }
 
-    @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
-    protected void addHomekitFactory(HomekitFactory homekitFactory) {
-        // Add all supported characteristic types from this factory
-        Set<String> characteristicTypes = homekitFactory.getSupportedCharacteristicTypes();
+    private void addFactoryDependentChannelTypes() {
+
+        Set<String> characteristicTypes = characteristicFactory.getSupportedCharacteristicTypes();
         for (String characteristicType : characteristicTypes) {
-            homekitFactories.put(characteristicType, homekitFactory);
 
             // Create and store channel type for this characteristic
-            String acceptedItemType = homekitFactory.getCharacteristicAcceptedItemType(characteristicType);
+            String acceptedItemType = characteristicFactory.getCharacteristicAcceptedItemType(characteristicType);
             if (acceptedItemType != null) {
-                ChannelTypeUID channelTypeUID = homekitFactory.getChannelTypeUID(characteristicType);
+                ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,characteristicType);
                 if (channelTypeUID != null) {
                     StateChannelTypeBuilder builder = ChannelTypeBuilder.state(channelTypeUID, characteristicType,
                             acceptedItemType);
                     ChannelType channelType = builder.build();
                     putChannelType(channelType);
                 }
-            }
-        }
-    }
-
-    protected void removeHomekitFactory(HomekitFactory homekitFactory) {
-        // Remove all channel types from this factory
-        Set<String> characteristicTypes = homekitFactory.getSupportedCharacteristicTypes();
-        for (String characteristicType : characteristicTypes) {
-            homekitFactories.remove(characteristicType);
-
-            // Remove the channel type
-            ChannelTypeUID channelTypeUID = homekitFactory.getChannelTypeUID(characteristicType);
-            if (channelTypeUID != null) {
-                removeChannelType(channelTypeUID);
             }
         }
     }
@@ -88,27 +75,27 @@ public class HomekitChannelTypeProvider extends AbstractStorageBasedTypeProvider
         return super.getChannelType(channelTypeUID, locale);
     }
 
-    public String getCharacteristicTypeFromTag(String tag) throws HomekitException {
-        // traverse factories and get the instance type from the tag
-        for (HomekitFactory factory : homekitFactories.values()) {
-            String instanceType = factory.getCharacteristicTypeFromTag(tag);
-            if (instanceType != null) {
-                return instanceType;
-            }
-        }
-        throw new HomekitException("No factory found for tag: " + tag);
-    }
+    // public String getCharacteristicTypeFromTag(String tag) throws HomekitException {
+    //     // traverse factories and get the instance type from the tag
+    //     for (HomekitFactory factory : homekitFactories.values()) {
+    //         String instanceType = factory.getCharacteristicTypeFromTag(tag);
+    //         if (instanceType != null) {
+    //             return instanceType;
+    //         }
+    //     }
+    //     throw new HomekitException("No factory found for tag: " + tag);
+    // }
 
-    public String getCharacteristicTag(String characteristicType) throws HomekitException {
-        // get the tag from the characteristic type
-        @Nullable
-        HomekitFactory factory = homekitFactories.get(characteristicType);
-        if (factory != null) {
-            String tag = factory.getTagFromCharacteristicType(characteristicType);
-            if (tag != null) {
-                return tag;
-            }
-        }
-        throw new HomekitException("No factory found for characteristic type: " + characteristicType);
-    }
+    // public String getCharacteristicTag(String characteristicType) throws HomekitException {
+    //     // get the tag from the characteristic type
+    //     @Nullable
+    //     HomekitFactory factory = homekitFactories.get(characteristicType);
+    //     if (factory != null) {
+    //         String tag = factory.getTagFromCharacteristicType(characteristicType);
+    //         if (tag != null) {
+    //             return tag;
+    //         }
+    //     }
+    //     throw new HomekitException("No factory found for characteristic type: " + characteristicType);
+    // }
 }

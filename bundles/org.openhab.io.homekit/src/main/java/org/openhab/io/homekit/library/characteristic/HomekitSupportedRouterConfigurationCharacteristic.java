@@ -13,12 +13,13 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * HomeKit Supported Router Configuration Characteristic.
- * This characteristic represents the supported configuration for router settings, as defined in the HomeKit Accessory Protocol (HAP) specification.
+ * This characteristic represents the supported configuration for router settings, as defined in the HomeKit Accessory
+ * Protocol (HAP) specification.
  *
  * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000210-0000-1000-8000-0026BB765291", name = "Supported Router Configuration", tag = "supportedRouterConfiguration")
+@HomekitCharacteristicType(type = "00000210-0000-1000-8000-0026BB765291", name = "Supported Router Configuration", tag = "supportedRouterConfiguration", acceptedItemTypes = {"String"})
 @NonNullByDefault
 public class HomekitSupportedRouterConfigurationCharacteristic extends HomekitTLV8Characteristic {
     /**
@@ -28,13 +29,11 @@ public class HomekitSupportedRouterConfigurationCharacteristic extends HomekitTL
      * @param eventManager the event manager for handling HomeKit events
      * @param instanceId the instance ID for this characteristic
      */
-    public HomekitSupportedRouterConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitSupportedRouterConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(false)
-            .withEvents(false)
-            .withDescription("Supported Router Configuration");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(false)
+                .withDescription("Supported Router Configuration");
     }
 
     /**
@@ -44,7 +43,8 @@ public class HomekitSupportedRouterConfigurationCharacteristic extends HomekitTL
      * @param eventManager the event manager for handling HomeKit events
      * @param value the JSON value to initialize the characteristic with
      */
-    public HomekitSupportedRouterConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitSupportedRouterConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -85,7 +85,8 @@ public class HomekitSupportedRouterConfigurationCharacteristic extends HomekitTL
      */
     @Override
     public Map<Integer, Object> toValue(State state) {
-        throw new UnsupportedOperationException("State to TLV8 conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "State to TLV8 conversion must be implemented for the specific device.");
     }
 
     /**
@@ -93,6 +94,7 @@ public class HomekitSupportedRouterConfigurationCharacteristic extends HomekitTL
      */
     @Override
     public State toState(Map<Integer, Object> value) {
-        throw new UnsupportedOperationException("TLV8 to State conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "TLV8 to State conversion must be implemented for the specific device.");
     }
-} 
+}

@@ -20,23 +20,22 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @NonNullByDefault
-@HomekitCharacteristicType(type = "00000025-0000-1000-8000-0026BB765291", name = "On", tag = "on")
+@HomekitCharacteristicType(
+    type = "00000025-0000-1000-8000-0026BB765291",
+    name = "On",
+    tag = "on",
+    acceptedItemTypes = {"Switch", "Contact"}
+)
 public class HomekitOnCharacteristic extends HomekitBooleanCharacteristic {
 
     public HomekitOnCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withDescription("On");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true).withDescription("On");
     }
 
     public HomekitOnCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }
-
- 
 
     @Override
     public State toState(@Nullable Boolean value) {

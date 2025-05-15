@@ -1,5 +1,7 @@
 package org.openhab.io.homekit.core.characteristic;
 
+import java.util.Set;
+
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
@@ -11,8 +13,6 @@ import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-
-import java.util.Set;
 
 /**
  * * HomekitCharacteristic that exposes an Enum value. Enums are represented as an Integer value in the

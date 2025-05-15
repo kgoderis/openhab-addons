@@ -30,10 +30,7 @@ public class HomekitTemperatureSensorService extends AbstractHomekitService {
     public HomekitTemperatureSensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Temperature Sensor")
-            .withExtensible(false)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Temperature Sensor").withPrimary(false).withHidden(false);
     }
 
     /**
@@ -51,7 +48,6 @@ public class HomekitTemperatureSensorService extends AbstractHomekitService {
 
     @Override
     public void addCharacteristics() {
-        super.addCharacteristics();
         addCharacteristic(new HomekitCurrentTemperatureCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
     }

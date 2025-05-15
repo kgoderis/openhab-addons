@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -14,7 +15,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000224-0000-1000-8000-0026BB765291", name = "Diagonal Field Of View", tag = "diagonalFieldOfView")
+@HomekitCharacteristicType(type = "00000224-0000-1000-8000-0026BB765291", name = "Diagonal Field Of View", tag = "diagonalFieldOfView", acceptedItemTypes = {"Number"})
 @NonNullByDefault
 public class HomekitDiagonalFieldOfViewCharacteristic extends HomekitFloatCharacteristic {
     /**
@@ -24,13 +25,11 @@ public class HomekitDiagonalFieldOfViewCharacteristic extends HomekitFloatCharac
      * @param eventManager the event manager for handling HomeKit events
      * @param instanceId the instance ID for this characteristic
      */
-    public HomekitDiagonalFieldOfViewCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitDiagonalFieldOfViewCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 0.0, 360.0, 1.0, "arcdegrees");
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(false)
-            .withEvents(true)
-            .withDescription("Diagonal Field Of View");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(true)
+                .withDescription("Diagonal Field Of View");
     }
 
     /**
@@ -40,7 +39,8 @@ public class HomekitDiagonalFieldOfViewCharacteristic extends HomekitFloatCharac
      * @param eventManager the event manager for handling HomeKit events
      * @param value the JSON value to initialize the characteristic with
      */
-    public HomekitDiagonalFieldOfViewCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitDiagonalFieldOfViewCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -54,4 +54,4 @@ public class HomekitDiagonalFieldOfViewCharacteristic extends HomekitFloatCharac
     public boolean isAllowedValue(Double value) {
         return value != null && value >= 0.0 && value <= 360.0;
     }
-} 
+}

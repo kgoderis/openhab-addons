@@ -13,7 +13,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * HomeKit Selected Camera Recording Configuration Characteristic.
- * This characteristic represents the selected configuration for camera recording, as defined in the HomeKit Accessory Protocol (HAP) specification.
+ * This characteristic represents the selected configuration for camera recording, as defined in the HomeKit Accessory
+ * Protocol (HAP) specification.
  *
  * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
@@ -28,13 +29,11 @@ public class HomekitSelectedCameraRecordingConfigurationCharacteristic extends H
      * @param eventManager the event manager for handling HomeKit events
      * @param instanceId the instance ID for this characteristic
      */
-    public HomekitSelectedCameraRecordingConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitSelectedCameraRecordingConfigurationCharacteristic(HomekitService service,
+            HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withDescription("Selected Camera Recording Configuration");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true)
+                .withDescription("Selected Camera Recording Configuration");
     }
 
     /**
@@ -44,7 +43,8 @@ public class HomekitSelectedCameraRecordingConfigurationCharacteristic extends H
      * @param eventManager the event manager for handling HomeKit events
      * @param value the JSON value to initialize the characteristic with
      */
-    public HomekitSelectedCameraRecordingConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitSelectedCameraRecordingConfigurationCharacteristic(HomekitService service,
+            HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -85,7 +85,8 @@ public class HomekitSelectedCameraRecordingConfigurationCharacteristic extends H
      */
     @Override
     public Map<Integer, Object> toValue(State state) {
-        throw new UnsupportedOperationException("State to TLV8 conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "State to TLV8 conversion must be implemented for the specific device.");
     }
 
     /**
@@ -93,6 +94,7 @@ public class HomekitSelectedCameraRecordingConfigurationCharacteristic extends H
      */
     @Override
     public State toState(Map<Integer, Object> value) {
-        throw new UnsupportedOperationException("TLV8 to State conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "TLV8 to State conversion must be implemented for the specific device.");
     }
-} 
+}

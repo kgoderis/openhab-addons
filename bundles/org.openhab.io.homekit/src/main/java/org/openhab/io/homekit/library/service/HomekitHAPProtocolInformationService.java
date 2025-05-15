@@ -30,10 +30,7 @@ public class HomekitHAPProtocolInformationService extends AbstractHomekitService
     public HomekitHAPProtocolInformationService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("HAP Protocol Information")
-            .withExtensible(false)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("HAP Protocol Information").withPrimary(false).withHidden(false);
     }
 
     /**
@@ -51,9 +48,9 @@ public class HomekitHAPProtocolInformationService extends AbstractHomekitService
 
     @Override
     public void addCharacteristics() {
-        super.addCharacteristics();
-        addCharacteristic(new HomekitVersionCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(
+                new HomekitVersionCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
     }
 
     @Override

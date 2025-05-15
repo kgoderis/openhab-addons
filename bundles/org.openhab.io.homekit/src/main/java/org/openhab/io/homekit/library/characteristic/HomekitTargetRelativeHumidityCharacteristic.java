@@ -13,12 +13,13 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * HomeKit Target Relative Humidity Characteristic.
- * This characteristic represents the target relative humidity level, as defined in the HomeKit Accessory Protocol (HAP) specification.
+ * This characteristic represents the target relative humidity level, as defined in the HomeKit Accessory Protocol (HAP)
+ * specification.
  *
  * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000034-0000-1000-8000-0026BB765291", name = "Target Relative Humidity", tag = "targetRelativeHumidity")
+@HomekitCharacteristicType(type = "00000034-0000-1000-8000-0026BB765291", name = "Target Relative Humidity", tag = "targetRelativeHumidity", acceptedItemTypes = {"Number"})
 @NonNullByDefault
 public class HomekitTargetRelativeHumidityCharacteristic extends HomekitFloatCharacteristic {
 
@@ -29,13 +30,11 @@ public class HomekitTargetRelativeHumidityCharacteristic extends HomekitFloatCha
      * @param eventManager the event manager for handling HomeKit events
      * @param instanceId the instance ID for this characteristic
      */
-    public HomekitTargetRelativeHumidityCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitTargetRelativeHumidityCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 0.0, 100.0, 1.0, "percentage");
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withDescription("Target Relative Humidity");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true)
+                .withDescription("Target Relative Humidity");
     }
 
     /**
@@ -45,7 +44,8 @@ public class HomekitTargetRelativeHumidityCharacteristic extends HomekitFloatCha
      * @param eventManager the event manager for handling HomeKit events
      * @param value the JSON value to initialize the characteristic with
      */
-    public HomekitTargetRelativeHumidityCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitTargetRelativeHumidityCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -69,4 +69,4 @@ public class HomekitTargetRelativeHumidityCharacteristic extends HomekitFloatCha
     public Set<Double> getAllowedValues() {
         return Collections.emptySet();
     }
-} 
+}

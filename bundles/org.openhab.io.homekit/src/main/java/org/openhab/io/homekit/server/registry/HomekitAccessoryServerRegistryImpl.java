@@ -15,15 +15,15 @@ import org.openhab.core.net.NetworkAddressService;
 import org.openhab.core.service.ReadyMarker;
 import org.openhab.core.service.ReadyMarkerFilter;
 import org.openhab.core.service.ReadyService;
+import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryCategory;
 import org.openhab.io.homekit.api.event.HomekitEventType;
-import org.openhab.io.homekit.api.factory.HomekitFactory;
+import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
 import org.openhab.io.homekit.api.provider.HomekitAccessoryServerProvider;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry;
 import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
-import org.openhab.io.homekit.core.accessory.AbstractHomekitAccessory;
 import org.openhab.io.homekit.event.core.HomekitEventSubscription;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.event.model.server.HomekitAccessoryServerEvent;
@@ -75,20 +75,20 @@ public class HomekitAccessoryServerRegistryImpl
     private final HomekitPairingRegistry pairingRegistry;
     private final HomekitEventManager eventManager;
     private final Set<HomekitEventSubscription> eventSubscriptions = new HashSet<>();
-    private final Set<HomekitFactory> homekitFactories;
+    private final HomekitAccessoryFactory accessoryFactory;
 
     @Activate
     public HomekitAccessoryServerRegistryImpl(@Reference ReadyService readyService,
             @Reference NetworkAddressService networkAddressService,
             @Reference HomekitAccessoryRegistry accessoryRegistry, @Reference HomekitPairingRegistry pairingRegistry,
-            @Reference HomekitEventManager eventManager, @Reference Set<HomekitFactory> homekitFactories) {
+            @Reference HomekitEventManager eventManager, @Reference HomekitAccessoryFactory accessoryFactory) {
         super(HomekitAccessoryServerProvider.class);
         this.readyService = readyService;
         this.networkAddressService = networkAddressService;
         this.accessoryRegistry = accessoryRegistry;
         this.pairingRegistry = pairingRegistry;
         this.eventManager = eventManager;
-        this.homekitFactories = homekitFactories;
+        this.accessoryFactory = accessoryFactory;
     }
 
     @Override
@@ -156,7 +156,7 @@ public class HomekitAccessoryServerRegistryImpl
             try {
                 availableServer = new HomekitRemoteAccessoryServer(HomekitAccessoryCategory.BRIDGES,
                         InetAddress.getByName(networkAddressService.getPrimaryIpv4HostAddress()), highestPortNumber++,
-                        accessoryRegistry, pairingRegistry, eventManager, homekitFactories);
+                        accessoryRegistry, pairingRegistry, eventManager, accessoryFactory);
             } catch (UnknownHostException | HomekitServerException e) {
                 logger.error("{}Failed to create HomekitRemoteAccessoryServer: {}", LOG_ERROR, e.getMessage(), e);
                 return null;
@@ -169,8 +169,7 @@ public class HomekitAccessoryServerRegistryImpl
                                 "{}Adding Bridge HomekitAccessory to Server - UID: {}, Type: {}, Port: {}, Setup Code: {}",
                                 LOG_ACCESSORY, availableServer.getUID(), availableServer.getClass().getSimpleName(),
                                 availableServer.getPort(), availableServer.getSetupCode());
-                        AbstractHomekitAccessory bridgeAccessory = new AbstractHomekitAccessory(eventManager,
-                                homekitFactories);
+                        HomekitAccessory bridgeAccessory = accessoryFactory.createAccessoryFromTag("generic");
                         bridgeAccessory.assignToServer(availableServer);
                     } catch (Exception e) {
                         logger.error("{}Error adding bridge accessory: {}", LOG_ERROR, e.getMessage(), e);

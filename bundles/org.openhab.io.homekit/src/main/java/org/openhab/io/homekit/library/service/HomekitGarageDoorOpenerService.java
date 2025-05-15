@@ -36,10 +36,7 @@ public class HomekitGarageDoorOpenerService extends AbstractHomekitService {
     public HomekitGarageDoorOpenerService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Garage Door Opener")
-            .withExtensible(false)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Garage Door Opener").withPrimary(false).withHidden(false);
     }
 
     /**
@@ -57,19 +54,20 @@ public class HomekitGarageDoorOpenerService extends AbstractHomekitService {
 
     @Override
     public void addCharacteristics() {
-        super.addCharacteristics();
         addCharacteristic(new HomekitCurrentDoorStateCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         addCharacteristic(new HomekitTargetDoorStateCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         addCharacteristic(new HomekitObstructionDetectedCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitStatusActiveCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitStatusFaultCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(false));
+        addCharacteristic(
+                new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        addCharacteristic(
+                new HomekitStatusFaultCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
     }
 
     @Override

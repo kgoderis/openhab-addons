@@ -1,24 +1,27 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Map;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitTLV8Characteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Map;
-import org.openhab.core.types.State;
 
 /**
  * HomeKit Selected Audio Stream Configuration Characteristic.
  * <p>
- * This characteristic represents the selected audio stream configuration for a device, as defined in the HomeKit Accessory Protocol (HAP) specification.
+ * This characteristic represents the selected audio stream configuration for a device, as defined in the HomeKit
+ * Accessory Protocol (HAP) specification.
  * <p>
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "00000128-0000-1000-8000-0026BB765291", name = "Selected Audio Stream Configuration", tag = "selectedAudioStreamConfiguration")
+@HomekitCharacteristicType(type = "00000128-0000-1000-8000-0026BB765291", name = "Selected Audio Stream Configuration", tag = "selectedAudioStreamConfiguration", acceptedItemTypes = {"String"})
 @NonNullByDefault
 public class HomekitSelectedAudioStreamConfigurationCharacteristic extends HomekitTLV8Characteristic {
     /**
@@ -28,12 +31,11 @@ public class HomekitSelectedAudioStreamConfigurationCharacteristic extends Homek
      * @param eventManager the event manager
      * @param instanceId the instance id
      */
-    public HomekitSelectedAudioStreamConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitSelectedAudioStreamConfigurationCharacteristic(HomekitService service,
+            HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedWrite(true)
-            .withPairedRead(true)
-            .withDescription("Selected Audio Stream Configuration");
+        withInstanceId(instanceId).withPairedWrite(true).withPairedRead(true)
+                .withDescription("Selected Audio Stream Configuration");
     }
 
     /**
@@ -43,12 +45,14 @@ public class HomekitSelectedAudioStreamConfigurationCharacteristic extends Homek
      * @param eventManager the event manager
      * @param value the JSON value
      */
-    public HomekitSelectedAudioStreamConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitSelectedAudioStreamConfigurationCharacteristic(HomekitService service,
+            HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }
 
     /**
      * Encodes the TLV8 value for this characteristic.
+     * 
      * @param value the value to encode
      * @return the encoded byte array
      */
@@ -59,6 +63,7 @@ public class HomekitSelectedAudioStreamConfigurationCharacteristic extends Homek
 
     /**
      * Decodes the TLV8 value for this characteristic.
+     * 
      * @param data the byte array to decode
      * @return the decoded value as a map
      */
@@ -69,6 +74,7 @@ public class HomekitSelectedAudioStreamConfigurationCharacteristic extends Homek
 
     /**
      * Returns the default value for this characteristic.
+     * 
      * @return the default value as a map
      */
     @Override
@@ -78,6 +84,7 @@ public class HomekitSelectedAudioStreamConfigurationCharacteristic extends Homek
 
     /**
      * Converts a JSON value to a TLV8 value.
+     * 
      * @param jsonValue the JSON value
      * @return the TLV8 value as a map
      */
@@ -88,21 +95,25 @@ public class HomekitSelectedAudioStreamConfigurationCharacteristic extends Homek
 
     /**
      * Converts a State to a TLV8 value.
+     * 
      * @param state the state
      * @return the TLV8 value as a map
      */
     @Override
     public Map<Integer, Object> toValue(State state) {
-        throw new UnsupportedOperationException("State to TLV8 conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "State to TLV8 conversion must be implemented for the specific device.");
     }
 
     /**
      * Converts a TLV8 value to a State.
+     * 
      * @param value the TLV8 value as a map
      * @return the state
      */
     @Override
     public State toState(Map<Integer, Object> value) {
-        throw new UnsupportedOperationException("TLV8 to State conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "TLV8 to State conversion must be implemented for the specific device.");
     }
-} 
+}

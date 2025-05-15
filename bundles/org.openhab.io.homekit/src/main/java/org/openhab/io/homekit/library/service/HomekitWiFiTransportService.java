@@ -33,10 +33,7 @@ public class HomekitWiFiTransportService extends AbstractHomekitService {
     public HomekitWiFiTransportService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("WiFi Transport")
-            .withExtensible(true)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("WiFi Transport").withExtensible(true).withPrimary(false).withHidden(false);
     }
 
     /**

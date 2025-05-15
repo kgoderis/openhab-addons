@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -13,21 +14,21 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * When enabled, the device can receive and process AirPlay streams.
  *
  * @author Karel Goderis
- * @see <a href="https://developer.apple.com/documentation/homekit/hap-characteristic-types/airplay-enable">HAP Specification</a>
+ * @see <a href="https://developer.apple.com/documentation/homekit/hap-characteristic-types/airplay-enable">HAP
+ *      Specification</a>
  */
-@HomekitCharacteristicType(type = "0000025B-0000-1000-8000-0026BB765291", name = "AirPlay Enable", tag = "airPlayEnable")
+@HomekitCharacteristicType(type = "0000025B-0000-1000-8000-0026BB765291", name = "AirPlay Enable", tag = "airPlayEnable", acceptedItemTypes = {"Switch", "Contact"})
 @NonNullByDefault
 public class HomekitAirPlayEnableCharacteristic extends HomekitBooleanCharacteristic {
-    public HomekitAirPlayEnableCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitAirPlayEnableCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withDescription("AirPlay Enable");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true)
+                .withDescription("AirPlay Enable");
     }
 
-    public HomekitAirPlayEnableCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitAirPlayEnableCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -35,4 +36,4 @@ public class HomekitAirPlayEnableCharacteristic extends HomekitBooleanCharacteri
     public boolean isAllowedValue(Boolean value) {
         return value != null;
     }
-} 
+}

@@ -31,10 +31,7 @@ public class HomekitAssetUpdateService extends AbstractHomekitService {
     public HomekitAssetUpdateService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Asset Update")
-            .withExtensible(true)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Asset Update").withExtensible(true).withPrimary(false).withHidden(false);
     }
 
     /**

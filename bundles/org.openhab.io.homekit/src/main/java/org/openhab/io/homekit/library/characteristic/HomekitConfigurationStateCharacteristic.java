@@ -1,25 +1,29 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Map;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitTLV8Characteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Map;
-import org.openhab.core.types.State;
 
 /**
  * HomeKit Configuration State Characteristic.
  * <p>
- * This characteristic represents the configuration state in TLV8 format. It is used to indicate the current configuration status of the accessory, such as whether it is properly configured or requires user action. The value is encoded as TLV8 and must be interpreted according to the device's capabilities and the HAP specification.
+ * This characteristic represents the configuration state in TLV8 format. It is used to indicate the current
+ * configuration status of the accessory, such as whether it is properly configured or requires user action. The value
+ * is encoded as TLV8 and must be interpreted according to the device's capabilities and the HAP specification.
  * <p>
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000263-0000-1000-8000-0026BB765291", name = "Configuration State", tag = "configurationState")
+@HomekitCharacteristicType(type = "00000263-0000-1000-8000-0026BB765291", name = "Configuration State", tag = "configurationState", acceptedItemTypes = {"String"})
 @NonNullByDefault
 public class HomekitConfigurationStateCharacteristic extends HomekitTLV8Characteristic {
     /**
@@ -29,13 +33,11 @@ public class HomekitConfigurationStateCharacteristic extends HomekitTLV8Characte
      * @param eventManager the event manager for handling HomeKit events
      * @param instanceId the instance ID for this characteristic
      */
-    public HomekitConfigurationStateCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitConfigurationStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(false)
-            .withEvents(true)
-            .withDescription("Configuration State");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(true)
+                .withDescription("Configuration State");
     }
 
     /**
@@ -45,7 +47,8 @@ public class HomekitConfigurationStateCharacteristic extends HomekitTLV8Characte
      * @param eventManager the event manager for handling HomeKit events
      * @param value the JSON value to initialize the characteristic with
      */
-    public HomekitConfigurationStateCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitConfigurationStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -105,7 +108,8 @@ public class HomekitConfigurationStateCharacteristic extends HomekitTLV8Characte
      */
     @Override
     public Map<Integer, Object> toValue(State state) {
-        throw new UnsupportedOperationException("State to TLV8 conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "State to TLV8 conversion must be implemented for the specific device.");
     }
 
     /**
@@ -117,6 +121,7 @@ public class HomekitConfigurationStateCharacteristic extends HomekitTLV8Characte
      */
     @Override
     public State toState(Map<Integer, Object> value) {
-        throw new UnsupportedOperationException("TLV8 to State conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "TLV8 to State conversion must be implemented for the specific device.");
     }
-} 
+}

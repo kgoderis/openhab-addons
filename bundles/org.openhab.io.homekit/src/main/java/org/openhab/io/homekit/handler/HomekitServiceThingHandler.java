@@ -18,6 +18,8 @@ import org.openhab.core.thing.type.ChannelTypeUID;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.event.HomekitEventType;
+import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
+import org.openhab.io.homekit.api.factory.HomekitServiceFactory;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -45,6 +47,9 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
     // ========== State Management ==========
     private volatile boolean serviceAvailable = false;
 
+    private final HomekitCharacteristicFactory characteristicFactory;
+    private final HomekitServiceFactory serviceFactory;
+
     /**
      * Constructs a new HomekitServiceThingHandler.
      * 
@@ -71,9 +76,13 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
      */
     public HomekitServiceThingHandler(Thing thing, HomekitAccessoryServerRegistry serverRegistry,
             HomekitAccessoryRegistry accessoryRegistry, HomekitChannelTypeProvider homekitChannelTypeProvider,
-            HomekitThingTypeProvider homekitThingTypeProvider, HomekitEventManager eventManager) {
+            HomekitThingTypeProvider homekitThingTypeProvider, HomekitEventManager eventManager,
+            HomekitServiceFactory serviceFactory, HomekitCharacteristicFactory characteristicFactory) { 
         super(thing, serverRegistry, accessoryRegistry, homekitChannelTypeProvider, homekitThingTypeProvider,
                 eventManager);
+        this.serviceFactory = serviceFactory;
+        this.characteristicFactory = characteristicFactory;
+        
         // // Parse configuration
         // Configuration config = thing.getConfiguration();
         // validateConfiguration(config);
@@ -249,8 +258,8 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
             throw new IllegalArgumentException("No HomekitService found for serviceId: " + serviceId);
         }
         try {
-            serviceTag = homekitThingTypeProvider.getServiceTag(currentService.getType());
-        } catch (org.openhab.io.homekit.exception.HomekitException e) {
+            serviceTag = serviceFactory.getTagFromServiceType(currentService.getType());
+        } catch (Exception e) {
             throw new IllegalArgumentException("HomekitService type could not be determined", e);
         }
 
@@ -311,8 +320,8 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
                 String channelTag = channel.getUID().getIdWithoutGroup();
                 String characteristicType;
                 try {
-                    characteristicType = homekitChannelTypeProvider.getCharacteristicTypeFromTag(channelTag);
-                } catch (HomekitException e) {
+                    characteristicType = characteristicFactory.getCharacteristicTypeFromTag(channelTag);
+                } catch (Exception e) {
                     handleRecoverableError(ThingStatusDetail.CONFIGURATION_ERROR,
                             "HomekitCharacteristic type could not be determined for channel " + channel.getUID(), e);
                     continue;
@@ -1238,8 +1247,8 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
     protected ChannelUID getChannelUID(HomekitCharacteristic<?> characteristic) {
         try {
             return new ChannelUID(thing.getUID(),
-                    homekitChannelTypeProvider.getCharacteristicTag(characteristic.getType()));
-        } catch (HomekitException e) {
+                    characteristicFactory.getTagFromCharacteristicType(characteristic.getType()));
+        } catch (Exception e) {
             throw new IllegalArgumentException("HomekitCharacteristic type could not be determined", e);
         }
     }

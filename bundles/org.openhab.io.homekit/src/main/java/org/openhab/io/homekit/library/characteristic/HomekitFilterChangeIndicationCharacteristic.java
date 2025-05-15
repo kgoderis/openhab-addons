@@ -1,23 +1,26 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Set;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitIntegerCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Set;
 
 /**
  * HomeKit Filter Change Indication Characteristic.
  * <p>
- * This characteristic indicates if a filter needs to be changed in an air purifier or similar device. The value is an integer corresponding to a specific indication as defined by the HAP specification.
+ * This characteristic indicates if a filter needs to be changed in an air purifier or similar device. The value is an
+ * integer corresponding to a specific indication as defined by the HAP specification.
  * <p>
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "000000AC-0000-1000-8000-0026BB765291", name = "Filter Change Indication", tag = "filterChangeIndication")
+@HomekitCharacteristicType(type = "000000AC-0000-1000-8000-0026BB765291", name = "Filter Change Indication", tag = "filterChangeIndication", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitFilterChangeIndicationCharacteristic extends HomekitIntegerCharacteristic {
     /**
@@ -26,16 +29,26 @@ public class HomekitFilterChangeIndicationCharacteristic extends HomekitIntegerC
     public enum FilterChangeIndication {
         FILTER_OK(0),
         CHANGE_FILTER(1);
+
         private final int code;
-        FilterChangeIndication(int code) { this.code = code; }
-        public int getCode() { return code; }
+
+        FilterChangeIndication(int code) {
+            this.code = code;
+        }
+
+        public int getCode() {
+            return code;
+        }
+
         public static FilterChangeIndication fromCode(int code) {
             for (FilterChangeIndication s : values()) {
-                if (s.code == code) return s;
+                if (s.code == code)
+                    return s;
             }
             return FILTER_OK;
         }
     }
+
     /**
      * Constructs a new Filter Change Indication characteristic.
      *
@@ -43,11 +56,13 @@ public class HomekitFilterChangeIndicationCharacteristic extends HomekitIntegerC
      * @param eventManager the event manager for handling HomeKit events
      * @param instanceId the instance ID for this characteristic
      */
-    public HomekitFilterChangeIndicationCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitFilterChangeIndicationCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 0, 1, "");
         withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
-            .withDescription("Filter Change Indication");
+                .withDescription("Filter Change Indication");
     }
+
     /**
      * Constructs a new Filter Change Indication characteristic from a JSON value.
      *
@@ -55,9 +70,11 @@ public class HomekitFilterChangeIndicationCharacteristic extends HomekitIntegerC
      * @param eventManager the event manager for handling HomeKit events
      * @param value the JSON value to initialize the characteristic with
      */
-    public HomekitFilterChangeIndicationCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitFilterChangeIndicationCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
+
     /**
      * Checks if the given value is an allowed filter change indication.
      *
@@ -66,8 +83,10 @@ public class HomekitFilterChangeIndicationCharacteristic extends HomekitIntegerC
      */
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && (value == FilterChangeIndication.FILTER_OK.getCode() || value == FilterChangeIndication.CHANGE_FILTER.getCode());
+        return value != null && (value == FilterChangeIndication.FILTER_OK.getCode()
+                || value == FilterChangeIndication.CHANGE_FILTER.getCode());
     }
+
     /**
      * Returns the set of allowed filter change indication values.
      *
@@ -77,4 +96,4 @@ public class HomekitFilterChangeIndicationCharacteristic extends HomekitIntegerC
     public Set<Integer> getAllowedValues() {
         return Set.of(FilterChangeIndication.FILTER_OK.getCode(), FilterChangeIndication.CHANGE_FILTER.getCode());
     }
-} 
+}

@@ -1,9 +1,10 @@
 package org.openhab.io.homekit.api.factory;
 
+import java.util.Set;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.service.HomekitService;
-import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * Factory interface for creating HomeKit services.
@@ -16,11 +17,10 @@ public interface HomekitServiceFactory {
      *
      * @param type The type of service to create
      * @param accessory The accessory that will own this service
-     * @param eventManager The event manager for handling service events
      * @return A new service instance
      * @throws IllegalArgumentException if the service type is not supported
      */
-    HomekitService createService(String type, HomekitAccessory accessory, HomekitEventManager eventManager);
+    HomekitService createService(String type, HomekitAccessory accessory);
 
     /**
      * Creates a new HomeKit service instance based on a tag.
@@ -28,11 +28,10 @@ public interface HomekitServiceFactory {
      *
      * @param tag The tag identifying the service (e.g. "LightBulb", "Switch", "Thermostat")
      * @param accessory The accessory that will own this service
-     * @param eventManager The event manager for handling service events
      * @return A new service instance
      * @throws IllegalArgumentException if no service type is found for the given tag
      */
-    HomekitService createServiceFromTag(String tag, HomekitAccessory accessory, HomekitEventManager eventManager);
+    HomekitService createServiceFromTag(String tag, HomekitAccessory accessory);
 
     /**
      * Creates a new HomeKit service instance with variable arguments.
@@ -66,12 +65,28 @@ public interface HomekitServiceFactory {
      *
      * @return A set of supported service type identifiers
      */
-    java.util.Set<String> getSupportedServiceTypes();
+    Set<String> getSupportedServiceTypes();
 
     /**
      * Gets all service tags supported by this factory.
      *
      * @return A set of supported service tags
      */
-    java.util.Set<String> getSupportedTags();
+    Set<String> getSupportedTags();
+
+    /**
+     * Gets the tag from the service type.
+     *
+     * @param serviceType The service type
+     * @return The tag
+     */
+    String getTagFromServiceType(String serviceType);
+
+    /**
+     * Gets the service type from the tag.
+     *
+     * @param serviceTag The tag
+     * @return The service type
+     */
+    String getServiceTypeFromTag(String serviceTag);
 }

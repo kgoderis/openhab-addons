@@ -39,10 +39,7 @@ public class HomekitHumidifierDehumidifierService extends AbstractHomekitService
     public HomekitHumidifierDehumidifierService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Humidifier Dehumidifier")
-            .withExtensible(false)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Humidifier Dehumidifier").withPrimary(false).withHidden(false);
     }
 
     /**
@@ -60,9 +57,9 @@ public class HomekitHumidifierDehumidifierService extends AbstractHomekitService
 
     @Override
     public void addCharacteristics() {
-        super.addCharacteristics();
-        addCharacteristic(new HomekitActiveCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(
+                new HomekitActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
         addCharacteristic(new HomekitCurrentHumidifierDehumidifierStateCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         addCharacteristic(new HomekitTargetHumidifierDehumidifierStateCharacteristic(this, eventManager,
@@ -73,12 +70,14 @@ public class HomekitHumidifierDehumidifierService extends AbstractHomekitService
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
         addCharacteristic(new HomekitRelativeHumidityDehumidifierThresholdCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitRotationSpeedCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitWaterLevelCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(
+                new HomekitRotationSpeedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        addCharacteristic(
+                new HomekitWaterLevelCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(false));
     }
 
     @Override

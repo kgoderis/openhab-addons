@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -13,19 +14,18 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/SignalToNoiseRatio">HomeKit Documentation</a>
  */
-@HomekitCharacteristicType(type = "00000241-0000-1000-8000-0026BB765291", name = "Signal To Noise Ratio", tag = "signalToNoiseRatio")
+@HomekitCharacteristicType(type = "00000241-0000-1000-8000-0026BB765291", name = "Signal To Noise Ratio", tag = "signalToNoiseRatio", acceptedItemTypes = {"Number"})
 @NonNullByDefault
 public class HomekitSignalToNoiseRatioCharacteristic extends HomekitIntegerCharacteristic {
-    public HomekitSignalToNoiseRatioCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitSignalToNoiseRatioCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, -128, 127, "dB");
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(false)
-            .withEvents(true)
-            .withDescription("Signal To Noise Ratio");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(true)
+                .withDescription("Signal To Noise Ratio");
     }
 
-    public HomekitSignalToNoiseRatioCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitSignalToNoiseRatioCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -33,4 +33,4 @@ public class HomekitSignalToNoiseRatioCharacteristic extends HomekitIntegerChara
     public boolean isAllowedValue(Integer value) {
         return value != null && value >= -128 && value <= 127;
     }
-} 
+}

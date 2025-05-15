@@ -1,13 +1,15 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Map;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitTLV8Characteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Map;
-import org.openhab.core.types.State;
 
 /**
  * HomeKit Crypto Hash Characteristic.
@@ -16,7 +18,7 @@ import org.openhab.core.types.State;
  * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000250-0000-1000-8000-0026BB765291", name = "Crypto Hash", tag = "cryptoHash")
+@HomekitCharacteristicType(type = "00000250-0000-1000-8000-0026BB765291", name = "Crypto Hash", tag = "cryptoHash", acceptedItemTypes = {"String"})
 @NonNullByDefault
 public class HomekitCryptoHashCharacteristic extends HomekitTLV8Characteristic {
 
@@ -29,11 +31,8 @@ public class HomekitCryptoHashCharacteristic extends HomekitTLV8Characteristic {
      */
     public HomekitCryptoHashCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedRead(false)
-            .withPairedWrite(true)
-            .withEvents(false)
-            .withDescription("Crypto Hash");
+        withInstanceId(instanceId).withPairedRead(false).withPairedWrite(true).withEvents(false)
+                .withDescription("Crypto Hash");
     }
 
     /**
@@ -86,4 +85,4 @@ public class HomekitCryptoHashCharacteristic extends HomekitTLV8Characteristic {
     public State toState(Map<Integer, Object> value) {
         throw new UnsupportedOperationException("State conversion not implemented for Crypto Hash");
     }
-} 
+}

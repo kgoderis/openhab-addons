@@ -28,7 +28,9 @@ import org.openhab.core.items.ItemRegistry;
 import org.openhab.core.items.Metadata;
 import org.openhab.core.items.MetadataKey;
 import org.openhab.core.items.MetadataRegistry;
-import org.openhab.io.homekit.api.factory.HomekitFactory;
+import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
+import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
+import org.openhab.io.homekit.api.factory.HomekitServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,11 +70,13 @@ public class HomekitTaggedItem {
     private final MetadataRegistry metadataRegistry;
     private final Collection<String> homekitTags;
     private final int id;
-    private String serviceType;
-    private String characteristicType;
+    private String serviceTag;
+    private String characteristicTag;
     private GroupItem parentGroupItem;
     private final Logger logger = LoggerFactory.getLogger(HomekitTaggedItem.class);
-    private final Collection<HomekitFactory> homekitFactories;
+    private final HomekitServiceFactory serviceFactory;
+    private final HomekitCharacteristicFactory characteristicFactory;
+    private final HomekitAccessoryFactory accessoryFactory;
 
     // 3. Inner classes
     class BadItemConfigurationException extends Exception {
@@ -90,20 +94,26 @@ public class HomekitTaggedItem {
      * @param item The openHAB item to wrap
      * @param itemRegistry The item registry to use for group lookups
      * @param metadataRegistry The metadata registry to use for metadata lookups
+     * @param accessoryFactory The factory for creating Homekit accessories
+     * @param serviceFactory The factory for creating Homekit services
+     * @param characteristicFactory The factory for creating Homekit characteristics
      * @throws BadItemConfigurationException if the item's configuration is invalid
      */
     public HomekitTaggedItem(Item item, ItemRegistry itemRegistry, MetadataRegistry metadataRegistry,
-            Collection<HomekitFactory> homekitFactories) {
+            HomekitAccessoryFactory accessoryFactory, HomekitServiceFactory serviceFactory,
+            HomekitCharacteristicFactory characteristicFactory) {
         this.item = item;
         this.metadataRegistry = metadataRegistry;
         this.itemRegistry = itemRegistry;
         this.homekitTags = getHomekitTagsFromMetaRegistry(item);
-        this.homekitFactories = homekitFactories;
+        this.accessoryFactory = accessoryFactory;
+        this.serviceFactory = serviceFactory;
+        this.characteristicFactory = characteristicFactory;
 
         try {
-            serviceType = getFactoryServiceType();
-            characteristicType = getFactoryCharacteristicType();
-            if (serviceType != null && characteristicType != null) {
+            serviceTag = determineServiceTag();
+            characteristicTag = determineCharacteristicTag();
+            if (serviceTag != null && characteristicTag != null) {
                 throw new BadItemConfigurationException(
                         "Items cannot be tagged as both a characteristic and an accessory type");
             }
@@ -111,7 +121,7 @@ public class HomekitTaggedItem {
 
             switch (matchingGroupItems.size()) {
                 case 0 -> { // Does not belong to a accessory group
-                    if (characteristicType != null) {
+                    if (characteristicTag != null) {
                         throw new BadItemConfigurationException(
                                 "Item is tagged as a characteristic, but does not belong to a root accessory group");
                     }
@@ -134,11 +144,11 @@ public class HomekitTaggedItem {
         } catch (BadItemConfigurationException e) {
             logger.warn("{}Item {} was misconfigured: {}. Excluding item from homekit.", LOG_WARN, item.getName(),
                     e.getMessage());
-            serviceType = null;
-            characteristicType = null;
+            serviceTag = null;
+            characteristicTag = null;
             parentGroupItem = null;
         }
-        if (serviceType != null) {
+        if (serviceTag != null) {
             this.id = calculateId(item);
         } else {
             this.id = 0;
@@ -146,47 +156,32 @@ public class HomekitTaggedItem {
     }
 
     /**
-     * Retrieves the Homekit service type from the item's tags.
-     * This method checks all available Homekit factories to find a matching service type.
+     * Determines the Homekit service type from the item's tags.
      *
      * @return The Homekit service type if found, null otherwise
      */
-    private String getFactoryServiceType() {
+    private String determineServiceTag() {
         if (!homekitTags.isEmpty()) {
             String firstTag = homekitTags.iterator().next();
-            for (HomekitFactory factory : homekitFactories) {
-                if (factory instanceof HomekitFactory homekitFactory) {
-                    String factoryServiceType = homekitFactory.getServiceTypeFromTag(firstTag);
-                    if (factoryServiceType != null) {
-                        return factoryServiceType;
-                    }
-                }
+            if (serviceFactory.supportsTag(firstTag)) {
+                return firstTag;
             }
         }
-
         return null;
     }
 
     /**
-     * Retrieves the Homekit characteristic type from the item's tags.
-     * This method checks all available Homekit factories to find a matching characteristic type.
+     * Determines the Homekit characteristic type from the item's tags.
      *
      * @return The Homekit characteristic type if found, null otherwise
      */
-    private String getFactoryCharacteristicType() {
-
+    private String determineCharacteristicTag() {
         if (!homekitTags.isEmpty()) {
             String firstTag = homekitTags.iterator().next();
-            for (HomekitFactory factory : homekitFactories) {
-                if (factory instanceof HomekitFactory homekitFactory) {
-                    String factoryCharacteristicType = homekitFactory.getCharacteristicTypeFromTag(firstTag);
-                    if (factoryCharacteristicType != null) {
-                        return factoryCharacteristicType;
-                    }
-                }
+            if (characteristicFactory.supportsTag(firstTag)) {
+                return firstTag;
             }
         }
-
         return null;
     }
 
@@ -197,7 +192,7 @@ public class HomekitTaggedItem {
      * @return true if the item is tagged for Homekit integration, false otherwise
      */
     public boolean isTagged() {
-        return (serviceType != null && id != 0) || characteristicType != null;
+        return (serviceTag != null && id != 0) || characteristicTag != null;
     }
 
     /**
@@ -215,8 +210,8 @@ public class HomekitTaggedItem {
      *
      * @return The Homekit service type, or null if not applicable
      */
-    public String getServiceType() {
-        return serviceType;
+    public String getServiceTag() {
+        return serviceTag;
     }
 
     /**
@@ -225,8 +220,8 @@ public class HomekitTaggedItem {
      *
      * @return The Homekit characteristic type, or null if not applicable
      */
-    public String getCharacteristicType() {
-        return characteristicType;
+    public String getCharacteristicTag() {
+        return characteristicTag;
     }
 
     /**
@@ -237,7 +232,7 @@ public class HomekitTaggedItem {
      * @return true if the item represents a Homekit accessory, false otherwise
      */
     public boolean isAccessory() {
-        return serviceType != null;
+        return serviceTag != null;
     }
 
     /**
@@ -248,7 +243,7 @@ public class HomekitTaggedItem {
      * @return true if the item represents a Homekit characteristic, false otherwise
      */
     public boolean isCharacteristic() {
-        return characteristicType != null;
+        return characteristicTag != null;
     }
 
     /**
@@ -308,7 +303,6 @@ public class HomekitTaggedItem {
      * @return A list of group items that are tagged as Homekit accessories
      */
     public List<GroupItem> findMyAccessoryGroups() {
-
         return item.getGroupNames().stream().flatMap(name -> {
             Item groupItem = itemRegistry.get(name);
             if ((groupItem != null) && (groupItem instanceof GroupItem)) {
@@ -318,12 +312,7 @@ public class HomekitTaggedItem {
             }
         }).filter(groupItem -> {
             Collection<String> groupHomekitTags = getHomekitTagsFromMetaRegistry(groupItem);
-
-            return groupHomekitTags.stream().anyMatch(tag -> {
-                return Stream.of(homekitFactories).filter(factory -> factory instanceof HomekitFactory)
-                        .map(factory -> (HomekitFactory) factory)
-                        .anyMatch(homekitFactory -> homekitFactory.getServiceTypeFromTag(tag) != null);
-            });
+            return groupHomekitTags.stream().anyMatch(tag -> serviceFactory.supportsTag(tag));
         }).collect(Collectors.toList());
     }
 

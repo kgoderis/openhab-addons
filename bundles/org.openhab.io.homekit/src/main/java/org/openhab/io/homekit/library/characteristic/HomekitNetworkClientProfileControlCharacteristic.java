@@ -13,12 +13,13 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * HomeKit Network Client Profile Control Characteristic.
- * This characteristic represents the control configuration for network client profiles, as defined in the HomeKit Accessory Protocol (HAP) specification.
+ * This characteristic represents the control configuration for network client profiles, as defined in the HomeKit
+ * Accessory Protocol (HAP) specification.
  *
  * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "0000020C-0000-1000-8000-0026BB765291", name = "Network Client Profile Control", tag = "networkClientProfileControl")
+@HomekitCharacteristicType(type = "0000020C-0000-1000-8000-0026BB765291", name = "Network Client Profile Control", tag = "networkClientProfileControl", acceptedItemTypes = {"String"})
 @NonNullByDefault
 public class HomekitNetworkClientProfileControlCharacteristic extends HomekitTLV8Characteristic {
     /**
@@ -28,15 +29,11 @@ public class HomekitNetworkClientProfileControlCharacteristic extends HomekitTLV
      * @param eventManager the event manager for handling HomeKit events
      * @param instanceId the instance ID for this characteristic
      */
-    public HomekitNetworkClientProfileControlCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitNetworkClientProfileControlCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withTimedWrite(true)
-            .withWriteResponse(true)
-            .withDescription("Network Client Profile Control");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true).withTimedWrite(true)
+                .withWriteResponse(true).withDescription("Network Client Profile Control");
     }
 
     /**
@@ -46,7 +43,8 @@ public class HomekitNetworkClientProfileControlCharacteristic extends HomekitTLV
      * @param eventManager the event manager for handling HomeKit events
      * @param value the JSON value to initialize the characteristic with
      */
-    public HomekitNetworkClientProfileControlCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitNetworkClientProfileControlCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -87,7 +85,8 @@ public class HomekitNetworkClientProfileControlCharacteristic extends HomekitTLV
      */
     @Override
     public Map<Integer, Object> toValue(State state) {
-        throw new UnsupportedOperationException("State to TLV8 conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "State to TLV8 conversion must be implemented for the specific device.");
     }
 
     /**
@@ -95,6 +94,7 @@ public class HomekitNetworkClientProfileControlCharacteristic extends HomekitTLV
      */
     @Override
     public State toState(Map<Integer, Object> value) {
-        throw new UnsupportedOperationException("TLV8 to State conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "TLV8 to State conversion must be implemented for the specific device.");
     }
-} 
+}

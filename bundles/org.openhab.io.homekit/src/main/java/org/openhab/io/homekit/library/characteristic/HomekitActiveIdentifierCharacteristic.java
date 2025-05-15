@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -15,20 +16,19 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "000000E7-0000-1000-8000-0026BB765291", name = "Active Identifier", tag = "activeIdentifier")
+@HomekitCharacteristicType(type = "000000E7-0000-1000-8000-0026BB765291", name = "Active Identifier", tag = "activeIdentifier", acceptedItemTypes = {"Number"})
 @NonNullByDefault
 public class HomekitActiveIdentifierCharacteristic extends HomekitLongCharacteristic {
 
-    public HomekitActiveIdentifierCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitActiveIdentifierCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 0L, 0xFFFFFFFFL, 1L);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withDescription("Active Identifier");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true)
+                .withDescription("Active Identifier");
     }
 
-    public HomekitActiveIdentifierCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitActiveIdentifierCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -41,4 +41,4 @@ public class HomekitActiveIdentifierCharacteristic extends HomekitLongCharacteri
     public java.util.Set<Long> getAllowedValues() {
         return java.util.Collections.emptySet(); // No specific allowed values, just a range
     }
-} 
+}

@@ -18,7 +18,6 @@ import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryCategory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.event.HomekitEventType;
-import org.openhab.io.homekit.api.factory.HomekitFactory;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -81,10 +80,9 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     // ========== Constructors ==========
     public HomekitLocalAccessoryServer(HomekitAccessoryCategory category, InetAddress address, int port,
             byte[] pairingId, byte[] secretKey, MDNSService mdnsService, HomekitAccessoryRegistry accessoryRegistry,
-            HomekitPairingRegistry pairingRegistry, HomekitEventManager eventManager,
-            Set<HomekitFactory> homekitFactories) throws HomekitConfigurationException {
-        super(category, address, port, pairingId, secretKey, accessoryRegistry, pairingRegistry, eventManager,
-                homekitFactories);
+            HomekitPairingRegistry pairingRegistry, HomekitEventManager eventManager)
+            throws HomekitConfigurationException {
+        super(category, address, port, pairingId, secretKey, accessoryRegistry, pairingRegistry, eventManager);
         logger.debug("{}Initializing local server - Category: {}, Address: {}, Port: {}", LOG_INIT, category, address,
                 port);
         this.mdnsService = mdnsService;
@@ -93,10 +91,9 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
 
     public HomekitLocalAccessoryServer(HomekitAccessoryCategory category, InetAddress address, int port,
             MDNSService mdnsService, HomekitAccessoryRegistry accessoryRegistry, HomekitPairingRegistry pairingRegistry,
-            HomekitEventManager eventManager, Set<HomekitFactory> homekitFactories)
-            throws HomekitConfigurationException, HomekitServerException {
+            HomekitEventManager eventManager) throws HomekitConfigurationException, HomekitServerException {
         super(category, address, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry,
-                eventManager, homekitFactories);
+                eventManager);
         this.mdnsService = mdnsService;
     }
 

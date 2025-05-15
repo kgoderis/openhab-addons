@@ -1,24 +1,27 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitIntegerCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Set;
-import java.util.HashSet;
 
 /**
  * HomeKit Air Particulate Size Characteristic.
  * <p>
- * This characteristic represents the particulate size measured by an air quality sensor, such as PM2.5 or PM10. The value is an integer corresponding to a specific particulate size as defined by the HAP specification.
+ * This characteristic represents the particulate size measured by an air quality sensor, such as PM2.5 or PM10. The
+ * value is an integer corresponding to a specific particulate size as defined by the HAP specification.
  * <p>
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "00000065-0000-1000-8000-0026BB765291", name = "Air Particulate Size", tag = "airParticulateSize")
+@HomekitCharacteristicType(type = "00000065-0000-1000-8000-0026BB765291", name = "Air Particulate Size", tag = "airParticulateSize", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitAirParticulateSizeCharacteristic extends HomekitIntegerCharacteristic {
 
@@ -28,12 +31,21 @@ public class HomekitAirParticulateSizeCharacteristic extends HomekitIntegerChara
     public enum AirParticulateSize {
         SIZE_2_5_M(0),
         SIZE_10_M(1);
+
         private final int code;
-        AirParticulateSize(int code) { this.code = code; }
-        public int getCode() { return code; }
+
+        AirParticulateSize(int code) {
+            this.code = code;
+        }
+
+        public int getCode() {
+            return code;
+        }
+
         public static AirParticulateSize fromCode(int code) {
             for (AirParticulateSize s : values()) {
-                if (s.code == code) return s;
+                if (s.code == code)
+                    return s;
             }
             return SIZE_2_5_M;
         }
@@ -46,13 +58,11 @@ public class HomekitAirParticulateSizeCharacteristic extends HomekitIntegerChara
      * @param eventManager the event manager for handling HomeKit events
      * @param instanceId the instance ID for this characteristic
      */
-    public HomekitAirParticulateSizeCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitAirParticulateSizeCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 0, 1, "");
-        withInstanceId(instanceId)
-            .withPairedWrite(false)
-            .withPairedRead(true)
-            .withEvents(true)
-            .withDescription("Air Particulate Size");
+        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
+                .withDescription("Air Particulate Size");
     }
 
     /**
@@ -62,7 +72,8 @@ public class HomekitAirParticulateSizeCharacteristic extends HomekitIntegerChara
      * @param eventManager the event manager for handling HomeKit events
      * @param value the JSON value to initialize the characteristic with
      */
-    public HomekitAirParticulateSizeCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitAirParticulateSizeCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -90,4 +101,4 @@ public class HomekitAirParticulateSizeCharacteristic extends HomekitIntegerChara
         }
         return set;
     }
-} 
+}

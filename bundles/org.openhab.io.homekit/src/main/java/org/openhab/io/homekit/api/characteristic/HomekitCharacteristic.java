@@ -100,7 +100,6 @@ public interface HomekitCharacteristic<T>
      */
     boolean isMandatory();
 
-
     // Value and state management methods
     /**
      * Gets the current value of the characteristic.
@@ -248,7 +247,6 @@ public interface HomekitCharacteristic<T>
      * @return this instance for method chaining
      */
     HomekitCharacteristic<T> withMandatory(boolean isMandatory);
-
 
     /**
      * Sets whether this characteristic has events. Enables the accessory to send notifications to

@@ -40,10 +40,7 @@ public class HomekitHeaterCoolerService extends AbstractHomekitService {
     public HomekitHeaterCoolerService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Heater Cooler")
-            .withExtensible(false)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Heater Cooler").withPrimary(false).withHidden(false);
     }
 
     /**
@@ -61,9 +58,9 @@ public class HomekitHeaterCoolerService extends AbstractHomekitService {
 
     @Override
     public void addCharacteristics() {
-        super.addCharacteristics();
-        addCharacteristic(new HomekitActiveCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(
+                new HomekitActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
         addCharacteristic(new HomekitCurrentHeaterCoolerStateCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         addCharacteristic(new HomekitTargetHeaterCoolerStateCharacteristic(this, eventManager,
@@ -76,12 +73,14 @@ public class HomekitHeaterCoolerService extends AbstractHomekitService {
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
         addCharacteristic(new HomekitTemperatureDisplayUnitsCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitRotationSpeedCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitSwingModeCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(
+                new HomekitRotationSpeedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        addCharacteristic(
+                new HomekitSwingModeCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(false));
     }
 
     @Override

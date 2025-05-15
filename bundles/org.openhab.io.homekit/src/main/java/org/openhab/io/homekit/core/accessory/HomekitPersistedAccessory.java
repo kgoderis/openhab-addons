@@ -4,18 +4,18 @@ public class HomekitPersistedAccessory {
 
     private String json;
     // private String instanceIdPool;
-    private String accessoryClass;
+    private String accessoryType;
 
     public HomekitPersistedAccessory() {
         json = "";
         // instanceIdPool = "";
-        accessoryClass = "";
+        accessoryType = "";
     }
 
-    public HomekitPersistedAccessory(String accessoryClass, String json) {
+    public HomekitPersistedAccessory(String accessoryType, String json) {
         this.json = json;
         // this.instanceIdPool = Long.toString(instanceIdPool);
-        this.accessoryClass = accessoryClass;
+        this.accessoryType = accessoryType;
     }
 
     public String getJson() {
@@ -26,8 +26,8 @@ public class HomekitPersistedAccessory {
     // return Long.parseLong(instanceIdPool);
     // }
 
-    public String getAccessoryClass() {
-        return accessoryClass;
+    public String getAccessoryType() {
+        return accessoryType;
     }
 
     public void setJson(String json) {
@@ -42,7 +42,7 @@ public class HomekitPersistedAccessory {
     // this.serverUID = serverUID.toString();
     // }
 
-    public void setAccessoryClass(String accessoryClass) {
-        this.accessoryClass = accessoryClass;
+    public void setAccessoryType(String accessoryType) {
+        this.accessoryType = accessoryType;
     }
 }

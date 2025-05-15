@@ -1,24 +1,28 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Map;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitTLV8Characteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Map;
-import org.openhab.core.types.State;
 
 /**
  * HomeKit Access Code Supported Configuration Characteristic.
  * <p>
- * This characteristic represents the supported configuration for access codes, indicating which access code formats and options are supported by the device. The value is encoded as TLV8 and must be interpreted according to the HAP specification.
+ * This characteristic represents the supported configuration for access codes, indicating which access code formats and
+ * options are supported by the device. The value is encoded as TLV8 and must be interpreted according to the HAP
+ * specification.
  * <p>
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "00000261-0000-1000-8000-0026BB765291", name = "Access Code Supported Configuration", tag = "accessCodeSupportedConfiguration")
+@HomekitCharacteristicType(type = "00000261-0000-1000-8000-0026BB765291", name = "Access Code Supported Configuration", tag = "accessCodeSupportedConfiguration", acceptedItemTypes = {"String"})
 @NonNullByDefault
 public class HomekitAccessCodeSupportedConfigurationCharacteristic extends HomekitTLV8Characteristic {
     /**
@@ -28,13 +32,11 @@ public class HomekitAccessCodeSupportedConfigurationCharacteristic extends Homek
      * @param eventManager the event manager for handling HomeKit events
      * @param instanceId the instance ID for this characteristic
      */
-    public HomekitAccessCodeSupportedConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitAccessCodeSupportedConfigurationCharacteristic(HomekitService service,
+            HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedWrite(false)
-            .withPairedRead(true)
-            .withEvents(false)
-            .withDescription("Access Code Supported Configuration");
+        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(false)
+                .withDescription("Access Code Supported Configuration");
     }
 
     /**
@@ -44,7 +46,8 @@ public class HomekitAccessCodeSupportedConfigurationCharacteristic extends Homek
      * @param eventManager the event manager for handling HomeKit events
      * @param value the JSON value to initialize the characteristic with
      */
-    public HomekitAccessCodeSupportedConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitAccessCodeSupportedConfigurationCharacteristic(HomekitService service,
+            HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -106,4 +109,4 @@ public class HomekitAccessCodeSupportedConfigurationCharacteristic extends Homek
     public State toState(Map<Integer, Object> value) {
         throw new UnsupportedOperationException("TLV8 to State not implemented");
     }
-} 
+}

@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -14,7 +15,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developers.homebridge.io/#/characteristic/AirQuality">HomeKit Documentation</a>
  * @author Karel Goderis - Initial contribution
  */
-@HomekitCharacteristicType(type = "00000095-0000-1000-8000-0026BB765291", name = "Air Quality", tag = "airQuality")
+@HomekitCharacteristicType(type = "00000095-0000-1000-8000-0026BB765291", name = "Air Quality", tag = "airQuality", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitCurrentAirQualityCharacteristic extends HomekitEnumCharacteristic {
     /**
@@ -34,13 +35,13 @@ public class HomekitCurrentAirQualityCharacteristic extends HomekitEnumCharacter
         INFERIOR(4),
         /** Air quality is poor */
         POOR(5);
-        
+
         private final int code;
-        
+
         AirQuality(int code) {
             this.code = code;
         }
-        
+
         /**
          * Gets the integer code for this air quality level.
          *
@@ -49,7 +50,7 @@ public class HomekitCurrentAirQualityCharacteristic extends HomekitEnumCharacter
         public int getCode() {
             return code;
         }
-        
+
         /**
          * Converts an integer code to the corresponding AirQuality.
          * If no matching level is found, returns UNKNOWN as default.
@@ -77,11 +78,8 @@ public class HomekitCurrentAirQualityCharacteristic extends HomekitEnumCharacter
     public HomekitCurrentAirQualityCharacteristic(HomekitService service, HomekitEventManager eventManager,
             long instanceId) {
         super(service, eventManager, AirQuality.values().length);
-        withInstanceId(instanceId)
-            .withPairedWrite(false)
-            .withPairedRead(true)
-            .withEvents(true)
-            .withDescription("Current Air Quality");
+        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
+                .withDescription("Current Air Quality");
     }
 
     /**
@@ -114,13 +112,7 @@ public class HomekitCurrentAirQualityCharacteristic extends HomekitEnumCharacter
      */
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(
-            AirQuality.UNKNOWN.getCode(),
-            AirQuality.EXCELLENT.getCode(),
-            AirQuality.GOOD.getCode(),
-            AirQuality.FAIR.getCode(),
-            AirQuality.INFERIOR.getCode(),
-            AirQuality.POOR.getCode()
-        );
+        return java.util.Set.of(AirQuality.UNKNOWN.getCode(), AirQuality.EXCELLENT.getCode(), AirQuality.GOOD.getCode(),
+                AirQuality.FAIR.getCode(), AirQuality.INFERIOR.getCode(), AirQuality.POOR.getCode());
     }
-} 
+}

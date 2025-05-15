@@ -1,24 +1,28 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Map;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitTLV8Characteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Map;
-import org.openhab.core.types.State;
 
 /**
  * HomeKit Supported Characteristic Value Transition Configuration Characteristic.
- * This characteristic represents the supported configuration for characteristic value transitions, as defined in the HomeKit Accessory Protocol (HAP) specification.
+ * This characteristic represents the supported configuration for characteristic value transitions, as defined in the
+ * HomeKit Accessory Protocol (HAP) specification.
  *
  * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000144-0000-1000-8000-0026BB765291", name = "Supported Characteristic Value Transition Configuration", tag = "supportedCharacteristicValueTransitionConfiguration")
 @NonNullByDefault
-public class HomekitSupportedCharacteristicValueTransitionConfigurationCharacteristic extends HomekitTLV8Characteristic {
+public class HomekitSupportedCharacteristicValueTransitionConfigurationCharacteristic
+        extends HomekitTLV8Characteristic {
     /**
      * Constructs a new Supported Characteristic Value Transition Configuration characteristic.
      *
@@ -26,13 +30,11 @@ public class HomekitSupportedCharacteristicValueTransitionConfigurationCharacter
      * @param eventManager the event manager for handling HomeKit events
      * @param instanceId the instance ID for this characteristic
      */
-    public HomekitSupportedCharacteristicValueTransitionConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitSupportedCharacteristicValueTransitionConfigurationCharacteristic(HomekitService service,
+            HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(false)
-            .withEvents(true)
-            .withDescription("Supported Characteristic Value Transition Configuration");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(true)
+                .withDescription("Supported Characteristic Value Transition Configuration");
     }
 
     /**
@@ -42,7 +44,8 @@ public class HomekitSupportedCharacteristicValueTransitionConfigurationCharacter
      * @param eventManager the event manager for handling HomeKit events
      * @param value the JSON value to initialize the characteristic with
      */
-    public HomekitSupportedCharacteristicValueTransitionConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitSupportedCharacteristicValueTransitionConfigurationCharacteristic(HomekitService service,
+            HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -83,7 +86,8 @@ public class HomekitSupportedCharacteristicValueTransitionConfigurationCharacter
      */
     @Override
     public Map<Integer, Object> toValue(State state) {
-        throw new UnsupportedOperationException("State to TLV8 conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "State to TLV8 conversion must be implemented for the specific device.");
     }
 
     /**
@@ -91,6 +95,7 @@ public class HomekitSupportedCharacteristicValueTransitionConfigurationCharacter
      */
     @Override
     public State toState(Map<Integer, Object> value) {
-        throw new UnsupportedOperationException("TLV8 to State conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "TLV8 to State conversion must be implemented for the specific device.");
     }
-} 
+}

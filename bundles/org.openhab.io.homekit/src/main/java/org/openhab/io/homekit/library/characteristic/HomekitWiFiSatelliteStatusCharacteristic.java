@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -16,7 +17,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "0000021E-0000-1000-8000-0026BB765291", name = "WiFi Satellite Status", tag = "wifiSatelliteStatus")
+@HomekitCharacteristicType(type = "0000021E-0000-1000-8000-0026BB765291", name = "WiFi Satellite Status", tag = "wifiSatelliteStatus", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitWiFiSatelliteStatusCharacteristic extends HomekitEnumCharacteristic {
     /**
@@ -36,6 +37,7 @@ public class HomekitWiFiSatelliteStatusCharacteristic extends HomekitEnumCharact
 
         /**
          * Returns the integer code for this status.
+         * 
          * @return the code
          */
         public int getCode() {
@@ -44,6 +46,7 @@ public class HomekitWiFiSatelliteStatusCharacteristic extends HomekitEnumCharact
 
         /**
          * Returns the WiFiSatelliteStatus enum for a given code.
+         * 
          * @param code the code
          * @return the WiFiSatelliteStatus
          */
@@ -57,21 +60,21 @@ public class HomekitWiFiSatelliteStatusCharacteristic extends HomekitEnumCharact
         }
     }
 
-    public HomekitWiFiSatelliteStatusCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitWiFiSatelliteStatusCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, WiFiSatelliteStatus.values().length);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(false)
-            .withEvents(true)
-            .withDescription("WiFi Satellite Status");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(true)
+                .withDescription("WiFi Satellite Status");
     }
 
-    public HomekitWiFiSatelliteStatusCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitWiFiSatelliteStatusCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
     /**
      * Checks if the given value is an allowed WiFi satellite status.
+     * 
      * @param value the value to check
      * @return true if allowed, false otherwise
      */
@@ -82,15 +85,12 @@ public class HomekitWiFiSatelliteStatusCharacteristic extends HomekitEnumCharact
 
     /**
      * Returns the set of allowed WiFi satellite status values.
+     * 
      * @return the set of allowed values
      */
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(
-            WiFiSatelliteStatus.CONNECTED.getCode(),
-            WiFiSatelliteStatus.DISCONNECTED.getCode(),
-            WiFiSatelliteStatus.CONNECTING.getCode(),
-            WiFiSatelliteStatus.DISCONNECTING.getCode()
-        );
+        return java.util.Set.of(WiFiSatelliteStatus.CONNECTED.getCode(), WiFiSatelliteStatus.DISCONNECTED.getCode(),
+                WiFiSatelliteStatus.CONNECTING.getCode(), WiFiSatelliteStatus.DISCONNECTING.getCode());
     }
-} 
+}

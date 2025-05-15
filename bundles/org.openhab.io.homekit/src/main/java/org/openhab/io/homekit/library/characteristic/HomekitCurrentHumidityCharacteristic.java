@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -14,18 +15,15 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
  * @author Karel Goderis - Initial Contribution
  */
-@HomekitCharacteristicType(type = "00000010-0000-1000-8000-0026BB765291", name = "Current Relative Humidity", tag = "currentRelativeHumidity")
+@HomekitCharacteristicType(type = "00000010-0000-1000-8000-0026BB765291", name = "Current Relative Humidity", tag = "currentRelativeHumidity", acceptedItemTypes = {"Number"})
 @NonNullByDefault
 public class HomekitCurrentHumidityCharacteristic extends HomekitFloatCharacteristic {
 
     public HomekitCurrentHumidityCharacteristic(HomekitService service, HomekitEventManager eventManager,
             long instanceId) {
         super(service, eventManager, 0.0, 100.0, 1.0, "percentage");
-        withInstanceId(instanceId)
-            .withPairedWrite(false)
-            .withPairedRead(true)
-            .withEvents(true)
-            .withDescription("Current Relative Humidity");
+        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
+                .withDescription("Current Relative Humidity");
     }
 
     public HomekitCurrentHumidityCharacteristic(HomekitService service, HomekitEventManager eventManager,
@@ -43,4 +41,4 @@ public class HomekitCurrentHumidityCharacteristic extends HomekitFloatCharacteri
     public boolean isAllowedValue(Double value) {
         return value != null && value >= 0.0 && value <= 100.0;
     }
-} 
+}

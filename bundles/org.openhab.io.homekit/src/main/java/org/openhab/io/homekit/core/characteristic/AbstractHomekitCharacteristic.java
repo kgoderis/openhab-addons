@@ -61,8 +61,6 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
     protected @Nullable T value = null;
     protected @Nullable JsonValue initialValue = null;
 
-
-
     /**
      * Creates a new HomekitBaseCharacteristic with required parameters.
      * 
@@ -273,7 +271,6 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
         return isHidden;
     }
 
-
     /**
      * Checks if this characteristic is mandatory.
      *
@@ -282,7 +279,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
     @Override
     public boolean isMandatory() {
         return isMandatory;
-    }   
+    }
 
     /**
      * Converts the characteristic to a JSON object with specified options.
@@ -694,7 +691,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
         return this;
     }
 
-    /** 
+    /**
      * Sets whether this characteristic is mandatory.
      * 
      * @param isMandatory whether the characteristic is mandatory
@@ -802,9 +799,10 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
 
         // Compare fields in the same order as compareTo
         return instanceId == that.instanceId && getType().equals(that.getType()) && format.equals(that.format)
-                && isPairedWrite == that.isPairedWrite && isPairedRead == that.isPairedRead && hasEvents == that.hasEvents
-                && description.equals(that.description) && isTimedWrite == that.isTimedWrite
-                && isAdditionalAuthorization == that.isAdditionalAuthorization && isWriteResponse == that.isWriteResponse;
+                && isPairedWrite == that.isPairedWrite && isPairedRead == that.isPairedRead
+                && hasEvents == that.hasEvents && description.equals(that.description)
+                && isTimedWrite == that.isTimedWrite && isAdditionalAuthorization == that.isAdditionalAuthorization
+                && isWriteResponse == that.isWriteResponse;
     }
 
     /**
@@ -847,12 +845,14 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
             return formatCompare;
 
         // Compare by isWritable
-        int writableCompare = Boolean.compare(this.isPairedWrite, ((AbstractHomekitCharacteristic<?>) other).isPairedWrite);
+        int writableCompare = Boolean.compare(this.isPairedWrite,
+                ((AbstractHomekitCharacteristic<?>) other).isPairedWrite);
         if (writableCompare != 0)
             return writableCompare;
 
         // Compare by isReadable
-        int readableCompare = Boolean.compare(this.isPairedRead, ((AbstractHomekitCharacteristic<?>) other).isPairedRead);
+        int readableCompare = Boolean.compare(this.isPairedRead,
+                ((AbstractHomekitCharacteristic<?>) other).isPairedRead);
         if (readableCompare != 0)
             return readableCompare;
 
@@ -862,17 +862,20 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
             return eventsCompare;
 
         // Compare by isTimedWrite
-        int timedWriteCompare = Boolean.compare(this.isTimedWrite, ((AbstractHomekitCharacteristic<?>) other).isTimedWrite);
+        int timedWriteCompare = Boolean.compare(this.isTimedWrite,
+                ((AbstractHomekitCharacteristic<?>) other).isTimedWrite);
         if (timedWriteCompare != 0)
             return timedWriteCompare;
 
-        // Compare by isWriteResponse   
-        int writeResponseCompare = Boolean.compare(this.isWriteResponse, ((AbstractHomekitCharacteristic<?>) other).isWriteResponse);
+        // Compare by isWriteResponse
+        int writeResponseCompare = Boolean.compare(this.isWriteResponse,
+                ((AbstractHomekitCharacteristic<?>) other).isWriteResponse);
         if (writeResponseCompare != 0)
             return writeResponseCompare;
 
         // Compare by isAdditionalAuthorization
-        int additionalAuthorizationCompare = Boolean.compare(this.isAdditionalAuthorization, ((AbstractHomekitCharacteristic<?>) other).isAdditionalAuthorization); 
+        int additionalAuthorizationCompare = Boolean.compare(this.isAdditionalAuthorization,
+                ((AbstractHomekitCharacteristic<?>) other).isAdditionalAuthorization);
         if (additionalAuthorizationCompare != 0)
             return additionalAuthorizationCompare;
 

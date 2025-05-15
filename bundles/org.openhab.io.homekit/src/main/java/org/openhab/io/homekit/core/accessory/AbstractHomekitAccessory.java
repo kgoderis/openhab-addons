@@ -83,7 +83,7 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
     private boolean extensible = true;
 
     /**
-     * Creates a new HomekitGenericAccessory with a unique instance ID.
+     * Creates a new Accessory with a unique instance ID.
      * The instance ID is automatically assigned and managed to avoid conflicts.
      *
      * @param eventManager The event manager for handling events
@@ -100,7 +100,7 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
     }
 
     /**
-     * Creates a new HomekitGenericAccessory from a JSON value.
+     * Creates a new Accessory from a JSON value.
      * The instance ID is taken from the JSON data.
      * AID is restored from JSON to maintain consistency across reboots.
      * 
@@ -317,7 +317,7 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
         String serviceType = ((JsonObject) value).getString("type");
         if (serviceFactory.supportsServiceType(serviceType)) {
             try {
-                HomekitService service = serviceFactory.createService(serviceType, this, eventManager);
+                HomekitService service = serviceFactory.createService(serviceType, this);
                 if (service != null) {
                     return Optional.of(service);
                 }

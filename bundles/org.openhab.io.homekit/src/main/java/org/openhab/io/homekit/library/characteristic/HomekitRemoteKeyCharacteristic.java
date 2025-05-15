@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -16,7 +17,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "000000E1-0000-1000-8000-0026BB765291", name = "Remote Key", tag = "remoteKey")
+@HomekitCharacteristicType(type = "000000E1-0000-1000-8000-0026BB765291", name = "Remote Key", tag = "remoteKey", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitRemoteKeyCharacteristic extends HomekitEnumCharacteristic {
     public enum RemoteKey {
@@ -56,11 +57,8 @@ public class HomekitRemoteKeyCharacteristic extends HomekitEnumCharacteristic {
 
     public HomekitRemoteKeyCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, RemoteKey.values().length);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withDescription("Remote Key");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true)
+                .withDescription("Remote Key");
     }
 
     public HomekitRemoteKeyCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
@@ -82,20 +80,10 @@ public class HomekitRemoteKeyCharacteristic extends HomekitEnumCharacteristic {
 
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(
-            RemoteKey.REWIND.getValue(),
-            RemoteKey.FAST_FORWARD.getValue(),
-            RemoteKey.NEXT_TRACK.getValue(),
-            RemoteKey.PREVIOUS_TRACK.getValue(),
-            RemoteKey.ARROW_UP.getValue(),
-            RemoteKey.ARROW_DOWN.getValue(),
-            RemoteKey.ARROW_LEFT.getValue(),
-            RemoteKey.ARROW_RIGHT.getValue(),
-            RemoteKey.SELECT.getValue(),
-            RemoteKey.BACK.getValue(),
-            RemoteKey.EXIT.getValue(),
-            RemoteKey.PLAY_PAUSE.getValue(),
-            RemoteKey.INFORMATION.getValue()
-        );
+        return java.util.Set.of(RemoteKey.REWIND.getValue(), RemoteKey.FAST_FORWARD.getValue(),
+                RemoteKey.NEXT_TRACK.getValue(), RemoteKey.PREVIOUS_TRACK.getValue(), RemoteKey.ARROW_UP.getValue(),
+                RemoteKey.ARROW_DOWN.getValue(), RemoteKey.ARROW_LEFT.getValue(), RemoteKey.ARROW_RIGHT.getValue(),
+                RemoteKey.SELECT.getValue(), RemoteKey.BACK.getValue(), RemoteKey.EXIT.getValue(),
+                RemoteKey.PLAY_PAUSE.getValue(), RemoteKey.INFORMATION.getValue());
     }
-} 
+}

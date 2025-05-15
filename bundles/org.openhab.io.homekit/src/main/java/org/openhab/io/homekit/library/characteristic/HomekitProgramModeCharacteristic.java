@@ -1,23 +1,27 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Set;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitIntegerCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Set;
 
 /**
  * HomeKit Program Mode Characteristic.
  * <p>
- * This characteristic represents the program mode of a device, such as a thermostat, indicating whether a program is scheduled or in manual mode. The value is an integer corresponding to a specific program mode as defined by the HAP specification.
+ * This characteristic represents the program mode of a device, such as a thermostat, indicating whether a program is
+ * scheduled or in manual mode. The value is an integer corresponding to a specific program mode as defined by the HAP
+ * specification.
  * <p>
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "000000D1-0000-1000-8000-0026BB765291", name = "Program Mode", tag = "programMode")
+@HomekitCharacteristicType(type = "000000D1-0000-1000-8000-0026BB765291", name = "Program Mode", tag = "programMode", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitProgramModeCharacteristic extends HomekitIntegerCharacteristic {
     /**
@@ -27,17 +31,17 @@ public class HomekitProgramModeCharacteristic extends HomekitIntegerCharacterist
         NO_PROGRAM_SCHEDULED(0),
         PROGRAM_SCHEDULED(1),
         PROGRAM_SCHEDULED_MANUAL_MODE(2);
-        
+
         private final int code;
-        
+
         ProgramMode(int code) {
             this.code = code;
         }
-        
+
         public int getCode() {
             return code;
         }
-        
+
         public static ProgramMode fromCode(int code) {
             for (ProgramMode s : values()) {
                 if (s.code == code) {
@@ -57,11 +61,8 @@ public class HomekitProgramModeCharacteristic extends HomekitIntegerCharacterist
      */
     public HomekitProgramModeCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, 0, 2, "");
-        withInstanceId(instanceId)
-            .withPairedWrite(false)
-            .withPairedRead(true)
-            .withEvents(true)
-            .withDescription("Program Mode");
+        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
+                .withDescription("Program Mode");
     }
 
     /**
@@ -83,9 +84,9 @@ public class HomekitProgramModeCharacteristic extends HomekitIntegerCharacterist
      */
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && (value == ProgramMode.NO_PROGRAM_SCHEDULED.getCode() 
-            || value == ProgramMode.PROGRAM_SCHEDULED.getCode() 
-            || value == ProgramMode.PROGRAM_SCHEDULED_MANUAL_MODE.getCode());
+        return value != null && (value == ProgramMode.NO_PROGRAM_SCHEDULED.getCode()
+                || value == ProgramMode.PROGRAM_SCHEDULED.getCode()
+                || value == ProgramMode.PROGRAM_SCHEDULED_MANUAL_MODE.getCode());
     }
 
     /**
@@ -95,10 +96,7 @@ public class HomekitProgramModeCharacteristic extends HomekitIntegerCharacterist
      */
     @Override
     public Set<Integer> getAllowedValues() {
-        return Set.of(
-            ProgramMode.NO_PROGRAM_SCHEDULED.getCode(),
-            ProgramMode.PROGRAM_SCHEDULED.getCode(),
-            ProgramMode.PROGRAM_SCHEDULED_MANUAL_MODE.getCode()
-        );
+        return Set.of(ProgramMode.NO_PROGRAM_SCHEDULED.getCode(), ProgramMode.PROGRAM_SCHEDULED.getCode(),
+                ProgramMode.PROGRAM_SCHEDULED_MANUAL_MODE.getCode());
     }
-} 
+}

@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -14,17 +15,13 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
  * @author Karel Goderis - Initial Contribution
  */
-@HomekitCharacteristicType(type = "0000001F-0000-1000-8000-0026BB765291", name = "Logs", tag = "logs")
+@HomekitCharacteristicType(type = "0000001F-0000-1000-8000-0026BB765291", name = "Logs", tag = "logs", acceptedItemTypes = {"String"})
 @NonNullByDefault
 public class HomekitLogsCharacteristic extends HomekitTLV8Characteristic {
 
     public HomekitLogsCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedWrite(true)
-            .withPairedRead(true)
-            .withEvents(true)
-            .withDescription("Logs");
+        withInstanceId(instanceId).withPairedWrite(true).withPairedRead(true).withEvents(true).withDescription("Logs");
     }
 
     public HomekitLogsCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
@@ -86,4 +83,4 @@ public class HomekitLogsCharacteristic extends HomekitTLV8Characteristic {
     public org.openhab.core.types.State toState(java.util.Map<Integer, Object> value) {
         return null;
     }
-} 
+}

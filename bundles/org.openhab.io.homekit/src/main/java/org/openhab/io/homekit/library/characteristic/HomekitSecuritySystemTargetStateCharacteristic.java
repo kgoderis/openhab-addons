@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -15,7 +16,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000067-0000-1000-8000-0026BB765291", name = "Security System Target State", tag = "securitySystemTargetState")
+@HomekitCharacteristicType(type = "00000067-0000-1000-8000-0026BB765291", name = "Security System Target State", tag = "securitySystemTargetState", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitSecuritySystemTargetStateCharacteristic extends HomekitEnumCharacteristic {
     public enum SecuritySystemTargetState {
@@ -23,10 +24,17 @@ public class HomekitSecuritySystemTargetStateCharacteristic extends HomekitEnumC
         AWAY_ARM(1),
         NIGHT_ARM(2),
         DISARM(3);
-        
+
         private final int value;
-        SecuritySystemTargetState(int value) { this.value = value; }
-        public int getValue() { return value; }
+
+        SecuritySystemTargetState(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
         public static SecuritySystemTargetState fromValue(int value) {
             for (SecuritySystemTargetState state : values()) {
                 if (state.value == value) {
@@ -37,22 +45,22 @@ public class HomekitSecuritySystemTargetStateCharacteristic extends HomekitEnumC
         }
     }
 
-    public HomekitSecuritySystemTargetStateCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitSecuritySystemTargetStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 4);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withDescription("Security System Target State");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true)
+                .withDescription("Security System Target State");
     }
 
-    public HomekitSecuritySystemTargetStateCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitSecuritySystemTargetStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        if (value == null) return false;
+        if (value == null)
+            return false;
         try {
             SecuritySystemTargetState.fromValue(value);
             return true;
@@ -69,4 +77,4 @@ public class HomekitSecuritySystemTargetStateCharacteristic extends HomekitEnumC
         }
         return allowed;
     }
-} 
+}

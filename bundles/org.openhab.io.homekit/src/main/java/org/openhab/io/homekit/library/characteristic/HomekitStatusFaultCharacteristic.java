@@ -19,7 +19,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000077-0000-1000-8000-0026BB765291", name = "Status Fault", tag = "statusFault")
+@HomekitCharacteristicType(type = "00000077-0000-1000-8000-0026BB765291", name = "Status Fault", tag = "statusFault", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitStatusFaultCharacteristic extends HomekitEnumCharacteristic {
 
@@ -49,11 +49,8 @@ public class HomekitStatusFaultCharacteristic extends HomekitEnumCharacteristic 
 
     public HomekitStatusFaultCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, 2);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(false)
-            .withEvents(true)
-            .withDescription("Status Fault");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(true)
+                .withDescription("Status Fault");
     }
 
     public HomekitStatusFaultCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {

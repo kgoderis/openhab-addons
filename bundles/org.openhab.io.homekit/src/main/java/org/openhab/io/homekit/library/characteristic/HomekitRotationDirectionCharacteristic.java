@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -24,8 +25,15 @@ public class HomekitRotationDirectionCharacteristic extends HomekitEnumCharacter
         COUNTER_CLOCKWISE(1);
 
         private final int value;
-        RotationDirection(int value) { this.value = value; }
-        public int getValue() { return value; }
+
+        RotationDirection(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
         public static RotationDirection fromValue(int value) {
             for (RotationDirection direction : values()) {
                 if (direction.value == value) {
@@ -36,22 +44,22 @@ public class HomekitRotationDirectionCharacteristic extends HomekitEnumCharacter
         }
     }
 
-    public HomekitRotationDirectionCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitRotationDirectionCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 2);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withDescription("Rotation Direction");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true)
+                .withDescription("Rotation Direction");
     }
 
-    public HomekitRotationDirectionCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitRotationDirectionCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        if (value == null) return false;
+        if (value == null)
+            return false;
         try {
             RotationDirection.fromValue(value);
             return true;
@@ -68,4 +76,4 @@ public class HomekitRotationDirectionCharacteristic extends HomekitEnumCharacter
         }
         return allowed;
     }
-} 
+}

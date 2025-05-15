@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -27,13 +28,11 @@ public class HomekitTargetTiltAngleCharacteristic extends HomekitIntegerCharacte
      * @param eventManager The event manager for handling HomeKit events
      * @param instanceId The instance ID for this characteristic
      */
-    public HomekitTargetTiltAngleCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitTargetTiltAngleCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, -90, 90, "arcdegrees");
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withDescription("Target Tilt Angle");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true)
+                .withDescription("Target Tilt Angle");
     }
 
     /**
@@ -43,7 +42,8 @@ public class HomekitTargetTiltAngleCharacteristic extends HomekitIntegerCharacte
      * @param eventManager The event manager for handling HomeKit events
      * @param value The JSON value to initialize the characteristic with
      */
-    public HomekitTargetTiltAngleCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitTargetTiltAngleCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -56,4 +56,4 @@ public class HomekitTargetTiltAngleCharacteristic extends HomekitIntegerCharacte
     public java.util.Set<Integer> getAllowedValues() {
         return java.util.Collections.emptySet();
     }
-} 
+}

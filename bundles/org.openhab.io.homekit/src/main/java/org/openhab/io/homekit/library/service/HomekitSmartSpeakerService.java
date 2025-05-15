@@ -13,7 +13,6 @@ import org.openhab.io.homekit.library.characteristic.HomekitConfiguredNameCharac
 import org.openhab.io.homekit.library.characteristic.HomekitCurrentMediaStateCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitMuteCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitSmartSpeakerCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitTargetMediaStateCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitVolumeCharacteristic;
 
@@ -38,10 +37,7 @@ public class HomekitSmartSpeakerService extends AbstractHomekitService {
     public HomekitSmartSpeakerService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Smart Speaker")
-            .withExtensible(true)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Smart Speaker").withExtensible(true).withPrimary(false).withHidden(false);
     }
 
     /**
@@ -68,15 +64,18 @@ public class HomekitSmartSpeakerService extends AbstractHomekitService {
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         addCharacteristic(new HomekitTargetMediaStateCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitAirPlayEnableCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-                addCharacteristic(new HomekitConfiguredNameCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-                addCharacteristic(new HomekitMuteCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-                addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-                addCharacteristic(new HomekitVolumeCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(
+                new HomekitAirPlayEnableCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        addCharacteristic(
+                new HomekitConfiguredNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        addCharacteristic(new HomekitMuteCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(false));
+        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(false));
+        addCharacteristic(
+                new HomekitVolumeCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
     }
 }

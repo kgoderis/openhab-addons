@@ -16,7 +16,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis - Initial contribution
  */
 @NonNullByDefault
-@HomekitCharacteristicType(type = "00000024-0000-1000-8000-0026BB765291", name = "Obstruction Detected", tag = "obstructionDetected")
+@HomekitCharacteristicType(type = "00000024-0000-1000-8000-0026BB765291", name = "Obstruction Detected", tag = "obstructionDetected", acceptedItemTypes = {"Switch", "Contact"})
 public class HomekitObstructionDetectedCharacteristic extends HomekitBooleanCharacteristic {
 
     public HomekitObstructionDetectedCharacteristic(HomekitService service, HomekitEventManager eventManager,

@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -14,7 +15,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  * @author Karel Goderis - Initial contribution
  */
-@HomekitCharacteristicType(type = "00000073-0000-1000-8000-0026BB765291", name = "Programmable Switch Event", tag = "programmableSwitchEvent")
+@HomekitCharacteristicType(type = "00000073-0000-1000-8000-0026BB765291", name = "Programmable Switch Event", tag = "programmableSwitchEvent", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitProgrammableSwitchEventCharacteristic extends HomekitEnumCharacteristic {
     /**
@@ -30,14 +31,22 @@ public class HomekitProgrammableSwitchEventCharacteristic extends HomekitEnumCha
         DOUBLE_PRESS(1),
         /** Long press event */
         LONG_PRESS(2);
+
         private final int code;
-        ProgrammableSwitchEvent(int code) { this.code = code; }
+
+        ProgrammableSwitchEvent(int code) {
+            this.code = code;
+        }
+
         /**
          * Gets the integer code for this switch event.
          *
          * @return the integer code
          */
-        public int getCode() { return code; }
+        public int getCode() {
+            return code;
+        }
+
         /**
          * Converts an integer code to the corresponding ProgrammableSwitchEvent.
          * If no matching event is found, returns SINGLE_PRESS as default.
@@ -47,11 +56,13 @@ public class HomekitProgrammableSwitchEventCharacteristic extends HomekitEnumCha
          */
         public static ProgrammableSwitchEvent fromCode(int code) {
             for (ProgrammableSwitchEvent s : values()) {
-                if (s.code == code) return s;
+                if (s.code == code)
+                    return s;
             }
             return SINGLE_PRESS;
         }
     }
+
     /**
      * Creates a new Programmable Switch Event characteristic.
      *
@@ -59,11 +70,13 @@ public class HomekitProgrammableSwitchEventCharacteristic extends HomekitEnumCha
      * @param eventManager The event manager for handling HomeKit events
      * @param instanceId The instance ID for this characteristic
      */
-    public HomekitProgrammableSwitchEventCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitProgrammableSwitchEventCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, ProgrammableSwitchEvent.values().length);
         withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
-            .withDescription("Programmable Switch Event");
+                .withDescription("Programmable Switch Event");
     }
+
     /**
      * Creates a new Programmable Switch Event characteristic from a JSON value.
      *
@@ -71,9 +84,11 @@ public class HomekitProgrammableSwitchEventCharacteristic extends HomekitEnumCha
      * @param eventManager The event manager for handling HomeKit events
      * @param value The JSON value to initialize the characteristic with
      */
-    public HomekitProgrammableSwitchEventCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitProgrammableSwitchEventCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
+
     /**
      * Checks if the given value is a valid switch event.
      *
@@ -82,8 +97,11 @@ public class HomekitProgrammableSwitchEventCharacteristic extends HomekitEnumCha
      */
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && (value == ProgrammableSwitchEvent.SINGLE_PRESS.getCode() || value == ProgrammableSwitchEvent.DOUBLE_PRESS.getCode() || value == ProgrammableSwitchEvent.LONG_PRESS.getCode());
+        return value != null && (value == ProgrammableSwitchEvent.SINGLE_PRESS.getCode()
+                || value == ProgrammableSwitchEvent.DOUBLE_PRESS.getCode()
+                || value == ProgrammableSwitchEvent.LONG_PRESS.getCode());
     }
+
     /**
      * Gets the set of all valid switch event values.
      *
@@ -91,8 +109,10 @@ public class HomekitProgrammableSwitchEventCharacteristic extends HomekitEnumCha
      */
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(ProgrammableSwitchEvent.SINGLE_PRESS.getCode(), ProgrammableSwitchEvent.DOUBLE_PRESS.getCode(), ProgrammableSwitchEvent.LONG_PRESS.getCode());
+        return java.util.Set.of(ProgrammableSwitchEvent.SINGLE_PRESS.getCode(),
+                ProgrammableSwitchEvent.DOUBLE_PRESS.getCode(), ProgrammableSwitchEvent.LONG_PRESS.getCode());
     }
+
     /**
      * Sets the switch event value for this characteristic.
      *
@@ -102,4 +122,4 @@ public class HomekitProgrammableSwitchEventCharacteristic extends HomekitEnumCha
     public void setValue(ProgrammableSwitchEvent event) throws Exception {
         setValueInternal(event.getCode());
     }
-} 
+}

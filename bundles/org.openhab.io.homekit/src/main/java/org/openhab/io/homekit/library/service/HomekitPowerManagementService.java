@@ -31,10 +31,7 @@ public class HomekitPowerManagementService extends AbstractHomekitService {
     public HomekitPowerManagementService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Power Management")
-            .withExtensible(true)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Power Management").withExtensible(true).withPrimary(false).withHidden(false);
     }
 
     /**

@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -16,7 +17,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000036-0000-1000-8000-0026BB765291", name = "Temperature Display Units", tag = "temperatureDisplayUnits")
+@HomekitCharacteristicType(type = "00000036-0000-1000-8000-0026BB765291", name = "Temperature Display Units", tag = "temperatureDisplayUnits", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitTemperatureDisplayUnitsCharacteristic extends HomekitEnumCharacteristic {
     public enum TemperatureDisplayUnits {
@@ -43,16 +44,15 @@ public class HomekitTemperatureDisplayUnitsCharacteristic extends HomekitEnumCha
         }
     }
 
-    public HomekitTemperatureDisplayUnitsCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitTemperatureDisplayUnitsCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 2);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withDescription("Temperature Display Units");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true)
+                .withDescription("Temperature Display Units");
     }
 
-    public HomekitTemperatureDisplayUnitsCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitTemperatureDisplayUnitsCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 

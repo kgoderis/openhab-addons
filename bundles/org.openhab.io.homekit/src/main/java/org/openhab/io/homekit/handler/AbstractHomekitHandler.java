@@ -915,8 +915,8 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
                 return;
             }
 
-            Set<String> currentCharacteristicTypes = currentCharacteristics.stream()
-                    .map(HomekitCharacteristic::getInstanceType).collect(Collectors.toSet());
+            Set<String> currentCharacteristicTypes = currentCharacteristics.stream().map(HomekitCharacteristic::getType)
+                    .collect(Collectors.toSet());
 
             // Step 1: Remove channels for characteristics that no longer exist
             List<Channel> channelsToRemove = new ArrayList<>();

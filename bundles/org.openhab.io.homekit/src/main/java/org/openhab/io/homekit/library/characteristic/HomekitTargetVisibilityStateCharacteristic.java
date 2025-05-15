@@ -11,13 +11,14 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 /**
  * HomeKit Target Visibility State Characteristic.
  * <p>
- * This characteristic represents the target visibility state of a device, allowing the user to set whether the device is shown or hidden as defined by the HAP specification.
+ * This characteristic represents the target visibility state of a device, allowing the user to set whether the device
+ * is shown or hidden as defined by the HAP specification.
  * <p>
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "00000134-0000-1000-8000-0026BB765291", name = "Target Visibility State", tag = "targetVisibilityState")
+@HomekitCharacteristicType(type = "00000134-0000-1000-8000-0026BB765291", name = "Target Visibility State", tag = "targetVisibilityState", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitTargetVisibilityStateCharacteristic extends HomekitEnumCharacteristic {
     /**
@@ -35,6 +36,7 @@ public class HomekitTargetVisibilityStateCharacteristic extends HomekitEnumChara
 
         /**
          * Returns the integer code for this visibility state.
+         * 
          * @return the code
          */
         public int getCode() {
@@ -43,6 +45,7 @@ public class HomekitTargetVisibilityStateCharacteristic extends HomekitEnumChara
 
         /**
          * Returns the TargetVisibilityState enum for a given code.
+         * 
          * @param code the code
          * @return the TargetVisibilityState
          */
@@ -56,38 +59,37 @@ public class HomekitTargetVisibilityStateCharacteristic extends HomekitEnumChara
         }
     }
 
-    public HomekitTargetVisibilityStateCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitTargetVisibilityStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, TargetVisibilityState.values().length);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withDescription("Target Visibility State");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true)
+                .withDescription("Target Visibility State");
     }
 
-    public HomekitTargetVisibilityStateCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitTargetVisibilityStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
     /**
      * Checks if the given value is an allowed target visibility state.
+     * 
      * @param value the value to check
      * @return true if allowed, false otherwise
      */
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && (value == TargetVisibilityState.SHOWN.getCode() || value == TargetVisibilityState.HIDDEN.getCode());
+        return value != null
+                && (value == TargetVisibilityState.SHOWN.getCode() || value == TargetVisibilityState.HIDDEN.getCode());
     }
 
     /**
      * Returns the set of allowed target visibility state values.
+     * 
      * @return the set of allowed values
      */
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(
-            TargetVisibilityState.SHOWN.getCode(),
-            TargetVisibilityState.HIDDEN.getCode()
-        );
+        return java.util.Set.of(TargetVisibilityState.SHOWN.getCode(), TargetVisibilityState.HIDDEN.getCode());
     }
-} 
+}

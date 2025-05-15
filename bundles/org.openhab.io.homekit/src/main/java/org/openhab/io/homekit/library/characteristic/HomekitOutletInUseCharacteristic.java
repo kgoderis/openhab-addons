@@ -19,7 +19,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis - Initial contribution
  */
 @NonNullByDefault
-@HomekitCharacteristicType(type = "00000026-0000-1000-8000-0026BB765291", name = "Outlet In Use", tag = "outletInUse")
+@HomekitCharacteristicType(type = "00000026-0000-1000-8000-0026BB765291", name = "Outlet In Use", tag = "outletInUse", acceptedItemTypes = {"Switch", "Contact"})
 public class HomekitOutletInUseCharacteristic extends HomekitBooleanCharacteristic {
 
     public HomekitOutletInUseCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {

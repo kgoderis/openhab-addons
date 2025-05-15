@@ -19,7 +19,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000072-0000-1000-8000-0026BB765291", name = "Position State", tag = "positionState")
+@HomekitCharacteristicType(type = "00000072-0000-1000-8000-0026BB765291", name = "Position State", tag = "positionState", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitPositionStateCharacteristic extends HomekitEnumCharacteristic {
     public enum PositionState {
@@ -47,16 +47,15 @@ public class HomekitPositionStateCharacteristic extends HomekitEnumCharacteristi
         }
     }
 
-    public HomekitPositionStateCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitPositionStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, PositionState.values().length);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(false)
-            .withEvents(true)
-            .withDescription("Position State");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(true)
+                .withDescription("Position State");
     }
 
-    public HomekitPositionStateCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitPositionStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -111,10 +110,7 @@ public class HomekitPositionStateCharacteristic extends HomekitEnumCharacteristi
 
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(
-            PositionState.DECREASING.getValue(),
-            PositionState.INCREASING.getValue(),
-            PositionState.STOPPED.getValue()
-        );
+        return java.util.Set.of(PositionState.DECREASING.getValue(), PositionState.INCREASING.getValue(),
+                PositionState.STOPPED.getValue());
     }
 }

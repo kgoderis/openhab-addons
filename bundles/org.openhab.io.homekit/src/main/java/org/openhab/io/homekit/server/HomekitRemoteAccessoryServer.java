@@ -68,12 +68,11 @@ import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryCategory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.event.HomekitEventType;
-import org.openhab.io.homekit.api.factory.HomekitFactory;
+import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
 import org.openhab.io.homekit.api.listener.HomekitCharacteristicChangeListener;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
 import org.openhab.io.homekit.api.service.HomekitService;
-import org.openhab.io.homekit.core.accessory.AbstractHomekitAccessory;
 import org.openhab.io.homekit.core.accessory.HomekitAccessoryServerState;
 import org.openhab.io.homekit.event.core.HomekitEventSubscription;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
@@ -130,6 +129,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
     // ========== Core Dependencies ==========
     private final ScheduledExecutorService scheduler;
+    private final HomekitAccessoryFactory accessoryFactory;
 
     // ========== Component References and Locks ==========
     private Optional<HomekitClientSRP6Session> SRP6Session = Optional.empty();
@@ -147,13 +147,12 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     private final Set<HomekitEventSubscription> eventSubscriptions = new HashSet<>();
 
     // ========== Constructor ==========
-    @SuppressWarnings("null")
     public HomekitRemoteAccessoryServer(HomekitAccessoryCategory category, InetAddress address, int port,
             byte[] pairingIdentifier, byte[] secretKey, HomekitAccessoryRegistry accessoryRegistry,
             HomekitPairingRegistry pairingRegistry, HomekitEventManager eventManager,
-            Set<HomekitFactory> homekitFactories) throws HomekitConfigurationException {
-        super(category, address, port, pairingIdentifier, secretKey, accessoryRegistry, pairingRegistry, eventManager,
-                homekitFactories);
+            HomekitAccessoryFactory accessoryFactory) throws HomekitConfigurationException {
+        super(category, address, port, pairingIdentifier, secretKey, accessoryRegistry, pairingRegistry, eventManager);
+        this.accessoryFactory = accessoryFactory;
         this.setupCode = "";
         this.isPairVerified = false;
         this.scheduler = org.openhab.core.common.ThreadPoolManager.getScheduledPool("homekit-remote");
@@ -161,10 +160,10 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
     public HomekitRemoteAccessoryServer(HomekitAccessoryCategory category, InetAddress address, int port,
             HomekitAccessoryRegistry accessoryRegistry, HomekitPairingRegistry pairingRegistry,
-            HomekitEventManager eventManager, Set<HomekitFactory> homekitFactories)
+            HomekitEventManager eventManager, HomekitAccessoryFactory accessoryFactory)
             throws HomekitConfigurationException, HomekitServerException {
         this(category, address, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry,
-                eventManager, homekitFactories);
+                eventManager, accessoryFactory);
     }
 
     // ========== Core Lifecycle Methods ==========
@@ -661,7 +660,6 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     }
 
     // ========== HomekitPairing Stage Methods ==========
-    @SuppressWarnings("null")
     private void resetPairingState() {
         logger.debug("{}Resetting pairing state - Server: {}", LOG_STATE, new String(getPairingId()));
         sessionKey = null;
@@ -672,7 +670,6 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         logger.debug("{}HomekitPairing state reset completed - Server: {}", LOG_STATE, new String(getPairingId()));
     }
 
-    @SuppressWarnings("null")
     private void resetVerificationState() {
         logger.debug("'{}' : Resetting verification state", new String(getPairingId()));
         sessionKey = null;
@@ -737,7 +734,6 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         return encoder.toByteArray();
     }
 
-    @SuppressWarnings("null")
     protected byte[] doPairSetupStage1(StageResult stageResult) throws IOException, HomekitServerException {
         logger.debug("{}Starting pair setup stage 1 - Server: {}", LOG_STATE, new String(getPairingId()));
 
@@ -807,7 +803,6 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         }
     }
 
-    @SuppressWarnings("null")
     protected byte[] doPairSetupStage2(StageResult stageResult) throws IOException, HomekitServerException {
         logger.debug("{}Starting pair setup stage 2 - Server: {}", LOG_STATE, new String(getPairingId()));
 
@@ -1044,7 +1039,6 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         return encoder.toByteArray();
     }
 
-    @SuppressWarnings("null")
     protected byte[] doPairVerifyStage2(StageResult stageResult) throws IOException, HomekitServerException {
         logger.debug("{}Starting pair verify stage 2 - Server: {}", LOG_STATE, new String(getPairingId()));
 
@@ -1086,7 +1080,6 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         return sendStage(request, "/pairings");
     }
 
-    @SuppressWarnings("null")
     protected Future<StageResult> sendStage(byte[] request, String url)
             throws InterruptedException, HomekitServerException {
         URI uri = null;
@@ -1255,7 +1248,6 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
     public Collection<HomekitAccessory> getRemoteAccessories() {
         Collection<HomekitAccessory> result = new HashSet<HomekitAccessory>();
-
         if (isPaired() && isPairVerified() && isSecure()) {
             Future<ContentResult> contentFuture;
             ContentResult contentResult = null;
@@ -1274,15 +1266,13 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 JsonArray accessories = Json.createReader(new ByteArrayInputStream(contentResult.body)).readObject()
                         .getJsonArray("accessories");
                 for (JsonValue value : accessories) {
-                    result.add(new AbstractHomekitAccessory(value, eventManager, homekitFactories));
+                    result.add(accessoryFactory.createAccessoryFromTagWithValue("generic", value));
                 }
             }
         }
-
         return result;
     }
 
-    @SuppressWarnings("null")
     public boolean subscribeEvents(HomekitCharacteristic<?> characteristic, boolean subscribe) {
         if (!isPairVerified()) {
             logger.debug("{}Cannot subscribe to events - not paired - Server: {}", LOG_STATE,
@@ -1555,7 +1545,6 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     }
 
     // ========== Inner Classes ==========
-    @SuppressWarnings("null")
     protected class StageResult {
         public StageResult(DecodeResult decodeResult, Result result) {
             this.decodeResult = decodeResult;
@@ -1583,7 +1572,6 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         public HomekitErrorCode error;
     }
 
-    @SuppressWarnings("null")
     public static class ContentResult {
         @Nullable
         public Result result;

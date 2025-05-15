@@ -8,9 +8,9 @@ import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
+import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitProgrammableSwitchEventCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitProgrammableSwitchOutputStateCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 
 /**
  * Service that represents a stateful programmable switch in HomeKit.
@@ -33,10 +33,7 @@ public class HomekitStatefulProgrammableSwitchService extends AbstractHomekitSer
     public HomekitStatefulProgrammableSwitchService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Stateful Programmable Switch")
-            .withExtensible(false)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Stateful Programmable Switch").withPrimary(false).withHidden(false);
     }
 
     /**
@@ -54,17 +51,16 @@ public class HomekitStatefulProgrammableSwitchService extends AbstractHomekitSer
 
     @Override
     public void addCharacteristics() {
-        super.addCharacteristics();
         addCharacteristic(new HomekitProgrammableSwitchEventCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         addCharacteristic(new HomekitProgrammableSwitchOutputStateCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(false));
     }
 
     @Override
     public boolean isExtensible() {
         return false;
     }
-} 
+}

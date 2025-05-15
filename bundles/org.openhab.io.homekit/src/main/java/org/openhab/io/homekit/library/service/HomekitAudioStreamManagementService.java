@@ -32,10 +32,7 @@ public class HomekitAudioStreamManagementService extends AbstractHomekitService 
     public HomekitAudioStreamManagementService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Audio Stream Management")
-            .withExtensible(false)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Audio Stream Management").withPrimary(false).withHidden(false);
     }
 
     /**
@@ -53,7 +50,6 @@ public class HomekitAudioStreamManagementService extends AbstractHomekitService 
 
     @Override
     public void addCharacteristics() {
-        super.addCharacteristics();
         addCharacteristic(new HomekitSelectedAudioStreamConfigurationCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         addCharacteristic(new HomekitSupportedAudioStreamConfigurationCharacteristic(this, eventManager,
@@ -64,4 +60,4 @@ public class HomekitAudioStreamManagementService extends AbstractHomekitService 
     public boolean isExtensible() {
         return false;
     }
-} 
+}

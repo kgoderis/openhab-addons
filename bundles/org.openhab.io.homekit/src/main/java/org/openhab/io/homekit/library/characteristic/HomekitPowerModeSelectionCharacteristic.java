@@ -1,17 +1,20 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Set;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitIntegerCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Set;
 
 /**
  * HomeKit Power Mode Selection Characteristic.
  * <p>
- * This characteristic represents the power mode selection for a device, allowing the user to select between different power modes as defined by the HAP specification.
+ * This characteristic represents the power mode selection for a device, allowing the user to select between different
+ * power modes as defined by the HAP specification.
  * <p>
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
@@ -26,23 +29,25 @@ public class HomekitPowerModeSelectionCharacteristic extends HomekitIntegerChara
     public enum PowerMode {
         SHOW(0),
         HIDE(1);
-        
+
         private final int code;
-        
+
         PowerMode(int code) {
             this.code = code;
         }
-        
+
         /**
          * Returns the integer code for this power mode.
+         * 
          * @return the code
          */
         public int getCode() {
             return code;
         }
-        
+
         /**
          * Returns the PowerMode enum for a given code.
+         * 
          * @param code the code
          * @return the PowerMode
          */
@@ -56,21 +61,21 @@ public class HomekitPowerModeSelectionCharacteristic extends HomekitIntegerChara
         }
     }
 
-    public HomekitPowerModeSelectionCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitPowerModeSelectionCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 0, 1, "");
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withDescription("Power Mode Selection");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true)
+                .withDescription("Power Mode Selection");
     }
 
-    public HomekitPowerModeSelectionCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitPowerModeSelectionCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
     /**
      * Checks if the given value is an allowed power mode.
+     * 
      * @param value the value to check
      * @return true if allowed, false otherwise
      */
@@ -81,13 +86,11 @@ public class HomekitPowerModeSelectionCharacteristic extends HomekitIntegerChara
 
     /**
      * Returns the set of allowed power mode values.
+     * 
      * @return the set of allowed values
      */
     @Override
     public Set<Integer> getAllowedValues() {
-        return Set.of(
-            PowerMode.SHOW.getCode(),
-            PowerMode.HIDE.getCode()
-        );
+        return Set.of(PowerMode.SHOW.getCode(), PowerMode.HIDE.getCode());
     }
-} 
+}

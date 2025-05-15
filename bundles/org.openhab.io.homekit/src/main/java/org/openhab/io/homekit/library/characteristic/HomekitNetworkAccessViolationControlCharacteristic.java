@@ -13,7 +13,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * HomeKit Network Access Violation Control Characteristic.
- * This characteristic represents the control configuration for network access violations, as defined in the HomeKit Accessory Protocol (HAP) specification.
+ * This characteristic represents the control configuration for network access violations, as defined in the HomeKit
+ * Accessory Protocol (HAP) specification.
  *
  * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
@@ -28,15 +29,11 @@ public class HomekitNetworkAccessViolationControlCharacteristic extends HomekitT
      * @param eventManager the event manager for handling HomeKit events
      * @param instanceId the instance ID for this characteristic
      */
-    public HomekitNetworkAccessViolationControlCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitNetworkAccessViolationControlCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withTimedWrite(true)
-            .withWriteResponse(true)
-            .withDescription("Network Access Violation Control");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true).withTimedWrite(true)
+                .withWriteResponse(true).withDescription("Network Access Violation Control");
     }
 
     /**
@@ -46,7 +43,8 @@ public class HomekitNetworkAccessViolationControlCharacteristic extends HomekitT
      * @param eventManager the event manager for handling HomeKit events
      * @param value the JSON value to initialize the characteristic with
      */
-    public HomekitNetworkAccessViolationControlCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitNetworkAccessViolationControlCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -87,7 +85,8 @@ public class HomekitNetworkAccessViolationControlCharacteristic extends HomekitT
      */
     @Override
     public Map<Integer, Object> toValue(State state) {
-        throw new UnsupportedOperationException("State to TLV8 conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "State to TLV8 conversion must be implemented for the specific device.");
     }
 
     /**
@@ -95,6 +94,7 @@ public class HomekitNetworkAccessViolationControlCharacteristic extends HomekitT
      */
     @Override
     public State toState(Map<Integer, Object> value) {
-        throw new UnsupportedOperationException("TLV8 to State conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "TLV8 to State conversion must be implemented for the specific device.");
     }
-} 
+}

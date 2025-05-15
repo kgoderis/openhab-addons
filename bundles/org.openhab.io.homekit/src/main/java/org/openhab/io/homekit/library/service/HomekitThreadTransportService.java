@@ -31,10 +31,7 @@ public class HomekitThreadTransportService extends AbstractHomekitService {
     public HomekitThreadTransportService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Thread Transport")
-            .withExtensible(true)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Thread Transport").withExtensible(true).withPrimary(false).withHidden(false);
     }
 
     /**
@@ -57,7 +54,8 @@ public class HomekitThreadTransportService extends AbstractHomekitService {
     @Override
     public void addCharacteristics() {
         // Required characteristics
-        addCharacteristic(new HomekitThreadStatusCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(
+                new HomekitThreadStatusCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
     }
 }

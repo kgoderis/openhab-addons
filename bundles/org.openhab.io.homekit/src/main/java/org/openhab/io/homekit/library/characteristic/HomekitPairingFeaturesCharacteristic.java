@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -15,7 +16,12 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "0000004F-0000-1000-8000-0026BB765291", name = "Pairing Features", tag = "pairingFeatures")
+@HomekitCharacteristicType(
+    type = "0000004F-0000-1000-8000-0026BB765291",
+    name = "Pairing Features",
+    tag = "pairingFeatures",
+    acceptedItemTypes = {"Number"}
+)
 @NonNullByDefault
 public class HomekitPairingFeaturesCharacteristic extends HomekitIntegerCharacteristic {
 
@@ -27,13 +33,11 @@ public class HomekitPairingFeaturesCharacteristic extends HomekitIntegerCharacte
      * @param eventManager The event manager for handling HomeKit events
      * @param instanceId The instance ID for this characteristic
      */
-    public HomekitPairingFeaturesCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitPairingFeaturesCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 0, Integer.MAX_VALUE, "");
-        withInstanceId(instanceId)
-            .withPairedWrite(false)
-            .withPairedRead(true)
-            .withEvents(true)
-            .withDescription("Pairing Features");
+        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
+                .withDescription("Pairing Features");
     }
 
     /**
@@ -43,7 +47,8 @@ public class HomekitPairingFeaturesCharacteristic extends HomekitIntegerCharacte
      * @param eventManager The event manager for handling HomeKit events
      * @param value The JSON value to initialize the characteristic with
      */
-    public HomekitPairingFeaturesCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitPairingFeaturesCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -69,4 +74,4 @@ public class HomekitPairingFeaturesCharacteristic extends HomekitIntegerCharacte
     public java.util.Set<Integer> getAllowedValues() {
         return java.util.Collections.emptySet();
     }
-} 
+}

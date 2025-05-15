@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -20,11 +21,8 @@ public class HomekitVOCDensityCharacteristic extends HomekitFloatCharacteristic 
 
     public HomekitVOCDensityCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, 0.0, 1000.0, 1.0, "micrograms/m3");
-        withInstanceId(instanceId)
-            .withPairedWrite(false)
-            .withPairedRead(true)
-            .withEvents(true)
-            .withDescription("VOC Density");
+        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
+                .withDescription("VOC Density");
     }
 
     public HomekitVOCDensityCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
@@ -35,4 +33,4 @@ public class HomekitVOCDensityCharacteristic extends HomekitFloatCharacteristic 
     public boolean isAllowedValue(Double value) {
         return value != null && value >= 0.0 && value <= 1000.0;
     }
-} 
+}

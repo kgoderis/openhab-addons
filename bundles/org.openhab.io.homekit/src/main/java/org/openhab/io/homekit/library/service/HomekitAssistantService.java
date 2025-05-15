@@ -30,10 +30,7 @@ public class HomekitAssistantService extends AbstractHomekitService {
     public HomekitAssistantService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Assistant")
-            .withExtensible(true)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Assistant").withExtensible(true).withPrimary(false).withHidden(false);
     }
 
     /**
@@ -42,8 +39,13 @@ public class HomekitAssistantService extends AbstractHomekitService {
      */
     @Override
     public void addCharacteristics() {
-        addCharacteristic(new HomekitActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitIdentifierCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(
+                new HomekitActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
+        addCharacteristic(
+                new HomekitIdentifierCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
+        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(true));
     }
 }

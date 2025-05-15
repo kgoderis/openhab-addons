@@ -1,24 +1,29 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Map;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitTLV8Characteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Map;
-import org.openhab.core.types.State;
 
 /**
  * HomeKit Setup Endpoints Characteristic.
  * <p>
- * This characteristic represents the setup endpoints for a device in TLV8 format. It is used to configure and manage the communication endpoints for a device, such as setting up secure connections, managing device discovery, and handling device-specific configuration. The data is encoded in TLV8 format and must be interpreted according to the HAP specification.
+ * This characteristic represents the setup endpoints for a device in TLV8 format. It is used to configure and manage
+ * the communication endpoints for a device, such as setting up secure connections, managing device discovery, and
+ * handling device-specific configuration. The data is encoded in TLV8 format and must be interpreted according to the
+ * HAP specification.
  * <p>
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "00000118-0000-1000-8000-0026BB765291", name = "Setup Endpoints", tag = "setupEndpoints")
+@HomekitCharacteristicType(type = "00000118-0000-1000-8000-0026BB765291", name = "Setup Endpoints", tag = "setupEndpoints", acceptedItemTypes = {"String"})
 @NonNullByDefault
 public class HomekitSetupEndpointsCharacteristic extends HomekitTLV8Characteristic {
 
@@ -29,13 +34,11 @@ public class HomekitSetupEndpointsCharacteristic extends HomekitTLV8Characterist
      * @param eventManager the event manager for handling HomeKit events
      * @param instanceId the instance ID for this characteristic
      */
-    public HomekitSetupEndpointsCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitSetupEndpointsCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedWrite(true)
-            .withPairedRead(true)
-            .withEvents(true)
-            .withDescription("Setup Endpoints");
+        withInstanceId(instanceId).withPairedWrite(true).withPairedRead(true).withEvents(true)
+                .withDescription("Setup Endpoints");
     }
 
     /**
@@ -45,7 +48,8 @@ public class HomekitSetupEndpointsCharacteristic extends HomekitTLV8Characterist
      * @param eventManager the event manager for handling HomeKit events
      * @param value the JSON value to initialize the characteristic with
      */
-    public HomekitSetupEndpointsCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitSetupEndpointsCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -105,7 +109,8 @@ public class HomekitSetupEndpointsCharacteristic extends HomekitTLV8Characterist
      */
     @Override
     public Map<Integer, Object> toValue(State state) {
-        throw new UnsupportedOperationException("State to TLV8 conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "State to TLV8 conversion must be implemented for the specific device.");
     }
 
     /**
@@ -117,6 +122,7 @@ public class HomekitSetupEndpointsCharacteristic extends HomekitTLV8Characterist
      */
     @Override
     public State toState(Map<Integer, Object> value) {
-        throw new UnsupportedOperationException("TLV8 to State conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "TLV8 to State conversion must be implemented for the specific device.");
     }
-} 
+}

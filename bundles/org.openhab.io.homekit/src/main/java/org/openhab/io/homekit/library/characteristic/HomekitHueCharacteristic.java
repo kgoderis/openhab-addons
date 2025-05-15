@@ -19,16 +19,12 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000013-0000-1000-8000-0026BB765291", name = "Hue", tag = "hue")
+@HomekitCharacteristicType(type = "00000013-0000-1000-8000-0026BB765291", name = "Hue", tag = "hue", acceptedItemTypes = {"Number", "Color"})
 @NonNullByDefault
 public class HomekitHueCharacteristic extends HomekitFloatCharacteristic {
     public HomekitHueCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, 0.0, 360.0, 1.0, "arcdegrees");
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withDescription("Hue");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true).withDescription("Hue");
     }
 
     public HomekitHueCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {

@@ -180,4 +180,29 @@ public class HomekitBridgedAccessory implements HomekitAccessory {
     public HomekitAccessoryServer getLocalServer() {
         return localServer;
     }
+
+    @Override
+    public HomekitAccessory withLabel(String label) {
+        return remoteAccessory.withLabel(label);
+    }
+
+    @Override
+    public HomekitAccessory withSerialNumber(String serialNumber) {
+        return remoteAccessory.withSerialNumber(serialNumber);
+    }
+
+    @Override
+    public HomekitAccessory withModel(String model) {
+        return remoteAccessory.withModel(model);
+    }
+
+    @Override
+    public HomekitAccessory withManufacturer(String manufacturer) {
+        return remoteAccessory.withManufacturer(manufacturer);
+    }
+
+    @Override
+    public HomekitAccessory withExtensible(boolean isExtensible) {
+        return remoteAccessory.withExtensible(isExtensible);
+    }
 }

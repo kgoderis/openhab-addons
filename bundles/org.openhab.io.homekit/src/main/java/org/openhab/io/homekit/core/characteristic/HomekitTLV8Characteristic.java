@@ -1,10 +1,12 @@
 package org.openhab.io.homekit.core.characteristic;
 
+import java.util.Map;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Map;
 
 @NonNullByDefault
 public abstract class HomekitTLV8Characteristic extends AbstractHomekitCharacteristic<Map<Integer, Object>> {
@@ -45,4 +47,4 @@ public abstract class HomekitTLV8Characteristic extends AbstractHomekitCharacter
         // Implementers should override this for custom TLV8 JSON handling
         throw new UnsupportedOperationException("TLV8 JSON conversion not implemented");
     }
-} 
+}

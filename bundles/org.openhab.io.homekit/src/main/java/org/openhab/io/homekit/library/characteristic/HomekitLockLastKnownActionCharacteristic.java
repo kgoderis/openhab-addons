@@ -1,18 +1,21 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitIntegerCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Set;
-import java.util.HashSet;
 
 /**
  * HomeKit Lock Last Known Action Characteristic.
  * <p>
- * This characteristic represents the last known action performed on a lock, such as secured or unsecured by various means. The value is an integer corresponding to a specific action as defined by the HAP specification.
+ * This characteristic represents the last known action performed on a lock, such as secured or unsecured by various
+ * means. The value is an integer corresponding to a specific action as defined by the HAP specification.
  * <p>
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
@@ -37,12 +40,21 @@ public class HomekitLockLastKnownActionCharacteristic extends HomekitIntegerChar
         SECURED_BY_AUTO_SECURE_TIMEOUT(8),
         SECURED_PHYSICALLY(9),
         UNSECURED_PHYSICALLY(10);
+
         private final int code;
-        LockLastKnownAction(int code) { this.code = code; }
-        public int getCode() { return code; }
+
+        LockLastKnownAction(int code) {
+            this.code = code;
+        }
+
+        public int getCode() {
+            return code;
+        }
+
         public static LockLastKnownAction fromCode(int code) {
             for (LockLastKnownAction a : values()) {
-                if (a.code == code) return a;
+                if (a.code == code)
+                    return a;
             }
             return null;
         }
@@ -55,13 +67,11 @@ public class HomekitLockLastKnownActionCharacteristic extends HomekitIntegerChar
      * @param eventManager the event manager for handling HomeKit events
      * @param instanceId the instance ID for this characteristic
      */
-    public HomekitLockLastKnownActionCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitLockLastKnownActionCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 0, 10, "");
-        withInstanceId(instanceId)
-            .withPairedWrite(false)
-            .withPairedRead(true)
-            .withEvents(true)
-            .withDescription("Lock Last Known Action");
+        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
+                .withDescription("Lock Last Known Action");
     }
 
     /**
@@ -71,7 +81,8 @@ public class HomekitLockLastKnownActionCharacteristic extends HomekitIntegerChar
      * @param eventManager the event manager for handling HomeKit events
      * @param value the JSON value to initialize the characteristic with
      */
-    public HomekitLockLastKnownActionCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitLockLastKnownActionCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -99,4 +110,4 @@ public class HomekitLockLastKnownActionCharacteristic extends HomekitIntegerChar
         }
         return set;
     }
-} 
+}

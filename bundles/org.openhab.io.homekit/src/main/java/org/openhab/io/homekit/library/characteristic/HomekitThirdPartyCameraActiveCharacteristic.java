@@ -1,12 +1,14 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Set;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitIntegerCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Set;
 
 /**
  * HomeKit Third Party Camera Active Characteristic.
@@ -24,27 +26,35 @@ public class HomekitThirdPartyCameraActiveCharacteristic extends HomekitIntegerC
     public enum CameraActiveState {
         OFF(0),
         ON(1);
+
         private final int code;
-        CameraActiveState(int code) { this.code = code; }
-        public int getCode() { return code; }
+
+        CameraActiveState(int code) {
+            this.code = code;
+        }
+
+        public int getCode() {
+            return code;
+        }
+
         public static CameraActiveState fromCode(int code) {
             for (CameraActiveState s : values()) {
-                if (s.code == code) return s;
+                if (s.code == code)
+                    return s;
             }
             return OFF;
         }
     }
 
-    public HomekitThirdPartyCameraActiveCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitThirdPartyCameraActiveCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 0, 1, "");
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(false)
-            .withEvents(true)
-            .withDescription("Third Party Camera Active");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(true)
+                .withDescription("Third Party Camera Active");
     }
 
-    public HomekitThirdPartyCameraActiveCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitThirdPartyCameraActiveCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -68,4 +78,4 @@ public class HomekitThirdPartyCameraActiveCharacteristic extends HomekitIntegerC
     public Set<Integer> getAllowedValues() {
         return Set.of(CameraActiveState.OFF.getCode(), CameraActiveState.ON.getCode());
     }
-} 
+}

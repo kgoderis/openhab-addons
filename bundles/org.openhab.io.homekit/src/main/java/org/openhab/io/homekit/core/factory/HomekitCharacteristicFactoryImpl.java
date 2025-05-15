@@ -14,6 +14,7 @@ import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
@@ -30,8 +31,10 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
     private final Logger logger = LoggerFactory.getLogger(HomekitCharacteristicFactoryImpl.class);
     private final Map<String, Class<? extends HomekitCharacteristic<?>>> characteristicTypes = new ConcurrentHashMap<>();
     private final Map<String, String> tagToTypeMap = new ConcurrentHashMap<>();
+    private HomekitEventManager eventManager;
 
-    public HomekitCharacteristicFactoryImpl() {
+    public HomekitCharacteristicFactoryImpl(@Reference HomekitEventManager eventManager) {
+        this.eventManager = eventManager;
         initializeCharacteristicTypes();
     }
 
@@ -67,8 +70,7 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
     }
 
     @Override
-    public HomekitCharacteristic<?> createCharacteristic(String type, HomekitService service,
-            HomekitEventManager eventManager) {
+    public HomekitCharacteristic<?> createCharacteristic(String type, HomekitService service) {
         Class<? extends HomekitCharacteristic<?>> characteristicClass = characteristicTypes.get(type);
         if (characteristicClass == null) {
             throw new IllegalArgumentException("Unsupported characteristic type: " + type);
@@ -85,13 +87,12 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
     }
 
     @Override
-    public HomekitCharacteristic<?> createCharacteristicFromTag(String tag, HomekitService service,
-            HomekitEventManager eventManager) {
+    public HomekitCharacteristic<?> createCharacteristicFromTag(String tag, HomekitService service) {
         String type = tagToTypeMap.get(tag);
         if (type == null) {
             throw new IllegalArgumentException("No characteristic type found for tag: " + tag);
         }
-        return createCharacteristic(type, service, eventManager);
+        return createCharacteristic(type, service);
     }
 
     @Override
@@ -134,5 +135,20 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
     @Override
     public Set<String> getSupportedTags() {
         return Collections.unmodifiableSet(tagToTypeMap.keySet());
+    }
+
+    @Override
+    public String getTagFromCharacteristicType(String characteristicType) {
+        for (Map.Entry<String, String> entry : tagToTypeMap.entrySet()) {
+            if (entry.getValue().equals(characteristicType)) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public String getCharacteristicTypeFromTag(String characteristicTag) {
+        return tagToTypeMap.get(characteristicTag);
     }
 }

@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -16,7 +17,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000076-0000-1000-8000-0026BB765291", name = "Smoke Detected", tag = "smokeDetected")
+@HomekitCharacteristicType(type = "00000076-0000-1000-8000-0026BB765291", name = "Smoke Detected", tag = "smokeDetected", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitSmokeDetectedCharacteristic extends HomekitEnumCharacteristic {
     public enum SmokeDetected {
@@ -24,8 +25,15 @@ public class HomekitSmokeDetectedCharacteristic extends HomekitEnumCharacteristi
         DETECTED(1);
 
         private final int value;
-        SmokeDetected(int value) { this.value = value; }
-        public int getValue() { return value; }
+
+        SmokeDetected(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
         public static SmokeDetected fromValue(int value) {
             for (SmokeDetected state : values()) {
                 if (state.value == value) {
@@ -43,13 +51,11 @@ public class HomekitSmokeDetectedCharacteristic extends HomekitEnumCharacteristi
      * @param eventManager The event manager for handling HomeKit events
      * @param instanceId The instance ID for this characteristic
      */
-    public HomekitSmokeDetectedCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitSmokeDetectedCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 2);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(false)
-            .withEvents(true)
-            .withDescription("Smoke Detected");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(true)
+                .withDescription("Smoke Detected");
     }
 
     /**
@@ -59,13 +65,15 @@ public class HomekitSmokeDetectedCharacteristic extends HomekitEnumCharacteristi
      * @param eventManager The event manager for handling HomeKit events
      * @param value The JSON value to initialize the characteristic with
      */
-    public HomekitSmokeDetectedCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitSmokeDetectedCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        if (value == null) return false;
+        if (value == null)
+            return false;
         try {
             SmokeDetected.fromValue(value);
             return true;
@@ -82,4 +90,4 @@ public class HomekitSmokeDetectedCharacteristic extends HomekitEnumCharacteristi
         }
         return allowed;
     }
-} 
+}

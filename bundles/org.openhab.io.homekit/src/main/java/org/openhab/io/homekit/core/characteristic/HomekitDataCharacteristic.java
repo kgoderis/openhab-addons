@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.core.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
@@ -48,4 +49,4 @@ public abstract class HomekitDataCharacteristic extends AbstractHomekitCharacter
         // Implementers should override this for custom data JSON handling
         throw new UnsupportedOperationException("Data JSON conversion not implemented");
     }
-} 
+}

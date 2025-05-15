@@ -31,10 +31,7 @@ public class HomekitCameraOperatingModeService extends AbstractHomekitService {
     public HomekitCameraOperatingModeService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Camera Operating Mode")
-            .withExtensible(true)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Camera Operating Mode").withExtensible(true).withPrimary(false).withHidden(false);
     }
 
     /**

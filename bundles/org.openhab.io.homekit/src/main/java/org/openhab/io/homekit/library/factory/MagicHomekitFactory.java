@@ -11,9 +11,7 @@ import org.openhab.io.homekit.library.characteristic.HomekitHueCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitOnCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitSaturationCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitTargetTemperatureCharacteristic;
-import org.openhab.io.homekit.library.service.HomekitColorLightBulbService;
 import org.openhab.io.homekit.library.service.HomekitContactSensorService;
-import org.openhab.io.homekit.library.service.HomekitDimmableLightBulbService;
 import org.openhab.io.homekit.library.service.HomekitLightBulbService;
 import org.openhab.io.homekit.library.service.HomekitThermostatService;
 import org.openhab.io.homekit.library.service.HomekitWindowCoveringService;
@@ -26,8 +24,8 @@ public class MagicHomekitFactory extends AbstractHomekitFactory {
     protected void initializeMappers() {
         try {
             this.addService(MagicBindingConstants.THING_TYPE_ON_OFF_LIGHT, HomekitLightBulbService.class);
-            this.addService(MagicBindingConstants.THING_TYPE_DIMMABLE_LIGHT, HomekitDimmableLightBulbService.class);
-            this.addService(MagicBindingConstants.THING_TYPE_COLOR_LIGHT, HomekitColorLightBulbService.class);
+            this.addService(MagicBindingConstants.THING_TYPE_DIMMABLE_LIGHT, HomekitLightBulbService.class);
+            this.addService(MagicBindingConstants.THING_TYPE_COLOR_LIGHT, HomekitLightBulbService.class);
             this.addService(MagicBindingConstants.THING_TYPE_CONTACT_SENSOR, HomekitContactSensorService.class);
             this.addService(MagicBindingConstants.THING_TYPE_THERMOSTAT, HomekitThermostatService.class);
             this.addService(MagicBindingConstants.THING_TYPE_ROLLERSHUTTER, HomekitWindowCoveringService.class);

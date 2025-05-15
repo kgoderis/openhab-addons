@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -14,17 +15,14 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
  * @author Karel Goderis - Initial Contribution
  */
-@HomekitCharacteristicType(type = "0000011D-0000-1000-8000-0026BB765291", name = "Digital Zoom", tag = "digitalZoom")
+@HomekitCharacteristicType(type = "0000011D-0000-1000-8000-0026BB765291", name = "Digital Zoom", tag = "digitalZoom", acceptedItemTypes = {"Number"})
 @NonNullByDefault
 public class HomekitDigitalZoomCharacteristic extends HomekitFloatCharacteristic {
 
     public HomekitDigitalZoomCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, 0.0, 100.0, 0.1, "");
-        withInstanceId(instanceId)
-            .withPairedWrite(true)
-            .withPairedRead(true)
-            .withEvents(true)
-            .withDescription("Digital Zoom");
+        withInstanceId(instanceId).withPairedWrite(true).withPairedRead(true).withEvents(true)
+                .withDescription("Digital Zoom");
     }
 
     public HomekitDigitalZoomCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
@@ -42,4 +40,4 @@ public class HomekitDigitalZoomCharacteristic extends HomekitFloatCharacteristic
         // No explicit min/max in spec, but typically 0-100 is a safe default
         return value != null && value >= 0.0 && value <= 100.0;
     }
-} 
+}

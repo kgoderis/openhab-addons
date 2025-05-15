@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -14,20 +15,19 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
  * @author Karel Goderis - Initial Contribution
  */
-@HomekitCharacteristicType(type = "000000AD-0000-1000-8000-0026BB765291", name = "Reset Filter Indication", tag = "resetFilterIndication")
+@HomekitCharacteristicType(type = "000000AD-0000-1000-8000-0026BB765291", name = "Reset Filter Indication", tag = "resetFilterIndication", acceptedItemTypes = {"Number"})
 @NonNullByDefault
 public class HomekitResetFilterIndicationCharacteristic extends HomekitIntegerCharacteristic {
 
-    public HomekitResetFilterIndicationCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitResetFilterIndicationCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 1, 1, "");
-        withInstanceId(instanceId)
-            .withPairedWrite(true)
-            .withPairedRead(false)
-            .withEvents(false)
-            .withDescription("Reset Filter Indication");
+        withInstanceId(instanceId).withPairedWrite(true).withPairedRead(false).withEvents(false)
+                .withDescription("Reset Filter Indication");
     }
 
-    public HomekitResetFilterIndicationCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitResetFilterIndicationCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -51,4 +51,4 @@ public class HomekitResetFilterIndicationCharacteristic extends HomekitIntegerCh
     public java.util.Set<Integer> getAllowedValues() {
         return java.util.Set.of(1);
     }
-} 
+}

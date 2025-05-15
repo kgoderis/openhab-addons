@@ -134,12 +134,12 @@ public abstract class AbstractHomekitService implements HomekitService {
      */
     final public void initialise() {
         if (isExtensible()) {
+            addBaseCharacteristics();
             addCharacteristics();
         }
 
         @Nullable
-        HomekitCharacteristic<?> nameCharacteristic = getCharacteristic(HomekitNameCharacteristic.class)
-                .orElse(null);
+        HomekitCharacteristic<?> nameCharacteristic = getCharacteristic(HomekitNameCharacteristic.class).orElse(null);
         if (nameCharacteristic != null) {
             try {
                 ((HomekitNameCharacteristic) nameCharacteristic).setValue(name);
@@ -153,8 +153,7 @@ public abstract class AbstractHomekitService implements HomekitService {
      * Adds default characteristics to this service.
      * This method is called during initialization if the service is extensible.
      */
-    @Override
-    public void addCharacteristics() {
+    public void addBaseCharacteristics() {
         addCharacteristic(
                 new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId()));
     }
@@ -333,7 +332,7 @@ public abstract class AbstractHomekitService implements HomekitService {
         if (characteristicFactory.supportsCharacteristicType(characteristicType)) {
             try {
                 HomekitCharacteristic<?> characteristic = characteristicFactory.createCharacteristic(characteristicType,
-                        this, eventManager);
+                        this);
                 if (characteristic != null) {
                     return Optional.of(characteristic);
                 }

@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -14,7 +15,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  * @author Karel Goderis - Initial contribution
  */
-@HomekitCharacteristicType(type = "0000000E-0000-1000-8000-0026BB765291", name = "Current Door State", tag = "currentDoorState")
+@HomekitCharacteristicType(type = "0000000E-0000-1000-8000-0026BB765291", name = "Current Door State", tag = "currentDoorState", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitCurrentDoorStateCharacteristic extends HomekitEnumCharacteristic {
     /**
@@ -32,13 +33,13 @@ public class HomekitCurrentDoorStateCharacteristic extends HomekitEnumCharacteri
         CLOSING(3),
         /** Door movement has been stopped */
         STOPPED(4);
-        
+
         private final int code;
-        
+
         DoorState(int code) {
             this.code = code;
         }
-        
+
         /**
          * Gets the integer code for this door state.
          *
@@ -47,7 +48,7 @@ public class HomekitCurrentDoorStateCharacteristic extends HomekitEnumCharacteri
         public int getCode() {
             return code;
         }
-        
+
         /**
          * Converts an integer code to the corresponding DoorState.
          * If no matching state is found, returns STOPPED as default.
@@ -75,11 +76,8 @@ public class HomekitCurrentDoorStateCharacteristic extends HomekitEnumCharacteri
     public HomekitCurrentDoorStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
             long instanceId) {
         super(service, eventManager, DoorState.values().length);
-        withInstanceId(instanceId)
-            .withPairedWrite(false)
-            .withPairedRead(true)
-            .withEvents(true)
-            .withDescription("Current Door State");
+        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
+                .withDescription("Current Door State");
     }
 
     /**
@@ -112,12 +110,7 @@ public class HomekitCurrentDoorStateCharacteristic extends HomekitEnumCharacteri
      */
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(
-            DoorState.OPEN.getCode(),
-            DoorState.CLOSED.getCode(),
-            DoorState.OPENING.getCode(),
-            DoorState.CLOSING.getCode(),
-            DoorState.STOPPED.getCode()
-        );
+        return java.util.Set.of(DoorState.OPEN.getCode(), DoorState.CLOSED.getCode(), DoorState.OPENING.getCode(),
+                DoorState.CLOSING.getCode(), DoorState.STOPPED.getCode());
     }
-} 
+}

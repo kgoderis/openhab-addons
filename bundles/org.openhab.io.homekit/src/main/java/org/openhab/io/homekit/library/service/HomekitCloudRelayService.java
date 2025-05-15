@@ -33,10 +33,7 @@ public class HomekitCloudRelayService extends AbstractHomekitService {
     public HomekitCloudRelayService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Cloud Relay")
-            .withExtensible(true)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Cloud Relay").withExtensible(true).withPrimary(false).withHidden(false);
     }
 
     /**
@@ -61,9 +58,11 @@ public class HomekitCloudRelayService extends AbstractHomekitService {
         // Required characteristics
         addCharacteristic(new HomekitRelayControlPointCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-                addCharacteristic(new HomekitRelayStateCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-                addCharacteristic(new HomekitRelayEnabledCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(
+                new HomekitRelayStateCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
+        addCharacteristic(
+                new HomekitRelayEnabledCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
     }
 }

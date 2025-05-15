@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -14,9 +15,15 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * COMPONENT_VIDEO, DVI, AIRPLAY, USB, or APPLICATION.
  *
  * @author Karel Goderis
- * @see <a href="https://developer.apple.com/documentation/homekit/hap-characteristic-types/input-source-type">HAP Specification</a>
+ * @see <a href="https://developer.apple.com/documentation/homekit/hap-characteristic-types/input-source-type">HAP
+ *      Specification</a>
  */
-@HomekitCharacteristicType(type = "000000DB-0000-1000-8000-0026BB765291", name = "Input Source Type", tag = "inputSourceType")
+@HomekitCharacteristicType(
+    type = "000000DB-0000-1000-8000-0026BB765291",
+    name = "Input Source Type",
+    tag = "inputSourceType",
+    acceptedItemTypes = {"Number", "String"}
+)
 @NonNullByDefault
 public class HomekitInputSourceTypeCharacteristic extends HomekitEnumCharacteristic {
     public enum InputSourceType {
@@ -52,39 +59,31 @@ public class HomekitInputSourceTypeCharacteristic extends HomekitEnumCharacteris
         }
     }
 
-    public HomekitInputSourceTypeCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitInputSourceTypeCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, InputSourceType.values().length);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(false)
-            .withEvents(true)
-            .withDescription("Input Source Type");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(true)
+                .withDescription("Input Source Type");
     }
 
-    public HomekitInputSourceTypeCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitInputSourceTypeCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && value >= InputSourceType.OTHER.getValue() 
-            && value <= InputSourceType.APPLICATION.getValue();
+        return value != null && value >= InputSourceType.OTHER.getValue()
+                && value <= InputSourceType.APPLICATION.getValue();
     }
 
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(
-            InputSourceType.OTHER.getValue(),
-            InputSourceType.HOME_SCREEN.getValue(),
-            InputSourceType.TUNER.getValue(),
-            InputSourceType.HDMI.getValue(),
-            InputSourceType.COMPOSITE_VIDEO.getValue(),
-            InputSourceType.S_VIDEO.getValue(),
-            InputSourceType.COMPONENT_VIDEO.getValue(),
-            InputSourceType.DVI.getValue(),
-            InputSourceType.AIRPLAY.getValue(),
-            InputSourceType.USB.getValue(),
-            InputSourceType.APPLICATION.getValue()
-        );
+        return java.util.Set.of(InputSourceType.OTHER.getValue(), InputSourceType.HOME_SCREEN.getValue(),
+                InputSourceType.TUNER.getValue(), InputSourceType.HDMI.getValue(),
+                InputSourceType.COMPOSITE_VIDEO.getValue(), InputSourceType.S_VIDEO.getValue(),
+                InputSourceType.COMPONENT_VIDEO.getValue(), InputSourceType.DVI.getValue(),
+                InputSourceType.AIRPLAY.getValue(), InputSourceType.USB.getValue(),
+                InputSourceType.APPLICATION.getValue());
     }
-} 
+}

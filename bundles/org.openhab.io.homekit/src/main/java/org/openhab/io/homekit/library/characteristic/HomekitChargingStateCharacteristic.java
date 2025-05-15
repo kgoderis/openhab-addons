@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -14,7 +15,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  * @author Karel Goderis - Initial contribution
  */
-@HomekitCharacteristicType(type = "0000008F-0000-1000-8000-0026BB765291", name = "Charging State", tag = "chargingState")
+@HomekitCharacteristicType(type = "0000008F-0000-1000-8000-0026BB765291", name = "Charging State", tag = "chargingState", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitChargingStateCharacteristic extends HomekitEnumCharacteristic {
     /**
@@ -27,14 +28,22 @@ public class HomekitChargingStateCharacteristic extends HomekitEnumCharacteristi
         NOT_CHARGING(0),
         CHARGING(1),
         NOT_CHARGEABLE(2);
+
         private final int code;
-        ChargingState(int code) { this.code = code; }
+
+        ChargingState(int code) {
+            this.code = code;
+        }
+
         /**
          * Gets the integer code for this charging state.
          *
          * @return the integer code
          */
-        public int getCode() { return code; }
+        public int getCode() {
+            return code;
+        }
+
         /**
          * Converts an integer code to the corresponding ChargingState.
          * If no matching state is found, returns NOT_CHARGING as default.
@@ -44,11 +53,13 @@ public class HomekitChargingStateCharacteristic extends HomekitEnumCharacteristi
          */
         public static ChargingState fromCode(int code) {
             for (ChargingState s : values()) {
-                if (s.code == code) return s;
+                if (s.code == code)
+                    return s;
             }
             return NOT_CHARGING;
         }
     }
+
     /**
      * Creates a new Charging State characteristic.
      *
@@ -56,11 +67,13 @@ public class HomekitChargingStateCharacteristic extends HomekitEnumCharacteristi
      * @param eventManager The event manager for handling HomeKit events
      * @param instanceId The instance ID for this characteristic
      */
-    public HomekitChargingStateCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitChargingStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, ChargingState.values().length);
         withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
-            .withDescription("Charging State");
+                .withDescription("Charging State");
     }
+
     /**
      * Creates a new Charging State characteristic from a JSON value.
      *
@@ -68,9 +81,11 @@ public class HomekitChargingStateCharacteristic extends HomekitEnumCharacteristi
      * @param eventManager The event manager for handling HomeKit events
      * @param value The JSON value to initialize the characteristic with
      */
-    public HomekitChargingStateCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitChargingStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
+
     /**
      * Checks if the given value is a valid charging state.
      *
@@ -79,8 +94,10 @@ public class HomekitChargingStateCharacteristic extends HomekitEnumCharacteristi
      */
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && (value == ChargingState.NOT_CHARGING.getCode() || value == ChargingState.CHARGING.getCode() || value == ChargingState.NOT_CHARGEABLE.getCode());
+        return value != null && (value == ChargingState.NOT_CHARGING.getCode()
+                || value == ChargingState.CHARGING.getCode() || value == ChargingState.NOT_CHARGEABLE.getCode());
     }
+
     /**
      * Gets the set of all valid charging state values.
      *
@@ -88,8 +105,10 @@ public class HomekitChargingStateCharacteristic extends HomekitEnumCharacteristi
      */
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(ChargingState.NOT_CHARGING.getCode(), ChargingState.CHARGING.getCode(), ChargingState.NOT_CHARGEABLE.getCode());
+        return java.util.Set.of(ChargingState.NOT_CHARGING.getCode(), ChargingState.CHARGING.getCode(),
+                ChargingState.NOT_CHARGEABLE.getCode());
     }
+
     /**
      * Sets the charging state value for this characteristic.
      *
@@ -99,4 +118,4 @@ public class HomekitChargingStateCharacteristic extends HomekitEnumCharacteristi
     public void setValue(ChargingState state) throws Exception {
         setValueInternal(state.getCode());
     }
-} 
+}

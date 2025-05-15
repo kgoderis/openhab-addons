@@ -2,9 +2,6 @@ package org.openhab.io.homekit.provider;
 
 import java.util.Collection;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -15,13 +12,10 @@ import org.openhab.core.thing.binding.ThingTypeProvider;
 import org.openhab.core.thing.type.ChannelGroupTypeUID;
 import org.openhab.core.thing.type.ThingType;
 import org.openhab.core.thing.type.ThingTypeBuilder;
-import org.openhab.io.homekit.api.factory.HomekitFactory;
-import org.openhab.io.homekit.exception.HomekitException;
+import org.openhab.io.homekit.api.factory.HomekitServiceFactory;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,12 +36,15 @@ import org.slf4j.LoggerFactory;
 @Component(service = { ThingTypeProvider.class })
 public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
     private final Logger logger = LoggerFactory.getLogger(HomekitThingTypeProvider.class);
-    private final Map<String, HomekitFactory> homekitFactories = new ConcurrentHashMap<>();
+    private final HomekitServiceFactory homekitServiceFactory;
 
     @Activate
-    public HomekitThingTypeProvider(@Reference StorageService storageService) {
+    public HomekitThingTypeProvider(@Reference StorageService storageService,
+            @Reference HomekitServiceFactory homekitServiceFactory) {
         super(storageService);
+        this.homekitServiceFactory = homekitServiceFactory;
         addFactoryIndependentThingTypes();
+        addFactoryDependentThingTypes();
     }
 
     private void addFactoryIndependentThingTypes() {
@@ -68,33 +65,40 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
         logger.debug("Created ThingType {} for Homekit", thingTypeUID);
     }
 
-    @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
-    protected void addHomekitFactory(HomekitFactory homekitFactory) {
-        // Add all supported service types from this factory
-        Set<String> serviceTypes = homekitFactory.getSupportedServiceTypes();
-        for (String serviceType : serviceTypes) {
-            homekitFactories.put(serviceType, homekitFactory);
-
-            // Create and store thing type for this service
-            createThingTypeForService(serviceType, homekitFactory);
+    private void addFactoryDependentThingTypes() {
+        // Add thing types for services that are factory-specific
+        for (String serviceType : homekitServiceFactory.getSupportedServiceTypes()) {
+            createThingTypeForService(serviceType);
         }
     }
 
-    protected void removeHomekitFactory(HomekitFactory homekitFactory) {
-        // Remove all thing types from this factory
-        Set<String> serviceTypes = homekitFactory.getSupportedServiceTypes();
-        for (String serviceType : serviceTypes) {
-            homekitFactories.remove(serviceType);
+    // @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
+    // protected void addHomekitFactory(HomekitFactory homekitFactory) {
+    // // Add all supported service types from this factory
+    // Set<String> serviceTypes = homekitFactory.getSupportedServiceTypes();
+    // for (String serviceType : serviceTypes) {
+    // homekitFactories.put(serviceType, homekitFactory);
 
-            // Remove the thing type
-            ThingTypeUID thingTypeUID = getThingTypeUID(serviceType);
-            if (thingTypeUID != null) {
-                removeThingType(thingTypeUID);
-            }
-        }
-    }
+    // // Create and store thing type for this service
+    // createThingTypeForService(serviceType, homekitFactory);
+    // }
+    // }
 
-    private void createThingTypeForService(String serviceType, HomekitFactory homekitFactory) {
+    // protected void removeHomekitFactory(HomekitFactory homekitFactory) {
+    // // Remove all thing types from this factory
+    // Set<String> serviceTypes = homekitFactory.getSupportedServiceTypes();
+    // for (String serviceType : serviceTypes) {
+    // homekitFactories.remove(serviceType);
+
+    // // Remove the thing type
+    // ThingTypeUID thingTypeUID = getThingTypeUID(serviceType);
+    // if (thingTypeUID != null) {
+    // removeThingType(thingTypeUID);
+    // }
+    // }
+    // }
+
+    private void createThingTypeForService(String serviceType) {
         // Create a unique ID for the thing type
         ThingTypeUID thingTypeUID = getThingTypeUID(serviceType);
         if (thingTypeUID == null) {
@@ -103,7 +107,7 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
         }
 
         // Get the service class to determine the service name
-        String serviceName = homekitFactory.getTagFromServiceType(serviceType);
+        String serviceName = homekitServiceFactory.getTagFromServiceType(serviceType);
 
         // Create the thing type
         ThingType thingType = ThingTypeBuilder.instance(thingTypeUID, serviceName)
@@ -173,27 +177,27 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
         return super.getThingType(thingTypeUID, locale);
     }
 
-    public String getServiceTag(String serviceType) throws HomekitException {
-        // find the factory that supports the service
-        @Nullable
-        HomekitFactory factory = homekitFactories.get(serviceType);
-        if (factory != null) {
-            String tag = factory.getTagFromServiceType(serviceType);
-            if (tag != null) {
-                return tag;
-            }
-        }
-        throw new HomekitException("No factory found for service type: " + serviceType);
-    }
+    // public String getServiceTag(String serviceType) throws HomekitException {
+    // // find the factory that supports the service
+    // @Nullable
+    // HomekitFactory factory = homekitFactories.get(serviceType);
+    // if (factory != null) {
+    // String tag = factory.getTagFromServiceType(serviceType);
+    // if (tag != null) {
+    // return tag;
+    // }
+    // }
+    // throw new HomekitException("No factory found for service type: " + serviceType);
+    // }
 
-    public String getServiceTypeFromTag(String tag) throws HomekitException {
-        // find the factory that supports the tag
-        for (HomekitFactory factory : homekitFactories.values()) {
-            String serviceType = factory.getServiceTypeFromTag(tag);
-            if (serviceType != null) {
-                return serviceType;
-            }
-        }
-        throw new HomekitException("No service type found for tag: " + tag);
-    }
+    // public String getServiceTypeFromTag(String tag) throws HomekitException {
+    // // find the factory that supports the tag
+    // for (HomekitFactory factory : homekitFactories.values()) {
+    // String serviceType = factory.getServiceTypeFromTag(tag);
+    // if (serviceType != null) {
+    // return serviceType;
+    // }
+    // }
+    // throw new HomekitException("No service type found for tag: " + tag);
+    // }
 }

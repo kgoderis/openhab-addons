@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -15,7 +16,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  * @author Karel Goderis - Initial contribution
  */
-@HomekitCharacteristicType(type = "00000069-0000-1000-8000-0026BB765291", name = "Carbon Monoxide Detected", tag = "carbonMonoxideDetected")
+@HomekitCharacteristicType(type = "00000069-0000-1000-8000-0026BB765291", name = "Carbon Monoxide Detected", tag = "carbonMonoxideDetected", acceptedItemTypes = {"Number", "String", "Contact"})
 @NonNullByDefault
 public class HomekitCarbonMonoxideDetectedCharacteristic extends HomekitEnumCharacteristic {
 
@@ -50,10 +51,11 @@ public class HomekitCarbonMonoxideDetectedCharacteristic extends HomekitEnumChar
      * @param eventManager The event manager for handling HomeKit events
      * @param instanceId The instance ID for this characteristic
      */
-    public HomekitCarbonMonoxideDetectedCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitCarbonMonoxideDetectedCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, CarbonMonoxideDetected.values().length);
         withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
-            .withDescription("Carbon Monoxide Detected");
+                .withDescription("Carbon Monoxide Detected");
     }
 
     /**
@@ -63,19 +65,20 @@ public class HomekitCarbonMonoxideDetectedCharacteristic extends HomekitEnumChar
      * @param eventManager The event manager for handling HomeKit events
      * @param value The JSON value to initialize the characteristic with
      */
-    public HomekitCarbonMonoxideDetectedCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitCarbonMonoxideDetectedCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && (value == CarbonMonoxideDetected.NOT_DETECTED.getCode() || 
-                                value == CarbonMonoxideDetected.DETECTED.getCode());
+        return value != null && (value == CarbonMonoxideDetected.NOT_DETECTED.getCode()
+                || value == CarbonMonoxideDetected.DETECTED.getCode());
     }
 
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(CarbonMonoxideDetected.NOT_DETECTED.getCode(), 
-                              CarbonMonoxideDetected.DETECTED.getCode());
+        return java.util.Set.of(CarbonMonoxideDetected.NOT_DETECTED.getCode(),
+                CarbonMonoxideDetected.DETECTED.getCode());
     }
-} 
+}

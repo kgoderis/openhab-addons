@@ -31,10 +31,7 @@ public class HomekitDiagnosticsService extends AbstractHomekitService {
     public HomekitDiagnosticsService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Diagnostics")
-            .withExtensible(true)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Diagnostics").withExtensible(true).withPrimary(false).withHidden(false);
     }
 
     /**

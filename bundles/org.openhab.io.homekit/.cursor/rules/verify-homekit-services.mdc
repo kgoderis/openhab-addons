@@ -113,6 +113,7 @@ public class HomekitServiceName extends AbstractHomekitService {
 - [ ] Characteristic initialization handled in initialise() method
 - [ ] Every file verified needs to be "saved" so that its last modified date gets updated
 - [ ] Replace full qualified classes with proper imports
-- [ ] Check that all Characteristics are added
+- [ ] Check that all mandatory Characteristics are added
+- [ ] Check that all optional Characteristics are added
 - [ ] All linter errors are fixed
 - [ ] The file is "touched" to update the Modified Date of the file

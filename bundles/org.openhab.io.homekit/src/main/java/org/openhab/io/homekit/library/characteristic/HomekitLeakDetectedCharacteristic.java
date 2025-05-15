@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -15,7 +16,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  * @author Karel Goderis - Initial contribution
  */
-@HomekitCharacteristicType(type = "00000070-0000-1000-8000-0026BB765291", name = "Leak Detected", tag = "leakDetected")
+@HomekitCharacteristicType(type = "00000070-0000-1000-8000-0026BB765291", name = "Leak Detected", tag = "leakDetected", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitLeakDetectedCharacteristic extends HomekitEnumCharacteristic {
 
@@ -43,25 +44,26 @@ public class HomekitLeakDetectedCharacteristic extends HomekitEnumCharacteristic
         }
     }
 
-    public HomekitLeakDetectedCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitLeakDetectedCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, LeakDetected.values().length);
         withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
-            .withDescription("Leak Detected");
+                .withDescription("Leak Detected");
     }
 
-    public HomekitLeakDetectedCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitLeakDetectedCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && (value == LeakDetected.LEAK_NOT_DETECTED.getCode() || 
-                                value == LeakDetected.LEAK_DETECTED.getCode());
+        return value != null
+                && (value == LeakDetected.LEAK_NOT_DETECTED.getCode() || value == LeakDetected.LEAK_DETECTED.getCode());
     }
 
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(LeakDetected.LEAK_NOT_DETECTED.getCode(), 
-                               LeakDetected.LEAK_DETECTED.getCode());
+        return java.util.Set.of(LeakDetected.LEAK_NOT_DETECTED.getCode(), LeakDetected.LEAK_DETECTED.getCode());
     }
-} 
+}

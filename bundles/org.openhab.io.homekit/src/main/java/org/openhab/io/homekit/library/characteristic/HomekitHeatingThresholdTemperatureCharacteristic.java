@@ -1,6 +1,9 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Set;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
@@ -8,18 +11,18 @@ import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitFloatCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Set;
 
 /**
  * HomeKit Heating Threshold Temperature Characteristic.
  * <p>
- * This characteristic represents the heating threshold temperature for a thermostat or similar device, expressed in degrees Celsius. The value is a floating-point number and is used to determine when heating should be activated.
+ * This characteristic represents the heating threshold temperature for a thermostat or similar device, expressed in
+ * degrees Celsius. The value is a floating-point number and is used to determine when heating should be activated.
  * <p>
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "00000012-0000-1000-8000-0026BB765291", name = "Heating Threshold Temperature", tag = "heatingThresholdTemperature")
+@HomekitCharacteristicType(type = "00000012-0000-1000-8000-0026BB765291", name = "Heating Threshold Temperature", tag = "heatingThresholdTemperature", acceptedItemTypes = {"Number"})
 @NonNullByDefault
 public class HomekitHeatingThresholdTemperatureCharacteristic extends HomekitFloatCharacteristic {
 
@@ -30,13 +33,11 @@ public class HomekitHeatingThresholdTemperatureCharacteristic extends HomekitFlo
      * @param eventManager the event manager for handling HomeKit events
      * @param instanceId the instance ID for this characteristic
      */
-    public HomekitHeatingThresholdTemperatureCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitHeatingThresholdTemperatureCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 0.0, 25.0, 0.1, "celcius");
-        withInstanceId(instanceId)
-            .withPairedWrite(true)
-            .withPairedRead(true)
-            .withEvents(true)
-            .withDescription("Heating Threshold Temperature");
+        withInstanceId(instanceId).withPairedWrite(true).withPairedRead(true).withEvents(true)
+                .withDescription("Heating Threshold Temperature");
     }
 
     /**
@@ -46,7 +47,8 @@ public class HomekitHeatingThresholdTemperatureCharacteristic extends HomekitFlo
      * @param eventManager the event manager for handling HomeKit events
      * @param value the JSON value to initialize the characteristic with
      */
-    public HomekitHeatingThresholdTemperatureCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitHeatingThresholdTemperatureCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -84,4 +86,4 @@ public class HomekitHeatingThresholdTemperatureCharacteristic extends HomekitFlo
     public State toState(Double value) {
         return new DecimalType(value);
     }
-} 
+}

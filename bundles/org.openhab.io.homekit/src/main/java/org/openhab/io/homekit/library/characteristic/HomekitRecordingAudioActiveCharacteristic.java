@@ -1,12 +1,14 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Set;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitIntegerCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Set;
 
 /**
  * HomeKit Recording Audio Active Characteristic.
@@ -24,28 +26,35 @@ public class HomekitRecordingAudioActiveCharacteristic extends HomekitIntegerCha
     public enum RecordingAudioState {
         DISABLE(0),
         ENABLE(1);
+
         private final int code;
-        RecordingAudioState(int code) { this.code = code; }
-        public int getCode() { return code; }
+
+        RecordingAudioState(int code) {
+            this.code = code;
+        }
+
+        public int getCode() {
+            return code;
+        }
+
         public static RecordingAudioState fromCode(int code) {
             for (RecordingAudioState s : values()) {
-                if (s.code == code) return s;
+                if (s.code == code)
+                    return s;
             }
             return DISABLE;
         }
     }
 
-    public HomekitRecordingAudioActiveCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitRecordingAudioActiveCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 0, 1, "");
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withTimedWrite(true)
-            .withDescription("Recording Audio Active");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true).withTimedWrite(true)
+                .withDescription("Recording Audio Active");
     }
 
-    public HomekitRecordingAudioActiveCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitRecordingAudioActiveCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -57,7 +66,8 @@ public class HomekitRecordingAudioActiveCharacteristic extends HomekitIntegerCha
      */
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && (value == RecordingAudioState.DISABLE.getCode() || value == RecordingAudioState.ENABLE.getCode());
+        return value != null
+                && (value == RecordingAudioState.DISABLE.getCode() || value == RecordingAudioState.ENABLE.getCode());
     }
 
     /**
@@ -69,4 +79,4 @@ public class HomekitRecordingAudioActiveCharacteristic extends HomekitIntegerCha
     public Set<Integer> getAllowedValues() {
         return Set.of(RecordingAudioState.DISABLE.getCode(), RecordingAudioState.ENABLE.getCode());
     }
-} 
+}

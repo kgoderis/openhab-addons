@@ -1,13 +1,15 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Map;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitTLV8Characteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Map;
-import org.openhab.core.types.State;
 
 /**
  * HomeKit Characteristic Value Transition Control Characteristic.
@@ -16,19 +18,18 @@ import org.openhab.core.types.State;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000143-0000-1000-8000-0026BB765291", name = "Characteristic Value Transition Control", tag = "characteristicValueTransitionControl")
+@HomekitCharacteristicType(type = "00000143-0000-1000-8000-0026BB765291", name = "Characteristic Value Transition Control", tag = "characteristicValueTransitionControl", acceptedItemTypes = {"String"})
 @NonNullByDefault
 public class HomekitCharacteristicValueTransitionControlCharacteristic extends HomekitTLV8Characteristic {
-    public HomekitCharacteristicValueTransitionControlCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitCharacteristicValueTransitionControlCharacteristic(HomekitService service,
+            HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withDescription("Characteristic Value Transition Control");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true)
+                .withDescription("Characteristic Value Transition Control");
     }
 
-    public HomekitCharacteristicValueTransitionControlCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitCharacteristicValueTransitionControlCharacteristic(HomekitService service,
+            HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -54,11 +55,13 @@ public class HomekitCharacteristicValueTransitionControlCharacteristic extends H
 
     @Override
     public Map<Integer, Object> toValue(State state) {
-        throw new UnsupportedOperationException("State to TLV8 conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "State to TLV8 conversion must be implemented for the specific device.");
     }
 
     @Override
     public State toState(Map<Integer, Object> value) {
-        throw new UnsupportedOperationException("TLV8 to State conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "TLV8 to State conversion must be implemented for the specific device.");
     }
-} 
+}

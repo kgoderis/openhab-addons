@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -14,20 +15,19 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
  * @author Karel Goderis - Initial Contribution
  */
-@HomekitCharacteristicType(type = "00000094-0000-1000-8000-0026BB765291", name = "Carbon Dioxide Peak Level", tag = "carbonDioxidePeakLevel")
+@HomekitCharacteristicType(type = "00000094-0000-1000-8000-0026BB765291", name = "Carbon Dioxide Peak Level", tag = "carbonDioxidePeakLevel", acceptedItemTypes = {"Number"})
 @NonNullByDefault
 public class HomekitCarbonDioxidePeakLevelCharacteristic extends HomekitFloatCharacteristic {
 
-    public HomekitCarbonDioxidePeakLevelCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitCarbonDioxidePeakLevelCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 0.0, 10000.0, 1.0, "");
-        withInstanceId(instanceId)
-            .withPairedWrite(false)
-            .withPairedRead(true)
-            .withEvents(true)
-            .withDescription("Carbon Dioxide Peak Level");
+        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
+                .withDescription("Carbon Dioxide Peak Level");
     }
 
-    public HomekitCarbonDioxidePeakLevelCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitCarbonDioxidePeakLevelCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -40,4 +40,4 @@ public class HomekitCarbonDioxidePeakLevelCharacteristic extends HomekitFloatCha
     public java.util.Set<Double> getAllowedValues() {
         return java.util.Collections.emptySet();
     }
-} 
+}

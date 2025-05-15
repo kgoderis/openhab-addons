@@ -32,10 +32,7 @@ public class HomekitProtocolInformationService extends AbstractHomekitService {
     public HomekitProtocolInformationService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Protocol Information")
-            .withExtensible(false)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Protocol Information").withPrimary(false).withHidden(false);
     }
 
     /**
@@ -53,16 +50,16 @@ public class HomekitProtocolInformationService extends AbstractHomekitService {
 
     @Override
     public void addCharacteristics() {
-        super.addCharacteristics();
-        addCharacteristic(new HomekitVersionCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(
+                new HomekitVersionCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
         // Uncomment below if SoftwareUpdate characteristic is available
         // addCharacteristic(new HomekitSoftwareUpdateCharacteristic(this, eventManager,
-        //        getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        // getAccessory().getNextAvailableInstanceId()).withMandatory(false));
     }
 
     @Override
     public boolean isExtensible() {
         return false;
     }
-} 
+}

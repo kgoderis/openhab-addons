@@ -16,18 +16,15 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "0000007B-0000-1000-8000-0026BB765291", name = "Target Horizontal Tilt Angle", tag = "targetHorizontalTiltAngle")
+@HomekitCharacteristicType(type = "0000007B-0000-1000-8000-0026BB765291", name = "Target Horizontal Tilt Angle", tag = "targetHorizontalTiltAngle", acceptedItemTypes = {"Number", "Rollershutter"})
 @NonNullByDefault
 public class HomekitTargetHorizontalTiltAngleCharacteristic extends HomekitIntegerCharacteristic {
 
     public HomekitTargetHorizontalTiltAngleCharacteristic(HomekitService service, HomekitEventManager eventManager,
             long instanceId) {
         super(service, eventManager, -90, 90, "arcdegrees");
-        withInstanceId(instanceId)
-            .withPairedWrite(true)
-            .withPairedRead(true)
-            .withEvents(true)
-            .withDescription("Target Horizontal Tilt Angle");
+        withInstanceId(instanceId).withPairedWrite(true).withPairedRead(true).withEvents(true)
+                .withDescription("Target Horizontal Tilt Angle");
     }
 
     public HomekitTargetHorizontalTiltAngleCharacteristic(HomekitService service, HomekitEventManager eventManager,

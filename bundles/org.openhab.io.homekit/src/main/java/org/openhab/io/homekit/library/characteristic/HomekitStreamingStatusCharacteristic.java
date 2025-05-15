@@ -1,25 +1,28 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Map;
+import java.util.Set;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitTLV8Characteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Map;
-import org.openhab.core.types.State;
-import java.util.Set;
 
 /**
  * HomeKit Streaming Status Characteristic.
  * <p>
- * This characteristic represents the streaming status for a device, indicating whether streaming is available, active, or busy. The value is encoded as TLV8 and must be interpreted according to the HAP specification.
+ * This characteristic represents the streaming status for a device, indicating whether streaming is available, active,
+ * or busy. The value is encoded as TLV8 and must be interpreted according to the HAP specification.
  * <p>
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "00000120-0000-1000-8000-0026BB765291", name = "Streaming Status", tag = "streamingStatus")
+@HomekitCharacteristicType(type = "00000120-0000-1000-8000-0026BB765291", name = "Streaming Status", tag = "streamingStatus", acceptedItemTypes = {"String"})
 @NonNullByDefault
 public class HomekitStreamingStatusCharacteristic extends HomekitTLV8Characteristic {
     public enum StreamingStatus {
@@ -54,13 +57,11 @@ public class HomekitStreamingStatusCharacteristic extends HomekitTLV8Characteris
      * @param eventManager the event manager for handling HomeKit events
      * @param instanceId the instance ID for this characteristic
      */
-    public HomekitStreamingStatusCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitStreamingStatusCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedWrite(false)
-            .withPairedRead(true)
-            .withEvents(true)
-            .withDescription("Streaming Status");
+        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
+                .withDescription("Streaming Status");
     }
 
     /**
@@ -70,7 +71,8 @@ public class HomekitStreamingStatusCharacteristic extends HomekitTLV8Characteris
      * @param eventManager the event manager for handling HomeKit events
      * @param value the JSON value to initialize the characteristic with
      */
-    public HomekitStreamingStatusCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitStreamingStatusCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -154,4 +156,4 @@ public class HomekitStreamingStatusCharacteristic extends HomekitTLV8Characteris
     public Set<Map<Integer, Object>> getAllowedValues() {
         return Set.of();
     }
-} 
+}

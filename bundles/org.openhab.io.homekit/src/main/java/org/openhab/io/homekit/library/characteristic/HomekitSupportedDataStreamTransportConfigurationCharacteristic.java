@@ -1,24 +1,27 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Map;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitTLV8Characteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Map;
-import org.openhab.core.types.State;
 
 /**
  * HomeKit Supported Data Stream Transport Configuration Characteristic.
  * <p>
- * This characteristic represents the supported data stream transport configuration for a device, as defined in the HomeKit Accessory Protocol (HAP) specification.
+ * This characteristic represents the supported data stream transport configuration for a device, as defined in the
+ * HomeKit Accessory Protocol (HAP) specification.
  * <p>
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "00000130-0000-1000-8000-0026BB765291", name = "Supported Data Stream Transport Configuration", tag = "supportedDataStreamTransportConfiguration")
+@HomekitCharacteristicType(type = "00000130-0000-1000-8000-0026BB765291", name = "Supported Data Stream Transport Configuration", tag = "supportedDataStreamTransportConfiguration", acceptedItemTypes = {"String"})
 @NonNullByDefault
 public class HomekitSupportedDataStreamTransportConfigurationCharacteristic extends HomekitTLV8Characteristic {
     /**
@@ -28,11 +31,11 @@ public class HomekitSupportedDataStreamTransportConfigurationCharacteristic exte
      * @param eventManager the event manager
      * @param instanceId the instance id
      */
-    public HomekitSupportedDataStreamTransportConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitSupportedDataStreamTransportConfigurationCharacteristic(HomekitService service,
+            HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withDescription("Supported Data Stream Transport Configuration");
+        withInstanceId(instanceId).withPairedRead(true)
+                .withDescription("Supported Data Stream Transport Configuration");
     }
 
     /**
@@ -42,12 +45,14 @@ public class HomekitSupportedDataStreamTransportConfigurationCharacteristic exte
      * @param eventManager the event manager
      * @param value the JSON value
      */
-    public HomekitSupportedDataStreamTransportConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitSupportedDataStreamTransportConfigurationCharacteristic(HomekitService service,
+            HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }
 
     /**
      * Encodes the TLV8 value for this characteristic.
+     * 
      * @param value the value to encode
      * @return the encoded byte array
      */
@@ -58,6 +63,7 @@ public class HomekitSupportedDataStreamTransportConfigurationCharacteristic exte
 
     /**
      * Decodes the TLV8 value for this characteristic.
+     * 
      * @param data the byte array to decode
      * @return the decoded value as a map
      */
@@ -68,6 +74,7 @@ public class HomekitSupportedDataStreamTransportConfigurationCharacteristic exte
 
     /**
      * Returns the default value for this characteristic.
+     * 
      * @return the default value as a map
      */
     @Override
@@ -77,6 +84,7 @@ public class HomekitSupportedDataStreamTransportConfigurationCharacteristic exte
 
     /**
      * Converts a JSON value to a TLV8 value.
+     * 
      * @param jsonValue the JSON value
      * @return the TLV8 value as a map
      */
@@ -87,21 +95,25 @@ public class HomekitSupportedDataStreamTransportConfigurationCharacteristic exte
 
     /**
      * Converts a State to a TLV8 value.
+     * 
      * @param state the state
      * @return the TLV8 value as a map
      */
     @Override
     public Map<Integer, Object> toValue(State state) {
-        throw new UnsupportedOperationException("State to TLV8 conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "State to TLV8 conversion must be implemented for the specific device.");
     }
 
     /**
      * Converts a TLV8 value to a State.
+     * 
      * @param value the TLV8 value as a map
      * @return the state
      */
     @Override
     public State toState(Map<Integer, Object> value) {
-        throw new UnsupportedOperationException("TLV8 to State conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "TLV8 to State conversion must be implemented for the specific device.");
     }
-} 
+}

@@ -14,6 +14,8 @@ public @interface HomekitCharacteristicType {
 
     String tag() default "";
 
+    String[] acceptedItemTypes() default {};
+
     // Binding-specific configurations
     // BindingMapping[] bindings() default {};
 

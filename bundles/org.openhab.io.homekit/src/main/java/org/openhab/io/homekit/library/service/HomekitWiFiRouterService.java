@@ -30,10 +30,7 @@ public class HomekitWiFiRouterService extends AbstractHomekitService {
     public HomekitWiFiRouterService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("WiFi Router")
-            .withExtensible(true)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("WiFi Router").withExtensible(true).withPrimary(false).withHidden(false);
     }
 
     /**
@@ -56,7 +53,8 @@ public class HomekitWiFiRouterService extends AbstractHomekitService {
     @Override
     public void addCharacteristics() {
         // Required characteristics
-        addCharacteristic(new HomekitRouterStatusCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(
+                new HomekitRouterStatusCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
     }
 }

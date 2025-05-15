@@ -3,7 +3,6 @@ package org.openhab.io.homekit.api.factory;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.service.HomekitService;
-import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
 /**
  * Factory interface for creating HomeKit characteristics.
@@ -16,12 +15,10 @@ public interface HomekitCharacteristicFactory {
      *
      * @param type The type of characteristic to create
      * @param service The service that will own this characteristic
-     * @param eventManager The event manager for handling characteristic events
      * @return A new characteristic instance
      * @throws IllegalArgumentException if the characteristic type is not supported
      */
-    HomekitCharacteristic<?> createCharacteristic(String type, HomekitService service,
-            HomekitEventManager eventManager);
+    HomekitCharacteristic<?> createCharacteristic(String type, HomekitService service);
 
     /**
      * Creates a new HomeKit characteristic instance based on a tag.
@@ -29,12 +26,10 @@ public interface HomekitCharacteristicFactory {
      *
      * @param tag The tag identifying the characteristic (e.g. "On", "Brightness", "Temperature")
      * @param service The service that will own this characteristic
-     * @param eventManager The event manager for handling characteristic events
      * @return A new characteristic instance
      * @throws IllegalArgumentException if no characteristic type is found for the given tag
      */
-    HomekitCharacteristic<?> createCharacteristicFromTag(String tag, HomekitService service,
-            HomekitEventManager eventManager);
+    HomekitCharacteristic<?> createCharacteristicFromTag(String tag, HomekitService service);
 
     /**
      * Creates a new HomeKit characteristic instance with variable arguments.
@@ -76,4 +71,20 @@ public interface HomekitCharacteristicFactory {
      * @return A set of supported characteristic tags
      */
     java.util.Set<String> getSupportedTags();
+
+        /**
+     * Gets the tag from the characteristic type.
+     *
+     * @param characteristicType The characteristic type
+     * @return The tag
+     */
+    String getTagFromCharacteristicType(String characteristicType);
+
+    /**
+     * Gets the service type from the tag.
+     *
+     * @param characteristicTag The tag
+     * @return The characteristic type
+     */
+    String getCharacteristicTypeFromTag(String characteristicTag);
 }

@@ -2,7 +2,6 @@ package org.openhab.io.homekit.server.registry;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -14,7 +13,7 @@ import org.openhab.core.service.ReadyService;
 import org.openhab.core.storage.StorageService;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryCategory;
-import org.openhab.io.homekit.api.factory.HomekitFactory;
+import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
 import org.openhab.io.homekit.api.provider.HomekitAccessoryServerProvider;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
@@ -67,20 +66,20 @@ public class HomekitManagedAccessoryServerProvider extends
     private final HomekitPairingRegistry pairingRegistry;
     private final MDNSService mdnsService;
     private final HomekitEventManager eventManager;
-    private final Set<HomekitFactory> homekitFactories;
+    private final HomekitAccessoryFactory accessoryFactory;
 
     @Activate
     public HomekitManagedAccessoryServerProvider(@Reference StorageService storageService,
             @Reference ReadyService readyService, @Reference HomekitAccessoryRegistry accessoryRegistry,
             @Reference HomekitPairingRegistry pairingRegistry, @Reference MDNSService mdnsService,
-            @Reference HomekitEventManager eventManager, @Reference Set<HomekitFactory> homekitFactories) {
+            @Reference HomekitEventManager eventManager, @Reference HomekitAccessoryFactory accessoryFactory) {
         super(storageService);
         this.readyService = readyService;
         this.accessoryRegistry = accessoryRegistry;
         this.pairingRegistry = pairingRegistry;
         this.mdnsService = mdnsService;
         this.eventManager = eventManager;
-        this.homekitFactories = homekitFactories;
+        this.accessoryFactory = accessoryFactory;
 
         logger.info("{}Marking Managed HomekitAccessory Server Provider as ready", LOG_STATE);
         ReadyMarker newMarker = new ReadyMarker(HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER, this.toString());
@@ -106,12 +105,12 @@ public class HomekitManagedAccessoryServerProvider extends
                 server = new HomekitRemoteAccessoryServer(persistableElement.getCategory(),
                         persistableElement.getLocalAddress(), persistableElement.getPort(),
                         persistableElement.getPairingIdentifier(), persistableElement.getPrivateKey(),
-                        accessoryRegistry, pairingRegistry, eventManager, homekitFactories);
+                        accessoryRegistry, pairingRegistry, eventManager, accessoryFactory);
             } else {
                 server = new HomekitLocalAccessoryServer(persistableElement.getCategory(),
                         persistableElement.getLocalAddress(), persistableElement.getPort(),
                         persistableElement.getPairingIdentifier(), persistableElement.getPrivateKey(), mdnsService,
-                        accessoryRegistry, pairingRegistry, eventManager, homekitFactories);
+                        accessoryRegistry, pairingRegistry, eventManager);
             }
 
             logger.debug("{}Created HomekitAccessory Server - UID: {}, Setup Code: {}", LOG_ACCESSORY, server.getUID(),

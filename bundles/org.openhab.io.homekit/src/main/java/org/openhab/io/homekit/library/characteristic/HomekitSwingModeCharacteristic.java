@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -15,7 +16,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "000000B6-0000-1000-8000-0026BB765291", name = "Swing Mode", tag = "swingMode")
+@HomekitCharacteristicType(type = "000000B6-0000-1000-8000-0026BB765291", name = "Swing Mode", tag = "swingMode", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitSwingModeCharacteristic extends HomekitEnumCharacteristic {
     public enum SwingMode {
@@ -44,11 +45,8 @@ public class HomekitSwingModeCharacteristic extends HomekitEnumCharacteristic {
 
     public HomekitSwingModeCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, SwingMode.values().length);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withDescription("Swing Mode");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true)
+                .withDescription("Swing Mode");
     }
 
     public HomekitSwingModeCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
@@ -70,9 +68,6 @@ public class HomekitSwingModeCharacteristic extends HomekitEnumCharacteristic {
 
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(
-            SwingMode.SWING_DISABLED.getValue(),
-            SwingMode.SWING_ENABLED.getValue()
-        );
+        return java.util.Set.of(SwingMode.SWING_DISABLED.getValue(), SwingMode.SWING_ENABLED.getValue());
     }
-} 
+}

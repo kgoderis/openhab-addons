@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -15,7 +16,12 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "0000022F-0000-1000-8000-0026BB765291", name = "Tap Type", tag = "tapType")
+@HomekitCharacteristicType(
+    type = "0000022F-0000-1000-8000-0026BB765291",
+    name = "Tap Type",
+    tag = "tapType",
+    acceptedItemTypes = {"Number", "String"}
+)
 @NonNullByDefault
 public class HomekitTapTypeCharacteristic extends HomekitEnumCharacteristic {
     public enum TapType {
@@ -45,11 +51,8 @@ public class HomekitTapTypeCharacteristic extends HomekitEnumCharacteristic {
 
     public HomekitTapTypeCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, TapType.values().length);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(false)
-            .withEvents(true)
-            .withDescription("Tap Type");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(true)
+                .withDescription("Tap Type");
     }
 
     public HomekitTapTypeCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
@@ -71,10 +74,6 @@ public class HomekitTapTypeCharacteristic extends HomekitEnumCharacteristic {
 
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(
-            TapType.SINGLE.getValue(),
-            TapType.DOUBLE.getValue(),
-            TapType.LONG.getValue()
-        );
+        return java.util.Set.of(TapType.SINGLE.getValue(), TapType.DOUBLE.getValue(), TapType.LONG.getValue());
     }
-} 
+}

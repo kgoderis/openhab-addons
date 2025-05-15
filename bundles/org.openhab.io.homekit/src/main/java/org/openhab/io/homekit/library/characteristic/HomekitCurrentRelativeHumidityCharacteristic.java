@@ -19,7 +19,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis - Initial contribution
  */
 @NonNullByDefault
-@HomekitCharacteristicType(type = "00000010-0000-1000-8000-0026BB765291", name = "Current Relative Humidity", tag = "currentRelativeHumidity")
+@HomekitCharacteristicType(type = "00000010-0000-1000-8000-0026BB765291", name = "Current Relative Humidity", tag = "currentRelativeHumidity", acceptedItemTypes = {"Number"})
 public class HomekitCurrentRelativeHumidityCharacteristic extends HomekitFloatCharacteristic {
 
     /**
@@ -84,4 +84,4 @@ public class HomekitCurrentRelativeHumidityCharacteristic extends HomekitFloatCh
     public java.util.Set<Double> getAllowedValues() {
         return java.util.Collections.emptySet(); // No specific allowed values, just a range
     }
-} 
+}

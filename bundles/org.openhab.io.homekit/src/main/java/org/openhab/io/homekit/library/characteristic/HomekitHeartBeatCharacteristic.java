@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -18,11 +19,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 public class HomekitHeartBeatCharacteristic extends HomekitIntegerCharacteristic {
     public HomekitHeartBeatCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, 0, Integer.MAX_VALUE, "");
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(false)
-            .withEvents(true)
-            .withDescription("Heart Beat");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(true)
+                .withDescription("Heart Beat");
     }
 
     public HomekitHeartBeatCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
@@ -33,4 +31,4 @@ public class HomekitHeartBeatCharacteristic extends HomekitIntegerCharacteristic
     public boolean isAllowedValue(Integer value) {
         return value != null && value >= 0;
     }
-} 
+}

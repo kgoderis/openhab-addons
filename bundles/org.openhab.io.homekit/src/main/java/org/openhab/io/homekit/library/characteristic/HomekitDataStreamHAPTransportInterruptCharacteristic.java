@@ -1,22 +1,25 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Map;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitTLV8Characteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Map;
-import org.openhab.core.types.State;
 
 /**
  * HomeKit Data Stream HAP Transport Interrupt Characteristic.
- * This characteristic represents the HAP transport interrupt configuration for data streaming, as defined in the HomeKit Accessory Protocol (HAP) specification.
+ * This characteristic represents the HAP transport interrupt configuration for data streaming, as defined in the
+ * HomeKit Accessory Protocol (HAP) specification.
  *
  * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000139-0000-1000-8000-0026BB765291", name = "Data Stream HAP Transport Interrupt", tag = "dataStreamHAPTransportInterrupt")
+@HomekitCharacteristicType(type = "00000139-0000-1000-8000-0026BB765291", name = "Data Stream HAP Transport Interrupt", tag = "dataStreamHAPTransportInterrupt", acceptedItemTypes = {"String"})
 @NonNullByDefault
 public class HomekitDataStreamHAPTransportInterruptCharacteristic extends HomekitTLV8Characteristic {
     /**
@@ -26,13 +29,11 @@ public class HomekitDataStreamHAPTransportInterruptCharacteristic extends Homeki
      * @param eventManager the event manager for handling HomeKit events
      * @param instanceId the instance ID for this characteristic
      */
-    public HomekitDataStreamHAPTransportInterruptCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitDataStreamHAPTransportInterruptCharacteristic(HomekitService service,
+            HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withDescription("Data Stream HAP Transport Interrupt");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true)
+                .withDescription("Data Stream HAP Transport Interrupt");
     }
 
     /**
@@ -42,7 +43,8 @@ public class HomekitDataStreamHAPTransportInterruptCharacteristic extends Homeki
      * @param eventManager the event manager for handling HomeKit events
      * @param value the JSON value to initialize the characteristic with
      */
-    public HomekitDataStreamHAPTransportInterruptCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitDataStreamHAPTransportInterruptCharacteristic(HomekitService service,
+            HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -83,7 +85,8 @@ public class HomekitDataStreamHAPTransportInterruptCharacteristic extends Homeki
      */
     @Override
     public Map<Integer, Object> toValue(State state) {
-        throw new UnsupportedOperationException("State to TLV8 conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "State to TLV8 conversion must be implemented for the specific device.");
     }
 
     /**
@@ -91,6 +94,7 @@ public class HomekitDataStreamHAPTransportInterruptCharacteristic extends Homeki
      */
     @Override
     public State toState(Map<Integer, Object> value) {
-        throw new UnsupportedOperationException("TLV8 to State conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "TLV8 to State conversion must be implemented for the specific device.");
     }
-} 
+}

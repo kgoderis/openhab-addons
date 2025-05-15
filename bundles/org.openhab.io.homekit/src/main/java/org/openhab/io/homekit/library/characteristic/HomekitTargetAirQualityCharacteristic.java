@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -15,7 +16,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "000000AE-0000-1000-8000-0026BB765291", name = "Target Air Quality", tag = "targetAirQuality")
+@HomekitCharacteristicType(type = "000000AE-0000-1000-8000-0026BB765291", name = "Target Air Quality", tag = "targetAirQuality", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitTargetAirQualityCharacteristic extends HomekitEnumCharacteristic {
     public enum TargetAirQuality {
@@ -45,34 +46,29 @@ public class HomekitTargetAirQualityCharacteristic extends HomekitEnumCharacteri
         }
     }
 
-    public HomekitTargetAirQualityCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitTargetAirQualityCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, TargetAirQuality.values().length);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withDescription("Target Air Quality");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true)
+                .withDescription("Target Air Quality");
     }
 
-    public HomekitTargetAirQualityCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitTargetAirQualityCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && value >= TargetAirQuality.EXCELLENT.getValue() 
-            && value <= TargetAirQuality.POOR.getValue();
+        return value != null && value >= TargetAirQuality.EXCELLENT.getValue()
+                && value <= TargetAirQuality.POOR.getValue();
     }
 
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(
-            TargetAirQuality.EXCELLENT.getValue(),
-            TargetAirQuality.GOOD.getValue(),
-            TargetAirQuality.FAIR.getValue(),
-            TargetAirQuality.INFERIOR.getValue(),
-            TargetAirQuality.POOR.getValue()
-        );
+        return java.util.Set.of(TargetAirQuality.EXCELLENT.getValue(), TargetAirQuality.GOOD.getValue(),
+                TargetAirQuality.FAIR.getValue(), TargetAirQuality.INFERIOR.getValue(),
+                TargetAirQuality.POOR.getValue());
     }
 
     public void setValue(TargetAirQuality value) {
@@ -82,4 +78,4 @@ public class HomekitTargetAirQualityCharacteristic extends HomekitEnumCharacteri
             throw new IllegalArgumentException("Failed to set Target Air Quality value", e);
         }
     }
-} 
+}

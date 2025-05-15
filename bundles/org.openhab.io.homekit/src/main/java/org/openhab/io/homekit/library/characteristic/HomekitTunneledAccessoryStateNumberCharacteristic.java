@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -18,16 +19,15 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 @NonNullByDefault
 public class HomekitTunneledAccessoryStateNumberCharacteristic extends HomekitIntegerCharacteristic {
 
-    public HomekitTunneledAccessoryStateNumberCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitTunneledAccessoryStateNumberCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 0, Integer.MAX_VALUE, "");
-        withInstanceId(instanceId)
-            .withPairedWrite(false)
-            .withPairedRead(true)
-            .withEvents(true)
-            .withDescription("Tunneled Accessory State Number");
+        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
+                .withDescription("Tunneled Accessory State Number");
     }
 
-    public HomekitTunneledAccessoryStateNumberCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitTunneledAccessoryStateNumberCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -51,4 +51,4 @@ public class HomekitTunneledAccessoryStateNumberCharacteristic extends HomekitIn
     public java.util.Set<Integer> getAllowedValues() {
         return java.util.Collections.emptySet();
     }
-} 
+}

@@ -33,10 +33,7 @@ public class HomekitSlatService extends AbstractHomekitService {
     public HomekitSlatService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Slat")
-            .withExtensible(false)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Slat").withPrimary(false).withHidden(false);
     }
 
     /**
@@ -54,11 +51,11 @@ public class HomekitSlatService extends AbstractHomekitService {
 
     @Override
     public void addCharacteristics() {
-        super.addCharacteristics();
         addCharacteristic(new HomekitCurrentSlatStateCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitSlatTypeCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(
+                new HomekitSlatTypeCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
         addCharacteristic(new HomekitCurrentTiltAngleCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         addCharacteristic(new HomekitTargetTiltAngleCharacteristic(this, eventManager,

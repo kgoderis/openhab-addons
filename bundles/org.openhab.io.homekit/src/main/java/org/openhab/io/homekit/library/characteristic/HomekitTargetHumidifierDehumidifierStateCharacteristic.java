@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -14,9 +15,11 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * This is used to control whether the device should humidify, dehumidify, or automatically switch between modes.
  *
  * @author Karel Goderis
- * @see <a href="https://developer.apple.com/documentation/homekit/hap-characteristic-types/target-humidifier-dehumidifier-state">HAP Specification</a>
+ * @see <a href=
+ *      "https://developer.apple.com/documentation/homekit/hap-characteristic-types/target-humidifier-dehumidifier-state">HAP
+ *      Specification</a>
  */
-@HomekitCharacteristicType(type = "000000B4-0000-1000-8000-0026BB765291", name = "Target Humidifier Dehumidifier State", tag = "targetHumidifierDehumidifierState")
+@HomekitCharacteristicType(type = "000000B4-0000-1000-8000-0026BB765291", name = "Target Humidifier Dehumidifier State", tag = "targetHumidifierDehumidifierState", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitTargetHumidifierDehumidifierStateCharacteristic extends HomekitEnumCharacteristic {
     public enum TargetHumidifierDehumidifierState {
@@ -44,16 +47,15 @@ public class HomekitTargetHumidifierDehumidifierStateCharacteristic extends Home
         }
     }
 
-    public HomekitTargetHumidifierDehumidifierStateCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitTargetHumidifierDehumidifierStateCharacteristic(HomekitService service,
+            HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, 3);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withDescription("Target Humidifier Dehumidifier State");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true)
+                .withDescription("Target Humidifier Dehumidifier State");
     }
 
-    public HomekitTargetHumidifierDehumidifierStateCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitTargetHumidifierDehumidifierStateCharacteristic(HomekitService service,
+            HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -82,4 +84,4 @@ public class HomekitTargetHumidifierDehumidifierStateCharacteristic extends Home
             throw new IllegalArgumentException("Failed to set Target Humidifier Dehumidifier State value", e);
         }
     }
-} 
+}

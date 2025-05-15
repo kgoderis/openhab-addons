@@ -9,7 +9,6 @@ import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -30,7 +29,8 @@ import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryCategory;
-import org.openhab.io.homekit.api.factory.HomekitFactory;
+import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
+import org.openhab.io.homekit.api.factory.HomekitServiceFactory;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry;
 import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
@@ -106,7 +106,8 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
     private boolean autoCreateServiceThing;
     private ConfigurationAdmin configAdmin;
     private HomekitEventManager eventManager;
-    private Set<HomekitFactory> homekitFactories;
+    private HomekitAccessoryFactory accessoryFactory;
+    private HomekitServiceFactory homekitServiceFactory;
 
     /**
      * Constructs a new Homekit discovery service.
@@ -128,7 +129,8 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
             final @Reference NetworkAddressService networkAddressService,
             @Reference HomekitAccessoryRegistry accessoryRegistry, @Reference HomekitPairingRegistry pairingRegistry,
             @Reference HomekitThingTypeProvider homekitThingTypeProvider, @Reference ConfigurationAdmin configAdmin,
-            @Reference HomekitEventManager eventManager, @Reference Set<HomekitFactory> homekitFactories) {
+            @Reference HomekitEventManager eventManager, @Reference HomekitAccessoryFactory accessoryFactory,
+            @Reference HomekitServiceFactory homekitServiceFactory) {
         super(5);
         logger.debug("{}Initializing Homekit discovery service", LOG_INIT);
 
@@ -141,7 +143,8 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
         this.homekitThingTypeProvider = homekitThingTypeProvider;
         this.configAdmin = configAdmin;
         this.eventManager = eventManager;
-        this.homekitFactories = homekitFactories;
+        this.accessoryFactory = accessoryFactory;
+        this.homekitServiceFactory = homekitServiceFactory;
         // Load configuration
         loadConfiguration();
 
@@ -498,7 +501,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                     try {
                         HomekitAccessoryServer server = new HomekitRemoteAccessoryServer(category,
                                 InetAddress.getByName(hostAddress), port, accessoryRegistry, pairingRegistry,
-                                eventManager, homekitFactories);
+                                eventManager, accessoryFactory);
                         server.setConfigurationIndex(configIndex);
                         accessoryServerRegistry.add(server);
                         logger.info("{}Created new Remote HomekitAccessory Server - UID: {}, Setup Code: {}",
@@ -573,8 +576,8 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
 
                 String serviceTag;
                 try {
-                    serviceTag = homekitThingTypeProvider.getServiceTag(serviceType);
-                } catch (HomekitException e) {
+                    serviceTag = homekitServiceFactory.getTagFromServiceType(serviceType);
+                } catch (Exception e) {
                     logger.warn("{}Could not get service tag for type {}, using type as fallback: {}", LOG_WARN,
                             serviceType, e.getMessage());
                     serviceTag = serviceType;

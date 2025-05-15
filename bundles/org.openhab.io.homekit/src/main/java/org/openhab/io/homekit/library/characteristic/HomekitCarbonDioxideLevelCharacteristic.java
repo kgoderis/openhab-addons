@@ -19,7 +19,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis - Initial contribution
  */
 @NonNullByDefault
-@HomekitCharacteristicType(type = "00000093-0000-1000-8000-0026BB765291", name = "Carbon Dioxide Level", tag = "carbonDioxideLevel")
+@HomekitCharacteristicType(type = "00000093-0000-1000-8000-0026BB765291", name = "Carbon Dioxide Level", tag = "carbonDioxideLevel", acceptedItemTypes = {"Number"})
 public class HomekitCarbonDioxideLevelCharacteristic extends HomekitFloatCharacteristic {
 
     /**
@@ -84,4 +84,4 @@ public class HomekitCarbonDioxideLevelCharacteristic extends HomekitFloatCharact
     public java.util.Set<Double> getAllowedValues() {
         return java.util.Collections.emptySet(); // No specific allowed values, just a range
     }
-} 
+}

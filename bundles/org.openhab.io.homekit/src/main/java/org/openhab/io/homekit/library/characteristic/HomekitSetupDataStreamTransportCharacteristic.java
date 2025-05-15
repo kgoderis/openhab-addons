@@ -1,25 +1,29 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Map;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitTLV8Characteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Map;
-import org.openhab.core.types.State;
 
 /**
  * HomeKit Setup Data Stream Transport Characteristic.
  * <p>
- * This characteristic represents the setup data stream transport configuration. It is used to configure and manage the data stream transport settings for a HomeKit accessory, enabling features such as secure streaming or advanced communication protocols. The value is encoded as TLV8 and must be interpreted according to the HAP specification.
+ * This characteristic represents the setup data stream transport configuration. It is used to configure and manage the
+ * data stream transport settings for a HomeKit accessory, enabling features such as secure streaming or advanced
+ * communication protocols. The value is encoded as TLV8 and must be interpreted according to the HAP specification.
  * <p>
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000131-0000-1000-8000-0026BB765291", name = "Setup Data Stream Transport", tag = "setupDataStreamTransport")
+@HomekitCharacteristicType(type = "00000131-0000-1000-8000-0026BB765291", name = "Setup Data Stream Transport", tag = "setupDataStreamTransport", acceptedItemTypes = {"String"})
 @NonNullByDefault
 public class HomekitSetupDataStreamTransportCharacteristic extends HomekitTLV8Characteristic {
     /**
@@ -29,13 +33,11 @@ public class HomekitSetupDataStreamTransportCharacteristic extends HomekitTLV8Ch
      * @param eventManager the event manager for handling HomeKit events
      * @param instanceId the instance ID for this characteristic
      */
-    public HomekitSetupDataStreamTransportCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitSetupDataStreamTransportCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withDescription("Setup Data Stream Transport");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true)
+                .withDescription("Setup Data Stream Transport");
     }
 
     /**
@@ -45,7 +47,8 @@ public class HomekitSetupDataStreamTransportCharacteristic extends HomekitTLV8Ch
      * @param eventManager the event manager for handling HomeKit events
      * @param value the JSON value to initialize the characteristic with
      */
-    public HomekitSetupDataStreamTransportCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitSetupDataStreamTransportCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -105,7 +108,8 @@ public class HomekitSetupDataStreamTransportCharacteristic extends HomekitTLV8Ch
      */
     @Override
     public Map<Integer, Object> toValue(State state) {
-        throw new UnsupportedOperationException("State to TLV8 conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "State to TLV8 conversion must be implemented for the specific device.");
     }
 
     /**
@@ -117,6 +121,7 @@ public class HomekitSetupDataStreamTransportCharacteristic extends HomekitTLV8Ch
      */
     @Override
     public State toState(Map<Integer, Object> value) {
-        throw new UnsupportedOperationException("TLV8 to State conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "TLV8 to State conversion must be implemented for the specific device.");
     }
-} 
+}

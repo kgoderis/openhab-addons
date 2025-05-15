@@ -36,10 +36,7 @@ public class HomekitCameraRTPStreamManagementService extends AbstractHomekitServ
     public HomekitCameraRTPStreamManagementService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Camera RTP Stream Management")
-            .withExtensible(false)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Camera RTP Stream Management").withPrimary(false).withHidden(false);
     }
 
     /**
@@ -57,7 +54,6 @@ public class HomekitCameraRTPStreamManagementService extends AbstractHomekitServ
 
     @Override
     public void addCharacteristics() {
-        super.addCharacteristics();
         addCharacteristic(new HomekitStreamingStatusCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         addCharacteristic(new HomekitSupportedVideoStreamConfigurationCharacteristic(this, eventManager,
@@ -68,12 +64,13 @@ public class HomekitCameraRTPStreamManagementService extends AbstractHomekitServ
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         addCharacteristic(new HomekitSelectedRTPStreamConfigurationCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitSetupEndpointsCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(
+                new HomekitSetupEndpointsCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
     }
 
     @Override
     public boolean isExtensible() {
         return false;
     }
-} 
+}

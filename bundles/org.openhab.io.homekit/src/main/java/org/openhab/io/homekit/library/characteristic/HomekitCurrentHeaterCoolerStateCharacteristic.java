@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -14,7 +15,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  * @author Karel Goderis - Initial contribution
  */
-@HomekitCharacteristicType(type = "000000B1-0000-1000-8000-0026BB765291", name = "Current Heater Cooler State", tag = "currentHeaterCoolerState")
+@HomekitCharacteristicType(type = "000000B1-0000-1000-8000-0026BB765291", name = "Current Heater Cooler State", tag = "currentHeaterCoolerState", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitCurrentHeaterCoolerStateCharacteristic extends HomekitEnumCharacteristic {
     public enum HeaterCoolerState {
@@ -22,17 +23,17 @@ public class HomekitCurrentHeaterCoolerStateCharacteristic extends HomekitEnumCh
         IDLE(1),
         HEATING(2),
         COOLING(3);
-        
+
         private final int code;
-        
+
         HeaterCoolerState(int code) {
             this.code = code;
         }
-        
+
         public int getCode() {
             return code;
         }
-        
+
         public static HeaterCoolerState fromCode(int code) {
             for (HeaterCoolerState s : values()) {
                 if (s.code == code) {
@@ -46,11 +47,8 @@ public class HomekitCurrentHeaterCoolerStateCharacteristic extends HomekitEnumCh
     public HomekitCurrentHeaterCoolerStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
             long instanceId) {
         super(service, eventManager, HeaterCoolerState.values().length);
-        withInstanceId(instanceId)
-            .withPairedWrite(false)
-            .withPairedRead(true)
-            .withEvents(true)
-            .withDescription("Current Heater Cooler State");
+        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
+                .withDescription("Current Heater Cooler State");
     }
 
     public HomekitCurrentHeaterCoolerStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
@@ -65,11 +63,7 @@ public class HomekitCurrentHeaterCoolerStateCharacteristic extends HomekitEnumCh
 
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(
-            HeaterCoolerState.INACTIVE.getCode(),
-            HeaterCoolerState.IDLE.getCode(),
-            HeaterCoolerState.HEATING.getCode(),
-            HeaterCoolerState.COOLING.getCode()
-        );
+        return java.util.Set.of(HeaterCoolerState.INACTIVE.getCode(), HeaterCoolerState.IDLE.getCode(),
+                HeaterCoolerState.HEATING.getCode(), HeaterCoolerState.COOLING.getCode());
     }
-} 
+}

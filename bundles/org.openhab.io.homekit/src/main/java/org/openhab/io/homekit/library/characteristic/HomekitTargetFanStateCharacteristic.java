@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -14,9 +15,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * This is used to control whether the fan should operate in manual mode or automatically adjust its speed.
  *
  * @author Karel Goderis
- * @see <a href="https://developer.apple.com/documentation/homekit/hap-characteristic-types/target-fan-state">HAP Specification</a>
+ * @see <a href="https://developer.apple.com/documentation/homekit/hap-characteristic-types/target-fan-state">HAP
+ *      Specification</a>
  */
-@HomekitCharacteristicType(type = "000000BF-0000-1000-8000-0026BB765291", name = "Target Fan State", tag = "targetFanState")
+@HomekitCharacteristicType(type = "000000BF-0000-1000-8000-0026BB765291", name = "Target Fan State", tag = "targetFanState", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitTargetFanStateCharacteristic extends HomekitEnumCharacteristic {
     public enum TargetFanState {
@@ -43,16 +45,15 @@ public class HomekitTargetFanStateCharacteristic extends HomekitEnumCharacterist
         }
     }
 
-    public HomekitTargetFanStateCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitTargetFanStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 2);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withDescription("Target Fan State");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true)
+                .withDescription("Target Fan State");
     }
 
-    public HomekitTargetFanStateCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitTargetFanStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -81,4 +82,4 @@ public class HomekitTargetFanStateCharacteristic extends HomekitEnumCharacterist
             throw new IllegalArgumentException("Failed to set Target Fan State value", e);
         }
     }
-} 
+}

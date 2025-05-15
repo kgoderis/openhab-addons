@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -15,20 +16,18 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis - Initial Contribution
  */
 @NonNullByDefault
-@HomekitCharacteristicType(type = "0000000D-0000-1000-8000-0026BB765291", name = "Cooling Threshold Temperature", tag = "coolingThresholdTemperature")
+@HomekitCharacteristicType(type = "0000000D-0000-1000-8000-0026BB765291", name = "Cooling Threshold Temperature", tag = "coolingThresholdTemperature", acceptedItemTypes = {"Number"})
 public class HomekitCoolingThresholdTemperatureCharacteristic extends HomekitFloatCharacteristic {
 
-
-    public HomekitCoolingThresholdTemperatureCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitCoolingThresholdTemperatureCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 10.0, 35.0, 0.1, "celsius");
-        withInstanceId(instanceId)
-            .withPairedWrite(true)
-            .withPairedRead(true)
-            .withEvents(true)
-            .withDescription("Cooling Threshold Temperature");
+        withInstanceId(instanceId).withPairedWrite(true).withPairedRead(true).withEvents(true)
+                .withDescription("Cooling Threshold Temperature");
     }
 
-    public HomekitCoolingThresholdTemperatureCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitCoolingThresholdTemperatureCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -42,4 +41,4 @@ public class HomekitCoolingThresholdTemperatureCharacteristic extends HomekitFlo
     public boolean isAllowedValue(Double value) {
         return value != null && value >= 10.0 && value <= 35.0;
     }
-} 
+}

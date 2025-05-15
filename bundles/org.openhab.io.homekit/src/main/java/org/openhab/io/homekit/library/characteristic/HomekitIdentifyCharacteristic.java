@@ -12,14 +12,16 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 /**
  * HomeKit Identify Characteristic.
  * <p>
- * This characteristic represents the identify action for a HomeKit accessory. When set to true, the accessory should perform a physical identification action (such as blinking an LED or making a sound) to help the user locate it. The value is a boolean and is write-only.
+ * This characteristic represents the identify action for a HomeKit accessory. When set to true, the accessory should
+ * perform a physical identification action (such as blinking an LED or making a sound) to help the user locate it. The
+ * value is a boolean and is write-only.
  * <p>
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
  */
 @NonNullByDefault
-@HomekitCharacteristicType(type = "00000014-0000-1000-8000-0026BB765291", name = "Identify", tag = "identify")
+@HomekitCharacteristicType(type = "00000014-0000-1000-8000-0026BB765291", name = "Identify", tag = "identify", acceptedItemTypes = {"Switch", "Contact"})
 public class HomekitIdentifyCharacteristic extends HomekitBooleanCharacteristic {
 
     /**

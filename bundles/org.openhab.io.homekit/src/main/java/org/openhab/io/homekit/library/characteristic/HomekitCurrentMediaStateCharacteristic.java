@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -14,7 +15,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  * @author Karel Goderis - Initial contribution
  */
-@HomekitCharacteristicType(type = "000000E0-0000-1000-8000-0026BB765291", name = "Current Media State", tag = "currentMediaState")
+@HomekitCharacteristicType(type = "000000E0-0000-1000-8000-0026BB765291", name = "Current Media State", tag = "currentMediaState", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitCurrentMediaStateCharacteristic extends HomekitIntegerCharacteristic {
     /**
@@ -32,13 +33,13 @@ public class HomekitCurrentMediaStateCharacteristic extends HomekitIntegerCharac
         LOADING(4),
         /** Media playback is interrupted */
         INTERRUPTED(5);
-        
+
         private final int code;
-        
+
         CurrentMediaState(int code) {
             this.code = code;
         }
-        
+
         /**
          * Gets the integer code for this media state.
          *
@@ -47,7 +48,7 @@ public class HomekitCurrentMediaStateCharacteristic extends HomekitIntegerCharac
         public int getCode() {
             return code;
         }
-        
+
         /**
          * Converts an integer code to the corresponding CurrentMediaState.
          * If no matching state is found, returns STOP as default.
@@ -72,13 +73,11 @@ public class HomekitCurrentMediaStateCharacteristic extends HomekitIntegerCharac
      * @param eventManager The event manager for handling HomeKit events
      * @param instanceId The instance ID for this characteristic
      */
-    public HomekitCurrentMediaStateCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitCurrentMediaStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 0, 5, "");
-        withInstanceId(instanceId)
-            .withPairedWrite(false)
-            .withPairedRead(true)
-            .withEvents(true)
-            .withDescription("Current Media State");
+        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
+                .withDescription("Current Media State");
     }
 
     /**
@@ -88,7 +87,8 @@ public class HomekitCurrentMediaStateCharacteristic extends HomekitIntegerCharac
      * @param eventManager The event manager for handling HomeKit events
      * @param value The JSON value to initialize the characteristic with
      */
-    public HomekitCurrentMediaStateCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitCurrentMediaStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -100,11 +100,9 @@ public class HomekitCurrentMediaStateCharacteristic extends HomekitIntegerCharac
      */
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && (value == CurrentMediaState.PLAY.getCode() 
-            || value == CurrentMediaState.PAUSE.getCode() 
-            || value == CurrentMediaState.STOP.getCode() 
-            || value == CurrentMediaState.LOADING.getCode() 
-            || value == CurrentMediaState.INTERRUPTED.getCode());
+        return value != null && (value == CurrentMediaState.PLAY.getCode() || value == CurrentMediaState.PAUSE.getCode()
+                || value == CurrentMediaState.STOP.getCode() || value == CurrentMediaState.LOADING.getCode()
+                || value == CurrentMediaState.INTERRUPTED.getCode());
     }
 
     /**
@@ -114,12 +112,8 @@ public class HomekitCurrentMediaStateCharacteristic extends HomekitIntegerCharac
      */
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(
-            CurrentMediaState.PLAY.getCode(),
-            CurrentMediaState.PAUSE.getCode(),
-            CurrentMediaState.STOP.getCode(),
-            CurrentMediaState.LOADING.getCode(),
-            CurrentMediaState.INTERRUPTED.getCode()
-        );
+        return java.util.Set.of(CurrentMediaState.PLAY.getCode(), CurrentMediaState.PAUSE.getCode(),
+                CurrentMediaState.STOP.getCode(), CurrentMediaState.LOADING.getCode(),
+                CurrentMediaState.INTERRUPTED.getCode());
     }
-} 
+}

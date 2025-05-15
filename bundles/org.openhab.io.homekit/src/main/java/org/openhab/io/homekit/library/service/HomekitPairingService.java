@@ -31,10 +31,7 @@ public class HomekitPairingService extends AbstractHomekitService {
     public HomekitPairingService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Pairing")
-            .withExtensible(false)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Pairing").withPrimary(false).withHidden(false);
     }
 
     /**
@@ -52,8 +49,7 @@ public class HomekitPairingService extends AbstractHomekitService {
 
     @Override
     public void addCharacteristics() {
-        super.addCharacteristics();
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(true));
     }
-} 
+}

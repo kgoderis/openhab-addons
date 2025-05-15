@@ -33,10 +33,7 @@ public class HomekitBatteryService extends AbstractHomekitService {
     public HomekitBatteryService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Battery")
-            .withExtensible(false)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Battery").withPrimary(false).withHidden(false);
     }
 
     /**
@@ -52,19 +49,19 @@ public class HomekitBatteryService extends AbstractHomekitService {
         super(accessory, eventManager, characteristicFactory, value);
     }
 
+    /**
+     * Adds the required characteristics for this service.
+     * Required: BatteryLevel, ChargingState, StatusLowBattery
+     */
     @Override
     public void addCharacteristics() {
-        super.addCharacteristics();
-        addCharacteristic(new HomekitBatteryLevelCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitChargingStateCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(
+                new HomekitBatteryLevelCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
+        addCharacteristic(
+                new HomekitChargingStateCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
         addCharacteristic(new HomekitStatusLowBatteryCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-    }
-
-    @Override
-    public boolean isExtensible() {
-        return false;
     }
 }

@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -14,7 +15,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000225-0000-1000-8000-0026BB765291", name = "Periodic Snapshots Active", tag = "periodicSnapshotsActive")
+@HomekitCharacteristicType(type = "00000225-0000-1000-8000-0026BB765291", name = "Periodic Snapshots Active", tag = "periodicSnapshotsActive", acceptedItemTypes = {"Switch", "Contact"})
 @NonNullByDefault
 public class HomekitPeriodicSnapshotsActiveCharacteristic extends HomekitBooleanCharacteristic {
     /**
@@ -24,13 +25,11 @@ public class HomekitPeriodicSnapshotsActiveCharacteristic extends HomekitBoolean
      * @param eventManager the event manager for handling HomeKit events
      * @param instanceId the instance ID for this characteristic
      */
-    public HomekitPeriodicSnapshotsActiveCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitPeriodicSnapshotsActiveCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withDescription("Periodic Snapshots Active");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true)
+                .withDescription("Periodic Snapshots Active");
     }
 
     /**
@@ -40,7 +39,8 @@ public class HomekitPeriodicSnapshotsActiveCharacteristic extends HomekitBoolean
      * @param eventManager the event manager for handling HomeKit events
      * @param value the JSON value to initialize the characteristic with
      */
-    public HomekitPeriodicSnapshotsActiveCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitPeriodicSnapshotsActiveCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
-} 
+}

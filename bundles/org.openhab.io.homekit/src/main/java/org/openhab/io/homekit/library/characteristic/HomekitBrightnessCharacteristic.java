@@ -17,13 +17,14 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 /**
  * HomeKit Brightness Characteristic.
  * <p>
- * This characteristic represents the brightness level of a device, expressed as a percentage from 0 to 100. The value is a floating-point number and is used for dimmable lights and similar accessories.
+ * This characteristic represents the brightness level of a device, expressed as a percentage from 0 to 100. The value
+ * is a floating-point number and is used for dimmable lights and similar accessories.
  * <p>
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "00000008-0000-1000-8000-0026BB765291", name = "Brightness", tag = "brightness")
+@HomekitCharacteristicType(type = "00000008-0000-1000-8000-0026BB765291", name = "Brightness", tag = "brightness", acceptedItemTypes = {"Number", "Dimmer"})
 @NonNullByDefault
 public class HomekitBrightnessCharacteristic extends HomekitFloatCharacteristic {
 
@@ -37,7 +38,7 @@ public class HomekitBrightnessCharacteristic extends HomekitFloatCharacteristic 
     public HomekitBrightnessCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, 0.0, 100.0, 1.0, "percentage");
         withInstanceId(instanceId).withPairedWrite(true).withPairedRead(true).withEvents(true)
-            .withDescription("Brightness");
+                .withDescription("Brightness");
     }
 
     /**
@@ -98,6 +99,4 @@ public class HomekitBrightnessCharacteristic extends HomekitFloatCharacteristic 
         // return new DecimalType(value);
         // }
     }
-
-
 }

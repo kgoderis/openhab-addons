@@ -17,31 +17,42 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  * @author Karel Goderis - Initial contribution
  */
-@HomekitCharacteristicType(type = "0000006A-0000-1000-8000-0026BB765291", name = "Contact Sensor State", tag = "contactSensorState")
+@HomekitCharacteristicType(type = "0000006A-0000-1000-8000-0026BB765291", name = "Contact Sensor State", tag = "contactSensorState", acceptedItemTypes = {"Number", "String", "Contact"})
 @NonNullByDefault
 public class HomekitContactSensorStateCharacteristic extends HomekitEnumCharacteristic {
 
     public enum ContactSensorState {
         CONTACT_DETECTED(0),
         CONTACT_NOT_DETECTED(1);
+
         private final int code;
-        ContactSensorState(int code) { this.code = code; }
-        public int getCode() { return code; }
+
+        ContactSensorState(int code) {
+            this.code = code;
+        }
+
+        public int getCode() {
+            return code;
+        }
+
         public static ContactSensorState fromCode(int code) {
             for (ContactSensorState v : values()) {
-                if (v.code == code) return v;
+                if (v.code == code)
+                    return v;
             }
             return CONTACT_DETECTED;
         }
     }
 
-    public HomekitContactSensorStateCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitContactSensorStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, ContactSensorState.values().length);
         withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
-            .withDescription("Contact Sensor State");
+                .withDescription("Contact Sensor State");
     }
 
-    public HomekitContactSensorStateCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitContactSensorStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -60,12 +71,14 @@ public class HomekitContactSensorStateCharacteristic extends HomekitEnumCharacte
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && (value == ContactSensorState.CONTACT_DETECTED.getCode() || value == ContactSensorState.CONTACT_NOT_DETECTED.getCode());
+        return value != null && (value == ContactSensorState.CONTACT_DETECTED.getCode()
+                || value == ContactSensorState.CONTACT_NOT_DETECTED.getCode());
     }
 
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(ContactSensorState.CONTACT_DETECTED.getCode(), ContactSensorState.CONTACT_NOT_DETECTED.getCode());
+        return java.util.Set.of(ContactSensorState.CONTACT_DETECTED.getCode(),
+                ContactSensorState.CONTACT_NOT_DETECTED.getCode());
     }
 
     public void setValue(ContactSensorState value) throws Exception {

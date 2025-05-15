@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -16,7 +17,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000035-0000-1000-8000-0026BB765291", name = "Target Temperature", tag = "targetTemperature")
+@HomekitCharacteristicType(type = "00000035-0000-1000-8000-0026BB765291", name = "Target Temperature", tag = "targetTemperature", acceptedItemTypes = {"Number"})
 @NonNullByDefault
 public class HomekitTargetTemperatureCharacteristic extends HomekitFloatCharacteristic {
     /**
@@ -27,13 +28,11 @@ public class HomekitTargetTemperatureCharacteristic extends HomekitFloatCharacte
      * @param eventManager The event manager for handling HomeKit events
      * @param instanceId The instance ID for this characteristic
      */
-    public HomekitTargetTemperatureCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitTargetTemperatureCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 10.0f, 38.0f, 0.1f, "celcius");
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withDescription("Target Temperature");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true)
+                .withDescription("Target Temperature");
     }
 
     /**
@@ -43,7 +42,8 @@ public class HomekitTargetTemperatureCharacteristic extends HomekitFloatCharacte
      * @param eventManager The event manager for handling HomeKit events
      * @param value The JSON value to initialize the characteristic with
      */
-    public HomekitTargetTemperatureCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitTargetTemperatureCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 

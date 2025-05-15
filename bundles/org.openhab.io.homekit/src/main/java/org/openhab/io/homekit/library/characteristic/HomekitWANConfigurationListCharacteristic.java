@@ -1,18 +1,21 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Map;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitTLV8Characteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Map;
-import org.openhab.core.types.State;
 
 /**
  * HomeKit WAN Configuration List Characteristic.
  * <p>
- * This characteristic represents the WAN configuration list for a device, using TLV8 encoding as defined by the HAP specification.
+ * This characteristic represents the WAN configuration list for a device, using TLV8 encoding as defined by the HAP
+ * specification.
  * <p>
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
@@ -21,21 +24,21 @@ import org.openhab.core.types.State;
 @HomekitCharacteristicType(type = "00000211-0000-1000-8000-0026BB765291", name = "WAN Configuration List", tag = "wanConfigurationList")
 @NonNullByDefault
 public class HomekitWANConfigurationListCharacteristic extends HomekitTLV8Characteristic {
-    public HomekitWANConfigurationListCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitWANConfigurationListCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(false)
-            .withEvents(true)
-            .withDescription("WAN Configuration List");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(true)
+                .withDescription("WAN Configuration List");
     }
 
-    public HomekitWANConfigurationListCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitWANConfigurationListCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
     /**
      * Encodes the TLV8 value for this characteristic.
+     * 
      * @param value the value to encode
      * @return the encoded byte array
      */
@@ -46,6 +49,7 @@ public class HomekitWANConfigurationListCharacteristic extends HomekitTLV8Charac
 
     /**
      * Decodes the TLV8 value for this characteristic.
+     * 
      * @param data the byte array to decode
      * @return the decoded value as a map
      */
@@ -56,6 +60,7 @@ public class HomekitWANConfigurationListCharacteristic extends HomekitTLV8Charac
 
     /**
      * Returns the default value for this characteristic.
+     * 
      * @return the default value
      */
     @Override
@@ -65,6 +70,7 @@ public class HomekitWANConfigurationListCharacteristic extends HomekitTLV8Charac
 
     /**
      * Converts a JSON value to the TLV8 value for this characteristic.
+     * 
      * @param jsonValue the JSON value
      * @return the TLV8 value as a map
      */
@@ -75,21 +81,25 @@ public class HomekitWANConfigurationListCharacteristic extends HomekitTLV8Charac
 
     /**
      * Converts a State to the TLV8 value for this characteristic.
+     * 
      * @param state the State
      * @return the TLV8 value as a map
      */
     @Override
     public Map<Integer, Object> toValue(State state) {
-        throw new UnsupportedOperationException("State to TLV8 conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "State to TLV8 conversion must be implemented for the specific device.");
     }
 
     /**
      * Converts a TLV8 value to a State for this characteristic.
+     * 
      * @param value the TLV8 value as a map
      * @return the State
      */
     @Override
     public State toState(Map<Integer, Object> value) {
-        throw new UnsupportedOperationException("TLV8 to State conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "TLV8 to State conversion must be implemented for the specific device.");
     }
-} 
+}

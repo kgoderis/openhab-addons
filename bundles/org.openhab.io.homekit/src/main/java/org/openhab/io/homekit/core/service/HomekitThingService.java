@@ -1,4 +1,4 @@
-package org.openhab.io.homekit.library.service;
+package org.openhab.io.homekit.core.service;
 
 import java.util.Collection;
 
@@ -6,8 +6,7 @@ import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
-import org.openhab.io.homekit.api.factory.HomekitFactory;
-import org.openhab.io.homekit.core.service.AbstractHomekitService;
+import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.util.HomekitUUID5;
 
@@ -35,12 +34,9 @@ public class HomekitThingService extends AbstractHomekitService {
      * @throws Exception If an error occurs during initialization
      */
     public HomekitThingService(HomekitAccessory accessory, long instanceId, boolean extend, String serviceName,
-            HomekitEventManager eventManager, Collection<HomekitFactory> factories) throws Exception {
-        super(accessory, instanceId, extend, serviceName, TYPE, eventManager, factories);
-        withName("Thing")
-            .withExtensible(extend)
-            .withPrimary(false)
-            .withHidden(false);
+            HomekitEventManager eventManager, HomekitCharacteristicFactory characteristicFactory) throws Exception {
+        super(accessory, eventManager, characteristicFactory);
+        withName(serviceName).withInstanceId(instanceId).withExtensible(extend).withPrimary(false).withHidden(false);
     }
 
     /**

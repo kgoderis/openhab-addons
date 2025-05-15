@@ -1,15 +1,17 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitTLV8Characteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import org.openhab.core.types.State;
-import java.util.Map;
-import java.util.Collections;
-import java.util.HashMap;
 
 /**
  * HomeKit Lock Control Point Characteristic.
@@ -17,7 +19,8 @@ import java.util.HashMap;
  * The TLV8 format is used to encode the control commands.
  *
  * @author Karel Goderis
- * @see <a href="https://developer.apple.com/documentation/homekit/hap-characteristic-types/lock-control-point">HAP Specification</a>
+ * @see <a href="https://developer.apple.com/documentation/homekit/hap-characteristic-types/lock-control-point">HAP
+ *      Specification</a>
  */
 @HomekitCharacteristicType(type = "00000019-0000-1000-8000-0026BB765291", name = "Lock Control Point", tag = "lockControlPoint")
 @NonNullByDefault
@@ -29,16 +32,15 @@ public class HomekitLockControlPointCharacteristic extends HomekitTLV8Characteri
     public static final int GET_CREDENTIALS_STATUS = 5;
     public static final int GET_CREDENTIALS_STATUS_RESPONSE = 6;
 
-    public HomekitLockControlPointCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitLockControlPointCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedWrite(true)
-            .withPairedRead(true)
-            .withEvents(true)
-            .withDescription("Lock Control Point");
+        withInstanceId(instanceId).withPairedWrite(true).withPairedRead(true).withEvents(true)
+                .withDescription("Lock Control Point");
     }
 
-    public HomekitLockControlPointCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitLockControlPointCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -47,7 +49,7 @@ public class HomekitLockControlPointCharacteristic extends HomekitTLV8Characteri
         if (value == null || value.isEmpty()) {
             return new byte[0];
         }
-        
+
         // Basic TLV8 encoding implementation
         // In a real implementation, this would properly encode the TLV8 format
         // based on the HAP specification
@@ -59,7 +61,7 @@ public class HomekitLockControlPointCharacteristic extends HomekitTLV8Characteri
         if (data == null || data.length == 0) {
             return Collections.emptyMap();
         }
-        
+
         // Basic TLV8 decoding implementation
         // In a real implementation, this would properly decode the TLV8 format
         // based on the HAP specification
@@ -73,11 +75,13 @@ public class HomekitLockControlPointCharacteristic extends HomekitTLV8Characteri
 
     @Override
     public Map<Integer, Object> toValue(State state) {
-        throw new UnsupportedOperationException("State to TLV8 conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "State to TLV8 conversion must be implemented for the specific device.");
     }
 
     @Override
     public State toState(Map<Integer, Object> value) {
-        throw new UnsupportedOperationException("TLV8 to State conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "TLV8 to State conversion must be implemented for the specific device.");
     }
-} 
+}

@@ -1,24 +1,28 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Map;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitTLV8Characteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Map;
-import org.openhab.core.types.State;
 
 /**
  * HomeKit Hardware Finish Characteristic.
  * <p>
- * This characteristic represents the hardware finish in TLV8 format. It provides information about the physical appearance and finish of the hardware, such as brushed, polished, or matte. The value is encoded as TLV8 and must be interpreted according to the device's capabilities and the HAP specification.
+ * This characteristic represents the hardware finish in TLV8 format. It provides information about the physical
+ * appearance and finish of the hardware, such as brushed, polished, or matte. The value is encoded as TLV8 and must be
+ * interpreted according to the device's capabilities and the HAP specification.
  * <p>
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "0000026C-0000-1000-8000-0026BB765291", name = "Hardware Finish", tag = "hardwareFinish")
+@HomekitCharacteristicType(type = "0000026C-0000-1000-8000-0026BB765291", name = "Hardware Finish", tag = "hardwareFinish", acceptedItemTypes = {"String"})
 @NonNullByDefault
 public class HomekitHardwareFinishCharacteristic extends HomekitTLV8Characteristic {
     /**
@@ -28,13 +32,11 @@ public class HomekitHardwareFinishCharacteristic extends HomekitTLV8Characterist
      * @param eventManager the event manager for handling HomeKit events
      * @param instanceId the instance ID for this characteristic
      */
-    public HomekitHardwareFinishCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitHardwareFinishCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(false)
-            .withEvents(true)
-            .withDescription("Hardware Finish");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(true)
+                .withDescription("Hardware Finish");
     }
 
     /**
@@ -44,7 +46,8 @@ public class HomekitHardwareFinishCharacteristic extends HomekitTLV8Characterist
      * @param eventManager the event manager for handling HomeKit events
      * @param value the JSON value to initialize the characteristic with
      */
-    public HomekitHardwareFinishCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitHardwareFinishCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -104,7 +107,8 @@ public class HomekitHardwareFinishCharacteristic extends HomekitTLV8Characterist
      */
     @Override
     public Map<Integer, Object> toValue(State state) {
-        throw new UnsupportedOperationException("State to TLV8 conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "State to TLV8 conversion must be implemented for the specific device.");
     }
 
     /**
@@ -116,6 +120,7 @@ public class HomekitHardwareFinishCharacteristic extends HomekitTLV8Characterist
      */
     @Override
     public State toState(Map<Integer, Object> value) {
-        throw new UnsupportedOperationException("TLV8 to State conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "TLV8 to State conversion must be implemented for the specific device.");
     }
-} 
+}

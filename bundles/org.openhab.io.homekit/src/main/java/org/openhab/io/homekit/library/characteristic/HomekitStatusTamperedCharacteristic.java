@@ -20,7 +20,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "0000007A-0000-1000-8000-0026BB765291", name = "Status Tampered", tag = "statusTampered")
+@HomekitCharacteristicType(type = "0000007A-0000-1000-8000-0026BB765291", name = "Status Tampered", tag = "statusTampered", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitStatusTamperedCharacteristic extends HomekitEnumCharacteristic {
 
@@ -29,8 +29,15 @@ public class HomekitStatusTamperedCharacteristic extends HomekitEnumCharacterist
         TAMPERED(1);
 
         private final int value;
-        StatusTampered(int value) { this.value = value; }
-        public int getValue() { return value; }
+
+        StatusTampered(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
         public static StatusTampered fromValue(int value) {
             for (StatusTampered status : values()) {
                 if (status.value == value) {
@@ -41,16 +48,15 @@ public class HomekitStatusTamperedCharacteristic extends HomekitEnumCharacterist
         }
     }
 
-    public HomekitStatusTamperedCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitStatusTamperedCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 2);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(false)
-            .withEvents(true)
-            .withDescription("Status Tampered");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(true)
+                .withDescription("Status Tampered");
     }
 
-    public HomekitStatusTamperedCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitStatusTamperedCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -92,7 +98,8 @@ public class HomekitStatusTamperedCharacteristic extends HomekitEnumCharacterist
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        if (value == null) return false;
+        if (value == null)
+            return false;
         try {
             StatusTampered.fromValue(value);
             return true;

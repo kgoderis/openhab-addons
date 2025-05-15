@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -15,7 +16,12 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "000000DC-0000-1000-8000-0026BB765291", name = "Input Device Type", tag = "inputDeviceType")
+@HomekitCharacteristicType(
+    type = "000000DC-0000-1000-8000-0026BB765291",
+    name = "Input Device Type",
+    tag = "inputDeviceType",
+    acceptedItemTypes = {"Number", "String"}
+)
 @NonNullByDefault
 public class HomekitInputDeviceTypeCharacteristic extends HomekitEnumCharacteristic {
     public enum InputDeviceType {
@@ -45,16 +51,15 @@ public class HomekitInputDeviceTypeCharacteristic extends HomekitEnumCharacteris
         }
     }
 
-    public HomekitInputDeviceTypeCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitInputDeviceTypeCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, InputDeviceType.values().length);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(false)
-            .withEvents(true)
-            .withDescription("Input Device Type");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(true)
+                .withDescription("Input Device Type");
     }
 
-    public HomekitInputDeviceTypeCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitInputDeviceTypeCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -73,12 +78,8 @@ public class HomekitInputDeviceTypeCharacteristic extends HomekitEnumCharacteris
 
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(
-            InputDeviceType.OTHER.getValue(),
-            InputDeviceType.KEYBOARD.getValue(),
-            InputDeviceType.MOUSE.getValue(),
-            InputDeviceType.TOUCHPAD.getValue(),
-            InputDeviceType.GAMEPAD.getValue()
-        );
+        return java.util.Set.of(InputDeviceType.OTHER.getValue(), InputDeviceType.KEYBOARD.getValue(),
+                InputDeviceType.MOUSE.getValue(), InputDeviceType.TOUCHPAD.getValue(),
+                InputDeviceType.GAMEPAD.getValue());
     }
-} 
+}

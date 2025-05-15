@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -13,19 +14,18 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/SleepInterval">HomeKit Documentation</a>
  */
-@HomekitCharacteristicType(type = "0000023A-0000-1000-8000-0026BB765291", name = "Sleep Interval", tag = "sleepInterval")
+@HomekitCharacteristicType(type = "0000023A-0000-1000-8000-0026BB765291", name = "Sleep Interval", tag = "sleepInterval", acceptedItemTypes = {"Number"})
 @NonNullByDefault
 public class HomekitSleepIntervalCharacteristic extends HomekitIntegerCharacteristic {
-    public HomekitSleepIntervalCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitSleepIntervalCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 0, Integer.MAX_VALUE, "seconds");
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withDescription("Sleep Interval");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true)
+                .withDescription("Sleep Interval");
     }
 
-    public HomekitSleepIntervalCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitSleepIntervalCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -33,4 +33,4 @@ public class HomekitSleepIntervalCharacteristic extends HomekitIntegerCharacteri
     public boolean isAllowedValue(Integer value) {
         return value != null && value >= 0;
     }
-} 
+}

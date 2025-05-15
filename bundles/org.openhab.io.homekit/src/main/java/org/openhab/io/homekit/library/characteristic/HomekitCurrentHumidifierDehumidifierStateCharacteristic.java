@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -14,7 +15,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  * @author Karel Goderis - Initial contribution
  */
-@HomekitCharacteristicType(type = "000000B3-0000-1000-8000-0026BB765291", name = "Current Humidifier Dehumidifier State", tag = "currentHumidifierDehumidifierState")
+@HomekitCharacteristicType(type = "000000B3-0000-1000-8000-0026BB765291", name = "Current Humidifier Dehumidifier State", tag = "currentHumidifierDehumidifierState", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitCurrentHumidifierDehumidifierStateCharacteristic extends HomekitEnumCharacteristic {
 
@@ -44,13 +45,15 @@ public class HomekitCurrentHumidifierDehumidifierStateCharacteristic extends Hom
         }
     }
 
-    public HomekitCurrentHumidifierDehumidifierStateCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitCurrentHumidifierDehumidifierStateCharacteristic(HomekitService service,
+            HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, CurrentHumidifierDehumidifierState.values().length);
         withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
-            .withDescription("Current Humidifier Dehumidifier State");
+                .withDescription("Current Humidifier Dehumidifier State");
     }
 
-    public HomekitCurrentHumidifierDehumidifierStateCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitCurrentHumidifierDehumidifierStateCharacteristic(HomekitService service,
+            HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -61,11 +64,9 @@ public class HomekitCurrentHumidifierDehumidifierStateCharacteristic extends Hom
 
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(
-            CurrentHumidifierDehumidifierState.INACTIVE.getCode(),
-            CurrentHumidifierDehumidifierState.IDLE.getCode(),
-            CurrentHumidifierDehumidifierState.HUMIDIFYING.getCode(),
-            CurrentHumidifierDehumidifierState.DEHUMIDIFYING.getCode()
-        );
+        return java.util.Set.of(CurrentHumidifierDehumidifierState.INACTIVE.getCode(),
+                CurrentHumidifierDehumidifierState.IDLE.getCode(),
+                CurrentHumidifierDehumidifierState.HUMIDIFYING.getCode(),
+                CurrentHumidifierDehumidifierState.DEHUMIDIFYING.getCode());
     }
-} 
+}

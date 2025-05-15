@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -20,11 +21,8 @@ public class HomekitRelayStateCharacteristic extends HomekitIntegerCharacteristi
 
     public HomekitRelayStateCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, 0, Integer.MAX_VALUE, "");
-        withInstanceId(instanceId)
-            .withPairedWrite(false)
-            .withPairedRead(true)
-            .withEvents(true)
-            .withDescription("Relay State");
+        withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
+                .withDescription("Relay State");
     }
 
     public HomekitRelayStateCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
@@ -51,4 +49,4 @@ public class HomekitRelayStateCharacteristic extends HomekitIntegerCharacteristi
     public java.util.Set<Integer> getAllowedValues() {
         return java.util.Collections.emptySet();
     }
-} 
+}

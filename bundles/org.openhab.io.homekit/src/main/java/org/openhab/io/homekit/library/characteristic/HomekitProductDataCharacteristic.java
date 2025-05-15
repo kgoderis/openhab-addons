@@ -1,33 +1,33 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Map;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitTLV8Characteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Map;
-import org.openhab.core.types.State;
 
 /**
  * HomeKit Product Data Characteristic.
  * <p>
- * This characteristic represents the product data information for a device, using TLV8 encoding as defined by the HAP specification.
+ * This characteristic represents the product data information for a device, using TLV8 encoding as defined by the HAP
+ * specification.
  * <p>
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "00000220-0000-1000-8000-0026BB765291", name = "Product Data", tag = "productData")
+@HomekitCharacteristicType(type = "00000220-0000-1000-8000-0026BB765291", name = "Product Data", tag = "productData", acceptedItemTypes = {"String"})
 @NonNullByDefault
 public class HomekitProductDataCharacteristic extends HomekitTLV8Characteristic {
     public HomekitProductDataCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(false)
-            .withEvents(false)
-            .withDescription("Product Data");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(false)
+                .withDescription("Product Data");
     }
 
     public HomekitProductDataCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
@@ -36,6 +36,7 @@ public class HomekitProductDataCharacteristic extends HomekitTLV8Characteristic 
 
     /**
      * Encodes the TLV8 value for this characteristic.
+     * 
      * @param value the value to encode
      * @return the encoded byte array
      */
@@ -46,6 +47,7 @@ public class HomekitProductDataCharacteristic extends HomekitTLV8Characteristic 
 
     /**
      * Decodes the TLV8 value for this characteristic.
+     * 
      * @param data the byte array to decode
      * @return the decoded value as a map
      */
@@ -56,6 +58,7 @@ public class HomekitProductDataCharacteristic extends HomekitTLV8Characteristic 
 
     /**
      * Returns the default value for this characteristic.
+     * 
      * @return the default value
      */
     @Override
@@ -65,6 +68,7 @@ public class HomekitProductDataCharacteristic extends HomekitTLV8Characteristic 
 
     /**
      * Converts a JSON value to the TLV8 value for this characteristic.
+     * 
      * @param jsonValue the JSON value
      * @return the TLV8 value as a map
      */
@@ -75,21 +79,25 @@ public class HomekitProductDataCharacteristic extends HomekitTLV8Characteristic 
 
     /**
      * Converts a State to the TLV8 value for this characteristic.
+     * 
      * @param state the State
      * @return the TLV8 value as a map
      */
     @Override
     public Map<Integer, Object> toValue(State state) {
-        throw new UnsupportedOperationException("State to TLV8 conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "State to TLV8 conversion must be implemented for the specific device.");
     }
 
     /**
      * Converts a TLV8 value to a State for this characteristic.
+     * 
      * @param value the TLV8 value as a map
      * @return the State
      */
     @Override
     public State toState(Map<Integer, Object> value) {
-        throw new UnsupportedOperationException("TLV8 to State conversion must be implemented for the specific device.");
+        throw new UnsupportedOperationException(
+                "TLV8 to State conversion must be implemented for the specific device.");
     }
-} 
+}

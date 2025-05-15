@@ -16,6 +16,7 @@ import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
@@ -32,8 +33,10 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
     private final Logger logger = LoggerFactory.getLogger(HomekitServiceFactoryImpl.class);
     private final Map<String, Class<? extends HomekitService>> serviceTypes = new ConcurrentHashMap<>();
     private final Map<String, String> tagToTypeMap = new ConcurrentHashMap<>();
+    private HomekitEventManager eventManager;
 
-    public HomekitServiceFactoryImpl() {
+    public HomekitServiceFactoryImpl(@Reference HomekitEventManager eventManager) {
+        this.eventManager = eventManager;
         initializeServiceTypes();
     }
 
@@ -66,7 +69,7 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
     }
 
     @Override
-    public HomekitService createService(String type, HomekitAccessory accessory, HomekitEventManager eventManager) {
+    public HomekitService createService(String type, HomekitAccessory accessory) {
         Class<? extends HomekitService> serviceClass = serviceTypes.get(type);
         if (serviceClass == null) {
             throw new IllegalArgumentException("Unsupported service type: " + type);
@@ -114,13 +117,12 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
     }
 
     @Override
-    public HomekitService createServiceFromTag(String tag, HomekitAccessory accessory,
-            HomekitEventManager eventManager) {
+    public HomekitService createServiceFromTag(String tag, HomekitAccessory accessory) {
         String type = tagToTypeMap.get(tag);
         if (type == null) {
             throw new IllegalArgumentException("No service type found for tag: " + tag);
         }
-        return createService(type, accessory, eventManager);
+        return createService(type, accessory);
     }
 
     @Override
@@ -185,5 +187,20 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
             logger.error("Error creating service from JSON value", e);
             throw new IllegalArgumentException("Failed to create service from JSON value", e);
         }
+    }
+
+    @Override
+    public String getTagFromServiceType(String serviceType) {
+        for (Map.Entry<String, String> entry : tagToTypeMap.entrySet()) {
+            if (entry.getValue().equals(serviceType)) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public String getServiceTypeFromTag(String serviceTag) {
+        return tagToTypeMap.get(serviceTag);
     }
 }

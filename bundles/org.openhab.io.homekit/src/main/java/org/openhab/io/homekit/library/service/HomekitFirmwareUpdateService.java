@@ -31,10 +31,7 @@ public class HomekitFirmwareUpdateService extends AbstractHomekitService {
     public HomekitFirmwareUpdateService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Firmware Update")
-            .withExtensible(true)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Firmware Update").withExtensible(true).withPrimary(false).withHidden(false);
     }
 
     /**

@@ -31,10 +31,7 @@ public class HomekitTapManagementService extends AbstractHomekitService {
     public HomekitTapManagementService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("TapManagement")
-            .withExtensible(true)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("TapManagement").withExtensible(true).withPrimary(false).withHidden(false);
     }
 
     /**
@@ -44,13 +41,17 @@ public class HomekitTapManagementService extends AbstractHomekitService {
     @Override
     public void addCharacteristics() {
         // Add required characteristics based on HAP specification
-            addCharacteristic(new HomekitActiveCharacteristic(this, eventManager,
-                    getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitCryptoHashCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitTapTypeCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitTokenCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(
+                new HomekitActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
+        addCharacteristic(
+                new HomekitCryptoHashCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
+        addCharacteristic(
+                new HomekitTapTypeCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
+        addCharacteristic(
+                new HomekitTokenCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
     }
 }

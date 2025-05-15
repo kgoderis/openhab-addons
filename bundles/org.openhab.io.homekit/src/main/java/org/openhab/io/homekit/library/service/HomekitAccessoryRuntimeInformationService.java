@@ -8,10 +8,10 @@ import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import org.openhab.io.homekit.library.characteristic.HomekitPingCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitSleepIntervalCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitActivityIntervalCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitHeartBeatCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitPingCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitSleepIntervalCharacteristic;
 
 /**
  * HomeKit Accessory Runtime Information Service.
@@ -34,10 +34,7 @@ public class HomekitAccessoryRuntimeInformationService extends AbstractHomekitSe
     public HomekitAccessoryRuntimeInformationService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Accessory Runtime Information")
-            .withExtensible(true)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Accessory Runtime Information").withExtensible(true).withPrimary(false).withHidden(false);
     }
 
     /**
@@ -61,15 +58,17 @@ public class HomekitAccessoryRuntimeInformationService extends AbstractHomekitSe
     @Override
     public void addCharacteristics() {
         // Required characteristics
-        addCharacteristic(new HomekitPingCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(new HomekitPingCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(true));
 
         // Optional characteristics
         addCharacteristic(new HomekitActivityIntervalCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitHeartBeatCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-                addCharacteristic(new HomekitSleepIntervalCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(
+                new HomekitHeartBeatCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        addCharacteristic(
+                new HomekitSleepIntervalCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
     }
 }

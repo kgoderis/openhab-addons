@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -14,7 +15,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  * @author Karel Goderis - Initial contribution
  */
-@HomekitCharacteristicType(type = "000000C7-0000-1000-8000-0026BB765291", name = "PM10 Density", tag = "pm10Density")
+@HomekitCharacteristicType(type = "000000C7-0000-1000-8000-0026BB765291", name = "PM10 Density", tag = "pm10Density", acceptedItemTypes = {"Number"})
 @NonNullByDefault
 public class HomekitPM10DensityCharacteristic extends HomekitFloatCharacteristic {
     /**
@@ -27,8 +28,9 @@ public class HomekitPM10DensityCharacteristic extends HomekitFloatCharacteristic
     public HomekitPM10DensityCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, 0.0, 1000.0, 1.0, "microgramsPerCubicMeter");
         withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
-            .withDescription("PM10 Density");
+                .withDescription("PM10 Density");
     }
+
     /**
      * Creates a new PM10 Density characteristic from a JSON value.
      *
@@ -39,6 +41,7 @@ public class HomekitPM10DensityCharacteristic extends HomekitFloatCharacteristic
     public HomekitPM10DensityCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
     }
+
     /**
      * Checks if the given value is a valid PM10 density.
      *
@@ -49,6 +52,7 @@ public class HomekitPM10DensityCharacteristic extends HomekitFloatCharacteristic
     public boolean isAllowedValue(Double value) {
         return value != null && value >= 0.0 && value <= 1000.0;
     }
+
     /**
      * Gets the set of all valid PM10 density values (empty for continuous range).
      *
@@ -58,4 +62,4 @@ public class HomekitPM10DensityCharacteristic extends HomekitFloatCharacteristic
     public java.util.Set<Double> getAllowedValues() {
         return java.util.Collections.emptySet();
     }
-} 
+}

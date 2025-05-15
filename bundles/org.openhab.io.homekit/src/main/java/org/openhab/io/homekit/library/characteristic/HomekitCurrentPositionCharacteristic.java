@@ -15,7 +15,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  * @author Karel Goderis - Initial contribution
  */
-@HomekitCharacteristicType(type = "0000006D-0000-1000-8000-0026BB765291", name = "Current Position", tag = "currentPosition")
+@HomekitCharacteristicType(type = "0000006D-0000-1000-8000-0026BB765291", name = "Current Position", tag = "currentPosition", acceptedItemTypes = {"Number", "Rollershutter"})
 @NonNullByDefault
 public class HomekitCurrentPositionCharacteristic extends HomekitIntegerCharacteristic {
 
@@ -27,10 +27,11 @@ public class HomekitCurrentPositionCharacteristic extends HomekitIntegerCharacte
      * @param eventManager The event manager for handling HomeKit events
      * @param instanceId The instance ID for this characteristic
      */
-    public HomekitCurrentPositionCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitCurrentPositionCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 0, 100, "%");
         withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
-            .withDescription("Current Position");
+                .withDescription("Current Position");
     }
 
     /**
@@ -40,7 +41,8 @@ public class HomekitCurrentPositionCharacteristic extends HomekitIntegerCharacte
      * @param eventManager The event manager for handling HomeKit events
      * @param value The JSON value to initialize the characteristic with
      */
-    public HomekitCurrentPositionCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitCurrentPositionCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 

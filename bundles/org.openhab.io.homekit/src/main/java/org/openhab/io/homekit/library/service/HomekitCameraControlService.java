@@ -8,13 +8,13 @@ import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
+import org.openhab.io.homekit.library.characteristic.HomekitActiveCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitSelectedRTPStreamConfigurationCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitSetupEndpointsCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitStreamingStatusCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitSupportedAudioStreamConfigurationCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitSupportedRTPConfigurationCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitSupportedVideoStreamConfigurationCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitActiveCharacteristic;
 
 /**
  * HomeKit Camera RTP Stream Management Service.
@@ -37,10 +37,7 @@ public class HomekitCameraControlService extends AbstractHomekitService {
     public HomekitCameraControlService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Camera RTP Stream Management")
-            .withExtensible(false)
-            .withPrimary(false)
-            .withHidden(false);
+        withName("Camera RTP Stream Management").withExtensible(false).withPrimary(false).withHidden(false);
     }
 
     /**
@@ -61,8 +58,9 @@ public class HomekitCameraControlService extends AbstractHomekitService {
         // Required characteristics
         addCharacteristic(new HomekitSelectedRTPStreamConfigurationCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitSetupEndpointsCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(
+                new HomekitSetupEndpointsCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
         addCharacteristic(new HomekitStreamingStatusCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         addCharacteristic(new HomekitSupportedAudioStreamConfigurationCharacteristic(this, eventManager,
@@ -73,12 +71,13 @@ public class HomekitCameraControlService extends AbstractHomekitService {
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
 
         // Optional characteristics
-        addCharacteristic(new HomekitActiveCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(
+                new HomekitActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
     }
 
     @Override
     public boolean isExtensible() {
         return false;
     }
-} 
+}

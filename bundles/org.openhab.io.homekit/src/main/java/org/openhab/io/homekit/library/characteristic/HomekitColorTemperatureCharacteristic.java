@@ -15,17 +15,19 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  * @author Karel Goderis - Initial contribution
  */
-@HomekitCharacteristicType(type = "000000CE-0000-1000-8000-0026BB765291", name = "Color Temperature", tag = "colorTemperature")
+@HomekitCharacteristicType(type = "000000CE-0000-1000-8000-0026BB765291", name = "Color Temperature", tag = "colorTemperature", acceptedItemTypes = {"Number", "Dimmer"})
 @NonNullByDefault
 public class HomekitColorTemperatureCharacteristic extends HomekitFloatCharacteristic {
 
-    public HomekitColorTemperatureCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitColorTemperatureCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 140.0, 500.0, 1.0, "mired");
         withInstanceId(instanceId).withPairedWrite(true).withPairedRead(true).withEvents(true)
-            .withDescription("Color Temperature");
+                .withDescription("Color Temperature");
     }
 
-    public HomekitColorTemperatureCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitColorTemperatureCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 

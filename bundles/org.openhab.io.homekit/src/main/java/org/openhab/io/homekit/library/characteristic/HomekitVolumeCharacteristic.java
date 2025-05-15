@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -29,11 +30,8 @@ public class HomekitVolumeCharacteristic extends HomekitIntegerCharacteristic {
      */
     public HomekitVolumeCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, 0, 100, "percentage");
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(true)
-            .withEvents(true)
-            .withDescription("Volume");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true)
+                .withDescription("Volume");
     }
 
     /**
@@ -56,4 +54,4 @@ public class HomekitVolumeCharacteristic extends HomekitIntegerCharacteristic {
     public java.util.Set<Integer> getAllowedValues() {
         return java.util.Collections.emptySet();
     }
-} 
+}

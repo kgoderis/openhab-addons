@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -15,7 +16,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000066-0000-1000-8000-0026BB765291", name = "Security System Current State", tag = "securitySystemCurrentState")
+@HomekitCharacteristicType(type = "00000066-0000-1000-8000-0026BB765291", name = "Security System Current State", tag = "securitySystemCurrentState", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitSecuritySystemCurrentStateCharacteristic extends HomekitEnumCharacteristic {
     public enum SecuritySystemCurrentState {
@@ -24,10 +25,17 @@ public class HomekitSecuritySystemCurrentStateCharacteristic extends HomekitEnum
         NIGHT_ARM(2),
         DISARMED(3),
         ALARM_TRIGGERED(4);
-        
+
         private final int value;
-        SecuritySystemCurrentState(int value) { this.value = value; }
-        public int getValue() { return value; }
+
+        SecuritySystemCurrentState(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
         public static SecuritySystemCurrentState fromValue(int value) {
             for (SecuritySystemCurrentState state : values()) {
                 if (state.value == value) {
@@ -38,22 +46,22 @@ public class HomekitSecuritySystemCurrentStateCharacteristic extends HomekitEnum
         }
     }
 
-    public HomekitSecuritySystemCurrentStateCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitSecuritySystemCurrentStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, 5);
-        withInstanceId(instanceId)
-            .withPairedRead(true)
-            .withPairedWrite(false)
-            .withEvents(true)
-            .withDescription("Security System Current State");
+        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(true)
+                .withDescription("Security System Current State");
     }
 
-    public HomekitSecuritySystemCurrentStateCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitSecuritySystemCurrentStateCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        if (value == null) return false;
+        if (value == null)
+            return false;
         try {
             SecuritySystemCurrentState.fromValue(value);
             return true;
@@ -70,4 +78,4 @@ public class HomekitSecuritySystemCurrentStateCharacteristic extends HomekitEnum
         }
         return allowed;
     }
-} 
+}

@@ -1,24 +1,27 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Map;
+
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitTLV8Characteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import java.util.Map;
-import org.openhab.core.types.State;
 
 /**
  * HomeKit Lock Management Control Point Characteristic.
  * <p>
- * This characteristic represents the lock management control point for a device, used to send control commands to the lock management system. The value is encoded as TLV8 and must be interpreted according to the HAP specification.
+ * This characteristic represents the lock management control point for a device, used to send control commands to the
+ * lock management system. The value is encoded as TLV8 and must be interpreted according to the HAP specification.
  * <p>
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "0000011C-0000-1000-8000-0026BB765291", name = "Lock Management Control Point", tag = "lockManagementControlPoint")
+@HomekitCharacteristicType(type = "0000011C-0000-1000-8000-0026BB765291", name = "Lock Management Control Point", tag = "lockManagementControlPoint", acceptedItemTypes = {"String"})
 @NonNullByDefault
 public class HomekitLockManagementControlPointCharacteristic extends HomekitTLV8Characteristic {
     /**
@@ -28,13 +31,11 @@ public class HomekitLockManagementControlPointCharacteristic extends HomekitTLV8
      * @param eventManager the event manager for handling HomeKit events
      * @param instanceId the instance ID for this characteristic
      */
-    public HomekitLockManagementControlPointCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitLockManagementControlPointCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId)
-            .withPairedWrite(true)
-            .withPairedRead(true)
-            .withEvents(false)
-            .withDescription("Lock Management Control Point");
+        withInstanceId(instanceId).withPairedWrite(true).withPairedRead(true).withEvents(false)
+                .withDescription("Lock Management Control Point");
     }
 
     /**
@@ -44,7 +45,8 @@ public class HomekitLockManagementControlPointCharacteristic extends HomekitTLV8
      * @param eventManager the event manager for handling HomeKit events
      * @param value the JSON value to initialize the characteristic with
      */
-    public HomekitLockManagementControlPointCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitLockManagementControlPointCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
@@ -106,4 +108,4 @@ public class HomekitLockManagementControlPointCharacteristic extends HomekitTLV8
     public State toState(Map<Integer, Object> value) {
         throw new UnsupportedOperationException("toState not implemented");
     }
-} 
+}

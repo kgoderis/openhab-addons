@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -15,7 +16,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  * @author Karel Goderis - Initial contribution
  */
-@HomekitCharacteristicType(type = "00000071-0000-1000-8000-0026BB765291", name = "Occupancy Detected", tag = "occupancyDetected")
+@HomekitCharacteristicType(type = "00000071-0000-1000-8000-0026BB765291", name = "Occupancy Detected", tag = "occupancyDetected", acceptedItemTypes = {"Number", "String"})
 @NonNullByDefault
 public class HomekitOccupancyDetectedCharacteristic extends HomekitEnumCharacteristic {
 
@@ -50,10 +51,11 @@ public class HomekitOccupancyDetectedCharacteristic extends HomekitEnumCharacter
      * @param eventManager The event manager for handling HomeKit events
      * @param instanceId The instance ID for this characteristic
      */
-    public HomekitOccupancyDetectedCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
+    public HomekitOccupancyDetectedCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            long instanceId) {
         super(service, eventManager, OccupancyDetected.values().length);
         withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(true)
-            .withDescription("Occupancy Detected");
+                .withDescription("Occupancy Detected");
     }
 
     /**
@@ -63,19 +65,19 @@ public class HomekitOccupancyDetectedCharacteristic extends HomekitEnumCharacter
      * @param eventManager The event manager for handling HomeKit events
      * @param value The JSON value to initialize the characteristic with
      */
-    public HomekitOccupancyDetectedCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
+    public HomekitOccupancyDetectedCharacteristic(HomekitService service, HomekitEventManager eventManager,
+            JsonValue value) {
         super(service, eventManager, value);
     }
 
     @Override
     public boolean isAllowedValue(Integer value) {
-        return value != null && (value == OccupancyDetected.NOT_DETECTED.getCode() || 
-                                value == OccupancyDetected.DETECTED.getCode());
+        return value != null
+                && (value == OccupancyDetected.NOT_DETECTED.getCode() || value == OccupancyDetected.DETECTED.getCode());
     }
 
     @Override
     public java.util.Set<Integer> getAllowedValues() {
-        return java.util.Set.of(OccupancyDetected.NOT_DETECTED.getCode(), 
-                              OccupancyDetected.DETECTED.getCode());
+        return java.util.Set.of(OccupancyDetected.NOT_DETECTED.getCode(), OccupancyDetected.DETECTED.getCode());
     }
-} 
+}
