@@ -14,7 +14,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/SiriTouchToUse">HomeKit Documentation</a>
  */
-@HomekitCharacteristicType(type = "00000257-0000-1000-8000-0026BB765291", name = "Siri Touch To Use", tag = "siriTouchToUse", acceptedItemTypes = {"Switch", "Contact"})
+@HomekitCharacteristicType(type = "00000257-0000-1000-8000-0026BB765291", name = "Siri Touch To Use", tag = "siriTouchToUse", acceptedItemTypes = {
+        "Switch", "Contact" })
 @NonNullByDefault
 public class HomekitSiriTouchToUseCharacteristic extends HomekitBooleanCharacteristic {
     public HomekitSiriTouchToUseCharacteristic(HomekitService service, HomekitEventManager eventManager,

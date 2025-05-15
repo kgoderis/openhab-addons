@@ -15,7 +15,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  * @author Karel Goderis - Initial contribution
  */
-@HomekitCharacteristicType(type = "000000C7-0000-1000-8000-0026BB765291", name = "PM10 Density", tag = "pm10Density", acceptedItemTypes = {"Number"})
+@HomekitCharacteristicType(type = "000000C7-0000-1000-8000-0026BB765291", name = "PM10 Density", tag = "pm10Density", acceptedItemTypes = {
+        "Number" })
 @NonNullByDefault
 public class HomekitPM10DensityCharacteristic extends HomekitFloatCharacteristic {
     /**

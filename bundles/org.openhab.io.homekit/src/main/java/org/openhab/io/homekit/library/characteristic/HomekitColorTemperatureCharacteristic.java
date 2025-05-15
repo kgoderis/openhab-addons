@@ -15,7 +15,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  * @author Karel Goderis - Initial contribution
  */
-@HomekitCharacteristicType(type = "000000CE-0000-1000-8000-0026BB765291", name = "Color Temperature", tag = "colorTemperature", acceptedItemTypes = {"Number", "Dimmer"})
+@HomekitCharacteristicType(type = "000000CE-0000-1000-8000-0026BB765291", name = "Color Temperature", tag = "colorTemperature", acceptedItemTypes = {
+        "Number", "Dimmer" })
 @NonNullByDefault
 public class HomekitColorTemperatureCharacteristic extends HomekitFloatCharacteristic {
 

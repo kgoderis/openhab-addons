@@ -15,7 +15,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
  * @author Karel Goderis - Initial Contribution
  */
-@HomekitCharacteristicType(type = "000000C4-0000-1000-8000-0026BB765291", name = "Nitrogen Dioxide Density", tag = "nitrogenDioxideDensity")
+@HomekitCharacteristicType(type = "000000C4-0000-1000-8000-0026BB765291", name = "Nitrogen Dioxide Density", tag = "nitrogenDioxideDensity", acceptedItemTypes = {"Number"})
 @NonNullByDefault
 public class HomekitNitrogenDioxideDensityCharacteristic extends HomekitFloatCharacteristic {
 

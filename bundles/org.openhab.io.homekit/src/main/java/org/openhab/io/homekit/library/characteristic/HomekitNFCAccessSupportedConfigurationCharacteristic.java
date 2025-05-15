@@ -17,7 +17,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developers.homebridge.io/#/characteristic/NFCAccessSupportedConfiguration">HomeKit
  *      Documentation</a>
  */
-@HomekitCharacteristicType(type = "00000265-0000-1000-8000-0026BB765291", name = "NFC Access Supported Configuration", tag = "nfcAccessSupportedConfiguration")
+@HomekitCharacteristicType(type = "00000265-0000-1000-8000-0026BB765291", name = "NFC Access Supported Configuration", tag = "nfcAccessSupportedConfiguration", acceptedItemTypes = {"String"})
 @NonNullByDefault
 public class HomekitNFCAccessSupportedConfigurationCharacteristic extends HomekitTLV8Characteristic {
     public HomekitNFCAccessSupportedConfigurationCharacteristic(HomekitService service,

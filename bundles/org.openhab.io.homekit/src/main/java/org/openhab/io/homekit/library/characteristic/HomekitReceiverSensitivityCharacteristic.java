@@ -14,7 +14,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/ReceiverSensitivity">HomeKit Documentation</a>
  */
-@HomekitCharacteristicType(type = "00000244-0000-1000-8000-0026BB765291", name = "Receiver Sensitivity", tag = "receiverSensitivity", acceptedItemTypes = {"Number"})
+@HomekitCharacteristicType(type = "00000244-0000-1000-8000-0026BB765291", name = "Receiver Sensitivity", tag = "receiverSensitivity", acceptedItemTypes = {
+        "Number" })
 @NonNullByDefault
 public class HomekitReceiverSensitivityCharacteristic extends HomekitIntegerCharacteristic {
     public HomekitReceiverSensitivityCharacteristic(HomekitService service, HomekitEventManager eventManager,

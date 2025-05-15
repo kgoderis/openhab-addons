@@ -15,7 +15,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  * @author Karel Goderis - Initial contribution
  */
-@HomekitCharacteristicType(type = "000000AA-0000-1000-8000-0026BB765291", name = "Current Slat State", tag = "currentSlatState", acceptedItemTypes = {"Number", "String"})
+@HomekitCharacteristicType(type = "000000AA-0000-1000-8000-0026BB765291", name = "Current Slat State", tag = "currentSlatState", acceptedItemTypes = {
+        "Number", "String" })
 @NonNullByDefault
 public class HomekitCurrentSlatStateCharacteristic extends HomekitEnumCharacteristic {
     /**

@@ -24,7 +24,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "00000008-0000-1000-8000-0026BB765291", name = "Brightness", tag = "brightness", acceptedItemTypes = {"Number", "Dimmer"})
+@HomekitCharacteristicType(type = "00000008-0000-1000-8000-0026BB765291", name = "Brightness", tag = "brightness", acceptedItemTypes = {
+        "Number", "Dimmer" })
 @NonNullByDefault
 public class HomekitBrightnessCharacteristic extends HomekitFloatCharacteristic {
 

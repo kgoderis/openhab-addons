@@ -16,7 +16,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis - Initial Contribution
  */
 @NonNullByDefault
-@HomekitCharacteristicType(type = "000000C9-0000-1000-8000-0026BB765291", name = "Relative Humidity Dehumidifier Threshold", tag = "relativeHumidityDehumidifierThreshold", acceptedItemTypes = {"Number"})
+@HomekitCharacteristicType(type = "000000C9-0000-1000-8000-0026BB765291", name = "Relative Humidity Dehumidifier Threshold", tag = "relativeHumidityDehumidifierThreshold", acceptedItemTypes = {
+        "Number" })
 public class HomekitRelativeHumidityDehumidifierThresholdCharacteristic extends HomekitFloatCharacteristic {
     public HomekitRelativeHumidityDehumidifierThresholdCharacteristic(HomekitService service,
             HomekitEventManager eventManager, long instanceId) {

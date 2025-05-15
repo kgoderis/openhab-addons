@@ -17,7 +17,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "0000021E-0000-1000-8000-0026BB765291", name = "WiFi Satellite Status", tag = "wifiSatelliteStatus", acceptedItemTypes = {"Number", "String"})
+@HomekitCharacteristicType(type = "0000021E-0000-1000-8000-0026BB765291", name = "WiFi Satellite Status", tag = "wifiSatelliteStatus", acceptedItemTypes = {
+        "Number", "String" })
 @NonNullByDefault
 public class HomekitWiFiSatelliteStatusCharacteristic extends HomekitEnumCharacteristic {
     /**

@@ -21,7 +21,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "00000220-0000-1000-8000-0026BB765291", name = "Product Data", tag = "productData", acceptedItemTypes = {"String"})
+@HomekitCharacteristicType(type = "00000220-0000-1000-8000-0026BB765291", name = "Product Data", tag = "productData", acceptedItemTypes = {
+        "String" })
 @NonNullByDefault
 public class HomekitProductDataCharacteristic extends HomekitTLV8Characteristic {
     public HomekitProductDataCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {

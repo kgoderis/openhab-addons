@@ -77,12 +77,12 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
     public HomekitServiceThingHandler(Thing thing, HomekitAccessoryServerRegistry serverRegistry,
             HomekitAccessoryRegistry accessoryRegistry, HomekitChannelTypeProvider homekitChannelTypeProvider,
             HomekitThingTypeProvider homekitThingTypeProvider, HomekitEventManager eventManager,
-            HomekitServiceFactory serviceFactory, HomekitCharacteristicFactory characteristicFactory) { 
+            HomekitServiceFactory serviceFactory, HomekitCharacteristicFactory characteristicFactory) {
         super(thing, serverRegistry, accessoryRegistry, homekitChannelTypeProvider, homekitThingTypeProvider,
                 eventManager);
         this.serviceFactory = serviceFactory;
         this.characteristicFactory = characteristicFactory;
-        
+
         // // Parse configuration
         // Configuration config = thing.getConfiguration();
         // validateConfiguration(config);

@@ -21,7 +21,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "0000006C-0000-1000-8000-0026BB765291", name = "Current Horizontal Tilt Angle", tag = "currentHorizontalTiltAngle", acceptedItemTypes = {"Number", "Rollershutter"})
+@HomekitCharacteristicType(type = "0000006C-0000-1000-8000-0026BB765291", name = "Current Horizontal Tilt Angle", tag = "currentHorizontalTiltAngle", acceptedItemTypes = {
+        "Number", "Rollershutter" })
 @NonNullByDefault
 public class HomekitCurrentHorizontalTiltAngleCharacteristic extends HomekitIntegerCharacteristic {
 

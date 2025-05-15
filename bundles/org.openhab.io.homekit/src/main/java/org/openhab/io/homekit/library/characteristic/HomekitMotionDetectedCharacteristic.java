@@ -17,7 +17,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/homekit/hap-characteristic-types/motion-detected">HAP
  *      Specification</a>
  */
-@HomekitCharacteristicType(type = "00000022-0000-1000-8000-0026BB765291", name = "Motion Detected", tag = "motionDetected", acceptedItemTypes = {"Number", "String"})
+@HomekitCharacteristicType(type = "00000022-0000-1000-8000-0026BB765291", name = "Motion Detected", tag = "motionDetected", acceptedItemTypes = {
+        "Number", "String" })
 @NonNullByDefault
 public class HomekitMotionDetectedCharacteristic extends HomekitEnumCharacteristic {
 

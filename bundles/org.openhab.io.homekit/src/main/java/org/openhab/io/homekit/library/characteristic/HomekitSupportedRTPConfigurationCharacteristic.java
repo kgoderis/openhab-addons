@@ -21,7 +21,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "00000116-0000-1000-8000-0026BB765291", name = "Supported RTP Configuration", tag = "supportedRTPConfiguration", acceptedItemTypes = {"String"})
+@HomekitCharacteristicType(type = "00000116-0000-1000-8000-0026BB765291", name = "Supported RTP Configuration", tag = "supportedRTPConfiguration", acceptedItemTypes = {
+        "String" })
 @NonNullByDefault
 public class HomekitSupportedRTPConfigurationCharacteristic extends HomekitTLV8Characteristic {
     public HomekitSupportedRTPConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager,

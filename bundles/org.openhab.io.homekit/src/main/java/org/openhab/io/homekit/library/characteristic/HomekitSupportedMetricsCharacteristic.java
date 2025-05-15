@@ -16,7 +16,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/SupportedMetrics">HomeKit Documentation</a>
  */
-@HomekitCharacteristicType(type = "00000271-0000-1000-8000-0026BB765291", name = "Supported Metrics", tag = "supportedMetrics", acceptedItemTypes = {"String"})
+@HomekitCharacteristicType(type = "00000271-0000-1000-8000-0026BB765291", name = "Supported Metrics", tag = "supportedMetrics", acceptedItemTypes = {
+        "String" })
 @NonNullByDefault
 public class HomekitSupportedMetricsCharacteristic extends HomekitTLV8Characteristic {
     public HomekitSupportedMetricsCharacteristic(HomekitService service, HomekitEventManager eventManager,

@@ -16,7 +16,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis - Initial Contribution
  */
 @NonNullByDefault
-@HomekitCharacteristicType(type = "000000E6-0000-1000-8000-0026BB765291", name = "Identifier", tag = "identifier", acceptedItemTypes = {"Number"})
+@HomekitCharacteristicType(type = "000000E6-0000-1000-8000-0026BB765291", name = "Identifier", tag = "identifier", acceptedItemTypes = {
+        "Number" })
 public class HomekitIdentifierCharacteristic extends HomekitLongCharacteristic {
     public HomekitIdentifierCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, 0L, Long.MAX_VALUE, 1L);

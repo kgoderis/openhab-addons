@@ -22,7 +22,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/homekit/hap-characteristic-types/lock-control-point">HAP
  *      Specification</a>
  */
-@HomekitCharacteristicType(type = "00000019-0000-1000-8000-0026BB765291", name = "Lock Control Point", tag = "lockControlPoint")
+@HomekitCharacteristicType(type = "00000019-0000-1000-8000-0026BB765291", name = "Lock Control Point", tag = "lockControlPoint", acceptedItemTypes = {"String"})
 @NonNullByDefault
 public class HomekitLockControlPointCharacteristic extends HomekitTLV8Characteristic {
     public static final int LOCK_OPERATION = 1;

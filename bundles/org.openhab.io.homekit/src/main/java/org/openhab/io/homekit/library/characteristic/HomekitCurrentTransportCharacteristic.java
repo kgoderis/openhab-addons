@@ -14,7 +14,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/CurrentTransport">HomeKit Documentation</a>
  */
-@HomekitCharacteristicType(type = "0000022B-0000-1000-8000-0026BB765291", name = "Current Transport", tag = "currentTransport", acceptedItemTypes = {"Number", "String"})
+@HomekitCharacteristicType(type = "0000022B-0000-1000-8000-0026BB765291", name = "Current Transport", tag = "currentTransport", acceptedItemTypes = {
+        "Number", "String" })
 @NonNullByDefault
 public class HomekitCurrentTransportCharacteristic extends HomekitEnumCharacteristic {
     public static final int STOPPED = 0;

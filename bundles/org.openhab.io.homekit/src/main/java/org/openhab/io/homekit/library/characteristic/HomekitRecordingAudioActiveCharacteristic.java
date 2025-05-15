@@ -17,7 +17,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
  * @author Karel Goderis - Initial Contribution
  */
-@HomekitCharacteristicType(type = "00000226-0000-1000-8000-0026BB765291", name = "Recording Audio Active", tag = "recordingAudioActive")
+@HomekitCharacteristicType(type = "00000226-0000-1000-8000-0026BB765291", name = "Recording Audio Active", tag = "recordingAudioActive", acceptedItemTypes = {"Switch"})
 @NonNullByDefault
 public class HomekitRecordingAudioActiveCharacteristic extends HomekitIntegerCharacteristic {
     /**

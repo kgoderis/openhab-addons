@@ -22,7 +22,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "0000004C-0000-1000-8000-0026BB765291", name = "Pair Setup", tag = "pairSetup")
+@HomekitCharacteristicType(type = "0000004C-0000-1000-8000-0026BB765291", name = "Pair Setup", tag = "pairSetup", acceptedItemTypes = {"String"})
 @NonNullByDefault
 public class HomekitPairSetupCharacteristic extends HomekitTLV8Characteristic {
 

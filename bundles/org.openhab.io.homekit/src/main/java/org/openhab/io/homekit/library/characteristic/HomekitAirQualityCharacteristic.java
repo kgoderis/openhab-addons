@@ -16,7 +16,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000095-0000-1000-8000-0026BB765291", name = "Air Quality", tag = "airQuality", acceptedItemTypes = {"Number", "String"})
+@HomekitCharacteristicType(type = "00000095-0000-1000-8000-0026BB765291", name = "Air Quality", tag = "airQuality", acceptedItemTypes = {
+        "Number", "String" })
 @NonNullByDefault
 public class HomekitAirQualityCharacteristic extends HomekitEnumCharacteristic {
 

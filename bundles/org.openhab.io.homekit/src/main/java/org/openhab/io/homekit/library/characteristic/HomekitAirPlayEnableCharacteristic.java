@@ -17,7 +17,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/homekit/hap-characteristic-types/airplay-enable">HAP
  *      Specification</a>
  */
-@HomekitCharacteristicType(type = "0000025B-0000-1000-8000-0026BB765291", name = "AirPlay Enable", tag = "airPlayEnable", acceptedItemTypes = {"Switch", "Contact"})
+@HomekitCharacteristicType(type = "0000025B-0000-1000-8000-0026BB765291", name = "AirPlay Enable", tag = "airPlayEnable", acceptedItemTypes = {
+        "Switch", "Contact" })
 @NonNullByDefault
 public class HomekitAirPlayEnableCharacteristic extends HomekitBooleanCharacteristic {
     public HomekitAirPlayEnableCharacteristic(HomekitService service, HomekitEventManager eventManager,

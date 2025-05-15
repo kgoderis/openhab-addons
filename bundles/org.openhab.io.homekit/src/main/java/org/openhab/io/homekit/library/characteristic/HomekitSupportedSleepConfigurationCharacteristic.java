@@ -17,7 +17,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developers.homebridge.io/#/characteristic/SupportedSleepConfiguration">HomeKit
  *      Documentation</a>
  */
-@HomekitCharacteristicType(type = "00000251-0000-1000-8000-0026BB765291", name = "Supported Sleep Configuration", tag = "supportedSleepConfiguration", acceptedItemTypes = {"String"})
+@HomekitCharacteristicType(type = "00000251-0000-1000-8000-0026BB765291", name = "Supported Sleep Configuration", tag = "supportedSleepConfiguration", acceptedItemTypes = {
+        "String" })
 @NonNullByDefault
 public class HomekitSupportedSleepConfigurationCharacteristic extends HomekitTLV8Characteristic {
     public HomekitSupportedSleepConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager,

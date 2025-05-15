@@ -15,7 +15,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  * @author Karel Goderis - Initial contribution
  */
-@HomekitCharacteristicType(type = "000000B3-0000-1000-8000-0026BB765291", name = "Current Humidifier Dehumidifier State", tag = "currentHumidifierDehumidifierState", acceptedItemTypes = {"Number", "String"})
+@HomekitCharacteristicType(type = "000000B3-0000-1000-8000-0026BB765291", name = "Current Humidifier Dehumidifier State", tag = "currentHumidifierDehumidifierState", acceptedItemTypes = {
+        "Number", "String" })
 @NonNullByDefault
 public class HomekitCurrentHumidifierDehumidifierStateCharacteristic extends HomekitEnumCharacteristic {
 

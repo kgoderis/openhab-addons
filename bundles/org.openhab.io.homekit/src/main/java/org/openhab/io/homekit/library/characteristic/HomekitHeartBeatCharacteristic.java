@@ -14,7 +14,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/HeartBeat">HomeKit Documentation</a>
  */
-@HomekitCharacteristicType(type = "0000024A-0000-1000-8000-0026BB765291", name = "Heart Beat", tag = "heartBeat")
+@HomekitCharacteristicType(type = "0000024A-0000-1000-8000-0026BB765291", name = "Heart Beat", tag = "heartBeat", acceptedItemTypes = {"Number"})
 @NonNullByDefault
 public class HomekitHeartBeatCharacteristic extends HomekitIntegerCharacteristic {
     public HomekitHeartBeatCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {

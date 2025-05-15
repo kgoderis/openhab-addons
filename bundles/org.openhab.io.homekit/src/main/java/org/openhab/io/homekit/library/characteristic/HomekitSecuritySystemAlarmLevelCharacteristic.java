@@ -20,7 +20,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "0000008F-0000-1000-8000-0026BB765291", name = "Security System Alarm Level", tag = "securitySystemAlarmLevel", acceptedItemTypes = {"Number", "String"})
+@HomekitCharacteristicType(type = "0000008F-0000-1000-8000-0026BB765291", name = "Security System Alarm Level", tag = "securitySystemAlarmLevel", acceptedItemTypes = {
+        "Number", "String" })
 @NonNullByDefault
 public class HomekitSecuritySystemAlarmLevelCharacteristic extends HomekitEnumCharacteristic {
     /**

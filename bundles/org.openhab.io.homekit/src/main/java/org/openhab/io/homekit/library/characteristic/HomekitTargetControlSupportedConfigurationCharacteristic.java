@@ -21,7 +21,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "00000123-0000-1000-8000-0026BB765291", name = "Target Control Supported Configuration", tag = "targetControlSupportedConfiguration")
+@HomekitCharacteristicType(type = "00000123-0000-1000-8000-0026BB765291", name = "Target Control Supported Configuration", tag = "targetControlSupportedConfiguration", acceptedItemTypes = {
+        "String" })
 @NonNullByDefault
 public class HomekitTargetControlSupportedConfigurationCharacteristic extends HomekitTLV8Characteristic {
 

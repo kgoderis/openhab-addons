@@ -20,7 +20,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "000000C0-0000-1000-8000-0026BB765291", name = "Slat Type", tag = "slatType", acceptedItemTypes = {"Number", "String"})
+@HomekitCharacteristicType(type = "000000C0-0000-1000-8000-0026BB765291", name = "Slat Type", tag = "slatType", acceptedItemTypes = {
+        "Number", "String" })
 @NonNullByDefault
 public class HomekitSlatTypeCharacteristic extends HomekitIntegerCharacteristic {
     /**

@@ -15,7 +15,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000706-0000-1000-8000-0026BB765291", name = "Thread OpenThread Version", tag = "threadOpenThreadVersion")
+@HomekitCharacteristicType(type = "00000706-0000-1000-8000-0026BB765291", name = "Thread OpenThread Version", tag = "threadOpenThreadVersion", acceptedItemTypes = {"String"})
 @NonNullByDefault
 public class HomekitThreadOpenThreadVersionCharacteristic extends HomekitStringCharacteristic {
     public HomekitThreadOpenThreadVersionCharacteristic(HomekitService service, HomekitEventManager eventManager,

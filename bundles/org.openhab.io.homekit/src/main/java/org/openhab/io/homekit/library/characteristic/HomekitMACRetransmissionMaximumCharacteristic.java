@@ -14,7 +14,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/MACRetransmissionMaximum">HomeKit Documentation</a>
  */
-@HomekitCharacteristicType(type = "00000247-0000-1000-8000-0026BB765291", name = "MAC Retransmission Maximum", tag = "macRetransmissionMaximum", acceptedItemTypes = {"Number"})
+@HomekitCharacteristicType(type = "00000247-0000-1000-8000-0026BB765291", name = "MAC Retransmission Maximum", tag = "macRetransmissionMaximum", acceptedItemTypes = {
+        "Number" })
 @NonNullByDefault
 public class HomekitMACRetransmissionMaximumCharacteristic extends HomekitIntegerCharacteristic {
     public HomekitMACRetransmissionMaximumCharacteristic(HomekitService service, HomekitEventManager eventManager,

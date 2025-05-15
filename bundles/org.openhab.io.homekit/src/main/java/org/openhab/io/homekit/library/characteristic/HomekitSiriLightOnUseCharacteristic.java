@@ -14,7 +14,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/SiriLightOnUse">HomeKit Documentation</a>
  */
-@HomekitCharacteristicType(type = "00000258-0000-1000-8000-0026BB765291", name = "Siri Light On Use", tag = "siriLightOnUse", acceptedItemTypes = {"Switch", "Contact"})
+@HomekitCharacteristicType(type = "00000258-0000-1000-8000-0026BB765291", name = "Siri Light On Use", tag = "siriLightOnUse", acceptedItemTypes = {
+        "Switch", "Contact" })
 @NonNullByDefault
 public class HomekitSiriLightOnUseCharacteristic extends HomekitBooleanCharacteristic {
     public HomekitSiriLightOnUseCharacteristic(HomekitService service, HomekitEventManager eventManager,

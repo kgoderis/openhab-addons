@@ -15,7 +15,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developers.homebridge.io/#/characteristic/CurrentHeatingCoolingState">HomeKit Documentation</a>
  * @author Karel Goderis - Initial contribution
  */
-@HomekitCharacteristicType(type = "0000000F-0000-1000-8000-0026BB765291", name = "Current Heating Cooling State", tag = "currentHeatingCoolingState", acceptedItemTypes = {"Number", "String"})
+@HomekitCharacteristicType(type = "0000000F-0000-1000-8000-0026BB765291", name = "Current Heating Cooling State", tag = "currentHeatingCoolingState", acceptedItemTypes = {
+        "Number", "String" })
 @NonNullByDefault
 public class HomekitCurrentHeatingCoolingStateCharacteristic extends HomekitEnumCharacteristic {
     /**

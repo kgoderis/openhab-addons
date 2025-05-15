@@ -17,7 +17,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @NonNullByDefault
-@HomekitCharacteristicType(type = "00000037-0000-1000-8000-0026BB765291", name = "Version", tag = "version", acceptedItemTypes = {"String", "Text"})
+@HomekitCharacteristicType(type = "00000037-0000-1000-8000-0026BB765291", name = "Version", tag = "version", acceptedItemTypes = {
+        "String", "Text" })
 public class HomekitVersionCharacteristic extends HomekitStringCharacteristic {
     public HomekitVersionCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager);

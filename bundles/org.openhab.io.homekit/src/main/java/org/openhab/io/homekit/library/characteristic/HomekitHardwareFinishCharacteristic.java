@@ -22,7 +22,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "0000026C-0000-1000-8000-0026BB765291", name = "Hardware Finish", tag = "hardwareFinish", acceptedItemTypes = {"String"})
+@HomekitCharacteristicType(type = "0000026C-0000-1000-8000-0026BB765291", name = "Hardware Finish", tag = "hardwareFinish", acceptedItemTypes = {
+        "String" })
 @NonNullByDefault
 public class HomekitHardwareFinishCharacteristic extends HomekitTLV8Characteristic {
     /**

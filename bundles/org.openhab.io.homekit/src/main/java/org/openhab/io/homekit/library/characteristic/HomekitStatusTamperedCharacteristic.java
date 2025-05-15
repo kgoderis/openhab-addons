@@ -20,7 +20,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "0000007A-0000-1000-8000-0026BB765291", name = "Status Tampered", tag = "statusTampered", acceptedItemTypes = {"Number", "String"})
+@HomekitCharacteristicType(type = "0000007A-0000-1000-8000-0026BB765291", name = "Status Tampered", tag = "statusTampered", acceptedItemTypes = {
+        "Number", "String" })
 @NonNullByDefault
 public class HomekitStatusTamperedCharacteristic extends HomekitEnumCharacteristic {
 

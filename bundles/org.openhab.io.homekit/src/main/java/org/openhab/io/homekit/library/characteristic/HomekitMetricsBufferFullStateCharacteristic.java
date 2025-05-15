@@ -14,7 +14,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/MetricsBufferFullState">HomeKit Documentation</a>
  */
-@HomekitCharacteristicType(type = "00000272-0000-1000-8000-0026BB765291", name = "Metrics Buffer Full State", tag = "metricsBufferFullState", acceptedItemTypes = {"Switch", "Contact"})
+@HomekitCharacteristicType(type = "00000272-0000-1000-8000-0026BB765291", name = "Metrics Buffer Full State", tag = "metricsBufferFullState", acceptedItemTypes = {
+        "Switch", "Contact" })
 @NonNullByDefault
 public class HomekitMetricsBufferFullStateCharacteristic extends HomekitBooleanCharacteristic {
     public HomekitMetricsBufferFullStateCharacteristic(HomekitService service, HomekitEventManager eventManager,

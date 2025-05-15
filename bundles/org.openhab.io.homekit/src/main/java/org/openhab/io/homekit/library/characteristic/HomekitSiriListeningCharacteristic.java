@@ -14,7 +14,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/SiriListening">HomeKit Documentation</a>
  */
-@HomekitCharacteristicType(type = "00000256-0000-1000-8000-0026BB765291", name = "Siri Listening", tag = "siriListening")
+@HomekitCharacteristicType(type = "0000025C-0000-1000-8000-0026BB765291", name = "Siri Listening", tag = "siriListening", acceptedItemTypes = {"Switch"})
 @NonNullByDefault
 public class HomekitSiriListeningCharacteristic extends HomekitBooleanCharacteristic {
     public HomekitSiriListeningCharacteristic(HomekitService service, HomekitEventManager eventManager,

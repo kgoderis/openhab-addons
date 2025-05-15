@@ -16,7 +16,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  * @author Karel Goderis - Initial contribution
  */
-@HomekitCharacteristicType(type = "00000070-0000-1000-8000-0026BB765291", name = "Leak Detected", tag = "leakDetected", acceptedItemTypes = {"Number", "String"})
+@HomekitCharacteristicType(type = "00000070-0000-1000-8000-0026BB765291", name = "Leak Detected", tag = "leakDetected", acceptedItemTypes = {
+        "Number", "String" })
 @NonNullByDefault
 public class HomekitLeakDetectedCharacteristic extends HomekitEnumCharacteristic {
 

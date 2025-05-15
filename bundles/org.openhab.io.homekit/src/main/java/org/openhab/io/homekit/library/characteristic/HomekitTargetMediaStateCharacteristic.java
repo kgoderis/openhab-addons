@@ -16,7 +16,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000137-0000-1000-8000-0026BB765291", name = "Target Media State", tag = "targetMediaState", acceptedItemTypes = {"Number", "String"})
+@HomekitCharacteristicType(type = "00000137-0000-1000-8000-0026BB765291", name = "Target Media State", tag = "targetMediaState", acceptedItemTypes = {
+        "Number", "String" })
 @NonNullByDefault
 public class HomekitTargetMediaStateCharacteristic extends HomekitEnumCharacteristic {
     public enum TargetMediaState {

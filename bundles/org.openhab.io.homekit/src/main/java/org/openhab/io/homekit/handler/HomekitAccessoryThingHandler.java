@@ -116,7 +116,8 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
 
                     String characteristicType;
                     try {
-                        characteristicType = characteristicFactory.getCharacteristicTypeFromTag(channel.getUID().getIdWithoutGroup());
+                        characteristicType = characteristicFactory
+                                .getCharacteristicTypeFromTag(channel.getUID().getIdWithoutGroup());
                     } catch (Exception e) {
                         logger.warn("HomekitCharacteristic type could not be determined for characteristic tag: {}",
                                 channel.getUID().getIdWithoutGroup());

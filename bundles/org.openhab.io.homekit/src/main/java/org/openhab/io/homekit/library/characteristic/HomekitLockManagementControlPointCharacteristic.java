@@ -21,7 +21,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "0000011C-0000-1000-8000-0026BB765291", name = "Lock Management Control Point", tag = "lockManagementControlPoint", acceptedItemTypes = {"String"})
+@HomekitCharacteristicType(type = "0000011C-0000-1000-8000-0026BB765291", name = "Lock Management Control Point", tag = "lockManagementControlPoint", acceptedItemTypes = {
+        "String" })
 @NonNullByDefault
 public class HomekitLockManagementControlPointCharacteristic extends HomekitTLV8Characteristic {
     /**

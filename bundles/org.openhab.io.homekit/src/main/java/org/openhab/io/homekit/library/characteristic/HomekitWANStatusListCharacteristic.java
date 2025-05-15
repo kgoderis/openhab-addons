@@ -21,7 +21,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "00000212-0000-1000-8000-0026BB765291", name = "WAN Status List", tag = "wanStatusList", acceptedItemTypes = {"String"})
+@HomekitCharacteristicType(type = "00000212-0000-1000-8000-0026BB765291", name = "WAN Status List", tag = "wanStatusList", acceptedItemTypes = {
+        "String" })
 @NonNullByDefault
 public class HomekitWANStatusListCharacteristic extends HomekitTLV8Characteristic {
     public HomekitWANStatusListCharacteristic(HomekitService service, HomekitEventManager eventManager,

@@ -16,7 +16,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/OperatingStateResponse">HomeKit Documentation</a>
  */
-@HomekitCharacteristicType(type = "00000232-0000-1000-8000-0026BB765291", name = "Operating State Response", tag = "operatingStateResponse", acceptedItemTypes = {"String"})
+@HomekitCharacteristicType(type = "00000232-0000-1000-8000-0026BB765291", name = "Operating State Response", tag = "operatingStateResponse", acceptedItemTypes = {
+        "String" })
 @NonNullByDefault
 public class HomekitOperatingStateResponseCharacteristic extends HomekitTLV8Characteristic {
     public HomekitOperatingStateResponseCharacteristic(HomekitService service, HomekitEventManager eventManager,

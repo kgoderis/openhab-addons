@@ -18,7 +18,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/homekit/hap-characteristic-types/target-fan-state">HAP
  *      Specification</a>
  */
-@HomekitCharacteristicType(type = "000000BF-0000-1000-8000-0026BB765291", name = "Target Fan State", tag = "targetFanState", acceptedItemTypes = {"Number", "String"})
+@HomekitCharacteristicType(type = "000000BF-0000-1000-8000-0026BB765291", name = "Target Fan State", tag = "targetFanState", acceptedItemTypes = {
+        "Number", "String" })
 @NonNullByDefault
 public class HomekitTargetFanStateCharacteristic extends HomekitEnumCharacteristic {
     public enum TargetFanState {

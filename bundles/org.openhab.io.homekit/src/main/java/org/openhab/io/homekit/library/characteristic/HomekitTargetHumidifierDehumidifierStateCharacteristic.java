@@ -19,7 +19,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *      "https://developer.apple.com/documentation/homekit/hap-characteristic-types/target-humidifier-dehumidifier-state">HAP
  *      Specification</a>
  */
-@HomekitCharacteristicType(type = "000000B4-0000-1000-8000-0026BB765291", name = "Target Humidifier Dehumidifier State", tag = "targetHumidifierDehumidifierState", acceptedItemTypes = {"Number", "String"})
+@HomekitCharacteristicType(type = "000000B4-0000-1000-8000-0026BB765291", name = "Target Humidifier Dehumidifier State", tag = "targetHumidifierDehumidifierState", acceptedItemTypes = {
+        "Number", "String" })
 @NonNullByDefault
 public class HomekitTargetHumidifierDehumidifierStateCharacteristic extends HomekitEnumCharacteristic {
     public enum TargetHumidifierDehumidifierState {

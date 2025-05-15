@@ -17,7 +17,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developers.homebridge.io/#/characteristic/SupportedDiagnosticsSnapshot">HomeKit
  *      Documentation</a>
  */
-@HomekitCharacteristicType(type = "00000238-0000-1000-8000-0026BB765291", name = "Supported Diagnostics Snapshot", tag = "supportedDiagnosticsSnapshot", acceptedItemTypes = {"String"})
+@HomekitCharacteristicType(type = "00000238-0000-1000-8000-0026BB765291", name = "Supported Diagnostics Snapshot", tag = "supportedDiagnosticsSnapshot", acceptedItemTypes = {
+        "String" })
 @NonNullByDefault
 public class HomekitSupportedDiagnosticsSnapshotCharacteristic extends HomekitTLV8Characteristic {
     public HomekitSupportedDiagnosticsSnapshotCharacteristic(HomekitService service, HomekitEventManager eventManager,

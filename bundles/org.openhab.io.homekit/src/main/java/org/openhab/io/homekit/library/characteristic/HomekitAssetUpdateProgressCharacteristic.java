@@ -16,7 +16,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/AssetUpdateProgress">HomeKit Documentation</a>
  */
-@HomekitCharacteristicType(type = "0000026B-0000-1000-8000-0026BB765291", name = "Asset Update Progress", tag = "assetUpdateProgress", acceptedItemTypes = {"String"})
+@HomekitCharacteristicType(type = "0000026B-0000-1000-8000-0026BB765291", name = "Asset Update Progress", tag = "assetUpdateProgress", acceptedItemTypes = {
+        "String" })
 @NonNullByDefault
 public class HomekitAssetUpdateProgressCharacteristic extends HomekitTLV8Characteristic {
     public HomekitAssetUpdateProgressCharacteristic(HomekitService service, HomekitEventManager eventManager,

@@ -18,7 +18,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000250-0000-1000-8000-0026BB765291", name = "Crypto Hash", tag = "cryptoHash", acceptedItemTypes = {"String"})
+@HomekitCharacteristicType(type = "00000250-0000-1000-8000-0026BB765291", name = "Crypto Hash", tag = "cryptoHash", acceptedItemTypes = {
+        "String" })
 @NonNullByDefault
 public class HomekitCryptoHashCharacteristic extends HomekitTLV8Characteristic {
 

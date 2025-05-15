@@ -16,7 +16,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/WiFiCapabilities">HomeKit Documentation</a>
  */
-@HomekitCharacteristicType(type = "0000022C-0000-1000-8000-0026BB765291", name = "WiFi Capabilities", tag = "wifiCapabilities", acceptedItemTypes = {"String"})
+@HomekitCharacteristicType(type = "0000022C-0000-1000-8000-0026BB765291", name = "WiFi Capabilities", tag = "wifiCapabilities", acceptedItemTypes = {
+        "String" })
 @NonNullByDefault
 public class HomekitWiFiCapabilitiesCharacteristic extends HomekitTLV8Characteristic {
     public HomekitWiFiCapabilitiesCharacteristic(HomekitService service, HomekitEventManager eventManager,

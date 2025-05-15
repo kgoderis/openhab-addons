@@ -14,7 +14,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/FirmwareUpdateReadiness">HomeKit Documentation</a>
  */
-@HomekitCharacteristicType(type = "00000234-0000-1000-8000-0026BB765291", name = "Firmware Update Readiness", tag = "firmwareUpdateReadiness", acceptedItemTypes = {"Number", "String"})
+@HomekitCharacteristicType(type = "00000234-0000-1000-8000-0026BB765291", name = "Firmware Update Readiness", tag = "firmwareUpdateReadiness", acceptedItemTypes = {
+        "Number", "String" })
 @NonNullByDefault
 public class HomekitFirmwareUpdateReadinessCharacteristic extends HomekitEnumCharacteristic {
     public static final int READY = 0;

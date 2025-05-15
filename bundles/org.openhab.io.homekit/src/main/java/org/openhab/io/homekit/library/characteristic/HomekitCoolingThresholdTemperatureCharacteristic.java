@@ -16,7 +16,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis - Initial Contribution
  */
 @NonNullByDefault
-@HomekitCharacteristicType(type = "0000000D-0000-1000-8000-0026BB765291", name = "Cooling Threshold Temperature", tag = "coolingThresholdTemperature", acceptedItemTypes = {"Number"})
+@HomekitCharacteristicType(type = "0000000D-0000-1000-8000-0026BB765291", name = "Cooling Threshold Temperature", tag = "coolingThresholdTemperature", acceptedItemTypes = {
+        "Number" })
 public class HomekitCoolingThresholdTemperatureCharacteristic extends HomekitFloatCharacteristic {
 
     public HomekitCoolingThresholdTemperatureCharacteristic(HomekitService service, HomekitEventManager eventManager,

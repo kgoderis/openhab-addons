@@ -66,7 +66,7 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
     protected final HomekitEventManager eventManager;
     protected final HomekitServiceFactory serviceFactory;
     protected final HomekitCharacteristicFactory characteristicFactory;
-    
+
     @Activate
     public HomekitHandlerFactory(ComponentContext componentContext,
             @Reference HomekitAccessoryRegistry accessoryRegistry, @Reference HomekitPairingRegistry pairingRegistry,
@@ -111,7 +111,8 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
 
         if (HomekitBindingConstants.THING_TYPE_ACCESSORY.equals(thingTypeUID)) {
             return new HomekitAccessoryThingHandler(thing, serverRegistry, accessoryRegistry,
-                    homekitChannelTypeProvider, homekitThingTypeProvider, eventManager, serviceFactory, characteristicFactory);
+                    homekitChannelTypeProvider, homekitThingTypeProvider, eventManager, serviceFactory,
+                    characteristicFactory);
         }
 
         if (SUPPORTED_THING_TYPES.contains(thingTypeUID)) {

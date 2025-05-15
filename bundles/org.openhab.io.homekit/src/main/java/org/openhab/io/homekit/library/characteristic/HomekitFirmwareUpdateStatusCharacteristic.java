@@ -17,7 +17,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/homekit/hap-characteristic-types/firmware-update-status">HAP
  *      Specification</a>
  */
-@HomekitCharacteristicType(type = "00000235-0000-1000-8000-0026BB765291", name = "Firmware Update Status", tag = "firmwareUpdateStatus", acceptedItemTypes = {"Number", "String"})
+@HomekitCharacteristicType(type = "00000235-0000-1000-8000-0026BB765291", name = "Firmware Update Status", tag = "firmwareUpdateStatus", acceptedItemTypes = {
+        "Number", "String" })
 @NonNullByDefault
 public class HomekitFirmwareUpdateStatusCharacteristic extends HomekitEnumCharacteristic {
     public enum FirmwareUpdateStatus {

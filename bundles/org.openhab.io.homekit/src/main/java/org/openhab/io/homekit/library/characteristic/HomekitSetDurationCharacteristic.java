@@ -15,7 +15,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
  * @author Karel Goderis - Initial Contribution
  */
-@HomekitCharacteristicType(type = "000000D3-0000-1000-8000-0026BB765291", name = "Set Duration", tag = "setDuration", acceptedItemTypes = {"Number"})
+@HomekitCharacteristicType(type = "000000D3-0000-1000-8000-0026BB765291", name = "Set Duration", tag = "setDuration", acceptedItemTypes = {
+        "Number" })
 @NonNullByDefault
 public class HomekitSetDurationCharacteristic extends HomekitIntegerCharacteristic {
 

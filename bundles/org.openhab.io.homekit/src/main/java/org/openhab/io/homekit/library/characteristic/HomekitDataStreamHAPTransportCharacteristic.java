@@ -17,7 +17,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * See the official HomeKit documentation for details.
  */
-@HomekitCharacteristicType(type = "00000138-0000-1000-8000-0026BB765291", name = "Data Stream HAP Transport", tag = "dataStreamHAPTransport", acceptedItemTypes = {"String"})
+@HomekitCharacteristicType(type = "00000138-0000-1000-8000-0026BB765291", name = "Data Stream HAP Transport", tag = "dataStreamHAPTransport", acceptedItemTypes = {
+        "String" })
 @NonNullByDefault
 public class HomekitDataStreamHAPTransportCharacteristic extends HomekitTLV8Characteristic {
     public HomekitDataStreamHAPTransportCharacteristic(HomekitService service, HomekitEventManager eventManager,

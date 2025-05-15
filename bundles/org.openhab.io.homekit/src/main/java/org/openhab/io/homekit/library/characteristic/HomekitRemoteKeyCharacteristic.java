@@ -17,7 +17,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "000000E1-0000-1000-8000-0026BB765291", name = "Remote Key", tag = "remoteKey", acceptedItemTypes = {"Number", "String"})
+@HomekitCharacteristicType(type = "000000E1-0000-1000-8000-0026BB765291", name = "Remote Key", tag = "remoteKey", acceptedItemTypes = {
+        "Number", "String" })
 @NonNullByDefault
 public class HomekitRemoteKeyCharacteristic extends HomekitEnumCharacteristic {
     public enum RemoteKey {

@@ -15,7 +15,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
  * @author Karel Goderis - Initial Contribution
  */
-@HomekitCharacteristicType(type = "000000A4-0000-1000-8000-0026BB765291", name = "App Matching Identifier", tag = "appMatchingIdentifier", acceptedItemTypes = {"String"})
+@HomekitCharacteristicType(type = "000000A4-0000-1000-8000-0026BB765291", name = "App Matching Identifier", tag = "appMatchingIdentifier", acceptedItemTypes = {
+        "String" })
 @NonNullByDefault
 public class HomekitAppMatchingIdentifierCharacteristic extends HomekitTLV8Characteristic {
 

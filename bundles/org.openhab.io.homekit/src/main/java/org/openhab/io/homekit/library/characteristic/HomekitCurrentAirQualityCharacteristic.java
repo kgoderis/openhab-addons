@@ -15,7 +15,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developers.homebridge.io/#/characteristic/AirQuality">HomeKit Documentation</a>
  * @author Karel Goderis - Initial contribution
  */
-@HomekitCharacteristicType(type = "00000095-0000-1000-8000-0026BB765291", name = "Air Quality", tag = "airQuality", acceptedItemTypes = {"Number", "String"})
+@HomekitCharacteristicType(type = "00000095-0000-1000-8000-0026BB765291", name = "Air Quality", tag = "airQuality", acceptedItemTypes = {
+        "Number", "String" })
 @NonNullByDefault
 public class HomekitCurrentAirQualityCharacteristic extends HomekitEnumCharacteristic {
     /**

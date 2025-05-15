@@ -14,7 +14,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/CCASignalDetectThreshold">HomeKit Documentation</a>
  */
-@HomekitCharacteristicType(type = "00000245-0000-1000-8000-0026BB765291", name = "CCA Signal Detect Threshold", tag = "ccaSignalDetectThreshold", acceptedItemTypes = {"Number"})
+@HomekitCharacteristicType(type = "00000245-0000-1000-8000-0026BB765291", name = "CCA Signal Detect Threshold", tag = "ccaSignalDetectThreshold", acceptedItemTypes = {
+        "Number" })
 @NonNullByDefault
 public class HomekitCCASignalDetectThresholdCharacteristic extends HomekitIntegerCharacteristic {
     public HomekitCCASignalDetectThresholdCharacteristic(HomekitService service, HomekitEventManager eventManager,

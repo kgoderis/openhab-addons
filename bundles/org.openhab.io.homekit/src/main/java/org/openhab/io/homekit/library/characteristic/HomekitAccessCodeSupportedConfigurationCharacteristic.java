@@ -22,7 +22,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "00000261-0000-1000-8000-0026BB765291", name = "Access Code Supported Configuration", tag = "accessCodeSupportedConfiguration", acceptedItemTypes = {"String"})
+@HomekitCharacteristicType(type = "00000261-0000-1000-8000-0026BB765291", name = "Access Code Supported Configuration", tag = "accessCodeSupportedConfiguration", acceptedItemTypes = {
+        "String" })
 @NonNullByDefault
 public class HomekitAccessCodeSupportedConfigurationCharacteristic extends HomekitTLV8Characteristic {
     /**

@@ -21,7 +21,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  */
 @NonNullByDefault
-@HomekitCharacteristicType(type = "00000014-0000-1000-8000-0026BB765291", name = "Identify", tag = "identify", acceptedItemTypes = {"Switch", "Contact"})
+@HomekitCharacteristicType(type = "00000014-0000-1000-8000-0026BB765291", name = "Identify", tag = "identify", acceptedItemTypes = {
+        "Switch", "Contact" })
 public class HomekitIdentifyCharacteristic extends HomekitBooleanCharacteristic {
 
     /**

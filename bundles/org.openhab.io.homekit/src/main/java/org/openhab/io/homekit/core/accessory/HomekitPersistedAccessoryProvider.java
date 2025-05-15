@@ -1,9 +1,6 @@
 package org.openhab.io.homekit.core.accessory;
 
 import java.io.StringReader;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -26,14 +23,11 @@ import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
 import org.openhab.io.homekit.api.provider.HomekitAccessoryProvider;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry;
-import org.openhab.io.homekit.exception.HomekitException;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,9 +72,8 @@ public class HomekitPersistedAccessoryProvider
 
     @Activate
     public HomekitPersistedAccessoryProvider(@Reference StorageService storageService,
-            @Reference HomekitAccessoryServerRegistry accessoryServerRegistry, 
-            @Reference HomekitAccessoryFactory homekitAccessoryFactory,
-            @Reference ReadyService readyService) {
+            @Reference HomekitAccessoryServerRegistry accessoryServerRegistry,
+            @Reference HomekitAccessoryFactory homekitAccessoryFactory, @Reference ReadyService readyService) {
         super(storageService);
         this.homekitAccessoryFactory = homekitAccessoryFactory;
         this.readyService = readyService;

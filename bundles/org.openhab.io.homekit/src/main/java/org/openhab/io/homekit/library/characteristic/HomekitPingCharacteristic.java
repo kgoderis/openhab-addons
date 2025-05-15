@@ -14,7 +14,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/Ping">HomeKit Documentation</a>
  */
-@HomekitCharacteristicType(type = "0000023C-0000-1000-8000-0026BB765291", name = "Ping", tag = "ping")
+@HomekitCharacteristicType(type = "0000023C-0000-1000-8000-0026BB765291", name = "Ping", tag = "ping", acceptedItemTypes = {"Number"})
 @NonNullByDefault
 public class HomekitPingCharacteristic extends HomekitIntegerCharacteristic {
     public HomekitPingCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {

@@ -18,7 +18,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "00000134-0000-1000-8000-0026BB765291", name = "Target Visibility State", tag = "targetVisibilityState", acceptedItemTypes = {"Number", "String"})
+@HomekitCharacteristicType(type = "00000134-0000-1000-8000-0026BB765291", name = "Target Visibility State", tag = "targetVisibilityState", acceptedItemTypes = {
+        "Number", "String" })
 @NonNullByDefault
 public class HomekitTargetVisibilityStateCharacteristic extends HomekitEnumCharacteristic {
     /**

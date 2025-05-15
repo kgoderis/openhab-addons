@@ -18,7 +18,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000248-0000-1000-8000-0026BB765291", name = "MAC Transmission Counters", tag = "macTransmissionCounters", acceptedItemTypes = {"String"})
+@HomekitCharacteristicType(type = "00000248-0000-1000-8000-0026BB765291", name = "MAC Transmission Counters", tag = "macTransmissionCounters", acceptedItemTypes = {
+        "String" })
 @NonNullByDefault
 public class HomekitMACTransmissionCountersCharacteristic extends HomekitTLV8Characteristic {
     public HomekitMACTransmissionCountersCharacteristic(HomekitService service, HomekitEventManager eventManager,

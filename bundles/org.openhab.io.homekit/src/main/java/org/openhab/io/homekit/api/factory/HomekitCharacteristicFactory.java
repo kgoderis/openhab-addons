@@ -72,7 +72,7 @@ public interface HomekitCharacteristicFactory {
      */
     java.util.Set<String> getSupportedTags();
 
-        /**
+    /**
      * Gets the tag from the characteristic type.
      *
      * @param characteristicType The characteristic type

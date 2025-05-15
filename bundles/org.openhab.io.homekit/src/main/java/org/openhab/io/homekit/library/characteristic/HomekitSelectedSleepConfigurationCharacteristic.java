@@ -21,7 +21,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000252-0000-1000-8000-0026BB765291", name = "Selected Sleep Configuration", tag = "selectedSleepConfiguration", acceptedItemTypes = {"String"})
+@HomekitCharacteristicType(type = "00000252-0000-1000-8000-0026BB765291", name = "Selected Sleep Configuration", tag = "selectedSleepConfiguration", acceptedItemTypes = {
+        "String" })
 @NonNullByDefault
 public class HomekitSelectedSleepConfigurationCharacteristic extends HomekitTLV8Characteristic {
     public HomekitSelectedSleepConfigurationCharacteristic(HomekitService service, HomekitEventManager eventManager,

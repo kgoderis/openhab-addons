@@ -18,7 +18,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000143-0000-1000-8000-0026BB765291", name = "Characteristic Value Transition Control", tag = "characteristicValueTransitionControl", acceptedItemTypes = {"String"})
+@HomekitCharacteristicType(type = "00000143-0000-1000-8000-0026BB765291", name = "Characteristic Value Transition Control", tag = "characteristicValueTransitionControl", acceptedItemTypes = {
+        "String" })
 @NonNullByDefault
 public class HomekitCharacteristicValueTransitionControlCharacteristic extends HomekitTLV8Characteristic {
     public HomekitCharacteristicValueTransitionControlCharacteristic(HomekitService service,

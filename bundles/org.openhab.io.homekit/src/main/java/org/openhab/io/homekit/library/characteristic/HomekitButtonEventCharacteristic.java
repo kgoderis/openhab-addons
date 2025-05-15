@@ -20,7 +20,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "00000126-0000-1000-8000-0026BB765291", name = "Button Event", tag = "buttonEvent", acceptedItemTypes = {"String"})
+@HomekitCharacteristicType(type = "00000126-0000-1000-8000-0026BB765291", name = "Button Event", tag = "buttonEvent", acceptedItemTypes = {
+        "String" })
 @NonNullByDefault
 public class HomekitButtonEventCharacteristic extends HomekitTLV8Characteristic {
     public HomekitButtonEventCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {

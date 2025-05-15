@@ -21,7 +21,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "0000001C-0000-1000-8000-0026BB765291", name = "Lock Last Known Action", tag = "lockLastKnownAction")
+@HomekitCharacteristicType(type = "0000001C-0000-1000-8000-0026BB765291", name = "Lock Last Known Action", tag = "lockLastKnownAction", acceptedItemTypes = {"Number"})
 @NonNullByDefault
 public class HomekitLockLastKnownActionCharacteristic extends HomekitIntegerCharacteristic {
 

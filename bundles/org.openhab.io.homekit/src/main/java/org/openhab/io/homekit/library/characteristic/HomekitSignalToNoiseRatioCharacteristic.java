@@ -14,7 +14,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/SignalToNoiseRatio">HomeKit Documentation</a>
  */
-@HomekitCharacteristicType(type = "00000241-0000-1000-8000-0026BB765291", name = "Signal To Noise Ratio", tag = "signalToNoiseRatio", acceptedItemTypes = {"Number"})
+@HomekitCharacteristicType(type = "00000241-0000-1000-8000-0026BB765291", name = "Signal To Noise Ratio", tag = "signalToNoiseRatio", acceptedItemTypes = {
+        "Number" })
 @NonNullByDefault
 public class HomekitSignalToNoiseRatioCharacteristic extends HomekitIntegerCharacteristic {
     public HomekitSignalToNoiseRatioCharacteristic(HomekitService service, HomekitEventManager eventManager,

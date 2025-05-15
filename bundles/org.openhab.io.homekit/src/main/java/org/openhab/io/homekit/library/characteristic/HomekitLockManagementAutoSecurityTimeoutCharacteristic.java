@@ -20,7 +20,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "0000001A-0000-1000-8000-0026BB765291", name = "Lock Management Auto Security Timeout", tag = "lockManagementAutoSecurityTimeout", acceptedItemTypes = {"Number"})
+@HomekitCharacteristicType(type = "0000001A-0000-1000-8000-0026BB765291", name = "Lock Management Auto Security Timeout", tag = "lockManagementAutoSecurityTimeout", acceptedItemTypes = {
+        "Number" })
 @NonNullByDefault
 public class HomekitLockManagementAutoSecurityTimeoutCharacteristic extends HomekitIntegerCharacteristic {
 

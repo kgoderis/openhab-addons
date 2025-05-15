@@ -15,7 +15,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  * @author Karel Goderis - Initial contribution
  */
-@HomekitCharacteristicType(type = "000000B1-0000-1000-8000-0026BB765291", name = "Current Heater Cooler State", tag = "currentHeaterCoolerState", acceptedItemTypes = {"Number", "String"})
+@HomekitCharacteristicType(type = "000000B1-0000-1000-8000-0026BB765291", name = "Current Heater Cooler State", tag = "currentHeaterCoolerState", acceptedItemTypes = {
+        "Number", "String" })
 @NonNullByDefault
 public class HomekitCurrentHeaterCoolerStateCharacteristic extends HomekitEnumCharacteristic {
     public enum HeaterCoolerState {

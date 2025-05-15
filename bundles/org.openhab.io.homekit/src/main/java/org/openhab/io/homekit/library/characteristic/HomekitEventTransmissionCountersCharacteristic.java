@@ -16,7 +16,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/EventTransmissionCounters">HomeKit Documentation</a>
  */
-@HomekitCharacteristicType(type = "0000023E-0000-1000-8000-0026BB765291", name = "Event Transmission Counters", tag = "eventTransmissionCounters", acceptedItemTypes = {"String"})
+@HomekitCharacteristicType(type = "0000023E-0000-1000-8000-0026BB765291", name = "Event Transmission Counters", tag = "eventTransmissionCounters", acceptedItemTypes = {
+        "String" })
 @NonNullByDefault
 public class HomekitEventTransmissionCountersCharacteristic extends HomekitTLV8Characteristic {
     public HomekitEventTransmissionCountersCharacteristic(HomekitService service, HomekitEventManager eventManager,

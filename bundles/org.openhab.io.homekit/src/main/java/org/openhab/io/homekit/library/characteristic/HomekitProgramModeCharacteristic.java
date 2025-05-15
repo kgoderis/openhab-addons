@@ -21,7 +21,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "000000D1-0000-1000-8000-0026BB765291", name = "Program Mode", tag = "programMode", acceptedItemTypes = {"Number", "String"})
+@HomekitCharacteristicType(type = "000000D1-0000-1000-8000-0026BB765291", name = "Program Mode", tag = "programMode", acceptedItemTypes = {
+        "Number", "String" })
 @NonNullByDefault
 public class HomekitProgramModeCharacteristic extends HomekitIntegerCharacteristic {
     /**

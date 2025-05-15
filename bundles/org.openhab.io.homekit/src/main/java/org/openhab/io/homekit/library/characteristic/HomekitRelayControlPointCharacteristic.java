@@ -15,7 +15,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
  * @author Karel Goderis - Initial Contribution
  */
-@HomekitCharacteristicType(type = "0000005E-0000-1000-8000-0026BB765291", name = "Relay Control Point", tag = "relayControlPoint", acceptedItemTypes = {"String"})
+@HomekitCharacteristicType(type = "0000005E-0000-1000-8000-0026BB765291", name = "Relay Control Point", tag = "relayControlPoint", acceptedItemTypes = {
+        "String" })
 @NonNullByDefault
 public class HomekitRelayControlPointCharacteristic extends HomekitTLV8Characteristic {
 

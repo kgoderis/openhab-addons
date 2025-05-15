@@ -21,7 +21,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "00000115-0000-1000-8000-0026BB765291", name = "Supported Audio Stream Configuration", tag = "supportedAudioStreamConfiguration", acceptedItemTypes = {"String"})
+@HomekitCharacteristicType(type = "00000115-0000-1000-8000-0026BB765291", name = "Supported Audio Stream Configuration", tag = "supportedAudioStreamConfiguration", acceptedItemTypes = {
+        "String" })
 @NonNullByDefault
 public class HomekitSupportedAudioStreamConfigurationCharacteristic extends HomekitTLV8Characteristic {
 

@@ -16,7 +16,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "000000A6-0000-1000-8000-0026BB765291", name = "Accessory Flags", tag = "accessoryFlags", acceptedItemTypes = {"Number"})
+@HomekitCharacteristicType(type = "000000A6-0000-1000-8000-0026BB765291", name = "Accessory Flags", tag = "accessoryFlags", acceptedItemTypes = {
+        "Number" })
 @NonNullByDefault
 public class HomekitAccessoryFlagsCharacteristic extends HomekitLongCharacteristic {
 

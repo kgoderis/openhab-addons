@@ -22,7 +22,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @author Karel Goderis
  */
-@HomekitCharacteristicType(type = "00000120-0000-1000-8000-0026BB765291", name = "Streaming Status", tag = "streamingStatus", acceptedItemTypes = {"String"})
+@HomekitCharacteristicType(type = "00000120-0000-1000-8000-0026BB765291", name = "Streaming Status", tag = "streamingStatus", acceptedItemTypes = {
+        "String" })
 @NonNullByDefault
 public class HomekitStreamingStatusCharacteristic extends HomekitTLV8Characteristic {
     public enum StreamingStatus {

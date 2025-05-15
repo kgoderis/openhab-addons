@@ -14,7 +14,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/CCAEnergyDetectThreshold">HomeKit Documentation</a>
  */
-@HomekitCharacteristicType(type = "00000246-0000-1000-8000-0026BB765291", name = "CCA Energy Detect Threshold", tag = "ccaEnergyDetectThreshold", acceptedItemTypes = {"Number"})
+@HomekitCharacteristicType(type = "00000246-0000-1000-8000-0026BB765291", name = "CCA Energy Detect Threshold", tag = "ccaEnergyDetectThreshold", acceptedItemTypes = {
+        "Number" })
 @NonNullByDefault
 public class HomekitCCAEnergyDetectThresholdCharacteristic extends HomekitIntegerCharacteristic {
     public HomekitCCAEnergyDetectThresholdCharacteristic(HomekitService service, HomekitEventManager eventManager,

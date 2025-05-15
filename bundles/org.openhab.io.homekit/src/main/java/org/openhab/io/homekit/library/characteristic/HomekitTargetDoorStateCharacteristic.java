@@ -17,7 +17,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
-@HomekitCharacteristicType(type = "00000032-0000-1000-8000-0026BB765291", name = "Target Door State", tag = "targetDoorState", acceptedItemTypes = {"Number", "String"})
+@HomekitCharacteristicType(type = "00000032-0000-1000-8000-0026BB765291", name = "Target Door State", tag = "targetDoorState", acceptedItemTypes = {
+        "Number", "String" })
 @NonNullByDefault
 public class HomekitTargetDoorStateCharacteristic extends HomekitEnumCharacteristic {
     public enum TargetDoorState {

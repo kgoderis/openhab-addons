@@ -15,7 +15,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
  * @author Karel Goderis - Initial Contribution
  */
-@HomekitCharacteristicType(type = "00000074-0000-1000-8000-0026BB765291", name = "Programmable Switch Output State", tag = "programmableSwitchOutputState")
+@HomekitCharacteristicType(type = "00000074-0000-1000-8000-0026BB765291", name = "Programmable Switch Output State", tag = "programmableSwitchOutputState", acceptedItemTypes = {"Number"})
 @NonNullByDefault
 public class HomekitProgrammableSwitchOutputStateCharacteristic extends HomekitBooleanCharacteristic {
     public HomekitProgrammableSwitchOutputStateCharacteristic(HomekitService service, HomekitEventManager eventManager,

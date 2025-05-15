@@ -15,7 +15,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  * @author Karel Goderis - Initial contribution
  */
-@HomekitCharacteristicType(type = "000000AB-0000-1000-8000-0026BB765291", name = "Filter Life Level", tag = "filterLifeLevel", acceptedItemTypes = {"Number"})
+@HomekitCharacteristicType(type = "000000AB-0000-1000-8000-0026BB765291", name = "Filter Life Level", tag = "filterLifeLevel", acceptedItemTypes = {
+        "Number" })
 @NonNullByDefault
 public class HomekitFilterLifeLevelCharacteristic extends HomekitFloatCharacteristic {
     /**

@@ -14,7 +14,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/Token">HomeKit Documentation</a>
  */
-@HomekitCharacteristicType(type = "00000231-0000-1000-8000-0026BB765291", name = "Token", tag = "token", acceptedItemTypes = {"String"})
+@HomekitCharacteristicType(type = "00000231-0000-1000-8000-0026BB765291", name = "Token", tag = "token", acceptedItemTypes = {
+        "String" })
 @NonNullByDefault
 public class HomekitTokenCharacteristic extends HomekitStringCharacteristic {
     public HomekitTokenCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {

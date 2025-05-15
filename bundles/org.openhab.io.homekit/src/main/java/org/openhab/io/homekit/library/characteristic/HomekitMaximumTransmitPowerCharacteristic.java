@@ -14,7 +14,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/MaximumTransmitPower">HomeKit Documentation</a>
  */
-@HomekitCharacteristicType(type = "00000243-0000-1000-8000-0026BB765291", name = "Maximum Transmit Power", tag = "maximumTransmitPower", acceptedItemTypes = {"Number"})
+@HomekitCharacteristicType(type = "00000243-0000-1000-8000-0026BB765291", name = "Maximum Transmit Power", tag = "maximumTransmitPower", acceptedItemTypes = {
+        "Number" })
 @NonNullByDefault
 public class HomekitMaximumTransmitPowerCharacteristic extends HomekitIntegerCharacteristic {
     public HomekitMaximumTransmitPowerCharacteristic(HomekitService service, HomekitEventManager eventManager,
