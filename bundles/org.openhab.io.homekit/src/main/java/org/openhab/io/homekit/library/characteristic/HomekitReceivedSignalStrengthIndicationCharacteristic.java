@@ -15,7 +15,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href="https://developers.homebridge.io/#/characteristic/ReceivedSignalStrengthIndication">HomeKit
  *      Documentation</a>
  */
-@HomekitCharacteristicType(type = "0000023F-0000-1000-8000-0026BB765291", name = "Received Signal Strength Indication", tag = "receivedSignalStrengthIndication", acceptedItemTypes = {"Number"})
+@HomekitCharacteristicType(type = "0000023F-0000-1000-8000-0026BB765291", name = "Received Signal Strength Indication", tag = "receivedSignalStrengthIndication", acceptedItemTypes = {
+        "Number" })
 @NonNullByDefault
 public class HomekitReceivedSignalStrengthIndicationCharacteristic extends HomekitIntegerCharacteristic {
     public HomekitReceivedSignalStrengthIndicationCharacteristic(HomekitService service,

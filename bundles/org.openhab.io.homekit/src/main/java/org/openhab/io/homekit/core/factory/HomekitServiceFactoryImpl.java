@@ -15,6 +15,7 @@ import org.openhab.io.homekit.api.factory.HomekitServiceFactory;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.reflections.Reflections;
@@ -33,8 +34,9 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
     private final Logger logger = LoggerFactory.getLogger(HomekitServiceFactoryImpl.class);
     private final Map<String, Class<? extends HomekitService>> serviceTypes = new ConcurrentHashMap<>();
     private final Map<String, String> tagToTypeMap = new ConcurrentHashMap<>();
-    private HomekitEventManager eventManager;
+    private final HomekitEventManager eventManager;
 
+    @Activate
     public HomekitServiceFactoryImpl(@Reference HomekitEventManager eventManager) {
         this.eventManager = eventManager;
         initializeServiceTypes();

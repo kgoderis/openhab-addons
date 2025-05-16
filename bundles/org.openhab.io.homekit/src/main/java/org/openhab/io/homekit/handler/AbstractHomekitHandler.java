@@ -963,7 +963,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
                         addChannelForCharacteristic(characteristic);
                         eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
                                 characteristic.getUID(), thing.getUID(),
-                                event -> onCharacteristicEvent((HomekitCharacteristicEvent) event)));
+                                someEvent -> onCharacteristicEvent((HomekitCharacteristicEvent) someEvent)));
                         logger.debug("{}Added channel for characteristic: {}", LOG_CHANNEL, characteristic.getType());
                     } catch (HomekitException e) {
                         logger.warn("{}Failed to add channel for characteristic {}: {}", LOG_CHANNEL,

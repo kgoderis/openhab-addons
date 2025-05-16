@@ -63,15 +63,10 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
                 throw new IllegalStateException("HomekitAccessory is not initialized");
             }
 
-            // If the Thing does not have any channels, traverse the services of the accessory, and for each service add
-            // a
-            // ChannelGroup. then, for each characteristic of the service, add a channel in the ChannelGroup. Add
-            // logging to
-            // the process.
+            // If the Thing does not have any channels, traverse the services of the accessory
             if (thing.getChannels().isEmpty()) {
                 logger.info("Thing has no channels, traversing services of accessory");
                 for (HomekitService service : currentAccessory.getServices()) {
-                    // addChannelGroupForService(service);
                     for (HomekitCharacteristic<?> characteristic : service.getCharacteristics()) {
                         addChannelForCharacteristic(characteristic);
                     }
@@ -79,7 +74,6 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
             } else {
                 // traverse channels and add them to the characteristicMap
                 for (Channel channel : thing.getChannels()) {
-
                     if (channel.getUID().getGroupId() == null) {
                         logger.warn("Channel {} has no group ID", channel.getUID());
                         continue;

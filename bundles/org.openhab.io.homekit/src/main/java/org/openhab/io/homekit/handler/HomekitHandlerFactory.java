@@ -117,7 +117,7 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
 
         if (SUPPORTED_THING_TYPES.contains(thingTypeUID)) {
             return new HomekitServiceThingHandler(thing, serverRegistry, accessoryRegistry, homekitChannelTypeProvider,
-                    homekitThingTypeProvider, eventManager);
+                    homekitThingTypeProvider, eventManager, serviceFactory, characteristicFactory);
         }
 
         logger.debug("Unsupported thing {}", thing.getThingTypeUID());

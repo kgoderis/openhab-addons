@@ -16,7 +16,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/SiriEndpointSessionStatus">HomeKit Documentation</a>
  */
-@HomekitCharacteristicType(type = "00000254-0000-1000-8000-0026BB765291", name = "Siri Endpoint Session Status", tag = "siriEndpointSessionStatus", acceptedItemTypes = {"Number"})
+@HomekitCharacteristicType(type = "00000254-0000-1000-8000-0026BB765291", name = "Siri Endpoint Session Status", tag = "siriEndpointSessionStatus", acceptedItemTypes = {
+        "Number" })
 @NonNullByDefault
 public class HomekitSiriEndpointSessionStatusCharacteristic extends HomekitTLV8Characteristic {
     public HomekitSiriEndpointSessionStatusCharacteristic(HomekitService service, HomekitEventManager eventManager,

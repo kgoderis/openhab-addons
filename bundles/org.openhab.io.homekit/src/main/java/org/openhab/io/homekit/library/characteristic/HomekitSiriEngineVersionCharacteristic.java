@@ -14,7 +14,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/SiriEngineVersion">HomeKit Documentation</a>
  */
-@HomekitCharacteristicType(type = "0000025A-0000-1000-8000-0026BB765291", name = "Siri Engine Version", tag = "siriEngineVersion", acceptedItemTypes = {"String"})
+@HomekitCharacteristicType(type = "0000025A-0000-1000-8000-0026BB765291", name = "Siri Engine Version", tag = "siriEngineVersion", acceptedItemTypes = {
+        "String" })
 @NonNullByDefault
 public class HomekitSiriEngineVersionCharacteristic extends HomekitStringCharacteristic {
     public HomekitSiriEngineVersionCharacteristic(HomekitService service, HomekitEventManager eventManager,

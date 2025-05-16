@@ -13,6 +13,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.yaml.snakeyaml.Yaml;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -27,6 +36,8 @@ import org.openhab.core.items.MetadataKey;
 import org.openhab.core.items.MetadataRegistry;
 import org.openhab.core.items.StateChangeListener;
 import org.openhab.core.items.events.ItemEventFactory;
+import org.openhab.core.items.events.ItemStateEvent;
+import org.openhab.core.library.items.SwitchItem;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.thing.UID;
@@ -55,6 +66,10 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.openhab.io.homekit.bridge.HomekitItemConfigParser;
+import org.openhab.io.homekit.bridge.HomekitTaggedItem;
+import org.openhab.io.homekit.bridge.HomekitConfigurationManager;
+import org.openhab.io.homekit.bridge.ConfigurationSource;
 
 /**
  * The {@link HomekitItemBridge} manages the integration between openHAB items and Homekit accessories.
@@ -151,10 +166,12 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     private final Set<UID> peerGroup;
     private final Map<String, @Nullable ExitEvent> exitEvents;
     private final ExitEventStatisticsCollector statisticsCollector;
-    private final long correlationWindowMs = 1000; // 1 second window
     private final HomekitServiceFactory serviceFactory;
     private final HomekitCharacteristicFactory characteristicFactory;
     private final HomekitAccessoryFactory accessoryFactory;
+    private static final String YAML_FILE_NAME = "homekit-2.x-items.yaml";
+    private final HomekitItemConfigParser configParser;
+    private final HomekitConfigurationManager configManager;
 
     /**
      * Activates the bridge component and initializes necessary resources.
@@ -170,7 +187,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
             @Reference HomekitAccessoryServerRegistry accessoryServerRegistry,
             @Reference HomekitEventManager eventManager, @Reference HomekitAccessoryFactory accessoryFactory,
             @Reference HomekitServiceFactory serviceFactory,
-            @Reference HomekitCharacteristicFactory characteristicFactory) {
+            @Reference HomekitCharacteristicFactory characteristicFactory,
+            @Reference HomekitConfigurationManager configManager) {
         this.itemRegistry = itemRegistry;
         this.eventPublisher = eventPublisher;
         this.accessoryRegistry = accessoryRegistry;
@@ -180,6 +198,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
         this.accessoryFactory = accessoryFactory;
         this.serviceFactory = serviceFactory;
         this.characteristicFactory = characteristicFactory;
+        this.configParser = new HomekitItemConfigParser(metadataRegistry);
+        this.configManager = configManager;
 
         initializeRegistryListener();
 
@@ -630,6 +650,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
         HomekitTaggedItem taggedItem = new HomekitTaggedItem(item, itemRegistry, metadataRegistry, accessoryFactory,
                 serviceFactory, characteristicFactory);
         if (taggedItem.isTagged()) {
+            Map<String, Object> config = configParser.getFilteredConfig(item);
+            configManager.updateConfiguration(item.getName(), config, HomekitConfigurationManager.ConfigurationType.ITEM);
             createAccessoryForItem(taggedItem);
         }
     }
@@ -642,6 +664,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      */
     @Override
     public void removed(Item item) {
+        configManager.removeConfiguration(item.getName(), HomekitConfigurationManager.ConfigurationType.ITEM);
         removeAccessoryForItem(item);
     }
 
@@ -654,10 +677,13 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      */
     @Override
     public void updated(Item oldItem, Item item) {
+        configManager.removeConfiguration(oldItem.getName(), HomekitConfigurationManager.ConfigurationType.ITEM);
         removeAccessoryForItem(oldItem);
         HomekitTaggedItem taggedItem = new HomekitTaggedItem(item, itemRegistry, metadataRegistry, accessoryFactory,
                 serviceFactory, characteristicFactory);
         if (taggedItem.isTagged()) {
+            Map<String, Object> config = configParser.getFilteredConfig(item);
+            configManager.updateConfiguration(item.getName(), config, HomekitConfigurationManager.ConfigurationType.ITEM, YAML_FILE_NAME);
             createAccessoryForItem(taggedItem);
         }
     }

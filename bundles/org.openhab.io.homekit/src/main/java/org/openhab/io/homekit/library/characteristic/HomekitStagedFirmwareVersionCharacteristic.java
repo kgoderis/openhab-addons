@@ -14,7 +14,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/StagedFirmwareVersion">HomeKit Documentation</a>
  */
-@HomekitCharacteristicType(type = "00000249-0000-1000-8000-0026BB765291", name = "Staged Firmware Version", tag = "stagedFirmwareVersion", acceptedItemTypes = {"String"})
+@HomekitCharacteristicType(type = "00000249-0000-1000-8000-0026BB765291", name = "Staged Firmware Version", tag = "stagedFirmwareVersion", acceptedItemTypes = {
+        "String" })
 @NonNullByDefault
 public class HomekitStagedFirmwareVersionCharacteristic extends HomekitStringCharacteristic {
     public HomekitStagedFirmwareVersionCharacteristic(HomekitService service, HomekitEventManager eventManager,

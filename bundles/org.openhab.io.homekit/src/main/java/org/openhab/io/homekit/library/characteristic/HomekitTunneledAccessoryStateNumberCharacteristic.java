@@ -15,7 +15,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
  * @author Karel Goderis - Initial Contribution
  */
-@HomekitCharacteristicType(type = "00000058-0000-1000-8000-0026BB765291", name = "Tunneled Accessory State Number", tag = "tunneledAccessoryStateNumber", acceptedItemTypes = {"Number"})
+@HomekitCharacteristicType(type = "00000058-0000-1000-8000-0026BB765291", name = "Tunneled Accessory State Number", tag = "tunneledAccessoryStateNumber", acceptedItemTypes = {
+        "Number" })
 @NonNullByDefault
 public class HomekitTunneledAccessoryStateNumberCharacteristic extends HomekitIntegerCharacteristic {
 

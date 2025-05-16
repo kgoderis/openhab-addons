@@ -43,7 +43,7 @@ public class HomekitChannelTypeProvider extends AbstractStorageBasedTypeProvider
         for (String characteristicType : characteristicTypes) {
 
             // Create and store channel type for this characteristic
-            String acceptedItemType = characteristicFactory.getCharacteristicAcceptedItemType(characteristicType);
+            String acceptedItemType = characteristicFactory.getAcceptedItemType(characteristicType);
             if (acceptedItemType != null) {
                 ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
                         characteristicType);

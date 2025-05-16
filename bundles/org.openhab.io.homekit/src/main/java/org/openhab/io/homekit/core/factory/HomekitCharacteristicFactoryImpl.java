@@ -2,7 +2,9 @@ package org.openhab.io.homekit.core.factory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,6 +15,7 @@ import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.reflections.Reflections;
@@ -31,8 +34,9 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
     private final Logger logger = LoggerFactory.getLogger(HomekitCharacteristicFactoryImpl.class);
     private final Map<String, Class<? extends HomekitCharacteristic<?>>> characteristicTypes = new ConcurrentHashMap<>();
     private final Map<String, String> tagToTypeMap = new ConcurrentHashMap<>();
-    private HomekitEventManager eventManager;
+    private final HomekitEventManager eventManager;
 
+    @Activate
     public HomekitCharacteristicFactoryImpl(@Reference HomekitEventManager eventManager) {
         this.eventManager = eventManager;
         initializeCharacteristicTypes();
@@ -150,5 +154,20 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
     @Override
     public String getCharacteristicTypeFromTag(String characteristicTag) {
         return tagToTypeMap.get(characteristicTag);
+    }
+
+    @Override
+    public Set<String> getAcceptedItemTypes(String characteristicType) {
+        Class<? extends HomekitCharacteristic<?>> characteristicClass = characteristicTypes.get(characteristicType);
+        if (characteristicClass == null) {
+            throw new IllegalArgumentException("Unsupported characteristic type: " + characteristicType);
+        }
+
+        HomekitCharacteristicType annotation = characteristicClass.getAnnotation(HomekitCharacteristicType.class);
+        if (annotation == null) {
+            throw new IllegalArgumentException("Characteristic type " + characteristicType + " does not have a HomekitCharacteristicType annotation");
+        }
+
+        return new HashSet<>(Arrays.asList(annotation.acceptedItemTypes()));
     }
 }

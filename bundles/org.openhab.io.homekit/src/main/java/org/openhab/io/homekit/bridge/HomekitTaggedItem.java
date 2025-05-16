@@ -77,6 +77,7 @@ public class HomekitTaggedItem {
     private final HomekitServiceFactory serviceFactory;
     private final HomekitCharacteristicFactory characteristicFactory;
     private final HomekitAccessoryFactory accessoryFactory;
+    private final boolean useMetadataTags;
 
     // 3. Inner classes
     class BadItemConfigurationException extends Exception {
@@ -97,6 +98,7 @@ public class HomekitTaggedItem {
      * @param accessoryFactory The factory for creating Homekit accessories
      * @param serviceFactory The factory for creating Homekit services
      * @param characteristicFactory The factory for creating Homekit characteristics
+     * @param useMetadataTags Whether to use metadata-based tags (true) or real tags (false)
      * @throws BadItemConfigurationException if the item's configuration is invalid
      */
     public HomekitTaggedItem(Item item, ItemRegistry itemRegistry, MetadataRegistry metadataRegistry,
@@ -105,7 +107,8 @@ public class HomekitTaggedItem {
         this.item = item;
         this.metadataRegistry = metadataRegistry;
         this.itemRegistry = itemRegistry;
-        this.homekitTags = getHomekitTagsFromMetaRegistry(item);
+        this.useMetadataTags = true;
+        this.homekitTags = getHomekitTags(item);
         this.accessoryFactory = accessoryFactory;
         this.serviceFactory = serviceFactory;
         this.characteristicFactory = characteristicFactory;
@@ -311,13 +314,35 @@ public class HomekitTaggedItem {
                 return Stream.empty();
             }
         }).filter(groupItem -> {
-            Collection<String> groupHomekitTags = getHomekitTagsFromMetaRegistry(groupItem);
+            Collection<String> groupHomekitTags = getHomekitTags(groupItem);
             return groupHomekitTags.stream().anyMatch(tag -> serviceFactory.supportsTag(tag));
         }).collect(Collectors.toList());
     }
 
     public Collection<String> getHomekitTags() {
         return homekitTags;
+    }
+
+    /**
+     * Gets the Homekit tags for the given item based on the configured tag source.
+     *
+     * @param item The item to get tags for
+     * @return Collection of Homekit tags
+     */
+    private Collection<String> getHomekitTags(Item item) {
+        return useMetadataTags ? getHomekitTagsFromMetaRegistry(item) : getHomekitTagsFromItem(item);
+    }
+
+    /**
+     * Gets the Homekit tags directly from the item's tags.
+     *
+     * @param item The item to get tags for
+     * @return Collection of Homekit tags
+     */
+    private Collection<String> getHomekitTagsFromItem(Item item) {
+        return item.getTags().stream()
+                .filter(tag -> serviceFactory.supportsTag(tag) || characteristicFactory.supportsTag(tag))
+                .collect(Collectors.toList());
     }
 
     private Collection<String> getHomekitTagsFromMetaRegistry(Item item) {

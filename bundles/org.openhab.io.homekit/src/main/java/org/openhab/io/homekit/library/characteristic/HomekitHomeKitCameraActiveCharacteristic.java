@@ -17,7 +17,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
  * @author Karel Goderis - Initial Contribution
  */
-@HomekitCharacteristicType(type = "0000021B-0000-1000-8000-0026BB765291", name = "HomeKit Camera Active", tag = "homeKitCameraActive", acceptedItemTypes = {"Switch"})
+@HomekitCharacteristicType(type = "0000021B-0000-1000-8000-0026BB765291", name = "HomeKit Camera Active", tag = "homeKitCameraActive", acceptedItemTypes = {
+        "Switch" })
 @NonNullByDefault
 public class HomekitHomeKitCameraActiveCharacteristic extends HomekitIntegerCharacteristic {
     /**

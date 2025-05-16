@@ -1,5 +1,7 @@
 package org.openhab.io.homekit.api.factory;
 
+import java.util.Set;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -87,4 +89,12 @@ public interface HomekitCharacteristicFactory {
      * @return The characteristic type
      */
     String getCharacteristicTypeFromTag(String characteristicTag);
+
+    /**
+     * Gets the accepted item types for the characteristic type.
+     *
+     * @param characteristicType The characteristic type
+     * @return The accepted item types
+     */
+    Set<String> getAcceptedItemTypes(String characteristicType);
 }
