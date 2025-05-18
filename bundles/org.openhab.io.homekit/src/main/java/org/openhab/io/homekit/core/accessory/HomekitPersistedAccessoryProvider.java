@@ -87,7 +87,6 @@ public class HomekitPersistedAccessoryProvider
         readyService.unregisterTracker(this);
     }
 
-    @SuppressWarnings("null")
     private synchronized void delayedInitialize() {
         if (executor == null) {
             executor = Executors.newSingleThreadScheduledExecutor();

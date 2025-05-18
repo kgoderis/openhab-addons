@@ -3,6 +3,8 @@
  */
 package org.openhab.io.homekit.core.characteristic;
 
+import java.util.Map;
+
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
@@ -54,7 +56,7 @@ public abstract class HomekitWriteOnlyBooleanCharacteristic extends AbstractHome
 
     /** {@inheritDoc} */
     @Override
-    public Boolean toValue(JsonValue jsonValue) {
+    public Boolean toValue(JsonValue jsonValue, Map<String, Object> conversionMap) {
         if (jsonValue.getValueType().equals(ValueType.NUMBER)) {
             return ((JsonNumber) jsonValue).intValue() > 0;
         }
@@ -62,7 +64,7 @@ public abstract class HomekitWriteOnlyBooleanCharacteristic extends AbstractHome
     }
 
     @Override
-    public Boolean toValue(State state) {
+    public Boolean toValue(State state, Map<String, Object> conversionMap) {
         OnOffType convertedState = state.as(OnOffType.class);
         if (convertedState == null) {
             return getDefault();

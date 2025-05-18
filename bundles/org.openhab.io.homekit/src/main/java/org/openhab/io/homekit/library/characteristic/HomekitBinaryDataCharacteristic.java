@@ -7,7 +7,7 @@ import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitDataCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-
+import org.openhab.core.types.State;
 /**
  * HomeKit Binary Data Characteristic.
  * This characteristic represents binary data that can be read from or written to a device.

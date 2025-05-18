@@ -3,6 +3,8 @@
  */
 package org.openhab.io.homekit.core.characteristic;
 
+import java.util.Map;
+
 import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
@@ -57,7 +59,7 @@ public abstract class HomekitShortReadOnlyStringCharacteristic extends AbstractH
     }
 
     @Override
-    public String toValue(JsonValue jsonValue) {
+    public String toValue(JsonValue jsonValue, Map<String, Object> conversionMap) {
         return ((JsonString) jsonValue).getString();
     }
 
@@ -92,21 +94,6 @@ public abstract class HomekitShortReadOnlyStringCharacteristic extends AbstractH
     @Override
     public State toState(String value) {
         return StringType.valueOf(value);
-    }
-
-    @Override
-    public JsonObject toEventJson(String value) {
-        return super.toEventJson(value);
-    }
-
-    @Override
-    public JsonObject toEventJson() {
-        return super.toEventJson();
-    }
-
-    @Override
-    public JsonValue toValueJson(@Nullable String value) {
-        return super.toValueJson(value);
     }
 
     public static String getAcceptedItemType() {

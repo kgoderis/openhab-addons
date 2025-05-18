@@ -1,5 +1,7 @@
 package org.openhab.io.homekit.core.characteristic;
 
+import java.util.Map;
+
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
@@ -66,12 +68,12 @@ public abstract class HomekitByteCharacteristic extends AbstractHomekitCharacter
     }
 
     @Override
-    public Byte toValue(JsonValue value) {
+    public Byte toValue(JsonValue value, Map<String, Object> conversionMap) {
         return (byte) ((JsonNumber) value).intValue();
     }
 
     @Override
-    public Byte toValue(State state) {
+    public Byte toValue(State state, Map<String, Object> conversionMap) {
         DecimalType convertedState = state.as(DecimalType.class);
         if (convertedState == null) {
             return minValue;
@@ -87,21 +89,6 @@ public abstract class HomekitByteCharacteristic extends AbstractHomekitCharacter
     @Override
     public Byte getDefault() {
         return minValue;
-    }
-
-    @Override
-    public JsonObject toEventJson(Byte value) {
-        return super.toEventJson(value);
-    }
-
-    @Override
-    public JsonObject toEventJson() {
-        return super.toEventJson();
-    }
-
-    @Override
-    public JsonValue toValueJson(@Nullable Byte value) {
-        return super.toValueJson(value);
     }
 
     public static String getAcceptedItemType() {

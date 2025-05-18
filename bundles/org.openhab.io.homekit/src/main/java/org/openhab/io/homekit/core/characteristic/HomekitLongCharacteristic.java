@@ -1,5 +1,6 @@
 package org.openhab.io.homekit.core.characteristic;
 
+import java.util.Map;
 import java.util.Set;
 
 import javax.json.JsonNumber;
@@ -72,27 +73,12 @@ public abstract class HomekitLongCharacteristic extends AbstractHomekitCharacter
     }
 
     @Override
-    public JsonObject toEventJson() {
-        return super.toEventJson();
-    }
-
-    @Override
-    public JsonObject toEventJson(Long value) {
-        return super.toEventJson(value);
-    }
-
-    @Override
-    public JsonValue toValueJson(@Nullable Long value) {
-        return super.toValueJson(value);
-    }
-
-    @Override
-    public Long toValue(JsonValue value) {
+    public Long toValue(JsonValue value, Map<String, Object> conversionMap) {
         return ((JsonNumber) value).longValue();
     }
 
     @Override
-    public Long toValue(State state) {
+    public Long toValue(State state, Map<String, Object> conversionMap) {
         DecimalType convertedState = state.as(DecimalType.class);
         if (convertedState == null) {
             return minValue;

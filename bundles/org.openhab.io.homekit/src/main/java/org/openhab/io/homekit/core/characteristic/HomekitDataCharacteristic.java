@@ -1,11 +1,13 @@
 package org.openhab.io.homekit.core.characteristic;
 
+import java.util.Map;
+
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-
+import org.openhab.core.types.State;
 @NonNullByDefault
 public abstract class HomekitDataCharacteristic extends AbstractHomekitCharacteristic<byte[]> {
     public HomekitDataCharacteristic(HomekitService service, HomekitEventManager eventManager) {
@@ -39,9 +41,13 @@ public abstract class HomekitDataCharacteristic extends AbstractHomekitCharacter
     }
 
     @Override
-    public byte[] toValue(JsonValue jsonValue) {
+    public byte[] toValue(JsonValue jsonValue, Map<String, Object> conversionMap) {
         // Implementers should override this for custom data JSON handling
         throw new UnsupportedOperationException("Data JSON conversion not implemented");
+    }
+
+    public byte[] toValue(State state, Map<String, Object> conversionMap) {
+        throw new UnsupportedOperationException("State to Data conversion not implemented");
     }
 
     @Override

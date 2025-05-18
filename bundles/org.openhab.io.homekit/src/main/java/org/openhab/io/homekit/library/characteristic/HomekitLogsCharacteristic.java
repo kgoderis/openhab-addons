@@ -1,8 +1,11 @@
 package org.openhab.io.homekit.library.characteristic;
 
+import java.util.Map;
+
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitTLV8Characteristic;
@@ -81,7 +84,8 @@ public class HomekitLogsCharacteristic extends HomekitTLV8Characteristic {
      * @return the corresponding State
      */
     @Override
-    public org.openhab.core.types.State toState(java.util.Map<Integer, Object> value) {
-        return null;
+    public State toState(Map<Integer, Object> value) {
+        throw new UnsupportedOperationException(
+                "TLV8 to State conversion must be implemented for the specific device.");
     }
 }

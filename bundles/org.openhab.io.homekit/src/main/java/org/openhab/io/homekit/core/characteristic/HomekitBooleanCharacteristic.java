@@ -10,6 +10,8 @@
  */
 package org.openhab.io.homekit.core.characteristic;
 
+import java.util.Map;
+
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
@@ -67,7 +69,7 @@ public abstract class HomekitBooleanCharacteristic extends AbstractHomekitCharac
 
     /** {@inheritDoc} */
     @Override
-    public Boolean toValue(JsonValue value) {
+    public Boolean toValue(JsonValue value, Map<String, Object> conversionMap) {
         if (value.getValueType().equals(ValueType.NUMBER)) {
             return ((JsonNumber) value).intValue() > 0;
         }
@@ -75,7 +77,7 @@ public abstract class HomekitBooleanCharacteristic extends AbstractHomekitCharac
     }
 
     @Override
-    public Boolean toValue(State state) {
+    public Boolean toValue(State state, Map<String, Object> conversionMap) {
         OnOffType convertedState = state.as(OnOffType.class);
         if (convertedState == null) {
             return false;
@@ -88,36 +90,6 @@ public abstract class HomekitBooleanCharacteristic extends AbstractHomekitCharac
         return value ? OnOffType.ON : OnOffType.OFF;
     }
 
-    @Override
-    public JsonObject toEventJson(Boolean value) {
-        return super.toEventJson(value);
-    }
-
-    @Override
-    public JsonObject toEventJson() {
-        return super.toEventJson();
-    }
-
-    @Override
-    public JsonValue toValueJson(@Nullable Boolean value) {
-        return super.toValueJson(value);
-    }
-
-    @Override
-    public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType,
-            boolean includeEvent) {
-        return super.toJson(includeMeta, includePermissions, includeType, includeEvent);
-    }
-
-    @Override
-    public JsonObject toJson() {
-        return super.toJson();
-    }
-
-    @Override
-    public JsonObject toReducedJson() {
-        return super.toReducedJson();
-    }
 
     public static String getAcceptedItemType() {
         return CoreItemFactory.SWITCH;

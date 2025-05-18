@@ -8,6 +8,7 @@ import javax.json.JsonObject;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
+import org.openhab.io.homekit.api.accessory.HomekitAccessoryType;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory;
  * its own AID and UID for the local server.
  */
 @NonNullByDefault
+@HomekitAccessoryType(name = "Bridged Accessory", type = "1110002-0000-1000-8000-0026BB765291", tag = "bridged")
 public class HomekitBridgedAccessory implements HomekitAccessory {
     private static final Logger logger = LoggerFactory.getLogger(HomekitBridgedAccessory.class);
     private static final String LOG_PREFIX = "Homekit HomekitBridgedAccessory: ";

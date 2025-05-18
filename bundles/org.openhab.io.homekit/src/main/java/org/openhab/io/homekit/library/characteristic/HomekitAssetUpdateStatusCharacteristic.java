@@ -9,7 +9,7 @@ import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitTLV8Characteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-
+import org.openhab.core.types.State;
 /**
  * HomeKit Asset Update Status Characteristic.
  * This characteristic represents the current status of asset updates in TLV8 format.
@@ -122,7 +122,7 @@ public class HomekitAssetUpdateStatusCharacteristic extends HomekitTLV8Character
      * @throws UnsupportedOperationException if not implemented by the device
      */
     @Override
-    public org.openhab.core.types.State toState(Map<Integer, Object> value) {
+    public State toState(Map<Integer, Object> value) {
         throw new UnsupportedOperationException(
                 "TLV8 to State conversion must be implemented for the specific device.");
     }

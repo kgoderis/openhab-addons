@@ -3,6 +3,8 @@
  */
 package org.openhab.io.homekit.core.characteristic;
 
+import java.util.Map;
+
 import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
@@ -47,7 +49,7 @@ public abstract class HomekitReadOnlyStringCharacteristic extends AbstractHomeki
     }
 
     @Override
-    public String toValue(JsonValue jsonValue) {
+    public String toValue(JsonValue jsonValue, Map<String, Object> conversionMap) {
         return ((JsonString) jsonValue).getString();
     }
 
@@ -71,7 +73,7 @@ public abstract class HomekitReadOnlyStringCharacteristic extends AbstractHomeki
     }
 
     @Override
-    public String toValue(State state) {
+    public String toValue(State state, Map<String, Object> conversionMap) {
         StringType convertedState = state.as(StringType.class);
         if (convertedState == null) {
             return getDefault();
@@ -82,21 +84,6 @@ public abstract class HomekitReadOnlyStringCharacteristic extends AbstractHomeki
     @Override
     public State toState(String value) {
         return StringType.valueOf(value);
-    }
-
-    @Override
-    public JsonObject toEventJson(String value) {
-        return super.toEventJson(value);
-    }
-
-    @Override
-    public JsonObject toEventJson() {
-        return super.toEventJson();
-    }
-
-    @Override
-    public JsonValue toValueJson(@Nullable String value) {
-        return super.toValueJson(value);
     }
 
     public static String getAcceptedItemType() {

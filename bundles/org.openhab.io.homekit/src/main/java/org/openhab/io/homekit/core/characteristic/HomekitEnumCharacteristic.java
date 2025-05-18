@@ -1,5 +1,6 @@
 package org.openhab.io.homekit.core.characteristic;
 
+import java.util.Map;
 import java.util.Set;
 
 import javax.json.JsonNumber;
@@ -69,7 +70,7 @@ public abstract class HomekitEnumCharacteristic extends AbstractHomekitCharacter
     }
 
     @Override
-    public Integer toValue(JsonValue value) {
+    public Integer toValue(JsonValue value, Map<String, Object> conversionMap) {
         if (value instanceof JsonNumber jsonNumber) {
             return jsonNumber.intValue();
         } else if (value == JsonValue.TRUE) {
@@ -83,7 +84,7 @@ public abstract class HomekitEnumCharacteristic extends AbstractHomekitCharacter
     }
 
     @Override
-    public Integer toValue(State state) {
+    public Integer toValue(State state, Map<String, Object> conversionMap) {
         DecimalType convertedState = state.as(DecimalType.class);
         if (convertedState == null) {
             return 0;
@@ -99,21 +100,6 @@ public abstract class HomekitEnumCharacteristic extends AbstractHomekitCharacter
     @Override
     public Integer getDefault() {
         return 0;
-    }
-
-    @Override
-    public JsonObject toEventJson(Integer value) {
-        return super.toEventJson(value);
-    }
-
-    @Override
-    public JsonObject toEventJson() {
-        return super.toEventJson();
-    }
-
-    @Override
-    public JsonValue toValueJson(@Nullable Integer value) {
-        return super.toValueJson(value);
     }
 
     public static String getAcceptedItemType() {

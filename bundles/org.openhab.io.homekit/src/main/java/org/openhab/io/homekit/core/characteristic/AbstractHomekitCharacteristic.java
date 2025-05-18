@@ -2,6 +2,8 @@ package org.openhab.io.homekit.core.characteristic;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -166,8 +168,8 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
                         if (changeEvent.getCharacteristic().get().equals(AbstractHomekitCharacteristic.this)) {
                             // Update the value in response to the event
                             try {
-                                AbstractHomekitCharacteristic.this.setValue(changeEvent.getNewValue().get(),
-                                        event.getMetadata());
+                                AbstractHomekitCharacteristic.this.setValue(changeEvent.getNewValue().get(),changeEvent.getItemConfiguration(),
+                                changeEvent.getMetadata());
                             } catch (Exception e) {
                                 // Handle error
                             }
@@ -359,14 +361,14 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
         }
     }
 
-    protected void setValue(JsonValue value, HomekitEventMetadata metadata) throws Exception {
+    protected void setValue(JsonValue value, Map<String, Object> conversionMap,HomekitEventMetadata metadata) throws Exception {
         if (!isPairedWrite) {
             throw new Exception("Cannot modify a readonly characteristic");
         }
         try {
             @Nullable
             T oldValue = this.value;
-            setValueInternal(toValue(value));
+            setValueInternal(toValue(value, conversionMap));
             notifyValueChanged(oldValue, this.value, metadata);
         } catch (Exception e) {
             logger.error("{}Error while setting value with metadata: {}", LOG_ERROR, e.getMessage(), e);
@@ -391,10 +393,33 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
      * Converts a JSON value to the characteristic's value type.
      * 
      * @param jsonValue the JSON value to convert
+     * @param conversionMap a map of conversion rules for the value
      * @return the converted value
      */
     @Override
-    public abstract T toValue(JsonValue jsonValue);
+    public abstract T toValue(JsonValue jsonValue, Map<String, Object> conversionMap);
+
+
+    /**
+     * Converts a JSON value to the characteristic's value type.
+     * 
+     * @param jsonValue the JSON value to convert
+     * @return the converted value
+     */
+    @Override
+    public  T toValue(JsonValue jsonValue) {
+        return toValue(jsonValue, Collections.emptyMap());
+    }
+
+    /**
+     * Converts a State to the characteristic's value type.
+     * 
+     * @param state the state to convert
+     * @param conversionMap a map of conversion rules for the value
+     * @return the converted value
+     */
+    @Override
+    public abstract T toValue(State state, Map<String, Object> conversionMap);
 
     /**
      * Converts a State to the characteristic's value type.
@@ -403,7 +428,9 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
      * @return the converted value
      */
     @Override
-    public abstract T toValue(State state);
+    public T toValue(State state) {
+        return toValue(state, Collections.emptyMap());
+    }
 
     /**
      * Converts a value to a State.

@@ -97,7 +97,6 @@ public class HomekitManagedAccessoryServerProvider extends
     }
 
     @Override
-    @SuppressWarnings("null")
     protected HomekitAccessoryServer toElement(String key, HomekitPersistedAccessoryServer persistableElement) {
         try {
             HomekitAccessoryServer server;

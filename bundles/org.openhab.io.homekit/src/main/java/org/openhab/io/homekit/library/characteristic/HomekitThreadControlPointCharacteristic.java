@@ -5,6 +5,7 @@ import java.util.Map;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitTLV8Characteristic;
@@ -62,7 +63,7 @@ public class HomekitThreadControlPointCharacteristic extends HomekitTLV8Characte
     }
 
     @Override
-    public org.openhab.core.types.State toState(Map<Integer, Object> value) {
+    public State toState(Map<Integer, Object> value) {
         throw new UnsupportedOperationException(
                 "TLV8 to State conversion must be implemented for the specific device.");
     }

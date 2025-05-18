@@ -68,7 +68,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openhab.io.homekit.bridge.HomekitItemConfigParser;
 import org.openhab.io.homekit.bridge.HomekitTaggedItem;
-import org.openhab.io.homekit.bridge.HomekitConfigurationManager;
+import org.openhab.io.homekit.config.HomekitConfigurationManager;
 import org.openhab.io.homekit.bridge.ConfigurationSource;
 
 /**
@@ -651,10 +651,12 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                 serviceFactory, characteristicFactory);
         if (taggedItem.isTagged()) {
             Map<String, Object> config = configParser.getFilteredConfig(item);
-            configManager.updateConfiguration(item.getName(), config, HomekitConfigurationManager.ConfigurationType.ITEM);
+            configManager.updateConfiguration(item.getName(), config, HomekitConfigurationManager.ConfigurationType.ITEM, YAML_FILE_NAME);
             createAccessoryForItem(taggedItem);
         }
     }
+
+     //TODO  :  add logic to prioritse configuration coming from the config yaml over the metadata
 
     /**
      * Handles the removal of an item from the registry.
@@ -726,6 +728,11 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
             return;
         }
 
+                            // get the homekit namespace metadata for the item
+                            MetadataKey key = new MetadataKey("homekit", item.getName());
+                            Metadata metadata = metadataRegistry.get(key);
+                            Map<String, Object> itemConfiguration = metadata != null ? metadata.getConfiguration() : Collections.emptyMap();
+
         // Clean up expired exit events
         exitEvents.entrySet().removeIf(entry -> entry.getValue().isExpired());
 
@@ -744,8 +751,9 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                                 statisticsCollector.recordEvent(System.currentTimeMillis() - e.getTimestamp());
                             }
 
+    
                             HomekitEvent newEvent = new HomekitCharacteristicUpdateEvent(bridgeUID, c.getUID(), c,
-                                    c.toValueJson(e.getState()), c.toValueJson(newState), e.getMetadata());
+                                    c.toValueJson(e.getState()), c.toValueJson(newState), itemConfiguration, e.getMetadata());
 
                             eventManager.publishEvent(newEvent);
                             exitEvents.remove(item.getName());
@@ -753,11 +761,11 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                     });
 
                     // Handle uncorrelated state change
-                    if (exitEvent != null) {
+                    if (exitEvent == null) {
                         logger.debug("Processing new state change for item: {}", item.getName());
                         HomekitEvent newEvent = new HomekitCharacteristicUpdateEvent(bridgeUID, c.getUID(), c,
-                                c.toValueJson(exitEvent.getState()), c.toValueJson(newState),
-                                new HomekitEventMetadata(c.getUID(), null, null, peerGroup));
+                                c.toValueJson(oldState), c.toValueJson(newState), itemConfiguration,
+                                new HomekitEventMetadata(bridgeUID, null, bridgeUID, peerGroup));
                         eventManager.publishEvent(newEvent);
                     }
                 } catch (Exception e) {
@@ -779,12 +787,17 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
         if (item == null || state == null) {
             return;
         }
+        // get the homekit namespace metadata for the item
+        MetadataKey key = new MetadataKey("homekit", item.getName());
+        Metadata metadata = metadataRegistry.get(key);
+        Map<String, Object> itemConfiguration = metadata != null ? metadata.getConfiguration() : Collections.emptyMap();
+
         Optional.ofNullable(characteristicMap.get(item.getName()))
                 .ifPresent(characteristics -> characteristics.forEach(c -> {
                     try {
                         Optional.ofNullable(exitEvents.get(item.getName())).ifPresent(exitEvent -> {
                             HomekitEvent newEvent = new HomekitCharacteristicUpdateEvent(c,
-                                    c.toValueJson(exitEvent.getState()), c.toValueJson(state), exitEvent.getMetadata());
+                                    c.toValueJson(exitEvent.getState()), c.toValueJson(state), itemConfiguration, exitEvent.getMetadata());
                             eventManager.publishEvent(newEvent);
                         });
                     } catch (Exception e) {

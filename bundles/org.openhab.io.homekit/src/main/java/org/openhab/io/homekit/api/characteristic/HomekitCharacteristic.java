@@ -1,5 +1,6 @@
 package org.openhab.io.homekit.api.characteristic;
 
+import java.util.Map;
 import java.util.Set;
 
 import javax.json.JsonObject;
@@ -136,9 +137,27 @@ public interface HomekitCharacteristic<T>
      * Converts a JSON value to the characteristic's type.
      *
      * @param jsonValue the JSON value to convert
+     * @param conversionMap a map of conversion rules for the value
+     * @return the converted value of type T
+     */
+    T toValue(JsonValue jsonValue, Map<String, Object> conversionMap);
+
+    /**
+     * Converts a JSON value to the characteristic's type.
+     *
+     * @param jsonValue the JSON value to convert
      * @return the converted value of type T
      */
     T toValue(JsonValue jsonValue);
+
+    /**
+     * Converts a State to the characteristic's type.
+     *
+     * @param state the state to convert
+     * @param conversionMap a map of conversion rules for the value
+     * @return the converted value of type T
+     */
+    T toValue(State state, Map<String, Object> conversionMap);
 
     /**
      * Converts a State to the characteristic's type.

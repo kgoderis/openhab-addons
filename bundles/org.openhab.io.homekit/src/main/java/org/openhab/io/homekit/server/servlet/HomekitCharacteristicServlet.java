@@ -190,7 +190,7 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
                                     if (characteristic instanceof AbstractHomekitCharacteristic<?> genericCharacteristic) {
                                         HomekitEvent newEvent = new HomekitCharacteristicUpdateEvent(server.getUID(),
                                                 genericCharacteristic.getUID(), genericCharacteristic, JsonValue.NULL,
-                                                characteristicWrite.get("value"),
+                                                characteristicWrite.get("value"), Collections.emptyMap(),
                                                 new HomekitEventMetadata(server.getUID(), null, server.getUID(),
                                                         Collections.emptySet()));
                                         eventManager.publishEvent(newEvent);
