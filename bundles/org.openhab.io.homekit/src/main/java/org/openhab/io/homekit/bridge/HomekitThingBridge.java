@@ -51,6 +51,7 @@ import org.openhab.io.homekit.config.HomekitConfigurationManager;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicChangedEvent;
 import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicUpdateEvent;
+import org.openhab.io.homekit.util.HomekitUID;
 import org.openhab.io.homekit.api.event.HomekitEvent;
 import org.openhab.io.homekit.api.event.HomekitEventSubscriber;
 import org.openhab.io.homekit.api.event.HomekitEventType;
@@ -73,6 +74,7 @@ import java.util.concurrent.Executors;
 import org.openhab.core.events.EventSubscriber;
 import java.util.HashSet;
 import org.openhab.io.homekit.event.core.HomekitEventMetadata;
+import org.openhab.io.homekit.event.core.HomekitEventSubscription;
 import org.openhab.core.config.core.Configuration;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -134,10 +136,11 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
     // Maps to store relationships between Things, Channels, and HomeKit accessories/characteristics
     private final Map<ThingUID, HomekitAccessory> thingAccessoryMap = new ConcurrentHashMap<>();
     private final Map<ChannelUID, HomekitCharacteristic<?>> channelCharacteristicMap = new ConcurrentHashMap<>();
+    private final Map<HomekitCharacteristic<?>, ChannelUID> characteristicChannelMap = new ConcurrentHashMap<>();
     private final Map<String, ChannelUID> itemChannelMap = new ConcurrentHashMap<>();
     private final HomekitEventManager eventManager;
-    private final Map<HomekitCharacteristic<?>, Set<HomekitEventType>> characteristicSubscriptions = new ConcurrentHashMap<>();
-
+    private final Set<HomekitEventSubscription> eventSubscriptions = new HashSet<>();
+    private final HomekitUID bridgeUID = new HomekitUID("bridge");
     /**
      * Creates a new HomekitThingBridge instance.
      * Initializes all required services and managers.
@@ -240,7 +243,9 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
                         HomekitCharacteristic<?> characteristic = characteristicFactory
                                 .createCharacteristic(characteristicType, service);
                         if (characteristic != null) {
+                            // Add bidirectional mapping
                             channelCharacteristicMap.put(channel.getUID(), characteristic);
+                            characteristicChannelMap.put(characteristic, channel.getUID());
                             service.addCharacteristic(characteristic);
 
                             // Subscribe to characteristic events
@@ -264,27 +269,24 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
 
     private void subscribeToCharacteristicEvents(HomekitCharacteristic<?> characteristic) {
         try {
-            Set<HomekitEventType> subscribedTypes = new HashSet<>();
-            
+           
             // Subscribe to value changes
-            eventManager.subscribe(
+            eventSubscriptions.add(eventManager.subscribe(
                 HomekitEventType.CHARACTERISTIC_VALUE_CHANGED,
                 characteristic.getUID(),
-                characteristic.getUID(),
+                bridgeUID,
                 (event) -> handleCharacteristicEvent(characteristic, event)
-            );
-            subscribedTypes.add(HomekitEventType.CHARACTERISTIC_VALUE_CHANGED);
+            ));
+
 
             // Subscribe to state changes
-            eventManager.subscribe(
+            eventSubscriptions.add(eventManager.subscribe(
                 HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
                 characteristic.getUID(),
-                characteristic.getUID(),
+                bridgeUID,
                 (event) -> handleCharacteristicEvent(characteristic, event)
-            );
-            subscribedTypes.add(HomekitEventType.CHARACTERISTIC_STATE_CHANGED);
+            ));
 
-            characteristicSubscriptions.put(characteristic, subscribedTypes);
             logger.debug("{}Subscribed to events for characteristic {}", LOG_PREFIX, characteristic.getUID());
         } catch (Exception e) {
             logger.error("{}Failed to subscribe to characteristic events: {}", LOG_PREFIX, e.getMessage(), e);
@@ -293,13 +295,17 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
 
     private void unsubscribeFromCharacteristicEvents(HomekitCharacteristic<?> characteristic) {
         try {
-            Set<HomekitEventType> subscribedTypes = characteristicSubscriptions.remove(characteristic);
-            if (subscribedTypes != null) {
-                for (HomekitEventType type : subscribedTypes) {
-                    eventManager.unsubscribe(type, characteristic.getUID(), characteristic.getUID());
+            // Find and remove all subscriptions for this characteristic
+            eventSubscriptions.removeIf(subscription -> {
+                if (subscription.getPublisherUID().equals(characteristic.getUID())) {
+                    eventManager.unsubscribe(subscription.getEventType(), 
+                        subscription.getPublisherUID(), 
+                        subscription.getSubscriber());
+                    return true;
                 }
-                logger.debug("{}Unsubscribed from events for characteristic {}", LOG_PREFIX, characteristic.getUID());
-            }
+                return false;
+            });
+            logger.debug("{}Unsubscribed from events for characteristic {}", LOG_PREFIX, characteristic.getUID());
         } catch (Exception e) {
             logger.error("{}Failed to unsubscribe from characteristic events: {}", LOG_PREFIX, e.getMessage(), e);
         }
@@ -308,8 +314,8 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
     private void handleCharacteristicEvent(HomekitCharacteristic<?> characteristic, HomekitEvent event) {
         if (event instanceof HomekitCharacteristicChangedEvent changedEvent) {
             try {
-                // Find the channel for this characteristic
-                ChannelUID channelUID = characteristic.getChannelUID();
+                // Find the channel for this characteristic using the bidirectional map
+                ChannelUID channelUID = characteristicChannelMap.get(characteristic);
                 if (channelUID != null) {
                     // Use the HomeKit -> OpenHAB profile
                     Profile profile = channelHomekitToOpenhabProfiles.get(channelUID);
@@ -341,13 +347,13 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
     private void publishCharacteristicUpdate(HomekitCharacteristic<?> characteristic, Object value) {
         try {
             HomekitCharacteristicUpdateEvent event = new HomekitCharacteristicUpdateEvent(
-                characteristic.getUID(),
+                bridgeUID,
                 characteristic.getUID(),
                 characteristic,
                 characteristic.toValueJson(value),
                 null,
                 Map.of(),
-                new HomekitEventMetadata(characteristic.getUID(), null, characteristic.getUID(), Set.of())
+                new HomekitEventMetadata(bridgeUID, null, bridgeUID, Set.of())
             );
             eventManager.publishEvent(event);
             logger.debug("{}Published update for characteristic {}: {}", LOG_PREFIX, characteristic.getUID(), value);
@@ -397,16 +403,16 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
             // Direct communication - convert and send event
             try {
                 Object homekitValue = characteristic.fromCommand(command);
-                HomekitCharacteristicUpdateEvent event = new HomekitCharacteristicUpdateEvent(
-                    characteristic.getUID(),
+                HomekitCharacteristicUpdateEvent updateEvent = new HomekitCharacteristicUpdateEvent(
+                    bridgeUID,
                     characteristic.getUID(),
                     characteristic,
                     characteristic.toValueJson(homekitValue),
                     null,
                     Map.of(),
-                    new HomekitEventMetadata(characteristic.getUID(), null, characteristic.getUID(), Set.of())
+                    new HomekitEventMetadata(bridgeUID, null, bridgeUID, Set.of())
                 );
-                eventManager.publishEvent(event);
+                eventManager.publishEvent(updateEvent);
             } catch (Exception e) {
                 logger.error("{}Failed to handle command for item {}: {}", 
                         LOG_PREFIX, itemName, e.getMessage(), e);
@@ -441,16 +447,16 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
             // Direct communication - convert and send event
             try {
                 Object homekitValue = characteristic.fromState(state);
-                HomekitCharacteristicUpdateEvent event = new HomekitCharacteristicUpdateEvent(
-                    characteristic.getUID(),
+                HomekitCharacteristicUpdateEvent updateEvent = new HomekitCharacteristicUpdateEvent(
+                    bridgeUID,
                     characteristic.getUID(),
                     characteristic,
                     characteristic.toValueJson(homekitValue),
                     null,
                     Map.of(),
-                    new HomekitEventMetadata(characteristic.getUID(), null, characteristic.getUID(), Set.of())
+                    new HomekitEventMetadata(bridgeUID, null, bridgeUID, Set.of())
                 );
-                eventManager.publishEvent(event);
+                eventManager.publishEvent(updateEvent);
             } catch (Exception e) {
                 logger.error("{}Failed to handle state update for item {}: {}", 
                         LOG_PREFIX, itemName, e.getMessage(), e);
@@ -569,16 +575,16 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         if (characteristic != null) {
             try {
                 Object homekitValue = characteristic.fromCommand(command);
-                HomekitCharacteristicUpdateEvent event = new HomekitCharacteristicUpdateEvent(
-                    characteristic.getUID(),
+                HomekitCharacteristicUpdateEvent updateEvent = new HomekitCharacteristicUpdateEvent(
+                    bridgeUID,
                     characteristic.getUID(),
                     characteristic,
                     characteristic.toValueJson(homekitValue),
                     null,
                     Map.of(),
-                    new HomekitEventMetadata(characteristic.getUID(), null, characteristic.getUID(), Set.of())
+                    new HomekitEventMetadata(bridgeUID, null, bridgeUID, Set.of())
                 );
-                eventManager.publishEvent(event);
+                eventManager.publishEvent(updateEvent);
             } catch (Exception e) {
                 logger.error("{}Failed to handle command for channel {}: {}", 
                         LOG_PREFIX, channelUID, e.getMessage(), e);
@@ -598,16 +604,16 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         if (characteristic != null) {
             try {
                 Object homekitValue = characteristic.fromState(state);
-                HomekitCharacteristicUpdateEvent event = new HomekitCharacteristicUpdateEvent(
-                    characteristic.getUID(),
+                HomekitCharacteristicUpdateEvent updateEvent = new HomekitCharacteristicUpdateEvent(
+                    bridgeUID,
                     characteristic.getUID(),
                     characteristic,
                     characteristic.toValueJson(homekitValue),
                     null,
                     Map.of(),
-                    new HomekitEventMetadata(characteristic.getUID(), null, characteristic.getUID(), Set.of())
+                    new HomekitEventMetadata(bridgeUID, null, bridgeUID, Set.of())
                 );
-                eventManager.publishEvent(event);
+                eventManager.publishEvent(updateEvent);
             } catch (Exception e) {
                 logger.error("{}Failed to handle state update for channel {}: {}", 
                         LOG_PREFIX, channelUID, e.getMessage(), e);
@@ -632,8 +638,16 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
      */
     public void deactivate() {
         // Unsubscribe from all characteristic events
-        characteristicSubscriptions.keySet().forEach(this::unsubscribeFromCharacteristicEvents);
-        characteristicSubscriptions.clear();
+        eventSubscriptions.forEach(subscription -> {
+            try {
+                eventManager.unsubscribe(subscription.getEventType(), 
+                    subscription.getPublisherUID(), 
+                    subscription.getSubscriber());
+            } catch (Exception e) {
+                logger.error("{}Failed to unsubscribe from event: {}", LOG_PREFIX, e.getMessage(), e);
+            }
+        });
+        eventSubscriptions.clear();
 
         // Remove accessories and clean up
         thingAccessoryMap.values().forEach(accessory -> {
@@ -647,6 +661,7 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         
         thingAccessoryMap.clear();
         channelCharacteristicMap.clear();
+        characteristicChannelMap.clear();
         itemChannelMap.clear();
 
         // Clean up both profile maps
@@ -715,6 +730,8 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
                 thing.getChannels().forEach(channel -> {
                     HomekitCharacteristic<?> characteristic = channelCharacteristicMap.remove(channel.getUID());
                     if (characteristic != null) {
+                        // Remove from bidirectional map
+                        characteristicChannelMap.remove(characteristic);
                         // Unsubscribe from characteristic events
                         unsubscribeFromCharacteristicEvents(characteristic);
                         
