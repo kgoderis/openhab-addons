@@ -1,0 +1,101 @@
+# HomeKit Mapping Configuration
+
+things:
+  # Specific Magic device mapping
+  "magic:device:livingroom_switch":
+    accessory: "generic"
+    metadata:
+      manufacturer: "Magic"
+      model: "RF Switch"
+    services:
+      switch:
+        characteristics:
+          on: { channel: "power", inverted: false }
+
+  # Magic motion sensor
+  "magic:device:kitchen_motion":
+    accessory: "generic"
+    metadata:
+      manufacturer: "Magic"
+      model: "Motion Sensor"
+    services:
+      motionSensor:
+        characteristics:
+          motionDetected: { channel: "motion" }
+          statusActive: { channel: "active" }
+          statusLowBattery: { channel: "battery" }
+
+  # Magic temperature sensor
+  "magic:device:bedroom_temp":
+    accessory: "generic"
+    metadata:
+      manufacturer: "Magic"
+      model: "Temperature Sensor"
+    services:
+      temperatureSensor:
+        characteristics:
+          currentTemperature: { channel: "temperature", unit: "CELSIUS" }
+          statusLowBattery: { channel: "battery" }
+
+  # Magic remote control (multiple services)
+  "magic:device:livingroom_remote":
+    accessory: "generic"
+    metadata:
+      manufacturer: "Magic"
+      model: "Remote Control"
+    services:
+      switch:
+        characteristics:
+          on: { channel: "power" }
+      battery:
+        characteristics:
+          batteryLevel: { channel: "battery" }
+          statusLowBattery: { channel: "batteryLow" }
+
+  # Type-based mapping for all Magic switches
+  "magic:device:*_switch":
+    accessory: "generic"
+    metadata:
+      manufacturer: "Magic"
+    services:
+      switch:
+        characteristics:
+          on: { channel: "power" }
+      battery:
+        characteristics:
+          batteryLevel: { channel: "battery" }
+          statusLowBattery: { channel: "batteryLow" }
+
+# Service Mappings
+services:
+  # Specific service mapping for a channel
+  "magic:device:livingroom_switch:switch":
+    serviceTag: "switch"
+    characteristics:
+      on: { channel: "power" }
+
+  # Specific service mapping for a channel in a group
+  "magic:device:livingroom_switch:my_group#battery":
+    serviceTag: "battery"
+    characteristics:
+      on: { channel: "power" }
+
+  # Type-based service mapping for a channel
+  "magic:device:*_switch:switch":
+    serviceTag: "switch"
+    characteristics:
+      on: { channel: "power" }
+
+# Characteristic Mappings
+characteristics:
+  # Specific characteristic mapping for a channel
+  "magic:device:livingroom_switch:switch:on":
+    characteristic: "on"
+    channel: "power"
+    inverted: false
+
+  # Type-based characteristic mapping for a channel
+  "magic:device:*_switch:switch:on":
+    characteristic: "on"
+    channel: "power"
+    inverted: false 

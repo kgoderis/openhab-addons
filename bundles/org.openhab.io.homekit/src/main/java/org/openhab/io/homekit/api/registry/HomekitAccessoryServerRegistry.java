@@ -5,6 +5,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.registry.Registry;
 import org.openhab.io.homekit.api.provider.HomekitAccessoryServerProvider;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
+import org.openhab.io.homekit.core.accessory.HomekitAccessoryUID;
 import org.openhab.io.homekit.server.HomekitAccessoryServerUID;
 
 /**
@@ -20,4 +21,6 @@ import org.openhab.io.homekit.server.HomekitAccessoryServerUID;
 public interface HomekitAccessoryServerRegistry extends Registry<HomekitAccessoryServer, HomekitAccessoryServerUID> {
 
     public @Nullable HomekitAccessoryServer getAvailableBridgeAccessoryServer();
+
+    public Object getAccessoryServer(HomekitAccessoryUID accessoryUID);
 }

@@ -81,6 +81,7 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
     private String model = "";
     private String manufacturer = "openHAB";
     private boolean extensible = true;
+    private boolean orphaned = false;
 
     /**
      * Creates a new Accessory with a unique instance ID.
@@ -600,6 +601,28 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
     public HomekitAccessory withExtensible(boolean isExtensible) {
         this.extensible = isExtensible;
         return this;
+    }
+
+    /**
+     * Sets whether this accessory is orphaned (its source item/thing has been removed).
+     * Orphaned accessories are kept in the registry to prevent HomeKit controllers from deleting them.
+     *
+     * @param orphaned true if the accessory is orphaned, false otherwise
+     */
+    @Override
+    public void setOrphaned(boolean orphaned) {
+        this.orphaned = orphaned;
+    }
+
+    /**
+     * Checks if this accessory is orphaned.
+     * Orphaned accessories are those whose source items/things have been removed.
+     *
+     * @return true if the accessory is orphaned, false otherwise
+     */
+    @Override
+    public boolean isOrphaned() {
+        return orphaned;
     }
 
     /**

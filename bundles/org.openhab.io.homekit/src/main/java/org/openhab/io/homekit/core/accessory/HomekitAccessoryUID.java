@@ -1,12 +1,14 @@
 package org.openhab.io.homekit.core.accessory;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.util.HomekitUID;
 
 /**
  * Represents a unique identifier for a Homekit accessory.
  * The UID format is: homekit:accessory:{pairingId}:{accessoryId}
  */
+@NonNullByDefault
 public class HomekitAccessoryUID extends HomekitUID {
 
     /**

@@ -11,6 +11,7 @@ import org.openhab.io.homekit.util.HomekitUID;
  *
  * @author Karel Goderis
  */
+@NonNullByDefault
 public class HomekitCharacteristicUID extends HomekitUID {
 
     /**
@@ -24,6 +25,10 @@ public class HomekitCharacteristicUID extends HomekitUID {
     public HomekitCharacteristicUID(String pairingId, long accessoryId, long serviceId, long characteristicId) {
         super("characteristic",
                 "homekit:characteristic:" + pairingId + ":" + accessoryId + ":" + serviceId + ":" + characteristicId);
+    }
+
+    public HomekitCharacteristicUID(String key) {
+        super("characteristic", key);
     }
 
     @Override

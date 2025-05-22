@@ -176,7 +176,7 @@ public class HomekitEventMetadata {
      * @param peerIdentifiers optional set of identifiers for components that should be treated as peers
      */
     public HomekitEventMetadata(UID publisherUid, @Nullable UID correlationId, @Nullable UID immediateOrigin,
-            Set<UID> peerIdentifiers) {
+            Set<HomekitUID> peerIdentifiers) {
         this.eventId = new HomekitUID("event");
         this.originalPublisherUid = publisherUid;
         this.hopCount = 0;
@@ -314,7 +314,7 @@ public class HomekitEventMetadata {
      * @param peerGroup the set of peer identifiers to check against
      * @return true if the event is from a peer in the group
      */
-    public boolean isFromPeerGroup(Set<UID> peerGroup) {
+    public boolean isFromPeerGroup(Set<HomekitUID> peerGroup) {
         return peerGroup.contains(immediateOrigin);
     }
 

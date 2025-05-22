@@ -6,6 +6,7 @@ import org.openhab.io.homekit.util.HomekitUID;
  * Represents a unique identifier for a Homekit service.
  * The UID format is: homekit:service:{pairingId}:{accessoryId}:{serviceId}
  */
+@NonNullByDefault
 public class HomekitServiceUID extends HomekitUID {
 
     // server id : accessory instance id : service id
@@ -24,6 +25,10 @@ public class HomekitServiceUID extends HomekitUID {
      */
     public HomekitServiceUID(String pairingId, long accessoryId, long serviceId) {
         super("service", "homekit:service:" + pairingId + ":" + accessoryId + ":" + serviceId);
+    }
+
+    public HomekitServiceUID(String key) {
+        super("service", key);
     }
 
     /**

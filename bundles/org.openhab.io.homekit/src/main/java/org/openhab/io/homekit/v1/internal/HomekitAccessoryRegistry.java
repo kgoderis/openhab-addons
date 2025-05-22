@@ -10,17 +10,18 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.io.homekit.internal;
+package org.openhab.io.homekit.v1.internal;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.github.hapjava.accessories.HomekitAccessory;
 import io.github.hapjava.server.impl.HomekitRoot;
 
 /**
@@ -29,6 +30,7 @@ import io.github.hapjava.server.impl.HomekitRoot;
  *
  * @author Andy Lintner - Initial contribution
  */
+@NonNullByDefault
 class HomekitAccessoryRegistry {
     private @Nullable HomekitRoot bridge;
     private final Map<String, HomekitAccessory> createdAccessories = new HashMap<>();
@@ -58,7 +60,11 @@ class HomekitAccessoryRegistry {
 
     public synchronized void remove(String itemName) {
         if (createdAccessories.containsKey(itemName)) {
-            HomekitAccessory accessory = createdAccessories.remove(itemName);
+            HomekitAccessory accessory = createdAccessories.get(itemName);
+            if (accessory.isOrphaned()) {
+                logger.debug("Accessory {} is orphaned, keeping it in registry", itemName);
+                return;
+            }
             logger.trace("Removed accessory {} for taggedItem {}", accessory, itemName);
             final HomekitRoot bridge = this.bridge;
             if (bridge != null) {

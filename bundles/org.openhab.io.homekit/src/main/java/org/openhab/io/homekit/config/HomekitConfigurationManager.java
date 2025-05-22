@@ -1,4 +1,4 @@
-package org.openhab.io.homekit.bridge;
+package org.openhab.io.homekit.config;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,12 +11,21 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
+import java.util.HashSet;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.config.core.ConfigDescriptionProvider;
 import org.openhab.core.config.core.ConfigDescriptionRegistry;
 import org.openhab.core.config.core.Configuration;
 import org.openhab.core.service.WatchService;
+import org.openhab.core.thing.UID;
+import org.openhab.core.thing.ThingUID;
+import org.openhab.core.thing.ChannelUID;
+import org.openhab.io.homekit.util.ItemUID;
+import org.openhab.io.homekit.util.HomekitUID;
+import org.openhab.io.homekit.core.accessory.HomekitAccessoryUID;
+import org.openhab.io.homekit.core.characteristic.HomekitCharacteristicUID;
+import org.openhab.io.homekit.core.service.HomekitServiceUID;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -42,16 +51,31 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     private final Yaml yaml;
     
     // Separate stores for different configuration types
-    private final Map<String, Map<String, Object>> itemConfigs = new ConcurrentHashMap<>();
-    private final Map<String, Map<String, Object>> thingConfigs = new ConcurrentHashMap<>();
-    private final Map<String, Map<String, Object>> channelConfigs = new ConcurrentHashMap<>();
-    private final Map<String, Map<String, Object>> accessoryConfigs = new ConcurrentHashMap<>();
+    private final Map<UID, Map<String, Object>> itemConfigs = new ConcurrentHashMap<>();
+    private final Map<UID, Map<String, Object>> thingConfigs = new ConcurrentHashMap<>();
+    private final Map<UID, Map<String, Object>> channelConfigs = new ConcurrentHashMap<>();
+    private final Map<UID, Map<String, Object>> accessoryConfigs = new ConcurrentHashMap<>();
+    private final Map<UID, Map<String, Object>> serviceConfigs = new ConcurrentHashMap<>();
+    private final Map<UID, Map<String, Object>> characteristicConfigs = new ConcurrentHashMap<>();
+    private final Map<UID, Map<String, Object>> profileConfigs = new ConcurrentHashMap<>();
+    private final Map<UID, Map<String, Object>> bridgeConfigs = new ConcurrentHashMap<>();
+    private final Map<UID, Map<String, Object>> networkConfigs = new ConcurrentHashMap<>();
+    private final Map<UID, Map<String, Object>> eventConfigs = new ConcurrentHashMap<>();
     
     // Track which file each configuration comes from
-    private final Map<String, String> itemSourceFiles = new ConcurrentHashMap<>();
-    private final Map<String, String> thingSourceFiles = new ConcurrentHashMap<>();
-    private final Map<String, String> channelSourceFiles = new ConcurrentHashMap<>();
-    private final Map<String, String> accessorySourceFiles = new ConcurrentHashMap<>();
+    private final Map<UID, String> itemSourceFiles = new ConcurrentHashMap<>();
+    private final Map<UID, String> thingSourceFiles = new ConcurrentHashMap<>();
+    private final Map<UID, String> channelSourceFiles = new ConcurrentHashMap<>();
+    private final Map<UID, String> accessorySourceFiles = new ConcurrentHashMap<>();
+    private final Map<UID, String> serviceSourceFiles = new ConcurrentHashMap<>();
+    private final Map<UID, String> characteristicSourceFiles = new ConcurrentHashMap<>();
+    private final Map<UID, String> profileSourceFiles = new ConcurrentHashMap<>();
+    private final Map<UID, String> bridgeSourceFiles = new ConcurrentHashMap<>();
+    private final Map<UID, String> networkSourceFiles = new ConcurrentHashMap<>();
+    private final Map<UID, String> eventSourceFiles = new ConcurrentHashMap<>();
+    
+    private final Map<UID, String> uidToYamlFile = new ConcurrentHashMap<>();
+    private final Map<String, Set<UID>> yamlFileToUIDs = new ConcurrentHashMap<>();
     
     @Activate
     public HomekitConfigurationManager(@Reference WatchService watchService,
@@ -80,33 +104,27 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     }
     
     @Modified
-    public void modified(Map<String, Object> config) {
-        // Process OSGi configuration updates
-        if (config != null) {
-            // Update configuration from OSGi config
-            config.forEach((key, value) -> {
-                String[] parts = key.split("\\.");
-                if (parts.length >= 2) {
-                    String type = parts[0];
-                    String uid = parts[1];
-                    String configKey = parts.length > 2 ? parts[2] : null;
-                    
-                    if (configKey != null) {
-                        ConfigurationType configType = switch (type.toLowerCase()) {
-                            case "item" -> ConfigurationType.ITEM;
-                            case "thing" -> ConfigurationType.THING;
-                            case "channel" -> ConfigurationType.CHANNEL;
-                            case "accessory" -> ConfigurationType.ACCESSORY;
-                            default -> null;
-                        };
-                        
-                        if (configType != null) {
-                            updateConfiguration(uid, configType, configKey, value);
-                        }
-                    }
-                }
-            });
+    protected void modified(Map<String, Object> config) {
+        if (config == null) {
+            return;
         }
+
+        config.forEach((key, value) -> {
+            String[] parts = key.split("\\.");
+            if (parts.length >= 3) {
+                String typeStr = parts[0];
+                String uidStr = parts[1];
+                String configKey = parts[2];
+
+                try {
+                    ConfigurationType type = ConfigurationType.valueOf(typeStr.toUpperCase());
+                    UID uid = convertToUID(uidStr, type);
+                    updateConfiguration(uid, type, configKey, value);
+                } catch (IllegalArgumentException e) {
+                    logger.warn("Invalid configuration key format: {}", key, e);
+                }
+            }
+        });
     }
     
     @Override
@@ -125,14 +143,10 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
             Map<String, Object> yamlConfig = yaml.load(Files.readString(file));
             
             // Process each section in the YAML file
-            if (yamlConfig.containsKey("items")) {
-                processItemConfigs(yamlConfig, fileName);
-            }
-            if (yamlConfig.containsKey("things")) {
-                processThingConfigs(yamlConfig, fileName);
-            }
-            if (yamlConfig.containsKey("channels")) {
-                processChannelConfigs(yamlConfig, fileName);
+            for (ConfigurationType type : ConfigurationType.values()) {
+                if (yamlConfig.containsKey(type.getYamlSection())) {
+                    processConfigs(yamlConfig, fileName, type);
+                }
             }
         } catch (IOException e) {
             logger.error("Error processing config file {}: {}", file, e.getMessage());
@@ -140,182 +154,273 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     }
     
     /**
-     * Processes item configurations from YAML
+     * Converts a string UID to the appropriate UID type based on its format and section
+     */
+    private UID convertToUID(String uidString, ConfigurationType type) {
+        if (uidString == null || uidString.isEmpty()) {
+            throw new IllegalArgumentException("UID string cannot be null or empty");
+        }
+
+        // Handle wildcard UIDs
+        if (uidString.equals("*")) {
+            return HomekitUID.WILDCARD_UID;
+        }
+
+        String[] segments = uidString.split(":");
+        
+        // Handle HomeKit UIDs
+        if (segments.length >= 2 && segments[0].equals("homekit")) {
+            switch (segments[1]) {
+                case "item":
+                    return new ItemUID(uidString);
+                case "accessory":
+                    return new HomekitAccessoryUID(uidString);
+                case "service":
+                    return new HomekitServiceUID(uidString);
+                case "characteristic":
+                    return new HomekitCharacteristicUID(uidString);
+                case "profile":
+                    return new HomekitUID(uidString);
+                case "bridge":
+                    return new HomekitUID(uidString);
+                case "network":
+                    return new HomekitUID(uidString);
+                case "event":
+                    return new HomekitUID(uidString);
+            }
+        }
+
+        // Handle based on configuration type
+        switch (type) {
+            case ITEM:
+                return new ItemUID(uidString);
+            case THING:
+            case SERVICE:
+                if (segments.length == 3) {
+                    return new ThingUID(segments[0], segments[1], segments[2]);
+                }
+                break;
+            case CHANNEL:
+            case CHARACTERISTIC:
+                if (segments.length == 4) {
+                    return new ChannelUID(new ThingUID(segments[0], segments[1], segments[2]), segments[3]);
+                }
+                break;
+            case ACCESSORY:
+                return new HomekitAccessoryUID(uidString);
+            case PROFILE:
+                return new HomekitUID(uidString);
+            case BRIDGE:
+                return new HomekitUID(uidString);
+            case NETWORK:
+                return new HomekitUID(uidString);
+            case EVENT:
+                return new HomekitUID(uidString);
+        }
+
+        // Default to ThingUID if no specific type can be determined
+        return new ThingUID("homekit", "unknown", uidString);
+    }
+
+    /**
+     * Converts a string UID to the appropriate UID type based on its format
+     */
+    private UID convertToUID(String uidString) {
+        // Try to determine type from the UID string first
+        String[] segments = uidString.split(":");
+        if (segments.length >= 2 && segments[0].equals("homekit")) {
+            try {
+                ConfigurationType type = ConfigurationType.valueOf(segments[1].toUpperCase());
+                return convertToUID(uidString, type);
+            } catch (IllegalArgumentException e) {
+                // If we can't determine type from UID, try to infer from format
+            }
+        }
+
+        // Try to infer type from format
+        if (segments.length == 3) {
+            return convertToUID(uidString, ConfigurationType.THING);
+        } else if (segments.length == 4) {
+            return convertToUID(uidString, ConfigurationType.CHANNEL);
+        }
+
+        // Default to ThingUID if no specific type can be determined
+        return new ThingUID("homekit", "unknown", uidString);
+    }
+    
+    /**
+     * Processes configurations from YAML for a specific type
      */
     @SuppressWarnings("unchecked")
-    private void processItemConfigs(Map<String, Object> yamlConfig, String fileName) {
-        Map<String, Object> items = (Map<String, Object>) yamlConfig.get("items");
-        if (items != null) {
-            items.forEach((uid, config) -> {
-                if (config instanceof Map) {
+    private void processConfigs(Map<String, Object> yamlConfig, String fileName, ConfigurationType type) {
+        Map<String, Object> configs = (Map<String, Object>) yamlConfig.get(type.getYamlSection());
+        if (configs != null) {
+            for (Map.Entry<String, Object> entry : configs.entrySet()) {
+                String uidString = entry.getKey();
+                Object value = entry.getValue();
+
+                if (value instanceof Map) {
                     @SuppressWarnings("unchecked")
-                    Map<String, Object> configMap = (Map<String, Object>) config;
-                    itemConfigs.put(uid, configMap);
-                    itemSourceFiles.put(uid, fileName);
+                    Map<String, Object> config = (Map<String, Object>) value;
+                    try {
+                        UID uid = convertToUID(uidString, type);
+                        updateConfiguration(uid, type, config, fileName);
+                    } catch (IllegalArgumentException e) {
+                        logger.warn("Invalid UID format in configuration: {}", uidString, e);
+                    }
                 }
-            });
+            }
         }
     }
     
     /**
-     * Processes thing configurations from YAML
+     * Writes a YAML configuration to a file
      */
-    @SuppressWarnings("unchecked")
-    private void processThingConfigs(Map<String, Object> yamlConfig, String fileName) {
-        Map<String, Object> things = (Map<String, Object>) yamlConfig.get("things");
-        if (things != null) {
-            things.forEach((uid, config) -> {
-                if (config instanceof Map) {
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> configMap = (Map<String, Object>) config;
-                    thingConfigs.put(uid, configMap);
-                    thingSourceFiles.put(uid, fileName);
-                }
-            });
-        }
-    }
-    
-    /**
-     * Processes channel configurations from YAML
-     */
-    @SuppressWarnings("unchecked")
-    private void processChannelConfigs(Map<String, Object> yamlConfig, String fileName) {
-        Map<String, Object> channels = (Map<String, Object>) yamlConfig.get("channels");
-        if (channels != null) {
-            channels.forEach((uid, config) -> {
-                if (config instanceof Map) {
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> configMap = (Map<String, Object>) config;
-                    channelConfigs.put(uid, configMap);
-                    channelSourceFiles.put(uid, fileName);
-                }
-            });
-        }
+    private void writeYamlFile(String yamlFile, Map<String, Object> yamlConfig) throws IOException {
+        Path configPath = Paths.get(CONFIG_DIR, yamlFile);
+        yaml.dump(yamlConfig, Files.newBufferedWriter(configPath));
     }
     
     /**
      * Stores configuration for a given UID in its respective YAML file
-     * 
-     * @param uid the unique identifier for the configuration
-     * @param type the type of configuration (ITEM, THING, CHANNEL)
      */
-    private void storeConfigs(String uid, ConfigurationType type) {
-        Optional<String> yamlFileOpt = getEffectiveSourceFile(uid, type);
-        if (yamlFileOpt.isEmpty()) {
-            logger.warn("No source file mapping found for {} of type {}", uid, type);
-            return;
-        }
-        String yamlFile = yamlFileOpt.get();
+    private void storeConfigs(UID uid, ConfigurationType type) {
+        Map<UID, Map<String, Object>> configs = switch (type) {
+            case ITEM -> itemConfigs;
+            case THING -> thingConfigs;
+            case CHANNEL -> channelConfigs;
+            case ACCESSORY -> accessoryConfigs;
+            case SERVICE -> serviceConfigs;
+            case CHARACTERISTIC -> characteristicConfigs;
+            case PROFILE -> profileConfigs;
+            case BRIDGE -> bridgeConfigs;
+            case NETWORK -> networkConfigs;
+            case EVENT -> eventConfigs;
+        };
 
-        Path configPath = Paths.get(CONFIG_DIR, yamlFile);
-        try {
-            Map<String, Object> yamlConfig = new HashMap<>();
-            
-            // Add only the sections that belong to this file
-            Map<String, Object> items = new HashMap<>();
-            Map<String, Object> things = new HashMap<>();
-            Map<String, Object> channels = new HashMap<>();
-            
-            // Collect configurations for this file
-            itemSourceFiles.forEach((itemUid, file) -> {
-                if (file.equals(yamlFile)) {
-                    items.put(itemUid, itemConfigs.get(itemUid));
+        Map<String, Object> config = configs.get(uid);
+        if (config != null) {
+            // Try to find the effective source file, considering wildcard matches
+            Optional<String> yamlFile = getEffectiveSourceFile(uid, type);
+            if (yamlFile.isPresent()) {
+                try {
+                    Map<String, Object> yamlConfig = new HashMap<>();
+                    yamlConfig.put(uid.toString(), config);
+                    writeYamlFile(yamlFile.get(), yamlConfig);
+                } catch (IOException e) {
+                    logger.error("Failed to write configuration to file: {}", yamlFile.get(), e);
                 }
-            });
-            thingSourceFiles.forEach((thingUid, file) -> {
-                if (file.equals(yamlFile)) {
-                    things.put(thingUid, thingConfigs.get(thingUid));
-                }
-            });
-            channelSourceFiles.forEach((channelUid, file) -> {
-                if (file.equals(yamlFile)) {
-                    channels.put(channelUid, channelConfigs.get(channelUid));
-                }
-            });
-            
-            // Add non-empty sections to the YAML config
-            if (!items.isEmpty()) {
-                yamlConfig.put("items", items);
+            } else {
+                logger.warn("No source file found for UID: {}", uid);
             }
-            if (!things.isEmpty()) {
-                yamlConfig.put("things", things);
-            }
-            if (!channels.isEmpty()) {
-                yamlConfig.put("channels", channels);
-            }
-            
-            yaml.dump(yamlConfig, Files.newBufferedWriter(configPath));
-        } catch (IOException e) {
-            logger.error("Error writing YAML configuration to {}: {}", yamlFile, e.getMessage());
         }
     }
 
     /**
-     * Gets all configurations of a specific type
+     * Gets all configurations of a given type
      */
-    public Map<String, Map<String, Object>> getConfigurations(ConfigurationType type) {
+    public Map<UID, Map<String, Object>> getAllConfigurations(ConfigurationType type) {
         return switch (type) {
-            case ITEM -> Collections.unmodifiableMap(itemConfigs);
-            case THING -> Collections.unmodifiableMap(thingConfigs);
-            case CHANNEL -> Collections.unmodifiableMap(channelConfigs);
-            case ACCESSORY -> Collections.unmodifiableMap(accessoryConfigs);
+            case ITEM -> new HashMap<>(itemConfigs);
+            case THING -> new HashMap<>(thingConfigs);
+            case CHANNEL -> new HashMap<>(channelConfigs);
+            case ACCESSORY -> new HashMap<>(accessoryConfigs);
+            case SERVICE -> new HashMap<>(serviceConfigs);
+            case CHARACTERISTIC -> new HashMap<>(characteristicConfigs);
+            case PROFILE -> new HashMap<>(profileConfigs);
+            case BRIDGE -> new HashMap<>(bridgeConfigs);
+            case NETWORK -> new HashMap<>(networkConfigs);
+            case EVENT -> new HashMap<>(eventConfigs);
         };
     }
 
     /**
-     * Gets all UIDs of a specific type
+     * Gets all source files for a given type
      */
-    public Set<String> getUIDs(ConfigurationType type) {
+    public Map<UID, String> getAllSourceFiles(ConfigurationType type) {
         return switch (type) {
-            case ITEM -> Collections.unmodifiableSet(itemConfigs.keySet());
-            case THING -> Collections.unmodifiableSet(thingConfigs.keySet());
-            case CHANNEL -> Collections.unmodifiableSet(channelConfigs.keySet());
-            case ACCESSORY -> Collections.unmodifiableSet(accessoryConfigs.keySet());
+            case ITEM -> new HashMap<>(itemSourceFiles);
+            case THING -> new HashMap<>(thingSourceFiles);
+            case CHANNEL -> new HashMap<>(channelSourceFiles);
+            case ACCESSORY -> new HashMap<>(accessorySourceFiles);
+            case SERVICE -> new HashMap<>(serviceSourceFiles);
+            case CHARACTERISTIC -> new HashMap<>(characteristicSourceFiles);
+            case PROFILE -> new HashMap<>(profileSourceFiles);
+            case BRIDGE -> new HashMap<>(bridgeSourceFiles);
+            case NETWORK -> new HashMap<>(networkSourceFiles);
+            case EVENT -> new HashMap<>(eventSourceFiles);
         };
     }
 
-        /**
-     * Gets the source file for a configuration
+    /**
+     * Gets all UIDs of a given type
      */
-    public Optional<String> getSourceFile(String uid, ConfigurationType type) {
-        return Optional.ofNullable(switch (type) {
-            case ITEM -> itemSourceFiles.get(uid);
-            case THING -> thingSourceFiles.get(uid);
-            case CHANNEL -> channelSourceFiles.get(uid);
-            case ACCESSORY -> accessorySourceFiles.get(uid);
-        });
+    public Set<UID> getAllUIDs(ConfigurationType type) {
+        return switch (type) {
+            case ITEM -> new HashSet<>(itemConfigs.keySet());
+            case THING -> new HashSet<>(thingConfigs.keySet());
+            case CHANNEL -> new HashSet<>(channelConfigs.keySet());
+            case ACCESSORY -> new HashSet<>(accessoryConfigs.keySet());
+            case SERVICE -> new HashSet<>(serviceConfigs.keySet());
+            case CHARACTERISTIC -> new HashSet<>(characteristicConfigs.keySet());
+            case PROFILE -> new HashSet<>(profileConfigs.keySet());
+            case BRIDGE -> new HashSet<>(bridgeConfigs.keySet());
+            case NETWORK -> new HashSet<>(networkConfigs.keySet());
+            case EVENT -> new HashSet<>(eventConfigs.keySet());
+        };
     }
 
-/**
-     * Gets the effective source file for a configuration UID.
-     * This will return the actual source file if it exists, or the source file
-     * of the wildcard/global rule that was used to match this UID.
+    /**
+     * Gets the source file for a given UID
      */
-    public Optional<String> getEffectiveSourceFile(String uid, ConfigurationType type) {
-        Map<String, String> sourceFiles = switch (type) {
+    public Optional<String> getSourceFile(UID uid, ConfigurationType type) {
+        Map<UID, String> sourceFiles = switch (type) {
             case ITEM -> itemSourceFiles;
             case THING -> thingSourceFiles;
             case CHANNEL -> channelSourceFiles;
             case ACCESSORY -> accessorySourceFiles;
+            case SERVICE -> serviceSourceFiles;
+            case CHARACTERISTIC -> characteristicSourceFiles;
+            case PROFILE -> profileSourceFiles;
+            case BRIDGE -> bridgeSourceFiles;
+            case NETWORK -> networkSourceFiles;
+            case EVENT -> eventSourceFiles;
         };
-        
-        // First check if we have a direct source file
-        String sourceFile = sourceFiles.get(uid);
-        if (sourceFile != null) {
-            return Optional.of(sourceFile);
+        return Optional.ofNullable(sourceFiles.get(uid));
+    }
+
+    /**
+     * Updates the source file for a given UID
+     */
+    public void updateSourceFile(UID uid, ConfigurationType type, String yamlFile) {
+        Map<UID, String> sourceFiles = switch (type) {
+            case ITEM -> itemSourceFiles;
+            case THING -> thingSourceFiles;
+            case CHANNEL -> channelSourceFiles;
+            case ACCESSORY -> accessorySourceFiles;
+            case SERVICE -> serviceSourceFiles;
+            case CHARACTERISTIC -> characteristicSourceFiles;
+            case PROFILE -> profileSourceFiles;
+            case BRIDGE -> bridgeSourceFiles;
+            case NETWORK -> networkSourceFiles;
+            case EVENT -> eventSourceFiles;
+        };
+        sourceFiles.put(uid, yamlFile);
+    }
+
+    /**
+     * Gets the effective source file for a given UID, considering wildcard matches
+     */
+    private Optional<String> getEffectiveSourceFile(UID uid, ConfigurationType type) {
+        // Try exact match first
+        Optional<String> sourceFile = getSourceFile(uid, type);
+        if (sourceFile.isPresent()) {
+            return sourceFile;
         }
-        
-        // If not, check for wildcard matches
-        if (type == ConfigurationType.ITEM) {
-            // For items, check wildcard match at the end
-            String wildcardUid = uid.substring(0, uid.lastIndexOf('_') + 1) + "*";
-            sourceFile = sourceFiles.get(wildcardUid);
-            if (sourceFile != null) {
-                return Optional.of(sourceFile);
-            }
-        } else {
-            // For things and channels, check wildcard matches at any segment
-            String[] segments = uid.split(":");
+
+
+            // For things and channels, try wildcard matches at any segment
+            String[] segments = uid.toString().split(":");
             for (int i = segments.length - 1; i >= 0; i--) {
                 StringBuilder wildcardBuilder = new StringBuilder();
                 for (int j = 0; j < segments.length; j++) {
@@ -325,33 +430,46 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
                     wildcardBuilder.append(j == i ? "*" : segments[j]);
                 }
                 String wildcardUid = wildcardBuilder.toString();
-                sourceFile = sourceFiles.get(wildcardUid);
-                if (sourceFile != null) {
-                    return Optional.of(sourceFile);
+                UID wildcardUID = convertToUID(wildcardUid, type);
+                sourceFile = getSourceFile(wildcardUID, type);
+                if (sourceFile.isPresent()) {
+                    return sourceFile;
                 }
-            }
         }
-        
-        // Finally, check for global default
-        return Optional.ofNullable(sourceFiles.get("*"));
+
+        // Try global default
+        UID wildcardUID = convertToUID("*", type);
+        return getSourceFile(wildcardUID, type);
     }
     
     /**
      * Gets configuration for a given UID with cascading support
      */
-    public Optional<Map<String, Object>> getConfiguration(String uid, ConfigurationType type) {
-        Map<String, Map<String, Object>> configs = switch (type) {
+    public Optional<Map<String, Object>> getConfiguration(UID uid, ConfigurationType type) {
+        Map<UID, Map<String, Object>> configs = switch (type) {
             case ITEM -> itemConfigs;
             case THING -> thingConfigs;
             case CHANNEL -> channelConfigs;
             case ACCESSORY -> accessoryConfigs;
+            case SERVICE -> serviceConfigs;
+            case CHARACTERISTIC -> characteristicConfigs;
+            case PROFILE -> profileConfigs;
+            case BRIDGE -> bridgeConfigs;
+            case NETWORK -> networkConfigs;
+            case EVENT -> eventConfigs;
         };
-        
-        Map<String, String> sourceFiles = switch (type) {
+
+        Map<UID, String> sourceFiles = switch (type) {
             case ITEM -> itemSourceFiles;
             case THING -> thingSourceFiles;
             case CHANNEL -> channelSourceFiles;
             case ACCESSORY -> accessorySourceFiles;
+            case SERVICE -> serviceSourceFiles;
+            case CHARACTERISTIC -> characteristicSourceFiles;
+            case PROFILE -> profileSourceFiles;
+            case BRIDGE -> bridgeSourceFiles;
+            case NETWORK -> networkSourceFiles;
+            case EVENT -> eventSourceFiles;
         };
         
         // Try exact match first
@@ -360,21 +478,9 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
             return Optional.of(config);
         }
         
-        // Try wildcard matches
-        if (type == ConfigurationType.ITEM) {
-            // For items, try wildcard match at the end
-            String wildcardUid = uid.substring(0, uid.lastIndexOf('_') + 1) + "*";
-            config = configs.get(wildcardUid);
-            if (config != null) {
-                String sourceFile = sourceFiles.get(wildcardUid);
-                if (sourceFile != null) {
-                    sourceFiles.put(uid, sourceFile);
-                }
-                return Optional.of(config);
-            }
-        } else {
+
             // For things and channels, try wildcard matches at any segment
-            String[] segments = uid.split(":");
+            String[] segments = uid.toString().split(":");
             for (int i = segments.length - 1; i >= 0; i--) {
                 StringBuilder wildcardBuilder = new StringBuilder();
                 for (int j = 0; j < segments.length; j++) {
@@ -384,21 +490,23 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
                     wildcardBuilder.append(j == i ? "*" : segments[j]);
                 }
                 String wildcardUid = wildcardBuilder.toString();
-                config = configs.get(wildcardUid);
+                UID wildcardUID = convertToUID(wildcardUid, type);
+                config = configs.get(wildcardUID);
                 if (config != null) {
-                    String sourceFile = sourceFiles.get(wildcardUid);
+                    String sourceFile = sourceFiles.get(wildcardUID);
                     if (sourceFile != null) {
                         sourceFiles.put(uid, sourceFile);
                     }
                     return Optional.of(config);
                 }
-            }
+            
         }
         
         // Try global default
-        config = configs.get("*");
+        UID wildcardUID = convertToUID("*", type);
+        config = configs.get(wildcardUID);
         if (config != null) {
-            String sourceFile = sourceFiles.get("*");
+            String sourceFile = sourceFiles.get(wildcardUID);
             if (sourceFile != null) {
                 sourceFiles.put(uid, sourceFile);
             }
@@ -408,118 +516,142 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
         return Optional.empty();
     }
     
-    
-    
     /**
      * Updates configuration for a given UID
      */
-    public void updateConfiguration(String uid, Map<String, Object> config, ConfigurationType type) {
-        Map<String, Map<String, Object>> configs = switch (type) {
+    public void updateConfiguration(UID uid, ConfigurationType type, Map<String, Object> config) {
+        Map<UID, Map<String, Object>> configs = switch (type) {
             case ITEM -> itemConfigs;
             case THING -> thingConfigs;
             case CHANNEL -> channelConfigs;
             case ACCESSORY -> accessoryConfigs;
+            case SERVICE -> serviceConfigs;
+            case CHARACTERISTIC -> characteristicConfigs;
+            case PROFILE -> profileConfigs;
+            case BRIDGE -> bridgeConfigs;
+            case NETWORK -> networkConfigs;
+            case EVENT -> eventConfigs;
         };
-        
         configs.put(uid, config);
-
-                // Finally update the YAML file
-                storeConfigs(uid, type);
+        storeConfigs(uid, type);
     }
     
     /**
-     * Updates configuration for a given UID and writes to its source file
+     * Updates configuration for a given UID and stores the source file
      */
-    public void updateConfiguration(String uid, Map<String, Object> config, ConfigurationType type, String yamlFile) {
-        // First update the source file mapping
-        switch (type) {
-            case ITEM -> itemSourceFiles.put(uid, yamlFile);
-            case THING -> thingSourceFiles.put(uid, yamlFile);
-            case CHANNEL -> channelSourceFiles.put(uid, yamlFile);
-            case ACCESSORY -> accessorySourceFiles.put(uid, yamlFile);
-        }
-        
-        // Then update the configuration in memory
-        updateConfiguration(uid, config, type);
-        
-        // Finally update the YAML file
+    public void updateConfiguration(UID uid, ConfigurationType type, Map<String, Object> config, String yamlFile) {
+        updateConfiguration(uid, type, config);
+        Map<UID, String> sourceFiles = switch (type) {
+            case ITEM -> itemSourceFiles;
+            case THING -> thingSourceFiles;
+            case CHANNEL -> channelSourceFiles;
+            case ACCESSORY -> accessorySourceFiles;
+            case SERVICE -> serviceSourceFiles;
+            case CHARACTERISTIC -> characteristicSourceFiles;
+            case PROFILE -> profileSourceFiles;
+            case BRIDGE -> bridgeSourceFiles;
+            case NETWORK -> networkSourceFiles;
+            case EVENT -> eventSourceFiles;
+        };
+        sourceFiles.put(uid, yamlFile);
         storeConfigs(uid, type);
     }
     
     /**
      * Removes configuration for a given UID
      */
-    public void removeConfiguration(String uid, ConfigurationType type) {
-        Map<String, Map<String, Object>> configs = switch (type) {
+    public void removeConfiguration(UID uid, ConfigurationType type) {
+        Map<UID, Map<String, Object>> configs = switch (type) {
             case ITEM -> itemConfigs;
             case THING -> thingConfigs;
             case CHANNEL -> channelConfigs;
             case ACCESSORY -> accessoryConfigs;
+            case SERVICE -> serviceConfigs;
+            case CHARACTERISTIC -> characteristicConfigs;
+            case PROFILE -> profileConfigs;
+            case BRIDGE -> bridgeConfigs;
+            case NETWORK -> networkConfigs;
+            case EVENT -> eventConfigs;
         };
-        
-        // Get the source file before removing the configuration
-        String sourceFile = switch (type) {
-            case ITEM -> itemSourceFiles.remove(uid);
-            case THING -> thingSourceFiles.remove(uid);
-            case CHANNEL -> channelSourceFiles.remove(uid);
-            case ACCESSORY -> accessorySourceFiles.remove(uid);
-        };
-        
         configs.remove(uid);
-        
-        // Update the source file if it exists
-        if (sourceFile != null) {
-            storeConfigs(uid, type);
-        }
-    }
-    
 
+        Map<UID, String> sourceFiles = switch (type) {
+            case ITEM -> itemSourceFiles;
+            case THING -> thingSourceFiles;
+            case CHANNEL -> channelSourceFiles;
+            case ACCESSORY -> accessorySourceFiles;
+            case SERVICE -> serviceSourceFiles;
+            case CHARACTERISTIC -> characteristicSourceFiles;
+            case PROFILE -> profileSourceFiles;
+            case BRIDGE -> bridgeSourceFiles;
+            case NETWORK -> networkSourceFiles;
+            case EVENT -> eventSourceFiles;
+        };
+        sourceFiles.remove(uid);
+    }
     
     /**
      * Gets a specific configuration value for a given UID and key.
-     * This method will first try to find the configuration using wildcard matching,
-     * then return the value for the specified key if found.
-     * 
-     * @param uid the unique identifier for the configuration
-     * @param type the type of configuration (ITEM, THING, CHANNEL, ACCESSORY)
-     * @param key the key to look up in the configuration map
-     * @return Optional containing the value if found, empty otherwise
      */
-    public Optional<Object> getConfiguration(String uid, ConfigurationType type, String key) {
+    public Optional<Object> getConfiguration(UID uid, ConfigurationType type, String key) {
         return getConfiguration(uid, type)
             .map(config -> config.get(key));
     }
     
     /**
-     * Updates a specific configuration value for a given UID and key
-     * 
-     * @param uid the unique identifier for the configuration
-     * @param type the type of configuration (ITEM, THING, CHANNEL, ACCESSORY)
-     * @param key the key to update in the configuration map
-     * @param value the new value to set
+     * Updates a specific configuration key for a given UID
      */
-    public void updateConfiguration(String uid, ConfigurationType type, String key, Object value) {
-        Map<String, Map<String, Object>> configs = switch (type) {
+    public void updateConfiguration(UID uid, ConfigurationType type, String key, Object value) {
+        Map<UID, Map<String, Object>> configs = switch (type) {
             case ITEM -> itemConfigs;
             case THING -> thingConfigs;
             case CHANNEL -> channelConfigs;
             case ACCESSORY -> accessoryConfigs;
+            case SERVICE -> serviceConfigs;
+            case CHARACTERISTIC -> characteristicConfigs;
+            case PROFILE -> profileConfigs;
+            case BRIDGE -> bridgeConfigs;
+            case NETWORK -> networkConfigs;
+            case EVENT -> eventConfigs;
         };
-        
-        // Get or create the configuration map for this UID
+
         Map<String, Object> config = configs.computeIfAbsent(uid, k -> new HashMap<>());
-        
-        // Update the specific key
         config.put(key, value);
-        
-        // Store the updated configuration
         storeConfigs(uid, type);
     }
     
     /**
-     * Enum representing different types of configurations
+     * Enum representing different types of configurations and their YAML section identifiers
      */
     public enum ConfigurationType {
-        ITEM, THING, CHANNEL, ACCESSORY
+        ITEM("items"),
+        THING("things"),
+        CHANNEL("channels"),
+        ACCESSORY("accessories"),
+        SERVICE("services"),
+        CHARACTERISTIC("characteristics"),
+        PROFILE("profiles"),
+        BRIDGE("bridge"),
+        NETWORK("network"),
+        EVENT("events");
+
+        private final String yamlSection;
+
+        ConfigurationType(String yamlSection) {
+            this.yamlSection = yamlSection;
+        }
+
+        public String getYamlSection() {
+            return yamlSection;
+        }
+
+        public static ConfigurationType fromYamlSection(String section) {
+            for (ConfigurationType type : values()) {
+                if (type.yamlSection.equals(section)) {
+                    return type;
+                }
+            }
+            return null;
+        }
     }
 } 

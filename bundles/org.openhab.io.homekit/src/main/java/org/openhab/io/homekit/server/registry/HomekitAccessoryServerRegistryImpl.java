@@ -24,6 +24,7 @@ import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry;
 import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
+import org.openhab.io.homekit.core.accessory.HomekitAccessoryUID;
 import org.openhab.io.homekit.event.core.HomekitEventSubscription;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.event.model.server.HomekitAccessoryServerEvent;
@@ -258,5 +259,19 @@ public class HomekitAccessoryServerRegistryImpl
         } catch (Exception e) {
             logger.error("{}Error removing change listener: {}", LOG_ERROR, e.getMessage(), e);
         }
+    }
+
+    public HomekitAccessoryServer getAccessoryServer(HomekitAccessoryUID accessoryUID) {
+        return getAll().stream()
+                .filter(server -> {
+                    try {
+                        return server.getAccessories().stream()
+                                .anyMatch(accessory -> accessory.getUID().equals(accessoryUID));
+                    } catch (HomekitAccessoryOperationException e) {
+                        return false;
+                    }
+                })
+                .findFirst()
+                .orElse(null);
     }
 }

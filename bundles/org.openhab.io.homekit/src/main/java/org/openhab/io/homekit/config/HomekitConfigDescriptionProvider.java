@@ -1,4 +1,4 @@
-package org.openhab.io.homekit.bridge;
+package org.openhab.io.homekit.config;
 
 import java.net.URI;
 import java.net.URISyntaxException;

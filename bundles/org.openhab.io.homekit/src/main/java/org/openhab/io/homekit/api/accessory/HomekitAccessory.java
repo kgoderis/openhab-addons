@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.api.accessory;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.json.JsonObject;
@@ -231,4 +232,21 @@ public interface HomekitAccessory extends Identifiable<HomekitAccessoryUID>, Com
      * @return this accessory for method chaining
      */
     HomekitAccessory withExtensible(boolean isExtensible);
+
+    /**
+     * Sets whether this accessory is orphaned (its source item/thing has been removed).
+     * Orphaned accessories are kept in the registry to prevent HomeKit controllers from deleting them.
+     *
+     * @param orphaned true if the accessory is orphaned, false otherwise
+     */
+    void setOrphaned(boolean orphaned);
+
+    /**
+     * Checks if this accessory is orphaned.
+     * Orphaned accessories are those whose source items/things have been removed.
+     *
+     * @return true if the accessory is orphaned, false otherwise
+     */
+    boolean isOrphaned();
+
 }

@@ -60,6 +60,7 @@ import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicCh
 import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicUpdateEvent;
 import org.openhab.io.homekit.event.util.HomekitPeerGroupUID;
 import org.openhab.io.homekit.util.HomekitUID;
+import org.openhab.io.homekit.util.ItemUID;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -162,8 +163,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     private final Map<String, Collection<HomekitCharacteristic<?>>> characteristicMap = new ConcurrentHashMap<>();
     private final Map<String, HomekitAccessory> accessoryMap = new ConcurrentHashMap<>();
     private final HomekitEventManager eventManager;
-    private final UID bridgeUID = new HomekitUID("bridge");
-    private final Set<UID> peerGroup;
+    private final HomekitUID bridgeUID = new HomekitUID("bridge");
+    private final Set<HomekitUID> peerGroup;
     private final Map<String, @Nullable ExitEvent> exitEvents;
     private final ExitEventStatisticsCollector statisticsCollector;
     private final HomekitServiceFactory serviceFactory;
@@ -651,7 +652,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                 serviceFactory, characteristicFactory);
         if (taggedItem.isTagged()) {
             Map<String, Object> config = configParser.getFilteredConfig(item);
-            configManager.updateConfiguration(item.getName(), config, HomekitConfigurationManager.ConfigurationType.ITEM, YAML_FILE_NAME);
+            configManager.updateConfiguration(new ItemUID(item.getName()), HomekitConfigurationManager.ConfigurationType.ITEM, config, YAML_FILE_NAME);
             createAccessoryForItem(taggedItem);
         }
     }
@@ -660,14 +661,20 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
     /**
      * Handles the removal of an item from the registry.
-     * Removes the associated Homekit accessory if it exists.
+     * Instead of removing the accessory, mark it as orphaned
      * 
      * @param item The item that was removed from the registry
      */
     @Override
     public void removed(Item item) {
-        configManager.removeConfiguration(item.getName(), HomekitConfigurationManager.ConfigurationType.ITEM);
-        removeAccessoryForItem(item);
+        // Instead of removing the accessory, mark it as orphaned
+        HomekitAccessory accessory = accessoryMap.get(item.getName());
+        if (accessory != null) {
+            logger.info("Item {} was removed but keeping its HomeKit accessory to prevent controller deletion", item.getName());
+            // Mark the accessory as orphaned but keep it in the registry
+            accessory.setOrphaned(true);
+        }
+        configManager.removeConfiguration(new ItemUID(item.getName()), HomekitConfigurationManager.ConfigurationType.ITEM);
     }
 
     /**
@@ -679,13 +686,13 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      */
     @Override
     public void updated(Item oldItem, Item item) {
-        configManager.removeConfiguration(oldItem.getName(), HomekitConfigurationManager.ConfigurationType.ITEM);
+        configManager.removeConfiguration(new ItemUID(oldItem.getName()), HomekitConfigurationManager.ConfigurationType.ITEM);
         removeAccessoryForItem(oldItem);
         HomekitTaggedItem taggedItem = new HomekitTaggedItem(item, itemRegistry, metadataRegistry, accessoryFactory,
                 serviceFactory, characteristicFactory);
         if (taggedItem.isTagged()) {
             Map<String, Object> config = configParser.getFilteredConfig(item);
-            configManager.updateConfiguration(item.getName(), config, HomekitConfigurationManager.ConfigurationType.ITEM, YAML_FILE_NAME);
+            configManager.updateConfiguration(new ItemUID(item.getName()), HomekitConfigurationManager.ConfigurationType.ITEM, config, YAML_FILE_NAME);
             createAccessoryForItem(taggedItem);
         }
     }

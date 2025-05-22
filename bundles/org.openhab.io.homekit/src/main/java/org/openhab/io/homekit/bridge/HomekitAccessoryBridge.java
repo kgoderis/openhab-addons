@@ -236,7 +236,7 @@ public class HomekitAccessoryBridge {
         try {
             // Fetch config for the accessory
             Optional<Map<String, Object>> configOpt = configManager.getConfiguration(
-                accessory.getUID().toString(), HomekitConfigurationManager.ConfigurationType.ACCESSORY);
+                accessory.getUID(), HomekitConfigurationManager.ConfigurationType.ACCESSORY);
             if (configOpt.isEmpty() || !Boolean.TRUE.equals(configOpt.get().get("bridge"))) {
                 logger.debug("{}Accessory {} not configured for bridging (missing or false 'bridge' parameter)", LOG_PREFIX, accessory.getUID());
                 return;

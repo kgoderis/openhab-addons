@@ -207,4 +207,14 @@ public class HomekitBridgedAccessory implements HomekitAccessory {
     public HomekitAccessory withExtensible(boolean isExtensible) {
         return remoteAccessory.withExtensible(isExtensible);
     }
+
+    @Override
+    public void setOrphaned(boolean orphaned) {
+        remoteAccessory.setOrphaned(orphaned);
+    }
+
+    @Override
+    public boolean isOrphaned() {
+        return remoteAccessory.isOrphaned();
+    }
 }
