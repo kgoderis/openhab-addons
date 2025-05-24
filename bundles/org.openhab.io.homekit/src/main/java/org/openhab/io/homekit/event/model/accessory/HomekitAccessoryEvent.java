@@ -5,11 +5,12 @@ import java.util.Optional;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.openhab.io.homekit.api.service.HomekitService;
-import org.openhab.io.homekit.core.accessory.HomekitAccessoryUID;
+import org.openhab.io.homekit.api.uid.HomekitAccessoryUID;
 import org.openhab.io.homekit.event.core.AbstractHomekitEvent;
 import org.openhab.io.homekit.event.core.HomekitEventMetadata;
 import org.openhab.io.homekit.util.HomekitUID;
@@ -37,8 +38,8 @@ public class HomekitAccessoryEvent extends AbstractHomekitEvent {
     @SuppressWarnings("null")
     public HomekitAccessoryEvent(HomekitEventType type, @Nullable HomekitAccessory accessory,
             @Nullable HomekitService service, @Nullable HomekitCharacteristic<?> characteristic) {
-        super(type, accessory != null ? accessory.getUID() : new HomekitUID("accessory"), HomekitUID.WILDCARD_UID,
-                new HomekitEventMetadata(accessory != null ? accessory.getUID() : HomekitUID.WILDCARD_UID, null, null,
+        super(type, accessory != null ? (UID) accessory.getUID() : (UID) new HomekitUID("accessory"), HomekitUID.WILDCARD_UID,
+                new HomekitEventMetadata(accessory != null ? (UID) accessory.getUID() : (UID) HomekitUID.WILDCARD_UID, null, null,
                         Collections.emptySet()));
         this.accessory = Optional.ofNullable(accessory);
         this.service = Optional.ofNullable(service);
@@ -59,7 +60,7 @@ public class HomekitAccessoryEvent extends AbstractHomekitEvent {
     public HomekitAccessoryEvent(HomekitEventType type, @Nullable HomekitAccessory accessory,
             @Nullable HomekitService service, @Nullable HomekitCharacteristic<?> characteristic,
             HomekitEventMetadata metadata) {
-        super(type, accessory != null ? accessory.getUID() : new HomekitUID("accessory"), HomekitUID.WILDCARD_UID,
+        super(type, accessory != null ? (UID) accessory.getUID() : (UID) new HomekitUID("accessory"), HomekitUID.WILDCARD_UID,
                 metadata);
         this.accessory = Optional.ofNullable(accessory);
         this.service = Optional.ofNullable(service);
@@ -78,8 +79,8 @@ public class HomekitAccessoryEvent extends AbstractHomekitEvent {
     @SuppressWarnings("null")
     public HomekitAccessoryEvent(HomekitEventType type, @Nullable HomekitAccessory accessory,
             HomekitAccessoryUID oldUid, HomekitAccessoryUID newUid) {
-        super(type, accessory != null ? accessory.getUID() : new HomekitUID("accessory"), HomekitUID.WILDCARD_UID,
-                new HomekitEventMetadata(accessory != null ? accessory.getUID() : HomekitUID.WILDCARD_UID, null, null,
+        super(type, accessory != null ? (UID) accessory.getUID() : (UID) new HomekitUID("accessory"), HomekitUID.WILDCARD_UID,
+                new HomekitEventMetadata(accessory != null ? (UID) accessory.getUID() : (UID) HomekitUID.WILDCARD_UID, null, null,
                         Collections.emptySet()));
         this.accessory = Optional.ofNullable(accessory);
         this.service = Optional.empty();
@@ -99,7 +100,7 @@ public class HomekitAccessoryEvent extends AbstractHomekitEvent {
     @SuppressWarnings("null")
     public HomekitAccessoryEvent(HomekitEventType type, HomekitAccessory accessory, HomekitAccessoryUID oldUid,
             HomekitAccessoryUID newUid, HomekitEventMetadata metadata) {
-        super(type, accessory != null ? accessory.getUID() : new HomekitUID("accessory"), HomekitUID.WILDCARD_UID,
+        super(type, accessory != null ? (UID) accessory.getUID() : (UID) new HomekitUID("accessory"), HomekitUID.WILDCARD_UID,
                 metadata);
         this.accessory = Optional.ofNullable(accessory);
         this.service = Optional.empty();

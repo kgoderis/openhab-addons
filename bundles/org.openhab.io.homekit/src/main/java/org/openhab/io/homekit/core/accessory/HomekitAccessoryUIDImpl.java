@@ -1,7 +1,7 @@
 package org.openhab.io.homekit.core.accessory;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.io.homekit.api.uid.HomekitAccessoryUID;
 import org.openhab.io.homekit.util.HomekitUID;
 
 /**
@@ -9,15 +9,17 @@ import org.openhab.io.homekit.util.HomekitUID;
  * The UID format is: homekit:accessory:{pairingId}:{accessoryId}
  */
 @NonNullByDefault
-public class HomekitAccessoryUID extends HomekitUID {
+public class HomekitAccessoryUIDImpl extends HomekitUID implements HomekitAccessoryUID {
+    private final long accessoryId;
 
     /**
      * Creates a new HomekitAccessoryUID from an existing UID string.
      *
      * @param key the existing UID string
      */
-    public HomekitAccessoryUID(@NonNull String key) {
+    public HomekitAccessoryUIDImpl(String key) {
         super("accessory", key);
+        this.accessoryId = Long.parseLong(getSegment(4));
     }
 
     @Override
@@ -31,8 +33,9 @@ public class HomekitAccessoryUID extends HomekitUID {
      * @param pairingId the hexidecimal pre-generated id
      * @param accessoryId the accessory instance id
      */
-    public HomekitAccessoryUID(String pairingId, long accessoryId) {
+    public HomekitAccessoryUIDImpl(String pairingId, long accessoryId) {
         super("accessory", "homekit:accessory:" + pairingId + ":" + accessoryId);
+        this.accessoryId = accessoryId;
     }
 
     /**
@@ -40,7 +43,23 @@ public class HomekitAccessoryUID extends HomekitUID {
      *
      * @return The pairing ID
      */
+    @Override
     public String getPairingId() {
         return getSegment(2);
+    }
+
+    @Override
+    public String getAsString() {
+        return toString();
+    }
+
+    @Override
+    public long getAccessoryId() {
+        return accessoryId;
+    }
+
+    @Override
+    public HomekitAccessoryUID getUID() {
+        return this;
     }
 }

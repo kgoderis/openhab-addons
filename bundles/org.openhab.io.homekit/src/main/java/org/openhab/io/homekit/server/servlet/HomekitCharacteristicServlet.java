@@ -38,6 +38,7 @@ import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicUp
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.protocol.status.HomekitStatusCode;
 import org.openhab.io.homekit.util.HomekitDebouncer;
+import org.openhab.core.thing.UID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -188,10 +189,10 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
                             if (characteristicWrite.containsKey("value")) {
                                 try {
                                     if (characteristic instanceof AbstractHomekitCharacteristic<?> genericCharacteristic) {
-                                        HomekitEvent newEvent = new HomekitCharacteristicUpdateEvent(server.getUID(),
-                                                genericCharacteristic.getUID(), genericCharacteristic, JsonValue.NULL,
+                                        HomekitEvent newEvent = new HomekitCharacteristicUpdateEvent((UID)server.getUID(),
+                                                (UID) genericCharacteristic.getUID(), genericCharacteristic, JsonValue.NULL,
                                                 characteristicWrite.get("value"), Collections.emptyMap(),
-                                                new HomekitEventMetadata(server.getUID(), null, server.getUID(),
+                                                new HomekitEventMetadata((UID)server.getUID(), null, (UID)server.getUID(),
                                                         Collections.emptySet()));
                                         eventManager.publishEvent(newEvent);
                                     }

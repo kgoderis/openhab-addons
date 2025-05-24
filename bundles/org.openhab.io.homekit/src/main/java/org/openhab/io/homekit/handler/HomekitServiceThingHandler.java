@@ -12,6 +12,7 @@ import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingStatus;
 import org.openhab.core.thing.ThingStatusDetail;
+import org.openhab.core.thing.UID;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.core.thing.type.ChannelType;
 import org.openhab.core.thing.type.ChannelTypeUID;
@@ -269,8 +270,8 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
         }
         setService(currentService);
         serviceAvailable = true;
-        eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED, currentService.getUID(),
-                thing.getUID(), event -> onServiceEvent((HomekitServiceEvent) event)));
+        eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED, (UID) currentService.getUID(),
+                (UID) thing.getUID(), event -> onServiceEvent((HomekitServiceEvent) event)));
     }
 
     /**
@@ -713,7 +714,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
                         // TODO : What wiht the added service ? Subscribe to its events ?
 
                         eventSubscriptions.add(eventManager.subscribe(HomekitEventType.ACCESSORY_STATE_CHANGED,
-                                foundAccessory.getUID(), thing.getUID(),
+                                (UID) foundAccessory.getUID(), (UID) thing.getUID(),
                                 someEvent -> onAccessoryEvent((HomekitAccessoryEvent) someEvent)));
 
                         handleServiceAdded();
@@ -738,7 +739,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
                         foundService.ifPresent(someService -> {
                             setService(service);
                             eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED,
-                                    someService.getUID(), thing.getUID(),
+                                    (UID) someService.getUID(), (UID) thing.getUID(),
                                     someEvent -> onServiceEvent((HomekitServiceEvent) someEvent)));
                             validateAndUpdateState();
                         });
@@ -2398,7 +2399,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
                 foundService.ifPresentOrElse(someService -> {
                     setService(someService);
                     eventSubscriptions
-                            .add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED, someService.getUID(),
+                            .add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED, (UID) someService.getUID(),
                                     thing.getUID(), someEvent -> onServiceEvent((HomekitServiceEvent) someEvent)));
                     logger.debug("{}Recovered service connection", LOG_INIT);
                 }, () -> {

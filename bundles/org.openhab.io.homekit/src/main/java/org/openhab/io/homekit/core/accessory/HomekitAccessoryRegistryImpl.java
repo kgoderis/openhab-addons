@@ -22,6 +22,7 @@ import org.openhab.core.service.ReadyService;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.provider.HomekitAccessoryProvider;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
+import org.openhab.io.homekit.api.uid.HomekitAccessoryUID;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;

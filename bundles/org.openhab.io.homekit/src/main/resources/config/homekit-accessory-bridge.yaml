@@ -1,0 +1,39 @@
+# HomeKit Accessory Bridge Configuration
+
+accessories:
+  # Bridge a remote light accessory
+  "homekit:accessory:remote_living_room_light":
+    bridge: true
+
+  # Example of an orphaned accessory (remote device was removed but bridge is kept)
+  "homekit:accessory:remote_garage_light":
+    bridge: true
+    orphaned: true
+
+  # Bridge a remote temperature sensor
+  "homekit:accessory:remote_bedroom_temp":
+    bridge: true
+
+  # Bridge a remote motion sensor
+  "homekit:accessory:remote_kitchen_motion":
+    bridge: true
+
+  # Bridge a complex remote entertainment device
+  "homekit:accessory:remote_living_room_tv":
+    bridge: true
+
+  # Wildcard pattern for all remote lights
+  "homekit:accessory:remote_*_light":
+    bridge: true
+
+  # Wildcard pattern for all remote temperature sensors
+  "homekit:accessory:remote_*_temp":
+    bridge: true
+
+  # Wildcard pattern for all remote motion sensors
+  "homekit:accessory:remote_*_motion":
+    bridge: true
+
+  # Wildcard pattern for all remote entertainment devices
+  "homekit:accessory:remote_*_tv":
+    bridge: true 

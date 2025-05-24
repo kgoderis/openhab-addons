@@ -1,3 +1,4 @@
+package org.openhab.io.homekit.core.characteristic;
 // package org.openhab.io.homekit.core.service;
 
 // import java.util.Collection;

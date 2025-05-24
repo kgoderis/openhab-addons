@@ -26,7 +26,7 @@ import org.openhab.io.homekit.api.event.HomekitEvent;
 import org.openhab.io.homekit.api.event.HomekitEventSubscriber;
 import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
-import org.openhab.io.homekit.core.accessory.HomekitAccessoryUID;
+import org.openhab.io.homekit.api.uid.HomekitAccessoryUID;
 import org.openhab.io.homekit.event.core.AbstractHomekitEvent;
 import org.openhab.io.homekit.event.core.HomekitEventSubscription;
 import org.openhab.io.homekit.event.model.accessory.HomekitAccessoryEvent;
@@ -746,19 +746,19 @@ public class HomekitEventManager {
         // Update direct subscriptions
         subscriptions.stream().filter(sub -> sub.publisherUID.equals(oldUID)).forEach(sub -> {
             subscriptions.remove(sub);
-            HomekitEventSubscription newSub = new HomekitEventSubscription(sub.eventType, newUID, sub.subscriberUID,
+            HomekitEventSubscription newSub = new HomekitEventSubscription(sub.eventType, (UID) newUID, sub.subscriberUID,
                     sub.subscriber, sub.expectedEventClass);
             subscriptions.add(newSub);
             logger.debug("{}Updated direct subscription from {} to {}", LOG_SUBSCRIBER, oldUID, newUID);
         });
 
         // Update wildcard subscriptions
-        subscriptions.stream().filter(sub -> sub.publisherUID.equals(HomekitUID.WILDCARD_UID)
-                || matchesPublisherPattern(sub.publisherUID, oldUID)).forEach(sub -> {
+        subscriptions.stream().filter(sub -> sub.publisherUID.equals((UID) HomekitUID.WILDCARD_UID)
+                || matchesPublisherPattern(sub.publisherUID, (UID) oldUID)).forEach(sub -> {
                     if (sub.subscriberUID.equals(oldUID)) {
                         subscriptions.remove(sub);
                         HomekitEventSubscription newSub = new HomekitEventSubscription(sub.eventType, sub.publisherUID,
-                                newUID, sub.subscriber, sub.expectedEventClass);
+                                (UID) newUID, sub.subscriber, sub.expectedEventClass);
                         subscriptions.add(newSub);
                         logger.debug("{}Updated wildcard subscription subscriber from {} to {}", LOG_SUBSCRIBER, oldUID,
                                 newUID);
@@ -767,13 +767,13 @@ public class HomekitEventManager {
 
         // Update events in the queue
         eventQueue.stream().filter(event -> event.getPublisherUID().equals(oldUID)).forEach(event -> {
-            event.setPublisherUID(newUID);
+            event.setPublisherUID((UID) newUID);
             logger.debug("{}Updated event publisher UID from {} to {}", LOG_EVENT, oldUID, newUID);
         });
 
         // Update active publishers
         if (activePublishers.remove(oldUID)) {
-            activePublishers.add(newUID);
+            activePublishers.add((UID) newUID);
             logger.debug("{}Updated active publisher from {} to {}", LOG_PUBLISHER, oldUID, newUID);
         }
 
@@ -782,7 +782,7 @@ public class HomekitEventManager {
         HomekitAccessory accessory = accessoryRegistry.get(accessoryUID);
         if (accessory != null) {
             publishEvent(new HomekitAccessoryEvent(HomekitEventType.ACCESSORY_UID_CHANGED, accessory,
-                    new HomekitAccessoryUID(oldUID.toString()), accessoryUID));
+                    oldUID, accessoryUID));
         } else {
             logger.warn("{}HomekitAccessory not found in registry for UID: {}", LOG_EVENT, newUID);
         }

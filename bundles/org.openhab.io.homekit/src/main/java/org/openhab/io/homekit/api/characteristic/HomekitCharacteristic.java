@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.api.characteristic;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.json.JsonObject;
@@ -10,7 +11,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.Identifiable;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.service.HomekitService;
-import org.openhab.io.homekit.core.characteristic.HomekitCharacteristicUID;
+import org.openhab.io.homekit.api.uid.HomekitCharacteristicUID;
 
 //TODO https://github.com/jlusiardi/homekit_python/blob/master/homekit/model/characteristics/characteristic_types.py
 //TODO https://github.com/apple/HomekitADK/blob/master/HAP/HAPCharacteristicTypes.h

@@ -20,6 +20,7 @@ import javax.json.JsonValue;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.event.HomekitEvent;
 import org.openhab.io.homekit.api.event.HomekitEventType;
@@ -27,8 +28,10 @@ import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.factory.HomekitServiceFactory;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.api.service.HomekitService;
+import org.openhab.io.homekit.api.uid.HomekitAccessoryUID;
 import org.openhab.io.homekit.event.core.HomekitEventSubscription;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
+import org.openhab.io.homekit.event.manager.HomekitEventManager.HomekitEventHandler;
 import org.openhab.io.homekit.event.model.accessory.HomekitAccessoryEvent;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.library.service.HomekitAccessoryInformationService;
@@ -66,7 +69,7 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
     private long nextInstanceId = 1;
     // private final HomekitAccessoryServer server;
     private @Nullable HomekitAccessoryUID accessoryUID;
-    private final HomekitAccessoryUID tempUID = new HomekitAccessoryUID(UUID.randomUUID().toString());
+    private final HomekitAccessoryUID tempUID = new HomekitAccessoryUIDImpl(UUID.randomUUID().toString());
 
     private final HomekitEventManager eventManager;
     private final HomekitServiceFactory serviceFactory;
@@ -261,8 +264,8 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
                         .publishEvent(new HomekitAccessoryEvent(HomekitEventType.SERVICE_ADDED, this, service, null));
 
                 // Subscribe to service state change events using current UID
-                eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED, service.getUID(),
-                        getUID(), event -> AbstractHomekitAccessory.this.onEvent(event)));
+                eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED, (UID)service.getUID(),
+                        (UID)getUID(), (HomekitEventHandler)event -> onEvent(event)));
             } else {
                 logger.debug("{}HomekitAccessory '{}' (Type: {}) already contains HomekitService '{}' (Type: {})",
                         LOG_ACCESSORY, this.getLabel(), this.getClass().getSimpleName(), service.getName(),
@@ -389,7 +392,7 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
         }
 
         // Create UID using the AID (either restored or newly assigned)
-        HomekitAccessoryUID newUID = new HomekitAccessoryUID(server.getUID().getPairingId(), this.accessoryId);
+        HomekitAccessoryUID newUID = new HomekitAccessoryUIDImpl(server.getUID().getPairingId(), this.accessoryId);
 
         // Notify event manager of UID change to migrate subscriptions
         eventManager.notifyUIDChange(tempUID, newUID);

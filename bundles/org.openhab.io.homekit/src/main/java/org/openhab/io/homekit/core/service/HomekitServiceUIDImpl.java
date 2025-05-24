@@ -1,5 +1,7 @@
 package org.openhab.io.homekit.core.service;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.io.homekit.api.uid.HomekitServiceUID;
 import org.openhab.io.homekit.util.HomekitUID;
 
 /**
@@ -7,7 +9,8 @@ import org.openhab.io.homekit.util.HomekitUID;
  * The UID format is: homekit:service:{pairingId}:{accessoryId}:{serviceId}
  */
 @NonNullByDefault
-public class HomekitServiceUID extends HomekitUID {
+public class HomekitServiceUIDImpl extends HomekitUID implements HomekitServiceUID {
+    private final long instanceId;
 
     // server id : accessory instance id : service id
 
@@ -23,12 +26,14 @@ public class HomekitServiceUID extends HomekitUID {
      * @param accessoryId the accessory instance id
      * @param serviceId the service instance id
      */
-    public HomekitServiceUID(String pairingId, long accessoryId, long serviceId) {
+    public HomekitServiceUIDImpl(String pairingId, long accessoryId, long serviceId) {
         super("service", "homekit:service:" + pairingId + ":" + accessoryId + ":" + serviceId);
+        this.instanceId = accessoryId;
     }
 
-    public HomekitServiceUID(String key) {
+    public HomekitServiceUIDImpl(String key) {
         super("service", key);
+        this.instanceId = 0;
     }
 
     /**
@@ -38,6 +43,21 @@ public class HomekitServiceUID extends HomekitUID {
      */
     public String getServiceId() {
         return getSegment(4);
+    }
+
+    @Override
+    public String getAsString() {
+        return toString();
+    }
+
+    @Override
+    public long getInstanceId() {
+        return instanceId;
+    }
+
+    @Override
+    public HomekitServiceUID getUID() {
+        return this;
     }
 
     // /**

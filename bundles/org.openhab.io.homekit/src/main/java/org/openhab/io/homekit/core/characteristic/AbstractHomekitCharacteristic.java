@@ -185,8 +185,8 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
      */
     @Override
     @NonNull
-    public HomekitCharacteristicUID getUID() {
-        return new HomekitCharacteristicUID(getService().getAccessory().getUID().getPairingId(),
+    public HomekitCharacteristicUIDImpl getUID() {
+        return new HomekitCharacteristicUIDImpl(getService().getAccessory().getUID().getPairingId(),
                 getService().getAccessory().getAccessoryId(), getService().getInstanceId(), getInstanceId());
     }
 

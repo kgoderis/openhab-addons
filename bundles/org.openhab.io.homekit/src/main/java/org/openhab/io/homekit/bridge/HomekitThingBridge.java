@@ -39,6 +39,7 @@ import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingRegistry;
 import org.openhab.core.thing.ThingRegistryChangeListener;
 import org.openhab.core.thing.ThingUID;
+import org.openhab.core.thing.UID;
 import org.openhab.core.thing.link.ItemChannelLink;
 import org.openhab.core.thing.link.ItemChannelLinkRegistry;
 import org.openhab.core.thing.profiles.Profile;
@@ -57,6 +58,7 @@ import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.config.HomekitConfigurationManager;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
+import org.openhab.io.homekit.event.manager.HomekitEventManager.HomekitEventHandler;
 import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicChangedEvent;
 import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicUpdateEvent;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
@@ -95,7 +97,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import javax.annotation.Nullable;
 import javax.measure.Unit;
 
-import org.openhab.io.homekit.event.util.HomekitPeerGroupUID;
+import org.openhab.io.homekit.api.uid.HomekitPeerGroupUID;
+import org.openhab.io.homekit.core.event.HomekitPeerGroupUIDImpl;
 
 import java.util.ArrayList;
 import java.util.concurrent.ScheduledFuture;
@@ -105,6 +108,9 @@ import java.util.Collections;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
+
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 /**
  * The HomekitThingBridge is responsible for bridging OpenHAB Things to HomeKit accessories.
@@ -145,6 +151,10 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
     private static final String LOG_PREFIX = "[HomekitThingBridge] ";
     private static final String THREAD_POOL_NAME = "homekit";
     private final Logger logger = LoggerFactory.getLogger(HomekitThingBridge.class);
+
+    // Configuration key for orphan functionality
+    private static final String CONFIG_ORPHAN_ENABLED = "orphanEnabled";
+    private boolean orphanEnabled = true; // Default to true for backward compatibility
 
     // Event tracking
     private static final boolean ENABLE_EXIT_EVENT_STATISTICS = true;
@@ -209,7 +219,8 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
             @Reference HomekitEventManager eventManager, 
             final @Reference SafeCaller safeCaller,
             final @Reference ItemStateConverter itemStateConverter, 
-            final @Reference ItemRegistry itemRegistry) {
+            final @Reference ItemRegistry itemRegistry,
+            Map<String, Object> properties) {
         this.thingRegistry = thingRegistry;
         this.itemChannelLinkRegistry = itemChannelLinkRegistry;
         this.profileFactory = profileFactory;
@@ -224,10 +235,18 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         this.safeCaller = safeCaller;
         this.itemStateConverter = itemStateConverter;
         this.itemRegistry = itemRegistry;
+
+        // Load orphan configuration
+        Object orphanConfig = properties.get(CONFIG_ORPHAN_ENABLED);
+        if (orphanConfig != null) {
+            this.orphanEnabled = Boolean.parseBoolean(orphanConfig.toString());
+            logger.info("{}Orphan functionality is {}", LOG_PREFIX, orphanEnabled ? "enabled" : "disabled");
+        }
+
         // Initialize existing Things
         initializeExistingThings();
 
-        this.peerGroup = Set.of(bridgeUID, new HomekitPeerGroupUID("openhab"), new HomekitPeerGroupUID("homekit"));
+        this.peerGroup = Set.of(bridgeUID, new HomekitPeerGroupUIDImpl("openhab"), new HomekitPeerGroupUIDImpl("homekit"));
         this.statisticsCollector = new ExitEventStatisticsCollector();
 
         if (ENABLE_EXIT_EVENT_STATISTICS) {
@@ -439,18 +458,18 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
             // Subscribe to value changes
             eventSubscriptions.add(eventManager.subscribe(
                 HomekitEventType.CHARACTERISTIC_VALUE_CHANGED,
-                characteristic.getUID(),
-                bridgeUID,
-                (event) -> handleCharacteristicEvent(characteristic, event)
+                (UID)characteristic.getUID(),
+                (UID)bridgeUID,
+                (HomekitEventHandler)(event -> handleCharacteristicEvent(characteristic, event))
             ));
 
 
             // Subscribe to state changes
             eventSubscriptions.add(eventManager.subscribe(
                 HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
-                characteristic.getUID(),
-                bridgeUID,
-                (event) -> handleCharacteristicEvent(characteristic, event)
+                (UID)characteristic.getUID(),
+                (UID)bridgeUID,
+                (HomekitEventHandler)(event -> handleCharacteristicEvent(characteristic, event))
             ));
 
             logger.debug("{}Subscribed to events for characteristic {}", LOG_PREFIX, characteristic.getUID());
@@ -568,8 +587,8 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
             // Direct communication - convert and send event
             try {
                 HomekitCharacteristicUpdateEvent updateEvent = new HomekitCharacteristicUpdateEvent(
-                    bridgeUID,
-                    characteristic.getUID(),
+                    (UID) bridgeUID,
+                    (UID) characteristic.getUID(),
                     characteristic,
                     characteristic.toValueJson((State) command),
                     null,
@@ -627,8 +646,8 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
                             statisticsCollector.recordEvent(System.currentTimeMillis() - e.getTimestamp());
                         }
                         HomekitCharacteristicUpdateEvent updateEvent = new HomekitCharacteristicUpdateEvent(
-                            bridgeUID,
-                            characteristic.getUID(),
+                            (UID) bridgeUID,
+                            (UID) characteristic.getUID(),
                             characteristic,
                             characteristic.toValueJson(e.getState()),
                             characteristic.toValueJson(state),
@@ -644,8 +663,8 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
                 if (exitEvent == null) {
                     logger.debug("{}Processing new state change for item: {}", LOG_PREFIX, itemName);
                     HomekitCharacteristicUpdateEvent updateEvent = new HomekitCharacteristicUpdateEvent(
-                        bridgeUID,
-                        characteristic.getUID(),
+                       (UID) bridgeUID,
+                        (UID) characteristic.getUID(),
                         characteristic,
                         characteristic.toValueJson(state),
                         null,
@@ -880,8 +899,8 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         if (characteristic != null) {
             try {
                 HomekitCharacteristicUpdateEvent updateEvent = new HomekitCharacteristicUpdateEvent(
-                    bridgeUID,
-                    characteristic.getUID(),
+                    (UID) bridgeUID,
+                    (UID) characteristic.getUID(),
                     characteristic,
                     characteristic.toValueJson((State) command),
                     null,
@@ -908,8 +927,8 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         if (characteristic != null) {
             try {
                 HomekitCharacteristicUpdateEvent updateEvent = new HomekitCharacteristicUpdateEvent(
-                    bridgeUID,
-                    characteristic.getUID(),
+                    (UID) bridgeUID,
+                    (UID) characteristic.getUID(),
                     characteristic,
                     characteristic.toValueJson(state),
                     null,
@@ -1016,56 +1035,131 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
 
     @Override
     public void added(Thing thing) {
-        // No action needed here as things are handled during initialization
-        // The thing will be processed by initializeExistingThings() if it's a bridge
         logger.debug("{}Thing {} added", LOG_PREFIX, thing.getUID());
+        
+        if (orphanEnabled) {
+            // Check if this is a restoration of an orphaned accessory
+            HomekitAccessory existingAccessory = thingAccessoryMap.get(thing.getUID());
+            if (existingAccessory != null && existingAccessory.isOrphaned()) {
+                if (restoreOrphanedAccessory(thing, existingAccessory)) {
+                    logger.info("{}Successfully restored orphaned accessory for thing {}", LOG_PREFIX, thing.getUID());
+                    return;
+                }
+            }
+        }
+        
+        // Process the new thing if it's not a restoration or if orphan functionality is disabled
+        processThing(thing);
     }
 
     @Override
     public void removed(Thing thing) {
         logger.debug("{}Thing {} removed", LOG_PREFIX, thing.getUID());
         
-        // Remove the accessory and its characteristics
-        HomekitAccessory accessory = thingAccessoryMap.remove(thing.getUID());
+        HomekitAccessory accessory = thingAccessoryMap.get(thing.getUID());
         if (accessory != null) {
             try {
-                // Remove all characteristics associated with this thing's channels
-                thing.getChannels().forEach(channel -> {
-                    HomekitCharacteristic<?> characteristic = channelCharacteristicMap.remove(channel.getUID());
-                    if (characteristic != null) {
-                        // Remove from bidirectional map
-                        characteristicChannelMap.remove(characteristic);
-                        // Unsubscribe from characteristic events
-                        unsubscribeFromCharacteristicEvents(characteristic);
-                        
-                        // Remove any item-channel mappings
-                        linkRegistry.getLinks(channel.getUID()).forEach(link -> {
-                            itemChannelMap.remove(link.getItemName());
-                        });
+                if (orphanEnabled) {
+                    // Mark the accessory as orphaned
+                    accessory.setOrphaned(true);
+                    logger.info("{}Thing {} was removed but keeping its HomeKit accessory to prevent controller deletion", 
+                        LOG_PREFIX, thing.getUID());
+                    
+                    // Update configuration to reflect orphaned state
+                    Optional<Map<String, Object>> configOpt = configManager.getConfiguration(
+                        thing.getUID(), 
+                        HomekitConfigurationManager.ConfigurationType.THING);
+                    if (configOpt.isPresent()) {
+                        Map<String, Object> config = new java.util.HashMap<>(configOpt.get());
+                        config.put("orphaned", true);
+                        configManager.updateConfiguration(thing.getUID(), 
+                            HomekitConfigurationManager.ConfigurationType.THING, config);
                     }
-                });
+                } else {
+                    // Completely remove the accessory and its characteristics
+                    thingAccessoryMap.remove(thing.getUID());
+                    
+                    // Remove all characteristics associated with this thing's channels
+                    thing.getChannels().forEach(channel -> {
+                        HomekitCharacteristic<?> characteristic = channelCharacteristicMap.remove(channel.getUID());
+                        if (characteristic != null) {
+                            // Remove from bidirectional map
+                            characteristicChannelMap.remove(characteristic);
+                            // Unsubscribe from characteristic events
+                            unsubscribeFromCharacteristicEvents(characteristic);
+                            
+                            // Remove any item-channel mappings
+                            linkRegistry.getLinks(channel.getUID()).forEach(link -> {
+                                itemChannelMap.remove(link.getItemName());
+                            });
+                        }
+                    });
 
-                // Remove the accessory from its server
-                HomekitAccessoryServer server = (HomekitAccessoryServer) accessoryServerRegistry.getAccessoryServer(accessory.getUID());
-                if (server != null) {
-                    try {
-                        server.removeAccessory(accessory);
-                    } catch (HomekitAccessoryOperationException e) {
-                        logger.error("{}Failed to remove accessory {}: {}", 
-                                LOG_PREFIX, accessory.getUID(), e.getMessage(), e);
+                    // Remove the accessory from its server
+                    HomekitAccessoryServer server = (HomekitAccessoryServer) accessoryServerRegistry.getAccessoryServer(accessory.getUID());
+                    if (server != null) {
+                        try {
+                            server.removeAccessory(accessory);
+                        } catch (HomekitAccessoryOperationException e) {
+                            logger.error("{}Failed to remove accessory {}: {}", 
+                                    LOG_PREFIX, accessory.getUID(), e.getMessage(), e);
+                        }
                     }
-                };
+
+                    // Clean up profiles
+                    thing.getChannels().forEach(channel -> {
+                        channelProfiles.remove(channel.getUID());
+                        channelHomekitToOpenhabProfiles.remove(channel.getUID());
+                    });
+                }
             } catch (Exception e) {
-                logger.error("{}Failed to remove accessory for thing {}: {}", 
-                        LOG_PREFIX, thing.getUID(), e.getMessage(), e);
+                logger.error("{}Failed to handle accessory for thing {}: {}", 
+                    LOG_PREFIX, thing.getUID(), e.getMessage(), e);
             }
         }
+    }
 
-        // Clean up profiles
-        thing.getChannels().forEach(channel -> {
-            channelProfiles.remove(channel.getUID());
-            channelHomekitToOpenhabProfiles.remove(channel.getUID());
-        });
+    private boolean restoreOrphanedAccessory(Thing thing, HomekitAccessory orphanedAccessory) {
+        try {
+            // Remove orphaned flag
+            orphanedAccessory.setOrphaned(false);
+            
+            // Update configuration
+            Optional<Map<String, Object>> configOpt = configManager.getConfiguration(
+                thing.getUID(), 
+                HomekitConfigurationManager.ConfigurationType.THING);
+            if (configOpt.isPresent()) {
+                Map<String, Object> config = new java.util.HashMap<>(configOpt.get());
+                config.remove("orphaned");
+                configManager.updateConfiguration(thing.getUID(), 
+                    HomekitConfigurationManager.ConfigurationType.THING, config);
+            }
+            
+            // Re-subscribe to characteristic events
+            orphanedAccessory.getServices().forEach(service -> {
+                service.getCharacteristics().forEach(characteristic -> {
+                    subscribeToCharacteristicEvents(characteristic);
+                });
+            });
+            
+            logger.info("{}Successfully restored orphaned accessory for thing {}", LOG_PREFIX, thing.getUID());
+            return true;
+        } catch (Exception e) {
+            logger.error("{}Failed to restore orphaned accessory for thing {}: {}", 
+                LOG_PREFIX, thing.getUID(), e.getMessage(), e);
+            return false;
+        }
+    }
+
+    /**
+     * Checks if an accessory is orphaned.
+     *
+     * @param thing The thing to check
+     * @return true if the accessory is orphaned, false otherwise
+     */
+    public boolean isOrphaned(Thing thing) {
+        HomekitAccessory accessory = thingAccessoryMap.get(thing.getUID());
+        return accessory != null && accessory.isOrphaned();
     }
 
     @Override
@@ -1193,5 +1287,39 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
                         histogram);
             }
         }
+    }
+
+    /**
+     * Gets all things managed by this bridge.
+     * 
+     * @return Collection of all things
+     */
+    public Collection<Thing> getThings() {
+        return thingAccessoryMap.keySet().stream()
+                .map(thingRegistry::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Gets the HomeKit accessory mapped to a specific thing.
+     * 
+     * @param thingUID The UID of the thing
+     * @return Optional containing the mapped accessory if found
+     */
+    public Optional<HomekitAccessory> getMappedAccessory(ThingUID thingUID) {
+        return Optional.ofNullable(thingAccessoryMap.get(thingUID));
+    }
+
+    /**
+     * Gets all HomeKit accessories managed by this bridge.
+     * This method is kept for backward compatibility.
+     * 
+     * @return Collection of all accessories
+     * @deprecated Use getThings() and getMappedAccessory() instead
+     */
+    @Deprecated
+    public Collection<HomekitAccessory> getAccessories() {
+        return thingAccessoryMap.values();
     }
 } 

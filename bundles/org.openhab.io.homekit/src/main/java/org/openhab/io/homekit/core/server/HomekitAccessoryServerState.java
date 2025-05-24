@@ -1,4 +1,4 @@
-package org.openhab.io.homekit.core.accessory;
+package org.openhab.io.homekit.core.server;
 
 import org.openhab.io.homekit.api.event.HomekitEventType;
 
@@ -113,4 +113,4 @@ public class HomekitAccessoryServerState {
     public int hashCode() {
         return 31 * name.hashCode() + eventType.hashCode();
     }
-}
+} 

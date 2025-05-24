@@ -11,7 +11,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.Identifiable;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
-import org.openhab.io.homekit.core.service.HomekitServiceUID;
+import org.openhab.io.homekit.api.uid.HomekitServiceUID;
 
 /**
  * Interface for a HomekitService offered by an HomekitAccessory.

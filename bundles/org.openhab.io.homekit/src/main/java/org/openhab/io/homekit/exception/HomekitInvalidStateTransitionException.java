@@ -1,6 +1,6 @@
 package org.openhab.io.homekit.exception;
 
-import org.openhab.io.homekit.core.accessory.HomekitAccessoryServerState;
+import org.openhab.io.homekit.core.server.HomekitAccessoryServerState;
 
 public class HomekitInvalidStateTransitionException extends HomekitServerException {
     public HomekitInvalidStateTransitionException(HomekitAccessoryServerState current,

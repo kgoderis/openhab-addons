@@ -64,6 +64,7 @@ import org.eclipse.jetty.client.util.BufferingResponseListener;
 import org.eclipse.jetty.client.util.BytesContentProvider;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
+import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryCategory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
@@ -73,7 +74,7 @@ import org.openhab.io.homekit.api.listener.HomekitCharacteristicChangeListener;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
 import org.openhab.io.homekit.api.service.HomekitService;
-import org.openhab.io.homekit.core.accessory.HomekitAccessoryServerState;
+import org.openhab.io.homekit.core.server.HomekitAccessoryServerState;
 import org.openhab.io.homekit.event.core.HomekitEventSubscription;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicEvent;
@@ -107,6 +108,8 @@ import com.nimbusds.srp6.SRP6Exception;
 import com.nimbusds.srp6.XRoutineWithUserIdentity;
 
 import djb.Curve25519;
+
+import org.openhab.io.homekit.event.manager.HomekitEventManager.HomekitEventHandler;
 
 // A bridge is a special type of HAP accessory server that bridges Homekit HomekitAccessory Protocol and different RF/transport protocols, such as ZigBee or Z-Wave. A bridge must expose all the user-addressable functionality supported by its connected devices as HAP accessory objects to the HAP controller(s). A bridge must ensure that the instance ID assigned to the HAP accessory objects exposed on behalf of its connected devices do not change for the lifetime of the server/client pairing.
 // For example, a bridge that bridges three lights would expose four HAP accessory objects: one HAP accessory object that represents the bridge itself that may include a "firmware update" service, and three additional HAP accessory objects that each contain a "lightbulb" service.
@@ -1504,14 +1507,14 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         for (HomekitService service : accessory.getServices()) {
             for (HomekitCharacteristic<?> characteristic : service.getCharacteristics()) {
                 eventSubscriptions.add(
-                        eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, characteristic.getUID(),
-                                getUID(), event -> onCharacteristicEvent((HomekitCharacteristicEvent) event)));
+                        eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, (UID) characteristic.getUID(),
+                                (UID) getUID(), (HomekitEventHandler) event -> onCharacteristicEvent((HomekitCharacteristicEvent) event)));
                 eventSubscriptions.add(
-                        eventManager.subscribe(HomekitEventType.CHARACTERISTIC_START_EVENTS, characteristic.getUID(),
-                                getUID(), event -> onCharacteristicEvent((HomekitCharacteristicEvent) event)));
+                        eventManager.subscribe(HomekitEventType.CHARACTERISTIC_START_EVENTS, (UID) characteristic.getUID(),
+                                (UID) getUID(), event -> onCharacteristicEvent((HomekitCharacteristicEvent) event)));
                 eventSubscriptions.add(
-                        eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STOP_EVENTS, characteristic.getUID(),
-                                getUID(), event -> onCharacteristicEvent((HomekitCharacteristicEvent) event)));
+                        eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STOP_EVENTS, (UID) characteristic.getUID(),
+                                (UID) getUID(), event -> onCharacteristicEvent((HomekitCharacteristicEvent) event)));
                 logger.debug("{}Subscribed to events for characteristic: {}", LOG_ACCESSORY,
                         characteristic.getClass().getSimpleName());
             }

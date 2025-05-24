@@ -15,6 +15,7 @@ import org.openhab.core.net.NetworkAddressService;
 import org.openhab.core.service.ReadyMarker;
 import org.openhab.core.service.ReadyMarkerFilter;
 import org.openhab.core.service.ReadyService;
+import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryCategory;
 import org.openhab.io.homekit.api.event.HomekitEventType;
@@ -24,13 +25,13 @@ import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry;
 import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
-import org.openhab.io.homekit.core.accessory.HomekitAccessoryUID;
+import org.openhab.io.homekit.api.uid.HomekitAccessoryServerUID;
+import org.openhab.io.homekit.api.uid.HomekitAccessoryUID;
 import org.openhab.io.homekit.event.core.HomekitEventSubscription;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.event.model.server.HomekitAccessoryServerEvent;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.exception.HomekitServerException;
-import org.openhab.io.homekit.server.HomekitAccessoryServerUID;
 import org.openhab.io.homekit.server.HomekitRemoteAccessoryServer;
 import org.openhab.io.homekit.util.HomekitUID;
 import org.osgi.framework.BundleContext;
@@ -238,7 +239,7 @@ public class HomekitAccessoryServerRegistryImpl
     @Override
     public void added(Provider<HomekitAccessoryServer> provider, HomekitAccessoryServer element) {
 
-        eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVER_STATE_CHANGED, element.getUID(),
+        eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVER_STATE_CHANGED, (UID) element.getUID(),
                 subscriberUID, event -> handleAccessoryServerEvent((HomekitAccessoryServerEvent) event)));
         super.added(provider, element);
     }

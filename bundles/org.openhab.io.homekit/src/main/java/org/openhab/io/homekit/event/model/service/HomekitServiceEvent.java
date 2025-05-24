@@ -21,9 +21,9 @@ public class HomekitServiceEvent extends AbstractHomekitEvent {
     @SuppressWarnings("null")
     public HomekitServiceEvent(HomekitEventType type, @Nullable HomekitService HomekitService,
             @Nullable HomekitCharacteristic<?> HomekitCharacteristic) {
-        super(type, HomekitService != null ? HomekitService.getUID() : new HomekitUID("HomekitService"), WILDCARD_UID,
+        super(type, HomekitService != null ? (UID) HomekitService.getUID() : (UID) new HomekitUID("HomekitService"), HomekitUID.WILDCARD_UID,
                 new HomekitEventMetadata(
-                        HomekitService != null ? HomekitService.getUID() : new HomekitUID("HomekitService"), null, null,
+                        HomekitService != null ? (UID) HomekitService.getUID() : (UID) new HomekitUID("HomekitService"), null, null,
                         Collections.emptySet()));
         this.HomekitService = Optional.ofNullable(HomekitService);
         this.HomekitCharacteristic = Optional.ofNullable(HomekitCharacteristic);
@@ -32,9 +32,9 @@ public class HomekitServiceEvent extends AbstractHomekitEvent {
     @SuppressWarnings("null")
     public HomekitServiceEvent(HomekitEventType type, @Nullable HomekitService HomekitService, UID subscriberUID,
             @Nullable HomekitCharacteristic<?> HomekitCharacteristic) {
-        super(type, HomekitService != null ? HomekitService.getUID() : new HomekitUID("HomekitService"), subscriberUID,
+        super(type, HomekitService != null ? (UID) HomekitService.getUID() : (UID) new HomekitUID("HomekitService"), subscriberUID,
                 new HomekitEventMetadata(
-                        HomekitService != null ? HomekitService.getUID() : new HomekitUID("HomekitService"), null, null,
+                        HomekitService != null ? (UID) HomekitService.getUID() : (UID) new HomekitUID("HomekitService"), null, null,
                         Collections.emptySet()));
         this.HomekitService = Optional.ofNullable(HomekitService);
         this.HomekitCharacteristic = Optional.ofNullable(HomekitCharacteristic);

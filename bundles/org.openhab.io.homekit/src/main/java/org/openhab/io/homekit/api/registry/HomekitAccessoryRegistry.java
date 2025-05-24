@@ -5,7 +5,7 @@ import org.openhab.core.common.registry.Registry;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.listener.HomekitAccessoryChangeListener;
 import org.openhab.io.homekit.api.provider.HomekitAccessoryProvider;
-import org.openhab.io.homekit.core.accessory.HomekitAccessoryUID;
+import org.openhab.io.homekit.api.uid.HomekitAccessoryUID;
 
 /**
  * {@link HomekitAccessoryRegistry} tracks all {@link ManagedAccessory}s from different

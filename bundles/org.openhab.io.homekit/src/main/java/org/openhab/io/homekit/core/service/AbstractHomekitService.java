@@ -22,6 +22,7 @@ import javax.json.JsonValue;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.event.HomekitEvent;
@@ -29,6 +30,7 @@ import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
+import org.openhab.io.homekit.api.uid.HomekitServiceUID;
 import org.openhab.io.homekit.core.characteristic.AbstractHomekitCharacteristic;
 import org.openhab.io.homekit.event.core.HomekitEventSubscription;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
@@ -166,7 +168,7 @@ public abstract class AbstractHomekitService implements HomekitService {
     @Override
     @NonNull
     public HomekitServiceUID getUID() {
-        return new HomekitServiceUID(getAccessory().getUID().getPairingId(), getAccessory().getAccessoryId(),
+        return new HomekitServiceUIDImpl(getAccessory().getUID().getPairingId(), getAccessory().getAccessoryId(),
                 getInstanceId());
     }
 
@@ -307,7 +309,7 @@ public abstract class AbstractHomekitService implements HomekitService {
 
             if (characteristic instanceof AbstractHomekitCharacteristic) {
                 eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
-                        characteristic.getUID(), getUID(), event -> {
+                        (UID) characteristic.getUID(), (UID) getUID(), event -> {
                             onEvent(event);
                         }));
             } else {

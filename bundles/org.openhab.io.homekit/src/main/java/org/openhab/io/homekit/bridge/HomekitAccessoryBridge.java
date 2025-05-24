@@ -1,18 +1,15 @@
 package org.openhab.io.homekit.bridge;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashMap;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
-import org.openhab.io.homekit.api.event.HomekitEvent;
-import org.openhab.io.homekit.api.event.HomekitEventSubscriber;
 import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.config.HomekitConfigurationManager;
@@ -21,7 +18,6 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.server.HomekitRemoteAccessoryServer;
 import org.openhab.io.homekit.util.HomekitUID;
-import org.openhab.io.homekit.event.model.accessory.HomekitAccessoryEvent;
 import org.openhab.io.homekit.event.model.server.HomekitAccessoryServerEvent;
 import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry;
@@ -30,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Reference;
-import org.openhab.io.homekit.core.accessory.HomekitBridgedAccessory;
 
 /**
  * Manages the bridging of accessories between remote and local accessory servers.
@@ -42,7 +37,12 @@ import org.openhab.io.homekit.core.accessory.HomekitBridgedAccessory;
 public class HomekitAccessoryBridge {
     private static final Logger logger = LoggerFactory.getLogger(HomekitAccessoryBridge.class);
     private static final String LOG_PREFIX = "Homekit Bridge: ";
+    private static final String YAML_FILE_NAME = "homekit-accessory-bridge.yaml";
     private final HomekitUID bridgeUID = new HomekitUID("bridge");
+
+    // Configuration key for orphan functionality
+    private static final String CONFIG_ORPHAN_ENABLED = "orphanEnabled";
+    private boolean orphanEnabled = true; // Default to true for backward compatibility
 
     private final HomekitEventManager eventManager;
     private final HomekitAccessoryServerRegistry serverRegistry;
@@ -64,11 +64,19 @@ public class HomekitAccessoryBridge {
             @Reference HomekitEventManager eventManager,
             @Reference HomekitAccessoryServerRegistry serverRegistry,
             @Reference HomekitAccessoryFactory accessoryFactory,
-            @Reference HomekitConfigurationManager configManager) {
+            @Reference HomekitConfigurationManager configManager,
+            Map<String, Object> properties) {
         this.eventManager = eventManager;
         this.serverRegistry = serverRegistry;
         this.accessoryFactory = accessoryFactory;
         this.configManager = configManager;
+        
+        // Load orphan configuration
+        Object orphanConfig = properties.get(CONFIG_ORPHAN_ENABLED);
+        if (orphanConfig != null) {
+            this.orphanEnabled = Boolean.parseBoolean(orphanConfig.toString());
+            logger.info("{}Orphan functionality is {}", LOG_PREFIX, orphanEnabled ? "enabled" : "disabled");
+        }
         
         // Subscribe to accessory events using lambdas
         this.eventSubscriptions = List.of(
@@ -125,7 +133,7 @@ public class HomekitAccessoryBridge {
             List<HomekitEventSubscription> remoteSubs = eventManager.subscribe(
                     Set.of(HomekitEventType.CHARACTERISTIC_VALUE_CHANGED, HomekitEventType.SERVICE_ADDED,
                             HomekitEventType.SERVICE_REMOVED, HomekitEventType.ACCESSORY_STATE_CHANGED),
-                    remoteAccessory.getUID(), bridgeUID, event -> {
+                    (UID) remoteAccessory.getUID(), (UID) bridgeUID, event -> {
                         logger.debug("{}Forwarding event from remote to local: {}", LOG_PREFIX, event);
                         // The local server will handle the event through its event manager
                         eventManager.publishEvent(event);
@@ -133,7 +141,7 @@ public class HomekitAccessoryBridge {
 
             // Set up command forwarding from local to remote
             List<HomekitEventSubscription> localSubs = eventManager.subscribe(
-                    Set.of(HomekitEventType.CHARACTERISTIC_VALUE_CHANGED), localAccessory.getUID(), bridgeUID,
+                    Set.of(HomekitEventType.CHARACTERISTIC_VALUE_CHANGED), (UID) localAccessory.getUID(), (UID) bridgeUID,
                     event -> { // Use local accessory UID for local events
                         logger.debug("{}Forwarding command from local to remote: {}", LOG_PREFIX, event);
                         // The remote server will handle the event through its event manager
@@ -226,25 +234,37 @@ public class HomekitAccessoryBridge {
 
     /**
      * Handles an accessory added event.
-     * If the accessory has a "bridge" configuration parameter set to true,
-     * it will be bridged to a local server.
+     * If orphan functionality is enabled, attempts to restore orphaned accessories.
      *
      * @param accessory The accessory that was added
      * @param remoteServer The remote server containing the accessory
      */
-    private void handleAccessoryAdded(HomekitAccessory accessory, HomekitAccessoryServer remoteServer) {
+    public void handleAccessoryAdded(HomekitAccessory accessory, HomekitAccessoryServer remoteServer) {
+        if (orphanEnabled) {
+            // Check if this is a restoration of an orphaned accessory
+            BridgeContext existingContext = bridgedAccessories.get(accessory);
+            if (existingContext != null && existingContext.localAccessory.isOrphaned()) {
+                if (restoreOrphanedAccessory(accessory, existingContext)) {
+                    logger.info("{}Successfully restored orphaned accessory {}", LOG_PREFIX, accessory.getUID());
+                    return;
+                }
+            }
+        }
+        // Continue with normal bridging process
         try {
             // Fetch config for the accessory
-            Optional<Map<String, Object>> configOpt = configManager.getConfiguration(
+            Optional<Map<String, Object>> configOpt = configManager.getConfiguration( (UID)
                 accessory.getUID(), HomekitConfigurationManager.ConfigurationType.ACCESSORY);
             if (configOpt.isEmpty() || !Boolean.TRUE.equals(configOpt.get().get("bridge"))) {
-                logger.debug("{}Accessory {} not configured for bridging (missing or false 'bridge' parameter)", LOG_PREFIX, accessory.getUID());
+                logger.debug("{}Accessory {} not configured for bridging (missing or false 'bridge' parameter)", 
+                    LOG_PREFIX, accessory.getUID());
                 return;
             }
 
             // Only bridge if accessory belongs to a remote accessory server (not a local server)
             if (remoteServer == null || isLocalServer(remoteServer)) {
-                logger.debug("{}Accessory {} is not from a remote server, skipping bridging", LOG_PREFIX, accessory.getUID());
+                logger.debug("{}Accessory {} is not from a remote server, skipping bridging", 
+                    LOG_PREFIX, accessory.getUID());
                 return;
             }
 
@@ -262,47 +282,106 @@ public class HomekitAccessoryBridge {
             }
 
             bridgeAccessory(accessory, remoteServer, localServer, localAccessory);
-            logger.info("{}Successfully bridged accessory {} from remote server {} to local server {}", LOG_PREFIX,
-                    accessory.getUID(), remoteServer.getUID(), localServer.getUID());
+            logger.info("{}Successfully bridged accessory {} from remote server {} to local server {}", 
+                LOG_PREFIX, accessory.getUID(), remoteServer.getUID(), localServer.getUID());
         } catch (Exception e) {
             logger.error("{}Failed to bridge accessory {}: {}", LOG_PREFIX, accessory.getUID(), e.getMessage(), e);
         }
     }
 
     /**
-     * Determines if the given server is a local server.
-     * This can be customized as needed to distinguish local from remote servers.
-     */
-    private boolean isLocalServer(HomekitAccessoryServer server) {
-        if(server instanceof HomekitRemoteAccessoryServer) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
      * Handles an accessory removed event.
-     * Removes the bridged accessory from the local server.
+     * If orphan functionality is enabled, marks the accessory as orphaned.
+     * Otherwise, removes the accessory completely.
      *
      * @param accessory The accessory that was removed
      */
-    private void handleAccessoryRemoved(HomekitAccessory accessory) {
-        BridgeContext ctx = bridgedAccessories.get(accessory);
-        if (ctx != null) {
-            try {
-                ctx.getLocalServer().removeAccessory(ctx.getLocalAccessory());
-                logger.info("{}Successfully unbridged accessory {} from local server {}", LOG_PREFIX,
-                        accessory.getUID(), ctx.getLocalServer().getUID());
-            } catch (Exception e) {
-                logger.error("{}Failed to unbridge accessory {}: {}", LOG_PREFIX, accessory.getUID(), e.getMessage(), e);
+    public void handleAccessoryRemoved(HomekitAccessory accessory) {
+        BridgeContext context = bridgedAccessories.get(accessory);
+        if (context != null) {
+            if (orphanEnabled) {
+                // Mark the accessory as orphaned but keep it in the registry
+                logger.info("{}Accessory {} was removed but keeping it to prevent controller deletion", 
+                    LOG_PREFIX, accessory.getUID());
+                accessory.setOrphaned(true);
+                
+                // Update configuration to reflect orphaned state
+                try {
+                    Map<String, Object> config = new HashMap<>();
+                    config.put("orphaned", true);
+                    configManager.updateConfiguration((UID) accessory.getUID(), 
+                        HomekitConfigurationManager.ConfigurationType.ACCESSORY, config);
+                } catch (Exception e) {
+                    logger.error("{}Failed to update configuration for orphaned accessory {}: {}", 
+                        LOG_PREFIX, accessory.getUID(), e.getMessage(), e);
+                }
+            } else {
+                // Completely remove the accessory and its characteristics
+                try {
+                    context.localServer.removeAccessory(context.localAccessory);
+                    bridgedAccessories.remove(accessory);
+                    logger.info("{}Successfully removed accessory {}", LOG_PREFIX, accessory.getUID());
+                } catch (Exception e) {
+                    logger.error("{}Failed to remove accessory {}: {}", 
+                        LOG_PREFIX, accessory.getUID(), e.getMessage(), e);
+                }
             }
         }
     }
 
     /**
+     * Checks if an accessory is orphaned.
+     *
+     * @param accessory The accessory to check
+     * @return true if the accessory is orphaned, false otherwise
+     */
+    public boolean isOrphaned(HomekitAccessory accessory) {
+        BridgeContext ctx = bridgedAccessories.get(accessory);
+        return ctx != null && ctx.getLocalAccessory().isOrphaned();
+    }
+
+    /**
+     * Restores an orphaned accessory if its remote counterpart becomes available again.
+     *
+     * @param remoteAccessory The remote accessory that was added
+     * @param context The bridge context containing the orphaned accessory
+     * @return true if the accessory was successfully restored, false otherwise
+     */
+    private boolean restoreOrphanedAccessory(HomekitAccessory remoteAccessory, BridgeContext context) {
+        try {
+            // Remove orphaned flag
+            context.localAccessory.setOrphaned(false);
+            
+            // Update configuration to reflect restored state
+            Map<String, Object> config = new HashMap<>();
+            config.put("orphaned", false);
+            configManager.updateConfiguration((UID) remoteAccessory.getUID(), 
+                HomekitConfigurationManager.ConfigurationType.ACCESSORY, config);
+            
+            logger.info("{}Successfully restored orphaned accessory {}", LOG_PREFIX, remoteAccessory.getUID());
+            return true;
+        } catch (Exception e) {
+            logger.error("{}Failed to restore orphaned accessory {}: {}", 
+                LOG_PREFIX, remoteAccessory.getUID(), e.getMessage(), e);
+            return false;
+        }
+    }
+
+    /**
+     * Determines if the given server is a local server.
+     * This can be customized as needed to distinguish local from remote servers.
+     *
+     * @param server The server to check
+     * @return true if the server is local, false if it's remote
+     */
+    private boolean isLocalServer(HomekitAccessoryServer server) {
+        return !(server instanceof HomekitRemoteAccessoryServer);
+    }
+
+    /**
      * Gets an available local server for bridging.
-     * 
-     * @return Optional containing an available local server, or empty if none are available
+     *
+     * @return Optional containing an available local server, or empty if none found
      */
     private Optional<HomekitAccessoryServer> getAvailableLocalServer() {
         return Optional.ofNullable(serverRegistry.getAvailableBridgeAccessoryServer());
@@ -363,5 +442,9 @@ public class HomekitAccessoryBridge {
         public List<HomekitEventSubscription> getLocalSubscriptions() {
             return localSubs;
         }
+    }
+
+    public Set<HomekitAccessory> getAccessories() {
+        return bridgedAccessories.keySet();
     }
 }

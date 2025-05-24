@@ -36,6 +36,7 @@ import org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry;
 import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.api.service.HomekitService;
+import org.openhab.io.homekit.core.server.HomekitAccessoryServerUIDImpl;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.exception.HomekitException;
@@ -43,7 +44,6 @@ import org.openhab.io.homekit.exception.HomekitServerException;
 import org.openhab.io.homekit.protocol.pairing.HomekitPairingFeatureFlag;
 import org.openhab.io.homekit.protocol.pairing.HomekitPairingStatusFlag;
 import org.openhab.io.homekit.provider.HomekitThingTypeProvider;
-import org.openhab.io.homekit.server.HomekitAccessoryServerUID;
 import org.openhab.io.homekit.server.HomekitRemoteAccessoryServer;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
@@ -54,6 +54,7 @@ import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.openhab.io.homekit.api.uid.HomekitAccessoryServerUID;
 
 /**
  * Discovery service for Homekit accessories.
@@ -299,7 +300,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                 continue;
             }
 
-            HomekitAccessoryServerUID serverUID = new HomekitAccessoryServerUID(deviceId);
+            HomekitAccessoryServerUID serverUID = new HomekitAccessoryServerUIDImpl(deviceId);
             HomekitAccessoryServer server = accessoryServerRegistry.get(serverUID);
 
             if (server == null) {
@@ -366,7 +367,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
         ServiceInfo serviceInfo = serviceEvent.getInfo();
         if (serviceInfo != null) {
             logger.debug("{}HomekitService removed: {}", LOG_EVENT, serviceInfo.getName());
-            HomekitAccessoryServerUID serverUID = new HomekitAccessoryServerUID(serviceInfo.getName());
+            HomekitAccessoryServerUID serverUID = new HomekitAccessoryServerUIDImpl(serviceInfo.getName());
             HomekitAccessoryServer server = accessoryServerRegistry.get(serverUID);
             if (server != null) {
                 long gracePeriod = 30; // 30 seconds grace period
@@ -445,7 +446,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                 throw new IllegalStateException("HomekitService " + serviceInfo.getName() + " has no ID property");
             }
 
-            HomekitAccessoryServerUID serverUID = new HomekitAccessoryServerUID(id.replace(":", ""));
+            HomekitAccessoryServerUID serverUID = new HomekitAccessoryServerUIDImpl(id.replace(":", ""));
             HomekitAccessoryServer existingServer = accessoryServerRegistry.get(serverUID);
 
             // Extract and validate service configuration

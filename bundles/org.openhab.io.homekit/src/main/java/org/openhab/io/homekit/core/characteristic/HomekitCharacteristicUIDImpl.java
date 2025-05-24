@@ -1,5 +1,7 @@
 package org.openhab.io.homekit.core.characteristic;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.io.homekit.api.uid.HomekitCharacteristicUID;
 import org.openhab.io.homekit.util.HomekitUID;
 
 /**
@@ -12,7 +14,8 @@ import org.openhab.io.homekit.util.HomekitUID;
  * @author Karel Goderis
  */
 @NonNullByDefault
-public class HomekitCharacteristicUID extends HomekitUID {
+public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitCharacteristicUID {
+    private final long instanceId;
 
     /**
      * Instantiates a new characteristic UID.
@@ -22,13 +25,15 @@ public class HomekitCharacteristicUID extends HomekitUID {
      * @param serviceId the service instance id
      * @param characteristicId the characteristic instance id
      */
-    public HomekitCharacteristicUID(String pairingId, long accessoryId, long serviceId, long characteristicId) {
+    public HomekitCharacteristicUIDImpl(String pairingId, long accessoryId, long serviceId, long characteristicId) {
         super("characteristic",
                 "homekit:characteristic:" + pairingId + ":" + accessoryId + ":" + serviceId + ":" + characteristicId);
+        this.instanceId = accessoryId;
     }
 
-    public HomekitCharacteristicUID(String key) {
+    public HomekitCharacteristicUIDImpl(String key) {
         super("characteristic", key);
+        this.instanceId = 0;
     }
 
     @Override
@@ -44,5 +49,20 @@ public class HomekitCharacteristicUID extends HomekitUID {
      */
     public String getHomekitId() {
         return String.join(SEPARATOR, getAllSegments().subList(getAllSegments().size() - 4, getAllSegments().size()));
+    }
+
+    @Override
+    public String getAsString() {
+        return toString();
+    }
+
+    @Override
+    public long getInstanceId() {
+        return instanceId;
+    }
+
+    @Override
+    public HomekitCharacteristicUID getUID() {
+        return this;
     }
 }

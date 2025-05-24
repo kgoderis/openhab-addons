@@ -11,6 +11,7 @@ import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryType;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.api.service.HomekitService;
+import org.openhab.io.homekit.api.uid.HomekitAccessoryUID;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -156,7 +157,7 @@ public class HomekitBridgedAccessory implements HomekitAccessory {
             throw new HomekitAccessoryOperationException("HomekitBridgedAccessory is already assigned to a server");
         }
         this.accessoryId = server.getNextAvailableAccessoryId();
-        this.uid = new HomekitAccessoryUID(server.getUID().getPairingId(), accessoryId);
+        this.uid = new HomekitAccessoryUIDImpl(server.getUID().getPairingId(), accessoryId);
         logger.debug("{}Assigned bridged accessory to local server with AID: {}", LOG_PREFIX, accessoryId);
     }
 

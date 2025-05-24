@@ -1,0 +1,109 @@
+# HomeKit Item Configuration
+
+items:
+  # Specific item mapping for a light
+  "openhab:item:LivingRoom_Light":
+    accessory: "generic"
+    metadata: { manufacturer: "Philips", model: "Hue Light" }
+    services:
+      lightbulb:
+        characteristics:
+          on: { inverted: false }
+          brightness: { minValue: 0, maxValue: 100, step: 1 }
+          hue: { minValue: 0, maxValue: 360, step: 1 }
+          saturation: { minValue: 0, maxValue: 100, step: 1 }
+
+  # Example of an orphaned item (item was removed but accessory is kept)
+  "openhab:item:Garage_Light":
+    accessory: "generic"
+    orphaned: true
+    metadata: { manufacturer: "Philips", model: "Hue Light" }
+    services:
+      lightbulb:
+        characteristics:
+          on: { inverted: false }
+          brightness: { minValue: 0, maxValue: 100, step: 1 }
+
+  # Specific item mapping for a temperature sensor
+  "openhab:item:Bedroom_Temperature":
+    accessory: "generic"
+    metadata: { manufacturer: "Xiaomi", model: "Temperature Sensor" }
+    services:
+      temperatureSensor:
+        characteristics:
+          currentTemperature: { unit: "CELSIUS" }
+          statusLowBattery: { lowThreshold: 20 }
+
+  # Specific item mapping for a motion sensor
+  "openhab:item:Kitchen_Motion":
+    accessory: "generic"
+    metadata: { manufacturer: "Xiaomi", model: "Motion Sensor" }
+    services:
+      motionSensor:
+        characteristics:
+          motionDetected: { debounce: 1000 }
+          statusActive: { inverted: false }
+          statusLowBattery: { lowThreshold: 20 }
+
+  # Type-based mapping for all lights
+  "openhab:item:*_Light":
+    accessory: "generic"
+    metadata: { manufacturer: "Generic" }
+    services:
+      lightbulb:
+        characteristics:
+          on: { inverted: false }
+          brightness: { minValue: 0, maxValue: 100, step: 1 }
+
+  # Type-based mapping for all temperature sensors
+  "openhab:item:*_Temperature":
+    accessory: "generic"
+    metadata: { manufacturer: "Generic" }
+    services:
+      temperatureSensor:
+        characteristics:
+          currentTemperature: { unit: "CELSIUS" }
+          statusLowBattery: { lowThreshold: 20 }
+
+  # Type-based mapping for all motion sensors
+  "openhab:item:*_Motion":
+    accessory: "generic"
+    metadata: { manufacturer: "Generic" }
+    services:
+      motionSensor:
+        characteristics:
+          motionDetected: { debounce: 1000 }
+          statusActive: { inverted: false }
+          statusLowBattery: { lowThreshold: 20 }
+
+  # Complex item with multiple services
+  "openhab:item:LivingRoom_Entertainment":
+    accessory: "generic"
+    metadata: { manufacturer: "Samsung", model: "Smart TV" }
+    services:
+      television:
+        characteristics:
+          active: { inverted: false }
+          activeIdentifier: { minValue: 1, maxValue: 4, step: 1 }
+      inputSource:
+        characteristics:
+          configuredName: "HDMI 1"
+          inputSourceType: "HDMI"
+          isConfigured: true
+      speaker:
+        characteristics:
+          mute: { inverted: false }
+          volume: { minValue: 0, maxValue: 100, step: 1 }
+
+  # Type-based mapping for all entertainment devices
+  "openhab:item:*_Entertainment":
+    accessory: "generic"
+    metadata: { manufacturer: "Generic" }
+    services:
+      television:
+        characteristics:
+          active: { inverted: false }
+      speaker:
+        characteristics:
+          mute: { inverted: false }
+          volume: { minValue: 0, maxValue: 100, step: 1 } 

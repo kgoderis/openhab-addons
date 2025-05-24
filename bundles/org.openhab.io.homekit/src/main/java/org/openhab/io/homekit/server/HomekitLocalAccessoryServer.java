@@ -14,6 +14,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.openhab.core.io.transport.mdns.MDNSService;
 import org.openhab.core.io.transport.mdns.ServiceDescription;
+import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryCategory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
@@ -586,7 +587,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
             for (HomekitService service : accessory.getServices()) {
                 for (HomekitCharacteristic<?> characteristic : service.getCharacteristics()) {
                     eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
-                            characteristic.getUID(), getUID(),
+                            (UID) characteristic.getUID(), (UID) getUID(),
                             event -> handleCharacteristicEvent((HomekitCharacteristicEvent) event)));
                     logger.debug("{}Subscribed to events for characteristic: {}", LOG_ACCESSORY,
                             characteristic.getClass().getSimpleName());

@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -14,18 +13,16 @@ import java.util.stream.Stream;
 import java.util.HashSet;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.core.config.core.ConfigDescriptionProvider;
 import org.openhab.core.config.core.ConfigDescriptionRegistry;
-import org.openhab.core.config.core.Configuration;
 import org.openhab.core.service.WatchService;
 import org.openhab.core.thing.UID;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.io.homekit.util.ItemUID;
 import org.openhab.io.homekit.util.HomekitUID;
-import org.openhab.io.homekit.core.accessory.HomekitAccessoryUID;
-import org.openhab.io.homekit.core.characteristic.HomekitCharacteristicUID;
-import org.openhab.io.homekit.core.service.HomekitServiceUID;
+import org.openhab.io.homekit.core.accessory.HomekitAccessoryUIDImpl;
+import org.openhab.io.homekit.core.characteristic.HomekitCharacteristicUIDImpl;
+import org.openhab.io.homekit.core.service.HomekitServiceUIDImpl;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -174,11 +171,11 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
                 case "item":
                     return new ItemUID(uidString);
                 case "accessory":
-                    return new HomekitAccessoryUID(uidString);
+                    return new HomekitAccessoryUIDImpl(uidString);
                 case "service":
-                    return new HomekitServiceUID(uidString);
+                    return new HomekitServiceUIDImpl(uidString);
                 case "characteristic":
-                    return new HomekitCharacteristicUID(uidString);
+                    return new HomekitCharacteristicUIDImpl(uidString);
                 case "profile":
                     return new HomekitUID(uidString);
                 case "bridge":
@@ -207,7 +204,7 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
                 }
                 break;
             case ACCESSORY:
-                return new HomekitAccessoryUID(uidString);
+                return new HomekitAccessoryUIDImpl(uidString);
             case PROFILE:
                 return new HomekitUID(uidString);
             case BRIDGE:

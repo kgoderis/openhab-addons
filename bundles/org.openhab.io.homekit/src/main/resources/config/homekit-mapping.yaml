@@ -12,6 +12,18 @@ things:
         characteristics:
           on: { channel: "power", inverted: false }
 
+  # Example of an orphaned thing (device was removed but thing is kept)
+  "magic:device:garage_switch":
+    accessory: "generic"
+    orphaned: true
+    metadata:
+      manufacturer: "Magic"
+      model: "RF Switch"
+    services:
+      switch:
+        characteristics:
+          on: { channel: "power", inverted: false }
+
   # Magic motion sensor
   "magic:device:kitchen_motion":
     accessory: "generic"

@@ -18,11 +18,11 @@ import org.openhab.io.homekit.api.provider.HomekitAccessoryServerProvider;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
-import org.openhab.io.homekit.core.accessory.HomekitAccessoryUID;
+import org.openhab.io.homekit.api.uid.HomekitAccessoryServerUID;
+import org.openhab.io.homekit.core.accessory.HomekitAccessoryUIDImpl;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.exception.HomekitServerException;
-import org.openhab.io.homekit.server.HomekitAccessoryServerUID;
 import org.openhab.io.homekit.server.HomekitLocalAccessoryServer;
 import org.openhab.io.homekit.server.HomekitPersistedAccessoryServer;
 import org.openhab.io.homekit.server.HomekitRemoteAccessoryServer;
@@ -118,7 +118,7 @@ public class HomekitManagedAccessoryServerProvider extends
             if (accessoryRegistry != null) {
                 Collection<String> accessoryUIDs = persistableElement.getAccessoryUIDs();
                 for (String accessoryUID : accessoryUIDs) {
-                    HomekitAccessory accessory = accessoryRegistry.get(new HomekitAccessoryUID(accessoryUID));
+                    HomekitAccessory accessory = accessoryRegistry.get(new HomekitAccessoryUIDImpl(accessoryUID));
                     if (accessory != null) {
                         try {
                             server.addAccessory(accessory);

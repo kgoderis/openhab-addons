@@ -23,7 +23,9 @@ import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.api.service.HomekitService;
-import org.openhab.io.homekit.core.accessory.HomekitAccessoryServerState;
+import org.openhab.io.homekit.api.uid.HomekitAccessoryServerUID;
+import org.openhab.io.homekit.core.server.HomekitAccessoryServerState;
+import org.openhab.io.homekit.core.server.HomekitAccessoryServerUIDImpl;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.event.model.server.HomekitAccessoryServerEvent;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
@@ -411,7 +413,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
     @Override
     public HomekitAccessoryServerUID getUID() {
         logger.debug("{}Getting server UID", LOG_CONFIG);
-        return new HomekitAccessoryServerUID(new String(getPairingId(), StandardCharsets.UTF_8).replace(":", ""));
+        return new HomekitAccessoryServerUIDImpl(new String(getPairingId(), StandardCharsets.UTF_8).replace(":", ""));
     }
 
     @Override

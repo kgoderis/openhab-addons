@@ -8,12 +8,12 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.registry.Identifiable;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
+import org.openhab.io.homekit.api.uid.HomekitAccessoryServerUID;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.exception.HomekitConfigurationException;
 import org.openhab.io.homekit.exception.HomekitException;
 import org.openhab.io.homekit.exception.HomekitServerException;
 import org.openhab.io.homekit.protocol.pairing.HomekitPairing;
-import org.openhab.io.homekit.server.HomekitAccessoryServerUID;
 
 /**
  * Interface for an HAP HomekitAccessory Server that exposes a collection of Accessories to the HAP controller(s).

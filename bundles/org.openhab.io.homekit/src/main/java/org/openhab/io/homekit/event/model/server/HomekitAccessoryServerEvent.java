@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.event.HomekitEventType;
@@ -25,8 +26,8 @@ public class HomekitAccessoryServerEvent extends AbstractHomekitEvent {
     public HomekitAccessoryServerEvent(HomekitEventType type, HomekitAccessoryServer server,
             @Nullable HomekitAccessory accessory, @Nullable HomekitService service,
             @Nullable HomekitCharacteristic<?> characteristic) {
-        super(type, server != null ? server.getUID() : new HomekitUID("server"), WILDCARD_UID, new HomekitEventMetadata(
-                server != null ? server.getUID() : new HomekitUID("server"), null, null, Collections.emptySet()));
+        super(type, server != null ? (UID) server.getUID() : (UID) new HomekitUID("server"), WILDCARD_UID, new HomekitEventMetadata(
+                server != null ? (UID) server.getUID() : (UID) new HomekitUID("server"), null, null, Collections.emptySet()));
         this.server = Optional.ofNullable(server);
         this.accessory = Optional.ofNullable(accessory);
         this.service = Optional.ofNullable(service);
@@ -37,7 +38,7 @@ public class HomekitAccessoryServerEvent extends AbstractHomekitEvent {
     public HomekitAccessoryServerEvent(HomekitEventType type, HomekitAccessoryServer server,
             @Nullable HomekitAccessory accessory, @Nullable HomekitService service,
             @Nullable HomekitCharacteristic<?> characteristic, HomekitEventMetadata metadata) {
-        super(type, server != null ? server.getUID() : new HomekitUID("server"), WILDCARD_UID, metadata);
+        super(type, server != null ? (UID) server.getUID() : (UID) new HomekitUID("server"), WILDCARD_UID, metadata);
         this.server = Optional.ofNullable(server);
         this.accessory = Optional.ofNullable(accessory);
         this.service = Optional.ofNullable(service);

@@ -2,6 +2,7 @@ package org.openhab.io.homekit.util;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.items.Item;
+import org.openhab.core.thing.UID;
 
 /**
  * Represents a unique identifier for a Homekit item.
@@ -12,8 +13,8 @@ import org.openhab.core.items.Item;
  * Example: homekit:item:livingroom_light
  */
 @NonNullByDefault
-public class ItemUID extends HomekitUID {
-    private static final String ITEM_PREFIX = "item";
+public class ItemUID extends UID {
+    private static final String ITEM_PREFIX = "openhab:item";
     private final String itemName;
 
     /** Wildcard UID that matches any item */
@@ -25,7 +26,7 @@ public class ItemUID extends HomekitUID {
      * @param item The item to create a UID for
      */
     public ItemUID(Item item) {
-        super(ITEM_PREFIX);
+        super(ITEM_PREFIX, item.getName());
         this.itemName = item.getName();
     }
 
@@ -74,6 +75,10 @@ public class ItemUID extends HomekitUID {
 
     @Override
     protected int getMinimalNumberOfSegments() {
-        return 3; // homekit:item:itemName
+        return 3; // openhab:item:itemName
+    }
+
+    public String getPrefix() {
+        return ITEM_PREFIX;
     }
 } 
