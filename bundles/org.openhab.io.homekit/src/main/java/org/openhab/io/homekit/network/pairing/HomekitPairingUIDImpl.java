@@ -1,4 +1,4 @@
-package org.openhab.io.homekit.core.network.pairing;
+package org.openhab.io.homekit.network.pairing;
 
 import java.util.Base64;
 import java.util.List;

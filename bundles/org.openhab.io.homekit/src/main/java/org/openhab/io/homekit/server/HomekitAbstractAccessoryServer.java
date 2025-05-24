@@ -24,6 +24,7 @@ import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.api.uid.HomekitAccessoryServerUID;
+import org.openhab.io.homekit.api.uid.HomekitPairingUID;
 import org.openhab.io.homekit.core.server.HomekitAccessoryServerState;
 import org.openhab.io.homekit.core.server.HomekitAccessoryServerUIDImpl;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
@@ -33,7 +34,7 @@ import org.openhab.io.homekit.exception.HomekitConfigurationException;
 import org.openhab.io.homekit.exception.HomekitInvalidStateTransitionException;
 import org.openhab.io.homekit.exception.HomekitServerException;
 import org.openhab.io.homekit.network.pairing.HomekitPairingImpl;
-import org.openhab.io.homekit.network.pairing.HomekitPairingUID;
+import org.openhab.io.homekit.network.pairing.HomekitPairingUIDImpl;
 import org.openhab.io.homekit.protocol.pairing.HomekitPairing;
 import org.openhab.io.homekit.util.HomekitByte;
 import org.openhab.io.homekit.util.HomekitKeyGenerator;
@@ -426,7 +427,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
     public byte[] getPublicKey(byte @NonNull [] destinationPairingId) {
         logger.debug("{}Getting public key for destination pairing ID: {}", LOG_CONFIG,
                 HomekitByte.toHexString(destinationPairingId));
-        HomekitPairing hp = pairingRegistry.get(new HomekitPairingUID(getPairingId(), destinationPairingId));
+        HomekitPairing hp = pairingRegistry.get(new HomekitPairingUIDImpl(getPairingId(), destinationPairingId));
         return hp != null ? hp.getPublicKey() : new byte[0];
     }
 
@@ -456,7 +457,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         }
 
         // Validate pairing ID uniqueness
-        if (pairingRegistry.get(new HomekitPairingUID(getPairingId(), pairingId)) != null) {
+        if (pairingRegistry.get(new HomekitPairingUIDImpl(getPairingId(), pairingId)) != null) {
             String error = String.format("HomekitPairing ID %s already exists", HomekitByte.toHexString(pairingId));
             logger.error("{}HomekitPairing validation error: {}", LOG_ERROR, error);
             throw new HomekitServerException(error);
@@ -514,7 +515,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         logger.debug("{}Removing pairing - ID: {}", LOG_PAIRING, HomekitByte.toHexString(pairingId));
 
         try {
-            HomekitPairingUID uid = new HomekitPairingUID(getPairingId(), pairingId);
+            HomekitPairingUID uid = new HomekitPairingUIDImpl(getPairingId(), pairingId);
             if (pairingRegistry.remove(uid) != null) {
                 setState(HomekitAccessoryServerState.UNPAIRED);
                 logger.info("{}HomekitPairing removed successfully - ID: {}", LOG_PAIRING,

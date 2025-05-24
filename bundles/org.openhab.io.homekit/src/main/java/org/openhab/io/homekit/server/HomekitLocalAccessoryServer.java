@@ -22,7 +22,7 @@ import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
 import org.openhab.io.homekit.api.service.HomekitService;
-import org.openhab.io.homekit.core.accessory.HomekitAccessoryServerState;
+import org.openhab.io.homekit.core.server.HomekitAccessoryServerState;
 import org.openhab.io.homekit.event.core.HomekitEventSubscription;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicEvent;

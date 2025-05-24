@@ -3,6 +3,7 @@ package org.openhab.io.homekit.network.pairing;
 import java.util.Base64;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.openhab.io.homekit.api.uid.HomekitPairingUID;
 import org.openhab.io.homekit.protocol.pairing.HomekitPairing;
 
 public class HomekitPairingImpl implements HomekitPairing {
@@ -26,7 +27,7 @@ public class HomekitPairingImpl implements HomekitPairing {
 
     @Override
     public @NonNull HomekitPairingUID getUID() {
-        return new HomekitPairingUID(getSourceId(), getDestinationId());
+        return new HomekitPairingUIDImpl(getSourceId(), getDestinationId());
     }
 
     @Override

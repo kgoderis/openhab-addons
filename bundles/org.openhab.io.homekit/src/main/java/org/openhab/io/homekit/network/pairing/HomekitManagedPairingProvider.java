@@ -8,6 +8,7 @@ import org.openhab.core.service.ReadyService;
 import org.openhab.core.storage.StorageService;
 import org.openhab.io.homekit.api.provider.HomekitPairingProvider;
 import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
+import org.openhab.io.homekit.api.uid.HomekitPairingUID;
 import org.openhab.io.homekit.protocol.pairing.HomekitPairing;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;

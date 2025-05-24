@@ -5,7 +5,7 @@ import java.util.Collection;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.Registry;
 import org.openhab.io.homekit.api.provider.HomekitPairingProvider;
-import org.openhab.io.homekit.network.pairing.HomekitPairingUID;
+import org.openhab.io.homekit.api.uid.HomekitPairingUID;
 import org.openhab.io.homekit.protocol.pairing.HomekitPairing;
 
 /**
