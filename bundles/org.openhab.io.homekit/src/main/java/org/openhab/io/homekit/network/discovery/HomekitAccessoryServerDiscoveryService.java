@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.Date;
 
 import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
@@ -109,6 +110,11 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
     private HomekitEventManager eventManager;
     private HomekitAccessoryFactory accessoryFactory;
     private HomekitServiceFactory homekitServiceFactory;
+    private final Map<String, ThingUID> cachedServices = new ConcurrentHashMap<>();
+    private static final String DEVICE_ID = "id";
+    private static final String CATEGORY_ID = "ci";
+    private static final String BRIDGE_CATEGORY = "2";
+    private static final String STANDALONE_CATEGORY = "1";
 
     /**
      * Constructs a new Homekit discovery service.
@@ -286,15 +292,14 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
 
         for (ServiceInfo serviceInfo : services) {
             logger.debug("{}Processing service: {}", LOG_SERVER, serviceInfo.getName());
-            Map<String, String> properties = processService(serviceInfo);
+            Map<String, Object> properties = processService(serviceInfo);
 
             if (properties == null) {
                 logger.debug("{}Skipping service {} - no valid properties found", LOG_SERVER, serviceInfo.getName());
                 continue;
             }
 
-            @Nullable
-            String deviceId = properties.get("id");
+            String deviceId = (String) properties.get("id");
             if (deviceId == null || deviceId.isEmpty()) {
                 logger.warn("{}HomekitService {} has no device ID", LOG_WARN, serviceInfo.getName());
                 continue;
@@ -343,6 +348,10 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                 logger.warn("{}Server {} is not paired, skipping accessory processing", LOG_PAIRING, server.getUID());
             }
         }
+
+        if (!isBackground) {
+            stopScan();
+        }
     }
 
     /**
@@ -353,7 +362,9 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
     @Override
     public void serviceAdded(@NonNullByDefault({}) ServiceEvent serviceEvent) {
         logger.debug("{}New service added: {}", LOG_EVENT, serviceEvent.getName());
-        considerService(serviceEvent);
+        if (isBackgroundDiscoveryEnabled()) {
+            considerService(serviceEvent);
+        }
     }
 
     /**
@@ -367,17 +378,20 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
         ServiceInfo serviceInfo = serviceEvent.getInfo();
         if (serviceInfo != null) {
             logger.debug("{}HomekitService removed: {}", LOG_EVENT, serviceInfo.getName());
-            HomekitAccessoryServerUID serverUID = new HomekitAccessoryServerUIDImpl(serviceInfo.getName());
-            HomekitAccessoryServer server = accessoryServerRegistry.get(serverUID);
-            if (server != null) {
-                long gracePeriod = 30; // 30 seconds grace period
-                if (gracePeriod <= 0) {
-                    logger.debug("{}Removing server {} immediately", LOG_SERVER, serverUID);
-                    accessoryServerRegistry.remove(serverUID);
-                } else {
-                    logger.debug("{}Scheduling removal of server {} in {} seconds", LOG_SERVER, serverUID, gracePeriod);
-                    cancelRemovalTask(serviceInfo);
-                    scheduleRemovalTask(serverUID, serviceInfo, gracePeriod);
+            String deviceId = serviceInfo.getPropertyString("id");
+            if (deviceId != null) {
+                HomekitAccessoryServerUID serverUID = new HomekitAccessoryServerUIDImpl(deviceId.replace(":", ""));
+                HomekitAccessoryServer server = accessoryServerRegistry.get(serverUID);
+                if (server != null) {
+                    long gracePeriod = 30; // 30 seconds grace period
+                    if (gracePeriod <= 0) {
+                        logger.debug("{}Removing server {} immediately", LOG_SERVER, serverUID);
+                        accessoryServerRegistry.remove(serverUID);
+                    } else {
+                        logger.debug("{}Scheduling removal of server {} in {} seconds", LOG_SERVER, serverUID, gracePeriod);
+                        cancelRemovalTask(serviceInfo);
+                        scheduleRemovalTask(serverUID, serviceInfo, gracePeriod);
+                    }
                 }
             }
         }
@@ -391,7 +405,9 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
     @Override
     public void serviceResolved(@NonNullByDefault({}) ServiceEvent serviceEvent) {
         logger.debug("{}HomekitService resolved: {}", LOG_EVENT, serviceEvent.getName());
-        considerService(serviceEvent);
+        if (isBackgroundDiscoveryEnabled()) {
+            considerService(serviceEvent);
+        }
     }
 
     /**
@@ -400,9 +416,63 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
      * @param serviceEvent The service event to process
      */
     private void considerService(ServiceEvent serviceEvent) {
-        if (isBackgroundDiscoveryEnabled()) {
-            logger.debug("{}Processing service in background discovery: {}", LOG_EVENT, serviceEvent.getName());
-            processService(serviceEvent.getInfo());
+        ServiceInfo serviceInfo = serviceEvent.getInfo();
+        if (serviceInfo == null) {
+            return;
+        }
+
+        Map<String, Object> properties = processService(serviceInfo);
+        if (properties == null) {
+            return;
+        }
+
+        String deviceId = (String) properties.get("id");
+        if (deviceId == null || deviceId.isEmpty()) {
+            logger.warn("{}HomekitService {} has no device ID", LOG_WARN, serviceInfo.getName());
+            return;
+        }
+
+        HomekitAccessoryServerUID serverUID = new HomekitAccessoryServerUIDImpl(deviceId);
+        HomekitAccessoryServer server = accessoryServerRegistry.get(serverUID);
+
+        if (server == null) {
+            logger.debug("{}No server found for device ID: {}", LOG_SERVER, deviceId);
+            return;
+        }
+
+        if (server.isPaired()) {
+            logger.info("{}Server {} is paired, updating accessories", LOG_PAIRING, server.getUID());
+
+            try {
+                server.updateAccessories();
+                logger.debug("{}Successfully updated accessories for server {}", LOG_ACCESSORY, server.getUID());
+            } catch (HomekitAccessoryOperationException e) {
+                logger.warn("{}Failed to update accessories for server {}: {}", LOG_WARN, server.getUID(),
+                        e.getMessage());
+            }
+
+            try {
+                for (HomekitAccessory accessory : server.getAccessories()) {
+                    if (accessoryRegistry != null && accessoryRegistry.get(accessory.getUID()) == null) {
+                        logger.debug("{}Adding new accessory {} to registry", LOG_ACCESSORY, accessory.getUID());
+                        accessoryRegistry.add(accessory);
+                        try {
+                            createThingFromAccessory(server, accessory);
+                        } catch (HomekitException e) {
+                            logger.warn("{}Failed to create thing for accessory {}: {}", LOG_WARN,
+                                    accessory.getUID(), e.getMessage());
+                        }
+                    } else {
+                        logger.trace("{}HomekitAccessory {} already exists in registry", LOG_ACCESSORY,
+                                accessory.getUID());
+                    }
+                }
+            } catch (HomekitAccessoryOperationException e) {
+                logger.warn("{}Failed to process accessories for server {}: {}", LOG_WARN, server.getUID(),
+                        e.getMessage());
+            }
+        } else {
+            logger.warn("{}Server {} is not paired, skipping accessory processing", LOG_PAIRING, server.getUID());
         }
     }
 
@@ -413,13 +483,11 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
      * @param serviceInfo The discovered service information
      * @return Map of service properties, or null if processing failed
      */
-    private @Nullable Map<String, String> processService(@Nullable ServiceInfo serviceInfo) {
-        if (serviceInfo == null) {
-            logger.warn("{}Received null service info, skipping processing", LOG_WARN);
+    private @Nullable Map<String, Object> processService(@Nullable ServiceInfo serviceInfo) {
+        if (serviceInfo == null || !serviceInfo.hasData()) {
             return null;
         }
 
-        Map<String, String> properties = new HashMap<>();
         try {
             if (!serviceInfo.hasData() || !serviceInfo.getApplication().contains("hap") || serviceInfo.getPort() == 0) {
                 return null;
@@ -427,16 +495,13 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
 
             logger.debug("{}Processing Homekit service: {}", LOG_SERVER, serviceInfo.getName());
 
-            // Extract all service properties
-            Enumeration<@Nullable String> serviceProperties = serviceInfo.getPropertyNames();
+            Map<String, Object> properties = new HashMap<>();
+            Enumeration<String> serviceProperties = serviceInfo.getPropertyNames();
             while (serviceProperties.hasMoreElements()) {
-                @Nullable
                 String element = serviceProperties.nextElement();
-                if (element != null) {
-                    String value = serviceInfo.getPropertyString(element);
-                    if (value != null) {
-                        properties.put(element, value);
-                    }
+                String value = serviceInfo.getPropertyString(element);
+                if (value != null) {
+                    properties.put(element, value);
                 }
             }
 
@@ -519,11 +584,43 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                 throw new IllegalStateException(
                         "Invalid numeric value in service properties for " + serviceInfo.getName(), e);
             }
+
+            // Cache the service
+            ThingUID thingUID = getThingUID(serviceInfo);
+            if (thingUID != null) {
+                cachedServices.put(serviceInfo.getQualifiedName(), thingUID);
+            }
+
+            return properties;
         } catch (IllegalStateException e) {
             logger.error("{}Error processing service {}: {}", LOG_ERROR, serviceInfo.getName(), e.getMessage());
             return null;
         }
-        return properties;
+    }
+
+    private @Nullable ThingUID getThingUID(ServiceInfo serviceInfo) {
+        if (!serviceInfo.hasData() || !serviceInfo.getApplication().contains("hap")) {
+            return null;
+        }
+
+        String deviceId = serviceInfo.getPropertyString(DEVICE_ID);
+        String category = serviceInfo.getPropertyString(CATEGORY_ID);
+
+        if (deviceId == null || category == null) {
+            return null;
+        }
+
+        // Clean device ID by removing colons
+        String cleanDeviceId = deviceId.replace(":", "");
+
+        // Determine thing type based on category
+        if (BRIDGE_CATEGORY.equals(category)) {
+            return new ThingUID(HomekitBindingConstants.THING_TYPE_BRIDGE, cleanDeviceId);
+        } else if (STANDALONE_CATEGORY.equals(category)) {
+            return new ThingUID(HomekitBindingConstants.THING_TYPE_STANDALONE_ACCESSORY, cleanDeviceId);
+        }
+
+        return null;
     }
 
     /**
@@ -676,24 +773,40 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
      * @return The host address, or null if no valid address is found
      */
     private @Nullable String getHostAddress(ServiceInfo serviceInfo) {
+        if (serviceInfo == null) {
+            return null;
+        }
+
+        String hostAddress = null;
+
         if (SystemUtils.IS_OS_MAC) {
+            // Use IPv4 only on MacOS due to known issues with IPv6
+            // See: https://medium.com/@quelgar/java-sockets-broken-for-ipv6-on-mac-5aae72f06b21
             if (networkAddressService.isUseIPv6()) {
-                logger.warn("{}IPv6 and MDNS may not work well on MacOS", LOG_WARN);
+                logger.warn("{}IPv6 and mDNS do not work well on MacOS - forcing IPv4");
             }
             if (serviceInfo.getInet4Addresses().length > 0) {
-                return serviceInfo.getInet4Addresses()[0].getHostAddress();
+                hostAddress = serviceInfo.getInet4Addresses()[0].getHostAddress();
             }
         } else {
+            // On other platforms, respect the network configuration
             if (networkAddressService.isUseIPv6()) {
                 if (serviceInfo.getInet6Addresses().length > 0) {
-                    return serviceInfo.getInet6Addresses()[0].getHostAddress();
+                    hostAddress = serviceInfo.getInet6Addresses()[0].getHostAddress();
                 }
             } else {
                 if (serviceInfo.getInet4Addresses().length > 0) {
-                    return serviceInfo.getInet4Addresses()[0].getHostAddress();
+                    hostAddress = serviceInfo.getInet4Addresses()[0].getHostAddress();
                 }
             }
         }
-        return null;
+
+        if (hostAddress == null) {
+            logger.warn("{}No valid host address found for service {}", LOG_WARN, serviceInfo.getName());
+            return null;
+        }
+
+        return hostAddress;
     }
 }
+
