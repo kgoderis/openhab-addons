@@ -52,8 +52,8 @@ public class ValidationContext {
         private final boolean failFast;
         private final boolean suppressCascadingErrors;
 
-        public ValidationSettings(boolean cachingEnabled, long cacheDuration, 
-                                boolean failFast, boolean suppressCascadingErrors) {
+        public ValidationSettings(boolean cachingEnabled, long cacheDuration, boolean failFast,
+                boolean suppressCascadingErrors) {
             this.cachingEnabled = cachingEnabled;
             this.cacheDuration = cacheDuration;
             this.failFast = failFast;
@@ -76,4 +76,4 @@ public class ValidationContext {
             return suppressCascadingErrors;
         }
     }
-} 
+}

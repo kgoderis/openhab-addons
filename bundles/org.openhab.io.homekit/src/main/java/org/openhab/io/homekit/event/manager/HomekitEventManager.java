@@ -746,8 +746,8 @@ public class HomekitEventManager {
         // Update direct subscriptions
         subscriptions.stream().filter(sub -> sub.publisherUID.equals(oldUID)).forEach(sub -> {
             subscriptions.remove(sub);
-            HomekitEventSubscription newSub = new HomekitEventSubscription(sub.eventType, (UID) newUID, sub.subscriberUID,
-                    sub.subscriber, sub.expectedEventClass);
+            HomekitEventSubscription newSub = new HomekitEventSubscription(sub.eventType, (UID) newUID,
+                    sub.subscriberUID, sub.subscriber, sub.expectedEventClass);
             subscriptions.add(newSub);
             logger.debug("{}Updated direct subscription from {} to {}", LOG_SUBSCRIBER, oldUID, newUID);
         });
@@ -781,8 +781,8 @@ public class HomekitEventManager {
         HomekitAccessoryUID accessoryUID = newUID;
         HomekitAccessory accessory = accessoryRegistry.get(accessoryUID);
         if (accessory != null) {
-            publishEvent(new HomekitAccessoryEvent(HomekitEventType.ACCESSORY_UID_CHANGED, accessory,
-                    oldUID, accessoryUID));
+            publishEvent(
+                    new HomekitAccessoryEvent(HomekitEventType.ACCESSORY_UID_CHANGED, accessory, oldUID, accessoryUID));
         } else {
             logger.warn("{}HomekitAccessory not found in registry for UID: {}", LOG_EVENT, newUID);
         }

@@ -15,6 +15,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.ThreadPoolManager;
@@ -42,13 +43,14 @@ import org.openhab.io.homekit.api.factory.HomekitServiceFactory;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.api.service.HomekitService;
+import org.openhab.io.homekit.config.HomekitConfigurationManager;
 import org.openhab.io.homekit.core.accessory.HomekitAccessoryRegistryImpl;
 import org.openhab.io.homekit.core.characteristic.AbstractHomekitCharacteristic;
+import org.openhab.io.homekit.core.event.HomekitPeerGroupUIDImpl;
 import org.openhab.io.homekit.event.core.HomekitEventMetadata;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicChangedEvent;
 import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicUpdateEvent;
-import org.openhab.io.homekit.core.event.HomekitPeerGroupUIDImpl;
 import org.openhab.io.homekit.util.HomekitUID;
 import org.openhab.io.homekit.util.ItemUID;
 import org.osgi.service.component.annotations.Activate;
@@ -57,7 +59,6 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.openhab.io.homekit.config.HomekitConfigurationManager;
 
 /**
  * The {@link HomekitItemBridge} manages the integration between openHAB items and Homekit accessories.
@@ -180,8 +181,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
             @Reference HomekitEventManager eventManager, @Reference HomekitAccessoryFactory accessoryFactory,
             @Reference HomekitServiceFactory serviceFactory,
             @Reference HomekitCharacteristicFactory characteristicFactory,
-            @Reference HomekitConfigurationManager configManager,
-            Map<String, Object> properties) {
+            @Reference HomekitConfigurationManager configManager, Map<String, Object> properties) {
         this.itemRegistry = itemRegistry;
         this.eventPublisher = eventPublisher;
         this.accessoryRegistry = accessoryRegistry;
@@ -212,7 +212,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
             }
         }
 
-        this.peerGroup = Set.of(bridgeUID, new HomekitPeerGroupUIDImpl("openhab"), new HomekitPeerGroupUIDImpl("homekit"));
+        this.peerGroup = Set.of(bridgeUID, new HomekitPeerGroupUIDImpl("openhab"),
+                new HomekitPeerGroupUIDImpl("homekit"));
         this.exitEvents = new ConcurrentHashMap<>();
         this.statisticsCollector = new ExitEventStatisticsCollector();
 
@@ -652,15 +653,16 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                 HomekitAccessory existingAccessory = accessoryMap.get(item.getName());
                 if (existingAccessory != null && existingAccessory.isOrphaned()) {
                     if (restoreOrphanedAccessory(item, existingAccessory)) {
-                        logger.info("{}Successfully restored orphaned accessory for item {}", LOG_PREFIX, item.getName());
+                        logger.info("{}Successfully restored orphaned accessory for item {}", LOG_PREFIX,
+                                item.getName());
                         return;
                     }
                 }
             }
             // Get configuration with proper priority
             Map<String, Object> config = getItemConfiguration(item);
-            configManager.updateConfiguration(new ItemUID("openhab:item:" + item.getName()), 
-                HomekitConfigurationManager.ConfigurationType.ITEM, config, YAML_FILE_NAME);
+            configManager.updateConfiguration(new ItemUID("openhab:item:" + item.getName()),
+                    HomekitConfigurationManager.ConfigurationType.ITEM, config, YAML_FILE_NAME);
             createAccessoryForItem(taggedItem);
         }
     }
@@ -676,18 +678,17 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
         try {
             // Remove orphaned flag
             orphanedAccessory.setOrphaned(false);
-            
+
             // Update configuration
             Optional<Map<String, Object>> configOpt = configManager.getConfiguration(
-                new ItemUID("openhab:item:" + item.getName()), 
-                HomekitConfigurationManager.ConfigurationType.ITEM);
+                    new ItemUID("openhab:item:" + item.getName()), HomekitConfigurationManager.ConfigurationType.ITEM);
             if (configOpt.isPresent()) {
                 Map<String, Object> config = new HashMap<>(configOpt.get());
                 config.remove("orphaned");
-                configManager.updateConfiguration(new ItemUID("openhab:item:" + item.getName()), 
-                    HomekitConfigurationManager.ConfigurationType.ITEM, config, YAML_FILE_NAME);
+                configManager.updateConfiguration(new ItemUID("openhab:item:" + item.getName()),
+                        HomekitConfigurationManager.ConfigurationType.ITEM, config, YAML_FILE_NAME);
             }
-            
+
             // Re-subscribe to item state changes
             orphanedAccessory.getServices().forEach(service -> {
                 service.getCharacteristics().forEach(characteristic -> {
@@ -696,11 +697,12 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                     }
                 });
             });
-            
+
             logger.info("{}Successfully restored orphaned accessory for item {}", LOG_PREFIX, item.getName());
             return true;
         } catch (Exception e) {
-            logger.error("{}Failed to restore orphaned accessory for item {}: {}", LOG_PREFIX, item.getName(), e.getMessage(), e);
+            logger.error("{}Failed to restore orphaned accessory for item {}: {}", LOG_PREFIX, item.getName(),
+                    e.getMessage(), e);
             return false;
         }
     }
@@ -717,25 +719,25 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
         if (accessory != null) {
             if (orphanEnabled) {
                 // Mark the accessory as orphaned but keep it in the registry
-                logger.info("{}Item {} was removed but keeping its HomeKit accessory to prevent controller deletion", 
-                    LOG_PREFIX, item.getName());
+                logger.info("{}Item {} was removed but keeping its HomeKit accessory to prevent controller deletion",
+                        LOG_PREFIX, item.getName());
                 accessory.setOrphaned(true);
-                
+
                 // Update configuration to reflect orphaned state
                 try {
                     Map<String, Object> config = new HashMap<>();
                     config.put("orphaned", true);
-                    configManager.updateConfiguration(new ItemUID("openhab:item:" + item.getName()), 
-                        HomekitConfigurationManager.ConfigurationType.ITEM, config, YAML_FILE_NAME);
+                    configManager.updateConfiguration(new ItemUID("openhab:item:" + item.getName()),
+                            HomekitConfigurationManager.ConfigurationType.ITEM, config, YAML_FILE_NAME);
                 } catch (Exception e) {
-                    logger.error("{}Failed to update configuration for orphaned item {}: {}", 
-                        LOG_PREFIX, item.getName(), e.getMessage(), e);
+                    logger.error("{}Failed to update configuration for orphaned item {}: {}", LOG_PREFIX,
+                            item.getName(), e.getMessage(), e);
                 }
             } else {
                 // Completely remove the accessory and its characteristics
                 removeAccessoryForItem(item);
-                configManager.removeConfiguration(new ItemUID("openhab:item:" + item.getName()), 
-                    HomekitConfigurationManager.ConfigurationType.ITEM);
+                configManager.removeConfiguration(new ItemUID("openhab:item:" + item.getName()),
+                        HomekitConfigurationManager.ConfigurationType.ITEM);
             }
         }
     }
@@ -749,16 +751,16 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      */
     @Override
     public void updated(Item oldItem, Item item) {
-        configManager.removeConfiguration(new ItemUID("openhab:item:" + oldItem.getName()), 
-            HomekitConfigurationManager.ConfigurationType.ITEM);
+        configManager.removeConfiguration(new ItemUID("openhab:item:" + oldItem.getName()),
+                HomekitConfigurationManager.ConfigurationType.ITEM);
         removeAccessoryForItem(oldItem);
         HomekitTaggedItem taggedItem = new HomekitTaggedItem(item, itemRegistry, metadataRegistry, accessoryFactory,
                 serviceFactory, characteristicFactory);
         if (taggedItem.isTagged()) {
             // Get configuration with proper priority
             Map<String, Object> config = getItemConfiguration(item);
-            configManager.updateConfiguration(new ItemUID("openhab:item:" + item.getName()), 
-                HomekitConfigurationManager.ConfigurationType.ITEM, config, YAML_FILE_NAME);
+            configManager.updateConfiguration(new ItemUID("openhab:item:" + item.getName()),
+                    HomekitConfigurationManager.ConfigurationType.ITEM, config, YAML_FILE_NAME);
             createAccessoryForItem(taggedItem);
         }
     }
@@ -798,13 +800,12 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     private Map<String, Object> getItemConfiguration(Item item) {
         // First try to get configuration from YAML using fully qualified UID
         Optional<Map<String, Object>> yamlConfig = configManager.getConfiguration(
-                new ItemUID("openhab:item:" + item.getName()), 
-                HomekitConfigurationManager.ConfigurationType.ITEM);
-        
+                new ItemUID("openhab:item:" + item.getName()), HomekitConfigurationManager.ConfigurationType.ITEM);
+
         if (yamlConfig.isPresent()) {
             return yamlConfig.get();
         }
-        
+
         // Fall back to filtered metadata configuration via configParser
         return configParser.getFilteredConfig(item);
     }
@@ -844,8 +845,9 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                                 statisticsCollector.recordEvent(System.currentTimeMillis() - e.getTimestamp());
                             }
 
-                            HomekitEvent newEvent = new HomekitCharacteristicUpdateEvent((UID)bridgeUID, (UID)c.getUID(), c,
-                                    c.toValueJson(e.getState()), c.toValueJson(newState), itemConfiguration, e.getMetadata());
+                            HomekitEvent newEvent = new HomekitCharacteristicUpdateEvent((UID) bridgeUID,
+                                    (UID) c.getUID(), c, c.toValueJson(e.getState()), c.toValueJson(newState),
+                                    itemConfiguration, e.getMetadata());
 
                             eventManager.publishEvent(newEvent);
                             exitEvents.remove(item.getName());
@@ -855,8 +857,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                     // Handle uncorrelated state change
                     if (exitEvent == null) {
                         logger.debug("Processing new state change for item: {}", item.getName());
-                        HomekitEvent newEvent = new HomekitCharacteristicUpdateEvent((UID)bridgeUID, (UID)c.getUID(), c,
-                                c.toValueJson(oldState), c.toValueJson(newState), itemConfiguration,
+                        HomekitEvent newEvent = new HomekitCharacteristicUpdateEvent((UID) bridgeUID, (UID) c.getUID(),
+                                c, c.toValueJson(oldState), c.toValueJson(newState), itemConfiguration,
                                 new HomekitEventMetadata(bridgeUID, null, bridgeUID, peerGroup));
                         eventManager.publishEvent(newEvent);
                     }
@@ -879,7 +881,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
         if (item == null || state == null) {
             return;
         }
-        
+
         // Get configuration with proper priority
         Map<String, Object> itemConfiguration = getItemConfiguration(item);
 
@@ -888,7 +890,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                     try {
                         Optional.ofNullable(exitEvents.get(item.getName())).ifPresent(exitEvent -> {
                             HomekitEvent newEvent = new HomekitCharacteristicUpdateEvent(c,
-                                    c.toValueJson(exitEvent.getState()), c.toValueJson(state), itemConfiguration, exitEvent.getMetadata());
+                                    c.toValueJson(exitEvent.getState()), c.toValueJson(state), itemConfiguration,
+                                    exitEvent.getMetadata());
                             eventManager.publishEvent(newEvent);
                         });
                     } catch (Exception e) {
@@ -1043,9 +1046,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      * @return Collection of all items
      */
     public Collection<Item> getItems() {
-        return accessoryMap.keySet().stream()
-                .map(itemRegistry::get)
-                .filter(Objects::nonNull)
+        return accessoryMap.keySet().stream().map(itemRegistry::get).filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 

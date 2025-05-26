@@ -31,6 +31,64 @@ import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicUp
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Abstract base class for HomeKit characteristics that provides core functionality and lifecycle management.
+ * This class serves as the foundation for all HomeKit characteristic implementations, offering a robust framework
+ * for managing characteristic state, permissions, and event handling within the OpenHAB HomeKit integration.
+ *
+ * <p>
+ * The class implements a comprehensive state management system that includes:
+ * <ul>
+ *   <li>Value management and type conversion between HomeKit and OpenHAB formats</li>
+ *   <li>Event handling and notifications for state changes</li>
+ *   <li>JSON serialization and deserialization for HomeKit protocol communication</li>
+ *   <li>Permission and access control for characteristic operations</li>
+ *   <li>State synchronization with OpenHAB items</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * Key architectural features:
+ * <ul>
+ *   <li>Type-safe value handling through generics, ensuring type safety across the characteristic hierarchy</li>
+ *   <li>Automatic event subscription and handling through the {@link HomekitEventManager}</li>
+ *   <li>Flexible permission system supporting paired read/write, hidden, and mandatory characteristics</li>
+ *   <li>Support for advanced HomeKit features like timed writes and additional authorization</li>
+ *   <li>Built-in JSON conversion utilities for HomeKit protocol compliance</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * The class integrates with several key components:
+ * <ul>
+ *   <li>{@link HomekitService} - Manages service lifecycle and characteristic relationships</li>
+ *   <li>{@link HomekitEventManager} - Handles event distribution and subscription management</li>
+ *   <li>{@link org.openhab.core.types.State} - Provides state conversion and synchronization</li>
+ *   <li>{@link javax.json.JsonValue} - Enables JSON serialization for HomeKit protocol</li>
+ *   <li>{@link HomekitCharacteristicUID} - Provides unique identification for characteristics</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * Implementation guidelines:
+ * <ul>
+ *   <li>Subclasses must implement type-specific value conversion methods</li>
+ *   <li>State synchronization should be handled through the provided event system</li>
+ *   <li>Permission changes should be managed through the builder pattern methods</li>
+ *   <li>JSON serialization should follow HomeKit protocol specifications</li>
+ *   <li>Error handling should use the provided logging system</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * The class follows the HomeKit Accessory Protocol (HAP) specification for characteristic behavior and
+ * integrates with OpenHAB's state management system for reliable device control and monitoring.
+ * </p>
+ *
+ * @author Karel Goderis - Initial contribution
+ * @version 1.0
+ * @since 1.0
+ */
 @NonNullByDefault
 public abstract class AbstractHomekitCharacteristic<@NonNull T> implements HomekitCharacteristic<@NonNull T> {
 
@@ -168,8 +226,8 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
                         if (changeEvent.getCharacteristic().get().equals(AbstractHomekitCharacteristic.this)) {
                             // Update the value in response to the event
                             try {
-                                AbstractHomekitCharacteristic.this.setValue(changeEvent.getNewValue().get(),changeEvent.getItemConfiguration(),
-                                changeEvent.getMetadata());
+                                AbstractHomekitCharacteristic.this.setValue(changeEvent.getNewValue().get(),
+                                        changeEvent.getItemConfiguration(), changeEvent.getMetadata());
                             } catch (Exception e) {
                                 // Handle error
                             }
@@ -361,7 +419,8 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
         }
     }
 
-    protected void setValue(JsonValue value, Map<String, Object> conversionMap,HomekitEventMetadata metadata) throws Exception {
+    protected void setValue(JsonValue value, Map<String, Object> conversionMap, HomekitEventMetadata metadata)
+            throws Exception {
         if (!isPairedWrite) {
             throw new Exception("Cannot modify a readonly characteristic");
         }
@@ -399,7 +458,6 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
     @Override
     public abstract T toValue(JsonValue jsonValue, Map<String, Object> conversionMap);
 
-
     /**
      * Converts a JSON value to the characteristic's value type.
      * 
@@ -407,7 +465,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
      * @return the converted value
      */
     @Override
-    public  T toValue(JsonValue jsonValue) {
+    public T toValue(JsonValue jsonValue) {
         return toValue(jsonValue, Collections.emptyMap());
     }
 

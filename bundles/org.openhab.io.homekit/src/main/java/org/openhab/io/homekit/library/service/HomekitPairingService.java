@@ -12,41 +12,78 @@ import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 
 /**
  * Service that represents a pairing in HomeKit.
- * This service provides functionality for pairing HomeKit accessories.
+ * 
+ * <p>
+ * This service provides functionality for pairing HomeKit accessories with iOS devices. It handles:
+ * <ul>
+ *   <li>Pairing setup and verification</li>
+ *   <li>Secure communication establishment</li>
+ *   <li>Accessory identification during pairing</li>
+ * </ul>
+ * </p>
  *
- * @author Karel Goderis
- * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ * <p>
+ * The pairing service is essential for the security of HomeKit accessories, as it ensures that:
+ * <ul>
+ *   <li>Only authorized devices can control the accessory</li>
+ *   <li>Communication between the accessory and iOS device is encrypted</li>
+ *   <li>Each pairing is unique and secure</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * For more information, see the
+ * <a href="https://developer.apple.com/documentation/HomeKit">HomeKit Accessory Protocol Specification</a>.
+ * </p>
+ *
+ * @author Karel Goderis - Initial contribution
+ * @version 1.0
+ * @since 1.0
  */
 @HomekitServiceType(type = "00000055-0000-1000-8000-0026BB765291", name = "Pairing", tag = "pairing")
 @NonNullByDefault
 public class HomekitPairingService extends AbstractHomekitService {
 
     /**
-     * Creates a new HomekitPairingService.
+     * Creates a new Pairing service.
      *
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @since 1.0
      */
     public HomekitPairingService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Pairing").withPrimary(false).withHidden(false);
+        withName("Pairing").withExtensible(false).withPrimary(false).withHidden(false);
     }
 
     /**
-     * Creates a new HomekitPairingService from a JSON value.
+     * Creates a new Pairing service from a JSON configuration.
      *
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
      * @param value JSON value containing service configuration
+     * @since 1.0
      */
     public HomekitPairingService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
         super(accessory, eventManager, characteristicFactory, value);
     }
 
+    /**
+     * Adds the required characteristics for this service.
+     * 
+     * <p>
+     * Required characteristics:
+     * <ul>
+     *   <li>Name</li>
+     * </ul>
+     * </p>
+     *
+     * @since 1.0
+     */
     @Override
     public void addCharacteristics() {
         addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())

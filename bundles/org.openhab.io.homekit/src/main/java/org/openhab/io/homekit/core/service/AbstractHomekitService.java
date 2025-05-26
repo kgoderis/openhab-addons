@@ -40,10 +40,47 @@ import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Abstract base class for HomeKit services that provides core functionality and lifecycle management.
+ *
+ * <p>
+ * This class implements the fundamental service behavior required by all HomeKit services, including:
+ * <ul>
+ *   <li>Characteristic management and lifecycle</li>
+ *   <li>Event handling and subscriptions</li>
+ *   <li>JSON serialization</li>
+ *   <li>Service configuration and state management</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * The class integrates with:
+ * <ul>
+ *   <li>{@link HomekitAccessory} for accessory lifecycle and state management</li>
+ *   <li>{@link HomekitCharacteristic} for value conversion and validation</li>
+ *   <li>{@link HomekitEventManager} for event handling and subscriptions</li>
+ *   <li>{@link HomekitCharacteristicFactory} for characteristic creation</li>
+ *   <li>{@link org.openhab.core.thing.UID OpenHAB's UID system} for unique identification</li>
+ * </ul>
+ * </p>
+ *
+ * @author Karel Goderis - Initial contribution
+ * @version 1.0
+ * @since 1.0
+ */
 @NonNullByDefault
 public abstract class AbstractHomekitService implements HomekitService {
 
     protected static final Logger logger = LoggerFactory.getLogger(AbstractHomekitService.class);
+
+    // ========== Log Message Prefixes ==========
+    protected static final String LOG_PREFIX = "Homekit Service: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    protected static final String LOG_CHAR = LOG_PREFIX + "Characteristic - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
     private final HomekitAccessory accessory;
     private long instanceId;
@@ -57,11 +94,19 @@ public abstract class AbstractHomekitService implements HomekitService {
     private final Set<HomekitEventSubscription> eventSubscriptions;
 
     /**
-     * Creates a new HomekitBaseService with required parameters.
-     * 
-     * @param accessory the accessory this service belongs to
-     * @param eventManager the event manager for handling events
-     * @param characteristicFactory the factory for creating characteristics
+     * Creates a new HomeKit service with required parameters.
+     *
+     * This constructor initializes a new service with the specified accessory and factories.
+     * It sets up the basic service structure and prepares it for characteristic management.
+     *
+     * Key implementation details:
+     * - Validates all required parameters
+     * - Initializes characteristic and event subscription collections
+     * - Sets up event handling infrastructure
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling events
+     * @param characteristicFactory The factory for creating characteristics
      * @throws IllegalArgumentException if any required parameter is null
      */
     public AbstractHomekitService(HomekitAccessory accessory, HomekitEventManager eventManager,
@@ -81,20 +126,28 @@ public abstract class AbstractHomekitService implements HomekitService {
         this.characteristicFactory = characteristicFactory;
         this.characteristics = new LinkedList<>();
         this.eventSubscriptions = new HashSet<>();
+        logger.debug("{}Created new service for accessory {}", LOG_INIT, accessory.getUID());
     }
 
     /**
-     * Creates a new HomekitBaseService from a JSON value.
-     * 
-     * @param accessory the accessory this service belongs to
-     * @param eventManager the event manager for handling events
-     * @param characteristicFactory the factory for creating characteristics
-     * @param value the JSON value containing service configuration
+     * Creates a new HomeKit service from a JSON value.
+     *
+     * This constructor restores a service from persistent storage, including its
+     * characteristics and configuration.
+     *
+     * Key implementation details:
+     * - Validates JSON structure and type
+     * - Restores service configuration
+     * - Recreates characteristics from JSON
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling events
+     * @param characteristicFactory The factory for creating characteristics
+     * @param value The JSON value containing service configuration
      * @throws IllegalArgumentException if the JSON value is invalid or required parameters are null
      */
     public AbstractHomekitService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
-
         if (accessory == null) {
             throw new IllegalArgumentException("Accessory cannot be null");
         }
@@ -127,6 +180,7 @@ public abstract class AbstractHomekitService implements HomekitService {
         for (JsonValue characteristicValue : characteristicsArray) {
             createCharacteristic(characteristicValue).ifPresent(this::addCharacteristic);
         }
+        logger.debug("{}Restored service from JSON for accessory {}", LOG_INIT, accessory.getUID());
     }
 
     /**

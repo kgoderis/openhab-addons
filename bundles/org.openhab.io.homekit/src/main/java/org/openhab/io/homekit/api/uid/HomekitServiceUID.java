@@ -22,4 +22,4 @@ public interface HomekitServiceUID extends Identifiable<HomekitServiceUID> {
      * @return the service instance ID
      */
     long getInstanceId();
-} 
+}

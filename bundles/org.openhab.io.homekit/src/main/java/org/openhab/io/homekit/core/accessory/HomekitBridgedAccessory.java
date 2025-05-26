@@ -24,8 +24,17 @@ import org.slf4j.LoggerFactory;
 @NonNullByDefault
 @HomekitAccessoryType(name = "Bridged Accessory", type = "1110002-0000-1000-8000-0026BB765291", tag = "bridged")
 public class HomekitBridgedAccessory implements HomekitAccessory {
-    private static final Logger logger = LoggerFactory.getLogger(HomekitBridgedAccessory.class);
-    private static final String LOG_PREFIX = "Homekit HomekitBridgedAccessory: ";
+    // ========== Log Message Prefixes ==========
+    private static final String LOG_PREFIX = "Homekit BridgedAccessory: ";
+    private static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    private static final String LOG_STATE = LOG_PREFIX + "State - ";
+    private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    private static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
+    private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+    private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
+
+    private final Logger logger = LoggerFactory.getLogger(HomekitBridgedAccessory.class);
 
     private final HomekitAccessory remoteAccessory;
     private final HomekitAccessoryServer localServer;
@@ -33,16 +42,28 @@ public class HomekitBridgedAccessory implements HomekitAccessory {
     private @Nullable HomekitAccessoryUID uid;
 
     /**
-     * Creates a new HomekitBridgedAccessory.
+     * Creates a new Bridged Accessory.
+     * A bridged accessory represents a remote accessory that is bridged to a local HomeKit server.
+     * This allows remote accessories to be exposed to HomeKit clients through the local server.
      *
      * @param remoteAccessory The remote accessory to bridge
      * @param localServer The local server this accessory belongs to
+     * @since 1.0
      */
     public HomekitBridgedAccessory(HomekitAccessory remoteAccessory, HomekitAccessoryServer localServer) {
         this.remoteAccessory = remoteAccessory;
         this.localServer = localServer;
+        logger.debug("{}Created new BridgedAccessory for remote accessory {} on server {}", LOG_INIT,
+                remoteAccessory.getLabel(), localServer.getUID());
     }
 
+    /**
+     * Gets the unique identifier for this accessory.
+     * The UID is required for identifying the accessory in the HomeKit system.
+     *
+     * @return the unique identifier
+     * @throws IllegalStateException if the UID has not been set
+     */
     @Override
     public HomekitAccessoryUID getUID() {
         HomekitAccessoryUID currentUid = this.uid;
@@ -52,6 +73,13 @@ public class HomekitBridgedAccessory implements HomekitAccessory {
         return currentUid;
     }
 
+    /**
+     * Gets the accessory instance ID.
+     * This ID is assigned from a global pool across the entire HomeKit server.
+     *
+     * @return the accessory instance ID
+     * @throws IllegalStateException if the accessory ID has not been set
+     */
     @Override
     public long getAccessoryId() {
         Long aid = this.accessoryId;
@@ -61,21 +89,45 @@ public class HomekitBridgedAccessory implements HomekitAccessory {
         return aid;
     }
 
+    /**
+     * Gets the display label for this accessory.
+     * Delegates to the remote accessory's label.
+     *
+     * @return the display label
+     */
     @Override
     public String getLabel() {
         return remoteAccessory.getLabel();
     }
 
+    /**
+     * Gets the manufacturer name for this accessory.
+     * Delegates to the remote accessory's manufacturer.
+     *
+     * @return the manufacturer name
+     */
     @Override
     public String getManufacturer() {
         return remoteAccessory.getManufacturer();
     }
 
+    /**
+     * Gets the model name for this accessory.
+     * Delegates to the remote accessory's model.
+     *
+     * @return the model name
+     */
     @Override
     public String getModel() {
         return remoteAccessory.getModel();
     }
 
+    /**
+     * Gets the serial number for this accessory.
+     * Delegates to the remote accessory's serial number.
+     *
+     * @return the serial number
+     */
     @Override
     public String getSerialNumber() {
         return remoteAccessory.getSerialNumber();

@@ -7,13 +7,10 @@ import java.util.Set;
 
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.Thing;
-import org.osgi.service.component.annotations.Component;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
+import org.osgi.service.component.annotations.Component;
 
 /**
  * Performs validation of channel mappings to ensure they are correctly associated with HomeKit characteristics.
@@ -33,14 +30,8 @@ public class ChannelCharacteristicMappingValidation extends AbstractValidation {
         Object object = context.getTarget();
         if (!(object instanceof Thing)) {
             List<ValidationIssue> issues = new ArrayList<>();
-            issues.add(createIssue(
-                ValidationResult.Severity.ERROR,
-                "Invalid object type: expected Thing",
-                "INVALID_TYPE",
-                getContextKey(object),
-                true,
-                true
-            ));
+            issues.add(createIssue(ValidationResult.Severity.ERROR, "Invalid object type: expected Thing",
+                    "INVALID_TYPE", getContextKey(object), true, true));
             return createResult(issues);
         }
 
@@ -50,14 +41,8 @@ public class ChannelCharacteristicMappingValidation extends AbstractValidation {
         // Get all services for this thing
         List<HomekitService> services = getServices(thing);
         if (services == null) {
-            issues.add(createIssue(
-                ValidationResult.Severity.ERROR,
-                "No HomeKit services found for thing",
-                "NO_SERVICES",
-                getContextKey(thing),
-                true,
-                true
-            ));
+            issues.add(createIssue(ValidationResult.Severity.ERROR, "No HomeKit services found for thing",
+                    "NO_SERVICES", getContextKey(thing), true, true));
             return createResult(issues);
         }
 
@@ -72,14 +57,8 @@ public class ChannelCharacteristicMappingValidation extends AbstractValidation {
     private void validateServiceChannels(HomekitService service, Thing thing, List<ValidationIssue> issues) {
         HomekitServiceType serviceType = service.getClass().getAnnotation(HomekitServiceType.class);
         if (serviceType == null) {
-            issues.add(createIssue(
-                ValidationResult.Severity.ERROR,
-                "Service type annotation not found",
-                "MISSING_SERVICE_TYPE",
-                getContextKey(thing),
-                true,
-                true
-            ));
+            issues.add(createIssue(ValidationResult.Severity.ERROR, "Service type annotation not found",
+                    "MISSING_SERVICE_TYPE", getContextKey(thing), true, true));
             return;
         }
 
@@ -89,14 +68,9 @@ public class ChannelCharacteristicMappingValidation extends AbstractValidation {
         // Get all characteristics for this service
         Set<HomekitCharacteristic<?>> characteristics = service.getCharacteristics();
         if (characteristics == null) {
-            issues.add(createIssue(
-                ValidationResult.Severity.ERROR,
-                String.format("No characteristics found for service '%s'", serviceName),
-                "NO_CHARACTERISTICS",
-                getContextKey(thing) + ":" + serviceUuid,
-                true,
-                true
-            ));
+            issues.add(createIssue(ValidationResult.Severity.ERROR,
+                    String.format("No characteristics found for service '%s'", serviceName), "NO_CHARACTERISTICS",
+                    getContextKey(thing) + ":" + serviceUuid, true, true));
             return;
         }
 
@@ -106,8 +80,8 @@ public class ChannelCharacteristicMappingValidation extends AbstractValidation {
         }
     }
 
-    private void validateCharacteristicChannel(HomekitCharacteristic<?> characteristic, Thing thing, 
-            String serviceName, String serviceUuid, List<ValidationIssue> issues) {
+    private void validateCharacteristicChannel(HomekitCharacteristic<?> characteristic, Thing thing, String serviceName,
+            String serviceUuid, List<ValidationIssue> issues) {
         // Get the channel ID from the characteristic configuration
         String channelId = getChannelId(characteristic);
         if (channelId == null) {
@@ -118,42 +92,28 @@ public class ChannelCharacteristicMappingValidation extends AbstractValidation {
         // Check if the channel exists
         Channel channel = thing.getChannel(channelId);
         if (channel == null) {
-            issues.add(createIssue(
-                ValidationResult.Severity.ERROR,
-                String.format("Channel '%s' not found for characteristic '%s' in service '%s'", 
-                    channelId, characteristic.getClass().getSimpleName(), serviceName),
-                "MISSING_CHANNEL",
-                getContextKey(thing) + ":" + serviceUuid + ":" + characteristic.getClass().getSimpleName(),
-                true,
-                true,
-                Map.of(
-                    "serviceName", serviceName,
-                    "serviceUuid", serviceUuid,
-                    "characteristicType", characteristic.getClass().getSimpleName(),
-                    "channelId", channelId
-                )
-            ));
+            issues.add(createIssue(ValidationResult.Severity.ERROR,
+                    String.format("Channel '%s' not found for characteristic '%s' in service '%s'", channelId,
+                            characteristic.getClass().getSimpleName(), serviceName),
+                    "MISSING_CHANNEL",
+                    getContextKey(thing) + ":" + serviceUuid + ":" + characteristic.getClass().getSimpleName(), true,
+                    true, Map.of("serviceName", serviceName, "serviceUuid", serviceUuid, "characteristicType",
+                            characteristic.getClass().getSimpleName(), "channelId", channelId)));
             return;
         }
 
         // Validate channel type compatibility
         if (!isChannelTypeCompatible(channel, characteristic)) {
-            issues.add(createIssue(
-                ValidationResult.Severity.ERROR,
-                String.format("Channel '%s' type '%s' is not compatible with characteristic '%s' in service '%s'", 
-                    channelId, channel.getChannelTypeUID(), characteristic.getClass().getSimpleName(), serviceName),
-                "INCOMPATIBLE_CHANNEL_TYPE",
-                getContextKey(thing) + ":" + serviceUuid + ":" + characteristic.getClass().getSimpleName(),
-                true,
-                true,
-                Map.of(
-                    "serviceName", serviceName,
-                    "serviceUuid", serviceUuid,
-                    "characteristicType", characteristic.getClass().getSimpleName(),
-                    "channelId", channelId,
-                    "channelType", channel.getChannelTypeUID().toString()
-                )
-            ));
+            issues.add(createIssue(ValidationResult.Severity.ERROR,
+                    String.format("Channel '%s' type '%s' is not compatible with characteristic '%s' in service '%s'",
+                            channelId, channel.getChannelTypeUID(), characteristic.getClass().getSimpleName(),
+                            serviceName),
+                    "INCOMPATIBLE_CHANNEL_TYPE",
+                    getContextKey(thing) + ":" + serviceUuid + ":" + characteristic.getClass().getSimpleName(), true,
+                    true,
+                    Map.of("serviceName", serviceName, "serviceUuid", serviceUuid, "characteristicType",
+                            characteristic.getClass().getSimpleName(), "channelId", channelId, "channelType",
+                            channel.getChannelTypeUID().toString())));
         }
     }
 
@@ -182,4 +142,4 @@ public class ChannelCharacteristicMappingValidation extends AbstractValidation {
         }
         return super.getContextKey(object);
     }
-} 
+}

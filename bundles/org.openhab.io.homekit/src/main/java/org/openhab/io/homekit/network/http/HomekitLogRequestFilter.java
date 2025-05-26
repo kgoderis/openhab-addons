@@ -17,31 +17,91 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Implements a servlet filter for logging HomeKit HTTP requests.
+ *
+ * This filter intercepts incoming HTTP requests to the HomeKit server and logs
+ * detailed information about each request, including headers, payload, and
+ * request metadata. It is used for debugging and monitoring HomeKit communication.
+ *
+ * The filter works in conjunction with:
+ * - {@link HomekitRequestWrapper} for request wrapping
+ * - {@link HomekitHttpParser} for request parsing
+ * - {@link HomekitHttpGenerator} for response generation
+ *
+ * Key responsibilities:
+ * 1. Intercepting HTTP requests
+ * 2. Logging request details
+ * 3. Wrapping requests for payload inspection
+ * 4. Maintaining request context
+ *
+ * The implementation uses SLF4J for logging and provides detailed hex dumps
+ * of request payloads for debugging purposes.
+ *
+ * @author Karel Goderis - Initial Contribution
+ * @since 1.0
+ */
 public class HomekitLogRequestFilter implements Filter {
 
-    protected static final Logger logger = LoggerFactory.getLogger(HomekitLogRequestFilter.class);
+    private final Logger logger = LoggerFactory.getLogger(HomekitLogRequestFilter.class);
+
+    // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "Homekit HomekitLogRequestFilter: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
-    protected static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
+    protected static final String LOG_REQUEST = LOG_PREFIX + "Request - ";
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
+    /**
+     * Creates a new HomeKit log request filter.
+     *
+     * This constructor initializes the filter with default settings.
+     * The filter is ready to process requests after initialization.
+     */
     public HomekitLogRequestFilter() {
-        // TODO Auto-generated constructor stub
+        logger.debug("{}Initializing HomekitLogRequestFilter", LOG_INIT);
     }
 
+    /**
+     * Initializes the filter with the given configuration.
+     *
+     * This method is called by the servlet container when the filter is being
+     * initialized. It sets up any necessary resources or configuration.
+     *
+     * @param filterConfig The filter configuration
+     * @throws ServletException if initialization fails
+     */
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        // TODO Auto-generated method stub
+        logger.debug("{}Initializing filter with configuration", LOG_INIT);
     }
 
+    /**
+     * Processes the incoming request and logs its details.
+     *
+     * This method intercepts the request, wraps it for payload inspection,
+     * and logs detailed information about the request before passing it
+     * along the filter chain.
+     *
+     * Key implementation details:
+     * - Wraps the request for payload access
+     * - Logs request metadata
+     * - Logs request payload in hex format
+     * - Maintains request context
+     *
+     * @param request The servlet request
+     * @param response The servlet response
+     * @param chain The filter chain
+     * @throws IOException if an I/O error occurs
+     * @throws ServletException if the request cannot be processed
+     */
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         try {
-            logger.debug("{}Entering doFilter for request URI: {}", LOG_STATE,
+            logger.debug("{}Processing request: {}", LOG_REQUEST,
                     ((HttpServletRequest) request).getRequestURI());
             if (logger.isDebugEnabled()) {
                 final HomekitRequestWrapper wrappedRequest = new HomekitRequestWrapper((HttpServletRequest) request);
@@ -52,39 +112,54 @@ public class HomekitLogRequestFilter implements Filter {
             }
         } finally {
             if (logger.isDebugEnabled()) {
-                logger.debug("{}=======Request Processed=====", LOG_STATE);
+                logger.debug("{}Request processing completed", LOG_REQUEST);
             }
         }
     }
 
+    /**
+     * Logs the details of an HTTP request.
+     *
+     * This method logs comprehensive information about the request,
+     * including headers, metadata, and a hex dump of the payload.
+     *
+     * @param request The HTTP request to log
+     */
     private void logPayLoad(HttpServletRequest request) {
         final String userAgent = request.getHeader("User-Agent");
-        logger.debug("{}============Request==========", LOG_STATE);
-        logger.debug("{}From {}:{} ; ua:{}", LOG_STATE, request.getRemoteAddr(), request.getRemotePort(), userAgent);
-        logger.debug("{}HomekitMethod : {}", LOG_STATE, request.getMethod().toUpperCase());
-        logger.debug("{}Content-Type : {}", LOG_STATE, request.getContentType());
-        logger.debug("{}Payload-Size : {}", LOG_STATE, request.getContentLength());
-        logger.debug("{}URI : {}", LOG_STATE, request.getRequestURI());
-        logger.debug("{}Query : {}", LOG_STATE, request.getQueryString());
-        logger.debug("{}Payload :", LOG_STATE);
+        logger.debug("{}Request details:", LOG_REQUEST);
+        logger.debug("{}Source: {}:{} ; User-Agent: {}", LOG_REQUEST, request.getRemoteAddr(),
+                request.getRemotePort(), userAgent);
+        logger.debug("{}Method: {}", LOG_REQUEST, request.getMethod().toUpperCase());
+        logger.debug("{}Content-Type: {}", LOG_REQUEST, request.getContentType());
+        logger.debug("{}Content-Length: {}", LOG_REQUEST, request.getContentLength());
+        logger.debug("{}URI: {}", LOG_REQUEST, request.getRequestURI());
+        logger.debug("{}Query: {}", LOG_REQUEST, request.getQueryString());
+        logger.debug("{}Payload:", LOG_REQUEST);
         try {
             byte[] body = IOUtils.toByteArray(request.getInputStream());
 
             try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
                 HexDump.dump(body, 0, stream, 0);
                 stream.flush();
-                logger.trace("{}{}", LOG_STATE, stream.toString(StandardCharsets.UTF_8.name()));
+                logger.trace("{}{}", LOG_REQUEST, stream.toString(StandardCharsets.UTF_8.name()));
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("{}Failed to read request payload: {}", LOG_ERROR, e.getMessage(), e);
         }
 
-        logger.debug("{}=============================", LOG_STATE);
+        logger.debug("{}Request logging completed", LOG_REQUEST);
     }
 
+    /**
+     * Cleans up resources used by the filter.
+     *
+     * This method is called by the servlet container when the filter is being
+     * destroyed. It performs any necessary cleanup operations.
+     */
     @Override
     public void destroy() {
-        // TODO Auto-generated method stub
+        logger.debug("{}Destroying HomekitLogRequestFilter", LOG_INIT);
     }
 }

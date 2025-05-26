@@ -37,4 +37,4 @@ public interface Validation {
      * @return true if the validation component is enabled, false otherwise
      */
     boolean isEnabled();
-} 
+}

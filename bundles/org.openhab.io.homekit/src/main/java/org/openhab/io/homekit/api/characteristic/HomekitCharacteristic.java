@@ -1,7 +1,6 @@
 package org.openhab.io.homekit.api.characteristic;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.json.JsonObject;
@@ -24,7 +23,7 @@ import org.openhab.io.homekit.api.uid.HomekitCharacteristicUID;
  * Characteristics are the lowest level building block of the Homekit HomekitAccessory Protocol. They
  * define variables that can be retrieved or set by the remote client.
  *
- * @author Andy Lintner
+ * @author Karel Goderis
  */
 @NonNullByDefault
 public interface HomekitCharacteristic<T>

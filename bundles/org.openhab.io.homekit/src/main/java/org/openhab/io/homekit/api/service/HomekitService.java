@@ -14,9 +14,29 @@ import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.uid.HomekitServiceUID;
 
 /**
- * Interface for a HomekitService offered by an HomekitAccessory.
+ * Base interface for all HomeKit services. This interface defines the core functionality that all HomeKit services
+ * must implement. While you can implement this interface directly, most users will prefer to use the more full-featured
+ * interfaces in the services package which include default implementations of common methods.
  *
- * @author Andy Lintner
+ * <p>
+ * A HomeKit service represents a specific functionality or feature of an accessory. Each service:
+ * <ul>
+ *   <li>Has a unique type identifier</li>
+ *   <li>Contains one or more characteristics</li>
+ *   <li>Can be linked to other services</li>
+ *   <li>Can be marked as primary, hidden, or extensible</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * Services are the primary way to interact with accessories via the HomeKit protocol. They define what an accessory
+ * can do and how it can be controlled. For example, a light bulb accessory might have a LightBulb service that
+ * contains characteristics for power state, brightness, and color.
+ * </p>
+ *
+ * @author Karel Goderis - Initial contribution
+ * @version 1.0
+ * @since 1.0
  */
 @NonNullByDefault
 public interface HomekitService extends Identifiable<HomekitServiceUID>, Comparable<HomekitService> {
@@ -46,14 +66,18 @@ public interface HomekitService extends Identifiable<HomekitServiceUID>, Compara
 
     /**
      * Gets the name of this service.
+     * 
+     * <p>
      * Not all Services provide user-visible or user-interactive functionality. Services which provide either
      * user-visible or user-interactive functionality must include the Name characteristic; All other Services must not
      * include this characteristic. This convention is used by iOS clients to determine which Services to display to
      * users.
+     * </p>
      *
+     * <p>
      * Note that the HomekitAccessory Information service is an exception and always includes the Name characteristic
-     * even
-     * though it is not typically user-visible or user-interactive
+     * even though it is not typically user-visible or user-interactive.
+     * </p>
      *
      * @return the name of the service
      */
@@ -68,6 +92,7 @@ public interface HomekitService extends Identifiable<HomekitServiceUID>, Compara
 
     /**
      * Gets the type identifier of this service.
+     * The type identifier is a unique string that identifies the kind of service.
      *
      * @return the type identifier string
      */
@@ -75,6 +100,7 @@ public interface HomekitService extends Identifiable<HomekitServiceUID>, Compara
 
     /**
      * Gets the tag associated with this service.
+     * The tag is a shorter, more user-friendly identifier for the service type.
      *
      * @return the tag string
      */
@@ -91,6 +117,7 @@ public interface HomekitService extends Identifiable<HomekitServiceUID>, Compara
     // Service property methods
     /**
      * Checks if this service is extensible.
+     * An extensible service can have additional characteristics added to it.
      *
      * @return true if the service is extensible
      */
@@ -98,12 +125,13 @@ public interface HomekitService extends Identifiable<HomekitServiceUID>, Compara
 
     /**
      * Checks if this service is hidden from user interfaces.
+     * 
+     * <p>
      * Accessories may specify the Services that are to be hidden from users by a generic Homekit application.
      * Accessories may expose several Services that could be used to configure the HomekitAccessory or to update
-     * firmware on
-     * the HomekitAccessory, these Services should be marked as hidden. When all Characteristics in a HomekitService are
-     * marked hidden
-     * then the HomekitService must also be marked as hidden.
+     * firmware on the HomekitAccessory, these Services should be marked as hidden. When all Characteristics in a
+     * HomekitService are marked hidden then the HomekitService must also be marked as hidden.
+     * </p>
      *
      * @return true if the service is hidden
      */
@@ -111,9 +139,12 @@ public interface HomekitService extends Identifiable<HomekitServiceUID>, Compara
 
     /**
      * Checks if this service is the primary service.
+     * 
+     * <p>
      * The primary service must match the primary function of the accessory and must also match with
      * the accessory category. An accessory must expose only one primary service from its list of available
      * services.
+     * </p>
      *
      * @return true if this is the primary service
      */
@@ -121,17 +152,26 @@ public interface HomekitService extends Identifiable<HomekitServiceUID>, Compara
 
     /**
      * Gets the services linked to this service.
+     * 
+     * <p>
      * Linked Services allows Accessories to specify logical relationship between Services. A HomekitService can link to
-     * one or
-     * more Services. A HomekitService must not link to itself. HomekitService links have context and meaning only to
-     * the first level
-     * of Services that it links to. For example if HomekitService A links to HomekitService B, and HomekitService B
-     * links to HomekitService C, this
-     * does not imply any relation between HomekitService A to HomekitService C. If HomekitService A also relates to
-     * HomekitService C then HomekitService
-     * Aʼs linked services must include both HomekitService B and HomekitService C. Linked services allows applications
-     * to display
-     * logically grouped HomekitAccessory controls in the UI.
+     * one or more Services. A HomekitService must not link to itself. HomekitService links have context and meaning
+     * only to the first level of Services that it links to.
+     * </p>
+     *
+     * <p>
+     * For example:
+     * <ul>
+     *   <li>If Service A links to Service B, and Service B links to Service C, this does not imply any relation
+     *       between Service A and Service C.</li>
+     *   <li>If Service A also relates to Service C then Service A's linked services must include both Service B and
+     *       Service C.</li>
+     * </ul>
+     * </p>
+     *
+     * <p>
+     * Linked services allows applications to display logically grouped HomekitAccessory controls in the UI.
+     * </p>
      *
      * @return the collection of linked services
      */
@@ -140,6 +180,7 @@ public interface HomekitService extends Identifiable<HomekitServiceUID>, Compara
     // Characteristic management methods
     /**
      * Adds a characteristic to this service.
+     * The service must be extensible to add characteristics.
      *
      * @param characteristic the characteristic to add
      */
@@ -151,7 +192,7 @@ public interface HomekitService extends Identifiable<HomekitServiceUID>, Compara
     void addCharacteristics();
 
     /**
-     * Removes a specific characteristic from this service.
+     * Removes a characteristic from this service.
      *
      * @param characteristic the characteristic to remove
      */
@@ -174,11 +215,12 @@ public interface HomekitService extends Identifiable<HomekitServiceUID>, Compara
 
     /**
      * Gets a characteristic by its type.
+     * The type must match exactly.
      *
-     * @param characteristicType the type to look up
-     * @return an Optional containing the characteristic if found
+     * @param type the type of characteristic to find
+     * @return the characteristic if found, null otherwise
      */
-    Optional<HomekitCharacteristic<?>> getCharacteristic(String characteristicType);
+    Optional<HomekitCharacteristic<?>> getCharacteristic(String type);
 
     /**
      * Gets a characteristic by its class.

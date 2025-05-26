@@ -5,9 +5,9 @@ import java.util.Map;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import org.openhab.core.types.State;
 
 @NonNullByDefault
 public abstract class HomekitTLV8Characteristic extends AbstractHomekitCharacteristic<Map<Integer, Object>> {
@@ -51,8 +51,6 @@ public abstract class HomekitTLV8Characteristic extends AbstractHomekitCharacter
 
     @Override
     public Map<Integer, Object> toValue(State state, Map<String, Object> conversionMap) {
-        throw new UnsupportedOperationException(
-                "State to TLV8 conversion not implemented");
+        throw new UnsupportedOperationException("State to TLV8 conversion not implemented");
     }
-    
 }

@@ -26,15 +26,16 @@ import org.openhab.core.thing.binding.BaseThingHandlerFactory;
 import org.openhab.core.thing.binding.ThingHandler;
 import org.openhab.core.thing.binding.ThingHandlerFactory;
 import org.openhab.core.thing.type.ThingType;
+import org.openhab.io.homekit.HomekitBindingConstants;
 import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.factory.HomekitServiceFactory;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry;
 import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import org.openhab.io.homekit.network.discovery.HomekitBindingConstants;
 import org.openhab.io.homekit.provider.HomekitChannelTypeProvider;
 import org.openhab.io.homekit.provider.HomekitThingTypeProvider;
+import org.openhab.io.homekit.provider.HomekitChannelGroupTypeProvider;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
@@ -66,6 +67,7 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
     protected final HomekitEventManager eventManager;
     protected final HomekitServiceFactory serviceFactory;
     protected final HomekitCharacteristicFactory characteristicFactory;
+    protected final HomekitChannelGroupTypeProvider channelGroupTypeProvider;
 
     @Activate
     public HomekitHandlerFactory(ComponentContext componentContext,
@@ -74,7 +76,8 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
             @Reference HomekitThingTypeProvider homekitThingTypeProvider,
             @Reference HomekitChannelTypeProvider homekitChannelTypeProvider,
             @Reference HomekitEventManager eventManager, @Reference HomekitServiceFactory serviceFactory,
-            @Reference HomekitCharacteristicFactory characteristicFactory) {
+            @Reference HomekitCharacteristicFactory characteristicFactory,
+            @Reference HomekitChannelGroupTypeProvider channelGroupTypeProvider) {
         super.activate(componentContext);
         this.bundleContext = componentContext.getBundleContext();
         this.accessoryRegistry = accessoryRegistry;
@@ -85,6 +88,7 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
         this.eventManager = eventManager;
         this.serviceFactory = serviceFactory;
         this.characteristicFactory = characteristicFactory;
+        this.channelGroupTypeProvider = channelGroupTypeProvider;
         SUPPORTED_THING_TYPES = Collections.unmodifiableSet(homekitThingTypeProvider.getThingTypes(null).stream()
                 .map(ThingType::getUID).collect(Collectors.toSet()));
     }

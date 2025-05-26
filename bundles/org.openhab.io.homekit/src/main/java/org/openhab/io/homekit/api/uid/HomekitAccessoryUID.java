@@ -29,4 +29,4 @@ public interface HomekitAccessoryUID extends Identifiable<HomekitAccessoryUID> {
      * @return the pairing ID
      */
     String getPairingId();
-} 
+}

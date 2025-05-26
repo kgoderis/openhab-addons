@@ -1,153 +1,287 @@
-// package org.openhab.io.homekit.provider;
+package org.openhab.io.homekit.provider;
 
-// import java.util.Collection;
-// import java.util.List;
-// import java.util.Locale;
-// import java.util.Map;
-// import java.util.Set;
-// import java.util.concurrent.ConcurrentHashMap;
-// import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
-// import org.eclipse.jdt.annotation.NonNullByDefault;
-// import org.eclipse.jdt.annotation.Nullable;
-// import org.openhab.core.storage.StorageService;
-// import org.openhab.core.thing.binding.AbstractStorageBasedTypeProvider;
-// import org.openhab.core.thing.type.ChannelDefinition;
-// import org.openhab.core.thing.type.ChannelDefinitionBuilder;
-// import org.openhab.core.thing.type.ChannelGroupType;
-// import org.openhab.core.thing.type.ChannelGroupTypeBuilder;
-// import org.openhab.core.thing.type.ChannelGroupTypeProvider;
-// import org.openhab.core.thing.type.ChannelGroupTypeUID;
-// import org.openhab.core.thing.type.ChannelTypeUID;
-// import org.openhab.io.homekit.api.factory.HomekitFactory;
-// import org.osgi.service.component.annotations.Activate;
-// import org.osgi.service.component.annotations.Component;
-// import org.osgi.service.component.annotations.Reference;
-// import org.osgi.service.component.annotations.ReferenceCardinality;
-// import org.osgi.service.component.annotations.ReferencePolicy;
-// import org.slf4j.Logger;
-// import org.slf4j.LoggerFactory;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.core.storage.StorageService;
+import org.openhab.core.thing.binding.AbstractStorageBasedTypeProvider;
+import org.openhab.core.thing.type.ChannelDefinition;
+import org.openhab.core.thing.type.ChannelDefinitionBuilder;
+import org.openhab.core.thing.type.ChannelGroupType;
+import org.openhab.core.thing.type.ChannelGroupTypeBuilder;
+import org.openhab.core.thing.type.ChannelGroupTypeProvider;
+import org.openhab.core.thing.type.ChannelGroupTypeUID;
+import org.openhab.core.thing.type.ChannelTypeUID;
+import org.openhab.io.homekit.HomekitBindingConstants;
+import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
+import org.openhab.io.homekit.api.factory.HomekitServiceFactory;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Modified;
+import org.osgi.service.component.annotations.Reference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-// /**
-// * Provides ChannelGroupTypes based on registered HomekitFactory instances.
-// * Each service type registered with a HomekitFactory is converted to a ChannelGroupType.
-// *
-// * @author Karel Goderis - Initial contribution
-// */
-// @NonNullByDefault
-// @Component(service = { ChannelGroupTypeProvider.class })
-// public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypeProvider {
-// protected static final String LOG_PREFIX = "Homekit ChannelGroupTypeProvider: ";
-// protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
-// protected static final String LOG_STATE = LOG_PREFIX + "State - ";
-// protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
-// protected static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
-// protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
-// protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
-// private final Logger logger = LoggerFactory.getLogger(HomekitChannelGroupTypeProvider.class);
-// private final Map<String, HomekitFactory> homekitFactories = new ConcurrentHashMap<>();
+/**
+ * Provides ChannelGroupTypes based on registered HomekitFactory instances.
+ * Each service type registered with a HomekitFactory is converted to a ChannelGroupType.
+ * The provider supports dynamic updates and maintains a cache of channel group types.
+ *
+ * @author Karel Goderis - Initial contribution
+ * @version 1.0
+ * @since 1.0
+ */
+@NonNullByDefault
+@Component(service = { ChannelGroupTypeProvider.class })
+public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypeProvider {
+    // ========== Log Message Prefixes ==========
+    protected static final String LOG_PREFIX = "Homekit ChannelGroupTypeProvider: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+    protected static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
 
-// @Activate
-// public HomekitChannelGroupTypeProvider(@Reference StorageService storageService) {
-// super(storageService);
-// }
+    private final Logger logger = LoggerFactory.getLogger(HomekitChannelGroupTypeProvider.class);
+    private final HomekitServiceFactory serviceFactory;
+    private final HomekitCharacteristicFactory characteristicFactory;
+    private final Map<ChannelGroupTypeUID, ChannelGroupType> channelGroupTypeCache = new ConcurrentHashMap<>();
 
-// @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
-// protected void addHomekitFactory(HomekitFactory homekitFactory) {
-// // Add all supported service types from this factory
-// Set<String> serviceTypes = homekitFactory.getSupportedServiceTypes();
-// for (String serviceType : serviceTypes) {
-// homekitFactories.put(serviceType, homekitFactory);
+    /**
+     * Creates a new HomekitChannelGroupTypeProvider instance.
+     * Initializes the provider with required dependencies and starts the channel group type initialization.
+     *
+     * @param storageService The storage service for persisting channel group types
+     * @param serviceFactory The factory for creating HomeKit services
+     * @param characteristicFactory The factory for creating HomeKit characteristics
+     * @throws IllegalArgumentException if any of the required dependencies are null
+     */
+    @Activate
+    public HomekitChannelGroupTypeProvider(@Reference StorageService storageService,
+            @Reference HomekitServiceFactory serviceFactory,
+            @Reference HomekitCharacteristicFactory characteristicFactory) {
+        super(storageService);
+        this.serviceFactory = serviceFactory;
+        this.characteristicFactory = characteristicFactory;
+        logger.debug("{}Initializing HomekitChannelGroupTypeProvider", LOG_INIT);
+        initializeChannelGroupTypes();
+    }
 
-// // Create and store channel group type for this service
-// createChannelGroupTypeForService(serviceType, homekitFactory);
-// }
-// }
+    /**
+     * Deactivates the provider and cleans up resources.
+     * Clears the channel group type cache.
+     * 
+     * @since 1.0
+     */
+    @Deactivate
+    protected void deactivate() {
+        logger.debug("{}Deactivating HomekitChannelGroupTypeProvider", LOG_STATE);
+        channelGroupTypeCache.clear();
+    }
 
-// protected void removeHomekitFactory(HomekitFactory homekitFactory) {
-// // Remove all channel group types from this factory
-// Set<String> serviceTypes = homekitFactory.getSupportedServiceTypes();
-// for (String serviceType : serviceTypes) {
-// homekitFactories.remove(serviceType);
+    /**
+     * Handles configuration changes by refreshing channel group types.
+     * This method is called by the OSGi framework when the component's configuration is modified.
+     * 
+     * @since 1.0
+     */
+    @Modified
+    protected void modified() {
+        logger.debug("{}Configuration modified, refreshing channel group types", LOG_CONFIG);
+        refreshChannelGroupTypes();
+    }
 
-// // Remove the channel group type
-// ChannelGroupTypeUID channelGroupTypeUID = getChannelGroupTypeUID(serviceType);
-// if (channelGroupTypeUID != null) {
-// removeChannelGroupType(channelGroupTypeUID);
-// }
-// }
-// }
+    /**
+     * Initializes all channel group types based on available services.
+     * Scans for supported service types and creates corresponding channel group types.
+     * 
+     * @throws IllegalStateException if initialization fails
+     * @since 1.0
+     */
+    private void initializeChannelGroupTypes() {
+        logger.debug("{}Initializing channel group types", LOG_INIT);
+        try {
+            Set<String> serviceTypes = serviceFactory.getSupportedServiceTypes();
+            logger.trace("{}Found {} supported service types", LOG_TRACE, serviceTypes.size());
+            
+            for (String serviceType : serviceTypes) {
+                logger.trace("{}Processing service type: {}", LOG_TRACE, serviceType);
+                createChannelGroupTypeForService(serviceType);
+            }
+            logger.info("{}Successfully initialized {} channel group types", LOG_INIT, channelGroupTypeCache.size());
+        } catch (Exception e) {
+            logger.error("{}Failed to initialize channel group types: {}", LOG_ERROR, e.getMessage(), e);
+        }
+    }
 
-// private void createChannelGroupTypeForService(String serviceType, HomekitFactory homekitFactory) {
-// // Create a unique ID for the channel group type
-// ChannelGroupTypeUID channelGroupTypeUID = getChannelGroupTypeUID(serviceType);
-// if (channelGroupTypeUID == null) {
-// logger.warn("{}Could not create ChannelGroupTypeUID for service type: {}", LOG_WARN, serviceType);
-// return;
-// }
+    /**
+     * Refreshes all channel group types.
+     * This is called when the configuration changes or when services are updated.
+     * Clears the existing cache and reinitializes all channel group types.
+     * 
+     * @since 1.0
+     */
+    public void refreshChannelGroupTypes() {
+        logger.debug("{}Refreshing channel group types", LOG_STATE);
+        channelGroupTypeCache.clear();
+        initializeChannelGroupTypes();
+    }
 
-// // Get the service class to determine the service name
-// Class<?> serviceClass = homekitFactory.getService(serviceType);
-// String serviceName = serviceClass != null ? serviceClass.getSimpleName() : serviceType;
+    /**
+     * Creates a channel group type for a specific service.
+     * 
+     * @param serviceType The service type to create a channel group type for
+     * @throws IllegalArgumentException if the service type is invalid or not supported
+     * @throws IllegalStateException if channel group type creation fails
+     * @since 1.0
+     */
+    private void createChannelGroupTypeForService(String serviceType) {
+        logger.trace("{}Creating channel group type for service: {}", LOG_TRACE, serviceType);
+        try {
+            String serviceTag = serviceFactory.getTagFromServiceType(serviceType);
+            if (serviceTag == null || serviceTag.isEmpty()) {
+                logger.warn("{}Invalid service tag for service type: {}", LOG_WARN, serviceType);
+                return;
+            }
 
-// // Create channel definitions for each characteristic type supported by this service
-// List<ChannelDefinition> channelDefinitions = createChannelDefinitions(serviceType, homekitFactory);
+            ChannelGroupTypeUID channelGroupTypeUID = new ChannelGroupTypeUID(HomekitBindingConstants.BINDING_ID, 
+                "service-" + serviceTag);
+            logger.trace("{}Created channel group type UID: {}", LOG_TRACE, channelGroupTypeUID);
 
-// // Create the channel group type
-// ChannelGroupType channelGroupType = ChannelGroupTypeBuilder.instance(channelGroupTypeUID, serviceName)
-// .withDescription("Homekit " + serviceName + " HomekitService")
-// .withChannelDefinitions(channelDefinitions).build();
+            // Get mandatory and optional characteristics for this service
+            Map<String, Set<String>> characteristicTypes = serviceFactory.getCharacteristicTypes(serviceType);
+            List<ChannelDefinition> channelDefinitions = new ArrayList<>();
 
-// // Store the channel group type
-// putChannelGroupType(channelGroupType);
-// logger.debug("{}Created ChannelGroupType {} for Homekit service type {}", LOG_CONFIG, channelGroupTypeUID,
-// serviceType);
-// }
+            // Add mandatory characteristics
+            for (String characteristicType : characteristicTypes.get("mandatory")) {
+                logger.trace("{}Processing mandatory characteristic: {}", LOG_TRACE, characteristicType);
+                String characteristicTag = characteristicFactory.getTagFromCharacteristicType(characteristicType);
+                if (characteristicTag == null || characteristicTag.isEmpty()) {
+                    logger.warn("{}Invalid characteristic tag for type: {}", LOG_WARN, characteristicType);
+                    continue;
+                }
 
-// private List<ChannelDefinition> createChannelDefinitions(String serviceType, HomekitFactory homekitFactory) {
-// // Get all characteristic types supported by this service
-// Set<String> characteristicTypes = homekitFactory.getSupportedCharacteristicTypes();
+                ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID, 
+                    characteristicType);
+                
+                channelDefinitions.add(new ChannelDefinitionBuilder(characteristicTag, channelTypeUID)
+                    .withLabel(characteristicTag)
+                    .withDescription("HomeKit " + characteristicTag + " Characteristic (Mandatory)")
+                    .build());
+                logger.trace("{}Added mandatory channel definition for: {}", LOG_TRACE, characteristicTag);
+            }
 
-// // Filter to only include characteristics that are relevant to this service
-// // This is a simplification - in a real implementation, you would need to determine
-// // which characteristics belong to which service
-// return characteristicTypes.stream().filter(type -> {
-// // Check if this characteristic type is associated with the service
-// // This is a simplification - in a real implementation, you would need to
-// // determine the relationship between services and characteristics
-// return homekitFactory.getService(type) != null
-// && homekitFactory.getService(type).getSimpleName().equals(serviceType);
-// }).map(type -> {
-// // Get the channel type UID for this characteristic
-// ChannelTypeUID channelTypeUID = homekitFactory.getChannelTypeUID(type);
-// if (channelTypeUID == null) {
-// logger.warn("{}No ChannelTypeUID found for characteristic type: {}", LOG_WARN, type);
-// return null;
-// }
+            // Add optional characteristics
+            for (String characteristicType : characteristicTypes.get("optional")) {
+                logger.trace("{}Processing optional characteristic: {}", LOG_TRACE, characteristicType);
+                String characteristicTag = characteristicFactory.getTagFromCharacteristicType(characteristicType);
+                if (characteristicTag == null || characteristicTag.isEmpty()) {
+                    logger.warn("{}Invalid characteristic tag for type: {}", LOG_WARN, characteristicType);
+                    continue;
+                }
 
-// // Create a channel definition
-// return new ChannelDefinitionBuilder(type, channelTypeUID).withLabel(type)
-// .withDescription("Homekit " + type + " HomekitCharacteristic").build();
-// }).filter(def -> def != null).collect(Collectors.toList());
-// }
+                ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID, 
+                    characteristicType);
+                
+                channelDefinitions.add(new ChannelDefinitionBuilder(characteristicTag, channelTypeUID)
+                    .withLabel(characteristicTag)
+                    .withDescription("HomeKit " + characteristicTag + " Characteristic (Optional)")
+                    .build());
+                logger.trace("{}Added optional channel definition for: {}", LOG_TRACE, characteristicTag);
+            }
 
-// public ChannelGroupTypeUID getChannelGroupTypeUID(String serviceType) {
-// // Create a unique ID for the channel group type based on the service type
-// // Format: homekit:service:serviceType
-// String serviceTypeId = serviceType.replaceAll("^0*([0-9a-fA-F]+)-0000-1000-8000-0026BB765291$", "$1");
-// return new ChannelGroupTypeUID("homekit", "service-" + serviceTypeId);
-// }
+            if (channelDefinitions.isEmpty()) {
+                logger.warn("{}No channel definitions found for service type: {}", LOG_WARN, serviceType);
+                return;
+            }
 
-// @Override
-// public Collection<ChannelGroupType> getChannelGroupTypes(@Nullable Locale locale) {
-// // Return all stored channel group types
-// return super.getChannelGroupTypes(locale);
-// }
+            ChannelGroupType channelGroupType = ChannelGroupTypeBuilder.instance(channelGroupTypeUID, serviceTag)
+                .withDescription("HomeKit " + serviceTag + " Service")
+                .withChannelDefinitions(channelDefinitions)
+                .build();
 
-// @Override
-// public @Nullable ChannelGroupType getChannelGroupType(ChannelGroupTypeUID channelGroupTypeUID,
-// @Nullable Locale locale) {
-// // Return the specific channel group type if it exists
-// return super.getChannelGroupType(channelGroupTypeUID, locale);
-// }
-// }
+            // Store in both the cache and the storage
+            channelGroupTypeCache.put(channelGroupTypeUID, channelGroupType);
+            putChannelGroupType(channelGroupType);
+
+            logger.debug("{}Created channel group type for service {} with {} channels", LOG_STATE, serviceType, 
+                channelDefinitions.size());
+        } catch (Exception e) {
+            logger.error("{}Failed to create channel group type for service {}: {}", LOG_ERROR, serviceType, 
+                e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Gets a channel group type by its UID.
+     * First checks the cache, then falls back to storage.
+     * 
+     * @param channelGroupTypeUID The UID of the channel group type to retrieve
+     * @param locale The locale for localization, may be null
+     * @return The channel group type, or null if not found
+     * @throws IllegalArgumentException if the channelGroupTypeUID is null
+     * @since 1.0
+     */
+    @Override
+    public @Nullable ChannelGroupType getChannelGroupType(ChannelGroupTypeUID channelGroupTypeUID, 
+            @Nullable Locale locale) {
+        logger.trace("{}Getting channel group type for UID: {}", LOG_TRACE, channelGroupTypeUID);
+        
+        // First check the cache
+        ChannelGroupType cachedType = channelGroupTypeCache.get(channelGroupTypeUID);
+        if (cachedType != null) {
+            logger.trace("{}Found channel group type in cache", LOG_TRACE);
+            return cachedType;
+        }
+
+        // If not in cache, try to get from storage
+        ChannelGroupType storedType = super.getChannelGroupType(channelGroupTypeUID, locale);
+        if (storedType != null) {
+            // Add to cache for future lookups
+            channelGroupTypeCache.put(channelGroupTypeUID, storedType);
+            logger.trace("{}Found channel group type in storage and added to cache", LOG_TRACE);
+        } else {
+            logger.trace("{}Channel group type not found in cache or storage", LOG_TRACE);
+        }
+        return storedType;
+    }
+
+    /**
+     * Gets all channel group types.
+     * Returns a combination of cached and stored types.
+     * 
+     * @param locale The locale for localization, may be null
+     * @return An unmodifiable collection of all channel group types
+     * @since 1.0
+     */
+    @Override
+    public Collection<ChannelGroupType> getChannelGroupTypes(@Nullable Locale locale) {
+        logger.trace("{}Getting all channel group types", LOG_TRACE);
+        
+        // Get all stored types
+        Collection<ChannelGroupType> storedTypes = super.getChannelGroupTypes(locale);
+        
+        // Add any cached types that aren't in storage
+        for (ChannelGroupType cachedType : channelGroupTypeCache.values()) {
+            if (!storedTypes.contains(cachedType)) {
+                storedTypes.add(cachedType);
+                logger.trace("{}Added cached type to collection: {}", LOG_TRACE, cachedType.getUID());
+            }
+        }
+        
+        logger.debug("{}Returning {} channel group types", LOG_STATE, storedTypes.size());
+        return storedTypes;
+    }
+}

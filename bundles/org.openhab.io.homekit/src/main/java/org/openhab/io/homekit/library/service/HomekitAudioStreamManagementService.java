@@ -10,52 +10,115 @@ import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.library.characteristic.HomekitSelectedAudioStreamConfigurationCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitSupportedAudioStreamConfigurationCharacteristic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Service that represents audio stream management in HomeKit.
- * This service provides control over audio stream configurations and settings.
+ * HomeKit Audio Stream Management Service.
+ * <p>
+ * This service provides control over audio stream configurations and settings in HomeKit accessories.
+ * It manages audio stream parameters, quality settings, and configuration options for audio-enabled devices.
+ * </p>
+ *
+ * <ul>
+ *   <li>Audio stream configuration management</li>
+ *   <li>Stream quality and parameter control</li>
+ *   <li>Support for multiple audio configurations</li>
+ * </ul>
+ *
+ * <p>
+ * Required characteristics:
+ * <ul>
+ *   <li>SelectedAudioStreamConfiguration - Current audio stream settings</li>
+ *   <li>SupportedAudioStreamConfiguration - Available audio stream options</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * For more information, see the
+ * <a href="https://developer.apple.com/documentation/HomeKit">HomeKit Accessory Protocol Specification</a>.
+ * </p>
  *
  * @author Karel Goderis
- * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ * @version 1.0
+ * @since 1.0
  */
 @HomekitServiceType(type = "00000127-0000-1000-8000-0026BB765291", name = "Audio Stream Management", tag = "audioStreamManagement")
 @NonNullByDefault
 public class HomekitAudioStreamManagementService extends AbstractHomekitService {
+    // ========== Log Message Prefixes ==========
+    private static final String LOG_PREFIX = "Homekit AudioStreamManagementService: ";
+    private static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    private static final String LOG_STATE = LOG_PREFIX + "State - ";
+    private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    private static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
+    private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+    private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
+
+    private final Logger logger = LoggerFactory.getLogger(HomekitAudioStreamManagementService.class);
 
     /**
-     * Creates a new HomekitAudioStreamManagementService.
+     * Creates a new Audio Stream Management service.
      *
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @since 1.0
      */
     public HomekitAudioStreamManagementService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
         withName("Audio Stream Management").withPrimary(false).withHidden(false);
+        logger.debug("{}Created AudioStreamManagementService for accessory {}", LOG_INIT, accessory.getLabel());
     }
 
     /**
-     * Creates a new HomekitAudioStreamManagementService from a JSON value.
+     * Creates a new Audio Stream Management service from a JSON configuration.
      *
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
      * @param value JSON value containing service configuration
+     * @since 1.0
      */
     public HomekitAudioStreamManagementService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
         super(accessory, eventManager, characteristicFactory, value);
+        logger.debug("{}Created AudioStreamManagementService from JSON for accessory {}", LOG_INIT, accessory.getLabel());
     }
 
+    /**
+     * Adds the required characteristics for this service.
+     * <p>
+     * Required characteristics:
+     * <ul>
+     *   <li>SelectedAudioStreamConfiguration - Current audio stream settings</li>
+     *   <li>SupportedAudioStreamConfiguration - Available audio stream options</li>
+     * </ul>
+     * </p>
+     * @since 1.0
+     */
     @Override
     public void addCharacteristics() {
+        logger.trace("{}Adding required characteristics to AudioStreamManagementService for accessory {}", LOG_TRACE, getAccessory().getLabel());
+        
         addCharacteristic(new HomekitSelectedAudioStreamConfigurationCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        logger.debug("{}Added SelectedAudioStreamConfigurationCharacteristic to AudioStreamManagementService", LOG_STATE);
+        
         addCharacteristic(new HomekitSupportedAudioStreamConfigurationCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        logger.debug("{}Added SupportedAudioStreamConfigurationCharacteristic to AudioStreamManagementService", LOG_STATE);
     }
 
+    /**
+     * Indicates that this service is not extensible.
+     * Audio stream management service has a fixed set of characteristics.
+     *
+     * @return false, as this service is not extensible
+     * @since 1.0
+     */
     @Override
     public boolean isExtensible() {
         return false;

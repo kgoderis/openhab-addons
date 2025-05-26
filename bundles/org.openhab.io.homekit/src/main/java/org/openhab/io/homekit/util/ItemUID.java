@@ -41,7 +41,6 @@ public class ItemUID extends UID {
         this.itemName = itemName;
     }
 
-
     /**
      * Returns the name of the item.
      *
@@ -81,4 +80,4 @@ public class ItemUID extends UID {
     public String getPrefix() {
         return ITEM_PREFIX;
     }
-} 
+}

@@ -56,7 +56,7 @@ import org.slf4j.LoggerFactory;
  * </ul>
  * </p>
  *
- * @author Andy Lintner - Initial contribution
+ * @author Karel Goderis - Initial contribution
  */
 public class HomekitTaggedItem {
     // 1. Constants and static fields

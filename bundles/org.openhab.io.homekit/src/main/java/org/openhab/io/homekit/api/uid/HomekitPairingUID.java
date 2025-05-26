@@ -29,4 +29,4 @@ public interface HomekitPairingUID extends Identifiable<HomekitPairingUID> {
      * @return The source pairing ID
      */
     byte[] getSourcePairingId();
-} 
+}

@@ -27,6 +27,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.event.HomekitEvent;
@@ -38,7 +39,6 @@ import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicUp
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.protocol.status.HomekitStatusCode;
 import org.openhab.io.homekit.util.HomekitDebouncer;
-import org.openhab.core.thing.UID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -189,11 +189,11 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
                             if (characteristicWrite.containsKey("value")) {
                                 try {
                                     if (characteristic instanceof AbstractHomekitCharacteristic<?> genericCharacteristic) {
-                                        HomekitEvent newEvent = new HomekitCharacteristicUpdateEvent((UID)server.getUID(),
-                                                (UID) genericCharacteristic.getUID(), genericCharacteristic, JsonValue.NULL,
-                                                characteristicWrite.get("value"), Collections.emptyMap(),
-                                                new HomekitEventMetadata((UID)server.getUID(), null, (UID)server.getUID(),
-                                                        Collections.emptySet()));
+                                        HomekitEvent newEvent = new HomekitCharacteristicUpdateEvent(
+                                                (UID) server.getUID(), (UID) genericCharacteristic.getUID(),
+                                                genericCharacteristic, JsonValue.NULL, characteristicWrite.get("value"),
+                                                Collections.emptyMap(), new HomekitEventMetadata((UID) server.getUID(),
+                                                        null, (UID) server.getUID(), Collections.emptySet()));
                                         eventManager.publishEvent(newEvent);
                                     }
                                 } catch (Exception e) {

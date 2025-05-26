@@ -7,11 +7,26 @@ import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitReadOnlyStringCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * HomeKit Name Characteristic.
- * This characteristic represents the name of a device.
- * It is a read-only string value that identifies the device in the Home app.
+ * 
+ * <p>
+ * This characteristic represents the display name of a device.
+ * It is a read-only string value that provides a user-friendly name for the accessory.
+ * </p>
+ *
+ * <p>
+ * The name is used to:
+ * <ul>
+ *   <li>Provide a human-readable identifier for the device</li>
+ *   <li>Enable easy device identification in HomeKit apps</li>
+ *   <li>Support device organization and management</li>
+ *   <li>Facilitate user interaction and control</li>
+ * </ul>
+ * </p>
  *
  * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
@@ -20,14 +35,36 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
         "String", "Text" })
 @NonNullByDefault
 public class HomekitNameCharacteristic extends HomekitReadOnlyStringCharacteristic {
+    // ========== Log Message Prefixes ==========
+    private static final String LOG_PREFIX = "Homekit NameCharacteristic: ";
+    private static final String LOG_INIT = LOG_PREFIX + "Init - ";
+
+    private final Logger logger = LoggerFactory.getLogger(HomekitNameCharacteristic.class);
+
+    /**
+     * Creates a new Name characteristic.
+     * 
+     * <p>
+     * This characteristic is read-only and provides the display name of the accessory.
+     * </p>
+     *
+     * @param service The HomeKit service this characteristic belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param instanceId The instance ID for this characteristic
+     */
     public HomekitNameCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager);
         withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(false)
                 .withDescription("Name");
+        logger.debug("{}Created new Name characteristic with instance ID {}", LOG_INIT, instanceId);
     }
 
     /**
      * Creates a new Name characteristic from a JSON value.
+     * 
+     * <p>
+     * This constructor is used when restoring a characteristic from persistent storage.
+     * </p>
      *
      * @param service The HomeKit service this characteristic belongs to
      * @param eventManager The event manager for handling HomeKit events
@@ -35,5 +72,6 @@ public class HomekitNameCharacteristic extends HomekitReadOnlyStringCharacterist
      */
     public HomekitNameCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
+        logger.debug("{}Restored Name characteristic from JSON", LOG_INIT);
     }
 }

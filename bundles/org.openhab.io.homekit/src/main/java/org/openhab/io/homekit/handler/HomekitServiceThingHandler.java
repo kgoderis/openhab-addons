@@ -16,6 +16,7 @@ import org.openhab.core.thing.UID;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.core.thing.type.ChannelType;
 import org.openhab.core.thing.type.ChannelTypeUID;
+import org.openhab.io.homekit.HomekitBindingConstants;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.event.HomekitEventType;
@@ -28,7 +29,6 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.event.model.accessory.HomekitAccessoryEvent;
 import org.openhab.io.homekit.event.model.service.HomekitServiceEvent;
 import org.openhab.io.homekit.exception.HomekitException;
-import org.openhab.io.homekit.network.discovery.HomekitBindingConstants;
 import org.openhab.io.homekit.provider.HomekitChannelTypeProvider;
 import org.openhab.io.homekit.provider.HomekitThingTypeProvider;
 
@@ -270,8 +270,9 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
         }
         setService(currentService);
         serviceAvailable = true;
-        eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED, (UID) currentService.getUID(),
-                (UID) thing.getUID(), event -> onServiceEvent((HomekitServiceEvent) event)));
+        eventSubscriptions
+                .add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED, (UID) currentService.getUID(),
+                        (UID) thing.getUID(), event -> onServiceEvent((HomekitServiceEvent) event)));
     }
 
     /**
@@ -2398,8 +2399,8 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
                 Optional<HomekitService> foundService = accessory.getService(serviceId);
                 foundService.ifPresentOrElse(someService -> {
                     setService(someService);
-                    eventSubscriptions
-                            .add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED, (UID) someService.getUID(),
+                    eventSubscriptions.add(
+                            eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED, (UID) someService.getUID(),
                                     thing.getUID(), someEvent -> onServiceEvent((HomekitServiceEvent) someEvent)));
                     logger.debug("{}Recovered service connection", LOG_INIT);
                 }, () -> {

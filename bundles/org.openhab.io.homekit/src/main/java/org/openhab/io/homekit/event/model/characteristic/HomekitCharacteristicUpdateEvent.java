@@ -18,9 +18,10 @@ import org.openhab.io.homekit.event.core.HomekitEventMetadata;
 @NonNullByDefault
 public class HomekitCharacteristicUpdateEvent extends HomekitCharacteristicEvent {
     private final Map<String, Object> itemConfiguration;
+
     public HomekitCharacteristicUpdateEvent(UID publisherUID, UID subscriberUID,
-            HomekitCharacteristic<?> characteristic, @Nullable JsonValue oldValue, @Nullable JsonValue newValue, Map<String, Object> itemConfiguration,
-            HomekitEventMetadata metadata) {
+            HomekitCharacteristic<?> characteristic, @Nullable JsonValue oldValue, @Nullable JsonValue newValue,
+            Map<String, Object> itemConfiguration, HomekitEventMetadata metadata) {
         super(HomekitEventType.CHARACTERISTIC_CHANGE_VALUE, publisherUID, subscriberUID, characteristic, oldValue,
                 newValue, metadata);
         this.itemConfiguration = itemConfiguration;

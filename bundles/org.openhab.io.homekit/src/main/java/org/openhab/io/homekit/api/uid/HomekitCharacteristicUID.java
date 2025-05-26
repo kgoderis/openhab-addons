@@ -22,4 +22,4 @@ public interface HomekitCharacteristicUID extends Identifiable<HomekitCharacteri
      * @return the characteristic instance ID
      */
     long getInstanceId();
-} 
+}

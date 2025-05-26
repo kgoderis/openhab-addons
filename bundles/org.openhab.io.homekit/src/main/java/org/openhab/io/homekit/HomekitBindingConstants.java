@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.io.homekit.network.discovery;
+package org.openhab.io.homekit;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.ThingTypeUID;
@@ -25,11 +25,6 @@ import org.openhab.core.thing.ThingTypeUID;
 public class HomekitBindingConstants {
 
     public static final String BINDING_ID = "homekit";
-
-    public static final String DEVICE_ID = "id";
-    public static final String CONFIGURATION_NUMBER_SHARP = "c#";
-
-    public static final String CONFIGURATION_URI = "binding:homekit:bridge";
 
     // List of all Thing Type UIDs
     public static final ThingTypeUID THING_TYPE_BRIDGE = new ThingTypeUID(BINDING_ID, "bridge");

@@ -165,7 +165,8 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
 
         HomekitCharacteristicType annotation = characteristicClass.getAnnotation(HomekitCharacteristicType.class);
         if (annotation == null) {
-            throw new IllegalArgumentException("Characteristic type " + characteristicType + " does not have a HomekitCharacteristicType annotation");
+            throw new IllegalArgumentException("Characteristic type " + characteristicType
+                    + " does not have a HomekitCharacteristicType annotation");
         }
 
         return new HashSet<>(Arrays.asList(annotation.acceptedItemTypes()));

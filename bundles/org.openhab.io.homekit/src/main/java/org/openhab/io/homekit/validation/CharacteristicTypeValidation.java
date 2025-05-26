@@ -6,14 +6,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.openhab.core.thing.Thing;
-import org.osgi.service.component.annotations.Component;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
+import org.osgi.service.component.annotations.Component;
 
 /**
  * Performs validation of HomeKit characteristics to ensure they have valid types and are compatible
@@ -33,14 +30,8 @@ public class CharacteristicTypeValidation extends AbstractValidation {
         Object object = context.getTarget();
         if (!(object instanceof Thing)) {
             List<ValidationIssue> issues = new ArrayList<>();
-            issues.add(createIssue(
-                ValidationResult.Severity.ERROR,
-                "Invalid object type: expected Thing",
-                "INVALID_TYPE",
-                getContextKey(object),
-                true,
-                true
-            ));
+            issues.add(createIssue(ValidationResult.Severity.ERROR, "Invalid object type: expected Thing",
+                    "INVALID_TYPE", getContextKey(object), true, true));
             return createResult(issues);
         }
 
@@ -50,14 +41,8 @@ public class CharacteristicTypeValidation extends AbstractValidation {
         // Get all services for this thing
         List<HomekitService> services = getServices(thing);
         if (services == null) {
-            issues.add(createIssue(
-                ValidationResult.Severity.ERROR,
-                "No HomeKit services found for thing",
-                "NO_SERVICES",
-                getContextKey(thing),
-                true,
-                true
-            ));
+            issues.add(createIssue(ValidationResult.Severity.ERROR, "No HomeKit services found for thing",
+                    "NO_SERVICES", getContextKey(thing), true, true));
             return createResult(issues);
         }
 
@@ -72,14 +57,8 @@ public class CharacteristicTypeValidation extends AbstractValidation {
     private void validateServiceCharacteristics(HomekitService service, Thing thing, List<ValidationIssue> issues) {
         HomekitServiceType serviceType = service.getClass().getAnnotation(HomekitServiceType.class);
         if (serviceType == null) {
-            issues.add(createIssue(
-                ValidationResult.Severity.ERROR,
-                "Service type annotation not found",
-                "MISSING_SERVICE_TYPE",
-                getContextKey(thing),
-                true,
-                true
-            ));
+            issues.add(createIssue(ValidationResult.Severity.ERROR, "Service type annotation not found",
+                    "MISSING_SERVICE_TYPE", getContextKey(thing), true, true));
             return;
         }
 
@@ -89,14 +68,9 @@ public class CharacteristicTypeValidation extends AbstractValidation {
         // Get all characteristics for this service
         Set<HomekitCharacteristic<?>> characteristics = service.getCharacteristics();
         if (characteristics == null) {
-            issues.add(createIssue(
-                ValidationResult.Severity.ERROR,
-                String.format("No characteristics found for service '%s'", serviceName),
-                "NO_CHARACTERISTICS",
-                getContextKey(thing) + ":" + serviceUuid,
-                true,
-                true
-            ));
+            issues.add(createIssue(ValidationResult.Severity.ERROR,
+                    String.format("No characteristics found for service '%s'", serviceName), "NO_CHARACTERISTICS",
+                    getContextKey(thing) + ":" + serviceUuid, true, true));
             return;
         }
 
@@ -106,19 +80,17 @@ public class CharacteristicTypeValidation extends AbstractValidation {
         }
     }
 
-    private void validateCharacteristicType(HomekitCharacteristic<?> characteristic, HomekitService service, 
+    private void validateCharacteristicType(HomekitCharacteristic<?> characteristic, HomekitService service,
             Thing thing, List<ValidationIssue> issues) {
-        HomekitCharacteristicType characteristicType = characteristic.getClass().getAnnotation(HomekitCharacteristicType.class);
+        HomekitCharacteristicType characteristicType = characteristic.getClass()
+                .getAnnotation(HomekitCharacteristicType.class);
         if (characteristicType == null) {
-            issues.add(createIssue(
-                ValidationResult.Severity.ERROR,
-                String.format("Characteristic type annotation not found for characteristic '%s'", 
-                    characteristic.getClass().getSimpleName()),
-                "MISSING_CHARACTERISTIC_TYPE",
-                getContextKey(thing) + ":" + service.getType() + ":" + characteristic.getClass().getSimpleName(),
-                true,
-                true
-            ));
+            issues.add(createIssue(ValidationResult.Severity.ERROR,
+                    String.format("Characteristic type annotation not found for characteristic '%s'",
+                            characteristic.getClass().getSimpleName()),
+                    "MISSING_CHARACTERISTIC_TYPE",
+                    getContextKey(thing) + ":" + service.getType() + ":" + characteristic.getClass().getSimpleName(),
+                    true, true));
             return;
         }
 
@@ -127,60 +99,36 @@ public class CharacteristicTypeValidation extends AbstractValidation {
 
         // Validate characteristic UUID format
         if (!isValidCharacteristicUuid(characteristicUuid)) {
-            issues.add(createIssue(
-                ValidationResult.Severity.ERROR,
-                String.format("Invalid characteristic UUID format for characteristic '%s': %s", 
-                    characteristicName, characteristicUuid),
-                "INVALID_CHARACTERISTIC_UUID",
-                getContextKey(thing) + ":" + service.getType() + ":" + characteristicUuid,
-                true,
-                true,
-                Map.of(
-                    "serviceName", service.getName(),
-                    "serviceUuid", service.getType(),
-                    "characteristicName", characteristicName,
-                    "characteristicUuid", characteristicUuid
-                )
-            ));
+            issues.add(createIssue(ValidationResult.Severity.ERROR,
+                    String.format("Invalid characteristic UUID format for characteristic '%s': %s", characteristicName,
+                            characteristicUuid),
+                    "INVALID_CHARACTERISTIC_UUID",
+                    getContextKey(thing) + ":" + service.getType() + ":" + characteristicUuid, true, true,
+                    Map.of("serviceName", service.getName(), "serviceUuid", service.getType(), "characteristicName",
+                            characteristicName, "characteristicUuid", characteristicUuid)));
             return;
         }
 
         // Check if characteristic type is compatible with service type
         if (!isCharacteristicTypeCompatible(characteristicType, service)) {
-            issues.add(createIssue(
-                ValidationResult.Severity.ERROR,
-                String.format("Characteristic type '%s' is not compatible with service type '%s'", 
-                    characteristicName, service.getName()),
-                "INCOMPATIBLE_CHARACTERISTIC_TYPE",
-                getContextKey(thing) + ":" + service.getType() + ":" + characteristicUuid,
-                true,
-                true,
-                Map.of(
-                    "serviceName", service.getName(),
-                    "serviceUuid", service.getType(),
-                    "characteristicName", characteristicName,
-                    "characteristicUuid", characteristicUuid
-                )
-            ));
+            issues.add(createIssue(ValidationResult.Severity.ERROR,
+                    String.format("Characteristic type '%s' is not compatible with service type '%s'",
+                            characteristicName, service.getName()),
+                    "INCOMPATIBLE_CHARACTERISTIC_TYPE",
+                    getContextKey(thing) + ":" + service.getType() + ":" + characteristicUuid, true, true,
+                    Map.of("serviceName", service.getName(), "serviceUuid", service.getType(), "characteristicName",
+                            characteristicName, "characteristicUuid", characteristicUuid)));
         }
 
         // Check for duplicate characteristic types within the service
         if (hasDuplicateCharacteristicType(characteristic, service)) {
-            issues.add(createIssue(
-                ValidationResult.Severity.ERROR,
-                String.format("Duplicate characteristic type '%s' found in service '%s'", 
-                    characteristicName, service.getName()),
-                "DUPLICATE_CHARACTERISTIC_TYPE",
-                getContextKey(thing) + ":" + service.getType() + ":" + characteristicUuid,
-                true,
-                true,
-                Map.of(
-                    "serviceName", service.getName(),
-                    "serviceUuid", service.getType(),
-                    "characteristicName", characteristicName,
-                    "characteristicUuid", characteristicUuid
-                )
-            ));
+            issues.add(createIssue(ValidationResult.Severity.ERROR,
+                    String.format("Duplicate characteristic type '%s' found in service '%s'", characteristicName,
+                            service.getName()),
+                    "DUPLICATE_CHARACTERISTIC_TYPE",
+                    getContextKey(thing) + ":" + service.getType() + ":" + characteristicUuid, true, true,
+                    Map.of("serviceName", service.getName(), "serviceUuid", service.getType(), "characteristicName",
+                            characteristicName, "characteristicUuid", characteristicUuid)));
         }
     }
 
@@ -190,14 +138,16 @@ public class CharacteristicTypeValidation extends AbstractValidation {
         return uuid != null && uuid.matches("^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$");
     }
 
-    private boolean isCharacteristicTypeCompatible(HomekitCharacteristicType characteristicType, HomekitService service) {
+    private boolean isCharacteristicTypeCompatible(HomekitCharacteristicType characteristicType,
+            HomekitService service) {
         // TODO: Implement characteristic type compatibility check
         // This will depend on the mapping rules between service types and characteristic types
         return true;
     }
 
     private boolean hasDuplicateCharacteristicType(HomekitCharacteristic<?> characteristic, HomekitService service) {
-        HomekitCharacteristicType characteristicType = characteristic.getClass().getAnnotation(HomekitCharacteristicType.class);
+        HomekitCharacteristicType characteristicType = characteristic.getClass()
+                .getAnnotation(HomekitCharacteristicType.class);
         if (characteristicType == null) {
             return false;
         }
@@ -209,7 +159,8 @@ public class CharacteristicTypeValidation extends AbstractValidation {
 
         int count = 0;
         for (HomekitCharacteristic<?> otherCharacteristic : characteristics) {
-            HomekitCharacteristicType otherType = otherCharacteristic.getClass().getAnnotation(HomekitCharacteristicType.class);
+            HomekitCharacteristicType otherType = otherCharacteristic.getClass()
+                    .getAnnotation(HomekitCharacteristicType.class);
             if (otherType != null && otherType.type().equals(characteristicType.type())) {
                 count++;
                 if (count > 1) {
@@ -233,4 +184,4 @@ public class CharacteristicTypeValidation extends AbstractValidation {
         }
         return super.getContextKey(object);
     }
-} 
+}

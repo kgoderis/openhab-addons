@@ -25,12 +25,37 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * HttpGenerator. Builds HTTP Messages.
- * <p>
- * If the system property "org.eclipse.jetty.http.HttpGenerator.STRICT" is set to true,
- * then the generator will strictly pass on the exact strings received from methods and header
- * fields. Otherwise a fast case insensitive string lookup is used that may alter the
- * case and white space of some methods/headers
+ * A specialized HTTP generator for HomeKit communication.
+ *
+ * This class extends Jetty's HttpGenerator to provide specialized HTTP message
+ * generation for HomeKit accessories, including support for custom HTTP versions
+ * and optimized header handling.
+ *
+ * The generator works in conjunction with:
+ * - {@link HomekitHttpParser} for protocol parsing
+ * - {@link HomekitHttpVersion} for version handling
+ * - {@link HomekitHttpConnection} for connection management
+ *
+ * Key responsibilities:
+ * 1. Generating HTTP request and response messages
+ * 2. Managing message state and content
+ * 3. Handling chunked transfer encoding
+ * 4. Supporting persistent connections
+ * 5. Optimizing header generation
+ *
+ * The implementation provides:
+ * - Fast case-insensitive string lookups for methods and headers
+ * - Optimized buffer management for message generation
+ * - Support for chunked transfer encoding
+ * - Proper handling of content length and transfer encoding
+ * - Support for persistent connections
+ *
+ * The generator can be configured to be strict in its output through the
+ * "org.eclipse.jetty.http.HttpGenerator.STRICT" system property, which will
+ * preserve exact case and whitespace of methods and headers.
+ *
+ * @author Karel Goderis - Initial Contribution
+ * @since 1.0
  */
 public class HomekitHttpGenerator extends HttpGenerator {
 
@@ -39,7 +64,7 @@ public class HomekitHttpGenerator extends HttpGenerator {
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
-    protected static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
@@ -75,6 +100,7 @@ public class HomekitHttpGenerator extends HttpGenerator {
     private long _contentPrepared = 0;
     private boolean _noContent = false;
     private Boolean _persistent = null;
+    private boolean _needCRLF = false;
 
     private final int _send;
     private final static int SEND_SERVER = 0x01;
@@ -82,7 +108,111 @@ public class HomekitHttpGenerator extends HttpGenerator {
     private final static Set<String> __assumedContentMethods = new HashSet<>(
             Arrays.asList(new String[] { HttpMethod.POST.asString(), HttpMethod.PUT.asString() }));
 
-    /* ------------------------------------------------------------------------------- */
+    // Common content
+    private static final byte[] LAST_CHUNK = { (byte) '0', (byte) '\015', (byte) '\012', (byte) '\015', (byte) '\012' };
+    private static final byte[] CONTENT_LENGTH_0 = StringUtil.getBytes("Content-Length: 0\015\012");
+    private static final byte[] CONNECTION_KEEP_ALIVE = StringUtil.getBytes("Connection: keep-alive\015\012");
+    private static final byte[] CONNECTION_CLOSE = StringUtil.getBytes("Connection: close\015\012");
+    private static final byte[] HTTP_1_1_SPACE = StringUtil.getBytes(HttpVersion.HTTP_1_1 + " ");
+    private static final byte[] EVENT_1_0_SPACE = StringUtil.getBytes("EVENT/1.0" + " ");
+    private static final byte[] TRANSFER_ENCODING_CHUNKED = StringUtil.getBytes("Transfer-Encoding: chunked\015\012");
+    private static final byte[][] SEND = new byte[][] { new byte[0],
+            StringUtil.getBytes("Server: Jetty(9.x.x)\015\012"),
+            StringUtil.getBytes("X-Powered-By: Jetty(9.x.x)\015\012"),
+            StringUtil.getBytes("Server: Jetty(9.x.x)\015\012X-Powered-By: Jetty(9.x.x)\015\012") };
+
+    // Build cache of response lines for status
+    private static class PreparedResponse {
+        byte[] _reason;
+        @SuppressWarnings("unused")
+        byte[] _schemeCode;
+        @SuppressWarnings("unused")
+        byte[] _responseLine;
+    }
+
+    private static final PreparedResponse[] __preprepared = new PreparedResponse[HttpStatus.MAX_CODE + 1];
+    static {
+        int versionLength = HttpVersion.HTTP_1_1.toString().length();
+
+        for (int i = 0; i < __preprepared.length; i++) {
+            HttpStatus.Code code = HttpStatus.getCode(i);
+            if (code == null) {
+                continue;
+            }
+            String reason = code.getMessage();
+            byte[] line = new byte[versionLength + 5 + reason.length() + 2];
+            HttpVersion.HTTP_1_1.toBuffer().get(line, 0, versionLength);
+            line[versionLength + 0] = ' ';
+            line[versionLength + 1] = (byte) ('0' + i / 100);
+            line[versionLength + 2] = (byte) ('0' + (i % 100) / 10);
+            line[versionLength + 3] = (byte) ('0' + (i % 10));
+            line[versionLength + 4] = ' ';
+            for (int j = 0; j < reason.length(); j++) {
+                line[versionLength + 5 + j] = (byte) reason.charAt(j);
+            }
+            line[versionLength + 5 + reason.length()] = CARRIAGE_RETURN;
+            line[versionLength + 6 + reason.length()] = LINE_FEED;
+
+            __preprepared[i] = new PreparedResponse();
+            __preprepared[i]._schemeCode = Arrays.copyOfRange(line, 0, versionLength + 5);
+            __preprepared[i]._reason = Arrays.copyOfRange(line, versionLength + 5, line.length - 2);
+            __preprepared[i]._responseLine = line;
+        }
+    }
+
+    private static void putSanitisedName(String s, ByteBuffer buffer) {
+        int l = s.length();
+        for (int i = 0; i < l; i++) {
+            char c = s.charAt(i);
+
+            if (c < 0 || c > 0xff || c == '\r' || c == '\n' || c == ':') {
+                buffer.put((byte) '?');
+            } else {
+                buffer.put((byte) (0xff & c));
+            }
+        }
+    }
+
+    private static void putSanitisedValue(String s, ByteBuffer buffer) {
+        int l = s.length();
+        for (int i = 0; i < l; i++) {
+            char c = s.charAt(i);
+
+            if (c < 0 || c > 0xff || c == '\r' || c == '\n') {
+                buffer.put((byte) ' ');
+            } else {
+                buffer.put((byte) (0xff & c));
+            }
+        }
+    }
+
+    private void putContentLength(ByteBuffer header, long contentLength, boolean contentType, MetaData.Request request,
+            MetaData.Response response) {
+        if (contentLength > 0) {
+            header.put(HttpHeader.CONTENT_LENGTH.getBytesColonSpace());
+            BufferUtil.putDecLong(header, contentLength);
+            header.put(CRLF);
+        } else if (!_noContent) {
+            if (contentType || response != null
+                    || (request != null && __assumedContentMethods.contains(request.getMethod()))) {
+                header.put(CONTENT_LENGTH_0);
+            }
+        }
+    }
+
+    /**
+     * Sets the Jetty server version in the HTTP headers.
+     *
+     * This method updates both the Server and X-Powered-By headers with the provided version.
+     * The version string is used to identify the server in HTTP responses.
+     *
+     * Key implementation details:
+     * - Updates both Server and X-Powered-By headers
+     * - Maintains consistent version across all responses
+     * - Uses StringUtil for byte conversion
+     *
+     * @param serverVersion The version string to be used in the headers
+     */
     public static void setJettyVersion(String serverVersion) {
         SEND[SEND_SERVER] = StringUtil.getBytes("Server: " + serverVersion + "\015\012");
         SEND[SEND_XPOWEREDBY] = StringUtil.getBytes("X-Powered-By: " + serverVersion + "\015\012");
@@ -90,21 +220,51 @@ public class HomekitHttpGenerator extends HttpGenerator {
                 .getBytes("Server: " + serverVersion + "\015\012X-Powered-By: " + serverVersion + "\015\012");
     }
 
-    /* ------------------------------------------------------------------------------- */
-    // data
-    private boolean _needCRLF = false;
-
-    /* ------------------------------------------------------------------------------- */
+    /**
+     * Creates a new HomeKit HTTP generator with default settings.
+     *
+     * This constructor initializes a generator with server version and X-Powered-By
+     * headers disabled by default.
+     *
+     * Key implementation details:
+     * - Calls the two-parameter constructor with false values
+     * - Sets up basic HTTP message generation capabilities
+     * - Initializes internal state variables
+     */
     public HomekitHttpGenerator() {
         this(false, false);
     }
 
-    /* ------------------------------------------------------------------------------- */
+    /**
+     * Creates a new HomeKit HTTP generator with specified header settings.
+     *
+     * This constructor allows customization of server identification headers.
+     *
+     * Key implementation details:
+     * - Configures server version header visibility
+     * - Configures X-Powered-By header visibility
+     * - Sets up internal send flags
+     *
+     * @param sendServerVersion Whether to include the Server header
+     * @param sendXPoweredBy Whether to include the X-Powered-By header
+     */
     public HomekitHttpGenerator(boolean sendServerVersion, boolean sendXPoweredBy) {
         _send = (sendServerVersion ? SEND_SERVER : 0) | (sendXPoweredBy ? SEND_XPOWEREDBY : 0);
     }
 
-    /* ------------------------------------------------------------------------------- */
+    /**
+     * Resets the generator to its initial state.
+     *
+     * This method clears all internal state including message state, content tracking,
+     * and persistence settings. It should be called before starting a new message
+     * generation cycle.
+     *
+     * Key implementation details:
+     * - Resets state to START
+     * - Clears content tracking
+     * - Resets persistence settings
+     * - Clears CRLF tracking
+     */
     @Override
     public void reset() {
         _state = State.START;
@@ -115,90 +275,203 @@ public class HomekitHttpGenerator extends HttpGenerator {
         _needCRLF = false;
     }
 
-    /* ------------------------------------------------------------ */
-    @Override
-    @Deprecated
-    public boolean getSendServerVersion() {
-        return (_send & SEND_SERVER) != 0;
-    }
-
-    /* ------------------------------------------------------------ */
-    @Override
-    @Deprecated
-    public void setSendServerVersion(boolean sendServerVersion) {
-        throw new UnsupportedOperationException();
-    }
-
-    /* ------------------------------------------------------------ */
+    /**
+     * Gets the current state of the generator.
+     *
+     * This method returns the current state of message generation, which indicates
+     * the phase of HTTP message construction.
+     *
+     * Key implementation details:
+     * - Returns internal state variable
+     * - Used for tracking message generation progress
+     *
+     * @return The current state of the generator
+     */
     @Override
     public State getState() {
         return _state;
     }
 
-    /* ------------------------------------------------------------ */
+    /**
+     * Checks if the generator is in a specific state.
+     *
+     * This method compares the current state against a provided state value.
+     *
+     * Key implementation details:
+     * - Direct state comparison
+     * - Used for state validation
+     *
+     * @param state The state to check against
+     * @return true if the generator is in the specified state
+     */
     @Override
     public boolean isState(State state) {
         return _state == state;
     }
 
-    /* ------------------------------------------------------------ */
+    /**
+     * Checks if the generator is idle.
+     *
+     * This method determines if the generator is in its initial state and ready
+     * to begin message generation.
+     *
+     * Key implementation details:
+     * - Checks for START state
+     * - Used for readiness verification
+     *
+     * @return true if the generator is idle
+     */
     @Override
     public boolean isIdle() {
         return _state == State.START;
     }
 
-    /* ------------------------------------------------------------ */
+    /**
+     * Checks if the generator has completed message generation.
+     *
+     * This method determines if the current message generation cycle is complete.
+     *
+     * Key implementation details:
+     * - Checks for END state
+     * - Used for completion verification
+     *
+     * @return true if the generator has completed
+     */
     @Override
     public boolean isEnd() {
         return _state == State.END;
     }
 
-    /* ------------------------------------------------------------ */
+    /**
+     * Checks if the generator has committed to sending a message.
+     *
+     * This method determines if the generator has progressed beyond the initial
+     * state and is committed to sending the current message.
+     *
+     * Key implementation details:
+     * - Checks state ordinal against COMMITTED
+     * - Used for commitment verification
+     *
+     * @return true if the generator has committed
+     */
     @Override
     public boolean isCommitted() {
         return _state.ordinal() >= State.COMMITTED.ordinal();
     }
 
-    /* ------------------------------------------------------------ */
+    /**
+     * Checks if the generator is using chunked transfer encoding.
+     *
+     * This method determines if the current message is using chunked transfer
+     * encoding for content delivery.
+     *
+     * Key implementation details:
+     * - Checks endOfContent type
+     * - Used for transfer encoding verification
+     *
+     * @return true if chunked transfer encoding is being used
+     */
     @Override
     public boolean isChunking() {
         return _endOfContent == EndOfContent.CHUNKED_CONTENT;
     }
 
-    /* ------------------------------------------------------------ */
+    /**
+     * Checks if the message has no content.
+     *
+     * This method determines if the current message is a no-content response,
+     * such as 204 No Content.
+     *
+     * Key implementation details:
+     * - Checks internal noContent flag
+     * - Used for content presence verification
+     *
+     * @return true if the message has no content
+     */
     @Override
     public boolean isNoContent() {
         return _noContent;
     }
 
-    /* ------------------------------------------------------------ */
+    /**
+     * Sets whether the connection should be persistent.
+     *
+     * This method configures the connection persistence behavior, which affects
+     * how the Connection header is generated.
+     *
+     * Key implementation details:
+     * - Sets internal persistent flag
+     * - Affects header generation
+     *
+     * @param persistent true if the connection should be persistent
+     */
     @Override
     public void setPersistent(boolean persistent) {
         _persistent = persistent;
     }
 
-    /* ------------------------------------------------------------ */
     /**
-     * @return true if known to be persistent
+     * Checks if the connection is known to be persistent.
+     *
+     * This method determines if the current connection is configured to be
+     * persistent across multiple requests.
+     *
+     * Key implementation details:
+     * - Checks internal persistent flag
+     * - Used for connection behavior verification
+     *
+     * @return true if the connection is persistent
      */
     @Override
     public boolean isPersistent() {
         return Boolean.TRUE.equals(_persistent);
     }
 
-    /* ------------------------------------------------------------ */
+    /**
+     * Checks if any content has been written.
+     *
+     * This method determines if any content has been prepared for the current
+     * message.
+     *
+     * Key implementation details:
+     * - Checks contentPrepared counter
+     * - Used for content presence verification
+     *
+     * @return true if content has been written
+     */
     @Override
     public boolean isWritten() {
         return _contentPrepared > 0;
     }
 
-    /* ------------------------------------------------------------ */
+    /**
+     * Gets the amount of content that has been prepared.
+     *
+     * This method returns the total number of bytes that have been prepared
+     * for the current message.
+     *
+     * Key implementation details:
+     * - Returns contentPrepared counter
+     * - Used for content size tracking
+     *
+     * @return The number of bytes of content prepared
+     */
     @Override
     public long getContentPrepared() {
         return _contentPrepared;
     }
 
-    /* ------------------------------------------------------------ */
+    /**
+     * Aborts the current message generation.
+     *
+     * This method forces the connection to close and resets the generator state.
+     * It should be called when an error occurs during message generation.
+     *
+     * Key implementation details:
+     * - Sets persistent to false
+     * - Sets state to END
+     * - Clears endOfContent
+     */
     @Override
     public void abort() {
         _persistent = false;
@@ -206,7 +479,26 @@ public class HomekitHttpGenerator extends HttpGenerator {
         _endOfContent = null;
     }
 
-    /* ------------------------------------------------------------ */
+    /**
+     * Generates an HTTP request message.
+     *
+     * This method handles the generation of request headers, content, and chunked
+     * transfer encoding for HTTP requests.
+     *
+     * Key implementation details:
+     * - Generates request line
+     * - Handles headers
+     * - Manages content and chunking
+     * - Supports persistent connections
+     *
+     * @param info The request metadata containing method, URI, and headers
+     * @param header The buffer for the request header
+     * @param chunk The buffer for chunked transfer encoding
+     * @param content The buffer containing the request content
+     * @param last Whether this is the last content buffer
+     * @return The result of the generation operation
+     * @throws IOException If an I/O error occurs during generation
+     */
     @Override
     public Result generateRequest(MetaData.Request info, ByteBuffer header, ByteBuffer chunk, ByteBuffer content,
             boolean last) throws IOException {
@@ -329,18 +621,55 @@ public class HomekitHttpGenerator extends HttpGenerator {
         }
     }
 
-    /* ------------------------------------------------------------ */
+    /**
+     * Generates an HTTP response message.
+     *
+     * This method handles the generation of response headers, content, and chunked
+     * transfer encoding for HTTP responses.
+     *
+     * Key implementation details:
+     * - Generates response line
+     * - Handles headers
+     * - Manages content and chunking
+     * - Supports persistent connections
+     *
+     * @param info The response metadata containing status code and headers
+     * @param header The buffer for the response header
+     * @param chunk The buffer for chunked transfer encoding
+     * @param content The buffer containing the response content
+     * @param last Whether this is the last content buffer
+     * @return The result of the generation operation
+     * @throws IOException If an I/O error occurs during generation
+     */
     @Override
     public Result generateResponse(MetaData.Response info, ByteBuffer header, ByteBuffer chunk, ByteBuffer content,
             boolean last) throws IOException {
         return generateResponse(info, false, header, chunk, content, last);
     }
 
-    /* ------------------------------------------------------------ */
+    /**
+     * Generates an HTTP response message with HEAD request handling.
+     *
+     * This method is similar to generateResponse but includes special handling
+     * for HEAD requests, which should not include a message body.
+     *
+     * Key implementation details:
+     * - Handles HEAD request specifics
+     * - Suppresses body generation
+     * - Maintains header consistency
+     *
+     * @param info The response metadata containing status code and headers
+     * @param head Whether this is a response to a HEAD request
+     * @param header The buffer for the response header
+     * @param chunk The buffer for chunked transfer encoding
+     * @param content The buffer containing the response content
+     * @param last Whether this is the last content buffer
+     * @return The result of the generation operation
+     * @throws IOException If an I/O error occurs during generation
+     */
     @Override
     public Result generateResponse(MetaData.Response info, boolean head, ByteBuffer header, ByteBuffer chunk,
             ByteBuffer content, boolean last) throws IOException {
-
         switch (_state) {
             case START: {
                 if (info == null) {
@@ -444,7 +773,6 @@ public class HomekitHttpGenerator extends HttpGenerator {
                     return len > 0 ? Result.FLUSH : Result.CONTINUE;
                 }
                 return len > 0 ? Result.FLUSH : Result.DONE;
-
             }
 
             case COMPLETING_1XX: {
@@ -493,7 +821,20 @@ public class HomekitHttpGenerator extends HttpGenerator {
         }
     }
 
-    /* ------------------------------------------------------------ */
+    /**
+     * Prepares a chunk of data for chunked transfer encoding.
+     *
+     * This method formats the chunk size and adds necessary CRLF delimiters
+     * for chunked transfer encoding.
+     *
+     * Key implementation details:
+     * - Formats chunk size in hex
+     * - Adds CRLF delimiters
+     * - Handles last chunk specially
+     *
+     * @param chunk The buffer to write the chunk header to
+     * @param remaining The size of the chunk in bytes
+     */
     private void prepareChunk(ByteBuffer chunk, int remaining) {
         // if we need CRLF add this to header
         if (_needCRLF) {
@@ -511,7 +852,19 @@ public class HomekitHttpGenerator extends HttpGenerator {
         }
     }
 
-    /* ------------------------------------------------------------ */
+    /**
+     * Generates the request line for an HTTP request.
+     *
+     * This method formats the request line including method, URI, and HTTP version.
+     *
+     * Key implementation details:
+     * - Formats method, URI, and version
+     * - Adds proper spacing
+     * - Terminates with CRLF
+     *
+     * @param request The request metadata
+     * @param header The buffer to write the request line to
+     */
     private void generateRequestLine(MetaData.Request request, ByteBuffer header) {
         header.put(StringUtil.getBytes(request.getMethod()));
         header.put((byte) ' ');
@@ -521,7 +874,21 @@ public class HomekitHttpGenerator extends HttpGenerator {
         header.put(CRLF);
     }
 
-    /* ------------------------------------------------------------ */
+    /**
+     * Generates the response line for an HTTP response.
+     *
+     * This method formats the response line including HTTP version, status code,
+     * and reason phrase.
+     *
+     * Key implementation details:
+     * - Formats version, status, and reason
+     * - Adds proper spacing
+     * - Terminates with CRLF
+     *
+     * @param response The response metadata
+     * @param header The buffer to write the response line to
+     * @param version The HTTP version bytes to use
+     */
     private void generateResponseLine(MetaData.Response response, ByteBuffer header, byte[] version) {
         // Look for prepared response line
         int status = response.getStatus();
@@ -542,7 +909,20 @@ public class HomekitHttpGenerator extends HttpGenerator {
         header.put(CRLF);
     }
 
-    /* ------------------------------------------------------------ */
+    /**
+     * Gets the reason phrase bytes for a given reason string.
+     *
+     * This method sanitizes the reason string and converts it to bytes,
+     * ensuring it is valid for HTTP headers.
+     *
+     * Key implementation details:
+     * - Truncates long reasons
+     * - Sanitizes invalid characters
+     * - Converts to bytes
+     *
+     * @param reason The reason phrase string
+     * @return The sanitized reason phrase bytes
+     */
     private byte[] getReasonBytes(String reason) {
         if (reason.length() > 1024) {
             reason = reason.substring(0, 1024);
@@ -557,7 +937,23 @@ public class HomekitHttpGenerator extends HttpGenerator {
         return _bytes;
     }
 
-    /* ------------------------------------------------------------ */
+    /**
+     * Generates HTTP headers for a request or response.
+     *
+     * This method handles the generation of all HTTP headers, including content
+     * length, transfer encoding, and connection headers.
+     *
+     * Key implementation details:
+     * - Handles content length
+     * - Manages transfer encoding
+     * - Sets connection behavior
+     * - Adds server headers
+     *
+     * @param _info The request or response metadata
+     * @param header The buffer to write headers to
+     * @param content The content buffer
+     * @param last Whether this is the last content
+     */
     private void generateHeaders(MetaData _info, ByteBuffer header, ByteBuffer content, boolean last) {
         final MetaData.Request request = (_info instanceof MetaData.Request) ? (MetaData.Request) _info : null;
         final MetaData.Response response = (_info instanceof MetaData.Response) ? (MetaData.Response) _info : null;
@@ -815,22 +1211,20 @@ public class HomekitHttpGenerator extends HttpGenerator {
         header.put(CRLF);
     }
 
-    /* ------------------------------------------------------------------------------- */
-    private void putContentLength(ByteBuffer header, long contentLength, boolean contentType, MetaData.Request request,
-            MetaData.Response response) {
-        if (contentLength > 0) {
-            header.put(HttpHeader.CONTENT_LENGTH.getBytesColonSpace());
-            BufferUtil.putDecLong(header, contentLength);
-            header.put(CRLF);
-        } else if (!_noContent) {
-            if (contentType || response != null
-                    || (request != null && __assumedContentMethods.contains(request.getMethod()))) {
-                header.put(CONTENT_LENGTH_0);
-            }
-        }
-    }
-
-    /* ------------------------------------------------------------------------------- */
+    /**
+     * Gets the reason phrase buffer for a given HTTP status code.
+     *
+     * This method returns a pre-encoded byte array containing the standard
+     * reason phrase for the specified status code.
+     *
+     * Key implementation details:
+     * - Uses pre-prepared responses
+     * - Handles unknown codes
+     * - Returns null for invalid codes
+     *
+     * @param code The HTTP status code
+     * @return The byte array containing the reason phrase, or null if not found
+     */
     public static byte[] getReasonBuffer(int code) {
         PreparedResponse status = code < __preprepared.length ? __preprepared[code] : null;
         if (status != null) {
@@ -839,97 +1233,39 @@ public class HomekitHttpGenerator extends HttpGenerator {
         return null;
     }
 
-    /* ------------------------------------------------------------------------------- */
+    /**
+     * Returns a string representation of the generator.
+     *
+     * This method provides a string containing the class name, hash code,
+     * and current state.
+     *
+     * Key implementation details:
+     * - Includes class name
+     * - Shows hash code
+     * - Shows current state
+     *
+     * @return A string representation of the generator
+     */
     @Override
     public String toString() {
         return String.format("%s@%x{s=%s}", getClass().getSimpleName(), hashCode(), _state);
     }
 
-    /* ------------------------------------------------------------------------------- */
-    /* ------------------------------------------------------------------------------- */
-    /* ------------------------------------------------------------------------------- */
-    // common _content
-    private static final byte[] LAST_CHUNK = { (byte) '0', (byte) '\015', (byte) '\012', (byte) '\015', (byte) '\012' };
-    private static final byte[] CONTENT_LENGTH_0 = StringUtil.getBytes("Content-Length: 0\015\012");
-    private static final byte[] CONNECTION_KEEP_ALIVE = StringUtil.getBytes("Connection: keep-alive\015\012");
-    private static final byte[] CONNECTION_CLOSE = StringUtil.getBytes("Connection: close\015\012");
-    private static final byte[] HTTP_1_1_SPACE = StringUtil.getBytes(HttpVersion.HTTP_1_1 + " ");
-    private static final byte[] EVENT_1_0_SPACE = StringUtil.getBytes("EVENT/1.0" + " ");
-    // private static final byte[] CRLF = StringUtil.getBytes("\015\012");
-    private static final byte[] TRANSFER_ENCODING_CHUNKED = StringUtil.getBytes("Transfer-Encoding: chunked\015\012");
-    private static final byte[][] SEND = new byte[][] { new byte[0],
-            StringUtil.getBytes("Server: Jetty(9.x.x)\015\012"),
-            StringUtil.getBytes("X-Powered-By: Jetty(9.x.x)\015\012"),
-            StringUtil.getBytes("Server: Jetty(9.x.x)\015\012X-Powered-By: Jetty(9.x.x)\015\012") };
-
-    /* ------------------------------------------------------------------------------- */
-    /* ------------------------------------------------------------------------------- */
-    /* ------------------------------------------------------------------------------- */
-    // Build cache of response lines for status
-    private static class PreparedResponse {
-        byte[] _reason;
-        @SuppressWarnings("unused")
-        byte[] _schemeCode;
-        @SuppressWarnings("unused")
-        byte[] _responseLine;
-    }
-
-    private static final PreparedResponse[] __preprepared = new PreparedResponse[HttpStatus.MAX_CODE + 1];
-    static {
-        int versionLength = HttpVersion.HTTP_1_1.toString().length();
-
-        for (int i = 0; i < __preprepared.length; i++) {
-            HttpStatus.Code code = HttpStatus.getCode(i);
-            if (code == null) {
-                continue;
-            }
-            String reason = code.getMessage();
-            byte[] line = new byte[versionLength + 5 + reason.length() + 2];
-            HttpVersion.HTTP_1_1.toBuffer().get(line, 0, versionLength);
-            line[versionLength + 0] = ' ';
-            line[versionLength + 1] = (byte) ('0' + i / 100);
-            line[versionLength + 2] = (byte) ('0' + (i % 100) / 10);
-            line[versionLength + 3] = (byte) ('0' + (i % 10));
-            line[versionLength + 4] = ' ';
-            for (int j = 0; j < reason.length(); j++) {
-                line[versionLength + 5 + j] = (byte) reason.charAt(j);
-            }
-            line[versionLength + 5 + reason.length()] = CARRIAGE_RETURN;
-            line[versionLength + 6 + reason.length()] = LINE_FEED;
-
-            __preprepared[i] = new PreparedResponse();
-            __preprepared[i]._schemeCode = Arrays.copyOfRange(line, 0, versionLength + 5);
-            __preprepared[i]._reason = Arrays.copyOfRange(line, versionLength + 5, line.length - 2);
-            __preprepared[i]._responseLine = line;
-        }
-    }
-
-    private static void putSanitisedName(String s, ByteBuffer buffer) {
-        int l = s.length();
-        for (int i = 0; i < l; i++) {
-            char c = s.charAt(i);
-
-            if (c < 0 || c > 0xff || c == '\r' || c == '\n' || c == ':') {
-                buffer.put((byte) '?');
-            } else {
-                buffer.put((byte) (0xff & c));
-            }
-        }
-    }
-
-    private static void putSanitisedValue(String s, ByteBuffer buffer) {
-        int l = s.length();
-        for (int i = 0; i < l; i++) {
-            char c = s.charAt(i);
-
-            if (c < 0 || c > 0xff || c == '\r' || c == '\n') {
-                buffer.put((byte) ' ');
-            } else {
-                buffer.put((byte) (0xff & c));
-            }
-        }
-    }
-
+    /**
+     * Writes an HTTP field to a buffer.
+     *
+     * This method handles both pre-encoded and regular HTTP fields, ensuring
+     * proper formatting and sanitization of field names and values.
+     *
+     * Key implementation details:
+     * - Handles pre-encoded fields
+     * - Sanitizes field names
+     * - Sanitizes field values
+     * - Adds proper formatting
+     *
+     * @param field The HTTP field to write
+     * @param bufferInFillMode The buffer to write to
+     */
     public static void putTo(HttpField field, ByteBuffer bufferInFillMode) {
         if (field instanceof PreEncodedHttpField) {
             ((PreEncodedHttpField) field).putTo(bufferInFillMode, HttpVersion.HTTP_1_0);
@@ -948,6 +1284,19 @@ public class HomekitHttpGenerator extends HttpGenerator {
         }
     }
 
+    /**
+     * Writes a collection of HTTP fields to a buffer.
+     *
+     * This method writes all fields in the collection, followed by a CRLF.
+     *
+     * Key implementation details:
+     * - Iterates through fields
+     * - Writes each field
+     * - Adds final CRLF
+     *
+     * @param fields The collection of HTTP fields to write
+     * @param bufferInFillMode The buffer to write to
+     */
     public static void putTo(HttpFields fields, ByteBuffer bufferInFillMode) {
         for (HttpField field : fields) {
             if (field != null) {

@@ -24,15 +24,45 @@ import org.openhab.io.homekit.protocol.crypto.HomekitEncryptionEngine.SequenceBu
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A specialized HTTP sender for HomeKit communication with encryption support.
+ *
+ * This class extends {@link org.eclipse.jetty.client.http.HttpSenderOverHTTP HttpSenderOverHTTP} to provide specialized HTTP request
+ * handling for HomeKit accessories, including encryption of request payloads and
+ * proper sequence number management for secure communication.
+ *
+ * The sender works in conjunction with:
+ * - {@link HomekitHttpChannel} for channel management
+ * - {@link HomekitHttpConnectionOverHTTP} for connection management
+ * - {@link HomekitEncryptionEngine} for payload encryption
+ * - {@link org.eclipse.jetty.client.HttpClient HttpClient} for HTTP operations
+ *
+ * Key responsibilities:
+ * 1. Sending and encrypting HTTP requests
+ * 2. Managing sequence numbers for secure communication
+ * 3. Handling request formatting and validation
+ * 4. Providing buffer management and recycling
+ * 5. Supporting both encrypted and unencrypted communication
+ *
+ * The implementation uses:
+ * - {@link org.eclipse.jetty.io.ByteBufferPool ByteBufferPool} for efficient buffer management
+ * - {@link HomekitEncryptionEngine} for secure communication
+ * - {@link org.eclipse.jetty.client.HttpClient HttpClient} for HTTP client functionality
+ * - {@link org.eclipse.jetty.client.api.ContentProvider ContentProvider} for request content
+ *
+ * @author Karel Goderis - Initial Contribution
+ * @since 1.0
+ */
 public class HomekitHttpSender extends HttpSenderOverHTTP {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpSender.class);
 
-    protected static final String LOG_PREFIX = "Homekit HttpSenderOverHTTP: ";
+    // ========== Log Message Prefixes ==========
+    protected static final String LOG_PREFIX = "Homekit HttpSender: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
-    protected static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
+    protected static final String LOG_REQUEST = LOG_PREFIX + "Request - ";
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
@@ -42,29 +72,96 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
 
     private byte[] encryptionKey;
     private long outboundSequenceCount = 0;
+    private ByteBuffer encryptedOutputBuffer;
+    private ByteBuffer decryptedOutputBuffer;
 
+    /**
+     * Creates a new HomeKit HTTP sender for the given channel.
+     *
+     * This constructor initializes a sender with the specified HTTP channel.
+     *
+     * Key implementation details:
+     * - Uses provided {@link HomekitHttpChannel}
+     * - Sets up buffer management using {@link org.eclipse.jetty.io.ByteBufferPool ByteBufferPool}
+     * - Configures {@link org.eclipse.jetty.client.HttpClient HttpClient} for HTTP operations
+     *
+     * @param channel The HTTP channel to use for communication
+     */
     public HomekitHttpSender(HomekitHttpChannel channel) {
         super(channel);
         httpClient = channel.getHttpDestination().getHttpClient();
+        logger.debug("{}Initialized for channel {}", LOG_INIT, channel);
     }
 
+    /**
+     * Gets the HTTP channel associated with this sender.
+     *
+     * This method returns the specialized {@link HomekitHttpChannel} instance
+     * that manages this sender's communication channel.
+     *
+     * @return The {@link HomekitHttpChannel} instance
+     */
     @Override
-    public HttpChannelOverHTTP getHttpChannel() {
-        return super.getHttpChannel();
+    public HomekitHttpChannel getHttpChannel() {
+        return (HomekitHttpChannel) super.getHttpChannel();
     }
 
+    /**
+     * Gets the HTTP connection associated with this sender.
+     *
+     * This method returns the specialized {@link HomekitHttpConnectionOverHTTP} instance
+     * that manages the underlying network connection.
+     *
+     * @return The {@link HomekitHttpConnectionOverHTTP} instance
+     */
+    private HomekitHttpConnectionOverHTTP getHttpConnection() {
+        return (HomekitHttpConnectionOverHTTP) getHttpChannel().getHttpConnection();
+    }
+
+    /**
+     * Sends HTTP headers for the given exchange.
+     *
+     * This method handles the generation and transmission of HTTP headers,
+     * including any necessary encryption of header content.
+     *
+     * Key implementation details:
+     * - Creates HeadersCallback for async processing
+     * - Handles header generation and encryption
+     * - Manages buffer lifecycle
+     * - Supports chunked transfer encoding
+     *
+     * @param exchange The HTTP exchange
+     * @param content The HTTP content
+     * @param callback The callback to invoke on completion
+     */
     @Override
     protected void sendHeaders(HttpExchange exchange, HttpContent content, Callback callback) {
         try {
+            logger.debug("{}Sending headers for exchange {}", LOG_REQUEST, exchange);
             new HeadersCallback(exchange, content, callback).iterate();
         } catch (Throwable x) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("{}Exception in sendHeaders", LOG_ERROR, x);
-            }
+            logger.error("{}Failed to send headers: {}", LOG_ERROR, x.getMessage(), x);
             callback.failed(x);
         }
     }
 
+    /**
+     * Sends HTTP content for the given exchange.
+     *
+     * This method handles the generation and transmission of HTTP content,
+     * including encryption of the content when a key is set.
+     *
+     * Key implementation details:
+     * - Manages buffer allocation and recycling
+     * - Handles chunked transfer encoding
+     * - Supports content encryption
+     * - Manages sequence numbers
+     * - Handles buffer lifecycle
+     *
+     * @param exchange The HTTP exchange
+     * @param content The HTTP content
+     * @param callback The callback to invoke on completion
+     */
     @Override
     protected void sendContent(HttpExchange exchange, HttpContent content, Callback callback) {
         try {
@@ -74,10 +171,8 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
                 ByteBuffer contentBuffer = content.getByteBuffer();
                 boolean lastContent = content.isLast();
                 HttpGenerator.Result result = generator.generateRequest(null, null, chunk, contentBuffer, lastContent);
-                if (logger.isDebugEnabled()) {
-                    logger.debug("{}Generated content ({} bytes) - {}/{}", LOG_STATE,
-                            contentBuffer == null ? -1 : contentBuffer.remaining(), result, generator);
-                }
+                logger.debug("{}Generated content ({} bytes) - {}/{}", LOG_REQUEST,
+                        contentBuffer == null ? -1 : contentBuffer.remaining(), result, generator);
                 switch (result) {
                     case NEED_CHUNK: {
                         chunk = bufferPool.acquire(HttpGenerator.CHUNK_SIZE, false);
@@ -129,15 +224,28 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
                 }
             }
         } catch (Throwable x) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("{}Exception in sendContent", LOG_ERROR, x);
-            }
+            logger.error("{}Failed to send content: {}", LOG_ERROR, x.getMessage(), x);
             callback.failed(x);
         }
     }
 
+    /**
+     * Encrypts one or more byte buffers using the HomeKit encryption engine.
+     *
+     * This method handles the encryption of request content using the HomeKit
+     * encryption engine and manages sequence numbers for secure communication.
+     *
+     * Key implementation details:
+     * - Uses {@link HomekitEncryptionEngine} for encryption
+     * - Manages sequence numbers
+     * - Handles buffer concatenation
+     * - Supports multiple input buffers
+     *
+     * @param endpoint The endpoint for the connection
+     * @param buffers The buffers to encrypt
+     * @return A new encrypted buffer
+     */
     protected ByteBuffer encryptBuffers(EndPoint endpoint, ByteBuffer... buffers) {
-
         int totalRemaining = 0;
         for (ByteBuffer b : buffers) {
             totalRemaining += b.remaining();
@@ -153,8 +261,8 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
 
         BufferUtil.flipToFlush(flushBuffer, 0);
 
-        logger.debug("[{}] encryptBuffers={}", endpoint.getRemoteAddress().toString(),
-                BufferUtil.toDetailString(flushBuffer));
+        logger.debug("{}Encrypting {} bytes for endpoint {}", LOG_REQUEST, totalRemaining,
+                endpoint.getRemoteAddress());
 
         ByteBuffer encryptedBuffer = bufferPool.acquire(httpClient.getResponseBufferSize(), true);
 
@@ -165,46 +273,147 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
             encryptedBuffer = sBuffer.buffer;
             outboundSequenceCount = sBuffer.sequenceNumber;
 
-            logger.debug("[{}] outboundSequenceCount={}", endpoint.getRemoteAddress().toString(),
-                    outboundSequenceCount);
+            logger.debug("{}Updated sequence number to {} for endpoint {}", LOG_REQUEST, outboundSequenceCount,
+                    endpoint.getRemoteAddress());
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.error("{}Failed to encrypt buffer: {}", LOG_ERROR, e.getMessage(), e);
         }
 
         return encryptedBuffer;
     }
 
+    /**
+     * Resets the sender's state.
+     *
+     * This method resets both the generator and the parent class state.
+     *
+     * Key implementation details:
+     * - Resets generator state
+     * - Calls parent reset
+     * - Logs state change
+     */
     @Override
     protected void reset() {
         generator.reset();
         super.reset();
+        logger.debug("{}Reset sender state", LOG_STATE);
     }
 
+    /**
+     * Disposes of the sender's resources.
+     *
+     * This method aborts the generator and cleans up any resources.
+     *
+     * Key implementation details:
+     * - Aborts generator
+     * - Calls parent dispose
+     * - Shuts down output
+     * - Logs state change
+     */
     @Override
     protected void dispose() {
         generator.abort();
         super.dispose();
         shutdownOutput();
+        logger.debug("{}Disposed sender resources", LOG_STATE);
     }
 
+    /**
+     * Shuts down the output stream.
+     *
+     * This method marks the sender as shutdown and logs the state change.
+     *
+     * Key implementation details:
+     * - Sets shutdown flag
+     * - Logs state change
+     */
     private void shutdownOutput() {
-        if (logger.isDebugEnabled()) {
-            logger.debug("{}Request shutdown output {}", LOG_STATE, getHttpExchange().getRequest());
-        }
+        logger.debug("{}Shutting down output for request {}", LOG_STATE, getHttpExchange().getRequest());
         shutdown = true;
     }
 
+    /**
+     * Checks if the sender is shutdown.
+     *
+     * @return true if the sender is shutdown, false otherwise
+     */
     @Override
     protected boolean isShutdown() {
         return shutdown;
     }
 
+    /**
+     * Returns a string representation of the sender.
+     *
+     * @return A string containing the class name and generator state
+     */
     @Override
     public String toString() {
         return String.format("%s[%s]", super.toString(), generator);
     }
 
+    /**
+     * Sets the encryption key for this sender.
+     *
+     * This method configures the key used for encrypting outgoing messages.
+     * The key is used by {@link HomekitEncryptionEngine} for secure communication.
+     *
+     * @param encryptionKey The key to use for encryption
+     */
+    public void setEncryptionKey(byte[] encryptionKey) {
+        this.encryptionKey = encryptionKey;
+        logger.info("{}Encryption key set", LOG_CONFIG);
+    }
+
+    /**
+     * Checks if this sender has an encryption key set.
+     *
+     * @return true if an encryption key is set
+     */
+    public boolean hasEncryptionKey() {
+        return (encryptionKey != null);
+    }
+
+    /**
+     * Gets the encryption key used by this sender.
+     *
+     * @return The encryption key, or null if not set
+     */
+    public byte[] getEncryptionKey() {
+        return encryptionKey;
+    }
+
+    /**
+     * Gets the current outbound sequence number.
+     *
+     * This method returns the sequence number used for encrypting outgoing messages.
+     * The sequence number is managed by {@link HomekitEncryptionEngine} for secure communication.
+     *
+     * @return The current outbound sequence number
+     */
+    public long getOutboundSequenceCount() {
+        return outboundSequenceCount;
+    }
+
+    /**
+     * Sets the outbound sequence number.
+     *
+     * This method configures the sequence number used for encrypting outgoing messages.
+     * The sequence number is managed by {@link HomekitEncryptionEngine} for secure communication.
+     *
+     * @param outboundSequenceCount The sequence number to use
+     */
+    public void setOutboundSequenceCount(long outboundSequenceCount) {
+        this.outboundSequenceCount = outboundSequenceCount;
+        logger.debug("{}Outbound sequence count set to {}", LOG_STATE, outboundSequenceCount);
+    }
+
+    /**
+     * Callback for handling header generation and transmission.
+     *
+     * This inner class manages the asynchronous generation and transmission
+     * of HTTP headers, including any necessary encryption.
+     */
     private class HeadersCallback extends IteratingCallback {
         private final HttpExchange exchange;
         private final Callback callback;
@@ -215,6 +424,13 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
         private boolean lastContent;
         private boolean generated;
 
+        /**
+         * Creates a new headers callback.
+         *
+         * @param exchange The HTTP exchange
+         * @param content The HTTP content
+         * @param callback The callback to invoke on completion
+         */
         public HeadersCallback(HttpExchange exchange, HttpContent content, Callback callback) {
             super(false);
             this.exchange = exchange;
@@ -239,17 +455,24 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
             }
         }
 
+        /**
+         * Processes the next iteration of header generation.
+         *
+         * This method handles the generation and transmission of HTTP headers,
+         * including any necessary encryption.
+         *
+         * @return The next action to take
+         * @throws Exception if an error occurs
+         */
         @Override
         protected Action process() throws Exception {
             while (true) {
                 HttpGenerator.Result result = generator.generateRequest(metaData, headerBuffer, chunkBuffer,
                         contentBuffer, lastContent);
-                if (logger.isDebugEnabled()) {
-                    logger.debug("{}Generated headers ({} bytes), chunk ({} bytes), content ({} bytes) - {}/{}",
-                            LOG_STATE, headerBuffer == null ? -1 : headerBuffer.remaining(),
-                            chunkBuffer == null ? -1 : chunkBuffer.remaining(),
-                            contentBuffer == null ? -1 : contentBuffer.remaining(), result, generator);
-                }
+                logger.debug("{}Generated headers ({} bytes), chunk ({} bytes), content ({} bytes) - {}/{}",
+                        LOG_REQUEST, headerBuffer == null ? -1 : headerBuffer.remaining(),
+                        chunkBuffer == null ? -1 : chunkBuffer.remaining(),
+                        contentBuffer == null ? -1 : contentBuffer.remaining(), result, generator);
                 switch (result) {
                     case NEED_HEADER: {
                         headerBuffer = httpClient.getByteBufferPool().acquire(httpClient.getRequestBufferSize(), false);
@@ -313,12 +536,20 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
             }
         }
 
+        /**
+         * Handles successful completion of the callback.
+         */
         @Override
         public void succeeded() {
             release();
             super.succeeded();
         }
 
+        /**
+         * Handles failure of the callback.
+         *
+         * @param x The exception that caused the failure
+         */
         @Override
         public void failed(Throwable x) {
             release();
@@ -326,12 +557,18 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
             super.failed(x);
         }
 
+        /**
+         * Handles successful completion of the callback.
+         */
         @Override
         protected void onCompleteSuccess() {
             super.onCompleteSuccess();
             callback.succeeded();
         }
 
+        /**
+         * Releases the buffers used by this callback.
+         */
         private void release() {
             ByteBufferPool bufferPool = httpClient.getByteBufferPool();
             if (!BufferUtil.isTheEmptyBuffer(headerBuffer)) {
@@ -346,16 +583,32 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
         }
     }
 
+    /**
+     * Callback for recycling byte buffers.
+     *
+     * This inner class manages the recycling of byte buffers after they have
+     * been used, ensuring proper resource cleanup.
+     */
     private class ByteBufferRecyclerCallback extends Callback.Nested {
         private final ByteBufferPool pool;
         private final ByteBuffer[] buffers;
 
+        /**
+         * Creates a new byte buffer recycler callback.
+         *
+         * @param callback The callback to invoke on completion
+         * @param pool The buffer pool to use
+         * @param buffers The buffers to recycle
+         */
         private ByteBufferRecyclerCallback(Callback callback, ByteBufferPool pool, ByteBuffer... buffers) {
             super(callback);
             this.pool = pool;
             this.buffers = buffers;
         }
 
+        /**
+         * Handles successful completion of the callback.
+         */
         @Override
         public void succeeded() {
             for (ByteBuffer buffer : buffers) {
@@ -365,6 +618,11 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
             super.succeeded();
         }
 
+        /**
+         * Handles failure of the callback.
+         *
+         * @param x The exception that caused the failure
+         */
         @Override
         public void failed(Throwable x) {
             for (ByteBuffer buffer : buffers) {
@@ -372,19 +630,5 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
             }
             super.failed(x);
         }
-    }
-
-    public void setEncryptionKey(byte[] encryptionKey) {
-        this.encryptionKey = encryptionKey;
-
-        logger.info("{}Setting Encryption Key on {}", LOG_CONFIG, this);
-    }
-
-    public boolean hasEncryptionKey() {
-        return (encryptionKey != null);
-    }
-
-    public byte[] getEncryptionKey() {
-        return encryptionKey;
     }
 }

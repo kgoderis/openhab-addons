@@ -5,11 +5,12 @@ import java.util.Map;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitTLV8Characteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import org.openhab.core.types.State;
+
 /**
  * HomeKit Thread Status Characteristic.
  * This characteristic represents the Thread network status in TLV8 format.

@@ -2,7 +2,6 @@ package org.openhab.io.homekit.validation;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -134,15 +133,16 @@ public class ValidationResult {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         ValidationResult that = (ValidationResult) o;
-        return Objects.equals(code, that.code) && 
-               Objects.equals(contextKey, that.contextKey);
+        return Objects.equals(code, that.code) && Objects.equals(contextKey, that.contextKey);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(code, contextKey);
     }
-} 
+}

@@ -9,17 +9,52 @@ import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.library.characteristic.HomekitCameraOperatingModeIndicatorCharacteristic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * HomeKit Camera Operating Mode Service.
- * This service provides functionality for controlling camera operating modes in HomeKit.
- * For more information, see https://developer.apple.com/documentation/HomeKit
+ * <p>
+ * This service provides functionality for controlling and monitoring camera operating modes in HomeKit accessories.
+ * It enables management of camera states, modes, and operational settings for IP cameras and other video devices.
+ * </p>
+ *
+ * <ul>
+ *   <li>Camera operating mode control</li>
+ *   <li>Mode indicator status monitoring</li>
+ *   <li>Operational state management</li>
+ * </ul>
+ *
+ * <p>
+ * Required characteristics:
+ * <ul>
+ *   <li>CameraOperatingModeIndicator - Current operating mode status</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * For more information, see the
+ * <a href="https://developer.apple.com/documentation/HomeKit">HomeKit Accessory Protocol Specification</a>.
+ * </p>
  *
  * @author Karel Goderis
+ * @version 1.0
+ * @since 1.0
  */
 @HomekitServiceType(type = "0000021A-0000-1000-8000-0026BB765291", name = "CameraOperatingMode", tag = "cameraOperatingMode")
 @NonNullByDefault
 public class HomekitCameraOperatingModeService extends AbstractHomekitService {
+    // ========== Log Message Prefixes ==========
+    private static final String LOG_PREFIX = "Homekit CameraOperatingModeService: ";
+    private static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    private static final String LOG_STATE = LOG_PREFIX + "State - ";
+    private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    private static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
+    private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+    private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
+
+    private final Logger logger = LoggerFactory.getLogger(HomekitCameraOperatingModeService.class);
 
     /**
      * Creates a new Camera Operating Mode service.
@@ -27,11 +62,13 @@ public class HomekitCameraOperatingModeService extends AbstractHomekitService {
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @since 1.0
      */
     public HomekitCameraOperatingModeService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
         withName("Camera Operating Mode").withExtensible(true).withPrimary(false).withHidden(false);
+        logger.debug("{}Created CameraOperatingModeService for accessory {}", LOG_INIT, accessory.getLabel());
     }
 
     /**
@@ -41,20 +78,31 @@ public class HomekitCameraOperatingModeService extends AbstractHomekitService {
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
      * @param value JSON value containing service configuration
+     * @since 1.0
      */
     public HomekitCameraOperatingModeService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
         super(accessory, eventManager, characteristicFactory, value);
+        logger.debug("{}Created CameraOperatingModeService from JSON for accessory {}", LOG_INIT, accessory.getLabel());
     }
 
     /**
      * Adds the required characteristics for this service.
-     * Required: CameraOperatingModeIndicator
+     * <p>
+     * Required characteristics:
+     * <ul>
+     *   <li>CameraOperatingModeIndicator - Current operating mode status</li>
+     * </ul>
+     * </p>
+     * @since 1.0
      */
     @Override
     public void addCharacteristics() {
+        logger.trace("{}Adding required characteristics to CameraOperatingModeService for accessory {}", LOG_TRACE, getAccessory().getLabel());
+        
         // Required characteristics
         addCharacteristic(new HomekitCameraOperatingModeIndicatorCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        logger.debug("{}Added CameraOperatingModeIndicatorCharacteristic to CameraOperatingModeService", LOG_STATE);
     }
 }

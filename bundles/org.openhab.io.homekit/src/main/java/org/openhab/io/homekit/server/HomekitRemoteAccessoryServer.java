@@ -77,6 +77,7 @@ import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.server.HomekitAccessoryServerState;
 import org.openhab.io.homekit.event.core.HomekitEventSubscription;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
+import org.openhab.io.homekit.event.manager.HomekitEventManager.HomekitEventHandler;
 import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicEvent;
 import org.openhab.io.homekit.event.model.server.HomekitAccessoryServerEvent;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
@@ -109,12 +110,18 @@ import com.nimbusds.srp6.XRoutineWithUserIdentity;
 
 import djb.Curve25519;
 
-import org.openhab.io.homekit.event.manager.HomekitEventManager.HomekitEventHandler;
-
-// A bridge is a special type of HAP accessory server that bridges Homekit HomekitAccessory Protocol and different RF/transport protocols, such as ZigBee or Z-Wave. A bridge must expose all the user-addressable functionality supported by its connected devices as HAP accessory objects to the HAP controller(s). A bridge must ensure that the instance ID assigned to the HAP accessory objects exposed on behalf of its connected devices do not change for the lifetime of the server/client pairing.
-// For example, a bridge that bridges three lights would expose four HAP accessory objects: one HAP accessory object that represents the bridge itself that may include a "firmware update" service, and three additional HAP accessory objects that each contain a "lightbulb" service.
-// A bridge must not expose more than 150 HAP accessory objects. The HAP accessory object with an instance ID of 1 is considered the primary HAP accessory object. For bridges, this must be the bridge itself.
-
+/**
+ * Represents a remote HomeKit accessory server that connects to a HomeKit accessory on the network.
+ * This server handles remote HomeKit accessories and manages their lifecycle, including:
+ * - Server initialization and connection
+ * - Remote accessory discovery and management
+ * - Event subscription and handling
+ * - State synchronization
+ * - Security and pairing
+ *
+ * @author Karel Goderis - Initial contribution
+ * @since 1.0
+ */
 @NonNullByDefault
 public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         implements HomekitCharacteristicChangeListener {
@@ -122,13 +129,16 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     // ========== Constants ==========
     protected static final Logger logger = LoggerFactory.getLogger(HomekitRemoteAccessoryServer.class);
     private static final String HTTP_SCHEME = "http";
-    protected static final String LOG_PREFIX = "Homekit HomekitRemoteAccessoryServer: ";
+    protected static final String LOG_PREFIX = "Homekit RemoteAccessoryServer: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
-    protected static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+    protected static final String LOG_PAIRING = LOG_PREFIX + "Pairing - ";
+    protected static final String LOG_EVENT = LOG_PREFIX + "Event - ";
+    protected static final String LOG_SERVER = LOG_PREFIX + "Server - ";
 
     // ========== Core Dependencies ==========
     private final ScheduledExecutorService scheduler;
@@ -149,24 +159,54 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
     private final Set<HomekitEventSubscription> eventSubscriptions = new HashSet<>();
 
-    // ========== Constructor ==========
+    /**
+     * Creates a new remote HomeKit accessory server with the specified configuration.
+     *
+     * @param category The category of accessories this server will host
+     * @param address The network address of the remote server
+     * @param port The port the remote server is listening on
+     * @param pairingIdentifier The unique pairing identifier for this server
+     * @param secretKey The secret key used for encryption
+     * @param accessoryRegistry The registry for managing accessories
+     * @param pairingRegistry The registry for managing pairings
+     * @param eventManager The manager for handling events
+     * @param accessoryFactory The factory for creating accessories
+     * @throws HomekitConfigurationException if the configuration is invalid
+     */
     public HomekitRemoteAccessoryServer(HomekitAccessoryCategory category, InetAddress address, int port,
             byte[] pairingIdentifier, byte[] secretKey, HomekitAccessoryRegistry accessoryRegistry,
             HomekitPairingRegistry pairingRegistry, HomekitEventManager eventManager,
             HomekitAccessoryFactory accessoryFactory) throws HomekitConfigurationException {
         super(category, address, port, pairingIdentifier, secretKey, accessoryRegistry, pairingRegistry, eventManager);
+        logger.debug("{}Initializing remote server - Category: {}, Address: {}, Port: {}", LOG_INIT, category, address,
+                port);
         this.accessoryFactory = accessoryFactory;
         this.setupCode = "";
         this.isPairVerified = false;
         this.scheduler = org.openhab.core.common.ThreadPoolManager.getScheduledPool("homekit-remote");
+        logger.debug("{}Remote server initialization completed", LOG_INIT);
     }
 
+    /**
+     * Creates a new remote HomeKit accessory server with auto-generated pairing ID and secret key.
+     *
+     * @param category The category of accessories this server will host
+     * @param address The network address of the remote server
+     * @param port The port the remote server is listening on
+     * @param accessoryRegistry The registry for managing accessories
+     * @param pairingRegistry The registry for managing pairings
+     * @param eventManager The manager for handling events
+     * @param accessoryFactory The factory for creating accessories
+     * @throws HomekitConfigurationException if the configuration is invalid
+     * @throws HomekitServerException if server creation fails
+     */
     public HomekitRemoteAccessoryServer(HomekitAccessoryCategory category, InetAddress address, int port,
             HomekitAccessoryRegistry accessoryRegistry, HomekitPairingRegistry pairingRegistry,
             HomekitEventManager eventManager, HomekitAccessoryFactory accessoryFactory)
             throws HomekitConfigurationException, HomekitServerException {
         this(category, address, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry,
                 eventManager, accessoryFactory);
+        logger.debug("{}Created new remote server with auto-generated credentials", LOG_INIT);
     }
 
     // ========== Core Lifecycle Methods ==========
@@ -1220,6 +1260,12 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     }
 
     // ========== Event Handling Methods ==========
+    /**
+     * Handles incoming events from the remote server.
+     * This method processes event data and updates the local state accordingly.
+     *
+     * @param body The event data received from the remote server
+     */
     public void handleEvent(byte[] body) {
         try {
             logger.debug("{}Processing event - Server: {}", LOG_STATE, new String(getPairingId()));
@@ -1231,6 +1277,12 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         }
     }
 
+    /**
+     * Handles characteristic events from the remote server.
+     * This method manages event subscriptions for characteristics and updates their state.
+     *
+     * @param event The characteristic event to handle
+     */
     @Override
     public void onCharacteristicEvent(HomekitCharacteristicEvent event) {
         if (event.getType() == HomekitEventType.CHARACTERISTIC_START_EVENTS && event.getCharacteristic().isPresent()) {
@@ -1320,6 +1372,17 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         }
     }
 
+    /**
+     * Updates the list of accessories by fetching remote accessories and comparing with currently managed ones.
+     * This method:
+     * 1. Fetches the current list of remote accessories
+     * 2. Compares with locally managed accessories
+     * 3. Adds new accessories
+     * 4. Removes accessories that no longer exist
+     * 5. Updates services and characteristics for existing accessories
+     *
+     * @throws HomekitAccessoryOperationException if the update operation fails
+     */
     @Override
     public void updateAccessories() throws HomekitAccessoryOperationException {
         if (!isPairVerified()) {
@@ -1417,12 +1480,12 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                         }
 
                         // Compare characteristics for each service
-                        for (HomekitService currentService : currentAccessory.getServices()) {
+                        for (HomekitService currentService : currentServices) {
                             for (HomekitService remoteService : remoteServices) {
                                 if (currentService.getInstanceId() == remoteService.getInstanceId()) {
-                                    Set<HomekitCharacteristic<?>> currentCharacteristics = currentService
+                                    Collection<HomekitCharacteristic<?>> currentCharacteristics = currentService
                                             .getCharacteristics();
-                                    Set<HomekitCharacteristic<?>> remoteCharacteristics = remoteService
+                                    Collection<HomekitCharacteristic<?>> remoteCharacteristics = remoteService
                                             .getCharacteristics();
 
                                     // Find new characteristics to add
@@ -1468,25 +1531,6 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                                                     currentService, currentCharacteristic));
                                         }
                                     }
-
-                                    // Find characteristics that are the same, and check if they are equal()
-                                    for (HomekitCharacteristic<?> currentCharacteristic : currentCharacteristics) {
-                                        for (HomekitCharacteristic<?> remoteCharacteristic : remoteCharacteristics) {
-                                            if (currentCharacteristic.getInstanceId() == remoteCharacteristic
-                                                    .getInstanceId()) {
-                                                if (!currentCharacteristic.equals(remoteCharacteristic)) {
-                                                    logger.info(
-                                                            "{}HomekitCharacteristic {} is different from {} - Server: {}",
-                                                            LOG_STATE, currentCharacteristic, remoteCharacteristic,
-                                                            new String(getPairingId()));
-                                                    currentCharacteristic.updateWith(remoteCharacteristic);
-                                                    eventManager.publishEvent(new HomekitAccessoryServerEvent(
-                                                            HomekitEventType.CHARACTERISTIC_STATE_CHANGED, this,
-                                                            currentAccessory, currentService, currentCharacteristic));
-                                                }
-                                            }
-                                        }
-                                    }
                                 }
                             }
                         }
@@ -1501,20 +1545,26 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         }
     }
 
+    /**
+     * Adds an accessory to this server and sets up event subscriptions for its characteristics.
+     *
+     * @param accessory The accessory to add
+     * @throws HomekitAccessoryOperationException if the operation fails
+     */
     @Override
     public void addAccessory(HomekitAccessory accessory) throws HomekitAccessoryOperationException {
         super.addAccessory(accessory);
         for (HomekitService service : accessory.getServices()) {
             for (HomekitCharacteristic<?> characteristic : service.getCharacteristics()) {
-                eventSubscriptions.add(
-                        eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, (UID) characteristic.getUID(),
-                                (UID) getUID(), (HomekitEventHandler) event -> onCharacteristicEvent((HomekitCharacteristicEvent) event)));
-                eventSubscriptions.add(
-                        eventManager.subscribe(HomekitEventType.CHARACTERISTIC_START_EVENTS, (UID) characteristic.getUID(),
-                                (UID) getUID(), event -> onCharacteristicEvent((HomekitCharacteristicEvent) event)));
-                eventSubscriptions.add(
-                        eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STOP_EVENTS, (UID) characteristic.getUID(),
-                                (UID) getUID(), event -> onCharacteristicEvent((HomekitCharacteristicEvent) event)));
+                eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
+                        (UID) characteristic.getUID(), (UID) getUID(),
+                        (HomekitEventHandler) event -> onCharacteristicEvent((HomekitCharacteristicEvent) event)));
+                eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_START_EVENTS,
+                        (UID) characteristic.getUID(), (UID) getUID(),
+                        event -> onCharacteristicEvent((HomekitCharacteristicEvent) event)));
+                eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STOP_EVENTS,
+                        (UID) characteristic.getUID(), (UID) getUID(),
+                        event -> onCharacteristicEvent((HomekitCharacteristicEvent) event)));
                 logger.debug("{}Subscribed to events for characteristic: {}", LOG_ACCESSORY,
                         characteristic.getClass().getSimpleName());
             }

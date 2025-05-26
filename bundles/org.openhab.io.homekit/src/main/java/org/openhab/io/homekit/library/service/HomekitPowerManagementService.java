@@ -12,10 +12,34 @@ import org.openhab.io.homekit.library.characteristic.HomekitWakeConfigurationCha
 
 /**
  * HomeKit Power Management Service.
- * This service provides power management functionality in HomeKit.
- * For more information, see https://developer.apple.com/documentation/HomeKit
+ * 
+ * <p>
+ * This service provides power management functionality for accessories, including:
+ * <ul>
+ *   <li>Wake configuration management</li>
+ *   <li>Power state monitoring</li>
+ *   <li>Power-related accessory states</li>
+ * </ul>
+ * </p>
  *
- * @author Karel Goderis
+ * <p>
+ * The service is used to:
+ * <ul>
+ *   <li>Configure wake behavior of accessories</li>
+ *   <li>Monitor power states</li>
+ *   <li>Manage power-related accessory states</li>
+ *   <li>Provide power management information to iOS devices</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * For more information, see the
+ * <a href="https://developer.apple.com/documentation/HomeKit">HomeKit Accessory Protocol Specification</a>.
+ * </p>
+ *
+ * @author Karel Goderis - Initial contribution
+ * @version 1.0
+ * @since 1.0
  */
 @HomekitServiceType(type = "00000221-0000-1000-8000-0026BB765291", name = "PowerManagement", tag = "powerManagement")
 @NonNullByDefault
@@ -27,6 +51,7 @@ public class HomekitPowerManagementService extends AbstractHomekitService {
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @since 1.0
      */
     public HomekitPowerManagementService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
@@ -41,6 +66,7 @@ public class HomekitPowerManagementService extends AbstractHomekitService {
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
      * @param value JSON value containing service configuration
+     * @since 1.0
      */
     public HomekitPowerManagementService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
@@ -49,7 +75,15 @@ public class HomekitPowerManagementService extends AbstractHomekitService {
 
     /**
      * Adds the required characteristics for this service.
-     * Required: WakeConfiguration
+     * 
+     * <p>
+     * Required characteristics:
+     * <ul>
+     *   <li>WakeConfiguration</li>
+     * </ul>
+     * </p>
+     *
+     * @since 1.0
      */
     @Override
     public void addCharacteristics() {

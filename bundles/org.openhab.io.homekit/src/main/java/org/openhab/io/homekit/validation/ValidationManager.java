@@ -27,11 +27,10 @@ public class ValidationManager {
     public ValidationManager() {
         // Default cache duration: 5 minutes
         this.cache = new ValidationCache(5 * 60 * 1000);
-        this.defaultSettings = new ValidationContext.ValidationSettings(
-            true, // caching enabled
-            5 * 60 * 1000, // 5 minutes cache duration
-            false, // don't fail fast
-            true // suppress cascading errors
+        this.defaultSettings = new ValidationContext.ValidationSettings(true, // caching enabled
+                5 * 60 * 1000, // 5 minutes cache duration
+                false, // don't fail fast
+                true // suppress cascading errors
         );
     }
 
@@ -55,10 +54,8 @@ public class ValidationManager {
         List<ValidationResult> results = new ArrayList<>();
 
         // Sort validations by priority
-        List<Validation> sortedValidations = validations.values().stream()
-            .filter(Validation::isEnabled)
-            .sorted((v1, v2) -> Integer.compare(v2.getPriority(), v1.getPriority()))
-            .collect(Collectors.toList());
+        List<Validation> sortedValidations = validations.values().stream().filter(Validation::isEnabled)
+                .sorted((v1, v2) -> Integer.compare(v2.getPriority(), v1.getPriority())).collect(Collectors.toList());
 
         for (Validation validation : sortedValidations) {
             String cacheKey = generateCacheKey(target, validation);
@@ -76,11 +73,8 @@ public class ValidationManager {
                     }
                 } catch (Exception e) {
                     logger.error("Error executing validation {}: {}", validation.getId(), e.getMessage(), e);
-                    result = ValidationResult.builder()
-                        .valid(false)
-                        .severity(ValidationResult.Severity.ERROR)
-                        .message("Validation execution failed: " + e.getMessage())
-                        .build();
+                    result = ValidationResult.builder().valid(false).severity(ValidationResult.Severity.ERROR)
+                            .message("Validation execution failed: " + e.getMessage()).build();
                 }
             }
 
@@ -106,26 +100,18 @@ public class ValidationManager {
         List<ValidationResult> filteredResults = results;
         if (suppressCascading) {
             // Remove results that are likely cascading from previous errors
-            filteredResults = results.stream()
-                .filter(result -> !isLikelyCascading(result, results))
-                .collect(Collectors.toList());
+            filteredResults = results.stream().filter(result -> !isLikelyCascading(result, results))
+                    .collect(Collectors.toList());
         }
 
         boolean isValid = filteredResults.stream().allMatch(ValidationResult::isValid);
-        ValidationResult.Severity maxSeverity = filteredResults.stream()
-            .map(ValidationResult::getSeverity)
-            .max(Enum::compareTo)
-            .orElse(ValidationResult.Severity.INFO);
+        ValidationResult.Severity maxSeverity = filteredResults.stream().map(ValidationResult::getSeverity)
+                .max(Enum::compareTo).orElse(ValidationResult.Severity.INFO);
 
-        List<ValidationIssue> allIssues = filteredResults.stream()
-            .flatMap(r -> r.getIssues().stream())
-            .collect(Collectors.toList());
+        List<ValidationIssue> allIssues = filteredResults.stream().flatMap(r -> r.getIssues().stream())
+                .collect(Collectors.toList());
 
-        return ValidationResult.builder()
-            .valid(isValid)
-            .severity(maxSeverity)
-            .issues(allIssues)
-            .build();
+        return ValidationResult.builder().valid(isValid).severity(maxSeverity).issues(allIssues).build();
     }
 
     private boolean isLikelyCascading(ValidationResult result, List<ValidationResult> allResults) {
@@ -134,13 +120,10 @@ public class ValidationManager {
         }
 
         // Check if this result's issues are likely caused by previous validation failures
-        return allResults.stream()
-            .filter(r -> r != result)
-            .filter(r -> !r.isValid())
-            .anyMatch(r -> r.getIssues().stream()
-                .anyMatch(issue -> result.getIssues().stream()
-                    .anyMatch(resultIssue -> resultIssue.getContextKey() != null &&
-                        resultIssue.getContextKey().startsWith(issue.getContextKey()))));
+        return allResults.stream().filter(r -> r != result).filter(r -> !r.isValid())
+                .anyMatch(r -> r.getIssues().stream().anyMatch(
+                        issue -> result.getIssues().stream().anyMatch(resultIssue -> resultIssue.getContextKey() != null
+                                && resultIssue.getContextKey().startsWith(issue.getContextKey()))));
     }
 
     public void clearCache() {
@@ -150,4 +133,4 @@ public class ValidationManager {
     public void shutdown() {
         cache.shutdown();
     }
-} 
+}

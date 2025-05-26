@@ -5,24 +5,24 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
-import java.util.HashSet;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.config.core.ConfigDescriptionRegistry;
 import org.openhab.core.service.WatchService;
-import org.openhab.core.thing.UID;
-import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.ChannelUID;
-import org.openhab.io.homekit.util.ItemUID;
-import org.openhab.io.homekit.util.HomekitUID;
+import org.openhab.core.thing.ThingUID;
+import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.core.accessory.HomekitAccessoryUIDImpl;
 import org.openhab.io.homekit.core.characteristic.HomekitCharacteristicUIDImpl;
 import org.openhab.io.homekit.core.service.HomekitServiceUIDImpl;
+import org.openhab.io.homekit.util.HomekitUID;
+import org.openhab.io.homekit.util.ItemUID;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -42,11 +42,11 @@ import org.yaml.snakeyaml.Yaml;
 public class HomekitConfigurationManager implements WatchService.WatchEventListener {
     private static final Logger logger = LoggerFactory.getLogger(HomekitConfigurationManager.class);
     private static final String CONFIG_DIR = "conf/homekit";
-    
+
     private final WatchService watchService;
     private final ConfigDescriptionRegistry configDescriptionRegistry;
     private final Yaml yaml;
-    
+
     // Separate stores for different configuration types
     private final Map<UID, Map<String, Object>> itemConfigs = new ConcurrentHashMap<>();
     private final Map<UID, Map<String, Object>> thingConfigs = new ConcurrentHashMap<>();
@@ -58,7 +58,7 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     private final Map<UID, Map<String, Object>> bridgeConfigs = new ConcurrentHashMap<>();
     private final Map<UID, Map<String, Object>> networkConfigs = new ConcurrentHashMap<>();
     private final Map<UID, Map<String, Object>> eventConfigs = new ConcurrentHashMap<>();
-    
+
     // Track which file each configuration comes from
     private final Map<UID, String> itemSourceFiles = new ConcurrentHashMap<>();
     private final Map<UID, String> thingSourceFiles = new ConcurrentHashMap<>();
@@ -70,36 +70,33 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     private final Map<UID, String> bridgeSourceFiles = new ConcurrentHashMap<>();
     private final Map<UID, String> networkSourceFiles = new ConcurrentHashMap<>();
     private final Map<UID, String> eventSourceFiles = new ConcurrentHashMap<>();
-    
+
     private final Map<UID, String> uidToYamlFile = new ConcurrentHashMap<>();
     private final Map<String, Set<UID>> yamlFileToUIDs = new ConcurrentHashMap<>();
-    
+
     @Activate
     public HomekitConfigurationManager(@Reference WatchService watchService,
-            @Reference ConfigDescriptionRegistry configDescriptionRegistry,
-            Map<String, Object> config) {
+            @Reference ConfigDescriptionRegistry configDescriptionRegistry, Map<String, Object> config) {
         this.watchService = watchService;
         this.configDescriptionRegistry = configDescriptionRegistry;
         this.yaml = new Yaml();
-        
+
         // Register directory for watching
         Path confDir = Paths.get(CONFIG_DIR);
         this.watchService.registerListener(this, confDir);
-        
+
         // Initial load of all YAML files in the directory
         try (Stream<Path> paths = Files.walk(confDir, 1)) {
-            paths.filter(Files::isRegularFile)
-                 .filter(path -> path.toString().toLowerCase().endsWith(".yaml") || 
-                                path.toString().toLowerCase().endsWith(".yml"))
-                 .forEach(this::processConfigFile);
+            paths.filter(Files::isRegularFile).filter(path -> path.toString().toLowerCase().endsWith(".yaml")
+                    || path.toString().toLowerCase().endsWith(".yml")).forEach(this::processConfigFile);
         } catch (IOException e) {
             logger.error("Error scanning configuration directory: {}", e.getMessage());
         }
-        
+
         // Process OSGi configuration
         modified(config);
     }
-    
+
     @Modified
     protected void modified(Map<String, Object> config) {
         if (config == null) {
@@ -123,14 +120,14 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
             }
         });
     }
-    
+
     @Override
     public void processWatchEvent(WatchService.Kind kind, Path path) {
         if (kind == WatchService.Kind.CREATE || kind == WatchService.Kind.MODIFY) {
             processConfigFile(path);
         }
     }
-    
+
     /**
      * Processes a configuration file and updates the appropriate stores
      */
@@ -138,7 +135,7 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
         try {
             String fileName = file.getFileName().toString();
             Map<String, Object> yamlConfig = yaml.load(Files.readString(file));
-            
+
             // Process each section in the YAML file
             for (ConfigurationType type : ConfigurationType.values()) {
                 if (yamlConfig.containsKey(type.getYamlSection())) {
@@ -149,7 +146,7 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
             logger.error("Error processing config file {}: {}", file, e.getMessage());
         }
     }
-    
+
     /**
      * Converts a string UID to the appropriate UID type based on its format and section
      */
@@ -164,7 +161,7 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
         }
 
         String[] segments = uidString.split(":");
-        
+
         // Handle HomeKit UIDs
         if (segments.length >= 2 && segments[0].equals("homekit")) {
             switch (segments[1]) {
@@ -244,7 +241,7 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
         // Default to ThingUID if no specific type can be determined
         return new ThingUID("homekit", "unknown", uidString);
     }
-    
+
     /**
      * Processes configurations from YAML for a specific type
      */
@@ -269,7 +266,7 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
             }
         }
     }
-    
+
     /**
      * Writes a YAML configuration to a file
      */
@@ -277,7 +274,7 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
         Path configPath = Paths.get(CONFIG_DIR, yamlFile);
         yaml.dump(yamlConfig, Files.newBufferedWriter(configPath));
     }
-    
+
     /**
      * Stores configuration for a given UID in its respective YAML file
      */
@@ -415,30 +412,29 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
             return sourceFile;
         }
 
-
-            // For things and channels, try wildcard matches at any segment
-            String[] segments = uid.toString().split(":");
-            for (int i = segments.length - 1; i >= 0; i--) {
-                StringBuilder wildcardBuilder = new StringBuilder();
-                for (int j = 0; j < segments.length; j++) {
-                    if (j > 0) {
-                        wildcardBuilder.append(":");
-                    }
-                    wildcardBuilder.append(j == i ? "*" : segments[j]);
+        // For things and channels, try wildcard matches at any segment
+        String[] segments = uid.toString().split(":");
+        for (int i = segments.length - 1; i >= 0; i--) {
+            StringBuilder wildcardBuilder = new StringBuilder();
+            for (int j = 0; j < segments.length; j++) {
+                if (j > 0) {
+                    wildcardBuilder.append(":");
                 }
-                String wildcardUid = wildcardBuilder.toString();
-                UID wildcardUID = convertToUID(wildcardUid, type);
-                sourceFile = getSourceFile(wildcardUID, type);
-                if (sourceFile.isPresent()) {
-                    return sourceFile;
-                }
+                wildcardBuilder.append(j == i ? "*" : segments[j]);
+            }
+            String wildcardUid = wildcardBuilder.toString();
+            UID wildcardUID = convertToUID(wildcardUid, type);
+            sourceFile = getSourceFile(wildcardUID, type);
+            if (sourceFile.isPresent()) {
+                return sourceFile;
+            }
         }
 
         // Try global default
         UID wildcardUID = convertToUID("*", type);
         return getSourceFile(wildcardUID, type);
     }
-    
+
     /**
      * Gets configuration for a given UID with cascading support
      */
@@ -468,37 +464,36 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
             case NETWORK -> networkSourceFiles;
             case EVENT -> eventSourceFiles;
         };
-        
+
         // Try exact match first
         Map<String, Object> config = configs.get(uid);
         if (config != null) {
             return Optional.of(config);
         }
-        
 
-            // For things and channels, try wildcard matches at any segment
-            String[] segments = uid.toString().split(":");
-            for (int i = segments.length - 1; i >= 0; i--) {
-                StringBuilder wildcardBuilder = new StringBuilder();
-                for (int j = 0; j < segments.length; j++) {
-                    if (j > 0) {
-                        wildcardBuilder.append(":");
-                    }
-                    wildcardBuilder.append(j == i ? "*" : segments[j]);
+        // For things and channels, try wildcard matches at any segment
+        String[] segments = uid.toString().split(":");
+        for (int i = segments.length - 1; i >= 0; i--) {
+            StringBuilder wildcardBuilder = new StringBuilder();
+            for (int j = 0; j < segments.length; j++) {
+                if (j > 0) {
+                    wildcardBuilder.append(":");
                 }
-                String wildcardUid = wildcardBuilder.toString();
-                UID wildcardUID = convertToUID(wildcardUid, type);
-                config = configs.get(wildcardUID);
-                if (config != null) {
-                    String sourceFile = sourceFiles.get(wildcardUID);
-                    if (sourceFile != null) {
-                        sourceFiles.put(uid, sourceFile);
-                    }
-                    return Optional.of(config);
+                wildcardBuilder.append(j == i ? "*" : segments[j]);
+            }
+            String wildcardUid = wildcardBuilder.toString();
+            UID wildcardUID = convertToUID(wildcardUid, type);
+            config = configs.get(wildcardUID);
+            if (config != null) {
+                String sourceFile = sourceFiles.get(wildcardUID);
+                if (sourceFile != null) {
+                    sourceFiles.put(uid, sourceFile);
                 }
-            
+                return Optional.of(config);
+            }
+
         }
-        
+
         // Try global default
         UID wildcardUID = convertToUID("*", type);
         config = configs.get(wildcardUID);
@@ -509,10 +504,10 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
             }
             return Optional.of(config);
         }
-        
+
         return Optional.empty();
     }
-    
+
     /**
      * Updates configuration for a given UID
      */
@@ -532,7 +527,7 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
         configs.put(uid, config);
         storeConfigs(uid, type);
     }
-    
+
     /**
      * Updates configuration for a given UID and stores the source file
      */
@@ -553,7 +548,7 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
         sourceFiles.put(uid, yamlFile);
         storeConfigs(uid, type);
     }
-    
+
     /**
      * Removes configuration for a given UID
      */
@@ -586,15 +581,14 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
         };
         sourceFiles.remove(uid);
     }
-    
+
     /**
      * Gets a specific configuration value for a given UID and key.
      */
     public Optional<Object> getConfiguration(UID uid, ConfigurationType type, String key) {
-        return getConfiguration(uid, type)
-            .map(config -> config.get(key));
+        return getConfiguration(uid, type).map(config -> config.get(key));
     }
-    
+
     /**
      * Updates a specific configuration key for a given UID
      */
@@ -616,7 +610,7 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
         config.put(key, value);
         storeConfigs(uid, type);
     }
-    
+
     /**
      * Enum representing different types of configurations and their YAML section identifiers
      */
@@ -651,4 +645,4 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
             return null;
         }
     }
-} 
+}

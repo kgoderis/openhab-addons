@@ -1,6 +1,8 @@
 package org.openhab.io.homekit.provider;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -9,9 +11,11 @@ import org.openhab.core.storage.StorageService;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.binding.AbstractStorageBasedTypeProvider;
 import org.openhab.core.thing.binding.ThingTypeProvider;
+import org.openhab.core.thing.type.ChannelGroupDefinition;
 import org.openhab.core.thing.type.ChannelGroupTypeUID;
 import org.openhab.core.thing.type.ThingType;
 import org.openhab.core.thing.type.ThingTypeBuilder;
+import org.openhab.io.homekit.HomekitBindingConstants;
 import org.openhab.io.homekit.api.factory.HomekitServiceFactory;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -37,28 +41,28 @@ import org.slf4j.LoggerFactory;
 public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
     private final Logger logger = LoggerFactory.getLogger(HomekitThingTypeProvider.class);
     private final HomekitServiceFactory homekitServiceFactory;
+    private final HomekitChannelGroupTypeProvider channelGroupTypeProvider;
 
     @Activate
     public HomekitThingTypeProvider(@Reference StorageService storageService,
-            @Reference HomekitServiceFactory homekitServiceFactory) {
+            @Reference HomekitServiceFactory homekitServiceFactory,
+            @Reference HomekitChannelGroupTypeProvider channelGroupTypeProvider) {
         super(storageService);
         this.homekitServiceFactory = homekitServiceFactory;
+        this.channelGroupTypeProvider = channelGroupTypeProvider;
         addFactoryIndependentThingTypes();
         addFactoryDependentThingTypes();
     }
 
     private void addFactoryIndependentThingTypes() {
         // Add thing types for services that are not factory-specific
-        // This is a simplification - in a real implementation, you would need to determine
-        // which services should be grouped together
-        // which services should be grouped together
-
-        // homekit:accessory:
-        ThingTypeUID thingTypeUID = new ThingTypeUID("homekit", "accessory");
+        ThingTypeUID thingTypeUID = new ThingTypeUID(HomekitBindingConstants.BINDING_ID, "accessory");
 
         // Create the thing type
-        ThingType thingType = ThingTypeBuilder.instance(thingTypeUID, "Homekit HomekitAccessory")
-                .withDescription("Homekit HomekitAccessory").withCategory("homekit").build();
+        ThingType thingType = ThingTypeBuilder.instance(thingTypeUID, "Homekit Accessory")
+                .withDescription("Homekit Accessory")
+                .withCategory("homekit")
+                .build();
 
         // Store the thing type
         putThingType(thingType);
@@ -108,54 +112,71 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
 
         // Get the service class to determine the service name
         String serviceName = homekitServiceFactory.getTagFromServiceType(serviceType);
+        if (serviceName == null || serviceName.isEmpty()) {
+            logger.warn("Invalid service name for service type: {}", serviceType);
+            return;
+        }
 
-        // Create the thing type
+        // Create channel group definitions for this service
+        List<ChannelGroupDefinition> channelGroupDefinitions = createChannelGroupDefinitions(serviceType);
+        if (channelGroupDefinitions.isEmpty()) {
+            logger.warn("No channel group definitions found for service type: {}", serviceType);
+            return;
+        }
+
+        // Create the thing type with channel groups
         ThingType thingType = ThingTypeBuilder.instance(thingTypeUID, serviceName)
-                .withDescription("Homekit " + serviceName + " HomekitService").withCategory("homekit").build();
+                .withDescription("Homekit " + serviceName + " Service")
+                .withCategory("homekit")
+                .withChannelGroupDefinitions(channelGroupDefinitions)
+                .build();
 
         // Store the thing type
         putThingType(thingType);
-        logger.debug("Created ThingType {} for Homekit service type {}", thingTypeUID, serviceType);
+        logger.debug("Created ThingType {} for Homekit service type {} with {} channel groups", thingTypeUID, 
+            serviceType, channelGroupDefinitions.size());
     }
 
-    // private List<ChannelDefinition> createChannelDefinitions(String serviceType, HomekitFactory homekitFactory) {
-    // // Get all characteristic types supported by this service
-    // Set<String> characteristicTypes = homekitFactory.getSupportedCharacteristicTypes();
+    private List<ChannelGroupDefinition> createChannelGroupDefinitions(String serviceType) {
+        List<ChannelGroupDefinition> definitions = new ArrayList<>();
+        try {
+            String serviceTag = homekitServiceFactory.getTagFromServiceType(serviceType);
+            if (serviceTag == null || serviceTag.isEmpty()) {
+                logger.warn("Invalid service tag for service type: {}", serviceType);
+                return definitions;
+            }
 
-    // // Filter to only include characteristics that are relevant to this service
-    // return characteristicTypes.stream().filter(characteristicType -> {
-    // // Check if this characteristic type is associated with the service
-    // return homekitFactory.getService(characteristicType) != null
-    // && homekitFactory.getServiceType(characteristicType).equals(serviceType);
-    // }).map(characteristicType -> {
-    // // Get the channel type UID for this characteristic
-    // ChannelTypeUID channelTypeUID = homekitFactory.getChannelTypeUID(characteristicType);
-    // if (channelTypeUID == null) {
-    // logger.warn("No ChannelTypeUID found for characteristic type: {}", characteristicType);
-    // return null;
-    // }
+            // Create a channel group type UID for this service
+            ChannelGroupTypeUID channelGroupTypeUID = new ChannelGroupTypeUID(HomekitBindingConstants.BINDING_ID, 
+                "service-" + serviceTag);
 
-    // // Create a channel definition
-    // return new ChannelDefinitionBuilder(homekitFactory.getTagFromCharacteristicType(characteristicType),
-    // channelTypeUID).withLabel(characteristicType)
-    // .withDescription("Homekit " + characteristicType + " HomekitCharacteristic").build();
-    // }).filter(def -> def != null).collect(Collectors.toList());
-    // }
+            // Verify that the channel group type exists
+            if (channelGroupTypeProvider.getChannelGroupType(channelGroupTypeUID, null) == null) {
+                logger.warn("No channel group type found for service type: {}", serviceType);
+                return definitions;
+            }
 
-    // private List<ChannelGroupDefinition> createChannelGroupDefinitions(String serviceType,
-    // HomekitFactory homekitFactory) {
-    // // Create a channel group definition for this service
-    // // This is a simplification - in a real implementation, you would need to determine
-    // // which services should be grouped together
-    // ChannelGroupTypeUID channelGroupTypeUID = getChannelGroupTypeUID(serviceType);
-    // return List.of(new ChannelGroupDefinition(serviceType, channelGroupTypeUID, serviceType,
-    // "Homekit " + serviceType + " HomekitService Group"));
-    // }
+            // Create a channel group definition with index 1 (first instance)
+            definitions.add(new ChannelGroupDefinition(serviceTag + ".1", channelGroupTypeUID, serviceTag,
+                    "Homekit " + serviceTag + " Service"));
+
+            logger.debug("Created channel group definition for service type {} with UID {}", serviceType, 
+                channelGroupTypeUID);
+        } catch (Exception e) {
+            logger.error("Failed to create channel group definitions for service type {}: {}", serviceType, 
+                e.getMessage(), e);
+        }
+        return definitions;
+    }
 
     public ThingTypeUID getThingTypeUID(String serviceType) {
         // Create a unique ID for the thing type based on the service type
         // Format: homekit:serviceTag
-        return new ThingTypeUID("homekit", serviceType);
+        String serviceTag = homekitServiceFactory.getTagFromServiceType(serviceType);
+        if (serviceTag == null || serviceTag.isEmpty()) {
+            return null;
+        }
+        return new ThingTypeUID(HomekitBindingConstants.BINDING_ID, serviceTag);
     }
 
     private ChannelGroupTypeUID getChannelGroupTypeUID(String serviceType) {

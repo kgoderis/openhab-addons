@@ -5,47 +5,48 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.io.console.Console;
 import org.openhab.core.io.console.extensions.AbstractConsoleCommandExtension;
 import org.openhab.core.io.console.extensions.ConsoleCommandExtension;
-import org.openhab.core.items.Item;
 import org.openhab.core.items.GroupItem;
+import org.openhab.core.items.Item;
 import org.openhab.core.items.ItemRegistry;
 import org.openhab.core.items.Metadata;
 import org.openhab.core.items.MetadataKey;
 import org.openhab.core.items.MetadataRegistry;
+import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingRegistry;
 import org.openhab.core.thing.ThingUID;
-import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.link.ItemChannelLinkRegistry;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
-import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
-import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry;
+import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
+import org.openhab.io.homekit.api.service.HomekitService;
+import org.openhab.io.homekit.bridge.HomekitAccessoryBridge;
+import org.openhab.io.homekit.bridge.HomekitItemBridge;
+import org.openhab.io.homekit.bridge.HomekitThingBridge;
 import org.openhab.io.homekit.config.HomekitConfigurationManager;
-import org.openhab.io.homekit.util.ItemUID;
-import org.openhab.io.homekit.util.HomekitUID;
 import org.openhab.io.homekit.config.HomekitConfigurationManager.ConfigurationType;
 import org.openhab.io.homekit.core.server.HomekitAccessoryServerUIDImpl;
+import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
+import org.openhab.io.homekit.exception.HomekitServerException;
+import org.openhab.io.homekit.util.HomekitUID;
+import org.openhab.io.homekit.util.ItemUID;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.openhab.io.homekit.bridge.HomekitThingBridge;
-import org.openhab.io.homekit.bridge.HomekitItemBridge;
-import org.openhab.io.homekit.bridge.HomekitAccessoryBridge;
-import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
-import org.openhab.io.homekit.exception.HomekitServerException;
 
 /**
  * Console commands for interacting with the Homekit integration
  *
- * @author Andy Lintner - Initial contribution
+ * @author Karel Goderis - Initial contribution
  */
 @NonNullByDefault
 @Component(service = ConsoleCommandExtension.class)
@@ -83,10 +84,8 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
             @Reference MetadataRegistry metadataRegistry, @Reference HomekitAccessoryRegistry accessoryRegistry,
             @Reference HomekitAccessoryServerRegistry accessoryServerRegistry,
             @Reference ItemChannelLinkRegistry itemChannelLinkRegistry,
-            @Reference HomekitConfigurationManager configManager,
-            @Reference HomekitItemBridge itemBridge,
-            @Reference HomekitThingBridge thingBridge,
-            @Reference HomekitAccessoryBridge accessoryBridge) {
+            @Reference HomekitConfigurationManager configManager, @Reference HomekitItemBridge itemBridge,
+            @Reference HomekitThingBridge thingBridge, @Reference HomekitAccessoryBridge accessoryBridge) {
         super(COMMAND_HOMEKIT, "HomeKit integration commands");
         this.itemRegistry = itemRegistry;
         this.thingRegistry = thingRegistry;
@@ -196,10 +195,12 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
                         "Show HomeKit accessories exposed by an accessory server"),
                 buildCommandUsage(SUBCOMMAND_LIST + " " + SUBCOMMAND_SERVERS, "List all HomeKit accessory servers"),
                 buildCommandUsage(SUBCOMMAND_LIST + " " + SUBCOMMAND_ACCESSORIES, "List all HomeKit accessories"),
-                buildCommandUsage(SUBCOMMAND_LIST + " " + SUBCOMMAND_BRIDGED_ACCESSORIES, "List all HomeKit accessories exposed by the HomeKit bridges"),
+                buildCommandUsage(SUBCOMMAND_LIST + " " + SUBCOMMAND_BRIDGED_ACCESSORIES,
+                        "List all HomeKit accessories exposed by the HomeKit bridges"),
                 buildCommandUsage(SUBCOMMAND_LIST + " " + SUBCOMMAND_PAIRINGS, "List all HomeKit pairings"),
                 buildCommandUsage(SUBCOMMAND_ADD_PAIRING + " <serverId> <setupCode>", "Add a pairing to a server"),
-                buildCommandUsage(SUBCOMMAND_REMOVE_PAIRING + " <serverId> <pairingId>", "Remove a pairing from a server"),
+                buildCommandUsage(SUBCOMMAND_REMOVE_PAIRING + " <serverId> <pairingId>",
+                        "Remove a pairing from a server"),
                 buildCommandUsage(SUBCOMMAND_HELP, "Show this help"));
     }
 
@@ -278,8 +279,7 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         console.println("Label: " + thing.getLabel());
 
         // Get configuration
-        Optional<Map<String, Object>> config = configManager.getConfiguration(thing.getUID(),
-                ConfigurationType.THING);
+        Optional<Map<String, Object>> config = configManager.getConfiguration(thing.getUID(), ConfigurationType.THING);
         if (config.isPresent()) {
             console.println("Configuration:");
             config.get().forEach((k, v) -> console.println("  " + k + ": " + v));
@@ -341,9 +341,8 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         console.println("State: " + (server.isPaired() ? "Paired" : "Unpaired"));
 
         // Get configuration
-        Optional<Map<String, Object>> config = configManager.getConfiguration(
-            new HomekitUID("homekit:server:" + serverId),
-            ConfigurationType.BRIDGE);
+        Optional<Map<String, Object>> config = configManager
+                .getConfiguration(new HomekitUID("homekit:server:" + serverId), ConfigurationType.BRIDGE);
         if (config.isPresent()) {
             console.println("Configuration:");
             config.get().forEach((k, v) -> console.println("  " + k + ": " + v));
@@ -388,7 +387,7 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
     private void printBridgedAccessories(Console console) {
         console.println("Bridged HomeKit Accessories:");
         console.println("----------------------------");
-        
+
         // Print accessories from item bridge
         console.println("\nItem Bridge Accessories:");
         itemBridge.getItems().forEach(item -> {
@@ -405,7 +404,7 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
             });
         });
 
-        // Print accessories from the accessory bridge  
+        // Print accessories from the accessory bridge
         console.println("\nAccessory Bridge Accessories:");
         accessoryBridge.getAccessories().forEach(accessory -> {
             printAccessoryDetails(console, accessory);
@@ -426,7 +425,8 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
             console.println("  Server: " + server.getUID());
             try {
                 server.getPairings().forEach(pairing -> {
-                    console.println("    Pairing ID: " + Base64.getEncoder().encodeToString(pairing.getDestinationId()));
+                    console.println(
+                            "    Pairing ID: " + Base64.getEncoder().encodeToString(pairing.getDestinationId()));
                     console.println("      Public Key: " + Base64.getEncoder().encodeToString(pairing.getPublicKey()));
                 });
             } catch (HomekitServerException e) {
@@ -487,4 +487,3 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         }
     }
 }
-

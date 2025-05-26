@@ -12,20 +12,45 @@ import org.openhab.io.homekit.library.characteristic.HomekitRouterStatusCharacte
 
 /**
  * HomeKit WiFi Router Service.
- * This service provides WiFi router functionality in HomeKit.
- * For more information, see https://developer.apple.com/documentation/HomeKit
+ * 
+ * <p>
+ * This service provides WiFi router functionality in HomeKit, including:
+ * <ul>
+ *   <li>Router status monitoring</li>
+ *   <li>Network connectivity management</li>
+ *   <li>WiFi network state tracking</li>
+ * </ul>
+ * </p>
  *
- * @author Karel Goderis
+ * <p>
+ * The service is used to:
+ * <ul>
+ *   <li>Monitor the operational status of WiFi routers</li>
+ *   <li>Track network connectivity state</li>
+ *   <li>Provide router status information to iOS devices</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * For more information, see the
+ * <a href="https://developer.apple.com/documentation/HomeKit">HomeKit Accessory Protocol Specification</a>.
+ * </p>
+ *
+ * @author Karel Goderis - Initial contribution
+ * @version 1.0
+ * @since 1.0
  */
 @HomekitServiceType(type = "0000020A-0000-1000-8000-0026BB765291", name = "WiFiRouter", tag = "wifiRouter")
 @NonNullByDefault
 public class HomekitWiFiRouterService extends AbstractHomekitService {
+
     /**
      * Creates a new WiFi Router service.
      *
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @since 1.0
      */
     public HomekitWiFiRouterService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
@@ -40,6 +65,7 @@ public class HomekitWiFiRouterService extends AbstractHomekitService {
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
      * @param value JSON value containing service configuration
+     * @since 1.0
      */
     public HomekitWiFiRouterService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
@@ -48,7 +74,24 @@ public class HomekitWiFiRouterService extends AbstractHomekitService {
 
     /**
      * Adds the required characteristics for this service.
-     * Required: RouterStatus (UUID: 0000020E-0000-1000-8000-0026BB765291)
+     * 
+     * <p>
+     * Required characteristics:
+     * <ul>
+     *   <li>RouterStatus (UUID: 0000020E-0000-1000-8000-0026BB765291)</li>
+     * </ul>
+     * </p>
+     *
+     * <p>
+     * The RouterStatus characteristic provides:
+     * <ul>
+     *   <li>Current operational state of the router</li>
+     *   <li>Network connectivity status</li>
+     *   <li>WiFi network state information</li>
+     * </ul>
+     * </p>
+     *
+     * @since 1.0
      */
     @Override
     public void addCharacteristics() {

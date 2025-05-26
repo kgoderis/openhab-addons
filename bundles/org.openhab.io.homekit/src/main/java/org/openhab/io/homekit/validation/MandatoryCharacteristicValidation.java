@@ -6,13 +6,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.openhab.core.thing.Thing;
-import org.osgi.service.component.annotations.Component;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
+import org.osgi.service.component.annotations.Component;
 
 /**
  * Performs validation of mandatory characteristics to ensure all required HomeKit characteristics
@@ -33,14 +30,8 @@ public class MandatoryCharacteristicValidation extends AbstractValidation {
         Object object = context.getTarget();
         if (!(object instanceof Thing)) {
             List<ValidationIssue> issues = new ArrayList<>();
-            issues.add(createIssue(
-                ValidationResult.Severity.ERROR,
-                "Invalid object type: expected Thing",
-                "INVALID_TYPE",
-                getContextKey(object),
-                true,
-                true
-            ));
+            issues.add(createIssue(ValidationResult.Severity.ERROR, "Invalid object type: expected Thing",
+                    "INVALID_TYPE", getContextKey(object), true, true));
             return createResult(issues);
         }
 
@@ -50,14 +41,8 @@ public class MandatoryCharacteristicValidation extends AbstractValidation {
         // Get all services for this thing
         List<HomekitService> services = getServices(thing);
         if (services == null) {
-            issues.add(createIssue(
-                ValidationResult.Severity.ERROR,
-                "No HomeKit services found for thing",
-                "NO_SERVICES",
-                getContextKey(thing),
-                true,
-                true
-            ));
+            issues.add(createIssue(ValidationResult.Severity.ERROR, "No HomeKit services found for thing",
+                    "NO_SERVICES", getContextKey(thing), true, true));
             return createResult(issues);
         }
 
@@ -72,14 +57,8 @@ public class MandatoryCharacteristicValidation extends AbstractValidation {
     private void validateServiceCharacteristics(HomekitService service, Thing thing, List<ValidationIssue> issues) {
         HomekitServiceType serviceType = service.getClass().getAnnotation(HomekitServiceType.class);
         if (serviceType == null) {
-            issues.add(createIssue(
-                ValidationResult.Severity.ERROR,
-                "Service type annotation not found",
-                "MISSING_SERVICE_TYPE",
-                getContextKey(thing),
-                true,
-                true
-            ));
+            issues.add(createIssue(ValidationResult.Severity.ERROR, "Service type annotation not found",
+                    "MISSING_SERVICE_TYPE", getContextKey(thing), true, true));
             return;
         }
 
@@ -89,14 +68,9 @@ public class MandatoryCharacteristicValidation extends AbstractValidation {
         // Get all characteristics for this service
         Set<HomekitCharacteristic<?>> characteristics = service.getCharacteristics();
         if (characteristics == null) {
-            issues.add(createIssue(
-                ValidationResult.Severity.ERROR,
-                String.format("No characteristics found for service '%s'", serviceName),
-                "NO_CHARACTERISTICS",
-                getContextKey(thing) + ":" + serviceUuid,
-                true,
-                true
-            ));
+            issues.add(createIssue(ValidationResult.Severity.ERROR,
+                    String.format("No characteristics found for service '%s'", serviceName), "NO_CHARACTERISTICS",
+                    getContextKey(thing) + ":" + serviceUuid, true, true));
             return;
         }
 
@@ -112,8 +86,9 @@ public class MandatoryCharacteristicValidation extends AbstractValidation {
         }
     }
 
-    private void validateMandatoryCharacteristic(String characteristicName, Set<HomekitCharacteristic<?>> characteristics,
-            HomekitService service, Thing thing, List<ValidationIssue> issues) {
+    private void validateMandatoryCharacteristic(String characteristicName,
+            Set<HomekitCharacteristic<?>> characteristics, HomekitService service, Thing thing,
+            List<ValidationIssue> issues) {
         boolean found = false;
         for (HomekitCharacteristic<?> characteristic : characteristics) {
             if (characteristic.getClass().getSimpleName().contains(characteristicName)) {
@@ -123,20 +98,13 @@ public class MandatoryCharacteristicValidation extends AbstractValidation {
         }
 
         if (!found) {
-            issues.add(createIssue(
-                ValidationResult.Severity.ERROR,
-                String.format("Mandatory characteristic '%s' not found in service '%s'", 
-                    characteristicName, service.getName()),
-                "MISSING_MANDATORY_CHARACTERISTIC",
-                getContextKey(thing) + ":" + service.getType() + ":" + characteristicName,
-                true,
-                true,
-                Map.of(
-                    "serviceName", service.getName(),
-                    "serviceUuid", service.getType(),
-                    "characteristicName", characteristicName
-                )
-            ));
+            issues.add(createIssue(ValidationResult.Severity.ERROR,
+                    String.format("Mandatory characteristic '%s' not found in service '%s'", characteristicName,
+                            service.getName()),
+                    "MISSING_MANDATORY_CHARACTERISTIC",
+                    getContextKey(thing) + ":" + service.getType() + ":" + characteristicName, true, true,
+                    Map.of("serviceName", service.getName(), "serviceUuid", service.getType(), "characteristicName",
+                            characteristicName)));
         }
     }
 
@@ -159,4 +127,4 @@ public class MandatoryCharacteristicValidation extends AbstractValidation {
         }
         return super.getContextKey(object);
     }
-} 
+}

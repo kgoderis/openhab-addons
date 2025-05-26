@@ -1,0 +1,169 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Java Class Documentation Standards
+
+This document outlines the required format and content for documenting Java classes in the OpenHAB HomeKit integration, including all fields to be included in class-level and method-level documentation, as well as logging standards.
+
+## Class-Level Documentation
+
+Every Java class **must** begin with a Javadoc comment block that includes the following fields, and must use javadoc tags, in this order:
+
+```java
+/**
+ * <Short summary of the class's purpose and responsibilities.>
+ *
+ * <Detailed narrative description that explains:
+ * - How the class works and its role in the system
+ * - Key design decisions and their rationale
+ * - Important implementation details and patterns used
+ * - How it interacts with other components
+ * - Any special considerations or edge cases
+ * - Mention other class names as much as possible, and use links to these classes using @link tags
+ * - If making reference to other classes, you add a @link tag>
+ *
+ * The class integrates with:
+ * - {@link RelatedClass1} for specific functionality
+ * - {@link RelatedClass2} for another functionality
+ * - {@link org.openhab.core.items.Item OpenHAB's item system} for state synchronization
+ *
+ * @author <Author Name(s), with addition of "- Initial Contribution" if the author is the first author in the list>
+ * @since <Version or date of introduction>
+ */
+```
+
+## Method-Level Documentation
+
+Every method (including private and protected) **must** have a Javadoc comment block that includes:
+
+```java
+/**
+ * <Short summary of what the method does.>
+ *
+ * This method <detailed description of the method's purpose and behavior>.
+ *
+ * Key implementation details:
+ * - Specific implementation point 1
+ * - Specific implementation point 2
+ * - Specific implementation point 3
+ * - Specific implementation point 4
+ *
+ * @param <paramName> <Description of the parameter>
+ * @throws <ExceptionType> <Condition under which the exception is thrown>
+ */
+```
+
+## Mandatory 
+- Do not remove depreciated methods
+- Do not move methods or re-organise the class
+- Do not alter the logic of methods
+- Do not add methods
+- Do not change, remove or add fields
+- Remove sections like  /* ------------------------------------------------------------ */
+- Add @link tags for all classes referenced, even if from openHAB or external libs. 
+- Do remove logging prefixes that are not used
+- Do use javadoc tags for paragraphs, list and so forth
+- Do not alter Class Annotations
+- Do not use fully qualified names for classes if they are part of the solution. Only do fully qualified names for classes from other libraries or openHAB
+
+
+
+## Best Practices
+
+1. **Documentation**
+   - Focus on explaining how and why the code works, not just what it does
+   - Use proper Javadoc tags (@param, @throws, etc.)
+   - Include implementation details in method documentation
+   - Link to related classes using @link tags
+
+2. **Logging**
+   - Log initialization steps at INFO level
+   - Log state changes at DEBUG level
+   - Log configuration details at DEBUG level
+   - Log errors with full stack traces
+   - Use WARN for recoverable issues
+   - Include relevant context in every log message
+
+3. **Error Handling**
+   - Document all possible exceptions
+   - Include specific conditions for exceptions
+   - Log errors with full context
+   - Use appropriate exception types
+
+4. **Code Organization**
+   - Group related functionality
+   - Use consistent naming conventions
+   - Follow OSGi component patterns
+   - Implement proper resource cleanup
+
+## Example
+
+```java
+/**
+ * Manages a HomeKit accessory server instance.
+ *
+ * This class implements the core server functionality for HomeKit accessories, providing
+ * the bridge between OpenHAB and HomeKit clients. It manages the lifecycle and communication
+ * for a single HomeKit accessory server instance.
+ *
+ * The server operates as a central hub for {@link HomekitAccessory HomeKit accessories}. When initialized, it sets up
+ * network listeners and security settings to accept incoming HomeKit client connections. As
+ * accessories are registered through the {@link #registerAccessory(HomekitAccessory) registerAccessory} method, the server creates the
+ * necessary handlers and prepares them for client access.
+ *
+ * The class integrates with:
+ * - {@link HomekitAccessory} for accessory lifecycle and state management
+ * - {@link HomekitCharacteristic} for value conversion and validation
+ * - {@link org.openhab.core.items.Item OpenHAB's item system} for state synchronization
+ *
+ * @author Karel Goderis - Initial Contribution
+ * @since 1.0
+ */
+public class HomekitAccessoryServer {
+    // ========== Log Message Prefixes ==========
+    protected static final String LOG_PREFIX = "Homekit HomekitAccessoryServer: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+
+    /**
+     * Registers a new accessory with the server.
+     *
+     * This method handles the registration of a new accessory, setting up all necessary
+     * handlers and preparing it for client access.
+     *
+     * Key implementation details:
+     * - Validates accessory configuration
+     * - Sets up characteristic handlers
+     * - Prepares for client access
+     * - Updates server state
+     *
+     * @param accessory The accessory to register
+     * @throws IllegalArgumentException if the accessory configuration is invalid
+     * @throws IllegalStateException if the server is not properly initialized
+     * @throws NullPointerException if the accessory parameter is null
+     */
+    public void registerAccessory(HomekitAccessory accessory) {
+        logger.debug("{}Registering accessory: {}", LOG_ACCESSORY, accessory.getClass().getSimpleName());
+        try {
+            logger.debug("{}Accessory registered successfully: {}", LOG_ACCESSORY, accessory.getClass().getSimpleName());
+        } catch (Exception e) {
+            logger.error("{}Failed to register accessory {}: {}", LOG_ERROR, accessory.getClass().getSimpleName(), e.getMessage(), e);
+            throw e;
+        }
+    }
+}
+```
+
+## Enforcement
+
+- All new and modified classes and methods must follow this documentation format
+- Code reviews should verify compliance with these standards
+- Documentation should focus on explaining how and why the code works, not just what it does
+- Logging should follow the specified format and level guidelines
+- Error handling should be properly documented and logged 

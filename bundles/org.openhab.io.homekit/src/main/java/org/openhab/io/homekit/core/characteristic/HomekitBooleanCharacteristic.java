@@ -13,12 +13,10 @@ package org.openhab.io.homekit.core.characteristic;
 import java.util.Map;
 
 import javax.json.JsonNumber;
-import javax.json.JsonObject;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.types.State;
@@ -89,7 +87,6 @@ public abstract class HomekitBooleanCharacteristic extends AbstractHomekitCharac
     public State toState(Boolean value) {
         return value ? OnOffType.ON : OnOffType.OFF;
     }
-
 
     public static String getAcceptedItemType() {
         return CoreItemFactory.SWITCH;

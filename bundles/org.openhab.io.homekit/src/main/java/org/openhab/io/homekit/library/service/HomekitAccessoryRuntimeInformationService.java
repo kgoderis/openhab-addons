@@ -15,10 +15,34 @@ import org.openhab.io.homekit.library.characteristic.HomekitSleepIntervalCharact
 
 /**
  * HomeKit Accessory Runtime Information Service.
- * This service provides runtime information about the accessory.
- * For more information, see https://developer.apple.com/documentation/HomeKit
+ * 
+ * <p>
+ * This service provides runtime information about the accessory, including:
+ * <ul>
+ *   <li>Activity intervals</li>
+ *   <li>Heartbeat status</li>
+ *   <li>Ping responses</li>
+ *   <li>Sleep intervals</li>
+ * </ul>
+ * </p>
  *
- * @author Karel Goderis
+ * <p>
+ * The service is used to monitor and manage the accessory's runtime state, ensuring:
+ * <ul>
+ *   <li>Proper communication between the accessory and iOS devices</li>
+ *   <li>Efficient power management</li>
+ *   <li>Reliable operation monitoring</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * For more information, see the
+ * <a href="https://developer.apple.com/documentation/HomeKit">HomeKit Accessory Protocol Specification</a>.
+ * </p>
+ *
+ * @author Karel Goderis - Initial contribution
+ * @version 1.0
+ * @since 1.0
  */
 @HomekitServiceType(type = "00000239-0000-1000-8000-0026BB765291", name = "AccessoryRuntimeInformation", tag = "accessoryRuntimeInformation")
 @NonNullByDefault
@@ -30,6 +54,7 @@ public class HomekitAccessoryRuntimeInformationService extends AbstractHomekitSe
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @since 1.0
      */
     public HomekitAccessoryRuntimeInformationService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
@@ -44,6 +69,7 @@ public class HomekitAccessoryRuntimeInformationService extends AbstractHomekitSe
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
      * @param value JSON value containing service configuration
+     * @since 1.0
      */
     public HomekitAccessoryRuntimeInformationService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
@@ -52,23 +78,34 @@ public class HomekitAccessoryRuntimeInformationService extends AbstractHomekitSe
 
     /**
      * Adds the required and optional characteristics for this service.
-     * Required: Ping
-     * Optional: ActivityInterval, HeartBeat
+     * 
+     * <p>
+     * Required characteristics:
+     * <ul>
+     *   <li>Ping</li>
+     * </ul>
+     * </p>
+     *
+     * <p>
+     * Optional characteristics:
+     * <ul>
+     *   <li>ActivityInterval</li>
+     *   <li>HeartBeat</li>
+     *   <li>SleepInterval</li>
+     * </ul>
+     * </p>
+     *
+     * @since 1.0
      */
     @Override
     public void addCharacteristics() {
-        // Required characteristics
         addCharacteristic(new HomekitPingCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                 .withMandatory(true));
-
-        // Optional characteristics
         addCharacteristic(new HomekitActivityIntervalCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(
-                new HomekitHeartBeatCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                        .withMandatory(false));
-        addCharacteristic(
-                new HomekitSleepIntervalCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                        .withMandatory(false));
+        addCharacteristic(new HomekitHeartBeatCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitSleepIntervalCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
     }
 }

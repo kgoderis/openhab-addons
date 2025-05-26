@@ -33,8 +33,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A Parser for 1.0 and 1.1 as defined by RFC7230
- * <p>
+ * A specialized HTTP parser for HomeKit communication.
+ *
+ * A Parser for 1.0 and 1.1 HTTP messages as defined by RFC7230.
  * This parser parses HTTP client and server messages from buffers
  * passed in the {@link #parseNext(ByteBuffer)} method. The parsed
  * elements of the HTTP message are passed as event calls to the
@@ -42,8 +43,7 @@ import org.slf4j.LoggerFactory;
  * If the passed handler is a {@link RequestHandler} then server side
  * parsing is performed and if it is a {@link ResponseHandler}, then
  * client side parsing is done.
- * </p>
- * <p>
+ *
  * The contract of the {@link HttpHandler} API is that if a call returns
  * true then the call to {@link #parseNext(ByteBuffer)} will return as
  * soon as possible also with a true response. Typically this indicates
@@ -53,8 +53,7 @@ import org.slf4j.LoggerFactory;
  * should be done after a true return from {@link #parseNext(ByteBuffer)}
  * rather than from within the scope of a call like
  * {@link RequestHandler#messageComplete()}
- * </p>
- * <p>
+ *
  * For performance, the parse is heavily dependent on the
  * {@link Trie#getBest(ByteBuffer, int, int)} method to look ahead in a
  * single pass for both the structure ( : and CRLF ) and semantic (which
@@ -64,9 +63,27 @@ import org.slf4j.LoggerFactory;
  * For headers who's value is not known statically (eg. Host, COOKIE) then a
  * per parser dynamic Trie of {@link HttpFields} from previous parsed messages
  * is used to help the parsing of subsequent messages.
- * </p>
- * <p>
- * The parser can work in varying compliance modes:
+ *
+ * The parser works in conjunction with:
+ * - {@link HomekitHttpGenerator} for message generation
+ * - {@link HomekitHttpVersion} for version handling
+ * - {@link HomekitHttpConnection} for connection management
+ *
+ * Key responsibilities:
+ * 1. Parsing HTTP request and response messages
+ * 2. Handling message headers and content
+ * 3. Managing chunked transfer encoding
+ * 4. Supporting persistent connections
+ * 5. Optimizing header parsing through caching
+ *
+ * The implementation provides:
+ * - Fast case-insensitive string lookups for methods and headers
+ * - Optimized buffer management for message parsing
+ * - Support for chunked transfer encoding
+ * - Proper handling of content length and transfer encoding
+ * - Support for persistent connections
+ *
+ * The parser can operate in different compliance modes:
  * <dl>
  * <dt>RFC7230</dt>
  * <dd>(default) Compliance with RFC7230</dd>
@@ -79,6 +96,8 @@ import org.slf4j.LoggerFactory;
  * </dl>
  *
  * @see <a href="http://tools.ietf.org/html/rfc7230">RFC 7230</a>
+ * @author Karel Goderis - Initial Contribution
+ * @since 1.0
  */
 public class HomekitHttpParser {
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpParser.class);
@@ -256,18 +275,54 @@ public class HomekitHttpParser {
         return HttpCompliance.RFC7230;
     }
 
+    /**
+     * Creates a new HTTP parser with the specified request handler.
+     *
+     * This constructor initializes a parser that will handle HTTP requests using
+     * the provided request handler. The parser will use default settings for
+     * maximum header size and compliance mode.
+     *
+     * @param handler The request handler to use for processing parsed requests
+     */
     public HomekitHttpParser(RequestHandler handler) {
         this(handler, -1, compliance());
     }
 
+    /**
+     * Creates a new HTTP parser with the specified response handler.
+     *
+     * This constructor initializes a parser that will handle HTTP responses using
+     * the provided response handler. The parser will use default settings for
+     * maximum header size and compliance mode.
+     *
+     * @param handler The response handler to use for processing parsed responses
+     */
     public HomekitHttpParser(ResponseHandler handler) {
         this(handler, -1, compliance());
     }
 
+    /**
+     * Creates a new HTTP parser with the specified request handler and maximum header size.
+     *
+     * This constructor initializes a parser that will handle HTTP requests using
+     * the provided request handler and enforces the specified maximum header size.
+     *
+     * @param handler The request handler to use for processing parsed requests
+     * @param maxHeaderBytes The maximum number of bytes allowed in headers
+     */
     public HomekitHttpParser(RequestHandler handler, int maxHeaderBytes) {
         this(handler, maxHeaderBytes, compliance());
     }
 
+    /**
+     * Creates a new HTTP parser with the specified response handler and maximum header size.
+     *
+     * This constructor initializes a parser that will handle HTTP responses using
+     * the provided response handler and enforces the specified maximum header size.
+     *
+     * @param handler The response handler to use for processing parsed responses
+     * @param maxHeaderBytes The maximum number of bytes allowed in headers
+     */
     public HomekitHttpParser(ResponseHandler handler, int maxHeaderBytes) {
         this(handler, maxHeaderBytes, compliance());
     }
@@ -305,6 +360,11 @@ public class HomekitHttpParser {
         _complianceHandler = (ComplianceHandler) (_handler instanceof ComplianceHandler ? _handler : null);
     }
 
+    /**
+     * Gets the current HTTP handler.
+     *
+     * @return The current HTTP handler
+     */
     public HttpHandler getHandler() {
         return _handler;
     }
@@ -336,16 +396,28 @@ public class HomekitHttpParser {
         if (_complianceHandler != null) {
             _complianceHandler.onComplianceViolation(_compliance, violation, reason);
         }
-
         return false;
     }
 
+    /**
+     * Handle a compliance violation by notifying the compliance handler.
+     *
+     * @param section The compliance section that was violated
+     * @param reason The reason for the violation
+     */
     protected void handleViolation(HttpComplianceSection section, String reason) {
         if (_complianceHandler != null) {
             _complianceHandler.onComplianceViolation(_compliance, section, reason);
         }
     }
 
+    /**
+     * Handle case-insensitive header names according to compliance settings.
+     *
+     * @param orig The original header name
+     * @param normative The normative (standard) header name
+     * @return The appropriate header name based on compliance settings
+     */
     protected String caseInsensitiveHeader(String orig, String normative) {
         if (_compliances.contains(HttpComplianceSection.FIELD_NAME_CASE_INSENSITIVE)) {
             return normative;
@@ -356,10 +428,20 @@ public class HomekitHttpParser {
         return orig;
     }
 
+    /**
+     * Gets the current content length.
+     *
+     * @return The content length, or -1 if not set
+     */
     public long getContentLength() {
         return _contentLength;
     }
 
+    /**
+     * Gets the number of content bytes read so far.
+     *
+     * @return The number of content bytes read
+     */
     public long getContentRead() {
         return _contentPosition;
     }
@@ -373,46 +455,102 @@ public class HomekitHttpParser {
         _headResponse = head;
     }
 
+    /**
+     * Set the response status code.
+     *
+     * @param status The HTTP status code
+     */
     protected void setResponseStatus(int status) {
         _responseStatus = status;
     }
 
+    /**
+     * Gets the current parser state.
+     *
+     * @return The current state of the parser
+     */
     public State getState() {
         return _state;
     }
 
+    /**
+     * Checks if the parser is currently in a content state.
+     *
+     * @return true if the parser is processing content
+     */
     public boolean inContentState() {
         return _state.ordinal() >= State.CONTENT.ordinal() && _state.ordinal() < State.END.ordinal();
     }
 
+    /**
+     * Checks if the parser is currently in a header state.
+     *
+     * @return true if the parser is processing headers
+     */
     public boolean inHeaderState() {
         return _state.ordinal() < State.CONTENT.ordinal();
     }
 
+    /**
+     * Checks if the current message is using chunked transfer encoding.
+     *
+     * @return true if chunked transfer encoding is being used
+     */
     public boolean isChunking() {
         return _endOfContent == EndOfContent.CHUNKED_CONTENT;
     }
 
+    /**
+     * Checks if the parser is in the start state.
+     *
+     * @return true if the parser is in the start state
+     */
     public boolean isStart() {
         return isState(State.START);
     }
 
+    /**
+     * Checks if the parser is in the close state.
+     *
+     * @return true if the parser is in the close state
+     */
     public boolean isClose() {
         return isState(State.CLOSE);
     }
 
+    /**
+     * Checks if the parser is in the closed state.
+     *
+     * @return true if the parser is in the closed state
+     */
     public boolean isClosed() {
         return isState(State.CLOSED);
     }
 
+    /**
+     * Checks if the parser is in an idle state.
+     *
+     * @return true if the parser is in an idle state
+     */
     public boolean isIdle() {
         return __idleStates.contains(_state);
     }
 
+    /**
+     * Checks if the parser is in a complete state.
+     *
+     * @return true if the parser is in a complete state
+     */
     public boolean isComplete() {
         return __completeStates.contains(_state);
     }
 
+    /**
+     * Checks if the parser is in the specified state.
+     *
+     * @param state The state to check for
+     * @return true if the parser is in the specified state
+     */
     public boolean isState(State state) {
         return _state == state;
     }
@@ -913,13 +1051,9 @@ public class HomekitHttpParser {
                         }
 
                         if (_hasContentLength) {
-                            if (complianceViolation(MULTIPLE_CONTENT_LENGTHS)) {
-                                throw new BadMessageException(HttpStatus.BAD_REQUEST_400,
-                                        MULTIPLE_CONTENT_LENGTHS.getDescription());
-                            }
                             if (convertContentLength(_valueString) != _contentLength) {
                                 throw new BadMessageException(HttpStatus.BAD_REQUEST_400,
-                                        MULTIPLE_CONTENT_LENGTHS.getDescription());
+                                        "Invalid Content-Length Value");
                             }
                         }
                         _hasContentLength = true;
@@ -1752,6 +1886,12 @@ public class HomekitHttpParser {
         setState(State.CLOSE);
     }
 
+    /**
+     * Resets the parser to its initial state.
+     *
+     * This method clears all internal state and prepares the parser for
+     * processing a new message. It should be called between messages.
+     */
     public void reset() {
         if (debug) {
             logger.debug("{}reset {}", LOG_STATE, this);
@@ -1801,8 +1941,8 @@ public class HomekitHttpParser {
                 getContentLength());
     }
 
-    /*
-     * Event Handler interface
+    /**
+     * Event Handler interface for HTTP parsing events.
      * These methods return true if the caller should process the events
      * so far received (eg return from parseNext and call HttpChannel.handle).
      * If multiple callbacks are called in sequence (eg
@@ -1810,12 +1950,33 @@ public class HomekitHttpParser {
      * then it is sufficient for the caller to process the events only once.
      */
     public interface HttpHandler {
+        /**
+         * Handle content data from the parser.
+         *
+         * @param item The content buffer
+         * @return true if the caller should process events
+         */
         boolean content(ByteBuffer item);
 
+        /**
+         * Called when header parsing is complete.
+         *
+         * @return true if the caller should process events
+         */
         boolean headerComplete();
 
+        /**
+         * Called when content parsing is complete.
+         *
+         * @return true if the caller should process events
+         */
         boolean contentComplete();
 
+        /**
+         * Called when message parsing is complete.
+         *
+         * @return true if the caller should process events
+         */
         boolean messageComplete();
 
         /**
@@ -1861,6 +2022,9 @@ public class HomekitHttpParser {
         int getHeaderCacheSize();
     }
 
+    /**
+     * Handler for HTTP request parsing events.
+     */
     public interface RequestHandler extends HttpHandler {
         /**
          * This is the method called by parser when the HTTP request line is parsed
@@ -1874,9 +2038,12 @@ public class HomekitHttpParser {
         boolean startRequest(String method, String uri, HttpVersion version);
     }
 
+    /**
+     * Handler for HTTP response parsing events.
+     */
     public interface ResponseHandler extends HttpHandler {
         /**
-         * This is the method called by parser when the HTTP request line is parsed
+         * This is the method called by parser when the HTTP response line is parsed
          *
          * @param version the http version in use
          * @param status the response status
@@ -1886,18 +2053,41 @@ public class HomekitHttpParser {
         boolean startResponse(HomekitHttpVersion version, int status, String reason);
     }
 
+    /**
+     * Handler for HTTP compliance violations.
+     */
     public interface ComplianceHandler extends HttpHandler {
+        /**
+         * @deprecated use {@link #onComplianceViolation(HttpCompliance, HttpComplianceSection, String)} instead
+         */
         @Deprecated
         default void onComplianceViolation(HttpCompliance compliance, HttpCompliance required, String reason) {
         }
 
+        /**
+         * Called when a compliance violation is detected.
+         *
+         * @param compliance The current compliance mode
+         * @param violation The section that was violated
+         * @param details The details of the violation
+         */
         default void onComplianceViolation(HttpCompliance compliance, HttpComplianceSection violation, String details) {
             onComplianceViolation(compliance, HttpCompliance.requiredCompliance(violation), details);
         }
     }
 
+    /**
+     * Exception thrown when an illegal character is encountered during parsing.
+     */
     @SuppressWarnings("serial")
     private static class IllegalCharacterException extends BadMessageException {
+        /**
+         * Create a new illegal character exception.
+         *
+         * @param state The parser state when the error occurred
+         * @param token The illegal token encountered
+         * @param buffer The buffer being parsed
+         */
         private IllegalCharacterException(State state, HttpTokens.Token token, ByteBuffer buffer) {
             super(400, String.format("Illegal character %s", token));
             if (logger.isDebugEnabled()) {

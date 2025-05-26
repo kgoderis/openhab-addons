@@ -1,6 +1,9 @@
 package org.openhab.io.homekit.api.factory;
 
+import java.util.Map;
 import java.util.Set;
+
+import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
@@ -8,85 +11,208 @@ import org.openhab.io.homekit.api.service.HomekitService;
 
 /**
  * Factory interface for creating HomeKit services.
- * This factory is responsible for creating service instances based on their type.
+ * This factory is responsible for creating and managing HomeKit service instances
+ * based on service types, tags, or configuration.
+ *
+ * <p>
+ * The factory provides methods for:
+ * <ul>
+ *   <li>Creating services from service types</li>
+ *   <li>Creating services from service tags</li>
+ *   <li>Creating services with variable arguments</li>
+ *   <li>Creating services from JSON configuration</li>
+ *   <li>Querying supported service types and tags</li>
+ *   <li>Retrieving characteristic types for services</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * Service types and tags are used to identify different kinds of HomeKit services.
+ * Each service type is associated with a set of mandatory and optional characteristics
+ * that define its behavior and capabilities.
+ * </p>
+ *
+ * @author Karel Goderis - Initial contribution
+ * @version 1.0
+ * @since 1.0
  */
 @NonNullByDefault
 public interface HomekitServiceFactory {
     /**
-     * Creates a new HomeKit service instance.
+     * Creates a new service instance for the specified type and accessory.
      *
-     * @param type The type of service to create
-     * @param accessory The accessory that will own this service
+     * <p>
+     * The service is created using the standard constructor that takes an accessory
+     * and event manager. The service type must be previously registered during
+     * initialization.
+     * </p>
+     *
+     * @param type The service type to create
+     * @param accessory The accessory that will own the service
      * @return A new service instance
-     * @throws IllegalArgumentException if the service type is not supported
+     * @throws IllegalArgumentException if the service type is not supported or creation fails
+     * @since 1.0
      */
     HomekitService createService(String type, HomekitAccessory accessory);
 
     /**
-     * Creates a new HomeKit service instance based on a tag.
-     * The tag is typically derived from the service class name by removing "HomekitService" suffix.
-     *
-     * @param tag The tag identifying the service (e.g. "LightBulb", "Switch", "Thermostat")
-     * @param accessory The accessory that will own this service
-     * @return A new service instance
-     * @throws IllegalArgumentException if no service type is found for the given tag
-     */
-    HomekitService createServiceFromTag(String tag, HomekitAccessory accessory);
-
-    /**
-     * Creates a new HomeKit service instance with variable arguments.
+     * Creates a service instance with variable arguments.
      * This method allows for more flexible service creation by accepting any number of constructor arguments.
      *
-     * @param type The type of service to create
+     * <p>
+     * The method will:
+     * <ol>
+     *   <li>Determine the appropriate constructor based on argument types</li>
+     *   <li>Create a new service instance using the constructor</li>
+     *   <li>Return the created service</li>
+     * </ol>
+     * </p>
+     *
+     * @param type The service type to create
      * @param args The constructor arguments
      * @return A new service instance
      * @throws IllegalArgumentException if the service type is not supported or creation fails
+     * @since 1.0
      */
     HomekitService createServiceWithArgs(String type, Object... args);
 
     /**
-     * Checks if this factory supports creating a service of the given type.
+     * Creates a service instance from a service tag.
      *
-     * @param type The type of service to check
-     * @return true if this factory can create services of the given type
+     * <p>
+     * The method will:
+     * <ol>
+     *   <li>Look up the service type for the given tag</li>
+     *   <li>Create a new service instance using the found type</li>
+     *   <li>Return the created service</li>
+     * </ol>
+     * </p>
+     *
+     * @param tag The service tag to create from
+     * @param accessory The accessory that will own the service
+     * @return A new service instance
+     * @throws IllegalArgumentException if the tag is not supported or service creation fails
+     * @since 1.0
+     */
+    HomekitService createServiceFromTag(String tag, HomekitAccessory accessory);
+
+    /**
+     * Checks if the factory supports a specific service type.
+     *
+     * <p>
+     * This method checks if the factory has registered the given service type
+     * and can create instances of it.
+     * </p>
+     *
+     * @param type The service type to check
+     * @return true if the type is supported, false otherwise
+     * @since 1.0
      */
     boolean supportsServiceType(String type);
 
     /**
-     * Checks if this factory supports creating a service with the given tag.
+     * Checks if the factory supports creating services with the given tag.
      *
-     * @param tag The tag to check
-     * @return true if this factory can create services with the given tag
+     * <p>
+     * This method checks if the factory has registered the given service tag
+     * and can create instances using it.
+     * </p>
+     *
+     * @param tag The service tag to check
+     * @return true if the tag is supported, false otherwise
+     * @since 1.0
      */
     boolean supportsTag(String tag);
 
     /**
-     * Gets all service types supported by this factory.
+     * Returns a set of all supported service tags.
      *
-     * @return A set of supported service type identifiers
-     */
-    Set<String> getSupportedServiceTypes();
-
-    /**
-     * Gets all service tags supported by this factory.
+     * <p>
+     * The returned set contains all service tags that have been registered
+     * with the factory and can be used to create services.
+     * </p>
      *
-     * @return A set of supported service tags
+     * @return An unmodifiable set of supported service tags
+     * @since 1.0
      */
     Set<String> getSupportedTags();
 
     /**
-     * Gets the tag from the service type.
+     * Returns a set of all supported service types.
      *
-     * @param serviceType The service type
-     * @return The tag
+     * <p>
+     * The returned set contains all service types that have been registered
+     * with the factory and can be used to create services.
+     * </p>
+     *
+     * @return An unmodifiable set of supported service types
+     * @since 1.0
+     */
+    Set<String> getSupportedServiceTypes();
+
+    /**
+     * Creates a service instance from a JSON value.
+     * This method extracts the service type from the JSON value and creates the appropriate service.
+     *
+     * <p>
+     * The JSON value must contain:
+     * <ul>
+     *   <li>A "type" field with the service type</li>
+     *   <li>Any additional configuration required by the service</li>
+     * </ul>
+     * </p>
+     *
+     * @param accessory The accessory that will own the service
+     * @param value The JSON value containing service configuration
+     * @return A new service instance
+     * @throws IllegalArgumentException if the JSON value is invalid or service creation fails
+     * @since 1.0
+     */
+    HomekitService createService(HomekitAccessory accessory, JsonValue value);
+
+    /**
+     * Gets the service tag for a given service type.
+     *
+     * <p>
+     * This method looks up the service tag that corresponds to the given
+     * service type in the factory's registry.
+     * </p>
+     *
+     * @param serviceType The service type to get the tag for
+     * @return The service tag, or null if not found
+     * @since 1.0
      */
     String getTagFromServiceType(String serviceType);
 
     /**
-     * Gets the service type from the tag.
+     * Gets the service type for a given service tag.
      *
-     * @param serviceTag The tag
-     * @return The service type
+     * <p>
+     * This method looks up the service type that corresponds to the given
+     * service tag in the factory's registry.
+     * </p>
+     *
+     * @param serviceTag The service tag to get the type for
+     * @return The service type, or null if not found
+     * @since 1.0
      */
     String getServiceTypeFromTag(String serviceTag);
+
+    /**
+     * Gets the mandatory and optional characteristic types for a given service type.
+     *
+     * <p>
+     * The returned map contains two sets:
+     * <ul>
+     *   <li>"mandatory" - Set of required characteristic types</li>
+     *   <li>"optional" - Set of optional characteristic types</li>
+     * </ul>
+     * </p>
+     *
+     * @param serviceType The service type to get characteristics for
+     * @return A map containing sets of mandatory and optional characteristic types
+     * @throws IllegalArgumentException if the service type is not supported
+     * @since 1.0
+     */
+    Map<String, Set<String>> getCharacteristicTypes(String serviceType);
 }

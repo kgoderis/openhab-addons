@@ -14,64 +14,154 @@ import org.openhab.io.homekit.library.characteristic.HomekitStatusActiveCharacte
 import org.openhab.io.homekit.library.characteristic.HomekitStatusFaultCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitStatusLowBatteryCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitStatusTamperedCharacteristic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Service that represents a motion sensor in HomeKit.
- * This service provides information about motion detection.
+ * HomeKit Motion Sensor Service.
+ * <p>
+ * This service provides monitoring of motion detection in HomeKit accessories.
+ * It enables tracking of motion events and sensor status information.
+ * </p>
+ *
+ * <ul>
+ *   <li>Motion detection monitoring</li>
+ *   <li>Sensor status and fault monitoring</li>
+ *   <li>Battery and tamper state tracking</li>
+ * </ul>
+ *
+ * <p>
+ * Required characteristics:
+ * <ul>
+ *   <li>MotionDetected - Current motion detection state (0 = No Motion, 1 = Motion Detected)</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * Optional characteristics:
+ * <ul>
+ *   <li>Name - Sensor name</li>
+ *   <li>StatusActive - Sensor activation state</li>
+ *   <li>StatusFault - Fault state indicator</li>
+ *   <li>StatusLowBattery - Low battery warning</li>
+ *   <li>StatusTampered - Tamper detection state</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * For more information, see the
+ * <a href="https://developer.apple.com/documentation/HomeKit">HomeKit Accessory Protocol Specification</a>.
+ * </p>
  *
  * @author Karel Goderis
- * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ * @version 1.0
+ * @since 1.0
  */
 @HomekitServiceType(type = "00000085-0000-1000-8000-0026BB765291", name = "Motion Sensor", tag = "motionSensor")
 @NonNullByDefault
 public class HomekitMotionSensorService extends AbstractHomekitService {
+    // ========== Log Message Prefixes ==========
+    private static final String LOG_PREFIX = "Homekit MotionSensorService: ";
+    private static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    private static final String LOG_STATE = LOG_PREFIX + "State - ";
+    private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    private static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
+    private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+    private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
+
+    private final Logger logger = LoggerFactory.getLogger(HomekitMotionSensorService.class);
 
     /**
-     * Creates a new HomekitMotionSensorService.
+     * Creates a new Motion Sensor service.
      *
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @since 1.0
      */
     public HomekitMotionSensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
         withName("Motion Sensor").withPrimary(false).withHidden(false);
+        logger.debug("{}Created MotionSensorService for accessory {}", LOG_INIT, accessory.getLabel());
     }
 
     /**
-     * Creates a new HomekitMotionSensorService from a JSON value.
+     * Creates a new Motion Sensor service from a JSON configuration.
      *
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
      * @param value JSON value containing service configuration
+     * @since 1.0
      */
     public HomekitMotionSensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
         super(accessory, eventManager, characteristicFactory, value);
+        logger.debug("{}Created MotionSensorService from JSON for accessory {}", LOG_INIT, accessory.getLabel());
     }
 
+    /**
+     * Adds the required and optional characteristics for this service.
+     * <p>
+     * Required characteristics:
+     * <ul>
+     *   <li>MotionDetected - Current motion detection state (0 = No Motion, 1 = Motion Detected)</li>
+     * </ul>
+     * </p>
+     * <p>
+     * Optional characteristics:
+     * <ul>
+     *   <li>Name - Sensor name</li>
+     *   <li>StatusActive - Sensor activation state</li>
+     *   <li>StatusFault - Fault state indicator</li>
+     *   <li>StatusLowBattery - Low battery warning</li>
+     *   <li>StatusTampered - Tamper detection state</li>
+     * </ul>
+     * </p>
+     * @since 1.0
+     */
     @Override
     public void addCharacteristics() {
+        logger.trace("{}Adding required characteristics to MotionSensorService for accessory {}", LOG_TRACE, getAccessory().getLabel());
+        
         addCharacteristic(
                 new HomekitMotionDetectedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(true));
+        logger.debug("{}Added MotionDetectedCharacteristic to MotionSensorService", LOG_STATE);
+        
         addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                 .withMandatory(false));
+        logger.debug("{}Added NameCharacteristic to MotionSensorService", LOG_STATE);
+        
         addCharacteristic(
                 new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
+        logger.debug("{}Added StatusActiveCharacteristic to MotionSensorService", LOG_STATE);
+        
         addCharacteristic(
                 new HomekitStatusFaultCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
+        logger.debug("{}Added StatusFaultCharacteristic to MotionSensorService", LOG_STATE);
+        
         addCharacteristic(new HomekitStatusLowBatteryCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        logger.debug("{}Added StatusLowBatteryCharacteristic to MotionSensorService", LOG_STATE);
+        
         addCharacteristic(
                 new HomekitStatusTamperedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
+        logger.debug("{}Added StatusTamperedCharacteristic to MotionSensorService", LOG_STATE);
     }
 
+    /**
+     * Indicates that this service is not extensible.
+     * Motion sensor service has a fixed set of characteristics.
+     *
+     * @return false, as this service is not extensible
+     * @since 1.0
+     */
     @Override
     public boolean isExtensible() {
         return false;

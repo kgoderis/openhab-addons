@@ -45,18 +45,30 @@ import org.openhab.io.homekit.util.HomekitByte;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Represents a local HomeKit accessory server that runs on the same machine as OpenHAB.
+ * This server handles local HomeKit accessories and manages their lifecycle, including:
+ * - Server initialization and startup
+ * - Accessory registration and management
+ * - mDNS advertisement
+ * - HTTP request handling
+ * - Event processing and notifications
+ *
+ * @author Karel Goderis - Initial contribution
+ * @since 1.0
+ */
 public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer {
 
     // ========== Constants ==========
     protected static final Logger logger = LoggerFactory.getLogger(HomekitLocalAccessoryServer.class);
-    protected static final String LOG_PREFIX = "Homekit HomekitLocalAccessoryServer: ";
+    protected static final String LOG_PREFIX = "Homekit LocalAccessoryServer: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
-    protected static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
-    protected static final String LOG_PAIRING = LOG_PREFIX + "HomekitPairing - ";
+    protected static final String LOG_PAIRING = LOG_PREFIX + "Pairing - ";
     protected static final String LOG_EVENT = LOG_PREFIX + "Event - ";
     protected static final String LOG_SERVER = LOG_PREFIX + "Server - ";
 
@@ -78,7 +90,20 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     // ========== Event Handling ==========
     private final Set<HomekitEventSubscription> eventSubscriptions = new HashSet<>();
 
-    // ========== Constructors ==========
+    /**
+     * Creates a new local HomeKit accessory server with the specified configuration.
+     *
+     * @param category The category of accessories this server will host
+     * @param address The network address to bind to
+     * @param port The port to listen on
+     * @param pairingId The unique pairing identifier for this server
+     * @param secretKey The secret key used for encryption
+     * @param mdnsService The mDNS service for advertising
+     * @param accessoryRegistry The registry for managing accessories
+     * @param pairingRegistry The registry for managing pairings
+     * @param eventManager The manager for handling events
+     * @throws HomekitConfigurationException if the configuration is invalid
+     */
     public HomekitLocalAccessoryServer(HomekitAccessoryCategory category, InetAddress address, int port,
             byte[] pairingId, byte[] secretKey, MDNSService mdnsService, HomekitAccessoryRegistry accessoryRegistry,
             HomekitPairingRegistry pairingRegistry, HomekitEventManager eventManager)
@@ -90,12 +115,26 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
         logger.debug("{}Local server initialization completed", LOG_INIT);
     }
 
+    /**
+     * Creates a new local HomeKit accessory server with auto-generated pairing ID and secret key.
+     *
+     * @param category The category of accessories this server will host
+     * @param address The network address to bind to
+     * @param port The port to listen on
+     * @param mdnsService The mDNS service for advertising
+     * @param accessoryRegistry The registry for managing accessories
+     * @param pairingRegistry The registry for managing pairings
+     * @param eventManager The manager for handling events
+     * @throws HomekitConfigurationException if the configuration is invalid
+     * @throws HomekitServerException if server creation fails
+     */
     public HomekitLocalAccessoryServer(HomekitAccessoryCategory category, InetAddress address, int port,
             MDNSService mdnsService, HomekitAccessoryRegistry accessoryRegistry, HomekitPairingRegistry pairingRegistry,
             HomekitEventManager eventManager) throws HomekitConfigurationException, HomekitServerException {
         super(category, address, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry,
                 eventManager);
         this.mdnsService = mdnsService;
+        logger.debug("{}Created new local server with auto-generated credentials", LOG_INIT);
     }
 
     // ========== Lifecycle Methods ==========
@@ -453,6 +492,13 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     }
 
     // ========== Advertisement Management ==========
+    /**
+     * Advertises this server on the local network using mDNS.
+     * This method:
+     * 1. Ensures the server is running
+     * 2. Creates advertisement properties
+     * 3. Updates or creates the mDNS advertisement
+     */
     @Override
     public synchronized void advertise() {
         logger.debug("{}Starting server advertisement for {}", LOG_SERVER, getUID());
@@ -483,6 +529,16 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
         }
     }
 
+    /**
+     * Creates the properties for mDNS advertisement.
+     * These properties include:
+     * - Status flags indicating pairing state
+     * - Device ID for unique identification
+     * - Model name
+     * - Configuration number
+     *
+     * @return Hashtable containing the advertisement properties
+     */
     private Hashtable<String, String> createAdvertisementProperties() {
         Hashtable<String, String> props = new Hashtable<>();
 
@@ -493,8 +549,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
         // Device ID ("5.4 Device ID" (page 31)) of the accessory. The Device ID must be formatted as
         // "XX:XX:XX:XX:XX:XX", where "XX" is a hexadecimal string representing a byte. Required.
         // This value is also used as the accessory's HomekitPairing Identifier. This identifier of the accessory must
-        // be a
-        // unique random number generated at every factory reset and must persist across reboots.
+        // be a unique random number generated at every factory reset and must persist across reboots.
         props.put("id", new String(getPairingId(), StandardCharsets.UTF_8));
 
         // Model name of the accessory (e.g. "Device1,1"). Required.

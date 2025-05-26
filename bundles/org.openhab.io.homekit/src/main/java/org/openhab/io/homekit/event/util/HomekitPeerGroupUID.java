@@ -1,7 +1,6 @@
 package org.openhab.io.homekit.event.util;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.util.HomekitUID;
 
 /**

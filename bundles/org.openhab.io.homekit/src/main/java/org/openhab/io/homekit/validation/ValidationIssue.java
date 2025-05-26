@@ -108,15 +108,16 @@ public class ValidationIssue {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         ValidationIssue that = (ValidationIssue) o;
-        return Objects.equals(code, that.code) && 
-               Objects.equals(contextKey, that.contextKey);
+        return Objects.equals(code, that.code) && Objects.equals(contextKey, that.contextKey);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(code, contextKey);
     }
-} 
+}

@@ -1,6 +1,5 @@
 package org.openhab.io.homekit.validation;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -52,15 +51,9 @@ public abstract class AbstractValidation implements Validation {
             return doValidate(context);
         } catch (Exception e) {
             logger.error("Error in validation {}: {}", id, e.getMessage(), e);
-            return ValidationResult.builder()
-                .valid(false)
-                .severity(ValidationResult.Severity.ERROR)
-                .message("Validation failed: " + e.getMessage())
-                .code("VALIDATION_ERROR")
-                .contextKey(getContextKey(context.getTarget()))
-                .rootCause(true)
-                .blocking(true)
-                .build();
+            return ValidationResult.builder().valid(false).severity(ValidationResult.Severity.ERROR)
+                    .message("Validation failed: " + e.getMessage()).code("VALIDATION_ERROR")
+                    .contextKey(getContextKey(context.getTarget())).rootCause(true).blocking(true).build();
         }
     }
 
@@ -81,33 +74,19 @@ public abstract class AbstractValidation implements Validation {
     /**
      * Creates a validation issue with the given parameters.
      */
-    protected ValidationIssue createIssue(ValidationResult.Severity severity, String message, 
-            String code, String contextKey, boolean rootCause, boolean blocking) {
-        return ValidationIssue.builder()
-            .severity(severity)
-            .message(message)
-            .code(code)
-            .contextKey(contextKey)
-            .rootCause(rootCause)
-            .blocking(blocking)
-            .build();
+    protected ValidationIssue createIssue(ValidationResult.Severity severity, String message, String code,
+            String contextKey, boolean rootCause, boolean blocking) {
+        return ValidationIssue.builder().severity(severity).message(message).code(code).contextKey(contextKey)
+                .rootCause(rootCause).blocking(blocking).build();
     }
 
     /**
      * Creates a validation issue with the given parameters and additional details.
      */
-    protected ValidationIssue createIssue(ValidationResult.Severity severity, String message, 
-            String code, String contextKey, boolean rootCause, boolean blocking, 
-            Map<String, Object> details) {
-        return ValidationIssue.builder()
-            .severity(severity)
-            .message(message)
-            .code(code)
-            .contextKey(contextKey)
-            .rootCause(rootCause)
-            .blocking(blocking)
-            .details(details)
-            .build();
+    protected ValidationIssue createIssue(ValidationResult.Severity severity, String message, String code,
+            String contextKey, boolean rootCause, boolean blocking, Map<String, Object> details) {
+        return ValidationIssue.builder().severity(severity).message(message).code(code).contextKey(contextKey)
+                .rootCause(rootCause).blocking(blocking).details(details).build();
     }
 
     /**
@@ -119,15 +98,9 @@ public abstract class AbstractValidation implements Validation {
         }
 
         boolean isValid = false;
-        ValidationResult.Severity maxSeverity = issues.stream()
-            .map(ValidationIssue::getSeverity)
-            .max(Enum::compareTo)
-            .orElse(ValidationResult.Severity.INFO);
+        ValidationResult.Severity maxSeverity = issues.stream().map(ValidationIssue::getSeverity).max(Enum::compareTo)
+                .orElse(ValidationResult.Severity.INFO);
 
-        return ValidationResult.builder()
-            .valid(isValid)
-            .severity(maxSeverity)
-            .issues(issues)
-            .build();
+        return ValidationResult.builder().valid(isValid).severity(maxSeverity).issues(issues).build();
     }
-} 
+}

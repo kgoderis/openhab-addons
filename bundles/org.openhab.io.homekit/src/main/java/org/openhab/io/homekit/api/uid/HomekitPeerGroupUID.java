@@ -22,4 +22,4 @@ public interface HomekitPeerGroupUID extends Identifiable<HomekitPeerGroupUID> {
      * @return the peer group name
      */
     String getPeerGroup();
-} 
+}

@@ -41,13 +41,31 @@ import org.slf4j.LoggerFactory;
 /**
  * Abstract base class for HomeKit accessories. This class provides a default implementation of the HomekitAccessory
  * interface and manages the core functionality required by all HomeKit accessories.
- * 
+ *
+ * <p>
  * This class handles:
- * - Unique identification and instance management
- * - Service management and lifecycle
- * - Event handling and subscriptions
- * - JSON serialization
- * - Builder pattern for configuration
+ * <ul>
+ *   <li>Unique identification and instance management</li>
+ *   <li>Service management and lifecycle</li>
+ *   <li>Event handling and subscriptions</li>
+ *   <li>JSON serialization</li>
+ *   <li>Builder pattern for configuration</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * The class provides a robust foundation for implementing HomeKit accessories by:
+ * <ul>
+ *   <li>Managing service lifecycle and relationships</li>
+ *   <li>Handling event subscriptions and notifications</li>
+ *   <li>Providing builder pattern for easy configuration</li>
+ *   <li>Implementing JSON serialization for HomeKit protocol</li>
+ * </ul>
+ * </p>
+ *
+ * @author Karel Goderis - Initial contribution
+ * @version 1.0
+ * @since 1.0
  */
 @NonNullByDefault
 public abstract class AbstractHomekitAccessory implements HomekitAccessory {
@@ -92,6 +110,8 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
      *
      * @param eventManager The event manager for handling events
      * @param serviceFactory The factory for creating services
+     * @param characteristicFactory The factory for creating characteristics
+     * @since 1.0
      */
     public AbstractHomekitAccessory(HomekitEventManager eventManager, HomekitServiceFactory serviceFactory,
             HomekitCharacteristicFactory characteristicFactory) {
@@ -107,10 +127,12 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
      * Creates a new Accessory from a JSON value.
      * The instance ID is taken from the JSON data.
      * AID is restored from JSON to maintain consistency across reboots.
-     * 
+     *
      * @param eventManager The event manager for handling events
      * @param serviceFactory The factory for creating services
+     * @param characteristicFactory The factory for creating characteristics
      * @param value The JSON value containing the accessory data
+     * @since 1.0
      */
     public AbstractHomekitAccessory(HomekitEventManager eventManager, HomekitServiceFactory serviceFactory,
             HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
@@ -249,6 +271,7 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
      * When a service is added, it is also subscribed to state change events.
      *
      * @param service the service to add
+     * @since 1.0
      */
     @Override
     public void addService(@Nullable HomekitService service) {
@@ -264,8 +287,8 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
                         .publishEvent(new HomekitAccessoryEvent(HomekitEventType.SERVICE_ADDED, this, service, null));
 
                 // Subscribe to service state change events using current UID
-                eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED, (UID)service.getUID(),
-                        (UID)getUID(), (HomekitEventHandler)event -> onEvent(event)));
+                eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED,
+                        (UID) service.getUID(), (UID) getUID(), (HomekitEventHandler) event -> onEvent(event)));
             } else {
                 logger.debug("{}HomekitAccessory '{}' (Type: {}) already contains HomekitService '{}' (Type: {})",
                         LOG_ACCESSORY, this.getLabel(), this.getClass().getSimpleName(), service.getName(),
@@ -278,6 +301,8 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
      * Adds the default set of services to this accessory.
      * This includes the required accessory information service.
      * Subclasses can override this method to provide additional services.
+     *
+     * @since 1.0
      */
     @Override
     public void addServices() {
@@ -292,6 +317,7 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
      * Also cleans up any event subscriptions associated with the service.
      *
      * @param service the service to remove
+     * @since 1.0
      */
     @Override
     public void removeService(HomekitService service) {
@@ -316,6 +342,7 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
      *
      * @param value The JSON value containing service data
      * @return Optional containing the created service if successful
+     * @since 1.0
      */
     private Optional<HomekitService> createService(JsonValue value) {
         String serviceType = ((JsonObject) value).getString("type");
@@ -338,6 +365,7 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
      * Services are the primary way to interact with the accessory via the HomeKit protocol.
      *
      * @return the collection of services
+     * @since 1.0
      */
     @Override
     @NonNull
@@ -351,6 +379,7 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
      *
      * @param serviceType the type of service to find
      * @return an Optional containing the service if found, empty otherwise
+     * @since 1.0
      */
     @Override
     public Optional<HomekitService> getService(String serviceType) {
@@ -362,6 +391,7 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
      * The primary service represents the main functionality of the accessory.
      *
      * @return an Optional containing the primary service if found, empty otherwise
+     * @since 1.0
      */
     @Override
     public Optional<HomekitService> getPrimaryService() {

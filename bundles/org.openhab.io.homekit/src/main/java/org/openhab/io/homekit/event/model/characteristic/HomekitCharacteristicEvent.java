@@ -55,8 +55,8 @@ public class HomekitCharacteristicEvent extends AbstractHomekitEvent {
         super(type, characteristic != null ? (UID) characteristic.getUID() : (UID) new HomekitUID("characteristic"),
                 HomekitUID.WILDCARD_UID,
                 new HomekitEventMetadata(
-                        characteristic != null ? (UID) characteristic.getUID() : (UID) new HomekitUID("characteristic"), null, null,
-                        Collections.emptySet()));
+                        characteristic != null ? (UID) characteristic.getUID() : (UID) new HomekitUID("characteristic"),
+                        null, null, Collections.emptySet()));
         this.characteristic = Optional.ofNullable(characteristic);
         this.oldValue = Optional.ofNullable(oldValue);
         this.newValue = Optional.ofNullable(newValue);

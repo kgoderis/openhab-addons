@@ -16,67 +16,166 @@ import org.openhab.io.homekit.library.characteristic.HomekitStatusActiveCharacte
 import org.openhab.io.homekit.library.characteristic.HomekitStatusFaultCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitStatusLowBatteryCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitStatusTamperedCharacteristic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Service that represents a carbon monoxide sensor in HomeKit.
- * This service provides information about carbon monoxide levels and detection.
+ * HomeKit Carbon Monoxide Sensor Service.
+ * <p>
+ * This service provides comprehensive monitoring and detection of carbon monoxide (CO) levels in HomeKit accessories.
+ * It enables tracking of CO concentrations, peak levels, and detection states for safety monitoring devices.
+ * </p>
+ *
+ * <ul>
+ *   <li>CO level monitoring and reporting</li>
+ *   <li>Peak level detection and tracking</li>
+ *   <li>Sensor status and fault monitoring</li>
+ *   <li>Battery and tamper state tracking</li>
+ * </ul>
+ *
+ * <p>
+ * Required characteristics:
+ * <ul>
+ *   <li>CarbonMonoxideDetected - Current CO detection state</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * Optional characteristics:
+ * <ul>
+ *   <li>CarbonMonoxideLevel - Current CO concentration</li>
+ *   <li>CarbonMonoxidePeakLevel - Highest recorded CO level</li>
+ *   <li>Name - Sensor name</li>
+ *   <li>StatusActive - Sensor activation state</li>
+ *   <li>StatusFault - Fault state indicator</li>
+ *   <li>StatusLowBattery - Low battery warning</li>
+ *   <li>StatusTampered - Tamper detection state</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * For more information, see the
+ * <a href="https://developer.apple.com/documentation/HomeKit">HomeKit Accessory Protocol Specification</a>.
+ * </p>
  *
  * @author Karel Goderis
- * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ * @version 1.0
+ * @since 1.0
  */
 @HomekitServiceType(type = "0000007F-0000-1000-8000-0026BB765291", name = "Carbon Monoxide Sensor", tag = "carbonMonoxideSensor")
 @NonNullByDefault
 public class HomekitCarbonMonoxideSensorService extends AbstractHomekitService {
+    // ========== Log Message Prefixes ==========
+    private static final String LOG_PREFIX = "Homekit CarbonMonoxideSensorService: ";
+    private static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    private static final String LOG_STATE = LOG_PREFIX + "State - ";
+    private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    private static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
+    private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+    private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
+
+    private final Logger logger = LoggerFactory.getLogger(HomekitCarbonMonoxideSensorService.class);
 
     /**
-     * Creates a new HomekitCarbonMonoxideSensorService.
+     * Creates a new Carbon Monoxide Sensor service.
      *
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @since 1.0
      */
     public HomekitCarbonMonoxideSensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
         withName("Carbon Monoxide Sensor").withPrimary(false).withHidden(false);
+        logger.debug("{}Created CarbonMonoxideSensorService for accessory {}", LOG_INIT, accessory.getLabel());
     }
 
     /**
-     * Creates a new HomekitCarbonMonoxideSensorService from a JSON value.
+     * Creates a new Carbon Monoxide Sensor service from a JSON configuration.
      *
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
      * @param value JSON value containing service configuration
+     * @since 1.0
      */
     public HomekitCarbonMonoxideSensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
         super(accessory, eventManager, characteristicFactory, value);
+        logger.debug("{}Created CarbonMonoxideSensorService from JSON for accessory {}", LOG_INIT, accessory.getLabel());
     }
 
+    /**
+     * Adds the required and optional characteristics for this service.
+     * <p>
+     * Required characteristics:
+     * <ul>
+     *   <li>CarbonMonoxideDetected - Current CO detection state</li>
+     * </ul>
+     * </p>
+     * <p>
+     * Optional characteristics:
+     * <ul>
+     *   <li>CarbonMonoxideLevel - Current CO concentration</li>
+     *   <li>CarbonMonoxidePeakLevel - Highest recorded CO level</li>
+     *   <li>Name - Sensor name</li>
+     *   <li>StatusActive - Sensor activation state</li>
+     *   <li>StatusFault - Fault state indicator</li>
+     *   <li>StatusLowBattery - Low battery warning</li>
+     *   <li>StatusTampered - Tamper detection state</li>
+     * </ul>
+     * </p>
+     * @since 1.0
+     */
     @Override
     public void addCharacteristics() {
+        logger.trace("{}Adding required characteristics to CarbonMonoxideSensorService for accessory {}", LOG_TRACE, getAccessory().getLabel());
+        
         addCharacteristic(new HomekitCarbonMonoxideDetectedCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        logger.debug("{}Added CarbonMonoxideDetectedCharacteristic to CarbonMonoxideSensorService", LOG_STATE);
+        
         addCharacteristic(new HomekitCarbonMonoxideLevelCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        logger.debug("{}Added CarbonMonoxideLevelCharacteristic to CarbonMonoxideSensorService", LOG_STATE);
+        
         addCharacteristic(new HomekitCarbonMonoxidePeakLevelCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        logger.debug("{}Added CarbonMonoxidePeakLevelCharacteristic to CarbonMonoxideSensorService", LOG_STATE);
+        
         addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                 .withMandatory(false));
+        logger.debug("{}Added NameCharacteristic to CarbonMonoxideSensorService", LOG_STATE);
+        
         addCharacteristic(
                 new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
+        logger.debug("{}Added StatusActiveCharacteristic to CarbonMonoxideSensorService", LOG_STATE);
+        
         addCharacteristic(
                 new HomekitStatusFaultCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
+        logger.debug("{}Added StatusFaultCharacteristic to CarbonMonoxideSensorService", LOG_STATE);
+        
         addCharacteristic(new HomekitStatusLowBatteryCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        logger.debug("{}Added StatusLowBatteryCharacteristic to CarbonMonoxideSensorService", LOG_STATE);
+        
         addCharacteristic(
                 new HomekitStatusTamperedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
+        logger.debug("{}Added StatusTamperedCharacteristic to CarbonMonoxideSensorService", LOG_STATE);
     }
 
+    /**
+     * Indicates that this service is not extensible.
+     * Carbon monoxide sensor service has a fixed set of characteristics.
+     *
+     * @return false, as this service is not extensible
+     * @since 1.0
+     */
     @Override
     public boolean isExtensible() {
         return false;

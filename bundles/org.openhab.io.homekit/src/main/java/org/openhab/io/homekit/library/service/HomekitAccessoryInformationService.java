@@ -20,10 +20,31 @@ import org.openhab.io.homekit.library.characteristic.HomekitVersionCharacteristi
 
 /**
  * HomeKit Accessory Information Service.
- * This service provides basic information about the accessory, such as manufacturer, model, and serial number.
- * For more information, see https://developer.apple.com/documentation/HomeKit
+ * 
+ * <p>
+ * This service provides basic information about the accessory, such as:
+ * <ul>
+ *   <li>Manufacturer name</li>
+ *   <li>Model name</li>
+ *   <li>Serial number</li>
+ *   <li>Firmware version</li>
+ *   <li>Hardware revision</li>
+ * </ul>
+ * </p>
  *
- * @author Karel Goderis
+ * <p>
+ * This service is required for all HomeKit accessories and must be included in every accessory.
+ * It provides essential information that helps users identify and manage their accessories.
+ * </p>
+ *
+ * <p>
+ * For more information, see the
+ * <a href="https://developer.apple.com/documentation/HomeKit">HomeKit Accessory Protocol Specification</a>.
+ * </p>
+ *
+ * @author Karel Goderis - Initial contribution
+ * @version 1.0
+ * @since 1.0
  */
 @HomekitServiceType(type = "0000003E-0000-1000-8000-0026BB765291", name = "Accessory Information", tag = "accessoryInformation")
 @NonNullByDefault
@@ -35,6 +56,7 @@ public class HomekitAccessoryInformationService extends AbstractHomekitService {
      * @param accessory The accessory this service belongs to
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @since 1.0
      */
     public HomekitAccessoryInformationService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
@@ -49,6 +71,7 @@ public class HomekitAccessoryInformationService extends AbstractHomekitService {
      * @param eventManager The event manager for handling HomeKit events
      * @param characteristicFactory Factory for creating HomeKit characteristics
      * @param value JSON value containing service configuration
+     * @since 1.0
      */
     public HomekitAccessoryInformationService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
@@ -57,8 +80,29 @@ public class HomekitAccessoryInformationService extends AbstractHomekitService {
 
     /**
      * Adds the required and optional characteristics for this service.
-     * Required: Identify, Manufacturer, Model, Name, Serial Number, Version
-     * Optional: Firmware Revision, Hardware Revision, Accessory Flags
+     * 
+     * <p>
+     * Required characteristics:
+     * <ul>
+     *   <li>Identify</li>
+     *   <li>Manufacturer</li>
+     *   <li>Model</li>
+     *   <li>Name</li>
+     *   <li>Serial Number</li>
+     *   <li>Version</li>
+     * </ul>
+     * </p>
+     *
+     * <p>
+     * Optional characteristics:
+     * <ul>
+     *   <li>Firmware Revision</li>
+     *   <li>Hardware Revision</li>
+     *   <li>Accessory Flags</li>
+     * </ul>
+     * </p>
+     *
+     * @since 1.0
      */
     @Override
     public void addCharacteristics() {

@@ -6,7 +6,34 @@ import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.util.ArrayTrie;
 import org.eclipse.jetty.util.StringUtil;
 import org.eclipse.jetty.util.Trie;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+/**
+ * Defines the supported HTTP versions for HomeKit communication.
+ *
+ * This enum provides a set of HTTP version constants used in HomeKit network
+ * communication. It extends the standard HTTP versions with HomeKit-specific
+ * protocol versions and provides utilities for version parsing and conversion.
+ *
+ * The enum works in conjunction with:
+ * - {@link HomekitHttpParser} for protocol parsing
+ * - {@link HomekitHttpGenerator} for protocol generation
+ * - {@link HomekitHttpConnection} for connection handling
+ * - {@link HomekitHttpChannel} for channel management
+ *
+ * Key responsibilities:
+ * 1. Defining supported HTTP versions
+ * 2. Providing version parsing utilities
+ * 3. Supporting version conversion
+ * 4. Managing version caching
+ *
+ * The implementation uses a Trie-based cache for efficient version lookups
+ * and provides optimized byte-level parsing for performance.
+ *
+ * @author Karel Goderis - Initial Contribution
+ * @since 1.0
+ */
 public enum HomekitHttpVersion {
     HTTP_0_9("HTTP/0.9", 9),
     HTTP_1_0("HTTP/1.0", 10),
@@ -14,31 +41,66 @@ public enum HomekitHttpVersion {
     HTTP_2("HTTP/2.0", 20),
     EVENT_1_0("EVENT/1.0", 30);
 
+    private static final Logger logger = LoggerFactory.getLogger(HomekitHttpVersion.class);
+
+    // ========== Log Message Prefixes ==========
+    private static final String LOG_PREFIX = "Homekit HttpVersion: ";
+    private static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    private static final String LOG_STATE = LOG_PREFIX + "State - ";
+    private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+
+    /**
+     * Cache for efficient version lookups.
+     * Uses a Trie data structure for optimal performance.
+     */
     public static final Trie<HomekitHttpVersion> CACHE = new ArrayTrie<HomekitHttpVersion>();
 
     static {
         for (HomekitHttpVersion version : HomekitHttpVersion.values()) {
             CACHE.put(version.toString(), version);
+            logger.trace("{}Created version: {} ({})", LOG_INIT, version._string, version._version);
         }
     }
 
+    /**
+     * Gets the HTTP version from a string representation.
+     *
+     * This method looks up a version in the cache using its string representation.
+     * The lookup is case-insensitive and optimized using a Trie data structure.
+     *
+     * @param version The version string to parse
+     * @return The corresponding HomekitHttpVersion or null if not found
+     */
     public static HomekitHttpVersion get(String version) {
-        // HomekitHttpVersion httpversion = CACHE.get(version);
-        // return httpversion != null ? HttpVersion.fromVersion(httpversion.getVersion()) : null;
-        return CACHE.get(version);
+        HomekitHttpVersion result = CACHE.get(version);
+        if (result == null) {
+            logger.debug("{}Version not found in cache: {}", LOG_STATE, version);
+        }
+        return result;
     }
 
     /**
-     * Optimised lookup to find an Http Version and whitespace in a byte array.
+     * Optimized lookup to find an HTTP Version and whitespace in a byte array.
+     *
+     * This method performs a fast, byte-level parsing of HTTP version strings
+     * in a byte array, looking for specific patterns that indicate valid
+     * HTTP version declarations.
+     *
+     * Key implementation details:
+     * - Performs byte-level pattern matching
+     * - Handles both HTTP and EVENT protocols
+     * - Supports case-insensitive matching
+     * - Optimized for performance
      *
      * @param bytes Array containing ISO-8859-1 characters
      * @param position The first valid index
-     * @param limit The first non valid index
-     * @return An HttpMethod if a match or null if no easy match.
+     * @param limit The first non-valid index
+     * @return A HomekitHttpVersion if a match is found, null otherwise
      */
     public static HomekitHttpVersion lookAheadGet(byte[] bytes, int position, int limit) {
         int length = limit - position;
         if (length < 9) {
+            logger.trace("{}Buffer too short for version lookup: {}", LOG_STATE, length);
             return null;
         }
 
@@ -56,6 +118,7 @@ public enum HomekitHttpVersion {
                         case '1':
                             return HomekitHttpVersion.HTTP_1_1;
                         default:
+                            logger.trace("{}Invalid HTTP/1.x version: {}", LOG_STATE, bytes[position + 7]);
                             return null;
                     }
                 case '2':
@@ -63,9 +126,11 @@ public enum HomekitHttpVersion {
                         case '0':
                             return HomekitHttpVersion.HTTP_2;
                         default:
+                            logger.trace("{}Invalid HTTP/2.x version: {}", LOG_STATE, bytes[position + 7]);
                             return null;
                     }
                 default:
+                    logger.trace("{}Invalid HTTP major version: {}", LOG_STATE, bytes[position + 5]);
                     return null;
             }
         }
@@ -82,27 +147,34 @@ public enum HomekitHttpVersion {
                         case '0':
                             return HomekitHttpVersion.EVENT_1_0;
                         default:
+                            logger.trace("{}Invalid EVENT/1.x version: {}", LOG_STATE, bytes[position + 8]);
                             return null;
                     }
                 default:
+                    logger.trace("{}Invalid EVENT major version: {}", LOG_STATE, bytes[position + 6]);
                     return null;
             }
         }
 
+        logger.trace("{}No valid version pattern found", LOG_STATE);
         return null;
     }
 
     /**
-     * Optimised lookup to find an HTTP Version and trailing white space in a byte array.
+     * Optimized lookup to find an HTTP Version in a ByteBuffer.
      *
-     * @param buffer buffer containing ISO-8859-1 characters
-     * @return An HttpVersion if a match or null if no easy match.
+     * This method provides a convenient wrapper for looking up HTTP versions
+     * in ByteBuffer objects, delegating to the byte array implementation.
+     *
+     * @param buffer Buffer containing ISO-8859-1 characters
+     * @return A HomekitHttpVersion if a match is found, null otherwise
      */
     public static HomekitHttpVersion lookAheadGet(ByteBuffer buffer) {
         if (buffer.hasArray()) {
             return lookAheadGet(buffer.array(), buffer.arrayOffset() + buffer.position(),
                     buffer.arrayOffset() + buffer.limit());
         }
+        logger.trace("{}Buffer does not have array backing", LOG_STATE);
         return null;
     }
 
@@ -111,6 +183,16 @@ public enum HomekitHttpVersion {
     private final ByteBuffer _buffer;
     private final int _version;
 
+    /**
+     * Creates a new HTTP version constant.
+     *
+     * This constructor initializes a version with its string representation
+     * and numeric identifier, preparing the byte array and buffer for
+     * efficient lookups.
+     *
+     * @param s The string representation of the version
+     * @param version The numeric version identifier
+     */
     HomekitHttpVersion(String s, int version) {
         _string = s;
         _bytes = StringUtil.getBytes(s);
@@ -118,22 +200,48 @@ public enum HomekitHttpVersion {
         _version = version;
     }
 
+    /**
+     * Gets the byte array representation of this version.
+     *
+     * @return The version as a byte array
+     */
     public byte[] toBytes() {
         return _bytes;
     }
 
+    /**
+     * Gets the ByteBuffer representation of this version.
+     *
+     * @return A read-only ByteBuffer containing the version
+     */
     public ByteBuffer toBuffer() {
         return _buffer.asReadOnlyBuffer();
     }
 
+    /**
+     * Gets the numeric version identifier.
+     *
+     * @return The version number
+     */
     public int getVersion() {
         return _version;
     }
 
+    /**
+     * Checks if this version matches a given string.
+     *
+     * @param s The string to compare against
+     * @return true if the versions match (case-insensitive)
+     */
     public boolean is(String s) {
         return _string.equalsIgnoreCase(s);
     }
 
+    /**
+     * Gets the string representation of this version.
+     *
+     * @return The version string
+     */
     public String asString() {
         return _string;
     }
@@ -144,49 +252,91 @@ public enum HomekitHttpVersion {
     }
 
     /**
-     * Case insensitive fromString() conversion
+     * Converts a string to a HomekitHttpVersion.
      *
-     * @param version the String to convert to enum constant
-     * @return the enum constant or null if version unknown
+     * @param version The version string to convert
+     * @return The corresponding HomekitHttpVersion or null if not found
      */
     public static HomekitHttpVersion fromString(String version) {
-        // HomekitHttpVersion httpversion = CACHE.get(version);
-        // return httpversion != null ? HttpVersion.fromVersion(httpversion.getVersion()) : null;
-        return CACHE.get(version);
+        HomekitHttpVersion result = CACHE.get(version);
+        if (result == null) {
+            logger.debug("{}Version not found: {}", LOG_STATE, version);
+        }
+        return result;
     }
 
+    /**
+     * Converts a numeric version to a HomekitHttpVersion.
+     *
+     * @param version The numeric version to convert
+     * @return The corresponding HomekitHttpVersion
+     * @throws IllegalArgumentException if the version is not supported
+     */
     public static HomekitHttpVersion fromVersion(int version) {
-        switch (version) {
-            case 9:
-                return HomekitHttpVersion.HTTP_0_9;
-            case 10:
-                return HomekitHttpVersion.HTTP_1_0;
-            case 11:
-                return HomekitHttpVersion.HTTP_1_1;
-            case 20:
-                return HomekitHttpVersion.HTTP_2;
-            case 30:
-                return HomekitHttpVersion.EVENT_1_0;
-            default:
-                throw new IllegalArgumentException();
+        try {
+            switch (version) {
+                case 9:
+                    return HomekitHttpVersion.HTTP_0_9;
+                case 10:
+                    return HomekitHttpVersion.HTTP_1_0;
+                case 11:
+                    return HomekitHttpVersion.HTTP_1_1;
+                case 20:
+                    return HomekitHttpVersion.HTTP_2;
+                case 30:
+                    return HomekitHttpVersion.EVENT_1_0;
+                default:
+                    logger.error("{}Unsupported version number: {}", LOG_ERROR, version);
+                    throw new IllegalArgumentException("Unsupported version: " + version);
+            }
+        } catch (IllegalArgumentException e) {
+            logger.error("{}Failed to convert version number {}: {}", LOG_ERROR, version, e.getMessage());
+            throw e;
         }
     }
 
+    /**
+     * Gets the best matching version from a buffer.
+     *
+     * This method uses the Trie cache to find the best matching version
+     * in the given buffer range.
+     *
+     * @param buffer The buffer to search in
+     * @param i The starting position
+     * @param remaining The number of bytes to consider
+     * @return The best matching HomekitHttpVersion or null if none found
+     */
     public static HomekitHttpVersion getBest(ByteBuffer buffer, int i, int remaining) {
-        // HomekitHttpVersion httpversion = CACHE.getBest(buffer, i, remaining);
-        // return httpversion != null ? HttpVersion.fromVersion(httpversion.getVersion()) : null;
-        return CACHE.getBest(buffer, i, remaining);
+        HomekitHttpVersion result = CACHE.getBest(buffer, i, remaining);
+        if (result == null) {
+            logger.trace("{}No matching version found in buffer", LOG_STATE);
+        }
+        return result;
     }
 
+    /**
+     * Converts a HomekitHttpVersion to a standard HttpVersion.
+     *
+     * This method maps HomeKit-specific versions to standard HTTP versions,
+     * with special handling for EVENT protocol versions.
+     *
+     * @param version The HomekitHttpVersion to convert
+     * @return The corresponding HttpVersion
+     */
     public static HttpVersion convert(HomekitHttpVersion version) {
         int versionNumber = version.getVersion();
+        HttpVersion result;
         switch (versionNumber) {
             case 30: {
-                return HttpVersion.fromVersion(11);
+                result = HttpVersion.fromVersion(11);
+                break;
             }
             default: {
-                return HttpVersion.fromVersion(versionNumber);
+                result = HttpVersion.fromVersion(versionNumber);
+                break;
             }
         }
+        logger.trace("{}Converted {} to {}", LOG_STATE, version, result);
+        return result;
     }
 }

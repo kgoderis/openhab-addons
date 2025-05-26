@@ -1,7 +1,6 @@
 package org.openhab.io.homekit.api.accessory;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.Optional;
 
 import javax.json.JsonObject;
@@ -15,35 +14,54 @@ import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 
 /**
  * Base interface for all HomeKit accessories. This interface defines the core functionality that all HomeKit
- * accessories
- * must implement. While you can implement this interface directly, most users will prefer to use the more full-featured
- * interfaces in the accessories package which include default implementations of common methods.
+ * accessories must implement. While you can implement this interface directly, most users will prefer to use the more
+ * full-featured interfaces in the accessories package which include default implementations of common methods.
  *
+ * <p>
  * A HomeKit accessory represents a physical or virtual device that can be controlled through the HomeKit protocol.
- * Each accessory must have a unique identifier, basic information (like model, manufacturer), and can contain one or
- * more services that define its functionality.
+ * Each accessory:
+ * <ul>
+ *   <li>Has a unique identifier</li>
+ *   <li>Contains basic information (model, manufacturer, etc.)</li>
+ *   <li>Can have one or more services that define its functionality</li>
+ *   <li>Can be assigned to a HomeKit server</li>
+ * </ul>
+ * </p>
  *
- * @author Andy Lintner
+ * <p>
+ * Accessories are the primary way to represent devices in HomeKit. They can be simple (like a light bulb) or complex
+ * (like a thermostat with multiple sensors and controls). Each accessory must have at least one service, and the
+ * primary service must match the accessory's category.
+ * </p>
+ *
+ * @author Karel Goderis - Initial contribution
+ * @version 1.0
+ * @since 1.0
  */
 @NonNullByDefault
 public interface HomekitAccessory extends Identifiable<HomekitAccessoryUID>, Comparable<HomekitAccessory> {
 
-    // Core identification and type methods
     /**
      * Gets the unique identifier for this accessory.
      * The UID is used to identify the accessory within the HomeKit ecosystem.
      *
      * @return the unique identifier for this accessory
+     * @since 1.0
      */
     @Override
     HomekitAccessoryUID getUID();
 
     /**
-     * Gets the accessory instance ID. This ID is assigned from a global pool across the entire HomeKit server.
+     * Gets the accessory instance ID.
+     * 
+     * <p>
+     * This ID is assigned from a global pool across the entire HomeKit server.
      * For example, if the first accessory has an ID of "1", no other accessory can have ID "1" within the server.
      * The accessory with ID 1 is considered the primary accessory. For bridges, this must be the bridge itself.
+     * </p>
      *
      * @return the accessory instance ID
+     * @since 1.0
      */
     long getAccessoryId();
 
@@ -52,6 +70,7 @@ public interface HomekitAccessory extends Identifiable<HomekitAccessoryUID>, Com
      * This is the name that will be shown to users in the Home app.
      *
      * @return the display label
+     * @since 1.0
      */
     String getLabel();
 
@@ -60,6 +79,7 @@ public interface HomekitAccessory extends Identifiable<HomekitAccessoryUID>, Com
      * This should be a unique identifier for the physical device.
      *
      * @return the serial number
+     * @since 1.0
      */
     String getSerialNumber();
 
@@ -68,6 +88,7 @@ public interface HomekitAccessory extends Identifiable<HomekitAccessoryUID>, Com
      * This should identify the specific model of the device.
      *
      * @return the model name
+     * @since 1.0
      */
     String getModel();
 
@@ -76,6 +97,7 @@ public interface HomekitAccessory extends Identifiable<HomekitAccessoryUID>, Com
      * This should identify the company that made the device.
      *
      * @return the manufacturer name
+     * @since 1.0
      */
     String getManufacturer();
 
@@ -84,6 +106,7 @@ public interface HomekitAccessory extends Identifiable<HomekitAccessoryUID>, Com
      * If true, new services can be added to the accessory after creation.
      *
      * @return true if the accessory is extensible, false otherwise
+     * @since 1.0
      */
     boolean isExtensible();
 
@@ -92,21 +115,24 @@ public interface HomekitAccessory extends Identifiable<HomekitAccessoryUID>, Com
      * An accessory must be assigned to a server before it can be used.
      *
      * @return true if assigned, false otherwise
+     * @since 1.0
      */
     boolean isAssigned();
 
-    // Service management methods
     /**
      * Adds a service to this accessory.
      * The service must be compatible with the accessory type and not duplicate existing services.
      *
      * @param service the service to add
+     * @since 1.0
      */
     void addService(HomekitService service);
 
     /**
      * Adds the default set of services to this accessory.
      * This typically includes the required accessory information service.
+     *
+     * @since 1.0
      */
     void addServices();
 
@@ -114,20 +140,27 @@ public interface HomekitAccessory extends Identifiable<HomekitAccessoryUID>, Com
      * Removes a service from this accessory.
      *
      * @param service the service to remove
+     * @since 1.0
      */
     void removeService(HomekitService service);
 
     /**
      * Gets all services supported by this accessory.
+     * 
+     * <p>
      * Services are the primary way to interact with the accessory via the HomeKit protocol.
      * Besides the services returned here, the accessory will automatically include the required
      * accessory information service.
+     * </p>
      *
+     * <p>
      * The services contained within an accessory must be collocated. For example, a fan with a
      * light would expose a single accessory with three services: the required accessory information
      * service, a fan service, and a light bulb service.
+     * </p>
      *
      * @return the collection of services
+     * @since 1.0
      */
     Collection<HomekitService> getServices();
 
@@ -136,34 +169,39 @@ public interface HomekitAccessory extends Identifiable<HomekitAccessoryUID>, Com
      *
      * @param serviceType the type of service to find
      * @return an Optional containing the service if found, empty otherwise
+     * @since 1.0
      */
     Optional<HomekitService> getService(String serviceType);
 
     /**
      * Gets the primary service for this accessory.
+     * 
+     * <p>
      * The primary service must match the primary function of the accessory and must also
      * match the accessory category. An accessory must expose only one primary service.
+     * </p>
      *
      * @return an Optional containing the primary service if found, empty otherwise
+     * @since 1.0
      */
     Optional<HomekitService> getPrimaryService();
 
-    // Server management methods
     /**
      * Assigns this accessory to a server.
      * This method should be called by the server when adding the accessory.
      *
      * @param server The server to assign to
      * @throws HomekitAccessoryOperationException If there is an error assigning the accessory
+     * @since 1.0
      */
     void assignToServer(HomekitAccessoryServer server) throws HomekitAccessoryOperationException;
 
-    // JSON conversion methods
     /**
      * Creates the JSON representation of the accessory, in accordance with the HomeKit protocol.
      * This includes all services and their characteristics.
      *
      * @return the JSON representation
+     * @since 1.0
      */
     JsonObject toJson();
 
@@ -172,14 +210,16 @@ public interface HomekitAccessory extends Identifiable<HomekitAccessoryUID>, Com
      * This typically includes only essential information needed for basic operations.
      *
      * @return the reduced JSON representation
+     * @since 1.0
      */
     JsonObject toReducedJson();
 
-    // Utility methods
     /**
      * Performs an operation that can be used to identify the accessory.
      * This action can be performed without pairing and is typically used
      * to help users identify which physical device corresponds to this accessory.
+     *
+     * @since 1.0
      */
     void identify();
 
@@ -189,6 +229,7 @@ public interface HomekitAccessory extends Identifiable<HomekitAccessoryUID>, Com
      * within the accessory.
      *
      * @return the next available instance ID
+     * @since 1.0
      */
     long getNextAvailableInstanceId();
 
@@ -248,5 +289,4 @@ public interface HomekitAccessory extends Identifiable<HomekitAccessoryUID>, Com
      * @return true if the accessory is orphaned, false otherwise
      */
     boolean isOrphaned();
-
 }

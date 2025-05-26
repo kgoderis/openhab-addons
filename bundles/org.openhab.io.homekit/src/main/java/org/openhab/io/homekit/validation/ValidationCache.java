@@ -18,10 +18,10 @@ public class ValidationCache {
         this.cache = new ConcurrentHashMap<>();
         this.defaultExpirationMillis = defaultExpirationMillis;
         this.cleanupExecutor = Executors.newSingleThreadScheduledExecutor();
-        
+
         // Schedule periodic cleanup of expired entries
-        cleanupExecutor.scheduleAtFixedRate(this::cleanup, 
-            defaultExpirationMillis, defaultExpirationMillis, TimeUnit.MILLISECONDS);
+        cleanupExecutor.scheduleAtFixedRate(this::cleanup, defaultExpirationMillis, defaultExpirationMillis,
+                TimeUnit.MILLISECONDS);
     }
 
     public void put(String key, ValidationResult result, long expirationMillis) {
@@ -84,4 +84,4 @@ public class ValidationCache {
             return currentTime >= expirationTime;
         }
     }
-} 
+}

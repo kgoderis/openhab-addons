@@ -29,6 +29,7 @@ import org.openhab.core.thing.type.ChannelTypeUID;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.State;
 import org.openhab.core.types.UnDefType;
+import org.openhab.io.homekit.HomekitBindingConstants;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.event.HomekitEventType;
@@ -46,7 +47,6 @@ import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicEv
 import org.openhab.io.homekit.event.model.server.HomekitAccessoryServerEvent;
 import org.openhab.io.homekit.event.model.service.HomekitServiceEvent;
 import org.openhab.io.homekit.exception.HomekitException;
-import org.openhab.io.homekit.network.discovery.HomekitBindingConstants;
 import org.openhab.io.homekit.provider.HomekitChannelTypeProvider;
 import org.openhab.io.homekit.provider.HomekitThingTypeProvider;
 import org.slf4j.Logger;
@@ -887,8 +887,9 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
                 // characteristic.setValue(value);
                 // replace this with a publish event
                 HomekitCharacteristicEvent newEvent = new HomekitCharacteristicEvent(
-                        HomekitEventType.CHARACTERISTIC_CHANGE_VALUE, (UID) thing.getUID(), (UID) characteristic.getUID(),
-                        characteristic, JsonValue.NULL, characteristic.toValueJson(value),
+                        HomekitEventType.CHARACTERISTIC_CHANGE_VALUE, (UID) thing.getUID(),
+                        (UID) characteristic.getUID(), characteristic, JsonValue.NULL,
+                        characteristic.toValueJson(value),
                         new HomekitEventMetadata(thing.getUID(), null, thing.getUID(), Collections.emptySet()));
                 // TODO Define and check peergroup
                 eventManager.publishEvent(newEvent);
@@ -963,7 +964,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
                     try {
                         addChannelForCharacteristic(characteristic);
                         eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
-                                (UID) characteristic.getUID(), (UID)  thing.getUID(),
+                                (UID) characteristic.getUID(), (UID) thing.getUID(),
                                 someEvent -> onCharacteristicEvent((HomekitCharacteristicEvent) someEvent)));
                         logger.debug("{}Added channel for characteristic: {}", LOG_CHANNEL, characteristic.getType());
                     } catch (HomekitException e) {
@@ -1358,7 +1359,8 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
                 // Step 2: Recover accessory connection
                 synchronized (accessoryLock) {
                     if (accessory == null) {
-                        HomekitAccessory foundAccessory = accessoryRegistry.get(new HomekitAccessoryUIDImpl(accessoryId));
+                        HomekitAccessory foundAccessory = accessoryRegistry
+                                .get(new HomekitAccessoryUIDImpl(accessoryId));
                         if (foundAccessory != null) {
                             setAccessory(foundAccessory);
                             eventSubscriptions.add(eventManager.subscribe(HomekitEventType.ACCESSORY_STATE_CHANGED,
@@ -1441,23 +1443,28 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
 
         HomekitAccessoryServer foundServer = getServer();
         if (foundServer != null && foundServer.getUID() != null) {
-            eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVER_STATE_CHANGED, (UID) foundServer.getUID(),
-                    (UID) thing.getUID(), event -> onAccessoryServerEvent((HomekitAccessoryServerEvent) event)));
+            eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVER_STATE_CHANGED,
+                    (UID) foundServer.getUID(), (UID) thing.getUID(),
+                    event -> onAccessoryServerEvent((HomekitAccessoryServerEvent) event)));
         }
 
         // HomekitAccessory subscriptions
 
         HomekitAccessory foundAccessory = getAccessory();
         if (foundAccessory != null && foundAccessory.getUID() != null) {
-            eventSubscriptions.add(eventManager.subscribe(HomekitEventType.ACCESSORY_STATE_CHANGED,
-                    (UID) foundAccessory.getUID(), (UID) thing.getUID(), event -> onAccessoryEvent((HomekitAccessoryEvent) event)));
+            eventSubscriptions
+                    .add(eventManager.subscribe(HomekitEventType.ACCESSORY_STATE_CHANGED, (UID) foundAccessory.getUID(),
+                            (UID) thing.getUID(), event -> onAccessoryEvent((HomekitAccessoryEvent) event)));
 
             // HomekitService subscriptions
             for (HomekitService foundService : foundAccessory.getServices()) {
                 if (foundService != null && foundService.getUID() != null) {
-                    eventSubscriptions
-                            .add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED, (UID) foundService.getUID(),
-                                    (UID) thing.getUID(), event -> onAccessoryEvent((HomekitAccessoryEvent) event)));
+                    eventSubscriptions.add(eventManager.subscribe(
+                        HomekitEventType.SERVICE_STATE_CHANGED,
+                        (UID) foundService.getUID(),
+                        (UID) thing.getUID(),
+                        event -> onServiceEvent((HomekitServiceEvent) event)
+                    ));
 
                     for (HomekitCharacteristic<?> foundCharacteristic : foundService.getCharacteristics()) {
                         if (foundCharacteristic != null && foundCharacteristic.getUID() != null) {

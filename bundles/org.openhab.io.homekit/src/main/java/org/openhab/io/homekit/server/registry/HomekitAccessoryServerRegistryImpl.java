@@ -263,16 +263,12 @@ public class HomekitAccessoryServerRegistryImpl
     }
 
     public HomekitAccessoryServer getAccessoryServer(HomekitAccessoryUID accessoryUID) {
-        return getAll().stream()
-                .filter(server -> {
-                    try {
-                        return server.getAccessories().stream()
-                                .anyMatch(accessory -> accessory.getUID().equals(accessoryUID));
-                    } catch (HomekitAccessoryOperationException e) {
-                        return false;
-                    }
-                })
-                .findFirst()
-                .orElse(null);
+        return getAll().stream().filter(server -> {
+            try {
+                return server.getAccessories().stream().anyMatch(accessory -> accessory.getUID().equals(accessoryUID));
+            } catch (HomekitAccessoryOperationException e) {
+                return false;
+            }
+        }).findFirst().orElse(null);
     }
 }

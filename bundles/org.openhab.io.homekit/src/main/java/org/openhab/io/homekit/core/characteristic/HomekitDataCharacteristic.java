@@ -5,9 +5,10 @@ import java.util.Map;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import org.openhab.core.types.State;
+
 @NonNullByDefault
 public abstract class HomekitDataCharacteristic extends AbstractHomekitCharacteristic<byte[]> {
     public HomekitDataCharacteristic(HomekitService service, HomekitEventManager eventManager) {
