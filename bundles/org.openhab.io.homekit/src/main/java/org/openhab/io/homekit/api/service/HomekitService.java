@@ -17,7 +17,6 @@ import org.openhab.io.homekit.api.uid.HomekitServiceUID;
  * Base interface for all HomeKit services. This interface defines the core functionality that all HomeKit services
  * must implement. While you can implement this interface directly, most users will prefer to use the more full-featured
  * interfaces in the services package which include default implementations of common methods.
- *
  * <p>
  * A HomeKit service represents a specific functionality or feature of an accessory. Each service:
  * <ul>
@@ -27,11 +26,19 @@ import org.openhab.io.homekit.api.uid.HomekitServiceUID;
  *   <li>Can be marked as primary, hidden, or extensible</li>
  * </ul>
  * </p>
- *
  * <p>
  * Services are the primary way to interact with accessories via the HomeKit protocol. They define what an accessory
  * can do and how it can be controlled. For example, a light bulb accessory might have a LightBulb service that
  * contains characteristics for power state, brightness, and color.
+ * </p>
+ * <p>
+ * The interface integrates with:
+ * <ul>
+ *   <li>{@link org.openhab.core.common.registry.Identifiable} for registry integration</li>
+ *   <li>{@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for accessory management</li>
+ *   <li>{@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic} for characteristic management</li>
+ *   <li>{@link org.openhab.io.homekit.api.uid.HomekitServiceUID} for service identification</li>
+ * </ul>
  * </p>
  *
  * @author Karel Goderis - Initial contribution

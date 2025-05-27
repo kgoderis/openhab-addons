@@ -87,7 +87,7 @@ public class HomekitServiceLabelNamespaceCharacteristic extends HomekitIntegerCh
      */
     public HomekitServiceLabelNamespaceCharacteristic(HomekitService service, HomekitEventManager eventManager,
             long instanceId) {
-        super(service, eventManager, 0, 1, 1);
+        super(service, eventManager, 0, 1, "");
         withInstanceId(instanceId).withPairedRead(true).withPairedWrite(false).withEvents(false)
                 .withDescription("Service Label Namespace");
         logger.debug("{}Created new Service Label Namespace characteristic with instance ID {}", LOG_INIT, instanceId);

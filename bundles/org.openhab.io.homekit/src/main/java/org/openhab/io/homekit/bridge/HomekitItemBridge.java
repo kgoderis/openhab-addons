@@ -61,41 +61,40 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link HomekitItemBridge} manages the integration between openHAB items and Homekit accessories.
- * It handles the complete lifecycle of Homekit accessories, including creation, updates, and removal.
- * 
- * <p>
+ * The {@link HomekitItemBridge} manages the integration between openHAB items and HomeKit accessories.
+ * It handles the complete lifecycle of HomeKit accessories, including creation, updates, and removal.
+ *
  * This class implements both {@link ItemRegistryChangeListener} and {@link StateChangeListener} to handle:
- * <ul>
- * <li>Item lifecycle events (addition, removal, updates)</li>
- * <li>State changes for Homekit-enabled items</li>
- * <li>HomekitCharacteristic value updates</li>
- * <li>HomekitAccessory registration and cleanup</li>
- * </ul>
- * </p>
+ * - Item lifecycle events (addition, removal, updates)
+ * - State changes for HomeKit-enabled items
+ * - {@link HomekitCharacteristic} value updates
+ * - {@link HomekitAccessory} registration and cleanup
  *
- * <p>
  * The bridge maintains thread-safe collections for:
- * <ul>
- * <li>Accessories ({@link #accessoryMap})</li>
- * <li>Characteristics ({@link #characteristicMap})</li>
- * <li>Factories ({@link #homekitFactories})</li>
- * </ul>
- * Synchronization is handled through dedicated locks for each collection.
- * </p>
+ * - Accessories ({@link #accessoryMap})
+ * - Characteristics ({@link #characteristicMap})
+ * - Factories ({@link #homekitFactories})
  *
- * <p>
- * Key features:
- * <ul>
- * <li>Automatic accessory creation for tagged items</li>
- * <li>Support for group items and characteristic mapping</li>
- * <li>Thread-safe state management</li>
- * <li>Error handling and logging</li>
- * <li>Resource cleanup on deactivation</li>
- * </ul>
- * </p>
+ * The class integrates with:
+ * - {@link org.openhab.core.items.ItemRegistry} for item management
+ * - {@link org.openhab.core.events.EventPublisher} for event handling
+ * - {@link org.openhab.core.items.MetadataRegistry} for metadata management
+ * - {@link org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry} for server management
+ * - {@link org.openhab.io.homekit.api.factory.HomekitAccessoryFactory} for accessory creation
+ * - {@link org.openhab.io.homekit.api.factory.HomekitServiceFactory} for service creation
+ * - {@link org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory} for characteristic creation
+ * - {@link org.openhab.io.homekit.config.HomekitConfigurationManager} for configuration management
+ * - {@link org.openhab.io.homekit.event.manager.HomekitEventManager} for event management
+ * - {@link org.openhab.io.homekit.core.accessory.HomekitAccessoryRegistryImpl} for accessory registry
  *
- * @author Your Name - Initial contribution
+ * Key implementation details:
+ * - Thread-safe collections for accessories and characteristics
+ * - Event correlation to prevent feedback loops
+ * - Orphaned accessory management
+ * - Statistics collection for performance monitoring
+ * - Bidirectional state/command conversion
+ *
+ * @author Karel Goderis - Initial Contribution
  * @since 1.0.0
  */
 @Component(service = HomekitItemBridge.class, immediate = true)
@@ -104,75 +103,90 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
     private static final Logger logger = LoggerFactory.getLogger(HomekitItemBridge.class);
 
-    private static final boolean ENABLE_EXIT_EVENT_STATISTICS = true;
-    private static final int MAX_STATISTICS_ENTRIES = 1000;
-    private static final int STATISTICS_REPORT_INTERVAL_SECONDS = 60;
-
+    // ========== Log Message Prefixes ==========
     private static final String LOG_PREFIX = "Homekit Bridge: ";
     private static final String LOG_STATE = LOG_PREFIX + "State - ";
     private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
-    private static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
+    private static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
     private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
     private static final String LOG_DEBUG = LOG_PREFIX + "Debug - ";
     private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
 
-    // Configuration key for orphan functionality
+    // ========== Configuration Constants ==========
+    private static final boolean ENABLE_EXIT_EVENT_STATISTICS = true;
+    private static final int MAX_STATISTICS_ENTRIES = 1000;
+    private static final int STATISTICS_REPORT_INTERVAL_SECONDS = 60;
     private static final String CONFIG_ORPHAN_ENABLED = "orphanEnabled";
-    private boolean orphanEnabled = true; // Default to true for backward compatibility
+    private static final String YAML_FILE_NAME = "homekit-2.x-items.yaml";
 
-    // Error messages
-    private static final String ERROR_CREATING_ACCESSORY = LOG_ERROR
-            + "Error creating Homekit accessory for item {}: {}";
+    // ========== Error Messages ==========
+    private static final String ERROR_CREATING_ACCESSORY = LOG_ERROR + "Error creating Homekit accessory for item {}: {}";
     private static final String ERROR_UPDATING_CHARACTERISTIC = LOG_ERROR + "Error updating characteristic {}: {}";
     private static final String ERROR_REMOVING_ACCESSORY = LOG_ERROR + "Error removing accessory {}: {}";
-    private static final String NO_AVAILABLE_SERVER = LOG_WARN
-            + "No available bridge accessory server found for item {}";
-    private static final String CHARACTERISTIC_CREATION_FAILED = LOG_ERROR
-            + "Failed to create characteristic {} for item {}";
+    private static final String NO_AVAILABLE_SERVER = LOG_WARN + "No available bridge accessory server found for item {}";
+    private static final String CHARACTERISTIC_CREATION_FAILED = LOG_ERROR + "Failed to create characteristic {} for item {}";
     private static final String SERVICE_CREATION_FAILED = LOG_ERROR + "Failed to create service {} for item {}";
 
-    // Debug messages
-    private static final String DEBUG_ACCESSORY_CREATED = LOG_ACCESSORY
-            + "Successfully created Homekit accessory for item {}";
-    private static final String DEBUG_UPDATING_CHARACTERISTIC = LOG_STATE
-            + "Updating characteristic {} for item {} with value {}";
+    // ========== Debug Messages ==========
+    private static final String DEBUG_ACCESSORY_CREATED = LOG_ACCESSORY + "Successfully created Homekit accessory for item {}";
+    private static final String DEBUG_UPDATING_CHARACTERISTIC = LOG_STATE + "Updating characteristic {} for item {} with value {}";
     private static final String DEBUG_REMOVING_ACCESSORY = LOG_ACCESSORY + "Removing Homekit accessory for item {}";
-    private static final String DEBUG_ACCESSORY_REMOVED = LOG_ACCESSORY
-            + "Successfully removed Homekit accessory for item {}";
+    private static final String DEBUG_ACCESSORY_REMOVED = LOG_ACCESSORY + "Successfully removed Homekit accessory for item {}";
     private static final String DEBUG_FOUND_COMPATIBLE_FACTORY = LOG_CONFIG + "Found compatible factory {} for item {}";
     private static final String DEBUG_FOUND_AVAILABLE_SERVER = LOG_CONFIG + "Found available server {} for item {}";
 
-    // Thread safety
+    // ========== Thread Safety ==========
     private final Object accessoryLock = new Object();
     private final Object characteristicLock = new Object();
 
+    // ========== Service Dependencies ==========
     private final ItemRegistry itemRegistry;
     private final EventPublisher eventPublisher;
     private final HomekitAccessoryRegistryImpl accessoryRegistry;
     private final MetadataRegistry metadataRegistry;
     private final HomekitAccessoryServerRegistry accessoryServerRegistry;
+    private final HomekitEventManager eventManager;
+    private final HomekitServiceFactory serviceFactory;
+    private final HomekitCharacteristicFactory characteristicFactory;
+    private final HomekitAccessoryFactory accessoryFactory;
+    private final HomekitItemConfigParser configParser;
+    private final HomekitConfigurationManager configManager;
+
+    // ========== State Management ==========
     private final Map<String, Collection<HomekitCharacteristic<?>>> characteristicMap = new ConcurrentHashMap<>();
     private final Map<String, HomekitAccessory> accessoryMap = new ConcurrentHashMap<>();
-    private final HomekitEventManager eventManager;
     private final HomekitUID bridgeUID = new HomekitUID("bridge");
     private final Set<HomekitUID> peerGroup;
     private final Map<String, @Nullable ExitEvent> exitEvents;
     private final ExitEventStatisticsCollector statisticsCollector;
-    private final HomekitServiceFactory serviceFactory;
-    private final HomekitCharacteristicFactory characteristicFactory;
-    private final HomekitAccessoryFactory accessoryFactory;
-    private static final String YAML_FILE_NAME = "homekit-2.x-items.yaml";
-    private final HomekitItemConfigParser configParser;
-    private final HomekitConfigurationManager configManager;
+    private boolean orphanEnabled = true; // Default to true for backward compatibility
 
     /**
      * Activates the bridge component and initializes necessary resources.
-     * 
-     * @param itemRegistry The item registry service
-     * @param eventPublisher The event publisher service
-     * @param accessoryRegistry The accessory registry service
-     * @param accessoryServerRegistry The accessory server registry service
+     *
+     * This method initializes the bridge with all required services and configurations.
+     * It sets up event listeners, loads existing items, and configures statistics collection.
+     *
+     * Key implementation details:
+     * - Initializes service dependencies
+     * - Loads orphan configuration
+     * - Sets up item registry listener
+     * - Initializes existing HomeKit tagged items
+     * - Configures event statistics collection
+     *
+     * @param itemRegistry The {@link ItemRegistry} service
+     * @param eventPublisher The {@link EventPublisher} service
+     * @param accessoryRegistry The {@link HomekitAccessoryRegistryImpl} service
+     * @param metadataRegistry The {@link MetadataRegistry} service
+     * @param accessoryServerRegistry The {@link HomekitAccessoryServerRegistry} service
+     * @param eventManager The {@link HomekitEventManager} service
+     * @param accessoryFactory The {@link HomekitAccessoryFactory} service
+     * @param serviceFactory The {@link HomekitServiceFactory} service
+     * @param characteristicFactory The {@link HomekitCharacteristicFactory} service
+     * @param configManager The {@link HomekitConfigurationManager} service
+     * @param properties The component properties
+     * @since 1.0.0
      */
     @Activate
     public HomekitItemBridge(@Reference ItemRegistry itemRegistry, @Reference EventPublisher eventPublisher,
@@ -224,59 +238,69 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
     /**
      * Deactivates the bridge component and cleans up resources.
+     *
+     * This method performs cleanup operations when the bridge is deactivated.
+     * It removes event listeners, stops statistics collection, and cleans up accessories.
+     *
+     * Key implementation details:
+     * - Removes item registry listener
+     * - Stops statistics collection
+     * - Cleans up accessories and characteristics
+     * - Releases resources
+     *
+     * @since 1.0.0
      */
     @Deactivate
     protected void deactivate() {
-        try {
-            if (ENABLE_EXIT_EVENT_STATISTICS) {
-                statisticsCollector.stop();
-            }
-            itemRegistry.removeRegistryChangeListener(this);
-            cleanup();
-        } catch (Exception e) {
-            logger.error("Error during deactivation: {}", e.getMessage(), e);
-        } finally {
-            // Ensure all resources are cleaned up
-            synchronized (accessoryLock) {
-                accessoryMap.clear();
-            }
-            synchronized (characteristicLock) {
-                characteristicMap.clear();
-            }
+        logger.debug("{}Deactivating Homekit bridge", LOG_PREFIX);
+        itemRegistry.removeRegistryChangeListener(this);
+        if (ENABLE_EXIT_EVENT_STATISTICS) {
+            statisticsCollector.stop();
         }
+        cleanup();
     }
 
     /**
-     * Cleans up all resources and removes all accessories.
-     * This method is synchronized to ensure thread-safe cleanup.
+     * Cleans up all resources associated with the bridge.
+     *
+     * This method removes all accessories and characteristics, ensuring proper cleanup
+     * of all HomeKit-related resources.
+     *
+     * Key implementation details:
+     * - Removes all accessories from registry
+     * - Cleans up characteristic mappings
+     * - Handles cleanup errors gracefully
+     *
+     * @since 1.0.0
      */
     private void cleanup() {
+        logger.debug("{}Cleaning up Homekit bridge resources", LOG_PREFIX);
         synchronized (accessoryLock) {
-            accessoryMap.values().forEach(accessory -> {
+            for (HomekitAccessory accessory : accessoryMap.values()) {
                 try {
-                    if (accessory != null) {
-                        accessoryRegistry.remove(accessory.getUID());
-                    }
+                    accessoryRegistry.remove(accessory.getUID());
+                    logger.debug("{}Removed accessory {}", LOG_ACCESSORY, accessory.getUID());
                 } catch (Exception e) {
-                    if (accessory != null) {
-                        logger.error(ERROR_REMOVING_ACCESSORY, accessory.getUID(), e.getMessage(), e);
-                    }
+                    logger.warn("{}Failed to remove accessory {}: {}", LOG_WARN, accessory.getUID(), e.getMessage());
                 }
-            });
+            }
             accessoryMap.clear();
         }
 
         synchronized (characteristicLock) {
             characteristicMap.clear();
         }
+        logger.debug("{}Cleanup completed", LOG_PREFIX);
     }
 
     /**
-     * Safely adds a characteristic to the map.
+     * Adds a characteristic to the map for an item.
+     *
      * This method is synchronized to ensure thread-safe characteristic management.
-     * 
+     *
      * @param itemName The name of the item
-     * @param characteristic The characteristic to add
+     * @param characteristic The {@link HomekitCharacteristic} to add
+     * @since 1.0.0
      */
     private void addCharacteristic(String itemName, HomekitCharacteristic<?> characteristic) {
         synchronized (characteristicLock) {
@@ -287,11 +311,13 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     }
 
     /**
-     * Safely removes a characteristic from the map.
+     * Removes a characteristic from the map for an item.
+     *
      * This method is synchronized to ensure thread-safe characteristic management.
-     * 
+     *
      * @param itemName The name of the item
-     * @param characteristic The characteristic to remove
+     * @param characteristic The {@link HomekitCharacteristic} to remove
+     * @since 1.0.0
      */
     private void removeCharacteristic(String itemName, HomekitCharacteristic<?> characteristic) {
         synchronized (characteristicLock) {
@@ -307,10 +333,13 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     }
 
     /**
-     * Creates a new accessory for the given tagged item.
-     * This method handles the complete accessory creation process including service and characteristic setup.
-     * 
-     * @param taggedItem The item to create an accessory for
+     * Creates a HomeKit accessory for an item.
+     *
+     * This method processes the item's configuration and creates the appropriate
+     * HomeKit accessory with its services and characteristics.
+     *
+     * @param taggedItem The {@link HomekitTaggedItem} to create an accessory for
+     * @since 1.0.0
      */
     private void createAccessoryForItem(HomekitTaggedItem taggedItem) {
         logger.trace("{}Entering createAccessoryForItem for item: {}", LOG_TRACE, taggedItem.getName());
@@ -351,11 +380,13 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     }
 
     /**
-     * Creates and registers an accessory for the given tagged item.
-     * This method is synchronized to ensure thread-safe accessory management.
-     * 
-     * @param taggedItem The item to create an accessory for
-     * @param server The server to register the accessory with
+     * Creates and registers a HomeKit accessory for an item.
+     *
+     * This method creates the accessory and registers it with the appropriate server.
+     *
+     * @param taggedItem The {@link HomekitTaggedItem} to create an accessory for
+     * @param server The {@link HomekitAccessoryServer} to register the accessory with
+     * @since 1.0.0
      */
     private void createAndRegisterAccessory(HomekitTaggedItem taggedItem, HomekitAccessoryServer server) {
         logger.trace("{}Entering createAndRegisterAccessory", LOG_TRACE);
@@ -379,10 +410,12 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
     /**
      * Registers the created accessory with the registry.
+     *
      * This method is synchronized to ensure thread-safe registration.
-     * 
-     * @param taggedItem The item associated with the accessory
-     * @param accessory The accessory to register
+     *
+     * @param taggedItem The {@link HomekitTaggedItem} associated with the accessory
+     * @param accessory The {@link HomekitAccessory} to register
+     * @since 1.0.0
      */
     private void registerAccessory(HomekitTaggedItem taggedItem, HomekitAccessory accessory) {
         try {
@@ -399,9 +432,11 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
     /**
      * Removes an accessory for the given item.
+     *
      * This method is synchronized to ensure thread-safe removal.
-     * 
-     * @param item The item whose accessory should be removed
+     *
+     * @param item The {@link Item} whose accessory should be removed
+     * @since 1.0.0
      */
     private void removeAccessoryForItem(Item item) {
         logger.debug(DEBUG_REMOVING_ACCESSORY, item.getName());
@@ -428,11 +463,15 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     }
 
     /**
-     * Creates an accessory for the given tagged item.
-     * 
-     * @param taggedItem The item to create an accessory for
-     * @param server The server to add the accessory to
-     * @return The created accessory, or empty if creation failed
+     * Creates a HomeKit accessory for an item.
+     *
+     * This method processes the item's configuration and creates the appropriate
+     * HomeKit accessory with its services and characteristics.
+     *
+     * @param taggedItem The {@link HomekitTaggedItem} to create an accessory for
+     * @param server The {@link HomekitAccessoryServer} to register the accessory with
+     * @return Optional containing the created {@link HomekitAccessory}, or empty if creation failed
+     * @since 1.0.0
      */
     private Optional<HomekitAccessory> createAccessory(HomekitTaggedItem taggedItem, HomekitAccessoryServer server) {
         logger.trace("{}Entering createAccessory", LOG_TRACE);
@@ -466,11 +505,14 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
     /**
      * Creates the primary service for an accessory.
-     * 
-     * @param primaryAccessoryItem The primary accessory item
-     * @param accessory The accessory to add the service to
-     * @param taggedItem The tagged item
-     * @return The created service, or empty if creation failed
+     *
+     * This method creates the main service for the accessory based on its configuration.
+     *
+     * @param primaryAccessoryItem The primary {@link HomekitTaggedItem}
+     * @param accessory The {@link HomekitAccessory} to create the service for
+     * @param taggedItem The {@link HomekitTaggedItem} to create the service for
+     * @return Optional containing the created {@link HomekitService}, or empty if creation failed
+     * @since 1.0.0
      */
     private Optional<HomekitService> createPrimaryService(HomekitTaggedItem primaryAccessoryItem,
             HomekitAccessory accessory, HomekitTaggedItem taggedItem) {
@@ -494,11 +536,14 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     }
 
     /**
-     * Adds characteristics to the primary service.
-     * 
-     * @param service The service to add characteristics to
+     * Adds characteristics to a service.
+     *
+     * This method adds all configured characteristics to the given service.
+     *
+     * @param service The {@link HomekitService} to add characteristics to
      * @param characteristicItems Map of characteristic types to items
-     * @param accessory The accessory containing the service
+     * @param accessory The {@link HomekitAccessory} the service belongs to
+     * @since 1.0.0
      */
     private void addCharacteristics(HomekitService service, Map<String, Item> characteristicItems,
             HomekitAccessory accessory) {
@@ -537,10 +582,13 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     }
 
     /**
-     * Sets up the listener for a characteristic.
-     * 
-     * @param characteristic The characteristic to set up the listener for
-     * @param item The item associated with the characteristic
+     * Subscribes to events for a characteristic.
+     *
+     * This method sets up event subscriptions for characteristic value changes.
+     *
+     * @param characteristic The {@link HomekitCharacteristic} to subscribe to
+     * @param item The {@link Item} associated with the characteristic
+     * @since 1.0.0
      */
     private void subscribeToEvents(HomekitCharacteristic<?> characteristic, Item item) {
         if (!(characteristic instanceof AbstractHomekitCharacteristic<?> genericCharacteristic)) {
@@ -577,12 +625,13 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     }
 
     /**
-     * Given an accessory group, return the item in the group tagged as an accessory.
+     * Gets the primary accessory for a tagged item.
      *
-     * @param taggedItem The group item containing our item, or, the accessory item
-     * @param serviceType The accessory type for which we're looking
-     * @param itemRegistry The item registry to use
-     * @return Optional containing the primary accessory if found
+     * @param taggedItem The {@link HomekitTaggedItem} to get the primary accessory for
+     * @param serviceType The type of service
+     * @param itemRegistry The {@link ItemRegistry} to use
+     * @return Optional containing the primary {@link HomekitTaggedItem}, or empty if not found
+     * @since 1.0.0
      */
     private Optional<HomekitTaggedItem> getPrimaryAccessory(HomekitTaggedItem taggedItem, String serviceType,
             ItemRegistry itemRegistry) {
@@ -606,10 +655,11 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     }
 
     /**
-     * Gets the map of characteristic types to items for a tagged item.
+     * Gets a map of characteristic types to items.
      *
-     * @param taggedItem The tagged item to get characteristics for
+     * @param taggedItem The {@link HomekitTaggedItem} to get the map for
      * @return Map of characteristic types to items
+     * @since 1.0.0
      */
     private Map<String, Item> getCharacteristicTypeItemMap(HomekitTaggedItem taggedItem) {
         if (taggedItem.isGroup()) {
@@ -637,11 +687,12 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
     // ========== Item Registry Change Listener Methods ==========
     /**
-     * Handles the addition of a new item to the registry.
-     * If the item is tagged for Homekit integration, creates a new accessory for it.
-     * If the item was previously orphaned, restores it.
-     * 
-     * @param item The item that was added to the registry
+     * Handles item addition events.
+     *
+     * This method processes events when items are added to the registry.
+     *
+     * @param item The {@link Item} that was added
+     * @since 1.0.0
      */
     @Override
     public void added(Item item) {
@@ -668,11 +719,14 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     }
 
     /**
-     * Restores an orphaned accessory if its item becomes available again.
+     * Restores an orphaned accessory.
      *
-     * @param item The item that was added
-     * @param orphanedAccessory The orphaned accessory to restore
-     * @return true if the accessory was successfully restored, false otherwise
+     * This method attempts to restore an orphaned accessory when its item becomes available again.
+     *
+     * @param item The {@link Item} to restore the accessory for
+     * @param orphanedAccessory The orphaned {@link HomekitAccessory}
+     * @return true if the accessory was restored, false otherwise
+     * @since 1.0.0
      */
     private boolean restoreOrphanedAccessory(Item item, HomekitAccessory orphanedAccessory) {
         try {
@@ -708,10 +762,12 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     }
 
     /**
-     * Handles the removal of an item from the registry.
-     * Instead of removing the accessory, mark it as orphaned
-     * 
-     * @param item The item that was removed from the registry
+     * Handles item removal events.
+     *
+     * This method processes events when items are removed from the registry.
+     *
+     * @param item The {@link Item} that was removed
+     * @since 1.0.0
      */
     @Override
     public void removed(Item item) {
@@ -743,11 +799,13 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     }
 
     /**
-     * Handles the update of an existing item in the registry.
-     * Removes the old accessory and creates a new one if the updated item is tagged for Homekit integration.
-     * 
-     * @param oldItem The previous version of the item
-     * @param item The updated version of the item
+     * Handles item update events.
+     *
+     * This method processes events when items are updated in the registry.
+     *
+     * @param oldItem The old {@link Item}
+     * @param item The new {@link Item}
+     * @since 1.0.0
      */
     @Override
     public void updated(Item oldItem, Item item) {
@@ -766,10 +824,12 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     }
 
     /**
-     * Called when all items in the registry have changed.
-     * This method handles removing all old accessories and creating new ones for tagged items.
-     * 
-     * @param oldItemNames Collection of names of items that were previously in the registry
+     * Handles all items changed events.
+     *
+     * This method processes events when all items in the registry are changed.
+     *
+     * @param oldItemNames The names of the old items
+     * @since 1.0.0
      */
     @Override
     public void allItemsChanged(Collection<String> oldItemNames) {
@@ -790,12 +850,11 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
     // ========== State Change Listener Methods ==========
     /**
-     * Gets the configuration for an item with proper priority:
-     * 1. Configuration from YAML (via ConfigurationManager)
-     * 2. Configuration from metadata (via configParser)
-     * 
-     * @param item The item to get configuration for
-     * @return Map of configuration values
+     * Gets the configuration for an item.
+     *
+     * @param item The {@link Item} to get the configuration for
+     * @return Map of configuration properties
+     * @since 1.0.0
      */
     private Map<String, Object> getItemConfiguration(Item item) {
         // First try to get configuration from YAML using fully qualified UID
@@ -811,12 +870,14 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     }
 
     /**
-     * Handles state changes for items.
-     * Updates the corresponding Homekit characteristic values when an item's state changes.
-     * 
-     * @param item The item whose state changed
-     * @param oldState The previous state of the item
-     * @param newState The new state of the item
+     * Handles item state change events.
+     *
+     * This method processes events when item states change.
+     *
+     * @param item The {@link Item} whose state changed
+     * @param oldState The old {@link State}
+     * @param newState The new {@link State}
+     * @since 1.0.0
      */
     @Override
     public void stateChanged(Item item, State oldState, State newState) {
@@ -870,11 +931,13 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     }
 
     /**
-     * Handles state updates for items.
-     * Updates the corresponding Homekit characteristic values when an item's state is updated.
-     * 
-     * @param item The item whose state was updated
-     * @param state The new state of the item
+     * Handles item state update events.
+     *
+     * This method processes events when item states are updated.
+     *
+     * @param item The {@link Item} whose state was updated
+     * @param state The new {@link State}
+     * @since 1.0.0
      */
     @Override
     public void stateUpdated(Item item, State state) {
@@ -926,6 +989,16 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
     /**
      * Internal class for tracking state changes and their metadata.
+     * This class is used to correlate state changes between OpenHAB and HomeKit,
+     * preventing feedback loops and ensuring proper event handling.
+     *
+     * Key implementation details:
+     * - Tracks state changes with timestamps
+     * - Maintains metadata for event correlation
+     * - Implements expiration for cleanup
+     * - Provides thread-safe access to state and metadata
+     *
+     * @since 1.0.0
      */
     private static class ExitEvent {
         private final State state;
@@ -933,24 +1006,55 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
         private final long timestamp;
         private final long correlationWindowMs = 1000; // 1 second window
 
+        /**
+         * Creates a new exit event with the given state and metadata.
+         *
+         * @param state The {@link State} associated with this event
+         * @param metadata The {@link HomekitEventMetadata} for event correlation
+         * @since 1.0.0
+         */
         public ExitEvent(State state, HomekitEventMetadata metadata) {
             this.state = state;
             this.metadata = metadata;
             this.timestamp = System.currentTimeMillis();
         }
 
+        /**
+         * Checks if this event has expired based on the correlation window.
+         *
+         * @return true if the event has expired, false otherwise
+         * @since 1.0.0
+         */
         public boolean isExpired() {
             return System.currentTimeMillis() - timestamp > correlationWindowMs;
         }
 
+        /**
+         * Gets the state associated with this event.
+         *
+         * @return The {@link State} associated with this event
+         * @since 1.0.0
+         */
         public State getState() {
             return state;
         }
 
+        /**
+         * Gets the metadata associated with this event.
+         *
+         * @return The {@link HomekitEventMetadata} for event correlation
+         * @since 1.0.0
+         */
         public HomekitEventMetadata getMetadata() {
             return metadata;
         }
 
+        /**
+         * Gets the timestamp when this event was created.
+         *
+         * @return The timestamp in milliseconds
+         * @since 1.0.0
+         */
         public long getTimestamp() {
             return timestamp;
         }
@@ -958,6 +1062,17 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
     /**
      * Internal class for collecting and analyzing statistics about exit events.
+     * This class tracks event timing and provides statistical analysis to monitor
+     * the performance and behavior of the HomeKit integration.
+     *
+     * Key implementation details:
+     * - Thread-safe event time collection
+     * - Periodic statistics reporting
+     * - Histogram generation for time distribution
+     * - Basic statistical calculations (mean, std dev)
+     * - Automatic cleanup of old data
+     *
+     * @since 1.0.0
      */
     private class ExitEventStatisticsCollector {
         private final List<Long> eventTimes = new ArrayList<>();
@@ -965,6 +1080,12 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
         private @Nullable ScheduledFuture<?> scheduledTask;
         private @Nullable ScheduledExecutorService executor;
 
+        /**
+         * Starts the statistics collector.
+         * This method initializes the scheduled task for periodic statistics reporting.
+         *
+         * @since 1.0.0
+         */
         public void start() {
             executor = ThreadPoolManager.getScheduledPool("homekit");
             if (executor != null) {
@@ -973,6 +1094,12 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
             }
         }
 
+        /**
+         * Stops the statistics collector.
+         * This method cancels the scheduled task and cleans up resources.
+         *
+         * @since 1.0.0
+         */
         public void stop() {
             if (scheduledTask != null) {
                 scheduledTask.cancel(false);
@@ -981,6 +1108,14 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
             executor = null;
         }
 
+        /**
+         * Records an event time for statistical analysis.
+         * This method maintains a fixed-size collection of event times,
+         * removing the oldest entry when the maximum size is reached.
+         *
+         * @param timeMs The event time in milliseconds
+         * @since 1.0.0
+         */
         public void recordEvent(long timeMs) {
             synchronized (lock) {
                 if (eventTimes.size() >= MAX_STATISTICS_ENTRIES) {
@@ -990,6 +1125,15 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
             }
         }
 
+        /**
+         * Prints statistical analysis of collected event times.
+         * This method calculates and logs:
+         * - Mean and standard deviation
+         * - Minimum and maximum times
+         * - Time distribution histogram
+         *
+         * @since 1.0.0
+         */
         private void printStatistics() {
             synchronized (lock) {
                 if (eventTimes.isEmpty()) {
@@ -1042,8 +1186,9 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
     /**
      * Gets all items managed by this bridge.
-     * 
-     * @return Collection of all items
+     *
+     * @return Collection of {@link Item} instances
+     * @since 1.0.0
      */
     public Collection<Item> getItems() {
         return accessoryMap.keySet().stream().map(itemRegistry::get).filter(Objects::nonNull)
@@ -1051,10 +1196,11 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     }
 
     /**
-     * Gets the HomeKit accessory mapped to a specific item.
-     * 
+     * Gets the accessory mapped to an item.
+     *
      * @param itemName The name of the item
-     * @return Optional containing the mapped accessory if found
+     * @return Optional containing the mapped {@link HomekitAccessory}, or empty if not found
+     * @since 1.0.0
      */
     public Optional<HomekitAccessory> getMappedAccessory(String itemName) {
         return Optional.ofNullable(accessoryMap.get(itemName));

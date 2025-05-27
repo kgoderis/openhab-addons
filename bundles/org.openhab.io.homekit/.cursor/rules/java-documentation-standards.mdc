@@ -64,7 +64,8 @@ Every method (including private and protected) **must** have a Javadoc comment b
 - Remove sections like  /* ------------------------------------------------------------ */
 - Add @link tags for all classes referenced, even if from openHAB or external libs. 
 - Do remove logging prefixes that are not used
-- Do use javadoc tags for paragraphs, list and so forth
+- Do use javadoc tags for paragraphs, list and so forth: <b> <i> <p> <br> <h1> <div>...
+- Do use javadoc tags for references like @code, @link, @auther, @since, @version
 - Do not alter Class Annotations
 - Do not use fully qualified names for classes if they are part of the solution. Only do fully qualified names for classes from other libraries or openHAB
 

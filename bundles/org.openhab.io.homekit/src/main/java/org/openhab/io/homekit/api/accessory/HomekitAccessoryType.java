@@ -5,13 +5,70 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation used to define HomeKit accessory types and their metadata.
+ * <p>
+ * This annotation is used to mark classes that represent HomeKit accessories and provides
+ * essential metadata for HomeKit integration. It defines the type, name, and tag information
+ * that is used to identify and configure accessories in the HomeKit ecosystem.
+ * </p>
+ * <p>
+ * The annotation is used to:
+ * <ul>
+ *   <li>Define the HomeKit characteristic type UUID</li>
+ *   <li>Provide human-readable names for accessories</li>
+ *   <li>Specify tags for accessory identification</li>
+ *   <li>Enable binding-specific configurations</li>
+ * </ul>
+ * </p>
+ * <p>
+ * Key implementation details:
+ * <ul>
+ *   <li>Runtime retention for reflection-based processing</li>
+ *   <li>Type-level targeting for class annotations</li>
+ *   <li>Optional name and tag fields</li>
+ *   <li>Extensible for binding-specific configurations</li>
+ * </ul>
+ * </p>
+ * <p>
+ * The interface integrates with:
+ * <ul>
+ *   <li>{@link org.openhab.io.homekit.api.characteristic.BindingMapping} for binding configurations</li>
+ *   <li>{@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for accessory implementation</li>
+ * </ul>
+ * </p>
+ *
+ * @author Karel Goderis - Initial Contribution
+ * @since 1.0.0
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface HomekitAccessoryType {
-    String type(); // The HomeKit characteristic type UUID
+    /**
+     * The HomeKit characteristic type UUID that identifies this accessory type.
+     * This UUID must be a valid HomeKit characteristic type as defined in the HomeKit protocol.
+     *
+     * @return the HomeKit characteristic type UUID
+     * @since 1.0.0
+     */
+    String type();
 
-    String name() default ""; // Optional human-readable name
+    /**
+     * Optional human-readable name for this accessory type.
+     * If not specified, the name will be derived from the class name.
+     *
+     * @return the human-readable name, or empty string if not specified
+     * @since 1.0.0
+     */
+    String name() default "";
 
+    /**
+     * Optional tag for this accessory type.
+     * This tag can be used for additional identification or categorization.
+     *
+     * @return the tag, or empty string if not specified
+     * @since 1.0.0
+     */
     String tag() default "";
 
     // Binding-specific configurations

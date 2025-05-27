@@ -10,39 +10,72 @@ import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 //TODO : ServerFactory that can create AccessoryHolder for the client side
 // Rename to AccessoryHolderFactory
 
+/**
+ * Factory interface for creating HomeKit accessory servers.
+ *
+ * This interface defines the contract for factories that create HomeKit accessory servers. It provides
+ * methods for creating server instances with different configurations and for querying supported server types.
+ *
+ * The factory provides:
+ * - Server instance creation with basic configuration
+ * - Server instance creation with advanced security settings
+ * - Server type discovery
+ * - Network configuration management
+ * - Security parameter handling
+ *
+ * Key implementation details:
+ * - Thread-safe server creation
+ * - Network address binding
+ * - Port management
+ * - Security parameter validation
+ * - Server type registration
+ *
+ * The interface integrates with:
+ * - {@link org.openhab.io.homekit.api.server.HomekitAccessoryServer} for server instances
+ * - {@link java.net.InetAddress} for network configuration
+ *
+ * @author Karel Goderis - Initial Contribution
+ * @since 1.0.0
+ */
 @NonNullByDefault
 public interface HomekitAccessoryServerFactory {
 
     /**
-     * Creates a new HomekitAccessoryServer instance of type <code>factoryType</code>
+     * Creates a new HomeKit accessory server instance with basic configuration.
+     * This method creates a server with default security settings.
      *
-     * @param factoryType
-     * @return a new HomekitAccessoryServer of type <code>factoryType</code> or <code>null</code> if no matching class
-     *         is known.
+     * @param factoryType The type of server to create
+     * @param localAddress The local network address to bind to
+     * @param port The port number to listen on
+     * @return A new server instance, or null if the factory type is not supported
+     * @since 1.0.0
      */
     @Nullable
     HomekitAccessoryServer createServer(String factoryType, InetAddress localAddress, int port);
 
     /**
-     * Creates a new HomekitAccessoryServer instance of type <code>factoryType</code>
+     * Creates a new HomeKit accessory server instance with advanced security configuration.
+     * This method creates a server with custom security parameters for pairing and encryption.
      *
-     * @param factoryType
-     * @param pairingId
-     * @param salt
-     * @param privateKey
-     * @param configurationIndex
-     * @param instanceIdPool
-     * @return a new HomekitAccessoryServer of type <code>factoryType</code> or <code>null</code> if no matching class
-     *         is known.
+     * @param factoryType The type of server to create
+     * @param localAddress The local network address to bind to
+     * @param port The port number to listen on
+     * @param pairingId The unique identifier for pairing
+     * @param privateKey The private key for encryption
+     * @param configurationIndex The configuration index for the server
+     * @return A new server instance, or null if the factory type is not supported
+     * @since 1.0.0
      */
     @Nullable
     HomekitAccessoryServer createServer(String factoryType, InetAddress localAddress, int port, byte[] pairingId,
             byte[] privateKey, int configurationIndex);
 
     /**
-     * Returns the list of all supported HomekitAccessoryServer types of this factory.
+     * Gets all server types supported by this factory.
+     * This method provides a complete list of server types that can be created.
      *
-     * @return an unmodifiable set of supported HomekitAccessoryServer types
+     * @return An unmodifiable set of supported server type identifiers
+     * @since 1.0.0
      */
     Set<String> getSupportedServerTypes();
 

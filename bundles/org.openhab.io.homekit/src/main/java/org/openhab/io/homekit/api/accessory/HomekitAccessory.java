@@ -16,7 +16,6 @@ import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
  * Base interface for all HomeKit accessories. This interface defines the core functionality that all HomeKit
  * accessories must implement. While you can implement this interface directly, most users will prefer to use the more
  * full-featured interfaces in the accessories package which include default implementations of common methods.
- *
  * <p>
  * A HomeKit accessory represents a physical or virtual device that can be controlled through the HomeKit protocol.
  * Each accessory:
@@ -27,15 +26,22 @@ import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
  *   <li>Can be assigned to a HomeKit server</li>
  * </ul>
  * </p>
- *
  * <p>
  * Accessories are the primary way to represent devices in HomeKit. They can be simple (like a light bulb) or complex
  * (like a thermostat with multiple sensors and controls). Each accessory must have at least one service, and the
  * primary service must match the accessory's category.
  * </p>
+ * <p>
+ * The interface integrates with:
+ * <ul>
+ *   <li>{@link org.openhab.io.homekit.api.server.HomekitAccessoryServer} for server assignment</li>
+ *   <li>{@link org.openhab.io.homekit.api.service.HomekitService} for service management</li>
+ *   <li>{@link org.openhab.io.homekit.api.uid.HomekitAccessoryUID} for identification</li>
+ *   <li>{@link org.openhab.io.homekit.exception.HomekitAccessoryOperationException} for error handling</li>
+ * </ul>
+ * </p>
  *
  * @author Karel Goderis - Initial contribution
- * @version 1.0
  * @since 1.0
  */
 @NonNullByDefault
@@ -53,7 +59,6 @@ public interface HomekitAccessory extends Identifiable<HomekitAccessoryUID>, Com
 
     /**
      * Gets the accessory instance ID.
-     * 
      * <p>
      * This ID is assigned from a global pool across the entire HomeKit server.
      * For example, if the first accessory has an ID of "1", no other accessory can have ID "1" within the server.
@@ -146,13 +151,11 @@ public interface HomekitAccessory extends Identifiable<HomekitAccessoryUID>, Com
 
     /**
      * Gets all services supported by this accessory.
-     * 
      * <p>
      * Services are the primary way to interact with the accessory via the HomeKit protocol.
      * Besides the services returned here, the accessory will automatically include the required
      * accessory information service.
      * </p>
-     *
      * <p>
      * The services contained within an accessory must be collocated. For example, a fan with a
      * light would expose a single accessory with three services: the required accessory information
@@ -175,7 +178,6 @@ public interface HomekitAccessory extends Identifiable<HomekitAccessoryUID>, Com
 
     /**
      * Gets the primary service for this accessory.
-     * 
      * <p>
      * The primary service must match the primary function of the accessory and must also
      * match the accessory category. An accessory must expose only one primary service.

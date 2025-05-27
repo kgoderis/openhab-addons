@@ -29,14 +29,37 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Manages the bridging of accessories between remote and local accessory servers.
- * This class handles the setup and teardown of event subscriptions to forward
- * events and commands between the remote and local servers.
+ *
+ * This class implements the core functionality for bridging HomeKit accessories between remote and local servers.
+ * It handles the setup and teardown of event subscriptions to forward events and commands between servers,
+ * manages the lifecycle of bridged accessories, and provides mechanisms for orphaned accessory detection and restoration.
+ *
+ * The class integrates with:
+ * - {@link HomekitEventManager} for event handling and subscription management
+ * - {@link HomekitAccessoryServerRegistry} for server discovery and management
+ * - {@link HomekitAccessoryFactory} for creating local accessory copies
+ * - {@link HomekitConfigurationManager} for accessory configuration management
+ * - {@link HomekitRemoteAccessoryServer} for remote server functionality
+ * - {@link org.openhab.core.thing.UID OpenHAB's UID system} for unique identification
+ * - {@link HomekitEventSubscription} for event subscription management
+ * - {@link HomekitAccessoryServerEvent} for server event handling
+ *
+ * @author Karel Goderis - Initial Contribution
+ * @since 1.0.0
  */
 @Component(service = HomekitAccessoryBridge.class, immediate = true)
 @NonNullByDefault
 public class HomekitAccessoryBridge {
     private static final Logger logger = LoggerFactory.getLogger(HomekitAccessoryBridge.class);
+    // ========== Log Message Prefixes ==========
     private static final String LOG_PREFIX = "Homekit Bridge: ";
+    private static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    private static final String LOG_STATE = LOG_PREFIX + "State - ";
+    private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    private static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+
     private static final String YAML_FILE_NAME = "homekit-accessory-bridge.yaml";
     private final HomekitUID bridgeUID = new HomekitUID("bridge");
 
@@ -54,10 +77,21 @@ public class HomekitAccessoryBridge {
     /**
      * Creates a new AccessoryBridgeManager.
      *
-     * @param eventManager The event manager to use for event handling
-     * @param serverRegistry The server registry to use for accessing local servers
-     * @param accessoryFactory The accessory factory to use for creating local copies of accessories
-     * @param configManager The configuration manager to use for fetching accessory configurations
+     * This method initializes the bridge manager with required dependencies and sets up event subscriptions
+     * for accessory management. It also loads configuration settings for orphaned accessory handling.
+     *
+     * Key implementation details:
+     * - Initializes event subscriptions for accessory added/removed events
+     * - Loads orphan configuration from properties
+     * - Sets up event handlers using lambda expressions
+     * - Configures logging for initialization steps
+     *
+     * @param eventManager The {@link HomekitEventManager} to use for event handling
+     * @param serverRegistry The {@link HomekitAccessoryServerRegistry} to use for accessing local servers
+     * @param accessoryFactory The {@link HomekitAccessoryFactory} to use for creating local copies of accessories
+     * @param configManager The {@link HomekitConfigurationManager} to use for fetching accessory configurations
+     * @param properties The configuration properties for the bridge
+     * @since 1.0.0
      */
     @Activate
     public HomekitAccessoryBridge(@Reference HomekitEventManager eventManager,
@@ -97,13 +131,23 @@ public class HomekitAccessoryBridge {
 
     /**
      * Bridges an accessory between a remote and local server.
-     * Sets up event subscriptions to forward events and commands between the servers.
      *
-     * @param remoteAccessory The accessory to bridge
-     * @param remoteServer The remote server the accessory belongs to
-     * @param localServer The local server to expose the accessory on
-     * @param localAccessory The local accessory to be added to the local server
+     * This method sets up bidirectional event forwarding between remote and local servers for a given accessory.
+     * It creates event subscriptions for characteristic value changes, service modifications, and accessory state changes.
+     *
+     * Key implementation details:
+     * - Adds local accessory to local server
+     * - Sets up event forwarding from remote to local
+     * - Sets up command forwarding from local to remote
+     * - Stores bridge context for future reference
+     * - Handles cleanup on failure
+     *
+     * @param remoteAccessory The {@link HomekitAccessory} to bridge
+     * @param remoteServer The {@link HomekitAccessoryServer} the accessory belongs to
+     * @param localServer The {@link HomekitAccessoryServer} to expose the accessory on
+     * @param localAccessory The {@link HomekitAccessory} to be added to the local server
      * @throws HomekitAccessoryOperationException if there is an error adding or removing the accessory
+     * @since 1.0.0
      */
     public void bridgeAccessory(HomekitAccessory remoteAccessory, HomekitAccessoryServer remoteServer,
             HomekitAccessoryServer localServer, HomekitAccessory localAccessory)
@@ -155,9 +199,18 @@ public class HomekitAccessoryBridge {
 
     /**
      * Removes the bridging for an accessory.
-     * Cleans up all event subscriptions associated with the bridge and removes the local accessory.
      *
-     * @param accessory The accessory to unbridge
+     * This method handles the cleanup of all resources associated with a bridged accessory,
+     * including event subscriptions and local accessory removal.
+     *
+     * Key implementation details:
+     * - Removes bridge context from storage
+     * - Unsubscribes from all event subscriptions
+     * - Removes local accessory from local server
+     * - Handles cleanup errors gracefully
+     *
+     * @param accessory The {@link HomekitAccessory} to unbridge
+     * @since 1.0.0
      */
     public void unbridgeAccessory(HomekitAccessory accessory) {
         BridgeContext ctx = bridgedAccessories.remove(accessory);
@@ -180,8 +233,12 @@ public class HomekitAccessoryBridge {
     /**
      * Checks if an accessory is currently bridged.
      *
-     * @param accessory The accessory to check
+     * This method verifies whether a given accessory is currently being bridged
+     * by checking its presence in the bridge context storage.
+     *
+     * @param accessory The {@link HomekitAccessory} to check
      * @return true if the accessory is bridged, false otherwise
+     * @since 1.0.0
      */
     public boolean isBridged(HomekitAccessory accessory) {
         return bridgedAccessories.containsKey(accessory);
@@ -190,8 +247,12 @@ public class HomekitAccessoryBridge {
     /**
      * Gets the remote server for a bridged accessory.
      *
-     * @param accessory The bridged accessory
-     * @return Optional containing the remote server if the accessory is bridged
+     * This method retrieves the remote server associated with a bridged accessory
+     * from the bridge context storage.
+     *
+     * @param accessory The {@link HomekitAccessory} to check
+     * @return Optional containing the {@link HomekitAccessoryServer} if the accessory is bridged, empty otherwise
+     * @since 1.0.0
      */
     public Optional<HomekitAccessoryServer> getRemoteServer(HomekitAccessory accessory) {
         BridgeContext ctx = bridgedAccessories.get(accessory);
@@ -201,8 +262,12 @@ public class HomekitAccessoryBridge {
     /**
      * Gets the local server for a bridged accessory.
      *
-     * @param accessory The bridged accessory
-     * @return Optional containing the local server if the accessory is bridged
+     * This method retrieves the local server associated with a bridged accessory
+     * from the bridge context storage.
+     *
+     * @param accessory The {@link HomekitAccessory} to check
+     * @return Optional containing the {@link HomekitAccessoryServer} if the accessory is bridged, empty otherwise
+     * @since 1.0.0
      */
     public Optional<HomekitAccessoryServer> getLocalServer(HomekitAccessory accessory) {
         BridgeContext ctx = bridgedAccessories.get(accessory);
@@ -210,10 +275,14 @@ public class HomekitAccessoryBridge {
     }
 
     /**
-     * Gets the local accessory for a bridged remote accessory.
+     * Gets the local accessory copy for a remote accessory.
      *
-     * @param remoteAccessory The remote accessory
-     * @return The local accessory, or null if the remote accessory is not bridged
+     * This method retrieves the local copy of a remote accessory from the bridge context storage.
+     *
+     * @param remoteAccessory The {@link HomekitAccessory} to get the local copy for
+     * @return The local {@link HomekitAccessory} copy
+     * @throws IllegalStateException if the accessory is not bridged
+     * @since 1.0.0
      */
     public HomekitAccessory getLocalAccessory(HomekitAccessory remoteAccessory) {
         BridgeContext ctx = bridgedAccessories.get(remoteAccessory);
@@ -221,11 +290,20 @@ public class HomekitAccessoryBridge {
     }
 
     /**
-     * Handles an accessory added event.
-     * If orphan functionality is enabled, attempts to restore orphaned accessories.
+     * Handles the addition of a new accessory.
      *
-     * @param accessory The accessory that was added
-     * @param remoteServer The remote server containing the accessory
+     * This method processes accessory addition events, creating local copies and
+     * setting up bridging when appropriate.
+     *
+     * Key implementation details:
+     * - Checks if the server is remote
+     * - Creates local accessory copy
+     * - Sets up bridging between servers
+     * - Handles orphaned accessory restoration
+     *
+     * @param accessory The {@link HomekitAccessory} that was added
+     * @param remoteServer The {@link HomekitAccessoryServer} the accessory was added to
+     * @since 1.0.0
      */
     public void handleAccessoryAdded(HomekitAccessory accessory, HomekitAccessoryServer remoteServer) {
         if (orphanEnabled) {
@@ -278,11 +356,19 @@ public class HomekitAccessoryBridge {
     }
 
     /**
-     * Handles an accessory removed event.
-     * If orphan functionality is enabled, marks the accessory as orphaned.
-     * Otherwise, removes the accessory completely.
+     * Handles the removal of an accessory.
      *
-     * @param accessory The accessory that was removed
+     * This method processes accessory removal events, cleaning up bridging resources
+     * and handling any necessary state updates.
+     *
+     * Key implementation details:
+     * - Removes bridge context
+     * - Cleans up event subscriptions
+     * - Removes local accessory copy
+     * - Handles cleanup errors
+     *
+     * @param accessory The {@link HomekitAccessory} that was removed
+     * @since 1.0.0
      */
     public void handleAccessoryRemoved(HomekitAccessory accessory) {
         BridgeContext context = bridgedAccessories.get(accessory);
@@ -320,8 +406,12 @@ public class HomekitAccessoryBridge {
     /**
      * Checks if an accessory is orphaned.
      *
-     * @param accessory The accessory to check
+     * This method determines if a bridged accessory has become orphaned by checking
+     * if its remote server is no longer available.
+     *
+     * @param accessory The {@link HomekitAccessory} to check
      * @return true if the accessory is orphaned, false otherwise
+     * @since 1.0.0
      */
     public boolean isOrphaned(HomekitAccessory accessory) {
         BridgeContext ctx = bridgedAccessories.get(accessory);
@@ -392,8 +482,12 @@ public class HomekitAccessoryBridge {
     }
 
     /**
-     * Context class for bridged accessories.
-     * Holds references to the local server, local accessory, and remote server.
+     * Internal class representing the context of a bridged accessory.
+     *
+     * This class maintains the state and resources associated with a bridged accessory,
+     * including event subscriptions and server references.
+     *
+     * @since 1.0.0
      */
     private static class BridgeContext {
         private final List<HomekitEventSubscription> remoteSubs;
@@ -433,6 +527,14 @@ public class HomekitAccessoryBridge {
         }
     }
 
+    /**
+     * Gets all bridged accessories.
+     *
+     * This method returns a set of all accessories currently being bridged.
+     *
+     * @return Set of {@link HomekitAccessory} instances
+     * @since 1.0.0
+     */
     public Set<HomekitAccessory> getAccessories() {
         return bridgedAccessories.keySet();
     }

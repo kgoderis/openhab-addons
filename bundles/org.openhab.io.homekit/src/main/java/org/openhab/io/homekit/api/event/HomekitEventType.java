@@ -2,6 +2,30 @@ package org.openhab.io.homekit.api.event;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
+/**
+ * Enum representing the different types of events in the HomeKit integration.
+ *
+ * This enum defines all possible event types that can occur in the HomeKit integration,
+ * categorizing them by their source and purpose. Events are used to communicate state
+ * changes, lifecycle events, and other important notifications throughout the system.
+ *
+ * The event types are organized into categories:
+ * - Characteristic events: Value changes and state updates for characteristics
+ * - Service events: Service lifecycle and state changes
+ * - Accessory events: Accessory lifecycle and state changes
+ * - Server events: Server state and connection changes
+ * - Pairing events: Pairing state changes
+ * - Subscription events: Subscription lifecycle events
+ *
+ * Key implementation details:
+ * - Hierarchical event matching
+ * - Wildcard support for event categories
+ * - Thread-safe event type comparison
+ * - Extensible event type system
+ *
+ * @author Karel Goderis - Initial Contribution
+ * @since 1.0.0
+ */
 @NonNullByDefault
 public enum HomekitEventType {
     // HomekitCharacteristic events
@@ -54,6 +78,17 @@ public enum HomekitEventType {
     // Wildcard for all events
     ANY; // Matches any event type
 
+    /**
+     * Checks if this event type matches another event type.
+     * This method implements a hierarchical matching system where:
+     * - ANY matches all event types
+     * - Category ANY (e.g., CHARACTERISTIC_ANY) matches all events in that category
+     * - Exact matches are always true
+     *
+     * @param other the event type to compare against
+     * @return true if this event type matches the other event type
+     * @since 1.0.0
+     */
     public boolean matches(HomekitEventType other) {
         if (this == ANY || other == ANY) {
             return true;

@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation used to mark HomeKit service classes and provide metadata about the service.
- * This annotation is used by the HomekitServiceFactory to discover and create service instances.
+ * This annotation is used by the {@link org.openhab.io.homekit.api.factory.HomekitServiceFactory} to discover and create service instances.
  *
  * <p>
  * The annotation provides:
@@ -28,6 +28,14 @@ import java.lang.annotation.Target;
  * }
  * }
  * </pre>
+ * </p>
+ *
+ * <p>
+ * The interface integrates with:
+ * <ul>
+ *   <li>{@link org.openhab.io.homekit.api.factory.HomekitServiceFactory} for service creation</li>
+ *   <li>{@link org.openhab.io.homekit.api.service.HomekitService} for service implementation</li>
+ * </ul>
  * </p>
  *
  * @author Karel Goderis - Initial contribution

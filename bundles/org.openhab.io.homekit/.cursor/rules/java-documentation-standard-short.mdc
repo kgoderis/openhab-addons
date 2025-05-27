@@ -1,0 +1,26 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Java Class Documentation Standards
+
+This document outlines the required format and content for documenting Java classes in the OpenHAB HomeKit integration, including all fields to be included in class-level and method-level documentation. This document is a checklist that every class in the solution needs to conform too
+
+
+## Mandatory 
+- Do not remove depreciated methods
+- Do not move methods or re-organise the class
+- Do not alter the logic of methods
+- Do not add methods
+- Do not change, remove or add fields
+- Remove sections like  /* ------------------------------------------------------------ */
+- Add @link tags for all classes referenced, even if from openHAB or external libs. 
+- Do remove logging prefixes that are not used
+- Do use javadoc tags for paragraphs, list and so forth: <b> <i> <p> <br> <h1> <div>...
+- Do use javadoc tags for references like @code, @link, @auther, @since, @version
+- Do not alter Class Annotations
+- Do not use fully qualified names (that include the package definition) for classes if they are part of the solution. Only do fully qualified names for classes from other libraries or openHAB
+- Do make the javadoc of at the class-level narrative, using references to other classes using the @link javadoc tag
+
+

@@ -12,26 +12,78 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Parser for HomeKit item configurations that handles both simple and complex accessories,
- * including all configuration parameters and characteristic mappings.
+ * Parser for HomeKit item configurations.
+ *
+ * This class implements a parser for HomeKit item configurations stored in OpenHAB metadata.
+ * It handles both simple and complex accessories, including all configuration parameters
+ * and characteristic mappings. The parser supports metadata-based configuration parsing,
+ * characteristic mapping parsing, and parameter value type detection.
+ *
+ * The class integrates with:
+ * - {@link org.openhab.core.items.MetadataRegistry} for metadata access and management
+ * - {@link org.openhab.core.items.Item} for item information and state
+ * - {@link org.openhab.core.items.Metadata} for configuration storage and retrieval
+ *
+ * @author Karel Goderis - Initial Contribution
+ * @since 1.0.0
  */
 public class HomekitItemConfigParser {
-    private final Logger logger = LoggerFactory.getLogger(HomekitItemConfigParser.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitItemConfigParser.class);
+    
+    // ========== Log Message Prefixes ==========
+    private static final String LOG_PREFIX = "Homekit ItemConfigParser: ";
+    private static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    private static final String LOG_PARSE = LOG_PREFIX + "Parse - ";
+    private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+
     private final MetadataRegistry metadataRegistry;
     private static final Pattern CONFIG_PATTERN = Pattern.compile("\\[(.*?)\\]");
     private static final Pattern MAPPING_PATTERN = Pattern.compile("([A-Z]+)=\"([^\"]+)\"");
 
+    /**
+     * Creates a new HomekitItemConfigParser instance.
+     *
+     * This method initializes the parser with the required metadata registry
+     * for accessing item configurations.
+     *
+     * Key implementation details:
+     * - Validates metadata registry parameter
+     * - Initializes logging
+     * - Sets up pattern matchers
+     *
+     * @param metadataRegistry The registry to use for accessing item metadata
+     * @throws NullPointerException if metadataRegistry is null
+     */
     public HomekitItemConfigParser(MetadataRegistry metadataRegistry) {
+        if (metadataRegistry == null) {
+            throw new NullPointerException("metadataRegistry cannot be null");
+        }
         this.metadataRegistry = metadataRegistry;
+        logger.debug("{}Initialized with metadata registry", LOG_INIT);
     }
 
     /**
      * Parses the HomeKit configuration from an item.
-     * 
+     *
+     * This method extracts and parses the HomeKit configuration from an item's metadata.
+     * It processes both the service type and any additional characteristics or parameters.
+     *
+     * Key implementation details:
+     * - Retrieves metadata from registry
+     * - Parses service type and characteristics
+     * - Processes configuration parameters
+     * - Includes group membership information
+     *
      * @param item The item to parse
      * @return Map containing the parsed configuration
+     * @throws NullPointerException if item is null
      */
     public Map<String, Object> parseItemConfig(Item item) {
+        if (item == null) {
+            throw new NullPointerException("item cannot be null");
+        }
+        logger.debug("{}Parsing configuration for item {}", LOG_PARSE, item.getName());
         Map<String, Object> config = new HashMap<>();
 
         // Get metadata from registry
@@ -50,7 +102,10 @@ public class HomekitItemConfigParser {
             // Add group membership if applicable
             if (item.getGroupNames() != null && !item.getGroupNames().isEmpty()) {
                 config.put("groups", new ArrayList<>(item.getGroupNames()));
+                logger.debug("{}Item {} belongs to groups: {}", LOG_PARSE, item.getName(), item.getGroupNames());
             }
+        } else {
+            logger.debug("{}No metadata found for item {}", LOG_PARSE, item.getName());
         }
 
         return config;
@@ -58,15 +113,30 @@ public class HomekitItemConfigParser {
 
     /**
      * Parses the metadata value string into configuration parameters.
-     * 
-     * @param value The metadata value string
+     *
+     * This method processes the raw metadata value string, extracting service type,
+     * characteristics, and configuration parameters.
+     *
+     * Key implementation details:
+     * - Splits value into service type and characteristics
+     * - Extracts configuration parameters
+     * - Updates the provided configuration map
+     *
+     * @param value The metadata value string to parse
      * @param config The configuration map to populate
+     * @throws NullPointerException if value or config is null
      */
     private void parseMetadataValue(String value, Map<String, Object> config) {
+        if (value == null || config == null) {
+            throw new NullPointerException("value and config cannot be null");
+        }
+        logger.debug("{}Parsing metadata value: {}", LOG_PARSE, value);
+        
         // Split the value into service type and characteristics
         String[] parts = value.split("\\.");
         String serviceType = parts[0];
         config.put("serviceType", serviceType);
+        logger.debug("{}Found service type: {}", LOG_PARSE, serviceType);
 
         if (parts.length > 1) {
             List<String> characteristics = new ArrayList<>();
@@ -74,6 +144,7 @@ public class HomekitItemConfigParser {
                 characteristics.add(parts[i]);
             }
             config.put("characteristics", characteristics);
+            logger.debug("{}Found characteristics: {}", LOG_PARSE, characteristics);
         }
 
         // Parse configuration parameters
@@ -82,16 +153,31 @@ public class HomekitItemConfigParser {
             String configStr = configMatcher.group(1);
             Map<String, Object> params = parseConfigParameters(configStr);
             config.put("parameters", params);
+            logger.debug("{}Found parameters: {}", LOG_PARSE, params);
         }
     }
 
     /**
      * Parses configuration parameters from a string.
-     * 
-     * @param configStr The configuration string
+     *
+     * This method extracts and parses configuration parameters from a string,
+     * handling both characteristic mappings and numeric values.
+     *
+     * Key implementation details:
+     * - Parses characteristic mappings
+     * - Handles numeric value conversion
+     * - Processes parameter pairs
+     * - Returns a map of parameter names to values
+     *
+     * @param configStr The configuration string to parse
      * @return Map of parameter names to values
+     * @throws NullPointerException if configStr is null
      */
     private Map<String, Object> parseConfigParameters(String configStr) {
+        if (configStr == null) {
+            throw new NullPointerException("configStr cannot be null");
+        }
+        logger.debug("{}Parsing configuration parameters: {}", LOG_PARSE, configStr);
         Map<String, Object> params = new HashMap<>();
 
         // Parse characteristic mappings
@@ -100,55 +186,71 @@ public class HomekitItemConfigParser {
             String key = mappingMatcher.group(1);
             String value = mappingMatcher.group(2);
             params.put(key, value);
+            logger.debug("{}Found mapping: {} = {}", LOG_PARSE, key, value);
         }
 
         // Parse other parameters
         String[] paramPairs = configStr.split(",");
         for (String pair : paramPairs) {
             pair = pair.trim();
-            if (!pair.contains("="))
+            if (!pair.contains("=")) {
                 continue;
-
+            }
             String[] keyValue = pair.split("=");
             if (keyValue.length == 2) {
                 String key = keyValue[0].trim();
                 String value = keyValue[1].trim();
-
-                // Try to parse as number if possible
                 try {
-                    if (value.contains(".")) {
+                    // Try to parse as number if possible
+                    if (value.matches("-?\\d+")) {
+                        params.put(key, Long.parseLong(value));
+                    } else if (value.matches("-?\\d*\\.\\d+")) {
                         params.put(key, Double.parseDouble(value));
                     } else {
-                        params.put(key, Integer.parseInt(value));
+                        params.put(key, value);
                     }
+                    logger.debug("{}Found parameter: {} = {}", LOG_PARSE, key, value);
                 } catch (NumberFormatException e) {
-                    // If not a number, store as string
+                    logger.warn("{}Failed to parse numeric value for parameter {}: {}", LOG_ERROR, key, value);
                     params.put(key, value);
                 }
             }
         }
-
         return params;
     }
 
     /**
-     * Gets a filtered configuration containing only serviceType and parameters.
-     * 
+     * Gets a filtered configuration for an item.
+     *
+     * This method retrieves and filters the HomeKit configuration for an item,
+     * returning only the specified configuration fields.
+     *
+     * Key implementation details:
+     * - Retrieves full configuration
+     * - Filters based on specified fields
+     * - Handles missing fields gracefully
+     *
      * @param item The item to get configuration for
-     * @return Map containing only serviceType and parameters
+     * @return Map containing the filtered configuration
+     * @throws NullPointerException if item is null
      */
     public Map<String, Object> getFilteredConfig(Item item) {
+        if (item == null) {
+            throw new NullPointerException("item cannot be null");
+        }
+        logger.debug("{}Getting filtered configuration for item {}", LOG_CONFIG, item.getName());
         Map<String, Object> fullConfig = parseItemConfig(item);
         Map<String, Object> filteredConfig = new HashMap<>();
 
-        if (fullConfig.containsKey("serviceType")) {
-            filteredConfig.put("serviceType", fullConfig.get("serviceType"));
+        // Filter configuration fields
+        String[] fields = { "serviceType", "characteristics", "parameters" };
+        for (String field : fields) {
+            if (fullConfig.containsKey(field)) {
+                filteredConfig.put(field, fullConfig.get(field));
+            }
         }
 
-        if (fullConfig.containsKey("parameters")) {
-            filteredConfig.put("parameters", fullConfig.get("parameters"));
-        }
-
+        logger.debug("{}Filtered configuration for item {}: {}", LOG_CONFIG, item.getName(), filteredConfig);
         return filteredConfig;
     }
 }

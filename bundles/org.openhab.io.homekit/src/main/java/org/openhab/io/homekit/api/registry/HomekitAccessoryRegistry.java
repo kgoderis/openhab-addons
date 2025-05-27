@@ -8,15 +8,34 @@ import org.openhab.io.homekit.api.provider.HomekitAccessoryProvider;
 import org.openhab.io.homekit.api.uid.HomekitAccessoryUID;
 
 /**
- * {@link HomekitAccessoryRegistry} tracks all {@link ManagedAccessory}s from different
- * {@link HomekitAccessoryProvider}s and provides
- * access
- * to them. The {@link HomekitAccessoryRegistry} supports adding of listeners (see
- * {@link HomekitAccessoryChangeListener})
+ * Registry for managing HomeKit accessories in the system.
  *
- * @author Karel Goderis - Initial contribution
+ * This interface defines the contract for components that need to track and manage HomeKit
+ * accessories from different providers. It extends the OpenHAB Registry interface to provide
+ * a centralized registry for all HomeKit accessories in the system.
+ *
+ * The registry provides:
+ * - Centralized accessory management
+ * - Provider-based accessory discovery
+ * - Change notification support
+ * - Accessory lifecycle tracking
+ *
+ * Key implementation details:
+ * - Thread-safe registry operations
+ * - Provider-based discovery system
+ * - Change listener support
+ * - UID-based accessory identification
+ *
+ * The interface integrates with:
+ * - {@link org.openhab.core.common.registry.Registry} for registry functionality
+ * - {@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for accessory management
+ * - {@link org.openhab.io.homekit.api.provider.HomekitAccessoryProvider} for accessory discovery
+ * - {@link org.openhab.io.homekit.api.listener.HomekitAccessoryChangeListener} for change notifications
+ * - {@link org.openhab.io.homekit.api.uid.HomekitAccessoryUID} for accessory identification
+ *
+ * @author Karel Goderis - Initial Contribution
+ * @since 1.0.0
  */
-
 @NonNullByDefault
 public interface HomekitAccessoryRegistry extends Registry<HomekitAccessory, HomekitAccessoryUID> {
 

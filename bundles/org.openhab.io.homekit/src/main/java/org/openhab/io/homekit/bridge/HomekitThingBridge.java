@@ -107,37 +107,36 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The HomekitThingBridge is responsible for bridging OpenHAB Things to HomeKit accessories.
- * It handles bidirectional communication between OpenHAB and HomeKit using profiles for state/command conversion.
+ * Manages the integration between OpenHAB Things and HomeKit accessories.
  *
- * Key features:
- * 1. Bidirectional communication between OpenHAB and HomeKit
- * 2. Profile-based state/command conversion
- * 3. Event handling for both directions
- * 4. Configuration management
- * 5. Bridge context management
+ * This class implements both {@link org.openhab.core.events.EventSubscriber} and {@link org.openhab.core.thing.ThingRegistryChangeListener} 
+ * to handle bidirectional communication between OpenHAB and HomeKit. It manages the lifecycle of HomeKit accessories, 
+ * their services, and characteristics, while ensuring proper state synchronization and event handling.
  *
- * Communication Flow:
- * 1. OpenHAB -> HomeKit:
- * - Commands/States from OpenHAB items are processed through profiles
- * - Profiles convert OpenHAB types to HomeKit types
- * - Converted values are sent to HomeKit characteristics
+ * Key implementation details:
+ * - Manages bidirectional state/command conversion using {@link org.openhab.core.thing.profiles.Profile profiles}
+ * - Handles thing lifecycle events (addition, removal, updates)
+ * - Manages orphaned accessories to prevent controller deletion
+ * - Implements event correlation to prevent feedback loops
+ * - Provides statistics collection for performance monitoring
  *
- * 2. HomeKit -> OpenHAB:
- * - Events from HomeKit are received through the event subscriber
- * - Events are processed through profiles
- * - Profiles convert HomeKit types to OpenHAB types
- * - Converted values are sent to OpenHAB items
+ * The class integrates with:
+ * - {@link org.openhab.core.thing.ThingRegistry} for thing management
+ * - {@link org.openhab.core.thing.link.ItemChannelLinkRegistry} for link management
+ * - {@link org.openhab.core.thing.profiles.ProfileFactory} for profile creation
+ * - {@link org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry} for server management
+ * - {@link org.openhab.io.homekit.config.HomekitConfigurationManager} for configuration management
+ * - {@link org.openhab.core.events.EventPublisher} for event handling
+ * - {@link org.openhab.io.homekit.api.factory.HomekitAccessoryFactory} for accessory creation
+ * - {@link org.openhab.io.homekit.api.factory.HomekitServiceFactory} for service creation
+ * - {@link org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory} for characteristic creation
+ * - {@link org.openhab.io.homekit.event.manager.HomekitEventManager} for event management
+ * - {@link org.openhab.core.common.SafeCaller} for safe method execution
+ * - {@link org.openhab.core.items.ItemStateConverter} for state conversion
+ * - {@link org.openhab.core.items.ItemRegistry} for item management
  *
- * Profile System:
- * - Profiles are used to convert between OpenHAB and HomeKit types
- * - Two profiles are created for each channel:
- * 1. openhabToHomekitProfile: Converts OpenHAB types to HomeKit types
- * 2. homekitToOpenhabProfile: Converts HomeKit types to OpenHAB types
- * - NoOpProfile is used as fallback when no specific profile is configured
- * - Profiles can be configured through Item-Channel link metadata
- *
- * @author openHAB Contributors
+ * @author Karel Goderis - Initial Contribution
+ * @since 1.0.0
  */
 @Component(service = { EventSubscriber.class, ThingRegistryChangeListener.class })
 @NonNullByDefault
@@ -188,16 +187,34 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
     private final Map<String, List<Class<? extends Command>>> acceptedCommandTypeMap = new ConcurrentHashMap<>();
 
     /**
-     * Creates a new HomekitThingBridge instance.
-     * Initializes all required services and managers.
+     * Creates a new {@link HomekitThingBridge} instance.
      *
-     * @param thingRegistry Registry for OpenHAB Things
-     * @param itemChannelLinkRegistry Registry for Item-Channel links
-     * @param channelTypeRegistry Registry for Channel types
-     * @param profileFactory Factory for creating profiles
-     * @param accessoryServerRegistry Registry for HomeKit accessory servers
-     * @param configManager Manager for HomeKit configuration
-     * @param eventPublisher Publisher for OpenHAB events
+     * This method initializes the bridge with all required services and configurations.
+     * It sets up event listeners, loads existing things, and configures statistics collection.
+     *
+     * Key implementation details:
+     * - Initializes service dependencies
+     * - Loads orphan configuration
+     * - Sets up thing registry listener
+     * - Initializes existing HomeKit tagged things
+     * - Configures event statistics collection
+     *
+     * @param thingRegistry The {@link ThingRegistry} service
+     * @param itemChannelLinkRegistry The {@link ItemChannelLinkRegistry} service
+     * @param profileFactory The {@link ProfileFactory} service
+     * @param accessoryServerRegistry The {@link HomekitAccessoryServerRegistry} service
+     * @param configManager The {@link HomekitConfigurationManager} service
+     * @param eventPublisher The {@link EventPublisher} service
+     * @param accessoryFactory The {@link HomekitAccessoryFactory} service
+     * @param characteristicFactory The {@link HomekitCharacteristicFactory} service
+     * @param serviceFactory The {@link HomekitServiceFactory} service
+     * @param linkRegistry The {@link ItemChannelLinkRegistry} service
+     * @param eventManager The {@link HomekitEventManager} service
+     * @param safeCaller The {@link SafeCaller} service
+     * @param itemStateConverter The {@link ItemStateConverter} service
+     * @param itemRegistry The {@link ItemRegistry} service
+     * @param properties The component properties
+     * @since 1.0.0
      */
     @Activate
     public HomekitThingBridge(@Reference ThingRegistry thingRegistry,
@@ -244,10 +261,38 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         }
     }
 
+    /**
+     * Initializes existing things in the registry.
+     *
+     * This method processes all things currently in the registry to set up
+     * HomeKit accessories and characteristics.
+     *
+     * @since 1.0.0
+     */
     private void initializeExistingThings() {
         thingRegistry.getAll().forEach(this::processThing);
     }
 
+    /**
+     * Processes a thing to set up its HomeKit integration.
+     *
+     * This method handles the configuration and setup of HomeKit accessories for a given thing.
+     * It performs the following steps:
+     * 1. Retrieves and validates the thing's configuration
+     * 2. Creates a HomeKit accessory using the appropriate factory
+     * 3. Sets up bidirectional event forwarding
+     * 4. Configures characteristics and services
+     *
+     * Key implementation details:
+     * - Validates bridge configuration
+     * - Creates accessory using {@link HomekitAccessoryFactory}
+     * - Sets up event subscriptions
+     * - Configures metadata and characteristics
+     *
+     * @param thing The {@link org.openhab.core.thing.Thing} to process
+     * @throws IllegalStateException if no available bridge accessory server is found
+     * @since 1.0.0
+     */
     private void processThing(Thing thing) {
         // Get configuration for the Thing from the thingToAccessory mapping
         Optional<Map<String, Object>> thingConfigOpt = configManager.getConfiguration(thing.getUID(),
@@ -283,6 +328,29 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         }
     }
 
+    /**
+     * Creates a HomeKit accessory for a thing.
+     *
+     * This method creates and configures a HomeKit accessory based on the thing's configuration.
+     * It handles the following aspects:
+     * 1. Determines the accessory type from configuration
+     * 2. Creates the accessory using the factory
+     * 3. Applies metadata and configuration
+     * 4. Assigns the accessory to a server
+     *
+     * Key implementation details:
+     * - Uses {@link HomekitAccessoryFactory} for accessory creation
+     * - Applies metadata from configuration
+     * - Handles unit conversion and state mapping
+     * - Manages server assignment
+     *
+     * @param thing The {@link org.openhab.core.thing.Thing} to create an accessory for
+     * @param server The {@link org.openhab.io.homekit.api.server.HomekitAccessoryServer} to register with
+     * @param thingConfig The configuration for the thing
+     * @return The created {@link org.openhab.io.homekit.api.accessory.HomekitAccessory}, or null if creation fails
+     * @throws HomekitAccessoryOperationException if accessory creation or server assignment fails
+     * @since 1.0.0
+     */
     private HomekitAccessory createAccessoryForThing(Thing thing, HomekitAccessoryServer server,
             Map<String, Object> thingConfig) {
         // Get accessory type from configuration
@@ -336,6 +404,27 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         return accessory;
     }
 
+    /**
+     * Processes channels for a thing.
+     *
+     * This method sets up HomeKit services and characteristics for each channel in the thing.
+     * It performs the following steps:
+     * 1. Retrieves service mappings from configuration
+     * 2. Creates or retrieves services for each channel
+     * 3. Configures characteristics for each service
+     * 4. Sets up event subscriptions and profiles
+     *
+     * Key implementation details:
+     * - Uses {@link HomekitServiceFactory} for service creation
+     * - Configures characteristics using {@link HomekitCharacteristicFactory}
+     * - Sets up bidirectional event forwarding
+     * - Creates profiles for state/command conversion
+     *
+     * @param thing The {@link org.openhab.core.thing.Thing} whose channels to process
+     * @param accessory The {@link org.openhab.io.homekit.api.accessory.HomekitAccessory} to add services to
+     * @throws IllegalStateException if service or characteristic creation fails
+     * @since 1.0.0
+     */
     private void processChannels(Thing thing, HomekitAccessory accessory) {
         // Get service mappings for this thing
         Optional<Map<String, Object>> serviceMappingsOpt = configManager.getConfiguration(thing.getUID(),
@@ -378,6 +467,14 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         }
     }
 
+    /**
+     * Finds matching service configuration for a channel.
+     *
+     * @param channelUID The {@link ChannelUID} to find configuration for
+     * @param serviceMappings The service mappings to search in
+     * @return Optional containing the matching service configuration
+     * @since 1.0.0
+     */
     private Optional<Map<String, Object>> findMatchingServiceConfig(String channelUID,
             Map<String, Object> serviceMappings) {
         // First try exact match
@@ -403,6 +500,16 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         return Optional.empty();
     }
 
+    /**
+     * Processes characteristics for a channel.
+     *
+     * This method creates and configures HomeKit characteristics for a channel.
+     *
+     * @param channel The {@link Channel} to process
+     * @param service The {@link HomekitService} to add characteristics to
+     * @param characteristics The characteristic configuration
+     * @since 1.0.0
+     */
     private void processCharacteristics(Channel channel, HomekitService service, Map<String, Object> characteristics) {
         for (Map.Entry<String, Object> entry : characteristics.entrySet()) {
             String characteristicType = entry.getKey();
@@ -443,6 +550,14 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         }
     }
 
+    /**
+     * Subscribes to characteristic events.
+     *
+     * This method sets up event subscriptions for characteristic value changes.
+     *
+     * @param characteristic The {@link HomekitCharacteristic} to subscribe to
+     * @since 1.0.0
+     */
     private void subscribeToCharacteristicEvents(HomekitCharacteristic<?> characteristic) {
         try {
 
@@ -462,6 +577,14 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         }
     }
 
+    /**
+     * Unsubscribes from characteristic events.
+     *
+     * This method removes event subscriptions for characteristic value changes.
+     *
+     * @param characteristic The {@link HomekitCharacteristic} to unsubscribe from
+     * @since 1.0.0
+     */
     private void unsubscribeFromCharacteristicEvents(HomekitCharacteristic<?> characteristic) {
         try {
             // Find and remove all subscriptions for this characteristic
@@ -479,6 +602,27 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         }
     }
 
+    /**
+     * Handles characteristic events.
+     *
+     * This method processes events when characteristic values change.
+     * It performs the following steps:
+     * 1. Validates the event type and characteristic
+     * 2. Finds the associated channel and item
+     * 3. Checks for peer group events to prevent feedback loops
+     * 4. Updates the item state using profiles or direct conversion
+     *
+     * Key implementation details:
+     * - Uses {@link org.openhab.core.thing.profiles.Profile} for state conversion
+     * - Implements peer group event filtering
+     * - Manages state conversion and validation
+     * - Tracks exit events for correlation
+     *
+     * @param characteristic The {@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic} that changed
+     * @param event The {@link org.openhab.io.homekit.api.event.HomekitEvent} to handle
+     * @throws IllegalStateException if state conversion or update fails
+     * @since 1.0.0
+     */
     private void handleCharacteristicEvent(HomekitCharacteristic<?> characteristic, HomekitEvent event) {
         if (event instanceof HomekitCharacteristicChangedEvent changedEvent) {
             try {
@@ -524,11 +668,25 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         }
     }
 
+    /**
+     * Gets the subscribed event types.
+     *
+     * @return Set of subscribed event type strings
+     * @since 1.0.0
+     */
     @Override
     public Set<String> getSubscribedEventTypes() {
         return Set.of(ItemCommandEvent.TYPE, ItemStateEvent.TYPE);
     }
 
+    /**
+     * Receives and processes events.
+     *
+     * This method handles incoming events from the event bus.
+     *
+     * @param event The {@link Event} to process
+     * @since 1.0.0
+     */
     @Override
     public void receive(Event event) {
         if (event instanceof ItemCommandEvent commandEvent) {
@@ -538,6 +696,26 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         }
     }
 
+    /**
+     * Handles item command events.
+     *
+     * This method processes command events from items and forwards them to HomeKit.
+     * It performs the following steps:
+     * 1. Validates the command and finds the associated channel
+     * 2. Locates the corresponding HomeKit characteristic
+     * 3. Uses profiles for command conversion if available
+     * 4. Publishes the command as a HomeKit event
+     *
+     * Key implementation details:
+     * - Uses {@link org.openhab.core.thing.profiles.Profile} for command conversion
+     * - Handles command type conversion and validation
+     * - Manages event correlation to prevent feedback loops
+     * - Ensures thread-safe event publishing
+     *
+     * @param event The {@link org.openhab.core.items.events.ItemCommandEvent} to handle
+     * @throws IllegalStateException if characteristic lookup fails
+     * @since 1.0.0
+     */
     private void handleItemCommand(ItemCommandEvent event) {
         String itemName = event.getItemName();
         Command command = event.getItemCommand();
@@ -574,6 +752,27 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         }
     }
 
+    /**
+     * Handles item state events.
+     *
+     * This method processes state events from items and forwards them to HomeKit.
+     * It performs the following steps:
+     * 1. Validates the state and finds the associated channel
+     * 2. Locates the corresponding HomeKit characteristic
+     * 3. Checks for correlated events to prevent feedback loops
+     * 4. Uses profiles for state conversion if available
+     * 5. Publishes the state as a HomeKit event
+     *
+     * Key implementation details:
+     * - Uses {@link org.openhab.core.thing.profiles.Profile} for state conversion
+     * - Implements event correlation using {@link ExitEvent}
+     * - Handles state type conversion and validation
+     * - Manages statistics collection for performance monitoring
+     *
+     * @param event The {@link org.openhab.core.items.events.ItemStateEvent} to handle
+     * @throws IllegalStateException if characteristic lookup fails
+     * @since 1.0.0
+     */
     private void handleItemState(ItemStateEvent event) {
         String itemName = event.getItemName();
         State state = event.getItemState();
@@ -640,6 +839,25 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         }
     }
 
+    /**
+     * Checks if two states are equal.
+     *
+     * This method performs a deep comparison of two states.
+     * It handles the following cases:
+     * 1. Direct reference equality
+     * 2. Null state handling
+     * 3. State type-specific equality
+     *
+     * Key implementation details:
+     * - Handles null states safely
+     * - Uses state-specific equality checks
+     * - Supports all OpenHAB state types
+     *
+     * @param state1 The first {@link org.openhab.core.types.State}
+     * @param state2 The second {@link org.openhab.core.types.State}
+     * @return true if the states are equal, false otherwise
+     * @since 1.0.0
+     */
     private boolean statesEqual(State state1, State state2) {
         if (state1 == state2)
             return true;
@@ -649,13 +867,25 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
     }
 
     /**
-     * Creates profiles for a channel and its associated Item-Channel link.
-     * Creates two profiles:
-     * 1. For OpenHAB -> HomeKit direction
-     * 2. For HomeKit -> OpenHAB direction
+     * Creates profiles for a channel.
      *
-     * @param channel The channel to create profiles for
-     * @param link The Item-Channel link associated with the channel
+     * This method sets up bidirectional profiles for state/command conversion between OpenHAB and HomeKit.
+     * It performs the following steps:
+     * 1. Retrieves profile configuration from the link
+     * 2. Creates OpenHAB to HomeKit profile
+     * 3. Creates HomeKit to OpenHAB profile
+     * 4. Sets up profile callbacks for event handling
+     *
+     * Key implementation details:
+     * - Uses {@link org.openhab.core.thing.profiles.ProfileFactory} for profile creation
+     * - Configures profile callbacks for bidirectional communication
+     * - Handles profile context and configuration
+     * - Manages thread pool for profile execution
+     *
+     * @param channel The {@link org.openhab.core.thing.Channel} to create profiles for
+     * @param link The {@link org.openhab.core.thing.link.ItemChannelLink} associated with the channel
+     * @throws IllegalStateException if profile creation fails
+     * @since 1.0.0
      */
     private void createProfileForChannel(Channel channel, ItemChannelLink link) {
         // Get the profile type from the link's metadata
@@ -753,10 +983,26 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         channelProfiles.put(channel.getUID(), openhabToHomekitProfile);
     }
 
+    /**
+     * Gets an item by name.
+     *
+     * @param itemName The name of the item
+     * @return The {@link Item}, or null if not found
+     * @since 1.0.0
+     */
     private @Nullable Item getItem(final String itemName) {
         return itemRegistry.get(itemName);
     }
 
+    /**
+     * Converts a command to an accepted type.
+     *
+     * @param originalType The original {@link Command}
+     * @param channel The {@link Channel} to convert for
+     * @param item The {@link Item} to convert for
+     * @return The converted command, or null if conversion failed
+     * @since 1.0.0
+     */
     public @Nullable Command toAcceptedCommand(Command originalType, @Nullable Channel channel, @Nullable Item item) {
         if (item == null || channel == null) {
             logger.warn("Trying to convert types for non-existing channel or item, discarding command.");
@@ -795,6 +1041,13 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         }
     }
 
+    /**
+     * Calculates accepted command types.
+     *
+     * This method determines which command types are accepted by each channel.
+     *
+     * @since 1.0.0
+     */
     private synchronized void calculateAcceptedTypes() {
         acceptedCommandTypeMap.clear();
         for (ItemFactory itemFactory : itemFactories) {
@@ -810,6 +1063,29 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         }
     }
 
+    /**
+     * Fixes unit of measurement for a type.
+     *
+     * This method handles unit conversion and validation for types.
+     * It performs the following steps:
+     * 1. Validates channel and item types
+     * 2. Handles backward compatibility for number channels
+     * 3. Adds units to DecimalType when dimensions match
+     * 4. Converts between compatible unit types
+     *
+     * Key implementation details:
+     * - Uses {@link org.openhab.core.library.CoreItemFactory} for type validation
+     * - Handles {@link org.openhab.core.library.types.QuantityType} conversion
+     * - Manages unit dimension matching
+     * - Supports backward compatibility
+     *
+     * @param originalType The original {@link org.openhab.core.types.Type}
+     * @param channel The {@link org.openhab.core.thing.Channel} to fix for
+     * @param item The {@link org.openhab.core.items.Item} to fix for
+     * @return The fixed type, or null if fixing failed
+     * @throws IllegalArgumentException if unit conversion fails
+     * @since 1.0.0
+     */
     @SuppressWarnings("unchecked")
     private @Nullable <T extends Type> T fixUoM(@Nullable T originalType, Channel channel, Item item) {
         String channelAcceptedItemType = channel.getAcceptedItemType();
@@ -837,23 +1113,37 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         return null;
     }
 
+    /**
+     * Adds an item factory.
+     *
+     * @param itemFactory The {@link ItemFactory} to add
+     * @since 1.0.0
+     */
     @Reference(cardinality = ReferenceCardinality.AT_LEAST_ONE, policy = ReferencePolicy.DYNAMIC)
     protected void addItemFactory(ItemFactory itemFactory) {
         itemFactories.add(itemFactory);
         calculateAcceptedTypes();
     }
 
+    /**
+     * Removes an item factory.
+     *
+     * @param itemFactory The {@link ItemFactory} to remove
+     * @since 1.0.0
+     */
     protected void removeItemFactory(ItemFactory itemFactory) {
         itemFactories.remove(itemFactory);
         calculateAcceptedTypes();
     }
 
     /**
-     * Handles commands from OpenHAB to HomeKit.
-     * Converts the command to a HomeKit characteristic value.
+     * Handles profile commands.
      *
-     * @param channelUID The channel UID
-     * @param command The command to handle
+     * This method processes commands from profiles.
+     *
+     * @param channelUID The {@link ChannelUID} to handle commands for
+     * @param command The {@link Command} to handle
+     * @since 1.0.0
      */
     private void handleProfileCommand(ChannelUID channelUID, Command command) {
         HomekitCharacteristic<?> characteristic = channelCharacteristicMap.get(channelUID);
@@ -871,11 +1161,13 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
     }
 
     /**
-     * Handles state updates from OpenHAB to HomeKit.
-     * Converts the state to a HomeKit characteristic value.
+     * Handles profile states.
      *
-     * @param channelUID The channel UID
-     * @param state The state to handle
+     * This method processes states from profiles.
+     *
+     * @param channelUID The {@link ChannelUID} to handle states for
+     * @param state The {@link State} to handle
+     * @since 1.0.0
      */
     private void handleProfileState(ChannelUID channelUID, State state) {
         HomekitCharacteristic<?> characteristic = channelCharacteristicMap.get(channelUID);
@@ -894,7 +1186,10 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
 
     /**
      * Deactivates the bridge.
-     * Cleans up all profiles and resources.
+     *
+     * This method performs cleanup when the bridge is deactivated.
+     *
+     * @since 1.0.0
      */
     public void deactivate() {
         if (ENABLE_EXIT_EVENT_STATISTICS) {
@@ -982,6 +1277,26 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         }
     }
 
+    /**
+     * Handles thing addition events.
+     *
+     * This method processes events when things are added to the registry.
+     * It performs the following steps:
+     * 1. Checks if the thing is a restoration of an orphaned accessory
+     * 2. Attempts to restore orphaned accessories if enabled
+     * 3. Processes new things to set up HomeKit integration
+     * 4. Configures accessories and characteristics
+     *
+     * Key implementation details:
+     * - Uses {@link #isOrphaned(Thing)} to check orphan status
+     * - Implements orphan restoration logic
+     * - Manages accessory lifecycle
+     * - Ensures thread-safe operations
+     *
+     * @param thing The {@link org.openhab.core.thing.Thing} that was added
+     * @throws IllegalStateException if accessory creation or restoration fails
+     * @since 1.0.0
+     */
     @Override
     public void added(Thing thing) {
         logger.debug("{}Thing {} added", LOG_PREFIX, thing.getUID());
@@ -1001,6 +1316,26 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         processThing(thing);
     }
 
+    /**
+     * Handles thing removal events.
+     *
+     * This method processes events when things are removed from the registry.
+     * It performs the following steps:
+     * 1. Checks if orphan functionality is enabled
+     * 2. Either marks accessories as orphaned or removes them
+     * 3. Updates configuration to reflect orphaned state
+     * 4. Cleans up resources and subscriptions
+     *
+     * Key implementation details:
+     * - Manages orphaned accessory state
+     * - Handles resource cleanup
+     * - Updates configuration
+     * - Removes event subscriptions
+     *
+     * @param thing The {@link org.openhab.core.thing.Thing} that was removed
+     * @throws IllegalStateException if accessory removal fails
+     * @since 1.0.0
+     */
     @Override
     public void removed(Thing thing) {
         logger.debug("{}Thing {} removed", LOG_PREFIX, thing.getUID());
@@ -1069,6 +1404,60 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         }
     }
 
+    /**
+     * Handles thing update events.
+     *
+     * This method processes events when things are updated in the registry.
+     * It performs the following steps:
+     * 1. Removes the old thing configuration
+     * 2. Processes the new thing configuration
+     * 3. Updates accessories and characteristics
+     * 4. Reconfigures event subscriptions
+     *
+     * Key implementation details:
+     * - Handles configuration updates
+     * - Manages accessory lifecycle
+     * - Updates event subscriptions
+     * - Ensures thread-safe operations
+     *
+     * @param oldThing The old {@link org.openhab.core.thing.Thing}
+     * @param newThing The new {@link org.openhab.core.thing.Thing}
+     * @throws IllegalStateException if thing update fails
+     * @since 1.0.0
+     */
+    @Override
+    public void updated(Thing oldThing, Thing newThing) {
+        logger.debug("{}Thing {} updated", LOG_PREFIX, newThing.getUID());
+
+        // Remove the old thing first
+        removed(oldThing);
+
+        // Process the new thing
+        processThing(newThing);
+    }
+
+    /**
+     * Restores an orphaned accessory.
+     *
+     * This method attempts to restore an orphaned accessory when its thing becomes available again.
+     * It performs the following steps:
+     * 1. Removes orphaned flag from accessory
+     * 2. Updates configuration to remove orphaned state
+     * 3. Re-subscribes to characteristic events
+     * 4. Validates restoration success
+     *
+     * Key implementation details:
+     * - Updates accessory state
+     * - Manages configuration changes
+     * - Re-establishes event subscriptions
+     * - Handles error conditions
+     *
+     * @param thing The {@link org.openhab.core.thing.Thing} to restore the accessory for
+     * @param orphanedAccessory The orphaned {@link org.openhab.io.homekit.api.accessory.HomekitAccessory}
+     * @return true if the accessory was restored successfully, false otherwise
+     * @throws IllegalStateException if restoration fails
+     * @since 1.0.0
+     */
     private boolean restoreOrphanedAccessory(Thing thing, HomekitAccessory orphanedAccessory) {
         try {
             // Remove orphaned flag
@@ -1101,26 +1490,29 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
     }
 
     /**
-     * Checks if an accessory is orphaned.
+     * Checks if a thing is orphaned.
      *
-     * @param thing The thing to check
-     * @return true if the accessory is orphaned, false otherwise
+     * This method determines if a thing's accessory is in an orphaned state.
+     * It performs the following checks:
+     * 1. Retrieves the accessory for the thing
+     * 2. Checks the orphaned state of the accessory
+     * 3. Validates the accessory's configuration
+     *
+     * Key implementation details:
+     * - Uses {@link #thingAccessoryMap} for accessory lookup
+     * - Checks accessory orphaned state
+     * - Validates configuration
+     *
+     * @param thing The {@link org.openhab.core.thing.Thing} to check
+     * @return true if the thing's accessory is orphaned, false otherwise
+     * @since 1.0.0
      */
     public boolean isOrphaned(Thing thing) {
         HomekitAccessory accessory = thingAccessoryMap.get(thing.getUID());
         return accessory != null && accessory.isOrphaned();
     }
 
-    @Override
-    public void updated(Thing oldThing, Thing newThing) {
-        logger.debug("{}Thing {} updated", LOG_PREFIX, newThing.getUID());
 
-        // Remove the old thing first
-        removed(oldThing);
-
-        // Process the new thing
-        processThing(newThing);
-    }
 
     /**
      * Internal class for tracking state changes and their metadata.
@@ -1240,8 +1632,9 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
 
     /**
      * Gets all things managed by this bridge.
-     * 
-     * @return Collection of all things
+     *
+     * @return Collection of {@link Thing} instances
+     * @since 1.0.0
      */
     public Collection<Thing> getThings() {
         return thingAccessoryMap.keySet().stream().map(thingRegistry::get).filter(Objects::nonNull)
@@ -1249,21 +1642,22 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
     }
 
     /**
-     * Gets the HomeKit accessory mapped to a specific thing.
-     * 
-     * @param thingUID The UID of the thing
-     * @return Optional containing the mapped accessory if found
+     * Gets the accessory mapped to a thing.
+     *
+     * @param thingUID The {@link ThingUID} to get the accessory for
+     * @return Optional containing the mapped {@link HomekitAccessory}, or empty if not found
+     * @since 1.0.0
      */
     public Optional<HomekitAccessory> getMappedAccessory(ThingUID thingUID) {
         return Optional.ofNullable(thingAccessoryMap.get(thingUID));
     }
 
     /**
-     * Gets all HomeKit accessories managed by this bridge.
-     * This method is kept for backward compatibility.
-     * 
-     * @return Collection of all accessories
-     * @deprecated Use getThings() and getMappedAccessory() instead
+     * Gets all accessories managed by this bridge.
+     *
+     * @return Collection of {@link HomekitAccessory} instances
+     * @deprecated Use {@link #getMappedAccessory(ThingUID)} instead
+     * @since 1.0.0
      */
     @Deprecated
     public Collection<HomekitAccessory> getAccessories() {

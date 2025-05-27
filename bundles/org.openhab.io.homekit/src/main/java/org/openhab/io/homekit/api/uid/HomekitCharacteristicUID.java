@@ -5,21 +5,58 @@ import org.openhab.core.common.registry.Identifiable;
 
 /**
  * Interface for HomeKit characteristic unique identifiers.
- * This interface defines the contract for characteristic UIDs in the HomeKit system.
+ * <p>
+ * This interface defines the contract for characteristic UIDs in the HomeKit system. It provides
+ * methods for accessing and managing unique identifiers for HomeKit characteristics, ensuring
+ * proper identification and tracking throughout the system.
+ * </p>
+ * <p>
+ * The interface provides:
+ * <ul>
+ *   <li>String representation of the UID</li>
+ *   <li>Instance ID management</li>
+ *   <li>Unique identification</li>
+ * </ul>
+ * </p>
+ * <p>
+ * Key implementation details:
+ * <ul>
+ *   <li>Thread-safe UID generation</li>
+ *   <li>Unique ID validation</li>
+ *   <li>Instance ID association</li>
+ *   <li>String format consistency</li>
+ * </ul>
+ * </p>
+ * <p>
+ * The interface integrates with:
+ * <ul>
+ *   <li>{@link org.openhab.core.common.registry.Identifiable} for registry integration</li>
+ *   <li>{@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic} for characteristic identification</li>
+ * </ul>
+ * </p>
+ *
+ * @author Karel Goderis - Initial Contribution
+ * @since 1.0.0
  */
 @NonNullByDefault
 public interface HomekitCharacteristicUID extends Identifiable<HomekitCharacteristicUID> {
     /**
      * Gets the unique identifier string for this characteristic.
+     * This method provides a string representation of the characteristic's unique identifier
+     * that can be used for display, logging, and identification purposes.
      *
-     * @return the unique identifier string
+     * @return The unique identifier string
+     * @since 1.0.0
      */
     String getAsString();
 
     /**
      * Gets the characteristic instance ID.
+     * This method retrieves the numeric identifier assigned to the characteristic,
+     * which is used for internal tracking and management.
      *
-     * @return the characteristic instance ID
+     * @return The characteristic instance ID
+     * @since 1.0.0
      */
     long getInstanceId();
 }
