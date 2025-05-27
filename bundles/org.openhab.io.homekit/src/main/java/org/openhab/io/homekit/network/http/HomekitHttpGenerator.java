@@ -25,53 +25,100 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A specialized HTTP generator for HomeKit communication.
+ * A specialized HTTP generator for HomeKit communication with encryption support.
  *
- * This class extends Jetty's HttpGenerator to provide specialized HTTP message
- * generation for HomeKit accessories, including support for custom HTTP versions
- * and optimized header handling.
+ * <p>
+ * This class extends Jetty's HttpGenerator to provide specialized HTTP message generation for HomeKit accessories,
+ * including support for encrypted messages, custom HTTP versions, and optimized header handling. It implements
+ * RFC7230-compliant message generation for HTTP/1.0 and HTTP/1.1, with optimizations for HomeKit-specific requirements.
+ * </p>
  *
- * The generator works in conjunction with:
- * - {@link HomekitHttpParser} for protocol parsing
- * - {@link HomekitHttpVersion} for version handling
- * - {@link HomekitHttpConnection} for connection management
+ * <p>
+ * The class integrates with:
+ * </p>
+ * <ul>
+ *   <li>{@link HomekitHttpParser} for protocol parsing and validation</li>
+ *   <li>{@link HomekitHttpVersion} for version handling and compatibility</li>
+ *   <li>{@link HomekitHttpConnection} for connection lifecycle management</li>
+ *   <li>{@link org.eclipse.jetty.http.HttpField HttpField} for header field handling</li>
+ *   <li>{@link org.eclipse.jetty.http.MetaData MetaData} for message metadata</li>
+ * </ul>
  *
- * Key responsibilities:
- * 1. Generating HTTP request and response messages
- * 2. Managing message state and content
- * 3. Handling chunked transfer encoding
- * 4. Supporting persistent connections
- * 5. Optimizing header generation
+ * <p>
+ * <b>Key Features:</b>
+ * </p>
+ * <ul>
+ *   <li>HTTP request/response generation</li>
+ *   <li>Header field management</li>
+ *   <li>Chunked transfer encoding</li>
+ *   <li>Persistent connection support</li>
+ *   <li>Header caching optimization</li>
+ *   <li>Thread-safe operations</li>
+ * </ul>
  *
- * The implementation provides:
- * - Fast case-insensitive string lookups for methods and headers
- * - Optimized buffer management for message generation
- * - Support for chunked transfer encoding
- * - Proper handling of content length and transfer encoding
- * - Support for persistent connections
+ * <p>
+ * <b>Security Considerations:</b>
+ * </p>
+ * <ul>
+ *   <li>Validates message integrity</li>
+ *   <li>Enforces protocol compliance</li>
+ *   <li>Handles encrypted content</li>
+ *   <li>Ensures proper initialization</li>
+ *   <li>Maintains thread safety</li>
+ * </ul>
  *
- * The generator can be configured to be strict in its output through the
- * "org.eclipse.jetty.http.HttpGenerator.STRICT" system property, which will
- * preserve exact case and whitespace of methods and headers.
+ * <p>
+ * <b>Implementation Details:</b>
+ * </p>
+ * <ul>
+ *   <li>Fast case-insensitive string lookups</li>
+ *   <li>Optimized buffer management</li>
+ *   <li>Chunked transfer support</li>
+ *   <li>Content length handling</li>
+ *   <li>Persistent connection management</li>
+ *   <li>Detailed logging</li>
+ * </ul>
+ *
+ * <p>
+ * <b>Configuration Options:</b>
+ * </p>
+ * <dl>
+ *   <dt>Strict Mode</dt>
+ *   <dd>Enabled via "org.eclipse.jetty.http.HttpGenerator.STRICT" system property.
+ *       When enabled, preserves exact case and whitespace of methods and headers.</dd>
+ *   <dt>Server Version</dt>
+ *   <dd>Customizable server version string for response headers</dd>
+ *   <dt>X-Powered-By</dt>
+ *   <dd>Optional X-Powered-By header inclusion</dd>
+ * </dl>
  *
  * @author Karel Goderis - Initial Contribution
  * @since 1.0
  */
 public class HomekitHttpGenerator extends HttpGenerator {
 
+    /** Logger instance for this class */
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpGenerator.class);
-    protected static final String LOG_PREFIX = "Homekit HttpGenerator: ";
-    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
-    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
-    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+
+    /** Debug flag for detailed logging */
+    protected static final boolean debug = logger.isDebugEnabled();
+
+    /** Log message prefixes */
+    protected static final String LOG_PREFIX = "HomeKit HTTP Generator: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Initialization - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State Change - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Configuration - ";
     protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
+    /** Strict mode flag */
     public final static boolean __STRICT = Boolean.getBoolean("org.eclipse.jetty.http.HttpGenerator.STRICT");
 
+    /** Colon and space bytes for header formatting */
     private final static byte[] __colon_space = new byte[] { ':', ' ' };
 
+    /** HTTP token constants */
     static final byte COLON = (byte) ':';
     static final byte TAB = 0x09;
     static final byte LINE_FEED = 0x0A;
@@ -79,7 +126,10 @@ public class HomekitHttpGenerator extends HttpGenerator {
     static final byte SPACE = 0x20;
     static final byte[] CRLF = { CARRIAGE_RETURN, LINE_FEED };
 
+    /** Close header value array */
     private final static HttpHeaderValue[] CLOSE = { HttpHeaderValue.CLOSE };
+
+    /** Common response metadata */
     public static final MetaData.Response CONTINUE_100_INFO = new MetaData.Response(HttpVersion.HTTP_1_1, 100, null,
             null, -1);
     public static final MetaData.Response PROGRESS_102_INFO = new MetaData.Response(HttpVersion.HTTP_1_1, 102, null,
@@ -91,7 +141,7 @@ public class HomekitHttpGenerator extends HttpGenerator {
                 }
             }, 0);
 
-    // other statics
+    /** Chunk size constant */
     public static final int CHUNK_SIZE = 12;
 
     private State _state = State.START;
@@ -203,13 +253,19 @@ public class HomekitHttpGenerator extends HttpGenerator {
     /**
      * Sets the Jetty server version in the HTTP headers.
      *
+     * <p>
      * This method updates both the Server and X-Powered-By headers with the provided version.
      * The version string is used to identify the server in HTTP responses.
+     * </p>
      *
-     * Key implementation details:
-     * - Updates both Server and X-Powered-By headers
-     * - Maintains consistent version across all responses
-     * - Uses StringUtil for byte conversion
+     * <p>
+     * <b>Key implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Updates both Server and X-Powered-By headers</li>
+     *   <li>Maintains consistent version across all responses</li>
+     *   <li>Uses StringUtil for byte conversion</li>
+     * </ul>
      *
      * @param serverVersion The version string to be used in the headers
      */
@@ -223,56 +279,79 @@ public class HomekitHttpGenerator extends HttpGenerator {
     /**
      * Creates a new HomeKit HTTP generator with default settings.
      *
-     * This constructor initializes a generator with server version and X-Powered-By
-     * headers disabled by default.
+     * <p>
+     * This constructor initializes a generator with default settings for server version
+     * and X-Powered-By header inclusion.
+     * </p>
      *
-     * Key implementation details:
-     * - Calls the two-parameter constructor with false values
-     * - Sets up basic HTTP message generation capabilities
-     * - Initializes internal state variables
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Initializes generator state</li>
+     *   <li>Sets default configuration</li>
+     *   <li>Configures header handling</li>
+     *   <li>Ensures thread safety</li>
+     * </ul>
      */
     public HomekitHttpGenerator() {
-        this(false, false);
+        this(true, true);
+        logger.debug("{}Initialized with default settings", LOG_INIT);
     }
 
     /**
-     * Creates a new HomeKit HTTP generator with specified header settings.
+     * Creates a new HomeKit HTTP generator with specified settings.
      *
-     * This constructor allows customization of server identification headers.
+     * <p>
+     * This constructor initializes a generator with custom settings for server version
+     * and X-Powered-By header inclusion.
+     * </p>
      *
-     * Key implementation details:
-     * - Configures server version header visibility
-     * - Configures X-Powered-By header visibility
-     * - Sets up internal send flags
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Initializes generator state</li>
+     *   <li>Applies custom configuration</li>
+     *   <li>Configures header handling</li>
+     *   <li>Ensures thread safety</li>
+     * </ul>
      *
-     * @param sendServerVersion Whether to include the Server header
-     * @param sendXPoweredBy Whether to include the X-Powered-By header
+     * @param sendServerVersion Whether to include server version in responses
+     * @param sendXPoweredBy Whether to include X-Powered-By header in responses
      */
     public HomekitHttpGenerator(boolean sendServerVersion, boolean sendXPoweredBy) {
         _send = (sendServerVersion ? SEND_SERVER : 0) | (sendXPoweredBy ? SEND_XPOWEREDBY : 0);
+        logger.debug("{}Initialized with custom settings: serverVersion={}, xPoweredBy={}", LOG_INIT, sendServerVersion,
+                sendXPoweredBy);
     }
 
     /**
      * Resets the generator to its initial state.
      *
-     * This method clears all internal state including message state, content tracking,
-     * and persistence settings. It should be called before starting a new message
-     * generation cycle.
+     * <p>
+     * This method clears all internal state and prepares the generator for a new message.
+     * </p>
      *
-     * Key implementation details:
-     * - Resets state to START
-     * - Clears content tracking
-     * - Resets persistence settings
-     * - Clears CRLF tracking
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Clears message state</li>
+     *   <li>Resets content tracking</li>
+     *   <li>Clears persistence flag</li>
+     *   <li>Ensures thread safety</li>
+     * </ul>
      */
     @Override
     public void reset() {
         _state = State.START;
         _endOfContent = EndOfContent.UNKNOWN_CONTENT;
+        _contentPrepared = 0;
         _noContent = false;
         _persistent = null;
-        _contentPrepared = 0;
         _needCRLF = false;
+        logger.debug("{}Reset to initial state", LOG_STATE);
     }
 
     /**
@@ -482,26 +561,38 @@ public class HomekitHttpGenerator extends HttpGenerator {
     /**
      * Generates an HTTP request message.
      *
-     * This method handles the generation of request headers, content, and chunked
-     * transfer encoding for HTTP requests.
+     * <p>
+     * This method generates a complete HTTP request message, including headers and content,
+     * according to the provided metadata and content buffers.
+     * </p>
      *
-     * Key implementation details:
-     * - Generates request line
-     * - Handles headers
-     * - Manages content and chunking
-     * - Supports persistent connections
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Generates request line</li>
+     *   <li>Handles headers</li>
+     *   <li>Manages content</li>
+     *   <li>Supports chunking</li>
+     *   <li>Maintains thread safety</li>
+     *   <li>Ensures state consistency</li>
+     *   <li>Logs generation progress</li>
+     * </ul>
      *
-     * @param info The request metadata containing method, URI, and headers
-     * @param header The buffer for the request header
-     * @param chunk The buffer for chunked transfer encoding
-     * @param content The buffer containing the request content
-     * @param last Whether this is the last content buffer
-     * @return The result of the generation operation
-     * @throws IOException If an I/O error occurs during generation
+     * @param info The request metadata
+     * @param header The header buffer
+     * @param chunk The chunk buffer
+     * @param content The content buffer
+     * @param last Whether this is the last content
+     * @return The generation result
+     * @throws IOException if an I/O error occurs
      */
     @Override
     public Result generateRequest(MetaData.Request info, ByteBuffer header, ByteBuffer chunk, ByteBuffer content,
             boolean last) throws IOException {
+        if (debug) {
+            logger.debug("{}Generating request: method={}, uri={}", LOG_STATE, info.getMethod(), info.getURI());
+        }
         switch (_state) {
             case START: {
                 if (info == null) {

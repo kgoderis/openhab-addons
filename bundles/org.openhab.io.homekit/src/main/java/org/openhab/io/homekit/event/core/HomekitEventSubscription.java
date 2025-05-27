@@ -11,16 +11,59 @@ import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.openhab.io.homekit.util.HomekitUID;
 
 /**
- * Represents a subscription to Homekit events.
+ * Represents a subscription to HomeKit events in the OpenHAB HomeKit integration.
+ *
  * <p>
- * This class encapsulates the details of an event subscription, including:
- * <ul>
- * <li>The type of events to receive</li>
- * <li>The publisher UID to receive events from</li>
- * <li>The subscriber that will receive the events</li>
- * <li>An optional filter predicate to further refine which events are received</li>
- * </ul>
+ * This class encapsulates the details of an event subscription, providing a robust mechanism for
+ * event-based communication between HomeKit components. It manages the lifecycle and configuration
+ * of event subscriptions, ensuring proper event routing and filtering.
  * </p>
+ *
+ * <p>
+ * The class integrates with:
+ * </p>
+ * <ul>
+ *   <li>{@link HomekitEvent} for event type definitions and handling</li>
+ *   <li>{@link HomekitEventSubscriber} for event delivery and processing</li>
+ *   <li>{@link HomekitEventType} for event type categorization</li>
+ *   <li>{@link org.openhab.core.common.registry.Identifiable Identifiable} for subscriber identification</li>
+ * </ul>
+ *
+ * <p>
+ * <b>Key Features:</b>
+ * </p>
+ * <ul>
+ *   <li>Event type filtering</li>
+ *   <li>Publisher-based routing</li>
+ *   <li>Custom event filtering</li>
+ *   <li>Subscriber identification</li>
+ *   <li>Event class validation</li>
+ *   <li>Event timing tracking</li>
+ * </ul>
+ *
+ * <p>
+ * <b>Implementation Details:</b>
+ * </p>
+ * <ul>
+ *   <li>Uses Java's Predicate interface for flexible event filtering</li>
+ *   <li>Supports both identifiable and anonymous subscribers</li>
+ *   <li>Maintains event timing for monitoring and diagnostics</li>
+ *   <li>Provides multiple constructor overloads for different use cases</li>
+ *   <li>Ensures thread safety through proper field visibility</li>
+ * </ul>
+ *
+ * <p>
+ * <b>Usage Patterns:</b>
+ * </p>
+ * <ul>
+ *   <li>Create subscriptions for specific event types and publishers</li>
+ *   <li>Use custom filters for fine-grained event selection</li>
+ *   <li>Monitor event timing for performance analysis</li>
+ *   <li>Validate event classes for type safety</li>
+ * </ul>
+ *
+ * @author OpenHAB
+ * @since 3.x
  */
 @NonNullByDefault
 public class HomekitEventSubscription {

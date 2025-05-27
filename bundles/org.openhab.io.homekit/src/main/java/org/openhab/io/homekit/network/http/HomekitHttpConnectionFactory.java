@@ -16,24 +16,34 @@ import org.slf4j.LoggerFactory;
 /**
  * Factory for creating HomeKit HTTP connections.
  *
+ * <p>
  * This class manages the creation of HTTP connections for HomeKit communication,
  * providing specialized handling for HomeKit-specific connection requirements
  * and encryption support.
+ * </p>
  *
- * The factory works in conjunction with:
- * - {@link HomekitHttpConnection} for connection management
- * - {@link HomekitSessionHandler} for session handling
- * - {@link HomekitDecryptedEndPoint} for encrypted endpoints
- * - {@link org.eclipse.jetty.server.Connector Connector} for server connections
- * - {@link org.eclipse.jetty.server.HttpConfiguration HttpConfiguration} for HTTP settings
- * - {@link org.eclipse.jetty.http.HttpCompliance HttpCompliance} for protocol compliance
+ * <p>
+ * <b>Component Integration:</b>
+ * </p>
+ * <ul>
+ *   <li>{@link HomekitHttpConnection} for connection management</li>
+ *   <li>{@link HomekitSessionHandler} for session handling</li>
+ *   <li>{@link HomekitDecryptedEndPoint} for encrypted endpoints</li>
+ *   <li>{@link org.eclipse.jetty.server.Connector Connector} for server connections</li>
+ *   <li>{@link org.eclipse.jetty.server.HttpConfiguration HttpConfiguration} for HTTP settings</li>
+ *   <li>{@link org.eclipse.jetty.http.HttpCompliance HttpCompliance} for protocol compliance</li>
+ * </ul>
  *
- * Key responsibilities:
- * 1. Creating new HTTP connections
- * 2. Managing connection configuration
- * 3. Supporting connection upgrades
- * 4. Handling session management
- * 5. Providing encryption support
+ * <p>
+ * <b>Key responsibilities:</b>
+ * </p>
+ * <ul>
+ *   <li>Creating new HTTP connections</li>
+ *   <li>Managing connection configuration</li>
+ *   <li>Supporting connection upgrades</li>
+ *   <li>Handling session management</li>
+ *   <li>Providing encryption support</li>
+ * </ul>
  *
  * @author Karel Goderis - Initial Contribution
  * @since 1.0
@@ -56,8 +66,10 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
     /**
      * Creates a new HomeKit HTTP connection factory with a session handler.
      *
+     * <p>
      * This constructor initializes a factory with the specified session handler,
      * preparing it for creating HTTP connections with session support.
+     * </p>
      *
      * @param sessionHandler The {@link HomekitSessionHandler} for managing connections
      */
@@ -69,8 +81,10 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
     /**
      * Creates a new HomeKit HTTP connection factory with configuration.
      *
+     * <p>
      * This constructor initializes a factory with the specified HTTP configuration,
      * preparing it for creating HTTP connections.
+     * </p>
      *
      * @param config The {@link HttpConfiguration} to use
      */
@@ -81,8 +95,10 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
     /**
      * Creates a new HomeKit HTTP connection factory with configuration and compliance.
      *
+     * <p>
      * This constructor initializes a factory with the specified HTTP configuration
      * and compliance mode, preparing it for creating HTTP connections.
+     * </p>
      *
      * @param config The {@link HttpConfiguration} to use
      * @param compliance The {@link HttpCompliance} mode to use
@@ -102,6 +118,11 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
     /**
      * Sets whether to use direct buffers.
      *
+     * <p>
+     * This method configures whether the factory should use direct buffers
+     * for connection management.
+     * </p>
+     *
      * @param useDirectBuffers true to use direct buffers, false otherwise
      */
     public void setDirectBuffersF(boolean useDirectBuffers) {
@@ -111,6 +132,11 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
     /**
      * Checks if direct buffers are being used.
      *
+     * <p>
+     * This method indicates whether the factory is configured to use
+     * direct buffers for connection management.
+     * </p>
+     *
      * @return true if direct buffers are being used
      */
     public boolean isDirectBuffers() {
@@ -119,6 +145,11 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
 
     /**
      * Gets the HTTP configuration.
+     *
+     * <p>
+     * This method returns the HTTP configuration used by this factory
+     * for creating connections.
+     * </p>
      *
      * @return The {@link HttpConfiguration} instance
      */
@@ -130,6 +161,11 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
     /**
      * Gets the HTTP compliance mode.
      *
+     * <p>
+     * This method returns the HTTP compliance mode used by this factory
+     * for validating connections.
+     * </p>
+     *
      * @return The {@link HttpCompliance} mode
      */
     public HttpCompliance getHttpCompliance() {
@@ -138,6 +174,11 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
 
     /**
      * Checks if HTTP compliance violations are being recorded.
+     *
+     * <p>
+     * This method indicates whether the factory is configured to record
+     * HTTP compliance violations.
+     * </p>
      *
      * @return true if violations are being recorded
      */
@@ -148,6 +189,11 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
     /**
      * Sets the HTTP compliance mode.
      *
+     * <p>
+     * This method configures the HTTP compliance mode used by this factory
+     * for validating connections.
+     * </p>
+     *
      * @param httpCompliance The {@link HttpCompliance} mode to use
      */
     public void setHttpCompliance(HttpCompliance httpCompliance) {
@@ -157,8 +203,20 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
     /**
      * Creates a new connection for the given connector and endpoint.
      *
+     * <p>
      * This method handles the creation of new HTTP connections, including
      * support for encrypted connections when a valid session exists.
+     * </p>
+     *
+     * <p>
+     * <b>Key implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Checks for existing session</li>
+     *   <li>Creates encrypted endpoint if needed</li>
+     *   <li>Configures connection parameters</li>
+     *   <li>Handles connection upgrades</li>
+     * </ul>
      *
      * @param connector The {@link Connector} for the server
      * @param endPoint The {@link EndPoint} for the connection
@@ -205,6 +263,11 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
 
     /**
      * Sets whether to record HTTP compliance violations.
+     *
+     * <p>
+     * This method configures whether the factory should record HTTP compliance
+     * violations for debugging and monitoring purposes.
+     * </p>
      *
      * @param recordHttpComplianceViolations true to record violations
      */

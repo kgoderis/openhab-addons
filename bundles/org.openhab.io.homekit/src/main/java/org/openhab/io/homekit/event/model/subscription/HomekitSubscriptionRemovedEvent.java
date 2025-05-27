@@ -9,16 +9,73 @@ import org.openhab.io.homekit.event.core.AbstractHomekitEvent;
 import org.openhab.io.homekit.event.core.HomekitEventMetadata;
 import org.openhab.io.homekit.event.core.HomekitEventSubscription;
 
+/**
+ * Event class representing the removal of a HomeKit subscription.
+ * This event is fired when a client unsubscribes from updates of a HomeKit characteristic.
+ *
+ * <p>
+ * The class integrates with:
+ * </p>
+ * <ul>
+ *   <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for base event functionality</li>
+ *   <li>{@link org.openhab.io.homekit.api.event.HomekitEventType} for event type identification</li>
+ *   <li>{@link org.openhab.core.thing.UID} for component identification</li>
+ *   <li>{@link org.openhab.io.homekit.event.core.HomekitEventSubscription} for subscription details</li>
+ * </ul>
+ *
+ * <p>
+ * <b>Key Features:</b>
+ * </p>
+ * <ul>
+ *   <li>Subscription lifecycle management</li>
+ *   <li>Publisher identification for cleanup</li>
+ *   <li>Timestamp tracking for state management</li>
+ *   <li>Wildcard subscriber support</li>
+ * </ul>
+ *
+ * <p>
+ * <b>Usage Patterns:</b>
+ * </p>
+ * <ul>
+ *   <li>Cleanup of subscription resources</li>
+ *   <li>State management in publishers</li>
+ *   <li>Subscription tracking and monitoring</li>
+ *   <li>System diagnostics and logging</li>
+ * </ul>
+ *
+ * <p>
+ * <b>Lifecycle Management:</b>
+ * </p>
+ * <ul>
+ *   <li>Triggers cleanup of subscription resources</li>
+ *   <li>Updates publisher state</li>
+ *   <li>Maintains subscription history</li>
+ *   <li>Supports system diagnostics</li>
+ * </ul>
+ *
+ * @author Karel Goderis - Initial contribution
+ * @since 3.x
+ */
 @NonNullByDefault
 public class HomekitSubscriptionRemovedEvent extends AbstractHomekitEvent {
     private final HomekitEventSubscription subscription;
 
+    /**
+     * Creates a new subscription removed event.
+     *
+     * @param subscription the subscription being removed
+     */
     public HomekitSubscriptionRemovedEvent(HomekitEventSubscription subscription) {
         super(HomekitEventType.SUBSCRIPTION_REMOVED, subscription.getPublisherUID(), WILDCARD_UID,
                 new HomekitEventMetadata(subscription.getPublisherUID(), null, null, Collections.emptySet()));
         this.subscription = subscription;
     }
 
+    /**
+     * Returns the subscription being removed.
+     *
+     * @return the subscription
+     */
     public HomekitEventSubscription getSubscription() {
         return subscription;
     }

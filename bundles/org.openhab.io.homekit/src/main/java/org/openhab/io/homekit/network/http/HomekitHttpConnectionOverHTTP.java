@@ -12,31 +12,42 @@ import org.slf4j.LoggerFactory;
 /**
  * HTTP-specific implementation of HomeKit HTTP connections.
  *
+ * <p>
  * This class extends {@link HttpConnectionOverHTTP} to provide HTTP-specific
  * connection handling for HomeKit accessories. It implements the connection
  * logic for standard HTTP communication, including request/response handling
  * and connection lifecycle management.
+ * </p>
  *
- * The connection works in conjunction with:
- * - {@link HomekitHttpChannel} for channel management
- * - {@link HttpDestination} for connection configuration
- * - {@link org.eclipse.jetty.client.HttpClient HttpClient} for HTTP operations
+ * <p>
+ * <b>Component Integration:</b>
+ * </p>
+ * <ul>
+ *   <li>{@link HomekitHttpChannel} for channel management</li>
+ *   <li>{@link HttpDestination} for connection configuration</li>
+ *   <li>{@link org.eclipse.jetty.client.HttpClient HttpClient} for HTTP operations</li>
+ * </ul>
  *
- * Key responsibilities:
- * 1. Managing HTTP-specific connection lifecycle
- * 2. Handling HTTP request/response cycles
- * 3. Supporting HTTP protocol features
- * 4. Managing connection state
- * 5. Handling encryption keys for secure communication
+ * <p>
+ * <b>Key responsibilities:</b>
+ * </p>
+ * <ul>
+ *   <li>Managing HTTP-specific connection lifecycle</li>
+ *   <li>Handling HTTP request/response cycles</li>
+ *   <li>Supporting HTTP protocol features</li>
+ *   <li>Managing connection state</li>
+ *   <li>Handling encryption keys for secure communication</li>
+ * </ul>
  *
  * @author Karel Goderis - Initial Contribution
  * @since 1.0
  */
 public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
 
+    /** Logger instance for this class */
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpConnectionOverHTTP.class);
 
-    // ========== Log Message Prefixes ==========
+    /** Log message prefixes */
     protected static final String LOG_PREFIX = "Homekit HttpConnectionOverHTTP: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
@@ -44,14 +55,19 @@ public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
+    /** Decryption key for secure communication */
     private byte[] decryptionKey;
+
+    /** Encryption key for secure communication */
     private byte[] encryptionKey;
 
     /**
      * Creates a new HTTP-specific HomeKit connection.
      *
+     * <p>
      * This constructor initializes a connection with the specified endpoint,
      * destination, and connection promise.
+     * </p>
      *
      * @param endPoint The connection endpoint
      * @param destination The HTTP destination
@@ -65,8 +81,10 @@ public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
     /**
      * Creates a new HTTP channel for this connection.
      *
+     * <p>
      * This method creates a specialized HTTP channel for HomeKit communication
      * over HTTP.
+     * </p>
      *
      * @return A new HomekitHttpChannel instance
      */
@@ -79,6 +97,10 @@ public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
     /**
      * Gets the number of messages received.
      *
+     * <p>
+     * This method returns the total count of messages received through this connection.
+     * </p>
+     *
      * @return The number of messages received
      */
     @Override
@@ -88,6 +110,10 @@ public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
 
     /**
      * Gets the number of messages sent.
+     *
+     * <p>
+     * This method returns the total count of messages sent through this connection.
+     * </p>
      *
      * @return The number of messages sent
      */
@@ -99,6 +125,10 @@ public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
     /**
      * Adds received bytes to the connection statistics.
      *
+     * <p>
+     * This method updates the connection's byte count for received data.
+     * </p>
+     *
      * @param bytesIn The number of bytes received
      */
     @Override
@@ -108,6 +138,10 @@ public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
 
     /**
      * Gets the number of bytes sent.
+     *
+     * <p>
+     * This method returns the total number of bytes sent through this connection.
+     * </p>
      *
      * @return The number of bytes sent
      */
@@ -119,6 +153,10 @@ public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
     /**
      * Adds sent bytes to the connection statistics.
      *
+     * <p>
+     * This method updates the connection's byte count for sent data.
+     * </p>
+     *
      * @param bytesOut The number of bytes sent
      */
     @Override
@@ -128,6 +166,11 @@ public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
 
     /**
      * Closes the connection with an optional failure reason.
+     *
+     * <p>
+     * This method handles the graceful shutdown of the connection, logging
+     * any failure reason if provided.
+     * </p>
      *
      * @param failure The failure reason, or null if none
      */
@@ -144,8 +187,19 @@ public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
     /**
      * Sets the encryption keys for secure communication.
      *
+     * <p>
      * This method configures the encryption and decryption keys used for
      * secure communication over this connection.
+     * </p>
+     *
+     * <p>
+     * <b>Key implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Updates encryption keys for the connection</li>
+     *   <li>Configures the associated HTTP channel</li>
+     *   <li>Logs key information at appropriate levels</li>
+     * </ul>
      *
      * @param decryptionKey The key used for decrypting incoming messages
      * @param encryptionKey The key used for encrypting outgoing messages
@@ -172,6 +226,10 @@ public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
     /**
      * Checks if encryption keys are set.
      *
+     * <p>
+     * This method verifies that both encryption and decryption keys are available.
+     * </p>
+     *
      * @return true if both encryption and decryption keys are set
      */
     public boolean hasEncryptionKeys() {
@@ -181,6 +239,10 @@ public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
     /**
      * Gets the decryption key.
      *
+     * <p>
+     * This method returns the key used for decrypting incoming messages.
+     * </p>
+     *
      * @return The decryption key
      */
     public byte[] getDecryptionKey() {
@@ -189,6 +251,10 @@ public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
 
     /**
      * Gets the encryption key.
+     *
+     * <p>
+     * This method returns the key used for encrypting outgoing messages.
+     * </p>
      *
      * @return The encryption key
      */

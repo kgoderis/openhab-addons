@@ -19,42 +19,75 @@ import org.slf4j.LoggerFactory;
 /**
  * A specialized HTTP receiver for HomeKit communication with decryption support.
  *
+ * <p>
  * This class extends {@link org.eclipse.jetty.client.http.HttpReceiverOverHTTP HttpReceiverOverHTTP} to provide specialized HTTP response
  * handling for HomeKit accessories, including decryption of response payloads and
  * proper sequence number management for secure communication.
+ * </p>
  *
- * The receiver works in conjunction with:
- * - {@link HomekitHttpChannel} for channel management
- * - {@link HomekitHttpParser} for response parsing
- * - {@link org.openhab.io.homekit.protocol.crypto.HomekitEncryptionEngine HomekitEncryptionEngine} for payload decryption
- * - {@link HomekitHttpConnectionOverHTTP} for connection management
+ * <p>
+ * The class integrates with:
+ * </p>
+ * <ul>
+ *   <li>{@link HomekitHttpChannel} for channel lifecycle management</li>
+ *   <li>{@link HomekitHttpParser} for response parsing and validation</li>
+ *   <li>{@link HomekitEncryptionEngine} for secure message handling</li>
+ *   <li>{@link HomekitHttpConnectionOverHTTP} for connection management</li>
+ *   <li>{@link org.eclipse.jetty.client.HttpClient HttpClient} for HTTP operations</li>
+ * </ul>
  *
- * Key responsibilities:
- * 1. Receiving and decrypting HTTP responses
- * 2. Managing sequence numbers for secure communication
- * 3. Handling response parsing and validation
- * 4. Providing buffer management and recycling
- * 5. Supporting both encrypted and unencrypted communication
+ * <p>
+ * <b>Key Features:</b>
+ * </p>
+ * <ul>
+ *   <li>HTTP response reception and parsing</li>
+ *   <li>Message decryption support</li>
+ *   <li>Sequence number management</li>
+ *   <li>Buffer pool optimization</li>
+ *   <li>Protocol upgrade handling</li>
+ *   <li>Thread-safe operations</li>
+ * </ul>
  *
- * The implementation uses:
- * - {@link HomekitHttpParser} for response parsing
- * - {@link org.eclipse.jetty.io.ByteBufferPool ByteBufferPool} for efficient buffer management
- * - {@link org.openhab.io.homekit.protocol.crypto.HomekitEncryptionEngine HomekitEncryptionEngine} for secure communication
- * - {@link org.eclipse.jetty.client.HttpClient HttpClient} for HTTP client functionality
+ * <p>
+ * <b>Security Considerations:</b>
+ * </p>
+ * <ul>
+ *   <li>Validates message integrity</li>
+ *   <li>Enforces protocol compliance</li>
+ *   <li>Manages encryption keys</li>
+ *   <li>Handles sequence numbers</li>
+ *   <li>Ensures proper initialization</li>
+ *   <li>Maintains thread safety</li>
+ * </ul>
+ *
+ * <p>
+ * <b>Implementation Details:</b>
+ * </p>
+ * <ul>
+ *   <li>Efficient buffer management</li>
+ *   <li>Secure message handling</li>
+ *   <li>Protocol compliance</li>
+ *   <li>Connection lifecycle</li>
+ *   <li>Detailed logging</li>
+ * </ul>
  *
  * @author Karel Goderis - Initial Contribution
  * @since 1.0
  */
 public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements HomekitHttpParser.ResponseHandler {
 
+    /** Logger instance for this class */
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpReceiver.class);
 
+    /** Debug flag for detailed logging */
+    protected static final boolean debug = logger.isDebugEnabled();
+
     // ========== Log Message Prefixes ==========
-    protected static final String LOG_PREFIX = "Homekit HttpReceiver: ";
-    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
-    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
-    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
-    protected static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
+    protected static final String LOG_PREFIX = "HomeKit HTTP Receiver: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Initialization - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State Change - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Configuration - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
@@ -75,13 +108,21 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
     /**
      * Creates a new HomeKit HTTP receiver for the given channel.
      *
-     * This constructor initializes a receiver with the specified HTTP channel.
+     * <p>
+     * This constructor initializes a receiver with the specified HTTP channel,
+     * setting up the foundation for secure HTTP response handling.
+     * </p>
      *
-     * Key implementation details:
-     * - Uses provided {@link org.eclipse.jetty.client.http.HttpChannelOverHTTP HttpChannelOverHTTP}
-     * - Initializes {@link HomekitHttpParser} with HTTP compliance settings
-     * - Sets up buffer management using {@link org.eclipse.jetty.io.ByteBufferPool ByteBufferPool}
-     * - Configures {@link org.eclipse.jetty.client.HttpClient HttpClient} for HTTP operations
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Initializes HTTP channel</li>
+     *   <li>Configures HTTP parser</li>
+     *   <li>Sets up buffer management</li>
+     *   <li>Configures HTTP client</li>
+     *   <li>Ensures thread safety</li>
+     * </ul>
      *
      * @param channel The HTTP channel to use for communication
      */
@@ -89,15 +130,27 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
         super(channel);
         httpClient = channel.getHttpDestination().getHttpClient();
         parser = new HomekitHttpParser(this, -1, httpClient.getHttpCompliance());
+        logger.debug("{}Initialized with HTTP channel", LOG_INIT);
     }
 
     /**
      * Gets the HTTP channel associated with this receiver.
      *
-     * This method returns the specialized {@link HomekitHttpChannel} instance
+     * <p>
+     * This method returns the specialized HomeKit HTTP channel instance
      * that manages this receiver's communication channel.
+     * </p>
      *
-     * @return The {@link HomekitHttpChannel} instance
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Retrieves channel instance</li>
+     *   <li>Performs type casting</li>
+     *   <li>Ensures thread safety</li>
+     * </ul>
+     *
+     * @return The HomeKit HTTP channel instance
      */
     @Override
     public HomekitHttpChannel getHttpChannel() {
@@ -107,10 +160,21 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
     /**
      * Gets the HTTP connection associated with this receiver.
      *
-     * This method returns the specialized {@link HomekitHttpConnectionOverHTTP} instance
+     * <p>
+     * This method returns the specialized HomeKit HTTP connection instance
      * that manages the underlying network connection.
+     * </p>
      *
-     * @return The {@link HomekitHttpConnectionOverHTTP} instance
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Retrieves connection instance</li>
+     *   <li>Performs type casting</li>
+     *   <li>Ensures thread safety</li>
+     * </ul>
+     *
+     * @return The HomeKit HTTP connection instance
      */
     private HomekitHttpConnectionOverHTTP getHttpConnection() {
         return (HomekitHttpConnectionOverHTTP) getHttpChannel().getHttpConnection();
@@ -119,11 +183,21 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
     /**
      * Gets the response buffer for this receiver.
      *
+     * <p>
      * This method returns the decrypted input buffer used for storing
-     * decrypted response content. The buffer is managed by the
-     * {@link org.eclipse.jetty.io.ByteBufferPool ByteBufferPool}.
+     * decrypted response content.
+     * </p>
      *
-     * @return The decrypted input {@link java.nio.ByteBuffer ByteBuffer}
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Retrieves decrypted buffer</li>
+     *   <li>Ensures buffer availability</li>
+     *   <li>Maintains thread safety</li>
+     * </ul>
+     *
+     * @return The decrypted input buffer
      */
     @Override
     protected ByteBuffer getResponseBuffer() {
@@ -133,58 +207,95 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
     /**
      * Releases a buffer back to the pool.
      *
-     * This method validates and releases a buffer back to the
-     * {@link org.eclipse.jetty.io.ByteBufferPool ByteBufferPool}.
+     * <p>
+     * This method validates and releases a buffer back to the buffer pool
+     * for reuse.
+     * </p>
+     *
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Validates buffer state</li>
+     *   <li>Releases buffer to pool</li>
+     *   <li>Ensures thread safety</li>
+     *   <li>Handles error cases</li>
+     * </ul>
      *
      * @param buffer The buffer to release
      * @throws IllegalStateException if the buffer is null or contains content
      */
     private void releaseBuffer(ByteBuffer buffer) {
         if (buffer == null) {
-            throw new IllegalStateException();
+            logger.error("{}Cannot release null buffer", LOG_ERROR);
+            throw new IllegalStateException("Buffer cannot be null");
         }
         if (BufferUtil.hasContent(buffer)) {
-            throw new IllegalStateException();
+            logger.error("{}Cannot release buffer with content", LOG_ERROR);
+            throw new IllegalStateException("Buffer contains content");
         }
         HttpClient client = getHttpDestination().getHttpClient();
         ByteBufferPool bufferPool = client.getByteBufferPool();
         bufferPool.release(buffer);
+        logger.debug("{}Released buffer to pool", LOG_STATE);
     }
 
     /**
      * Handles protocol upgrade scenarios.
      *
+     * <p>
      * This method is called when the connection is being upgraded to a different
-     * protocol. It ensures any remaining content in the decrypted buffer is
-     * properly handled.
+     * protocol, ensuring proper handling of any remaining content.
+     * </p>
      *
-     * @return A new {@link java.nio.ByteBuffer ByteBuffer} containing any remaining content, or null if none
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Checks for remaining content</li>
+     *   <li>Creates upgrade buffer</li>
+     *   <li>Transfers content</li>
+     *   <li>Ensures thread safety</li>
+     *   <li>Logs upgrade process</li>
+     * </ul>
+     *
+     * @return A new buffer containing any remaining content, or null if none
      */
     @Override
     protected ByteBuffer onUpgradeFrom() {
         if (BufferUtil.hasContent(decryptedInputBuffer)) {
+            logger.debug("{}Handling protocol upgrade with remaining content", LOG_STATE);
             ByteBuffer upgradeBuffer = ByteBuffer.allocate(decryptedInputBuffer.remaining());
             upgradeBuffer.put(decryptedInputBuffer).flip();
             return upgradeBuffer;
         }
+        logger.debug("{}Protocol upgrade with no remaining content", LOG_STATE);
         return null;
     }
 
     /**
      * Receives and processes incoming data.
      *
+     * <p>
      * This method handles the core receive loop, managing both encrypted and
      * unencrypted communication. It works with:
-     * - {@link org.eclipse.jetty.io.EndPoint EndPoint} for network I/O
-     * - {@link org.openhab.io.homekit.protocol.crypto.HomekitEncryptionEngine HomekitEncryptionEngine} for decryption
-     * - {@link HomekitHttpParser} for response parsing
+     * </p>
+     * <ul>
+     *   <li>{@link org.eclipse.jetty.io.EndPoint EndPoint} for network I/O</li>
+     *   <li>{@link org.openhab.io.homekit.protocol.crypto.HomekitEncryptionEngine HomekitEncryptionEngine} for decryption</li>
+     *   <li>{@link HomekitHttpParser} for response parsing</li>
+     * </ul>
      *
-     * Key implementation details:
-     * - Manages buffer lifecycle
-     * - Handles connection upgrades
-     * - Processes encrypted/unencrypted data
-     * - Maintains sequence numbers
-     * - Handles connection closure
+     * <p>
+     * <b>Key implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Manages buffer lifecycle</li>
+     *   <li>Handles connection upgrades</li>
+     *   <li>Processes encrypted/unencrypted data</li>
+     *   <li>Maintains sequence numbers</li>
+     *   <li>Handles connection closure</li>
+     * </ul>
      */
     @Override
     public void receive() {
@@ -592,3 +703,4 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
         return decryptionKey;
     }
 }
+

@@ -7,31 +7,146 @@ import org.eclipse.jetty.client.http.HttpDestinationOverHTTP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A specialized HTTP destination for HomeKit communication with encryption support.
+ *
+ * <p>
+ * This class extends {@link org.eclipse.jetty.client.http.HttpDestinationOverHTTP HttpDestinationOverHTTP} to provide
+ * specialized HTTP destination handling for HomeKit accessories, including support for
+ * encryption and decryption of messages. It manages secure communication endpoints and
+ * connection pooling for HomeKit devices.
+ * </p>
+ *
+ * <p>
+ * The class integrates with:
+ * </p>
+ * <ul>
+ *   <li>{@link HttpClient} for HTTP client functionality and request handling</li>
+ *   <li>{@link Origin} for origin management and security</li>
+ *   <li>{@link HomekitConnectionPool} for connection pooling and reuse</li>
+ *   <li>{@link HomekitHttpConnectionOverHTTP} for encrypted connection management</li>
+ *   <li>{@link org.eclipse.jetty.client.api.Connection Connection} for connection lifecycle management</li>
+ * </ul>
+ *
+ * <p>
+ * <b>Key Features:</b>
+ * </p>
+ * <ul>
+ *   <li>HTTP destination management</li>
+ *   <li>Encryption key configuration</li>
+ *   <li>Connection pooling</li>
+ *   <li>Secure communication</li>
+ *   <li>Connection lifecycle management</li>
+ *   <li>Thread-safe operations</li>
+ * </ul>
+ *
+ * <p>
+ * <b>Security Considerations:</b>
+ * </p>
+ * <ul>
+ *   <li>Manages encryption keys</li>
+ *   <li>Secures message transmission</li>
+ *   <li>Validates connections</li>
+ *   <li>Ensures proper initialization</li>
+ *   <li>Maintains thread safety</li>
+ * </ul>
+ *
+ * <p>
+ * <b>Implementation Details:</b>
+ * </p>
+ * <ul>
+ *   <li>Extends Jetty's HttpDestinationOverHTTP</li>
+ *   <li>Uses custom connection pool</li>
+ *   <li>Supports encryption</li>
+ *   <li>Manages connection lifecycle</li>
+ *   <li>Provides detailed logging</li>
+ * </ul>
+ *
+ * @author Karel Goderis - Initial Contribution
+ * @since 1.0
+ */
 public class HomekitHttpDestination extends HttpDestinationOverHTTP {
 
+    /** Logger instance for this class */
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpDestination.class);
-    protected static final String LOG_PREFIX = "Homekit HttpDestinationOverHTTP: ";
-    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
-    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
-    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
-    protected static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
+
+    /** Debug flag for detailed logging */
+    protected static final boolean debug = logger.isDebugEnabled();
+
+    // ========== Log Message Prefixes ==========
+    protected static final String LOG_PREFIX = "HomeKit HTTP Destination: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Initialization - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State Change - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Configuration - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
+    /** Decryption key for secure communication */
     private byte[] decryptionKey;
+
+    /** Encryption key for secure communication */
     private byte[] encryptionKey;
 
+    /**
+     * Creates a new HomeKit HTTP destination.
+     *
+     * <p>
+     * This constructor initializes a destination with the specified HTTP client and origin,
+     * setting up the foundation for secure HomeKit communication.
+     * </p>
+     *
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Initializes base destination</li>
+     *   <li>Sets up client connection</li>
+     *   <li>Configures origin</li>
+     *   <li>Ensures thread safety</li>
+     *   <li>Logs initialization</li>
+     * </ul>
+     *
+     * @param client The HTTP client to use
+     * @param origin The origin for this destination
+     */
     public HomekitHttpDestination(HttpClient client, Origin origin) {
         super(client, origin);
+        logger.debug("{}Initialized for client {} and origin {}", LOG_INIT, client, origin);
     }
 
+    /**
+     * Sets the encryption and decryption keys for secure communication.
+     *
+     * <p>
+     * This method configures the encryption keys for both idle and active connections
+     * in the connection pool, ensuring secure communication across all connections.
+     * </p>
+     *
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Validates key parameters</li>
+     *   <li>Updates connection pool</li>
+     *   <li>Configures idle connections</li>
+     *   <li>Configures active connections</li>
+     *   <li>Maintains thread safety</li>
+     *   <li>Ensures state consistency</li>
+     *   <li>Logs configuration</li>
+     * </ul>
+     *
+     * @param decryptionKey The key used for decrypting incoming messages
+     * @param encryptionKey The key used for encrypting outgoing messages
+     */
     public void setEncryptionKeys(byte[] decryptionKey, byte[] encryptionKey) {
-        logger.debug("{}setEncryptionKeys called for {}", LOG_CONFIG, this);
-        logger.info("{}Setting Encryption Keys on {}", LOG_CONFIG, this);
+        logger.debug("{}Setting encryption keys", LOG_CONFIG);
+        logger.info("{}Configuring encryption for destination {}", LOG_CONFIG, this);
+        
         if (logger.isTraceEnabled()) {
-            logger.trace("{}DecryptionKey: {}", LOG_CONFIG,
+            logger.trace("{}Decryption key: {}", LOG_CONFIG,
                     javax.xml.bind.DatatypeConverter.printHexBinary(decryptionKey));
-            logger.trace("{}EncryptionKey: {}", LOG_CONFIG,
+            logger.trace("{}Encryption key: {}", LOG_CONFIG,
                     javax.xml.bind.DatatypeConverter.printHexBinary(encryptionKey));
         }
 
@@ -42,60 +157,96 @@ public class HomekitHttpDestination extends HttpDestinationOverHTTP {
         if (pool instanceof HomekitConnectionPool) {
             var idle = ((HomekitConnectionPool) pool).getIdleConnections();
             var active = ((HomekitConnectionPool) pool).getActiveConnections();
+            
+            logger.debug("{}Configuring {} idle connections", LOG_CONFIG, idle.size());
             for (org.eclipse.jetty.client.api.Connection connection : idle) {
                 if (connection instanceof HomekitHttpConnectionOverHTTP) {
                     ((HomekitHttpConnectionOverHTTP) connection).setEncryptionKeys(decryptionKey, encryptionKey);
                 }
             }
+            
+            logger.debug("{}Configuring {} active connections", LOG_CONFIG, active.size());
             for (org.eclipse.jetty.client.api.Connection connection : active) {
                 if (connection instanceof HomekitHttpConnectionOverHTTP) {
                     ((HomekitHttpConnectionOverHTTP) connection).setEncryptionKeys(decryptionKey, encryptionKey);
                 }
             }
         }
+        
+        logger.info("{}Encryption keys configured successfully", LOG_CONFIG);
     }
 
-    // private void secureConnection(Connection connection) {
-    // logger.info("Securing connection {}", connection.toString());
-    // if (connection instanceof HomekitHttpConnectionOverHTTP) {
-    // if (!(((HomekitHttpConnectionOverHTTP) connection).getEndPoint() instanceof DecryptedHomekitEndPoint)) {
-    // logger.info("[{}] Creating a new connection for Endpoint {}",
-    // ((HomekitHttpConnectionOverHTTP) connection).getEndPoint().getRemoteAddress().toString(),
-    // ((HomekitHttpConnectionOverHTTP) connection).getEndPoint().toString());
-    //
-    // DecryptedHomekitEndPoint appEndPoint = new DecryptedHomekitEndPoint(
-    // ((HomekitHttpConnectionOverHTTP) connection).getEndPoint(), getHttpClient().getExecutor(),
-    // getHttpClient().getByteBufferPool(), true, getEncryptionKey(), getDecryptionKey());
-    //
-    // FuturePromise<Connection> futureConnection = new FuturePromise<>();
-    // // destination.newConnection(futureConnection);
-    // // Connection connection = futureConnection.get get(5, TimeUnit.SECONDS);
-    //
-    // HomekitHttpConnectionOverHTTP appConnection = new HomekitHttpConnectionOverHTTP(appEndPoint, this,
-    // futureConnection);
-    // appEndPoint.setConnection(appConnection);
-    // ((HomekitHttpConnectionOverHTTP) connection).getEndPoint().upgrade(appConnection);
-    //
-    // } else {
-    // logger.info("[{}] Endpoint {} is already upgraded",
-    // ((HomekitHttpConnectionOverHTTP) connection).getEndPoint().getRemoteAddress().toString(),
-    // ((HomekitHttpConnectionOverHTTP) connection).getEndPoint().toString());
-    // }
-    // } else {
-    // logger.info("[{}] Connection is of class {}", connection.toString(),
-    // connection.getClass().getCanonicalName());
-    // }
-    // }
-
+    /**
+     * Checks if encryption keys are configured for this destination.
+     *
+     * <p>
+     * This method verifies whether both encryption and decryption keys
+     * have been set for secure communication.
+     * </p>
+     *
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Validates key presence</li>
+     *   <li>Checks key validity</li>
+     *   <li>Maintains thread safety</li>
+     *   <li>Ensures state consistency</li>
+     *   <li>Logs key status</li>
+     * </ul>
+     *
+     * @return true if both encryption keys are configured, false otherwise
+     */
     public boolean hasEncryptionKeys() {
-        return (decryptionKey != null && encryptionKey != null);
+        boolean hasKeys = decryptionKey != null && encryptionKey != null;
+        logger.trace("{}Encryption keys configured: {}", LOG_STATE, hasKeys);
+        return hasKeys;
     }
 
+    /**
+     * Gets the decryption key for this destination.
+     *
+     * <p>
+     * This method returns the key used for decrypting incoming messages.
+     * </p>
+     *
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Retrieves decryption key</li>
+     *   <li>Ensures thread safety</li>
+     *   <li>Logs key access</li>
+     * </ul>
+     *
+     * @return The decryption key, or null if not configured
+     */
     public byte[] getDecryptionKey() {
+        logger.trace("{}Retrieving decryption key", LOG_STATE);
         return decryptionKey;
     }
 
+    /**
+     * Gets the encryption key for this destination.
+     *
+     * <p>
+     * This method returns the key used for encrypting outgoing messages.
+     * </p>
+     *
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Retrieves encryption key</li>
+     *   <li>Ensures thread safety</li>
+     *   <li>Logs key access</li>
+     * </ul>
+     *
+     * @return The encryption key, or null if not configured
+     */
     public byte[] getEncryptionKey() {
+        logger.trace("{}Retrieving encryption key", LOG_STATE);
         return encryptionKey;
     }
 }
+

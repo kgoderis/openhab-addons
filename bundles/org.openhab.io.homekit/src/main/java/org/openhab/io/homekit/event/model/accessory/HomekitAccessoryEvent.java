@@ -16,9 +16,68 @@ import org.openhab.io.homekit.event.core.HomekitEventMetadata;
 import org.openhab.io.homekit.util.HomekitUID;
 
 /**
- * Represents an accessory-related event in the Homekit integration.
- * This event is used to propagate changes in accessories, services, and characteristics
- * between different components of the system.
+ * Event class representing accessory-related events in the HomeKit integration.
+ * This event is used to propagate changes and updates related to HomeKit accessories,
+ * including accessory lifecycle events, service updates, characteristic changes, and UID modifications.
+ *
+ * <p>
+ * The class integrates with:
+ * </p>
+ * <ul>
+ *   <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for base event functionality</li>
+ *   <li>{@link org.openhab.io.homekit.api.event.HomekitEventType} for event type identification</li>
+ *   <li>{@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for accessory management</li>
+ *   <li>{@link org.openhab.io.homekit.api.service.HomekitService} for service handling</li>
+ *   <li>{@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic} for characteristic handling</li>
+ *   <li>{@link org.openhab.io.homekit.api.uid.HomekitAccessoryUID} for accessory identification</li>
+ *   <li>{@link org.openhab.io.homekit.event.core.HomekitEventMetadata} for event metadata</li>
+ *   <li>{@link org.openhab.io.homekit.util.HomekitUID} for UID generation and management</li>
+ * </ul>
+ *
+ * <p>
+ * <b>Key Features:</b>
+ * </p>
+ * <ul>
+ *   <li>Accessory lifecycle management</li>
+ *   <li>Service and characteristic tracking</li>
+ *   <li>UID change handling</li>
+ *   <li>Event metadata support</li>
+ *   <li>Optional component handling</li>
+ * </ul>
+ *
+ * <p>
+ * <b>Usage Patterns:</b>
+ * </p>
+ * <ul>
+ *   <li>Accessory state management</li>
+ *   <li>Service configuration updates</li>
+ *   <li>Characteristic value changes</li>
+ *   <li>UID modification tracking</li>
+ *   <li>System diagnostics and monitoring</li>
+ * </ul>
+ *
+ * <p>
+ * <b>Event Handling:</b>
+ * </p>
+ * <ul>
+ *   <li>Supports hierarchical event routing</li>
+ *   <li>Maintains component relationships</li>
+ *   <li>Enables targeted event delivery</li>
+ *   <li>Supports wildcard subscribers</li>
+ * </ul>
+ *
+ * <p>
+ * <b>UID Management:</b>
+ * </p>
+ * <ul>
+ *   <li>Tracks UID changes</li>
+ *   <li>Maintains UID history</li>
+ *   <li>Supports UID validation</li>
+ *   <li>Enables UID correlation</li>
+ * </ul>
+ *
+ * @author Karel Goderis - Initial contribution
+ * @since 3.x
  */
 @NonNullByDefault
 public class HomekitAccessoryEvent extends AbstractHomekitEvent {
@@ -29,11 +88,12 @@ public class HomekitAccessoryEvent extends AbstractHomekitEvent {
     private final Optional<HomekitAccessoryUID> newUid;
 
     /**
-     * Creates a new accessory event with the specified accessory, service, and characteristic.
+     * Creates a new accessory event with default metadata.
      *
-     * @param accessory the accessory that changed
-     * @param service the service that changed, or null if not applicable
-     * @param characteristic the characteristic that changed, or null if not applicable
+     * @param type the type of event
+     * @param accessory the accessory associated with the event, if any
+     * @param service the service associated with the event, if any
+     * @param characteristic the characteristic associated with the event, if any
      */
     @SuppressWarnings("null")
     public HomekitAccessoryEvent(HomekitEventType type, @Nullable HomekitAccessory accessory,
@@ -50,12 +110,13 @@ public class HomekitAccessoryEvent extends AbstractHomekitEvent {
     }
 
     /**
-     * Creates a new accessory event with the specified accessory, service, characteristic, and metadata.
+     * Creates a new accessory event with custom metadata.
      *
-     * @param accessory the accessory that changed
-     * @param service the service that changed, or null if not applicable
-     * @param characteristic the characteristic that changed, or null if not applicable
-     * @param metadata the event metadata
+     * @param type the type of event
+     * @param accessory the accessory associated with the event, if any
+     * @param service the service associated with the event, if any
+     * @param characteristic the characteristic associated with the event, if any
+     * @param metadata additional metadata for the event
      */
     @SuppressWarnings("null")
     public HomekitAccessoryEvent(HomekitEventType type, @Nullable HomekitAccessory accessory,
@@ -71,9 +132,10 @@ public class HomekitAccessoryEvent extends AbstractHomekitEvent {
     }
 
     /**
-     * Creates a new accessory event for a UID change.
+     * Creates a new accessory event for a UID change with default metadata.
      *
-     * @param accessory the accessory that changed
+     * @param type the type of event
+     * @param accessory the accessory associated with the event, if any
      * @param oldUid the previous UID of the accessory
      * @param newUid the new UID of the accessory
      */
@@ -92,12 +154,13 @@ public class HomekitAccessoryEvent extends AbstractHomekitEvent {
     }
 
     /**
-     * Creates a new accessory event for a UID change with metadata.
+     * Creates a new accessory event for a UID change with custom metadata.
      *
-     * @param accessory the accessory that changed
+     * @param type the type of event
+     * @param accessory the accessory associated with the event, if any
      * @param oldUid the previous UID of the accessory
      * @param newUid the new UID of the accessory
-     * @param metadata the event metadata
+     * @param metadata additional metadata for the event
      */
     @SuppressWarnings("null")
     public HomekitAccessoryEvent(HomekitEventType type, HomekitAccessory accessory, HomekitAccessoryUID oldUid,
@@ -112,45 +175,45 @@ public class HomekitAccessoryEvent extends AbstractHomekitEvent {
     }
 
     /**
-     * Returns the accessory that changed.
+     * Returns the accessory associated with this event.
      *
-     * @return the accessory
+     * @return an Optional containing the accessory, or empty if not available
      */
     public Optional<HomekitAccessory> getAccessory() {
         return accessory;
     }
 
     /**
-     * Returns the service that changed, if applicable.
+     * Returns the service associated with this event.
      *
-     * @return the service, or null if not applicable
+     * @return an Optional containing the service, or empty if not available
      */
     public Optional<HomekitService> getService() {
         return service;
     }
 
     /**
-     * Returns the characteristic that changed, if applicable.
+     * Returns the characteristic associated with this event.
      *
-     * @return the characteristic, or null if not applicable
+     * @return an Optional containing the characteristic, or empty if not available
      */
     public Optional<HomekitCharacteristic<?>> getCharacteristic() {
         return characteristic;
     }
 
     /**
-     * Returns the previous UID of the accessory, if this is a UID change event.
+     * Returns the previous UID of the accessory.
      *
-     * @return the old UID, or null if not a UID change event
+     * @return an Optional containing the old UID, or empty if not a UID change event
      */
     public Optional<HomekitAccessoryUID> getOldUid() {
         return oldUid;
     }
 
     /**
-     * Returns the new UID of the accessory, if this is a UID change event.
+     * Returns the new UID of the accessory.
      *
-     * @return the new UID, or null if not a UID change event
+     * @return an Optional containing the new UID, or empty if not a UID change event
      */
     public Optional<HomekitAccessoryUID> getNewUid() {
         return newUid;

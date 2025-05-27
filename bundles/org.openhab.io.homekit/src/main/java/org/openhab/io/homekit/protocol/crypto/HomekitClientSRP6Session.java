@@ -17,173 +17,130 @@ import com.nimbusds.srp6.URoutineContext;
 import com.nimbusds.srp6.XRoutine;
 
 /**
- * This is a slightly modified version of the SRP6ServerSession class included with nimbus.
+ * Implements a client-side Secure Remote Password (SRP-6a) authentication session for HomeKit.
  *
- * Stateful client-side Secure Remote Password (SRP-6a) authentication session.
- * Handles the computing and storing of SRP-6a variables between the protocol
- * steps as well as timeouts.
+ * This class extends the SRP6Session from Nimbus to provide a stateful client-side implementation
+ * of the SRP-6a protocol, which is used for secure password-based authentication in HomeKit.
+ * It handles the computation and storage of SRP-6a variables between protocol steps, as well as
+ * session timeouts.
  *
- * <p>
- * Usage:
+ * Key features:
+ * - Implements the SRP-6a protocol for secure password authentication
+ * - Maintains session state and handles timeouts
+ * - Supports custom routines for password key computation
+ * - Provides step-by-step authentication process
+ * - Handles cryptographic parameter validation
  *
- * <ul>
- * <li>Create a new SRP-6a client session for each authentication attempt.
- * <li>If you wish to use custom routines for the password key 'x', the
- * server evidence message 'M1', and / or the client evidence message
- * 'M2' specify them at this point.
- * <li>Proceed to {@link #step1 step one} by recording the input user
- * identity 'I' (submitted to the server) and password 'P'.
- * <li>Proceed to {@link #step2 step two} on receiving the password salt
- * 's' and the public server value 'B' from the server. At this point
- * the SRP-6a crypto parameters 'N', 'g' and 'H' must also be
- * specified. These can either be agreed in advance between server and
- * client or suggested by the server in its step one response.
- * <li>Proceed to {@link #step3 step three} on receiving the server
- * evidence message 'M2'.
- * </ul>
+ * Security considerations:
+ * - Uses cryptographically secure random number generation
+ * - Implements proper session state management
+ * - Validates all cryptographic parameters
+ * - Handles session timeouts to prevent replay attacks
+ * - Supports custom password key computation routines
+ *
+ * Authentication process:
+ * 1. Initialize session (INIT state)
+ * 2. Record user identity and password (STEP_1)
+ * 3. Process server response with salt and public value (STEP_2)
+ * 4. Verify server evidence message (STEP_3)
  *
  * @author Vladimir Dzhuvinov
  * @author Bernard Wittwer
+ * @author Karel Goderis - HomeKit adaptation
  */
 public class HomekitClientSRP6Session extends SRP6Session implements Serializable {
 
-    /**
-     * Serializable class version number
-     */
+    /** Serializable class version number */
     private static final long serialVersionUID = -479060216624675478L;
 
     /**
-     * Enumerates the states of a client-side SRP-6a authentication
-     * session.
+     * Enumerates the states of a client-side SRP-6a authentication session.
+     * Each state represents a specific step in the authentication process.
      */
     public static enum State {
-
-        /**
-         * The session is initialised and ready to begin authentication
-         * by proceeding to {@link #STEP_1}.
-         */
+        /** The session is initialized and ready to begin authentication */
         INIT,
 
-        /**
-         * The authenticating user has input their identity 'I'
-         * (username) and password 'P'. The session is ready to proceed
-         * to {@link #STEP_2}.
-         */
+        /** User identity and password have been recorded */
         STEP_1,
 
-        /**
-         * The user identity 'I' is submitted to the server which has
-         * replied with the matching salt 's' and its public value 'B'
-         * based on the user's password verifier 'v'. The session is
-         * ready to proceed to {@link #STEP_3}.
-         */
+        /** Server response with salt and public value has been processed */
         STEP_2,
 
-        /**
-         * The client public key 'A' and evidence message 'M1' are
-         * submitted and the server has replied with own evidence
-         * message 'M2'. The session is finished (authentication was
-         * successful or failed).
-         */
+        /** Server evidence message has been verified, authentication complete */
         STEP_3
     }
 
-    /**
-     * The user password 'P'.
-     */
+    /** The user password 'P' */
     private String password;
 
-    /**
-     * The password key 'x'.
-     */
+    /** The password key 'x' */
     private BigInteger x = null;
 
-    /**
-     * The client private value 'a'.
-     */
+    /** The client private value 'a' */
     private BigInteger a = null;
 
-    /**
-     * The current SRP-6a auth state.
-     */
+    /** The current SRP-6a authentication state */
     private State state;
 
-    /**
-     * Custom routine for password key 'x' computation.
-     */
+    /** Custom routine for password key 'x' computation */
     private XRoutine xRoutine = null;
 
     /**
-     * Creates a new client-side SRP-6a authentication session and sets its
-     * state to {@link State#INIT}.
+     * Creates a new client-side SRP-6a authentication session.
      *
-     * @param timeout The SRP-6a authentication session timeout in seconds.
-     *            If the authenticating counterparty (server or client)
-     *            fails to respond within the specified time the session
-     *            will be closed. If zero timeouts are disabled.
+     * This constructor initializes a new session with the specified timeout
+     * and sets its state to INIT. The timeout determines how long the session
+     * will wait for responses from the server before expiring.
+     *
+     * @param timeout The session timeout in seconds, or 0 to disable timeouts
      */
     public HomekitClientSRP6Session(final int timeout) {
-
         super(timeout);
-
         state = State.INIT;
-
         updateLastActivityTime();
     }
 
     /**
-     * Creates a new client-side SRP-6a authentication session and sets its
-     * state to {@link State#INIT}. Session timeouts are disabled.
+     * Creates a new client-side SRP-6a authentication session with timeouts disabled.
      */
     public HomekitClientSRP6Session() {
-
         this(0);
     }
 
     /**
-     * Sets a custom routine for the password key 'x' computation. Note that
-     * the custom routine must be set prior to {@link State#STEP_2}.
+     * Sets a custom routine for password key computation.
      *
-     * @param routine The password key 'x' routine or {@code null} to use
-     *            the {@link SRP6Routines#computeX default one} instead.
+     * This method allows customization of the password key computation process.
+     * The custom routine must be set before STEP_2 of the authentication process.
+     *
+     * @param routine The custom password key routine, or null to use the default
      */
     public void setXRoutine(final XRoutine routine) {
-
         xRoutine = routine;
     }
 
     /**
-     * Gets the custom routine for the password key 'x' computation.
+     * Gets the current password key computation routine.
      *
-     * @return The routine instance or {@code null} if the default
-     *         {@link SRP6Routines#computeX default one} is used.
+     * @return The custom routine instance, or null if using the default
      */
     public XRoutine getXRoutine() {
-
         return xRoutine;
     }
 
     /**
-     * Records the identity 'I' and password 'P' of the authenticating
-     * user. The session is incremented to {@link State#STEP_1}.
+     * Records the user's identity and password to begin authentication.
      *
-     * <p>
-     * Argument origin:
+     * This method initiates the authentication process by recording the user's
+     * credentials. It validates the input parameters and updates the session state.
      *
-     * <ul>
-     * <li>From user: user identity 'I' and password 'P'.
-     * </ul>
-     *
-     * @param userID The identity 'I' of the authenticating user, UTF-8
-     *            encoded. Must not be {@code null} or empty.
-     * @param password The user password 'P', UTF-8 encoded. Must not be
-     *            {@code null}.
-     *
-     * @throws IllegalStateException If the method is invoked in a state
-     *             other than {@link State#INIT}.
+     * @param userID The user's identity (username), UTF-8 encoded
+     * @param password The user's password, UTF-8 encoded
+     * @throws IllegalArgumentException if userID is null/empty or password is null
+     * @throws IllegalStateException if called in a state other than INIT
      */
     public void step1(final String userID, final String password) {
-
         if (userID == null || userID.trim().isEmpty()) {
             throw new IllegalArgumentException("The user identity 'I' must not be null or empty");
         }
@@ -196,13 +153,11 @@ public class HomekitClientSRP6Session extends SRP6Session implements Serializabl
 
         this.password = password;
 
-        // Check current state
         if (state != State.INIT) {
-            throw new IllegalStateException("State violation: Session must be in INIT state");
+            throw new IllegalStateException("State must be INIT");
         }
 
         state = State.STEP_1;
-
         updateLastActivityTime();
     }
 

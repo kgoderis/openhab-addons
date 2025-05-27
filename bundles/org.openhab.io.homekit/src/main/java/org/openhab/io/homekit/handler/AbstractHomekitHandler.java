@@ -52,45 +52,122 @@ import org.openhab.io.homekit.provider.HomekitThingTypeProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Abstract base class for HomeKit thing handlers, providing core functionality for managing HomeKit accessories.
+ *
+ * This class serves as the foundation for all HomeKit thing handlers, implementing common functionality
+ * for managing HomeKit accessories, services, and characteristics. It handles the lifecycle of HomeKit
+ * components, state management, event processing, and channel synchronization.
+ *
+ * Key responsibilities include:
+ * - Managing the lifecycle of HomeKit accessories and servers
+ * - Handling state transitions and updates
+ * - Processing HomeKit events and commands
+ * - Managing channel synchronization
+ * - Error handling and recovery
+ *
+ * The handler integrates with:
+ * - {@link HomekitAccessoryServerRegistry} for server instance management
+ * - {@link HomekitAccessoryRegistry} for accessory registration
+ * - {@link HomekitChannelTypeProvider} for channel type definitions
+ * - {@link HomekitThingTypeProvider} for thing type definitions
+ * - {@link HomekitEventManager} for event handling
+ *
+ * @author Karel Goderis - Initial Contribution
+ * @since 1.0
+ */
 @NonNullByDefault
 public abstract class AbstractHomekitHandler extends BaseThingHandler {
 
     // ========== Constants ==========
+    /** Maximum size of the event processing queue */
     protected static final int MAX_QUEUE_SIZE = 1000;
+    
+    /** Timeout for event processing in milliseconds */
     protected static final long EVENT_PROCESSING_TIMEOUT = 5000; // 5 seconds
+    
+    /** Configuration key for device ID */
     protected static final String CONFIG_DEVICE_ID = "deviceId";
+    
+    /** Configuration key for accessory ID */
     protected static final String CONFIG_ACCESSORY_ID = "accessoryId";
+    
+    /** Default accessory ID */
     protected static final String DEFAULT_ACCESSORY_ID = "1";
 
     // ========== Error Messages ==========
-    protected static final String ERROR_PREFIX = "Homekit Handler Error: ";
+    /** Prefix for error messages */
+    protected static final String ERROR_PREFIX = "HomeKit Handler Error: ";
+    
+    /** Error message for server not found */
     protected static final String ERROR_SERVER_NOT_FOUND = ERROR_PREFIX + "Server not found for deviceId: %s";
-    protected static final String ERROR_ACCESSORY_NOT_FOUND = ERROR_PREFIX
-            + "HomekitAccessory not found for accessoryId: %s";
+    
+    /** Error message for accessory not found */
+    protected static final String ERROR_ACCESSORY_NOT_FOUND = ERROR_PREFIX + "HomekitAccessory not found for accessoryId: %s";
+    
+    /** Error message for invalid configuration */
     protected static final String ERROR_CONFIG_INVALID = ERROR_PREFIX + "Invalid configuration: %s";
+    
+    /** Error message for state update failure */
     protected static final String ERROR_STATE_UPDATE = ERROR_PREFIX + "Failed to update state: %s";
+    
+    /** Error message for channel operation failure */
     protected static final String ERROR_CHANNEL_OPERATION = ERROR_PREFIX + "Channel operation failed: %s";
+    
+    /** Error message for event processing failure */
     protected static final String ERROR_EVENT_PROCESSING = ERROR_PREFIX + "Event processing failed: %s";
+    
+    /** Error message for command processing failure */
     protected static final String ERROR_COMMAND_PROCESSING = ERROR_PREFIX + "Command processing failed: %s";
+    
+    /** Error message for accessory event processing failure */
     protected static final String ERROR_PROCESSING_ACCESSORY_EVENT = "Error processing accessory event";
+    
+    /** Error message for characteristic event processing failure */
     protected static final String ERROR_PROCESSING_CHARACTERISTIC_EVENT = "Error processing characteristic event";
+    
+    /** Error message for service event processing failure */
     protected static final String ERROR_PROCESSING_SERVICE_EVENT = "Error processing service event";
 
-    // ========== Log HomekitMessage Prefixes ==========
-    protected static final String LOG_PREFIX = "Homekit Handler: ";
+    // ========== Log Message Prefixes ==========
+    /** Base prefix for log messages */
+    protected static final String LOG_PREFIX = "HomeKit Handler: ";
+    
+    /** Prefix for event-related log messages */
     protected static final String LOG_EVENT = LOG_PREFIX + "Event - ";
+    
+    /** Prefix for state-related log messages */
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    
+    /** Prefix for channel-related log messages */
     protected static final String LOG_CHANNEL = LOG_PREFIX + "Channel - ";
-    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
-    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    
+    /** Prefix for configuration-related log messages */
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Configuration - ";
+    
+    /** Prefix for initialization-related log messages */
+    protected static final String LOG_INIT = LOG_PREFIX + "Initialization - ";
+    
+    /** Prefix for cleanup-related log messages */
     protected static final String LOG_CLEANUP = LOG_PREFIX + "Cleanup - ";
 
     // ========== Core Dependencies ==========
+    /** Logger instance for this class */
     protected final Logger logger;
+    
+    /** Registry for HomeKit accessory servers */
     protected final HomekitAccessoryServerRegistry serverRegistry;
+    
+    /** Registry for HomeKit accessories */
     protected final HomekitAccessoryRegistry accessoryRegistry;
+    
+    /** Provider for HomeKit channel types */
     protected final HomekitChannelTypeProvider homekitChannelTypeProvider;
+    
+    /** Provider for HomeKit thing types */
     protected final HomekitThingTypeProvider homekitThingTypeProvider;
+    
+    /** Manager for HomeKit events */
     protected final HomekitEventManager eventManager;
 
     // ========== Configuration Fields ==========
@@ -132,7 +209,12 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
         this.eventManager = eventManager;
     }
 
-    // ========== Core Lifecycle Methods ==========
+    /**
+     * Initializes the handler.
+     * 
+     * This method is called during the initialization phase to set up the handler.
+     * It validates the configuration, initializes components, and sets up event processing.
+     */
     @Override
     public void initialize() {
         try {
@@ -185,6 +267,12 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
 
     protected abstract void intializeSpecificComponents();
 
+    /**
+     * Disposes of the handler.
+     * 
+     * This method is called during disposal to clean up resources.
+     * It handles specific disposal operations and cleans up channels.
+     */
     @Override
     public void dispose() {
         synchronized (stateLock) {
@@ -224,7 +312,14 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
         }
     }
 
-    // ========== Configuration Methods ==========
+    /**
+     * Validates the handler configuration.
+     * 
+     * This method validates the base configuration required for all HomeKit handlers.
+     * It checks for required configuration parameters and validates specific configurations.
+     *
+     * @throws ConfigurationException if the configuration is invalid
+     */
     protected void validateConfiguration(Configuration config) {
         this.accessoryServerPairingId = (String) config.get(CONFIG_DEVICE_ID);
         this.accessoryId = (String) config.get(CONFIG_ACCESSORY_ID);
@@ -285,10 +380,34 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
         }
     }
 
+    /**
+     * Determines the thing status.
+     * 
+     * This method evaluates the current state of the handler to determine
+     * the appropriate thing status. It should be implemented by subclasses.
+     *
+     * @return The determined thing status
+     */
     protected abstract ThingStatus determineThingStatus();
 
+    /**
+     * Determines the thing status detail.
+     * 
+     * This method evaluates the current state of the handler to determine
+     * the appropriate status detail. It should be implemented by subclasses.
+     *
+     * @return The determined thing status detail
+     */
     protected abstract ThingStatusDetail determineThingStatusDetail();
 
+    /**
+     * Determines the thing status description.
+     * 
+     * This method evaluates the current state of the handler to determine
+     * an appropriate status description. It should be implemented by subclasses.
+     *
+     * @return A description of the current thing status
+     */
     protected abstract String determineThingStatusDescription();
 
     protected void updateState(ThingStatus status, ThingStatusDetail detail, @Nullable String description) {
@@ -996,11 +1115,34 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
         }
     }
 
+    /**
+     * Gets the current characteristics.
+     * 
+     * This method retrieves all characteristics associated with the handler.
+     * It should be implemented by subclasses.
+     *
+     * @return A set of characteristics for the handler
+     */
     protected abstract Set<HomekitCharacteristic<?>> getCurrentCharacteristics();
 
+    /**
+     * Validates whether a characteristic belongs to this handler.
+     * 
+     * This method checks if the characteristic belongs to this handler.
+     * It should be implemented by subclasses.
+     *
+     * @param characteristic The characteristic to validate
+     * @return true if the characteristic belongs to this handler, false otherwise
+     */
     protected abstract boolean validateCharacteristicBelongsToHandler(HomekitCharacteristic<?> characteristic);
 
-    private void cleanupChannels() {
+    /**
+     * Cleans up channels.
+     * 
+     * This method removes all channels associated with the handler.
+     * It is called during disposal to ensure proper cleanup.
+     */
+    protected void cleanupChannels() {
         try {
             synchronized (characteristicMapLock) {
                 // Remove all channels from the thing
@@ -1025,6 +1167,15 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
     protected abstract @Nullable Channel addChannelForCharacteristic(HomekitCharacteristic<?> characteristic)
             throws HomekitException;
 
+    /**
+     * Gets the channel UID for a characteristic.
+     * 
+     * This method constructs a channel UID based on the characteristic.
+     * It should be implemented by subclasses.
+     *
+     * @param characteristic The characteristic to get the channel UID for
+     * @return The channel UID for the characteristic
+     */
     protected abstract ChannelUID getChannelUID(HomekitCharacteristic<?> characteristic);
 
     protected void removeChannelForCharacteristic(HomekitCharacteristic<?> characteristic) {
@@ -1394,6 +1545,14 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
         }
     }
 
+    /**
+     * Performs specific recovery operations.
+     * 
+     * This method is called during recovery attempts to perform any handler-specific
+     * recovery steps. It should be implemented by subclasses.
+     *
+     * @throws Exception if recovery fails
+     */
     protected abstract void performSpecificRecovery() throws Exception;
 
     // ========== Getters and Setters ==========

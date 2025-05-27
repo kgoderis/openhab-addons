@@ -27,34 +27,49 @@ import org.slf4j.LoggerFactory;
 /**
  * A specialized HTTP sender for HomeKit communication with encryption support.
  *
+ * <p>
  * This class extends {@link org.eclipse.jetty.client.http.HttpSenderOverHTTP HttpSenderOverHTTP} to provide specialized HTTP request
  * handling for HomeKit accessories, including encryption of request payloads and
  * proper sequence number management for secure communication.
+ * </p>
  *
- * The sender works in conjunction with:
- * - {@link HomekitHttpChannel} for channel management
- * - {@link HomekitHttpConnectionOverHTTP} for connection management
- * - {@link HomekitEncryptionEngine} for payload encryption
- * - {@link org.eclipse.jetty.client.HttpClient HttpClient} for HTTP operations
+ * <p>
+ * <b>Component Integration:</b>
+ * </p>
+ * <ul>
+ *   <li>{@link HomekitHttpChannel} for channel management</li>
+ *   <li>{@link HomekitHttpConnectionOverHTTP} for connection management</li>
+ *   <li>{@link HomekitEncryptionEngine} for payload encryption</li>
+ *   <li>{@link org.eclipse.jetty.client.HttpClient HttpClient} for HTTP operations</li>
+ * </ul>
  *
- * Key responsibilities:
- * 1. Sending and encrypting HTTP requests
- * 2. Managing sequence numbers for secure communication
- * 3. Handling request formatting and validation
- * 4. Providing buffer management and recycling
- * 5. Supporting both encrypted and unencrypted communication
+ * <p>
+ * <b>Key responsibilities:</b>
+ * </p>
+ * <ul>
+ *   <li>Sending and encrypting HTTP requests</li>
+ *   <li>Managing sequence numbers for secure communication</li>
+ *   <li>Handling request formatting and validation</li>
+ *   <li>Providing buffer management and recycling</li>
+ *   <li>Supporting both encrypted and unencrypted communication</li>
+ * </ul>
  *
- * The implementation uses:
- * - {@link org.eclipse.jetty.io.ByteBufferPool ByteBufferPool} for efficient buffer management
- * - {@link HomekitEncryptionEngine} for secure communication
- * - {@link org.eclipse.jetty.client.HttpClient HttpClient} for HTTP client functionality
- * - {@link org.eclipse.jetty.client.api.ContentProvider ContentProvider} for request content
+ * <p>
+ * <b>Implementation details:</b>
+ * </p>
+ * <ul>
+ *   <li>{@link org.eclipse.jetty.io.ByteBufferPool ByteBufferPool} for efficient buffer management</li>
+ *   <li>{@link HomekitEncryptionEngine} for secure communication</li>
+ *   <li>{@link org.eclipse.jetty.client.HttpClient HttpClient} for HTTP client functionality</li>
+ *   <li>{@link org.eclipse.jetty.client.api.ContentProvider ContentProvider} for request content</li>
+ * </ul>
  *
  * @author Karel Goderis - Initial Contribution
  * @since 1.0
  */
 public class HomekitHttpSender extends HttpSenderOverHTTP {
 
+    /** Logger instance for this class */
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpSender.class);
 
     // ========== Log Message Prefixes ==========
@@ -78,12 +93,18 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
     /**
      * Creates a new HomeKit HTTP sender for the given channel.
      *
+     * <p>
      * This constructor initializes a sender with the specified HTTP channel.
+     * </p>
      *
-     * Key implementation details:
-     * - Uses provided {@link HomekitHttpChannel}
-     * - Sets up buffer management using {@link org.eclipse.jetty.io.ByteBufferPool ByteBufferPool}
-     * - Configures {@link org.eclipse.jetty.client.HttpClient HttpClient} for HTTP operations
+     * <p>
+     * <b>Key implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Uses provided {@link HomekitHttpChannel}</li>
+     *   <li>Sets up buffer management using {@link org.eclipse.jetty.io.ByteBufferPool ByteBufferPool}</li>
+     *   <li>Configures {@link org.eclipse.jetty.client.HttpClient HttpClient} for HTTP operations</li>
+     * </ul>
      *
      * @param channel The HTTP channel to use for communication
      */
@@ -96,8 +117,10 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
     /**
      * Gets the HTTP channel associated with this sender.
      *
+     * <p>
      * This method returns the specialized {@link HomekitHttpChannel} instance
      * that manages this sender's communication channel.
+     * </p>
      *
      * @return The {@link HomekitHttpChannel} instance
      */
@@ -109,8 +132,10 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
     /**
      * Gets the HTTP connection associated with this sender.
      *
+     * <p>
      * This method returns the specialized {@link HomekitHttpConnectionOverHTTP} instance
      * that manages the underlying network connection.
+     * </p>
      *
      * @return The {@link HomekitHttpConnectionOverHTTP} instance
      */
@@ -121,14 +146,20 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
     /**
      * Sends HTTP headers for the given exchange.
      *
+     * <p>
      * This method handles the generation and transmission of HTTP headers,
      * including any necessary encryption of header content.
+     * </p>
      *
-     * Key implementation details:
-     * - Creates HeadersCallback for async processing
-     * - Handles header generation and encryption
-     * - Manages buffer lifecycle
-     * - Supports chunked transfer encoding
+     * <p>
+     * <b>Key implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Creates HeadersCallback for async processing</li>
+     *   <li>Handles header generation and encryption</li>
+     *   <li>Manages buffer lifecycle</li>
+     *   <li>Supports chunked transfer encoding</li>
+     * </ul>
      *
      * @param exchange The HTTP exchange
      * @param content The HTTP content
@@ -148,15 +179,21 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
     /**
      * Sends HTTP content for the given exchange.
      *
+     * <p>
      * This method handles the generation and transmission of HTTP content,
      * including encryption of the content when a key is set.
+     * </p>
      *
-     * Key implementation details:
-     * - Manages buffer allocation and recycling
-     * - Handles chunked transfer encoding
-     * - Supports content encryption
-     * - Manages sequence numbers
-     * - Handles buffer lifecycle
+     * <p>
+     * <b>Key implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Manages buffer allocation and recycling</li>
+     *   <li>Handles chunked transfer encoding</li>
+     *   <li>Supports content encryption</li>
+     *   <li>Manages sequence numbers</li>
+     *   <li>Handles buffer lifecycle</li>
+     * </ul>
      *
      * @param exchange The HTTP exchange
      * @param content The HTTP content
@@ -232,14 +269,20 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
     /**
      * Encrypts one or more byte buffers using the HomeKit encryption engine.
      *
+     * <p>
      * This method handles the encryption of request content using the HomeKit
      * encryption engine and manages sequence numbers for secure communication.
+     * </p>
      *
-     * Key implementation details:
-     * - Uses {@link HomekitEncryptionEngine} for encryption
-     * - Manages sequence numbers
-     * - Handles buffer concatenation
-     * - Supports multiple input buffers
+     * <p>
+     * <b>Key implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Uses {@link HomekitEncryptionEngine} for encryption</li>
+     *   <li>Manages sequence numbers</li>
+     *   <li>Handles buffer concatenation</li>
+     *   <li>Supports multiple input buffers</li>
+     * </ul>
      *
      * @param endpoint The endpoint for the connection
      * @param buffers The buffers to encrypt

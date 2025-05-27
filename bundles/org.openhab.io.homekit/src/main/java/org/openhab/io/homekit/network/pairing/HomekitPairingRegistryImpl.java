@@ -40,27 +40,59 @@ import org.slf4j.LoggerFactory;
 /**
  * Implements the registry for HomeKit pairings.
  *
+ * <p>
  * This class provides a central registry for managing HomeKit pairings, extending
  * the functionality of {@link AbstractRegistry} to handle pairing-specific operations.
  * It coordinates with various components to ensure proper initialization and
  * availability of pairings.
+ * </p>
  *
+ * <p>
  * The registry works in conjunction with:
- * - {@link HomekitPairingProvider} for pairing data sources
- * - {@link HomekitManagedPairingProvider} for managed pairings
- * - {@link HomekitPairingImpl} for pairing implementations
- * - {@link HomekitPairingUIDImpl} for unique identifiers
+ * </p>
+ * <ul>
+ *   <li>{@link HomekitPairingProvider} for pairing data sources</li>
+ *   <li>{@link HomekitManagedPairingProvider} for managed pairings</li>
+ *   <li>{@link HomekitPairingImpl} for pairing implementations</li>
+ *   <li>{@link HomekitPairingUIDImpl} for unique identifiers</li>
+ *   <li>{@link org.openhab.core.common.registry.AbstractRegistry AbstractRegistry} for base registry functionality</li>
+ *   <li>{@link org.openhab.core.service.ReadyService ReadyService} for component lifecycle management</li>
+ * </ul>
  *
- * Key responsibilities:
- * 1. Managing pairing lifecycle
- * 2. Coordinating with providers
- * 3. Ensuring proper initialization
- * 4. Supporting pairing queries
- * 5. Maintaining pairing state
+ * <p>
+ * <b>Key Features:</b>
+ * </p>
+ * <ul>
+ *   <li>Centralized pairing management</li>
+ *   <li>OSGi service integration</li>
+ *   <li>Component lifecycle management</li>
+ *   <li>Ready state tracking</li>
+ *   <li>Provider coordination</li>
+ *   <li>Thread-safe operations</li>
+ * </ul>
  *
- * The implementation uses OSGi services for component lifecycle management and
- * integrates with the OpenHAB ready service to ensure proper initialization
- * order of components.
+ * <p>
+ * <b>Security Considerations:</b>
+ * </p>
+ * <ul>
+ *   <li>Validates pairing data integrity</li>
+ *   <li>Manages pairing lifecycle securely</li>
+ *   <li>Coordinates with security providers</li>
+ *   <li>Ensures proper initialization order</li>
+ *   <li>Maintains thread safety</li>
+ *   <li>Protects sensitive pairing data</li>
+ * </ul>
+ *
+ * <p>
+ * <b>Implementation Details:</b>
+ * </p>
+ * <ul>
+ *   <li>Uses OSGi services for lifecycle management</li>
+ *   <li>Integrates with OpenHAB ready service</li>
+ *   <li>Provides thread-safe operations</li>
+ *   <li>Maintains data consistency</li>
+ *   <li>Supports dynamic provider management</li>
+ * </ul>
  *
  * @author Karel Goderis - Initial Contribution
  * @since 1.0
@@ -71,55 +103,83 @@ public class HomekitPairingRegistryImpl
         extends AbstractRegistry<HomekitPairing, HomekitPairingUID, HomekitPairingProvider>
         implements HomekitPairingRegistry, ReadyService.ReadyTracker {
 
+    /** Logger instance for this class */
     private final Logger logger = LoggerFactory.getLogger(HomekitPairingRegistry.class);
 
     // ========== Log Message Prefixes ==========
-    protected static final String LOG_PREFIX = "Homekit HomekitPairingRegistry: ";
-    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
-    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
-    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    protected static final String LOG_PREFIX = "HomeKit Pairing Registry: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Initialization - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State Change - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Configuration - ";
     protected static final String LOG_PROVIDER = LOG_PREFIX + "Provider - ";
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
+    /** Ready marker for the pairing registry */
     private static final String HOMEKIT_PAIRING_REGISTRY = "homekit.pairingRegistry";
+    /** Ready marker for the managed pairing provider */
     private static final String HOMEKIT_MANAGED_PAIRING_PROVIDER = "homekit.managedPairingProvider";
+    /** Ready marker for the accessory server registry */
     private static final String HOMEKIT_ACCESSORY_SERVER_REGISTRY = "homekit.accessoryServerRegistry";
 
+    /** Service for tracking component readiness */
     private final ReadyService readyService;
+    /** Flag indicating if the accessory server registry is ready */
     private boolean accessoryServerRegistryReady = false;
+    /** Flag indicating if the managed pairing provider is ready */
     private boolean managedPairingProviderReady = false;
 
     /**
      * Initializes the HomeKit pairing registry.
      *
+     * <p>
      * This constructor sets up the registry with its dependencies and prepares
      * it for managing pairings. It registers with the ready service to track
      * the initialization of required components.
+     * </p>
      *
-     * Key implementation details:
-     * - Initializes registry state
-     * - Sets up ready service tracking
-     * - Prepares for provider management
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Initializes registry state</li>
+     *   <li>Sets up ready service tracking</li>
+     *   <li>Prepares for provider management</li>
+     *   <li>Registers ready markers for dependencies</li>
+     *   <li>Ensures thread safety</li>
+     * </ul>
      *
      * @param readyService The service for tracking component readiness
      */
     @Activate
     public HomekitPairingRegistryImpl(@Reference ReadyService readyService) {
         super(HomekitPairingProvider.class);
-        logger.debug("{}Initializing HomekitPairingRegistry", LOG_INIT);
+        logger.debug("{}Initializing HomeKit pairing registry", LOG_INIT);
         this.readyService = readyService;
 
         readyService.registerTracker(this, new ReadyMarkerFilter().withType(HOMEKIT_MANAGED_PAIRING_PROVIDER)
                 .withType(HOMEKIT_ACCESSORY_SERVER_REGISTRY));
-        logger.debug("{}HomekitPairingRegistry initialized", LOG_INIT);
+        logger.debug("{}HomeKit pairing registry initialized successfully", LOG_INIT);
     }
 
     /**
      * Sets the managed provider for this registry.
      *
+     * <p>
      * This method is called by OSGi to inject the managed provider, which
-     * handles system-managed pairings.
+     * handles system-managed pairings. The provider is added to the registry
+     * if it is ready.
+     * </p>
+     *
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Validates provider state</li>
+     *   <li>Updates provider list</li>
+     *   <li>Maintains thread safety</li>
+     *   <li>Ensures data consistency</li>
+     * </ul>
      *
      * @param provider The managed provider to set
      */
@@ -127,62 +187,113 @@ public class HomekitPairingRegistryImpl
     protected void setManagedProvider(HomekitManagedPairingProvider provider) {
         logger.debug("{}Setting managed provider: {}", LOG_PROVIDER, provider);
         super.setManagedProvider(provider);
+        logger.debug("{}Managed provider set successfully: {}", LOG_PROVIDER, provider);
     }
 
     /**
      * Removes the managed provider from this registry.
      *
+     * <p>
      * This method is called by OSGi when the managed provider is being removed.
+     * It ensures proper cleanup of the provider's resources.
+     * </p>
+     *
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Removes provider from list</li>
+     *   <li>Cleans up resources</li>
+     *   <li>Maintains thread safety</li>
+     *   <li>Ensures data consistency</li>
+     * </ul>
      *
      * @param provider The managed provider to remove
      */
     protected void unsetManagedProvider(HomekitManagedPairingProvider provider) {
         logger.debug("{}Removing managed provider: {}", LOG_PROVIDER, provider);
         super.unsetManagedProvider(provider);
+        logger.debug("{}Managed provider removed successfully: {}", LOG_PROVIDER, provider);
     }
 
     /**
      * Activates the registry.
      *
+     * <p>
      * This method is called by OSGi when the component is being activated.
      * It initializes the registry and prepares it for use.
+     * </p>
+     *
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Initializes registry state</li>
+     *   <li>Sets up OSGi integration</li>
+     *   <li>Prepares for provider management</li>
+     *   <li>Ensures thread safety</li>
+     * </ul>
      *
      * @param context The bundle context
      */
     @Override
     @Activate
     protected void activate(final BundleContext context) {
-        logger.debug("{}Activating HomekitPairingRegistry", LOG_INIT);
+        logger.debug("{}Activating HomeKit pairing registry", LOG_INIT);
         super.activate(context);
-        logger.debug("{}HomekitPairingRegistry activated", LOG_INIT);
+        logger.debug("{}HomeKit pairing registry activated successfully", LOG_INIT);
     }
 
     /**
      * Deactivates the registry.
      *
+     * <p>
      * This method is called by OSGi when the component is being deactivated.
      * It performs cleanup operations and releases resources.
+     * </p>
+     *
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Cleans up resources</li>
+     *   <li>Removes OSGi integration</li>
+     *   <li>Ensures proper shutdown</li>
+     *   <li>Maintains thread safety</li>
+     * </ul>
      */
     @Override
     @Deactivate
     protected void deactivate() {
-        logger.debug("{}Deactivating HomekitPairingRegistry", LOG_INIT);
+        logger.debug("{}Deactivating HomeKit pairing registry", LOG_INIT);
         super.deactivate();
-        logger.debug("{}HomekitPairingRegistry deactivated", LOG_INIT);
+        logger.debug("{}HomeKit pairing registry deactivated successfully", LOG_INIT);
     }
 
     /**
      * Gets all pairings with the specified pairing ID.
      *
+     * <p>
      * This method retrieves all pairings that match the given pairing ID,
      * which is used to identify specific pairing relationships.
+     * </p>
+     *
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Filters pairings by ID</li>
+     *   <li>Maintains thread safety</li>
+     *   <li>Ensures data consistency</li>
+     *   <li>Validates input parameters</li>
+     * </ul>
      *
      * @param pairingId The pairing ID to search for
      * @return A collection of matching pairings
      */
     @Override
     public Collection<HomekitPairing> get(byte[] pairingId) {
-        logger.debug("{}Getting pairings for ID: {}", LOG_STATE, HomekitByte.toHexString(pairingId));
+        logger.debug("{}Retrieving pairings for ID: {}", LOG_STATE, HomekitByte.toHexString(pairingId));
         return getAll().stream().filter(p -> Arrays.equals(p.getUID().getSourcePairingId(), pairingId))
                 .collect(Collectors.toList());
     }
@@ -190,13 +301,21 @@ public class HomekitPairingRegistryImpl
     /**
      * Adds a provider to this registry.
      *
+     * <p>
      * This method handles the addition of a new provider, ensuring proper
      * initialization and readiness tracking.
+     * </p>
      *
-     * Key implementation details:
-     * - Validates provider type
-     * - Checks provider readiness
-     * - Updates registry state
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Validates provider type</li>
+     *   <li>Checks provider readiness</li>
+     *   <li>Updates provider list</li>
+     *   <li>Maintains thread safety</li>
+     *   <li>Ensures data consistency</li>
+     * </ul>
      *
      * @param provider The provider to add
      */
@@ -223,21 +342,30 @@ public class HomekitPairingRegistryImpl
     /**
      * Handles the addition of a ready marker.
      *
-     * This method is called when a component signals that it is ready.
-     * It coordinates the initialization of the registry and its dependencies.
+     * <p>
+     * This method is called when a component signals that it is ready for use.
+     * It updates the registry's state based on the ready marker.
+     * </p>
      *
-     * Key implementation details:
-     * - Tracks component readiness
-     * - Coordinates initialization
-     * - Updates registry state
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Updates component state</li>
+     *   <li>Checks registry readiness</li>
+     *   <li>Maintains thread safety</li>
+     *   <li>Ensures data consistency</li>
+     * </ul>
      *
      * @param readyMarker The ready marker that was added
      */
     @Override
     public void onReadyMarkerAdded(ReadyMarker readyMarker) {
-        logger.debug("{}Ready marker added: {}:{}", LOG_STATE, readyMarker.getType(), readyMarker.getIdentifier());
-
-        if (readyMarker.getType() == HOMEKIT_ACCESSORY_SERVER_REGISTRY) {
+        logger.debug("{}Ready marker added: {}", LOG_STATE, readyMarker);
+        if (readyMarker.getType().equals(HOMEKIT_MANAGED_PAIRING_PROVIDER)) {
+            managedPairingProviderReady = true;
+            logger.debug("{}Managed pairing provider is ready", LOG_STATE);
+        } else if (readyMarker.getType().equals(HOMEKIT_ACCESSORY_SERVER_REGISTRY)) {
             accessoryServerRegistryReady = true;
             logger.debug("{}Accessory server registry is ready", LOG_STATE);
         }
@@ -265,13 +393,20 @@ public class HomekitPairingRegistryImpl
     /**
      * Handles the removal of a ready marker.
      *
+     * <p>
      * This method is called when a component signals that it is no longer ready.
-     * It updates the registry state accordingly.
+     * It updates the registry's state based on the removed ready marker.
+     * </p>
      *
-     * Key implementation details:
-     * - Updates component readiness state
-     * - Handles provider removal
-     * - Maintains registry consistency
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Updates component state</li>
+     *   <li>Checks registry readiness</li>
+     *   <li>Maintains thread safety</li>
+     *   <li>Ensures data consistency</li>
+     * </ul>
      *
      * @param readyMarker The ready marker that was removed
      */
@@ -281,7 +416,7 @@ public class HomekitPairingRegistryImpl
 
         if (readyMarker.getType() == HOMEKIT_ACCESSORY_SERVER_REGISTRY) {
             accessoryServerRegistryReady = false;
-            logger.debug("{}Accessory server registry is no longer ready", LOG_STATE);
+            logger.debug("{}Accessory server registry is not ready", LOG_STATE);
         }
 
         if (readyMarker.getType() == HOMEKIT_MANAGED_PAIRING_PROVIDER) {

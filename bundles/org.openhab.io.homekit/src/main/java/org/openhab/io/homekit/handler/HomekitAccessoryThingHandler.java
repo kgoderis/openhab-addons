@@ -2,6 +2,7 @@ package org.openhab.io.homekit.handler;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -32,21 +33,47 @@ import org.openhab.io.homekit.provider.HomekitThingTypeProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Handler for HomeKit accessory things, managing the lifecycle and state of HomeKit accessories.
+ *
+ * This class extends {@link AbstractHomekitHandler} to provide specific functionality for managing HomeKit accessories.
+ * It handles the creation and management of channels for HomeKit services and characteristics, ensuring proper
+ * synchronization between OpenHAB items and HomeKit accessories.
+ *
+ * Key responsibilities include:
+ * - Initializing and managing channels for HomeKit services and characteristics
+ * - Handling channel group creation and management
+ * - Validating and maintaining accessory state
+ * - Managing the lifecycle of HomeKit accessories
+ *
+ * The handler integrates with:
+ * - {@link HomekitServiceFactory} for service creation and management
+ * - {@link HomekitCharacteristicFactory} for characteristic creation and management
+ * - {@link HomekitAccessoryRegistry} for accessory registration
+ * - {@link HomekitAccessoryServerRegistry} for server instance management
+ * - {@link HomekitEventManager} for event handling
+ *
+ * @author Karel Goderis - Initial Contribution
+ * @since 1.0
+ */
 @NonNullByDefault
 public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
     // ========== Log Message Prefixes ==========
-    private static final String LOG_PREFIX = "Homekit AccessoryThingHandler: ";
-    private static final String LOG_INIT = LOG_PREFIX + "Init - ";
-    private static final String LOG_STATE = LOG_PREFIX + "State - ";
-    private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    private static final String LOG_PREFIX = "HomeKit Accessory Handler: ";
+    private static final String LOG_INIT = LOG_PREFIX + "Initialization - ";
+    private static final String LOG_STATE = LOG_PREFIX + "State Change - ";
+    private static final String LOG_CONFIG = LOG_PREFIX + "Configuration - ";
     private static final String LOG_CHANNEL = LOG_PREFIX + "Channel - ";
     private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
+    /** Logger instance for this class */
     private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryThingHandler.class);
 
-    // HomekitAccessory-specific fields
+    /** Factory for creating HomeKit services */
     private final HomekitServiceFactory serviceFactory;
+    
+    /** Factory for creating HomeKit characteristics */
     private final HomekitCharacteristicFactory characteristicFactory;
 
     public HomekitAccessoryThingHandler(Thing thing, HomekitAccessoryServerRegistry serverRegistry,
@@ -59,7 +86,11 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
         this.characteristicFactory = characteristicFactory;
     }
 
-    // ========== Core Lifecycle Methods ==========
+    /**
+     * Initializes accessory-specific components.
+     * 
+     * This method initializes the channels for the accessory and sets up event subscriptions.
+     */
     @Override
     protected void intializeSpecificComponents() {
         initializeChannels();
@@ -153,8 +184,11 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
     /**
      * Adds a channel group for a HomeKit service.
      * 
+     * This method creates a channel group for the specified HomeKit service and adds channels for each
+     * characteristic in the service. The channel group ID is constructed using the service tag and instance ID.
+     *
      * @param service The HomeKit service to create a channel group for
-     * @throws HomekitException if there is an error creating the channel group
+     * @throws HomekitException if there is an error creating the channel group or if the service is null
      */
     protected void addChannelGroupForService(HomekitService service) throws HomekitException {
         if (service == null) {
@@ -188,6 +222,17 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
         }
     }
 
+    /**
+     * Adds a channel for a HomeKit characteristic.
+     * 
+     * This method creates a channel for the specified HomeKit characteristic, using the characteristic's
+     * type and description to configure the channel. The channel is then added to the characteristic map
+     * for state tracking.
+     *
+     * @param characteristic The HomeKit characteristic to create a channel for
+     * @return The created channel, or null if creation fails
+     * @throws HomekitException if there is an error creating the channel or if the characteristic type is not found
+     */
     @Override
     protected Channel addChannelForCharacteristic(HomekitCharacteristic<?> characteristic) throws HomekitException {
         try {
@@ -221,18 +266,38 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
         }
     }
 
+    /**
+     * Handles accessory-specific disposal operations.
+     * 
+     * This method cleans up any resources specific to the accessory handler.
+     */
     @Override
     protected void handleSpecificDispose() {
         // No additional cleanup needed for accessory handler
     }
 
-    // ========== Configuration Methods ==========
+    /**
+     * Validates accessory-specific configuration.
+     * 
+     * This method checks that the configuration contains all required parameters
+     * for the accessory handler.
+     *
+     * @param config The configuration to validate
+     * @throws IllegalArgumentException if the configuration is invalid
+     */
     @Override
     protected void validateSpecificConfiguration(Configuration config) {
         // No additional configuration validation needed for accessory handler
     }
 
-    // ========== State Management Methods ==========
+    /**
+     * Determines the thing status based on the current state.
+     * 
+     * This method evaluates the current state of the accessory and returns
+     * the appropriate thing status.
+     *
+     * @return The current thing status
+     */
     @Override
     protected ThingStatus determineThingStatus() {
         if (!serverConnected || !serverPaired || !accessoryAvailable) {
@@ -241,6 +306,14 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
         return ThingStatus.ONLINE;
     }
 
+    /**
+     * Determines the thing status detail based on the current state.
+     * 
+     * This method evaluates the current state of the accessory and returns
+     * the appropriate status detail.
+     *
+     * @return The current thing status detail
+     */
     @Override
     protected ThingStatusDetail determineThingStatusDetail() {
         if (!serverConnected) {
@@ -255,6 +328,14 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
         return ThingStatusDetail.NONE;
     }
 
+    /**
+     * Determines the thing status description based on the current state.
+     * 
+     * This method evaluates the current state of the accessory and returns
+     * a description of the current status.
+     *
+     * @return A description of the current thing status
+     */
     @Override
     protected String determineThingStatusDescription() {
         if (!serverConnected) {
@@ -270,6 +351,13 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
     }
 
     // ========== Channel Management Methods ==========
+    /**
+     * Gets the current characteristics of the accessory.
+     * 
+     * This method retrieves all characteristics associated with the accessory.
+     *
+     * @return A set of characteristics for the accessory
+     */
     @Override
     protected Set<HomekitCharacteristic<?>> getCurrentCharacteristics() {
         HomekitAccessory currentAccessory = getAccessory();
@@ -285,6 +373,16 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
         return Collections.emptySet();
     }
 
+    /**
+     * Gets the channel UID for a characteristic.
+     * 
+     * This method constructs a channel UID based on the characteristic's service and type.
+     * The UID is created using the thing's UID, service tag, service ID, and characteristic tag.
+     *
+     * @param characteristic The characteristic to get the channel UID for
+     * @return The channel UID for the characteristic
+     * @throws IllegalArgumentException if the service or characteristic type cannot be determined
+     */
     @Override
     protected ChannelUID getChannelUID(HomekitCharacteristic<?> characteristic) {
         String groupId;
@@ -303,6 +401,14 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
         return new ChannelUID(thing.getUID(), groupId, characteristicTag);
     }
 
+    /**
+     * Validates that a characteristic belongs to this handler.
+     * 
+     * This method checks that the characteristic is associated with the handler's accessory.
+     *
+     * @param characteristic The characteristic to validate
+     * @return true if the characteristic belongs to this handler, false otherwise
+     */
     @Override
     protected boolean validateCharacteristicBelongsToHandler(HomekitCharacteristic<?> characteristic) {
         HomekitAccessory currentAccessory = getAccessory();
@@ -317,8 +423,13 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
     }
 
     // ========== Recovery Methods ==========
+    /**
+     * Performs accessory-specific recovery operations.
+     * 
+     * This method attempts to recover the accessory's state after an error.
+     */
     @Override
-    protected void performSpecificRecovery() throws Exception {
+    protected void performSpecificRecovery() {
         // no additional recovery steps needed for accessory handler
     }
 }

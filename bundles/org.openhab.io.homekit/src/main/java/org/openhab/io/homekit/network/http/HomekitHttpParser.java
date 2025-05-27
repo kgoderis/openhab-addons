@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A specialized HTTP parser for HomeKit communication.
  *
+ * <p>
  * A Parser for 1.0 and 1.1 HTTP messages as defined by RFC7230.
  * This parser parses HTTP client and server messages from buffers
  * passed in the {@link #parseNext(ByteBuffer)} method. The parsed
@@ -43,7 +44,9 @@ import org.slf4j.LoggerFactory;
  * If the passed handler is a {@link RequestHandler} then server side
  * parsing is performed and if it is a {@link ResponseHandler}, then
  * client side parsing is done.
+ * </p>
  *
+ * <p>
  * The contract of the {@link HttpHandler} API is that if a call returns
  * true then the call to {@link #parseNext(ByteBuffer)} will return as
  * soon as possible also with a true response. Typically this indicates
@@ -53,7 +56,9 @@ import org.slf4j.LoggerFactory;
  * should be done after a true return from {@link #parseNext(ByteBuffer)}
  * rather than from within the scope of a call like
  * {@link RequestHandler#messageComplete()}
+ * </p>
  *
+ * <p>
  * For performance, the parse is heavily dependent on the
  * {@link Trie#getBest(ByteBuffer, int, int)} method to look ahead in a
  * single pass for both the structure ( : and CRLF ) and semantic (which
@@ -63,36 +68,51 @@ import org.slf4j.LoggerFactory;
  * For headers who's value is not known statically (eg. Host, COOKIE) then a
  * per parser dynamic Trie of {@link HttpFields} from previous parsed messages
  * is used to help the parsing of subsequent messages.
+ * </p>
  *
- * The parser works in conjunction with:
- * - {@link HomekitHttpGenerator} for message generation
- * - {@link HomekitHttpVersion} for version handling
- * - {@link HomekitHttpConnection} for connection management
+ * <p>
+ * <b>Component Integration:</b>
+ * </p>
+ * <ul>
+ *   <li>{@link HomekitHttpGenerator} for message generation</li>
+ *   <li>{@link HomekitHttpVersion} for version handling</li>
+ *   <li>{@link HomekitHttpConnection} for connection management</li>
+ * </ul>
  *
- * Key responsibilities:
- * 1. Parsing HTTP request and response messages
- * 2. Handling message headers and content
- * 3. Managing chunked transfer encoding
- * 4. Supporting persistent connections
- * 5. Optimizing header parsing through caching
+ * <p>
+ * <b>Key responsibilities:</b>
+ * </p>
+ * <ul>
+ *   <li>Parsing HTTP request and response messages</li>
+ *   <li>Handling message headers and content</li>
+ *   <li>Managing chunked transfer encoding</li>
+ *   <li>Supporting persistent connections</li>
+ *   <li>Optimizing header parsing through caching</li>
+ * </ul>
  *
- * The implementation provides:
- * - Fast case-insensitive string lookups for methods and headers
- * - Optimized buffer management for message parsing
- * - Support for chunked transfer encoding
- * - Proper handling of content length and transfer encoding
- * - Support for persistent connections
+ * <p>
+ * <b>Implementation details:</b>
+ * </p>
+ * <ul>
+ *   <li>Fast case-insensitive string lookups for methods and headers</li>
+ *   <li>Optimized buffer management for message parsing</li>
+ *   <li>Support for chunked transfer encoding</li>
+ *   <li>Proper handling of content length and transfer encoding</li>
+ *   <li>Support for persistent connections</li>
+ * </ul>
  *
- * The parser can operate in different compliance modes:
+ * <p>
+ * <b>Compliance modes:</b>
+ * </p>
  * <dl>
- * <dt>RFC7230</dt>
- * <dd>(default) Compliance with RFC7230</dd>
- * <dt>RFC2616</dt>
- * <dd>Wrapped headers and HTTP/0.9 supported</dd>
- * <dt>LEGACY</dt>
- * <dd>(aka STRICT) Adherence to Servlet Specification requirement for
- * exact case of header names, bypassing the header caches, which are case insensitive,
- * otherwise equivalent to RFC2616</dd>
+ *   <dt>RFC7230</dt>
+ *   <dd>(default) Compliance with RFC7230</dd>
+ *   <dt>RFC2616</dt>
+ *   <dd>Wrapped headers and HTTP/0.9 supported</dd>
+ *   <dt>LEGACY</dt>
+ *   <dd>(aka STRICT) Adherence to Servlet Specification requirement for
+ *   exact case of header names, bypassing the header caches, which are case insensitive,
+ *   otherwise equivalent to RFC2616</dd>
  * </dl>
  *
  * @see <a href="http://tools.ietf.org/html/rfc7230">RFC 7230</a>
@@ -100,31 +120,41 @@ import org.slf4j.LoggerFactory;
  * @since 1.0
  */
 public class HomekitHttpParser {
+    /** Logger instance for this class */
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpParser.class);
-    protected static final String LOG_PREFIX = "Homekit HttpParser: ";
-    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
-    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
-    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+
+    /** Log message prefixes */
+    protected static final String LOG_PREFIX = "HomeKit HTTP Parser: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Initialization - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State Change - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Configuration - ";
     protected static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+
+    /** @deprecated Use {@link HttpCompliance#LEGACY} instead */
     @Deprecated
     public static final String __STRICT = "org.eclipse.jetty.http.HomekitHttpParser.STRICT";
+
+    /** Initial URI length for string builder */
     public static final int INITIAL_URI_LENGTH = 256;
+
+    /** Maximum chunk length */
     private static final int MAX_CHUNK_LENGTH = Integer.MAX_VALUE / 16 - 16;
 
     /**
      * Cache of common {@link HttpField}s including:
-     * <UL>
-     * <LI>Common static combinations such as:
-     * <UL>
-     * <li>Connection: close
-     * <li>Accept-Encoding: gzip
-     * <li>Content-Length: 0
-     * </ul>
-     * <li>Combinations of Content-Type header for common mime types by common charsets
-     * <li>Most common headers with null values so that a lookup will at least
-     * determine the header name even if the name:value combination is not cached
+     * <ul>
+     *   <li>Common static combinations such as:
+     *     <ul>
+     *       <li>Connection: close</li>
+     *       <li>Accept-Encoding: gzip</li>
+     *       <li>Content-Length: 0</li>
+     *     </ul>
+     *   </li>
+     *   <li>Combinations of Content-Type header for common mime types by common charsets</li>
+     *   <li>Most common headers with null values so that a lookup will at least
+     *       determine the header name even if the name:value combination is not cached</li>
      * </ul>
      */
     public static final Trie<HttpField> CACHE = new ArrayTrie<>(2048);
@@ -276,26 +306,48 @@ public class HomekitHttpParser {
     }
 
     /**
-     * Creates a new HTTP parser with the specified request handler.
+     * Creates a new HomeKit HTTP parser for request handling.
      *
-     * This constructor initializes a parser that will handle HTTP requests using
-     * the provided request handler. The parser will use default settings for
-     * maximum header size and compliance mode.
+     * <p>
+     * This constructor initializes a parser with the specified request handler,
+     * setting up the foundation for parsing HTTP requests.
+     * </p>
      *
-     * @param handler The request handler to use for processing parsed requests
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Initializes parser state</li>
+     *   <li>Configures request handler</li>
+     *   <li>Sets up header cache</li>
+     *   <li>Ensures thread safety</li>
+     * </ul>
+     *
+     * @param handler The request handler to use
      */
     public HomekitHttpParser(RequestHandler handler) {
         this(handler, -1, compliance());
     }
 
     /**
-     * Creates a new HTTP parser with the specified response handler.
+     * Creates a new HomeKit HTTP parser for response handling.
      *
-     * This constructor initializes a parser that will handle HTTP responses using
-     * the provided response handler. The parser will use default settings for
-     * maximum header size and compliance mode.
+     * <p>
+     * This constructor initializes a parser with the specified response handler,
+     * setting up the foundation for parsing HTTP responses.
+     * </p>
      *
-     * @param handler The response handler to use for processing parsed responses
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Initializes parser state</li>
+     *   <li>Configures response handler</li>
+     *   <li>Sets up header cache</li>
+     *   <li>Ensures thread safety</li>
+     * </ul>
+     *
+     * @param handler The response handler to use
      */
     public HomekitHttpParser(ResponseHandler handler) {
         this(handler, -1, compliance());
@@ -1527,14 +1579,31 @@ public class HomekitHttpParser {
     }
 
     /**
-     * Parse until next Event.
+     * Parses the next chunk of data from the provided buffer.
      *
-     * @param buffer the buffer to parse
-     * @return True if an {@link RequestHandler} method was called and it returned true;
+     * <p>
+     * This method processes the next portion of an HTTP message from the given buffer,
+     * handling headers, content, and message boundaries.
+     * </p>
+     *
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Processes message state</li>
+     *   <li>Handles headers and content</li>
+     *   <li>Manages chunked encoding</li>
+     *   <li>Maintains thread safety</li>
+     *   <li>Ensures state consistency</li>
+     *   <li>Logs parsing progress</li>
+     * </ul>
+     *
+     * @param buffer The buffer containing the next chunk of data to parse
+     * @return true if the caller should process events, false otherwise
      */
     public boolean parseNext(ByteBuffer buffer) {
         if (debug) {
-            logger.debug("{}parseNext s={} {}", LOG_STATE, _state, BufferUtil.toDetailString(buffer));
+            logger.debug("{}Parsing next chunk of data", LOG_STATE);
         }
         try {
             // Start a request/response
@@ -1664,6 +1733,25 @@ public class HomekitHttpParser {
         return false;
     }
 
+    /**
+     * Handles a bad message exception.
+     *
+     * <p>
+     * This method processes parsing errors and notifies the handler of the failure.
+     * </p>
+     *
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Logs error details</li>
+     *   <li>Notifies handler</li>
+     *   <li>Maintains thread safety</li>
+     *   <li>Ensures proper cleanup</li>
+     * </ul>
+     *
+     * @param x The bad message exception to handle
+     */
     protected void badMessage(BadMessageException x) {
         if (debug) {
             logger.debug("{}Parse exception: {} for {}", LOG_ERROR, this, _handler, x);

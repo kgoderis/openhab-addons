@@ -36,6 +36,55 @@ import org.yaml.snakeyaml.Yaml;
  * Handles loading, storing, and updating configurations with priority management.
  * Supports cascading configurations with wildcards.
  * Any YAML file can contain multiple sections of different types (items, things, channels).
+ *
+ * The class integrates with:
+ * - {@link org.openhab.core.config.core.ConfigDescriptionRegistry} for configuration validation
+ * - {@link org.openhab.core.service.WatchService} for file system monitoring
+ * - {@link org.openhab.core.thing.UID} for component identification
+ * - {@link org.yaml.snakeyaml.Yaml} for YAML parsing
+ *
+ * Configuration Types:
+ * - Items: OpenHAB item configurations
+ * - Things: OpenHAB thing configurations
+ * - Channels: OpenHAB channel configurations
+ * - Accessories: HomeKit accessory configurations
+ * - Services: HomeKit service configurations
+ * - Characteristics: HomeKit characteristic configurations
+ * - Profiles: HomeKit profile configurations
+ * - Bridge: HomeKit bridge configurations
+ * - Network: Network-related configurations
+ * - Events: Event-related configurations
+ *
+ * Key Features:
+ * - YAML-based configuration management
+ * - File system monitoring for changes
+ * - Configuration cascading with wildcards
+ * - Multiple configuration sources
+ * - Type-safe configuration access
+ * - Source file tracking
+ * - Configuration validation
+ *
+ * Usage Patterns:
+ * - Loading configurations: Use {@link #processConfigFile(Path)}
+ * - Updating configurations: Use {@link #updateConfiguration(UID, ConfigurationType, Map)}
+ * - Retrieving configurations: Use {@link #getConfiguration(UID, ConfigurationType)}
+ * - Managing source files: Use {@link #getSourceFile(UID, ConfigurationType)}
+ * - Handling configuration changes: Use {@link #modified(Map)}
+ *
+ * File Management:
+ * - Monitors configuration directory for changes
+ * - Supports multiple YAML files
+ * - Tracks configuration sources
+ * - Handles file updates and deletions
+ * - Maintains configuration consistency
+ *
+ * Configuration Priority:
+ * - OSGi configuration takes highest priority
+ * - YAML file configurations are merged
+ * - Wildcard configurations provide defaults
+ * - Specific configurations override wildcards
+ *
+ * @author Karel Goderis - Initial contribution
  */
 @Component(service = HomekitConfigurationManager.class, configurationPid = "org.openhab.homekit")
 @NonNullByDefault
@@ -129,7 +178,17 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     }
 
     /**
-     * Processes a configuration file and updates the appropriate stores
+     * Processes a configuration file and updates the appropriate configuration stores.
+     * This method reads a YAML file, parses its contents, and updates the configuration
+     * stores based on the sections found in the file.
+     *
+     * Key implementation details:
+     * - Reads and parses YAML file content
+     * - Processes each configuration type section
+     * - Updates configuration stores
+     * - Handles file reading errors
+     *
+     * @param file The path to the configuration file to process
      */
     private void processConfigFile(Path file) {
         try {
@@ -148,7 +207,19 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     }
 
     /**
-     * Converts a string UID to the appropriate UID type based on its format and section
+     * Converts a string UID to the appropriate UID type based on its format and section.
+     * This method handles various UID formats including HomeKit-specific UIDs and wildcards.
+     *
+     * Key implementation details:
+     * - Handles wildcard UIDs
+     * - Processes HomeKit-specific UIDs
+     * - Supports different configuration types
+     * - Validates UID format
+     *
+     * @param uidString The UID string to convert
+     * @param type The configuration type to determine the appropriate UID class
+     * @return The converted UID object
+     * @throws IllegalArgumentException if the UID string is null, empty, or invalid
      */
     private UID convertToUID(String uidString, ConfigurationType type) {
         if (uidString == null || uidString.isEmpty()) {
@@ -217,7 +288,16 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     }
 
     /**
-     * Converts a string UID to the appropriate UID type based on its format
+     * Converts a string UID to the appropriate UID type based on its format.
+     * This method attempts to determine the UID type from the string format.
+     *
+     * Key implementation details:
+     * - Analyzes UID string segments
+     * - Attempts to determine type from format
+     * - Falls back to default UID type
+     *
+     * @param uidString The UID string to convert
+     * @return The converted UID object
      */
     private UID convertToUID(String uidString) {
         // Try to determine type from the UID string first
@@ -243,7 +323,18 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     }
 
     /**
-     * Processes configurations from YAML for a specific type
+     * Processes configurations from YAML for a specific type.
+     * This method extracts and processes configuration entries for a given type.
+     *
+     * Key implementation details:
+     * - Extracts type-specific configurations
+     * - Converts UIDs
+     * - Updates configuration stores
+     * - Handles invalid configurations
+     *
+     * @param yamlConfig The YAML configuration map
+     * @param fileName The name of the configuration file
+     * @param type The type of configurations to process
      */
     @SuppressWarnings("unchecked")
     private void processConfigs(Map<String, Object> yamlConfig, String fileName, ConfigurationType type) {
@@ -268,7 +359,17 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     }
 
     /**
-     * Writes a YAML configuration to a file
+     * Writes a YAML configuration to a file.
+     * This method serializes the configuration map to YAML format and writes it to disk.
+     *
+     * Key implementation details:
+     * - Serializes configuration to YAML
+     * - Creates file if not exists
+     * - Handles file writing errors
+     *
+     * @param yamlFile The name of the YAML file to write
+     * @param yamlConfig The configuration map to write
+     * @throws IOException if there is an error writing the file
      */
     private void writeYamlFile(String yamlFile, Map<String, Object> yamlConfig) throws IOException {
         Path configPath = Paths.get(CONFIG_DIR, yamlFile);
@@ -276,7 +377,17 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     }
 
     /**
-     * Stores configuration for a given UID in its respective YAML file
+     * Stores configuration for a given UID in its respective YAML file.
+     * This method manages the persistence of configurations to YAML files.
+     *
+     * Key implementation details:
+     * - Determines target configuration store
+     * - Finds effective source file
+     * - Writes configuration to file
+     * - Handles file writing errors
+     *
+     * @param uid The UID of the configuration to store
+     * @param type The type of configuration to store
      */
     private void storeConfigs(UID uid, ConfigurationType type) {
         Map<UID, Map<String, Object>> configs = switch (type) {
@@ -311,7 +422,11 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     }
 
     /**
-     * Gets all configurations of a given type
+     * Gets all configurations of a given type.
+     * This method returns a copy of all configurations for the specified type.
+     *
+     * @param type The type of configurations to retrieve
+     * @return A map of UIDs to their configurations
      */
     public Map<UID, Map<String, Object>> getAllConfigurations(ConfigurationType type) {
         return switch (type) {
@@ -329,7 +444,11 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     }
 
     /**
-     * Gets all source files for a given type
+     * Gets all source files for a given type.
+     * This method returns a copy of all source files for the specified type.
+     *
+     * @param type The type of source files to retrieve
+     * @return A map of UIDs to their source files
      */
     public Map<UID, String> getAllSourceFiles(ConfigurationType type) {
         return switch (type) {
@@ -347,7 +466,11 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     }
 
     /**
-     * Gets all UIDs of a given type
+     * Gets all UIDs of a given type.
+     * This method returns a copy of all UIDs for the specified type.
+     *
+     * @param type The type of UIDs to retrieve
+     * @return A set of UIDs
      */
     public Set<UID> getAllUIDs(ConfigurationType type) {
         return switch (type) {
@@ -365,7 +488,12 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     }
 
     /**
-     * Gets the source file for a given UID
+     * Gets the source file for a given UID.
+     * This method returns the source file associated with the UID.
+     *
+     * @param uid The UID to look up
+     * @param type The type of the UID
+     * @return An optional containing the source file if found
      */
     public Optional<String> getSourceFile(UID uid, ConfigurationType type) {
         Map<UID, String> sourceFiles = switch (type) {
@@ -384,7 +512,12 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     }
 
     /**
-     * Updates the source file for a given UID
+     * Updates the source file for a given UID.
+     * This method associates a source file with a UID.
+     *
+     * @param uid The UID to update
+     * @param type The type of the UID
+     * @param yamlFile The source file to associate
      */
     public void updateSourceFile(UID uid, ConfigurationType type, String yamlFile) {
         Map<UID, String> sourceFiles = switch (type) {
@@ -403,7 +536,17 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     }
 
     /**
-     * Gets the effective source file for a given UID, considering wildcard matches
+     * Gets the effective source file for a given UID, considering wildcard matches.
+     * This method handles cascading configurations with wildcards.
+     *
+     * Key implementation details:
+     * - Tries exact match first
+     * - Attempts wildcard matches
+     * - Falls back to global default
+     *
+     * @param uid The UID to look up
+     * @param type The type of the UID
+     * @return An optional containing the effective source file if found
      */
     private Optional<String> getEffectiveSourceFile(UID uid, ConfigurationType type) {
         // Try exact match first
@@ -436,7 +579,18 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     }
 
     /**
-     * Gets configuration for a given UID with cascading support
+     * Gets configuration for a given UID with cascading support.
+     * This method handles configuration inheritance and wildcard matching.
+     *
+     * Key implementation details:
+     * - Tries exact match first
+     * - Attempts wildcard matches
+     * - Falls back to global default
+     * - Updates source file tracking
+     *
+     * @param uid The UID to look up
+     * @param type The type of configuration to retrieve
+     * @return An optional containing the configuration if found
      */
     public Optional<Map<String, Object>> getConfiguration(UID uid, ConfigurationType type) {
         Map<UID, Map<String, Object>> configs = switch (type) {
@@ -509,7 +663,12 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     }
 
     /**
-     * Updates configuration for a given UID
+     * Updates configuration for a given UID.
+     * This method stores the configuration and persists it to the appropriate file.
+     *
+     * @param uid The UID to update
+     * @param type The type of configuration to update
+     * @param config The configuration to store
      */
     public void updateConfiguration(UID uid, ConfigurationType type, Map<String, Object> config) {
         Map<UID, Map<String, Object>> configs = switch (type) {
@@ -529,7 +688,13 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     }
 
     /**
-     * Updates configuration for a given UID and stores the source file
+     * Updates configuration for a given UID and stores the source file.
+     * This method handles both configuration and source file updates.
+     *
+     * @param uid The UID to update
+     * @param type The type of configuration to update
+     * @param config The configuration to store
+     * @param yamlFile The source file to associate
      */
     public void updateConfiguration(UID uid, ConfigurationType type, Map<String, Object> config, String yamlFile) {
         updateConfiguration(uid, type, config);
@@ -550,7 +715,11 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     }
 
     /**
-     * Removes configuration for a given UID
+     * Removes configuration for a given UID.
+     * This method removes both the configuration and its source file association.
+     *
+     * @param uid The UID to remove
+     * @param type The type of configuration to remove
      */
     public void removeConfiguration(UID uid, ConfigurationType type) {
         Map<UID, Map<String, Object>> configs = switch (type) {
@@ -584,13 +753,25 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
 
     /**
      * Gets a specific configuration value for a given UID and key.
+     * This method retrieves a single configuration value.
+     *
+     * @param uid The UID to look up
+     * @param type The type of configuration to retrieve
+     * @param key The configuration key to retrieve
+     * @return An optional containing the configuration value if found
      */
     public Optional<Object> getConfiguration(UID uid, ConfigurationType type, String key) {
         return getConfiguration(uid, type).map(config -> config.get(key));
     }
 
     /**
-     * Updates a specific configuration key for a given UID
+     * Updates a specific configuration key for a given UID.
+     * This method updates a single configuration value and persists the change.
+     *
+     * @param uid The UID to update
+     * @param type The type of configuration to update
+     * @param key The configuration key to update
+     * @param value The value to store
      */
     public void updateConfiguration(UID uid, ConfigurationType type, String key, Object value) {
         Map<UID, Map<String, Object>> configs = switch (type) {
@@ -612,7 +793,8 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     }
 
     /**
-     * Enum representing different types of configurations and their YAML section identifiers
+     * Enum representing different types of configurations and their YAML section identifiers.
+     * This enum defines the supported configuration types and their YAML section names.
      */
     public enum ConfigurationType {
         ITEM("items"),

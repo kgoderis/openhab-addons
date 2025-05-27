@@ -21,6 +21,47 @@ import org.slf4j.LoggerFactory;
 /**
  * Provides configuration descriptions for HomeKit configurations.
  * This allows the configuration to be managed through the OpenHAB UI.
+ *
+ * The class integrates with:
+ * - {@link org.openhab.core.config.core.ConfigDescriptionProvider} for configuration description provision
+ * - {@link org.openhab.core.config.core.ConfigDescription} for configuration structure
+ * - {@link org.openhab.core.config.core.ConfigDescriptionParameter} for parameter definitions
+ *
+ * Configuration Parameters:
+ * - Item Configuration:
+ *   - item.enabled: Enable/disable HomeKit integration for items
+ *   - item.type: HomeKit type for items
+ * - Thing Configuration:
+ *   - thing.enabled: Enable/disable HomeKit integration for things
+ *   - thing.type: HomeKit type for things
+ * - Channel Configuration:
+ *   - channel.enabled: Enable/disable HomeKit integration for channels
+ *   - channel.type: HomeKit type for channels
+ * - Accessory Configuration:
+ *   - accessory.enabled: Enable/disable HomeKit integration for accessories
+ *   - accessory.type: HomeKit type for accessories
+ *
+ * Key Features:
+ * - UI-friendly configuration descriptions
+ * - Type-safe parameter definitions
+ * - Default value support
+ * - Localization support
+ * - Parameter validation
+ * - Configuration grouping
+ *
+ * Usage Patterns:
+ * - Retrieving descriptions: Use {@link #getConfigDescriptions(Locale)}
+ * - Getting specific description: Use {@link #getConfigDescription(URI, Locale)}
+ * - Creating descriptions: Use {@link #createConfigDescription()}
+ *
+ * UI Integration:
+ * - Provides structured configuration UI
+ * - Supports parameter validation
+ * - Enables default values
+ * - Facilitates configuration management
+ * - Supports localization
+ *
+ * @author Karel Goderis - Initial contribution
  */
 @Component(service = ConfigDescriptionProvider.class)
 @NonNullByDefault

@@ -44,13 +44,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Console commands for interacting with the Homekit integration
+ * Console commands for interacting with the HomeKit integration.
+ * 
+ * This class provides a set of console commands for managing and inspecting HomeKit integration
+ * components, including servers, accessories, pairings, and their mappings to OpenHAB items and things.
+ * 
+ * Key features:
+ * - View HomeKit mappings for items and things
+ * - List and inspect HomeKit servers and accessories
+ * - Manage HomeKit pairings
+ * - Display detailed information about HomeKit components
+ * 
+ * The commands are accessible through the OpenHAB console using the 'homekit' command
+ * followed by various subcommands.
  *
  * @author Karel Goderis - Initial contribution
  */
 @NonNullByDefault
 @Component(service = ConsoleCommandExtension.class)
 public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
+    // ========== Command Constants ==========
     private static final String COMMAND_HOMEKIT = "homekit";
     private static final String SUBCOMMAND_SHOW = "show";
     private static final String SUBCOMMAND_LIST = "list";
@@ -66,6 +79,16 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
     private static final String SUBCOMMAND_ADD_PAIRING = "add-pairing";
     private static final String SUBCOMMAND_REMOVE_PAIRING = "remove-pairing";
 
+    // ========== Log Message Prefixes ==========
+    private static final String LOG_PREFIX = "Homekit Command Extension: ";
+    private static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    private static final String LOG_CMD = LOG_PREFIX + "Command - ";
+    private static final String LOG_STATE = LOG_PREFIX + "State - ";
+    private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+    private static final String LOG_DEBUG = LOG_PREFIX + "Debug - ";
+
+    /** Logger instance for this class */
     private final Logger logger = LoggerFactory.getLogger(HomekitCommandExtension.class);
 
     private final ItemRegistry itemRegistry;
@@ -87,6 +110,7 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
             @Reference HomekitConfigurationManager configManager, @Reference HomekitItemBridge itemBridge,
             @Reference HomekitThingBridge thingBridge, @Reference HomekitAccessoryBridge accessoryBridge) {
         super(COMMAND_HOMEKIT, "HomeKit integration commands");
+        logger.info("{}Initializing HomeKit command extension", LOG_INIT);
         this.itemRegistry = itemRegistry;
         this.thingRegistry = thingRegistry;
         this.metadataRegistry = metadataRegistry;
@@ -97,17 +121,35 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         this.itemBridge = itemBridge;
         this.thingBridge = thingBridge;
         this.accessoryBridge = accessoryBridge;
+        logger.debug("{}Command extension initialized with {} servers, {} accessories", LOG_INIT,
+                accessoryServerRegistry.getAll().size(), accessoryRegistry.getAll().size());
     }
 
+    /**
+     * Executes a HomeKit console command.
+     * 
+     * This method processes the command arguments and executes the appropriate subcommand.
+     * Available subcommands include:
+     * - show: Display mappings for items, things, or servers
+     * - list: List servers, accessories, or pairings
+     * - add-pairing: Add a new pairing to a server
+     * - remove-pairing: Remove a pairing from a server
+     * - help: Display command usage
+     *
+     * @param args The command arguments, where args[0] is the subcommand
+     * @param console The console to write output to
+     */
     @Override
     public void execute(String[] args, Console console) {
         if (args.length > 0) {
             String subCommand = args[0];
+            logger.debug("{}Executing command: {}", LOG_CMD, subCommand);
             switch (subCommand) {
                 case SUBCOMMAND_SHOW:
                     if (args.length > 2) {
                         String type = args[1];
                         String id = args[2];
+                        logger.debug("{}Showing mapping for {}: {}", LOG_CMD, type, id);
                         switch (type) {
                             case SUBCOMMAND_ITEM:
                                 showItemMapping(id, console);
@@ -119,10 +161,12 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
                                 showServer(id, console);
                                 break;
                             default:
+                                logger.warn("{}Unknown type: {}", LOG_WARN, type);
                                 console.println("Unknown type: " + type);
                                 printUsage(console);
                         }
                     } else {
+                        logger.warn("{}Missing type or id for show command", LOG_WARN);
                         console.println("Missing type or id");
                         printUsage(console);
                     }
@@ -180,10 +224,19 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
                     printUsage(console);
             }
         } else {
+            logger.debug("{}No command arguments provided", LOG_CMD);
             printUsage(console);
         }
     }
 
+    /**
+     * Returns a list of command usage strings.
+     * 
+     * This method provides detailed usage information for each available command,
+     * including the command syntax and a brief description of its purpose.
+     *
+     * @return A list of command usage strings
+     */
     @Override
     public List<String> getUsages() {
         return Arrays.asList(
@@ -204,9 +257,21 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
                 buildCommandUsage(SUBCOMMAND_HELP, "Show this help"));
     }
 
+    /**
+     * Shows the HomeKit mapping for an item.
+     * 
+     * This method displays detailed information about an item's HomeKit configuration,
+     * including its type, label, HomeKit tags, configuration, group membership,
+     * and associated HomeKit accessory details.
+     *
+     * @param itemName The name of the item to show mapping for
+     * @param console The console to write output to
+     */
     private void showItemMapping(String itemName, Console console) {
+        logger.debug("{}Showing mapping for item: {}", LOG_CMD, itemName);
         Item item = itemRegistry.get(itemName);
         if (item == null) {
+            logger.warn("{}Item not found: {}", LOG_WARN, itemName);
             console.println("Item not found: " + itemName);
             return;
         }
@@ -239,6 +304,7 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
 
         // Get HomeKit accessory mapping
         itemBridge.getMappedAccessory(itemName).ifPresent(accessory -> {
+            logger.debug("{}Found HomeKit accessory mapping for item {}: {}", LOG_CMD, itemName, accessory.getUID());
             console.println("HomeKit Accessory:");
             console.println("  UID: " + accessory.getUID());
             console.println("  Type: " + accessory.getClass().getSimpleName());
@@ -267,9 +333,20 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         });
     }
 
+    /**
+     * Shows the HomeKit mapping for a thing.
+     * 
+     * This method displays detailed information about a thing's HomeKit configuration,
+     * including its type, label, channels, and associated HomeKit accessory details.
+     *
+     * @param thingId The ID of the thing to show mapping for
+     * @param console The console to write output to
+     */
     private void showThingMapping(String thingId, Console console) {
+        logger.debug("{}Showing mapping for thing: {}", LOG_CMD, thingId);
         Thing thing = thingRegistry.get(new ThingUID(thingId));
         if (thing == null) {
+            logger.warn("{}Thing not found: {}", LOG_WARN, thingId);
             console.println("Thing not found: " + thingId);
             return;
         }
@@ -287,6 +364,7 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
 
         // Get HomeKit accessory mapping
         thingBridge.getMappedAccessory(thing.getUID()).ifPresent(accessory -> {
+            logger.debug("{}Found HomeKit accessory mapping for thing {}: {}", LOG_CMD, thingId, accessory.getUID());
             console.println("HomeKit Accessory:");
             console.println("  UID: " + accessory.getUID());
             console.println("  Type: " + accessory.getClass().getSimpleName());
@@ -327,9 +405,20 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         });
     }
 
+    /**
+     * Shows the HomeKit accessories exposed by an accessory server.
+     * 
+     * This method displays detailed information about a server's HomeKit configuration,
+     * including its accessories, services, and characteristics.
+     *
+     * @param serverId The ID of the server to show
+     * @param console The console to write output to
+     */
     private void showServer(String serverId, Console console) {
+        logger.debug("{}Showing server: {}", LOG_CMD, serverId);
         HomekitAccessoryServer server = accessoryServerRegistry.get(new HomekitAccessoryServerUIDImpl(serverId));
         if (server == null) {
+            logger.warn("{}Server not found: {}", LOG_WARN, serverId);
             console.println("Server not found: " + serverId);
             return;
         }
@@ -352,6 +441,7 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         console.println("Accessories:");
         try {
             for (HomekitAccessory accessory : server.getAccessories()) {
+                logger.debug("{}Found accessory on server {}: {}", LOG_CMD, serverId, accessory.getUID());
                 console.println("  " + accessory.getUID());
                 console.println("    Type: " + accessory.getClass().getSimpleName());
                 console.println("    Services:");
@@ -364,10 +454,19 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
                 });
             }
         } catch (HomekitAccessoryOperationException e) {
+            logger.error("{}Error accessing accessories for server {}: {}", LOG_ERROR, serverId, e.getMessage(), e);
             console.println("Error accessing accessories: " + e.getMessage());
         }
     }
 
+    /**
+     * Prints a list of all HomeKit accessory servers.
+     * 
+     * This method displays information about each server, including its type,
+     * port, setup code, pairing state, and number of accessories.
+     *
+     * @param console The console to write output to
+     */
     private void printServers(Console console) {
         console.println("HomeKit Accessory Servers:");
         accessoryServerRegistry.getAll().forEach(server -> {
@@ -384,6 +483,14 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         });
     }
 
+    /**
+     * Prints a list of all HomeKit accessories exposed by bridges.
+     * 
+     * This method displays information about accessories from the item bridge,
+     * thing bridge, and accessory bridge.
+     *
+     * @param console The console to write output to
+     */
     private void printBridgedAccessories(Console console) {
         console.println("Bridged HomeKit Accessories:");
         console.println("----------------------------");
@@ -411,6 +518,14 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         });
     }
 
+    /**
+     * Prints a list of all HomeKit accessories.
+     * 
+     * This method displays detailed information about each accessory,
+     * including its label, ID, manufacturer, model, and services.
+     *
+     * @param console The console to write output to
+     */
     private void printAccessories(Console console) {
         console.println("HomeKit Accessories:");
         console.println("--------------------");
@@ -419,26 +534,49 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         });
     }
 
+    /**
+     * Prints a list of all HomeKit pairings.
+     * 
+     * This method displays information about pairings for each server,
+     * including pairing IDs and public keys.
+     *
+     * @param console The console to write output to
+     */
     private void printPairings(Console console) {
-        console.println("HomeKit Pairings:");
+        logger.debug("{}Printing all HomeKit pairings", LOG_CMD);
         accessoryServerRegistry.getAll().forEach(server -> {
             console.println("  Server: " + server.getUID());
             try {
                 server.getPairings().forEach(pairing -> {
+                    logger.debug("{}Found pairing for server {}: {}", LOG_CMD, server.getUID(),
+                            Base64.getEncoder().encodeToString(pairing.getDestinationId()));
                     console.println(
                             "    Pairing ID: " + Base64.getEncoder().encodeToString(pairing.getDestinationId()));
                     console.println("      Public Key: " + Base64.getEncoder().encodeToString(pairing.getPublicKey()));
                 });
             } catch (HomekitServerException e) {
+                logger.error("{}Error getting pairings from server {}: {}", LOG_ERROR, server.getUID(), e.getMessage(), e);
                 console.println("Error getting pairings from server: " + e.getMessage());
                 e.printStackTrace();
             }
         });
     }
 
+    /**
+     * Adds a new pairing to a HomeKit server.
+     * 
+     * This method adds a new pairing to the specified server using the provided setup code.
+     * The setup code should be in the format "XXX-XX-XXX" where X is a digit.
+     *
+     * @param serverId The ID of the server to add the pairing to
+     * @param setupCode The setup code for the new pairing
+     * @param console The console to write output to
+     */
     private void addPairing(String serverId, String setupCode, Console console) {
+        logger.debug("{}Adding pairing to server {} with setup code {}", LOG_CMD, serverId, setupCode);
         HomekitAccessoryServer server = accessoryServerRegistry.get(new HomekitAccessoryServerUIDImpl(serverId));
         if (server == null) {
+            logger.warn("{}Server not found: {}", LOG_WARN, serverId);
             console.println("Server not found: " + serverId);
             return;
         }
@@ -446,29 +584,55 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         server.setSetupCode(setupCode);
         try {
             server.pairSetup();
+            logger.info("{}Successfully added pairing to server: {}", LOG_STATE, serverId);
+            console.println("Successfully added pairing to server: " + serverId);
         } catch (HomekitServerException e) {
+            logger.error("{}Error adding pairing to server {}: {}", LOG_ERROR, serverId, e.getMessage(), e);
             console.println("Error adding pairing to server: " + e.getMessage());
             e.printStackTrace();
         }
-        console.println("Successfully added pairing to server: " + serverId);
     }
 
+    /**
+     * Removes a pairing from a HomeKit server.
+     * 
+     * This method removes an existing pairing from the specified server using the pairing ID.
+     * The pairing ID should be provided in base64 format.
+     *
+     * @param serverId The ID of the server to remove the pairing from
+     * @param pairingId The ID of the pairing to remove
+     * @param console The console to write output to
+     */
     private void removePairing(String serverId, String pairingId, Console console) {
+        logger.debug("{}Removing pairing {} from server {}", LOG_CMD, pairingId, serverId);
         HomekitAccessoryServer server = accessoryServerRegistry.get(new HomekitAccessoryServerUIDImpl(serverId));
         if (server == null) {
+            logger.warn("{}Server not found: {}", LOG_WARN, serverId);
             console.println("Server not found: " + serverId);
             return;
         }
 
         try {
             server.removePairing(Base64.getDecoder().decode(pairingId));
+            logger.info("{}Successfully removed pairing from server: {}", LOG_STATE, serverId);
+            console.println("Successfully removed pairing from server: " + serverId);
         } catch (HomekitServerException e) {
+            logger.error("{}Error removing pairing from server {}: {}", LOG_ERROR, serverId, e.getMessage(), e);
             console.println("Error removing pairing from server: " + e.getMessage());
             e.printStackTrace();
         }
-        console.println("Successfully removed pairing from server: " + serverId);
     }
 
+    /**
+     * Prints detailed information about a HomeKit accessory.
+     * 
+     * This method displays comprehensive information about an accessory,
+     * including its label, ID, manufacturer, model, serial number,
+     * and all services with their characteristics.
+     *
+     * @param console The console to write output to
+     * @param accessory The accessory to print details for
+     */
     private void printAccessoryDetails(Console console, HomekitAccessory accessory) {
         console.println("Accessory Details:");
         console.println("-----------------");

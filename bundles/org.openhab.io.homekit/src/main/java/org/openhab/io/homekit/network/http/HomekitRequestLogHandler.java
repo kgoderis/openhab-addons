@@ -18,52 +18,84 @@ import org.slf4j.LoggerFactory;
 /**
  * Handles detailed logging of HomeKit HTTP requests and responses.
  *
+ * <p>
  * This class extends Jetty's {@link RequestLogHandler} to provide comprehensive logging
  * of HomeKit HTTP communication. It captures and logs detailed information about
  * incoming requests and outgoing responses, including headers, payloads, and
  * connection details.
+ * </p>
  *
- * The class integrates with:
- * - {@link HomekitRequestWrapper} for request wrapping and logging
- * - {@link HomekitResponseWrapper} for response wrapping and logging
- * - {@link HomekitHttpParser} for parsing HTTP messages
- * - {@link HomekitHttpGenerator} for generating HTTP messages
- * - {@link HomekitHttpSender} for sending HTTP messages
- * - {@link HomekitHttpReceiver} for receiving HTTP messages
- * - {@link HomekitHttpConnection} for managing HTTP connections
+ * <p>
+ * <b>Key responsibilities:</b>
+ * </p>
+ * <ul>
+ *   <li>Request logging (headers, method, URI, payload)</li>
+ *   <li>Response logging (status, content)</li>
+ *   <li>Hex dump generation for binary payloads</li>
+ *   <li>Debug-level logging control</li>
+ *   <li>Request/response wrapping for logging</li>
+ *   <li>Error handling and recovery</li>
+ * </ul>
  *
- * Key responsibilities:
- * 1. Request logging (headers, method, URI, payload)
- * 2. Response logging (status, content)
- * 3. Hex dump generation for binary payloads
- * 4. Debug-level logging control
+ * <p>
+ * <b>Component Integration:</b>
+ * </p>
+ * <ul>
+ *   <li>{@link HomekitRequestWrapper} for request wrapping and logging</li>
+ *   <li>{@link HomekitResponseWrapper} for response wrapping and logging</li>
+ *   <li>{@link HomekitHttpParser} for parsing HTTP messages</li>
+ *   <li>{@link HomekitHttpGenerator} for generating HTTP messages</li>
+ *   <li>{@link HomekitHttpSender} for sending HTTP messages</li>
+ *   <li>{@link HomekitHttpReceiver} for receiving HTTP messages</li>
+ *   <li>{@link HomekitHttpConnection} for managing HTTP connections</li>
+ * </ul>
  *
- * The logging implementation uses:
- * - {@link HexDump} for binary payload visualization
- * - {@link IOUtils} for efficient stream handling
- * - {@link ByteArrayOutputStream} for content buffering
+ * <p>
+ * <b>Implementation Details:</b>
+ * </p>
+ * <ul>
+ *   <li>Uses {@link HexDump} for binary payload visualization</li>
+ *   <li>Uses {@link IOUtils} for efficient stream handling</li>
+ *   <li>Uses {@link ByteArrayOutputStream} for content buffering</li>
+ *   <li>Implements debug and trace level logging</li>
+ *   <li>Provides hex dump generation for binary content</li>
+ * </ul>
  *
  * @author Karel Goderis - Initial Contribution
  * @since 1.0
  */
 public class HomekitRequestLogHandler extends RequestLogHandler {
 
-    // ========== Log Message Prefixes ==========
+    /** Logger instance for this class */
     protected static final Logger logger = LoggerFactory.getLogger(HomekitRequestLogHandler.class);
+
+    // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "Homekit RequestLogHandler: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_REQUEST = LOG_PREFIX + "Request - ";
     protected static final String LOG_RESPONSE = LOG_PREFIX + "Response - ";
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
     /**
      * Creates a new HomeKit request log handler.
      *
+     * <p>
      * This constructor initializes the handler with default settings for
      * logging HomeKit HTTP communication. It works in conjunction with
      * {@link HomekitRequestWrapper} and {@link HomekitResponseWrapper} to
      * provide comprehensive request/response logging.
+     * </p>
+     *
+     * <p>
+     * <b>Key initialization steps:</b>
+     * </p>
+     * <ul>
+     *   <li>Sets up logging prefixes</li>
+     *   <li>Initializes handler state</li>
+     *   <li>Configures debug logging</li>
+     * </ul>
      */
     public HomekitRequestLogHandler() {
         logger.debug("{}Initializing HomeKit request log handler", LOG_INIT);
@@ -72,19 +104,27 @@ public class HomekitRequestLogHandler extends RequestLogHandler {
     /**
      * Handles and logs HTTP requests and responses.
      *
+     * <p>
      * This method processes incoming requests and outgoing responses, providing
      * detailed logging of all aspects of the HTTP communication. When debug
      * logging is enabled, it logs:
-     * - Request details (headers, method, URI, query parameters)
-     * - Request payload in hex dump format
-     * - Response status and content
-     * - Connection information
+     * </p>
+     * <ul>
+     *   <li>Request details (headers, method, URI, query parameters)</li>
+     *   <li>Request payload in hex dump format</li>
+     *   <li>Response status and content</li>
+     *   <li>Connection information</li>
+     * </ul>
      *
-     * Key implementation details:
-     * - Wraps requests and responses for logging using {@link HomekitRequestWrapper} and {@link HomekitResponseWrapper}
-     * - Generates hex dumps for binary payloads using {@link HexDump}
-     * - Maintains original request/response handling
-     * - Controls logging verbosity based on debug level
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Wraps requests and responses for logging</li>
+     *   <li>Generates hex dumps for binary payloads</li>
+     *   <li>Maintains original request/response handling</li>
+     *   <li>Controls logging verbosity based on debug level</li>
+     * </ul>
      *
      * @param target The target of the request
      * @param baseRequest The base Jetty request
@@ -99,12 +139,14 @@ public class HomekitRequestLogHandler extends RequestLogHandler {
 
         if (logger.isDebugEnabled()) {
             try {
+                logger.debug("{}Processing request for target: {}", LOG_REQUEST, target);
                 final HomekitRequestWrapper wrappedRequest = new HomekitRequestWrapper(request);
                 HomekitResponseWrapper wrappedResponse = new HomekitResponseWrapper(response);
 
                 logRequestDetails(wrappedRequest);
                 handleRequest(target, baseRequest, wrappedRequest, wrappedResponse);
                 logResponseDetails(wrappedResponse);
+                logger.debug("{}Request processing completed successfully", LOG_STATE);
             } catch (Exception e) {
                 logger.error("{}Error handling request: {}", LOG_ERROR, e.getMessage(), e);
                 throw e;
@@ -119,8 +161,18 @@ public class HomekitRequestLogHandler extends RequestLogHandler {
     /**
      * Logs detailed information about the incoming request.
      *
+     * <p>
      * This method uses {@link IOUtils} to efficiently read the request body
      * and {@link HexDump} to generate readable hex dumps of binary content.
+     * It logs comprehensive request details including:
+     * </p>
+     * <ul>
+     *   <li>Client information (IP, port)</li>
+     *   <li>Request headers</li>
+     *   <li>Request method and URI</li>
+     *   <li>Query parameters</li>
+     *   <li>Request payload (with hex dump)</li>
+     * </ul>
      *
      * @param request The wrapped HTTP request
      * @throws IOException if an I/O error occurs while reading the request
@@ -146,14 +198,19 @@ public class HomekitRequestLogHandler extends RequestLogHandler {
                             stream.toString(StandardCharsets.UTF_8.name()));
                 }
             }
+        } else {
+            logger.debug("{}No request payload", LOG_REQUEST);
         }
     }
 
     /**
      * Handles the request by delegating to the next handler in the chain.
      *
+     * <p>
      * This method works with {@link HomekitRequestWrapper} and {@link HomekitResponseWrapper}
      * to ensure proper request/response handling while maintaining logging capabilities.
+     * It delegates the actual request processing to the next handler in the chain.
+     * </p>
      *
      * @param target The target of the request
      * @param baseRequest The base Jetty request
@@ -165,15 +222,25 @@ public class HomekitRequestLogHandler extends RequestLogHandler {
     private void handleRequest(String target, Request baseRequest, HomekitRequestWrapper request,
             HomekitResponseWrapper response) throws IOException, ServletException {
         if (_handler != null) {
+            logger.debug("{}Delegating request to next handler", LOG_STATE);
             _handler.handle(target, baseRequest, request, response);
+        } else {
+            logger.warn("{}No handler available for request", LOG_WARN);
         }
     }
 
     /**
      * Logs detailed information about the outgoing response.
      *
+     * <p>
      * This method uses {@link HexDump} to generate readable hex dumps of binary
-     * response content when trace logging is enabled.
+     * response content when trace logging is enabled. It logs:
+     * </p>
+     * <ul>
+     *   <li>Response status code</li>
+     *   <li>Response content size</li>
+     *   <li>Response content (with hex dump)</li>
+     * </ul>
      *
      * @param response The wrapped HTTP response
      * @throws IOException if an I/O error occurs while reading the response
@@ -192,8 +259,11 @@ public class HomekitRequestLogHandler extends RequestLogHandler {
                             stream.toString(StandardCharsets.UTF_8.name()));
                 }
             }
+        } else {
+            logger.debug("{}No response content", LOG_RESPONSE);
         }
 
         response.copyBodyToResponse();
+        logger.debug("{}Response body copied to original response", LOG_RESPONSE);
     }
 }

@@ -12,24 +12,39 @@ import org.slf4j.LoggerFactory;
 /**
  * Defines the supported HTTP versions for HomeKit communication.
  *
+ * <p>
  * This enum provides a set of HTTP version constants used in HomeKit network
  * communication. It extends the standard HTTP versions with HomeKit-specific
  * protocol versions and provides utilities for version parsing and conversion.
+ * </p>
  *
- * The enum works in conjunction with:
- * - {@link HomekitHttpParser} for protocol parsing
- * - {@link HomekitHttpGenerator} for protocol generation
- * - {@link HomekitHttpConnection} for connection handling
- * - {@link HomekitHttpChannel} for channel management
+ * <p>
+ * <b>Component Integration:</b>
+ * </p>
+ * <ul>
+ *   <li>{@link HomekitHttpParser} for protocol parsing</li>
+ *   <li>{@link HomekitHttpGenerator} for protocol generation</li>
+ *   <li>{@link HomekitHttpConnection} for connection handling</li>
+ *   <li>{@link HomekitHttpChannel} for channel management</li>
+ * </ul>
  *
- * Key responsibilities:
- * 1. Defining supported HTTP versions
- * 2. Providing version parsing utilities
- * 3. Supporting version conversion
- * 4. Managing version caching
+ * <p>
+ * <b>Key responsibilities:</b>
+ * </p>
+ * <ul>
+ *   <li>Defining supported HTTP versions</li>
+ *   <li>Providing version parsing utilities</li>
+ *   <li>Supporting version conversion</li>
+ *   <li>Managing version caching</li>
+ * </ul>
  *
- * The implementation uses a Trie-based cache for efficient version lookups
- * and provides optimized byte-level parsing for performance.
+ * <p>
+ * <b>Implementation details:</b>
+ * </p>
+ * <ul>
+ *   <li>Uses a Trie-based cache for efficient version lookups</li>
+ *   <li>Provides optimized byte-level parsing for performance</li>
+ * </ul>
  *
  * @author Karel Goderis - Initial Contribution
  * @since 1.0
@@ -41,6 +56,7 @@ public enum HomekitHttpVersion {
     HTTP_2("HTTP/2.0", 20),
     EVENT_1_0("EVENT/1.0", 30);
 
+    /** Logger instance for this class */
     private static final Logger logger = LoggerFactory.getLogger(HomekitHttpVersion.class);
 
     // ========== Log Message Prefixes ==========
@@ -65,8 +81,10 @@ public enum HomekitHttpVersion {
     /**
      * Gets the HTTP version from a string representation.
      *
+     * <p>
      * This method looks up a version in the cache using its string representation.
      * The lookup is case-insensitive and optimized using a Trie data structure.
+     * </p>
      *
      * @param version The version string to parse
      * @return The corresponding HomekitHttpVersion or null if not found
@@ -82,15 +100,21 @@ public enum HomekitHttpVersion {
     /**
      * Optimized lookup to find an HTTP Version and whitespace in a byte array.
      *
+     * <p>
      * This method performs a fast, byte-level parsing of HTTP version strings
      * in a byte array, looking for specific patterns that indicate valid
      * HTTP version declarations.
+     * </p>
      *
-     * Key implementation details:
-     * - Performs byte-level pattern matching
-     * - Handles both HTTP and EVENT protocols
-     * - Supports case-insensitive matching
-     * - Optimized for performance
+     * <p>
+     * <b>Key implementation details:</b>
+     * </p>
+     * <ul>
+     *   <li>Performs byte-level pattern matching</li>
+     *   <li>Handles both HTTP and EVENT protocols</li>
+     *   <li>Supports case-insensitive matching</li>
+     *   <li>Optimized for performance</li>
+     * </ul>
      *
      * @param bytes Array containing ISO-8859-1 characters
      * @param position The first valid index
@@ -163,8 +187,10 @@ public enum HomekitHttpVersion {
     /**
      * Optimized lookup to find an HTTP Version in a ByteBuffer.
      *
+     * <p>
      * This method provides a convenient wrapper for looking up HTTP versions
      * in ByteBuffer objects, delegating to the byte array implementation.
+     * </p>
      *
      * @param buffer Buffer containing ISO-8859-1 characters
      * @return A HomekitHttpVersion if a match is found, null otherwise
@@ -186,9 +212,11 @@ public enum HomekitHttpVersion {
     /**
      * Creates a new HTTP version constant.
      *
+     * <p>
      * This constructor initializes a version with its string representation
      * and numeric identifier, preparing the byte array and buffer for
      * efficient lookups.
+     * </p>
      *
      * @param s The string representation of the version
      * @param version The numeric version identifier
@@ -254,6 +282,11 @@ public enum HomekitHttpVersion {
     /**
      * Converts a string to a HomekitHttpVersion.
      *
+     * <p>
+     * This method looks up a version in the cache using its string representation.
+     * The lookup is case-insensitive and optimized using a Trie data structure.
+     * </p>
+     *
      * @param version The version string to convert
      * @return The corresponding HomekitHttpVersion or null if not found
      */
@@ -267,6 +300,11 @@ public enum HomekitHttpVersion {
 
     /**
      * Converts a numeric version to a HomekitHttpVersion.
+     *
+     * <p>
+     * This method maps numeric version identifiers to their corresponding
+     * HomekitHttpVersion enum values, with special handling for unsupported versions.
+     * </p>
      *
      * @param version The numeric version to convert
      * @return The corresponding HomekitHttpVersion
@@ -298,8 +336,10 @@ public enum HomekitHttpVersion {
     /**
      * Gets the best matching version from a buffer.
      *
+     * <p>
      * This method uses the Trie cache to find the best matching version
      * in the given buffer range.
+     * </p>
      *
      * @param buffer The buffer to search in
      * @param i The starting position
@@ -317,8 +357,10 @@ public enum HomekitHttpVersion {
     /**
      * Converts a HomekitHttpVersion to a standard HttpVersion.
      *
+     * <p>
      * This method maps HomeKit-specific versions to standard HTTP versions,
      * with special handling for EVENT protocol versions.
+     * </p>
      *
      * @param version The HomekitHttpVersion to convert
      * @return The corresponding HttpVersion

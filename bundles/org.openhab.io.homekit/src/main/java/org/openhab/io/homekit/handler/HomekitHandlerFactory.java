@@ -14,6 +14,7 @@ package org.openhab.io.homekit.handler;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -45,17 +46,43 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The {@link HomekitHandlerFactory} is responsible for creating things and thing
- * handlers.
+ * Factory for creating HomeKit thing handlers and managing their lifecycle.
  *
- * @author Karel Goderis - Initial contribution
+ * This class is responsible for creating and managing HomeKit thing handlers, which are the core components
+ * that bridge OpenHAB items with HomeKit accessories. It handles the creation of both accessory and service
+ * handlers, manages their registration with the HomeKit server, and ensures proper initialization of all
+ * required components.
+ *
+ * The factory integrates with:
+ * - {@link HomekitAccessoryRegistry} for accessory registration and management
+ * - {@link HomekitPairingRegistry} for handling device pairing
+ * - {@link HomekitAccessoryServerRegistry} for server instance management
+ * - {@link HomekitThingTypeProvider} for thing type definitions
+ * - {@link HomekitChannelTypeProvider} for channel type definitions
+ * - {@link HomekitEventManager} for event handling
+ * - {@link HomekitServiceFactory} for service creation
+ * - {@link HomekitCharacteristicFactory} for characteristic creation
+ * - {@link HomekitChannelGroupTypeProvider} for channel group definitions
+ *
+ * @author Karel Goderis - Initial Contribution
+ * @since 1.0
  */
 @NonNullByDefault
 @Component(configurationPid = "io.homekit", service = ThingHandlerFactory.class)
 public class HomekitHandlerFactory extends BaseThingHandlerFactory {
 
+    /** Logger instance for this class */
     private final Logger logger = LoggerFactory.getLogger(HomekitHandlerFactory.class);
 
+    /** Log message prefixes */
+    protected static final String LOG_PREFIX = "HomeKit Handler Factory: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Initialization - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State Change - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Configuration - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+
+    /** Collection of supported thing types */
     public static Collection<ThingTypeUID> SUPPORTED_THING_TYPES = Collections.emptySet();
 
     protected final HomekitAccessoryRegistry accessoryRegistry;
@@ -93,11 +120,59 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
                 .map(ThingType::getUID).collect(Collectors.toSet()));
     }
 
+    /**
+     * Creates a handler for a thing.
+     * 
+     * This method creates an appropriate handler for the given thing based on its type.
+     * It supports both accessory and service thing types.
+     *
+     * @param thing The thing to create a handler for
+     * @return A handler for the thing, or null if the thing type is not supported
+     */
+    @Override
+    public ThingHandler createHandler(Thing thing) {
+        ThingTypeUID thingTypeUID = thing.getThingTypeUID();
+        if (HomekitBindingConstants.THING_TYPE_ACCESSORY.equals(thingTypeUID)) {
+            logger.debug("{}Creating accessory handler for thing {}", LOG_INIT, thing.getUID());
+            return new HomekitAccessoryThingHandler(thing, serverRegistry, accessoryRegistry,
+                    homekitChannelTypeProvider, homekitThingTypeProvider, eventManager, serviceFactory,
+                    characteristicFactory);
+        } else if (SUPPORTED_THING_TYPES.contains(thingTypeUID)) {
+            logger.debug("{}Creating service handler for thing {}", LOG_INIT, thing.getUID());
+            return new HomekitServiceThingHandler(thing, serverRegistry, accessoryRegistry, homekitChannelTypeProvider,
+                    homekitThingTypeProvider, eventManager, serviceFactory, characteristicFactory);
+        }
+        logger.debug("{}Unsupported thing type {}", LOG_WARN, thing.getThingTypeUID());
+        return null;
+    }
+
+    /**
+     * Checks if a thing type is supported.
+     * 
+     * This method determines if the factory can create a handler for the given thing type.
+     * It supports both accessory and service thing types.
+     *
+     * @param thingTypeUID The thing type to check
+     * @return true if the thing type is supported, false otherwise
+     */
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
         return SUPPORTED_THING_TYPES.contains(thingTypeUID);
     }
 
+    /**
+     * Creates a new thing instance.
+     * 
+     * This method creates a new thing instance for the given thing type and configuration.
+     * It validates that the thing type is supported before creating the thing.
+     *
+     * @param thingTypeUID The type of thing to create
+     * @param configuration The configuration for the thing
+     * @param thingUID The unique identifier for the thing, or null to generate one
+     * @param bridgeUID The unique identifier of the bridge this thing belongs to, or null if not bridged
+     * @return The created thing instance
+     * @throws IllegalArgumentException if the thing type is not supported
+     */
     @Override
     public @Nullable Thing createThing(ThingTypeUID thingTypeUID, Configuration configuration,
             @Nullable ThingUID thingUID, @Nullable ThingUID bridgeUID) {
@@ -107,24 +182,5 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
         }
         throw new IllegalArgumentException(
                 "The thing type " + thingTypeUID + " is not supported by the Homekit binding");
-    }
-
-    @Override
-    protected @Nullable ThingHandler createHandler(Thing thing) {
-        ThingTypeUID thingTypeUID = thing.getThingTypeUID();
-
-        if (HomekitBindingConstants.THING_TYPE_ACCESSORY.equals(thingTypeUID)) {
-            return new HomekitAccessoryThingHandler(thing, serverRegistry, accessoryRegistry,
-                    homekitChannelTypeProvider, homekitThingTypeProvider, eventManager, serviceFactory,
-                    characteristicFactory);
-        }
-
-        if (SUPPORTED_THING_TYPES.contains(thingTypeUID)) {
-            return new HomekitServiceThingHandler(thing, serverRegistry, accessoryRegistry, homekitChannelTypeProvider,
-                    homekitThingTypeProvider, eventManager, serviceFactory, characteristicFactory);
-        }
-
-        logger.debug("Unsupported thing {}", thing.getThingTypeUID());
-        return null;
     }
 }

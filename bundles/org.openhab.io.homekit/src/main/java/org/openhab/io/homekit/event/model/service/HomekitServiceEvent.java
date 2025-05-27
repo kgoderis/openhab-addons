@@ -13,11 +13,68 @@ import org.openhab.io.homekit.event.core.AbstractHomekitEvent;
 import org.openhab.io.homekit.event.core.HomekitEventMetadata;
 import org.openhab.io.homekit.util.HomekitUID;
 
+/**
+ * Event class representing service-related events in the HomeKit integration.
+ * This event is used to propagate changes and updates related to HomeKit services,
+ * including service lifecycle events and characteristic changes within services.
+ *
+ * <p>
+ * The class integrates with:
+ * </p>
+ * <ul>
+ *   <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for base event functionality</li>
+ *   <li>{@link org.openhab.io.homekit.api.event.HomekitEventType} for event type identification</li>
+ *   <li>{@link org.openhab.io.homekit.api.service.HomekitService} for service management</li>
+ *   <li>{@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic} for characteristic handling</li>
+ *   <li>{@link org.openhab.io.homekit.event.core.HomekitEventMetadata} for event metadata</li>
+ *   <li>{@link org.openhab.io.homekit.util.HomekitUID} for UID generation and management</li>
+ * </ul>
+ *
+ * <p>
+ * <b>Key Features:</b>
+ * </p>
+ * <ul>
+ *   <li>Service lifecycle management</li>
+ *   <li>Characteristic change tracking</li>
+ *   <li>Event metadata support</li>
+ *   <li>Optional component handling</li>
+ * </ul>
+ *
+ * <p>
+ * <b>Usage Patterns:</b>
+ * </p>
+ * <ul>
+ *   <li>Service state management</li>
+ *   <li>Characteristic value updates</li>
+ *   <li>Service configuration changes</li>
+ *   <li>System diagnostics and monitoring</li>
+ * </ul>
+ *
+ * <p>
+ * <b>Event Handling:</b>
+ * </p>
+ * <ul>
+ *   <li>Supports targeted event delivery</li>
+ *   <li>Maintains service relationships</li>
+ *   <li>Enables characteristic tracking</li>
+ *   <li>Supports wildcard subscribers</li>
+ * </ul>
+ *
+ * @author Karel Goderis - Initial contribution
+ * @since 3.x
+ */
 @NonNullByDefault
 public class HomekitServiceEvent extends AbstractHomekitEvent {
     private final Optional<HomekitService> HomekitService;
     private final Optional<HomekitCharacteristic<?>> HomekitCharacteristic;
 
+    /**
+     * Creates a new service event with default subscriber UID.
+     *
+     * @param type the type of event
+     * @param HomekitService the service associated with the event, if any
+     * @param HomekitCharacteristic the characteristic associated with the event, if any
+     */
     @SuppressWarnings("null")
     public HomekitServiceEvent(HomekitEventType type, @Nullable HomekitService HomekitService,
             @Nullable HomekitCharacteristic<?> HomekitCharacteristic) {
@@ -30,6 +87,14 @@ public class HomekitServiceEvent extends AbstractHomekitEvent {
         this.HomekitCharacteristic = Optional.ofNullable(HomekitCharacteristic);
     }
 
+    /**
+     * Creates a new service event with explicit subscriber UID.
+     *
+     * @param type the type of event
+     * @param HomekitService the service associated with the event, if any
+     * @param subscriberUID the UID of the subscriber that will receive the event
+     * @param HomekitCharacteristic the characteristic associated with the event, if any
+     */
     @SuppressWarnings("null")
     public HomekitServiceEvent(HomekitEventType type, @Nullable HomekitService HomekitService, UID subscriberUID,
             @Nullable HomekitCharacteristic<?> HomekitCharacteristic) {
@@ -42,10 +107,20 @@ public class HomekitServiceEvent extends AbstractHomekitEvent {
         this.HomekitCharacteristic = Optional.ofNullable(HomekitCharacteristic);
     }
 
+    /**
+     * Returns the service associated with this event.
+     *
+     * @return an Optional containing the service, or empty if not available
+     */
     public Optional<HomekitService> getService() {
         return HomekitService;
     }
 
+    /**
+     * Returns the characteristic associated with this event.
+     *
+     * @return an Optional containing the characteristic, or empty if not available
+     */
     public Optional<HomekitCharacteristic<?>> getCharacteristic() {
         return HomekitCharacteristic;
     }

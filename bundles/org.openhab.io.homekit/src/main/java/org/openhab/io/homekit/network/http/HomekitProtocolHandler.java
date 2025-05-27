@@ -7,52 +7,87 @@ import org.eclipse.jetty.client.api.Response.Listener;
 import org.eclipse.jetty.client.api.Result;
 import org.eclipse.jetty.client.util.BufferingResponseListener;
 import org.openhab.io.homekit.server.HomekitRemoteAccessoryServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handles HomeKit event protocol communication.
  *
+ * <p>
  * This class implements a custom protocol handler for HomeKit event communication,
- * extending Jetty's ProtocolHandler to support HomeKit-specific event handling.
+ * extending Jetty's {@link ProtocolHandler} to support HomeKit-specific event handling.
  * It manages the processing of HomeKit events through HTTP responses and provides
  * buffering capabilities for event content.
+ * </p>
  *
- * The class integrates with:
- * - {@link HomekitRemoteAccessoryServer} for event processing
- * - {@link BufferingResponseListener} for response buffering
- * - Jetty's ProtocolHandler for protocol handling
+ * <p>
+ * <b>Key responsibilities:</b>
+ * </p>
+ * <ul>
+ *   <li>Protocol identification and acceptance</li>
+ *   <li>Response buffering and processing</li>
+ *   <li>Event forwarding to the HomeKit server</li>
+ *   <li>Content buffering management</li>
+ *   <li>Error handling and recovery</li>
+ * </ul>
  *
- * Key responsibilities:
- * 1. Protocol identification and acceptance
- * 2. Response buffering and processing
- * 3. Event forwarding to the HomeKit server
+ * <p>
+ * <b>Component Integration:</b>
+ * </p>
+ * <ul>
+ *   <li>{@link HomekitRemoteAccessoryServer} for event processing</li>
+ *   <li>{@link BufferingResponseListener} for response buffering</li>
+ *   <li>{@link org.eclipse.jetty.client.api.Request Request} for request handling</li>
+ *   <li>{@link org.eclipse.jetty.client.api.Response Response} for response handling</li>
+ * </ul>
  *
  * @author Karel Goderis - Initial Contribution
  * @since 1.0
  */
 public class HomekitProtocolHandler implements ProtocolHandler {
 
+    /** Logger instance for this class */
+    protected static final Logger logger = LoggerFactory.getLogger(HomekitProtocolHandler.class);
+
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "Homekit HomekitProtocolHandler: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
+    /** The HomeKit remote accessory server instance */
     protected HomekitRemoteAccessoryServer server;
 
     /**
      * Creates a new HomeKit protocol handler.
      *
+     * <p>
      * This constructor initializes the protocol handler with a reference to the
-     * HomeKit remote accessory server that will process the events.
+     * HomeKit remote accessory server that will process the events. The handler
+     * is responsible for managing the communication between the client and the
+     * HomeKit server.
+     * </p>
      *
-     * @param server The HomeKit remote accessory server instance
+     * @param server The HomeKit remote accessory server instance that will process events
+     * @throws IllegalArgumentException if server is null
      */
     public HomekitProtocolHandler(HomekitRemoteAccessoryServer server) {
+        if (server == null) {
+            throw new IllegalArgumentException("HomeKit server cannot be null");
+        }
         this.server = server;
+        logger.debug("{}Initialized with server instance", LOG_INIT);
     }
 
     /**
      * Gets the name of this protocol handler.
+     *
+     * <p>
+     * This method returns the protocol identifier used to identify HomeKit event
+     * communication. The name is used by the Jetty client to route responses
+     * to the appropriate handler.
+     * </p>
      *
      * @return The protocol name "homekit.event"
      */
@@ -64,73 +99,119 @@ public class HomekitProtocolHandler implements ProtocolHandler {
     /**
      * Determines if this handler can process the given request/response pair.
      *
+     * <p>
      * This method checks if the response contains the HomeKit event header,
-     * indicating that it should be processed by this handler.
+     * indicating that it should be processed by this handler. The header
+     * "X-HOMEKIT-EVENT" with value "True" identifies HomeKit event responses.
+     * </p>
      *
-     * @param request The HTTP request
-     * @param response The HTTP response
+     * @param request The HTTP request to check
+     * @param response The HTTP response to check
      * @return true if the response contains the HomeKit event header
      */
     @Override
     public boolean accept(Request request, Response response) {
-        return response.getHeaders().contains("X-HOMEKIT-EVENT", "True");
+        boolean accepted = response.getHeaders().contains("X-HOMEKIT-EVENT", "True");
+        if (accepted) {
+            logger.debug("{}Accepted HomeKit event response", LOG_STATE);
+        }
+        return accepted;
     }
 
     /**
      * Gets the response listener for buffering and processing responses.
      *
+     * <p>
      * This method creates a new response listener with a maximum buffer size
-     * of 8MB for handling HomeKit event content.
+     * of 8MB for handling HomeKit event content. The listener is responsible
+     * for buffering the response content and forwarding it to the HomeKit server.
+     * </p>
      *
-     * @return A new HomekitResponseListener instance
+     * @return A new HomekitResponseListener instance configured for event handling
      */
     @Override
     public Listener getResponseListener() {
+        logger.debug("{}Creating response listener with 8MB buffer", LOG_STATE);
         return new HomekitResponseListener(8 * 1024 * 1024);
     }
 
     /**
      * Custom response listener for handling HomeKit events.
      *
-     * This inner class extends BufferingResponseListener to provide specialized
-     * handling of HomeKit event responses, including content buffering and
-     * event processing.
+     * <p>
+     * This inner class extends {@link BufferingResponseListener} to provide specialized
+     * handling of HomeKit event responses. It manages content buffering and
+     * event processing, ensuring reliable delivery of events to the HomeKit server.
+     * </p>
+     *
+     * <p>
+     * <b>Key features:</b>
+     * </p>
+     * <ul>
+     *   <li>Configurable buffer size</li>
+     *   <li>Event content buffering</li>
+     *   <li>Success/failure handling</li>
+     *   <li>Completion notification</li>
+     * </ul>
      */
     protected class HomekitResponseListener extends BufferingResponseListener {
 
         /**
          * Creates a new HomeKit response listener.
          *
-         * @param maxLength The maximum content length to buffer
+         * <p>
+         * This constructor initializes the listener with the specified maximum
+         * content length for buffering. The buffer size should be sufficient to
+         * handle the largest expected event payload.
+         * </p>
+         *
+         * @param maxLength The maximum content length to buffer in bytes
          */
         public HomekitResponseListener(int maxLength) {
             super(maxLength);
+            logger.debug("{}Created response listener with max length: {} bytes", LOG_INIT, maxLength);
         }
 
         /**
          * Handles successful response processing.
          *
+         * <p>
          * This method is called when a response is successfully received and
          * buffered. It forwards the buffered content to the HomeKit server
          * for event processing.
+         * </p>
          *
-         * @param response The HTTP response
+         * @param response The HTTP response that was successfully processed
          */
         @Override
         public void onSuccess(Response response) {
-            server.handleEvent(getContent());
+            logger.debug("{}Processing successful response", LOG_STATE);
+            try {
+                server.handleEvent(getContent());
+                logger.debug("{}Successfully forwarded event to server", LOG_STATE);
+            } catch (Exception e) {
+                logger.error("{}Failed to process event: {}", LOG_ERROR, e.getMessage(), e);
+            }
         }
 
         /**
          * Handles response completion.
          *
+         * <p>
          * This method is called when the response processing is complete,
-         * regardless of success or failure.
+         * regardless of success or failure. It provides an opportunity to
+         * perform cleanup or logging of the final result.
+         * </p>
          *
          * @param result The result of the response processing
          */
         @Override
         public void onComplete(Result result) {
+            if (result.isFailed()) {
+                logger.error("{}Response processing failed: {}", LOG_ERROR, result.getFailure().getMessage());
+            } else {
+                logger.debug("{}Response processing completed successfully", LOG_STATE);
+            }
         }
     }
 }

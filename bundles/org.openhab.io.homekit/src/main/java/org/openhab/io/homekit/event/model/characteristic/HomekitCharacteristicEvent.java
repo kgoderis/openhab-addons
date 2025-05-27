@@ -15,9 +15,56 @@ import org.openhab.io.homekit.event.core.HomekitEventMetadata;
 import org.openhab.io.homekit.util.HomekitUID;
 
 /**
- * Represents a characteristic value change event in the Homekit integration.
- * This event is used to propagate changes in characteristic values between
- * different components of the system.
+ * Base event class for all HomeKit characteristic-related events.
+ * This class provides common functionality for handling characteristic value changes,
+ * including tracking old and new values, and managing event metadata.
+ *
+ * <p>
+ * The class integrates with:
+ * </p>
+ * <ul>
+ *   <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for base event functionality</li>
+ *   <li>{@link org.openhab.io.homekit.api.event.HomekitEventType} for event type identification</li>
+ *   <li>{@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic} for characteristic handling</li>
+ *   <li>{@link org.openhab.io.homekit.event.core.HomekitEventMetadata} for event metadata</li>
+ *   <li>{@link org.openhab.io.homekit.util.HomekitUID} for UID generation and management</li>
+ *   <li>{@link javax.json.JsonValue} for value representation</li>
+ * </ul>
+ *
+ * <p>
+ * <b>Key Features:</b>
+ * </p>
+ * <ul>
+ *   <li>Value change tracking with old and new values</li>
+ *   <li>Characteristic identification and management</li>
+ *   <li>Event metadata support</li>
+ *   <li>Optional value handling</li>
+ *   <li>UID-based routing</li>
+ * </ul>
+ *
+ * <p>
+ * <b>Usage Patterns:</b>
+ * </p>
+ * <ul>
+ *   <li>Characteristic value updates</li>
+ *   <li>State change notifications</li>
+ *   <li>Value history tracking</li>
+ *   <li>System diagnostics</li>
+ *   <li>Event correlation</li>
+ * </ul>
+ *
+ * <p>
+ * <b>Value Management:</b>
+ * </p>
+ * <ul>
+ *   <li>Supports JSON value representation</li>
+ *   <li>Maintains value history</li>
+ *   <li>Enables value validation</li>
+ *   <li>Supports metadata enrichment</li>
+ * </ul>
+ *
+ * @author Karel Goderis - Initial contribution
+ * @since 3.x
  */
 @NonNullByDefault
 public class HomekitCharacteristicEvent extends AbstractHomekitEvent {
@@ -26,11 +73,15 @@ public class HomekitCharacteristicEvent extends AbstractHomekitEvent {
     private final Optional<JsonValue> newValue;
 
     /**
-     * Creates a new characteristic event with the specified characteristic and values.
+     * Creates a new characteristic event with explicit publisher and subscriber UIDs.
      *
-     * @param characteristic the characteristic that changed
+     * @param type the type of event
+     * @param publisherUID the UID of the publisher that generated the event
+     * @param subscriberUID the UID of the subscriber that will receive the event
+     * @param characteristic the characteristic associated with the event
      * @param oldValue the previous value of the characteristic
      * @param newValue the new value of the characteristic
+     * @param metadata additional metadata for the event
      */
     @SuppressWarnings("null")
     public HomekitCharacteristicEvent(HomekitEventType type, UID publisherUID, UID subscriberUID,
@@ -43,9 +94,10 @@ public class HomekitCharacteristicEvent extends AbstractHomekitEvent {
     }
 
     /**
-     * Creates a new characteristic event with the specified characteristic and values.
+     * Creates a new characteristic event with default publisher and subscriber UIDs.
      *
-     * @param characteristic the characteristic that changed
+     * @param type the type of event
+     * @param characteristic the characteristic associated with the event
      * @param oldValue the previous value of the characteristic
      * @param newValue the new value of the characteristic
      */
@@ -63,12 +115,13 @@ public class HomekitCharacteristicEvent extends AbstractHomekitEvent {
     }
 
     /**
-     * Creates a new characteristic event with the specified characteristic, values, and metadata.
+     * Creates a new characteristic event with metadata.
      *
-     * @param characteristic the characteristic that changed
+     * @param type the type of event
+     * @param characteristic the characteristic associated with the event
      * @param oldValue the previous value of the characteristic
      * @param newValue the new value of the characteristic
-     * @param metadata the event metadata
+     * @param metadata additional metadata for the event
      */
     @SuppressWarnings("null")
     public HomekitCharacteristicEvent(HomekitEventType type, HomekitCharacteristic<?> characteristic,
@@ -81,18 +134,28 @@ public class HomekitCharacteristicEvent extends AbstractHomekitEvent {
     }
 
     /**
-     * Returns the characteristic that changed.
+     * Returns the characteristic associated with this event.
      *
-     * @return the characteristic
+     * @return an Optional containing the characteristic, or empty if not available
      */
     public Optional<HomekitCharacteristic<?>> getCharacteristic() {
         return characteristic;
     }
 
+    /**
+     * Returns the previous value of the characteristic.
+     *
+     * @return an Optional containing the old value, or empty if not available
+     */
     public Optional<JsonValue> getOldValue() {
         return oldValue;
     }
 
+    /**
+     * Returns the new value of the characteristic.
+     *
+     * @return an Optional containing the new value, or empty if not available
+     */
     public Optional<JsonValue> getNewValue() {
         return newValue;
     }

@@ -7,15 +7,41 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Singleton logger for Homekit events.
- * <p>
- * This class implements {@link HomekitEventSubscriber} and logs all received events and errors
- * using SLF4J. It is intended to be registered as a subscriber to all event types in the
- * {@link HomekitEventManager}.
- * </p>
- * <p>
- * Use {@link #getInstance()} to obtain the singleton instance.
- * </p>
+ * Singleton logger implementation for HomeKit events in the OpenHAB system.
+ * This class implements {@link HomekitEventSubscriber} to provide centralized logging
+ * of all HomeKit events and their processing status.
+ *
+ * The class integrates with:
+ * - {@link HomekitEventSubscriber} for event subscription functionality
+ * - {@link HomekitEvent} for event data handling
+ * - {@link org.slf4j.Logger SLF4J} for logging implementation
+ *
+ * Key Features:
+ * - Centralized event logging
+ * - Error tracking and reporting
+ * - Thread-safe singleton implementation
+ * - Consistent log formatting
+ * - Debug and warning level logging
+ *
+ * Logging Patterns:
+ * - Event reception: Logs event type, publisher, timestamp, and data
+ * - Error handling: Logs event details and exception information
+ * - Warning conditions: Logs potential issues and processing errors
+ *
+ * Usage Guidelines:
+ * - Access the logger using {@link #getInstance()}
+ * - Subscribe to events using the {@link HomekitEventSubscriber} interface
+ * - Monitor debug logs for event flow
+ * - Check warning logs for error conditions
+ * - Use consistent log prefixes for filtering
+ *
+ * Error Handling:
+ * - Captures and logs all event processing exceptions
+ * - Maintains event context in error logs
+ * - Provides detailed error information for debugging
+ * - Preserves stack traces for error analysis
+ *
+ * @author Karel Goderis - Initial contribution
  */
 @NonNullByDefault
 public class HomekitEventLogger implements HomekitEventSubscriber {
@@ -31,12 +57,15 @@ public class HomekitEventLogger implements HomekitEventSubscriber {
 
     /**
      * Private constructor to enforce singleton pattern.
+     * Initializes the logger instance.
      */
     private HomekitEventLogger() {
     }
 
     /**
      * Returns the singleton instance of {@code HomekitEventLogger}.
+     * This method ensures that only one instance of the logger exists
+     * throughout the application.
      *
      * @return the singleton instance
      */
@@ -45,7 +74,8 @@ public class HomekitEventLogger implements HomekitEventSubscriber {
     }
 
     /**
-     * Logs the received Homekit event at debug level.
+     * Logs the received HomeKit event at debug level.
+     * This method is called by the event system when a new event is received.
      *
      * @param event the event to log
      */
@@ -55,7 +85,8 @@ public class HomekitEventLogger implements HomekitEventSubscriber {
     }
 
     /**
-     * Logs the details of the given Homekit event.
+     * Logs the details of the given HomeKit event.
+     * Includes event type, publisher, timestamp, and event data.
      *
      * @param event the event to log
      */
@@ -65,7 +96,9 @@ public class HomekitEventLogger implements HomekitEventSubscriber {
     }
 
     /**
-     * Logs an error that occurred while processing a Homekit event.
+     * Logs an error that occurred while processing a HomeKit event.
+     * This method is called by the event system when an error occurs
+     * during event processing.
      *
      * @param event the event that caused the error
      * @param exception the exception thrown during event processing

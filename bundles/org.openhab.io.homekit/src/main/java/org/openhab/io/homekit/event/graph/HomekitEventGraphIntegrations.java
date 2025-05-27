@@ -18,7 +18,28 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 /**
- * Integration points for the event processing graph with OpenHAB components.
+ * Integration points for the HomeKit event processing graph with OpenHAB components.
+ * This class provides functionality to integrate the event graph with other components
+ * of the system, such as metrics collection, visualization, and event processing.
+ *
+ * The class integrates with:
+ * - {@link org.openhab.core.events.Event} for event handling
+ * - {@link org.openhab.core.events.EventPublisher} for event publishing
+ * - {@link org.openhab.core.events.EventSubscriber} for event subscription
+ * - {@link org.openhab.io.homekit.event.graph.HomekitEventGraphProcessor} for graph processing
+ * - {@link org.openhab.io.homekit.event.graph.HomekitEventGraphVisualizer} for graph visualization
+ * - {@link org.openhab.io.homekit.event.graph.HomekitEventGraphUpdatedEvent} for graph updates
+ * - {@link org.openhab.io.homekit.event.graph.HomekitEventCycleDetectedEvent} for cycle detection
+ * - {@link javax.ws.rs.GET} for REST endpoint definitions
+ * - {@link com.google.gson.JsonObject} for JSON serialization
+ *
+ * Key implementation details:
+ * - Provides REST endpoints for graph visualization and analysis
+ * - Integrates with OpenHAB event system for graph updates
+ * - Supports metrics collection and logging
+ * - Handles cycle detection and bottleneck analysis
+ *
+ * @author Karel Goderis - Initial contribution
  */
 public class HomekitEventGraphIntegrations {
     private static final Logger logger = LoggerFactory.getLogger(HomekitEventGraphIntegrations.class);
@@ -27,6 +48,20 @@ public class HomekitEventGraphIntegrations {
     private final HomekitEventGraphVisualizer eventGraphVisualizer;
     private final EventPublisher eventPublisher;
 
+    /**
+     * Creates a new event graph integrations service.
+     * Initializes the service with required components for graph processing,
+     * visualization, and event publishing.
+     *
+     * Key implementation details:
+     * - Stores references to core components
+     * - Used by all integration methods
+     * - Required for REST endpoints
+     *
+     * @param eventGraph the event graph processor
+     * @param eventGraphVisualizer the event graph visualizer
+     * @param eventPublisher the event publisher for posting events
+     */
     public HomekitEventGraphIntegrations(HomekitEventGraphProcessor eventGraph,
             HomekitEventGraphVisualizer eventGraphVisualizer, EventPublisher eventPublisher) {
         this.eventGraph = eventGraph;
@@ -35,7 +70,14 @@ public class HomekitEventGraphIntegrations {
     }
 
     /**
-     * Register metrics with OpenHAB metrics registry
+     * Registers metrics with the OpenHAB metrics registry.
+     * This method logs various graph metrics such as node count, edge count,
+     * cycle detection, and graph density.
+     *
+     * Key implementation details:
+     * - Uses SLF4J logger for output
+     * - Calculates metrics from graph structure
+     * - Logs at INFO level for visibility
      */
     public void registerMetrics() {
         logger.info("Event Graph Metrics:");
@@ -46,7 +88,16 @@ public class HomekitEventGraphIntegrations {
     }
 
     /**
-     * Log current graph state
+     * Logs the current state of the event graph.
+     * This method outputs detailed information about the graph structure,
+     * including node and edge counts, cycle detection, performance metrics,
+     * and potential bottlenecks.
+     *
+     * Key implementation details:
+     * - Uses SLF4J logger for output
+     * - Calculates performance metrics
+     * - Identifies bottlenecks
+     * - Logs at appropriate levels (INFO/WARN)
      */
     public void logGraphState() {
         logger.info("Event Graph State:");
@@ -70,7 +121,17 @@ public class HomekitEventGraphIntegrations {
     }
 
     /**
-     * Register event listeners for graph updates
+     * Registers event listeners for graph updates.
+     * This method sets up a subscriber to handle graph update events and
+     * cycle detection events.
+     *
+     * Key implementation details:
+     * - Creates anonymous EventSubscriber implementation
+     * - Handles HomekitEventGraphUpdatedEvent events
+     * - Posts HomekitEventCycleDetectedEvent when cycles are found
+     * - Uses reflection for subscriber registration
+     *
+     * @throws RuntimeException if event subscriber registration fails
      */
     public void registerEventListeners() {
         if (eventPublisher != null) {
@@ -105,7 +166,15 @@ public class HomekitEventGraphIntegrations {
     }
 
     /**
-     * REST endpoint for graph visualization
+     * REST endpoint for graph visualization.
+     * Returns a JSON representation of the event graph structure.
+     *
+     * Key implementation details:
+     * - Uses JAX-RS annotations for endpoint definition
+     * - Returns JSON format for web visualization
+     * - Includes node and edge information
+     *
+     * @return a JSON string containing the graph visualization
      */
     @GET
     @Path("/event-graph")
@@ -115,7 +184,15 @@ public class HomekitEventGraphIntegrations {
     }
 
     /**
-     * REST endpoint for graph metrics
+     * REST endpoint for graph metrics.
+     * Returns a JSON representation of the event graph metrics.
+     *
+     * Key implementation details:
+     * - Uses JAX-RS annotations for endpoint definition
+     * - Returns JSON format for metrics visualization
+     * - Includes performance and event count data
+     *
+     * @return a JSON string containing the graph metrics
      */
     @GET
     @Path("/event-graph/metrics")
@@ -125,7 +202,21 @@ public class HomekitEventGraphIntegrations {
     }
 
     /**
-     * REST endpoint for graph analysis
+     * REST endpoint for graph analysis.
+     * Returns a comprehensive JSON analysis of the event graph, including:
+     * - Event flow analysis
+     * - Performance metrics
+     * - Node centrality
+     * - Critical paths
+     * - Bottlenecks
+     *
+     * Key implementation details:
+     * - Uses JAX-RS annotations for endpoint definition
+     * - Returns JSON format for analysis visualization
+     * - Combines multiple analysis types
+     * - Uses Gson for JSON serialization
+     *
+     * @return a JSON string containing the graph analysis
      */
     @GET
     @Path("/event-graph/analysis")
