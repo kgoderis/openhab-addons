@@ -39,11 +39,11 @@ import org.slf4j.LoggerFactory;
  * <p>
  * The class implements a comprehensive state management system that includes:
  * <ul>
- *   <li>Value management and type conversion between HomeKit and OpenHAB formats</li>
- *   <li>Event handling and notifications for state changes</li>
- *   <li>JSON serialization and deserialization for HomeKit protocol communication</li>
+ *   <li>Value management and type conversion between HomeKit and OpenHAB formats using {@link org.openhab.core.types.State}</li>
+ *   <li>Event handling and notifications through {@link HomekitEventManager} and {@link HomekitEventType}</li>
+ *   <li>JSON serialization and deserialization using {@link javax.json.JsonValue} for HomeKit protocol communication</li>
  *   <li>Permission and access control for characteristic operations</li>
- *   <li>State synchronization with OpenHAB items</li>
+ *   <li>State synchronization with {@link org.openhab.core.items.Item OpenHAB items}</li>
  * </ul>
  * </p>
  *
@@ -51,10 +51,10 @@ import org.slf4j.LoggerFactory;
  * Key architectural features:
  * <ul>
  *   <li>Type-safe value handling through generics, ensuring type safety across the characteristic hierarchy</li>
- *   <li>Automatic event subscription and handling through the {@link HomekitEventManager}</li>
+ *   <li>Automatic event subscription and handling through {@link HomekitEventManager} and {@link HomekitEventType}</li>
  *   <li>Flexible permission system supporting paired read/write, hidden, and mandatory characteristics</li>
  *   <li>Support for advanced HomeKit features like timed writes and additional authorization</li>
- *   <li>Built-in JSON conversion utilities for HomeKit protocol compliance</li>
+ *   <li>Built-in JSON conversion utilities using {@link javax.json.JsonObject} for HomeKit protocol compliance</li>
  * </ul>
  * </p>
  *
@@ -66,6 +66,8 @@ import org.slf4j.LoggerFactory;
  *   <li>{@link org.openhab.core.types.State} - Provides state conversion and synchronization</li>
  *   <li>{@link javax.json.JsonValue} - Enables JSON serialization for HomeKit protocol</li>
  *   <li>{@link HomekitCharacteristicUID} - Provides unique identification for characteristics</li>
+ *   <li>{@link org.openhab.core.items.Item} - Represents OpenHAB items for state synchronization</li>
+ *   <li>{@link org.openhab.core.types.Command} - Handles command processing for characteristic updates</li>
  * </ul>
  * </p>
  *
@@ -73,7 +75,7 @@ import org.slf4j.LoggerFactory;
  * Implementation guidelines:
  * <ul>
  *   <li>Subclasses must implement type-specific value conversion methods</li>
- *   <li>State synchronization should be handled through the provided event system</li>
+ *   <li>State synchronization should be handled through {@link HomekitEventManager}</li>
  *   <li>Permission changes should be managed through the builder pattern methods</li>
  *   <li>JSON serialization should follow HomeKit protocol specifications</li>
  *   <li>Error handling should use the provided logging system</li>
@@ -82,7 +84,19 @@ import org.slf4j.LoggerFactory;
  *
  * <p>
  * The class follows the HomeKit Accessory Protocol (HAP) specification for characteristic behavior and
- * integrates with OpenHAB's state management system for reliable device control and monitoring.
+ * integrates with OpenHAB's state management system for reliable device control and monitoring. It provides
+ * a robust foundation for implementing specific characteristic types while ensuring consistent behavior
+ * and proper integration with both HomeKit and OpenHAB ecosystems.
+ * </p>
+ *
+ * <p>
+ * The class works in conjunction with:
+ * <ul>
+ *   <li>{@link HomekitService} for service-level operations</li>
+ *   <li>{@link HomekitAccessory} for accessory-level integration</li>
+ *   <li>{@link HomekitEventManager} for event handling</li>
+ *   <li>{@link org.openhab.core.thing.Channel} for OpenHAB channel integration</li>
+ * </ul>
  * </p>
  *
  * @author Karel Goderis - Initial contribution
@@ -124,9 +138,20 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
     /**
      * Creates a new HomekitBaseCharacteristic with required parameters.
      * 
+     * <p>
+     * This constructor initializes a new characteristic with its required dependencies and sets up
+     * the event subscription system. It integrates with:
+     * <ul>
+     *   <li>{@link HomekitService} for service integration</li>
+     *   <li>{@link HomekitEventManager} for event handling</li>
+     *   <li>{@link HomekitEventType} for event type management</li>
+     * </ul>
+     * </p>
+     *
      * @param service the service this characteristic belongs to
      * @param eventManager the event manager for handling events
      * @throws IllegalArgumentException if any required parameter is null
+     * @since 1.0
      */
     public AbstractHomekitCharacteristic(HomekitService service, HomekitEventManager eventManager) {
         if (service == null) {
@@ -148,10 +173,22 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
     /**
      * Creates a new HomekitBaseCharacteristic from a JSON value.
      * 
+     * <p>
+     * This constructor initializes a characteristic from a JSON configuration, allowing for
+     * flexible characteristic creation and configuration. It integrates with:
+     * <ul>
+     *   <li>{@link javax.json.JsonValue} for configuration parsing</li>
+     *   <li>{@link HomekitService} for service integration</li>
+     *   <li>{@link HomekitEventManager} for event handling</li>
+     *   <li>{@link HomekitEventType} for event type management</li>
+     * </ul>
+     * </p>
+     *
      * @param service the service this characteristic belongs to
      * @param eventManager the event manager for handling events
      * @param value the JSON value containing characteristic configuration
      * @throws IllegalArgumentException if the JSON value is invalid or required parameters are null
+     * @since 1.0
      */
     public AbstractHomekitCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
         if (service == null) {
@@ -206,8 +243,19 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
     }
 
     /**
-     * Initializes the value after construction. This must be called by subclasses
-     * after calling super() in their constructors.
+     * Initializes the characteristic's value from its initial configuration.
+     * 
+     * <p>
+     * This method sets up the characteristic's initial state based on its configuration.
+     * It integrates with:
+     * <ul>
+     *   <li>{@link javax.json.JsonValue} for value parsing</li>
+     *   <li>{@link HomekitEventManager} for event handling</li>
+     *   <li>{@link HomekitEventType} for event type management</li>
+     * </ul>
+     * </p>
+     *
+     * @since 1.0
      */
     public void initializeValue() {
         if (initialValue != null) {
@@ -218,6 +266,22 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
         }
     }
 
+    /**
+     * Sets up event subscription for the characteristic.
+     * 
+     * <p>
+     * This method configures the characteristic to receive and handle events through the
+     * event management system. It integrates with:
+     * <ul>
+     *   <li>{@link HomekitEventManager} for event handling</li>
+     *   <li>{@link HomekitEventType} for event type management</li>
+     *   <li>{@link HomekitCharacteristicChangedEvent} for change events</li>
+     *   <li>{@link HomekitCharacteristicUpdateEvent} for update events</li>
+     * </ul>
+     * </p>
+     *
+     * @since 1.0
+     */
     protected final void setupSubscription() {
         eventManager.subscribe(HomekitEventType.CHARACTERISTIC_CHANGE_VALUE, AbstractHomekitEvent.WILDCARD_UID,
                 getUID(), event -> {

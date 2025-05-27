@@ -9,21 +9,32 @@ import org.openhab.io.homekit.util.HomekitUID;
  *
  * <p>
  * This class provides a structured way to identify HomeKit peer groups within the system.
- * The UID format follows the pattern: homekit:peer:{peerGroup}
- * where:
- * <ul>
- *   <li>peerGroup: The identifier for the group of peers</li>
- * </ul>
+ * The UID follows a specific format: {@code homekit:peergroup:{peerGroup}} where:
  * </p>
+ * <ul>
+ *   <li>{@code homekit} is the namespace prefix</li>
+ *   <li>{@code peergroup} indicates this is a peer group identifier</li>
+ *   <li>{@code peerGroup} is the unique identifier for the peer group</li>
+ * </ul>
+ *
+ * <p>
+ * Key responsibilities:
+ * </p>
+ * <ul>
+ *   <li>Creating and parsing peer group UIDs</li>
+ *   <li>Validating UID format and structure</li>
+ *   <li>Extracting peer group-specific information from UIDs</li>
+ *   <li>Ensuring unique identification across the system</li>
+ * </ul>
  *
  * <p>
  * The class integrates with:
- * <ul>
- *   <li>{@link HomekitUID} for base UID functionality</li>
- *   <li>{@link HomekitPeerGroupUID} for peer group-specific UID operations</li>
- *   <li>{@link org.openhab.core.thing.UID OpenHAB's UID system} for unique identification</li>
- * </ul>
  * </p>
+ * <ul>
+ *   <li>{@link org.openhab.core.common.registry.Identifiable} for UID management</li>
+ *   <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for event handling</li>
+ *   <li>OpenHAB's UID system for consistent identification</li>
+ * </ul>
  *
  * @author Karel Goderis - Initial contribution
  * @version 1.0
@@ -31,34 +42,76 @@ import org.openhab.io.homekit.util.HomekitUID;
  */
 @NonNullByDefault
 public class HomekitPeerGroupUIDImpl extends HomekitUID implements HomekitPeerGroupUID {
-    private static final String PEER_PREFIX = "peer";
+    private static final String PEER_GROUP_PREFIX = "peergroup";
     private final String peerGroup;
 
     /**
-     * Creates a new peer group UID with the specified group identifier.
+     * Creates a new peer group UID with the specified peer group identifier.
      *
-     * This constructor builds a complete peer group UID from its group identifier.
-     * The resulting UID will be in the format: homekit:peer:{peerGroup}
+     * <p>
+     * This constructor builds a complete peer group UID instance with the required
+     * peer group identifier. The UID is used to uniquely identify a HomeKit
+     * peer group within the system.
+     * </p>
      *
-     * @param peerGroup The identifier for the group of peers
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     *   <li>Validates all input parameters</li>
+     *   <li>Constructs the UID string in the correct format</li>
+     *   <li>Initializes all internal fields</li>
+     *   <li>Sets up the base UID structure</li>
+     * </ul>
+     *
+     * @param peerGroup The unique identifier for the peer group
+     * @throws IllegalArgumentException if the peer group identifier is null or empty
      */
     public HomekitPeerGroupUIDImpl(String peerGroup) {
-        super(PEER_PREFIX, "homekit:" + PEER_PREFIX + ":" + peerGroup);
+        super(PEER_GROUP_PREFIX, "homekit:" + PEER_GROUP_PREFIX + ":" + peerGroup);
         this.peerGroup = peerGroup;
     }
 
     /**
-     * Gets the complete UID as a string.
+     * Gets the UID as a string.
      *
-     * @return The UID string representation
+     * <p>
+     * The string representation follows the format {@code homekit:peergroup:{peerGroup}}.
+     * This format ensures consistent identification across the system.
+     * </p>
+     *
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     *   <li>Uses String.format for consistent formatting</li>
+     *   <li>Maintains the standard UID structure</li>
+     *   <li>Preserves all identifier components</li>
+     * </ul>
+     *
+     * @return The UID string in the format {@code homekit:peergroup:{peerGroup}}
      */
     @Override
     public String getAsString() {
-        return toString();
+        return String.format("homekit:peergroup:%s", peerGroup);
     }
 
     /**
      * Gets the peer group identifier.
+     *
+     * <p>
+     * The peer group identifier is used to group related HomeKit components
+     * together for coordinated event handling and state management.
+     * </p>
+     *
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     *   <li>Returns the internal peer group field</li>
+     *   <li>Used for group coordination</li>
+     *   <li>Supports event handling</li>
+     * </ul>
      *
      * @return The peer group identifier
      */
@@ -70,15 +123,47 @@ public class HomekitPeerGroupUIDImpl extends HomekitUID implements HomekitPeerGr
     /**
      * Gets the minimum number of segments required for a valid UID.
      *
-     * @return The minimum number of segments (3 for homekit:peer:peerGroup)
+     * <p>
+     * A valid peer group UID must have at least 3 segments:
+     * </p>
+     * <ol>
+     *   <li>The namespace prefix ("homekit")</li>
+     *   <li>The type identifier ("peergroup")</li>
+     *   <li>The peer group identifier</li>
+     * </ol>
+     *
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     *   <li>Enforces UID structure validation</li>
+     *   <li>Ensures complete identification</li>
+     *   <li>Supports UID parsing</li>
+     * </ul>
+     *
+     * @return The minimum number of segments (3) for a valid peer group UID
      */
     @Override
     protected int getMinimalNumberOfSegments() {
-        return 3; // homekit:peer:peerGroup
+        return 3;
     }
 
     /**
      * Gets this UID instance.
+     *
+     * <p>
+     * This method provides access to the UID instance itself, maintaining
+     * consistency with the {@link HomekitPeerGroupUID} interface.
+     * </p>
+     *
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     *   <li>Returns this instance</li>
+     *   <li>Supports interface compliance</li>
+     *   <li>Enables UID access</li>
+     * </ul>
      *
      * @return This UID instance
      */

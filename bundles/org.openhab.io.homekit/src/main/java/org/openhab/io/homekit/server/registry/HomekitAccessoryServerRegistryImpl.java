@@ -45,9 +45,45 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Stores the created HomekitServers
+ * Implementation of the HomeKit Accessory Server Registry.
  *
- * @author Karel Goderis - Initial contribution
+ * <p>This class manages the lifecycle and state of HomeKit accessory servers in the system. It provides:
+ * <ul>
+ *     <li>Server registration and discovery</li>
+ *     <li>Bridge accessory management</li>
+ *     <li>Event subscription handling</li>
+ *     <li>Server state tracking</li>
+ *     <li>Port allocation and management</li>
+ * </ul>
+ *
+ * <p>The registry integrates with:
+ * <ul>
+ *     <li>{@link ReadyService} for system readiness tracking</li>
+ *     <li>{@link NetworkAddressService} for network configuration</li>
+ *     <li>{@link HomekitAccessoryRegistry} for accessory management</li>
+ *     <li>{@link HomekitPairingRegistry} for pairing state management</li>
+ *     <li>{@link HomekitEventManager} for event handling</li>
+ *     <li>{@link HomekitAccessoryFactory} for accessory creation</li>
+ * </ul>
+ *
+ * <p>Security considerations:
+ * <ul>
+ *     <li>Manages server authentication and pairing state</li>
+ *     <li>Controls server advertisement and discovery</li>
+ *     <li>Enforces maximum accessory limits per server</li>
+ *     <li>Handles secure port allocation</li>
+ * </ul>
+ *
+ * <p>Lifecycle management:
+ * <ul>
+ *     <li>Activates on system startup</li>
+ *     <li>Registers with ReadyService for system readiness</li>
+ *     <li>Manages provider registration and removal</li>
+ *     <li>Handles graceful shutdown</li>
+ * </ul>
+ *
+ * @author Karel Goderis - Initial Contribution
+ * @since 1.0
  */
 @NonNullByDefault
 @Component(immediate = true, service = HomekitAccessoryServerRegistry.class)
@@ -55,11 +91,19 @@ public class HomekitAccessoryServerRegistryImpl
         extends AbstractRegistry<HomekitAccessoryServer, HomekitAccessoryServerUID, HomekitAccessoryServerProvider>
         implements HomekitAccessoryServerRegistry, ReadyService.ReadyTracker {
 
+    /** Registry identifier for the HomeKit accessory server registry */
     private static final String HOMEKIT_ACCESSORY_SERVER_REGISTRY = "homekit.accessoryServerRegistry";
+    
+    /** Registry identifier for the managed accessory server provider */
     private static final String HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER = "homekit.managedAccessoryServerProvider";
+    
+    /** Maximum number of accessories allowed per server */
     private static final int MAX_ACCESSORIES_PER_SERVER = 150;
+    
+    /** Starting port number for server allocation */
     private static final int LOWEST_PORT_NUMBER = 9000;
 
+    // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "Homekit Registry: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
@@ -67,6 +111,8 @@ public class HomekitAccessoryServerRegistryImpl
     protected static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+
+    /** Unique identifier for the registry subscriber */
     private final HomekitUID subscriberUID = new HomekitUID("registry:");
 
     private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryServerRegistryImpl.class);
@@ -79,6 +125,26 @@ public class HomekitAccessoryServerRegistryImpl
     private final Set<HomekitEventSubscription> eventSubscriptions = new HashSet<>();
     private final HomekitAccessoryFactory accessoryFactory;
 
+    /**
+     * Creates a new HomeKit accessory server registry.
+     *
+     * <p>This constructor initializes the registry with all required services:
+     * <ul>
+     *     <li>ReadyService for system readiness tracking</li>
+     *     <li>NetworkAddressService for network configuration</li>
+     *     <li>HomekitAccessoryRegistry for accessory management</li>
+     *     <li>HomekitPairingRegistry for pairing state</li>
+     *     <li>HomekitEventManager for event handling</li>
+     *     <li>HomekitAccessoryFactory for accessory creation</li>
+     * </ul>
+     *
+     * @param readyService Service for tracking system readiness
+     * @param networkAddressService Service for network configuration
+     * @param accessoryRegistry Registry for HomeKit accessories
+     * @param pairingRegistry Registry for pairing state
+     * @param eventManager Manager for event handling
+     * @param accessoryFactory Factory for creating accessories
+     */
     @Activate
     public HomekitAccessoryServerRegistryImpl(@Reference ReadyService readyService,
             @Reference NetworkAddressService networkAddressService,
@@ -93,6 +159,18 @@ public class HomekitAccessoryServerRegistryImpl
         this.accessoryFactory = accessoryFactory;
     }
 
+    /**
+     * Activates the registry.
+     *
+     * <p>This method:
+     * <ul>
+     *     <li>Activates the base registry functionality</li>
+     *     <li>Registers with ReadyService for system readiness tracking</li>
+     *     <li>Initializes event handling</li>
+     * </ul>
+     *
+     * @param context The bundle context for OSGi integration
+     */
     @Override
     @Activate
     protected void activate(final BundleContext context) {
@@ -101,21 +179,59 @@ public class HomekitAccessoryServerRegistryImpl
         readyService.registerTracker(this, new ReadyMarkerFilter().withType(HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER));
     }
 
+    /**
+     * Deactivates the registry.
+     *
+     * <p>This method:
+     * <ul>
+     *     <li>Deactivates the base registry functionality</li>
+     *     <li>Cleans up event subscriptions</li>
+     *     <li>Removes system readiness tracking</li>
+     * </ul>
+     */
     @Override
     @Deactivate
     protected void deactivate() {
         super.deactivate();
     }
 
+    /**
+     * Sets the managed provider for the registry.
+     *
+     * <p>This method is called by OSGi when a managed provider becomes available.
+     * It ensures proper initialization and registration of the provider.
+     *
+     * @param provider The managed provider to set
+     */
     @Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC)
     protected void setManagedProvider(HomekitManagedAccessoryServerProvider provider) {
         super.setManagedProvider(provider);
     }
 
+    /**
+     * Removes the managed provider from the registry.
+     *
+     * <p>This method is called by OSGi when a managed provider becomes unavailable.
+     * It ensures proper cleanup of the provider's resources.
+     *
+     * @param provider The managed provider to remove
+     */
     protected void unsetManagedProvider(HomekitManagedAccessoryServerProvider provider) {
         super.unsetManagedProvider(provider);
     }
 
+    /**
+     * Adds a provider to the registry.
+     *
+     * <p>This method:
+     * <ul>
+     *     <li>Validates the provider type</li>
+     *     <li>Checks system readiness for managed providers</li>
+     *     <li>Adds the provider with appropriate initialization</li>
+     * </ul>
+     *
+     * @param provider The provider to add
+     */
     @Override
     protected void addProvider(Provider<HomekitAccessoryServer> provider) {
         logger.debug("{}Adding provider: {}", LOG_CONFIG, provider.toString());
@@ -131,6 +247,26 @@ public class HomekitAccessoryServerRegistryImpl
         }
     }
 
+    /**
+     * Gets an available bridge accessory server.
+     *
+     * <p>This method:
+     * <ul>
+     *     <li>Searches for an existing server with available capacity</li>
+     *     <li>Creates a new server if none is available</li>
+     *     <li>Ensures proper bridge accessory configuration</li>
+     *     <li>Manages port allocation</li>
+     * </ul>
+     *
+     * <p>Error handling:
+     * <ul>
+     *     <li>Handles network configuration errors</li>
+     *     <li>Manages server creation failures</li>
+     *     <li>Handles accessory operation exceptions</li>
+     * </ul>
+     *
+     * @return An available bridge accessory server, or null if none can be created
+     */
     @Override
     @Nullable
     public synchronized HomekitAccessoryServer getAvailableBridgeAccessoryServer() {
@@ -191,6 +327,17 @@ public class HomekitAccessoryServerRegistryImpl
         return availableServer;
     }
 
+    /**
+     * Handles the addition of a ready marker.
+     *
+     * <p>This method is called when a component becomes ready. It:
+     * <ul>
+     *     <li>Logs the ready marker addition</li>
+     *     <li>Adds the managed provider if available</li>
+     * </ul>
+     *
+     * @param readyMarker The ready marker that was added
+     */
     @Override
     public void onReadyMarkerAdded(ReadyMarker readyMarker) {
         logger.debug("{}Ready marker added - Type: {}, Identifier: {}", LOG_STATE, readyMarker.getType(),
@@ -201,12 +348,34 @@ public class HomekitAccessoryServerRegistryImpl
         }
     }
 
+    /**
+     * Handles the removal of a ready marker.
+     *
+     * <p>This method is called when a component is no longer ready. It:
+     * <ul>
+     *     <li>Logs the ready marker removal</li>
+     *     <li>Updates system state accordingly</li>
+     * </ul>
+     *
+     * @param readyMarker The ready marker that was removed
+     */
     @Override
     public void onReadyMarkerRemoved(ReadyMarker readyMarker) {
         logger.debug("{}Ready marker removed - Type: {}, Identifier: {}", LOG_STATE, readyMarker.getType(),
                 readyMarker.getIdentifier());
     }
 
+    /**
+     * Handles accessory server events.
+     *
+     * <p>This method processes events from accessory servers:
+     * <ul>
+     *     <li>Updates server state changes</li>
+     *     <li>Manages server lifecycle events</li>
+     * </ul>
+     *
+     * @param event The event to handle
+     */
     public void handleAccessoryServerEvent(HomekitAccessoryServerEvent event) {
         switch (event.getType()) {
             case SERVER_STATE_CHANGED -> {
@@ -220,6 +389,18 @@ public class HomekitAccessoryServerRegistryImpl
         }
     }
 
+    /**
+     * Adds a provider with a ready marker.
+     *
+     * <p>This method:
+     * <ul>
+     *     <li>Adds the provider to the registry</li>
+     *     <li>Advertises available servers</li>
+     *     <li>Marks the registry as ready</li>
+     * </ul>
+     *
+     * @param provider The provider to add
+     */
     public synchronized void addProviderWithReadyMarker(Provider<HomekitAccessoryServer> provider) {
         super.addProvider(provider);
 
@@ -236,14 +417,44 @@ public class HomekitAccessoryServerRegistryImpl
         readyService.markReady(newMarker);
     }
 
+    /**
+     * Handles the addition of a server.
+     *
+     * <p>This method:
+     * <ul>
+     *     <li>Subscribes to server state changes</li>
+     *     <li>Adds the server to the registry</li>
+     * </ul>
+     *
+     * @param provider The provider that added the server
+     * @param element The server that was added
+     */
     @Override
     public void added(Provider<HomekitAccessoryServer> provider, HomekitAccessoryServer element) {
-
         eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVER_STATE_CHANGED, (UID) element.getUID(),
                 subscriberUID, event -> handleAccessoryServerEvent((HomekitAccessoryServerEvent) event)));
         super.added(provider, element);
     }
 
+    /**
+     * Handles the removal of a server.
+     *
+     * <p>This method:
+     * <ul>
+     *     <li>Unsubscribes from server events</li>
+     *     <li>Removes the server from the registry</li>
+     *     <li>Cleans up associated resources</li>
+     * </ul>
+     *
+     * <p>Error handling:
+     * <ul>
+     *     <li>Handles event unsubscription failures</li>
+     *     <li>Ensures proper cleanup on errors</li>
+     * </ul>
+     *
+     * @param provider The provider that removed the server
+     * @param element The server that was removed
+     */
     @Override
     public void removed(Provider<HomekitAccessoryServer> provider, HomekitAccessoryServer element) {
         try {
@@ -262,6 +473,19 @@ public class HomekitAccessoryServerRegistryImpl
         }
     }
 
+    /**
+     * Gets the server for a specific accessory.
+     *
+     * <p>This method:
+     * <ul>
+     *     <li>Searches all servers for the accessory</li>
+     *     <li>Handles accessory operation exceptions</li>
+     *     <li>Returns the first matching server</li>
+     * </ul>
+     *
+     * @param accessoryUID The UID of the accessory to find
+     * @return The server containing the accessory, or null if not found
+     */
     public HomekitAccessoryServer getAccessoryServer(HomekitAccessoryUID accessoryUID) {
         return getAll().stream().filter(server -> {
             try {

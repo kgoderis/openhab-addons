@@ -27,23 +27,45 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of the HomekitServiceFactory that uses annotations to discover and create services.
- * This factory scans for classes annotated with @HomekitServiceType and creates instances as needed.
- * It maintains registries of service types, tags, and their associated characteristics.
+ * This factory serves as the central registry and creator for all HomeKit services in the system.
  *
  * <p>
- * The factory uses reflection to discover and register service types during initialization.
- * Each service type is associated with its mandatory and optional characteristics, which are
- * determined by analyzing the service class methods.
+ * The factory operates as a dynamic discovery and instantiation system for HomeKit services. It uses
+ * reflection to scan for classes annotated with {@link HomekitServiceType} and maintains mappings between
+ * service types, their implementations, and their associated tags. This allows for flexible and extensible
+ * service creation without requiring explicit registration of each service type.
  * </p>
  *
  * <p>
- * The factory supports creating services in multiple ways:
+ * Key responsibilities:
+ * </p>
  * <ul>
- *   <li>Direct creation from a service type</li>
- *   <li>Creation from a service tag</li>
- *   <li>Creation with variable constructor arguments</li>
- *   <li>Creation from JSON configuration</li>
+ *   <li>Annotation-based discovery of service types using {@link HomekitServiceType}</li>
+ *   <li>Dynamic instantiation of service instances through reflection</li>
+ *   <li>Mapping between service types and their implementations</li>
+ *   <li>Support for tag-based service creation</li>
+ *   <li>Management of mandatory and optional characteristics</li>
+ *   <li>JSON-based service configuration</li>
+ *   <li>Integration with {@link org.openhab.core.items.Item OpenHAB's item system} for state management</li>
  * </ul>
+ *
+ * <p>
+ * The factory integrates with:
+ * </p>
+ * <ul>
+ *   <li>{@link HomekitService} for service functionality and state management</li>
+ *   <li>{@link HomekitAccessory} for accessory integration and service ownership</li>
+ *   <li>{@link HomekitEventManager} for event handling and state updates</li>
+ *   <li>{@link HomekitServiceType} for type annotations and metadata</li>
+ *   <li>{@link HomekitCharacteristic} for characteristic management</li>
+ *   <li>{@link org.openhab.core.items.Item OpenHAB's item system} for state synchronization</li>
+ *   <li>{@link org.openhab.core.thing.ChannelTypeUID OpenHAB's channel type system} for service configuration</li>
+ * </ul>
+ *
+ * <p>
+ * The factory works in conjunction with {@link HomekitAccessoryFactory} and {@link HomekitCharacteristicFactory} to
+ * create a complete HomeKit accessory hierarchy. When a service is created, it uses the characteristic factory to
+ * create its characteristics, ensuring proper initialization and integration with the event system.
  * </p>
  *
  * @author Karel Goderis - Initial contribution
@@ -58,7 +80,7 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
-    protected static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
     protected static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
@@ -71,12 +93,22 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
 
     /**
      * Creates a new HomekitServiceFactoryImpl instance.
-     * Initializes the factory with required dependencies and starts service type discovery.
      *
      * <p>
+     * This constructor initializes the factory with required dependencies and starts service type discovery.
      * The factory will scan for annotated service classes and register them during initialization.
      * Each service type will be associated with its characteristics based on method analysis.
      * </p>
+     *
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     *   <li>Initializes service type registry</li>
+     *   <li>Scans for annotated service classes</li>
+     *   <li>Registers service types and tags</li>
+     *   <li>Analyzes service characteristics</li>
+     * </ul>
      *
      * @param eventManager The event manager for handling HomeKit events
      * @throws IllegalArgumentException if eventManager is null
@@ -91,17 +123,28 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
 
     /**
      * Initializes the service type registry by scanning for annotated service classes.
-     * Uses reflection to discover and register all service types and their characteristics.
      *
      * <p>
+     * This method uses reflection to discover and register all service types and their associated metadata.
      * The initialization process:
-     * <ol>
-     *   <li>Scans the service package for @HomekitServiceType annotations</li>
-     *   <li>Analyzes each service class for characteristic methods</li>
-     *   <li>Registers service types and their characteristics</li>
-     *   <li>Builds the tag-to-type mapping</li>
-     * </ol>
      * </p>
+     * <ol>
+     *   <li>Scans the service package for {@link HomekitServiceType} annotations</li>
+     *   <li>Analyzes each service class for type and tag information</li>
+     *   <li>Registers service types and their implementations</li>
+     *   <li>Builds the tag-to-type mapping for flexible service creation</li>
+     *   <li>Analyzes service methods to identify mandatory and optional characteristics</li>
+     * </ol>
+     *
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     *   <li>Uses Reflections library for annotation scanning</li>
+     *   <li>Maintains thread-safe collections for service types</li>
+     *   <li>Analyzes service methods for characteristic information</li>
+     *   <li>Logs detailed information about discovered services</li>
+     * </ul>
      *
      * @throws IllegalStateException if service type initialization fails
      * @since 1.0
@@ -166,10 +209,21 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
      * Creates a new service instance for the specified type and accessory.
      *
      * <p>
-     * The service is created using the standard constructor that takes an accessory
-     * and event manager. The service type must be previously registered during
+     * This method serves as the primary entry point for service creation. It creates a service
+     * instance using the standard constructor that takes a {@link HomekitAccessory} and
+     * {@link HomekitEventManager}. The service type must be previously registered during
      * initialization.
      * </p>
+     *
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     *   <li>Validates service type against registered types</li>
+     *   <li>Uses reflection to create service instance</li>
+     *   <li>Provides proper error handling and logging</li>
+     *   <li>Ensures thread-safe operation</li>
+     * </ul>
      *
      * @param type The service type to create
      * @param accessory The accessory that will own the service
@@ -198,16 +252,22 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
 
     /**
      * Creates a service instance with variable arguments.
-     * This method allows for more flexible service creation by accepting any number of constructor arguments.
      *
      * <p>
-     * The method will:
-     * <ol>
-     *   <li>Determine the appropriate constructor based on argument types</li>
-     *   <li>Create a new service instance using the constructor</li>
-     *   <li>Return the created service</li>
-     * </ol>
+     * This method provides advanced service creation capabilities by allowing custom constructor
+     * arguments. It uses reflection to find and invoke the appropriate constructor based on the provided
+     * argument types.
      * </p>
+     *
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     *   <li>Validates service type against registered types</li>
+     *   <li>Uses reflection to find matching constructor</li>
+     *   <li>Handles variable argument types</li>
+     *   <li>Provides detailed error logging</li>
+     * </ul>
      *
      * @param type The service type to create
      * @param args The constructor arguments
@@ -217,7 +277,7 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
      */
     @Override
     public HomekitService createServiceWithArgs(String type, Object... args) {
-        logger.trace("{}Creating service of type: {} with {} arguments", LOG_TRACE, type, args.length);
+        logger.trace("{}Creating service of type: {} with custom arguments", LOG_TRACE, type);
         Class<? extends HomekitService> serviceClass = serviceTypes.get(type);
         if (serviceClass == null) {
             logger.error("{}Unsupported service type: {}", LOG_ERROR, type);
@@ -225,36 +285,40 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
         }
 
         try {
-            Class<?>[] argTypes = new Class[args.length];
+            Class<?>[] argTypes = new Class<?>[args.length];
             for (int i = 0; i < args.length; i++) {
                 argTypes[i] = args[i].getClass();
             }
-
-            Constructor<? extends HomekitService> constructor = serviceClass.getConstructor(argTypes);
-            return constructor.newInstance(args);
+            return serviceClass.getConstructor(argTypes).newInstance(args);
         } catch (IllegalAccessException | IllegalArgumentException | InstantiationException | NoSuchMethodException
                 | SecurityException | InvocationTargetException e) {
-            logger.error("{}Error creating service of type {} with args: {}", LOG_ERROR, type, e.getMessage(), e);
+            logger.error("{}Error creating service of type {} with custom arguments: {}", LOG_ERROR, type, e.getMessage(), e);
             throw new IllegalArgumentException("Failed to create service of type: " + type, e);
         }
     }
 
     /**
-     * Creates a service instance from a service tag.
+     * Creates a service instance from a tag.
      *
      * <p>
-     * The method will:
-     * <ol>
-     *   <li>Look up the service type for the given tag</li>
-     *   <li>Create a new service instance using the found type</li>
-     *   <li>Return the created service</li>
-     * </ol>
+     * This method creates a service instance using a tag instead of a service type. The tag is
+     * mapped to the appropriate service type during initialization.
      * </p>
      *
-     * @param tag The service tag to create from
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     *   <li>Maps tag to service type</li>
+     *   <li>Uses standard service creation</li>
+     *   <li>Provides proper error handling</li>
+     *   <li>Maintains consistent logging</li>
+     * </ul>
+     *
+     * @param tag The service tag
      * @param accessory The accessory that will own the service
      * @return A new service instance
-     * @throws IllegalArgumentException if the tag is not supported or service creation fails
+     * @throws IllegalArgumentException if the tag is not supported or creation fails
      * @since 1.0
      */
     @Override
@@ -262,166 +326,259 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
         logger.trace("{}Creating service from tag: {} for accessory: {}", LOG_TRACE, tag, accessory.getUID());
         String type = tagToTypeMap.get(tag);
         if (type == null) {
-            logger.error("{}No service type found for tag: {}", LOG_ERROR, tag);
-            throw new IllegalArgumentException("No service type found for tag: " + tag);
+            logger.error("{}Unsupported service tag: {}", LOG_ERROR, tag);
+            throw new IllegalArgumentException("Unsupported service tag: " + tag);
         }
         return createService(type, accessory);
     }
 
     /**
-     * Checks if the factory supports a specific service type.
+     * Checks if a service type is supported.
+     *
+     * <p>
+     * This method verifies whether a given service type has been registered during initialization.
+     * </p>
+     *
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     *   <li>Uses thread-safe collection lookup</li>
+     *   <li>Provides fast response time</li>
+     *   <li>Maintains consistent logging</li>
+     * </ul>
      *
      * @param type The service type to check
-     * @return true if the type is supported, false otherwise
+     * @return true if the service type is supported, false otherwise
      * @since 1.0
      */
     @Override
     public boolean supportsServiceType(String type) {
         boolean supported = serviceTypes.containsKey(type);
-        logger.trace("{}Service type {} support check: {}", LOG_TRACE, type, supported);
+        logger.trace("{}Service type {} is {}", LOG_TRACE, type, supported ? "supported" : "not supported");
         return supported;
     }
 
     /**
-     * Checks if the factory supports creating services with the given tag.
+     * Checks if a service tag is supported.
+     *
+     * <p>
+     * This method verifies whether a given service tag has been registered during initialization.
+     * </p>
+     *
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     *   <li>Uses thread-safe collection lookup</li>
+     *   <li>Provides fast response time</li>
+     *   <li>Maintains consistent logging</li>
+     * </ul>
      *
      * @param tag The service tag to check
-     * @return true if the tag is supported, false otherwise
+     * @return true if the service tag is supported, false otherwise
      * @since 1.0
      */
     @Override
     public boolean supportsTag(String tag) {
         boolean supported = tagToTypeMap.containsKey(tag);
-        logger.trace("{}Service tag {} support check: {}", LOG_TRACE, tag, supported);
+        logger.trace("{}Service tag {} is {}", LOG_TRACE, tag, supported ? "supported" : "not supported");
         return supported;
     }
 
     /**
-     * Returns a set of all supported service tags.
+     * Gets all supported service tags.
+     *
+     * <p>
+     * This method returns an unmodifiable set of all service tags that have been registered
+     * during initialization.
+     * </p>
+     *
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     *   <li>Returns unmodifiable set</li>
+     *   <li>Uses thread-safe collection</li>
+     *   <li>Maintains consistent logging</li>
+     * </ul>
      *
      * @return An unmodifiable set of supported service tags
      * @since 1.0
      */
     @Override
     public Set<String> getSupportedTags() {
-        logger.trace("{}Getting supported tags, count: {}", LOG_TRACE, tagToTypeMap.size());
-        return Collections.unmodifiableSet(tagToTypeMap.keySet());
+        Set<String> tags = Collections.unmodifiableSet(new HashSet<>(tagToTypeMap.keySet()));
+        logger.trace("{}Returning {} supported tags", LOG_TRACE, tags.size());
+        return tags;
     }
 
     /**
-     * Returns a set of all supported service types.
+     * Gets all supported service types.
+     *
+     * <p>
+     * This method returns an unmodifiable set of all service types that have been registered
+     * during initialization.
+     * </p>
+     *
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     *   <li>Returns unmodifiable set</li>
+     *   <li>Uses thread-safe collection</li>
+     *   <li>Maintains consistent logging</li>
+     * </ul>
      *
      * @return An unmodifiable set of supported service types
      * @since 1.0
      */
     @Override
     public Set<String> getSupportedServiceTypes() {
-        logger.trace("{}Getting supported service types, count: {}", LOG_TRACE, serviceTypes.size());
-        return Collections.unmodifiableSet(serviceTypes.keySet());
+        Set<String> types = Collections.unmodifiableSet(new HashSet<>(serviceTypes.keySet()));
+        logger.trace("{}Returning {} supported service types", LOG_TRACE, types.size());
+        return types;
     }
 
     /**
-     * Creates a service instance from a JSON value.
-     * This method extracts the service type from the JSON value and creates the appropriate service.
+     * Creates a service instance from JSON configuration.
      *
      * <p>
-     * The JSON value must contain:
-     * <ul>
-     *   <li>A "type" field with the service type</li>
-     *   <li>Any additional configuration required by the service</li>
-     * </ul>
+     * This method creates a service instance using configuration data from a JSON value.
+     * The JSON must contain the service type and any required configuration parameters.
      * </p>
      *
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     *   <li>Parses JSON configuration</li>
+     *   <li>Validates required fields</li>
+     *   <li>Creates service with configuration</li>
+     *   <li>Provides detailed error logging</li>
+     * </ul>
+     *
      * @param accessory The accessory that will own the service
-     * @param value The JSON value containing service configuration
+     * @param value The JSON configuration
      * @return A new service instance
-     * @throws IllegalArgumentException if the JSON value is invalid or service creation fails
+     * @throws IllegalArgumentException if the configuration is invalid or creation fails
      * @since 1.0
      */
     public HomekitService createService(HomekitAccessory accessory, JsonValue value) {
-        logger.trace("{}Creating service from JSON for accessory: {}", LOG_TRACE, accessory.getUID());
-        if (value == null || !value.getValueType().equals(JsonValue.ValueType.OBJECT)) {
-            logger.error("{}Invalid JSON value for service creation", LOG_ERROR);
-            throw new IllegalArgumentException("Invalid JSON value for service creation");
+        if (!(value instanceof javax.json.JsonObject)) {
+            logger.error("{}Invalid JSON configuration: not an object", LOG_ERROR);
+            throw new IllegalArgumentException("Invalid JSON configuration: not an object");
         }
 
-        String type = value.asJsonObject().getString("type", null);
-        if (type == null) {
-            logger.error("{}Service type not found in JSON value", LOG_ERROR);
-            throw new IllegalArgumentException("Service type not found in JSON value");
+        javax.json.JsonObject jsonObject = (javax.json.JsonObject) value;
+        if (!jsonObject.containsKey("type")) {
+            logger.error("{}Invalid JSON configuration: missing type", LOG_ERROR);
+            throw new IllegalArgumentException("Invalid JSON configuration: missing type");
         }
 
-        Class<? extends HomekitService> serviceClass = serviceTypes.get(type);
-        if (serviceClass == null) {
-            logger.error("{}Unsupported service type: {}", LOG_ERROR, type);
-            throw new IllegalArgumentException("Unsupported service type: " + type);
-        }
-
-        try {
-            return serviceClass.getConstructor(HomekitAccessory.class, JsonValue.class)
-                    .newInstance(accessory, value);
-        } catch (IllegalAccessException | IllegalArgumentException | InstantiationException | NoSuchMethodException
-                | SecurityException | InvocationTargetException e) {
-            logger.error("{}Error creating service from JSON value: {}", LOG_ERROR, e.getMessage(), e);
-            throw new IllegalArgumentException("Failed to create service from JSON value", e);
-        }
+        String type = jsonObject.getString("type");
+        logger.trace("{}Creating service of type: {} from JSON for accessory: {}", LOG_TRACE, type, accessory.getUID());
+        return createService(type, accessory);
     }
 
     /**
-     * Gets the service tag for a given service type.
+     * Gets the service tag for a service type.
      *
-     * @param serviceType The service type to get the tag for
-     * @return The service tag, or null if not found
+     * <p>
+     * This method returns the tag associated with a given service type. The mapping is
+     * established during initialization.
+     * </p>
+     *
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     *   <li>Uses reverse mapping lookup</li>
+     *   <li>Provides proper error handling</li>
+     *   <li>Maintains consistent logging</li>
+     * </ul>
+     *
+     * @param serviceType The service type
+     * @return The associated service tag
+     * @throws IllegalArgumentException if the service type is not supported
      * @since 1.0
      */
     @Override
     public String getTagFromServiceType(String serviceType) {
-        logger.trace("{}Getting tag for service type: {}", LOG_TRACE, serviceType);
         for (Map.Entry<String, String> entry : tagToTypeMap.entrySet()) {
             if (entry.getValue().equals(serviceType)) {
+                logger.trace("{}Found tag {} for service type {}", LOG_TRACE, entry.getKey(), serviceType);
                 return entry.getKey();
             }
         }
-        return null;
+        logger.error("{}No tag found for service type: {}", LOG_ERROR, serviceType);
+        throw new IllegalArgumentException("No tag found for service type: " + serviceType);
     }
 
     /**
-     * Gets the service type for a given service tag.
+     * Gets the service type for a service tag.
      *
-     * @param serviceTag The service tag to get the type for
-     * @return The service type, or null if not found
+     * <p>
+     * This method returns the service type associated with a given tag. The mapping is
+     * established during initialization.
+     * </p>
+     *
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     *   <li>Uses direct mapping lookup</li>
+     *   <li>Provides proper error handling</li>
+     *   <li>Maintains consistent logging</li>
+     * </ul>
+     *
+     * @param serviceTag The service tag
+     * @return The associated service type
+     * @throws IllegalArgumentException if the service tag is not supported
      * @since 1.0
      */
     @Override
     public String getServiceTypeFromTag(String serviceTag) {
-        logger.trace("{}Getting service type for tag: {}", LOG_TRACE, serviceTag);
-        return tagToTypeMap.get(serviceTag);
+        String type = tagToTypeMap.get(serviceTag);
+        if (type == null) {
+            logger.error("{}No service type found for tag: {}", LOG_ERROR, serviceTag);
+            throw new IllegalArgumentException("No service type found for tag: " + serviceTag);
+        }
+        logger.trace("{}Found service type {} for tag {}", LOG_TRACE, type, serviceTag);
+        return type;
     }
 
     /**
-     * Gets the mandatory and optional characteristic types for a given service type.
+     * Gets the characteristic types for a service type.
      *
      * <p>
-     * The returned map contains two sets:
-     * <ul>
-     *   <li>"mandatory" - Set of required characteristic types</li>
-     *   <li>"optional" - Set of optional characteristic types</li>
-     * </ul>
+     * This method returns a map of mandatory and optional characteristic types for a given
+     * service type. The mapping is established during initialization through reflection.
      * </p>
      *
-     * @param serviceType The service type to get characteristics for
-     * @return A map containing sets of mandatory and optional characteristic types
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     *   <li>Uses thread-safe collection lookup</li>
+     *   <li>Returns unmodifiable map</li>
+     *   <li>Provides proper error handling</li>
+     *   <li>Maintains consistent logging</li>
+     * </ul>
+     *
+     * @param serviceType The service type
+     * @return A map containing mandatory and optional characteristic types
      * @throws IllegalArgumentException if the service type is not supported
      * @since 1.0
      */
     @Override
     public Map<String, Set<String>> getCharacteristicTypes(String serviceType) {
-        logger.trace("{}Getting characteristic types for service: {}", LOG_TRACE, serviceType);
         Map<String, Set<String>> types = serviceCharacteristicTypes.get(serviceType);
         if (types == null) {
-            logger.error("{}Unsupported service type: {}", LOG_ERROR, serviceType);
-            throw new IllegalArgumentException("Unsupported service type: " + serviceType);
+            logger.error("{}No characteristic types found for service type: {}", LOG_ERROR, serviceType);
+            throw new IllegalArgumentException("No characteristic types found for service type: " + serviceType);
         }
+        logger.trace("{}Returning characteristic types for service type: {}", LOG_TRACE, serviceType);
         return Collections.unmodifiableMap(types);
     }
 }

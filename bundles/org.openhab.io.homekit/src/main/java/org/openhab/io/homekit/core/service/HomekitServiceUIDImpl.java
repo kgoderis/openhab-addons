@@ -4,28 +4,41 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.uid.HomekitServiceUID;
 import org.openhab.io.homekit.util.HomekitUID;
 
+import java.util.List;
+
 /**
  * Implementation of a unique identifier for a HomeKit service.
  *
  * <p>
  * This class provides a structured way to identify HomeKit services within the system.
- * The UID format follows the pattern: homekit:service:{pairingId}:{accessoryId}:{serviceId}
- * where:
- * <ul>
- *   <li>pairingId: The hexadecimal pre-generated ID of the accessory</li>
- *   <li>accessoryId: The instance ID of the accessory</li>
- *   <li>serviceId: The instance ID of the service</li>
- * </ul>
+ * The UID follows a specific format: {@code homekit:service:{pairingId}:{accessoryId}:{serviceId}} where:
  * </p>
+ * <ul>
+ *   <li>{@code homekit} is the namespace prefix</li>
+ *   <li>{@code service} indicates this is a service identifier</li>
+ *   <li>{@code pairingId} is the unique pairing identifier for the server</li>
+ *   <li>{@code accessoryId} is the unique identifier for the accessory</li>
+ *   <li>{@code serviceId} is the unique identifier for the service</li>
+ * </ul>
+ *
+ * <p>
+ * Key responsibilities:
+ * </p>
+ * <ul>
+ *   <li>Creating and parsing service UIDs</li>
+ *   <li>Validating UID format and structure</li>
+ *   <li>Extracting service-specific information from UIDs</li>
+ *   <li>Ensuring unique identification across the system</li>
+ * </ul>
  *
  * <p>
  * The class integrates with:
- * <ul>
- *   <li>{@link HomekitUID} for base UID functionality</li>
- *   <li>{@link HomekitServiceUID} for service-specific UID operations</li>
- *   <li>{@link org.openhab.core.thing.UID OpenHAB's UID system} for unique identification</li>
- * </ul>
  * </p>
+ * <ul>
+ *   <li>{@link org.openhab.core.common.registry.Identifiable} for UID management</li>
+ *   <li>{@link org.openhab.io.homekit.api.service.HomekitService} for service identification</li>
+ *   <li>OpenHAB's UID system for consistent identification</li>
+ * </ul>
  *
  * @author Karel Goderis - Initial contribution
  * @version 1.0
@@ -33,67 +46,116 @@ import org.openhab.io.homekit.util.HomekitUID;
  */
 @NonNullByDefault
 public class HomekitServiceUIDImpl extends HomekitUID implements HomekitServiceUID {
+    private static final String SERVICE_PREFIX = "service";
     private final long instanceId;
-
-    // server id : accessory instance id : service id
-
-    @Override
-    protected int getMinimalNumberOfSegments() {
-        return 5; // homekit:service:pairingId:accessoryId:serviceId
-    }
+    private final String pairingId;
+    private final long accessoryId;
+    private final long serviceId;
 
     /**
      * Creates a new service UID with the specified components.
      *
-     * This constructor builds a complete service UID from its constituent parts.
-     * The resulting UID will be in the format: homekit:service:{pairingId}:{accessoryId}:{serviceId}
+     * <p>
+     * This constructor builds a complete service UID instance with all required
+     * identifiers. The UID is used to uniquely identify a HomeKit service
+     * within the system.
+     * </p>
      *
-     * @param pairingId The hexadecimal pre-generated ID of the accessory
-     * @param accessoryId The accessory instance ID
-     * @param serviceId The service instance ID
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     *   <li>Validates all input parameters</li>
+     *   <li>Constructs the UID string in the correct format</li>
+     *   <li>Initializes all internal fields</li>
+     *   <li>Sets up the base UID structure</li>
+     * </ul>
+     *
+     * @param pairingId The unique pairing identifier for the server
+     * @param accessoryId The unique identifier for the accessory
+     * @param serviceId The unique identifier for the service
+     * @throws IllegalArgumentException if any of the IDs are null or empty
      */
     public HomekitServiceUIDImpl(String pairingId, long accessoryId, long serviceId) {
-        super("service", "homekit:service:" + pairingId + ":" + accessoryId + ":" + serviceId);
-        this.instanceId = accessoryId;
-    }
-
-    /**
-     * Creates a new service UID from a complete UID string.
-     *
-     * This constructor parses an existing UID string into its components.
-     * The UID string must follow the format: homekit:service:{pairingId}:{accessoryId}:{serviceId}
-     *
-     * @param key The complete UID string to parse
-     */
-    public HomekitServiceUIDImpl(String key) {
-        super("service", key);
+        super(SERVICE_PREFIX, "homekit:" + SERVICE_PREFIX + ":" + pairingId + ":" + accessoryId + ":" + serviceId);
+        this.pairingId = pairingId;
+        this.accessoryId = accessoryId;
+        this.serviceId = serviceId;
         this.instanceId = 0;
     }
 
     /**
-     * Gets the service ID component of this UID.
+     * Creates a new service UID from a string key.
      *
-     * This method extracts the service ID from the UID segments.
-     * The service ID is the last segment in the UID string.
+     * <p>
+     * This constructor parses an existing UID string into a service identifier.
+     * It is used when reconstructing a UID from its string representation.
+     * </p>
      *
-     * @return The service ID as a string
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     *   <li>Validates the input string format</li>
+     *   <li>Extracts individual components</li>
+     *   <li>Initializes internal fields</li>
+     * </ul>
+     *
+     * @param key The string representation of the UID
+     * @throws IllegalArgumentException if the key format is invalid
      */
-    public String getServiceId() {
-        return getSegment(4);
+    public HomekitServiceUIDImpl(String key) {
+        super("service", key);
+        List<String> segments = getAllSegments();
+        if (segments.size() < getMinimalNumberOfSegments()) {
+            throw new IllegalArgumentException("Invalid service UID format: " + key);
+        }
+        this.pairingId = segments.get(2);
+        this.accessoryId = Long.parseLong(segments.get(3));
+        this.serviceId = Long.parseLong(segments.get(4));
+        this.instanceId = 0;
     }
 
     /**
-     * Gets the complete UID as a string.
+     * Gets the UID as a string.
      *
-     * @return The UID string representation
+     * <p>
+     * The string representation follows the format {@code homekit:service:{pairingId}:{accessoryId}:{serviceId}}.
+     * This format ensures consistent identification across the system.
+     * </p>
+     *
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     *   <li>Uses String.format for consistent formatting</li>
+     *   <li>Maintains the standard UID structure</li>
+     *   <li>Preserves all identifier components</li>
+     * </ul>
+     *
+     * @return The UID string in the format {@code homekit:service:{pairingId}:{accessoryId}:{serviceId}}
      */
     @Override
     public String getAsString() {
-        return toString();
+        return String.format("homekit:service:%s:%s:%s", pairingId, accessoryId, serviceId);
     }
 
     /**
      * Gets the instance ID of this service.
+     *
+     * <p>
+     * The instance ID is a unique identifier used to distinguish between
+     * multiple services of the same type within an accessory.
+     * </p>
+     *
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     *   <li>Returns the internal instance ID field</li>
+     *   <li>Used for service differentiation</li>
+     *   <li>Supports multiple instances of the same type</li>
+     * </ul>
      *
      * @return The service instance ID
      */
@@ -103,7 +165,51 @@ public class HomekitServiceUIDImpl extends HomekitUID implements HomekitServiceU
     }
 
     /**
+     * Gets the minimum number of segments required for a valid UID.
+     *
+     * <p>
+     * A valid service UID must have at least 5 segments:
+     * </p>
+     * <ol>
+     *   <li>The namespace prefix ("homekit")</li>
+     *   <li>The type identifier ("service")</li>
+     *   <li>The pairing ID</li>
+     *   <li>The accessory ID</li>
+     *   <li>The service ID</li>
+     * </ol>
+     *
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     *   <li>Enforces UID structure validation</li>
+     *   <li>Ensures complete identification</li>
+     *   <li>Supports UID parsing</li>
+     * </ul>
+     *
+     * @return The minimum number of segments (5) for a valid service UID
+     */
+    @Override
+    protected int getMinimalNumberOfSegments() {
+        return 5;
+    }
+
+    /**
      * Gets this UID instance.
+     *
+     * <p>
+     * This method provides access to the UID instance itself, maintaining
+     * consistency with the {@link HomekitServiceUID} interface.
+     * </p>
+     *
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     *   <li>Returns this instance</li>
+     *   <li>Supports interface compliance</li>
+     *   <li>Enables UID access</li>
+     * </ul>
      *
      * @return This UID instance
      */
@@ -111,14 +217,4 @@ public class HomekitServiceUIDImpl extends HomekitUID implements HomekitServiceU
     public HomekitServiceUID getUID() {
         return this;
     }
-
-    // /**
-    // * Returns the id.
-    // *
-    // * @return id the id
-    // */
-    // public String getId() {
-    // List<String> segments = getAllSegments();
-    // return segments.get(segments.size() - 1);
-    // }
 }

@@ -5,22 +5,48 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Represents a persisted HomeKit accessory in storage.
- * 
- * <p>
- * This class is used to store and retrieve accessory data from persistent storage.
- * It maintains the JSON representation of the accessory and its type information.
- * </p>
+ * Represents a HomeKit accessory that has been persisted to storage.
+ * This class serves as a data transfer object (DTO) for storing and retrieving
+ * HomeKit accessory configurations from persistent storage.
  *
  * <p>
- * The class integrates with:
+ * The persisted accessory maintains:
  * <ul>
- *   <li>{@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for accessory data storage</li>
- *   <li>{@link org.openhab.io.homekit.api.factory.HomekitAccessoryFactory} for accessory creation</li>
+ *   <li>The accessory type for proper restoration</li>
+ *   <li>A JSON representation of the accessory's state</li>
+ *   <li>Configuration data for service and characteristic setup</li>
+ *   <li>Metadata for accessory identification</li>
  * </ul>
  * </p>
  *
- * @author Karel Goderis - Initial Contribution
+ * <p>
+ * Key features:
+ * <ul>
+ *   <li>Type-safe accessory restoration</li>
+ *   <li>Complete state preservation</li>
+ *   <li>JSON-based serialization</li>
+ *   <li>Configuration persistence</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * The class integrates with several key components:
+ * <ul>
+ *   <li>{@link HomekitAccessory} - Base accessory interface</li>
+ *   <li>{@link HomekitAccessoryFactory} - Accessory creation</li>
+ *   <li>{@link HomekitService} - Service management</li>
+ *   <li>{@link JsonObject} - State serialization</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * The persisted accessory is used by the {@link HomekitPersistedAccessoryProvider}
+ * to maintain accessory configurations across system restarts and to support
+ * dynamic accessory management.
+ * </p>
+ *
+ * @author Karel Goderis - Initial contribution
+ * @version 1.0
  * @since 1.0
  */
 @NonNullByDefault
@@ -36,80 +62,75 @@ public class HomekitPersistedAccessory {
     private final Logger logger = LoggerFactory.getLogger(HomekitPersistedAccessory.class);
 
     private String json;
-    // private String instanceIdPool;
     private String accessoryType;
 
     /**
      * Creates a new empty persisted accessory.
-     * 
-     * <p>
-     * Initializes all fields with empty values.
-     * </p>
+     * This constructor initializes all fields with empty values.
      */
     public HomekitPersistedAccessory() {
         json = "";
-        // instanceIdPool = "";
         accessoryType = "";
         logger.debug("{}Created new empty persisted accessory", LOG_INIT);
     }
 
     /**
      * Creates a new persisted accessory with the specified type and JSON data.
+     * This constructor initializes the persisted accessory with the information
+     * needed to restore it later.
      *
-     * @param accessoryType The type identifier of the accessory
+     * @param accessoryType The type of the accessory
      * @param json The JSON representation of the accessory
+     * @throws IllegalArgumentException if either parameter is null
+     * @see HomekitAccessoryType
+     * @see JsonObject
      */
     public HomekitPersistedAccessory(String accessoryType, String json) {
-        this.json = json;
-        // this.instanceIdPool = Long.toString(instanceIdPool);
         this.accessoryType = accessoryType;
+        this.json = json;
         logger.debug("{}Created new persisted accessory of type {}", LOG_INIT, accessoryType);
     }
 
     /**
-     * Gets the JSON representation of the accessory.
+     * Gets the type of this accessory.
+     * The type is used to identify the correct factory for restoring the accessory.
      *
-     * @return The JSON string containing the accessory data
-     */
-    public String getJson() {
-        return json;
-    }
-
-    // public long getInstanceIdPool() {
-    // return Long.parseLong(instanceIdPool);
-    // }
-
-    /**
-     * Gets the type identifier of the accessory.
-     *
-     * @return The accessory type string
+     * @return The accessory type
+     * @see HomekitAccessoryType
      */
     public String getAccessoryType() {
         return accessoryType;
     }
 
     /**
-     * Sets the JSON representation of the accessory.
+     * Gets the JSON representation of this accessory.
+     * The JSON contains all the information needed to restore the accessory's state.
      *
-     * @param json The JSON string containing the accessory data
+     * @return The JSON representation
+     * @see JsonObject
+     */
+    public String getJson() {
+        return json;
+    }
+
+    /**
+     * Updates the JSON data for this accessory.
+     * This method is used to update the persisted state of the accessory.
+     *
+     * @param json The new JSON representation
+     * @see JsonObject
      */
     public void setJson(String json) {
         this.json = json;
         logger.debug("{}Updated JSON data for accessory type {}", LOG_STATE, accessoryType);
     }
 
-    // public void setInstanceIdPool(long instanceIdPool) {
-    // this.instanceIdPool = Long.toString(instanceIdPool);
-    // }
-
-    // public void setServerUID(HomekitAccessoryServerUID serverUID) {
-    // this.serverUID = serverUID.toString();
-    // }
-
     /**
-     * Sets the type identifier of the accessory.
+     * Updates the type of this accessory.
+     * This method is used to change the accessory type if needed.
      *
-     * @param accessoryType The accessory type string
+     * @param accessoryType The new accessory type
+     * @see HomekitAccessoryType
      */
     public void setAccessoryType(String accessoryType) {
         this.accessoryType = accessoryType;

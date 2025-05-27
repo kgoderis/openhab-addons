@@ -15,14 +15,16 @@ import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.api.event.HomekitEventType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Implementation of a write-only boolean characteristic for HomeKit accessories.
+ * Abstract base class for HomeKit characteristics that handle read-only boolean values.
  *
  * This class extends {@link AbstractHomekitCharacteristic} to provide a specialized implementation
- * for boolean characteristics that can only be written to, not read from. It is particularly useful
- * for characteristics that represent actions or commands rather than states, such as triggers or
- * momentary switches.
+ * for boolean characteristics that can only be read from, not written to. It is particularly useful
+ * for characteristics that represent read-only states or conditions, such as sensor states,
+ * device status indicators, or system conditions.
  *
  * <p>
  * The class integrates with several key components:
@@ -32,25 +34,27 @@ import org.openhab.io.homekit.api.event.HomekitEventType;
  *   <li>{@link HomekitEventManager} for event handling</li>
  *   <li>{@link org.openhab.core.types.State} for state conversion</li>
  *   <li>{@link javax.json.JsonValue} for JSON serialization</li>
+ *   <li>{@link org.openhab.core.library.types.OnOffType} for boolean state handling</li>
  * </ul>
  * </p>
  *
  * <p>
  * Key features:
  * <ul>
- *   <li>Write-only access control through permission management</li>
+ *   <li>Read-only access control through permission management</li>
  *   <li>Boolean value conversion between HomeKit and OpenHAB formats</li>
  *   <li>Event handling for value changes</li>
  *   <li>JSON serialization for HomeKit protocol communication</li>
  *   <li>Integration with OpenHAB's state management system</li>
+ *   <li>Support for boolean state validation and constraints</li>
  * </ul>
  * </p>
  *
  * <p>
  * The class follows the HomeKit Accessory Protocol (HAP) specification for boolean characteristics
- * and integrates with OpenHAB's state management system for reliable device control. It provides
- * a robust implementation for write-only boolean characteristics while ensuring proper integration
- * with both HomeKit and OpenHAB ecosystems.
+ * and integrates with OpenHAB's state management system for reliable device state monitoring.
+ * It provides a robust implementation for read-only boolean characteristics while ensuring proper
+ * integration with both HomeKit and OpenHAB ecosystems.
  * </p>
  *
  * @author Karel Goderis - Initial contribution
@@ -58,12 +62,18 @@ import org.openhab.io.homekit.api.event.HomekitEventType;
  * @since 1.0
  */
 @NonNullByDefault
-public abstract class HomekitWriteOnlyBooleanCharacteristic extends AbstractHomekitCharacteristic<Boolean> {
+public abstract class HomekitReadOnlyBooleanCharacteristic extends AbstractHomekitCharacteristic<Boolean> {
+    // ========== Log Message Prefixes ==========
+    protected static final String LOG_PREFIX = "Homekit ReadOnlyBoolean: ";
+    protected static final String LOG_CHAR = LOG_PREFIX + "Characteristic - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+
+    private static final Logger logger = LoggerFactory.getLogger(HomekitReadOnlyBooleanCharacteristic.class);
 
     /**
-     * Creates a new write-only boolean characteristic.
+     * Creates a new read-only boolean characteristic.
      *
-     * This constructor initializes a new write-only boolean characteristic with its required
+     * This constructor initializes a new read-only boolean characteristic with its required
      * dependencies and sets up the event subscription system. It integrates with:
      * <ul>
      *   <li>{@link HomekitService} for service integration</li>
@@ -76,16 +86,17 @@ public abstract class HomekitWriteOnlyBooleanCharacteristic extends AbstractHome
      * @throws IllegalArgumentException if any required parameter is null
      * @since 1.0
      */
-    public HomekitWriteOnlyBooleanCharacteristic(HomekitService service, HomekitEventManager eventManager) {
+    public HomekitReadOnlyBooleanCharacteristic(HomekitService service, HomekitEventManager eventManager) {
         super(service, eventManager);
-        withFormat("bool").withPairedWrite(true).withPairedRead(false).withEvents(false);
+        withFormat("bool").withPairedWrite(false).withPairedRead(true).withEvents(false);
         initializeValue();
+        logger.trace("{}Created new read-only boolean characteristic for service: {}", LOG_CHAR, service);
     }
 
     /**
-     * Creates a new write-only boolean characteristic from a JSON value.
+     * Creates a new read-only boolean characteristic from a JSON value.
      *
-     * This constructor initializes a write-only boolean characteristic from a JSON configuration,
+     * This constructor initializes a read-only boolean characteristic from a JSON configuration,
      * allowing for flexible characteristic creation and configuration. It integrates with:
      * <ul>
      *   <li>{@link javax.json.JsonValue} for configuration parsing</li>
@@ -100,20 +111,11 @@ public abstract class HomekitWriteOnlyBooleanCharacteristic extends AbstractHome
      * @throws IllegalArgumentException if the JSON value is invalid or required parameters are null
      * @since 1.0
      */
-    public HomekitWriteOnlyBooleanCharacteristic(HomekitService service, HomekitEventManager eventManager,
+    public HomekitReadOnlyBooleanCharacteristic(HomekitService service, HomekitEventManager eventManager,
             JsonValue value) {
         super(service, eventManager, value);
         initializeValue();
-    }
-
-    /**
-     * Indicates that this characteristic is not hidden in the HomeKit interface.
-     *
-     * @return false, as write-only boolean characteristics are always visible
-     */
-    @Override
-    public boolean isHidden() {
-        return false;
+        logger.trace("{}Created new read-only boolean characteristic from JSON for service: {}", LOG_CHAR, service);
     }
 
     /**
@@ -124,18 +126,8 @@ public abstract class HomekitWriteOnlyBooleanCharacteristic extends AbstractHome
      */
     @Override
     public Boolean getDefault() {
+        logger.trace("{}Getting default value: false", LOG_CHAR);
         return false;
-    }
-
-    /**
-     * Gets the current value of this characteristic.
-     * Since this is a write-only characteristic, always returns the default value.
-     *
-     * @return the default value (false)
-     */
-    @Override
-    public Boolean getValue() {
-        return getDefault();
     }
 
     /**
@@ -146,7 +138,7 @@ public abstract class HomekitWriteOnlyBooleanCharacteristic extends AbstractHome
      * <ul>
      *   <li>{@link javax.json.JsonValue} for value parsing</li>
      *   <li>{@link javax.json.JsonObject} for object handling</li>
-     *   <li>{@link javax.json.JsonString} for string handling</li>
+     *   <li>{@link javax.json.JsonNumber} for numeric handling</li>
      * </ul>
      *
      * @param jsonValue the JSON value to convert
@@ -157,10 +149,14 @@ public abstract class HomekitWriteOnlyBooleanCharacteristic extends AbstractHome
      */
     @Override
     public Boolean toValue(JsonValue jsonValue, Map<String, Object> conversionMap) {
+        Boolean result;
         if (jsonValue.getValueType().equals(ValueType.NUMBER)) {
-            return ((JsonNumber) jsonValue).intValue() > 0;
+            result = ((JsonNumber) jsonValue).intValue() > 0;
+        } else {
+            result = jsonValue.equals(JsonValue.TRUE);
         }
-        return jsonValue.equals(JsonValue.TRUE);
+        logger.trace("{}Converted JSON value to boolean: {}", LOG_CHAR, result);
+        return result;
     }
 
     /**
@@ -170,8 +166,8 @@ public abstract class HomekitWriteOnlyBooleanCharacteristic extends AbstractHome
      * various state types and conversion rules. It integrates with:
      * <ul>
      *   <li>{@link org.openhab.core.types.State} for state handling</li>
-     *   <li>{@link org.openhab.core.types.OnOffType} for on/off state handling</li>
-     *   <li>{@link org.openhab.core.types.OpenClosedType} for open/closed state handling</li>
+     *   <li>{@link org.openhab.core.library.types.OnOffType} for on/off state handling</li>
+     *   <li>{@link org.openhab.core.library.types.OpenClosedType} for open/closed state handling</li>
      * </ul>
      *
      * @param state the state to convert
@@ -184,10 +180,12 @@ public abstract class HomekitWriteOnlyBooleanCharacteristic extends AbstractHome
     public Boolean toValue(State state, Map<String, Object> conversionMap) {
         OnOffType convertedState = state.as(OnOffType.class);
         if (convertedState == null) {
+            logger.trace("{}State conversion failed, using default value", LOG_CHAR);
             return getDefault();
         }
-
-        return convertedState.equals(OnOffType.ON);
+        Boolean result = convertedState.equals(OnOffType.ON);
+        logger.trace("{}Converted state to boolean: {}", LOG_CHAR, result);
+        return result;
     }
 
     /**
@@ -197,8 +195,8 @@ public abstract class HomekitWriteOnlyBooleanCharacteristic extends AbstractHome
      * various state types and conversion rules. It integrates with:
      * <ul>
      *   <li>{@link org.openhab.core.types.State} for state creation</li>
-     *   <li>{@link org.openhab.core.types.OnOffType} for on/off state creation</li>
-     *   <li>{@link org.openhab.core.types.OpenClosedType} for open/closed state creation</li>
+     *   <li>{@link org.openhab.core.library.types.OnOffType} for on/off state creation</li>
+     *   <li>{@link org.openhab.core.library.types.OpenClosedType} for open/closed state creation</li>
      * </ul>
      *
      * @param value the boolean value to convert
@@ -207,82 +205,8 @@ public abstract class HomekitWriteOnlyBooleanCharacteristic extends AbstractHome
      */
     @Override
     public State toState(Boolean value) {
-        return value ? OnOffType.ON : OnOffType.OFF;
+        State result = value ? OnOffType.ON : OnOffType.OFF;
+        logger.trace("{}Converted boolean to state: {}", LOG_CHAR, result);
+        return result;
     }
-
-    /**
-     * Converts a boolean value to an event JSON object.
-     *
-     * @param value the boolean value to convert
-     * @return the event JSON object
-     */
-    @Override
-    public JsonObject toEventJson(Boolean value) {
-        return super.toEventJson(value);
-    }
-
-    /**
-     * Converts the current value to an event JSON object.
-     *
-     * @return the event JSON object
-     */
-    @Override
-    public JsonObject toEventJson() {
-        return super.toEventJson();
-    }
-
-    /**
-     * Converts a boolean value to a JSON value.
-     *
-     * @param value the boolean value to convert
-     * @return the JSON value
-     */
-    @Override
-    public JsonValue toValueJson(@Nullable Boolean value) {
-        return super.toValueJson(value);
-    }
-
-    /**
-     * Converts this characteristic to a JSON object with metadata.
-     *
-     * @return the JSON representation of the characteristic
-     */
-    @Override
-    public JsonObject toJson() {
-        return super.toJson();
-    }
-
-    /**
-     * Converts this characteristic to a JSON object with specified metadata.
-     *
-     * @param includeMeta whether to include metadata
-     * @param includePermissions whether to include permissions
-     * @param includeType whether to include type information
-     * @param includeEvent whether to include event information
-     * @return the JSON representation of the characteristic
-     */
-    @Override
-    public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType,
-            boolean includeEvent) {
-        return super.toJson(includeMeta, includePermissions, includeType, includeEvent);
-    }
-
-    /**
-     * Converts this characteristic to a reduced JSON object.
-     *
-     * @return the reduced JSON representation of the characteristic
-     */
-    @Override
-    public JsonObject toReducedJson() {
-        return super.toReducedJson();
-    }
-
-    /**
-     * Gets the accepted OpenHAB item type for this characteristic.
-     *
-     * @return the item type string for switches
-     */
-    public static String getAcceptedItemType() {
-        return CoreItemFactory.SWITCH;
-    }
-}
+} 

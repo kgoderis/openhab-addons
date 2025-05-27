@@ -31,18 +31,69 @@ import org.slf4j.LoggerFactory;
 //TODO : add createChannelDefinitionWithIndex that takes an index and creates a channel definition with that index  
 
 /**
- * Provides ThingTypes based on registered HomekitFactory instances.
- * Each service type registered with a HomekitFactory is converted to a ThingType.
- * 
- * @author Karel Goderis - Initial contribution
+ * Manages the creation and registration of HomeKit thing types in the OpenHAB ecosystem.
+ *
+ * This class serves as the central provider for HomeKit thing types, converting HomeKit service types
+ * into OpenHAB thing types. It handles both factory-independent accessory types and factory-specific
+ * service types, ensuring proper integration between HomeKit and OpenHAB's thing system.
+ *
+ * The provider implements a sophisticated type conversion system that:
+ * - Creates thing types for HomeKit accessories
+ * - Converts HomeKit service types to thing types
+ * - Manages channel group definitions
+ * - Handles service type to tag conversions
+ * - Maintains type persistence
+ *
+ * The class integrates with:
+ * - {@link StorageService} for persistent storage of thing types
+ * - {@link HomekitServiceFactory} for service type management
+ * - {@link HomekitChannelGroupTypeProvider} for channel group definitions
+ * - {@link org.openhab.core.thing.type.ThingType OpenHAB's thing type system} for type registration
+ *
+ * Key features:
+ * - Automatic thing type generation from service types
+ * - Channel group definition management
+ * - Service type to tag conversion
+ * - Persistent storage of thing types
+ * - Support for factory-specific and independent types
+ *
+ * @author Karel Goderis - Initial Contribution
+ * @since 1.0
  */
 @NonNullByDefault
 @Component(service = { ThingTypeProvider.class })
 public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
     private final Logger logger = LoggerFactory.getLogger(HomekitThingTypeProvider.class);
+
+    // ========== Log Message Prefixes ==========
+    protected static final String LOG_PREFIX = "Homekit ThingType Provider: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+    protected static final String LOG_TYPE = LOG_PREFIX + "Type - ";
+
     private final HomekitServiceFactory homekitServiceFactory;
     private final HomekitChannelGroupTypeProvider channelGroupTypeProvider;
 
+    /**
+     * Creates a new HomeKit thing type provider.
+     *
+     * This constructor initializes the provider with all required services and establishes the foundation
+     * for managing HomeKit thing types. It sets up the necessary connections to various system services
+     * and prepares the provider for operation.
+     *
+     * The initialization process includes:
+     * - Setting up storage for thing types
+     * - Configuring service factory integration
+     * - Setting up channel group type provider
+     * - Creating factory-independent thing types
+     * - Creating factory-dependent thing types
+     *
+     * @param storageService Service for persistent storage of thing types
+     * @param homekitServiceFactory Factory for managing HomeKit services
+     * @param channelGroupTypeProvider Provider for channel group types
+     */
     @Activate
     public HomekitThingTypeProvider(@Reference StorageService storageService,
             @Reference HomekitServiceFactory homekitServiceFactory,
@@ -50,27 +101,39 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
         super(storageService);
         this.homekitServiceFactory = homekitServiceFactory;
         this.channelGroupTypeProvider = channelGroupTypeProvider;
+        logger.info("{}Initializing HomeKit thing type provider", LOG_INIT);
         addFactoryIndependentThingTypes();
         addFactoryDependentThingTypes();
+        logger.info("{}HomeKit thing type provider initialized", LOG_INIT);
     }
 
+    /**
+     * Adds thing types that are not dependent on specific factories.
+     *
+     * This method creates and registers the base HomeKit accessory thing type, which serves
+     * as the foundation for all HomeKit accessories in the system.
+     */
     private void addFactoryIndependentThingTypes() {
-        // Add thing types for services that are not factory-specific
+        logger.debug("{}Adding factory-independent thing types", LOG_TYPE);
         ThingTypeUID thingTypeUID = new ThingTypeUID(HomekitBindingConstants.BINDING_ID, "accessory");
 
-        // Create the thing type
         ThingType thingType = ThingTypeBuilder.instance(thingTypeUID, "Homekit Accessory")
                 .withDescription("Homekit Accessory")
                 .withCategory("homekit")
                 .build();
 
-        // Store the thing type
         putThingType(thingType);
-        logger.debug("Created ThingType {} for Homekit", thingTypeUID);
+        logger.info("{}Created base HomeKit accessory thing type: {}", LOG_TYPE, thingTypeUID);
     }
 
+    /**
+     * Adds thing types that are dependent on specific factories.
+     *
+     * This method iterates through all supported service types from the service factory
+     * and creates corresponding thing types for each service.
+     */
     private void addFactoryDependentThingTypes() {
-        // Add thing types for services that are factory-specific
+        logger.debug("{}Adding factory-dependent thing types", LOG_TYPE);
         for (String serviceType : homekitServiceFactory.getSupportedServiceTypes()) {
             createThingTypeForService(serviceType);
         }
@@ -102,99 +165,156 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
     // }
     // }
 
+    /**
+     * Creates a thing type for a specific service type.
+     *
+     * This method handles the complete process of creating a thing type for a HomeKit service,
+     * including validation, channel group creation, and type registration.
+     *
+     * The creation process includes:
+     * - Validating service type and name
+     * - Creating channel group definitions
+     * - Building the thing type
+     * - Registering the type in the system
+     *
+     * @param serviceType The HomeKit service type to create a thing type for
+     */
     private void createThingTypeForService(String serviceType) {
-        // Create a unique ID for the thing type
+        logger.debug("{}Creating thing type for service: {}", LOG_TYPE, serviceType);
+        
         ThingTypeUID thingTypeUID = getThingTypeUID(serviceType);
         if (thingTypeUID == null) {
-            logger.warn("Could not create ThingTypeUID for service type: {}", serviceType);
+            logger.warn("{}Could not create ThingTypeUID for service type: {}", LOG_WARN, serviceType);
             return;
         }
 
-        // Get the service class to determine the service name
         String serviceName = homekitServiceFactory.getTagFromServiceType(serviceType);
         if (serviceName == null || serviceName.isEmpty()) {
-            logger.warn("Invalid service name for service type: {}", serviceType);
+            logger.warn("{}Invalid service name for service type: {}", LOG_WARN, serviceType);
             return;
         }
 
-        // Create channel group definitions for this service
         List<ChannelGroupDefinition> channelGroupDefinitions = createChannelGroupDefinitions(serviceType);
         if (channelGroupDefinitions.isEmpty()) {
-            logger.warn("No channel group definitions found for service type: {}", serviceType);
+            logger.warn("{}No channel group definitions found for service type: {}", LOG_WARN, serviceType);
             return;
         }
 
-        // Create the thing type with channel groups
         ThingType thingType = ThingTypeBuilder.instance(thingTypeUID, serviceName)
                 .withDescription("Homekit " + serviceName + " Service")
                 .withCategory("homekit")
                 .withChannelGroupDefinitions(channelGroupDefinitions)
                 .build();
 
-        // Store the thing type
         putThingType(thingType);
-        logger.debug("Created ThingType {} for Homekit service type {} with {} channel groups", thingTypeUID, 
+        logger.info("{}Created thing type {} for service {} with {} channel groups", LOG_TYPE, thingTypeUID, 
             serviceType, channelGroupDefinitions.size());
     }
 
+    /**
+     * Creates channel group definitions for a service type.
+     *
+     * This method handles the creation of channel group definitions for a HomeKit service,
+     * including validation and error handling.
+     *
+     * The creation process includes:
+     * - Validating service tag
+     * - Creating channel group type UID
+     * - Verifying channel group type existence
+     * - Creating channel group definition
+     *
+     * @param serviceType The service type to create channel group definitions for
+     * @return List of created channel group definitions
+     */
     private List<ChannelGroupDefinition> createChannelGroupDefinitions(String serviceType) {
+        logger.debug("{}Creating channel group definitions for service: {}", LOG_TYPE, serviceType);
         List<ChannelGroupDefinition> definitions = new ArrayList<>();
+        
         try {
             String serviceTag = homekitServiceFactory.getTagFromServiceType(serviceType);
             if (serviceTag == null || serviceTag.isEmpty()) {
-                logger.warn("Invalid service tag for service type: {}", serviceType);
+                logger.warn("{}Invalid service tag for service type: {}", LOG_WARN, serviceType);
                 return definitions;
             }
 
-            // Create a channel group type UID for this service
             ChannelGroupTypeUID channelGroupTypeUID = new ChannelGroupTypeUID(HomekitBindingConstants.BINDING_ID, 
                 "service-" + serviceTag);
 
-            // Verify that the channel group type exists
             if (channelGroupTypeProvider.getChannelGroupType(channelGroupTypeUID, null) == null) {
-                logger.warn("No channel group type found for service type: {}", serviceType);
+                logger.warn("{}No channel group type found for service type: {}", LOG_WARN, serviceType);
                 return definitions;
             }
 
-            // Create a channel group definition with index 1 (first instance)
             definitions.add(new ChannelGroupDefinition(serviceTag + ".1", channelGroupTypeUID, serviceTag,
                     "Homekit " + serviceTag + " Service"));
 
-            logger.debug("Created channel group definition for service type {} with UID {}", serviceType, 
+            logger.debug("{}Created channel group definition for service {} with UID {}", LOG_TYPE, serviceType, 
                 channelGroupTypeUID);
         } catch (Exception e) {
-            logger.error("Failed to create channel group definitions for service type {}: {}", serviceType, 
+            logger.error("{}Failed to create channel group definitions for service {}: {}", LOG_ERROR, serviceType, 
                 e.getMessage(), e);
         }
         return definitions;
     }
 
+    /**
+     * Gets the thing type UID for a service type.
+     *
+     * This method creates a unique identifier for a thing type based on the service type,
+     * ensuring proper identification and registration in the system.
+     *
+     * @param serviceType The service type to get the thing type UID for
+     * @return The thing type UID, or null if the service type is invalid
+     */
     public ThingTypeUID getThingTypeUID(String serviceType) {
-        // Create a unique ID for the thing type based on the service type
-        // Format: homekit:serviceTag
         String serviceTag = homekitServiceFactory.getTagFromServiceType(serviceType);
         if (serviceTag == null || serviceTag.isEmpty()) {
+            logger.warn("{}Invalid service tag for service type: {}", LOG_WARN, serviceType);
             return null;
         }
         return new ThingTypeUID(HomekitBindingConstants.BINDING_ID, serviceTag);
     }
 
+    /**
+     * Gets the channel group type UID for a service type.
+     *
+     * This method creates a unique identifier for a channel group type based on the service type,
+     * following the HomeKit service type format.
+     *
+     * @param serviceType The service type to get the channel group type UID for
+     * @return The channel group type UID
+     */
     private ChannelGroupTypeUID getChannelGroupTypeUID(String serviceType) {
-        // Create a unique ID for the channel group type based on the service type
-        // Format: homekit:service-serviceType
         String serviceTypeId = serviceType.replaceAll("^0*([0-9a-fA-F]+)-0000-1000-8000-0026BB765291$", "$1");
         return new ChannelGroupTypeUID("homekit", "service-" + serviceTypeId);
     }
 
+    /**
+     * Gets all registered thing types.
+     *
+     * This method returns all thing types registered with the provider, optionally filtered
+     * by locale for internationalization support.
+     *
+     * @param locale The locale to get thing types for, or null for default
+     * @return Collection of registered thing types
+     */
     @Override
     public Collection<ThingType> getThingTypes(@Nullable Locale locale) {
-        // Return all stored thing types
         return super.getThingTypes(locale);
     }
 
+    /**
+     * Gets a specific thing type by its UID.
+     *
+     * This method retrieves a specific thing type from the provider based on its unique
+     * identifier, optionally filtered by locale for internationalization support.
+     *
+     * @param thingTypeUID The UID of the thing type to get
+     * @param locale The locale to get the thing type for, or null for default
+     * @return The thing type, or null if not found
+     */
     @Override
     public @Nullable ThingType getThingType(ThingTypeUID thingTypeUID, @Nullable Locale locale) {
-        // Return the specific thing type if it exists
         return super.getThingType(thingTypeUID, locale);
     }
 

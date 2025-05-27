@@ -14,26 +14,53 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
+
 /**
- * A generic HomeKit accessory implementation that can be used as a base for various types of accessories.
- * This class provides a flexible foundation for creating custom HomeKit accessories with standard functionality.
+ * A flexible implementation of a HomeKit accessory that can be customized for various use cases.
+ * This class provides a foundation for creating custom HomeKit accessories with configurable
+ * services, characteristics, and behavior.
  *
  * <p>
- * The generic accessory supports:
+ * The generic accessory serves as a versatile base for implementing custom HomeKit devices,
+ * offering:
  * <ul>
- *   <li>Basic accessory information (name, manufacturer, model, serial number)</li>
- *   <li>Standard HomeKit services and characteristics</li>
- *   <li>Event handling and state management</li>
- *   <li>JSON serialization for persistence</li>
+ *   <li>Configurable accessory information (name, manufacturer, model, etc.)</li>
+ *   <li>Dynamic service management and characteristic configuration</li>
+ *   <li>Event handling and state synchronization</li>
+ *   <li>JSON serialization for persistence and configuration</li>
  * </ul>
  * </p>
  *
  * <p>
- * This class is particularly useful when:
+ * Key features:
  * <ul>
- *   <li>Creating new types of HomeKit accessories</li>
- *   <li>Implementing custom accessory behavior</li>
- *   <li>Extending basic HomeKit functionality</li>
+ *   <li>Customizable accessory metadata and identification</li>
+ *   <li>Dynamic service and characteristic management</li>
+ *   <li>Event propagation and state updates</li>
+ *   <li>Extensible service configuration</li>
+ *   <li>Persistence through JSON serialization</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * The class integrates with several key components:
+ * <ul>
+ *   <li>{@link AbstractHomekitAccessory} - Base accessory functionality</li>
+ *   <li>{@link HomekitService} - Service management</li>
+ *   <li>{@link HomekitAccessoryType} - Accessory type definition</li>
+ *   <li>{@link HomekitAccessoryUID} - Unique identification</li>
+ *   <li>{@link HomekitAccessoryServer} - Server integration</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * The generic accessory supports dynamic configuration through JSON, allowing for:
+ * <ul>
+ *   <li>Service addition and removal</li>
+ *   <li>Characteristic configuration</li>
+ *   <li>Accessory metadata updates</li>
+ *   <li>State persistence</li>
  * </ul>
  * </p>
  *
@@ -57,6 +84,9 @@ public class HomekitGenericAccessory extends AbstractHomekitAccessory {
      * @param eventManager The event manager for handling HomeKit events
      * @param serviceFactory The factory for creating HomeKit services
      * @param characteristicFactory The factory for creating HomeKit characteristics
+     * @see HomekitEventManager
+     * @see HomekitServiceFactory
+     * @see HomekitCharacteristicFactory
      */
     public HomekitGenericAccessory(HomekitEventManager eventManager, HomekitServiceFactory serviceFactory,
             HomekitCharacteristicFactory characteristicFactory) {
@@ -72,6 +102,10 @@ public class HomekitGenericAccessory extends AbstractHomekitAccessory {
      * @param serviceFactory The factory for creating HomeKit services
      * @param characteristicFactory The factory for creating HomeKit characteristics
      * @param value The JSON value containing the accessory configuration
+     * @see HomekitEventManager
+     * @see HomekitServiceFactory
+     * @see HomekitCharacteristicFactory
+     * @see JsonValue
      */
     public HomekitGenericAccessory(HomekitEventManager eventManager, HomekitServiceFactory serviceFactory,
             HomekitCharacteristicFactory characteristicFactory, JsonValue value) {

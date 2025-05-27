@@ -39,11 +39,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Abstract base class for HomeKit accessories. This class provides a default implementation of the HomekitAccessory
- * interface and manages the core functionality required by all HomeKit accessories.
+ * Abstract base class for HomeKit accessories that provides core functionality and lifecycle management.
  *
  * <p>
- * This class handles:
+ * This class implements the fundamental accessory behavior required by all HomeKit accessories, including:
+ * </p>
  * <ul>
  *   <li>Unique identification and instance management</li>
  *   <li>Service management and lifecycle</li>
@@ -51,17 +51,31 @@ import org.slf4j.LoggerFactory;
  *   <li>JSON serialization</li>
  *   <li>Builder pattern for configuration</li>
  * </ul>
- * </p>
  *
  * <p>
- * The class provides a robust foundation for implementing HomeKit accessories by:
+ * Key responsibilities:
+ * </p>
  * <ul>
  *   <li>Managing service lifecycle and relationships</li>
  *   <li>Handling event subscriptions and notifications</li>
  *   <li>Providing builder pattern for easy configuration</li>
  *   <li>Implementing JSON serialization for HomeKit protocol</li>
+ *   <li>Managing instance IDs and unique identification</li>
+ *   <li>Coordinating with HomeKit servers</li>
  * </ul>
+ *
+ * <p>
+ * The class integrates with:
  * </p>
+ * <ul>
+ *   <li>{@link HomekitService} for service lifecycle management</li>
+ *   <li>{@link HomekitEventManager} for event handling</li>
+ *   <li>{@link HomekitServiceFactory} for service creation</li>
+ *   <li>{@link HomekitCharacteristicFactory} for characteristic creation</li>
+ *   <li>{@link HomekitAccessoryServer} for server coordination</li>
+ *   <li>{@link org.openhab.core.thing.UID OpenHAB's UID system} for unique identification</li>
+ *   <li>{@link org.openhab.io.homekit.api.event.HomekitEvent OpenHAB's event system} for event handling</li>
+ * </ul>
  *
  * @author Karel Goderis - Initial contribution
  * @version 1.0

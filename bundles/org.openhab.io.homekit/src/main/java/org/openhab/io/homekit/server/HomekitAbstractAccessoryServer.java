@@ -41,6 +41,41 @@ import org.openhab.io.homekit.util.HomekitKeyGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Abstract base class for HomeKit accessory servers that provides core functionality for managing
+ * HomeKit accessories, pairings, and server lifecycle.
+ *
+ * <p>This class implements the core server functionality for HomeKit accessories, providing
+ * the bridge between OpenHAB and HomeKit clients. It manages the lifecycle and communication
+ * for a single HomeKit accessory server instance.
+ *
+ * <p>The server operates as a central hub for {@link HomekitAccessory HomeKit accessories}. When initialized, it sets up
+ * network listeners and security settings to accept incoming HomeKit client connections. As
+ * accessories are registered through the {@link #addAccessory(HomekitAccessory) addAccessory} method, the server creates the
+ * necessary handlers and prepares them for client access.
+ *
+ * <p>The class integrates with:
+ * <ul>
+ *     <li>{@link HomekitAccessory} for accessory lifecycle and state management</li>
+ *     <li>{@link HomekitCharacteristic} for value conversion and validation</li>
+ *     <li>{@link org.openhab.core.items.Item OpenHAB's item system} for state synchronization</li>
+ *     <li>{@link HomekitAccessoryRegistry} for accessory registration and discovery</li>
+ *     <li>{@link HomekitPairingRegistry} for secure pairing management</li>
+ *     <li>{@link HomekitEventManager} for event handling and notifications</li>
+ * </ul>
+ *
+ * <p>Key features:
+ * <ul>
+ *     <li>State management with valid state transitions</li>
+ *     <li>Accessory lifecycle management</li>
+ *     <li>Secure pairing and authentication</li>
+ *     <li>Event handling and notifications</li>
+ *     <li>Resource cleanup and shutdown</li>
+ * </ul>
+ *
+ * @author Karel Goderis - Initial contribution
+ * @version 1.0
+ */
 @NonNullByDefault
 public abstract class HomekitAbstractAccessoryServer implements HomekitAccessoryServer, AutoCloseable {
 
@@ -48,13 +83,13 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
     protected static final Logger logger = LoggerFactory.getLogger(HomekitAbstractAccessoryServer.class);
     protected static final String SERVICE_TYPE = "_hap._tcp.local.";
 
-    // ========== Log HomekitMessage Prefixes ==========
+    // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "Homekit Server: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
-    protected static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
-    protected static final String LOG_PAIRING = LOG_PREFIX + "HomekitPairing - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    protected static final String LOG_PAIRING = LOG_PREFIX + "Pairing - ";
     protected static final String LOG_EVENT = LOG_PREFIX + "Event - ";
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_SERVER = LOG_PREFIX + "Server - ";
@@ -103,6 +138,30 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
     protected final HomekitEventManager eventManager;
 
     // ========== Constructor ==========
+    /**
+     * Creates a new HomeKit accessory server with the specified configuration.
+     *
+     * <p>This constructor initializes the server with the required configuration parameters
+     * and validates them before proceeding with initialization.
+     *
+     * <p>Key implementation details:
+     * <ul>
+     *     <li>Validates all constructor parameters</li>
+     *     <li>Initializes server state and configuration</li>
+     *     <li>Sets up logging and event management</li>
+     *     <li>Prepares for accessory registration</li>
+     * </ul>
+     *
+     * @param category The category of accessories this server will host
+     * @param address The network address to bind to
+     * @param port The port to listen on
+     * @param pairingId The unique identifier for this server
+     * @param privateKey The private key for secure communication
+     * @param accessoryRegistry The registry for managing accessories
+     * @param pairingRegistry The registry for managing pairings
+     * @param eventManager The manager for handling events
+     * @throws HomekitConfigurationException if any configuration parameter is invalid
+     */
     public HomekitAbstractAccessoryServer(HomekitAccessoryCategory category, InetAddress address, int port,
             byte[] pairingId, byte[] privateKey, HomekitAccessoryRegistry accessoryRegistry,
             HomekitPairingRegistry pairingRegistry, HomekitEventManager eventManager)
@@ -125,6 +184,25 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         logger.debug("{}Homekit server initialization completed", LOG_INIT);
     }
 
+    /**
+     * Validates the constructor parameters to ensure they meet the requirements.
+     *
+     * <p>This method checks:
+     * <ul>
+     *     <li>Port number is within valid range (1-65535)</li>
+     *     <li>Pairing ID is not empty</li>
+     *     <li>Private key is not empty</li>
+     * </ul>
+     *
+     * @param category The accessory category
+     * @param address The network address
+     * @param port The port number
+     * @param pairingId The pairing identifier
+     * @param privateKey The private key
+     * @param accessoryRegistry The accessory registry
+     * @param pairingRegistry The pairing registry
+     * @throws HomekitConfigurationException if any parameter is invalid
+     */
     private void validateConstructorParameters(HomekitAccessoryCategory category, InetAddress address, int port,
             byte[] pairingId, byte[] privateKey, HomekitAccessoryRegistry accessoryRegistry,
             HomekitPairingRegistry pairingRegistry) throws HomekitConfigurationException {
@@ -144,25 +222,39 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
 
     // ========== Lifecycle Methods ==========
     /**
-     * Initialize any resources needed by the server.
-     * Subclasses should override this method to initialize their specific resources.
-     * 
-     * @throws Exception if initialization fails
+     * Initializes any resources needed by the server.
+     *
+     * <p>This method should be overridden by subclasses to initialize their specific resources.
+     * The base implementation does nothing.
+     *
+     * @throws HomekitServerException if initialization fails
      */
     protected void initializeResources() throws HomekitServerException {
         // Base implementation does nothing
     }
 
     /**
-     * Cleanup any resources held by the server.
-     * Subclasses should override this method to cleanup their specific resources.
-     * 
-     * @throws Exception if cleanup fails
+     * Cleans up any resources held by the server.
+     *
+     * <p>This method should be overridden by subclasses to cleanup their specific resources.
+     * The base implementation does nothing.
+     *
+     * @throws HomekitServerException if cleanup fails
      */
     protected void cleanupResources() throws HomekitServerException {
         // Base implementation does nothing
     }
 
+    /**
+     * Removes all registered accessories during server shutdown.
+     *
+     * <p>This method:
+     * <ul>
+     *     <li>Creates a copy of the accessories list to avoid concurrent modification</li>
+     *     <li>Attempts to remove each accessory</li>
+     *     <li>Logs any errors that occur during removal</li>
+     * </ul>
+     */
     private void cleanupAccessories() {
         List<HomekitAccessory> accessoriesToRemove;
         synchronized (accessoryLock) {
@@ -178,6 +270,19 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         }
     }
 
+    /**
+     * Starts the HomeKit accessory server.
+     *
+     * <p>This method:
+     * <ul>
+     *     <li>Validates the current server state</li>
+     *     <li>Initializes required resources</li>
+     *     <li>Transitions to the READY state</li>
+     *     <li>Handles any initialization errors</li>
+     * </ul>
+     *
+     * @throws HomekitServerException if the server cannot be started
+     */
     @Override
     public void start() throws HomekitServerException {
         synchronized (stateLock) {
@@ -207,6 +312,19 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         }
     }
 
+    /**
+     * Stops the HomeKit accessory server gracefully.
+     *
+     * <p>This method:
+     * <ul>
+     *     <li>Validates the current server state</li>
+     *     <li>Transitions to the STOPPED state</li>
+     *     <li>Cleans up resources</li>
+     *     <li>Handles any shutdown errors</li>
+     * </ul>
+     *
+     * @throws HomekitServerException if the server cannot be stopped gracefully
+     */
     @Override
     public void stop() throws HomekitServerException {
         synchronized (stateLock) {
@@ -228,51 +346,16 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         }
     }
 
-    @Override
-    public void close() throws Exception {
-        synchronized (stateLock) {
-            if (isShutdown) {
-                logger.debug("{}Server already shut down", LOG_SERVER);
-                return;
-            }
-            isShutdown = true;
-            logger.info("{}Initiating server shutdown", LOG_SERVER);
-
-            Exception firstException = null;
-
-            // Cleanup in specific order, capturing first exception but continuing cleanup
-            try {
-                cleanupAccessories();
-            } catch (Exception e) {
-                if (firstException == null)
-                    firstException = e;
-                logger.error("{}Error during accessory cleanup: {}", LOG_ERROR, e.getMessage(), e);
-            }
-
-            try {
-                cleanupResources();
-            } catch (Exception e) {
-                if (firstException == null)
-                    firstException = e;
-                logger.error("{}Error during resource cleanup: {}", LOG_ERROR, e.getMessage(), e);
-            }
-
-            try {
-                setState(HomekitAccessoryServerState.STOPPED);
-            } catch (Exception e) {
-                if (firstException == null)
-                    firstException = e;
-                logger.error("{}Failed to set stopped state during shutdown: {}", LOG_ERROR, e.getMessage(), e);
-            }
-
-            if (firstException != null) {
-                throw new Exception("Server shutdown completed with errors", firstException);
-            }
-
-            logger.info("{}Server shutdown completed successfully", LOG_SERVER);
-        }
-    }
-
+    /**
+     * Forces the server to stop immediately, bypassing normal shutdown procedures.
+     *
+     * <p>This method is called when normal shutdown fails and attempts to:
+     * <ul>
+     *     <li>Clean up all resources</li>
+     *     <li>Set the server state to STOPPED</li>
+     *     <li>Log any errors that occur</li>
+     * </ul>
+     */
     private void forceStop() {
         try {
             cleanupResources();
@@ -283,6 +366,18 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         }
     }
 
+    /**
+     * Validates that a lifecycle operation can be performed in the current server state.
+     *
+     * <p>This method checks:
+     * <ul>
+     *     <li>The server is not in a shutdown state</li>
+     *     <li>The operation is valid for the current state</li>
+     * </ul>
+     *
+     * @param operation A description of the operation being performed
+     * @throws HomekitServerException if the operation is not valid
+     */
     protected void validateLifecycleOperation(String operation) throws HomekitServerException {
         if (isShutdown) {
             throw new HomekitServerException(String.format("Cannot %s - server is shut down", operation));
@@ -290,10 +385,24 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
     }
 
     // ========== State Management Methods ==========
+    /**
+     * Gets the current state of the server.
+     *
+     * @return The current server state
+     */
     public synchronized HomekitAccessoryServerState getCurrentState() {
         return currentState;
     }
 
+    /**
+     * Validates that a state transition is allowed.
+     *
+     * <p>This method checks if the transition from the current state to the new state
+     * is valid according to the state transition rules.
+     *
+     * @param newState The desired new state
+     * @throws HomekitInvalidStateTransitionException if the transition is not allowed
+     */
     private void validateStateTransition(HomekitAccessoryServerState newState)
             throws HomekitInvalidStateTransitionException {
         if (!isValidStateTransition(currentState, newState)) {
@@ -301,128 +410,210 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         }
     }
 
+    /**
+     * Checks if a state transition is valid.
+     *
+     * @param current The current state
+     * @param next The desired next state
+     * @return true if the transition is valid, false otherwise
+     */
     private boolean isValidStateTransition(HomekitAccessoryServerState current, HomekitAccessoryServerState next) {
-        @Nullable
         Set<HomekitAccessoryServerState> validNextStates = VALID_STATE_TRANSITIONS.get(current);
         return validNextStates != null && validNextStates.contains(next);
     }
 
+    /**
+     * Sets the server state and notifies listeners of the change.
+     *
+     * <p>This method:
+     * <ul>
+     *     <li>Validates the state transition</li>
+     *     <li>Updates the current state</li>
+     *     <li>Notifies state change listeners</li>
+     *     <li>Logs the state change</li>
+     * </ul>
+     *
+     * @param newState The new state to set
+     * @throws HomekitServerException if the state transition is invalid
+     */
     protected synchronized void setState(HomekitAccessoryServerState newState) throws HomekitServerException {
-        HomekitAccessoryServerState previousState = currentState;
         try {
             validateStateTransition(newState);
-
-            synchronized (stateLock) {
-                if (!isValidStateTransition(currentState, newState)) {
-                    throw new HomekitInvalidStateTransitionException(
-                            String.format("Invalid state transition from %s to %s - Valid transitions from %s are: %s",
-                                    currentState, newState, currentState, VALID_STATE_TRANSITIONS.get(currentState)));
-                }
-                currentState = newState;
-            }
-
-            eventManager.publishEvent(new HomekitAccessoryServerEvent(newState.getEventType(), this,
+            HomekitAccessoryServerState oldState = currentState;
+            currentState = newState;
+            logger.debug("{}Server state changed from {} to {}", LOG_STATE, oldState, newState);
+            eventManager.publishEvent(new HomekitAccessoryServerEvent(HomekitEventType.SERVER_STATE_CHANGED, this,
                     (HomekitAccessory) null, (HomekitService) null, (HomekitCharacteristic<?>) null));
-            logger.debug("{}State change completed", LOG_STATE);
-        } catch (HomekitServerException e) {
-            // Rollback on failure
-            synchronized (stateLock) {
-                currentState = previousState;
-            }
-            logger.error("{}Failed to set state to {}: {}", LOG_ERROR, newState, e.getMessage());
-            throw e;
+        } catch (HomekitInvalidStateTransitionException e) {
+            logger.error("{}Invalid state transition: {}", LOG_ERROR, e.getMessage());
+            throw new HomekitServerException("Invalid state transition", e);
         }
     }
 
     // ========== Configuration Management Methods ==========
+    /**
+     * Gets the current configuration index.
+     *
+     * <p>The configuration index is used to track changes to the server's configuration
+     * and notify clients when updates are needed.
+     *
+     * @return The current configuration index
+     */
     @Override
     public int getConfigurationIndex() {
-        synchronized (stateLock) {
-            return configurationIndex;
-        }
+        return configurationIndex;
     }
 
+    /**
+     * Sets a new configuration index.
+     *
+     * <p>This method:
+     * <ul>
+     *     <li>Validates the new index</li>
+     *     <li>Updates the configuration index</li>
+     *     <li>Notifies clients of the change</li>
+     * </ul>
+     *
+     * @param newIndex The new configuration index
+     * @throws HomekitConfigurationException if the new index is invalid
+     */
     @Override
     public void setConfigurationIndex(int newIndex) throws HomekitConfigurationException {
-        synchronized (stateLock) {
-            validateConfigurationIndex(newIndex);
-            int oldIndex = configurationIndex;
-            try {
-                configurationIndex = newIndex;
-                eventManager.publishEvent(
-                        new HomekitAccessoryServerEvent(HomekitEventType.SERVER_STATE_CONFIGURATION_NUMBER_CHANGED,
-                                this, (HomekitAccessory) null, (HomekitService) null, (HomekitCharacteristic<?>) null));
-                logger.info("{}Configuration index updated from {} to {}", LOG_CONFIG, oldIndex, newIndex);
-            } catch (Exception e) {
-                // Rollback on failure
-                configurationIndex = oldIndex;
-                throw new HomekitConfigurationException(
-                        String.format("Failed to update configuration index from %d to %d", oldIndex, newIndex), e);
-            }
-        }
+        validateConfigurationIndex(newIndex);
+        configurationIndex = newIndex;
+        logger.debug("{}Configuration index updated to {}", LOG_CONFIG, newIndex);
+        eventManager.publishEvent(new HomekitAccessoryServerEvent(HomekitEventType.SERVER_STATE_CONFIGURATION_NUMBER_CHANGED, this,
+                (HomekitAccessory) null, (HomekitService) null, (HomekitCharacteristic<?>) null));
     }
 
+    /**
+     * Validates a new configuration index.
+     *
+     * <p>This method ensures that:
+     * <ul>
+     *     <li>The new index is greater than the current index</li>
+     *     <li>The new index is not unreasonably large</li>
+     * </ul>
+     *
+     * @param newIndex The new configuration index to validate
+     * @throws HomekitConfigurationException if the new index is invalid
+     */
     private void validateConfigurationIndex(int newIndex) throws HomekitConfigurationException {
-        if (newIndex <= 0) {
-            throw new HomekitConfigurationException("Configuration index must be positive");
+        if (newIndex <= configurationIndex) {
+            throw new HomekitConfigurationException(
+                    String.format("New configuration index %d must be greater than current index %d", newIndex,
+                            configurationIndex));
         }
-        if (newIndex == configurationIndex) {
-            throw new HomekitConfigurationException("New configuration index is the same as current index");
+        if (newIndex > configurationIndex + 1000) {
+            throw new HomekitConfigurationException(
+                    String.format("New configuration index %d is unreasonably large", newIndex));
         }
     }
 
+    /**
+     * Increments the configuration index.
+     *
+     * <p>This method is called when the server's configuration changes and
+     * clients need to be notified of the update.
+     */
     protected synchronized void incrementConfigurationIndex() {
-        synchronized (stateLock) {
-            configurationIndex++;
-            logger.debug("{}Configuration index incremented to {}", LOG_CONFIG, configurationIndex);
-        }
+        configurationIndex++;
+        logger.debug("{}Configuration index incremented to {}", LOG_CONFIG, configurationIndex);
+        eventManager.publishEvent(new HomekitAccessoryServerEvent(HomekitEventType.SERVER_STATE_CONFIGURATION_NUMBER_CHANGED, this,
+                (HomekitAccessory) null, (HomekitService) null, (HomekitCharacteristic<?>) null));
     }
 
+    /**
+     * Performs a factory reset of the server.
+     *
+     * <p>This method:
+     * <ul>
+     *     <li>Removes all pairings</li>
+     *     <li>Resets the configuration index</li>
+     *     <li>Clears the setup code</li>
+     *     <li>Notifies clients of the reset</li>
+     * </ul>
+     */
     @Override
     public void factoryReset() {
-        logger.debug("{}Performing factory reset", LOG_CONFIG);
-        synchronized (stateLock) {
-            try {
-                setState(HomekitAccessoryServerState.RESET);
-                // After reset, transition to UNPAIRED state
-                setState(HomekitAccessoryServerState.UNPAIRED);
-            } catch (HomekitServerException e) {
-                logger.error("{}Failed to perform factory reset: {}", LOG_ERROR, e.getMessage(), e);
+        logger.info("{}Performing factory reset", LOG_CONFIG);
+        try {
+            Collection<HomekitPairing> pairings = pairingRegistry.get(getPairingId());
+            for (HomekitPairing pairing : pairings) {
+                pairingRegistry.remove(pairing.getUID());
             }
+            configurationIndex = 1;
+            setupCode = "";
+            eventManager.publishEvent(new HomekitAccessoryServerEvent(HomekitEventType.SERVER_STATE_UNPAIRED, this,
+                    (HomekitAccessory) null, (HomekitService) null, (HomekitCharacteristic<?>) null));
+            logger.info("{}Factory reset completed successfully", LOG_CONFIG);
+        } catch (Exception e) {
+            logger.error("{}Failed to perform factory reset: {}", LOG_ERROR, e.getMessage(), e);
         }
     }
 
     // ========== Server Identity and Network Methods ==========
+    /**
+     * Gets the network address of the server.
+     *
+     * @return The server's network address
+     */
     @Override
     public InetAddress getAddress() {
         logger.debug("{}Getting server address: {}", LOG_CONFIG, address);
         return address;
     }
 
+    /**
+     * Gets the port number the server is listening on.
+     *
+     * @return The server's port number
+     */
     @Override
     public int getPort() {
         logger.debug("{}Getting server port: {}", LOG_CONFIG, port);
         return port;
     }
 
+    /**
+     * Gets the pairing identifier for this server.
+     *
+     * @return The server's pairing identifier
+     */
     @Override
     public byte[] getPairingId() {
         logger.debug("{}Getting pairing ID", LOG_CONFIG);
         return pairingIdentifier;
     }
 
+    /**
+     * Gets the unique identifier for this server.
+     *
+     * @return The server's unique identifier
+     */
     @Override
     public HomekitAccessoryServerUID getUID() {
         logger.debug("{}Getting server UID", LOG_CONFIG);
         return new HomekitAccessoryServerUIDImpl(new String(getPairingId(), StandardCharsets.UTF_8).replace(":", ""));
     }
 
+    /**
+     * Gets the server's secret key.
+     *
+     * @return The server's secret key
+     */
     @Override
     public byte[] getSecretKey() {
         logger.debug("{}Getting secret key", LOG_CONFIG);
         return secretKey;
     }
 
+    /**
+     * Gets the public key for a specific pairing.
+     *
+     * @param destinationPairingId The pairing identifier to get the public key for
+     * @return The public key for the specified pairing
+     */
     @Override
     public byte[] getPublicKey(byte @NonNull [] destinationPairingId) {
         logger.debug("{}Getting public key for destination pairing ID: {}", LOG_CONFIG,
@@ -432,12 +623,22 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
     }
 
     // ========== Setup Code Management Methods ==========
+    /**
+     * Gets the setup code for this server.
+     *
+     * @return The server's setup code
+     */
     @Override
     public String getSetupCode() {
         logger.debug("{}Getting setup code", LOG_CONFIG);
         return setupCode;
     }
 
+    /**
+     * Sets the setup code for this server.
+     *
+     * @param setupCode The new setup code
+     */
     @Override
     public void setSetupCode(String setupCode) {
         if (setupCode.length() != 8 || !setupCode.matches("\\d{8}")) {
@@ -447,6 +648,21 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
     }
 
     // ========== HomekitPairing Management Methods ==========
+    /**
+     * Adds a new pairing to the server.
+     *
+     * <p>This method:
+     * <ul>
+     *     <li>Validates the pairing parameters</li>
+     *     <li>Creates a new pairing</li>
+     *     <li>Registers it with the pairing registry</li>
+     *     <li>Notifies clients of the change</li>
+     * </ul>
+     *
+     * @param pairingId The identifier for the new pairing
+     * @param publicKey The public key for the new pairing
+     * @throws HomekitServerException if the pairing cannot be added
+     */
     @Override
     public void addPairing(byte @NonNull [] pairingId, byte @NonNull [] publicKey) throws HomekitServerException {
         if (pairingId.length == 0) {
@@ -489,6 +705,12 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         }
     }
 
+    /**
+     * Gets a pairing by its identifier.
+     *
+     * @param pairingId The identifier of the pairing to get
+     * @return The pairing, or null if not found
+     */
     @Override
     public @Nullable HomekitPairing getPairing(byte @NonNull [] pairingId) {
         if (pairingId.length == 0) {
@@ -498,12 +720,30 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         return pairings.isEmpty() ? null : pairings.iterator().next();
     }
 
+    /**
+     * Gets all pairings for this server.
+     *
+     * @return A collection of all pairings
+     */
     @Override
     public Collection<HomekitPairing> getPairings() {
         logger.debug("{}Getting all pairings", LOG_PAIRING);
         return pairingRegistry.get(getPairingId());
     }
 
+    /**
+     * Removes a pairing from the server.
+     *
+     * <p>This method:
+     * <ul>
+     *     <li>Validates the pairing exists</li>
+     *     <li>Removes it from the pairing registry</li>
+     *     <li>Notifies clients of the change</li>
+     * </ul>
+     *
+     * @param pairingId The identifier of the pairing to remove
+     * @throws HomekitServerException if the pairing cannot be removed
+     */
     @Override
     public void removePairing(byte @NonNull [] pairingId) throws HomekitServerException {
         if (pairingId == null || pairingId.length == 0) {
@@ -529,6 +769,18 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         }
     }
 
+    /**
+     * Handles the result of a pairing verification attempt.
+     *
+     * <p>This method:
+     * <ul>
+     *     <li>Updates the server state based on verification result</li>
+     *     <li>Notifies clients of the change</li>
+     * </ul>
+     *
+     * @param verified Whether the pairing was verified successfully
+     * @throws HomekitServerException if the state transition fails
+     */
     protected void handlePairingVerification(boolean verified) throws HomekitServerException {
         logger.debug("{}Handling pairing verification - Verified: {}", LOG_STATE, verified);
         synchronized (stateLock) {
@@ -542,6 +794,11 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         }
     }
 
+    /**
+     * Checks if the server has any active pairings.
+     *
+     * @return true if the server has at least one pairing, false otherwise
+     */
     @Override
     public boolean isPaired() {
         synchronized (stateLock) {
@@ -562,6 +819,11 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
     }
 
     // ========== HomekitAccessory Management Methods ==========
+    /**
+     * Gets all accessories registered with this server.
+     *
+     * @return A collection of all registered accessories
+     */
     @Override
     public Collection<HomekitAccessory> getAccessories() {
         synchronized (accessoryLock) {
@@ -569,6 +831,12 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         }
     }
 
+    /**
+     * Gets an accessory by its identifier.
+     *
+     * @param accessoryId The identifier of the accessory to get
+     * @return The accessory, or null if not found
+     */
     @Override
     public @Nullable HomekitAccessory getAccessory(int accessoryId) {
         synchronized (accessoryLock) {
@@ -578,6 +846,20 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         }
     }
 
+    /**
+     * Adds a new accessory to the server.
+     *
+     * <p>This method:
+     * <ul>
+     *     <li>Validates the accessory</li>
+     *     <li>Checks for ID and UID uniqueness</li>
+     *     <li>Registers the accessory</li>
+     *     <li>Notifies clients of the change</li>
+     * </ul>
+     *
+     * @param accessory The accessory to add
+     * @throws HomekitAccessoryOperationException if the accessory cannot be added
+     */
     @Override
     public void addAccessory(HomekitAccessory accessory) throws HomekitAccessoryOperationException {
         validateAccessory(accessory);
@@ -632,6 +914,19 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         }
     }
 
+    /**
+     * Removes an accessory from the server.
+     *
+     * <p>This method:
+     * <ul>
+     *     <li>Validates the accessory exists</li>
+     *     <li>Unregisters the accessory</li>
+     *     <li>Notifies clients of the change</li>
+     * </ul>
+     *
+     * @param accessory The accessory to remove
+     * @throws HomekitAccessoryOperationException if the accessory cannot be removed
+     */
     @Override
     public void removeAccessory(HomekitAccessory accessory) throws HomekitAccessoryOperationException {
         validateAccessory(accessory);
@@ -680,6 +975,12 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         }
     }
 
+    /**
+     * Validates that an accessory's ID is unique.
+     *
+     * @param accessory The accessory to validate
+     * @throws HomekitAccessoryOperationException if the ID is not unique
+     */
     private void validateAccessoryIdUniqueness(HomekitAccessory accessory) throws HomekitAccessoryOperationException {
         synchronized (accessoryLock) {
             for (HomekitAccessory existing : accessories) {
@@ -692,6 +993,12 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         }
     }
 
+    /**
+     * Validates that an accessory's UID is unique.
+     *
+     * @param accessory The accessory to validate
+     * @throws HomekitAccessoryOperationException if the UID is not unique
+     */
     private void validateAccessoryUidUniqueness(HomekitAccessory accessory) throws HomekitAccessoryOperationException {
         synchronized (accessoryLock) {
             for (HomekitAccessory existing : accessories) {
@@ -704,6 +1011,12 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         }
     }
 
+    /**
+     * Validates an accessory's configuration.
+     *
+     * @param accessory The accessory to validate
+     * @throws HomekitAccessoryOperationException if the accessory is invalid
+     */
     private void validateAccessory(HomekitAccessory accessory) throws HomekitAccessoryOperationException {
 
         if (accessory.getAccessoryId() < 0) {
@@ -715,6 +1028,12 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         validateAccessoryUidUniqueness(accessory);
     }
 
+    /**
+     * Validates that an accessory exists in the server.
+     *
+     * @param accessory The accessory to validate
+     * @throws HomekitAccessoryOperationException if the accessory is not found
+     */
     private void validateAccessoryExists(HomekitAccessory accessory) throws HomekitAccessoryOperationException {
         synchronized (stateLock) {
             if (!accessories.contains(accessory)) {
@@ -725,11 +1044,25 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
     }
 
     // ========== Interfaces ==========
+    /**
+     * Interface for listeners that need to be prioritized.
+     */
     public interface PrioritizedListener extends HomekitAccessoryServerChangeListener {
+        /**
+         * Gets the priority of this listener.
+         *
+         * @return The listener's priority
+         */
         int getPriority();
     }
 
     // ========== Utility Methods ==========
+    /**
+     * Generates a new secret key for the server.
+     *
+     * @return A new secret key
+     * @throws HomekitServerException if key generation fails
+     */
     protected static byte[] generateSecretKey() throws HomekitServerException {
         try {
             logger.debug("{}Generating new secret key", LOG_CONFIG);
@@ -740,6 +1073,12 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         }
     }
 
+    /**
+     * Generates a new pairing identifier for the server.
+     *
+     * @return A new pairing identifier
+     * @throws HomekitServerException if ID generation fails
+     */
     protected static byte[] generatePairingId() throws HomekitServerException {
         try {
             logger.debug("{}Generating new pairing ID", LOG_CONFIG);
@@ -750,6 +1089,11 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         }
     }
 
+    /**
+     * Checks if this server is a bridge.
+     *
+     * @return true if this server is a bridge, false otherwise
+     */
     public boolean isBridge() {
         logger.debug("{}Checking if server is a bridge: {}", LOG_CONFIG, category == HomekitAccessoryCategory.BRIDGES);
         return category == HomekitAccessoryCategory.BRIDGES;
@@ -758,6 +1102,18 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
     @Override
     public abstract void advertise();
 
+    /**
+     * Handles a connection state change.
+     *
+     * <p>This method:
+     * <ul>
+     *     <li>Updates the server state based on connection status</li>
+     *     <li>Notifies clients of the change</li>
+     * </ul>
+     *
+     * @param connected Whether the server is connected
+     * @throws HomekitServerException if the state transition fails
+     */
     protected void handleConnection(boolean connected) throws HomekitServerException {
         logger.debug("{}Handling connection - Connected: {}", LOG_STATE, connected);
         synchronized (stateLock) {
@@ -767,6 +1123,52 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
             } else {
                 setState(HomekitAccessoryServerState.DISCONNECTED);
                 logger.info("{}Connection terminated", LOG_STATE);
+            }
+        }
+    }
+
+    /**
+     * Closes the HomeKit accessory server and releases all resources.
+     *
+     * <p>This method performs a graceful shutdown of the server, ensuring that all
+     * resources are properly released and all registered accessories are removed.
+     * It is called automatically when the server is used in a try-with-resources block
+     * or when explicitly closed.
+     *
+     * <p>Key implementation details:
+     * <ul>
+     *     <li>Stops the server if it is running</li>
+     *     <li>Cleans up all resources and registered accessories</li>
+     *     <li>Logs any errors encountered during shutdown</li>
+     *     <li>Ensures idempotent behavior (multiple calls are safe)</li>
+     * </ul>
+     *
+     * <p>The method integrates with:
+     * <ul>
+     *     <li>{@link #stop()} for graceful server shutdown</li>
+     *     <li>{@link #cleanupAccessories()} for accessory cleanup</li>
+     *     <li>{@link #cleanupResources()} for resource cleanup</li>
+     * </ul>
+     *
+     * @throws Exception if an error occurs during shutdown
+     */
+    @Override
+    public void close() throws Exception {
+        logger.info("{}Closing Homekit accessory server", LOG_INIT);
+        synchronized (stateLock) {
+            if (!isShutdown) {
+                try {
+                    stop();
+                    cleanupAccessories();
+                    cleanupResources();
+                    isShutdown = true;
+                    logger.info("{}Homekit accessory server closed successfully", LOG_INIT);
+                } catch (Exception e) {
+                    logger.error("{}Error while closing Homekit accessory server: {}", LOG_ERROR, e.getMessage(), e);
+                    throw e;
+                }
+            } else {
+                logger.warn("{}Homekit accessory server is already closed", LOG_WARN);
             }
         }
     }

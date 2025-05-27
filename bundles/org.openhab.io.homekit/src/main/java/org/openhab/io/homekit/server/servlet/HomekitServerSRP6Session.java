@@ -322,6 +322,16 @@ public class HomekitServerSRP6Session extends SRP6Session {
         return state;
     }
 
+    /**
+     * Generates a private value 'b' for the server's SRP-6a session.
+     * The value is generated within a secure range to ensure cryptographic strength.
+     * For HomeKit compatibility, the minimum bit length is set to 3072 bits or half the modulus length,
+     * whichever is smaller.
+     *
+     * @param N The SRP-6a modulus. Must not be {@code null}.
+     * @param random Source of randomness. Must not be {@code null}.
+     * @return A random private value 'b' in the secure range.
+     */
     public BigInteger generatePrivateValue(BigInteger N, SecureRandom random) {
         final int minBits = Math.min(3072, N.bitLength() / 2);
 

@@ -47,19 +47,36 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Represents a local HomeKit accessory server that runs on the same machine as OpenHAB.
- * This server handles local HomeKit accessories and manages their lifecycle, including:
- * - Server initialization and startup
- * - Accessory registration and management
- * - mDNS advertisement
- * - HTTP request handling
- * - Event processing and notifications
  *
- * @author Karel Goderis - Initial contribution
+ * <p>This class implements a local HomeKit accessory server that manages the lifecycle of
+ * HomeKit accessories, including server initialization, accessory registration, mDNS
+ * advertisement, HTTP request handling, and event processing.
+ *
+ * <p>The class integrates with:
+ * <ul>
+ *     <li>{@link HomekitAbstractAccessoryServer} for base server functionality</li>
+ *     <li>{@link MDNSService} for service discovery and advertisement</li>
+ *     <li>{@link Server} for HTTP request handling</li>
+ *     <li>{@link HomekitAccessoryRegistry} for accessory management</li>
+ *     <li>{@link HomekitPairingRegistry} for secure pairing management</li>
+ *     <li>{@link HomekitEventManager} for event handling</li>
+ * </ul>
+ *
+ * <p>Key features:
+ * <ul>
+ *     <li>Local network service discovery via mDNS</li>
+ *     <li>Secure HTTP communication with HomeKit clients</li>
+ *     <li>Accessory lifecycle management</li>
+ *     <li>Event subscription and notification</li>
+ *     <li>Secure pairing and authentication</li>
+ * </ul>
+ *
+ * @author Karel Goderis - Initial Contribution
  * @since 1.0
  */
 public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer {
 
-    // ========== Constants ==========
+    // ========== Log Message Prefixes ==========
     protected static final Logger logger = LoggerFactory.getLogger(HomekitLocalAccessoryServer.class);
     protected static final String LOG_PREFIX = "Homekit LocalAccessoryServer: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
@@ -93,6 +110,17 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     /**
      * Creates a new local HomeKit accessory server with the specified configuration.
      *
+     * <p>This constructor initializes a local HomeKit server with explicit configuration
+     * parameters for network settings, security, and service integration.
+     *
+     * <p>Key implementation details:
+     * <ul>
+     *     <li>Validates and stores network configuration</li>
+     *     <li>Initializes security parameters</li>
+     *     <li>Sets up service integrations</li>
+     *     <li>Configures logging and monitoring</li>
+     * </ul>
+     *
      * @param category The category of accessories this server will host
      * @param address The network address to bind to
      * @param port The port to listen on
@@ -118,6 +146,17 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     /**
      * Creates a new local HomeKit accessory server with auto-generated pairing ID and secret key.
      *
+     * <p>This constructor initializes a local HomeKit server with auto-generated security
+     * credentials while maintaining the same network and service configuration capabilities.
+     *
+     * <p>Key implementation details:
+     * <ul>
+     *     <li>Generates secure pairing ID and secret key</li>
+     *     <li>Initializes network configuration</li>
+     *     <li>Sets up service integrations</li>
+     *     <li>Configures logging and monitoring</li>
+     * </ul>
+     *
      * @param category The category of accessories this server will host
      * @param address The network address to bind to
      * @param port The port to listen on
@@ -138,6 +177,22 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     }
 
     // ========== Lifecycle Methods ==========
+    /**
+     * Initializes the server resources required for operation.
+     *
+     * <p>This method sets up the HTTP server, servlets, and other resources needed
+     * for the HomeKit server to function.
+     *
+     * <p>Key implementation details:
+     * <ul>
+     *     <li>Creates and configures Jetty server instance</li>
+     *     <li>Sets up HTTP configuration and connectors</li>
+     *     <li>Initializes servlets for various endpoints</li>
+     *     <li>Configures request logging and handlers</li>
+     * </ul>
+     *
+     * @throws HomekitServerException if resource initialization fails
+     */
     @Override
     protected void initializeResources() throws HomekitServerException {
         logger.debug("{}Initializing server resources", LOG_INIT);
@@ -171,8 +226,6 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
                 throw e;
             }
 
-            // ServletContextHandler servletContextHandler = new ServletContextHandler(
-            // ServletContextHandler.SESSIONS | ServletContextHandler.NO_SECURITY);
             ServletContextHandler servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
             servletContextHandler.setContextPath("/");
             servletContextHandler.setSessionHandler(homekitSessionHandler);
@@ -193,52 +246,23 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
             logger.error("{}Failed to initialize server resources: {}", LOG_ERROR, e.getMessage(), e);
             throw e;
         }
-
-        // Netty - Do not Delete
-
-        // logger.debug("Attempting {}:{}", localAddress, port);
-        //
-        // final ServerBootstrap bootstrap = new ServerBootstrap();
-        // bootstrap.channel(NioServerSocketChannel.class);
-        // bootstrap.group(new NioEventLoopGroup(), new NioEventLoopGroup());
-        //
-        // WebappConfiguration webapp = new WebappConfiguration()
-        // .addServletConfigurations(new ServletConfiguration(this, HomekitPairSetupServlet.class, "/pair-setup/"))
-        // .addServletConfigurations(
-        // new ServletConfiguration(this, HomekitPairVerificationServlet.class, "/pair-verify/"))
-        // .addServletConfigurations(new ServletConfiguration(this, HomekitAccessoryServlet.class, "/accessories/"))
-        // .addServletConfigurations(
-        // new ServletConfiguration(this, HomekitCharacteristicServlet.class, "/characteristics/"))
-        // .addServletConfigurations(new ServletConfiguration(this, HomekitPairingServlet.class, "/pairings/"));
-        //
-        // bootstrap.childHandler(new HomekitChannelInitializer(webapp));
-        //
-        // // Set up the event pipeline factory.
-        // // bootstrap.setPipelineFactory(new ServletBridgeChannelPipelineFactory(webapp));
-        //
-        // final ChannelFuture serverChannel = bootstrap.bind(localAddress, port);
-        // final CompletableFuture<Integer> portFuture = new CompletableFuture<Integer>();
-        // serverChannel.addListener(new GenericFutureListener<Future<? super Void>>() {
-        //
-        // @Override
-        // public void operationComplete(Future<? super Void> future) throws Exception {
-        // try {
-        // future.get();
-        // SocketAddress socketAddress = serverChannel.channel().localAddress();
-        // if (socketAddress instanceof InetSocketAddress) {
-        // logger.debug("bound homekit listener to " + socketAddress.toString());
-        // portFuture.complete(((InetSocketAddress) socketAddress).getPort());
-        // } else {
-        // throw new RuntimeException(
-        // "Unknown socket address type: " + socketAddress.getClass().getName());
-        // }
-        // } catch (Exception e) {
-        // portFuture.completeExceptionally(e);
-        // }
-        // }
-        // });
     }
 
+    /**
+     * Adds servlets to the servlet context handler.
+     *
+     * <p>This method adds the following servlets:
+     * <ul>
+     *     <li>Pair setup servlet for initial pairing</li>
+     *     <li>Pair verification servlet for secure communication</li>
+     *     <li>Accessory servlet for accessory information</li>
+     *     <li>Characteristic servlet for state management</li>
+     *     <li>Pairing servlet for pairing management</li>
+     *     <li>Catch-all servlet for other requests</li>
+     * </ul>
+     *
+     * @param servletContextHandler The servlet context handler to add servlets to
+     */
     private void addServlets(ServletContextHandler servletContextHandler) {
         logger.debug("{}Adding servlets to context handler", LOG_INIT);
 
@@ -395,6 +419,21 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     }
 
     // ========== HomekitPairing Management ==========
+    /**
+     * Adds a new pairing to the server.
+     *
+     * <p>This method performs the following operations:
+     * <ul>
+     *     <li>Adds the pairing to the base server</li>
+     *     <li>Updates the server advertisement</li>
+     *     <li>Logs the pairing addition</li>
+     * </ul>
+     *
+     * @param destinationPairingId The pairing ID of the destination device
+     * @param destinationPublicKey The public key of the destination device
+     * @throws HomekitServerException if pairing addition fails
+     * @throws NullPointerException if either parameter is null
+     */
     @Override
     public void addPairing(byte @NonNull [] destinationPairingId, byte @NonNull [] destinationPublicKey)
             throws HomekitServerException {
@@ -405,6 +444,20 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
         logger.info("{}HomekitPairing added and server advertised", LOG_PAIRING);
     }
 
+    /**
+     * Removes a pairing from the server.
+     *
+     * <p>This method performs the following operations:
+     * <ul>
+     *     <li>Removes the pairing from the base server</li>
+     *     <li>Updates the server advertisement</li>
+     *     <li>Logs the pairing removal</li>
+     * </ul>
+     *
+     * @param destinationPairingId The pairing ID of the destination device to remove
+     * @throws HomekitServerException if pairing removal fails
+     * @throws NullPointerException if the pairing ID is null
+     */
     @Override
     public void removePairing(byte @NonNull [] destinationPairingId) throws HomekitServerException {
         logger.debug("{}Removing pairing - Destination ID: {}", LOG_PAIRING,
@@ -414,17 +467,41 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
         logger.info("{}HomekitPairing removed and server advertised", LOG_PAIRING);
     }
 
+    /**
+     * Verifies the pairing status of the server.
+     *
+     * <p>This method checks if the server is currently paired with any devices.
+     *
+     * @return true if the server is paired, false otherwise
+     * @throws HomekitServerException if verification fails
+     */
     @Override
     public boolean pairVerify() throws HomekitServerException {
         logger.debug("{}Verifying pairing", LOG_PAIRING);
         return isPaired();
     }
 
+    /**
+     * Handles pairing removal requests.
+     *
+     * <p>This method is a no-op for local servers as pairing removal is handled
+     * through the removePairing method.
+     *
+     * @throws HomekitServerException if an error occurs
+     */
     @Override
     public void pairRemove() throws HomekitServerException {
         logger.debug("{}Remote pairing removal requested - No action needed for local server", LOG_PAIRING);
     }
 
+    /**
+     * Handles pairing setup requests.
+     *
+     * <p>This method is a no-op for local servers as pairing setup is handled
+     * through the addPairing method.
+     *
+     * @throws HomekitServerException if an error occurs
+     */
     @Override
     public void pairSetup() throws HomekitServerException {
         logger.debug("{}Remote pairing setup requested - No action needed for local server", LOG_PAIRING);
@@ -493,11 +570,15 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
 
     // ========== Advertisement Management ==========
     /**
-     * Advertises this server on the local network using mDNS.
-     * This method:
-     * 1. Ensures the server is running
-     * 2. Creates advertisement properties
-     * 3. Updates or creates the mDNS advertisement
+     * Advertises the server on the local network using mDNS.
+     *
+     * <p>This method performs the following operations:
+     * <ul>
+     *     <li>Ensures the server is running</li>
+     *     <li>Creates advertisement properties</li>
+     *     <li>Updates or creates the mDNS advertisement</li>
+     *     <li>Updates server state to READY</li>
+     * </ul>
      */
     @Override
     public synchronized void advertise() {
@@ -531,11 +612,15 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
 
     /**
      * Creates the properties for mDNS advertisement.
-     * These properties include:
-     * - Status flags indicating pairing state
-     * - Device ID for unique identification
-     * - Model name
-     * - Configuration number
+     *
+     * <p>This method creates a set of properties required for mDNS advertisement, including:
+     * <ul>
+     *     <li>Status flags indicating pairing state</li>
+     *     <li>Device ID for unique identification</li>
+     *     <li>Model name and configuration number</li>
+     *     <li>Feature flags and protocol version</li>
+     *     <li>Accessory category identifier</li>
+     * </ul>
      *
      * @return Hashtable containing the advertisement properties
      */
@@ -585,14 +670,25 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
         // props.put("pv", "1.1");
 
         // HomekitAccessory Category Identifier. Required. Indicates the category that best describes the primary
-        // function of
-        // the accessory. This must have a range of 1-65535. This must take values defined in "13-1 HomekitAccessory
-        // Categories" (page 252). This must persist across reboots, power cycles, etc.
+        // function of the accessory. This must have a range of 1-65535. This must take values defined in
+        // "13-1 HomekitAccessory Categories" (page 252). This must persist across reboots, power cycles, etc.
         props.put("ci", Integer.toString(HomekitAccessoryCategory.BRIDGES.getValue()));
 
         return props;
     }
 
+    /**
+     * Updates an existing mDNS advertisement with new properties.
+     *
+     * <p>This method:
+     * <ul>
+     *     <li>Updates the service properties</li>
+     *     <li>Unregisters and re-registers the service</li>
+     *     <li>Updates the server state</li>
+     * </ul>
+     *
+     * @param props The new advertisement properties
+     */
     private void updateExistingAdvertisement(Hashtable<String, String> props) {
         logger.debug("{}Updating existing advertisement", LOG_SERVER);
         announcedServiceDescription.serviceProperties = props;
@@ -606,6 +702,18 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
         logger.info("{}Advertisement updated successfully", LOG_SERVER);
     }
 
+    /**
+     * Creates a new mDNS advertisement with the specified properties.
+     *
+     * <p>This method:
+     * <ul>
+     *     <li>Creates a new service description</li>
+     *     <li>Registers the service with mDNS</li>
+     *     <li>Updates the server state</li>
+     * </ul>
+     *
+     * @param props The advertisement properties
+     */
     private void createNewAdvertisement(Hashtable<String, String> props) {
         logger.debug("{}Creating new advertisement", LOG_SERVER);
         announcedServiceDescription = new ServiceDescription(SERVICE_TYPE,
@@ -630,6 +738,21 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
         }
     }
 
+    /**
+     * Adds a new accessory to the server.
+     *
+     * <p>This method performs the following operations:
+     * <ul>
+     *     <li>Validates the server's lifecycle state</li>
+     *     <li>Registers the accessory with the base server</li>
+     *     <li>Sets up event subscriptions for the accessory's characteristics</li>
+     *     <li>Logs the addition of the accessory</li>
+     * </ul>
+     *
+     * @param accessory The accessory to add
+     * @throws HomekitAccessoryOperationException if accessory addition fails
+     * @throws NullPointerException if the accessory is null
+     */
     @Override
     public void addAccessory(@NonNull HomekitAccessory accessory) throws HomekitAccessoryOperationException {
         logger.debug("{}Adding accessory - ID: {}, Type: {}", LOG_ACCESSORY, accessory.getAccessoryId(),
@@ -655,6 +778,22 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
         }
     }
 
+    /**
+     * Removes an accessory from the server.
+     *
+     * <p>This method performs the following operations:
+     * <ul>
+     *     <li>Validates the server's lifecycle state</li>
+     *     <li>Removes the accessory from the base server</li>
+     *     <li>Unsubscribes from all characteristic events</li>
+     *     <li>Cleans up event subscriptions</li>
+     *     <li>Logs the removal of the accessory</li>
+     * </ul>
+     *
+     * @param accessory The accessory to remove
+     * @throws HomekitAccessoryOperationException if accessory removal fails
+     * @throws NullPointerException if the accessory is null
+     */
     @Override
     public void removeAccessory(@NonNull HomekitAccessory accessory) throws HomekitAccessoryOperationException {
         logger.debug("{}Removing accessory - ID: {}, Type: {}", LOG_ACCESSORY, accessory.getAccessoryId(),

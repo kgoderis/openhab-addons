@@ -34,9 +34,31 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Stores the created Accessories
+ * Implementation of the HomeKit accessory registry that manages the lifecycle and availability of HomeKit accessories.
  *
- * @author Karel Goderis - Initial Contribution
+ * This class serves as a central repository for all HomeKit accessories in the OpenHAB system, providing
+ * registration, discovery, and management capabilities. It operates as an OSGi service that integrates
+ * with OpenHAB's registry and ready service systems.
+ *
+ * Key responsibilities:
+ * - Managing accessory registration and discovery
+ * - Coordinating with accessory providers
+ * - Handling accessory lifecycle events
+ * - Ensuring proper initialization order
+ * - Maintaining accessory availability state
+ *
+ * The class integrates with:
+ * - {@link AbstractRegistry} for base registry functionality
+ * - {@link HomekitAccessoryProvider} for accessory source management
+ * - {@link HomekitAccessory} for accessory lifecycle
+ * - {@link ReadyService} for system readiness management
+ * - {@link ManagedProvider} for persistent storage integration
+ * - {@link org.openhab.core.common.registry.Provider OpenHAB's provider system} for accessory management
+ * - {@link org.openhab.core.service.ReadyMarker OpenHAB's ready marker system} for initialization coordination
+ *
+ * @author Karel Goderis - Initial contribution
+ * @version 1.0
+ * @since 1.0
  */
 @NonNullByDefault
 @Component(immediate = true, service = HomekitAccessoryRegistry.class)
@@ -60,23 +82,52 @@ public class HomekitAccessoryRegistryImpl
 
     private final ReadyService readyService;
 
+    /**
+     * Creates a new HomeKit accessory registry instance.
+     * This constructor initializes the registry with the required ready service
+     * for managing system initialization.
+     *
+     * @param readyService The service for managing system readiness
+     * @see ReadyService
+     */
     @Activate
     public HomekitAccessoryRegistryImpl(@Reference ReadyService readyService) {
         super(HomekitAccessoryProvider.class);
         this.readyService = readyService;
     }
 
+    /**
+     * Sets the managed provider for this registry.
+     * This method is called by the OSGi framework when a managed provider becomes available.
+     *
+     * @param provider The managed provider to set
+     * @see ManagedProvider
+     */
     @Reference(cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC)
     @Override
     protected void setManagedProvider(ManagedProvider<HomekitAccessory, HomekitAccessoryUID> provider) {
         super.setManagedProvider(provider);
     }
 
+    /**
+     * Removes the managed provider from this registry.
+     * This method is called by the OSGi framework when a managed provider becomes unavailable.
+     *
+     * @param provider The managed provider to remove
+     * @see ManagedProvider
+     */
     @Override
     protected void unsetManagedProvider(ManagedProvider<HomekitAccessory, HomekitAccessoryUID> provider) {
         super.unsetManagedProvider(provider);
     }
 
+    /**
+     * Activates the registry and registers it with the ready service.
+     * This method is called by the OSGi framework when the component is being started.
+     *
+     * @param context The OSGi bundle context
+     * @see BundleContext
+     */
     @Override
     @Activate
     protected void activate(final BundleContext context) {
@@ -85,6 +136,10 @@ public class HomekitAccessoryRegistryImpl
         readyService.registerTracker(this, new ReadyMarkerFilter().withType(HOMEKIT_MANAGED_ACCESSORY_PROVIDER));
     }
 
+    /**
+     * Deactivates the registry and unregisters it from the ready service.
+     * This method is called by the OSGi framework when the component is being stopped.
+     */
     @Override
     @Deactivate
     protected void deactivate() {
@@ -93,6 +148,13 @@ public class HomekitAccessoryRegistryImpl
         readyService.unregisterTracker(this);
     }
 
+    /**
+     * Handles the addition of a ready marker.
+     * This method is called when a component signals that it is ready to operate.
+     *
+     * @param readyMarker The ready marker that was added
+     * @see ReadyMarker
+     */
     @Override
     public void onReadyMarkerAdded(ReadyMarker readyMarker) {
         logger.debug("{}Ready marker added - Type: {}, Identifier: {}", LOG_STATE, readyMarker.getType(),
@@ -103,12 +165,26 @@ public class HomekitAccessoryRegistryImpl
         }
     }
 
+    /**
+     * Handles the removal of a ready marker.
+     * This method is called when a component signals that it is no longer ready to operate.
+     *
+     * @param readyMarker The ready marker that was removed
+     * @see ReadyMarker
+     */
     @Override
     public void onReadyMarkerRemoved(ReadyMarker readyMarker) {
         logger.debug("{}Ready marker removed - Type: {}, Identifier: {}", LOG_STATE, readyMarker.getType(),
                 readyMarker.getIdentifier());
     }
 
+    /**
+     * Adds a provider to the registry.
+     * This method ensures that providers are only added when the system is ready.
+     *
+     * @param provider The provider to add
+     * @see Provider
+     */
     @Override
     protected void addProvider(Provider<HomekitAccessory> provider) {
         logger.debug("{}Adding provider: {}", LOG_CONFIG, provider.toString());
@@ -124,6 +200,13 @@ public class HomekitAccessoryRegistryImpl
         }
     }
 
+    /**
+     * Adds a provider to the registry and marks the registry as ready.
+     * This method is called when a provider is ready to be added to the registry.
+     *
+     * @param provider The provider to add
+     * @see Provider
+     */
     public synchronized void addProviderWithReadyMarker(Provider<HomekitAccessory> provider) {
         super.addProvider(provider);
 
