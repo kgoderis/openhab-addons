@@ -19,19 +19,19 @@ import org.openhab.io.homekit.library.characteristic.HomekitSleepIntervalCharact
  * <p>
  * This service provides runtime information about the accessory, including:
  * <ul>
- *   <li>Activity intervals</li>
- *   <li>Heartbeat status</li>
- *   <li>Ping responses</li>
- *   <li>Sleep intervals</li>
+ * <li>Activity intervals</li>
+ * <li>Heartbeat status</li>
+ * <li>Ping responses</li>
+ * <li>Sleep intervals</li>
  * </ul>
  * </p>
  *
  * <p>
  * The service is used to monitor and manage the accessory's runtime state, ensuring:
  * <ul>
- *   <li>Proper communication between the accessory and iOS devices</li>
- *   <li>Efficient power management</li>
- *   <li>Reliable operation monitoring</li>
+ * <li>Proper communication between the accessory and iOS devices</li>
+ * <li>Efficient power management</li>
+ * <li>Reliable operation monitoring</li>
  * </ul>
  * </p>
  *
@@ -82,16 +82,16 @@ public class HomekitAccessoryRuntimeInformationService extends AbstractHomekitSe
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>Ping</li>
+     * <li>Ping</li>
      * </ul>
      * </p>
      *
      * <p>
      * Optional characteristics:
      * <ul>
-     *   <li>ActivityInterval</li>
-     *   <li>HeartBeat</li>
-     *   <li>SleepInterval</li>
+     * <li>ActivityInterval</li>
+     * <li>HeartBeat</li>
+     * <li>SleepInterval</li>
      * </ul>
      * </p>
      *
@@ -103,9 +103,11 @@ public class HomekitAccessoryRuntimeInformationService extends AbstractHomekitSe
                 .withMandatory(true));
         addCharacteristic(new HomekitActivityIntervalCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitHeartBeatCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitSleepIntervalCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(
+                new HomekitHeartBeatCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        addCharacteristic(
+                new HomekitSleepIntervalCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
     }
 }

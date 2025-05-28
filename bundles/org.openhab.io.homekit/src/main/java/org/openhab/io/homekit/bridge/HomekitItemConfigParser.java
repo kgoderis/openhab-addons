@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
  */
 public class HomekitItemConfigParser {
     private static final Logger logger = LoggerFactory.getLogger(HomekitItemConfigParser.class);
-    
+
     // ========== Log Message Prefixes ==========
     private static final String LOG_PREFIX = "Homekit ItemConfigParser: ";
     private static final String LOG_INIT = LOG_PREFIX + "Init - ";
@@ -131,7 +131,7 @@ public class HomekitItemConfigParser {
             throw new NullPointerException("value and config cannot be null");
         }
         logger.debug("{}Parsing metadata value: {}", LOG_PARSE, value);
-        
+
         // Split the value into service type and characteristics
         String[] parts = value.split("\\.");
         String serviceType = parts[0];

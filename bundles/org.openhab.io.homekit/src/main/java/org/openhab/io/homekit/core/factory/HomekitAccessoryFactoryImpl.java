@@ -1,6 +1,5 @@
 package org.openhab.io.homekit.core.factory;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashSet;
@@ -40,26 +39,26 @@ import org.slf4j.LoggerFactory;
  * <p>
  * The factory provides a centralized mechanism for creating HomeKit accessories through:
  * <ul>
- *   <li>Annotation-based discovery of accessory types using {@link HomekitAccessoryType}</li>
- *   <li>Dynamic instantiation of accessory instances through reflection</li>
- *   <li>Mapping between accessory types and their implementations</li>
- *   <li>Support for tag-based accessory creation</li>
- *   <li>Integration with {@link HomekitServiceFactory} for service creation</li>
- *   <li>Integration with {@link HomekitCharacteristicFactory} for characteristic creation</li>
- *   <li>Integration with {@link org.openhab.core.items.Item OpenHAB's item system} for state management</li>
+ * <li>Annotation-based discovery of accessory types using {@link HomekitAccessoryType}</li>
+ * <li>Dynamic instantiation of accessory instances through reflection</li>
+ * <li>Mapping between accessory types and their implementations</li>
+ * <li>Support for tag-based accessory creation</li>
+ * <li>Integration with {@link HomekitServiceFactory} for service creation</li>
+ * <li>Integration with {@link HomekitCharacteristicFactory} for characteristic creation</li>
+ * <li>Integration with {@link org.openhab.core.items.Item OpenHAB's item system} for state management</li>
  * </ul>
  * </p>
  *
  * <p>
  * The factory integrates with several key components:
  * <ul>
- *   <li>{@link HomekitAccessory} for accessory functionality and state management</li>
- *   <li>{@link HomekitServiceFactory} for service creation and management</li>
- *   <li>{@link HomekitCharacteristicFactory} for characteristic creation and management</li>
- *   <li>{@link HomekitEventManager} for event handling and state updates</li>
- *   <li>{@link HomekitAccessoryType} for type annotations and metadata</li>
- *   <li>{@link org.openhab.core.items.Item OpenHAB's item system} for state synchronization</li>
- *   <li>{@link org.openhab.core.thing.ChannelTypeUID OpenHAB's channel type system} for accessory configuration</li>
+ * <li>{@link HomekitAccessory} for accessory functionality and state management</li>
+ * <li>{@link HomekitServiceFactory} for service creation and management</li>
+ * <li>{@link HomekitCharacteristicFactory} for characteristic creation and management</li>
+ * <li>{@link HomekitEventManager} for event handling and state updates</li>
+ * <li>{@link HomekitAccessoryType} for type annotations and metadata</li>
+ * <li>{@link org.openhab.core.items.Item OpenHAB's item system} for state synchronization</li>
+ * <li>{@link org.openhab.core.thing.ChannelTypeUID OpenHAB's channel type system} for accessory configuration</li>
  * </ul>
  * </p>
  *
@@ -106,10 +105,10 @@ public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Initializes accessory type registry</li>
-     *   <li>Scans for annotated accessory classes</li>
-     *   <li>Registers accessory types and tags</li>
-     *   <li>Analyzes accessory metadata</li>
+     * <li>Initializes accessory type registry</li>
+     * <li>Scans for annotated accessory classes</li>
+     * <li>Registers accessory types and tags</li>
+     * <li>Analyzes accessory metadata</li>
      * </ul>
      *
      * @param eventManager The event manager for handling HomeKit events
@@ -137,20 +136,20 @@ public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
      * The initialization process:
      * </p>
      * <ol>
-     *   <li>Scans the accessory package for {@link HomekitAccessoryType} annotations</li>
-     *   <li>Analyzes each accessory class for type and tag information</li>
-     *   <li>Registers accessory types and their implementations</li>
-     *   <li>Builds the tag-to-type mapping for flexible accessory creation</li>
+     * <li>Scans the accessory package for {@link HomekitAccessoryType} annotations</li>
+     * <li>Analyzes each accessory class for type and tag information</li>
+     * <li>Registers accessory types and their implementations</li>
+     * <li>Builds the tag-to-type mapping for flexible accessory creation</li>
      * </ol>
      *
      * <p>
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Uses Reflections library for annotation scanning</li>
-     *   <li>Maintains thread-safe collections for accessory types</li>
-     *   <li>Analyzes accessory annotations for metadata</li>
-     *   <li>Logs detailed information about discovered accessories</li>
+     * <li>Uses Reflections library for annotation scanning</li>
+     * <li>Maintains thread-safe collections for accessory types</li>
+     * <li>Analyzes accessory annotations for metadata</li>
+     * <li>Logs detailed information about discovered accessories</li>
      * </ul>
      *
      * @throws IllegalStateException if accessory type initialization fails
@@ -199,10 +198,10 @@ public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Validates accessory type against registered types</li>
-     *   <li>Uses reflection to create accessory instance</li>
-     *   <li>Provides proper error handling and logging</li>
-     *   <li>Ensures thread-safe operation</li>
+     * <li>Validates accessory type against registered types</li>
+     * <li>Uses reflection to create accessory instance</li>
+     * <li>Provides proper error handling and logging</li>
+     * <li>Ensures thread-safe operation</li>
      * </ul>
      *
      * @param type The accessory type to create
@@ -240,10 +239,10 @@ public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Maps tag to accessory type</li>
-     *   <li>Uses standard accessory creation</li>
-     *   <li>Provides proper error handling</li>
-     *   <li>Maintains consistent logging</li>
+     * <li>Maps tag to accessory type</li>
+     * <li>Uses standard accessory creation</li>
+     * <li>Provides proper error handling</li>
+     * <li>Maintains consistent logging</li>
      * </ul>
      *
      * @param tag The accessory tag
@@ -275,10 +274,10 @@ public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Validates accessory type against registered types</li>
-     *   <li>Uses reflection to find matching constructor</li>
-     *   <li>Handles variable argument types</li>
-     *   <li>Provides detailed error logging</li>
+     * <li>Validates accessory type against registered types</li>
+     * <li>Uses reflection to find matching constructor</li>
+     * <li>Handles variable argument types</li>
+     * <li>Provides detailed error logging</li>
      * </ul>
      *
      * @param type The accessory type to create
@@ -304,7 +303,8 @@ public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
             return accessoryClass.getConstructor(argTypes).newInstance(args);
         } catch (IllegalAccessException | IllegalArgumentException | InstantiationException | NoSuchMethodException
                 | SecurityException | InvocationTargetException e) {
-            logger.error("{}Error creating accessory of type {} with custom arguments: {}", LOG_ERROR, type, e.getMessage(), e);
+            logger.error("{}Error creating accessory of type {} with custom arguments: {}", LOG_ERROR, type,
+                    e.getMessage(), e);
             throw new IllegalArgumentException("Failed to create accessory of type: " + type, e);
         }
     }
@@ -321,10 +321,10 @@ public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Maps tag to accessory type</li>
-     *   <li>Uses JSON value for initialization</li>
-     *   <li>Provides proper error handling</li>
-     *   <li>Maintains consistent logging</li>
+     * <li>Maps tag to accessory type</li>
+     * <li>Uses JSON value for initialization</li>
+     * <li>Provides proper error handling</li>
+     * <li>Maintains consistent logging</li>
      * </ul>
      *
      * @param tag The accessory tag
@@ -363,10 +363,10 @@ public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Maps tag to accessory type</li>
-     *   <li>Uses custom constructor arguments</li>
-     *   <li>Provides proper error handling</li>
-     *   <li>Maintains consistent logging</li>
+     * <li>Maps tag to accessory type</li>
+     * <li>Uses custom constructor arguments</li>
+     * <li>Provides proper error handling</li>
+     * <li>Maintains consistent logging</li>
      * </ul>
      *
      * @param tag The accessory tag
@@ -396,9 +396,9 @@ public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Uses thread-safe collection lookup</li>
-     *   <li>Provides fast response time</li>
-     *   <li>Maintains consistent logging</li>
+     * <li>Uses thread-safe collection lookup</li>
+     * <li>Provides fast response time</li>
+     * <li>Maintains consistent logging</li>
      * </ul>
      *
      * @param type The accessory type to check
@@ -423,9 +423,9 @@ public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Uses thread-safe collection lookup</li>
-     *   <li>Provides fast response time</li>
-     *   <li>Maintains consistent logging</li>
+     * <li>Uses thread-safe collection lookup</li>
+     * <li>Provides fast response time</li>
+     * <li>Maintains consistent logging</li>
      * </ul>
      *
      * @param tag The accessory tag to check
@@ -451,9 +451,9 @@ public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns unmodifiable set</li>
-     *   <li>Uses thread-safe collection</li>
-     *   <li>Maintains consistent logging</li>
+     * <li>Returns unmodifiable set</li>
+     * <li>Uses thread-safe collection</li>
+     * <li>Maintains consistent logging</li>
      * </ul>
      *
      * @return An unmodifiable set of supported accessory types
@@ -478,9 +478,9 @@ public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns unmodifiable set</li>
-     *   <li>Uses thread-safe collection</li>
-     *   <li>Maintains consistent logging</li>
+     * <li>Returns unmodifiable set</li>
+     * <li>Uses thread-safe collection</li>
+     * <li>Maintains consistent logging</li>
      * </ul>
      *
      * @return An unmodifiable set of supported accessory tags

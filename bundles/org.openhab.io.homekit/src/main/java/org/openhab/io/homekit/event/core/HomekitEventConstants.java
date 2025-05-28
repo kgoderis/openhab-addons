@@ -15,38 +15,38 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * The class integrates with:
  * </p>
  * <ul>
- *   <li>{@link HomekitEvent} for event property definitions</li>
- *   <li>{@link HomekitEventDispatcher} for thread management</li>
- *   <li>{@link HomekitEventMetadata} for event property handling</li>
+ * <li>{@link HomekitEvent} for event property definitions</li>
+ * <li>{@link HomekitEventDispatcher} for thread management</li>
+ * <li>{@link HomekitEventMetadata} for event property handling</li>
  * </ul>
  *
  * <p>
  * <b>Key Constants:</b>
  * </p>
  * <ul>
- *   <li>Thread Management:
- *     <ul>
- *       <li>EVENT_THREAD_NAME: Name of the event dispatch thread</li>
- *       <li>SHUTDOWN_TIMEOUT_SECONDS: Graceful shutdown timeout</li>
- *     </ul>
- *   </li>
- *   <li>Event Properties:
- *     <ul>
- *       <li>POWER: Power state property</li>
- *       <li>BRIGHTNESS: Brightness level property</li>
- *       <li>TEMPERATURE: Temperature value property</li>
- *       <li>HUMIDITY: Humidity level property</li>
- *     </ul>
- *   </li>
+ * <li>Thread Management:
+ * <ul>
+ * <li>EVENT_THREAD_NAME: Name of the event dispatch thread</li>
+ * <li>SHUTDOWN_TIMEOUT_SECONDS: Graceful shutdown timeout</li>
+ * </ul>
+ * </li>
+ * <li>Event Properties:
+ * <ul>
+ * <li>POWER: Power state property</li>
+ * <li>BRIGHTNESS: Brightness level property</li>
+ * <li>TEMPERATURE: Temperature value property</li>
+ * <li>HUMIDITY: Humidity level property</li>
+ * </ul>
+ * </li>
  * </ul>
  *
  * <p>
  * <b>Usage Guidelines:</b>
  * </p>
  * <ul>
- *   <li>Use these constants instead of string literals for consistency</li>
- *   <li>Add new constants for any new standard event properties</li>
- *   <li>Maintain thread-related constants for system configuration</li>
+ * <li>Use these constants instead of string literals for consistency</li>
+ * <li>Add new constants for any new standard event properties</li>
+ * <li>Maintain thread-related constants for system configuration</li>
  * </ul>
  *
  * @author OpenHAB

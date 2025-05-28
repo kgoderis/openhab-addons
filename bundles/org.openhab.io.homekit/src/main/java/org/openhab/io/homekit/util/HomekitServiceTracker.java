@@ -22,21 +22,21 @@ import org.slf4j.LoggerFactory;
  * The class integrates with several key components:
  * </p>
  * <ul>
- *   <li>{@link org.osgi.util.tracker.ServiceTracker} for OSGi service tracking</li>
- *   <li>{@link org.osgi.framework.BundleContext} for service registration</li>
- *   <li>{@link java.util.function.Supplier} for service access</li>
- *   <li>{@link java.lang.AutoCloseable} for resource management</li>
+ * <li>{@link org.osgi.util.tracker.ServiceTracker} for OSGi service tracking</li>
+ * <li>{@link org.osgi.framework.BundleContext} for service registration</li>
+ * <li>{@link java.util.function.Supplier} for service access</li>
+ * <li>{@link java.lang.AutoCloseable} for resource management</li>
  * </ul>
  *
  * <p>
  * Key features:
  * </p>
  * <ul>
- *   <li>Automatic service tracking and lifecycle management</li>
- *   <li>Type-safe service access</li>
- *   <li>Resource cleanup through AutoCloseable</li>
- *   <li>Bundle context validation</li>
- *   <li>Null safety checks</li>
+ * <li>Automatic service tracking and lifecycle management</li>
+ * <li>Type-safe service access</li>
+ * <li>Resource cleanup through AutoCloseable</li>
+ * <li>Bundle context validation</li>
+ * <li>Null safety checks</li>
  * </ul>
  *
  * @author Karel Goderis - Initial contribution
@@ -66,10 +66,10 @@ public class HomekitServiceTracker<T> implements AutoCloseable, Supplier<T> {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Validates input parameters</li>
-     *   <li>Acquires bundle context</li>
-     *   <li>Initializes service tracker</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Validates input parameters</li>
+     * <li>Acquires bundle context</li>
+     * <li>Initializes service tracker</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @param target The service type to track
@@ -92,7 +92,8 @@ public class HomekitServiceTracker<T> implements AutoCloseable, Supplier<T> {
             throw new IllegalArgumentException("Unable to acquire bundle context for " + source.getCanonicalName());
         }
         this.serviceTracker = new ServiceTracker<T, T>(context, target, null);
-        logger.trace("{}Created service tracker for {} in bundle {}", LOG_INIT, target.getSimpleName(), bundle.getSymbolicName());
+        logger.trace("{}Created service tracker for {} in bundle {}", LOG_INIT, target.getSimpleName(),
+                bundle.getSymbolicName());
     }
 
     /**
@@ -107,9 +108,9 @@ public class HomekitServiceTracker<T> implements AutoCloseable, Supplier<T> {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Type-safe creation</li>
-     *   <li>Parameter validation</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Type-safe creation</li>
+     * <li>Parameter validation</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @param <T> The service type to track
@@ -135,9 +136,9 @@ public class HomekitServiceTracker<T> implements AutoCloseable, Supplier<T> {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Auto-opens tracker if closed</li>
-     *   <li>Returns current service</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Auto-opens tracker if closed</li>
+     * <li>Returns current service</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return The current service instance, or null if not available
@@ -150,7 +151,8 @@ public class HomekitServiceTracker<T> implements AutoCloseable, Supplier<T> {
             closed = false;
         }
         T service = serviceTracker.getService();
-        logger.trace("{}Retrieved service: {}", LOG_SERVICE, service != null ? service.getClass().getSimpleName() : "null");
+        logger.trace("{}Retrieved service: {}", LOG_SERVICE,
+                service != null ? service.getClass().getSimpleName() : "null");
         return service;
     }
 
@@ -166,9 +168,9 @@ public class HomekitServiceTracker<T> implements AutoCloseable, Supplier<T> {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Calls close() method</li>
-     *   <li>Ensures resource cleanup</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Calls close() method</li>
+     * <li>Ensures resource cleanup</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @throws Throwable if an error occurs during cleanup
@@ -192,9 +194,9 @@ public class HomekitServiceTracker<T> implements AutoCloseable, Supplier<T> {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Closes service tracker</li>
-     *   <li>Updates closed state</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Closes service tracker</li>
+     * <li>Updates closed state</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @throws Exception if an error occurs during closure

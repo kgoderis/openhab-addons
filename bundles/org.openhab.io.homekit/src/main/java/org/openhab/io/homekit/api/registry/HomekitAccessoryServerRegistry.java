@@ -3,7 +3,6 @@ package org.openhab.io.homekit.api.registry;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.registry.Registry;
-import org.openhab.io.homekit.api.provider.HomekitAccessoryServerProvider;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.api.uid.HomekitAccessoryServerUID;
 import org.openhab.io.homekit.api.uid.HomekitAccessoryUID;

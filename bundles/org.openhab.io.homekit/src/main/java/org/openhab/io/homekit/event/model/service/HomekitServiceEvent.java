@@ -22,42 +22,42 @@ import org.openhab.io.homekit.util.HomekitUID;
  * The class integrates with:
  * </p>
  * <ul>
- *   <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for base event functionality</li>
- *   <li>{@link org.openhab.io.homekit.api.event.HomekitEventType} for event type identification</li>
- *   <li>{@link org.openhab.io.homekit.api.service.HomekitService} for service management</li>
- *   <li>{@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic} for characteristic handling</li>
- *   <li>{@link org.openhab.io.homekit.event.core.HomekitEventMetadata} for event metadata</li>
- *   <li>{@link org.openhab.io.homekit.util.HomekitUID} for UID generation and management</li>
+ * <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for base event functionality</li>
+ * <li>{@link org.openhab.io.homekit.api.event.HomekitEventType} for event type identification</li>
+ * <li>{@link org.openhab.io.homekit.api.service.HomekitService} for service management</li>
+ * <li>{@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic} for characteristic handling</li>
+ * <li>{@link org.openhab.io.homekit.event.core.HomekitEventMetadata} for event metadata</li>
+ * <li>{@link org.openhab.io.homekit.util.HomekitUID} for UID generation and management</li>
  * </ul>
  *
  * <p>
  * <b>Key Features:</b>
  * </p>
  * <ul>
- *   <li>Service lifecycle management</li>
- *   <li>Characteristic change tracking</li>
- *   <li>Event metadata support</li>
- *   <li>Optional component handling</li>
+ * <li>Service lifecycle management</li>
+ * <li>Characteristic change tracking</li>
+ * <li>Event metadata support</li>
+ * <li>Optional component handling</li>
  * </ul>
  *
  * <p>
  * <b>Usage Patterns:</b>
  * </p>
  * <ul>
- *   <li>Service state management</li>
- *   <li>Characteristic value updates</li>
- *   <li>Service configuration changes</li>
- *   <li>System diagnostics and monitoring</li>
+ * <li>Service state management</li>
+ * <li>Characteristic value updates</li>
+ * <li>Service configuration changes</li>
+ * <li>System diagnostics and monitoring</li>
  * </ul>
  *
  * <p>
  * <b>Event Handling:</b>
  * </p>
  * <ul>
- *   <li>Supports targeted event delivery</li>
- *   <li>Maintains service relationships</li>
- *   <li>Enables characteristic tracking</li>
- *   <li>Supports wildcard subscribers</li>
+ * <li>Supports targeted event delivery</li>
+ * <li>Maintains service relationships</li>
+ * <li>Enables characteristic tracking</li>
+ * <li>Supports wildcard subscribers</li>
  * </ul>
  *
  * @author Karel Goderis - Initial contribution

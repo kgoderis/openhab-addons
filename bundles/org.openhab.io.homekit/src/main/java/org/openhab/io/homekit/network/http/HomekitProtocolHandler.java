@@ -24,21 +24,21 @@ import org.slf4j.LoggerFactory;
  * <b>Key responsibilities:</b>
  * </p>
  * <ul>
- *   <li>Protocol identification and acceptance</li>
- *   <li>Response buffering and processing</li>
- *   <li>Event forwarding to the HomeKit server</li>
- *   <li>Content buffering management</li>
- *   <li>Error handling and recovery</li>
+ * <li>Protocol identification and acceptance</li>
+ * <li>Response buffering and processing</li>
+ * <li>Event forwarding to the HomeKit server</li>
+ * <li>Content buffering management</li>
+ * <li>Error handling and recovery</li>
  * </ul>
  *
  * <p>
  * <b>Component Integration:</b>
  * </p>
  * <ul>
- *   <li>{@link HomekitRemoteAccessoryServer} for event processing</li>
- *   <li>{@link BufferingResponseListener} for response buffering</li>
- *   <li>{@link org.eclipse.jetty.client.api.Request Request} for request handling</li>
- *   <li>{@link org.eclipse.jetty.client.api.Response Response} for response handling</li>
+ * <li>{@link HomekitRemoteAccessoryServer} for event processing</li>
+ * <li>{@link BufferingResponseListener} for response buffering</li>
+ * <li>{@link org.eclipse.jetty.client.api.Request Request} for request handling</li>
+ * <li>{@link org.eclipse.jetty.client.api.Response Response} for response handling</li>
  * </ul>
  *
  * @author Karel Goderis - Initial Contribution
@@ -148,10 +148,10 @@ public class HomekitProtocolHandler implements ProtocolHandler {
      * <b>Key features:</b>
      * </p>
      * <ul>
-     *   <li>Configurable buffer size</li>
-     *   <li>Event content buffering</li>
-     *   <li>Success/failure handling</li>
-     *   <li>Completion notification</li>
+     * <li>Configurable buffer size</li>
+     * <li>Event content buffering</li>
+     * <li>Success/failure handling</li>
+     * <li>Completion notification</li>
      * </ul>
      */
     protected class HomekitResponseListener extends BufferingResponseListener {

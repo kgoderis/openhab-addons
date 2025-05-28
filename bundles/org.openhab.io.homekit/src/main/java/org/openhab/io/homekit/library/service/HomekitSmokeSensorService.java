@@ -25,28 +25,28 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * <ul>
- *   <li>Smoke detection monitoring</li>
- *   <li>Battery level monitoring</li>
- *   <li>Tamper detection</li>
- *   <li>Fault condition monitoring</li>
- *   <li>Active state tracking</li>
+ * <li>Smoke detection monitoring</li>
+ * <li>Battery level monitoring</li>
+ * <li>Tamper detection</li>
+ * <li>Fault condition monitoring</li>
+ * <li>Active state tracking</li>
  * </ul>
  *
  * <p>
  * Required characteristics:
  * <ul>
- *   <li>SmokeDetected - Current smoke detection state (0 = Smoke Not Detected, 1 = Smoke Detected)</li>
+ * <li>SmokeDetected - Current smoke detection state (0 = Smoke Not Detected, 1 = Smoke Detected)</li>
  * </ul>
  * </p>
  *
  * <p>
  * Optional characteristics:
  * <ul>
- *   <li>Name - Smoke sensor name</li>
- *   <li>StatusActive - Sensor activation state</li>
- *   <li>StatusFault - Fault state indicator</li>
- *   <li>StatusLowBattery - Low battery indicator</li>
- *   <li>StatusTampered - Tamper detection indicator</li>
+ * <li>Name - Smoke sensor name</li>
+ * <li>StatusActive - Sensor activation state</li>
+ * <li>StatusFault - Fault state indicator</li>
+ * <li>StatusLowBattery - Low battery indicator</li>
+ * <li>StatusTampered - Tamper detection indicator</li>
  * </ul>
  * </p>
  *
@@ -109,48 +109,50 @@ public class HomekitSmokeSensorService extends AbstractHomekitService {
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>SmokeDetected - Current smoke detection state (0 = Smoke Not Detected, 1 = Smoke Detected)</li>
+     * <li>SmokeDetected - Current smoke detection state (0 = Smoke Not Detected, 1 = Smoke Detected)</li>
      * </ul>
      * </p>
      * <p>
      * Optional characteristics:
      * <ul>
-     *   <li>Name - Smoke sensor name</li>
-     *   <li>StatusActive - Sensor activation state</li>
-     *   <li>StatusFault - Fault state indicator</li>
-     *   <li>StatusLowBattery - Low battery indicator</li>
-     *   <li>StatusTampered - Tamper detection indicator</li>
+     * <li>Name - Smoke sensor name</li>
+     * <li>StatusActive - Sensor activation state</li>
+     * <li>StatusFault - Fault state indicator</li>
+     * <li>StatusLowBattery - Low battery indicator</li>
+     * <li>StatusTampered - Tamper detection indicator</li>
      * </ul>
      * </p>
+     * 
      * @since 1.0
      */
     @Override
     public void addCharacteristics() {
-        logger.trace("{}Adding required characteristics to SmokeSensorService for accessory {}", LOG_TRACE, getAccessory().getLabel());
-        
+        logger.trace("{}Adding required characteristics to SmokeSensorService for accessory {}", LOG_TRACE,
+                getAccessory().getLabel());
+
         addCharacteristic(
                 new HomekitSmokeDetectedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(true));
         logger.debug("{}Added SmokeDetectedCharacteristic to SmokeSensorService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                 .withMandatory(false));
         logger.debug("{}Added NameCharacteristic to SmokeSensorService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
         logger.debug("{}Added StatusActiveCharacteristic to SmokeSensorService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitStatusFaultCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
         logger.debug("{}Added StatusFaultCharacteristic to SmokeSensorService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitStatusLowBatteryCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
         logger.debug("{}Added StatusLowBatteryCharacteristic to SmokeSensorService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitStatusTamperedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));

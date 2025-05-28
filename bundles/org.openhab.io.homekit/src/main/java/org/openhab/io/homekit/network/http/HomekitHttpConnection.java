@@ -24,46 +24,46 @@ import org.slf4j.LoggerFactory;
  * The class integrates with:
  * </p>
  * <ul>
- *   <li>{@link HomekitHttpChannel} for channel management and request/response handling</li>
- *   <li>{@link HomekitHttpDestination} for connection configuration and routing</li>
- *   <li>{@link HomekitHttpClientTransport} for transport layer security and encryption</li>
- *   <li>{@link org.eclipse.jetty.client.HttpClient HttpClient} for HTTP operations and connection pooling</li>
- *   <li>{@link org.eclipse.jetty.server.HttpConnection HttpConnection} for base HTTP functionality</li>
- *   <li>{@link org.eclipse.jetty.http.HttpGenerator HttpGenerator} for HTTP message generation</li>
+ * <li>{@link HomekitHttpChannel} for channel management and request/response handling</li>
+ * <li>{@link HomekitHttpDestination} for connection configuration and routing</li>
+ * <li>{@link HomekitHttpClientTransport} for transport layer security and encryption</li>
+ * <li>{@link org.eclipse.jetty.client.HttpClient HttpClient} for HTTP operations and connection pooling</li>
+ * <li>{@link org.eclipse.jetty.server.HttpConnection HttpConnection} for base HTTP functionality</li>
+ * <li>{@link org.eclipse.jetty.http.HttpGenerator HttpGenerator} for HTTP message generation</li>
  * </ul>
  *
  * <p>
  * <b>Key Features:</b>
  * </p>
  * <ul>
- *   <li>Connection lifecycle management</li>
- *   <li>State tracking and validation</li>
- *   <li>Configuration management</li>
- *   <li>Connection pooling support</li>
- *   <li>Encryption upgrade handling</li>
- *   <li>Thread-safe operations</li>
+ * <li>Connection lifecycle management</li>
+ * <li>State tracking and validation</li>
+ * <li>Configuration management</li>
+ * <li>Connection pooling support</li>
+ * <li>Encryption upgrade handling</li>
+ * <li>Thread-safe operations</li>
  * </ul>
  *
  * <p>
  * <b>Security Considerations:</b>
  * </p>
  * <ul>
- *   <li>Supports encrypted connections</li>
- *   <li>Manages secure upgrades</li>
- *   <li>Validates connection state</li>
- *   <li>Ensures proper initialization</li>
- *   <li>Maintains thread safety</li>
+ * <li>Supports encrypted connections</li>
+ * <li>Manages secure upgrades</li>
+ * <li>Validates connection state</li>
+ * <li>Ensures proper initialization</li>
+ * <li>Maintains thread safety</li>
  * </ul>
  *
  * <p>
  * <b>Implementation Details:</b>
  * </p>
  * <ul>
- *   <li>Extends Jetty's HttpConnection</li>
- *   <li>Uses custom HTTP generator</li>
- *   <li>Supports connection upgrades</li>
- *   <li>Maintains connection state</li>
- *   <li>Provides detailed logging</li>
+ * <li>Extends Jetty's HttpConnection</li>
+ * <li>Uses custom HTTP generator</li>
+ * <li>Supports connection upgrades</li>
+ * <li>Maintains connection state</li>
+ * <li>Provides detailed logging</li>
  * </ul>
  *
  * @author Karel Goderis - Initial Contribution
@@ -98,11 +98,11 @@ public class HomekitHttpConnection extends HttpConnection {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Initializes base connection</li>
-     *   <li>Sets up configuration</li>
-     *   <li>Configures endpoint</li>
-     *   <li>Establishes compliance mode</li>
-     *   <li>Ensures thread safety</li>
+     * <li>Initializes base connection</li>
+     * <li>Sets up configuration</li>
+     * <li>Configures endpoint</li>
+     * <li>Establishes compliance mode</li>
+     * <li>Ensures thread safety</li>
      * </ul>
      *
      * @param config The HTTP configuration settings
@@ -129,10 +129,10 @@ public class HomekitHttpConnection extends HttpConnection {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Creates HomeKit-specific generator</li>
-     *   <li>Configures message formatting</li>
-     *   <li>Ensures thread safety</li>
-     *   <li>Maintains state consistency</li>
+     * <li>Creates HomeKit-specific generator</li>
+     * <li>Configures message formatting</li>
+     * <li>Ensures thread safety</li>
+     * <li>Maintains state consistency</li>
      * </ul>
      *
      * @return A new HomeKit HTTP generator instance
@@ -156,12 +156,12 @@ public class HomekitHttpConnection extends HttpConnection {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Checks upgrade eligibility</li>
-     *   <li>Verifies encryption requirements</li>
-     *   <li>Creates secured connection</li>
-     *   <li>Performs connection upgrade</li>
-     *   <li>Maintains thread safety</li>
-     *   <li>Ensures state consistency</li>
+     * <li>Checks upgrade eligibility</li>
+     * <li>Verifies encryption requirements</li>
+     * <li>Creates secured connection</li>
+     * <li>Performs connection upgrade</li>
+     * <li>Maintains thread safety</li>
+     * <li>Ensures state consistency</li>
      * </ul>
      */
     @Override
@@ -195,10 +195,10 @@ public class HomekitHttpConnection extends HttpConnection {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Updates upgrade flag</li>
-     *   <li>Maintains thread safety</li>
-     *   <li>Ensures state consistency</li>
-     *   <li>Logs configuration changes</li>
+     * <li>Updates upgrade flag</li>
+     * <li>Maintains thread safety</li>
+     * <li>Ensures state consistency</li>
+     * <li>Logs configuration changes</li>
      * </ul>
      *
      * @param b true if the connection can be upgraded, false otherwise
@@ -208,4 +208,3 @@ public class HomekitHttpConnection extends HttpConnection {
         this.upgradable = b;
     }
 }
-

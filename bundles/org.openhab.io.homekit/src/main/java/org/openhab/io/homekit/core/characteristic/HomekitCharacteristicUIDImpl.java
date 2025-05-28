@@ -1,45 +1,47 @@
 package org.openhab.io.homekit.core.characteristic;
 
+import java.util.List;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.uid.HomekitCharacteristicUID;
 import org.openhab.io.homekit.util.HomekitUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.List;
 
 /**
  * Implementation of a unique identifier for a HomeKit characteristic.
  *
  * <p>
  * This class provides a structured way to identify HomeKit characteristics within the system.
- * The UID follows a specific format: {@code homekit:characteristic:{pairingId}:{accessoryId}:{serviceId}:{characteristicId}} where:
+ * The UID follows a specific format:
+ * {@code homekit:characteristic:{pairingId}:{accessoryId}:{serviceId}:{characteristicId}} where:
  * </p>
  * <ul>
- *   <li>{@code homekit} is the namespace prefix</li>
- *   <li>{@code characteristic} indicates this is a characteristic identifier</li>
- *   <li>{@code pairingId} is the unique pairing identifier for the server</li>
- *   <li>{@code accessoryId} is the unique identifier for the accessory</li>
- *   <li>{@code serviceId} is the unique identifier for the service</li>
- *   <li>{@code characteristicId} is the unique identifier for the characteristic</li>
+ * <li>{@code homekit} is the namespace prefix</li>
+ * <li>{@code characteristic} indicates this is a characteristic identifier</li>
+ * <li>{@code pairingId} is the unique pairing identifier for the server</li>
+ * <li>{@code accessoryId} is the unique identifier for the accessory</li>
+ * <li>{@code serviceId} is the unique identifier for the service</li>
+ * <li>{@code characteristicId} is the unique identifier for the characteristic</li>
  * </ul>
  *
  * <p>
  * Key responsibilities:
  * </p>
  * <ul>
- *   <li>Creating and parsing characteristic UIDs</li>
- *   <li>Validating UID format and structure</li>
- *   <li>Extracting characteristic-specific information from UIDs</li>
- *   <li>Ensuring unique identification across the system</li>
+ * <li>Creating and parsing characteristic UIDs</li>
+ * <li>Validating UID format and structure</li>
+ * <li>Extracting characteristic-specific information from UIDs</li>
+ * <li>Ensuring unique identification across the system</li>
  * </ul>
  *
  * <p>
  * The class integrates with:
  * </p>
  * <ul>
- *   <li>{@link org.openhab.core.common.registry.Identifiable} for UID management</li>
- *   <li>{@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic} for characteristic identification</li>
- *   <li>OpenHAB's UID system for consistent identification</li>
+ * <li>{@link org.openhab.core.common.registry.Identifiable} for UID management</li>
+ * <li>{@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic} for characteristic identification</li>
+ * <li>OpenHAB's UID system for consistent identification</li>
  * </ul>
  *
  * @author Karel Goderis - Initial contribution
@@ -74,11 +76,11 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Validates all input parameters</li>
-     *   <li>Constructs the UID string in the correct format</li>
-     *   <li>Initializes all internal fields</li>
-     *   <li>Sets up the base UID structure</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Validates all input parameters</li>
+     * <li>Constructs the UID string in the correct format</li>
+     * <li>Initializes all internal fields</li>
+     * <li>Sets up the base UID structure</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @param pairingId The unique pairing identifier for the server
@@ -88,7 +90,8 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      * @throws IllegalArgumentException if any of the IDs are null or empty
      */
     public HomekitCharacteristicUIDImpl(String pairingId, long accessoryId, long serviceId, long characteristicId) {
-        super(CHARACTERISTIC_PREFIX, "homekit:" + CHARACTERISTIC_PREFIX + ":" + pairingId + ":" + accessoryId + ":" + serviceId + ":" + characteristicId);
+        super(CHARACTERISTIC_PREFIX, "homekit:" + CHARACTERISTIC_PREFIX + ":" + pairingId + ":" + accessoryId + ":"
+                + serviceId + ":" + characteristicId);
         if (pairingId == null || pairingId.isEmpty()) {
             logger.error("{}Pairing ID cannot be null or empty", LOG_ERROR);
             throw new IllegalArgumentException("Pairing ID cannot be null or empty");
@@ -98,8 +101,9 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
         this.serviceId = serviceId;
         this.characteristicId = characteristicId;
         this.instanceId = 0;
-        logger.trace("{}Created characteristic UID with pairing ID: {}, accessory ID: {}, service ID: {}, characteristic ID: {}", 
-            LOG_UID, pairingId, accessoryId, serviceId, characteristicId);
+        logger.trace(
+                "{}Created characteristic UID with pairing ID: {}, accessory ID: {}, service ID: {}, characteristic ID: {}",
+                LOG_UID, pairingId, accessoryId, serviceId, characteristicId);
     }
 
     /**
@@ -114,10 +118,10 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Validates the input string format</li>
-     *   <li>Extracts individual components</li>
-     *   <li>Initializes internal fields</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Validates the input string format</li>
+     * <li>Extracts individual components</li>
+     * <li>Initializes internal fields</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @param key The string representation of the UID
@@ -135,15 +139,17 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
         this.serviceId = Long.parseLong(segments.get(4));
         this.characteristicId = Long.parseLong(segments.get(5));
         this.instanceId = 0;
-        logger.trace("{}Parsed characteristic UID from key: {} with pairing ID: {}, accessory ID: {}, service ID: {}, characteristic ID: {}", 
-            LOG_UID, key, pairingId, accessoryId, serviceId, characteristicId);
+        logger.trace(
+                "{}Parsed characteristic UID from key: {} with pairing ID: {}, accessory ID: {}, service ID: {}, characteristic ID: {}",
+                LOG_UID, key, pairingId, accessoryId, serviceId, characteristicId);
     }
 
     /**
      * Gets the UID as a string.
      *
      * <p>
-     * The string representation follows the format {@code homekit:characteristic:{pairingId}:{accessoryId}:{serviceId}:{characteristicId}}.
+     * The string representation follows the format
+     * {@code homekit:characteristic:{pairingId}:{accessoryId}:{serviceId}:{characteristicId}}.
      * This format ensures consistent identification across the system.
      * </p>
      *
@@ -151,17 +157,19 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Uses String.format for consistent formatting</li>
-     *   <li>Maintains the standard UID structure</li>
-     *   <li>Preserves all identifier components</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Uses String.format for consistent formatting</li>
+     * <li>Maintains the standard UID structure</li>
+     * <li>Preserves all identifier components</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
-     * @return The UID string in the format {@code homekit:characteristic:{pairingId}:{accessoryId}:{serviceId}:{characteristicId}}
+     * @return The UID string in the format
+     *         {@code homekit:characteristic:{pairingId}:{accessoryId}:{serviceId}:{characteristicId}}
      */
     @Override
     public String getAsString() {
-        String result = String.format("homekit:characteristic:%s:%s:%s:%s", pairingId, accessoryId, serviceId, characteristicId);
+        String result = String.format("homekit:characteristic:%s:%s:%s:%s", pairingId, accessoryId, serviceId,
+                characteristicId);
         logger.trace("{}Getting UID string: {}", LOG_UID, result);
         return result;
     }
@@ -178,10 +186,10 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns the internal instance ID field</li>
-     *   <li>Used for characteristic differentiation</li>
-     *   <li>Supports multiple instances of the same type</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Returns the internal instance ID field</li>
+     * <li>Used for characteristic differentiation</li>
+     * <li>Supports multiple instances of the same type</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return The characteristic instance ID
@@ -199,22 +207,22 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      * A valid characteristic UID must have at least 6 segments:
      * </p>
      * <ol>
-     *   <li>The namespace prefix ("homekit")</li>
-     *   <li>The type identifier ("characteristic")</li>
-     *   <li>The pairing ID</li>
-     *   <li>The accessory ID</li>
-     *   <li>The service ID</li>
-     *   <li>The characteristic ID</li>
+     * <li>The namespace prefix ("homekit")</li>
+     * <li>The type identifier ("characteristic")</li>
+     * <li>The pairing ID</li>
+     * <li>The accessory ID</li>
+     * <li>The service ID</li>
+     * <li>The characteristic ID</li>
      * </ol>
      *
      * <p>
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Enforces UID structure validation</li>
-     *   <li>Ensures complete identification</li>
-     *   <li>Supports UID parsing</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Enforces UID structure validation</li>
+     * <li>Ensures complete identification</li>
+     * <li>Supports UID parsing</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return The minimum number of segments (6) for a valid characteristic UID
@@ -237,10 +245,10 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns this instance</li>
-     *   <li>Supports interface compliance</li>
-     *   <li>Enables UID access</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Returns this instance</li>
+     * <li>Supports interface compliance</li>
+     * <li>Enables UID access</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return This UID instance
@@ -264,16 +272,17 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Extracts the last 4 segments</li>
-     *   <li>Joins segments with the standard separator</li>
-     *   <li>Maintains identifier order</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Extracts the last 4 segments</li>
+     * <li>Joins segments with the standard separator</li>
+     * <li>Maintains identifier order</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return The HomeKit ID in the format: pairingId:accessoryId:serviceId:characteristicId
      */
     public String getHomekitId() {
-        String result = String.join(SEPARATOR, getAllSegments().subList(getAllSegments().size() - 4, getAllSegments().size()));
+        String result = String.join(SEPARATOR,
+                getAllSegments().subList(getAllSegments().size() - 4, getAllSegments().size()));
         logger.trace("{}Getting HomeKit ID: {}", LOG_UID, result);
         return result;
     }
@@ -290,10 +299,10 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns all UID segments</li>
-     *   <li>Maintains segment order</li>
-     *   <li>Supports UID analysis</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Returns all UID segments</li>
+     * <li>Maintains segment order</li>
+     * <li>Supports UID analysis</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return A list of all UID segments

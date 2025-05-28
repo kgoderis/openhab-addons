@@ -18,18 +18,18 @@ import org.slf4j.LoggerFactory;
  * <p>
  * This service provides control over access codes in HomeKit, including:
  * <ul>
- *   <li>Access code management and control</li>
- *   <li>Secure code storage and retrieval</li>
- *   <li>Access code state monitoring</li>
+ * <li>Access code management and control</li>
+ * <li>Secure code storage and retrieval</li>
+ * <li>Access code state monitoring</li>
  * </ul>
  * </p>
  *
  * <p>
  * The service is used to:
  * <ul>
- *   <li>Manage access codes for secure entry systems</li>
- *   <li>Control access code operations</li>
- *   <li>Monitor access code states</li>
+ * <li>Manage access codes for secure entry systems</li>
+ * <li>Control access code operations</li>
+ * <li>Monitor access code states</li>
  * </ul>
  * </p>
  *
@@ -93,16 +93,16 @@ public class HomekitAccessCodeService extends AbstractHomekitService {
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>AccessCodeControlPoint (UUID: 00000261-0000-1000-8000-0026BB765291)</li>
+     * <li>AccessCodeControlPoint (UUID: 00000261-0000-1000-8000-0026BB765291)</li>
      * </ul>
      * </p>
      *
      * <p>
      * The AccessCodeControlPoint characteristic provides:
      * <ul>
-     *   <li>Access code management operations</li>
-     *   <li>Code state control</li>
-     *   <li>Secure code handling</li>
+     * <li>Access code management operations</li>
+     * <li>Code state control</li>
+     * <li>Secure code handling</li>
      * </ul>
      * </p>
      *

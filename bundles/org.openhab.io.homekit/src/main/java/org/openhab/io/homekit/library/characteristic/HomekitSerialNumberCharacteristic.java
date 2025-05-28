@@ -21,10 +21,10 @@ import org.slf4j.LoggerFactory;
  * <p>
  * The serial number is used to:
  * <ul>
- *   <li>Uniquely identify a specific instance of a device</li>
- *   <li>Track and manage individual devices</li>
- *   <li>Enable proper device registration and management</li>
- *   <li>Support warranty and support services</li>
+ * <li>Uniquely identify a specific instance of a device</li>
+ * <li>Track and manage individual devices</li>
+ * <li>Enable proper device registration and management</li>
+ * <li>Support warranty and support services</li>
  * </ul>
  * </p>
  *

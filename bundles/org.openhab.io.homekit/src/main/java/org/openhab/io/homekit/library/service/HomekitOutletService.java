@@ -24,26 +24,26 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * <ul>
- *   <li>Power state control and monitoring</li>
- *   <li>Usage status tracking</li>
- *   <li>Fault condition monitoring</li>
- *   <li>Active state tracking</li>
+ * <li>Power state control and monitoring</li>
+ * <li>Usage status tracking</li>
+ * <li>Fault condition monitoring</li>
+ * <li>Active state tracking</li>
  * </ul>
  *
  * <p>
  * Required characteristics:
  * <ul>
- *   <li>On - Current power state (0 = Off, 1 = On)</li>
- *   <li>InUse - Current usage state (0 = Not In Use, 1 = In Use)</li>
+ * <li>On - Current power state (0 = Off, 1 = On)</li>
+ * <li>InUse - Current usage state (0 = Not In Use, 1 = In Use)</li>
  * </ul>
  * </p>
  *
  * <p>
  * Optional characteristics:
  * <ul>
- *   <li>Name - Outlet name</li>
- *   <li>StatusActive - Outlet activation state</li>
- *   <li>StatusFault - Fault state indicator</li>
+ * <li>Name - Outlet name</li>
+ * <li>StatusActive - Outlet activation state</li>
+ * <li>StatusFault - Fault state indicator</li>
  * </ul>
  * </p>
  *
@@ -106,42 +106,44 @@ public class HomekitOutletService extends AbstractHomekitService {
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>On - Current power state (0 = Off, 1 = On)</li>
-     *   <li>InUse - Current usage state (0 = Not In Use, 1 = In Use)</li>
+     * <li>On - Current power state (0 = Off, 1 = On)</li>
+     * <li>InUse - Current usage state (0 = Not In Use, 1 = In Use)</li>
      * </ul>
      * </p>
      * <p>
      * Optional characteristics:
      * <ul>
-     *   <li>Name - Outlet name</li>
-     *   <li>StatusActive - Outlet activation state</li>
-     *   <li>StatusFault - Fault state indicator</li>
+     * <li>Name - Outlet name</li>
+     * <li>StatusActive - Outlet activation state</li>
+     * <li>StatusFault - Fault state indicator</li>
      * </ul>
      * </p>
+     * 
      * @since 1.0
      */
     @Override
     public void addCharacteristics() {
-        logger.trace("{}Adding required characteristics to OutletService for accessory {}", LOG_TRACE, getAccessory().getLabel());
-        
+        logger.trace("{}Adding required characteristics to OutletService for accessory {}", LOG_TRACE,
+                getAccessory().getLabel());
+
         addCharacteristic(new HomekitOnCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                 .withMandatory(true));
         logger.debug("{}Added OnCharacteristic to OutletService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitInUseCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(true));
         logger.debug("{}Added InUseCharacteristic to OutletService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                 .withMandatory(false));
         logger.debug("{}Added NameCharacteristic to OutletService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
         logger.debug("{}Added StatusActiveCharacteristic to OutletService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitStatusFaultCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));

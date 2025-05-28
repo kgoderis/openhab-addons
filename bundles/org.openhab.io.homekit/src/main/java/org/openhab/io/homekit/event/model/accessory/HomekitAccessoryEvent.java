@@ -24,56 +24,56 @@ import org.openhab.io.homekit.util.HomekitUID;
  * The class integrates with:
  * </p>
  * <ul>
- *   <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for base event functionality</li>
- *   <li>{@link org.openhab.io.homekit.api.event.HomekitEventType} for event type identification</li>
- *   <li>{@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for accessory management</li>
- *   <li>{@link org.openhab.io.homekit.api.service.HomekitService} for service handling</li>
- *   <li>{@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic} for characteristic handling</li>
- *   <li>{@link org.openhab.io.homekit.api.uid.HomekitAccessoryUID} for accessory identification</li>
- *   <li>{@link org.openhab.io.homekit.event.core.HomekitEventMetadata} for event metadata</li>
- *   <li>{@link org.openhab.io.homekit.util.HomekitUID} for UID generation and management</li>
+ * <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for base event functionality</li>
+ * <li>{@link org.openhab.io.homekit.api.event.HomekitEventType} for event type identification</li>
+ * <li>{@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for accessory management</li>
+ * <li>{@link org.openhab.io.homekit.api.service.HomekitService} for service handling</li>
+ * <li>{@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic} for characteristic handling</li>
+ * <li>{@link org.openhab.io.homekit.api.uid.HomekitAccessoryUID} for accessory identification</li>
+ * <li>{@link org.openhab.io.homekit.event.core.HomekitEventMetadata} for event metadata</li>
+ * <li>{@link org.openhab.io.homekit.util.HomekitUID} for UID generation and management</li>
  * </ul>
  *
  * <p>
  * <b>Key Features:</b>
  * </p>
  * <ul>
- *   <li>Accessory lifecycle management</li>
- *   <li>Service and characteristic tracking</li>
- *   <li>UID change handling</li>
- *   <li>Event metadata support</li>
- *   <li>Optional component handling</li>
+ * <li>Accessory lifecycle management</li>
+ * <li>Service and characteristic tracking</li>
+ * <li>UID change handling</li>
+ * <li>Event metadata support</li>
+ * <li>Optional component handling</li>
  * </ul>
  *
  * <p>
  * <b>Usage Patterns:</b>
  * </p>
  * <ul>
- *   <li>Accessory state management</li>
- *   <li>Service configuration updates</li>
- *   <li>Characteristic value changes</li>
- *   <li>UID modification tracking</li>
- *   <li>System diagnostics and monitoring</li>
+ * <li>Accessory state management</li>
+ * <li>Service configuration updates</li>
+ * <li>Characteristic value changes</li>
+ * <li>UID modification tracking</li>
+ * <li>System diagnostics and monitoring</li>
  * </ul>
  *
  * <p>
  * <b>Event Handling:</b>
  * </p>
  * <ul>
- *   <li>Supports hierarchical event routing</li>
- *   <li>Maintains component relationships</li>
- *   <li>Enables targeted event delivery</li>
- *   <li>Supports wildcard subscribers</li>
+ * <li>Supports hierarchical event routing</li>
+ * <li>Maintains component relationships</li>
+ * <li>Enables targeted event delivery</li>
+ * <li>Supports wildcard subscribers</li>
  * </ul>
  *
  * <p>
  * <b>UID Management:</b>
  * </p>
  * <ul>
- *   <li>Tracks UID changes</li>
- *   <li>Maintains UID history</li>
- *   <li>Supports UID validation</li>
- *   <li>Enables UID correlation</li>
+ * <li>Tracks UID changes</li>
+ * <li>Maintains UID history</li>
+ * <li>Supports UID validation</li>
+ * <li>Enables UID correlation</li>
  * </ul>
  *
  * @author Karel Goderis - Initial contribution

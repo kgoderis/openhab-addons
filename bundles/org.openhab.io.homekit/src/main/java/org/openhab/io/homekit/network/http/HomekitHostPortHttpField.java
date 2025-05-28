@@ -16,17 +16,17 @@ import org.eclipse.jetty.http.HttpHeader;
  * <b>Key features:</b>
  * </p>
  * <ul>
- *   <li>Extends standard HTTP host/port field handling</li>
- *   <li>Supports HomeKit-specific host header formatting</li>
- *   <li>Maintains compatibility with Jetty's HTTP implementation</li>
+ * <li>Extends standard HTTP host/port field handling</li>
+ * <li>Supports HomeKit-specific host header formatting</li>
+ * <li>Maintains compatibility with Jetty's HTTP implementation</li>
  * </ul>
  *
  * <p>
  * <b>Component Integration:</b>
  * </p>
  * <ul>
- *   <li>{@link org.eclipse.jetty.http.HostPortHttpField} for base host/port field functionality</li>
- *   <li>{@link org.eclipse.jetty.http.HttpHeader} for HTTP header definitions</li>
+ * <li>{@link org.eclipse.jetty.http.HostPortHttpField} for base host/port field functionality</li>
+ * <li>{@link org.eclipse.jetty.http.HttpHeader} for HTTP header definitions</li>
  * </ul>
  *
  * @author Karel Goderis - Initial Contribution
@@ -47,9 +47,9 @@ public class HomekitHostPortHttpField extends HostPortHttpField {
      * <b>Key implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Validates header type and field name</li>
-     *   <li>Parses authority string for host and port</li>
-     *   <li>Initializes base HostPortHttpField</li>
+     * <li>Validates header type and field name</li>
+     * <li>Parses authority string for host and port</li>
+     * <li>Initializes base HostPortHttpField</li>
      * </ul>
      *
      * @param header The HTTP header type (e.g., HOST)

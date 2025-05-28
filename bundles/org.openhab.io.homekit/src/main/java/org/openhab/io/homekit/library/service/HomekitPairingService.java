@@ -16,18 +16,18 @@ import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
  * <p>
  * This service provides functionality for pairing HomeKit accessories with iOS devices. It handles:
  * <ul>
- *   <li>Pairing setup and verification</li>
- *   <li>Secure communication establishment</li>
- *   <li>Accessory identification during pairing</li>
+ * <li>Pairing setup and verification</li>
+ * <li>Secure communication establishment</li>
+ * <li>Accessory identification during pairing</li>
  * </ul>
  * </p>
  *
  * <p>
  * The pairing service is essential for the security of HomeKit accessories, as it ensures that:
  * <ul>
- *   <li>Only authorized devices can control the accessory</li>
- *   <li>Communication between the accessory and iOS device is encrypted</li>
- *   <li>Each pairing is unique and secure</li>
+ * <li>Only authorized devices can control the accessory</li>
+ * <li>Communication between the accessory and iOS device is encrypted</li>
+ * <li>Each pairing is unique and secure</li>
  * </ul>
  * </p>
  *
@@ -78,7 +78,7 @@ public class HomekitPairingService extends AbstractHomekitService {
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>Name</li>
+     * <li>Name</li>
      * </ul>
      * </p>
      *

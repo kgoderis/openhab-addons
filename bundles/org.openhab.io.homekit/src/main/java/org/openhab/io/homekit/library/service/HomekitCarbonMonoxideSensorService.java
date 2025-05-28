@@ -27,29 +27,29 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * <ul>
- *   <li>CO level monitoring and reporting</li>
- *   <li>Peak level detection and tracking</li>
- *   <li>Sensor status and fault monitoring</li>
- *   <li>Battery and tamper state tracking</li>
+ * <li>CO level monitoring and reporting</li>
+ * <li>Peak level detection and tracking</li>
+ * <li>Sensor status and fault monitoring</li>
+ * <li>Battery and tamper state tracking</li>
  * </ul>
  *
  * <p>
  * Required characteristics:
  * <ul>
- *   <li>CarbonMonoxideDetected - Current CO detection state</li>
+ * <li>CarbonMonoxideDetected - Current CO detection state</li>
  * </ul>
  * </p>
  *
  * <p>
  * Optional characteristics:
  * <ul>
- *   <li>CarbonMonoxideLevel - Current CO concentration</li>
- *   <li>CarbonMonoxidePeakLevel - Highest recorded CO level</li>
- *   <li>Name - Sensor name</li>
- *   <li>StatusActive - Sensor activation state</li>
- *   <li>StatusFault - Fault state indicator</li>
- *   <li>StatusLowBattery - Low battery warning</li>
- *   <li>StatusTampered - Tamper detection state</li>
+ * <li>CarbonMonoxideLevel - Current CO concentration</li>
+ * <li>CarbonMonoxidePeakLevel - Highest recorded CO level</li>
+ * <li>Name - Sensor name</li>
+ * <li>StatusActive - Sensor activation state</li>
+ * <li>StatusFault - Fault state indicator</li>
+ * <li>StatusLowBattery - Low battery warning</li>
+ * <li>StatusTampered - Tamper detection state</li>
  * </ul>
  * </p>
  *
@@ -104,7 +104,8 @@ public class HomekitCarbonMonoxideSensorService extends AbstractHomekitService {
     public HomekitCarbonMonoxideSensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
         super(accessory, eventManager, characteristicFactory, value);
-        logger.debug("{}Created CarbonMonoxideSensorService from JSON for accessory {}", LOG_INIT, accessory.getLabel());
+        logger.debug("{}Created CarbonMonoxideSensorService from JSON for accessory {}", LOG_INIT,
+                accessory.getLabel());
     }
 
     /**
@@ -112,57 +113,59 @@ public class HomekitCarbonMonoxideSensorService extends AbstractHomekitService {
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>CarbonMonoxideDetected - Current CO detection state</li>
+     * <li>CarbonMonoxideDetected - Current CO detection state</li>
      * </ul>
      * </p>
      * <p>
      * Optional characteristics:
      * <ul>
-     *   <li>CarbonMonoxideLevel - Current CO concentration</li>
-     *   <li>CarbonMonoxidePeakLevel - Highest recorded CO level</li>
-     *   <li>Name - Sensor name</li>
-     *   <li>StatusActive - Sensor activation state</li>
-     *   <li>StatusFault - Fault state indicator</li>
-     *   <li>StatusLowBattery - Low battery warning</li>
-     *   <li>StatusTampered - Tamper detection state</li>
+     * <li>CarbonMonoxideLevel - Current CO concentration</li>
+     * <li>CarbonMonoxidePeakLevel - Highest recorded CO level</li>
+     * <li>Name - Sensor name</li>
+     * <li>StatusActive - Sensor activation state</li>
+     * <li>StatusFault - Fault state indicator</li>
+     * <li>StatusLowBattery - Low battery warning</li>
+     * <li>StatusTampered - Tamper detection state</li>
      * </ul>
      * </p>
+     * 
      * @since 1.0
      */
     @Override
     public void addCharacteristics() {
-        logger.trace("{}Adding required characteristics to CarbonMonoxideSensorService for accessory {}", LOG_TRACE, getAccessory().getLabel());
-        
+        logger.trace("{}Adding required characteristics to CarbonMonoxideSensorService for accessory {}", LOG_TRACE,
+                getAccessory().getLabel());
+
         addCharacteristic(new HomekitCarbonMonoxideDetectedCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         logger.debug("{}Added CarbonMonoxideDetectedCharacteristic to CarbonMonoxideSensorService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitCarbonMonoxideLevelCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
         logger.debug("{}Added CarbonMonoxideLevelCharacteristic to CarbonMonoxideSensorService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitCarbonMonoxidePeakLevelCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
         logger.debug("{}Added CarbonMonoxidePeakLevelCharacteristic to CarbonMonoxideSensorService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                 .withMandatory(false));
         logger.debug("{}Added NameCharacteristic to CarbonMonoxideSensorService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
         logger.debug("{}Added StatusActiveCharacteristic to CarbonMonoxideSensorService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitStatusFaultCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
         logger.debug("{}Added StatusFaultCharacteristic to CarbonMonoxideSensorService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitStatusLowBatteryCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
         logger.debug("{}Added StatusLowBatteryCharacteristic to CarbonMonoxideSensorService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitStatusTamperedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));

@@ -5,26 +5,36 @@ import org.openhab.core.common.registry.Identifiable;
 
 /**
  * Interface for HomeKit accessory unique identifiers.
- *
+ * <p>
  * This interface defines the contract for accessory UIDs in the HomeKit system. It provides
  * methods for accessing and managing unique identifiers for HomeKit accessories, ensuring
  * proper identification and tracking throughout the system.
- *
+ * </p>
+ * <p>
  * The interface provides:
- * - String representation of the UID
- * - Accessory ID retrieval
- * - Pairing ID management
- * - Unique identification
- *
+ * <ul>
+ * <li>String representation of the UID</li>
+ * <li>Accessory ID retrieval</li>
+ * <li>Pairing ID management</li>
+ * <li>Unique identification</li>
+ * </ul>
+ * </p>
+ * <p>
  * Key implementation details:
- * - Thread-safe UID generation
- * - Unique ID validation
- * - Pairing ID association
- * - String format consistency
- *
+ * <ul>
+ * <li>Thread-safe UID generation</li>
+ * <li>Unique ID validation</li>
+ * <li>Pairing ID association</li>
+ * <li>String format consistency</li>
+ * </ul>
+ * </p>
+ * <p>
  * The interface integrates with:
- * - {@link org.openhab.core.common.registry.Identifiable} for registry integration
- * - {@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for accessory identification
+ * <ul>
+ * <li>{@link org.openhab.core.common.registry.Identifiable} for registry integration</li>
+ * <li>{@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for accessory identification</li>
+ * </ul>
+ * </p>
  *
  * @author Karel Goderis - Initial Contribution
  * @since 1.0.0

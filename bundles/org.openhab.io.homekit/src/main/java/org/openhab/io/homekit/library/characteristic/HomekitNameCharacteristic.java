@@ -21,10 +21,10 @@ import org.slf4j.LoggerFactory;
  * <p>
  * The name is used to:
  * <ul>
- *   <li>Provide a human-readable identifier for the device</li>
- *   <li>Enable easy device identification in HomeKit apps</li>
- *   <li>Support device organization and management</li>
- *   <li>Facilitate user interaction and control</li>
+ * <li>Provide a human-readable identifier for the device</li>
+ * <li>Enable easy device identification in HomeKit apps</li>
+ * <li>Support device organization and management</li>
+ * <li>Facilitate user interaction and control</li>
  * </ul>
  * </p>
  *

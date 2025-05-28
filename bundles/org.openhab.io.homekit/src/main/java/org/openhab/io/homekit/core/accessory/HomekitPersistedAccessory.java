@@ -12,30 +12,30 @@ import org.slf4j.LoggerFactory;
  * <p>
  * The persisted accessory maintains:
  * <ul>
- *   <li>The accessory type for proper restoration</li>
- *   <li>A JSON representation of the accessory's state</li>
- *   <li>Configuration data for service and characteristic setup</li>
- *   <li>Metadata for accessory identification</li>
+ * <li>The accessory type for proper restoration</li>
+ * <li>A JSON representation of the accessory's state</li>
+ * <li>Configuration data for service and characteristic setup</li>
+ * <li>Metadata for accessory identification</li>
  * </ul>
  * </p>
  *
  * <p>
  * Key features:
  * <ul>
- *   <li>Type-safe accessory restoration</li>
- *   <li>Complete state preservation</li>
- *   <li>JSON-based serialization</li>
- *   <li>Configuration persistence</li>
+ * <li>Type-safe accessory restoration</li>
+ * <li>Complete state preservation</li>
+ * <li>JSON-based serialization</li>
+ * <li>Configuration persistence</li>
  * </ul>
  * </p>
  *
  * <p>
  * The class integrates with several key components:
  * <ul>
- *   <li>{@link HomekitAccessory} - Base accessory interface</li>
- *   <li>{@link HomekitAccessoryFactory} - Accessory creation</li>
- *   <li>{@link HomekitService} - Service management</li>
- *   <li>{@link JsonObject} - State serialization</li>
+ * <li>{@link HomekitAccessory} - Base accessory interface</li>
+ * <li>{@link HomekitAccessoryFactory} - Accessory creation</li>
+ * <li>{@link HomekitService} - Service management</li>
+ * <li>{@link JsonObject} - State serialization</li>
  * </ul>
  * </p>
  *

@@ -12,26 +12,26 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * <p>
  * The categories are used to:
  * <ul>
- *   <li>Classify accessories for HomeKit controllers</li>
- *   <li>Determine available services and characteristics</li>
- *   <li>Group similar devices in the Home app</li>
- *   <li>Ensure proper device representation</li>
+ * <li>Classify accessories for HomeKit controllers</li>
+ * <li>Determine available services and characteristics</li>
+ * <li>Group similar devices in the Home app</li>
+ * <li>Ensure proper device representation</li>
  * </ul>
  * </p>
  * <p>
  * Key implementation details:
  * <ul>
- *   <li>Each category has a unique numeric value</li>
- *   <li>Categories are immutable</li>
- *   <li>Unknown values default to OTHER</li>
- *   <li>Reserved values are explicitly marked</li>
+ * <li>Each category has a unique numeric value</li>
+ * <li>Categories are immutable</li>
+ * <li>Unknown values default to OTHER</li>
+ * <li>Reserved values are explicitly marked</li>
  * </ul>
  * </p>
  * <p>
  * The enum integrates with:
  * <ul>
- *   <li>{@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for accessory categorization</li>
- *   <li>{@link org.openhab.io.homekit.api.service.HomekitService} for service availability</li>
+ * <li>{@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for accessory categorization</li>
+ * <li>{@link org.openhab.io.homekit.api.service.HomekitService} for service availability</li>
  * </ul>
  * </p>
  *

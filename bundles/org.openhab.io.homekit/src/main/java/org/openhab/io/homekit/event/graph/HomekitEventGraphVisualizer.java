@@ -3,11 +3,12 @@ package org.openhab.io.homekit.event.graph;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.eclipse.jdt.annotation.NonNullByDefault;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 /**
  * Visualizer for the HomeKit event processing graph.

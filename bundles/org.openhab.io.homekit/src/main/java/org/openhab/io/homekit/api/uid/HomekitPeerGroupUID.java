@@ -5,25 +5,35 @@ import org.openhab.core.common.registry.Identifiable;
 
 /**
  * Interface for HomeKit peer group unique identifiers.
- *
+ * <p>
  * This interface defines the contract for peer group UIDs in the HomeKit system. It provides
  * methods for accessing and managing unique identifiers for HomeKit peer groups, ensuring
  * proper identification and grouping of related accessories.
- *
+ * </p>
+ * <p>
  * The interface provides:
- * - String representation of the UID
- * - Peer group name management
- * - Unique identification
- *
+ * <ul>
+ * <li>String representation of the UID</li>
+ * <li>Peer group name management</li>
+ * <li>Unique identification</li>
+ * </ul>
+ * </p>
+ * <p>
  * Key implementation details:
- * - Thread-safe UID generation
- * - Unique ID validation
- * - Group name association
- * - String format consistency
- *
+ * <ul>
+ * <li>Thread-safe UID generation</li>
+ * <li>Unique ID validation</li>
+ * <li>Group name association</li>
+ * <li>String format consistency</li>
+ * </ul>
+ * </p>
+ * <p>
  * The interface integrates with:
- * - {@link org.openhab.core.common.registry.Identifiable} for registry integration
- * - {@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for accessory grouping
+ * <ul>
+ * <li>{@link org.openhab.core.common.registry.Identifiable} for registry integration</li>
+ * <li>{@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for accessory grouping</li>
+ * </ul>
+ * </p>
  *
  * @author Karel Goderis - Initial Contribution
  * @since 1.0.0

@@ -20,44 +20,44 @@ import org.openhab.io.homekit.event.core.HomekitEventMetadata;
  * The class integrates with:
  * </p>
  * <ul>
- *   <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for base event functionality</li>
- *   <li>{@link org.openhab.io.homekit.api.event.HomekitEventType} for event type identification</li>
- *   <li>{@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic} for characteristic handling</li>
- *   <li>{@link org.openhab.io.homekit.event.core.HomekitEventMetadata} for event metadata</li>
- *   <li>{@link javax.json.JsonValue} for value representation</li>
- *   <li>{@link java.util.Map} for configuration management</li>
+ * <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for base event functionality</li>
+ * <li>{@link org.openhab.io.homekit.api.event.HomekitEventType} for event type identification</li>
+ * <li>{@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic} for characteristic handling</li>
+ * <li>{@link org.openhab.io.homekit.event.core.HomekitEventMetadata} for event metadata</li>
+ * <li>{@link javax.json.JsonValue} for value representation</li>
+ * <li>{@link java.util.Map} for configuration management</li>
  * </ul>
  *
  * <p>
  * <b>Key Features:</b>
  * </p>
  * <ul>
- *   <li>Pre-update value validation</li>
- *   <li>Configuration management</li>
- *   <li>Value change tracking</li>
- *   <li>Event metadata support</li>
- *   <li>Optional value handling</li>
+ * <li>Pre-update value validation</li>
+ * <li>Configuration management</li>
+ * <li>Value change tracking</li>
+ * <li>Event metadata support</li>
+ * <li>Optional value handling</li>
  * </ul>
  *
  * <p>
  * <b>Usage Patterns:</b>
  * </p>
  * <ul>
- *   <li>Characteristic value updates</li>
- *   <li>Configuration validation</li>
- *   <li>Pre-update processing</li>
- *   <li>System diagnostics</li>
- *   <li>Event correlation</li>
+ * <li>Characteristic value updates</li>
+ * <li>Configuration validation</li>
+ * <li>Pre-update processing</li>
+ * <li>System diagnostics</li>
+ * <li>Event correlation</li>
  * </ul>
  *
  * <p>
  * <b>Configuration Management:</b>
  * </p>
  * <ul>
- *   <li>Supports item configuration</li>
- *   <li>Enables configuration validation</li>
- *   <li>Allows configuration updates</li>
- *   <li>Maintains configuration state</li>
+ * <li>Supports item configuration</li>
+ * <li>Enables configuration validation</li>
+ * <li>Allows configuration updates</li>
+ * <li>Maintains configuration state</li>
  * </ul>
  *
  * @author Karel Goderis - Initial contribution

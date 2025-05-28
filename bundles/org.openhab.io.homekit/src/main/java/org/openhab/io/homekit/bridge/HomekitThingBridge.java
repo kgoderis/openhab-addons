@@ -109,8 +109,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Manages the integration between OpenHAB Things and HomeKit accessories.
  *
- * This class implements both {@link org.openhab.core.events.EventSubscriber} and {@link org.openhab.core.thing.ThingRegistryChangeListener} 
- * to handle bidirectional communication between OpenHAB and HomeKit. It manages the lifecycle of HomeKit accessories, 
+ * This class implements both {@link org.openhab.core.events.EventSubscriber} and
+ * {@link org.openhab.core.thing.ThingRegistryChangeListener}
+ * to handle bidirectional communication between OpenHAB and HomeKit. It manages the lifecycle of HomeKit accessories,
  * their services, and characteristics, while ensuring proper state synchronization and event handling.
  *
  * Key implementation details:
@@ -1511,8 +1512,6 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         HomekitAccessory accessory = thingAccessoryMap.get(thing.getUID());
         return accessory != null && accessory.isOrphaned();
     }
-
-
 
     /**
      * Internal class for tracking state changes and their metadata.

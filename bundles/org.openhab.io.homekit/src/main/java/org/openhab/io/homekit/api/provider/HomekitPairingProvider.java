@@ -6,26 +6,36 @@ import org.openhab.io.homekit.protocol.pairing.HomekitPairing;
 
 /**
  * Interface for providing HomeKit pairing information to the system.
- *
+ * <p>
  * This interface defines the contract for components that provide HomeKit pairing
  * information to the system. It extends the OpenHAB Provider interface to enable
  * dynamic discovery and management of HomeKit pairing configurations.
- *
+ * </p>
+ * <p>
  * The interface provides:
- * - Dynamic pairing discovery
- * - Pairing lifecycle management
- * - Pairing state tracking
- * - Pairing configuration management
- *
+ * <ul>
+ * <li>Dynamic pairing discovery</li>
+ * <li>Pairing lifecycle management</li>
+ * <li>Pairing state tracking</li>
+ * <li>Pairing configuration management</li>
+ * </ul>
+ * </p>
+ * <p>
  * Key implementation details:
- * - Provider-based discovery system
- * - Thread-safe pairing management
- * - Dynamic pairing registration
- * - State synchronization
- *
+ * <ul>
+ * <li>Provider-based discovery system</li>
+ * <li>Thread-safe pairing management</li>
+ * <li>Dynamic pairing registration</li>
+ * <li>State synchronization</li>
+ * </ul>
+ * </p>
+ * <p>
  * The interface integrates with:
- * - {@link org.openhab.core.common.registry.Provider} for provider functionality
- * - {@link org.openhab.io.homekit.protocol.pairing.HomekitPairing} for pairing management
+ * <ul>
+ * <li>{@link org.openhab.core.common.registry.Provider} for provider functionality</li>
+ * <li>{@link org.openhab.io.homekit.protocol.pairing.HomekitPairing} for pairing management</li>
+ * </ul>
+ * </p>
  *
  * @author Karel Goderis - Initial Contribution
  * @since 1.0.0

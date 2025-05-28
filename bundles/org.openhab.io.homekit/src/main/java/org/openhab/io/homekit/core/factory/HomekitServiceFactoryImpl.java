@@ -1,6 +1,5 @@
 package org.openhab.io.homekit.core.factory;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashSet;
@@ -40,26 +39,26 @@ import org.slf4j.LoggerFactory;
  * Key responsibilities:
  * </p>
  * <ul>
- *   <li>Annotation-based discovery of service types using {@link HomekitServiceType}</li>
- *   <li>Dynamic instantiation of service instances through reflection</li>
- *   <li>Mapping between service types and their implementations</li>
- *   <li>Support for tag-based service creation</li>
- *   <li>Management of mandatory and optional characteristics</li>
- *   <li>JSON-based service configuration</li>
- *   <li>Integration with {@link org.openhab.core.items.Item OpenHAB's item system} for state management</li>
+ * <li>Annotation-based discovery of service types using {@link HomekitServiceType}</li>
+ * <li>Dynamic instantiation of service instances through reflection</li>
+ * <li>Mapping between service types and their implementations</li>
+ * <li>Support for tag-based service creation</li>
+ * <li>Management of mandatory and optional characteristics</li>
+ * <li>JSON-based service configuration</li>
+ * <li>Integration with {@link org.openhab.core.items.Item OpenHAB's item system} for state management</li>
  * </ul>
  *
  * <p>
  * The factory integrates with:
  * </p>
  * <ul>
- *   <li>{@link HomekitService} for service functionality and state management</li>
- *   <li>{@link HomekitAccessory} for accessory integration and service ownership</li>
- *   <li>{@link HomekitEventManager} for event handling and state updates</li>
- *   <li>{@link HomekitServiceType} for type annotations and metadata</li>
- *   <li>{@link HomekitCharacteristic} for characteristic management</li>
- *   <li>{@link org.openhab.core.items.Item OpenHAB's item system} for state synchronization</li>
- *   <li>{@link org.openhab.core.thing.ChannelTypeUID OpenHAB's channel type system} for service configuration</li>
+ * <li>{@link HomekitService} for service functionality and state management</li>
+ * <li>{@link HomekitAccessory} for accessory integration and service ownership</li>
+ * <li>{@link HomekitEventManager} for event handling and state updates</li>
+ * <li>{@link HomekitServiceType} for type annotations and metadata</li>
+ * <li>{@link HomekitCharacteristic} for characteristic management</li>
+ * <li>{@link org.openhab.core.items.Item OpenHAB's item system} for state synchronization</li>
+ * <li>{@link org.openhab.core.thing.ChannelTypeUID OpenHAB's channel type system} for service configuration</li>
  * </ul>
  *
  * <p>
@@ -104,10 +103,10 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Initializes service type registry</li>
-     *   <li>Scans for annotated service classes</li>
-     *   <li>Registers service types and tags</li>
-     *   <li>Analyzes service characteristics</li>
+     * <li>Initializes service type registry</li>
+     * <li>Scans for annotated service classes</li>
+     * <li>Registers service types and tags</li>
+     * <li>Analyzes service characteristics</li>
      * </ul>
      *
      * @param eventManager The event manager for handling HomeKit events
@@ -129,21 +128,21 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
      * The initialization process:
      * </p>
      * <ol>
-     *   <li>Scans the service package for {@link HomekitServiceType} annotations</li>
-     *   <li>Analyzes each service class for type and tag information</li>
-     *   <li>Registers service types and their implementations</li>
-     *   <li>Builds the tag-to-type mapping for flexible service creation</li>
-     *   <li>Analyzes service methods to identify mandatory and optional characteristics</li>
+     * <li>Scans the service package for {@link HomekitServiceType} annotations</li>
+     * <li>Analyzes each service class for type and tag information</li>
+     * <li>Registers service types and their implementations</li>
+     * <li>Builds the tag-to-type mapping for flexible service creation</li>
+     * <li>Analyzes service methods to identify mandatory and optional characteristics</li>
      * </ol>
      *
      * <p>
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Uses Reflections library for annotation scanning</li>
-     *   <li>Maintains thread-safe collections for service types</li>
-     *   <li>Analyzes service methods for characteristic information</li>
-     *   <li>Logs detailed information about discovered services</li>
+     * <li>Uses Reflections library for annotation scanning</li>
+     * <li>Maintains thread-safe collections for service types</li>
+     * <li>Analyzes service methods for characteristic information</li>
+     * <li>Logs detailed information about discovered services</li>
      * </ul>
      *
      * @throws IllegalStateException if service type initialization fails
@@ -168,32 +167,32 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
                         String type = annotation.type();
                         serviceTypes.put(type, (Class<? extends HomekitService>) serviceClass);
                         tagToTypeMap.put(annotation.tag(), type);
-                        
+
                         // Initialize characteristic types map using reflection
                         Map<String, Set<String>> characteristicTypes = new ConcurrentHashMap<>();
                         Set<String> mandatory = new HashSet<>();
                         Set<String> optional = new HashSet<>();
-                        
+
                         // Get all methods that return HomekitCharacteristic
                         for (java.lang.reflect.Method method : serviceClass.getMethods()) {
                             if (method.getReturnType().getName().contains("HomekitCharacteristic")) {
                                 String characteristicType = method.getName().replace("get", "");
                                 if (method.getName().startsWith("getMandatory")) {
                                     mandatory.add(characteristicType);
-                                    logger.trace("{}Added mandatory characteristic: {} for service: {}", 
-                                        LOG_TRACE, characteristicType, type);
+                                    logger.trace("{}Added mandatory characteristic: {} for service: {}", LOG_TRACE,
+                                            characteristicType, type);
                                 } else if (method.getName().startsWith("getOptional")) {
                                     optional.add(characteristicType);
-                                    logger.trace("{}Added optional characteristic: {} for service: {}", 
-                                        LOG_TRACE, characteristicType, type);
+                                    logger.trace("{}Added optional characteristic: {} for service: {}", LOG_TRACE,
+                                            characteristicType, type);
                                 }
                             }
                         }
-                        
+
                         characteristicTypes.put("mandatory", mandatory);
                         characteristicTypes.put("optional", optional);
                         serviceCharacteristicTypes.put(type, characteristicTypes);
-                        
+
                         logger.debug("{}Registered service type: {} -> {}", LOG_STATE, type, serviceClass.getName());
                     }
                 }
@@ -219,10 +218,10 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Validates service type against registered types</li>
-     *   <li>Uses reflection to create service instance</li>
-     *   <li>Provides proper error handling and logging</li>
-     *   <li>Ensures thread-safe operation</li>
+     * <li>Validates service type against registered types</li>
+     * <li>Uses reflection to create service instance</li>
+     * <li>Provides proper error handling and logging</li>
+     * <li>Ensures thread-safe operation</li>
      * </ul>
      *
      * @param type The service type to create
@@ -241,8 +240,8 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
         }
 
         try {
-            return serviceClass.getConstructor(HomekitAccessory.class, HomekitEventManager.class)
-                    .newInstance(accessory, eventManager);
+            return serviceClass.getConstructor(HomekitAccessory.class, HomekitEventManager.class).newInstance(accessory,
+                    eventManager);
         } catch (IllegalAccessException | IllegalArgumentException | InstantiationException | NoSuchMethodException
                 | SecurityException | InvocationTargetException e) {
             logger.error("{}Error creating service of type {}: {}", LOG_ERROR, type, e.getMessage(), e);
@@ -263,10 +262,10 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Validates service type against registered types</li>
-     *   <li>Uses reflection to find matching constructor</li>
-     *   <li>Handles variable argument types</li>
-     *   <li>Provides detailed error logging</li>
+     * <li>Validates service type against registered types</li>
+     * <li>Uses reflection to find matching constructor</li>
+     * <li>Handles variable argument types</li>
+     * <li>Provides detailed error logging</li>
      * </ul>
      *
      * @param type The service type to create
@@ -292,7 +291,8 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
             return serviceClass.getConstructor(argTypes).newInstance(args);
         } catch (IllegalAccessException | IllegalArgumentException | InstantiationException | NoSuchMethodException
                 | SecurityException | InvocationTargetException e) {
-            logger.error("{}Error creating service of type {} with custom arguments: {}", LOG_ERROR, type, e.getMessage(), e);
+            logger.error("{}Error creating service of type {} with custom arguments: {}", LOG_ERROR, type,
+                    e.getMessage(), e);
             throw new IllegalArgumentException("Failed to create service of type: " + type, e);
         }
     }
@@ -309,10 +309,10 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Maps tag to service type</li>
-     *   <li>Uses standard service creation</li>
-     *   <li>Provides proper error handling</li>
-     *   <li>Maintains consistent logging</li>
+     * <li>Maps tag to service type</li>
+     * <li>Uses standard service creation</li>
+     * <li>Provides proper error handling</li>
+     * <li>Maintains consistent logging</li>
      * </ul>
      *
      * @param tag The service tag
@@ -343,9 +343,9 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Uses thread-safe collection lookup</li>
-     *   <li>Provides fast response time</li>
-     *   <li>Maintains consistent logging</li>
+     * <li>Uses thread-safe collection lookup</li>
+     * <li>Provides fast response time</li>
+     * <li>Maintains consistent logging</li>
      * </ul>
      *
      * @param type The service type to check
@@ -370,9 +370,9 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Uses thread-safe collection lookup</li>
-     *   <li>Provides fast response time</li>
-     *   <li>Maintains consistent logging</li>
+     * <li>Uses thread-safe collection lookup</li>
+     * <li>Provides fast response time</li>
+     * <li>Maintains consistent logging</li>
      * </ul>
      *
      * @param tag The service tag to check
@@ -398,9 +398,9 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns unmodifiable set</li>
-     *   <li>Uses thread-safe collection</li>
-     *   <li>Maintains consistent logging</li>
+     * <li>Returns unmodifiable set</li>
+     * <li>Uses thread-safe collection</li>
+     * <li>Maintains consistent logging</li>
      * </ul>
      *
      * @return An unmodifiable set of supported service tags
@@ -425,9 +425,9 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns unmodifiable set</li>
-     *   <li>Uses thread-safe collection</li>
-     *   <li>Maintains consistent logging</li>
+     * <li>Returns unmodifiable set</li>
+     * <li>Uses thread-safe collection</li>
+     * <li>Maintains consistent logging</li>
      * </ul>
      *
      * @return An unmodifiable set of supported service types
@@ -452,10 +452,10 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Parses JSON configuration</li>
-     *   <li>Validates required fields</li>
-     *   <li>Creates service with configuration</li>
-     *   <li>Provides detailed error logging</li>
+     * <li>Parses JSON configuration</li>
+     * <li>Validates required fields</li>
+     * <li>Creates service with configuration</li>
+     * <li>Provides detailed error logging</li>
      * </ul>
      *
      * @param accessory The accessory that will own the service
@@ -493,9 +493,9 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Uses reverse mapping lookup</li>
-     *   <li>Provides proper error handling</li>
-     *   <li>Maintains consistent logging</li>
+     * <li>Uses reverse mapping lookup</li>
+     * <li>Provides proper error handling</li>
+     * <li>Maintains consistent logging</li>
      * </ul>
      *
      * @param serviceType The service type
@@ -527,9 +527,9 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Uses direct mapping lookup</li>
-     *   <li>Provides proper error handling</li>
-     *   <li>Maintains consistent logging</li>
+     * <li>Uses direct mapping lookup</li>
+     * <li>Provides proper error handling</li>
+     * <li>Maintains consistent logging</li>
      * </ul>
      *
      * @param serviceTag The service tag
@@ -560,10 +560,10 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Uses thread-safe collection lookup</li>
-     *   <li>Returns unmodifiable map</li>
-     *   <li>Provides proper error handling</li>
-     *   <li>Maintains consistent logging</li>
+     * <li>Uses thread-safe collection lookup</li>
+     * <li>Returns unmodifiable map</li>
+     * <li>Provides proper error handling</li>
+     * <li>Maintains consistent logging</li>
      * </ul>
      *
      * @param serviceType The service type

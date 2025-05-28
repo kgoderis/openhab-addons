@@ -14,7 +14,6 @@ package org.openhab.io.homekit.handler;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -34,9 +33,9 @@ import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry;
 import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
+import org.openhab.io.homekit.provider.HomekitChannelGroupTypeProvider;
 import org.openhab.io.homekit.provider.HomekitChannelTypeProvider;
 import org.openhab.io.homekit.provider.HomekitThingTypeProvider;
-import org.openhab.io.homekit.provider.HomekitChannelGroupTypeProvider;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;

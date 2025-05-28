@@ -12,29 +12,29 @@ import org.openhab.io.homekit.util.HomekitUID;
  * The UID follows a specific format: {@code homekit:accessory:{pairingId}:{accessoryId}} where:
  * </p>
  * <ul>
- *   <li>{@code homekit} is the namespace prefix</li>
- *   <li>{@code accessory} indicates this is an accessory identifier</li>
- *   <li>{@code pairingId} is the unique pairing identifier for the server</li>
- *   <li>{@code accessoryId} is the unique identifier for the accessory</li>
+ * <li>{@code homekit} is the namespace prefix</li>
+ * <li>{@code accessory} indicates this is an accessory identifier</li>
+ * <li>{@code pairingId} is the unique pairing identifier for the server</li>
+ * <li>{@code accessoryId} is the unique identifier for the accessory</li>
  * </ul>
  *
  * <p>
  * Key responsibilities:
  * </p>
  * <ul>
- *   <li>Creating and parsing accessory UIDs</li>
- *   <li>Validating UID format and structure</li>
- *   <li>Extracting accessory-specific information from UIDs</li>
- *   <li>Ensuring unique identification across the system</li>
+ * <li>Creating and parsing accessory UIDs</li>
+ * <li>Validating UID format and structure</li>
+ * <li>Extracting accessory-specific information from UIDs</li>
+ * <li>Ensuring unique identification across the system</li>
  * </ul>
  *
  * <p>
  * The class integrates with:
  * </p>
  * <ul>
- *   <li>{@link org.openhab.core.common.registry.Identifiable} for UID management</li>
- *   <li>{@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for accessory identification</li>
- *   <li>OpenHAB's UID system for consistent identification</li>
+ * <li>{@link org.openhab.core.common.registry.Identifiable} for UID management</li>
+ * <li>{@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for accessory identification</li>
+ * <li>OpenHAB's UID system for consistent identification</li>
  * </ul>
  *
  * @author Karel Goderis - Initial contribution
@@ -60,10 +60,10 @@ public class HomekitAccessoryUIDImpl extends HomekitUID implements HomekitAccess
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Validates all input parameters</li>
-     *   <li>Constructs the UID string in the correct format</li>
-     *   <li>Initializes all internal fields</li>
-     *   <li>Sets up the base UID structure</li>
+     * <li>Validates all input parameters</li>
+     * <li>Constructs the UID string in the correct format</li>
+     * <li>Initializes all internal fields</li>
+     * <li>Sets up the base UID structure</li>
      * </ul>
      *
      * @param pairingId The unique pairing identifier for the server
@@ -88,9 +88,9 @@ public class HomekitAccessoryUIDImpl extends HomekitUID implements HomekitAccess
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Validates the input string format</li>
-     *   <li>Extracts individual components</li>
-     *   <li>Initializes internal fields</li>
+     * <li>Validates the input string format</li>
+     * <li>Extracts individual components</li>
+     * <li>Initializes internal fields</li>
      * </ul>
      *
      * @param key The string representation of the UID
@@ -119,9 +119,9 @@ public class HomekitAccessoryUIDImpl extends HomekitUID implements HomekitAccess
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Uses String.format for consistent formatting</li>
-     *   <li>Maintains the standard UID structure</li>
-     *   <li>Preserves all identifier components</li>
+     * <li>Uses String.format for consistent formatting</li>
+     * <li>Maintains the standard UID structure</li>
+     * <li>Preserves all identifier components</li>
      * </ul>
      *
      * @return The UID string in the format {@code homekit:accessory:{pairingId}:{accessoryId}}
@@ -143,9 +143,9 @@ public class HomekitAccessoryUIDImpl extends HomekitUID implements HomekitAccess
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns the internal pairing ID field</li>
-     *   <li>Used for server connection management</li>
-     *   <li>Supports device pairing</li>
+     * <li>Returns the internal pairing ID field</li>
+     * <li>Used for server connection management</li>
+     * <li>Supports device pairing</li>
      * </ul>
      *
      * @return The pairing identifier for this accessory
@@ -167,9 +167,9 @@ public class HomekitAccessoryUIDImpl extends HomekitUID implements HomekitAccess
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns the internal accessory ID field</li>
-     *   <li>Used for accessory differentiation</li>
-     *   <li>Supports multiple accessories</li>
+     * <li>Returns the internal accessory ID field</li>
+     * <li>Used for accessory differentiation</li>
+     * <li>Supports multiple accessories</li>
      * </ul>
      *
      * @return The accessory identifier
@@ -186,19 +186,19 @@ public class HomekitAccessoryUIDImpl extends HomekitUID implements HomekitAccess
      * A valid accessory UID must have at least 4 segments:
      * </p>
      * <ol>
-     *   <li>The namespace prefix ("homekit")</li>
-     *   <li>The type identifier ("accessory")</li>
-     *   <li>The pairing ID</li>
-     *   <li>The accessory ID</li>
+     * <li>The namespace prefix ("homekit")</li>
+     * <li>The type identifier ("accessory")</li>
+     * <li>The pairing ID</li>
+     * <li>The accessory ID</li>
      * </ol>
      *
      * <p>
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Enforces UID structure validation</li>
-     *   <li>Ensures complete identification</li>
-     *   <li>Supports UID parsing</li>
+     * <li>Enforces UID structure validation</li>
+     * <li>Ensures complete identification</li>
+     * <li>Supports UID parsing</li>
      * </ul>
      *
      * @return The minimum number of segments (4) for a valid accessory UID
@@ -220,9 +220,9 @@ public class HomekitAccessoryUIDImpl extends HomekitUID implements HomekitAccess
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns this instance</li>
-     *   <li>Supports interface compliance</li>
-     *   <li>Enables UID access</li>
+     * <li>Returns this instance</li>
+     * <li>Supports interface compliance</li>
+     * <li>Enables UID access</li>
      * </ul>
      *
      * @return This UID instance

@@ -28,31 +28,31 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * <b>Key features:</b>
  * </p>
  * <ul>
- *   <li>Device identification parameters</li>
- *   <li>Configuration properties</li>
- *   <li>Device categories</li>
- *   <li>Discovery-specific attributes</li>
- *   <li>Logging message prefixes</li>
+ * <li>Device identification parameters</li>
+ * <li>Configuration properties</li>
+ * <li>Device categories</li>
+ * <li>Discovery-specific attributes</li>
+ * <li>Logging message prefixes</li>
  * </ul>
  *
  * <p>
  * <b>Component Integration:</b>
  * </p>
  * <ul>
- *   <li>{@link HomekitAccessoryServerDiscoveryService} for device discovery and management</li>
- *   <li>{@link HomekitAccessoryServer} for device configuration and communication</li>
- *   <li>{@link HomekitAccessory} for device identification and state management</li>
- *   <li>{@link org.openhab.core.config.discovery.DiscoveryService} for integration with OpenHAB's discovery system</li>
+ * <li>{@link HomekitAccessoryServerDiscoveryService} for device discovery and management</li>
+ * <li>{@link HomekitAccessoryServer} for device configuration and communication</li>
+ * <li>{@link HomekitAccessory} for device identification and state management</li>
+ * <li>{@link org.openhab.core.config.discovery.DiscoveryService} for integration with OpenHAB's discovery system</li>
  * </ul>
  *
  * <p>
  * <b>Usage Guidelines:</b>
  * </p>
  * <ul>
- *   <li>Use these constants for consistent device identification and configuration</li>
- *   <li>Follow the logging standards when implementing discovery-related features</li>
- *   <li>Maintain backward compatibility when modifying constants</li>
- *   <li>Document any changes to these constants in release notes</li>
+ * <li>Use these constants for consistent device identification and configuration</li>
+ * <li>Follow the logging standards when implementing discovery-related features</li>
+ * <li>Maintain backward compatibility when modifying constants</li>
+ * <li>Document any changes to these constants in release notes</li>
  * </ul>
  *
  * @author Karel Goderis - Initial contribution
@@ -87,10 +87,10 @@ public class HomekitDiscoveryConstants {
      * <b>Usage:</b> This constant is used in:
      * </p>
      * <ul>
-     *   <li>Device discovery process</li>
-     *   <li>Accessory registration</li>
-     *   <li>Thing creation</li>
-     *   <li>Device state tracking</li>
+     * <li>Device discovery process</li>
+     * <li>Accessory registration</li>
+     * <li>Thing creation</li>
+     * <li>Device state tracking</li>
      * </ul>
      */
     public static final String DEVICE_ID = "id";
@@ -112,9 +112,9 @@ public class HomekitDiscoveryConstants {
      * <b>Usage:</b> This constant is used in:
      * </p>
      * <ul>
-     *   <li>Configuration change detection</li>
-     *   <li>Accessory state synchronization</li>
-     *   <li>Update management</li>
+     * <li>Configuration change detection</li>
+     * <li>Accessory state synchronization</li>
+     * <li>Update management</li>
      * </ul>
      */
     public static final String CONFIGURATION_NUMBER_SHARP = "c#";
@@ -136,9 +136,9 @@ public class HomekitDiscoveryConstants {
      * <b>Usage:</b> This constant is used in:
      * </p>
      * <ul>
-     *   <li>Binding registration</li>
-     *   <li>Configuration management</li>
-     *   <li>System integration</li>
+     * <li>Binding registration</li>
+     * <li>Configuration management</li>
+     * <li>System integration</li>
      * </ul>
      */
     public static final String CONFIGURATION_URI = "binding:homekit:bridge";
@@ -156,17 +156,17 @@ public class HomekitDiscoveryConstants {
      * of HomeKit accessory. Common values include:
      * </p>
      * <ul>
-     *   <li>"1" for standalone accessories</li>
-     *   <li>"2" for bridge accessories</li>
+     * <li>"1" for standalone accessories</li>
+     * <li>"2" for bridge accessories</li>
      * </ul>
      *
      * <p>
      * <b>Usage:</b> This constant is used in:
      * </p>
      * <ul>
-     *   <li>Device type identification</li>
-     *   <li>Accessory categorization</li>
-     *   <li>Thing type determination</li>
+     * <li>Device type identification</li>
+     * <li>Accessory categorization</li>
+     * <li>Thing type determination</li>
      * </ul>
      */
     public static final String CATEGORY_ID = "ci";
@@ -187,9 +187,9 @@ public class HomekitDiscoveryConstants {
      * <b>Usage:</b> This constant is used in:
      * </p>
      * <ul>
-     *   <li>Bridge device identification</li>
-     *   <li>Accessory hierarchy management</li>
-     *   <li>Communication routing</li>
+     * <li>Bridge device identification</li>
+     * <li>Accessory hierarchy management</li>
+     * <li>Communication routing</li>
      * </ul>
      */
     public static final String BRIDGE_CATEGORY = "2";
@@ -210,9 +210,9 @@ public class HomekitDiscoveryConstants {
      * <b>Usage:</b> This constant is used in:
      * </p>
      * <ul>
-     *   <li>Standalone device identification</li>
-     *   <li>Direct accessory management</li>
-     *   <li>Communication handling</li>
+     * <li>Standalone device identification</li>
+     * <li>Direct accessory management</li>
+     * <li>Communication handling</li>
      * </ul>
      */
     public static final String STANDALONE_CATEGORY = "1";

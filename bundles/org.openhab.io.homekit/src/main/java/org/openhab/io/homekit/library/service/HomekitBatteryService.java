@@ -22,17 +22,17 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * <ul>
- *   <li>Battery level monitoring and reporting</li>
- *   <li>Charging state detection and notification</li>
- *   <li>Low battery status alerts</li>
+ * <li>Battery level monitoring and reporting</li>
+ * <li>Charging state detection and notification</li>
+ * <li>Low battery status alerts</li>
  * </ul>
  *
  * <p>
  * Required characteristics:
  * <ul>
- *   <li>BatteryLevel - Current battery charge percentage</li>
- *   <li>ChargingState - Current charging status (charging/not charging)</li>
- *   <li>StatusLowBattery - Low battery warning indicator</li>
+ * <li>BatteryLevel - Current battery charge percentage</li>
+ * <li>ChargingState - Current charging status (charging/not charging)</li>
+ * <li>StatusLowBattery - Low battery warning indicator</li>
  * </ul>
  * </p>
  *
@@ -95,27 +95,29 @@ public class HomekitBatteryService extends AbstractHomekitService {
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>BatteryLevel - Current battery charge percentage</li>
-     *   <li>ChargingState - Current charging status</li>
-     *   <li>StatusLowBattery - Low battery warning indicator</li>
+     * <li>BatteryLevel - Current battery charge percentage</li>
+     * <li>ChargingState - Current charging status</li>
+     * <li>StatusLowBattery - Low battery warning indicator</li>
      * </ul>
      * </p>
+     * 
      * @since 1.0
      */
     @Override
     public void addCharacteristics() {
-        logger.trace("{}Adding required characteristics to BatteryService for accessory {}", LOG_TRACE, getAccessory().getLabel());
-        
+        logger.trace("{}Adding required characteristics to BatteryService for accessory {}", LOG_TRACE,
+                getAccessory().getLabel());
+
         addCharacteristic(
                 new HomekitBatteryLevelCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(true));
         logger.debug("{}Added BatteryLevelCharacteristic to BatteryService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitChargingStateCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(true));
         logger.debug("{}Added ChargingStateCharacteristic to BatteryService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitStatusLowBatteryCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         logger.debug("{}Added StatusLowBatteryCharacteristic to BatteryService", LOG_STATE);

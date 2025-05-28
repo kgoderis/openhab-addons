@@ -24,46 +24,46 @@ import org.openhab.io.homekit.util.HomekitUID;
  * The class integrates with:
  * </p>
  * <ul>
- *   <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for base event functionality</li>
- *   <li>{@link org.openhab.io.homekit.api.event.HomekitEventType} for event type identification</li>
- *   <li>{@link org.openhab.io.homekit.api.server.HomekitAccessoryServer} for server management</li>
- *   <li>{@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for accessory handling</li>
- *   <li>{@link org.openhab.io.homekit.api.service.HomekitService} for service management</li>
- *   <li>{@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic} for characteristic handling</li>
- *   <li>{@link org.openhab.io.homekit.event.core.HomekitEventMetadata} for event metadata</li>
- *   <li>{@link org.openhab.io.homekit.util.HomekitUID} for UID generation and management</li>
+ * <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for base event functionality</li>
+ * <li>{@link org.openhab.io.homekit.api.event.HomekitEventType} for event type identification</li>
+ * <li>{@link org.openhab.io.homekit.api.server.HomekitAccessoryServer} for server management</li>
+ * <li>{@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for accessory handling</li>
+ * <li>{@link org.openhab.io.homekit.api.service.HomekitService} for service management</li>
+ * <li>{@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic} for characteristic handling</li>
+ * <li>{@link org.openhab.io.homekit.event.core.HomekitEventMetadata} for event metadata</li>
+ * <li>{@link org.openhab.io.homekit.util.HomekitUID} for UID generation and management</li>
  * </ul>
  *
  * <p>
  * <b>Key Features:</b>
  * </p>
  * <ul>
- *   <li>Server lifecycle management</li>
- *   <li>Accessory registration tracking</li>
- *   <li>Service update propagation</li>
- *   <li>Characteristic change handling</li>
- *   <li>Event metadata support</li>
+ * <li>Server lifecycle management</li>
+ * <li>Accessory registration tracking</li>
+ * <li>Service update propagation</li>
+ * <li>Characteristic change handling</li>
+ * <li>Event metadata support</li>
  * </ul>
  *
  * <p>
  * <b>Usage Patterns:</b>
  * </p>
  * <ul>
- *   <li>Server state management</li>
- *   <li>Accessory lifecycle tracking</li>
- *   <li>Service configuration updates</li>
- *   <li>Characteristic value changes</li>
- *   <li>System diagnostics and monitoring</li>
+ * <li>Server state management</li>
+ * <li>Accessory lifecycle tracking</li>
+ * <li>Service configuration updates</li>
+ * <li>Characteristic value changes</li>
+ * <li>System diagnostics and monitoring</li>
  * </ul>
  *
  * <p>
  * <b>Event Propagation:</b>
  * </p>
  * <ul>
- *   <li>Supports hierarchical event routing</li>
- *   <li>Maintains component relationships</li>
- *   <li>Enables targeted event delivery</li>
- *   <li>Supports wildcard subscribers</li>
+ * <li>Supports hierarchical event routing</li>
+ * <li>Maintains component relationships</li>
+ * <li>Enables targeted event delivery</li>
+ * <li>Supports wildcard subscribers</li>
  * </ul>
  *
  * @author Karel Goderis - Initial contribution

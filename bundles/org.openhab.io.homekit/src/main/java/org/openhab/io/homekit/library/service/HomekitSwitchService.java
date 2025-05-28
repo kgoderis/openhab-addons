@@ -23,24 +23,24 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * <ul>
- *   <li>Switch state control and monitoring</li>
- *   <li>Activation status tracking</li>
- *   <li>Fault condition monitoring</li>
+ * <li>Switch state control and monitoring</li>
+ * <li>Activation status tracking</li>
+ * <li>Fault condition monitoring</li>
  * </ul>
  *
  * <p>
  * Required characteristics:
  * <ul>
- *   <li>On - Current switch state (0 = Off, 1 = On)</li>
+ * <li>On - Current switch state (0 = Off, 1 = On)</li>
  * </ul>
  * </p>
  *
  * <p>
  * Optional characteristics:
  * <ul>
- *   <li>Name - Switch name</li>
- *   <li>StatusActive - Switch activation state</li>
- *   <li>StatusFault - Fault state indicator</li>
+ * <li>Name - Switch name</li>
+ * <li>StatusActive - Switch activation state</li>
+ * <li>StatusFault - Fault state indicator</li>
  * </ul>
  * </p>
  *
@@ -103,36 +103,38 @@ public class HomekitSwitchService extends AbstractHomekitService {
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>On - Current switch state (0 = Off, 1 = On)</li>
+     * <li>On - Current switch state (0 = Off, 1 = On)</li>
      * </ul>
      * </p>
      * <p>
      * Optional characteristics:
      * <ul>
-     *   <li>Name - Switch name</li>
-     *   <li>StatusActive - Switch activation state</li>
-     *   <li>StatusFault - Fault state indicator</li>
+     * <li>Name - Switch name</li>
+     * <li>StatusActive - Switch activation state</li>
+     * <li>StatusFault - Fault state indicator</li>
      * </ul>
      * </p>
+     * 
      * @since 1.0
      */
     @Override
     public void addCharacteristics() {
-        logger.trace("{}Adding required characteristics to SwitchService for accessory {}", LOG_TRACE, getAccessory().getLabel());
-        
+        logger.trace("{}Adding required characteristics to SwitchService for accessory {}", LOG_TRACE,
+                getAccessory().getLabel());
+
         addCharacteristic(new HomekitOnCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                 .withMandatory(true));
         logger.debug("{}Added OnCharacteristic to SwitchService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                 .withMandatory(false));
         logger.debug("{}Added NameCharacteristic to SwitchService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
         logger.debug("{}Added StatusActiveCharacteristic to SwitchService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitStatusFaultCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));

@@ -21,32 +21,32 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * <p>
  * The class implements value management for byte characteristics with:
  * <ul>
- *   <li>Configurable minimum and maximum value constraints</li>
- *   <li>Type conversion between HomeKit byte values and OpenHAB states</li>
- *   <li>JSON serialization with range information</li>
- *   <li>Default value handling based on minimum value</li>
+ * <li>Configurable minimum and maximum value constraints</li>
+ * <li>Type conversion between HomeKit byte values and OpenHAB states</li>
+ * <li>JSON serialization with range information</li>
+ * <li>Default value handling based on minimum value</li>
  * </ul>
  * </p>
  *
  * <p>
  * Key features:
  * <ul>
- *   <li>Supports uint8 format as per HomeKit specification</li>
- *   <li>Provides paired read/write access by default</li>
- *   <li>Includes event notifications for value changes</li>
- *   <li>Maintains value constraints through min/max boundaries</li>
- *   <li>Integrates with OpenHAB's number item type system</li>
+ * <li>Supports uint8 format as per HomeKit specification</li>
+ * <li>Provides paired read/write access by default</li>
+ * <li>Includes event notifications for value changes</li>
+ * <li>Maintains value constraints through min/max boundaries</li>
+ * <li>Integrates with OpenHAB's number item type system</li>
  * </ul>
  * </p>
  *
  * <p>
  * The class integrates with:
  * <ul>
- *   <li>{@link AbstractHomekitCharacteristic} - Base characteristic functionality</li>
- *   <li>{@link HomekitService} - Service lifecycle management</li>
- *   <li>{@link HomekitEventManager} - Event handling and notifications</li>
- *   <li>{@link org.openhab.core.library.types.DecimalType} - State conversion</li>
- *   <li>{@link org.openhab.core.library.CoreItemFactory} - Item type validation</li>
+ * <li>{@link AbstractHomekitCharacteristic} - Base characteristic functionality</li>
+ * <li>{@link HomekitService} - Service lifecycle management</li>
+ * <li>{@link HomekitEventManager} - Event handling and notifications</li>
+ * <li>{@link org.openhab.core.library.types.DecimalType} - State conversion</li>
+ * <li>{@link org.openhab.core.library.CoreItemFactory} - Item type validation</li>
  * </ul>
  * </p>
  *

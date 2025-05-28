@@ -21,9 +21,9 @@ import org.slf4j.LoggerFactory;
  * <p>
  * The identifier is used to:
  * <ul>
- *   <li>Uniquely identify the accessory in the HomeKit ecosystem</li>
- *   <li>Maintain consistent identification across reboots and reconfigurations</li>
- *   <li>Enable proper pairing and communication with HomeKit clients</li>
+ * <li>Uniquely identify the accessory in the HomeKit ecosystem</li>
+ * <li>Maintain consistent identification across reboots and reconfigurations</li>
+ * <li>Enable proper pairing and communication with HomeKit clients</li>
  * </ul>
  * </p>
  *

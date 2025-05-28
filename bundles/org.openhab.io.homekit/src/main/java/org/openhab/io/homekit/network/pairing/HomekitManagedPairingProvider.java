@@ -29,45 +29,45 @@ import org.slf4j.LoggerFactory;
  * <b>Key features:</b>
  * </p>
  * <ul>
- *   <li>Persistent storage of pairings</li>
- *   <li>Runtime pairing management</li>
- *   <li>OSGi service integration</li>
- *   <li>Ready state tracking</li>
- *   <li>Automatic persistence</li>
- *   <li>Thread-safe operations</li>
+ * <li>Persistent storage of pairings</li>
+ * <li>Runtime pairing management</li>
+ * <li>OSGi service integration</li>
+ * <li>Ready state tracking</li>
+ * <li>Automatic persistence</li>
+ * <li>Thread-safe operations</li>
  * </ul>
  *
  * <p>
  * <b>Component Integration:</b>
  * </p>
  * <ul>
- *   <li>{@link HomekitPairingRegistry} for pairing registration and management</li>
- *   <li>{@link HomekitPairingImpl} for pairing implementation details</li>
- *   <li>{@link HomekitPairingUIDImpl} for unique identifier generation</li>
- *   <li>{@link StorageService} for persistent storage operations</li>
- *   <li>{@link ReadyService} for component lifecycle management</li>
+ * <li>{@link HomekitPairingRegistry} for pairing registration and management</li>
+ * <li>{@link HomekitPairingImpl} for pairing implementation details</li>
+ * <li>{@link HomekitPairingUIDImpl} for unique identifier generation</li>
+ * <li>{@link StorageService} for persistent storage operations</li>
+ * <li>{@link ReadyService} for component lifecycle management</li>
  * </ul>
  *
  * <p>
  * <b>Security Considerations:</b>
  * </p>
  * <ul>
- *   <li>Secure storage of pairing data</li>
- *   <li>Proper initialization order</li>
- *   <li>Thread-safe operations</li>
- *   <li>Data integrity validation</li>
- *   <li>Access control enforcement</li>
+ * <li>Secure storage of pairing data</li>
+ * <li>Proper initialization order</li>
+ * <li>Thread-safe operations</li>
+ * <li>Data integrity validation</li>
+ * <li>Access control enforcement</li>
  * </ul>
  *
  * <p>
  * <b>Implementation Details:</b>
  * </p>
  * <ul>
- *   <li>Uses OpenHAB storage service for persistence</li>
- *   <li>Integrates with ready service for initialization</li>
- *   <li>Implements OSGi service interfaces</li>
- *   <li>Provides thread-safe operations</li>
- *   <li>Maintains data consistency</li>
+ * <li>Uses OpenHAB storage service for persistence</li>
+ * <li>Integrates with ready service for initialization</li>
+ * <li>Implements OSGi service interfaces</li>
+ * <li>Provides thread-safe operations</li>
+ * <li>Maintains data consistency</li>
  * </ul>
  *
  * @author Karel Goderis - Initial Contribution
@@ -109,11 +109,11 @@ public class HomekitManagedPairingProvider extends
      * <b>Key implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Initializes storage service for persistence</li>
-     *   <li>Sets up ready service for lifecycle management</li>
-     *   <li>Marks provider as ready for operation</li>
-     *   <li>Prepares for pairing management</li>
-     *   <li>Establishes thread safety</li>
+     * <li>Initializes storage service for persistence</li>
+     * <li>Sets up ready service for lifecycle management</li>
+     * <li>Marks provider as ready for operation</li>
+     * <li>Prepares for pairing management</li>
+     * <li>Establishes thread safety</li>
      * </ul>
      *
      * @param storageService The service for persistent storage
@@ -143,9 +143,9 @@ public class HomekitManagedPairingProvider extends
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Uses class name for storage identification</li>
-     *   <li>Ensures unique storage location</li>
-     *   <li>Maintains consistency with OpenHAB storage system</li>
+     * <li>Uses class name for storage identification</li>
+     * <li>Ensures unique storage location</li>
+     * <li>Maintains consistency with OpenHAB storage system</li>
      * </ul>
      *
      * @return The storage name for pairings
@@ -170,9 +170,9 @@ public class HomekitManagedPairingProvider extends
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Ensures consistent string representation</li>
-     *   <li>Maintains uniqueness of identifiers</li>
-     *   <li>Supports storage system requirements</li>
+     * <li>Ensures consistent string representation</li>
+     * <li>Maintains uniqueness of identifiers</li>
+     * <li>Supports storage system requirements</li>
      * </ul>
      *
      * @param key The pairing UID to convert
@@ -198,9 +198,9 @@ public class HomekitManagedPairingProvider extends
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Validates stored data integrity</li>
-     *   <li>Reconstructs pairing instance</li>
-     *   <li>Maintains data consistency</li>
+     * <li>Validates stored data integrity</li>
+     * <li>Reconstructs pairing instance</li>
+     * <li>Maintains data consistency</li>
      * </ul>
      *
      * @param key The key for the element
@@ -226,9 +226,9 @@ public class HomekitManagedPairingProvider extends
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Preserves all pairing data</li>
-     *   <li>Ensures storage compatibility</li>
-     *   <li>Maintains data integrity</li>
+     * <li>Preserves all pairing data</li>
+     * <li>Ensures storage compatibility</li>
+     * <li>Maintains data integrity</li>
      * </ul>
      *
      * @param element The pairing to convert

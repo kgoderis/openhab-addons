@@ -21,45 +21,45 @@ import org.slf4j.LoggerFactory;
  * The class integrates with:
  * </p>
  * <ul>
- *   <li>{@link HttpClient} for HTTP client functionality and request handling</li>
- *   <li>{@link Origin} for origin management and security</li>
- *   <li>{@link HomekitConnectionPool} for connection pooling and reuse</li>
- *   <li>{@link HomekitHttpConnectionOverHTTP} for encrypted connection management</li>
- *   <li>{@link org.eclipse.jetty.client.api.Connection Connection} for connection lifecycle management</li>
+ * <li>{@link HttpClient} for HTTP client functionality and request handling</li>
+ * <li>{@link Origin} for origin management and security</li>
+ * <li>{@link HomekitConnectionPool} for connection pooling and reuse</li>
+ * <li>{@link HomekitHttpConnectionOverHTTP} for encrypted connection management</li>
+ * <li>{@link org.eclipse.jetty.client.api.Connection Connection} for connection lifecycle management</li>
  * </ul>
  *
  * <p>
  * <b>Key Features:</b>
  * </p>
  * <ul>
- *   <li>HTTP destination management</li>
- *   <li>Encryption key configuration</li>
- *   <li>Connection pooling</li>
- *   <li>Secure communication</li>
- *   <li>Connection lifecycle management</li>
- *   <li>Thread-safe operations</li>
+ * <li>HTTP destination management</li>
+ * <li>Encryption key configuration</li>
+ * <li>Connection pooling</li>
+ * <li>Secure communication</li>
+ * <li>Connection lifecycle management</li>
+ * <li>Thread-safe operations</li>
  * </ul>
  *
  * <p>
  * <b>Security Considerations:</b>
  * </p>
  * <ul>
- *   <li>Manages encryption keys</li>
- *   <li>Secures message transmission</li>
- *   <li>Validates connections</li>
- *   <li>Ensures proper initialization</li>
- *   <li>Maintains thread safety</li>
+ * <li>Manages encryption keys</li>
+ * <li>Secures message transmission</li>
+ * <li>Validates connections</li>
+ * <li>Ensures proper initialization</li>
+ * <li>Maintains thread safety</li>
  * </ul>
  *
  * <p>
  * <b>Implementation Details:</b>
  * </p>
  * <ul>
- *   <li>Extends Jetty's HttpDestinationOverHTTP</li>
- *   <li>Uses custom connection pool</li>
- *   <li>Supports encryption</li>
- *   <li>Manages connection lifecycle</li>
- *   <li>Provides detailed logging</li>
+ * <li>Extends Jetty's HttpDestinationOverHTTP</li>
+ * <li>Uses custom connection pool</li>
+ * <li>Supports encryption</li>
+ * <li>Manages connection lifecycle</li>
+ * <li>Provides detailed logging</li>
  * </ul>
  *
  * @author Karel Goderis - Initial Contribution
@@ -100,11 +100,11 @@ public class HomekitHttpDestination extends HttpDestinationOverHTTP {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Initializes base destination</li>
-     *   <li>Sets up client connection</li>
-     *   <li>Configures origin</li>
-     *   <li>Ensures thread safety</li>
-     *   <li>Logs initialization</li>
+     * <li>Initializes base destination</li>
+     * <li>Sets up client connection</li>
+     * <li>Configures origin</li>
+     * <li>Ensures thread safety</li>
+     * <li>Logs initialization</li>
      * </ul>
      *
      * @param client The HTTP client to use
@@ -127,13 +127,13 @@ public class HomekitHttpDestination extends HttpDestinationOverHTTP {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Validates key parameters</li>
-     *   <li>Updates connection pool</li>
-     *   <li>Configures idle connections</li>
-     *   <li>Configures active connections</li>
-     *   <li>Maintains thread safety</li>
-     *   <li>Ensures state consistency</li>
-     *   <li>Logs configuration</li>
+     * <li>Validates key parameters</li>
+     * <li>Updates connection pool</li>
+     * <li>Configures idle connections</li>
+     * <li>Configures active connections</li>
+     * <li>Maintains thread safety</li>
+     * <li>Ensures state consistency</li>
+     * <li>Logs configuration</li>
      * </ul>
      *
      * @param decryptionKey The key used for decrypting incoming messages
@@ -142,7 +142,7 @@ public class HomekitHttpDestination extends HttpDestinationOverHTTP {
     public void setEncryptionKeys(byte[] decryptionKey, byte[] encryptionKey) {
         logger.debug("{}Setting encryption keys", LOG_CONFIG);
         logger.info("{}Configuring encryption for destination {}", LOG_CONFIG, this);
-        
+
         if (logger.isTraceEnabled()) {
             logger.trace("{}Decryption key: {}", LOG_CONFIG,
                     javax.xml.bind.DatatypeConverter.printHexBinary(decryptionKey));
@@ -157,14 +157,14 @@ public class HomekitHttpDestination extends HttpDestinationOverHTTP {
         if (pool instanceof HomekitConnectionPool) {
             var idle = ((HomekitConnectionPool) pool).getIdleConnections();
             var active = ((HomekitConnectionPool) pool).getActiveConnections();
-            
+
             logger.debug("{}Configuring {} idle connections", LOG_CONFIG, idle.size());
             for (org.eclipse.jetty.client.api.Connection connection : idle) {
                 if (connection instanceof HomekitHttpConnectionOverHTTP) {
                     ((HomekitHttpConnectionOverHTTP) connection).setEncryptionKeys(decryptionKey, encryptionKey);
                 }
             }
-            
+
             logger.debug("{}Configuring {} active connections", LOG_CONFIG, active.size());
             for (org.eclipse.jetty.client.api.Connection connection : active) {
                 if (connection instanceof HomekitHttpConnectionOverHTTP) {
@@ -172,7 +172,7 @@ public class HomekitHttpDestination extends HttpDestinationOverHTTP {
                 }
             }
         }
-        
+
         logger.info("{}Encryption keys configured successfully", LOG_CONFIG);
     }
 
@@ -188,11 +188,11 @@ public class HomekitHttpDestination extends HttpDestinationOverHTTP {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Validates key presence</li>
-     *   <li>Checks key validity</li>
-     *   <li>Maintains thread safety</li>
-     *   <li>Ensures state consistency</li>
-     *   <li>Logs key status</li>
+     * <li>Validates key presence</li>
+     * <li>Checks key validity</li>
+     * <li>Maintains thread safety</li>
+     * <li>Ensures state consistency</li>
+     * <li>Logs key status</li>
      * </ul>
      *
      * @return true if both encryption keys are configured, false otherwise
@@ -214,9 +214,9 @@ public class HomekitHttpDestination extends HttpDestinationOverHTTP {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Retrieves decryption key</li>
-     *   <li>Ensures thread safety</li>
-     *   <li>Logs key access</li>
+     * <li>Retrieves decryption key</li>
+     * <li>Ensures thread safety</li>
+     * <li>Logs key access</li>
      * </ul>
      *
      * @return The decryption key, or null if not configured
@@ -237,9 +237,9 @@ public class HomekitHttpDestination extends HttpDestinationOverHTTP {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Retrieves encryption key</li>
-     *   <li>Ensures thread safety</li>
-     *   <li>Logs key access</li>
+     * <li>Retrieves encryption key</li>
+     * <li>Ensures thread safety</li>
+     * <li>Logs key access</li>
      * </ul>
      *
      * @return The encryption key, or null if not configured
@@ -249,4 +249,3 @@ public class HomekitHttpDestination extends HttpDestinationOverHTTP {
         return encryptionKey;
     }
 }
-

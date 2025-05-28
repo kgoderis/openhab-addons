@@ -8,7 +8,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -152,7 +151,7 @@ public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypePro
         try {
             Set<String> serviceTypes = serviceFactory.getSupportedServiceTypes();
             logger.debug("{}Found {} supported service types", LOG_TYPE, serviceTypes.size());
-            
+
             for (String serviceType : serviceTypes) {
                 logger.debug("{}Processing service type: {}", LOG_TYPE, serviceType);
                 createChannelGroupTypeForService(serviceType);
@@ -202,8 +201,8 @@ public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypePro
                 return;
             }
 
-            ChannelGroupTypeUID channelGroupTypeUID = new ChannelGroupTypeUID(HomekitBindingConstants.BINDING_ID, 
-                "service-" + serviceTag);
+            ChannelGroupTypeUID channelGroupTypeUID = new ChannelGroupTypeUID(HomekitBindingConstants.BINDING_ID,
+                    "service-" + serviceTag);
             logger.debug("{}Created channel group type UID: {}", LOG_TYPE, channelGroupTypeUID);
 
             Map<String, Set<String>> characteristicTypes = serviceFactory.getCharacteristicTypes(serviceType);
@@ -218,13 +217,12 @@ public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypePro
                     continue;
                 }
 
-                ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID, 
-                    characteristicType);
-                
+                ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
+                        characteristicType);
+
                 channelDefinitions.add(new ChannelDefinitionBuilder(characteristicTag, channelTypeUID)
-                    .withLabel(characteristicTag)
-                    .withDescription("HomeKit " + characteristicTag + " Characteristic (Mandatory)")
-                    .build());
+                        .withLabel(characteristicTag)
+                        .withDescription("HomeKit " + characteristicTag + " Characteristic (Mandatory)").build());
                 logger.debug("{}Added mandatory channel definition for: {}", LOG_TYPE, characteristicTag);
             }
 
@@ -237,13 +235,12 @@ public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypePro
                     continue;
                 }
 
-                ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID, 
-                    characteristicType);
-                
+                ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
+                        characteristicType);
+
                 channelDefinitions.add(new ChannelDefinitionBuilder(characteristicTag, channelTypeUID)
-                    .withLabel(characteristicTag)
-                    .withDescription("HomeKit " + characteristicTag + " Characteristic (Optional)")
-                    .build());
+                        .withLabel(characteristicTag)
+                        .withDescription("HomeKit " + characteristicTag + " Characteristic (Optional)").build());
                 logger.debug("{}Added optional channel definition for: {}", LOG_TYPE, characteristicTag);
             }
 
@@ -253,18 +250,17 @@ public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypePro
             }
 
             ChannelGroupType channelGroupType = ChannelGroupTypeBuilder.instance(channelGroupTypeUID, serviceTag)
-                .withDescription("HomeKit " + serviceTag + " Service")
-                .withChannelDefinitions(channelDefinitions)
-                .build();
+                    .withDescription("HomeKit " + serviceTag + " Service").withChannelDefinitions(channelDefinitions)
+                    .build();
 
             channelGroupTypeCache.put(channelGroupTypeUID, channelGroupType);
             putChannelGroupType(channelGroupType);
 
-            logger.info("{}Created channel group type for service {} with {} channels", LOG_TYPE, serviceType, 
-                channelDefinitions.size());
+            logger.info("{}Created channel group type for service {} with {} channels", LOG_TYPE, serviceType,
+                    channelDefinitions.size());
         } catch (Exception e) {
-            logger.error("{}Failed to create channel group type for service {}: {}", LOG_ERROR, serviceType, 
-                e.getMessage(), e);
+            logger.error("{}Failed to create channel group type for service {}: {}", LOG_ERROR, serviceType,
+                    e.getMessage(), e);
             throw new IllegalStateException("Failed to create channel group type for service: " + serviceType, e);
         }
     }
@@ -282,10 +278,10 @@ public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypePro
      * @return The channel group type, or null if not found
      */
     @Override
-    public @Nullable ChannelGroupType getChannelGroupType(ChannelGroupTypeUID channelGroupTypeUID, 
+    public @Nullable ChannelGroupType getChannelGroupType(ChannelGroupTypeUID channelGroupTypeUID,
             @Nullable Locale locale) {
         logger.debug("{}Getting channel group type for UID: {}", LOG_TYPE, channelGroupTypeUID);
-        
+
         ChannelGroupType cachedType = channelGroupTypeCache.get(channelGroupTypeUID);
         if (cachedType != null) {
             logger.debug("{}Found channel group type in cache", LOG_TYPE);
@@ -316,16 +312,16 @@ public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypePro
     @Override
     public Collection<ChannelGroupType> getChannelGroupTypes(@Nullable Locale locale) {
         logger.debug("{}Getting all channel group types", LOG_TYPE);
-        
+
         Collection<ChannelGroupType> storedTypes = super.getChannelGroupTypes(locale);
-        
+
         for (ChannelGroupType cachedType : channelGroupTypeCache.values()) {
             if (!storedTypes.contains(cachedType)) {
                 storedTypes.add(cachedType);
                 logger.debug("{}Added cached type to collection: {}", LOG_TYPE, cachedType.getUID());
             }
         }
-        
+
         logger.debug("{}Returning {} channel group types", LOG_TYPE, storedTypes.size());
         return Collections.unmodifiableCollection(storedTypes);
     }

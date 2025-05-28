@@ -1,6 +1,5 @@
 package org.openhab.io.homekit.network.http;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -27,34 +26,34 @@ import org.slf4j.LoggerFactory;
  * <b>Key features:</b>
  * </p>
  * <ul>
- *   <li>IP-based session tracking</li>
- *   <li>Cookie-less session management</li>
- *   <li>URL-based session tracking disabled</li>
- *   <li>Thread-safe session ID mapping</li>
- *   <li>Automatic session cleanup</li>
- *   <li>Session validation and invalidation</li>
- *   <li>Client IP and port tracking</li>
+ * <li>IP-based session tracking</li>
+ * <li>Cookie-less session management</li>
+ * <li>URL-based session tracking disabled</li>
+ * <li>Thread-safe session ID mapping</li>
+ * <li>Automatic session cleanup</li>
+ * <li>Session validation and invalidation</li>
+ * <li>Client IP and port tracking</li>
  * </ul>
  *
  * <p>
  * <b>Component Integration:</b>
  * </p>
  * <ul>
- *   <li>{@link org.eclipse.jetty.server.session.SessionHandler} for base session handling</li>
- *   <li>{@link javax.servlet.http.HttpSession} for session management</li>
- *   <li>{@link org.eclipse.jetty.server.Request} for request processing</li>
- *   <li>{@link java.util.concurrent.ConcurrentHashMap} for thread-safe session mapping</li>
+ * <li>{@link org.eclipse.jetty.server.session.SessionHandler} for base session handling</li>
+ * <li>{@link javax.servlet.http.HttpSession} for session management</li>
+ * <li>{@link org.eclipse.jetty.server.Request} for request processing</li>
+ * <li>{@link java.util.concurrent.ConcurrentHashMap} for thread-safe session mapping</li>
  * </ul>
  *
  * <p>
  * <b>Implementation Details:</b>
  * </p>
  * <ul>
- *   <li>Uses IP:port combination as client identifier</li>
- *   <li>Maintains thread-safe session ID mapping</li>
- *   <li>Implements session validation logic</li>
- *   <li>Provides session cleanup on invalidation</li>
- *   <li>Supports session ID lookup by IP</li>
+ * <li>Uses IP:port combination as client identifier</li>
+ * <li>Maintains thread-safe session ID mapping</li>
+ * <li>Implements session validation logic</li>
+ * <li>Provides session cleanup on invalidation</li>
+ * <li>Supports session ID lookup by IP</li>
  * </ul>
  *
  * @author Karel Goderis - Initial Contribution
@@ -90,10 +89,10 @@ public class HomekitSessionHandler extends SessionHandler {
      * <b>Key implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Disables cookie-based session tracking</li>
-     *   <li>Disables URL-based session tracking</li>
-     *   <li>Initializes IP-based session mapping</li>
-     *   <li>Sets up logging configuration</li>
+     * <li>Disables cookie-based session tracking</li>
+     * <li>Disables URL-based session tracking</li>
+     * <li>Initializes IP-based session mapping</li>
+     * <li>Sets up logging configuration</li>
      * </ul>
      */
     public HomekitSessionHandler() {
@@ -115,11 +114,11 @@ public class HomekitSessionHandler extends SessionHandler {
      * <b>Key implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Validates requested session ID if present</li>
-     *   <li>Looks up IP-based session mapping</li>
-     *   <li>Sets session in request if valid</li>
-     *   <li>Handles session validation</li>
-     *   <li>Manages session state transitions</li>
+     * <li>Validates requested session ID if present</li>
+     * <li>Looks up IP-based session mapping</li>
+     * <li>Sets session in request if valid</li>
+     * <li>Handles session validation</li>
+     * <li>Manages session state transitions</li>
      * </ul>
      *
      * @param baseRequest The base request containing client information
@@ -156,7 +155,8 @@ public class HomekitSessionHandler extends SessionHandler {
                 baseRequest.setRequestedSessionId(requestedSessionId);
                 baseRequest.setSession(session);
             } else {
-                logger.warn("{}Invalid or expired IP-based session {} for client {}", LOG_WARN, requestedSessionId, clientId);
+                logger.warn("{}Invalid or expired IP-based session {} for client {}", LOG_WARN, requestedSessionId,
+                        clientId);
                 ipSessionIds.remove(clientId);
             }
         } else {
@@ -176,9 +176,9 @@ public class HomekitSessionHandler extends SessionHandler {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Thread-safe session ID lookup</li>
-     *   <li>IP:port based mapping</li>
-     *   <li>Null-safe return value</li>
+     * <li>Thread-safe session ID lookup</li>
+     * <li>IP:port based mapping</li>
+     * <li>Null-safe return value</li>
      * </ul>
      *
      * @param ipAddress The client's IP address and port
@@ -203,10 +203,10 @@ public class HomekitSessionHandler extends SessionHandler {
      * <b>Key implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Creates new HTTP session</li>
-     *   <li>Maps client IP and port to session ID</li>
-     *   <li>Thread-safe session mapping</li>
-     *   <li>Session creation logging</li>
+     * <li>Creates new HTTP session</li>
+     * <li>Maps client IP and port to session ID</li>
+     * <li>Thread-safe session mapping</li>
+     * <li>Session creation logging</li>
      * </ul>
      *
      * @param request The HTTP request requiring a new session
@@ -234,10 +234,10 @@ public class HomekitSessionHandler extends SessionHandler {
      * <b>Key implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Session invalidation</li>
-     *   <li>IP mapping cleanup</li>
-     *   <li>Thread-safe operations</li>
-     *   <li>Resource cleanup</li>
+     * <li>Session invalidation</li>
+     * <li>IP mapping cleanup</li>
+     * <li>Thread-safe operations</li>
+     * <li>Resource cleanup</li>
      * </ul>
      *
      * @param id The session ID to invalidate

@@ -21,31 +21,32 @@ import org.slf4j.LoggerFactory;
  * HomeKit Camera Recording Management Service.
  * <p>
  * This service provides comprehensive control over camera recording settings and configurations in HomeKit accessories.
- * It manages recording parameters, audio settings, and configuration options for IP cameras and other video recording devices.
+ * It manages recording parameters, audio settings, and configuration options for IP cameras and other video recording
+ * devices.
  * </p>
  *
  * <ul>
- *   <li>Recording configuration management</li>
- *   <li>Video and audio recording parameter control</li>
- *   <li>Recording state and status monitoring</li>
- *   <li>Audio recording control</li>
+ * <li>Recording configuration management</li>
+ * <li>Video and audio recording parameter control</li>
+ * <li>Recording state and status monitoring</li>
+ * <li>Audio recording control</li>
  * </ul>
  *
  * <p>
  * Required characteristics:
  * <ul>
- *   <li>Active - Service activation state</li>
- *   <li>SelectedCameraRecordingConfiguration - Current recording settings</li>
- *   <li>SupportedAudioRecordingConfiguration - Available audio recording options</li>
- *   <li>SupportedCameraRecordingConfiguration - Available camera recording options</li>
- *   <li>SupportedVideoRecordingConfiguration - Available video recording options</li>
+ * <li>Active - Service activation state</li>
+ * <li>SelectedCameraRecordingConfiguration - Current recording settings</li>
+ * <li>SupportedAudioRecordingConfiguration - Available audio recording options</li>
+ * <li>SupportedCameraRecordingConfiguration - Available camera recording options</li>
+ * <li>SupportedVideoRecordingConfiguration - Available video recording options</li>
  * </ul>
  * </p>
  *
  * <p>
  * Optional characteristics:
  * <ul>
- *   <li>RecordingAudioActive - Audio recording state</li>
+ * <li>RecordingAudioActive - Audio recording state</li>
  * </ul>
  * </p>
  *
@@ -100,7 +101,8 @@ public class HomekitCameraRecordingManagementService extends AbstractHomekitServ
     public HomekitCameraRecordingManagementService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
         super(accessory, eventManager, characteristicFactory, value);
-        logger.debug("{}Created CameraRecordingManagementService from JSON for accessory {}", LOG_INIT, accessory.getLabel());
+        logger.debug("{}Created CameraRecordingManagementService from JSON for accessory {}", LOG_INIT,
+                accessory.getLabel());
     }
 
     /**
@@ -108,46 +110,52 @@ public class HomekitCameraRecordingManagementService extends AbstractHomekitServ
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>Active - Service activation state</li>
-     *   <li>SelectedCameraRecordingConfiguration - Current recording settings</li>
-     *   <li>SupportedAudioRecordingConfiguration - Available audio recording options</li>
-     *   <li>SupportedCameraRecordingConfiguration - Available camera recording options</li>
-     *   <li>SupportedVideoRecordingConfiguration - Available video recording options</li>
+     * <li>Active - Service activation state</li>
+     * <li>SelectedCameraRecordingConfiguration - Current recording settings</li>
+     * <li>SupportedAudioRecordingConfiguration - Available audio recording options</li>
+     * <li>SupportedCameraRecordingConfiguration - Available camera recording options</li>
+     * <li>SupportedVideoRecordingConfiguration - Available video recording options</li>
      * </ul>
      * </p>
      * <p>
      * Optional characteristics:
      * <ul>
-     *   <li>RecordingAudioActive - Audio recording state</li>
+     * <li>RecordingAudioActive - Audio recording state</li>
      * </ul>
      * </p>
+     * 
      * @since 1.0
      */
     @Override
     public void addCharacteristics() {
-        logger.trace("{}Adding required characteristics to CameraRecordingManagementService for accessory {}", LOG_TRACE, getAccessory().getLabel());
-        
+        logger.trace("{}Adding required characteristics to CameraRecordingManagementService for accessory {}",
+                LOG_TRACE, getAccessory().getLabel());
+
         // Required characteristics
         addCharacteristic(
                 new HomekitActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(true));
         logger.debug("{}Added ActiveCharacteristic to CameraRecordingManagementService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitSelectedCameraRecordingConfigurationCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        logger.debug("{}Added SelectedCameraRecordingConfigurationCharacteristic to CameraRecordingManagementService", LOG_STATE);
-        
+        logger.debug("{}Added SelectedCameraRecordingConfigurationCharacteristic to CameraRecordingManagementService",
+                LOG_STATE);
+
         addCharacteristic(new HomekitSupportedAudioRecordingConfigurationCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        logger.debug("{}Added SupportedAudioRecordingConfigurationCharacteristic to CameraRecordingManagementService", LOG_STATE);
-        
+        logger.debug("{}Added SupportedAudioRecordingConfigurationCharacteristic to CameraRecordingManagementService",
+                LOG_STATE);
+
         addCharacteristic(new HomekitSupportedCameraRecordingConfigurationCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        logger.debug("{}Added SupportedCameraRecordingConfigurationCharacteristic to CameraRecordingManagementService", LOG_STATE);
-        
+        logger.debug("{}Added SupportedCameraRecordingConfigurationCharacteristic to CameraRecordingManagementService",
+                LOG_STATE);
+
         addCharacteristic(new HomekitSupportedVideoRecordingConfigurationCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        logger.debug("{}Added SupportedVideoRecordingConfigurationCharacteristic to CameraRecordingManagementService", LOG_STATE);
+        logger.debug("{}Added SupportedVideoRecordingConfigurationCharacteristic to CameraRecordingManagementService",
+                LOG_STATE);
 
         // Optional characteristics
         addCharacteristic(new HomekitRecordingAudioActiveCharacteristic(this, eventManager,

@@ -29,27 +29,30 @@ import net.i2p.crypto.eddsa.spec.EdDSAParameterSpec;
  * This class provides methods for generating secure random keys and unique identifiers that comply
  * with HomeKit security requirements.
  *
- * <p>Key features:
+ * <p>
+ * Key features:
  * <ul>
- *     <li>Secure key generation using EdDSA (Ed25519)</li>
- *     <li>Cryptographically secure random number generation</li>
- *     <li>MAC address format identifier generation</li>
- *     <li>Thread-safe operations</li>
+ * <li>Secure key generation using EdDSA (Ed25519)</li>
+ * <li>Cryptographically secure random number generation</li>
+ * <li>MAC address format identifier generation</li>
+ * <li>Thread-safe operations</li>
  * </ul>
  *
- * <p>Integration points:
+ * <p>
+ * Integration points:
  * <ul>
- *     <li>HomeKit encryption engine</li>
- *     <li>Accessory pairing process</li>
- *     <li>Secure communication setup</li>
+ * <li>HomeKit encryption engine</li>
+ * <li>Accessory pairing process</li>
+ * <li>Secure communication setup</li>
  * </ul>
  *
- * <p>Implementation details:
+ * <p>
+ * Implementation details:
  * <ul>
- *     <li>Uses Ed25519 curve for key generation</li>
- *     <li>Employs secure random number generation</li>
- *     <li>Generates locally administered MAC addresses</li>
- *     <li>UTF-8 encoding for identifier strings</li>
+ * <li>Uses Ed25519 curve for key generation</li>
+ * <li>Employs secure random number generation</li>
+ * <li>Generates locally administered MAC addresses</li>
+ * <li>UTF-8 encoding for identifier strings</li>
  * </ul>
  *
  * @author Karel Goderis - Initial contribution
@@ -67,11 +70,12 @@ public class HomekitKeyGenerator {
      * Generates a secret key for HomeKit encryption using the Ed25519 curve.
      * The generated key is suitable for use in HomeKit's encryption engine.
      *
-     * <p>The key generation process:
+     * <p>
+     * The key generation process:
      * <ol>
-     *     <li>Retrieves the Ed25519 curve parameters</li>
-     *     <li>Creates a seed buffer of appropriate size</li>
-     *     <li>Fills the buffer with cryptographically secure random bytes</li>
+     * <li>Retrieves the Ed25519 curve parameters</li>
+     * <li>Creates a seed buffer of appropriate size</li>
+     * <li>Fills the buffer with cryptographically secure random bytes</li>
      * </ol>
      *
      * @return A byte array containing the generated secret key
@@ -79,7 +83,7 @@ public class HomekitKeyGenerator {
      */
     public static byte[] generateSecretKey() {
         logger.trace("{}Generating secret key using Ed25519 curve", LOG_KEY);
-        
+
         EdDSAParameterSpec spec = EdDSANamedCurveTable.getByName("ed25519-sha-512");
         if (spec == null) {
             logger.error("{}Failed to retrieve Ed25519 curve parameters", LOG_KEY);
@@ -88,7 +92,7 @@ public class HomekitKeyGenerator {
 
         byte[] seed = new byte[spec.getCurve().getField().getb() / 8];
         HomekitEncryptionEngine.getSecureRandom().nextBytes(seed);
-        
+
         logger.trace("{}Generated secret key of length {} bytes", LOG_KEY, seed.length);
         return seed;
     }
@@ -97,31 +101,31 @@ public class HomekitKeyGenerator {
      * Generates a unique identifier in MAC address format for HomeKit accessories.
      * The generated ID follows the locally administered unicast MAC address format.
      *
-     * <p>The ID generation process:
+     * <p>
+     * The ID generation process:
      * <ol>
-     *     <li>Generates a random byte for the first octet with specific bits set</li>
-     *     <li>Generates 5 additional random bytes</li>
-     *     <li>Formats the bytes as a colon-separated hexadecimal string</li>
+     * <li>Generates a random byte for the first octet with specific bits set</li>
+     * <li>Generates 5 additional random bytes</li>
+     * <li>Formats the bytes as a colon-separated hexadecimal string</li>
      * </ol>
      *
-     * <p>The first byte is generated with the following constraints:
+     * <p>
+     * The first byte is generated with the following constraints:
      * <ul>
-     *     <li>Least significant bit is set to 0 (unicast)</li>
-     *     <li>Second least significant bit is set to 1 (locally administered)</li>
-     *     <li>Value is non-zero</li>
+     * <li>Least significant bit is set to 0 (unicast)</li>
+     * <li>Second least significant bit is set to 1 (locally administered)</li>
+     * <li>Value is non-zero</li>
      * </ul>
      *
      * @return A byte array containing the generated identifier in UTF-8 encoding
      */
     public static byte[] generateHexidecimalId() {
         logger.trace("{}Generating hexadecimal identifier", LOG_ID);
-        
+
         int byte1 = ((HomekitEncryptionEngine.getSecureRandom().nextInt(255) + 1) | 2) & 0xFE;
         String id = Integer.toHexString(byte1).toUpperCase() + ":"
-                + Stream.generate(() -> HomekitEncryptionEngine.getSecureRandom().nextInt(255) + 1)
-                        .limit(5)
-                        .map(i -> Integer.toHexString(i).toUpperCase())
-                        .collect(Collectors.joining(":"));
+                + Stream.generate(() -> HomekitEncryptionEngine.getSecureRandom().nextInt(255) + 1).limit(5)
+                        .map(i -> Integer.toHexString(i).toUpperCase()).collect(Collectors.joining(":"));
 
         logger.trace("{}Generated identifier: {}", LOG_ID, id);
         return id.getBytes(StandardCharsets.UTF_8);

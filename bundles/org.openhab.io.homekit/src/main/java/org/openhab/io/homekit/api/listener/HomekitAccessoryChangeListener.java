@@ -12,24 +12,24 @@ import org.openhab.io.homekit.event.model.accessory.HomekitAccessoryEvent;
  * <p>
  * The interface provides:
  * <ul>
- *   <li>Accessory event notifications</li>
- *   <li>State change tracking</li>
- *   <li>Event handling</li>
+ * <li>Accessory event notifications</li>
+ * <li>State change tracking</li>
+ * <li>Event handling</li>
  * </ul>
  * </p>
  * <p>
  * Key implementation details:
  * <ul>
- *   <li>Event-based notification system</li>
- *   <li>Thread-safe event handling</li>
- *   <li>Accessory state tracking</li>
- *   <li>Event propagation</li>
+ * <li>Event-based notification system</li>
+ * <li>Thread-safe event handling</li>
+ * <li>Accessory state tracking</li>
+ * <li>Event propagation</li>
  * </ul>
  * </p>
  * <p>
  * The interface integrates with:
  * <ul>
- *   <li>{@link org.openhab.io.homekit.event.model.accessory.HomekitAccessoryEvent} for accessory events</li>
+ * <li>{@link org.openhab.io.homekit.event.model.accessory.HomekitAccessoryEvent} for accessory events</li>
  * </ul>
  * </p>
  *

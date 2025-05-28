@@ -12,24 +12,24 @@ import org.openhab.io.homekit.event.model.service.HomekitServiceEvent;
  * <p>
  * The interface provides:
  * <ul>
- *   <li>Service event notifications</li>
- *   <li>State change tracking</li>
- *   <li>Event handling</li>
+ * <li>Service event notifications</li>
+ * <li>State change tracking</li>
+ * <li>Event handling</li>
  * </ul>
  * </p>
  * <p>
  * Key implementation details:
  * <ul>
- *   <li>Event-based notification system</li>
- *   <li>Thread-safe event handling</li>
- *   <li>Service state tracking</li>
- *   <li>Event propagation</li>
+ * <li>Event-based notification system</li>
+ * <li>Thread-safe event handling</li>
+ * <li>Service state tracking</li>
+ * <li>Event propagation</li>
  * </ul>
  * </p>
  * <p>
  * The interface integrates with:
  * <ul>
- *   <li>{@link org.openhab.io.homekit.event.model.service.HomekitServiceEvent} for service events</li>
+ * <li>{@link org.openhab.io.homekit.event.model.service.HomekitServiceEvent} for service events</li>
  * </ul>
  * </p>
  *

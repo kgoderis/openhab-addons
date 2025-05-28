@@ -1,10 +1,10 @@
 package org.openhab.io.homekit.core.service;
 
+import java.util.List;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.uid.HomekitServiceUID;
 import org.openhab.io.homekit.util.HomekitUID;
-
-import java.util.List;
 
 /**
  * Implementation of a unique identifier for a HomeKit service.
@@ -14,30 +14,30 @@ import java.util.List;
  * The UID follows a specific format: {@code homekit:service:{pairingId}:{accessoryId}:{serviceId}} where:
  * </p>
  * <ul>
- *   <li>{@code homekit} is the namespace prefix</li>
- *   <li>{@code service} indicates this is a service identifier</li>
- *   <li>{@code pairingId} is the unique pairing identifier for the server</li>
- *   <li>{@code accessoryId} is the unique identifier for the accessory</li>
- *   <li>{@code serviceId} is the unique identifier for the service</li>
+ * <li>{@code homekit} is the namespace prefix</li>
+ * <li>{@code service} indicates this is a service identifier</li>
+ * <li>{@code pairingId} is the unique pairing identifier for the server</li>
+ * <li>{@code accessoryId} is the unique identifier for the accessory</li>
+ * <li>{@code serviceId} is the unique identifier for the service</li>
  * </ul>
  *
  * <p>
  * Key responsibilities:
  * </p>
  * <ul>
- *   <li>Creating and parsing service UIDs</li>
- *   <li>Validating UID format and structure</li>
- *   <li>Extracting service-specific information from UIDs</li>
- *   <li>Ensuring unique identification across the system</li>
+ * <li>Creating and parsing service UIDs</li>
+ * <li>Validating UID format and structure</li>
+ * <li>Extracting service-specific information from UIDs</li>
+ * <li>Ensuring unique identification across the system</li>
  * </ul>
  *
  * <p>
  * The class integrates with:
  * </p>
  * <ul>
- *   <li>{@link org.openhab.core.common.registry.Identifiable} for UID management</li>
- *   <li>{@link org.openhab.io.homekit.api.service.HomekitService} for service identification</li>
- *   <li>OpenHAB's UID system for consistent identification</li>
+ * <li>{@link org.openhab.core.common.registry.Identifiable} for UID management</li>
+ * <li>{@link org.openhab.io.homekit.api.service.HomekitService} for service identification</li>
+ * <li>OpenHAB's UID system for consistent identification</li>
  * </ul>
  *
  * @author Karel Goderis - Initial contribution
@@ -65,10 +65,10 @@ public class HomekitServiceUIDImpl extends HomekitUID implements HomekitServiceU
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Validates all input parameters</li>
-     *   <li>Constructs the UID string in the correct format</li>
-     *   <li>Initializes all internal fields</li>
-     *   <li>Sets up the base UID structure</li>
+     * <li>Validates all input parameters</li>
+     * <li>Constructs the UID string in the correct format</li>
+     * <li>Initializes all internal fields</li>
+     * <li>Sets up the base UID structure</li>
      * </ul>
      *
      * @param pairingId The unique pairing identifier for the server
@@ -96,9 +96,9 @@ public class HomekitServiceUIDImpl extends HomekitUID implements HomekitServiceU
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Validates the input string format</li>
-     *   <li>Extracts individual components</li>
-     *   <li>Initializes internal fields</li>
+     * <li>Validates the input string format</li>
+     * <li>Extracts individual components</li>
+     * <li>Initializes internal fields</li>
      * </ul>
      *
      * @param key The string representation of the UID
@@ -128,9 +128,9 @@ public class HomekitServiceUIDImpl extends HomekitUID implements HomekitServiceU
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Uses String.format for consistent formatting</li>
-     *   <li>Maintains the standard UID structure</li>
-     *   <li>Preserves all identifier components</li>
+     * <li>Uses String.format for consistent formatting</li>
+     * <li>Maintains the standard UID structure</li>
+     * <li>Preserves all identifier components</li>
      * </ul>
      *
      * @return The UID string in the format {@code homekit:service:{pairingId}:{accessoryId}:{serviceId}}
@@ -152,9 +152,9 @@ public class HomekitServiceUIDImpl extends HomekitUID implements HomekitServiceU
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns the internal instance ID field</li>
-     *   <li>Used for service differentiation</li>
-     *   <li>Supports multiple instances of the same type</li>
+     * <li>Returns the internal instance ID field</li>
+     * <li>Used for service differentiation</li>
+     * <li>Supports multiple instances of the same type</li>
      * </ul>
      *
      * @return The service instance ID
@@ -171,20 +171,20 @@ public class HomekitServiceUIDImpl extends HomekitUID implements HomekitServiceU
      * A valid service UID must have at least 5 segments:
      * </p>
      * <ol>
-     *   <li>The namespace prefix ("homekit")</li>
-     *   <li>The type identifier ("service")</li>
-     *   <li>The pairing ID</li>
-     *   <li>The accessory ID</li>
-     *   <li>The service ID</li>
+     * <li>The namespace prefix ("homekit")</li>
+     * <li>The type identifier ("service")</li>
+     * <li>The pairing ID</li>
+     * <li>The accessory ID</li>
+     * <li>The service ID</li>
      * </ol>
      *
      * <p>
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Enforces UID structure validation</li>
-     *   <li>Ensures complete identification</li>
-     *   <li>Supports UID parsing</li>
+     * <li>Enforces UID structure validation</li>
+     * <li>Ensures complete identification</li>
+     * <li>Supports UID parsing</li>
      * </ul>
      *
      * @return The minimum number of segments (5) for a valid service UID
@@ -206,9 +206,9 @@ public class HomekitServiceUIDImpl extends HomekitUID implements HomekitServiceU
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns this instance</li>
-     *   <li>Supports interface compliance</li>
-     *   <li>Enables UID access</li>
+     * <li>Returns this instance</li>
+     * <li>Supports interface compliance</li>
+     * <li>Enables UID access</li>
      * </ul>
      *
      * @return This UID instance

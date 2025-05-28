@@ -25,26 +25,26 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * <ul>
- *   <li>Contact state monitoring (open/closed)</li>
- *   <li>Sensor status and fault monitoring</li>
- *   <li>Battery and tamper state tracking</li>
+ * <li>Contact state monitoring (open/closed)</li>
+ * <li>Sensor status and fault monitoring</li>
+ * <li>Battery and tamper state tracking</li>
  * </ul>
  *
  * <p>
  * Required characteristics:
  * <ul>
- *   <li>ContactSensorState - Current contact state (open/closed)</li>
+ * <li>ContactSensorState - Current contact state (open/closed)</li>
  * </ul>
  * </p>
  *
  * <p>
  * Optional characteristics:
  * <ul>
- *   <li>Name - Sensor name</li>
- *   <li>StatusActive - Sensor activation state</li>
- *   <li>StatusFault - Fault state indicator</li>
- *   <li>StatusLowBattery - Low battery warning</li>
- *   <li>StatusTampered - Tamper detection state</li>
+ * <li>Name - Sensor name</li>
+ * <li>StatusActive - Sensor activation state</li>
+ * <li>StatusFault - Fault state indicator</li>
+ * <li>StatusLowBattery - Low battery warning</li>
+ * <li>StatusTampered - Tamper detection state</li>
  * </ul>
  * </p>
  *
@@ -107,47 +107,49 @@ public class HomekitContactSensorService extends AbstractHomekitService {
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>ContactSensorState - Current contact state (open/closed)</li>
+     * <li>ContactSensorState - Current contact state (open/closed)</li>
      * </ul>
      * </p>
      * <p>
      * Optional characteristics:
      * <ul>
-     *   <li>Name - Sensor name</li>
-     *   <li>StatusActive - Sensor activation state</li>
-     *   <li>StatusFault - Fault state indicator</li>
-     *   <li>StatusLowBattery - Low battery warning</li>
-     *   <li>StatusTampered - Tamper detection state</li>
+     * <li>Name - Sensor name</li>
+     * <li>StatusActive - Sensor activation state</li>
+     * <li>StatusFault - Fault state indicator</li>
+     * <li>StatusLowBattery - Low battery warning</li>
+     * <li>StatusTampered - Tamper detection state</li>
      * </ul>
      * </p>
+     * 
      * @since 1.0
      */
     @Override
     public void addCharacteristics() {
-        logger.trace("{}Adding required characteristics to ContactSensorService for accessory {}", LOG_TRACE, getAccessory().getLabel());
-        
+        logger.trace("{}Adding required characteristics to ContactSensorService for accessory {}", LOG_TRACE,
+                getAccessory().getLabel());
+
         addCharacteristic(new HomekitContactSensorStateCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         logger.debug("{}Added ContactSensorStateCharacteristic to ContactSensorService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                 .withMandatory(false));
         logger.debug("{}Added NameCharacteristic to ContactSensorService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
         logger.debug("{}Added StatusActiveCharacteristic to ContactSensorService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitStatusFaultCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
         logger.debug("{}Added StatusFaultCharacteristic to ContactSensorService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitStatusLowBatteryCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
         logger.debug("{}Added StatusLowBatteryCharacteristic to ContactSensorService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitStatusTamperedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));

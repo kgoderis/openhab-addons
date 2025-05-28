@@ -25,26 +25,26 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * <ul>
- *   <li>Ambient light level monitoring</li>
- *   <li>Sensor status and fault monitoring</li>
- *   <li>Battery and tamper state tracking</li>
+ * <li>Ambient light level monitoring</li>
+ * <li>Sensor status and fault monitoring</li>
+ * <li>Battery and tamper state tracking</li>
  * </ul>
  *
  * <p>
  * Required characteristics:
  * <ul>
- *   <li>CurrentAmbientLightLevel - Current ambient light level in lux (0.0001 to 100000)</li>
+ * <li>CurrentAmbientLightLevel - Current ambient light level in lux (0.0001 to 100000)</li>
  * </ul>
  * </p>
  *
  * <p>
  * Optional characteristics:
  * <ul>
- *   <li>Name - Sensor name</li>
- *   <li>StatusActive - Sensor activation state</li>
- *   <li>StatusFault - Fault state indicator</li>
- *   <li>StatusLowBattery - Low battery warning</li>
- *   <li>StatusTampered - Tamper detection state</li>
+ * <li>Name - Sensor name</li>
+ * <li>StatusActive - Sensor activation state</li>
+ * <li>StatusFault - Fault state indicator</li>
+ * <li>StatusLowBattery - Low battery warning</li>
+ * <li>StatusTampered - Tamper detection state</li>
  * </ul>
  * </p>
  *
@@ -107,47 +107,49 @@ public class HomekitLightSensorService extends AbstractHomekitService {
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>CurrentAmbientLightLevel - Current ambient light level in lux (0.0001 to 100000)</li>
+     * <li>CurrentAmbientLightLevel - Current ambient light level in lux (0.0001 to 100000)</li>
      * </ul>
      * </p>
      * <p>
      * Optional characteristics:
      * <ul>
-     *   <li>Name - Sensor name</li>
-     *   <li>StatusActive - Sensor activation state</li>
-     *   <li>StatusFault - Fault state indicator</li>
-     *   <li>StatusLowBattery - Low battery warning</li>
-     *   <li>StatusTampered - Tamper detection state</li>
+     * <li>Name - Sensor name</li>
+     * <li>StatusActive - Sensor activation state</li>
+     * <li>StatusFault - Fault state indicator</li>
+     * <li>StatusLowBattery - Low battery warning</li>
+     * <li>StatusTampered - Tamper detection state</li>
      * </ul>
      * </p>
+     * 
      * @since 1.0
      */
     @Override
     public void addCharacteristics() {
-        logger.trace("{}Adding required characteristics to LightSensorService for accessory {}", LOG_TRACE, getAccessory().getLabel());
-        
+        logger.trace("{}Adding required characteristics to LightSensorService for accessory {}", LOG_TRACE,
+                getAccessory().getLabel());
+
         addCharacteristic(new HomekitCurrentAmbientLightLevelCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         logger.debug("{}Added CurrentAmbientLightLevelCharacteristic to LightSensorService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                 .withMandatory(false));
         logger.debug("{}Added NameCharacteristic to LightSensorService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
         logger.debug("{}Added StatusActiveCharacteristic to LightSensorService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitStatusFaultCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
         logger.debug("{}Added StatusFaultCharacteristic to LightSensorService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitStatusLowBatteryCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
         logger.debug("{}Added StatusLowBatteryCharacteristic to LightSensorService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitStatusTamperedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));

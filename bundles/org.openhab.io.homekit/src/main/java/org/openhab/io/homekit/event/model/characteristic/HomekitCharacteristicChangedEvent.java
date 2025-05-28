@@ -16,41 +16,41 @@ import org.openhab.io.homekit.event.core.HomekitEventMetadata;
  * The class integrates with:
  * </p>
  * <ul>
- *   <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for base event functionality</li>
- *   <li>{@link org.openhab.io.homekit.api.event.HomekitEventType} for event type identification</li>
- *   <li>{@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic} for characteristic handling</li>
- *   <li>{@link org.openhab.io.homekit.event.core.HomekitEventMetadata} for event metadata</li>
- *   <li>{@link javax.json.JsonValue} for value representation</li>
+ * <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for base event functionality</li>
+ * <li>{@link org.openhab.io.homekit.api.event.HomekitEventType} for event type identification</li>
+ * <li>{@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic} for characteristic handling</li>
+ * <li>{@link org.openhab.io.homekit.event.core.HomekitEventMetadata} for event metadata</li>
+ * <li>{@link javax.json.JsonValue} for value representation</li>
  * </ul>
  *
  * <p>
  * <b>Key Features:</b>
  * </p>
  * <ul>
- *   <li>Value change tracking with old and new values</li>
- *   <li>Characteristic identification</li>
- *   <li>Timestamp tracking</li>
- *   <li>Metadata support</li>
+ * <li>Value change tracking with old and new values</li>
+ * <li>Characteristic identification</li>
+ * <li>Timestamp tracking</li>
+ * <li>Metadata support</li>
  * </ul>
  *
  * <p>
  * <b>Usage Patterns:</b>
  * </p>
  * <ul>
- *   <li>State change notifications</li>
- *   <li>Value history tracking</li>
- *   <li>System diagnostics</li>
- *   <li>Event correlation</li>
+ * <li>State change notifications</li>
+ * <li>Value history tracking</li>
+ * <li>System diagnostics</li>
+ * <li>Event correlation</li>
  * </ul>
  *
  * <p>
  * <b>Value Management:</b>
  * </p>
  * <ul>
- *   <li>Supports JSON value representation</li>
- *   <li>Maintains value history</li>
- *   <li>Enables value validation</li>
- *   <li>Supports metadata enrichment</li>
+ * <li>Supports JSON value representation</li>
+ * <li>Maintains value history</li>
+ * <li>Enables value validation</li>
+ * <li>Supports metadata enrichment</li>
  * </ul>
  *
  * @author Karel Goderis - Initial contribution

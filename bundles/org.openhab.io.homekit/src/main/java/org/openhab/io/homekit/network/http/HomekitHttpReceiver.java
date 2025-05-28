@@ -20,7 +20,8 @@ import org.slf4j.LoggerFactory;
  * A specialized HTTP receiver for HomeKit communication with decryption support.
  *
  * <p>
- * This class extends {@link org.eclipse.jetty.client.http.HttpReceiverOverHTTP HttpReceiverOverHTTP} to provide specialized HTTP response
+ * This class extends {@link org.eclipse.jetty.client.http.HttpReceiverOverHTTP HttpReceiverOverHTTP} to provide
+ * specialized HTTP response
  * handling for HomeKit accessories, including decryption of response payloads and
  * proper sequence number management for secure communication.
  * </p>
@@ -29,46 +30,46 @@ import org.slf4j.LoggerFactory;
  * The class integrates with:
  * </p>
  * <ul>
- *   <li>{@link HomekitHttpChannel} for channel lifecycle management</li>
- *   <li>{@link HomekitHttpParser} for response parsing and validation</li>
- *   <li>{@link HomekitEncryptionEngine} for secure message handling</li>
- *   <li>{@link HomekitHttpConnectionOverHTTP} for connection management</li>
- *   <li>{@link org.eclipse.jetty.client.HttpClient HttpClient} for HTTP operations</li>
+ * <li>{@link HomekitHttpChannel} for channel lifecycle management</li>
+ * <li>{@link HomekitHttpParser} for response parsing and validation</li>
+ * <li>{@link HomekitEncryptionEngine} for secure message handling</li>
+ * <li>{@link HomekitHttpConnectionOverHTTP} for connection management</li>
+ * <li>{@link org.eclipse.jetty.client.HttpClient HttpClient} for HTTP operations</li>
  * </ul>
  *
  * <p>
  * <b>Key Features:</b>
  * </p>
  * <ul>
- *   <li>HTTP response reception and parsing</li>
- *   <li>Message decryption support</li>
- *   <li>Sequence number management</li>
- *   <li>Buffer pool optimization</li>
- *   <li>Protocol upgrade handling</li>
- *   <li>Thread-safe operations</li>
+ * <li>HTTP response reception and parsing</li>
+ * <li>Message decryption support</li>
+ * <li>Sequence number management</li>
+ * <li>Buffer pool optimization</li>
+ * <li>Protocol upgrade handling</li>
+ * <li>Thread-safe operations</li>
  * </ul>
  *
  * <p>
  * <b>Security Considerations:</b>
  * </p>
  * <ul>
- *   <li>Validates message integrity</li>
- *   <li>Enforces protocol compliance</li>
- *   <li>Manages encryption keys</li>
- *   <li>Handles sequence numbers</li>
- *   <li>Ensures proper initialization</li>
- *   <li>Maintains thread safety</li>
+ * <li>Validates message integrity</li>
+ * <li>Enforces protocol compliance</li>
+ * <li>Manages encryption keys</li>
+ * <li>Handles sequence numbers</li>
+ * <li>Ensures proper initialization</li>
+ * <li>Maintains thread safety</li>
  * </ul>
  *
  * <p>
  * <b>Implementation Details:</b>
  * </p>
  * <ul>
- *   <li>Efficient buffer management</li>
- *   <li>Secure message handling</li>
- *   <li>Protocol compliance</li>
- *   <li>Connection lifecycle</li>
- *   <li>Detailed logging</li>
+ * <li>Efficient buffer management</li>
+ * <li>Secure message handling</li>
+ * <li>Protocol compliance</li>
+ * <li>Connection lifecycle</li>
+ * <li>Detailed logging</li>
  * </ul>
  *
  * @author Karel Goderis - Initial Contribution
@@ -117,11 +118,11 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Initializes HTTP channel</li>
-     *   <li>Configures HTTP parser</li>
-     *   <li>Sets up buffer management</li>
-     *   <li>Configures HTTP client</li>
-     *   <li>Ensures thread safety</li>
+     * <li>Initializes HTTP channel</li>
+     * <li>Configures HTTP parser</li>
+     * <li>Sets up buffer management</li>
+     * <li>Configures HTTP client</li>
+     * <li>Ensures thread safety</li>
      * </ul>
      *
      * @param channel The HTTP channel to use for communication
@@ -145,9 +146,9 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Retrieves channel instance</li>
-     *   <li>Performs type casting</li>
-     *   <li>Ensures thread safety</li>
+     * <li>Retrieves channel instance</li>
+     * <li>Performs type casting</li>
+     * <li>Ensures thread safety</li>
      * </ul>
      *
      * @return The HomeKit HTTP channel instance
@@ -169,9 +170,9 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Retrieves connection instance</li>
-     *   <li>Performs type casting</li>
-     *   <li>Ensures thread safety</li>
+     * <li>Retrieves connection instance</li>
+     * <li>Performs type casting</li>
+     * <li>Ensures thread safety</li>
      * </ul>
      *
      * @return The HomeKit HTTP connection instance
@@ -192,9 +193,9 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Retrieves decrypted buffer</li>
-     *   <li>Ensures buffer availability</li>
-     *   <li>Maintains thread safety</li>
+     * <li>Retrieves decrypted buffer</li>
+     * <li>Ensures buffer availability</li>
+     * <li>Maintains thread safety</li>
      * </ul>
      *
      * @return The decrypted input buffer
@@ -216,10 +217,10 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Validates buffer state</li>
-     *   <li>Releases buffer to pool</li>
-     *   <li>Ensures thread safety</li>
-     *   <li>Handles error cases</li>
+     * <li>Validates buffer state</li>
+     * <li>Releases buffer to pool</li>
+     * <li>Ensures thread safety</li>
+     * <li>Handles error cases</li>
      * </ul>
      *
      * @param buffer The buffer to release
@@ -252,11 +253,11 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Checks for remaining content</li>
-     *   <li>Creates upgrade buffer</li>
-     *   <li>Transfers content</li>
-     *   <li>Ensures thread safety</li>
-     *   <li>Logs upgrade process</li>
+     * <li>Checks for remaining content</li>
+     * <li>Creates upgrade buffer</li>
+     * <li>Transfers content</li>
+     * <li>Ensures thread safety</li>
+     * <li>Logs upgrade process</li>
      * </ul>
      *
      * @return A new buffer containing any remaining content, or null if none
@@ -281,20 +282,21 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
      * unencrypted communication. It works with:
      * </p>
      * <ul>
-     *   <li>{@link org.eclipse.jetty.io.EndPoint EndPoint} for network I/O</li>
-     *   <li>{@link org.openhab.io.homekit.protocol.crypto.HomekitEncryptionEngine HomekitEncryptionEngine} for decryption</li>
-     *   <li>{@link HomekitHttpParser} for response parsing</li>
+     * <li>{@link org.eclipse.jetty.io.EndPoint EndPoint} for network I/O</li>
+     * <li>{@link org.openhab.io.homekit.protocol.crypto.HomekitEncryptionEngine HomekitEncryptionEngine} for
+     * decryption</li>
+     * <li>{@link HomekitHttpParser} for response parsing</li>
      * </ul>
      *
      * <p>
      * <b>Key implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Manages buffer lifecycle</li>
-     *   <li>Handles connection upgrades</li>
-     *   <li>Processes encrypted/unencrypted data</li>
-     *   <li>Maintains sequence numbers</li>
-     *   <li>Handles connection closure</li>
+     * <li>Manages buffer lifecycle</li>
+     * <li>Handles connection upgrades</li>
+     * <li>Processes encrypted/unencrypted data</li>
+     * <li>Maintains sequence numbers</li>
+     * <li>Handles connection closure</li>
      * </ul>
      */
     @Override
@@ -703,4 +705,3 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
         return decryptionKey;
     }
 }
-

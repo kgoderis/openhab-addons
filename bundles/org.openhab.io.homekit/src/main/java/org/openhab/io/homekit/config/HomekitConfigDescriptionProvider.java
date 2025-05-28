@@ -29,17 +29,17 @@ import org.slf4j.LoggerFactory;
  *
  * Configuration Parameters:
  * - Item Configuration:
- *   - item.enabled: Enable/disable HomeKit integration for items
- *   - item.type: HomeKit type for items
+ * - item.enabled: Enable/disable HomeKit integration for items
+ * - item.type: HomeKit type for items
  * - Thing Configuration:
- *   - thing.enabled: Enable/disable HomeKit integration for things
- *   - thing.type: HomeKit type for things
+ * - thing.enabled: Enable/disable HomeKit integration for things
+ * - thing.type: HomeKit type for things
  * - Channel Configuration:
- *   - channel.enabled: Enable/disable HomeKit integration for channels
- *   - channel.type: HomeKit type for channels
+ * - channel.enabled: Enable/disable HomeKit integration for channels
+ * - channel.type: HomeKit type for channels
  * - Accessory Configuration:
- *   - accessory.enabled: Enable/disable HomeKit integration for accessories
- *   - accessory.type: HomeKit type for accessories
+ * - accessory.enabled: Enable/disable HomeKit integration for accessories
+ * - accessory.type: HomeKit type for accessories
  *
  * Key Features:
  * - UI-friendly configuration descriptions

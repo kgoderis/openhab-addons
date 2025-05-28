@@ -14,28 +14,28 @@ import org.slf4j.LoggerFactory;
  * The UID follows a specific format: {@code homekit:server:{pairingId}} where:
  * </p>
  * <ul>
- *   <li>{@code homekit} is the namespace prefix</li>
- *   <li>{@code server} indicates this is a server identifier</li>
- *   <li>{@code pairingId} is the unique pairing identifier for the server</li>
+ * <li>{@code homekit} is the namespace prefix</li>
+ * <li>{@code server} indicates this is a server identifier</li>
+ * <li>{@code pairingId} is the unique pairing identifier for the server</li>
  * </ul>
  *
  * <p>
  * Key responsibilities:
  * </p>
  * <ul>
- *   <li>Creating and parsing server UIDs</li>
- *   <li>Validating UID format and structure</li>
- *   <li>Extracting server-specific information from UIDs</li>
- *   <li>Ensuring unique identification across the system</li>
+ * <li>Creating and parsing server UIDs</li>
+ * <li>Validating UID format and structure</li>
+ * <li>Extracting server-specific information from UIDs</li>
+ * <li>Ensuring unique identification across the system</li>
  * </ul>
  *
  * <p>
  * The class integrates with:
  * </p>
  * <ul>
- *   <li>{@link org.openhab.core.common.registry.Identifiable} for UID management</li>
- *   <li>{@link org.openhab.io.homekit.api.server.HomekitAccessoryServer} for server identification</li>
- *   <li>OpenHAB's UID system for consistent identification</li>
+ * <li>{@link org.openhab.core.common.registry.Identifiable} for UID management</li>
+ * <li>{@link org.openhab.io.homekit.api.server.HomekitAccessoryServer} for server identification</li>
+ * <li>OpenHAB's UID system for consistent identification</li>
  * </ul>
  *
  * @author Karel Goderis - Initial contribution
@@ -65,10 +65,10 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Sets up basic UID structure</li>
-     *   <li>Initializes with empty values</li>
-     *   <li>Used internally by reflection</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Sets up basic UID structure</li>
+     * <li>Initializes with empty values</li>
+     * <li>Used internally by reflection</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      */
     HomekitAccessoryServerUIDImpl() {
@@ -89,11 +89,11 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Validates all input parameters</li>
-     *   <li>Constructs the UID string in the correct format</li>
-     *   <li>Initializes all internal fields</li>
-     *   <li>Sets up the base UID structure</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Validates all input parameters</li>
+     * <li>Constructs the UID string in the correct format</li>
+     * <li>Initializes all internal fields</li>
+     * <li>Sets up the base UID structure</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @param pairingId The unique pairing identifier for the server
@@ -121,10 +121,10 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Uses String.format for consistent formatting</li>
-     *   <li>Maintains the standard UID structure</li>
-     *   <li>Preserves all identifier components</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Uses String.format for consistent formatting</li>
+     * <li>Maintains the standard UID structure</li>
+     * <li>Preserves all identifier components</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return The UID string in the format {@code homekit:server:{pairingId}}
@@ -148,10 +148,10 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns the internal pairing ID field</li>
-     *   <li>Used for server connection management</li>
-     *   <li>Supports device pairing</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Returns the internal pairing ID field</li>
+     * <li>Used for server connection management</li>
+     * <li>Supports device pairing</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return The pairing identifier for this server
@@ -169,19 +169,19 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
      * A valid server UID must have at least 3 segments:
      * </p>
      * <ol>
-     *   <li>The namespace prefix ("homekit")</li>
-     *   <li>The type identifier ("server")</li>
-     *   <li>The pairing ID</li>
+     * <li>The namespace prefix ("homekit")</li>
+     * <li>The type identifier ("server")</li>
+     * <li>The pairing ID</li>
      * </ol>
      *
      * <p>
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Enforces UID structure validation</li>
-     *   <li>Ensures complete identification</li>
-     *   <li>Supports UID parsing</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Enforces UID structure validation</li>
+     * <li>Ensures complete identification</li>
+     * <li>Supports UID parsing</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return The minimum number of segments (3) for a valid server UID
@@ -204,10 +204,10 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns this instance</li>
-     *   <li>Supports interface compliance</li>
-     *   <li>Enables UID access</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Returns this instance</li>
+     * <li>Supports interface compliance</li>
+     * <li>Enables UID access</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return This UID instance

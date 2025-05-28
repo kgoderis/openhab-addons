@@ -24,25 +24,25 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * <ul>
- *   <li>Power control (on/off)</li>
- *   <li>Speed control and monitoring</li>
- *   <li>Status and fault monitoring</li>
+ * <li>Power control (on/off)</li>
+ * <li>Speed control and monitoring</li>
+ * <li>Status and fault monitoring</li>
  * </ul>
  *
  * <p>
  * Required characteristics:
  * <ul>
- *   <li>On - Power state of the fan</li>
+ * <li>On - Power state of the fan</li>
  * </ul>
  * </p>
  *
  * <p>
  * Optional characteristics:
  * <ul>
- *   <li>RotationSpeed - Fan speed control (0-100%)</li>
- *   <li>Name - Fan name</li>
- *   <li>StatusActive - Fan activation state</li>
- *   <li>StatusFault - Fault state indicator</li>
+ * <li>RotationSpeed - Fan speed control (0-100%)</li>
+ * <li>Name - Fan name</li>
+ * <li>StatusActive - Fan activation state</li>
+ * <li>StatusFault - Fault state indicator</li>
  * </ul>
  * </p>
  *
@@ -105,42 +105,44 @@ public class HomekitFanService extends AbstractHomekitService {
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>On - Power state of the fan</li>
+     * <li>On - Power state of the fan</li>
      * </ul>
      * </p>
      * <p>
      * Optional characteristics:
      * <ul>
-     *   <li>RotationSpeed - Fan speed control (0-100%)</li>
-     *   <li>Name - Fan name</li>
-     *   <li>StatusActive - Fan activation state</li>
-     *   <li>StatusFault - Fault state indicator</li>
+     * <li>RotationSpeed - Fan speed control (0-100%)</li>
+     * <li>Name - Fan name</li>
+     * <li>StatusActive - Fan activation state</li>
+     * <li>StatusFault - Fault state indicator</li>
      * </ul>
      * </p>
+     * 
      * @since 1.0
      */
     @Override
     public void addCharacteristics() {
-        logger.trace("{}Adding required characteristics to FanService for accessory {}", LOG_TRACE, getAccessory().getLabel());
-        
+        logger.trace("{}Adding required characteristics to FanService for accessory {}", LOG_TRACE,
+                getAccessory().getLabel());
+
         addCharacteristic(new HomekitOnCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                 .withMandatory(true));
         logger.debug("{}Added OnCharacteristic to FanService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitRotationSpeedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
         logger.debug("{}Added RotationSpeedCharacteristic to FanService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                 .withMandatory(false));
         logger.debug("{}Added NameCharacteristic to FanService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
         logger.debug("{}Added StatusActiveCharacteristic to FanService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitStatusFaultCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));

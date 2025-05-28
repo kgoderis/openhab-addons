@@ -14,7 +14,8 @@ import org.slf4j.LoggerFactory;
  * A specialized HTTP client transport for HomeKit communication with encryption support.
  *
  * <p>
- * This class extends {@link org.eclipse.jetty.client.http.HttpClientTransportOverHTTP HttpClientTransportOverHTTP} to provide
+ * This class extends {@link org.eclipse.jetty.client.http.HttpClientTransportOverHTTP HttpClientTransportOverHTTP} to
+ * provide
  * specialized HTTP client transport functionality for HomeKit accessories, including
  * encryption support and custom connection management. It handles secure communication
  * channels and connection pooling for HomeKit devices.
@@ -24,45 +25,45 @@ import org.slf4j.LoggerFactory;
  * The class integrates with:
  * </p>
  * <ul>
- *   <li>{@link org.eclipse.jetty.client.HttpDestination HttpDestination} for destination management and routing</li>
- *   <li>{@link org.eclipse.jetty.client.Origin Origin} for origin handling and security</li>
- *   <li>{@link org.eclipse.jetty.client.api.Connection Connection} for connection lifecycle management</li>
- *   <li>{@link HomekitHttpConnectionOverHTTP} for specialized encrypted connections</li>
- *   <li>{@link HomekitConnectionPool} for connection pooling and reuse</li>
+ * <li>{@link org.eclipse.jetty.client.HttpDestination HttpDestination} for destination management and routing</li>
+ * <li>{@link org.eclipse.jetty.client.Origin Origin} for origin handling and security</li>
+ * <li>{@link org.eclipse.jetty.client.api.Connection Connection} for connection lifecycle management</li>
+ * <li>{@link HomekitHttpConnectionOverHTTP} for specialized encrypted connections</li>
+ * <li>{@link HomekitConnectionPool} for connection pooling and reuse</li>
  * </ul>
  *
  * <p>
  * <b>Key Features:</b>
  * </p>
  * <ul>
- *   <li>HTTP connection management</li>
- *   <li>Encryption key configuration</li>
- *   <li>Connection pooling</li>
- *   <li>Secure communication support</li>
- *   <li>Custom destination handling</li>
- *   <li>Thread-safe operations</li>
+ * <li>HTTP connection management</li>
+ * <li>Encryption key configuration</li>
+ * <li>Connection pooling</li>
+ * <li>Secure communication support</li>
+ * <li>Custom destination handling</li>
+ * <li>Thread-safe operations</li>
  * </ul>
  *
  * <p>
  * <b>Security Considerations:</b>
  * </p>
  * <ul>
- *   <li>Manages encryption keys</li>
- *   <li>Supports secure connections</li>
- *   <li>Validates destinations</li>
- *   <li>Ensures proper initialization</li>
- *   <li>Maintains thread safety</li>
+ * <li>Manages encryption keys</li>
+ * <li>Supports secure connections</li>
+ * <li>Validates destinations</li>
+ * <li>Ensures proper initialization</li>
+ * <li>Maintains thread safety</li>
  * </ul>
  *
  * <p>
  * <b>Implementation Details:</b>
  * </p>
  * <ul>
- *   <li>Extends Jetty's HttpClientTransportOverHTTP</li>
- *   <li>Uses custom connection pool</li>
- *   <li>Supports encryption upgrades</li>
- *   <li>Manages connection lifecycle</li>
- *   <li>Provides detailed logging</li>
+ * <li>Extends Jetty's HttpClientTransportOverHTTP</li>
+ * <li>Uses custom connection pool</li>
+ * <li>Supports encryption upgrades</li>
+ * <li>Manages connection lifecycle</li>
+ * <li>Provides detailed logging</li>
  * </ul>
  *
  * @author Karel Goderis - Initial Contribution
@@ -94,10 +95,10 @@ public class HomekitHttpClientTransport extends HttpClientTransportOverHTTP {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Initializes base transport</li>
-     *   <li>Configures connection pool</li>
-     *   <li>Sets up connection limits</li>
-     *   <li>Ensures thread safety</li>
+     * <li>Initializes base transport</li>
+     * <li>Configures connection pool</li>
+     * <li>Sets up connection limits</li>
+     * <li>Ensures thread safety</li>
      * </ul>
      */
     public HomekitHttpClientTransport() {
@@ -119,12 +120,12 @@ public class HomekitHttpClientTransport extends HttpClientTransportOverHTTP {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Creates HomeKit connection instance</li>
-     *   <li>Configures encryption keys</li>
-     *   <li>Sets up secure channel</li>
-     *   <li>Maintains thread safety</li>
-     *   <li>Ensures state consistency</li>
-     *   <li>Logs connection details</li>
+     * <li>Creates HomeKit connection instance</li>
+     * <li>Configures encryption keys</li>
+     * <li>Sets up secure channel</li>
+     * <li>Maintains thread safety</li>
+     * <li>Ensures state consistency</li>
+     * <li>Logs connection details</li>
      * </ul>
      *
      * @param endPoint The endpoint for the connection
@@ -176,11 +177,11 @@ public class HomekitHttpClientTransport extends HttpClientTransportOverHTTP {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Creates HomeKit destination</li>
-     *   <li>Configures security settings</li>
-     *   <li>Sets up routing rules</li>
-     *   <li>Maintains thread safety</li>
-     *   <li>Ensures state consistency</li>
+     * <li>Creates HomeKit destination</li>
+     * <li>Configures security settings</li>
+     * <li>Sets up routing rules</li>
+     * <li>Maintains thread safety</li>
+     * <li>Ensures state consistency</li>
      * </ul>
      *
      * @param origin The origin for the destination

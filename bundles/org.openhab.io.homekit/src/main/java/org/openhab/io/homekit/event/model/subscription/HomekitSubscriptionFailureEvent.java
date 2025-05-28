@@ -18,40 +18,40 @@ import org.openhab.io.homekit.util.HomekitUID;
  * The class integrates with:
  * </p>
  * <ul>
- *   <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for base event functionality</li>
- *   <li>{@link org.openhab.io.homekit.api.event.HomekitEventType} for event type identification</li>
- *   <li>{@link org.openhab.core.thing.UID} for component identification</li>
- *   <li>{@link org.openhab.io.homekit.event.core.HomekitEventMetadata} for event metadata</li>
+ * <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for base event functionality</li>
+ * <li>{@link org.openhab.io.homekit.api.event.HomekitEventType} for event type identification</li>
+ * <li>{@link org.openhab.core.thing.UID} for component identification</li>
+ * <li>{@link org.openhab.io.homekit.event.core.HomekitEventMetadata} for event metadata</li>
  * </ul>
  *
  * <p>
  * <b>Key Features:</b>
  * </p>
  * <ul>
- *   <li>Detailed error tracking with message and cause</li>
- *   <li>Subscriber identification for targeted error handling</li>
- *   <li>Failed event type tracking for diagnostics</li>
- *   <li>Timestamp-based error correlation</li>
+ * <li>Detailed error tracking with message and cause</li>
+ * <li>Subscriber identification for targeted error handling</li>
+ * <li>Failed event type tracking for diagnostics</li>
+ * <li>Timestamp-based error correlation</li>
  * </ul>
  *
  * <p>
  * <b>Usage Patterns:</b>
  * </p>
  * <ul>
- *   <li>Error handling in subscription management</li>
- *   <li>Diagnostic logging and monitoring</li>
- *   <li>Error recovery and retry mechanisms</li>
- *   <li>Subscription state management</li>
+ * <li>Error handling in subscription management</li>
+ * <li>Diagnostic logging and monitoring</li>
+ * <li>Error recovery and retry mechanisms</li>
+ * <li>Subscription state management</li>
  * </ul>
  *
  * <p>
  * <b>Error Handling:</b>
  * </p>
  * <ul>
- *   <li>Captures both error messages and underlying causes</li>
- *   <li>Maintains subscriber context for targeted recovery</li>
- *   <li>Supports error correlation through event types</li>
- *   <li>Enables diagnostic analysis through metadata</li>
+ * <li>Captures both error messages and underlying causes</li>
+ * <li>Maintains subscriber context for targeted recovery</li>
+ * <li>Supports error correlation through event types</li>
+ * <li>Enables diagnostic analysis through metadata</li>
  * </ul>
  *
  * @author Karel Goderis - Initial contribution

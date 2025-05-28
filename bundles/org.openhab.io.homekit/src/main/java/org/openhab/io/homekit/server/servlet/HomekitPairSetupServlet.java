@@ -38,32 +38,34 @@ import com.nimbusds.srp6.ClientEvidenceRoutine;
 import com.nimbusds.srp6.SRP6ClientEvidenceContext;
 import com.nimbusds.srp6.SRP6CryptoParams;
 import com.nimbusds.srp6.SRP6Exception;
-import com.nimbusds.srp6.SRP6Routines;
 import com.nimbusds.srp6.SRP6VerifierGenerator;
 import com.nimbusds.srp6.XRoutineWithUserIdentity;
 
 /**
  * Servlet that implements the HomeKit Secure Remote Password (SRP) pairing protocol.
  *
- * <p>This servlet manages the secure pairing process between HomeKit accessories and controllers
+ * <p>
+ * This servlet manages the secure pairing process between HomeKit accessories and controllers
  * using the SRP-6a protocol. The pairing process occurs in three distinct stages:
  * <ol>
- *     <li>Initial handshake and salt exchange</li>
- *     <li>SRP authentication and proof verification</li>
- *     <li>Encrypted session key establishment and device verification</li>
+ * <li>Initial handshake and salt exchange</li>
+ * <li>SRP authentication and proof verification</li>
+ * <li>Encrypted session key establishment and device verification</li>
  * </ol>
  *
- * <p>The servlet maintains session state throughout the pairing process, storing SRP session
+ * <p>
+ * The servlet maintains session state throughout the pairing process, storing SRP session
  * information in the HTTP session. It uses ChaCha20-Poly1305 for encrypted communication
  * and EdDSA for signature verification in the final stage.
  *
- * <p>The class integrates with:
+ * <p>
+ * The class integrates with:
  * <ul>
- *     <li>{@link HomekitBaseServlet} for base servlet functionality</li>
- *     <li>{@link HomekitAccessoryServer} for server functionality</li>
- *     <li>{@link HomekitServerSRP6Session} for SRP session management</li>
- *     <li>{@link HomekitEncryptionEngine} for cryptographic operations</li>
- *     <li>{@link HomekitTypeLengthValueEncoderDecoder} for TLV8 encoding/decoding</li>
+ * <li>{@link HomekitBaseServlet} for base servlet functionality</li>
+ * <li>{@link HomekitAccessoryServer} for server functionality</li>
+ * <li>{@link HomekitServerSRP6Session} for SRP session management</li>
+ * <li>{@link HomekitEncryptionEngine} for cryptographic operations</li>
+ * <li>{@link HomekitTypeLengthValueEncoderDecoder} for TLV8 encoding/decoding</li>
  * </ul>
  *
  * @author Karel Goderis - Initial Contribution
@@ -86,7 +88,8 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
     /**
      * Creates a new pair setup servlet.
      *
-     * <p>This constructor initializes a basic servlet instance. It is recommended to use
+     * <p>
+     * This constructor initializes a basic servlet instance. It is recommended to use
      * the constructor with a server parameter for proper functionality.
      */
     public HomekitPairSetupServlet() {
@@ -96,12 +99,13 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
     /**
      * Creates a new pair setup servlet with the specified server.
      *
-     * <p>This constructor initializes the servlet with the necessary components for
+     * <p>
+     * This constructor initializes the servlet with the necessary components for
      * handling pair setup operations. It sets up:
      * <ul>
-     *     <li>The base servlet functionality through the parent class</li>
-     *     <li>Access to the server's cryptographic material</li>
-     *     <li>Integration with the server's pairing management</li>
+     * <li>The base servlet functionality through the parent class</li>
+     * <li>Access to the server's cryptographic material</li>
+     * <li>Integration with the server's pairing management</li>
      * </ul>
      *
      * @param server The HomeKit accessory server instance
@@ -114,28 +118,31 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
     /**
      * Handles POST requests for the pairing setup process.
      *
-     * <p>This method orchestrates the three-stage pairing process by:
+     * <p>
+     * This method orchestrates the three-stage pairing process by:
      * <ul>
-     *     <li>Reading and decoding the TLV8-encoded request body</li>
-     *     <li>Determining the current pairing stage from the state value</li>
-     *     <li>Routing to the appropriate stage handler:
-     *         <ul>
-     *             <li>Stage 1: Initial handshake and salt exchange</li>
-     *             <li>Stage 2: SRP authentication and proof verification</li>
-     *             <li>Stage 3: Session key establishment and device verification</li>
-     *         </ul>
-     *     </li>
+     * <li>Reading and decoding the TLV8-encoded request body</li>
+     * <li>Determining the current pairing stage from the state value</li>
+     * <li>Routing to the appropriate stage handler:
+     * <ul>
+     * <li>Stage 1: Initial handshake and salt exchange</li>
+     * <li>Stage 2: SRP authentication and proof verification</li>
+     * <li>Stage 3: Session key establishment and device verification</li>
+     * </ul>
+     * </li>
      * </ul>
      *
-     * <p>The method maintains session state throughout the process, ensuring that
+     * <p>
+     * The method maintains session state throughout the process, ensuring that
      * each stage builds upon the previous one's cryptographic material.
      *
-     * <p>Error handling ensures:
+     * <p>
+     * Error handling ensures:
      * <ul>
-     *     <li>Proper validation of request data</li>
-     *     <li>Graceful handling of invalid stages</li>
-     *     <li>Detailed error logging for debugging</li>
-     *     <li>Appropriate HTTP status codes for different error conditions</li>
+     * <li>Proper validation of request data</li>
+     * <li>Graceful handling of invalid stages</li>
+     * <li>Detailed error logging for debugging</li>
+     * <li>Appropriate HTTP status codes for different error conditions</li>
      * </ul>
      *
      * @param request The HTTP request containing the pairing data
@@ -180,24 +187,27 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
     /**
      * Handles Stage 1 of the pairing process - Initial handshake and salt exchange.
      *
-     * <p>This method initiates the SRP-6a protocol by:
+     * <p>
+     * This method initiates the SRP-6a protocol by:
      * <ul>
-     *     <li>Creating or retrieving the SRP session from the HTTP session</li>
-     *     <li>Generating a random salt value</li>
-     *     <li>Computing the SRP verifier using the setup code</li>
-     *     <li>Generating the server's public key</li>
-     *     <li>Returning the salt and public key to the client</li>
+     * <li>Creating or retrieving the SRP session from the HTTP session</li>
+     * <li>Generating a random salt value</li>
+     * <li>Computing the SRP verifier using the setup code</li>
+     * <li>Generating the server's public key</li>
+     * <li>Returning the salt and public key to the client</li>
      * </ul>
      *
-     * <p>The method ensures that the session is in the correct state (INIT) before
+     * <p>
+     * The method ensures that the session is in the correct state (INIT) before
      * proceeding and maintains the SRP session in the HTTP session for subsequent stages.
      *
-     * <p>Security considerations:
+     * <p>
+     * Security considerations:
      * <ul>
-     *     <li>Uses cryptographically secure random number generation for salt</li>
-     *     <li>Implements proper SRP-6a protocol initialization</li>
-     *     <li>Maintains session state securely</li>
-     *     <li>Protects against replay attacks</li>
+     * <li>Uses cryptographically secure random number generation for salt</li>
+     * <li>Implements proper SRP-6a protocol initialization</li>
+     * <li>Maintains session state securely</li>
+     * <li>Protects against replay attacks</li>
      * </ul>
      *
      * @param request The HTTP request containing the client's initial message
@@ -255,25 +265,28 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
     /**
      * Handles Stage 2 of the pairing process - SRP authentication and proof verification.
      *
-     * <p>This method performs the core SRP authentication by:
+     * <p>
+     * This method performs the core SRP authentication by:
      * <ul>
-     *     <li>Retrieving the SRP session from the HTTP session</li>
-     *     <li>Extracting the client's public key and proof from the request</li>
-     *     <li>Computing the server's proof using the SRP session key</li>
-     *     <li>Verifying the client's proof</li>
-     *     <li>Returning the server's proof to the client</li>
+     * <li>Retrieving the SRP session from the HTTP session</li>
+     * <li>Extracting the client's public key and proof from the request</li>
+     * <li>Computing the server's proof using the SRP session key</li>
+     * <li>Verifying the client's proof</li>
+     * <li>Returning the server's proof to the client</li>
      * </ul>
      *
-     * <p>The method ensures that the session is in the correct state (STEP_1) before
+     * <p>
+     * The method ensures that the session is in the correct state (STEP_1) before
      * proceeding and handles SRP exceptions by clearing the session and returning
      * an unauthorized response.
      *
-     * <p>Security considerations:
+     * <p>
+     * Security considerations:
      * <ul>
-     *     <li>Validates client proof using SRP-6a protocol</li>
-     *     <li>Maintains session state securely</li>
-     *     <li>Protects against man-in-the-middle attacks</li>
-     *     <li>Handles authentication failures gracefully</li>
+     * <li>Validates client proof using SRP-6a protocol</li>
+     * <li>Maintains session state securely</li>
+     * <li>Protects against man-in-the-middle attacks</li>
+     * <li>Handles authentication failures gracefully</li>
      * </ul>
      *
      * @param request The HTTP request containing the client's authentication data
@@ -330,26 +343,29 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
     /**
      * Handles Stage 3 of the pairing process - Session key establishment and device verification.
      *
-     * <p>This method finalizes the pairing process by:
+     * <p>
+     * This method finalizes the pairing process by:
      * <ul>
-     *     <li>Retrieving the SRP session from the HTTP session</li>
-     *     <li>Deriving the shared secret from the SRP session key</li>
-     *     <li>Generating the session key using HKDF</li>
-     *     <li>Decrypting and verifying the client's device information</li>
-     *     <li>Verifying the client's signature using EdDSA</li>
-     *     <li>Generating and encrypting the server's response</li>
+     * <li>Retrieving the SRP session from the HTTP session</li>
+     * <li>Deriving the shared secret from the SRP session key</li>
+     * <li>Generating the session key using HKDF</li>
+     * <li>Decrypting and verifying the client's device information</li>
+     * <li>Verifying the client's signature using EdDSA</li>
+     * <li>Generating and encrypting the server's response</li>
      * </ul>
      *
-     * <p>The method uses ChaCha20-Poly1305 for encrypted communication and EdDSA for
+     * <p>
+     * The method uses ChaCha20-Poly1305 for encrypted communication and EdDSA for
      * signature verification, ensuring a secure and authenticated pairing process.
      *
-     * <p>Security considerations:
+     * <p>
+     * Security considerations:
      * <ul>
-     *     <li>Uses HKDF for key derivation</li>
-     *     <li>Implements ChaCha20-Poly1305 for encryption</li>
-     *     <li>Uses EdDSA for signature verification</li>
-     *     <li>Protects against replay attacks</li>
-     *     <li>Maintains session security</li>
+     * <li>Uses HKDF for key derivation</li>
+     * <li>Implements ChaCha20-Poly1305 for encryption</li>
+     * <li>Uses EdDSA for signature verification</li>
+     * <li>Protects against replay attacks</li>
+     * <li>Maintains session security</li>
      * </ul>
      *
      * @param request The HTTP request containing the client's encrypted device info
@@ -400,9 +416,8 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         logger.trace("{}Retrieved client pairing ID and keys", LOG_SECURITY);
 
         hkdf = new HKDFBytesGenerator(new SHA512Digest());
-        hkdf.init(
-                new HKDFParameters(sharedSecret, "Pair-Setup-Controller-Sign-Salt".getBytes(StandardCharsets.UTF_8),
-                        "Pair-Setup-Controller-Sign-Info".getBytes(StandardCharsets.UTF_8)));
+        hkdf.init(new HKDFParameters(sharedSecret, "Pair-Setup-Controller-Sign-Salt".getBytes(StandardCharsets.UTF_8),
+                "Pair-Setup-Controller-Sign-Info".getBytes(StandardCharsets.UTF_8)));
         byte[] clientDeviceX = new byte[32];
         hkdf.generateBytes(clientDeviceX, 0, 32);
 
@@ -502,14 +517,16 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
     /**
      * Extracts the client's public key from the TLV8-encoded content.
      *
-     * <p>This method decodes the TLV8-encoded content and retrieves the client's
+     * <p>
+     * This method decodes the TLV8-encoded content and retrieves the client's
      * public key, which is used in the SRP-6a protocol for authentication.
      *
-     * <p>Security considerations:
+     * <p>
+     * Security considerations:
      * <ul>
-     *     <li>Validates TLV8 encoding format</li>
-     *     <li>Ensures proper key length</li>
-     *     <li>Handles malformed input gracefully</li>
+     * <li>Validates TLV8 encoding format</li>
+     * <li>Ensures proper key length</li>
+     * <li>Handles malformed input gracefully</li>
      * </ul>
      *
      * @param content The TLV8-encoded message content
@@ -525,15 +542,17 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
     /**
      * Extracts the client's proof from the TLV8-encoded content.
      *
-     * <p>This method decodes the TLV8-encoded content and retrieves the client's
+     * <p>
+     * This method decodes the TLV8-encoded content and retrieves the client's
      * proof value, which is used to verify the client's knowledge of the shared
      * secret in the SRP-6a protocol.
      *
-     * <p>Security considerations:
+     * <p>
+     * Security considerations:
      * <ul>
-     *     <li>Validates TLV8 encoding format</li>
-     *     <li>Ensures proper proof length</li>
-     *     <li>Handles malformed input gracefully</li>
+     * <li>Validates TLV8 encoding format</li>
+     * <li>Ensures proper proof length</li>
+     * <li>Handles malformed input gracefully</li>
      * </ul>
      *
      * @param content The TLV8-encoded message content
@@ -549,15 +568,17 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
     /**
      * Generates a random salt value for the SRP-6a protocol.
      *
-     * <p>This method creates a cryptographically secure random salt value that is
+     * <p>
+     * This method creates a cryptographically secure random salt value that is
      * used in the SRP-6a protocol to prevent dictionary attacks and ensure unique
      * session keys.
      *
-     * <p>Security considerations:
+     * <p>
+     * Security considerations:
      * <ul>
-     *     <li>Uses cryptographically secure random number generation</li>
-     *     <li>Ensures sufficient entropy in the salt value</li>
-     *     <li>Protects against rainbow table attacks</li>
+     * <li>Uses cryptographically secure random number generation</li>
+     * <li>Ensures sufficient entropy in the salt value</li>
+     * <li>Protects against rainbow table attacks</li>
      * </ul>
      *
      * @return A random salt value as a BigInteger
@@ -572,17 +593,20 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
     /**
      * Implementation of the SRP-6a client evidence routine.
      *
-     * <p>This class implements the client evidence calculation according to the
+     * <p>
+     * This class implements the client evidence calculation according to the
      * SRP-6a protocol specification. It computes the M1 value using the formula:
+     * 
      * <pre>
      * M1 = H(H(N) xor H(g) || H(username) || s || A || B || H(S))
      * </pre>
      *
-     * <p>The implementation ensures:
+     * <p>
+     * The implementation ensures:
      * <ul>
-     *     <li>Proper cryptographic hash function usage</li>
-     *     <li>Correct byte array operations</li>
-     *     <li>Protocol-compliant evidence calculation</li>
+     * <li>Proper cryptographic hash function usage</li>
+     * <li>Correct byte array operations</li>
+     * <li>Protocol-compliant evidence calculation</li>
      * </ul>
      */
     class ClientEvidenceRoutineImpl implements ClientEvidenceRoutine {
@@ -592,18 +616,21 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         /**
          * Calculates M1 according to the SRP-6a protocol specification.
          *
-         * <p>This method computes the client evidence value (M1) using the formula:
+         * <p>
+         * This method computes the client evidence value (M1) using the formula:
+         * 
          * <pre>
          * M1 = H(H(N) xor H(g) || H(username) || s || A || B || H(S))
          * </pre>
          *
-         * <p>The calculation involves:
+         * <p>
+         * The calculation involves:
          * <ul>
-         *     <li>Computing hash of the modulus (N) and generator (g)</li>
-         *     <li>XORing the hashes of N and g</li>
-         *     <li>Computing hash of the username</li>
-         *     <li>Computing hash of the session key (S)</li>
-         *     <li>Concatenating all components and computing final hash</li>
+         * <li>Computing hash of the modulus (N) and generator (g)</li>
+         * <li>XORing the hashes of N and g</li>
+         * <li>Computing hash of the username</li>
+         * <li>Computing hash of the session key (S)</li>
+         * <li>Concatenating all components and computing final hash</li>
          * </ul>
          *
          * @param cryptoParams The SRP-6a cryptographic parameters
@@ -647,7 +674,8 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         /**
          * Performs XOR operation on two byte arrays.
          *
-         * <p>This helper method performs a bitwise XOR operation on corresponding
+         * <p>
+         * This helper method performs a bitwise XOR operation on corresponding
          * bytes of two input arrays. The arrays must be of equal length.
          *
          * @param b1 The first byte array

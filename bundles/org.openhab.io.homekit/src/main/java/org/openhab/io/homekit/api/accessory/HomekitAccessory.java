@@ -20,10 +20,10 @@ import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
  * A HomeKit accessory represents a physical or virtual device that can be controlled through the HomeKit protocol.
  * Each accessory:
  * <ul>
- *   <li>Has a unique identifier</li>
- *   <li>Contains basic information (model, manufacturer, etc.)</li>
- *   <li>Can have one or more services that define its functionality</li>
- *   <li>Can be assigned to a HomeKit server</li>
+ * <li>Has a unique identifier</li>
+ * <li>Contains basic information (model, manufacturer, etc.)</li>
+ * <li>Can have one or more services that define its functionality</li>
+ * <li>Can be assigned to a HomeKit server</li>
  * </ul>
  * </p>
  * <p>
@@ -34,10 +34,10 @@ import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
  * <p>
  * The interface integrates with:
  * <ul>
- *   <li>{@link org.openhab.io.homekit.api.server.HomekitAccessoryServer} for server assignment</li>
- *   <li>{@link org.openhab.io.homekit.api.service.HomekitService} for service management</li>
- *   <li>{@link org.openhab.io.homekit.api.uid.HomekitAccessoryUID} for identification</li>
- *   <li>{@link org.openhab.io.homekit.exception.HomekitAccessoryOperationException} for error handling</li>
+ * <li>{@link org.openhab.io.homekit.api.server.HomekitAccessoryServer} for server assignment</li>
+ * <li>{@link org.openhab.io.homekit.api.service.HomekitService} for service management</li>
+ * <li>{@link org.openhab.io.homekit.api.uid.HomekitAccessoryUID} for identification</li>
+ * <li>{@link org.openhab.io.homekit.exception.HomekitAccessoryOperationException} for error handling</li>
  * </ul>
  * </p>
  *

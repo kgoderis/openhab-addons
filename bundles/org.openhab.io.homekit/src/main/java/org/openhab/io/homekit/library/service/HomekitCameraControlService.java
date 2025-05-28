@@ -27,28 +27,28 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * <ul>
- *   <li>RTP stream configuration management</li>
- *   <li>Video and audio stream parameter control</li>
- *   <li>Streaming endpoint setup and management</li>
- *   <li>Streaming status monitoring</li>
+ * <li>RTP stream configuration management</li>
+ * <li>Video and audio stream parameter control</li>
+ * <li>Streaming endpoint setup and management</li>
+ * <li>Streaming status monitoring</li>
  * </ul>
  *
  * <p>
  * Required characteristics:
  * <ul>
- *   <li>SelectedRTPStreamConfiguration - Current RTP stream settings</li>
- *   <li>SetupEndpoints - Stream endpoint configuration</li>
- *   <li>StreamingStatus - Current streaming state</li>
- *   <li>SupportedAudioStreamConfiguration - Available audio stream options</li>
- *   <li>SupportedRTPConfiguration - Available RTP protocol options</li>
- *   <li>SupportedVideoStreamConfiguration - Available video stream options</li>
+ * <li>SelectedRTPStreamConfiguration - Current RTP stream settings</li>
+ * <li>SetupEndpoints - Stream endpoint configuration</li>
+ * <li>StreamingStatus - Current streaming state</li>
+ * <li>SupportedAudioStreamConfiguration - Available audio stream options</li>
+ * <li>SupportedRTPConfiguration - Available RTP protocol options</li>
+ * <li>SupportedVideoStreamConfiguration - Available video stream options</li>
  * </ul>
  * </p>
  *
  * <p>
  * Optional characteristics:
  * <ul>
- *   <li>Active - Service activation state</li>
+ * <li>Active - Service activation state</li>
  * </ul>
  * </p>
  *
@@ -111,48 +111,50 @@ public class HomekitCameraControlService extends AbstractHomekitService {
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>SelectedRTPStreamConfiguration - Current RTP stream settings</li>
-     *   <li>SetupEndpoints - Stream endpoint configuration</li>
-     *   <li>StreamingStatus - Current streaming state</li>
-     *   <li>SupportedAudioStreamConfiguration - Available audio stream options</li>
-     *   <li>SupportedRTPConfiguration - Available RTP protocol options</li>
-     *   <li>SupportedVideoStreamConfiguration - Available video stream options</li>
+     * <li>SelectedRTPStreamConfiguration - Current RTP stream settings</li>
+     * <li>SetupEndpoints - Stream endpoint configuration</li>
+     * <li>StreamingStatus - Current streaming state</li>
+     * <li>SupportedAudioStreamConfiguration - Available audio stream options</li>
+     * <li>SupportedRTPConfiguration - Available RTP protocol options</li>
+     * <li>SupportedVideoStreamConfiguration - Available video stream options</li>
      * </ul>
      * </p>
      * <p>
      * Optional characteristics:
      * <ul>
-     *   <li>Active - Service activation state</li>
+     * <li>Active - Service activation state</li>
      * </ul>
      * </p>
+     * 
      * @since 1.0
      */
     @Override
     public void addCharacteristics() {
-        logger.trace("{}Adding required characteristics to CameraControlService for accessory {}", LOG_TRACE, getAccessory().getLabel());
-        
+        logger.trace("{}Adding required characteristics to CameraControlService for accessory {}", LOG_TRACE,
+                getAccessory().getLabel());
+
         // Required characteristics
         addCharacteristic(new HomekitSelectedRTPStreamConfigurationCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         logger.debug("{}Added SelectedRTPStreamConfigurationCharacteristic to CameraControlService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitSetupEndpointsCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(true));
         logger.debug("{}Added SetupEndpointsCharacteristic to CameraControlService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitStreamingStatusCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         logger.debug("{}Added StreamingStatusCharacteristic to CameraControlService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitSupportedAudioStreamConfigurationCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         logger.debug("{}Added SupportedAudioStreamConfigurationCharacteristic to CameraControlService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitSupportedRTPConfigurationCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         logger.debug("{}Added SupportedRTPConfigurationCharacteristic to CameraControlService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitSupportedVideoStreamConfigurationCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         logger.debug("{}Added SupportedVideoStreamConfigurationCharacteristic to CameraControlService", LOG_STATE);

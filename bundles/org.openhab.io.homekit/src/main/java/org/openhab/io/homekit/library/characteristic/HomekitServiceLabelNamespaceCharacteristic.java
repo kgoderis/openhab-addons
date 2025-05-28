@@ -22,18 +22,18 @@ import org.slf4j.LoggerFactory;
  * <p>
  * The namespace is used to:
  * <ul>
- *   <li>Group related services together</li>
- *   <li>Provide a hierarchical organization of services</li>
- *   <li>Enable better service discovery and management</li>
- *   <li>Support multiple service instances with different purposes</li>
+ * <li>Group related services together</li>
+ * <li>Provide a hierarchical organization of services</li>
+ * <li>Enable better service discovery and management</li>
+ * <li>Support multiple service instances with different purposes</li>
  * </ul>
  * </p>
  *
  * <p>
  * The class integrates with:
  * <ul>
- *   <li>{@link HomekitService} for service organization</li>
- *   <li>{@link HomekitEventManager} for event handling</li>
+ * <li>{@link HomekitService} for service organization</li>
+ * <li>{@link HomekitEventManager} for event handling</li>
  * </ul>
  * </p>
  *

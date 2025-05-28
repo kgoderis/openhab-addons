@@ -48,27 +48,30 @@ import org.slf4j.LoggerFactory;
 /**
  * Represents a local HomeKit accessory server that runs on the same machine as OpenHAB.
  *
- * <p>This class implements a local HomeKit accessory server that manages the lifecycle of
+ * <p>
+ * This class implements a local HomeKit accessory server that manages the lifecycle of
  * HomeKit accessories, including server initialization, accessory registration, mDNS
  * advertisement, HTTP request handling, and event processing.
  *
- * <p>The class integrates with:
+ * <p>
+ * The class integrates with:
  * <ul>
- *     <li>{@link HomekitAbstractAccessoryServer} for base server functionality</li>
- *     <li>{@link MDNSService} for service discovery and advertisement</li>
- *     <li>{@link Server} for HTTP request handling</li>
- *     <li>{@link HomekitAccessoryRegistry} for accessory management</li>
- *     <li>{@link HomekitPairingRegistry} for secure pairing management</li>
- *     <li>{@link HomekitEventManager} for event handling</li>
+ * <li>{@link HomekitAbstractAccessoryServer} for base server functionality</li>
+ * <li>{@link MDNSService} for service discovery and advertisement</li>
+ * <li>{@link Server} for HTTP request handling</li>
+ * <li>{@link HomekitAccessoryRegistry} for accessory management</li>
+ * <li>{@link HomekitPairingRegistry} for secure pairing management</li>
+ * <li>{@link HomekitEventManager} for event handling</li>
  * </ul>
  *
- * <p>Key features:
+ * <p>
+ * Key features:
  * <ul>
- *     <li>Local network service discovery via mDNS</li>
- *     <li>Secure HTTP communication with HomeKit clients</li>
- *     <li>Accessory lifecycle management</li>
- *     <li>Event subscription and notification</li>
- *     <li>Secure pairing and authentication</li>
+ * <li>Local network service discovery via mDNS</li>
+ * <li>Secure HTTP communication with HomeKit clients</li>
+ * <li>Accessory lifecycle management</li>
+ * <li>Event subscription and notification</li>
+ * <li>Secure pairing and authentication</li>
  * </ul>
  *
  * @author Karel Goderis - Initial Contribution
@@ -110,15 +113,17 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     /**
      * Creates a new local HomeKit accessory server with the specified configuration.
      *
-     * <p>This constructor initializes a local HomeKit server with explicit configuration
+     * <p>
+     * This constructor initializes a local HomeKit server with explicit configuration
      * parameters for network settings, security, and service integration.
      *
-     * <p>Key implementation details:
+     * <p>
+     * Key implementation details:
      * <ul>
-     *     <li>Validates and stores network configuration</li>
-     *     <li>Initializes security parameters</li>
-     *     <li>Sets up service integrations</li>
-     *     <li>Configures logging and monitoring</li>
+     * <li>Validates and stores network configuration</li>
+     * <li>Initializes security parameters</li>
+     * <li>Sets up service integrations</li>
+     * <li>Configures logging and monitoring</li>
      * </ul>
      *
      * @param category The category of accessories this server will host
@@ -146,15 +151,17 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     /**
      * Creates a new local HomeKit accessory server with auto-generated pairing ID and secret key.
      *
-     * <p>This constructor initializes a local HomeKit server with auto-generated security
+     * <p>
+     * This constructor initializes a local HomeKit server with auto-generated security
      * credentials while maintaining the same network and service configuration capabilities.
      *
-     * <p>Key implementation details:
+     * <p>
+     * Key implementation details:
      * <ul>
-     *     <li>Generates secure pairing ID and secret key</li>
-     *     <li>Initializes network configuration</li>
-     *     <li>Sets up service integrations</li>
-     *     <li>Configures logging and monitoring</li>
+     * <li>Generates secure pairing ID and secret key</li>
+     * <li>Initializes network configuration</li>
+     * <li>Sets up service integrations</li>
+     * <li>Configures logging and monitoring</li>
      * </ul>
      *
      * @param category The category of accessories this server will host
@@ -180,15 +187,17 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     /**
      * Initializes the server resources required for operation.
      *
-     * <p>This method sets up the HTTP server, servlets, and other resources needed
+     * <p>
+     * This method sets up the HTTP server, servlets, and other resources needed
      * for the HomeKit server to function.
      *
-     * <p>Key implementation details:
+     * <p>
+     * Key implementation details:
      * <ul>
-     *     <li>Creates and configures Jetty server instance</li>
-     *     <li>Sets up HTTP configuration and connectors</li>
-     *     <li>Initializes servlets for various endpoints</li>
-     *     <li>Configures request logging and handlers</li>
+     * <li>Creates and configures Jetty server instance</li>
+     * <li>Sets up HTTP configuration and connectors</li>
+     * <li>Initializes servlets for various endpoints</li>
+     * <li>Configures request logging and handlers</li>
      * </ul>
      *
      * @throws HomekitServerException if resource initialization fails
@@ -251,14 +260,15 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     /**
      * Adds servlets to the servlet context handler.
      *
-     * <p>This method adds the following servlets:
+     * <p>
+     * This method adds the following servlets:
      * <ul>
-     *     <li>Pair setup servlet for initial pairing</li>
-     *     <li>Pair verification servlet for secure communication</li>
-     *     <li>Accessory servlet for accessory information</li>
-     *     <li>Characteristic servlet for state management</li>
-     *     <li>Pairing servlet for pairing management</li>
-     *     <li>Catch-all servlet for other requests</li>
+     * <li>Pair setup servlet for initial pairing</li>
+     * <li>Pair verification servlet for secure communication</li>
+     * <li>Accessory servlet for accessory information</li>
+     * <li>Characteristic servlet for state management</li>
+     * <li>Pairing servlet for pairing management</li>
+     * <li>Catch-all servlet for other requests</li>
      * </ul>
      *
      * @param servletContextHandler The servlet context handler to add servlets to
@@ -422,11 +432,12 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     /**
      * Adds a new pairing to the server.
      *
-     * <p>This method performs the following operations:
+     * <p>
+     * This method performs the following operations:
      * <ul>
-     *     <li>Adds the pairing to the base server</li>
-     *     <li>Updates the server advertisement</li>
-     *     <li>Logs the pairing addition</li>
+     * <li>Adds the pairing to the base server</li>
+     * <li>Updates the server advertisement</li>
+     * <li>Logs the pairing addition</li>
      * </ul>
      *
      * @param destinationPairingId The pairing ID of the destination device
@@ -447,11 +458,12 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     /**
      * Removes a pairing from the server.
      *
-     * <p>This method performs the following operations:
+     * <p>
+     * This method performs the following operations:
      * <ul>
-     *     <li>Removes the pairing from the base server</li>
-     *     <li>Updates the server advertisement</li>
-     *     <li>Logs the pairing removal</li>
+     * <li>Removes the pairing from the base server</li>
+     * <li>Updates the server advertisement</li>
+     * <li>Logs the pairing removal</li>
      * </ul>
      *
      * @param destinationPairingId The pairing ID of the destination device to remove
@@ -470,7 +482,8 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     /**
      * Verifies the pairing status of the server.
      *
-     * <p>This method checks if the server is currently paired with any devices.
+     * <p>
+     * This method checks if the server is currently paired with any devices.
      *
      * @return true if the server is paired, false otherwise
      * @throws HomekitServerException if verification fails
@@ -484,7 +497,8 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     /**
      * Handles pairing removal requests.
      *
-     * <p>This method is a no-op for local servers as pairing removal is handled
+     * <p>
+     * This method is a no-op for local servers as pairing removal is handled
      * through the removePairing method.
      *
      * @throws HomekitServerException if an error occurs
@@ -497,7 +511,8 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     /**
      * Handles pairing setup requests.
      *
-     * <p>This method is a no-op for local servers as pairing setup is handled
+     * <p>
+     * This method is a no-op for local servers as pairing setup is handled
      * through the addPairing method.
      *
      * @throws HomekitServerException if an error occurs
@@ -572,12 +587,13 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     /**
      * Advertises the server on the local network using mDNS.
      *
-     * <p>This method performs the following operations:
+     * <p>
+     * This method performs the following operations:
      * <ul>
-     *     <li>Ensures the server is running</li>
-     *     <li>Creates advertisement properties</li>
-     *     <li>Updates or creates the mDNS advertisement</li>
-     *     <li>Updates server state to READY</li>
+     * <li>Ensures the server is running</li>
+     * <li>Creates advertisement properties</li>
+     * <li>Updates or creates the mDNS advertisement</li>
+     * <li>Updates server state to READY</li>
      * </ul>
      */
     @Override
@@ -613,13 +629,14 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     /**
      * Creates the properties for mDNS advertisement.
      *
-     * <p>This method creates a set of properties required for mDNS advertisement, including:
+     * <p>
+     * This method creates a set of properties required for mDNS advertisement, including:
      * <ul>
-     *     <li>Status flags indicating pairing state</li>
-     *     <li>Device ID for unique identification</li>
-     *     <li>Model name and configuration number</li>
-     *     <li>Feature flags and protocol version</li>
-     *     <li>Accessory category identifier</li>
+     * <li>Status flags indicating pairing state</li>
+     * <li>Device ID for unique identification</li>
+     * <li>Model name and configuration number</li>
+     * <li>Feature flags and protocol version</li>
+     * <li>Accessory category identifier</li>
      * </ul>
      *
      * @return Hashtable containing the advertisement properties
@@ -680,11 +697,12 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     /**
      * Updates an existing mDNS advertisement with new properties.
      *
-     * <p>This method:
+     * <p>
+     * This method:
      * <ul>
-     *     <li>Updates the service properties</li>
-     *     <li>Unregisters and re-registers the service</li>
-     *     <li>Updates the server state</li>
+     * <li>Updates the service properties</li>
+     * <li>Unregisters and re-registers the service</li>
+     * <li>Updates the server state</li>
      * </ul>
      *
      * @param props The new advertisement properties
@@ -705,11 +723,12 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     /**
      * Creates a new mDNS advertisement with the specified properties.
      *
-     * <p>This method:
+     * <p>
+     * This method:
      * <ul>
-     *     <li>Creates a new service description</li>
-     *     <li>Registers the service with mDNS</li>
-     *     <li>Updates the server state</li>
+     * <li>Creates a new service description</li>
+     * <li>Registers the service with mDNS</li>
+     * <li>Updates the server state</li>
      * </ul>
      *
      * @param props The advertisement properties
@@ -741,12 +760,13 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     /**
      * Adds a new accessory to the server.
      *
-     * <p>This method performs the following operations:
+     * <p>
+     * This method performs the following operations:
      * <ul>
-     *     <li>Validates the server's lifecycle state</li>
-     *     <li>Registers the accessory with the base server</li>
-     *     <li>Sets up event subscriptions for the accessory's characteristics</li>
-     *     <li>Logs the addition of the accessory</li>
+     * <li>Validates the server's lifecycle state</li>
+     * <li>Registers the accessory with the base server</li>
+     * <li>Sets up event subscriptions for the accessory's characteristics</li>
+     * <li>Logs the addition of the accessory</li>
      * </ul>
      *
      * @param accessory The accessory to add
@@ -781,13 +801,14 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     /**
      * Removes an accessory from the server.
      *
-     * <p>This method performs the following operations:
+     * <p>
+     * This method performs the following operations:
      * <ul>
-     *     <li>Validates the server's lifecycle state</li>
-     *     <li>Removes the accessory from the base server</li>
-     *     <li>Unsubscribes from all characteristic events</li>
-     *     <li>Cleans up event subscriptions</li>
-     *     <li>Logs the removal of the accessory</li>
+     * <li>Validates the server's lifecycle state</li>
+     * <li>Removes the accessory from the base server</li>
+     * <li>Unsubscribes from all characteristic events</li>
+     * <li>Cleans up event subscriptions</li>
+     * <li>Logs the removal of the accessory</li>
      * </ul>
      *
      * @param accessory The accessory to remove

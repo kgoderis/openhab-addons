@@ -12,24 +12,25 @@ import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicEv
  * <p>
  * The interface provides:
  * <ul>
- *   <li>Characteristic event notifications</li>
- *   <li>State change tracking</li>
- *   <li>Event handling</li>
+ * <li>Characteristic event notifications</li>
+ * <li>State change tracking</li>
+ * <li>Event handling</li>
  * </ul>
  * </p>
  * <p>
  * Key implementation details:
  * <ul>
- *   <li>Event-based notification system</li>
- *   <li>Thread-safe event handling</li>
- *   <li>Characteristic state tracking</li>
- *   <li>Event propagation</li>
+ * <li>Event-based notification system</li>
+ * <li>Thread-safe event handling</li>
+ * <li>Characteristic state tracking</li>
+ * <li>Event propagation</li>
  * </ul>
  * </p>
  * <p>
  * The interface integrates with:
  * <ul>
- *   <li>{@link org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicEvent} for characteristic events</li>
+ * <li>{@link org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicEvent} for characteristic
+ * events</li>
  * </ul>
  * </p>
  *

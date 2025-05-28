@@ -12,28 +12,28 @@ import org.openhab.io.homekit.util.HomekitUID;
  * The UID follows a specific format: {@code homekit:peergroup:{peerGroup}} where:
  * </p>
  * <ul>
- *   <li>{@code homekit} is the namespace prefix</li>
- *   <li>{@code peergroup} indicates this is a peer group identifier</li>
- *   <li>{@code peerGroup} is the unique identifier for the peer group</li>
+ * <li>{@code homekit} is the namespace prefix</li>
+ * <li>{@code peergroup} indicates this is a peer group identifier</li>
+ * <li>{@code peerGroup} is the unique identifier for the peer group</li>
  * </ul>
  *
  * <p>
  * Key responsibilities:
  * </p>
  * <ul>
- *   <li>Creating and parsing peer group UIDs</li>
- *   <li>Validating UID format and structure</li>
- *   <li>Extracting peer group-specific information from UIDs</li>
- *   <li>Ensuring unique identification across the system</li>
+ * <li>Creating and parsing peer group UIDs</li>
+ * <li>Validating UID format and structure</li>
+ * <li>Extracting peer group-specific information from UIDs</li>
+ * <li>Ensuring unique identification across the system</li>
  * </ul>
  *
  * <p>
  * The class integrates with:
  * </p>
  * <ul>
- *   <li>{@link org.openhab.core.common.registry.Identifiable} for UID management</li>
- *   <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for event handling</li>
- *   <li>OpenHAB's UID system for consistent identification</li>
+ * <li>{@link org.openhab.core.common.registry.Identifiable} for UID management</li>
+ * <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for event handling</li>
+ * <li>OpenHAB's UID system for consistent identification</li>
  * </ul>
  *
  * @author Karel Goderis - Initial contribution
@@ -58,10 +58,10 @@ public class HomekitPeerGroupUIDImpl extends HomekitUID implements HomekitPeerGr
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Validates all input parameters</li>
-     *   <li>Constructs the UID string in the correct format</li>
-     *   <li>Initializes all internal fields</li>
-     *   <li>Sets up the base UID structure</li>
+     * <li>Validates all input parameters</li>
+     * <li>Constructs the UID string in the correct format</li>
+     * <li>Initializes all internal fields</li>
+     * <li>Sets up the base UID structure</li>
      * </ul>
      *
      * @param peerGroup The unique identifier for the peer group
@@ -84,9 +84,9 @@ public class HomekitPeerGroupUIDImpl extends HomekitUID implements HomekitPeerGr
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Uses String.format for consistent formatting</li>
-     *   <li>Maintains the standard UID structure</li>
-     *   <li>Preserves all identifier components</li>
+     * <li>Uses String.format for consistent formatting</li>
+     * <li>Maintains the standard UID structure</li>
+     * <li>Preserves all identifier components</li>
      * </ul>
      *
      * @return The UID string in the format {@code homekit:peergroup:{peerGroup}}
@@ -108,9 +108,9 @@ public class HomekitPeerGroupUIDImpl extends HomekitUID implements HomekitPeerGr
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns the internal peer group field</li>
-     *   <li>Used for group coordination</li>
-     *   <li>Supports event handling</li>
+     * <li>Returns the internal peer group field</li>
+     * <li>Used for group coordination</li>
+     * <li>Supports event handling</li>
      * </ul>
      *
      * @return The peer group identifier
@@ -127,18 +127,18 @@ public class HomekitPeerGroupUIDImpl extends HomekitUID implements HomekitPeerGr
      * A valid peer group UID must have at least 3 segments:
      * </p>
      * <ol>
-     *   <li>The namespace prefix ("homekit")</li>
-     *   <li>The type identifier ("peergroup")</li>
-     *   <li>The peer group identifier</li>
+     * <li>The namespace prefix ("homekit")</li>
+     * <li>The type identifier ("peergroup")</li>
+     * <li>The peer group identifier</li>
      * </ol>
      *
      * <p>
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Enforces UID structure validation</li>
-     *   <li>Ensures complete identification</li>
-     *   <li>Supports UID parsing</li>
+     * <li>Enforces UID structure validation</li>
+     * <li>Ensures complete identification</li>
+     * <li>Supports UID parsing</li>
      * </ul>
      *
      * @return The minimum number of segments (3) for a valid peer group UID
@@ -160,9 +160,9 @@ public class HomekitPeerGroupUIDImpl extends HomekitUID implements HomekitPeerGr
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns this instance</li>
-     *   <li>Supports interface compliance</li>
-     *   <li>Enables UID access</li>
+     * <li>Returns this instance</li>
+     * <li>Supports interface compliance</li>
+     * <li>Enables UID access</li>
      * </ul>
      *
      * @return This UID instance

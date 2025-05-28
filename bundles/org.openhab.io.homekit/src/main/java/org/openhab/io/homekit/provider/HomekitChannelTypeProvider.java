@@ -97,11 +97,11 @@ public class HomekitChannelTypeProvider extends AbstractStorageBasedTypeProvider
     private void addFactoryDependentChannelTypes() {
         logger.debug("{}Adding factory-dependent channel types", LOG_TYPE);
         Set<String> characteristicTypes = characteristicFactory.getSupportedCharacteristicTypes();
-        
+
         for (String characteristicType : characteristicTypes) {
             logger.debug("{}Processing characteristic type: {}", LOG_TYPE, characteristicType);
             Set<String> acceptedItemTypes = characteristicFactory.getAcceptedItemTypes(characteristicType);
-            
+
             for (String acceptedItemType : acceptedItemTypes) {
                 ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
                         characteristicType);
@@ -112,14 +112,14 @@ public class HomekitChannelTypeProvider extends AbstractStorageBasedTypeProvider
                         ChannelType channelType = builder.build();
                         putChannelType(channelType);
                         logger.debug("{}Created channel type {} for characteristic {} with item type {}", LOG_TYPE,
-                            channelTypeUID, characteristicType, acceptedItemType);
+                                channelTypeUID, characteristicType, acceptedItemType);
                     } catch (Exception e) {
-                        logger.error("{}Failed to create channel type for characteristic {} with item type {}: {}", 
-                            LOG_ERROR, characteristicType, acceptedItemType, e.getMessage(), e);
+                        logger.error("{}Failed to create channel type for characteristic {} with item type {}: {}",
+                                LOG_ERROR, characteristicType, acceptedItemType, e.getMessage(), e);
                     }
                 } else {
-                    logger.warn("{}Could not create ChannelTypeUID for characteristic type: {}", LOG_WARN, 
-                        characteristicType);
+                    logger.warn("{}Could not create ChannelTypeUID for characteristic type: {}", LOG_WARN,
+                            characteristicType);
                 }
             }
         }

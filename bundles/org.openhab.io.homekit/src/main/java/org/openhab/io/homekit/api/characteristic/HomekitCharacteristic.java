@@ -22,29 +22,29 @@ import org.openhab.io.homekit.api.uid.HomekitCharacteristicUID;
  * <p>
  * This interface provides:
  * <ul>
- *   <li>Core identification and type information</li>
- *   <li>Value and state management</li>
- *   <li>State conversion between HomeKit and OpenHAB</li>
- *   <li>JSON serialization for HomeKit protocol</li>
- *   <li>Builder pattern for configuration</li>
+ * <li>Core identification and type information</li>
+ * <li>Value and state management</li>
+ * <li>State conversion between HomeKit and OpenHAB</li>
+ * <li>JSON serialization for HomeKit protocol</li>
+ * <li>Builder pattern for configuration</li>
  * </ul>
  * </p>
  * <p>
  * Key implementation details:
  * <ul>
- *   <li>Thread-safe value access</li>
- *   <li>Type-safe value handling</li>
- *   <li>Bidirectional state conversion</li>
- *   <li>Event notification support</li>
- *   <li>Permission management</li>
+ * <li>Thread-safe value access</li>
+ * <li>Type-safe value handling</li>
+ * <li>Bidirectional state conversion</li>
+ * <li>Event notification support</li>
+ * <li>Permission management</li>
  * </ul>
  * </p>
  * <p>
  * The interface integrates with:
  * <ul>
- *   <li>{@link org.openhab.core.types.State} for state conversion</li>
- *   <li>{@link org.openhab.io.homekit.api.service.HomekitService} for service integration</li>
- *   <li>{@link org.openhab.io.homekit.api.uid.HomekitCharacteristicUID} for identification</li>
+ * <li>{@link org.openhab.core.types.State} for state conversion</li>
+ * <li>{@link org.openhab.io.homekit.api.service.HomekitService} for service integration</li>
+ * <li>{@link org.openhab.io.homekit.api.uid.HomekitCharacteristicUID} for identification</li>
  * </ul>
  * </p>
  *

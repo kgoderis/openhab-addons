@@ -18,9 +18,9 @@ import org.openhab.io.homekit.library.characteristic.HomekitAssetUpdateReadiness
  * </p>
  *
  * <ul>
- *   <li>Asset update readiness monitoring</li>
- *   <li>Integration with HomeKit event system</li>
- *   <li>Extensible for future asset update features</li>
+ * <li>Asset update readiness monitoring</li>
+ * <li>Integration with HomeKit event system</li>
+ * <li>Extensible for future asset update features</li>
  * </ul>
  *
  * <p>
@@ -82,14 +82,16 @@ public class HomekitAssetUpdateService extends AbstractHomekitService {
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>AssetUpdateReadiness</li>
+     * <li>AssetUpdateReadiness</li>
      * </ul>
      * </p>
+     * 
      * @since 1.0
      */
     @Override
     public void addCharacteristics() {
-        logger.trace("{}Adding required characteristics to AssetUpdateService for accessory {}", LOG_TRACE, getAccessory().getLabel());
+        logger.trace("{}Adding required characteristics to AssetUpdateService for accessory {}", LOG_TRACE,
+                getAccessory().getLabel());
         // Required characteristics
         addCharacteristic(new HomekitAssetUpdateReadinessCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));

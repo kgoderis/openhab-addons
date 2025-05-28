@@ -23,42 +23,42 @@ import org.slf4j.LoggerFactory;
  * <b>Key Features:</b>
  * </p>
  * <ul>
- *   <li>Secure pairing management</li>
- *   <li>Cryptographic key storage</li>
- *   <li>Base64 encoding/decoding</li>
- *   <li>Pairing lifecycle support</li>
- *   <li>Thread-safe operations</li>
+ * <li>Secure pairing management</li>
+ * <li>Cryptographic key storage</li>
+ * <li>Base64 encoding/decoding</li>
+ * <li>Pairing lifecycle support</li>
+ * <li>Thread-safe operations</li>
  * </ul>
  *
  * <p>
  * <b>Component Integration:</b>
  * </p>
  * <ul>
- *   <li>{@link HomekitPairingUIDImpl} for unique identifier generation</li>
- *   <li>{@link HomekitPairingRegistryImpl} for persistent storage</li>
- *   <li>{@link org.openhab.io.homekit.protocol.pairing.HomekitPairing} for interface implementation</li>
+ * <li>{@link HomekitPairingUIDImpl} for unique identifier generation</li>
+ * <li>{@link HomekitPairingRegistryImpl} for persistent storage</li>
+ * <li>{@link org.openhab.io.homekit.protocol.pairing.HomekitPairing} for interface implementation</li>
  * </ul>
  *
  * <p>
  * <b>Security Considerations:</b>
  * </p>
  * <ul>
- *   <li>Secure storage of cryptographic keys</li>
- *   <li>Base64 encoding for binary data</li>
- *   <li>Input validation</li>
- *   <li>Thread safety</li>
- *   <li>Data integrity</li>
+ * <li>Secure storage of cryptographic keys</li>
+ * <li>Base64 encoding for binary data</li>
+ * <li>Input validation</li>
+ * <li>Thread safety</li>
+ * <li>Data integrity</li>
  * </ul>
  *
  * <p>
  * <b>Implementation Details:</b>
  * </p>
  * <ul>
- *   <li>Uses Base64 encoding for storage</li>
- *   <li>Implements secure key management</li>
- *   <li>Provides thread-safe operations</li>
- *   <li>Maintains data consistency</li>
- *   <li>Supports pairing lifecycle</li>
+ * <li>Uses Base64 encoding for storage</li>
+ * <li>Implements secure key management</li>
+ * <li>Provides thread-safe operations</li>
+ * <li>Maintains data consistency</li>
+ * <li>Supports pairing lifecycle</li>
  * </ul>
  *
  * @author Karel Goderis - Initial Contribution
@@ -94,10 +94,10 @@ public class HomekitPairingImpl implements HomekitPairing {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Initializes empty identifiers</li>
-     *   <li>Sets up empty public key</li>
-     *   <li>Prepares for pairing operations</li>
-     *   <li>Ensures thread safety</li>
+     * <li>Initializes empty identifiers</li>
+     * <li>Sets up empty public key</li>
+     * <li>Prepares for pairing operations</li>
+     * <li>Ensures thread safety</li>
      * </ul>
      */
     public HomekitPairingImpl() {
@@ -121,10 +121,10 @@ public class HomekitPairingImpl implements HomekitPairing {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Encodes binary identifiers to Base64</li>
-     *   <li>Stores public key for secure communication</li>
-     *   <li>Validates input parameters</li>
-     *   <li>Ensures thread safety</li>
+     * <li>Encodes binary identifiers to Base64</li>
+     * <li>Stores public key for secure communication</li>
+     * <li>Validates input parameters</li>
+     * <li>Ensures thread safety</li>
      * </ul>
      *
      * @param sourcePairingId The source identifier for the pairing
@@ -156,9 +156,9 @@ public class HomekitPairingImpl implements HomekitPairing {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Creates new UID instance</li>
-     *   <li>Uses source and destination IDs</li>
-     *   <li>Ensures uniqueness</li>
+     * <li>Creates new UID instance</li>
+     * <li>Uses source and destination IDs</li>
+     * <li>Ensures uniqueness</li>
      * </ul>
      *
      * @return A new HomekitPairingUID instance for this pairing
@@ -181,9 +181,9 @@ public class HomekitPairingImpl implements HomekitPairing {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Decodes Base64 string</li>
-     *   <li>Returns binary identifier</li>
-     *   <li>Maintains data integrity</li>
+     * <li>Decodes Base64 string</li>
+     * <li>Returns binary identifier</li>
+     * <li>Maintains data integrity</li>
      * </ul>
      *
      * @return The decoded source identifier
@@ -206,9 +206,9 @@ public class HomekitPairingImpl implements HomekitPairing {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Decodes Base64 string</li>
-     *   <li>Returns binary identifier</li>
-     *   <li>Maintains data integrity</li>
+     * <li>Decodes Base64 string</li>
+     * <li>Returns binary identifier</li>
+     * <li>Maintains data integrity</li>
      * </ul>
      *
      * @return The decoded destination identifier
@@ -231,9 +231,9 @@ public class HomekitPairingImpl implements HomekitPairing {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Decodes Base64 string</li>
-     *   <li>Returns binary key</li>
-     *   <li>Maintains data integrity</li>
+     * <li>Decodes Base64 string</li>
+     * <li>Returns binary key</li>
+     * <li>Maintains data integrity</li>
      * </ul>
      *
      * @return The decoded public key

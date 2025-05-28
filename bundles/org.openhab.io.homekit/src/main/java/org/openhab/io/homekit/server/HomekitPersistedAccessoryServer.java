@@ -15,23 +15,26 @@ import org.slf4j.LoggerFactory;
 /**
  * Represents a persisted HomeKit accessory server configuration.
  *
- * <p>This class provides a data structure for storing and retrieving HomeKit server
+ * <p>
+ * This class provides a data structure for storing and retrieving HomeKit server
  * configurations, including network settings, security keys, and accessory information.
  * It handles the serialization and deserialization of server state for persistence.
  *
- * <p>The class integrates with:
+ * <p>
+ * The class integrates with:
  * <ul>
- *     <li>{@link InetAddress} for network address handling</li>
- *     <li>{@link HomekitAccessoryCategory} for accessory categorization</li>
- *     <li>{@link Base64} for encoding/decoding binary data</li>
+ * <li>{@link InetAddress} for network address handling</li>
+ * <li>{@link HomekitAccessoryCategory} for accessory categorization</li>
+ * <li>{@link Base64} for encoding/decoding binary data</li>
  * </ul>
  *
- * <p>Key features:
+ * <p>
+ * Key features:
  * <ul>
- *     <li>Network configuration persistence</li>
- *     <li>Security key management</li>
- *     <li>Accessory list serialization</li>
- *     <li>Server type differentiation</li>
+ * <li>Network configuration persistence</li>
+ * <li>Security key management</li>
+ * <li>Accessory list serialization</li>
+ * <li>Server type differentiation</li>
  * </ul>
  *
  * @author Karel Goderis - Initial Contribution
@@ -82,7 +85,8 @@ public class HomekitPersistedAccessoryServer {
     /**
      * Creates a new persisted server with the specified configuration.
      *
-     * <p>This constructor initializes all server properties and handles the serialization
+     * <p>
+     * This constructor initializes all server properties and handles the serialization
      * of binary data and accessory information.
      *
      * @param localAddress The network address to bind to

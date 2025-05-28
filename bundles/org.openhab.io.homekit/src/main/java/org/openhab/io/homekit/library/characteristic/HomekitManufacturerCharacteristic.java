@@ -21,9 +21,9 @@ import org.slf4j.LoggerFactory;
  * <p>
  * The manufacturer name is used to:
  * <ul>
- *   <li>Identify the company that produced the accessory</li>
- *   <li>Help users identify and organize their accessories</li>
- *   <li>Provide context for support and troubleshooting</li>
+ * <li>Identify the company that produced the accessory</li>
+ * <li>Help users identify and organize their accessories</li>
+ * <li>Provide context for support and troubleshooting</li>
  * </ul>
  * </p>
  *

@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.core.server;
 
 import java.util.Objects;
+
 import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,29 +14,29 @@ import org.slf4j.LoggerFactory;
  * including connection states, pairing states, and operational states. Each state includes:
  * </p>
  * <ul>
- *   <li>A name for identification</li>
- *   <li>A human-readable description</li>
- *   <li>An associated event type</li>
- *   <li>A flag indicating if the state is transient</li>
+ * <li>A name for identification</li>
+ * <li>A human-readable description</li>
+ * <li>An associated event type</li>
+ * <li>A flag indicating if the state is transient</li>
  * </ul>
  *
  * <p>
  * Key responsibilities:
  * </p>
  * <ul>
- *   <li>Defining server states and their properties</li>
- *   <li>Managing state transitions and validation</li>
- *   <li>Providing state information for event handling</li>
- *   <li>Supporting server lifecycle management</li>
+ * <li>Defining server states and their properties</li>
+ * <li>Managing state transitions and validation</li>
+ * <li>Providing state information for event handling</li>
+ * <li>Supporting server lifecycle management</li>
  * </ul>
  *
  * <p>
  * The class integrates with:
  * </p>
  * <ul>
- *   <li>{@link HomekitEventType} for event type mapping</li>
- *   <li>{@link org.openhab.io.homekit.api.server.HomekitAccessoryServer} for server state management</li>
- *   <li>{@link org.openhab.io.homekit.api.event.HomekitEvent OpenHAB's event system} for state change notifications</li>
+ * <li>{@link HomekitEventType} for event type mapping</li>
+ * <li>{@link org.openhab.io.homekit.api.server.HomekitAccessoryServer} for server state management</li>
+ * <li>{@link org.openhab.io.homekit.api.event.HomekitEvent OpenHAB's event system} for state change notifications</li>
  * </ul>
  *
  * @author Karel Goderis - Initial contribution
@@ -67,10 +68,10 @@ public class HomekitAccessoryServerState {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Validates all input parameters</li>
-     *   <li>Initializes all internal fields</li>
-     *   <li>Sets up state properties</li>
-     *   <li>Logs state creation for debugging</li>
+     * <li>Validates all input parameters</li>
+     * <li>Initializes all internal fields</li>
+     * <li>Sets up state properties</li>
+     * <li>Logs state creation for debugging</li>
      * </ul>
      *
      * @param name The state name, used for identification and logging
@@ -169,10 +170,10 @@ public class HomekitAccessoryServerState {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns the internal name field</li>
-     *   <li>Used for state identification</li>
-     *   <li>Supports logging and debugging</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Returns the internal name field</li>
+     * <li>Used for state identification</li>
+     * <li>Supports logging and debugging</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return The state name as a string
@@ -194,10 +195,10 @@ public class HomekitAccessoryServerState {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns the internal description field</li>
-     *   <li>Used for user interface display</li>
-     *   <li>Supports state understanding</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Returns the internal description field</li>
+     * <li>Used for user interface display</li>
+     * <li>Supports state understanding</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return A human-readable description of the state
@@ -220,10 +221,10 @@ public class HomekitAccessoryServerState {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns the internal event type field</li>
-     *   <li>Used for event handling</li>
-     *   <li>Supports state change notifications</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Returns the internal event type field</li>
+     * <li>Used for event handling</li>
+     * <li>Supports state change notifications</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return The associated HomekitEventType for state change notifications
@@ -246,10 +247,10 @@ public class HomekitAccessoryServerState {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns the internal transient flag</li>
-     *   <li>Used for state transition handling</li>
-     *   <li>Supports state stability checks</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Returns the internal transient flag</li>
+     * <li>Used for state transition handling</li>
+     * <li>Supports state stability checks</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return true if this state is temporary, false if it represents a stable condition
@@ -271,10 +272,10 @@ public class HomekitAccessoryServerState {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Uses String.format for consistent formatting</li>
-     *   <li>Combines name and description</li>
-     *   <li>Supports debugging and logging</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Uses String.format for consistent formatting</li>
+     * <li>Combines name and description</li>
+     * <li>Supports debugging and logging</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return A string in the format "{name} ({description})"
@@ -298,10 +299,10 @@ public class HomekitAccessoryServerState {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Implements standard equals contract</li>
-     *   <li>Compares all relevant fields</li>
-     *   <li>Handles null cases properly</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Implements standard equals contract</li>
+     * <li>Compares all relevant fields</li>
+     * <li>Handles null cases properly</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @param obj The object to compare with
@@ -335,10 +336,10 @@ public class HomekitAccessoryServerState {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Uses Objects.hash for consistent hashing</li>
-     *   <li>Includes all relevant fields</li>
-     *   <li>Maintains equals/hashCode contract</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Uses Objects.hash for consistent hashing</li>
+     * <li>Includes all relevant fields</li>
+     * <li>Maintains equals/hashCode contract</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return A hash code value for this state

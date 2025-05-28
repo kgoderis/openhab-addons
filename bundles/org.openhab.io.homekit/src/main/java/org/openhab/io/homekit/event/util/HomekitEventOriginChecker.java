@@ -35,7 +35,8 @@ import org.openhab.io.homekit.api.event.HomekitEvent;
  * - Bridge validation: Use {@link #isFromBridge(HomekitEvent, UID)} to verify bridge origin
  * - Accessory validation: Use {@link #isFromAccessory(HomekitEvent, String, String)} to verify accessory origin
  * - Service validation: Use {@link #isFromService(HomekitEvent, String, String, String)} to verify service origin
- * - Characteristic validation: Use {@link #isFromCharacteristic(HomekitEvent, String, String, String, String)} to verify characteristic origin
+ * - Characteristic validation: Use {@link #isFromCharacteristic(HomekitEvent, String, String, String, String)} to
+ * verify characteristic origin
  * - Peer validation: Use {@link #isFromPeer(HomekitEvent)} to verify peer group origin
  * - Event correlation: Use {@link #isCorrelated(HomekitEvent, HomekitEvent)} to check event relationships
  *

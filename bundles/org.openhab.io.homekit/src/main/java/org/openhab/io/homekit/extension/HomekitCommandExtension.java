@@ -555,7 +555,8 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
                     console.println("      Public Key: " + Base64.getEncoder().encodeToString(pairing.getPublicKey()));
                 });
             } catch (HomekitServerException e) {
-                logger.error("{}Error getting pairings from server {}: {}", LOG_ERROR, server.getUID(), e.getMessage(), e);
+                logger.error("{}Error getting pairings from server {}: {}", LOG_ERROR, server.getUID(), e.getMessage(),
+                        e);
                 console.println("Error getting pairings from server: " + e.getMessage());
                 e.printStackTrace();
             }

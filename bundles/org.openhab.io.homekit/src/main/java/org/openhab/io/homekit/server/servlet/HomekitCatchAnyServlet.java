@@ -14,36 +14,40 @@ import org.slf4j.LoggerFactory;
 /**
  * Servlet that implements the HomeKit catch-all request handler.
  *
- * <p>This servlet serves as a security and debugging component in the HomeKit
+ * <p>
+ * This servlet serves as a security and debugging component in the HomeKit
  * server implementation, handling any HTTP requests that don't match the
  * specific paths handled by other servlets. It provides a consistent and
  * secure way to handle unmatched requests while maintaining proper logging
  * for security monitoring and debugging purposes.
  *
- * <p>Key features:
+ * <p>
+ * Key features:
  * <ul>
- *     <li>Unified handling of unmatched requests</li>
- *     <li>Consistent 404 Not Found responses</li>
- *     <li>Request logging for security monitoring</li>
- *     <li>Request body capture for debugging</li>
- *     <li>Graceful error handling</li>
+ * <li>Unified handling of unmatched requests</li>
+ * <li>Consistent 404 Not Found responses</li>
+ * <li>Request logging for security monitoring</li>
+ * <li>Request body capture for debugging</li>
+ * <li>Graceful error handling</li>
  * </ul>
  *
- * <p>Security considerations:
+ * <p>
+ * Security considerations:
  * <ul>
- *     <li>Prevents information leakage about server structure</li>
- *     <li>Provides consistent error responses</li>
- *     <li>Enables security monitoring through logging</li>
- *     <li>Handles both GET and POST requests uniformly</li>
- *     <li>Captures request details for security analysis</li>
- *     <li>Implements proper error handling to prevent stack traces</li>
+ * <li>Prevents information leakage about server structure</li>
+ * <li>Provides consistent error responses</li>
+ * <li>Enables security monitoring through logging</li>
+ * <li>Handles both GET and POST requests uniformly</li>
+ * <li>Captures request details for security analysis</li>
+ * <li>Implements proper error handling to prevent stack traces</li>
  * </ul>
  *
- * <p>The class integrates with:
+ * <p>
+ * The class integrates with:
  * <ul>
- *     <li>{@link HomekitBaseServlet} for base servlet functionality</li>
- *     <li>{@link HomekitAccessoryServer} for server instance management</li>
- *     <li>{@link org.apache.commons.io.IOUtils} for request body handling</li>
+ * <li>{@link HomekitBaseServlet} for base servlet functionality</li>
+ * <li>{@link HomekitAccessoryServer} for server instance management</li>
+ * <li>{@link org.apache.commons.io.IOUtils} for request body handling</li>
  * </ul>
  *
  * @author Karel Goderis - Initial Contribution
@@ -76,7 +80,8 @@ public class HomekitCatchAnyServlet extends HomekitBaseServlet {
     /**
      * Creates a new catch-all servlet with the specified server instance.
      *
-     * <p>This constructor initializes the servlet with a specific server instance,
+     * <p>
+     * This constructor initializes the servlet with a specific server instance,
      * enabling proper integration with the HomeKit server infrastructure.
      *
      * @param server The HomeKit accessory server instance to associate with this servlet
@@ -89,18 +94,20 @@ public class HomekitCatchAnyServlet extends HomekitBaseServlet {
     /**
      * Handles POST requests by delegating to doGet for consistent handling.
      *
-     * <p>This method implements a unified request handling strategy by:
+     * <p>
+     * This method implements a unified request handling strategy by:
      * <ul>
-     *     <li>Forwarding POST requests to the doGet method</li>
-     *     <li>Ensuring consistent handling of all unmatched requests</li>
-     *     <li>Maintaining uniform logging and response behavior</li>
+     * <li>Forwarding POST requests to the doGet method</li>
+     * <li>Ensuring consistent handling of all unmatched requests</li>
+     * <li>Maintaining uniform logging and response behavior</li>
      * </ul>
      *
-     * <p>This approach ensures:
+     * <p>
+     * This approach ensures:
      * <ul>
-     *     <li>Consistent security monitoring</li>
-     *     <li>Uniform error responses</li>
-     *     <li>Simplified request handling logic</li>
+     * <li>Consistent security monitoring</li>
+     * <li>Uniform error responses</li>
+     * <li>Simplified request handling logic</li>
      * </ul>
      *
      * @param request The HTTP POST request to handle
@@ -118,21 +125,23 @@ public class HomekitCatchAnyServlet extends HomekitBaseServlet {
     /**
      * Handles GET requests for unmatched paths.
      *
-     * <p>This method implements the catch-all request handling by:
+     * <p>
+     * This method implements the catch-all request handling by:
      * <ul>
-     *     <li>Logging the unmatched request URI for security monitoring</li>
-     *     <li>Attempting to read and capture the request body for debugging</li>
-     *     <li>Returning a 404 Not Found response</li>
-     *     <li>Handling any I/O errors gracefully</li>
+     * <li>Logging the unmatched request URI for security monitoring</li>
+     * <li>Attempting to read and capture the request body for debugging</li>
+     * <li>Returning a 404 Not Found response</li>
+     * <li>Handling any I/O errors gracefully</li>
      * </ul>
      *
-     * <p>Security features:
+     * <p>
+     * Security features:
      * <ul>
-     *     <li>Request logging for security monitoring</li>
-     *     <li>Request body capture for debugging</li>
-     *     <li>Consistent error responses</li>
-     *     <li>Graceful error handling</li>
-     *     <li>No sensitive information exposure</li>
+     * <li>Request logging for security monitoring</li>
+     * <li>Request body capture for debugging</li>
+     * <li>Consistent error responses</li>
+     * <li>Graceful error handling</li>
+     * <li>No sensitive information exposure</li>
      * </ul>
      *
      * @param request The HTTP GET request to handle

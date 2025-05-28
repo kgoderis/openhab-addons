@@ -20,15 +20,15 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * <ul>
- *   <li>Camera operating mode control</li>
- *   <li>Mode indicator status monitoring</li>
- *   <li>Operational state management</li>
+ * <li>Camera operating mode control</li>
+ * <li>Mode indicator status monitoring</li>
+ * <li>Operational state management</li>
  * </ul>
  *
  * <p>
  * Required characteristics:
  * <ul>
- *   <li>CameraOperatingModeIndicator - Current operating mode status</li>
+ * <li>CameraOperatingModeIndicator - Current operating mode status</li>
  * </ul>
  * </p>
  *
@@ -91,15 +91,17 @@ public class HomekitCameraOperatingModeService extends AbstractHomekitService {
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>CameraOperatingModeIndicator - Current operating mode status</li>
+     * <li>CameraOperatingModeIndicator - Current operating mode status</li>
      * </ul>
      * </p>
+     * 
      * @since 1.0
      */
     @Override
     public void addCharacteristics() {
-        logger.trace("{}Adding required characteristics to CameraOperatingModeService for accessory {}", LOG_TRACE, getAccessory().getLabel());
-        
+        logger.trace("{}Adding required characteristics to CameraOperatingModeService for accessory {}", LOG_TRACE,
+                getAccessory().getLabel());
+
         // Required characteristics
         addCharacteristic(new HomekitCameraOperatingModeIndicatorCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));

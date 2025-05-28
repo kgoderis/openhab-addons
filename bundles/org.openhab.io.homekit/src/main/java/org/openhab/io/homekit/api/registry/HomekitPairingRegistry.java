@@ -4,37 +4,46 @@ import java.util.Collection;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.Registry;
-import org.openhab.io.homekit.api.provider.HomekitPairingProvider;
 import org.openhab.io.homekit.api.uid.HomekitPairingUID;
 import org.openhab.io.homekit.protocol.pairing.HomekitPairing;
 
 /**
  * Registry for managing HomeKit pairing information in the system.
- *
+ * <p>
  * This interface defines the contract for components that need to track and manage HomeKit
  * pairing configurations from different providers. It extends the OpenHAB Registry interface to provide
  * a centralized registry for all HomeKit pairing information in the system.
- *
+ * </p>
+ * <p>
  * The registry provides:
- * - Centralized pairing management
- * - Provider-based pairing discovery
- * - Change notification support
- * - Pairing lifecycle tracking
- * - Pairing ID lookup
- *
+ * <ul>
+ * <li>Centralized pairing management</li>
+ * <li>Provider-based pairing discovery</li>
+ * <li>Change notification support</li>
+ * <li>Pairing lifecycle tracking</li>
+ * <li>Pairing ID lookup</li>
+ * </ul>
+ * </p>
+ * <p>
  * Key implementation details:
- * - Thread-safe registry operations
- * - Provider-based discovery system
- * - Change listener support
- * - UID-based pairing identification
- * - Pairing ID validation
- *
+ * <ul>
+ * <li>Thread-safe registry operations</li>
+ * <li>Provider-based discovery system</li>
+ * <li>Change listener support</li>
+ * <li>UID-based pairing identification</li>
+ * <li>Pairing ID validation</li>
+ * </ul>
+ * </p>
+ * <p>
  * The interface integrates with:
- * - {@link org.openhab.core.common.registry.Registry} for registry functionality
- * - {@link org.openhab.io.homekit.protocol.pairing.HomekitPairing} for pairing management
- * - {@link org.openhab.io.homekit.api.provider.HomekitPairingProvider} for pairing discovery
- * - {@link org.openhab.io.homekit.api.listener.HomekitPairingChangeListener} for change notifications
- * - {@link org.openhab.io.homekit.api.uid.HomekitPairingUID} for pairing identification
+ * <ul>
+ * <li>{@link org.openhab.core.common.registry.Registry} for registry functionality</li>
+ * <li>{@link org.openhab.io.homekit.protocol.pairing.HomekitPairing} for pairing management</li>
+ * <li>{@link org.openhab.io.homekit.api.provider.HomekitPairingProvider} for pairing discovery</li>
+ * <li>{@link org.openhab.io.homekit.api.listener.HomekitPairingChangeListener} for change notifications</li>
+ * <li>{@link org.openhab.io.homekit.api.uid.HomekitPairingUID} for pairing identification</li>
+ * </ul>
+ * </p>
  *
  * @author Karel Goderis - Initial Contribution
  * @since 1.0.0

@@ -26,23 +26,23 @@ import org.slf4j.LoggerFactory;
  * <b>Component Integration:</b>
  * </p>
  * <ul>
- *   <li>{@link HomekitHttpConnection} for connection management</li>
- *   <li>{@link HomekitSessionHandler} for session handling</li>
- *   <li>{@link HomekitDecryptedEndPoint} for encrypted endpoints</li>
- *   <li>{@link org.eclipse.jetty.server.Connector Connector} for server connections</li>
- *   <li>{@link org.eclipse.jetty.server.HttpConfiguration HttpConfiguration} for HTTP settings</li>
- *   <li>{@link org.eclipse.jetty.http.HttpCompliance HttpCompliance} for protocol compliance</li>
+ * <li>{@link HomekitHttpConnection} for connection management</li>
+ * <li>{@link HomekitSessionHandler} for session handling</li>
+ * <li>{@link HomekitDecryptedEndPoint} for encrypted endpoints</li>
+ * <li>{@link org.eclipse.jetty.server.Connector Connector} for server connections</li>
+ * <li>{@link org.eclipse.jetty.server.HttpConfiguration HttpConfiguration} for HTTP settings</li>
+ * <li>{@link org.eclipse.jetty.http.HttpCompliance HttpCompliance} for protocol compliance</li>
  * </ul>
  *
  * <p>
  * <b>Key responsibilities:</b>
  * </p>
  * <ul>
- *   <li>Creating new HTTP connections</li>
- *   <li>Managing connection configuration</li>
- *   <li>Supporting connection upgrades</li>
- *   <li>Handling session management</li>
- *   <li>Providing encryption support</li>
+ * <li>Creating new HTTP connections</li>
+ * <li>Managing connection configuration</li>
+ * <li>Supporting connection upgrades</li>
+ * <li>Handling session management</li>
+ * <li>Providing encryption support</li>
  * </ul>
  *
  * @author Karel Goderis - Initial Contribution
@@ -212,10 +212,10 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
      * <b>Key implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Checks for existing session</li>
-     *   <li>Creates encrypted endpoint if needed</li>
-     *   <li>Configures connection parameters</li>
-     *   <li>Handles connection upgrades</li>
+     * <li>Checks for existing session</li>
+     * <li>Creates encrypted endpoint if needed</li>
+     * <li>Configures connection parameters</li>
+     * <li>Handles connection upgrades</li>
      * </ul>
      *
      * @param connector The {@link Connector} for the server

@@ -15,18 +15,18 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * <p>
  * Key implementation details:
  * <ul>
- *   <li>Source identification through UID</li>
- *   <li>Event manager integration</li>
- *   <li>Automatic publisher UID assignment</li>
- *   <li>Thread-safe event publishing</li>
+ * <li>Source identification through UID</li>
+ * <li>Event manager integration</li>
+ * <li>Automatic publisher UID assignment</li>
+ * <li>Thread-safe event publishing</li>
  * </ul>
  * </p>
  * <p>
  * The interface integrates with:
  * <ul>
- *   <li>{@link org.openhab.core.thing.UID} for source identification</li>
- *   <li>{@link org.openhab.io.homekit.event.manager.HomekitEventManager} for event management</li>
- *   <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for event handling</li>
+ * <li>{@link org.openhab.core.thing.UID} for source identification</li>
+ * <li>{@link org.openhab.io.homekit.event.manager.HomekitEventManager} for event management</li>
+ * <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for event handling</li>
  * </ul>
  * </p>
  *

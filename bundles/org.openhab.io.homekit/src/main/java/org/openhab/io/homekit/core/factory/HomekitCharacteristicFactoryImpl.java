@@ -2,7 +2,6 @@ package org.openhab.io.homekit.core.factory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -39,23 +38,23 @@ import org.slf4j.LoggerFactory;
  * <p>
  * The factory provides a centralized mechanism for creating HomeKit characteristics through:
  * <ul>
- *   <li>Annotation-based discovery of characteristic types using {@link HomekitCharacteristicType}</li>
- *   <li>Dynamic instantiation of characteristic instances through reflection</li>
- *   <li>Mapping between characteristic types and their implementations</li>
- *   <li>Support for tag-based characteristic creation</li>
- *   <li>Integration with {@link org.openhab.core.items.Item OpenHAB's item system} for state management</li>
+ * <li>Annotation-based discovery of characteristic types using {@link HomekitCharacteristicType}</li>
+ * <li>Dynamic instantiation of characteristic instances through reflection</li>
+ * <li>Mapping between characteristic types and their implementations</li>
+ * <li>Support for tag-based characteristic creation</li>
+ * <li>Integration with {@link org.openhab.core.items.Item OpenHAB's item system} for state management</li>
  * </ul>
  * </p>
  *
  * <p>
  * The factory integrates with several key components:
  * <ul>
- *   <li>{@link HomekitCharacteristic} for characteristic functionality and state management</li>
- *   <li>{@link HomekitService} for service integration and characteristic ownership</li>
- *   <li>{@link HomekitEventManager} for event handling and state updates</li>
- *   <li>{@link HomekitCharacteristicType} for type annotations and metadata</li>
- *   <li>{@link org.openhab.core.items.Item OpenHAB's item system} for state synchronization</li>
- *   <li>{@link org.openhab.core.thing.ChannelTypeUID OpenHAB's channel type system} for characteristic configuration</li>
+ * <li>{@link HomekitCharacteristic} for characteristic functionality and state management</li>
+ * <li>{@link HomekitService} for service integration and characteristic ownership</li>
+ * <li>{@link HomekitEventManager} for event handling and state updates</li>
+ * <li>{@link HomekitCharacteristicType} for type annotations and metadata</li>
+ * <li>{@link org.openhab.core.items.Item OpenHAB's item system} for state synchronization</li>
+ * <li>{@link org.openhab.core.thing.ChannelTypeUID OpenHAB's channel type system} for characteristic configuration</li>
  * </ul>
  * </p>
  *
@@ -100,10 +99,10 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Initializes characteristic type registry</li>
-     *   <li>Scans for annotated characteristic classes</li>
-     *   <li>Registers characteristic types and tags</li>
-     *   <li>Analyzes characteristic metadata</li>
+     * <li>Initializes characteristic type registry</li>
+     * <li>Scans for annotated characteristic classes</li>
+     * <li>Registers characteristic types and tags</li>
+     * <li>Analyzes characteristic metadata</li>
      * </ul>
      *
      * @param eventManager The event manager for handling HomeKit events
@@ -125,20 +124,20 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
      * The initialization process:
      * </p>
      * <ol>
-     *   <li>Scans the characteristic package for {@link HomekitCharacteristicType} annotations</li>
-     *   <li>Analyzes each characteristic class for type and tag information</li>
-     *   <li>Registers characteristic types and their implementations</li>
-     *   <li>Builds the tag-to-type mapping for flexible characteristic creation</li>
+     * <li>Scans the characteristic package for {@link HomekitCharacteristicType} annotations</li>
+     * <li>Analyzes each characteristic class for type and tag information</li>
+     * <li>Registers characteristic types and their implementations</li>
+     * <li>Builds the tag-to-type mapping for flexible characteristic creation</li>
      * </ol>
      *
      * <p>
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Uses Reflections library for annotation scanning</li>
-     *   <li>Maintains thread-safe collections for characteristic types</li>
-     *   <li>Analyzes characteristic annotations for metadata</li>
-     *   <li>Logs detailed information about discovered characteristics</li>
+     * <li>Uses Reflections library for annotation scanning</li>
+     * <li>Maintains thread-safe collections for characteristic types</li>
+     * <li>Analyzes characteristic annotations for metadata</li>
+     * <li>Logs detailed information about discovered characteristics</li>
      * </ul>
      *
      * @throws IllegalStateException if characteristic type initialization fails
@@ -189,10 +188,10 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Validates characteristic type against registered types</li>
-     *   <li>Uses reflection to create characteristic instance</li>
-     *   <li>Provides proper error handling and logging</li>
-     *   <li>Ensures thread-safe operation</li>
+     * <li>Validates characteristic type against registered types</li>
+     * <li>Uses reflection to create characteristic instance</li>
+     * <li>Provides proper error handling and logging</li>
+     * <li>Ensures thread-safe operation</li>
      * </ul>
      *
      * @param type The characteristic type to create
@@ -232,10 +231,10 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Maps tag to characteristic type</li>
-     *   <li>Uses standard characteristic creation</li>
-     *   <li>Provides proper error handling</li>
-     *   <li>Maintains consistent logging</li>
+     * <li>Maps tag to characteristic type</li>
+     * <li>Uses standard characteristic creation</li>
+     * <li>Provides proper error handling</li>
+     * <li>Maintains consistent logging</li>
      * </ul>
      *
      * @param tag The characteristic tag
@@ -267,10 +266,10 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Validates characteristic type against registered types</li>
-     *   <li>Uses reflection to find appropriate constructor</li>
-     *   <li>Handles argument type matching and conversion</li>
-     *   <li>Provides detailed error logging</li>
+     * <li>Validates characteristic type against registered types</li>
+     * <li>Uses reflection to find appropriate constructor</li>
+     * <li>Handles argument type matching and conversion</li>
+     * <li>Provides detailed error logging</li>
      * </ul>
      *
      * @param type The characteristic type to create
@@ -294,7 +293,8 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
             return constructor.newInstance(args);
         } catch (IllegalAccessException | IllegalArgumentException | InstantiationException | NoSuchMethodException
                 | SecurityException | InvocationTargetException e) {
-            logger.error("{}Error creating characteristic of type {} with args: {}", LOG_ERROR, type, e.getMessage(), e);
+            logger.error("{}Error creating characteristic of type {} with args: {}", LOG_ERROR, type, e.getMessage(),
+                    e);
             throw new IllegalArgumentException("Failed to create characteristic of type: " + type, e);
         }
     }
@@ -310,9 +310,9 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Performs thread-safe lookup in characteristic registry</li>
-     *   <li>Provides trace-level logging for debugging</li>
-     *   <li>Maintains consistent error handling</li>
+     * <li>Performs thread-safe lookup in characteristic registry</li>
+     * <li>Provides trace-level logging for debugging</li>
+     * <li>Maintains consistent error handling</li>
      * </ul>
      *
      * @param type The characteristic type to check
@@ -338,9 +338,9 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Performs thread-safe lookup in tag registry</li>
-     *   <li>Provides trace-level logging for debugging</li>
-     *   <li>Maintains consistent error handling</li>
+     * <li>Performs thread-safe lookup in tag registry</li>
+     * <li>Provides trace-level logging for debugging</li>
+     * <li>Maintains consistent error handling</li>
      * </ul>
      *
      * @param tag The characteristic tag to check
@@ -367,9 +367,9 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns thread-safe unmodifiable set</li>
-     *   <li>Provides debug-level logging</li>
-     *   <li>Maintains consistent error handling</li>
+     * <li>Returns thread-safe unmodifiable set</li>
+     * <li>Provides debug-level logging</li>
+     * <li>Maintains consistent error handling</li>
      * </ul>
      *
      * @return An unmodifiable set of supported characteristic types
@@ -395,9 +395,9 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns thread-safe unmodifiable set</li>
-     *   <li>Provides debug-level logging</li>
-     *   <li>Maintains consistent error handling</li>
+     * <li>Returns thread-safe unmodifiable set</li>
+     * <li>Provides debug-level logging</li>
+     * <li>Maintains consistent error handling</li>
      * </ul>
      *
      * @return An unmodifiable set of supported characteristic tags
@@ -422,9 +422,9 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Performs reverse lookup in tag registry</li>
-     *   <li>Provides detailed error logging</li>
-     *   <li>Maintains consistent error handling</li>
+     * <li>Performs reverse lookup in tag registry</li>
+     * <li>Provides detailed error logging</li>
+     * <li>Maintains consistent error handling</li>
      * </ul>
      *
      * @param characteristicType The characteristic type to look up
@@ -440,11 +440,8 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
             throw new IllegalArgumentException("Unsupported characteristic type: " + characteristicType);
         }
 
-        String tag = tagToTypeMap.entrySet().stream()
-                .filter(entry -> entry.getValue().equals(characteristicType))
-                .map(Map.Entry::getKey)
-                .findFirst()
-                .orElse(null);
+        String tag = tagToTypeMap.entrySet().stream().filter(entry -> entry.getValue().equals(characteristicType))
+                .map(Map.Entry::getKey).findFirst().orElse(null);
 
         if (tag == null) {
             logger.error("{}No tag found for characteristic type: {}", LOG_ERROR, characteristicType);
@@ -466,9 +463,9 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Performs direct lookup in tag registry</li>
-     *   <li>Provides detailed error logging</li>
-     *   <li>Maintains consistent error handling</li>
+     * <li>Performs direct lookup in tag registry</li>
+     * <li>Provides detailed error logging</li>
+     * <li>Maintains consistent error handling</li>
      * </ul>
      *
      * @param characteristicTag The tag to look up
@@ -500,10 +497,10 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Retrieves characteristic class from registry</li>
-     *   <li>Uses reflection to access metadata</li>
-     *   <li>Provides detailed error logging</li>
-     *   <li>Maintains consistent error handling</li>
+     * <li>Retrieves characteristic class from registry</li>
+     * <li>Uses reflection to access metadata</li>
+     * <li>Provides detailed error logging</li>
+     * <li>Maintains consistent error handling</li>
      * </ul>
      *
      * @param characteristicType The characteristic type to look up
@@ -520,6 +517,7 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
             throw new IllegalArgumentException("Unsupported characteristic type: " + characteristicType);
         }
         logger.trace("{}Returning accepted item types for characteristic type: {}", LOG_TRACE, characteristicType);
-        return Collections.unmodifiableSet(new HashSet<>(Arrays.asList(characteristicClass.getAnnotation(HomekitCharacteristicType.class).acceptedItemTypes())));
+        return Collections.unmodifiableSet(new HashSet<>(
+                Arrays.asList(characteristicClass.getAnnotation(HomekitCharacteristicType.class).acceptedItemTypes())));
     }
 }

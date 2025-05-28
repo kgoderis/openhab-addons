@@ -45,34 +45,38 @@ import org.slf4j.LoggerFactory;
 /**
  * Servlet that implements the HomeKit Accessory Protocol (HAP) for characteristic value management.
  *
- * <p>This servlet serves as the primary interface for HomeKit clients to interact with
+ * <p>
+ * This servlet serves as the primary interface for HomeKit clients to interact with
  * accessory characteristics. It implements a robust event-driven architecture that supports
  * both synchronous value requests and asynchronous event subscriptions, following the HAP
  * specification for real-time accessory state updates.
  *
- * <p>The servlet's core responsibilities include:
+ * <p>
+ * The servlet's core responsibilities include:
  * <ul>
- *     <li>Processing GET requests to retrieve current characteristic values</li>
- *     <li>Handling PUT requests to update characteristic states</li>
- *     <li>Managing long-lived connections for real-time event notifications</li>
- *     <li>Implementing efficient update batching and debouncing mechanisms</li>
+ * <li>Processing GET requests to retrieve current characteristic values</li>
+ * <li>Handling PUT requests to update characteristic states</li>
+ * <li>Managing long-lived connections for real-time event notifications</li>
+ * <li>Implementing efficient update batching and debouncing mechanisms</li>
  * </ul>
  *
- * <p>Key architectural features:
+ * <p>
+ * Key architectural features:
  * <ul>
- *     <li>Asynchronous event handling using {@link AsyncContext} for efficient resource usage</li>
- *     <li>Debounced updates to prevent network flooding while maintaining responsiveness</li>
- *     <li>Thread-safe subscription management using {@link ConcurrentHashMap}</li>
- *     <li>JSON-based communication following HAP protocol specifications</li>
+ * <li>Asynchronous event handling using {@link AsyncContext} for efficient resource usage</li>
+ * <li>Debounced updates to prevent network flooding while maintaining responsiveness</li>
+ * <li>Thread-safe subscription management using {@link ConcurrentHashMap}</li>
+ * <li>JSON-based communication following HAP protocol specifications</li>
  * </ul>
  *
- * <p>The class integrates with:
+ * <p>
+ * The class integrates with:
  * <ul>
- *     <li>{@link HomekitBaseServlet} for base servlet functionality</li>
- *     <li>{@link HomekitAccessoryServer} for server and accessory management</li>
- *     <li>{@link HomekitEventManager} for event distribution and handling</li>
- *     <li>{@link HomekitCharacteristic} for characteristic value operations</li>
- *     <li>{@link HomekitAccessory} for accessory lifecycle management</li>
+ * <li>{@link HomekitBaseServlet} for base servlet functionality</li>
+ * <li>{@link HomekitAccessoryServer} for server and accessory management</li>
+ * <li>{@link HomekitEventManager} for event distribution and handling</li>
+ * <li>{@link HomekitCharacteristic} for characteristic value operations</li>
+ * <li>{@link HomekitAccessory} for accessory lifecycle management</li>
  * </ul>
  *
  * @author Karel Goderis - Initial Contribution
@@ -112,20 +116,22 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
     /**
      * Creates a new characteristic servlet with the specified server and event manager.
      *
-     * <p>This constructor initializes the servlet with the necessary components for
+     * <p>
+     * This constructor initializes the servlet with the necessary components for
      * handling characteristic operations and event management. It sets up:
      * <ul>
-     *     <li>The base servlet functionality through the parent class</li>
-     *     <li>The event manager for publishing characteristic updates</li>
-     *     <li>Thread-safe collections for subscription management</li>
-     *     <li>A scheduler for handling debounced updates</li>
+     * <li>The base servlet functionality through the parent class</li>
+     * <li>The event manager for publishing characteristic updates</li>
+     * <li>Thread-safe collections for subscription management</li>
+     * <li>A scheduler for handling debounced updates</li>
      * </ul>
      *
-     * <p>Security considerations:
+     * <p>
+     * Security considerations:
      * <ul>
-     *     <li>Uses thread-safe collections for concurrent access</li>
-     *     <li>Implements proper resource cleanup</li>
-     *     <li>Maintains secure event handling</li>
+     * <li>Uses thread-safe collections for concurrent access</li>
+     * <li>Implements proper resource cleanup</li>
+     * <li>Maintains secure event handling</li>
      * </ul>
      *
      * @param server The HomeKit accessory server instance
@@ -140,41 +146,46 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
     /**
      * Handles GET requests for characteristic values and event subscriptions.
      *
-     * <p>This method implements the HAP protocol for characteristic value retrieval and
+     * <p>
+     * This method implements the HAP protocol for characteristic value retrieval and
      * event subscription management. It supports two distinct request types:
      * <ul>
-     *     <li>Value requests: Synchronous retrieval of current characteristic states</li>
-     *     <li>Event subscriptions: Asynchronous setup of real-time update channels</li>
+     * <li>Value requests: Synchronous retrieval of current characteristic states</li>
+     * <li>Event subscriptions: Asynchronous setup of real-time update channels</li>
      * </ul>
      *
-     * <p>For value requests, the method:
+     * <p>
+     * For value requests, the method:
      * <ul>
-     *     <li>Parses and validates characteristic identifiers (aid.iid format)</li>
-     *     <li>Retrieves current values from the accessory hierarchy</li>
-     *     <li>Constructs a JSON response with requested characteristic data</li>
+     * <li>Parses and validates characteristic identifiers (aid.iid format)</li>
+     * <li>Retrieves current values from the accessory hierarchy</li>
+     * <li>Constructs a JSON response with requested characteristic data</li>
      * </ul>
      *
-     * <p>For event subscriptions, the method:
+     * <p>
+     * For event subscriptions, the method:
      * <ul>
-     *     <li>Establishes a persistent HTTP connection using async servlet features</li>
-     *     <li>Registers the connection for characteristic update notifications</li>
-     *     <li>Implements automatic cleanup on client disconnection</li>
+     * <li>Establishes a persistent HTTP connection using async servlet features</li>
+     * <li>Registers the connection for characteristic update notifications</li>
+     * <li>Implements automatic cleanup on client disconnection</li>
      * </ul>
      *
-     * <p>Security considerations:
+     * <p>
+     * Security considerations:
      * <ul>
-     *     <li>Validates characteristic identifiers to prevent injection attacks</li>
-     *     <li>Implements proper access control for characteristic values</li>
-     *     <li>Maintains secure event subscription handling</li>
-     *     <li>Protects against resource exhaustion through proper cleanup</li>
+     * <li>Validates characteristic identifiers to prevent injection attacks</li>
+     * <li>Implements proper access control for characteristic values</li>
+     * <li>Maintains secure event subscription handling</li>
+     * <li>Protects against resource exhaustion through proper cleanup</li>
      * </ul>
      *
-     * <p>Error handling ensures:
+     * <p>
+     * Error handling ensures:
      * <ul>
-     *     <li>Proper validation of request parameters</li>
-     *     <li>Graceful handling of invalid characteristic IDs</li>
-     *     <li>Detailed error logging for debugging</li>
-     *     <li>Appropriate HTTP status codes for different error conditions</li>
+     * <li>Proper validation of request parameters</li>
+     * <li>Graceful handling of invalid characteristic IDs</li>
+     * <li>Detailed error logging for debugging</li>
+     * <li>Appropriate HTTP status codes for different error conditions</li>
      * </ul>
      *
      * @param request The HTTP request containing characteristic IDs and options
@@ -230,7 +241,8 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
                                         characteristicSubscriptions
                                                 .computeIfAbsent(characteristic, c -> ConcurrentHashMap.newKeySet())
                                                 .add(asyncContext);
-                                        logger.debug("{}Subscribed to characteristic {}.{}", LOG_SUBSCRIPTION, aid, iid);
+                                        logger.debug("{}Subscribed to characteristic {}.{}", LOG_SUBSCRIPTION, aid,
+                                                iid);
                                     });
                         }
                     } catch (NumberFormatException e) {
@@ -258,7 +270,8 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
 
                     @Override
                     public void onError(AsyncEvent event) {
-                        logger.error("{}Subscription error, cleaning up: {}", LOG_ERROR, event.getThrowable().getMessage());
+                        logger.error("{}Subscription error, cleaning up: {}", LOG_ERROR,
+                                event.getThrowable().getMessage());
                         removeSubscription(asyncContext);
                     }
 
@@ -290,10 +303,9 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
                     if (accessory != null) {
                         accessory.getServices().stream()
                                 .map(service -> (HomekitCharacteristic<?>) service.getCharacteristic(iid).get())
-                                .filter(characteristic -> characteristic != null)
-                                .forEach(characteristic -> {
-                                    characteristics.add(characteristic.toJson(includeMeta, includePermissions, includeType,
-                                            includeEvent));
+                                .filter(characteristic -> characteristic != null).forEach(characteristic -> {
+                                    characteristics.add(characteristic.toJson(includeMeta, includePermissions,
+                                            includeType, includeEvent));
                                     logger.trace("{}Retrieved value for characteristic {}.{}", LOG_REQUEST, aid, iid);
                                 });
                     }
@@ -317,32 +329,36 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
     /**
      * Handles PUT requests for updating characteristic values and managing event subscriptions.
      *
-     * <p>This method implements the HAP protocol for characteristic value updates and
+     * <p>
+     * This method implements the HAP protocol for characteristic value updates and
      * subscription management. It processes batch updates efficiently while maintaining
      * proper error handling and status reporting.
      *
-     * <p>The update process includes:
+     * <p>
+     * The update process includes:
      * <ul>
-     *     <li>Parsing and validating the JSON request payload</li>
-     *     <li>Processing each characteristic update in the batch</li>
-     *     <li>Publishing update events through the event system</li>
-     *     <li>Managing subscription state changes</li>
+     * <li>Parsing and validating the JSON request payload</li>
+     * <li>Processing each characteristic update in the batch</li>
+     * <li>Publishing update events through the event system</li>
+     * <li>Managing subscription state changes</li>
      * </ul>
      *
-     * <p>Security considerations:
+     * <p>
+     * Security considerations:
      * <ul>
-     *     <li>Validates JSON payload structure and content</li>
-     *     <li>Implements proper access control for updates</li>
-     *     <li>Protects against batch update attacks</li>
-     *     <li>Maintains secure event handling</li>
+     * <li>Validates JSON payload structure and content</li>
+     * <li>Implements proper access control for updates</li>
+     * <li>Protects against batch update attacks</li>
+     * <li>Maintains secure event handling</li>
      * </ul>
      *
-     * <p>Error handling ensures:
+     * <p>
+     * Error handling ensures:
      * <ul>
-     *     <li>Individual update failures don't affect the entire batch</li>
-     *     <li>Proper status codes are returned for each update</li>
-     *     <li>Detailed error information is logged for debugging</li>
-     *     <li>Graceful handling of invalid requests</li>
+     * <li>Individual update failures don't affect the entire batch</li>
+     * <li>Proper status codes are returned for each update</li>
+     * <li>Detailed error information is logged for debugging</li>
+     * <li>Graceful handling of invalid requests</li>
      * </ul>
      *
      * @param request The HTTP request containing characteristic updates
@@ -378,7 +394,8 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
                             if (characteristicWrite.containsKey("value")) {
                                 try {
                                     if (characteristic instanceof AbstractHomekitCharacteristic<?> genericCharacteristic) {
-                                        logger.debug("{}Updating value for characteristic {}.{}", LOG_REQUEST, aid, iid);
+                                        logger.debug("{}Updating value for characteristic {}.{}", LOG_REQUEST, aid,
+                                                iid);
                                         HomekitEvent newEvent = new HomekitCharacteristicUpdateEvent(
                                                 (UID) server.getUID(), (UID) genericCharacteristic.getUID(),
                                                 genericCharacteristic, JsonValue.NULL, characteristicWrite.get("value"),
@@ -387,14 +404,14 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
                                         eventManager.publishEvent(newEvent);
                                     }
                                 } catch (Exception e) {
-                                    logger.error("{}Error setting characteristic value for {}.{}: {}", LOG_ERROR, aid, iid,
-                                            e.getMessage(), e);
+                                    logger.error("{}Error setting characteristic value for {}.{}: {}", LOG_ERROR, aid,
+                                            iid, e.getMessage(), e);
                                 }
                             }
                             if (characteristicWrite.containsKey("ev")) {
                                 boolean subscribe = characteristicWrite.getBoolean("ev");
-                                logger.debug("{}Updating subscription state for characteristic {}.{} to {}", LOG_SUBSCRIPTION,
-                                        aid, iid, subscribe);
+                                logger.debug("{}Updating subscription state for characteristic {}.{} to {}",
+                                        LOG_SUBSCRIPTION, aid, iid, subscribe);
                                 handleEventSubscription(characteristic, subscribe);
                             }
                         });
@@ -414,32 +431,36 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
     /**
      * Publishes a characteristic update to all subscribed clients.
      *
-     * <p>This method implements the HAP event notification system, ensuring efficient
+     * <p>
+     * This method implements the HAP event notification system, ensuring efficient
      * delivery of characteristic updates to all interested clients. It employs a
      * sophisticated batching and debouncing mechanism to optimize network usage.
      *
-     * <p>The update process includes:
+     * <p>
+     * The update process includes:
      * <ul>
-     *     <li>Identifying all subscribers for the updated characteristic</li>
-     *     <li>Creating optimized JSON update messages</li>
-     *     <li>Batching multiple updates to reduce network overhead</li>
-     *     <li>Using debouncing to prevent update flooding</li>
+     * <li>Identifying all subscribers for the updated characteristic</li>
+     * <li>Creating optimized JSON update messages</li>
+     * <li>Batching multiple updates to reduce network overhead</li>
+     * <li>Using debouncing to prevent update flooding</li>
      * </ul>
      *
-     * <p>Security considerations:
+     * <p>
+     * Security considerations:
      * <ul>
-     *     <li>Validates characteristic updates before publishing</li>
-     *     <li>Implements proper access control for updates</li>
-     *     <li>Protects against update flooding attacks</li>
-     *     <li>Maintains secure event distribution</li>
+     * <li>Validates characteristic updates before publishing</li>
+     * <li>Implements proper access control for updates</li>
+     * <li>Protects against update flooding attacks</li>
+     * <li>Maintains secure event distribution</li>
      * </ul>
      *
-     * <p>The method ensures:
+     * <p>
+     * The method ensures:
      * <ul>
-     *     <li>Real-time updates while maintaining system performance</li>
-     *     <li>Efficient network usage through update batching</li>
-     *     <li>Proper cleanup of disconnected clients</li>
-     *     <li>Graceful handling of update failures</li>
+     * <li>Real-time updates while maintaining system performance</li>
+     * <li>Efficient network usage through update batching</li>
+     * <li>Proper cleanup of disconnected clients</li>
+     * <li>Graceful handling of update failures</li>
      * </ul>
      *
      * @param characteristic The characteristic that was updated
@@ -472,28 +493,31 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
     /**
      * Sends all pending updates for a given context in a single batch.
      *
-     * <p>This method consolidates multiple characteristic updates into a single
+     * <p>
+     * This method consolidates multiple characteristic updates into a single
      * response to optimize network usage. It:
      * <ul>
-     *     <li>Retrieves all pending updates for the context</li>
-     *     <li>Combines them into a single JSON response</li>
-     *     <li>Sends the response to the client</li>
-     *     <li>Cleans up the pending updates list</li>
+     * <li>Retrieves all pending updates for the context</li>
+     * <li>Combines them into a single JSON response</li>
+     * <li>Sends the response to the client</li>
+     * <li>Cleans up the pending updates list</li>
      * </ul>
      *
-     * <p>Security considerations:
+     * <p>
+     * Security considerations:
      * <ul>
-     *     <li>Validates JSON response structure</li>
-     *     <li>Implements proper error handling</li>
-     *     <li>Protects against response flooding</li>
-     *     <li>Maintains secure response handling</li>
+     * <li>Validates JSON response structure</li>
+     * <li>Implements proper error handling</li>
+     * <li>Protects against response flooding</li>
+     * <li>Maintains secure response handling</li>
      * </ul>
      *
-     * <p>Error handling ensures:
+     * <p>
+     * Error handling ensures:
      * <ul>
-     *     <li>Graceful handling of I/O errors</li>
-     *     <li>Proper cleanup of failed subscriptions</li>
-     *     <li>Detailed error logging for debugging</li>
+     * <li>Graceful handling of I/O errors</li>
+     * <li>Proper cleanup of failed subscriptions</li>
+     * <li>Detailed error logging for debugging</li>
      * </ul>
      *
      * @param context The async context for which to send updates
@@ -532,26 +556,29 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
     /**
      * Handles event subscription state changes for a characteristic.
      *
-     * <p>This method manages the subscription state by:
+     * <p>
+     * This method manages the subscription state by:
      * <ul>
-     *     <li>Adding or removing the characteristic from the subscription map</li>
-     *     <li>Updating the characteristic's event state</li>
-     *     <li>Logging subscription changes</li>
+     * <li>Adding or removing the characteristic from the subscription map</li>
+     * <li>Updating the characteristic's event state</li>
+     * <li>Logging subscription changes</li>
      * </ul>
      *
-     * <p>Security considerations:
+     * <p>
+     * Security considerations:
      * <ul>
-     *     <li>Validates subscription state changes</li>
-     *     <li>Implements proper access control</li>
-     *     <li>Protects against subscription flooding</li>
-     *     <li>Maintains secure state management</li>
+     * <li>Validates subscription state changes</li>
+     * <li>Implements proper access control</li>
+     * <li>Protects against subscription flooding</li>
+     * <li>Maintains secure state management</li>
      * </ul>
      *
-     * <p>Error handling ensures:
+     * <p>
+     * Error handling ensures:
      * <ul>
-     *     <li>Proper cleanup of unsubscribed characteristics</li>
-     *     <li>Consistent state management</li>
-     *     <li>Detailed logging of state changes</li>
+     * <li>Proper cleanup of unsubscribed characteristics</li>
+     * <li>Consistent state management</li>
+     * <li>Detailed logging of state changes</li>
      * </ul>
      *
      * @param characteristic The characteristic to update subscription for
@@ -576,26 +603,29 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
     /**
      * Removes a subscription and cleans up associated resources.
      *
-     * <p>This method handles cleanup when a client disconnects by:
+     * <p>
+     * This method handles cleanup when a client disconnects by:
      * <ul>
-     *     <li>Removing the async context from all characteristic subscriptions</li>
-     *     <li>Cleaning up the debouncer for the context</li>
-     *     <li>Removing any pending updates</li>
+     * <li>Removing the async context from all characteristic subscriptions</li>
+     * <li>Cleaning up the debouncer for the context</li>
+     * <li>Removing any pending updates</li>
      * </ul>
      *
-     * <p>Security considerations:
+     * <p>
+     * Security considerations:
      * <ul>
-     *     <li>Ensures complete resource cleanup</li>
-     *     <li>Implements thread-safe removal</li>
-     *     <li>Protects against resource leaks</li>
-     *     <li>Maintains secure cleanup process</li>
+     * <li>Ensures complete resource cleanup</li>
+     * <li>Implements thread-safe removal</li>
+     * <li>Protects against resource leaks</li>
+     * <li>Maintains secure cleanup process</li>
      * </ul>
      *
-     * <p>Error handling ensures:
+     * <p>
+     * Error handling ensures:
      * <ul>
-     *     <li>Complete cleanup of all resources</li>
-     *     <li>Thread-safe removal of subscriptions</li>
-     *     <li>Proper logging of cleanup operations</li>
+     * <li>Complete cleanup of all resources</li>
+     * <li>Thread-safe removal of subscriptions</li>
+     * <li>Proper logging of cleanup operations</li>
      * </ul>
      *
      * @param context The async context to clean up
@@ -610,26 +640,29 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
     /**
      * Sends a JSON response to the client.
      *
-     * <p>This method handles the HTTP response by:
+     * <p>
+     * This method handles the HTTP response by:
      * <ul>
-     *     <li>Setting the appropriate content type</li>
-     *     <li>Writing the JSON object to the response stream</li>
-     *     <li>Flushing the response to ensure delivery</li>
+     * <li>Setting the appropriate content type</li>
+     * <li>Writing the JSON object to the response stream</li>
+     * <li>Flushing the response to ensure delivery</li>
      * </ul>
      *
-     * <p>Security considerations:
+     * <p>
+     * Security considerations:
      * <ul>
-     *     <li>Validates JSON response content</li>
-     *     <li>Implements proper content type handling</li>
-     *     <li>Protects against response injection</li>
-     *     <li>Maintains secure response handling</li>
+     * <li>Validates JSON response content</li>
+     * <li>Implements proper content type handling</li>
+     * <li>Protects against response injection</li>
+     * <li>Maintains secure response handling</li>
      * </ul>
      *
-     * <p>Error handling ensures:
+     * <p>
+     * Error handling ensures:
      * <ul>
-     *     <li>Proper resource cleanup</li>
-     *     <li>Detailed error logging</li>
-     *     <li>Graceful handling of I/O errors</li>
+     * <li>Proper resource cleanup</li>
+     * <li>Detailed error logging</li>
+     * <li>Graceful handling of I/O errors</li>
      * </ul>
      *
      * @param response The HTTP response to write to
@@ -651,26 +684,29 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
     /**
      * Cleans up resources when the servlet is destroyed.
      *
-     * <p>This method ensures proper cleanup by:
+     * <p>
+     * This method ensures proper cleanup by:
      * <ul>
-     *     <li>Shutting down the scheduler</li>
-     *     <li>Clearing all subscriptions</li>
-     *     <li>Removing all pending updates</li>
+     * <li>Shutting down the scheduler</li>
+     * <li>Clearing all subscriptions</li>
+     * <li>Removing all pending updates</li>
      * </ul>
      *
-     * <p>Security considerations:
+     * <p>
+     * Security considerations:
      * <ul>
-     *     <li>Ensures complete resource cleanup</li>
-     *     <li>Implements graceful shutdown</li>
-     *     <li>Protects against resource leaks</li>
-     *     <li>Maintains secure shutdown process</li>
+     * <li>Ensures complete resource cleanup</li>
+     * <li>Implements graceful shutdown</li>
+     * <li>Protects against resource leaks</li>
+     * <li>Maintains secure shutdown process</li>
      * </ul>
      *
-     * <p>Error handling ensures:
+     * <p>
+     * Error handling ensures:
      * <ul>
-     *     <li>Graceful shutdown of the scheduler</li>
-     *     <li>Proper cleanup of all resources</li>
-     *     <li>Detailed logging of shutdown process</li>
+     * <li>Graceful shutdown of the scheduler</li>
+     * <li>Proper cleanup of all resources</li>
+     * <li>Detailed logging of shutdown process</li>
      * </ul>
      */
     @Override

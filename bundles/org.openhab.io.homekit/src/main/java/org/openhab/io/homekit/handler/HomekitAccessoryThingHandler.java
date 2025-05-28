@@ -2,7 +2,6 @@ package org.openhab.io.homekit.handler;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -72,7 +71,7 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
 
     /** Factory for creating HomeKit services */
     private final HomekitServiceFactory serviceFactory;
-    
+
     /** Factory for creating HomeKit characteristics */
     private final HomekitCharacteristicFactory characteristicFactory;
 
@@ -214,7 +213,9 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
             // Update the thing with the new channels
             updateThing(thingBuilder.build());
 
-            logger.debug("{}Added channel group for service {} with ID {} (channels only, group not created at runtime)", LOG_CHANNEL, service.getName(), groupId);
+            logger.debug(
+                    "{}Added channel group for service {} with ID {} (channels only, group not created at runtime)",
+                    LOG_CHANNEL, service.getName(), groupId);
         } catch (Exception e) {
             logger.warn("{}Failed to add channel group for service {}: {}", LOG_WARN, service.getInstanceId(),
                     e.getMessage());

@@ -25,26 +25,26 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * <ul>
- *   <li>Door state control and monitoring</li>
- *   <li>Obstruction detection</li>
- *   <li>Status and fault monitoring</li>
+ * <li>Door state control and monitoring</li>
+ * <li>Obstruction detection</li>
+ * <li>Status and fault monitoring</li>
  * </ul>
  *
  * <p>
  * Required characteristics:
  * <ul>
- *   <li>CurrentDoorState - Current state of the garage door</li>
- *   <li>TargetDoorState - Target state to move the door to</li>
- *   <li>ObstructionDetected - Detection of door obstruction</li>
+ * <li>CurrentDoorState - Current state of the garage door</li>
+ * <li>TargetDoorState - Target state to move the door to</li>
+ * <li>ObstructionDetected - Detection of door obstruction</li>
  * </ul>
  * </p>
  *
  * <p>
  * Optional characteristics:
  * <ul>
- *   <li>Name - Door name</li>
- *   <li>StatusActive - Door activation state</li>
- *   <li>StatusFault - Fault state indicator</li>
+ * <li>Name - Door name</li>
+ * <li>StatusActive - Door activation state</li>
+ * <li>StatusFault - Fault state indicator</li>
  * </ul>
  * </p>
  *
@@ -107,46 +107,48 @@ public class HomekitGarageDoorOpenerService extends AbstractHomekitService {
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>CurrentDoorState - Current state of the garage door</li>
-     *   <li>TargetDoorState - Target state to move the door to</li>
-     *   <li>ObstructionDetected - Detection of door obstruction</li>
+     * <li>CurrentDoorState - Current state of the garage door</li>
+     * <li>TargetDoorState - Target state to move the door to</li>
+     * <li>ObstructionDetected - Detection of door obstruction</li>
      * </ul>
      * </p>
      * <p>
      * Optional characteristics:
      * <ul>
-     *   <li>Name - Door name</li>
-     *   <li>StatusActive - Door activation state</li>
-     *   <li>StatusFault - Fault state indicator</li>
+     * <li>Name - Door name</li>
+     * <li>StatusActive - Door activation state</li>
+     * <li>StatusFault - Fault state indicator</li>
      * </ul>
      * </p>
+     * 
      * @since 1.0
      */
     @Override
     public void addCharacteristics() {
-        logger.trace("{}Adding required characteristics to GarageDoorOpenerService for accessory {}", LOG_TRACE, getAccessory().getLabel());
-        
+        logger.trace("{}Adding required characteristics to GarageDoorOpenerService for accessory {}", LOG_TRACE,
+                getAccessory().getLabel());
+
         addCharacteristic(new HomekitCurrentDoorStateCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         logger.debug("{}Added CurrentDoorStateCharacteristic to GarageDoorOpenerService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitTargetDoorStateCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         logger.debug("{}Added TargetDoorStateCharacteristic to GarageDoorOpenerService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitObstructionDetectedCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         logger.debug("{}Added ObstructionDetectedCharacteristic to GarageDoorOpenerService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                 .withMandatory(false));
         logger.debug("{}Added NameCharacteristic to GarageDoorOpenerService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
         logger.debug("{}Added StatusActiveCharacteristic to GarageDoorOpenerService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitStatusFaultCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));

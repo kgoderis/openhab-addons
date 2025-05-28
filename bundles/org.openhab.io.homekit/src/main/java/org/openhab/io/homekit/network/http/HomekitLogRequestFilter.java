@@ -101,8 +101,7 @@ public class HomekitLogRequestFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         try {
-            logger.debug("{}Processing request: {}", LOG_REQUEST,
-                    ((HttpServletRequest) request).getRequestURI());
+            logger.debug("{}Processing request: {}", LOG_REQUEST, ((HttpServletRequest) request).getRequestURI());
             if (logger.isDebugEnabled()) {
                 final HomekitRequestWrapper wrappedRequest = new HomekitRequestWrapper((HttpServletRequest) request);
                 logPayLoad(wrappedRequest);
@@ -128,8 +127,8 @@ public class HomekitLogRequestFilter implements Filter {
     private void logPayLoad(HttpServletRequest request) {
         final String userAgent = request.getHeader("User-Agent");
         logger.debug("{}Request details:", LOG_REQUEST);
-        logger.debug("{}Source: {}:{} ; User-Agent: {}", LOG_REQUEST, request.getRemoteAddr(),
-                request.getRemotePort(), userAgent);
+        logger.debug("{}Source: {}:{} ; User-Agent: {}", LOG_REQUEST, request.getRemoteAddr(), request.getRemotePort(),
+                userAgent);
         logger.debug("{}Method: {}", LOG_REQUEST, request.getMethod().toUpperCase());
         logger.debug("{}Content-Type: {}", LOG_REQUEST, request.getContentType());
         logger.debug("{}Content-Length: {}", LOG_REQUEST, request.getContentLength());

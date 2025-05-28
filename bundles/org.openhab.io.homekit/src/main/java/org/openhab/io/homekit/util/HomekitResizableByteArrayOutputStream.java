@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.util;
 
 import java.io.ByteArrayOutputStream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,31 +19,31 @@ import org.slf4j.LoggerFactory;
  * The class integrates with several key components:
  * </p>
  * <ul>
- *   <li>{@link org.openhab.io.homekit.network.http.HomekitResponseWrapper} for response content caching</li>
- *   <li>{@link javax.servlet.ServletOutputStream} for binary content handling</li>
- *   <li>{@link java.io.OutputStreamWriter} for character content handling</li>
- *   <li>{@link java.io.ByteArrayOutputStream} for base stream functionality</li>
+ * <li>{@link org.openhab.io.homekit.network.http.HomekitResponseWrapper} for response content caching</li>
+ * <li>{@link javax.servlet.ServletOutputStream} for binary content handling</li>
+ * <li>{@link java.io.OutputStreamWriter} for character content handling</li>
+ * <li>{@link java.io.ByteArrayOutputStream} for base stream functionality</li>
  * </ul>
  *
  * <p>
  * Key features:
  * </p>
  * <ul>
- *   <li>Dynamic buffer resizing with configurable initial capacity</li>
- *   <li>Efficient content buffering with minimal memory overhead</li>
- *   <li>Thread-safe operations through synchronized methods</li>
- *   <li>Optimized buffer growth strategy</li>
- *   <li>Memory-efficient content copying</li>
+ * <li>Dynamic buffer resizing with configurable initial capacity</li>
+ * <li>Efficient content buffering with minimal memory overhead</li>
+ * <li>Thread-safe operations through synchronized methods</li>
+ * <li>Optimized buffer growth strategy</li>
+ * <li>Memory-efficient content copying</li>
  * </ul>
  *
  * <p>
  * The implementation uses:
  * </p>
  * <ul>
- *   <li>{@link System#arraycopy} for efficient buffer copying</li>
- *   <li>Synchronized methods for thread safety</li>
- *   <li>Default initial capacity of 256 bytes</li>
- *   <li>Exponential growth strategy for optimal performance</li>
+ * <li>{@link System#arraycopy} for efficient buffer copying</li>
+ * <li>Synchronized methods for thread safety</li>
+ * <li>Default initial capacity of 256 bytes</li>
+ * <li>Exponential growth strategy for optimal performance</li>
  * </ul>
  *
  * @author Karel Goderis - Initial contribution
@@ -71,10 +72,10 @@ public class HomekitResizableByteArrayOutputStream extends ByteArrayOutputStream
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Uses DEFAULT_INITIAL_CAPACITY for initial buffer size</li>
-     *   <li>Inherits from ByteArrayOutputStream</li>
-     *   <li>Thread-safe by default</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Uses DEFAULT_INITIAL_CAPACITY for initial buffer size</li>
+     * <li>Inherits from ByteArrayOutputStream</li>
+     * <li>Thread-safe by default</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      */
     public HomekitResizableByteArrayOutputStream() {
@@ -94,10 +95,10 @@ public class HomekitResizableByteArrayOutputStream extends ByteArrayOutputStream
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Uses provided initialCapacity for buffer size</li>
-     *   <li>Inherits from ByteArrayOutputStream</li>
-     *   <li>Thread-safe by default</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Uses provided initialCapacity for buffer size</li>
+     * <li>Inherits from ByteArrayOutputStream</li>
+     * <li>Thread-safe by default</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @param initialCapacity The initial buffer size in bytes
@@ -121,11 +122,11 @@ public class HomekitResizableByteArrayOutputStream extends ByteArrayOutputStream
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Creates new buffer of target size</li>
-     *   <li>Copies existing content using System.arraycopy</li>
-     *   <li>Updates internal buffer reference</li>
-     *   <li>Thread-safe operation</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Creates new buffer of target size</li>
+     * <li>Copies existing content using System.arraycopy</li>
+     * <li>Updates internal buffer reference</li>
+     * <li>Thread-safe operation</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @param targetCapacity The desired size of the buffer
@@ -135,8 +136,10 @@ public class HomekitResizableByteArrayOutputStream extends ByteArrayOutputStream
      */
     public synchronized void resize(int targetCapacity) {
         if (targetCapacity < this.count) {
-            logger.error("{}Target capacity {} is smaller than current content size {}", LOG_ERROR, targetCapacity, this.count);
-            throw new IllegalArgumentException("Target capacity " + targetCapacity + " is smaller than current content size " + this.count);
+            logger.error("{}Target capacity {} is smaller than current content size {}", LOG_ERROR, targetCapacity,
+                    this.count);
+            throw new IllegalArgumentException(
+                    "Target capacity " + targetCapacity + " is smaller than current content size " + this.count);
         }
         byte[] resizedBuffer = new byte[targetCapacity];
         System.arraycopy(this.buf, 0, resizedBuffer, 0, this.count);
@@ -157,11 +160,11 @@ public class HomekitResizableByteArrayOutputStream extends ByteArrayOutputStream
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Doubles current size if needed</li>
-     *   <li>Ensures minimum growth to accommodate new content</li>
-     *   <li>Uses resize() for actual buffer expansion</li>
-     *   <li>Thread-safe operation</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Doubles current size if needed</li>
+     * <li>Ensures minimum growth to accommodate new content</li>
+     * <li>Uses resize() for actual buffer expansion</li>
+     * <li>Thread-safe operation</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @param additionalCapacity The number of bytes to add to the current buffer size
@@ -187,10 +190,10 @@ public class HomekitResizableByteArrayOutputStream extends ByteArrayOutputStream
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns actual buffer length</li>
-     *   <li>Thread-safe operation</li>
-     *   <li>Different from size() which returns content length</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Returns actual buffer length</li>
+     * <li>Thread-safe operation</li>
+     * <li>Different from size() which returns content length</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return The current capacity of the buffer in bytes

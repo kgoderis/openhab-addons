@@ -21,10 +21,10 @@ import org.slf4j.LoggerFactory;
  * <p>
  * The model name is used to:
  * <ul>
- *   <li>Identify the specific model of the accessory</li>
- *   <li>Help users identify and organize their accessories</li>
- *   <li>Provide context for support and troubleshooting</li>
- *   <li>Enable proper device-specific functionality</li>
+ * <li>Identify the specific model of the accessory</li>
+ * <li>Help users identify and organize their accessories</li>
+ * <li>Provide context for support and troubleshooting</li>
+ * <li>Enable proper device-specific functionality</li>
  * </ul>
  * </p>
  *

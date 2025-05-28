@@ -35,24 +35,27 @@ import djb.Curve25519;
 /**
  * Servlet that implements the HomeKit Pair-Verify protocol for secure communication.
  *
- * <p>This servlet manages the verification of previously paired devices and establishes
+ * <p>
+ * This servlet manages the verification of previously paired devices and establishes
  * encrypted communication channels. The verification process occurs in two stages:
  * <ol>
- *     <li>Key exchange and signature verification</li>
- *     <li>Session key establishment and encryption setup</li>
+ * <li>Key exchange and signature verification</li>
+ * <li>Session key establishment and encryption setup</li>
  * </ol>
  *
- * <p>The servlet uses Curve25519 for key exchange, EdDSA for signature verification,
+ * <p>
+ * The servlet uses Curve25519 for key exchange, EdDSA for signature verification,
  * and ChaCha20-Poly1305 for encrypted communication. It maintains session state
  * throughout the verification process, storing cryptographic material in the HTTP session.
  *
- * <p>The class integrates with:
+ * <p>
+ * The class integrates with:
  * <ul>
- *     <li>{@link HomekitBaseServlet} for base servlet functionality</li>
- *     <li>{@link HomekitAccessoryServer} for server functionality</li>
- *     <li>{@link HomekitEncryptionEngine} for cryptographic operations</li>
- *     <li>{@link HomekitTypeLengthValueEncoderDecoder} for TLV8 encoding/decoding</li>
- *     <li>{@link djb.Curve25519} for key exchange operations</li>
+ * <li>{@link HomekitBaseServlet} for base servlet functionality</li>
+ * <li>{@link HomekitAccessoryServer} for server functionality</li>
+ * <li>{@link HomekitEncryptionEngine} for cryptographic operations</li>
+ * <li>{@link HomekitTypeLengthValueEncoderDecoder} for TLV8 encoding/decoding</li>
+ * <li>{@link djb.Curve25519} for key exchange operations</li>
  * </ul>
  *
  * @author Karel Goderis - Initial Contribution
@@ -78,7 +81,8 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
     /**
      * Creates a new pair verification servlet.
      *
-     * <p>This constructor initializes a basic servlet instance. It is recommended to use
+     * <p>
+     * This constructor initializes a basic servlet instance. It is recommended to use
      * the constructor with a server parameter for proper functionality.
      */
     public HomekitPairVerificationServlet() {
@@ -88,12 +92,13 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
     /**
      * Creates a new pair verification servlet with the specified server.
      *
-     * <p>This constructor initializes the servlet with the necessary components for
+     * <p>
+     * This constructor initializes the servlet with the necessary components for
      * handling pair verification operations. It sets up:
      * <ul>
-     *     <li>The base servlet functionality through the parent class</li>
-     *     <li>Access to the server's cryptographic material</li>
-     *     <li>Integration with the server's pairing management</li>
+     * <li>The base servlet functionality through the parent class</li>
+     * <li>Access to the server's cryptographic material</li>
+     * <li>Integration with the server's pairing management</li>
      * </ul>
      *
      * @param server The HomeKit accessory server instance
@@ -106,27 +111,30 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
     /**
      * Handles POST requests for the pair verification process.
      *
-     * <p>This method orchestrates the two-stage verification process by:
+     * <p>
+     * This method orchestrates the two-stage verification process by:
      * <ul>
-     *     <li>Reading and decoding the TLV8-encoded request body</li>
-     *     <li>Determining the current verification stage from the state value</li>
-     *     <li>Routing to the appropriate stage handler:
-     *         <ul>
-     *             <li>Stage 1: Key exchange and signature verification</li>
-     *             <li>Stage 2: Session key establishment and encryption setup</li>
-     *         </ul>
-     *     </li>
+     * <li>Reading and decoding the TLV8-encoded request body</li>
+     * <li>Determining the current verification stage from the state value</li>
+     * <li>Routing to the appropriate stage handler:
+     * <ul>
+     * <li>Stage 1: Key exchange and signature verification</li>
+     * <li>Stage 2: Session key establishment and encryption setup</li>
+     * </ul>
+     * </li>
      * </ul>
      *
-     * <p>The method maintains session state throughout the process, ensuring that
+     * <p>
+     * The method maintains session state throughout the process, ensuring that
      * each stage builds upon the previous one's cryptographic material.
      *
-     * <p>Error handling ensures:
+     * <p>
+     * Error handling ensures:
      * <ul>
-     *     <li>Proper validation of request data</li>
-     *     <li>Graceful handling of invalid stages</li>
-     *     <li>Detailed error logging for debugging</li>
-     *     <li>Appropriate HTTP status codes for different error conditions</li>
+     * <li>Proper validation of request data</li>
+     * <li>Graceful handling of invalid stages</li>
+     * <li>Detailed error logging for debugging</li>
+     * <li>Appropriate HTTP status codes for different error conditions</li>
      * </ul>
      *
      * @param request The HTTP request containing the verification data
@@ -167,25 +175,28 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
     /**
      * Handles Stage 1 of the verification process - Key exchange and signature verification.
      *
-     * <p>This method initiates the verification process by:
+     * <p>
+     * This method initiates the verification process by:
      * <ul>
-     *     <li>Extracting the client's public key from the request</li>
-     *     <li>Generating a new accessory key pair using Curve25519</li>
-     *     <li>Computing the shared secret using Curve25519 key exchange</li>
-     *     <li>Signing the accessory's information using EdDSA</li>
-     *     <li>Generating a session key using HKDF</li>
-     *     <li>Encrypting the response using ChaCha20-Poly1305</li>
+     * <li>Extracting the client's public key from the request</li>
+     * <li>Generating a new accessory key pair using Curve25519</li>
+     * <li>Computing the shared secret using Curve25519 key exchange</li>
+     * <li>Signing the accessory's information using EdDSA</li>
+     * <li>Generating a session key using HKDF</li>
+     * <li>Encrypting the response using ChaCha20-Poly1305</li>
      * </ul>
      *
-     * <p>The method stores all cryptographic material in the HTTP session for use
+     * <p>
+     * The method stores all cryptographic material in the HTTP session for use
      * in subsequent stages and ensures proper key generation and exchange.
      *
-     * <p>Security considerations:
+     * <p>
+     * Security considerations:
      * <ul>
-     *     <li>Uses cryptographically secure random number generation</li>
-     *     <li>Implements proper key exchange protocol</li>
-     *     <li>Maintains session state securely</li>
-     *     <li>Protects against replay attacks</li>
+     * <li>Uses cryptographically secure random number generation</li>
+     * <li>Implements proper key exchange protocol</li>
+     * <li>Maintains session state securely</li>
+     * <li>Protects against replay attacks</li>
      * </ul>
      *
      * @param request The HTTP request containing the client's public key
@@ -264,24 +275,27 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
     /**
      * Handles Stage 2 of the verification process - Session key establishment and encryption setup.
      *
-     * <p>This method finalizes the verification process by:
+     * <p>
+     * This method finalizes the verification process by:
      * <ul>
-     *     <li>Retrieving the session key and cryptographic material from the session</li>
-     *     <li>Decrypting and verifying the client's device information</li>
-     *     <li>Verifying the client's signature using EdDSA</li>
-     *     <li>Establishing read and write encryption keys using HKDF</li>
-     *     <li>Enabling encryption for subsequent communications</li>
+     * <li>Retrieving the session key and cryptographic material from the session</li>
+     * <li>Decrypting and verifying the client's device information</li>
+     * <li>Verifying the client's signature using EdDSA</li>
+     * <li>Establishing read and write encryption keys using HKDF</li>
+     * <li>Enabling encryption for subsequent communications</li>
      * </ul>
      *
-     * <p>The method ensures that the client is properly authenticated and that
+     * <p>
+     * The method ensures that the client is properly authenticated and that
      * secure communication channels are established for future interactions.
      *
-     * <p>Security considerations:
+     * <p>
+     * Security considerations:
      * <ul>
-     *     <li>Validates client identity through signature verification</li>
-     *     <li>Establishes secure encryption keys</li>
-     *     <li>Protects against man-in-the-middle attacks</li>
-     *     <li>Maintains session security</li>
+     * <li>Validates client identity through signature verification</li>
+     * <li>Establishes secure encryption keys</li>
+     * <li>Protects against man-in-the-middle attacks</li>
+     * <li>Maintains session security</li>
      * </ul>
      *
      * @param request The HTTP request containing the client's encrypted device info
@@ -402,14 +416,16 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
     /**
      * Extracts the client's public key from the TLV8-encoded content.
      *
-     * <p>This method decodes the TLV8-encoded content and retrieves the client's
+     * <p>
+     * This method decodes the TLV8-encoded content and retrieves the client's
      * public key, which is used in the Curve25519 key exchange process.
      *
-     * <p>Security considerations:
+     * <p>
+     * Security considerations:
      * <ul>
-     *     <li>Validates TLV8 encoding format</li>
-     *     <li>Ensures proper key length</li>
-     *     <li>Handles malformed input gracefully</li>
+     * <li>Validates TLV8 encoding format</li>
+     * <li>Ensures proper key length</li>
+     * <li>Handles malformed input gracefully</li>
      * </ul>
      *
      * @param content The TLV8-encoded message content

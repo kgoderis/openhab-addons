@@ -3,18 +3,13 @@ package org.openhab.io.homekit.core.accessory;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryType;
-import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
 import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.factory.HomekitServiceFactory;
 import org.openhab.io.homekit.api.service.HomekitService;
-import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Collection;
 
 /**
  * A flexible implementation of a HomeKit accessory that can be customized for various use cases.
@@ -25,42 +20,42 @@ import java.util.Collection;
  * The generic accessory serves as a versatile base for implementing custom HomeKit devices,
  * offering:
  * <ul>
- *   <li>Configurable accessory information (name, manufacturer, model, etc.)</li>
- *   <li>Dynamic service management and characteristic configuration</li>
- *   <li>Event handling and state synchronization</li>
- *   <li>JSON serialization for persistence and configuration</li>
+ * <li>Configurable accessory information (name, manufacturer, model, etc.)</li>
+ * <li>Dynamic service management and characteristic configuration</li>
+ * <li>Event handling and state synchronization</li>
+ * <li>JSON serialization for persistence and configuration</li>
  * </ul>
  * </p>
  *
  * <p>
  * Key features:
  * <ul>
- *   <li>Customizable accessory metadata and identification</li>
- *   <li>Dynamic service and characteristic management</li>
- *   <li>Event propagation and state updates</li>
- *   <li>Extensible service configuration</li>
- *   <li>Persistence through JSON serialization</li>
+ * <li>Customizable accessory metadata and identification</li>
+ * <li>Dynamic service and characteristic management</li>
+ * <li>Event propagation and state updates</li>
+ * <li>Extensible service configuration</li>
+ * <li>Persistence through JSON serialization</li>
  * </ul>
  * </p>
  *
  * <p>
  * The class integrates with several key components:
  * <ul>
- *   <li>{@link AbstractHomekitAccessory} - Base accessory functionality</li>
- *   <li>{@link HomekitService} - Service management</li>
- *   <li>{@link HomekitAccessoryType} - Accessory type definition</li>
- *   <li>{@link HomekitAccessoryUID} - Unique identification</li>
- *   <li>{@link HomekitAccessoryServer} - Server integration</li>
+ * <li>{@link AbstractHomekitAccessory} - Base accessory functionality</li>
+ * <li>{@link HomekitService} - Service management</li>
+ * <li>{@link HomekitAccessoryType} - Accessory type definition</li>
+ * <li>{@link HomekitAccessoryUID} - Unique identification</li>
+ * <li>{@link HomekitAccessoryServer} - Server integration</li>
  * </ul>
  * </p>
  *
  * <p>
  * The generic accessory supports dynamic configuration through JSON, allowing for:
  * <ul>
- *   <li>Service addition and removal</li>
- *   <li>Characteristic configuration</li>
- *   <li>Accessory metadata updates</li>
- *   <li>State persistence</li>
+ * <li>Service addition and removal</li>
+ * <li>Characteristic configuration</li>
+ * <li>Accessory metadata updates</li>
+ * <li>State persistence</li>
  * </ul>
  * </p>
  *

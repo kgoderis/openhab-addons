@@ -23,44 +23,44 @@ import org.openhab.io.homekit.util.HomekitUID;
  * The class integrates with:
  * </p>
  * <ul>
- *   <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for base event functionality</li>
- *   <li>{@link org.openhab.io.homekit.api.event.HomekitEventType} for event type identification</li>
- *   <li>{@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic} for characteristic handling</li>
- *   <li>{@link org.openhab.io.homekit.event.core.HomekitEventMetadata} for event metadata</li>
- *   <li>{@link org.openhab.io.homekit.util.HomekitUID} for UID generation and management</li>
- *   <li>{@link javax.json.JsonValue} for value representation</li>
+ * <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for base event functionality</li>
+ * <li>{@link org.openhab.io.homekit.api.event.HomekitEventType} for event type identification</li>
+ * <li>{@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic} for characteristic handling</li>
+ * <li>{@link org.openhab.io.homekit.event.core.HomekitEventMetadata} for event metadata</li>
+ * <li>{@link org.openhab.io.homekit.util.HomekitUID} for UID generation and management</li>
+ * <li>{@link javax.json.JsonValue} for value representation</li>
  * </ul>
  *
  * <p>
  * <b>Key Features:</b>
  * </p>
  * <ul>
- *   <li>Value change tracking with old and new values</li>
- *   <li>Characteristic identification and management</li>
- *   <li>Event metadata support</li>
- *   <li>Optional value handling</li>
- *   <li>UID-based routing</li>
+ * <li>Value change tracking with old and new values</li>
+ * <li>Characteristic identification and management</li>
+ * <li>Event metadata support</li>
+ * <li>Optional value handling</li>
+ * <li>UID-based routing</li>
  * </ul>
  *
  * <p>
  * <b>Usage Patterns:</b>
  * </p>
  * <ul>
- *   <li>Characteristic value updates</li>
- *   <li>State change notifications</li>
- *   <li>Value history tracking</li>
- *   <li>System diagnostics</li>
- *   <li>Event correlation</li>
+ * <li>Characteristic value updates</li>
+ * <li>State change notifications</li>
+ * <li>Value history tracking</li>
+ * <li>System diagnostics</li>
+ * <li>Event correlation</li>
  * </ul>
  *
  * <p>
  * <b>Value Management:</b>
  * </p>
  * <ul>
- *   <li>Supports JSON value representation</li>
- *   <li>Maintains value history</li>
- *   <li>Enables value validation</li>
- *   <li>Supports metadata enrichment</li>
+ * <li>Supports JSON value representation</li>
+ * <li>Maintains value history</li>
+ * <li>Enables value validation</li>
+ * <li>Supports metadata enrichment</li>
  * </ul>
  *
  * @author Karel Goderis - Initial contribution

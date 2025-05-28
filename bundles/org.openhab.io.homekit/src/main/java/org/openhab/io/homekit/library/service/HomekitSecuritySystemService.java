@@ -24,26 +24,26 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * <ul>
- *   <li>Security system state control and monitoring</li>
- *   <li>Target state configuration</li>
- *   <li>Tamper detection</li>
- *   <li>Fault condition monitoring</li>
+ * <li>Security system state control and monitoring</li>
+ * <li>Target state configuration</li>
+ * <li>Tamper detection</li>
+ * <li>Fault condition monitoring</li>
  * </ul>
  *
  * <p>
  * Required characteristics:
  * <ul>
- *   <li>SecuritySystemCurrentState - Current security system state</li>
- *   <li>SecuritySystemTargetState - Desired security system state</li>
+ * <li>SecuritySystemCurrentState - Current security system state</li>
+ * <li>SecuritySystemTargetState - Desired security system state</li>
  * </ul>
  * </p>
  *
  * <p>
  * Optional characteristics:
  * <ul>
- *   <li>Name - Security system name</li>
- *   <li>StatusFault - Fault state indicator</li>
- *   <li>StatusTampered - Tamper detection indicator</li>
+ * <li>Name - Security system name</li>
+ * <li>StatusFault - Fault state indicator</li>
+ * <li>StatusTampered - Tamper detection indicator</li>
  * </ul>
  * </p>
  *
@@ -106,41 +106,43 @@ public class HomekitSecuritySystemService extends AbstractHomekitService {
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>SecuritySystemCurrentState - Current security system state</li>
-     *   <li>SecuritySystemTargetState - Desired security system state</li>
+     * <li>SecuritySystemCurrentState - Current security system state</li>
+     * <li>SecuritySystemTargetState - Desired security system state</li>
      * </ul>
      * </p>
      * <p>
      * Optional characteristics:
      * <ul>
-     *   <li>Name - Security system name</li>
-     *   <li>StatusFault - Fault state indicator</li>
-     *   <li>StatusTampered - Tamper detection indicator</li>
+     * <li>Name - Security system name</li>
+     * <li>StatusFault - Fault state indicator</li>
+     * <li>StatusTampered - Tamper detection indicator</li>
      * </ul>
      * </p>
+     * 
      * @since 1.0
      */
     @Override
     public void addCharacteristics() {
-        logger.trace("{}Adding required characteristics to SecuritySystemService for accessory {}", LOG_TRACE, getAccessory().getLabel());
-        
+        logger.trace("{}Adding required characteristics to SecuritySystemService for accessory {}", LOG_TRACE,
+                getAccessory().getLabel());
+
         addCharacteristic(new HomekitSecuritySystemCurrentStateCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         logger.debug("{}Added SecuritySystemCurrentStateCharacteristic to SecuritySystemService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitSecuritySystemTargetStateCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         logger.debug("{}Added SecuritySystemTargetStateCharacteristic to SecuritySystemService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                 .withMandatory(false));
         logger.debug("{}Added NameCharacteristic to SecuritySystemService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitStatusFaultCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
         logger.debug("{}Added StatusFaultCharacteristic to SecuritySystemService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitStatusTamperedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));

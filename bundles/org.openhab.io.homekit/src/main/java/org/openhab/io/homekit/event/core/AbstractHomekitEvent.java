@@ -22,44 +22,44 @@ import org.slf4j.LoggerFactory;
  * The class integrates with:
  * </p>
  * <ul>
- *   <li>{@link HomekitEvent} for the event interface contract</li>
- *   <li>{@link HomekitEventType} for event type definitions</li>
- *   <li>{@link HomekitEventMetadata} for event lifecycle management</li>
- *   <li>{@link org.openhab.core.thing.UID UID} for component identification</li>
+ * <li>{@link HomekitEvent} for the event interface contract</li>
+ * <li>{@link HomekitEventType} for event type definitions</li>
+ * <li>{@link HomekitEventMetadata} for event lifecycle management</li>
+ * <li>{@link org.openhab.core.thing.UID UID} for component identification</li>
  * </ul>
  *
  * <p>
  * <b>Key Features:</b>
  * </p>
  * <ul>
- *   <li>Event type management</li>
- *   <li>Publisher/subscriber routing</li>
- *   <li>Event metadata tracking</li>
- *   <li>Loop detection</li>
- *   <li>Hop count management</li>
- *   <li>Wildcard subscriber support</li>
- *   <li>Timestamp tracking</li>
+ * <li>Event type management</li>
+ * <li>Publisher/subscriber routing</li>
+ * <li>Event metadata tracking</li>
+ * <li>Loop detection</li>
+ * <li>Hop count management</li>
+ * <li>Wildcard subscriber support</li>
+ * <li>Timestamp tracking</li>
  * </ul>
  *
  * <p>
  * <b>Implementation Details:</b>
  * </p>
  * <ul>
- *   <li>Uses immutable fields for thread safety</li>
- *   <li>Implements proper logging for diagnostics</li>
- *   <li>Supports wildcard subscribers</li>
- *   <li>Validates event propagation</li>
- *   <li>Manages event lifecycle</li>
+ * <li>Uses immutable fields for thread safety</li>
+ * <li>Implements proper logging for diagnostics</li>
+ * <li>Supports wildcard subscribers</li>
+ * <li>Validates event propagation</li>
+ * <li>Manages event lifecycle</li>
  * </ul>
  *
  * <p>
  * <b>Security Considerations:</b>
  * </p>
  * <ul>
- *   <li>Validates event propagation paths</li>
- *   <li>Prevents infinite event loops</li>
- *   <li>Enforces hop count limits</li>
- *   <li>Maintains event integrity</li>
+ * <li>Validates event propagation paths</li>
+ * <li>Prevents infinite event loops</li>
+ * <li>Enforces hop count limits</li>
+ * <li>Maintains event integrity</li>
  * </ul>
  *
  * @author OpenHAB

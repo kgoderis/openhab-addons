@@ -37,59 +37,59 @@ import org.slf4j.LoggerFactory;
  * The class integrates with:
  * </p>
  * <ul>
- *   <li>{@link HomekitHttpParser} for protocol parsing and validation</li>
- *   <li>{@link HomekitHttpVersion} for version handling and compatibility</li>
- *   <li>{@link HomekitHttpConnection} for connection lifecycle management</li>
- *   <li>{@link org.eclipse.jetty.http.HttpField HttpField} for header field handling</li>
- *   <li>{@link org.eclipse.jetty.http.MetaData MetaData} for message metadata</li>
+ * <li>{@link HomekitHttpParser} for protocol parsing and validation</li>
+ * <li>{@link HomekitHttpVersion} for version handling and compatibility</li>
+ * <li>{@link HomekitHttpConnection} for connection lifecycle management</li>
+ * <li>{@link org.eclipse.jetty.http.HttpField HttpField} for header field handling</li>
+ * <li>{@link org.eclipse.jetty.http.MetaData MetaData} for message metadata</li>
  * </ul>
  *
  * <p>
  * <b>Key Features:</b>
  * </p>
  * <ul>
- *   <li>HTTP request/response generation</li>
- *   <li>Header field management</li>
- *   <li>Chunked transfer encoding</li>
- *   <li>Persistent connection support</li>
- *   <li>Header caching optimization</li>
- *   <li>Thread-safe operations</li>
+ * <li>HTTP request/response generation</li>
+ * <li>Header field management</li>
+ * <li>Chunked transfer encoding</li>
+ * <li>Persistent connection support</li>
+ * <li>Header caching optimization</li>
+ * <li>Thread-safe operations</li>
  * </ul>
  *
  * <p>
  * <b>Security Considerations:</b>
  * </p>
  * <ul>
- *   <li>Validates message integrity</li>
- *   <li>Enforces protocol compliance</li>
- *   <li>Handles encrypted content</li>
- *   <li>Ensures proper initialization</li>
- *   <li>Maintains thread safety</li>
+ * <li>Validates message integrity</li>
+ * <li>Enforces protocol compliance</li>
+ * <li>Handles encrypted content</li>
+ * <li>Ensures proper initialization</li>
+ * <li>Maintains thread safety</li>
  * </ul>
  *
  * <p>
  * <b>Implementation Details:</b>
  * </p>
  * <ul>
- *   <li>Fast case-insensitive string lookups</li>
- *   <li>Optimized buffer management</li>
- *   <li>Chunked transfer support</li>
- *   <li>Content length handling</li>
- *   <li>Persistent connection management</li>
- *   <li>Detailed logging</li>
+ * <li>Fast case-insensitive string lookups</li>
+ * <li>Optimized buffer management</li>
+ * <li>Chunked transfer support</li>
+ * <li>Content length handling</li>
+ * <li>Persistent connection management</li>
+ * <li>Detailed logging</li>
  * </ul>
  *
  * <p>
  * <b>Configuration Options:</b>
  * </p>
  * <dl>
- *   <dt>Strict Mode</dt>
- *   <dd>Enabled via "org.eclipse.jetty.http.HttpGenerator.STRICT" system property.
- *       When enabled, preserves exact case and whitespace of methods and headers.</dd>
- *   <dt>Server Version</dt>
- *   <dd>Customizable server version string for response headers</dd>
- *   <dt>X-Powered-By</dt>
- *   <dd>Optional X-Powered-By header inclusion</dd>
+ * <dt>Strict Mode</dt>
+ * <dd>Enabled via "org.eclipse.jetty.http.HttpGenerator.STRICT" system property.
+ * When enabled, preserves exact case and whitespace of methods and headers.</dd>
+ * <dt>Server Version</dt>
+ * <dd>Customizable server version string for response headers</dd>
+ * <dt>X-Powered-By</dt>
+ * <dd>Optional X-Powered-By header inclusion</dd>
  * </dl>
  *
  * @author Karel Goderis - Initial Contribution
@@ -262,9 +262,9 @@ public class HomekitHttpGenerator extends HttpGenerator {
      * <b>Key implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Updates both Server and X-Powered-By headers</li>
-     *   <li>Maintains consistent version across all responses</li>
-     *   <li>Uses StringUtil for byte conversion</li>
+     * <li>Updates both Server and X-Powered-By headers</li>
+     * <li>Maintains consistent version across all responses</li>
+     * <li>Uses StringUtil for byte conversion</li>
      * </ul>
      *
      * @param serverVersion The version string to be used in the headers
@@ -288,10 +288,10 @@ public class HomekitHttpGenerator extends HttpGenerator {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Initializes generator state</li>
-     *   <li>Sets default configuration</li>
-     *   <li>Configures header handling</li>
-     *   <li>Ensures thread safety</li>
+     * <li>Initializes generator state</li>
+     * <li>Sets default configuration</li>
+     * <li>Configures header handling</li>
+     * <li>Ensures thread safety</li>
      * </ul>
      */
     public HomekitHttpGenerator() {
@@ -311,10 +311,10 @@ public class HomekitHttpGenerator extends HttpGenerator {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Initializes generator state</li>
-     *   <li>Applies custom configuration</li>
-     *   <li>Configures header handling</li>
-     *   <li>Ensures thread safety</li>
+     * <li>Initializes generator state</li>
+     * <li>Applies custom configuration</li>
+     * <li>Configures header handling</li>
+     * <li>Ensures thread safety</li>
      * </ul>
      *
      * @param sendServerVersion Whether to include server version in responses
@@ -337,10 +337,10 @@ public class HomekitHttpGenerator extends HttpGenerator {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Clears message state</li>
-     *   <li>Resets content tracking</li>
-     *   <li>Clears persistence flag</li>
-     *   <li>Ensures thread safety</li>
+     * <li>Clears message state</li>
+     * <li>Resets content tracking</li>
+     * <li>Clears persistence flag</li>
+     * <li>Ensures thread safety</li>
      * </ul>
      */
     @Override
@@ -570,13 +570,13 @@ public class HomekitHttpGenerator extends HttpGenerator {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Generates request line</li>
-     *   <li>Handles headers</li>
-     *   <li>Manages content</li>
-     *   <li>Supports chunking</li>
-     *   <li>Maintains thread safety</li>
-     *   <li>Ensures state consistency</li>
-     *   <li>Logs generation progress</li>
+     * <li>Generates request line</li>
+     * <li>Handles headers</li>
+     * <li>Manages content</li>
+     * <li>Supports chunking</li>
+     * <li>Maintains thread safety</li>
+     * <li>Ensures state consistency</li>
+     * <li>Logs generation progress</li>
      * </ul>
      *
      * @param info The request metadata

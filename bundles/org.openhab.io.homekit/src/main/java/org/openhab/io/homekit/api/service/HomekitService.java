@@ -20,10 +20,10 @@ import org.openhab.io.homekit.api.uid.HomekitServiceUID;
  * <p>
  * A HomeKit service represents a specific functionality or feature of an accessory. Each service:
  * <ul>
- *   <li>Has a unique type identifier</li>
- *   <li>Contains one or more characteristics</li>
- *   <li>Can be linked to other services</li>
- *   <li>Can be marked as primary, hidden, or extensible</li>
+ * <li>Has a unique type identifier</li>
+ * <li>Contains one or more characteristics</li>
+ * <li>Can be linked to other services</li>
+ * <li>Can be marked as primary, hidden, or extensible</li>
  * </ul>
  * </p>
  * <p>
@@ -34,15 +34,14 @@ import org.openhab.io.homekit.api.uid.HomekitServiceUID;
  * <p>
  * The interface integrates with:
  * <ul>
- *   <li>{@link org.openhab.core.common.registry.Identifiable} for registry integration</li>
- *   <li>{@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for accessory management</li>
- *   <li>{@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic} for characteristic management</li>
- *   <li>{@link org.openhab.io.homekit.api.uid.HomekitServiceUID} for service identification</li>
+ * <li>{@link org.openhab.core.common.registry.Identifiable} for registry integration</li>
+ * <li>{@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for accessory management</li>
+ * <li>{@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic} for characteristic management</li>
+ * <li>{@link org.openhab.io.homekit.api.uid.HomekitServiceUID} for service identification</li>
  * </ul>
  * </p>
  *
  * @author Karel Goderis - Initial contribution
- * @version 1.0
  * @since 1.0
  */
 @NonNullByDefault
@@ -73,14 +72,12 @@ public interface HomekitService extends Identifiable<HomekitServiceUID>, Compara
 
     /**
      * Gets the name of this service.
-     * 
      * <p>
      * Not all Services provide user-visible or user-interactive functionality. Services which provide either
      * user-visible or user-interactive functionality must include the Name characteristic; All other Services must not
      * include this characteristic. This convention is used by iOS clients to determine which Services to display to
      * users.
      * </p>
-     *
      * <p>
      * Note that the HomekitAccessory Information service is an exception and always includes the Name characteristic
      * even though it is not typically user-visible or user-interactive.
@@ -132,7 +129,6 @@ public interface HomekitService extends Identifiable<HomekitServiceUID>, Compara
 
     /**
      * Checks if this service is hidden from user interfaces.
-     * 
      * <p>
      * Accessories may specify the Services that are to be hidden from users by a generic Homekit application.
      * Accessories may expose several Services that could be used to configure the HomekitAccessory or to update
@@ -146,7 +142,6 @@ public interface HomekitService extends Identifiable<HomekitServiceUID>, Compara
 
     /**
      * Checks if this service is the primary service.
-     * 
      * <p>
      * The primary service must match the primary function of the accessory and must also match with
      * the accessory category. An accessory must expose only one primary service from its list of available
@@ -159,23 +154,20 @@ public interface HomekitService extends Identifiable<HomekitServiceUID>, Compara
 
     /**
      * Gets the services linked to this service.
-     * 
      * <p>
      * Linked Services allows Accessories to specify logical relationship between Services. A HomekitService can link to
      * one or more Services. A HomekitService must not link to itself. HomekitService links have context and meaning
      * only to the first level of Services that it links to.
      * </p>
-     *
      * <p>
      * For example:
      * <ul>
-     *   <li>If Service A links to Service B, and Service B links to Service C, this does not imply any relation
-     *       between Service A and Service C.</li>
-     *   <li>If Service A also relates to Service C then Service A's linked services must include both Service B and
-     *       Service C.</li>
+     * <li>If Service A links to Service B, and Service B links to Service C, this does not imply any relation
+     * between Service A and Service C.</li>
+     * <li>If Service A also relates to Service C then Service A's linked services must include both Service B and
+     * Service C.</li>
      * </ul>
      * </p>
-     *
      * <p>
      * Linked services allows applications to display logically grouped HomekitAccessory controls in the UI.
      * </p>
@@ -248,7 +240,8 @@ public interface HomekitService extends Identifiable<HomekitServiceUID>, Compara
 
     // JSON conversion methods
     /**
-     * Creates the JSON representation of the service, in accordance with the Homekit HomekitAccessory Protocol.
+     * Creates the JSON representation of the service, in accordance with the HomeKit protocol.
+     * This includes all characteristics and their values.
      *
      * @return the resulting JSON object
      */

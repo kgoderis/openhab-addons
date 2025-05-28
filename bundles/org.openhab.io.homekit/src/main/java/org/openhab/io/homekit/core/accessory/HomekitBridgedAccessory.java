@@ -25,32 +25,32 @@ import org.slf4j.LoggerFactory;
  * <p>
  * The bridged accessory provides a seamless integration layer that:
  * <ul>
- *   <li>Maintains local server identity while delegating operations to the remote accessory</li>
- *   <li>Preserves the remote accessory's characteristics and services</li>
- *   <li>Handles state synchronization between local and remote accessories</li>
- *   <li>Manages event propagation and state updates</li>
+ * <li>Maintains local server identity while delegating operations to the remote accessory</li>
+ * <li>Preserves the remote accessory's characteristics and services</li>
+ * <li>Handles state synchronization between local and remote accessories</li>
+ * <li>Manages event propagation and state updates</li>
  * </ul>
  * </p>
  *
  * <p>
  * Key features:
  * <ul>
- *   <li>Transparent delegation of all operations to the remote accessory</li>
- *   <li>Local AID and UID management for server integration</li>
- *   <li>Read-only access to remote services and characteristics</li>
- *   <li>State synchronization and event handling</li>
- *   <li>JSON serialization for persistence</li>
+ * <li>Transparent delegation of all operations to the remote accessory</li>
+ * <li>Local AID and UID management for server integration</li>
+ * <li>Read-only access to remote services and characteristics</li>
+ * <li>State synchronization and event handling</li>
+ * <li>JSON serialization for persistence</li>
  * </ul>
  * </p>
  *
  * <p>
  * The class integrates with several key components:
  * <ul>
- *   <li>{@link HomekitAccessory} - Base accessory interface</li>
- *   <li>{@link HomekitAccessoryServer} - Local server management</li>
- *   <li>{@link HomekitAccessoryUID} - Unique identification</li>
- *   <li>{@link HomekitService} - Service delegation</li>
- *   <li>{@link HomekitAccessoryOperationException} - Error handling</li>
+ * <li>{@link HomekitAccessory} - Base accessory interface</li>
+ * <li>{@link HomekitAccessoryServer} - Local server management</li>
+ * <li>{@link HomekitAccessoryUID} - Unique identification</li>
+ * <li>{@link HomekitService} - Service delegation</li>
+ * <li>{@link HomekitAccessoryOperationException} - Error handling</li>
  * </ul>
  * </p>
  *
@@ -58,10 +58,10 @@ import org.slf4j.LoggerFactory;
  * The bridged accessory ensures that all operations are properly delegated to the remote
  * accessory while maintaining its own identity in the local server. This includes:
  * <ul>
- *   <li>Service and characteristic access</li>
- *   <li>State management and updates</li>
- *   <li>Event propagation</li>
- *   <li>Identification and discovery</li>
+ * <li>Service and characteristic access</li>
+ * <li>State management and updates</li>
+ * <li>Event propagation</li>
+ * <li>Identification and discovery</li>
  * </ul>
  * </p>
  *

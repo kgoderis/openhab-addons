@@ -32,7 +32,8 @@ import org.slf4j.LoggerFactory;
  *
  * This class implements the core functionality for bridging HomeKit accessories between remote and local servers.
  * It handles the setup and teardown of event subscriptions to forward events and commands between servers,
- * manages the lifecycle of bridged accessories, and provides mechanisms for orphaned accessory detection and restoration.
+ * manages the lifecycle of bridged accessories, and provides mechanisms for orphaned accessory detection and
+ * restoration.
  *
  * The class integrates with:
  * - {@link HomekitEventManager} for event handling and subscription management
@@ -133,7 +134,8 @@ public class HomekitAccessoryBridge {
      * Bridges an accessory between a remote and local server.
      *
      * This method sets up bidirectional event forwarding between remote and local servers for a given accessory.
-     * It creates event subscriptions for characteristic value changes, service modifications, and accessory state changes.
+     * It creates event subscriptions for characteristic value changes, service modifications, and accessory state
+     * changes.
      *
      * Key implementation details:
      * - Adds local accessory to local server

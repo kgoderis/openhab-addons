@@ -15,28 +15,28 @@ import java.lang.annotation.Target;
  * <p>
  * The annotation is used to:
  * <ul>
- *   <li>Define the HomeKit characteristic type UUID</li>
- *   <li>Provide human-readable names for characteristics</li>
- *   <li>Specify tags for characteristic identification</li>
- *   <li>Define accepted OpenHAB item types</li>
- *   <li>Enable binding-specific configurations</li>
+ * <li>Define the HomeKit characteristic type UUID</li>
+ * <li>Provide human-readable names for characteristics</li>
+ * <li>Specify tags for characteristic identification</li>
+ * <li>Define accepted OpenHAB item types</li>
+ * <li>Enable binding-specific configurations</li>
  * </ul>
  * </p>
  * <p>
  * Key implementation details:
  * <ul>
- *   <li>Runtime retention for reflection-based processing</li>
- *   <li>Type-level targeting for class annotations</li>
- *   <li>Optional name and tag fields</li>
- *   <li>Support for multiple item types</li>
- *   <li>Extensible for binding-specific configurations</li>
+ * <li>Runtime retention for reflection-based processing</li>
+ * <li>Type-level targeting for class annotations</li>
+ * <li>Optional name and tag fields</li>
+ * <li>Support for multiple item types</li>
+ * <li>Extensible for binding-specific configurations</li>
  * </ul>
  * </p>
  * <p>
  * The interface integrates with:
  * <ul>
- *   <li>{@link org.openhab.io.homekit.api.characteristic.BindingMapping} for binding configurations</li>
- *   <li>{@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic} for characteristic implementation</li>
+ * <li>{@link org.openhab.io.homekit.api.characteristic.BindingMapping} for binding configurations</li>
+ * <li>{@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic} for characteristic implementation</li>
  * </ul>
  * </p>
  *

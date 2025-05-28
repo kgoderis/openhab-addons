@@ -118,9 +118,7 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
         ThingTypeUID thingTypeUID = new ThingTypeUID(HomekitBindingConstants.BINDING_ID, "accessory");
 
         ThingType thingType = ThingTypeBuilder.instance(thingTypeUID, "Homekit Accessory")
-                .withDescription("Homekit Accessory")
-                .withCategory("homekit")
-                .build();
+                .withDescription("Homekit Accessory").withCategory("homekit").build();
 
         putThingType(thingType);
         logger.info("{}Created base HomeKit accessory thing type: {}", LOG_TYPE, thingTypeUID);
@@ -181,7 +179,7 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
      */
     private void createThingTypeForService(String serviceType) {
         logger.debug("{}Creating thing type for service: {}", LOG_TYPE, serviceType);
-        
+
         ThingTypeUID thingTypeUID = getThingTypeUID(serviceType);
         if (thingTypeUID == null) {
             logger.warn("{}Could not create ThingTypeUID for service type: {}", LOG_WARN, serviceType);
@@ -201,14 +199,12 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
         }
 
         ThingType thingType = ThingTypeBuilder.instance(thingTypeUID, serviceName)
-                .withDescription("Homekit " + serviceName + " Service")
-                .withCategory("homekit")
-                .withChannelGroupDefinitions(channelGroupDefinitions)
-                .build();
+                .withDescription("Homekit " + serviceName + " Service").withCategory("homekit")
+                .withChannelGroupDefinitions(channelGroupDefinitions).build();
 
         putThingType(thingType);
-        logger.info("{}Created thing type {} for service {} with {} channel groups", LOG_TYPE, thingTypeUID, 
-            serviceType, channelGroupDefinitions.size());
+        logger.info("{}Created thing type {} for service {} with {} channel groups", LOG_TYPE, thingTypeUID,
+                serviceType, channelGroupDefinitions.size());
     }
 
     /**
@@ -229,7 +225,7 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
     private List<ChannelGroupDefinition> createChannelGroupDefinitions(String serviceType) {
         logger.debug("{}Creating channel group definitions for service: {}", LOG_TYPE, serviceType);
         List<ChannelGroupDefinition> definitions = new ArrayList<>();
-        
+
         try {
             String serviceTag = homekitServiceFactory.getTagFromServiceType(serviceType);
             if (serviceTag == null || serviceTag.isEmpty()) {
@@ -237,8 +233,8 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
                 return definitions;
             }
 
-            ChannelGroupTypeUID channelGroupTypeUID = new ChannelGroupTypeUID(HomekitBindingConstants.BINDING_ID, 
-                "service-" + serviceTag);
+            ChannelGroupTypeUID channelGroupTypeUID = new ChannelGroupTypeUID(HomekitBindingConstants.BINDING_ID,
+                    "service-" + serviceTag);
 
             if (channelGroupTypeProvider.getChannelGroupType(channelGroupTypeUID, null) == null) {
                 logger.warn("{}No channel group type found for service type: {}", LOG_WARN, serviceType);
@@ -248,11 +244,11 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
             definitions.add(new ChannelGroupDefinition(serviceTag + ".1", channelGroupTypeUID, serviceTag,
                     "Homekit " + serviceTag + " Service"));
 
-            logger.debug("{}Created channel group definition for service {} with UID {}", LOG_TYPE, serviceType, 
-                channelGroupTypeUID);
+            logger.debug("{}Created channel group definition for service {} with UID {}", LOG_TYPE, serviceType,
+                    channelGroupTypeUID);
         } catch (Exception e) {
-            logger.error("{}Failed to create channel group definitions for service {}: {}", LOG_ERROR, serviceType, 
-                e.getMessage(), e);
+            logger.error("{}Failed to create channel group definitions for service {}: {}", LOG_ERROR, serviceType,
+                    e.getMessage(), e);
         }
         return definitions;
     }

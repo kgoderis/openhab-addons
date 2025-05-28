@@ -13,25 +13,25 @@ import org.openhab.core.common.registry.Identifiable;
  * <p>
  * The interface provides:
  * <ul>
- *   <li>String representation of the UID</li>
- *   <li>Instance ID management</li>
- *   <li>Unique identification</li>
+ * <li>String representation of the UID</li>
+ * <li>Instance ID management</li>
+ * <li>Unique identification</li>
  * </ul>
  * </p>
  * <p>
  * Key implementation details:
  * <ul>
- *   <li>Thread-safe UID generation</li>
- *   <li>Unique ID validation</li>
- *   <li>Instance ID association</li>
- *   <li>String format consistency</li>
+ * <li>Thread-safe UID generation</li>
+ * <li>Unique ID validation</li>
+ * <li>Instance ID association</li>
+ * <li>String format consistency</li>
  * </ul>
  * </p>
  * <p>
  * The interface integrates with:
  * <ul>
- *   <li>{@link org.openhab.core.common.registry.Identifiable} for registry integration</li>
- *   <li>{@link org.openhab.io.homekit.api.service.HomekitService} for service identification</li>
+ * <li>{@link org.openhab.core.common.registry.Identifiable} for registry integration</li>
+ * <li>{@link org.openhab.io.homekit.api.service.HomekitService} for service identification</li>
  * </ul>
  * </p>
  *

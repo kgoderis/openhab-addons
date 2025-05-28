@@ -11,7 +11,8 @@ import org.slf4j.LoggerFactory;
  * A specialized HTTP channel for HomeKit communication with encryption support.
  *
  * <p>
- * This class extends Jetty's HttpChannelOverHTTP to provide specialized HTTP channel functionality for HomeKit accessories,
+ * This class extends Jetty's HttpChannelOverHTTP to provide specialized HTTP channel functionality for HomeKit
+ * accessories,
  * including support for encrypted messages, custom sender/receiver implementations, and secure communication channels.
  * It implements RFC7230-compliant channel management with optimizations for HomeKit-specific requirements.
  * </p>
@@ -20,45 +21,45 @@ import org.slf4j.LoggerFactory;
  * The class integrates with:
  * </p>
  * <ul>
- *   <li>{@link HomekitHttpSender} for sending encrypted requests and message formatting</li>
- *   <li>{@link HomekitHttpReceiver} for receiving encrypted responses and message parsing</li>
- *   <li>{@link HomekitHttpConnectionOverHTTP} for connection lifecycle management</li>
- *   <li>{@link HomekitEncryptionEngine} for encryption/decryption operations</li>
- *   <li>{@link org.eclipse.jetty.client.http.HttpConnectionOverHTTP HttpConnectionOverHTTP} for connection handling</li>
+ * <li>{@link HomekitHttpSender} for sending encrypted requests and message formatting</li>
+ * <li>{@link HomekitHttpReceiver} for receiving encrypted responses and message parsing</li>
+ * <li>{@link HomekitHttpConnectionOverHTTP} for connection lifecycle management</li>
+ * <li>{@link HomekitEncryptionEngine} for encryption/decryption operations</li>
+ * <li>{@link org.eclipse.jetty.client.http.HttpConnectionOverHTTP HttpConnectionOverHTTP} for connection handling</li>
  * </ul>
  *
  * <p>
  * <b>Key Features:</b>
  * </p>
  * <ul>
- *   <li>Encryption key management</li>
- *   <li>Custom HTTP sender/receiver</li>
- *   <li>Message tracking</li>
- *   <li>Secure communication</li>
- *   <li>Connection management</li>
- *   <li>Thread-safe operations</li>
+ * <li>Encryption key management</li>
+ * <li>Custom HTTP sender/receiver</li>
+ * <li>Message tracking</li>
+ * <li>Secure communication</li>
+ * <li>Connection management</li>
+ * <li>Thread-safe operations</li>
  * </ul>
  *
  * <p>
  * <b>Security Considerations:</b>
  * </p>
  * <ul>
- *   <li>Manages encryption keys</li>
- *   <li>Secures message transmission</li>
- *   <li>Validates message integrity</li>
- *   <li>Ensures proper initialization</li>
- *   <li>Maintains thread safety</li>
+ * <li>Manages encryption keys</li>
+ * <li>Secures message transmission</li>
+ * <li>Validates message integrity</li>
+ * <li>Ensures proper initialization</li>
+ * <li>Maintains thread safety</li>
  * </ul>
  *
  * <p>
  * <b>Implementation Details:</b>
  * </p>
  * <ul>
- *   <li>Extends Jetty's HttpChannelOverHTTP</li>
- *   <li>Uses custom sender/receiver</li>
- *   <li>Supports encryption</li>
- *   <li>Manages message flow</li>
- *   <li>Provides detailed logging</li>
+ * <li>Extends Jetty's HttpChannelOverHTTP</li>
+ * <li>Uses custom sender/receiver</li>
+ * <li>Supports encryption</li>
+ * <li>Manages message flow</li>
+ * <li>Provides detailed logging</li>
  * </ul>
  *
  * @author Karel Goderis - Initial Contribution
@@ -98,11 +99,11 @@ public class HomekitHttpChannel extends HttpChannelOverHTTP {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Initializes base channel</li>
-     *   <li>Sets up connection</li>
-     *   <li>Prepares encryption</li>
-     *   <li>Ensures thread safety</li>
-     *   <li>Logs initialization</li>
+     * <li>Initializes base channel</li>
+     * <li>Sets up connection</li>
+     * <li>Prepares encryption</li>
+     * <li>Ensures thread safety</li>
+     * <li>Logs initialization</li>
      * </ul>
      *
      * @param connection The HTTP connection to use
@@ -124,11 +125,11 @@ public class HomekitHttpChannel extends HttpChannelOverHTTP {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Creates HomeKit sender</li>
-     *   <li>Configures encryption</li>
-     *   <li>Sets up formatting</li>
-     *   <li>Ensures thread safety</li>
-     *   <li>Logs creation</li>
+     * <li>Creates HomeKit sender</li>
+     * <li>Configures encryption</li>
+     * <li>Sets up formatting</li>
+     * <li>Ensures thread safety</li>
+     * <li>Logs creation</li>
      * </ul>
      *
      * @return A new HomeKit HTTP sender instance
@@ -151,11 +152,11 @@ public class HomekitHttpChannel extends HttpChannelOverHTTP {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Creates HomeKit receiver</li>
-     *   <li>Configures decryption</li>
-     *   <li>Sets up parsing</li>
-     *   <li>Ensures thread safety</li>
-     *   <li>Logs creation</li>
+     * <li>Creates HomeKit receiver</li>
+     * <li>Configures decryption</li>
+     * <li>Sets up parsing</li>
+     * <li>Ensures thread safety</li>
+     * <li>Logs creation</li>
      * </ul>
      *
      * @return A new HomeKit HTTP receiver instance
@@ -178,10 +179,10 @@ public class HomekitHttpChannel extends HttpChannelOverHTTP {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Retrieves message count</li>
-     *   <li>Logs statistics</li>
-     *   <li>Maintains thread safety</li>
-     *   <li>Ensures accuracy</li>
+     * <li>Retrieves message count</li>
+     * <li>Logs statistics</li>
+     * <li>Maintains thread safety</li>
+     * <li>Ensures accuracy</li>
      * </ul>
      *
      * @return The number of messages received
@@ -205,10 +206,10 @@ public class HomekitHttpChannel extends HttpChannelOverHTTP {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Retrieves message count</li>
-     *   <li>Logs statistics</li>
-     *   <li>Maintains thread safety</li>
-     *   <li>Ensures accuracy</li>
+     * <li>Retrieves message count</li>
+     * <li>Logs statistics</li>
+     * <li>Maintains thread safety</li>
+     * <li>Ensures accuracy</li>
      * </ul>
      *
      * @return The number of messages sent
@@ -232,10 +233,10 @@ public class HomekitHttpChannel extends HttpChannelOverHTTP {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Retrieves receiver instance</li>
-     *   <li>Performs type casting</li>
-     *   <li>Ensures thread safety</li>
-     *   <li>Logs access</li>
+     * <li>Retrieves receiver instance</li>
+     * <li>Performs type casting</li>
+     * <li>Ensures thread safety</li>
+     * <li>Logs access</li>
      * </ul>
      *
      * @return The HomeKit HTTP receiver instance
@@ -258,10 +259,10 @@ public class HomekitHttpChannel extends HttpChannelOverHTTP {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Retrieves sender instance</li>
-     *   <li>Performs type casting</li>
-     *   <li>Ensures thread safety</li>
-     *   <li>Logs access</li>
+     * <li>Retrieves sender instance</li>
+     * <li>Performs type casting</li>
+     * <li>Ensures thread safety</li>
+     * <li>Logs access</li>
      * </ul>
      *
      * @return The HomeKit HTTP sender instance
@@ -284,12 +285,12 @@ public class HomekitHttpChannel extends HttpChannelOverHTTP {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Validates key parameters</li>
-     *   <li>Updates sender keys</li>
-     *   <li>Updates receiver keys</li>
-     *   <li>Maintains thread safety</li>
-     *   <li>Ensures state consistency</li>
-     *   <li>Logs configuration</li>
+     * <li>Validates key parameters</li>
+     * <li>Updates sender keys</li>
+     * <li>Updates receiver keys</li>
+     * <li>Maintains thread safety</li>
+     * <li>Ensures state consistency</li>
+     * <li>Logs configuration</li>
      * </ul>
      *
      * @param decryptionKey The key used for decrypting incoming messages
@@ -297,7 +298,7 @@ public class HomekitHttpChannel extends HttpChannelOverHTTP {
      */
     public void setEncryptionKeys(byte[] decryptionKey, byte[] encryptionKey) {
         logger.debug("{}Setting encryption keys", LOG_CONFIG);
-        
+
         if (logger.isTraceEnabled()) {
             logger.trace("{}Decryption key: {}", LOG_CONFIG,
                     javax.xml.bind.DatatypeConverter.printHexBinary(decryptionKey));
@@ -333,11 +334,11 @@ public class HomekitHttpChannel extends HttpChannelOverHTTP {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Validates key presence</li>
-     *   <li>Checks key validity</li>
-     *   <li>Maintains thread safety</li>
-     *   <li>Ensures state consistency</li>
-     *   <li>Logs key status</li>
+     * <li>Validates key presence</li>
+     * <li>Checks key validity</li>
+     * <li>Maintains thread safety</li>
+     * <li>Ensures state consistency</li>
+     * <li>Logs key status</li>
      * </ul>
      *
      * @return true if both encryption keys are configured, false otherwise
@@ -359,9 +360,9 @@ public class HomekitHttpChannel extends HttpChannelOverHTTP {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Retrieves decryption key</li>
-     *   <li>Ensures thread safety</li>
-     *   <li>Logs key access</li>
+     * <li>Retrieves decryption key</li>
+     * <li>Ensures thread safety</li>
+     * <li>Logs key access</li>
      * </ul>
      *
      * @return The decryption key, or null if not configured
@@ -382,9 +383,9 @@ public class HomekitHttpChannel extends HttpChannelOverHTTP {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Retrieves encryption key</li>
-     *   <li>Ensures thread safety</li>
-     *   <li>Logs key access</li>
+     * <li>Retrieves encryption key</li>
+     * <li>Ensures thread safety</li>
+     * <li>Logs key access</li>
      * </ul>
      *
      * @return The encryption key, or null if not configured
@@ -394,4 +395,3 @@ public class HomekitHttpChannel extends HttpChannelOverHTTP {
         return encryptionKey;
     }
 }
-

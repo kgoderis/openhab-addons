@@ -7,19 +7,21 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation used to mark HomeKit service classes and provide metadata about the service.
- * This annotation is used by the {@link org.openhab.io.homekit.api.factory.HomekitServiceFactory} to discover and create service instances.
+ * This annotation is used by the {@link org.openhab.io.homekit.api.factory.HomekitServiceFactory} to discover and
+ * create service instances.
  *
  * <p>
  * The annotation provides:
  * <ul>
- *   <li>Service type identifier</li>
- *   <li>Human-readable service name</li>
- *   <li>Service tag for identification</li>
+ * <li>Service type identifier</li>
+ * <li>Human-readable service name</li>
+ * <li>Service tag for identification</li>
  * </ul>
  * </p>
  *
  * <p>
  * Example usage:
+ * 
  * <pre>
  * {@code
  * @HomekitServiceType(type = "LightBulb", name = "Light Bulb", tag = "light")
@@ -33,13 +35,12 @@ import java.lang.annotation.Target;
  * <p>
  * The interface integrates with:
  * <ul>
- *   <li>{@link org.openhab.io.homekit.api.factory.HomekitServiceFactory} for service creation</li>
- *   <li>{@link org.openhab.io.homekit.api.service.HomekitService} for service implementation</li>
+ * <li>{@link org.openhab.io.homekit.api.factory.HomekitServiceFactory} for service creation</li>
+ * <li>{@link org.openhab.io.homekit.api.service.HomekitService} for service implementation</li>
  * </ul>
  * </p>
  *
  * @author Karel Goderis - Initial contribution
- * @version 1.0
  * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -80,9 +81,9 @@ public @interface HomekitServiceType {
      * <p>
      * The tag should be:
      * <ul>
-     *   <li>Lowercase</li>
-     *   <li>Simple and concise</li>
-     *   <li>Unique within the system</li>
+     * <li>Lowercase</li>
+     * <li>Simple and concise</li>
+     * <li>Unique within the system</li>
      * </ul>
      * </p>
      *

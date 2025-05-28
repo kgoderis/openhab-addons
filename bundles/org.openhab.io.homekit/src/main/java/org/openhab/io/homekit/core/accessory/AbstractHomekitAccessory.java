@@ -45,36 +45,36 @@ import org.slf4j.LoggerFactory;
  * This class implements the fundamental accessory behavior required by all HomeKit accessories, including:
  * </p>
  * <ul>
- *   <li>Unique identification and instance management</li>
- *   <li>Service management and lifecycle</li>
- *   <li>Event handling and subscriptions</li>
- *   <li>JSON serialization</li>
- *   <li>Builder pattern for configuration</li>
+ * <li>Unique identification and instance management</li>
+ * <li>Service management and lifecycle</li>
+ * <li>Event handling and subscriptions</li>
+ * <li>JSON serialization</li>
+ * <li>Builder pattern for configuration</li>
  * </ul>
  *
  * <p>
  * Key responsibilities:
  * </p>
  * <ul>
- *   <li>Managing service lifecycle and relationships</li>
- *   <li>Handling event subscriptions and notifications</li>
- *   <li>Providing builder pattern for easy configuration</li>
- *   <li>Implementing JSON serialization for HomeKit protocol</li>
- *   <li>Managing instance IDs and unique identification</li>
- *   <li>Coordinating with HomeKit servers</li>
+ * <li>Managing service lifecycle and relationships</li>
+ * <li>Handling event subscriptions and notifications</li>
+ * <li>Providing builder pattern for easy configuration</li>
+ * <li>Implementing JSON serialization for HomeKit protocol</li>
+ * <li>Managing instance IDs and unique identification</li>
+ * <li>Coordinating with HomeKit servers</li>
  * </ul>
  *
  * <p>
  * The class integrates with:
  * </p>
  * <ul>
- *   <li>{@link HomekitService} for service lifecycle management</li>
- *   <li>{@link HomekitEventManager} for event handling</li>
- *   <li>{@link HomekitServiceFactory} for service creation</li>
- *   <li>{@link HomekitCharacteristicFactory} for characteristic creation</li>
- *   <li>{@link HomekitAccessoryServer} for server coordination</li>
- *   <li>{@link org.openhab.core.thing.UID OpenHAB's UID system} for unique identification</li>
- *   <li>{@link org.openhab.io.homekit.api.event.HomekitEvent OpenHAB's event system} for event handling</li>
+ * <li>{@link HomekitService} for service lifecycle management</li>
+ * <li>{@link HomekitEventManager} for event handling</li>
+ * <li>{@link HomekitServiceFactory} for service creation</li>
+ * <li>{@link HomekitCharacteristicFactory} for characteristic creation</li>
+ * <li>{@link HomekitAccessoryServer} for server coordination</li>
+ * <li>{@link org.openhab.core.thing.UID OpenHAB's UID system} for unique identification</li>
+ * <li>{@link org.openhab.io.homekit.api.event.HomekitEvent OpenHAB's event system} for event handling</li>
  * </ul>
  *
  * @author Karel Goderis - Initial contribution

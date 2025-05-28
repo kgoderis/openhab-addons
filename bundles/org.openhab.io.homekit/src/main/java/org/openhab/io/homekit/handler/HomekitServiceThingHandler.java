@@ -1,7 +1,6 @@
 package org.openhab.io.homekit.handler;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -17,9 +16,7 @@ import org.openhab.core.thing.UID;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.core.thing.type.ChannelType;
 import org.openhab.core.thing.type.ChannelTypeUID;
-import org.openhab.core.types.Command;
 import org.openhab.io.homekit.HomekitBindingConstants;
-import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
@@ -83,7 +80,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
     // ========== Component References and Locks ==========
     /** Lock for synchronizing service access */
     private final Object serviceLock = new Object();
-    
+
     /** Reference to the HomeKit service being managed */
     private @Nullable HomekitService service;
 
@@ -93,7 +90,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
 
     /** Factory for creating HomeKit characteristics */
     private final HomekitCharacteristicFactory characteristicFactory;
-    
+
     /** Factory for creating HomeKit services */
     private final HomekitServiceFactory serviceFactory;
 

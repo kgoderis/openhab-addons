@@ -3,35 +3,43 @@ package org.openhab.io.homekit.api.registry;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.Registry;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
-import org.openhab.io.homekit.api.listener.HomekitAccessoryChangeListener;
-import org.openhab.io.homekit.api.provider.HomekitAccessoryProvider;
 import org.openhab.io.homekit.api.uid.HomekitAccessoryUID;
 
 /**
  * Registry for managing HomeKit accessories in the system.
- *
+ * <p>
  * This interface defines the contract for components that need to track and manage HomeKit
  * accessories from different providers. It extends the OpenHAB Registry interface to provide
  * a centralized registry for all HomeKit accessories in the system.
- *
+ * </p>
+ * <p>
  * The registry provides:
- * - Centralized accessory management
- * - Provider-based accessory discovery
- * - Change notification support
- * - Accessory lifecycle tracking
- *
+ * <ul>
+ * <li>Centralized accessory management</li>
+ * <li>Provider-based accessory discovery</li>
+ * <li>Change notification support</li>
+ * <li>Accessory lifecycle tracking</li>
+ * </ul>
+ * </p>
+ * <p>
  * Key implementation details:
- * - Thread-safe registry operations
- * - Provider-based discovery system
- * - Change listener support
- * - UID-based accessory identification
- *
+ * <ul>
+ * <li>Thread-safe registry operations</li>
+ * <li>Provider-based discovery system</li>
+ * <li>Change listener support</li>
+ * <li>UID-based accessory identification</li>
+ * </ul>
+ * </p>
+ * <p>
  * The interface integrates with:
- * - {@link org.openhab.core.common.registry.Registry} for registry functionality
- * - {@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for accessory management
- * - {@link org.openhab.io.homekit.api.provider.HomekitAccessoryProvider} for accessory discovery
- * - {@link org.openhab.io.homekit.api.listener.HomekitAccessoryChangeListener} for change notifications
- * - {@link org.openhab.io.homekit.api.uid.HomekitAccessoryUID} for accessory identification
+ * <ul>
+ * <li>{@link org.openhab.core.common.registry.Registry} for registry functionality</li>
+ * <li>{@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for accessory management</li>
+ * <li>{@link org.openhab.io.homekit.api.provider.HomekitAccessoryProvider} for accessory discovery</li>
+ * <li>{@link org.openhab.io.homekit.api.listener.HomekitAccessoryChangeListener} for change notifications</li>
+ * <li>{@link org.openhab.io.homekit.api.uid.HomekitAccessoryUID} for accessory identification</li>
+ * </ul>
+ * </p>
  *
  * @author Karel Goderis - Initial Contribution
  * @since 1.0.0

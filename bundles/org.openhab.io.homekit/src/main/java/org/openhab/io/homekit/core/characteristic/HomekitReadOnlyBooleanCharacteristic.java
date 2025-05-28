@@ -3,18 +3,15 @@ package org.openhab.io.homekit.core.characteristic;
 import java.util.Map;
 
 import javax.json.JsonNumber;
-import javax.json.JsonObject;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.types.State;
+import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,24 +26,24 @@ import org.slf4j.LoggerFactory;
  * <p>
  * The class integrates with several key components:
  * <ul>
- *   <li>{@link AbstractHomekitCharacteristic} for base characteristic functionality</li>
- *   <li>{@link HomekitService} for service-level operations</li>
- *   <li>{@link HomekitEventManager} for event handling</li>
- *   <li>{@link org.openhab.core.types.State} for state conversion</li>
- *   <li>{@link javax.json.JsonValue} for JSON serialization</li>
- *   <li>{@link org.openhab.core.library.types.OnOffType} for boolean state handling</li>
+ * <li>{@link AbstractHomekitCharacteristic} for base characteristic functionality</li>
+ * <li>{@link HomekitService} for service-level operations</li>
+ * <li>{@link HomekitEventManager} for event handling</li>
+ * <li>{@link org.openhab.core.types.State} for state conversion</li>
+ * <li>{@link javax.json.JsonValue} for JSON serialization</li>
+ * <li>{@link org.openhab.core.library.types.OnOffType} for boolean state handling</li>
  * </ul>
  * </p>
  *
  * <p>
  * Key features:
  * <ul>
- *   <li>Read-only access control through permission management</li>
- *   <li>Boolean value conversion between HomeKit and OpenHAB formats</li>
- *   <li>Event handling for value changes</li>
- *   <li>JSON serialization for HomeKit protocol communication</li>
- *   <li>Integration with OpenHAB's state management system</li>
- *   <li>Support for boolean state validation and constraints</li>
+ * <li>Read-only access control through permission management</li>
+ * <li>Boolean value conversion between HomeKit and OpenHAB formats</li>
+ * <li>Event handling for value changes</li>
+ * <li>JSON serialization for HomeKit protocol communication</li>
+ * <li>Integration with OpenHAB's state management system</li>
+ * <li>Support for boolean state validation and constraints</li>
  * </ul>
  * </p>
  *
@@ -76,9 +73,9 @@ public abstract class HomekitReadOnlyBooleanCharacteristic extends AbstractHomek
      * This constructor initializes a new read-only boolean characteristic with its required
      * dependencies and sets up the event subscription system. It integrates with:
      * <ul>
-     *   <li>{@link HomekitService} for service integration</li>
-     *   <li>{@link HomekitEventManager} for event handling</li>
-     *   <li>{@link HomekitEventType} for event type management</li>
+     * <li>{@link HomekitService} for service integration</li>
+     * <li>{@link HomekitEventManager} for event handling</li>
+     * <li>{@link HomekitEventType} for event type management</li>
      * </ul>
      *
      * @param service the service this characteristic belongs to
@@ -99,10 +96,10 @@ public abstract class HomekitReadOnlyBooleanCharacteristic extends AbstractHomek
      * This constructor initializes a read-only boolean characteristic from a JSON configuration,
      * allowing for flexible characteristic creation and configuration. It integrates with:
      * <ul>
-     *   <li>{@link javax.json.JsonValue} for configuration parsing</li>
-     *   <li>{@link HomekitService} for service integration</li>
-     *   <li>{@link HomekitEventManager} for event handling</li>
-     *   <li>{@link HomekitEventType} for event type management</li>
+     * <li>{@link javax.json.JsonValue} for configuration parsing</li>
+     * <li>{@link HomekitService} for service integration</li>
+     * <li>{@link HomekitEventManager} for event handling</li>
+     * <li>{@link HomekitEventType} for event type management</li>
      * </ul>
      *
      * @param service the service this characteristic belongs to
@@ -136,9 +133,9 @@ public abstract class HomekitReadOnlyBooleanCharacteristic extends AbstractHomek
      * This method handles the conversion of JSON values to boolean values, supporting
      * various JSON value types and conversion rules. It integrates with:
      * <ul>
-     *   <li>{@link javax.json.JsonValue} for value parsing</li>
-     *   <li>{@link javax.json.JsonObject} for object handling</li>
-     *   <li>{@link javax.json.JsonNumber} for numeric handling</li>
+     * <li>{@link javax.json.JsonValue} for value parsing</li>
+     * <li>{@link javax.json.JsonObject} for object handling</li>
+     * <li>{@link javax.json.JsonNumber} for numeric handling</li>
      * </ul>
      *
      * @param jsonValue the JSON value to convert
@@ -165,9 +162,9 @@ public abstract class HomekitReadOnlyBooleanCharacteristic extends AbstractHomek
      * This method handles the conversion of OpenHAB states to boolean values, supporting
      * various state types and conversion rules. It integrates with:
      * <ul>
-     *   <li>{@link org.openhab.core.types.State} for state handling</li>
-     *   <li>{@link org.openhab.core.library.types.OnOffType} for on/off state handling</li>
-     *   <li>{@link org.openhab.core.library.types.OpenClosedType} for open/closed state handling</li>
+     * <li>{@link org.openhab.core.types.State} for state handling</li>
+     * <li>{@link org.openhab.core.library.types.OnOffType} for on/off state handling</li>
+     * <li>{@link org.openhab.core.library.types.OpenClosedType} for open/closed state handling</li>
      * </ul>
      *
      * @param state the state to convert
@@ -194,9 +191,9 @@ public abstract class HomekitReadOnlyBooleanCharacteristic extends AbstractHomek
      * This method handles the conversion of boolean values to OpenHAB states, supporting
      * various state types and conversion rules. It integrates with:
      * <ul>
-     *   <li>{@link org.openhab.core.types.State} for state creation</li>
-     *   <li>{@link org.openhab.core.library.types.OnOffType} for on/off state creation</li>
-     *   <li>{@link org.openhab.core.library.types.OpenClosedType} for open/closed state creation</li>
+     * <li>{@link org.openhab.core.types.State} for state creation</li>
+     * <li>{@link org.openhab.core.library.types.OnOffType} for on/off state creation</li>
+     * <li>{@link org.openhab.core.library.types.OpenClosedType} for open/closed state creation</li>
      * </ul>
      *
      * @param value the boolean value to convert
@@ -209,4 +206,4 @@ public abstract class HomekitReadOnlyBooleanCharacteristic extends AbstractHomek
         logger.trace("{}Converted boolean to state: {}", LOG_CHAR, result);
         return result;
     }
-} 
+}

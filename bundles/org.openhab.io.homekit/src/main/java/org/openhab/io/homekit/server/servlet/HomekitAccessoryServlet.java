@@ -21,39 +21,43 @@ import org.slf4j.LoggerFactory;
 /**
  * Servlet that implements the HomeKit accessory information protocol.
  *
- * <p>This servlet provides the core functionality for exposing HomeKit accessory
+ * <p>
+ * This servlet provides the core functionality for exposing HomeKit accessory
  * information to clients, implementing the HomeKit Accessory Protocol (HAP)
  * specification for accessory discovery and configuration. It serves as the
  * primary interface for clients to discover and understand the capabilities
  * of connected accessories.
  *
- * <p>Key features:
+ * <p>
+ * Key features:
  * <ul>
- *     <li>Complete accessory information exposure</li>
- *     <li>HAP-compliant JSON response formatting</li>
- *     <li>Efficient accessory enumeration</li>
- *     <li>Error handling and logging</li>
- *     <li>Proper HTTP header management</li>
- *     <li>Streaming response handling</li>
+ * <li>Complete accessory information exposure</li>
+ * <li>HAP-compliant JSON response formatting</li>
+ * <li>Efficient accessory enumeration</li>
+ * <li>Error handling and logging</li>
+ * <li>Proper HTTP header management</li>
+ * <li>Streaming response handling</li>
  * </ul>
  *
- * <p>Protocol implementation details:
+ * <p>
+ * Protocol implementation details:
  * <ul>
- *     <li>Accessory metadata exposure (name, manufacturer, model)</li>
- *     <li>Service and characteristic definitions</li>
- *     <li>Reduced JSON format for efficient transmission</li>
- *     <li>Proper HTTP headers and content types</li>
- *     <li>Keep-alive connection management</li>
- *     <li>Content length optimization</li>
+ * <li>Accessory metadata exposure (name, manufacturer, model)</li>
+ * <li>Service and characteristic definitions</li>
+ * <li>Reduced JSON format for efficient transmission</li>
+ * <li>Proper HTTP headers and content types</li>
+ * <li>Keep-alive connection management</li>
+ * <li>Content length optimization</li>
  * </ul>
  *
- * <p>The class integrates with:
+ * <p>
+ * The class integrates with:
  * <ul>
- *     <li>{@link HomekitBaseServlet} for base servlet functionality</li>
- *     <li>{@link HomekitAccessoryServer} for server and accessory management</li>
- *     <li>{@link HomekitAccessory} for accessory information and metadata</li>
- *     <li>{@link javax.json.Json} for HAP-compliant JSON handling</li>
- *     <li>{@link org.eclipse.jetty.http.HttpHeader} for HTTP header management</li>
+ * <li>{@link HomekitBaseServlet} for base servlet functionality</li>
+ * <li>{@link HomekitAccessoryServer} for server and accessory management</li>
+ * <li>{@link HomekitAccessory} for accessory information and metadata</li>
+ * <li>{@link javax.json.Json} for HAP-compliant JSON handling</li>
+ * <li>{@link org.eclipse.jetty.http.HttpHeader} for HTTP header management</li>
  * </ul>
  *
  * @author Karel Goderis - Initial Contribution
@@ -86,7 +90,8 @@ public class HomekitAccessoryServlet extends HomekitBaseServlet {
     /**
      * Creates a new accessory servlet with the specified server instance.
      *
-     * <p>This constructor initializes the servlet with a specific server instance,
+     * <p>
+     * This constructor initializes the servlet with a specific server instance,
      * enabling proper integration with the HomeKit server infrastructure.
      *
      * @param server The HomeKit accessory server instance to associate with this servlet
@@ -99,39 +104,43 @@ public class HomekitAccessoryServlet extends HomekitBaseServlet {
     /**
      * Handles GET requests for accessory information.
      *
-     * <p>This method implements the HAP accessory information protocol by:
+     * <p>
+     * This method implements the HAP accessory information protocol by:
      * <ul>
-     *     <li>Retrieving all registered accessories from the server</li>
-     *     <li>Converting each accessory to a reduced JSON representation</li>
-     *     <li>Building a complete JSON response with all accessories</li>
-     *     <li>Setting appropriate HTTP headers and content type</li>
-     *     <li>Writing the JSON response to the output stream</li>
+     * <li>Retrieving all registered accessories from the server</li>
+     * <li>Converting each accessory to a reduced JSON representation</li>
+     * <li>Building a complete JSON response with all accessories</li>
+     * <li>Setting appropriate HTTP headers and content type</li>
+     * <li>Writing the JSON response to the output stream</li>
      * </ul>
      *
-     * <p>The response follows the HAP specification and includes:
+     * <p>
+     * The response follows the HAP specification and includes:
      * <ul>
-     *     <li>Accessory metadata (name, manufacturer, model, serial number)</li>
-     *     <li>Service definitions with their types and characteristics</li>
-     *     <li>Characteristic definitions with their properties and values</li>
-     *     <li>Proper HAP content type and connection headers</li>
+     * <li>Accessory metadata (name, manufacturer, model, serial number)</li>
+     * <li>Service definitions with their types and characteristics</li>
+     * <li>Characteristic definitions with their properties and values</li>
+     * <li>Proper HAP content type and connection headers</li>
      * </ul>
      *
-     * <p>Error handling ensures:
+     * <p>
+     * Error handling ensures:
      * <ul>
-     *     <li>Proper error status codes for server errors</li>
-     *     <li>Detailed error logging for debugging</li>
-     *     <li>Graceful failure handling</li>
-     *     <li>Resource cleanup in error cases</li>
-     *     <li>Proper exception propagation</li>
+     * <li>Proper error status codes for server errors</li>
+     * <li>Detailed error logging for debugging</li>
+     * <li>Graceful failure handling</li>
+     * <li>Resource cleanup in error cases</li>
+     * <li>Proper exception propagation</li>
      * </ul>
      *
-     * <p>Implementation details:
+     * <p>
+     * Implementation details:
      * <ul>
-     *     <li>Uses JsonArrayBuilder for efficient JSON construction</li>
-     *     <li>Implements streaming response handling</li>
-     *     <li>Manages keep-alive connections</li>
-     *     <li>Optimizes content length calculation</li>
-     *     <li>Ensures proper resource cleanup</li>
+     * <li>Uses JsonArrayBuilder for efficient JSON construction</li>
+     * <li>Implements streaming response handling</li>
+     * <li>Manages keep-alive connections</li>
+     * <li>Optimizes content length calculation</li>
+     * <li>Ensures proper resource cleanup</li>
      * </ul>
      *
      * @param request The HTTP request for accessory information

@@ -20,20 +20,20 @@ import org.slf4j.LoggerFactory;
  * The class integrates with several key components:
  * </p>
  * <ul>
- *   <li>{@link org.openhab.core.thing.UID} for base UID functionality</li>
- *   <li>{@link java.util.UUID} for unique identifier generation</li>
- *   <li>OpenHAB's thing system for device identification</li>
+ * <li>{@link org.openhab.core.thing.UID} for base UID functionality</li>
+ * <li>{@link java.util.UUID} for unique identifier generation</li>
+ * <li>OpenHAB's thing system for device identification</li>
  * </ul>
  *
  * <p>
  * Key features:
  * </p>
  * <ul>
- *   <li>Standardized UID format: homekit:{prefix}:{uuid}</li>
- *   <li>Support for different handler types through prefixes</li>
- *   <li>UUID-based unique identification</li>
- *   <li>Format validation and parsing</li>
- *   <li>Wildcard UID support for matching any subscriber</li>
+ * <li>Standardized UID format: homekit:{prefix}:{uuid}</li>
+ * <li>Support for different handler types through prefixes</li>
+ * <li>UUID-based unique identification</li>
+ * <li>Format validation and parsing</li>
+ * <li>Wildcard UID support for matching any subscriber</li>
  * </ul>
  *
  * <p>
@@ -70,10 +70,10 @@ public class HomekitUID extends UID {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Generates random UUID for uniqueness</li>
-     *   <li>Validates prefix parameter</li>
-     *   <li>Constructs UID in standard format</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Generates random UUID for uniqueness</li>
+     * <li>Validates prefix parameter</li>
+     * <li>Constructs UID in standard format</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @param prefix The prefix to use for this handler UID (e.g., "bridge", "accessory", "service")
@@ -97,10 +97,10 @@ public class HomekitUID extends UID {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Validates UID format</li>
-     *   <li>Extracts prefix component</li>
-     *   <li>Ensures format consistency</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Validates UID format</li>
+     * <li>Extracts prefix component</li>
+     * <li>Ensures format consistency</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @param prefix The prefix to use for this handler UID
@@ -124,9 +124,9 @@ public class HomekitUID extends UID {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns internal prefix field</li>
-     *   <li>Used for UID categorization</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Returns internal prefix field</li>
+     * <li>Used for UID categorization</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return The prefix used in this UID
@@ -143,9 +143,9 @@ public class HomekitUID extends UID {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Extracts UUID segment</li>
-     *   <li>Maintains UID structure</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Extracts UUID segment</li>
+     * <li>Maintains UID structure</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return The UUID component of this UID
@@ -163,18 +163,18 @@ public class HomekitUID extends UID {
      * A valid HomeKit UID must have at least 3 segments:
      * </p>
      * <ol>
-     *   <li>The namespace prefix ("homekit")</li>
-     *   <li>The handler prefix (e.g., "bridge", "accessory")</li>
-     *   <li>The UUID component</li>
+     * <li>The namespace prefix ("homekit")</li>
+     * <li>The handler prefix (e.g., "bridge", "accessory")</li>
+     * <li>The UUID component</li>
      * </ol>
      *
      * <p>
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Enforces UID structure validation</li>
-     *   <li>Ensures complete identification</li>
-     *   <li>Supports UID parsing</li>
+     * <li>Enforces UID structure validation</li>
+     * <li>Ensures complete identification</li>
+     * <li>Supports UID parsing</li>
      * </ul>
      *
      * @return The minimum number of segments (3) for a valid HomeKit UID

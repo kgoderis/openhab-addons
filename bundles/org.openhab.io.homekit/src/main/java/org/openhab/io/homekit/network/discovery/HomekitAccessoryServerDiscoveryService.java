@@ -65,44 +65,44 @@ import org.slf4j.LoggerFactory;
  * It handles the complete lifecycle of HomeKit accessories including:
  * </p>
  * <ul>
- *   <li>mDNS service discovery and event handling</li>
- *   <li>Accessory server registration and management</li>
- *   <li>Thing creation and configuration</li>
- *   <li>Background and foreground scanning</li>
- *   <li>Service property processing and validation</li>
+ * <li>mDNS service discovery and event handling</li>
+ * <li>Accessory server registration and management</li>
+ * <li>Thing creation and configuration</li>
+ * <li>Background and foreground scanning</li>
+ * <li>Service property processing and validation</li>
  * </ul>
  *
  * <p>
  * <b>Configuration Options:</b>
  * </p>
  * <ul>
- *   <li>auto.create.accessoryThing: Controls automatic creation of accessory things (default: true)</li>
- *   <li>auto.create.serviceThing: Controls automatic creation of service things (default: true)</li>
+ * <li>auto.create.accessoryThing: Controls automatic creation of accessory things (default: true)</li>
+ * <li>auto.create.serviceThing: Controls automatic creation of service things (default: true)</li>
  * </ul>
  *
  * <p>
  * <b>Key Features:</b>
  * </p>
  * <ul>
- *   <li>Automatic discovery of HomeKit accessories on the network</li>
- *   <li>Support for both IPv4 and IPv6 (with platform-specific handling)</li>
- *   <li>Graceful handling of service removal with configurable grace period</li>
- *   <li>Automatic thing creation for discovered accessories and services</li>
- *   <li>Comprehensive logging and error handling</li>
+ * <li>Automatic discovery of HomeKit accessories on the network</li>
+ * <li>Support for both IPv4 and IPv6 (with platform-specific handling)</li>
+ * <li>Graceful handling of service removal with configurable grace period</li>
+ * <li>Automatic thing creation for discovered accessories and services</li>
+ * <li>Comprehensive logging and error handling</li>
  * </ul>
  *
  * <p>
  * <b>Dependencies:</b>
  * </p>
  * <ul>
- *   <li>{@link MDNSClient} - For network service discovery</li>
- *   <li>{@link HomekitAccessoryServerRegistry} - For server management</li>
- *   <li>{@link HomekitAccessoryRegistry} - For accessory management</li>
- *   <li>{@link HomekitPairingRegistry} - For pairing management</li>
- *   <li>{@link HomekitThingTypeProvider} - For thing type definitions</li>
- *   <li>{@link HomekitEventManager} - For event handling</li>
- *   <li>{@link HomekitAccessoryFactory} - For accessory creation</li>
- *   <li>{@link HomekitServiceFactory} - For service creation</li>
+ * <li>{@link MDNSClient} - For network service discovery</li>
+ * <li>{@link HomekitAccessoryServerRegistry} - For server management</li>
+ * <li>{@link HomekitAccessoryRegistry} - For accessory management</li>
+ * <li>{@link HomekitPairingRegistry} - For pairing management</li>
+ * <li>{@link HomekitThingTypeProvider} - For thing type definitions</li>
+ * <li>{@link HomekitEventManager} - For event handling</li>
+ * <li>{@link HomekitAccessoryFactory} - For accessory creation</li>
+ * <li>{@link HomekitServiceFactory} - For service creation</li>
  * </ul>
  *
  * @author OpenHAB
@@ -169,10 +169,10 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
      * <b>Key implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Initializes all required dependencies</li>
-     *   <li>Loads configuration settings</li>
-     *   <li>Sets up logging and monitoring</li>
-     *   <li>Prepares for service discovery</li>
+     * <li>Initializes all required dependencies</li>
+     * <li>Loads configuration settings</li>
+     * <li>Sets up logging and monitoring</li>
+     * <li>Prepares for service discovery</li>
      * </ul>
      *
      * @param configProperties Configuration properties for the service
@@ -224,10 +224,10 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
      * This method performs cleanup operations when the service is deactivated:
      * </p>
      * <ul>
-     *   <li>Stops background discovery</li>
-     *   <li>Cancels all pending removal tasks</li>
-     *   <li>Removes service listeners</li>
-     *   <li>Cleans up resources</li>
+     * <li>Stops background discovery</li>
+     * <li>Cancels all pending removal tasks</li>
+     * <li>Removes service listeners</li>
+     * <li>Cleans up resources</li>
      * </ul>
      */
     @Deactivate
@@ -367,7 +367,8 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
             Map<String, Object> properties = processService(serviceInfo);
 
             if (properties == null) {
-                logger.debug("{}Skipping service {} - invalid or missing properties", LOG_SERVER, serviceInfo.getName());
+                logger.debug("{}Skipping service {} - invalid or missing properties", LOG_SERVER,
+                        serviceInfo.getName());
                 continue;
             }
 
@@ -399,7 +400,8 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                 try {
                     for (HomekitAccessory accessory : server.getAccessories()) {
                         if (accessoryRegistry != null && accessoryRegistry.get(accessory.getUID()) == null) {
-                            logger.debug("{}Registering new accessory {} in registry", LOG_ACCESSORY, accessory.getUID());
+                            logger.debug("{}Registering new accessory {} in registry", LOG_ACCESSORY,
+                                    accessory.getUID());
                             accessoryRegistry.add(accessory);
                             try {
                                 createThingFromAccessory(server, accessory);
@@ -460,7 +462,8 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                         logger.debug("{}Removing server {} immediately due to service removal", LOG_SERVER, serverUID);
                         accessoryServerRegistry.remove(serverUID);
                     } else {
-                        logger.debug("{}Scheduling server {} removal in {} seconds", LOG_SERVER, serverUID, gracePeriod);
+                        logger.debug("{}Scheduling server {} removal in {} seconds", LOG_SERVER, serverUID,
+                                gracePeriod);
                         cancelRemovalTask(serviceInfo);
                         scheduleRemovalTask(serverUID, serviceInfo, gracePeriod);
                     }
@@ -811,8 +814,9 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
             if (autoCreateObj instanceof Boolean aBoolean) {
                 autoCreateAccessoryThing = aBoolean;
             } else if (autoCreateObj != null) {
-                throw new IllegalArgumentException(String.format("Invalid configuration value for %s: %s. Expected boolean.",
-                        CONFIG_AUTO_CREATE_ACCESSORY, autoCreateObj));
+                throw new IllegalArgumentException(
+                        String.format("Invalid configuration value for %s: %s. Expected boolean.",
+                                CONFIG_AUTO_CREATE_ACCESSORY, autoCreateObj));
             } else {
                 autoCreateAccessoryThing = DEFAULT_AUTO_CREATE_ACCESSORY;
             }
@@ -823,8 +827,9 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
             if (autoCreateServiceObj instanceof Boolean aBoolean) {
                 autoCreateServiceThing = aBoolean;
             } else if (autoCreateServiceObj != null) {
-                throw new IllegalArgumentException(String.format("Invalid configuration value for %s: %s. Expected boolean.",
-                        CONFIG_AUTO_CREATE_SERVICE, autoCreateServiceObj));
+                throw new IllegalArgumentException(
+                        String.format("Invalid configuration value for %s: %s. Expected boolean.",
+                                CONFIG_AUTO_CREATE_SERVICE, autoCreateServiceObj));
             } else {
                 autoCreateServiceThing = DEFAULT_AUTO_CREATE_SERVICE;
             }

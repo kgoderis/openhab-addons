@@ -17,31 +17,31 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * <p>
  * The class implements binary data management with:
  * <ul>
- *   <li>Raw byte array value representation</li>
- *   <li>Default identity encoding/decoding</li>
- *   <li>Support for paired read/write operations</li>
- *   <li>Event notification capabilities</li>
+ * <li>Raw byte array value representation</li>
+ * <li>Default identity encoding/decoding</li>
+ * <li>Support for paired read/write operations</li>
+ * <li>Event notification capabilities</li>
  * </ul>
  * </p>
  *
  * <p>
  * Key features:
  * <ul>
- *   <li>Supports binary data format as per HomeKit specification</li>
- *   <li>Provides paired read/write access by default</li>
- *   <li>Includes event notifications for value changes</li>
- *   <li>Allows custom encoding/decoding through method overrides</li>
- *   <li>Uses byte[] for binary data representation</li>
+ * <li>Supports binary data format as per HomeKit specification</li>
+ * <li>Provides paired read/write access by default</li>
+ * <li>Includes event notifications for value changes</li>
+ * <li>Allows custom encoding/decoding through method overrides</li>
+ * <li>Uses byte[] for binary data representation</li>
  * </ul>
  * </p>
  *
  * <p>
  * The class integrates with:
  * <ul>
- *   <li>{@link AbstractHomekitCharacteristic} - Base characteristic functionality</li>
- *   <li>{@link HomekitService} - Service lifecycle management</li>
- *   <li>{@link HomekitEventManager} - Event handling and notifications</li>
- *   <li>{@link org.openhab.core.types.State} - State conversion interface</li>
+ * <li>{@link AbstractHomekitCharacteristic} - Base characteristic functionality</li>
+ * <li>{@link HomekitService} - Service lifecycle management</li>
+ * <li>{@link HomekitEventManager} - Event handling and notifications</li>
+ * <li>{@link org.openhab.core.types.State} - State conversion interface</li>
  * </ul>
  * </p>
  *

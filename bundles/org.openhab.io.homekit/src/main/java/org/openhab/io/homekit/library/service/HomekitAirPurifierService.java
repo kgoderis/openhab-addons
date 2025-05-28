@@ -24,21 +24,21 @@ import org.slf4j.LoggerFactory;
  * <p>
  * This service provides control over air purifiers and their settings, including:
  * <ul>
- *   <li>Power state management</li>
- *   <li>Purification mode control</li>
- *   <li>Fan speed adjustment</li>
- *   <li>Swing mode operation</li>
+ * <li>Power state management</li>
+ * <li>Purification mode control</li>
+ * <li>Fan speed adjustment</li>
+ * <li>Swing mode operation</li>
  * </ul>
  * </p>
  *
  * <p>
  * The service is used to:
  * <ul>
- *   <li>Control air purifier operation</li>
- *   <li>Monitor purification states</li>
- *   <li>Adjust fan speeds</li>
- *   <li>Manage physical control locks</li>
- *   <li>Configure swing modes</li>
+ * <li>Control air purifier operation</li>
+ * <li>Monitor purification states</li>
+ * <li>Adjust fan speeds</li>
+ * <li>Manage physical control locks</li>
+ * <li>Configure swing modes</li>
  * </ul>
  * </p>
  *
@@ -102,19 +102,19 @@ public class HomekitAirPurifierService extends AbstractHomekitService {
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>Active (UUID: 000000B0-0000-1000-8000-0026BB765291)</li>
-     *   <li>CurrentAirPurifierState (UUID: 000000A9-0000-1000-8000-0026BB765291)</li>
-     *   <li>TargetAirPurifierState (UUID: 000000A8-0000-1000-8000-0026BB765291)</li>
+     * <li>Active (UUID: 000000B0-0000-1000-8000-0026BB765291)</li>
+     * <li>CurrentAirPurifierState (UUID: 000000A9-0000-1000-8000-0026BB765291)</li>
+     * <li>TargetAirPurifierState (UUID: 000000A8-0000-1000-8000-0026BB765291)</li>
      * </ul>
      * </p>
      *
      * <p>
      * Optional characteristics:
      * <ul>
-     *   <li>LockPhysicalControls (UUID: 000000A7-0000-1000-8000-0026BB765291)</li>
-     *   <li>Name (UUID: 00000023-0000-1000-8000-0026BB765291)</li>
-     *   <li>RotationSpeed (UUID: 00000029-0000-1000-8000-0026BB765291)</li>
-     *   <li>SwingMode (UUID: 000000B6-0000-1000-8000-0026BB765291)</li>
+     * <li>LockPhysicalControls (UUID: 000000A7-0000-1000-8000-0026BB765291)</li>
+     * <li>Name (UUID: 00000023-0000-1000-8000-0026BB765291)</li>
+     * <li>RotationSpeed (UUID: 00000029-0000-1000-8000-0026BB765291)</li>
+     * <li>SwingMode (UUID: 000000B6-0000-1000-8000-0026BB765291)</li>
      * </ul>
      * </p>
      *

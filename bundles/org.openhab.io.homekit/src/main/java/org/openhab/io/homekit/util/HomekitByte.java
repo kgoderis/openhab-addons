@@ -19,29 +19,32 @@ import org.slf4j.LoggerFactory;
  * This class offers methods for handling binary data, stream operations, and hexadecimal conversions
  * commonly used in HomeKit protocol implementations.
  *
- * <p>Key features:
+ * <p>
+ * Key features:
  * <ul>
- *     <li>Byte array concatenation</li>
- *     <li>BigInteger to byte array conversion</li>
- *     <li>Stream copying with length control</li>
- *     <li>Hexadecimal string conversion</li>
- *     <li>Buffer logging with hex dump</li>
+ * <li>Byte array concatenation</li>
+ * <li>BigInteger to byte array conversion</li>
+ * <li>Stream copying with length control</li>
+ * <li>Hexadecimal string conversion</li>
+ * <li>Buffer logging with hex dump</li>
  * </ul>
  *
- * <p>Integration points:
+ * <p>
+ * Integration points:
  * <ul>
- *     <li>HomeKit protocol message handling</li>
- *     <li>Binary data processing</li>
- *     <li>Network communication</li>
- *     <li>Debug logging</li>
+ * <li>HomeKit protocol message handling</li>
+ * <li>Binary data processing</li>
+ * <li>Network communication</li>
+ * <li>Debug logging</li>
  * </ul>
  *
- * <p>Implementation details:
+ * <p>
+ * Implementation details:
  * <ul>
- *     <li>Efficient byte array operations</li>
- *     <li>Thread-safe methods</li>
- *     <li>Memory-efficient stream handling</li>
- *     <li>UTF-8 encoding support</li>
+ * <li>Efficient byte array operations</li>
+ * <li>Thread-safe methods</li>
+ * <li>Memory-efficient stream handling</li>
+ * <li>UTF-8 encoding support</li>
  * </ul>
  *
  * @author Karel Goderis - Initial contribution
@@ -124,11 +127,11 @@ public class HomekitByte {
         }
 
         logger.trace("{}Copying {} bytes between streams", LOG_OPERATION, length);
-        
+
         byte[] buffer = new byte[length];
         int remaining = length;
         int bytesRead;
-        
+
         while ((bytesRead = input.read(buffer, 0, remaining)) != -1 && remaining > 0) {
             output.write(buffer, 0, bytesRead);
             remaining -= bytesRead;
@@ -183,7 +186,7 @@ public class HomekitByte {
 
                 HexDump.dump(bytes, 0, stream, 0);
                 stream.flush();
-                
+
                 logger.trace("[{}] {} {}:%n{}%n", remote, label, BufferUtil.toDetailString(buf),
                         stream.toString(StandardCharsets.UTF_8.name()));
             }

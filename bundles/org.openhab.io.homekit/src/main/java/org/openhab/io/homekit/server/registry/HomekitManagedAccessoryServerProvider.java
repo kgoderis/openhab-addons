@@ -6,7 +6,6 @@ import java.util.Collection;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.AbstractManagedProvider;
-import org.openhab.core.common.registry.ManagedProvider;
 import org.openhab.core.io.transport.mdns.MDNSService;
 import org.openhab.core.service.ReadyMarker;
 import org.openhab.core.service.ReadyService;
@@ -224,8 +223,8 @@ public class HomekitManagedAccessoryServerProvider extends
                             server.addAccessory(accessory);
                             logger.debug("{}Accessory restored - UID: {}", LOG_ACCESSORY, accessoryUID);
                         } catch (HomekitAccessoryOperationException e) {
-                            logger.error("{}Failed to restore accessory {}: {}", LOG_ERROR, accessoryUID, e.getMessage(),
-                                    e);
+                            logger.error("{}Failed to restore accessory {}: {}", LOG_ERROR, accessoryUID,
+                                    e.getMessage(), e);
                         }
                     } else {
                         logger.warn("{}Accessory not found in registry - UID: {}", LOG_WARN, accessoryUID);
@@ -236,7 +235,8 @@ public class HomekitManagedAccessoryServerProvider extends
             return server;
 
         } catch (HomekitServerException e) {
-            logger.error("{}Failed to restore server from persistence - key: {}: {}", LOG_ERROR, key, e.getMessage(), e);
+            logger.error("{}Failed to restore server from persistence - key: {}: {}", LOG_ERROR, key, e.getMessage(),
+                    e);
             return null;
         }
     }
@@ -280,11 +280,10 @@ public class HomekitManagedAccessoryServerProvider extends
             logger.error("{}Failed to capture accessories for persistence: {}", LOG_ERROR, e.getMessage(), e);
         }
 
-        HomekitPersistedAccessoryServer persistedServer = new HomekitPersistedAccessoryServer(
-                element.getAddress(), element.getPort(), element.getPairingId(),
-                element.getSecretKey(), element.getConfigurationIndex(), accessories,
-                HomekitAccessoryCategory.BRIDGES, serverType);
-        
+        HomekitPersistedAccessoryServer persistedServer = new HomekitPersistedAccessoryServer(element.getAddress(),
+                element.getPort(), element.getPairingId(), element.getSecretKey(), element.getConfigurationIndex(),
+                accessories, HomekitAccessoryCategory.BRIDGES, serverType);
+
         logger.debug("{}Server state persisted successfully - UID: {}", LOG_STATE, element.getUID());
         return persistedServer;
     }

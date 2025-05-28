@@ -26,28 +26,28 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * <ul>
- *   <li>Lock state monitoring and control</li>
- *   <li>Operation status tracking</li>
- *   <li>Fault and jam detection</li>
- *   <li>Battery status monitoring</li>
+ * <li>Lock state monitoring and control</li>
+ * <li>Operation status tracking</li>
+ * <li>Fault and jam detection</li>
+ * <li>Battery status monitoring</li>
  * </ul>
  *
  * <p>
  * Required characteristics:
  * <ul>
- *   <li>LockCurrentState - Current state of the lock (0 = Unsecured, 1 = Secured, 2 = Jammed, 3 = Unknown)</li>
- *   <li>LockTargetState - Target state for the lock (0 = Unsecured, 1 = Secured)</li>
+ * <li>LockCurrentState - Current state of the lock (0 = Unsecured, 1 = Secured, 2 = Jammed, 3 = Unknown)</li>
+ * <li>LockTargetState - Target state for the lock (0 = Unsecured, 1 = Secured)</li>
  * </ul>
  * </p>
  *
  * <p>
  * Optional characteristics:
  * <ul>
- *   <li>Name - Lock name</li>
- *   <li>StatusActive - Lock activation state</li>
- *   <li>StatusFault - Fault state indicator</li>
- *   <li>StatusJammed - Jam detection state</li>
- *   <li>StatusLowBattery - Low battery warning</li>
+ * <li>Name - Lock name</li>
+ * <li>StatusActive - Lock activation state</li>
+ * <li>StatusFault - Fault state indicator</li>
+ * <li>StatusJammed - Jam detection state</li>
+ * <li>StatusLowBattery - Low battery warning</li>
  * </ul>
  * </p>
  *
@@ -110,53 +110,55 @@ public class HomekitLockMechanismService extends AbstractHomekitService {
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>LockCurrentState - Current state of the lock (0 = Unsecured, 1 = Secured, 2 = Jammed, 3 = Unknown)</li>
-     *   <li>LockTargetState - Target state for the lock (0 = Unsecured, 1 = Secured)</li>
+     * <li>LockCurrentState - Current state of the lock (0 = Unsecured, 1 = Secured, 2 = Jammed, 3 = Unknown)</li>
+     * <li>LockTargetState - Target state for the lock (0 = Unsecured, 1 = Secured)</li>
      * </ul>
      * </p>
      * <p>
      * Optional characteristics:
      * <ul>
-     *   <li>Name - Lock name</li>
-     *   <li>StatusActive - Lock activation state</li>
-     *   <li>StatusFault - Fault state indicator</li>
-     *   <li>StatusJammed - Jam detection state</li>
-     *   <li>StatusLowBattery - Low battery warning</li>
+     * <li>Name - Lock name</li>
+     * <li>StatusActive - Lock activation state</li>
+     * <li>StatusFault - Fault state indicator</li>
+     * <li>StatusJammed - Jam detection state</li>
+     * <li>StatusLowBattery - Low battery warning</li>
      * </ul>
      * </p>
+     * 
      * @since 1.0
      */
     @Override
     public void addCharacteristics() {
-        logger.trace("{}Adding required characteristics to LockMechanismService for accessory {}", LOG_TRACE, getAccessory().getLabel());
-        
+        logger.trace("{}Adding required characteristics to LockMechanismService for accessory {}", LOG_TRACE,
+                getAccessory().getLabel());
+
         addCharacteristic(new HomekitLockCurrentStateCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         logger.debug("{}Added LockCurrentStateCharacteristic to LockMechanismService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitLockTargetStateCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         logger.debug("{}Added LockTargetStateCharacteristic to LockMechanismService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                 .withMandatory(false));
         logger.debug("{}Added NameCharacteristic to LockMechanismService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
         logger.debug("{}Added StatusActiveCharacteristic to LockMechanismService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitStatusFaultCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
         logger.debug("{}Added StatusFaultCharacteristic to LockMechanismService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitStatusJammedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
         logger.debug("{}Added StatusJammedCharacteristic to LockMechanismService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitStatusLowBatteryCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
         logger.debug("{}Added StatusLowBatteryCharacteristic to LockMechanismService", LOG_STATE);

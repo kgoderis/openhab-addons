@@ -21,16 +21,16 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * <ul>
- *   <li>Audio stream configuration management</li>
- *   <li>Stream quality and parameter control</li>
- *   <li>Support for multiple audio configurations</li>
+ * <li>Audio stream configuration management</li>
+ * <li>Stream quality and parameter control</li>
+ * <li>Support for multiple audio configurations</li>
  * </ul>
  *
  * <p>
  * Required characteristics:
  * <ul>
- *   <li>SelectedAudioStreamConfiguration - Current audio stream settings</li>
- *   <li>SupportedAudioStreamConfiguration - Available audio stream options</li>
+ * <li>SelectedAudioStreamConfiguration - Current audio stream settings</li>
+ * <li>SupportedAudioStreamConfiguration - Available audio stream options</li>
  * </ul>
  * </p>
  *
@@ -85,7 +85,8 @@ public class HomekitAudioStreamManagementService extends AbstractHomekitService 
     public HomekitAudioStreamManagementService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
         super(accessory, eventManager, characteristicFactory, value);
-        logger.debug("{}Created AudioStreamManagementService from JSON for accessory {}", LOG_INIT, accessory.getLabel());
+        logger.debug("{}Created AudioStreamManagementService from JSON for accessory {}", LOG_INIT,
+                accessory.getLabel());
     }
 
     /**
@@ -93,23 +94,27 @@ public class HomekitAudioStreamManagementService extends AbstractHomekitService 
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>SelectedAudioStreamConfiguration - Current audio stream settings</li>
-     *   <li>SupportedAudioStreamConfiguration - Available audio stream options</li>
+     * <li>SelectedAudioStreamConfiguration - Current audio stream settings</li>
+     * <li>SupportedAudioStreamConfiguration - Available audio stream options</li>
      * </ul>
      * </p>
+     * 
      * @since 1.0
      */
     @Override
     public void addCharacteristics() {
-        logger.trace("{}Adding required characteristics to AudioStreamManagementService for accessory {}", LOG_TRACE, getAccessory().getLabel());
-        
+        logger.trace("{}Adding required characteristics to AudioStreamManagementService for accessory {}", LOG_TRACE,
+                getAccessory().getLabel());
+
         addCharacteristic(new HomekitSelectedAudioStreamConfigurationCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        logger.debug("{}Added SelectedAudioStreamConfigurationCharacteristic to AudioStreamManagementService", LOG_STATE);
-        
+        logger.debug("{}Added SelectedAudioStreamConfigurationCharacteristic to AudioStreamManagementService",
+                LOG_STATE);
+
         addCharacteristic(new HomekitSupportedAudioStreamConfigurationCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        logger.debug("{}Added SupportedAudioStreamConfigurationCharacteristic to AudioStreamManagementService", LOG_STATE);
+        logger.debug("{}Added SupportedAudioStreamConfigurationCharacteristic to AudioStreamManagementService",
+                LOG_STATE);
     }
 
     /**

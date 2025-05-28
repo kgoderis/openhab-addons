@@ -74,45 +74,45 @@ import org.slf4j.LoggerFactory;
  * <b>Component Integration:</b>
  * </p>
  * <ul>
- *   <li>{@link HomekitHttpGenerator} for message generation</li>
- *   <li>{@link HomekitHttpVersion} for version handling</li>
- *   <li>{@link HomekitHttpConnection} for connection management</li>
+ * <li>{@link HomekitHttpGenerator} for message generation</li>
+ * <li>{@link HomekitHttpVersion} for version handling</li>
+ * <li>{@link HomekitHttpConnection} for connection management</li>
  * </ul>
  *
  * <p>
  * <b>Key responsibilities:</b>
  * </p>
  * <ul>
- *   <li>Parsing HTTP request and response messages</li>
- *   <li>Handling message headers and content</li>
- *   <li>Managing chunked transfer encoding</li>
- *   <li>Supporting persistent connections</li>
- *   <li>Optimizing header parsing through caching</li>
+ * <li>Parsing HTTP request and response messages</li>
+ * <li>Handling message headers and content</li>
+ * <li>Managing chunked transfer encoding</li>
+ * <li>Supporting persistent connections</li>
+ * <li>Optimizing header parsing through caching</li>
  * </ul>
  *
  * <p>
  * <b>Implementation details:</b>
  * </p>
  * <ul>
- *   <li>Fast case-insensitive string lookups for methods and headers</li>
- *   <li>Optimized buffer management for message parsing</li>
- *   <li>Support for chunked transfer encoding</li>
- *   <li>Proper handling of content length and transfer encoding</li>
- *   <li>Support for persistent connections</li>
+ * <li>Fast case-insensitive string lookups for methods and headers</li>
+ * <li>Optimized buffer management for message parsing</li>
+ * <li>Support for chunked transfer encoding</li>
+ * <li>Proper handling of content length and transfer encoding</li>
+ * <li>Support for persistent connections</li>
  * </ul>
  *
  * <p>
  * <b>Compliance modes:</b>
  * </p>
  * <dl>
- *   <dt>RFC7230</dt>
- *   <dd>(default) Compliance with RFC7230</dd>
- *   <dt>RFC2616</dt>
- *   <dd>Wrapped headers and HTTP/0.9 supported</dd>
- *   <dt>LEGACY</dt>
- *   <dd>(aka STRICT) Adherence to Servlet Specification requirement for
- *   exact case of header names, bypassing the header caches, which are case insensitive,
- *   otherwise equivalent to RFC2616</dd>
+ * <dt>RFC7230</dt>
+ * <dd>(default) Compliance with RFC7230</dd>
+ * <dt>RFC2616</dt>
+ * <dd>Wrapped headers and HTTP/0.9 supported</dd>
+ * <dt>LEGACY</dt>
+ * <dd>(aka STRICT) Adherence to Servlet Specification requirement for
+ * exact case of header names, bypassing the header caches, which are case insensitive,
+ * otherwise equivalent to RFC2616</dd>
  * </dl>
  *
  * @see <a href="http://tools.ietf.org/html/rfc7230">RFC 7230</a>
@@ -145,16 +145,16 @@ public class HomekitHttpParser {
     /**
      * Cache of common {@link HttpField}s including:
      * <ul>
-     *   <li>Common static combinations such as:
-     *     <ul>
-     *       <li>Connection: close</li>
-     *       <li>Accept-Encoding: gzip</li>
-     *       <li>Content-Length: 0</li>
-     *     </ul>
-     *   </li>
-     *   <li>Combinations of Content-Type header for common mime types by common charsets</li>
-     *   <li>Most common headers with null values so that a lookup will at least
-     *       determine the header name even if the name:value combination is not cached</li>
+     * <li>Common static combinations such as:
+     * <ul>
+     * <li>Connection: close</li>
+     * <li>Accept-Encoding: gzip</li>
+     * <li>Content-Length: 0</li>
+     * </ul>
+     * </li>
+     * <li>Combinations of Content-Type header for common mime types by common charsets</li>
+     * <li>Most common headers with null values so that a lookup will at least
+     * determine the header name even if the name:value combination is not cached</li>
      * </ul>
      */
     public static final Trie<HttpField> CACHE = new ArrayTrie<>(2048);
@@ -317,10 +317,10 @@ public class HomekitHttpParser {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Initializes parser state</li>
-     *   <li>Configures request handler</li>
-     *   <li>Sets up header cache</li>
-     *   <li>Ensures thread safety</li>
+     * <li>Initializes parser state</li>
+     * <li>Configures request handler</li>
+     * <li>Sets up header cache</li>
+     * <li>Ensures thread safety</li>
      * </ul>
      *
      * @param handler The request handler to use
@@ -341,10 +341,10 @@ public class HomekitHttpParser {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Initializes parser state</li>
-     *   <li>Configures response handler</li>
-     *   <li>Sets up header cache</li>
-     *   <li>Ensures thread safety</li>
+     * <li>Initializes parser state</li>
+     * <li>Configures response handler</li>
+     * <li>Sets up header cache</li>
+     * <li>Ensures thread safety</li>
      * </ul>
      *
      * @param handler The response handler to use
@@ -1590,12 +1590,12 @@ public class HomekitHttpParser {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Processes message state</li>
-     *   <li>Handles headers and content</li>
-     *   <li>Manages chunked encoding</li>
-     *   <li>Maintains thread safety</li>
-     *   <li>Ensures state consistency</li>
-     *   <li>Logs parsing progress</li>
+     * <li>Processes message state</li>
+     * <li>Handles headers and content</li>
+     * <li>Manages chunked encoding</li>
+     * <li>Maintains thread safety</li>
+     * <li>Ensures state consistency</li>
+     * <li>Logs parsing progress</li>
      * </ul>
      *
      * @param buffer The buffer containing the next chunk of data to parse
@@ -1744,10 +1744,10 @@ public class HomekitHttpParser {
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Logs error details</li>
-     *   <li>Notifies handler</li>
-     *   <li>Maintains thread safety</li>
-     *   <li>Ensures proper cleanup</li>
+     * <li>Logs error details</li>
+     * <li>Notifies handler</li>
+     * <li>Maintains thread safety</li>
+     * <li>Ensures proper cleanup</li>
      * </ul>
      *
      * @param x The bad message exception to handle

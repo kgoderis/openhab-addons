@@ -24,11 +24,11 @@ import org.openhab.io.homekit.library.characteristic.HomekitVersionCharacteristi
  * <p>
  * This service provides basic information about the accessory, such as:
  * <ul>
- *   <li>Manufacturer name</li>
- *   <li>Model name</li>
- *   <li>Serial number</li>
- *   <li>Firmware version</li>
- *   <li>Hardware revision</li>
+ * <li>Manufacturer name</li>
+ * <li>Model name</li>
+ * <li>Serial number</li>
+ * <li>Firmware version</li>
+ * <li>Hardware revision</li>
  * </ul>
  * </p>
  *
@@ -84,21 +84,21 @@ public class HomekitAccessoryInformationService extends AbstractHomekitService {
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>Identify</li>
-     *   <li>Manufacturer</li>
-     *   <li>Model</li>
-     *   <li>Name</li>
-     *   <li>Serial Number</li>
-     *   <li>Version</li>
+     * <li>Identify</li>
+     * <li>Manufacturer</li>
+     * <li>Model</li>
+     * <li>Name</li>
+     * <li>Serial Number</li>
+     * <li>Version</li>
      * </ul>
      * </p>
      *
      * <p>
      * Optional characteristics:
      * <ul>
-     *   <li>Firmware Revision</li>
-     *   <li>Hardware Revision</li>
-     *   <li>Accessory Flags</li>
+     * <li>Firmware Revision</li>
+     * <li>Hardware Revision</li>
+     * <li>Accessory Flags</li>
      * </ul>
      * </p>
      *

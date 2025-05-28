@@ -25,27 +25,27 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * <ul>
- *   <li>Door position control and monitoring</li>
- *   <li>Position state tracking (opening/closing/stopped)</li>
- *   <li>Obstruction detection</li>
- *   <li>Position hold functionality</li>
+ * <li>Door position control and monitoring</li>
+ * <li>Position state tracking (opening/closing/stopped)</li>
+ * <li>Obstruction detection</li>
+ * <li>Position hold functionality</li>
  * </ul>
  *
  * <p>
  * Required characteristics:
  * <ul>
- *   <li>CurrentPosition - Current door position (0-100%)</li>
- *   <li>TargetPosition - Target door position to move to</li>
- *   <li>PositionState - Current movement state (opening/closing/stopped)</li>
+ * <li>CurrentPosition - Current door position (0-100%)</li>
+ * <li>TargetPosition - Target door position to move to</li>
+ * <li>PositionState - Current movement state (opening/closing/stopped)</li>
  * </ul>
  * </p>
  *
  * <p>
  * Optional characteristics:
  * <ul>
- *   <li>HoldPosition - Ability to hold door at current position</li>
- *   <li>ObstructionDetected - Detection of door obstruction</li>
- *   <li>Name - Door name</li>
+ * <li>HoldPosition - Ability to hold door at current position</li>
+ * <li>ObstructionDetected - Detection of door obstruction</li>
+ * <li>Name - Door name</li>
  * </ul>
  * </p>
  *
@@ -108,48 +108,50 @@ public class HomekitDoorService extends AbstractHomekitService {
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>CurrentPosition - Current door position (0-100%)</li>
-     *   <li>TargetPosition - Target door position to move to</li>
-     *   <li>PositionState - Current movement state (opening/closing/stopped)</li>
+     * <li>CurrentPosition - Current door position (0-100%)</li>
+     * <li>TargetPosition - Target door position to move to</li>
+     * <li>PositionState - Current movement state (opening/closing/stopped)</li>
      * </ul>
      * </p>
      * <p>
      * Optional characteristics:
      * <ul>
-     *   <li>HoldPosition - Ability to hold door at current position</li>
-     *   <li>ObstructionDetected - Detection of door obstruction</li>
-     *   <li>Name - Door name</li>
+     * <li>HoldPosition - Ability to hold door at current position</li>
+     * <li>ObstructionDetected - Detection of door obstruction</li>
+     * <li>Name - Door name</li>
      * </ul>
      * </p>
+     * 
      * @since 1.0
      */
     @Override
     public void addCharacteristics() {
-        logger.trace("{}Adding required characteristics to DoorService for accessory {}", LOG_TRACE, getAccessory().getLabel());
-        
+        logger.trace("{}Adding required characteristics to DoorService for accessory {}", LOG_TRACE,
+                getAccessory().getLabel());
+
         addCharacteristic(new HomekitCurrentPositionCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         logger.debug("{}Added CurrentPositionCharacteristic to DoorService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitTargetPositionCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(true));
         logger.debug("{}Added TargetPositionCharacteristic to DoorService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitPositionStateCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(true));
         logger.debug("{}Added PositionStateCharacteristic to DoorService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitHoldPositionCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
         logger.debug("{}Added HoldPositionCharacteristic to DoorService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitObstructionDetectedCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
         logger.debug("{}Added ObstructionDetectedCharacteristic to DoorService", LOG_STATE);
-        
+
         addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                 .withMandatory(false));
         logger.debug("{}Added NameCharacteristic to DoorService", LOG_STATE);

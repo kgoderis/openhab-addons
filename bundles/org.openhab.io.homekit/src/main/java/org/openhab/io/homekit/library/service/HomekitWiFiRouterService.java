@@ -16,18 +16,18 @@ import org.openhab.io.homekit.library.characteristic.HomekitRouterStatusCharacte
  * <p>
  * This service provides WiFi router functionality in HomeKit, including:
  * <ul>
- *   <li>Router status monitoring</li>
- *   <li>Network connectivity management</li>
- *   <li>WiFi network state tracking</li>
+ * <li>Router status monitoring</li>
+ * <li>Network connectivity management</li>
+ * <li>WiFi network state tracking</li>
  * </ul>
  * </p>
  *
  * <p>
  * The service is used to:
  * <ul>
- *   <li>Monitor the operational status of WiFi routers</li>
- *   <li>Track network connectivity state</li>
- *   <li>Provide router status information to iOS devices</li>
+ * <li>Monitor the operational status of WiFi routers</li>
+ * <li>Track network connectivity state</li>
+ * <li>Provide router status information to iOS devices</li>
  * </ul>
  * </p>
  *
@@ -78,16 +78,16 @@ public class HomekitWiFiRouterService extends AbstractHomekitService {
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>RouterStatus (UUID: 0000020E-0000-1000-8000-0026BB765291)</li>
+     * <li>RouterStatus (UUID: 0000020E-0000-1000-8000-0026BB765291)</li>
      * </ul>
      * </p>
      *
      * <p>
      * The RouterStatus characteristic provides:
      * <ul>
-     *   <li>Current operational state of the router</li>
-     *   <li>Network connectivity status</li>
-     *   <li>WiFi network state information</li>
+     * <li>Current operational state of the router</li>
+     * <li>Network connectivity status</li>
+     * <li>WiFi network state information</li>
      * </ul>
      * </p>
      *

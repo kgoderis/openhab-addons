@@ -9,7 +9,6 @@ import org.eclipse.jetty.client.HttpExchange;
 import org.eclipse.jetty.client.HttpRequest;
 import org.eclipse.jetty.client.HttpRequestException;
 import org.eclipse.jetty.client.api.ContentProvider;
-import org.eclipse.jetty.client.http.HttpChannelOverHTTP;
 import org.eclipse.jetty.client.http.HttpSenderOverHTTP;
 import org.eclipse.jetty.http.HttpGenerator;
 import org.eclipse.jetty.http.HttpURI;
@@ -28,7 +27,8 @@ import org.slf4j.LoggerFactory;
  * A specialized HTTP sender for HomeKit communication with encryption support.
  *
  * <p>
- * This class extends {@link org.eclipse.jetty.client.http.HttpSenderOverHTTP HttpSenderOverHTTP} to provide specialized HTTP request
+ * This class extends {@link org.eclipse.jetty.client.http.HttpSenderOverHTTP HttpSenderOverHTTP} to provide specialized
+ * HTTP request
  * handling for HomeKit accessories, including encryption of request payloads and
  * proper sequence number management for secure communication.
  * </p>
@@ -37,31 +37,31 @@ import org.slf4j.LoggerFactory;
  * <b>Component Integration:</b>
  * </p>
  * <ul>
- *   <li>{@link HomekitHttpChannel} for channel management</li>
- *   <li>{@link HomekitHttpConnectionOverHTTP} for connection management</li>
- *   <li>{@link HomekitEncryptionEngine} for payload encryption</li>
- *   <li>{@link org.eclipse.jetty.client.HttpClient HttpClient} for HTTP operations</li>
+ * <li>{@link HomekitHttpChannel} for channel management</li>
+ * <li>{@link HomekitHttpConnectionOverHTTP} for connection management</li>
+ * <li>{@link HomekitEncryptionEngine} for payload encryption</li>
+ * <li>{@link org.eclipse.jetty.client.HttpClient HttpClient} for HTTP operations</li>
  * </ul>
  *
  * <p>
  * <b>Key responsibilities:</b>
  * </p>
  * <ul>
- *   <li>Sending and encrypting HTTP requests</li>
- *   <li>Managing sequence numbers for secure communication</li>
- *   <li>Handling request formatting and validation</li>
- *   <li>Providing buffer management and recycling</li>
- *   <li>Supporting both encrypted and unencrypted communication</li>
+ * <li>Sending and encrypting HTTP requests</li>
+ * <li>Managing sequence numbers for secure communication</li>
+ * <li>Handling request formatting and validation</li>
+ * <li>Providing buffer management and recycling</li>
+ * <li>Supporting both encrypted and unencrypted communication</li>
  * </ul>
  *
  * <p>
  * <b>Implementation details:</b>
  * </p>
  * <ul>
- *   <li>{@link org.eclipse.jetty.io.ByteBufferPool ByteBufferPool} for efficient buffer management</li>
- *   <li>{@link HomekitEncryptionEngine} for secure communication</li>
- *   <li>{@link org.eclipse.jetty.client.HttpClient HttpClient} for HTTP client functionality</li>
- *   <li>{@link org.eclipse.jetty.client.api.ContentProvider ContentProvider} for request content</li>
+ * <li>{@link org.eclipse.jetty.io.ByteBufferPool ByteBufferPool} for efficient buffer management</li>
+ * <li>{@link HomekitEncryptionEngine} for secure communication</li>
+ * <li>{@link org.eclipse.jetty.client.HttpClient HttpClient} for HTTP client functionality</li>
+ * <li>{@link org.eclipse.jetty.client.api.ContentProvider ContentProvider} for request content</li>
  * </ul>
  *
  * @author Karel Goderis - Initial Contribution
@@ -101,9 +101,9 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
      * <b>Key implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Uses provided {@link HomekitHttpChannel}</li>
-     *   <li>Sets up buffer management using {@link org.eclipse.jetty.io.ByteBufferPool ByteBufferPool}</li>
-     *   <li>Configures {@link org.eclipse.jetty.client.HttpClient HttpClient} for HTTP operations</li>
+     * <li>Uses provided {@link HomekitHttpChannel}</li>
+     * <li>Sets up buffer management using {@link org.eclipse.jetty.io.ByteBufferPool ByteBufferPool}</li>
+     * <li>Configures {@link org.eclipse.jetty.client.HttpClient HttpClient} for HTTP operations</li>
      * </ul>
      *
      * @param channel The HTTP channel to use for communication
@@ -155,10 +155,10 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
      * <b>Key implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Creates HeadersCallback for async processing</li>
-     *   <li>Handles header generation and encryption</li>
-     *   <li>Manages buffer lifecycle</li>
-     *   <li>Supports chunked transfer encoding</li>
+     * <li>Creates HeadersCallback for async processing</li>
+     * <li>Handles header generation and encryption</li>
+     * <li>Manages buffer lifecycle</li>
+     * <li>Supports chunked transfer encoding</li>
      * </ul>
      *
      * @param exchange The HTTP exchange
@@ -188,11 +188,11 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
      * <b>Key implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Manages buffer allocation and recycling</li>
-     *   <li>Handles chunked transfer encoding</li>
-     *   <li>Supports content encryption</li>
-     *   <li>Manages sequence numbers</li>
-     *   <li>Handles buffer lifecycle</li>
+     * <li>Manages buffer allocation and recycling</li>
+     * <li>Handles chunked transfer encoding</li>
+     * <li>Supports content encryption</li>
+     * <li>Manages sequence numbers</li>
+     * <li>Handles buffer lifecycle</li>
      * </ul>
      *
      * @param exchange The HTTP exchange
@@ -278,10 +278,10 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
      * <b>Key implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Uses {@link HomekitEncryptionEngine} for encryption</li>
-     *   <li>Manages sequence numbers</li>
-     *   <li>Handles buffer concatenation</li>
-     *   <li>Supports multiple input buffers</li>
+     * <li>Uses {@link HomekitEncryptionEngine} for encryption</li>
+     * <li>Manages sequence numbers</li>
+     * <li>Handles buffer concatenation</li>
+     * <li>Supports multiple input buffers</li>
      * </ul>
      *
      * @param endpoint The endpoint for the connection
@@ -304,8 +304,7 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
 
         BufferUtil.flipToFlush(flushBuffer, 0);
 
-        logger.debug("{}Encrypting {} bytes for endpoint {}", LOG_REQUEST, totalRemaining,
-                endpoint.getRemoteAddress());
+        logger.debug("{}Encrypting {} bytes for endpoint {}", LOG_REQUEST, totalRemaining, endpoint.getRemoteAddress());
 
         ByteBuffer encryptedBuffer = bufferPool.acquire(httpClient.getResponseBufferSize(), true);
 

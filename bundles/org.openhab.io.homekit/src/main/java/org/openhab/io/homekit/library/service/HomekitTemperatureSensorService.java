@@ -20,15 +20,15 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * <ul>
- *   <li>Temperature monitoring</li>
- *   <li>Real-time temperature updates</li>
- *   <li>Temperature value in Celsius</li>
+ * <li>Temperature monitoring</li>
+ * <li>Real-time temperature updates</li>
+ * <li>Temperature value in Celsius</li>
  * </ul>
  *
  * <p>
  * Required characteristics:
  * <ul>
- *   <li>CurrentTemperature - Current temperature value in Celsius</li>
+ * <li>CurrentTemperature - Current temperature value in Celsius</li>
  * </ul>
  * </p>
  *
@@ -91,15 +91,17 @@ public class HomekitTemperatureSensorService extends AbstractHomekitService {
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>CurrentTemperature - Current temperature value in Celsius</li>
+     * <li>CurrentTemperature - Current temperature value in Celsius</li>
      * </ul>
      * </p>
+     * 
      * @since 1.0
      */
     @Override
     public void addCharacteristics() {
-        logger.trace("{}Adding required characteristics to TemperatureSensorService for accessory {}", LOG_TRACE, getAccessory().getLabel());
-        
+        logger.trace("{}Adding required characteristics to TemperatureSensorService for accessory {}", LOG_TRACE,
+                getAccessory().getLabel());
+
         addCharacteristic(new HomekitCurrentTemperatureCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         logger.debug("{}Added CurrentTemperatureCharacteristic to TemperatureSensorService", LOG_STATE);

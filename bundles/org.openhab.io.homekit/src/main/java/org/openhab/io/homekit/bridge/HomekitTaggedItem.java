@@ -12,14 +12,12 @@
  */
 package org.openhab.io.homekit.bridge;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.openhab.core.items.GroupItem;
@@ -378,8 +376,7 @@ public class HomekitTaggedItem {
      * @return Collection of Homekit tags
      */
     private Collection<String> getHomekitTags(Item item) {
-        Collection<String> tags = useMetadataTags ? getHomekitTagsFromMetaRegistry(item)
-                : getHomekitTagsFromItem(item);
+        Collection<String> tags = useMetadataTags ? getHomekitTagsFromMetaRegistry(item) : getHomekitTagsFromItem(item);
         logger.debug("{}Retrieved {} HomeKit tags for item {}", LOG_CONFIG, tags.size(), item.getName());
         return tags;
     }
@@ -405,18 +402,15 @@ public class HomekitTaggedItem {
     }
 
     private List<GroupItem> findMyAccessoryGroupsInternal() {
-        return item.getGroupNames().stream()
-                .map(name -> itemRegistry.get(name))
-                .filter(item -> item instanceof GroupItem)
-                .map(item -> (GroupItem) item)
-                .filter(group -> {
+        return item.getGroupNames().stream().map(name -> itemRegistry.get(name))
+                .filter(item -> item instanceof GroupItem).map(item -> (GroupItem) item).filter(group -> {
                     Collection<String> groupTags = getHomekitTags(group);
-                    boolean isAccessory = !groupTags.isEmpty() && serviceFactory.supportsTag(groupTags.iterator().next());
+                    boolean isAccessory = !groupTags.isEmpty()
+                            && serviceFactory.supportsTag(groupTags.iterator().next());
                     logger.debug("{}Group {} is {}an accessory group", LOG_CONFIG, group.getName(),
                             isAccessory ? "" : "not ");
                     return isAccessory;
-                })
-                .collect(Collectors.toList());
+                }).collect(Collectors.toList());
     }
 
     /**

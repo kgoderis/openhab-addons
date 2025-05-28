@@ -20,19 +20,19 @@ import org.slf4j.LoggerFactory;
  * <p>
  * This service provides metrics and diagnostic information about the accessory, including:
  * <ul>
- *   <li>Performance metrics collection</li>
- *   <li>Diagnostic data monitoring</li>
- *   <li>Buffer state management</li>
+ * <li>Performance metrics collection</li>
+ * <li>Diagnostic data monitoring</li>
+ * <li>Buffer state management</li>
  * </ul>
  * </p>
  *
  * <p>
  * The service is used to:
  * <ul>
- *   <li>Track accessory performance metrics</li>
- *   <li>Monitor diagnostic information</li>
- *   <li>Manage metrics buffer states</li>
- *   <li>Report supported metrics capabilities</li>
+ * <li>Track accessory performance metrics</li>
+ * <li>Monitor diagnostic information</li>
+ * <li>Manage metrics buffer states</li>
+ * <li>Report supported metrics capabilities</li>
  * </ul>
  * </p>
  *
@@ -96,18 +96,18 @@ public class HomekitAccessoryMetricsService extends AbstractHomekitService {
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>Active (UUID: 000000B0-0000-1000-8000-0026BB765291)</li>
-     *   <li>MetricsBufferFullState (UUID: 00000271-0000-1000-8000-0026BB765291)</li>
-     *   <li>SupportedMetrics (UUID: 00000272-0000-1000-8000-0026BB765291)</li>
+     * <li>Active (UUID: 000000B0-0000-1000-8000-0026BB765291)</li>
+     * <li>MetricsBufferFullState (UUID: 00000271-0000-1000-8000-0026BB765291)</li>
+     * <li>SupportedMetrics (UUID: 00000272-0000-1000-8000-0026BB765291)</li>
      * </ul>
      * </p>
      *
      * <p>
      * These characteristics provide:
      * <ul>
-     *   <li>Service activation state</li>
-     *   <li>Metrics buffer capacity status</li>
-     *   <li>Supported metrics capabilities</li>
+     * <li>Service activation state</li>
+     * <li>Metrics buffer capacity status</li>
+     * <li>Supported metrics capabilities</li>
      * </ul>
      * </p>
      *

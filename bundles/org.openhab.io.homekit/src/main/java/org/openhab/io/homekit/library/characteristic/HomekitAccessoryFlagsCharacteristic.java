@@ -21,10 +21,10 @@ import org.slf4j.LoggerFactory;
  * <p>
  * The flags can indicate various accessory states and capabilities, such as:
  * <ul>
- *   <li>Whether the accessory is bridged</li>
- *   <li>Whether the accessory supports software updates</li>
- *   <li>Whether the accessory is discoverable</li>
- *   <li>Whether the accessory is paired</li>
+ * <li>Whether the accessory is bridged</li>
+ * <li>Whether the accessory supports software updates</li>
+ * <li>Whether the accessory is discoverable</li>
+ * <li>Whether the accessory is paired</li>
  * </ul>
  * </p>
  *

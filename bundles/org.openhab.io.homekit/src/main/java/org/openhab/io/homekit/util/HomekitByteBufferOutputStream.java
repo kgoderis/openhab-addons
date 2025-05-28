@@ -13,27 +13,30 @@ import org.slf4j.LoggerFactory;
  * in HomeKit communication. This class provides a bridge between the standard Java I/O stream API and
  * the more efficient NIO ByteBuffer operations.
  *
- * <p>Key features:
+ * <p>
+ * Key features:
  * <ul>
- *     <li>Direct ByteBuffer integration for improved performance</li>
- *     <li>Optional automatic buffer enlargement</li>
- *     <li>Efficient memory management</li>
- *     <li>Thread-safe operations</li>
+ * <li>Direct ByteBuffer integration for improved performance</li>
+ * <li>Optional automatic buffer enlargement</li>
+ * <li>Efficient memory management</li>
+ * <li>Thread-safe operations</li>
  * </ul>
  *
- * <p>Integration points:
+ * <p>
+ * Integration points:
  * <ul>
- *     <li>HomeKit HTTP response handling</li>
- *     <li>Network communication buffers</li>
- *     <li>Data serialization</li>
+ * <li>HomeKit HTTP response handling</li>
+ * <li>Network communication buffers</li>
+ * <li>Data serialization</li>
  * </ul>
  *
- * <p>Implementation details:
+ * <p>
+ * Implementation details:
  * <ul>
- *     <li>Uses ByteBuffer for internal storage</li>
- *     <li>Supports both direct and heap buffers</li>
- *     <li>Implements automatic buffer growth when enabled</li>
- *     <li>Maintains buffer position and limit correctly</li>
+ * <li>Uses ByteBuffer for internal storage</li>
+ * <li>Supports both direct and heap buffers</li>
+ * <li>Implements automatic buffer growth when enabled</li>
+ * <li>Maintains buffer position and limit correctly</li>
  * </ul>
  *
  * @author Mark Weiss - Initial contribution
@@ -61,8 +64,8 @@ public class HomekitByteBufferOutputStream extends OutputStream {
         if (wrappedBuffer == null) {
             throw new IllegalArgumentException("Buffer cannot be null");
         }
-        logger.trace("{}Creating stream with buffer: {}, autoEnlarge: {}", LOG_INIT, 
-            BufferUtil.toSummaryString(wrappedBuffer), autoEnlarge);
+        logger.trace("{}Creating stream with buffer: {}, autoEnlarge: {}", LOG_INIT,
+                BufferUtil.toSummaryString(wrappedBuffer), autoEnlarge);
         this.wrappedBuffer = wrappedBuffer;
         this.autoEnlarge = autoEnlarge;
     }
@@ -120,10 +123,9 @@ public class HomekitByteBufferOutputStream extends OutputStream {
 
         final ByteBuffer oldWrappedBuffer = wrappedBuffer;
         logger.trace("{}Creating new buffer with capacity {}", LOG_BUFFER, newCapacity);
-        
-        wrappedBuffer = wrappedBuffer.isDirect() ? 
-            ByteBuffer.allocateDirect(newCapacity) : 
-            ByteBuffer.allocate(newCapacity);
+
+        wrappedBuffer = wrappedBuffer.isDirect() ? ByteBuffer.allocateDirect(newCapacity)
+                : ByteBuffer.allocate(newCapacity);
 
         oldWrappedBuffer.flip();
         wrappedBuffer.put(oldWrappedBuffer);

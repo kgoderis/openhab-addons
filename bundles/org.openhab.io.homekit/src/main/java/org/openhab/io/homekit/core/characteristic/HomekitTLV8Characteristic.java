@@ -17,31 +17,31 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * <p>
  * The class implements TLV8 data management with:
  * <ul>
- *   <li>Type-Length-Value encoding and decoding capabilities</li>
- *   <li>Map-based value representation for TLV8 data</li>
- *   <li>Abstract methods for custom TLV8 handling</li>
- *   <li>Support for paired read/write operations</li>
+ * <li>Type-Length-Value encoding and decoding capabilities</li>
+ * <li>Map-based value representation for TLV8 data</li>
+ * <li>Abstract methods for custom TLV8 handling</li>
+ * <li>Support for paired read/write operations</li>
  * </ul>
  * </p>
  *
  * <p>
  * Key features:
  * <ul>
- *   <li>Supports TLV8 format as per HomeKit specification</li>
- *   <li>Provides paired read/write access by default</li>
- *   <li>Includes event notifications for value changes</li>
- *   <li>Requires implementation of custom encoding/decoding logic</li>
- *   <li>Uses Map<Integer, Object> for TLV8 data representation</li>
+ * <li>Supports TLV8 format as per HomeKit specification</li>
+ * <li>Provides paired read/write access by default</li>
+ * <li>Includes event notifications for value changes</li>
+ * <li>Requires implementation of custom encoding/decoding logic</li>
+ * <li>Uses Map<Integer, Object> for TLV8 data representation</li>
  * </ul>
  * </p>
  *
  * <p>
  * The class integrates with:
  * <ul>
- *   <li>{@link AbstractHomekitCharacteristic} - Base characteristic functionality</li>
- *   <li>{@link HomekitService} - Service lifecycle management</li>
- *   <li>{@link HomekitEventManager} - Event handling and notifications</li>
- *   <li>{@link org.openhab.core.types.State} - State conversion interface</li>
+ * <li>{@link AbstractHomekitCharacteristic} - Base characteristic functionality</li>
+ * <li>{@link HomekitService} - Service lifecycle management</li>
+ * <li>{@link HomekitEventManager} - Event handling and notifications</li>
+ * <li>{@link org.openhab.core.types.State} - State conversion interface</li>
  * </ul>
  * </p>
  *

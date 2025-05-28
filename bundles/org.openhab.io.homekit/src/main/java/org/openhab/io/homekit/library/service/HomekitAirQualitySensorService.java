@@ -25,21 +25,21 @@ import org.slf4j.LoggerFactory;
  * <p>
  * This service provides information about air quality and various air pollutants, including:
  * <ul>
- *   <li>Overall air quality measurement</li>
- *   <li>Particulate matter density</li>
- *   <li>Chemical pollutant levels</li>
- *   <li>VOC (Volatile Organic Compounds) monitoring</li>
+ * <li>Overall air quality measurement</li>
+ * <li>Particulate matter density</li>
+ * <li>Chemical pollutant levels</li>
+ * <li>VOC (Volatile Organic Compounds) monitoring</li>
  * </ul>
  * </p>
  *
  * <p>
  * The service is used to:
  * <ul>
- *   <li>Monitor overall air quality</li>
- *   <li>Track specific pollutant levels</li>
- *   <li>Measure particulate matter</li>
- *   <li>Detect harmful gases</li>
- *   <li>Monitor VOC concentrations</li>
+ * <li>Monitor overall air quality</li>
+ * <li>Track specific pollutant levels</li>
+ * <li>Measure particulate matter</li>
+ * <li>Detect harmful gases</li>
+ * <li>Monitor VOC concentrations</li>
  * </ul>
  * </p>
  *
@@ -103,20 +103,20 @@ public class HomekitAirQualitySensorService extends AbstractHomekitService {
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>AirQuality (UUID: 00000095-0000-1000-8000-0026BB765291)</li>
+     * <li>AirQuality (UUID: 00000095-0000-1000-8000-0026BB765291)</li>
      * </ul>
      * </p>
      *
      * <p>
      * Optional characteristics:
      * <ul>
-     *   <li>AirParticulateDensity (UUID: 00000064-0000-1000-8000-0026BB765291)</li>
-     *   <li>AirParticulateSize (UUID: 00000065-0000-1000-8000-0026BB765291)</li>
-     *   <li>OzoneDensity (UUID: 000000C3-0000-1000-8000-0026BB765291)</li>
-     *   <li>NitrogenDioxideDensity (UUID: 000000C4-0000-1000-8000-0026BB765291)</li>
-     *   <li>SulphurDioxideDensity (UUID: 000000C5-0000-1000-8000-0026BB765291)</li>
-     *   <li>PM10Density (UUID: 000000C7-0000-1000-8000-0026BB765291)</li>
-     *   <li>VOCDensity (UUID: 000000C8-0000-1000-8000-0026BB765291)</li>
+     * <li>AirParticulateDensity (UUID: 00000064-0000-1000-8000-0026BB765291)</li>
+     * <li>AirParticulateSize (UUID: 00000065-0000-1000-8000-0026BB765291)</li>
+     * <li>OzoneDensity (UUID: 000000C3-0000-1000-8000-0026BB765291)</li>
+     * <li>NitrogenDioxideDensity (UUID: 000000C4-0000-1000-8000-0026BB765291)</li>
+     * <li>SulphurDioxideDensity (UUID: 000000C5-0000-1000-8000-0026BB765291)</li>
+     * <li>PM10Density (UUID: 000000C7-0000-1000-8000-0026BB765291)</li>
+     * <li>VOCDensity (UUID: 000000C8-0000-1000-8000-0026BB765291)</li>
      * </ul>
      * </p>
      *

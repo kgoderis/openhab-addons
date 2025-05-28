@@ -1,6 +1,5 @@
 package org.openhab.io.homekit.api.server;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Collection;
 
@@ -11,7 +10,6 @@ import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.uid.HomekitAccessoryServerUID;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.exception.HomekitConfigurationException;
-import org.openhab.io.homekit.exception.HomekitException;
 import org.openhab.io.homekit.exception.HomekitServerException;
 import org.openhab.io.homekit.protocol.pairing.HomekitPairing;
 
@@ -25,33 +23,33 @@ import org.openhab.io.homekit.protocol.pairing.HomekitPairing;
  * <p>
  * The server provides:
  * <ul>
- *   <li>Accessory registration and management</li>
- *   <li>Secure pairing and authentication</li>
- *   <li>Network discovery and advertising</li>
- *   <li>Configuration management</li>
- *   <li>Server lifecycle control</li>
+ * <li>Accessory registration and management</li>
+ * <li>Secure pairing and authentication</li>
+ * <li>Network discovery and advertising</li>
+ * <li>Configuration management</li>
+ * <li>Server lifecycle control</li>
  * </ul>
  * </p>
  * <p>
  * Key implementation details:
  * <ul>
- *   <li>Secure communication using encryption</li>
- *   <li>Unique accessory identification</li>
- *   <li>Pairing state management</li>
- *   <li>Network service discovery</li>
- *   <li>Configuration versioning</li>
+ * <li>Secure communication using encryption</li>
+ * <li>Unique accessory identification</li>
+ * <li>Pairing state management</li>
+ * <li>Network service discovery</li>
+ * <li>Configuration versioning</li>
  * </ul>
  * </p>
  * <p>
  * The interface integrates with:
  * <ul>
- *   <li>{@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for accessory management</li>
- *   <li>{@link org.openhab.io.homekit.protocol.pairing.HomekitPairing} for pairing operations</li>
- *   <li>{@link org.openhab.io.homekit.api.uid.HomekitAccessoryServerUID} for server identification</li>
- *   <li>{@link org.openhab.core.common.registry.Identifiable} for registry integration</li>
- *   <li>{@link org.openhab.io.homekit.exception.HomekitAccessoryOperationException} for accessory errors</li>
- *   <li>{@link org.openhab.io.homekit.exception.HomekitConfigurationException} for configuration errors</li>
- *   <li>{@link org.openhab.io.homekit.exception.HomekitServerException} for server errors</li>
+ * <li>{@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for accessory management</li>
+ * <li>{@link org.openhab.io.homekit.protocol.pairing.HomekitPairing} for pairing operations</li>
+ * <li>{@link org.openhab.io.homekit.api.uid.HomekitAccessoryServerUID} for server identification</li>
+ * <li>{@link org.openhab.core.common.registry.Identifiable} for registry integration</li>
+ * <li>{@link org.openhab.io.homekit.exception.HomekitAccessoryOperationException} for accessory errors</li>
+ * <li>{@link org.openhab.io.homekit.exception.HomekitConfigurationException} for configuration errors</li>
+ * <li>{@link org.openhab.io.homekit.exception.HomekitServerException} for server errors</li>
  * </ul>
  * </p>
  *
@@ -116,11 +114,11 @@ public interface HomekitAccessoryServer extends Identifiable<HomekitAccessorySer
      * Updates the list of accessories by fetching remote accessories and comparing with currently managed ones.
      * This method:
      * <ul>
-     *   <li>Fetches remote accessories</li>
-     *   <li>Compares with current accessories</li>
-     *   <li>Adds new accessories</li>
-     *   <li>Removes obsolete accessories</li>
-     *   <li>Notifies listeners of changes</li>
+     * <li>Fetches remote accessories</li>
+     * <li>Compares with current accessories</li>
+     * <li>Adds new accessories</li>
+     * <li>Removes obsolete accessories</li>
+     * <li>Notifies listeners of changes</li>
      * </ul>
      *
      * @throws HomekitAccessoryOperationException if there is an error updating the accessories
@@ -278,10 +276,10 @@ public interface HomekitAccessoryServer extends Identifiable<HomekitAccessorySer
      * Performs a factory reset, removing all pairings and restoring default settings.
      * This method:
      * <ul>
-     *   <li>Removes all pairings</li>
-     *   <li>Resets configuration</li>
-     *   <li>Clears accessory state</li>
-     *   <li>Restores default settings</li>
+     * <li>Removes all pairings</li>
+     * <li>Resets configuration</li>
+     * <li>Clears accessory state</li>
+     * <li>Restores default settings</li>
      * </ul>
      *
      * @since 1.0.0
@@ -335,9 +333,9 @@ public interface HomekitAccessoryServer extends Identifiable<HomekitAccessorySer
      * <p>
      * Pair Verify is performed for every HomeKit Accessory Protocol session to:
      * <ul>
-     *   <li>Verify the pairing between an iOS device and an accessory</li>
-     *   <li>Establish an ephemeral shared secret</li>
-     *   <li>Secure the HomeKit Accessory Protocol session</li>
+     * <li>Verify the pairing between an iOS device and an accessory</li>
+     * <li>Establish an ephemeral shared secret</li>
+     * <li>Secure the HomeKit Accessory Protocol session</li>
      * </ul>
      * </p>
      *

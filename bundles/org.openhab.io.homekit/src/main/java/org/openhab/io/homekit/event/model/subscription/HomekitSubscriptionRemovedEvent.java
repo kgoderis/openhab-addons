@@ -17,40 +17,40 @@ import org.openhab.io.homekit.event.core.HomekitEventSubscription;
  * The class integrates with:
  * </p>
  * <ul>
- *   <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for base event functionality</li>
- *   <li>{@link org.openhab.io.homekit.api.event.HomekitEventType} for event type identification</li>
- *   <li>{@link org.openhab.core.thing.UID} for component identification</li>
- *   <li>{@link org.openhab.io.homekit.event.core.HomekitEventSubscription} for subscription details</li>
+ * <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for base event functionality</li>
+ * <li>{@link org.openhab.io.homekit.api.event.HomekitEventType} for event type identification</li>
+ * <li>{@link org.openhab.core.thing.UID} for component identification</li>
+ * <li>{@link org.openhab.io.homekit.event.core.HomekitEventSubscription} for subscription details</li>
  * </ul>
  *
  * <p>
  * <b>Key Features:</b>
  * </p>
  * <ul>
- *   <li>Subscription lifecycle management</li>
- *   <li>Publisher identification for cleanup</li>
- *   <li>Timestamp tracking for state management</li>
- *   <li>Wildcard subscriber support</li>
+ * <li>Subscription lifecycle management</li>
+ * <li>Publisher identification for cleanup</li>
+ * <li>Timestamp tracking for state management</li>
+ * <li>Wildcard subscriber support</li>
  * </ul>
  *
  * <p>
  * <b>Usage Patterns:</b>
  * </p>
  * <ul>
- *   <li>Cleanup of subscription resources</li>
- *   <li>State management in publishers</li>
- *   <li>Subscription tracking and monitoring</li>
- *   <li>System diagnostics and logging</li>
+ * <li>Cleanup of subscription resources</li>
+ * <li>State management in publishers</li>
+ * <li>Subscription tracking and monitoring</li>
+ * <li>System diagnostics and logging</li>
  * </ul>
  *
  * <p>
  * <b>Lifecycle Management:</b>
  * </p>
  * <ul>
- *   <li>Triggers cleanup of subscription resources</li>
- *   <li>Updates publisher state</li>
- *   <li>Maintains subscription history</li>
- *   <li>Supports system diagnostics</li>
+ * <li>Triggers cleanup of subscription resources</li>
+ * <li>Updates publisher state</li>
+ * <li>Maintains subscription history</li>
+ * <li>Supports system diagnostics</li>
  * </ul>
  *
  * @author Karel Goderis - Initial contribution

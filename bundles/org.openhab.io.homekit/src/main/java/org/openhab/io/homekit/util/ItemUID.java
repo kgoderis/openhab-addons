@@ -19,20 +19,20 @@ import org.slf4j.LoggerFactory;
  * The class integrates with several key components:
  * </p>
  * <ul>
- *   <li>{@link org.openhab.core.thing.UID} for base UID functionality</li>
- *   <li>{@link org.openhab.core.items.Item} for item identification</li>
- *   <li>OpenHAB's item system for state management</li>
+ * <li>{@link org.openhab.core.thing.UID} for base UID functionality</li>
+ * <li>{@link org.openhab.core.items.Item} for item identification</li>
+ * <li>OpenHAB's item system for state management</li>
  * </ul>
  *
  * <p>
  * Key features:
  * </p>
  * <ul>
- *   <li>Standardized UID format: openhab:item:{itemName}</li>
- *   <li>Direct item name mapping</li>
- *   <li>Wildcard pattern matching support</li>
- *   <li>Format validation and parsing</li>
- *   <li>Wildcard UID support for matching any item</li>
+ * <li>Standardized UID format: openhab:item:{itemName}</li>
+ * <li>Direct item name mapping</li>
+ * <li>Wildcard pattern matching support</li>
+ * <li>Format validation and parsing</li>
+ * <li>Wildcard UID support for matching any item</li>
  * </ul>
  *
  * <p>
@@ -70,10 +70,10 @@ public class ItemUID extends UID {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Extracts item name</li>
-     *   <li>Validates item parameter</li>
-     *   <li>Constructs UID in standard format</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Extracts item name</li>
+     * <li>Validates item parameter</li>
+     * <li>Constructs UID in standard format</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @param item The item to create a UID for
@@ -97,10 +97,10 @@ public class ItemUID extends UID {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Validates item name</li>
-     *   <li>Constructs UID in standard format</li>
-     *   <li>Supports wildcard names</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Validates item name</li>
+     * <li>Constructs UID in standard format</li>
+     * <li>Supports wildcard names</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @param itemName The name of the item
@@ -119,9 +119,9 @@ public class ItemUID extends UID {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns internal item name field</li>
-     *   <li>Used for item identification</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Returns internal item name field</li>
+     * <li>Used for item identification</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return The name of the item
@@ -143,10 +143,10 @@ public class ItemUID extends UID {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Supports wildcard matching</li>
-     *   <li>Validates pattern format</li>
-     *   <li>Converts wildcards to regex</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Supports wildcard matching</li>
+     * <li>Validates pattern format</li>
+     * <li>Converts wildcards to regex</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @param pattern The pattern to match against
@@ -179,18 +179,18 @@ public class ItemUID extends UID {
      * A valid item UID must have exactly 3 segments:
      * </p>
      * <ol>
-     *   <li>The namespace prefix ("openhab")</li>
-     *   <li>The type identifier ("item")</li>
-     *   <li>The item name</li>
+     * <li>The namespace prefix ("openhab")</li>
+     * <li>The type identifier ("item")</li>
+     * <li>The item name</li>
      * </ol>
      *
      * <p>
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Enforces UID structure validation</li>
-     *   <li>Ensures complete identification</li>
-     *   <li>Supports UID parsing</li>
+     * <li>Enforces UID structure validation</li>
+     * <li>Ensures complete identification</li>
+     * <li>Supports UID parsing</li>
      * </ul>
      *
      * @return The minimum number of segments (3) for a valid item UID
@@ -208,9 +208,9 @@ public class ItemUID extends UID {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns constant prefix</li>
-     *   <li>Used for UID categorization</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Returns constant prefix</li>
+     * <li>Used for UID categorization</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return The prefix used in this UID

@@ -16,19 +16,19 @@ import org.openhab.io.homekit.library.characteristic.HomekitWakeConfigurationCha
  * <p>
  * This service provides power management functionality for accessories, including:
  * <ul>
- *   <li>Wake configuration management</li>
- *   <li>Power state monitoring</li>
- *   <li>Power-related accessory states</li>
+ * <li>Wake configuration management</li>
+ * <li>Power state monitoring</li>
+ * <li>Power-related accessory states</li>
  * </ul>
  * </p>
  *
  * <p>
  * The service is used to:
  * <ul>
- *   <li>Configure wake behavior of accessories</li>
- *   <li>Monitor power states</li>
- *   <li>Manage power-related accessory states</li>
- *   <li>Provide power management information to iOS devices</li>
+ * <li>Configure wake behavior of accessories</li>
+ * <li>Monitor power states</li>
+ * <li>Manage power-related accessory states</li>
+ * <li>Provide power management information to iOS devices</li>
  * </ul>
  * </p>
  *
@@ -79,7 +79,7 @@ public class HomekitPowerManagementService extends AbstractHomekitService {
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>WakeConfiguration</li>
+     * <li>WakeConfiguration</li>
      * </ul>
      * </p>
      *

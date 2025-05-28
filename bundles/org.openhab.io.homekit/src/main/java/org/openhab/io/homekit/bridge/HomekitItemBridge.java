@@ -121,18 +121,24 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     private static final String YAML_FILE_NAME = "homekit-2.x-items.yaml";
 
     // ========== Error Messages ==========
-    private static final String ERROR_CREATING_ACCESSORY = LOG_ERROR + "Error creating Homekit accessory for item {}: {}";
+    private static final String ERROR_CREATING_ACCESSORY = LOG_ERROR
+            + "Error creating Homekit accessory for item {}: {}";
     private static final String ERROR_UPDATING_CHARACTERISTIC = LOG_ERROR + "Error updating characteristic {}: {}";
     private static final String ERROR_REMOVING_ACCESSORY = LOG_ERROR + "Error removing accessory {}: {}";
-    private static final String NO_AVAILABLE_SERVER = LOG_WARN + "No available bridge accessory server found for item {}";
-    private static final String CHARACTERISTIC_CREATION_FAILED = LOG_ERROR + "Failed to create characteristic {} for item {}";
+    private static final String NO_AVAILABLE_SERVER = LOG_WARN
+            + "No available bridge accessory server found for item {}";
+    private static final String CHARACTERISTIC_CREATION_FAILED = LOG_ERROR
+            + "Failed to create characteristic {} for item {}";
     private static final String SERVICE_CREATION_FAILED = LOG_ERROR + "Failed to create service {} for item {}";
 
     // ========== Debug Messages ==========
-    private static final String DEBUG_ACCESSORY_CREATED = LOG_ACCESSORY + "Successfully created Homekit accessory for item {}";
-    private static final String DEBUG_UPDATING_CHARACTERISTIC = LOG_STATE + "Updating characteristic {} for item {} with value {}";
+    private static final String DEBUG_ACCESSORY_CREATED = LOG_ACCESSORY
+            + "Successfully created Homekit accessory for item {}";
+    private static final String DEBUG_UPDATING_CHARACTERISTIC = LOG_STATE
+            + "Updating characteristic {} for item {} with value {}";
     private static final String DEBUG_REMOVING_ACCESSORY = LOG_ACCESSORY + "Removing Homekit accessory for item {}";
-    private static final String DEBUG_ACCESSORY_REMOVED = LOG_ACCESSORY + "Successfully removed Homekit accessory for item {}";
+    private static final String DEBUG_ACCESSORY_REMOVED = LOG_ACCESSORY
+            + "Successfully removed Homekit accessory for item {}";
     private static final String DEBUG_FOUND_COMPATIBLE_FACTORY = LOG_CONFIG + "Found compatible factory {} for item {}";
     private static final String DEBUG_FOUND_AVAILABLE_SERVER = LOG_CONFIG + "Found available server {} for item {}";
 

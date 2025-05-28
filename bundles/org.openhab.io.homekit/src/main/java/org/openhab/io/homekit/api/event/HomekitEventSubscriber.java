@@ -12,17 +12,17 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * <p>
  * Key implementation details:
  * <ul>
- *   <li>Event reception and processing</li>
- *   <li>Error handling and recovery</li>
- *   <li>Thread-safe event handling</li>
- *   <li>Asynchronous event processing support</li>
+ * <li>Event reception and processing</li>
+ * <li>Error handling and recovery</li>
+ * <li>Thread-safe event handling</li>
+ * <li>Asynchronous event processing support</li>
  * </ul>
  * </p>
  * <p>
  * The interface integrates with:
  * <ul>
- *   <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for event handling</li>
- *   <li>{@link org.openhab.io.homekit.api.event.HomekitEventPublisher} for event reception</li>
+ * <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for event handling</li>
+ * <li>{@link org.openhab.io.homekit.api.event.HomekitEventPublisher} for event reception</li>
  * </ul>
  * </p>
  *

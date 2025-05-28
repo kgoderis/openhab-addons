@@ -17,12 +17,12 @@ import org.openhab.io.homekit.api.service.HomekitService;
  * <p>
  * The factory provides methods for:
  * <ul>
- *   <li>Creating services from service types</li>
- *   <li>Creating services from service tags</li>
- *   <li>Creating services with variable arguments</li>
- *   <li>Creating services from JSON configuration</li>
- *   <li>Querying supported service types and tags</li>
- *   <li>Retrieving characteristic types for services</li>
+ * <li>Creating services from service types</li>
+ * <li>Creating services from service tags</li>
+ * <li>Creating services with variable arguments</li>
+ * <li>Creating services from JSON configuration</li>
+ * <li>Querying supported service types and tags</li>
+ * <li>Retrieving characteristic types for services</li>
  * </ul>
  * </p>
  *
@@ -62,9 +62,9 @@ public interface HomekitServiceFactory {
      * <p>
      * The method will:
      * <ol>
-     *   <li>Determine the appropriate constructor based on argument types</li>
-     *   <li>Create a new service instance using the constructor</li>
-     *   <li>Return the created service</li>
+     * <li>Determine the appropriate constructor based on argument types</li>
+     * <li>Create a new service instance using the constructor</li>
+     * <li>Return the created service</li>
      * </ol>
      * </p>
      *
@@ -82,9 +82,9 @@ public interface HomekitServiceFactory {
      * <p>
      * The method will:
      * <ol>
-     *   <li>Look up the service type for the given tag</li>
-     *   <li>Create a new service instance using the found type</li>
-     *   <li>Return the created service</li>
+     * <li>Look up the service type for the given tag</li>
+     * <li>Create a new service instance using the found type</li>
+     * <li>Return the created service</li>
      * </ol>
      * </p>
      *
@@ -157,8 +157,8 @@ public interface HomekitServiceFactory {
      * <p>
      * The JSON value must contain:
      * <ul>
-     *   <li>A "type" field with the service type</li>
-     *   <li>Any additional configuration required by the service</li>
+     * <li>A "type" field with the service type</li>
+     * <li>Any additional configuration required by the service</li>
      * </ul>
      * </p>
      *
@@ -204,8 +204,8 @@ public interface HomekitServiceFactory {
      * <p>
      * The returned map contains two sets:
      * <ul>
-     *   <li>"mandatory" - Set of required characteristic types</li>
-     *   <li>"optional" - Set of optional characteristic types</li>
+     * <li>"mandatory" - Set of required characteristic types</li>
+     * <li>"optional" - Set of optional characteristic types</li>
      * </ul>
      * </p>
      *

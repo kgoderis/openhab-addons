@@ -23,20 +23,20 @@ import org.slf4j.LoggerFactory;
  * <b>Component Integration:</b>
  * </p>
  * <ul>
- *   <li>{@link HomekitHttpChannel} for channel management</li>
- *   <li>{@link HttpDestination} for connection configuration</li>
- *   <li>{@link org.eclipse.jetty.client.HttpClient HttpClient} for HTTP operations</li>
+ * <li>{@link HomekitHttpChannel} for channel management</li>
+ * <li>{@link HttpDestination} for connection configuration</li>
+ * <li>{@link org.eclipse.jetty.client.HttpClient HttpClient} for HTTP operations</li>
  * </ul>
  *
  * <p>
  * <b>Key responsibilities:</b>
  * </p>
  * <ul>
- *   <li>Managing HTTP-specific connection lifecycle</li>
- *   <li>Handling HTTP request/response cycles</li>
- *   <li>Supporting HTTP protocol features</li>
- *   <li>Managing connection state</li>
- *   <li>Handling encryption keys for secure communication</li>
+ * <li>Managing HTTP-specific connection lifecycle</li>
+ * <li>Handling HTTP request/response cycles</li>
+ * <li>Supporting HTTP protocol features</li>
+ * <li>Managing connection state</li>
+ * <li>Handling encryption keys for secure communication</li>
  * </ul>
  *
  * @author Karel Goderis - Initial Contribution
@@ -196,9 +196,9 @@ public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
      * <b>Key implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Updates encryption keys for the connection</li>
-     *   <li>Configures the associated HTTP channel</li>
-     *   <li>Logs key information at appropriate levels</li>
+     * <li>Updates encryption keys for the connection</li>
+     * <li>Configures the associated HTTP channel</li>
+     * <li>Logs key information at appropriate levels</li>
      * </ul>
      *
      * @param decryptionKey The key used for decrypting incoming messages

@@ -23,20 +23,20 @@ import org.slf4j.LoggerFactory;
  * The class integrates with several key components:
  * </p>
  * <ul>
- *   <li>{@link java.security.MessageDigest} for SHA-1 hashing</li>
- *   <li>{@link java.util.UUID} for UUID generation and manipulation</li>
- *   <li>OpenHAB's HomeKit integration for component identification</li>
+ * <li>{@link java.security.MessageDigest} for SHA-1 hashing</li>
+ * <li>{@link java.util.UUID} for UUID generation and manipulation</li>
+ * <li>OpenHAB's HomeKit integration for component identification</li>
  * </ul>
  *
  * <p>
  * Key features:
  * </p>
  * <ul>
- *   <li>UUID version 5 (SHA-1) generation</li>
- *   <li>Namespace-based UUID creation</li>
- *   <li>Support for string and byte array inputs</li>
- *   <li>Predefined HomeKit namespaces</li>
- *   <li>Thread-safe operations</li>
+ * <li>UUID version 5 (SHA-1) generation</li>
+ * <li>Namespace-based UUID creation</li>
+ * <li>Support for string and byte array inputs</li>
+ * <li>Predefined HomeKit namespaces</li>
+ * <li>Thread-safe operations</li>
  * </ul>
  *
  * @author Karel Goderis - Initial contribution
@@ -83,10 +83,10 @@ public class HomekitUUID5 {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Converts string to UTF-8 bytes</li>
-     *   <li>Validates input parameters</li>
-     *   <li>Uses SHA-1 hashing</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Converts string to UTF-8 bytes</li>
+     * <li>Validates input parameters</li>
+     * <li>Uses SHA-1 hashing</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @param namespace The namespace UUID
@@ -111,10 +111,10 @@ public class HomekitUUID5 {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Uses SHA-1 message digest</li>
-     *   <li>Sets UUID version and variant bits</li>
-     *   <li>Validates input parameters</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Uses SHA-1 message digest</li>
+     * <li>Sets UUID version and variant bits</li>
+     * <li>Validates input parameters</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @param namespace The namespace UUID
@@ -156,10 +156,10 @@ public class HomekitUUID5 {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Requires 16-byte input</li>
-     *   <li>Splits into MSB and LSB</li>
-     *   <li>Handles byte ordering</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Requires 16-byte input</li>
+     * <li>Splits into MSB and LSB</li>
+     * <li>Handles byte ordering</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @param data The 16-byte array
@@ -192,10 +192,10 @@ public class HomekitUUID5 {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Produces 16-byte output</li>
-     *   <li>Extracts MSB and LSB</li>
-     *   <li>Handles byte ordering</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Produces 16-byte output</li>
+     * <li>Extracts MSB and LSB</li>
+     * <li>Handles byte ordering</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @param uuid The UUID to convert

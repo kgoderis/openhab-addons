@@ -26,21 +26,21 @@ import org.slf4j.LoggerFactory;
  * The class integrates with several key components:
  * </p>
  * <ul>
- *   <li>{@link org.openhab.io.homekit.protocol.message.HomekitMessage} for message type definitions</li>
- *   <li>{@link org.openhab.io.homekit.protocol.error.HomekitErrorCode} for error code handling</li>
- *   <li>{@link java.io.ByteArrayInputStream} for input stream handling</li>
- *   <li>{@link java.io.ByteArrayOutputStream} for output stream handling</li>
+ * <li>{@link org.openhab.io.homekit.protocol.message.HomekitMessage} for message type definitions</li>
+ * <li>{@link org.openhab.io.homekit.protocol.error.HomekitErrorCode} for error code handling</li>
+ * <li>{@link java.io.ByteArrayInputStream} for input stream handling</li>
+ * <li>{@link java.io.ByteArrayOutputStream} for output stream handling</li>
  * </ul>
  *
  * <p>
  * Key features:
  * </p>
  * <ul>
- *   <li>TLV data structure encoding and decoding</li>
- *   <li>Support for various data types (byte, BigInteger, byte arrays)</li>
- *   <li>Error code handling and conversion</li>
- *   <li>Stream-based processing for large data sets</li>
- *   <li>Thread-safe operations</li>
+ * <li>TLV data structure encoding and decoding</li>
+ * <li>Support for various data types (byte, BigInteger, byte arrays)</li>
+ * <li>Error code handling and conversion</li>
+ * <li>Stream-based processing for large data sets</li>
+ * <li>Thread-safe operations</li>
  * </ul>
  *
  * @author Karel Goderis - Initial contribution
@@ -79,10 +79,10 @@ public class HomekitTypeLengthValueEncoderDecoder {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Processes input stream byte by byte</li>
-     *   <li>Extracts type, length, and value components</li>
-     *   <li>Handles variable-length data</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Processes input stream byte by byte</li>
+     * <li>Extracts type, length, and value components</li>
+     * <li>Handles variable-length data</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @param content The byte array to decode
@@ -116,9 +116,9 @@ public class HomekitTypeLengthValueEncoderDecoder {
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Creates new ByteArrayOutputStream</li>
-     *   <li>Returns new Encoder instance</li>
-     *   <li>Thread-safe operation</li>
+     * <li>Creates new ByteArrayOutputStream</li>
+     * <li>Returns new Encoder instance</li>
+     * <li>Thread-safe operation</li>
      * </ul>
      *
      * @return A new Encoder instance
@@ -139,10 +139,10 @@ public class HomekitTypeLengthValueEncoderDecoder {
      * Key features:
      * </p>
      * <ul>
-     *   <li>Support for multiple data types</li>
-     *   <li>Automatic length calculation</li>
-     *   <li>Chunked data handling</li>
-     *   <li>Trace-level logging</li>
+     * <li>Support for multiple data types</li>
+     * <li>Automatic length calculation</li>
+     * <li>Chunked data handling</li>
+     * <li>Trace-level logging</li>
      * </ul>
      */
     public static final class Encoder {
@@ -159,9 +159,9 @@ public class HomekitTypeLengthValueEncoderDecoder {
          * Key implementation details:
          * </p>
          * <ul>
-         *   <li>Converts BigInteger to byte array</li>
-         *   <li>Handles large numbers</li>
-         *   <li>Provides trace-level logging</li>
+         * <li>Converts BigInteger to byte array</li>
+         * <li>Handles large numbers</li>
+         * <li>Provides trace-level logging</li>
          * </ul>
          *
          * @param type The message type
@@ -179,9 +179,9 @@ public class HomekitTypeLengthValueEncoderDecoder {
          * Key implementation details:
          * </p>
          * <ul>
-         *   <li>Writes type byte</li>
-         *   <li>Writes length byte</li>
-         *   <li>Writes value byte</li>
+         * <li>Writes type byte</li>
+         * <li>Writes length byte</li>
+         * <li>Writes value byte</li>
          * </ul>
          *
          * @param type The message type
@@ -200,9 +200,9 @@ public class HomekitTypeLengthValueEncoderDecoder {
          * Key implementation details:
          * </p>
          * <ul>
-         *   <li>Writes type byte</li>
-         *   <li>Writes length byte</li>
-         *   <li>Writes error code</li>
+         * <li>Writes type byte</li>
+         * <li>Writes length byte</li>
+         * <li>Writes error code</li>
          * </ul>
          *
          * @param type The message type
@@ -221,9 +221,9 @@ public class HomekitTypeLengthValueEncoderDecoder {
          * Key implementation details:
          * </p>
          * <ul>
-         *   <li>Handles large byte arrays</li>
-         *   <li>Splits data into chunks if needed</li>
-         *   <li>Provides trace-level logging</li>
+         * <li>Handles large byte arrays</li>
+         * <li>Splits data into chunks if needed</li>
+         * <li>Provides trace-level logging</li>
          * </ul>
          *
          * @param type The message type
@@ -238,7 +238,8 @@ public class HomekitTypeLengthValueEncoderDecoder {
                 baos.write(type.getKey());
                 baos.write(toWrite);
                 HomekitByte.copyStream(bais, baos, toWrite);
-                logger.trace("{}Encoded T {} L {} V {}", LOG_ENCODE, type.name(), toWrite, HomekitByte.toHexString(bytes));
+                logger.trace("{}Encoded T {} L {} V {}", LOG_ENCODE, type.name(), toWrite,
+                        HomekitByte.toHexString(bytes));
             }
         }
 
@@ -249,8 +250,8 @@ public class HomekitTypeLengthValueEncoderDecoder {
          * Key implementation details:
          * </p>
          * <ul>
-         *   <li>Returns complete TLV data</li>
-         *   <li>Preserves all added values</li>
+         * <li>Returns complete TLV data</li>
+         * <li>Preserves all added values</li>
          * </ul>
          *
          * @return The encoded TLV data
@@ -272,9 +273,9 @@ public class HomekitTypeLengthValueEncoderDecoder {
      * Key features:
      * </p>
      * <ul>
-     *   <li>Support for multiple data types</li>
-     *   <li>Value merging for repeated types</li>
-     *   <li>Safe value access</li>
+     * <li>Support for multiple data types</li>
+     * <li>Value merging for repeated types</li>
+     * <li>Safe value access</li>
      * </ul>
      */
     public static final class DecodeResult {
@@ -290,8 +291,8 @@ public class HomekitTypeLengthValueEncoderDecoder {
          * Key implementation details:
          * </p>
          * <ul>
-         *   <li>Returns first byte of value</li>
-         *   <li>Assumes single-byte value</li>
+         * <li>Returns first byte of value</li>
+         * <li>Assumes single-byte value</li>
          * </ul>
          *
          * @param type The message type
@@ -308,8 +309,8 @@ public class HomekitTypeLengthValueEncoderDecoder {
          * Key implementation details:
          * </p>
          * <ul>
-         *   <li>Converts bytes to BigInteger</li>
-         *   <li>Handles large numbers</li>
+         * <li>Converts bytes to BigInteger</li>
+         * <li>Handles large numbers</li>
          * </ul>
          *
          * @param type The message type
@@ -326,8 +327,8 @@ public class HomekitTypeLengthValueEncoderDecoder {
          * Key implementation details:
          * </p>
          * <ul>
-         *   <li>Returns complete byte array</li>
-         *   <li>Preserves all bytes</li>
+         * <li>Returns complete byte array</li>
+         * <li>Preserves all bytes</li>
          * </ul>
          *
          * @param type The message type
@@ -344,9 +345,9 @@ public class HomekitTypeLengthValueEncoderDecoder {
          * Key implementation details:
          * </p>
          * <ul>
-         *   <li>Handles partial copies</li>
-         *   <li>Respects array bounds</li>
-         *   <li>Uses System.arraycopy</li>
+         * <li>Handles partial copies</li>
+         * <li>Respects array bounds</li>
+         * <li>Uses System.arraycopy</li>
          * </ul>
          *
          * @param type The message type
@@ -365,8 +366,8 @@ public class HomekitTypeLengthValueEncoderDecoder {
          * Key implementation details:
          * </p>
          * <ul>
-         *   <li>Returns array length</li>
-         *   <li>Handles null values</li>
+         * <li>Returns array length</li>
+         * <li>Handles null values</li>
          * </ul>
          *
          * @param type The message type
@@ -383,9 +384,9 @@ public class HomekitTypeLengthValueEncoderDecoder {
          * Key implementation details:
          * </p>
          * <ul>
-         *   <li>Merges multiple values</li>
-         *   <li>Uses HomekitByte.joinBytes</li>
-         *   <li>Thread-safe operation</li>
+         * <li>Merges multiple values</li>
+         * <li>Uses HomekitByte.joinBytes</li>
+         * <li>Thread-safe operation</li>
          * </ul>
          *
          * @param type The message type

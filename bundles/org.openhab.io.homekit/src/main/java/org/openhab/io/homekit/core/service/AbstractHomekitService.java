@@ -46,21 +46,21 @@ import org.slf4j.LoggerFactory;
  * <p>
  * This class implements the fundamental service behavior required by all HomeKit services, including:
  * <ul>
- *   <li>Characteristic management and lifecycle</li>
- *   <li>Event handling and subscriptions</li>
- *   <li>JSON serialization</li>
- *   <li>Service configuration and state management</li>
+ * <li>Characteristic management and lifecycle</li>
+ * <li>Event handling and subscriptions</li>
+ * <li>JSON serialization</li>
+ * <li>Service configuration and state management</li>
  * </ul>
  * </p>
  *
  * <p>
  * The class integrates with:
  * <ul>
- *   <li>{@link HomekitAccessory} for accessory lifecycle and state management</li>
- *   <li>{@link HomekitCharacteristic} for value conversion and validation</li>
- *   <li>{@link HomekitEventManager} for event handling and subscriptions</li>
- *   <li>{@link HomekitCharacteristicFactory} for characteristic creation</li>
- *   <li>{@link org.openhab.core.thing.UID OpenHAB's UID system} for unique identification</li>
+ * <li>{@link HomekitAccessory} for accessory lifecycle and state management</li>
+ * <li>{@link HomekitCharacteristic} for value conversion and validation</li>
+ * <li>{@link HomekitEventManager} for event handling and subscriptions</li>
+ * <li>{@link HomekitCharacteristicFactory} for characteristic creation</li>
+ * <li>{@link org.openhab.core.thing.UID OpenHAB's UID system} for unique identification</li>
  * </ul>
  * </p>
  *

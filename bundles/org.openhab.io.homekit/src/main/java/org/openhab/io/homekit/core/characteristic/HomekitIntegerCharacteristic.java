@@ -21,33 +21,33 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * <p>
  * The class implements integer value management with:
  * <ul>
- *   <li>Configurable value range (minValue to maxValue)</li>
- *   <li>Unit specification for value representation</li>
- *   <li>Support for paired read/write operations</li>
- *   <li>Event notification capabilities</li>
+ * <li>Configurable value range (minValue to maxValue)</li>
+ * <li>Unit specification for value representation</li>
+ * <li>Support for paired read/write operations</li>
+ * <li>Event notification capabilities</li>
  * </ul>
  * </p>
  *
  * <p>
  * Key features:
  * <ul>
- *   <li>Supports integer format as per HomeKit specification</li>
- *   <li>Provides paired read/write access by default</li>
- *   <li>Includes event notifications for value changes</li>
- *   <li>Converts between JSON, OpenHAB states, and integer values</li>
- *   <li>Enforces value range constraints</li>
- *   <li>Supports unit specification for value representation</li>
+ * <li>Supports integer format as per HomeKit specification</li>
+ * <li>Provides paired read/write access by default</li>
+ * <li>Includes event notifications for value changes</li>
+ * <li>Converts between JSON, OpenHAB states, and integer values</li>
+ * <li>Enforces value range constraints</li>
+ * <li>Supports unit specification for value representation</li>
  * </ul>
  * </p>
  *
  * <p>
  * The class integrates with:
  * <ul>
- *   <li>{@link AbstractHomekitCharacteristic} - Base characteristic functionality</li>
- *   <li>{@link HomekitService} - Service lifecycle management</li>
- *   <li>{@link HomekitEventManager} - Event handling and notifications</li>
- *   <li>{@link org.openhab.core.library.types.DecimalType} - State type for numeric values</li>
- *   <li>{@link org.openhab.core.library.CoreItemFactory} - Item type factory for numbers</li>
+ * <li>{@link AbstractHomekitCharacteristic} - Base characteristic functionality</li>
+ * <li>{@link HomekitService} - Service lifecycle management</li>
+ * <li>{@link HomekitEventManager} - Event handling and notifications</li>
+ * <li>{@link org.openhab.core.library.types.DecimalType} - State type for numeric values</li>
+ * <li>{@link org.openhab.core.library.CoreItemFactory} - Item type factory for numbers</li>
  * </ul>
  * </p>
  *

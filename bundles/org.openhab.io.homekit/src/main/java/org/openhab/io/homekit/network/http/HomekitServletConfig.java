@@ -19,19 +19,19 @@ import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
  * <b>Key features:</b>
  * </p>
  * <ul>
- *   <li>Implements ServletConfig interface for servlet configuration</li>
- *   <li>Provides access to HomeKit accessory server instance</li>
- *   <li>Maintains servlet name and context information</li>
- *   <li>Simplified configuration without init parameters</li>
+ * <li>Implements ServletConfig interface for servlet configuration</li>
+ * <li>Provides access to HomeKit accessory server instance</li>
+ * <li>Maintains servlet name and context information</li>
+ * <li>Simplified configuration without init parameters</li>
  * </ul>
  *
  * <p>
  * <b>Component Integration:</b>
  * </p>
  * <ul>
- *   <li>{@link javax.servlet.ServletConfig} for servlet configuration interface</li>
- *   <li>{@link javax.servlet.ServletContext} for servlet context information</li>
- *   <li>{@link org.openhab.io.homekit.api.server.HomekitAccessoryServer} for HomeKit server functionality</li>
+ * <li>{@link javax.servlet.ServletConfig} for servlet configuration interface</li>
+ * <li>{@link javax.servlet.ServletContext} for servlet context information</li>
+ * <li>{@link org.openhab.io.homekit.api.server.HomekitAccessoryServer} for HomeKit server functionality</li>
  * </ul>
  *
  * @author Karel Goderis - Initial Contribution
@@ -60,9 +60,9 @@ public class HomekitServletConfig implements ServletConfig {
      * <b>Key implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Stores server instance for later access</li>
-     *   <li>Initializes servlet name and context</li>
-     *   <li>Prepares for servlet configuration</li>
+     * <li>Stores server instance for later access</li>
+     * <li>Initializes servlet name and context</li>
+     * <li>Prepares for servlet configuration</li>
      * </ul>
      *
      * @param server The HomeKit accessory server instance

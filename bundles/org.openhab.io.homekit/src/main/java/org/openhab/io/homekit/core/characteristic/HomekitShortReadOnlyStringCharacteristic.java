@@ -11,9 +11,9 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.types.State;
+import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
-import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,24 +31,24 @@ import org.slf4j.LoggerFactory;
  * The class integrates with several key components:
  * </p>
  * <ul>
- *   <li>{@link AbstractHomekitCharacteristic} for base characteristic functionality</li>
- *   <li>{@link HomekitService} for service-level operations</li>
- *   <li>{@link HomekitEventManager} for event handling</li>
- *   <li>{@link org.openhab.core.types.State} for state conversion</li>
- *   <li>{@link javax.json.JsonValue} for JSON serialization</li>
- *   <li>{@link org.openhab.core.library.types.StringType} for string state handling</li>
+ * <li>{@link AbstractHomekitCharacteristic} for base characteristic functionality</li>
+ * <li>{@link HomekitService} for service-level operations</li>
+ * <li>{@link HomekitEventManager} for event handling</li>
+ * <li>{@link org.openhab.core.types.State} for state conversion</li>
+ * <li>{@link javax.json.JsonValue} for JSON serialization</li>
+ * <li>{@link org.openhab.core.library.types.StringType} for string state handling</li>
  * </ul>
  *
  * <p>
  * Key features:
  * </p>
  * <ul>
- *   <li>Read-only access control through permission management</li>
- *   <li>String value conversion between HomeKit and OpenHAB formats</li>
- *   <li>Event handling for value changes</li>
- *   <li>JSON serialization for HomeKit protocol communication</li>
- *   <li>Integration with OpenHAB's state management system</li>
- *   <li>Support for short string values (limited length)</li>
+ * <li>Read-only access control through permission management</li>
+ * <li>String value conversion between HomeKit and OpenHAB formats</li>
+ * <li>Event handling for value changes</li>
+ * <li>JSON serialization for HomeKit protocol communication</li>
+ * <li>Integration with OpenHAB's state management system</li>
+ * <li>Support for short string values (limited length)</li>
  * </ul>
  *
  * <p>
@@ -80,20 +80,20 @@ public abstract class HomekitShortReadOnlyStringCharacteristic extends AbstractH
      * dependencies and sets up the event subscription system. It integrates with:
      * </p>
      * <ul>
-     *   <li>{@link HomekitService} for service integration</li>
-     *   <li>{@link HomekitEventManager} for event handling</li>
-     *   <li>{@link HomekitEventType} for event type management</li>
+     * <li>{@link HomekitService} for service integration</li>
+     * <li>{@link HomekitEventManager} for event handling</li>
+     * <li>{@link HomekitEventType} for event type management</li>
      * </ul>
      *
      * <p>
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Validates input parameters</li>
-     *   <li>Sets up read-only permissions</li>
-     *   <li>Configures string format</li>
-     *   <li>Initializes default value</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Validates input parameters</li>
+     * <li>Sets up read-only permissions</li>
+     * <li>Configures string format</li>
+     * <li>Initializes default value</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @param service the service this characteristic belongs to
@@ -116,21 +116,21 @@ public abstract class HomekitShortReadOnlyStringCharacteristic extends AbstractH
      * allowing for flexible characteristic creation and configuration. It integrates with:
      * </p>
      * <ul>
-     *   <li>{@link javax.json.JsonValue} for configuration parsing</li>
-     *   <li>{@link HomekitService} for service integration</li>
-     *   <li>{@link HomekitEventManager} for event handling</li>
-     *   <li>{@link HomekitEventType} for event type management</li>
+     * <li>{@link javax.json.JsonValue} for configuration parsing</li>
+     * <li>{@link HomekitService} for service integration</li>
+     * <li>{@link HomekitEventManager} for event handling</li>
+     * <li>{@link HomekitEventType} for event type management</li>
      * </ul>
      *
      * <p>
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Validates JSON configuration</li>
-     *   <li>Sets up read-only permissions</li>
-     *   <li>Configures string format</li>
-     *   <li>Initializes default value</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Validates JSON configuration</li>
+     * <li>Sets up read-only permissions</li>
+     * <li>Configures string format</li>
+     * <li>Initializes default value</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @param service the service this characteristic belongs to
@@ -143,7 +143,8 @@ public abstract class HomekitShortReadOnlyStringCharacteristic extends AbstractH
             JsonValue value) {
         super(service, eventManager, value);
         initializeValue();
-        logger.trace("{}Created new read-only short string characteristic from JSON for service: {}", LOG_CHAR, service);
+        logger.trace("{}Created new read-only short string characteristic from JSON for service: {}", LOG_CHAR,
+                service);
     }
 
     /**
@@ -155,9 +156,9 @@ public abstract class HomekitShortReadOnlyStringCharacteristic extends AbstractH
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Updates internal value</li>
-     *   <li>Maintains read-only status</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Updates internal value</li>
+     * <li>Maintains read-only status</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @param value the new value to set
@@ -175,9 +176,9 @@ public abstract class HomekitShortReadOnlyStringCharacteristic extends AbstractH
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Always throws exception</li>
-     *   <li>Enforces read-only nature</li>
-     *   <li>Provides error logging</li>
+     * <li>Always throws exception</li>
+     * <li>Enforces read-only nature</li>
+     * <li>Provides error logging</li>
      * </ul>
      *
      * @param value the value to set (ignored)
@@ -196,9 +197,9 @@ public abstract class HomekitShortReadOnlyStringCharacteristic extends AbstractH
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Always returns false</li>
-     *   <li>Ensures visibility in HomeKit</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Always returns false</li>
+     * <li>Ensures visibility in HomeKit</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return false, as read-only string characteristics are always visible
@@ -216,9 +217,9 @@ public abstract class HomekitShortReadOnlyStringCharacteristic extends AbstractH
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns empty string</li>
-     *   <li>Used for initialization</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Returns empty string</li>
+     * <li>Used for initialization</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return the default string value (empty string)
@@ -238,19 +239,19 @@ public abstract class HomekitShortReadOnlyStringCharacteristic extends AbstractH
      * various JSON value types and conversion rules. It integrates with:
      * </p>
      * <ul>
-     *   <li>{@link javax.json.JsonValue} for value parsing</li>
-     *   <li>{@link javax.json.JsonObject} for object handling</li>
-     *   <li>{@link javax.json.JsonString} for string handling</li>
+     * <li>{@link javax.json.JsonValue} for value parsing</li>
+     * <li>{@link javax.json.JsonObject} for object handling</li>
+     * <li>{@link javax.json.JsonString} for string handling</li>
      * </ul>
      *
      * <p>
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Validates JSON value type</li>
-     *   <li>Extracts string value</li>
-     *   <li>Handles conversion errors</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Validates JSON value type</li>
+     * <li>Extracts string value</li>
+     * <li>Handles conversion errors</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @param jsonValue the JSON value to convert
@@ -278,9 +279,9 @@ public abstract class HomekitShortReadOnlyStringCharacteristic extends AbstractH
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Adds max length constraint</li>
-     *   <li>Enriches base JSON</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Adds max length constraint</li>
+     * <li>Enriches base JSON</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return the JSON representation of the characteristic
@@ -301,9 +302,9 @@ public abstract class HomekitShortReadOnlyStringCharacteristic extends AbstractH
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Adds max length constraint</li>
-     *   <li>Enriches reduced JSON</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Adds max length constraint</li>
+     * <li>Enriches reduced JSON</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return the reduced JSON representation of the characteristic
@@ -324,9 +325,9 @@ public abstract class HomekitShortReadOnlyStringCharacteristic extends AbstractH
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Adds max length constraint</li>
-     *   <li>Enriches JSON with specified metadata</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Adds max length constraint</li>
+     * <li>Enriches JSON with specified metadata</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @param includeMeta whether to include metadata
@@ -340,7 +341,8 @@ public abstract class HomekitShortReadOnlyStringCharacteristic extends AbstractH
             boolean includeEvent) {
         JsonObject base = super.toJson(includeMeta, includePermissions, includeType, includeEvent);
         JsonObject result = enrich(base, "maxLen", MAX_LEN);
-        logger.trace("{}Converted characteristic to JSON with specified metadata and max length: {}", LOG_CHAR, MAX_LEN);
+        logger.trace("{}Converted characteristic to JSON with specified metadata and max length: {}", LOG_CHAR,
+                MAX_LEN);
         return result;
     }
 
@@ -352,19 +354,19 @@ public abstract class HomekitShortReadOnlyStringCharacteristic extends AbstractH
      * various state types and conversion rules. It integrates with:
      * </p>
      * <ul>
-     *   <li>{@link org.openhab.core.types.State} for state handling</li>
-     *   <li>{@link org.openhab.core.library.types.StringType} for string state handling</li>
-     *   <li>{@link org.openhab.core.library.types.DecimalType} for numeric state handling</li>
+     * <li>{@link org.openhab.core.types.State} for state handling</li>
+     * <li>{@link org.openhab.core.library.types.StringType} for string state handling</li>
+     * <li>{@link org.openhab.core.library.types.DecimalType} for numeric state handling</li>
      * </ul>
      *
      * <p>
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Validates state type</li>
-     *   <li>Handles conversion errors</li>
-     *   <li>Returns default value if needed</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Validates state type</li>
+     * <li>Handles conversion errors</li>
+     * <li>Returns default value if needed</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @param state the state to convert
@@ -393,17 +395,17 @@ public abstract class HomekitShortReadOnlyStringCharacteristic extends AbstractH
      * various state types and conversion rules. It integrates with:
      * </p>
      * <ul>
-     *   <li>{@link org.openhab.core.types.State} for state creation</li>
-     *   <li>{@link org.openhab.core.library.types.StringType} for string state creation</li>
+     * <li>{@link org.openhab.core.types.State} for state creation</li>
+     * <li>{@link org.openhab.core.library.types.StringType} for string state creation</li>
      * </ul>
      *
      * <p>
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Creates StringType state</li>
-     *   <li>Validates input value</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Creates StringType state</li>
+     * <li>Validates input value</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @param value the string value to convert
@@ -424,9 +426,9 @@ public abstract class HomekitShortReadOnlyStringCharacteristic extends AbstractH
      * Key implementation details:
      * </p>
      * <ul>
-     *   <li>Returns string item type</li>
-     *   <li>Used for item validation</li>
-     *   <li>Provides trace-level logging</li>
+     * <li>Returns string item type</li>
+     * <li>Used for item validation</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return The string item type identifier

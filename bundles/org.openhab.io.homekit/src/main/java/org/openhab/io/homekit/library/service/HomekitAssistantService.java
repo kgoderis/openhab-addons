@@ -21,17 +21,17 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * <ul>
- *   <li>Voice assistant activation control</li>
- *   <li>Assistant identification and naming</li>
- *   <li>Integration with HomeKit event system</li>
+ * <li>Voice assistant activation control</li>
+ * <li>Assistant identification and naming</li>
+ * <li>Integration with HomeKit event system</li>
  * </ul>
  *
  * <p>
  * Required characteristics:
  * <ul>
- *   <li>Active - Controls whether the assistant is active</li>
- *   <li>Identifier - Unique identifier for the assistant</li>
- *   <li>Name - Display name for the assistant</li>
+ * <li>Active - Controls whether the assistant is active</li>
+ * <li>Identifier - Unique identifier for the assistant</li>
+ * <li>Name - Display name for the assistant</li>
  * </ul>
  * </p>
  *
@@ -79,31 +79,32 @@ public class HomekitAssistantService extends AbstractHomekitService {
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>Active - Controls whether the assistant is active</li>
-     *   <li>Identifier - Unique identifier for the assistant</li>
-     *   <li>Name - Display name for the assistant</li>
+     * <li>Active - Controls whether the assistant is active</li>
+     * <li>Identifier - Unique identifier for the assistant</li>
+     * <li>Name - Display name for the assistant</li>
      * </ul>
      * </p>
+     * 
      * @since 1.0
      */
     @Override
     public void addCharacteristics() {
-        logger.trace("{}Adding required characteristics to AssistantService for accessory {}", LOG_TRACE, getAccessory().getLabel());
-        
+        logger.trace("{}Adding required characteristics to AssistantService for accessory {}", LOG_TRACE,
+                getAccessory().getLabel());
+
         // Required characteristics
         addCharacteristic(
                 new HomekitActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(true));
         logger.debug("{}Added ActiveCharacteristic to AssistantService", LOG_STATE);
-        
+
         addCharacteristic(
                 new HomekitIdentifierCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(true));
         logger.debug("{}Added IdentifierCharacteristic to AssistantService", LOG_STATE);
-        
-        addCharacteristic(
-                new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                        .withMandatory(true));
+
+        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(true));
         logger.debug("{}Added NameCharacteristic to AssistantService", LOG_STATE);
     }
 }

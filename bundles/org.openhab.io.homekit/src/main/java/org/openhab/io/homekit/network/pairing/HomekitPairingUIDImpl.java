@@ -3,7 +3,6 @@ package org.openhab.io.homekit.network.pairing;
 import java.util.Base64;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.uid.HomekitPairingUID;
 import org.openhab.io.homekit.util.HomekitUID;
@@ -31,10 +30,10 @@ import org.slf4j.LoggerFactory;
  * The class ensures that each pairing has a unique identifier that can be used to:
  * </p>
  * <ul>
- *   <li>Track pairing relationships through {@link HomekitPairing}</li>
- *   <li>Manage pairing lifecycle via {@link HomekitPairingRegistry}</li>
- *   <li>Support pairing removal using {@link HomekitPairingImpl#removePairing(HomekitPairingUID)}</li>
- *   <li>Enable pairing updates through {@link HomekitPairingRegistry#updatePairing(HomekitPairing)}</li>
+ * <li>Track pairing relationships through {@link HomekitPairing}</li>
+ * <li>Manage pairing lifecycle via {@link HomekitPairingRegistry}</li>
+ * <li>Support pairing removal using {@link HomekitPairingImpl#removePairing(HomekitPairingUID)}</li>
+ * <li>Enable pairing updates through {@link HomekitPairingRegistry#updatePairing(HomekitPairing)}</li>
  * </ul>
  *
  * <p>
@@ -47,35 +46,35 @@ import org.slf4j.LoggerFactory;
  * <b>Component Integration:</b>
  * </p>
  * <ul>
- *   <li>{@link HomekitPairingImpl} for pairing management</li>
- *   <li>{@link HomekitPairingRegistryImpl} for pairing storage</li>
- *   <li>{@link HomekitAccessoryServer} for accessory communication</li>
- *   <li>{@link HomekitUID} for base UID functionality</li>
- *   <li>{@link HomekitPairingUID} for the pairing UID interface</li>
- *   <li>{@link HomekitPairing} for pairing operations</li>
- *   <li>{@link HomekitPairingRegistry} for pairing registration</li>
+ * <li>{@link HomekitPairingImpl} for pairing management</li>
+ * <li>{@link HomekitPairingRegistryImpl} for pairing storage</li>
+ * <li>{@link HomekitAccessoryServer} for accessory communication</li>
+ * <li>{@link HomekitUID} for base UID functionality</li>
+ * <li>{@link HomekitPairingUID} for the pairing UID interface</li>
+ * <li>{@link HomekitPairing} for pairing operations</li>
+ * <li>{@link HomekitPairingRegistry} for pairing registration</li>
  * </ul>
  *
  * <p>
  * <b>Security Considerations:</b>
  * </p>
  * <ul>
- *   <li>Secure identifier storage</li>
- *   <li>Base64 encoding for binary data</li>
- *   <li>Input validation</li>
- *   <li>Thread safety</li>
- *   <li>Data integrity</li>
+ * <li>Secure identifier storage</li>
+ * <li>Base64 encoding for binary data</li>
+ * <li>Input validation</li>
+ * <li>Thread safety</li>
+ * <li>Data integrity</li>
  * </ul>
  *
  * <p>
  * <b>Implementation Details:</b>
  * </p>
  * <ul>
- *   <li>Extends HomekitUID for base functionality</li>
- *   <li>Implements HomekitPairingUID interface</li>
- *   <li>Uses byte arrays for identifiers</li>
- *   <li>Provides Base64 encoding/decoding</li>
- *   <li>Maintains data consistency</li>
+ * <li>Extends HomekitUID for base functionality</li>
+ * <li>Implements HomekitPairingUID interface</li>
+ * <li>Uses byte arrays for identifiers</li>
+ * <li>Provides Base64 encoding/decoding</li>
+ * <li>Maintains data consistency</li>
  * </ul>
  *
  * @author Karel Goderis - Initial Contribution
@@ -112,11 +111,11 @@ public class HomekitPairingUIDImpl extends HomekitUID implements HomekitPairingU
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Initializes identifier storage</li>
-     *   <li>Sets up UID generation</li>
-     *   <li>Configures identifier validation</li>
-     *   <li>Prepares for pairing operations</li>
-     *   <li>Ensures thread safety</li>
+     * <li>Initializes identifier storage</li>
+     * <li>Sets up UID generation</li>
+     * <li>Configures identifier validation</li>
+     * <li>Prepares for pairing operations</li>
+     * <li>Ensures thread safety</li>
      * </ul>
      *
      * @throws IllegalStateException if the UID system is already initialized
@@ -144,11 +143,11 @@ public class HomekitPairingUIDImpl extends HomekitUID implements HomekitPairingU
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Validates identifier lengths</li>
-     *   <li>Stores identifiers securely</li>
-     *   <li>Prepares for UID operations</li>
-     *   <li>Ensures thread safety</li>
-     *   <li>Maintains data integrity</li>
+     * <li>Validates identifier lengths</li>
+     * <li>Stores identifiers securely</li>
+     * <li>Prepares for UID operations</li>
+     * <li>Ensures thread safety</li>
+     * <li>Maintains data integrity</li>
      * </ul>
      *
      * @param sourceId The source identifier for the pairing
@@ -182,9 +181,9 @@ public class HomekitPairingUIDImpl extends HomekitUID implements HomekitPairingU
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Enforces UID structure</li>
-     *   <li>Validates segment count</li>
-     *   <li>Maintains format consistency</li>
+     * <li>Enforces UID structure</li>
+     * <li>Validates segment count</li>
+     * <li>Maintains format consistency</li>
      * </ul>
      *
      * @return The minimum number of segments (4 for homekit:pairing:sourcePairingId:destinationPairingId)
@@ -207,9 +206,9 @@ public class HomekitPairingUIDImpl extends HomekitUID implements HomekitPairingU
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Generates string representation</li>
-     *   <li>Maintains format consistency</li>
-     *   <li>Ensures thread safety</li>
+     * <li>Generates string representation</li>
+     * <li>Maintains format consistency</li>
+     * <li>Ensures thread safety</li>
      * </ul>
      *
      * @return The string representation of the UID
@@ -234,10 +233,10 @@ public class HomekitPairingUIDImpl extends HomekitUID implements HomekitPairingU
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Decodes Base64 string</li>
-     *   <li>Retrieves destination ID</li>
-     *   <li>Maintains data integrity</li>
-     *   <li>Ensures thread safety</li>
+     * <li>Decodes Base64 string</li>
+     * <li>Retrieves destination ID</li>
+     * <li>Maintains data integrity</li>
+     * <li>Ensures thread safety</li>
      * </ul>
      *
      * @return The destination pairing ID
@@ -263,10 +262,10 @@ public class HomekitPairingUIDImpl extends HomekitUID implements HomekitPairingU
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Decodes Base64 string</li>
-     *   <li>Retrieves source ID</li>
-     *   <li>Maintains data integrity</li>
-     *   <li>Ensures thread safety</li>
+     * <li>Decodes Base64 string</li>
+     * <li>Retrieves source ID</li>
+     * <li>Maintains data integrity</li>
+     * <li>Ensures thread safety</li>
      * </ul>
      *
      * @return The source pairing ID
@@ -291,9 +290,9 @@ public class HomekitPairingUIDImpl extends HomekitUID implements HomekitPairingU
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Returns current instance</li>
-     *   <li>Maintains type safety</li>
-     *   <li>Ensures thread safety</li>
+     * <li>Returns current instance</li>
+     * <li>Maintains type safety</li>
+     * <li>Ensures thread safety</li>
      * </ul>
      *
      * @return The current instance as a HomekitPairingUID

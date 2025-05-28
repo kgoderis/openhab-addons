@@ -51,47 +51,47 @@ import org.slf4j.LoggerFactory;
  * The registry works in conjunction with:
  * </p>
  * <ul>
- *   <li>{@link HomekitPairingProvider} for pairing data sources</li>
- *   <li>{@link HomekitManagedPairingProvider} for managed pairings</li>
- *   <li>{@link HomekitPairingImpl} for pairing implementations</li>
- *   <li>{@link HomekitPairingUIDImpl} for unique identifiers</li>
- *   <li>{@link org.openhab.core.common.registry.AbstractRegistry AbstractRegistry} for base registry functionality</li>
- *   <li>{@link org.openhab.core.service.ReadyService ReadyService} for component lifecycle management</li>
+ * <li>{@link HomekitPairingProvider} for pairing data sources</li>
+ * <li>{@link HomekitManagedPairingProvider} for managed pairings</li>
+ * <li>{@link HomekitPairingImpl} for pairing implementations</li>
+ * <li>{@link HomekitPairingUIDImpl} for unique identifiers</li>
+ * <li>{@link org.openhab.core.common.registry.AbstractRegistry AbstractRegistry} for base registry functionality</li>
+ * <li>{@link org.openhab.core.service.ReadyService ReadyService} for component lifecycle management</li>
  * </ul>
  *
  * <p>
  * <b>Key Features:</b>
  * </p>
  * <ul>
- *   <li>Centralized pairing management</li>
- *   <li>OSGi service integration</li>
- *   <li>Component lifecycle management</li>
- *   <li>Ready state tracking</li>
- *   <li>Provider coordination</li>
- *   <li>Thread-safe operations</li>
+ * <li>Centralized pairing management</li>
+ * <li>OSGi service integration</li>
+ * <li>Component lifecycle management</li>
+ * <li>Ready state tracking</li>
+ * <li>Provider coordination</li>
+ * <li>Thread-safe operations</li>
  * </ul>
  *
  * <p>
  * <b>Security Considerations:</b>
  * </p>
  * <ul>
- *   <li>Validates pairing data integrity</li>
- *   <li>Manages pairing lifecycle securely</li>
- *   <li>Coordinates with security providers</li>
- *   <li>Ensures proper initialization order</li>
- *   <li>Maintains thread safety</li>
- *   <li>Protects sensitive pairing data</li>
+ * <li>Validates pairing data integrity</li>
+ * <li>Manages pairing lifecycle securely</li>
+ * <li>Coordinates with security providers</li>
+ * <li>Ensures proper initialization order</li>
+ * <li>Maintains thread safety</li>
+ * <li>Protects sensitive pairing data</li>
  * </ul>
  *
  * <p>
  * <b>Implementation Details:</b>
  * </p>
  * <ul>
- *   <li>Uses OSGi services for lifecycle management</li>
- *   <li>Integrates with OpenHAB ready service</li>
- *   <li>Provides thread-safe operations</li>
- *   <li>Maintains data consistency</li>
- *   <li>Supports dynamic provider management</li>
+ * <li>Uses OSGi services for lifecycle management</li>
+ * <li>Integrates with OpenHAB ready service</li>
+ * <li>Provides thread-safe operations</li>
+ * <li>Maintains data consistency</li>
+ * <li>Supports dynamic provider management</li>
  * </ul>
  *
  * @author Karel Goderis - Initial Contribution
@@ -142,11 +142,11 @@ public class HomekitPairingRegistryImpl
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Initializes registry state</li>
-     *   <li>Sets up ready service tracking</li>
-     *   <li>Prepares for provider management</li>
-     *   <li>Registers ready markers for dependencies</li>
-     *   <li>Ensures thread safety</li>
+     * <li>Initializes registry state</li>
+     * <li>Sets up ready service tracking</li>
+     * <li>Prepares for provider management</li>
+     * <li>Registers ready markers for dependencies</li>
+     * <li>Ensures thread safety</li>
      * </ul>
      *
      * @param readyService The service for tracking component readiness
@@ -175,10 +175,10 @@ public class HomekitPairingRegistryImpl
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Validates provider state</li>
-     *   <li>Updates provider list</li>
-     *   <li>Maintains thread safety</li>
-     *   <li>Ensures data consistency</li>
+     * <li>Validates provider state</li>
+     * <li>Updates provider list</li>
+     * <li>Maintains thread safety</li>
+     * <li>Ensures data consistency</li>
      * </ul>
      *
      * @param provider The managed provider to set
@@ -202,10 +202,10 @@ public class HomekitPairingRegistryImpl
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Removes provider from list</li>
-     *   <li>Cleans up resources</li>
-     *   <li>Maintains thread safety</li>
-     *   <li>Ensures data consistency</li>
+     * <li>Removes provider from list</li>
+     * <li>Cleans up resources</li>
+     * <li>Maintains thread safety</li>
+     * <li>Ensures data consistency</li>
      * </ul>
      *
      * @param provider The managed provider to remove
@@ -228,10 +228,10 @@ public class HomekitPairingRegistryImpl
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Initializes registry state</li>
-     *   <li>Sets up OSGi integration</li>
-     *   <li>Prepares for provider management</li>
-     *   <li>Ensures thread safety</li>
+     * <li>Initializes registry state</li>
+     * <li>Sets up OSGi integration</li>
+     * <li>Prepares for provider management</li>
+     * <li>Ensures thread safety</li>
      * </ul>
      *
      * @param context The bundle context
@@ -256,10 +256,10 @@ public class HomekitPairingRegistryImpl
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Cleans up resources</li>
-     *   <li>Removes OSGi integration</li>
-     *   <li>Ensures proper shutdown</li>
-     *   <li>Maintains thread safety</li>
+     * <li>Cleans up resources</li>
+     * <li>Removes OSGi integration</li>
+     * <li>Ensures proper shutdown</li>
+     * <li>Maintains thread safety</li>
      * </ul>
      */
     @Override
@@ -282,10 +282,10 @@ public class HomekitPairingRegistryImpl
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Filters pairings by ID</li>
-     *   <li>Maintains thread safety</li>
-     *   <li>Ensures data consistency</li>
-     *   <li>Validates input parameters</li>
+     * <li>Filters pairings by ID</li>
+     * <li>Maintains thread safety</li>
+     * <li>Ensures data consistency</li>
+     * <li>Validates input parameters</li>
      * </ul>
      *
      * @param pairingId The pairing ID to search for
@@ -310,11 +310,11 @@ public class HomekitPairingRegistryImpl
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Validates provider type</li>
-     *   <li>Checks provider readiness</li>
-     *   <li>Updates provider list</li>
-     *   <li>Maintains thread safety</li>
-     *   <li>Ensures data consistency</li>
+     * <li>Validates provider type</li>
+     * <li>Checks provider readiness</li>
+     * <li>Updates provider list</li>
+     * <li>Maintains thread safety</li>
+     * <li>Ensures data consistency</li>
      * </ul>
      *
      * @param provider The provider to add
@@ -351,10 +351,10 @@ public class HomekitPairingRegistryImpl
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Updates component state</li>
-     *   <li>Checks registry readiness</li>
-     *   <li>Maintains thread safety</li>
-     *   <li>Ensures data consistency</li>
+     * <li>Updates component state</li>
+     * <li>Checks registry readiness</li>
+     * <li>Maintains thread safety</li>
+     * <li>Ensures data consistency</li>
      * </ul>
      *
      * @param readyMarker The ready marker that was added
@@ -402,10 +402,10 @@ public class HomekitPairingRegistryImpl
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Updates component state</li>
-     *   <li>Checks registry readiness</li>
-     *   <li>Maintains thread safety</li>
-     *   <li>Ensures data consistency</li>
+     * <li>Updates component state</li>
+     * <li>Checks registry readiness</li>
+     * <li>Maintains thread safety</li>
+     * <li>Ensures data consistency</li>
      * </ul>
      *
      * @param readyMarker The ready marker that was removed

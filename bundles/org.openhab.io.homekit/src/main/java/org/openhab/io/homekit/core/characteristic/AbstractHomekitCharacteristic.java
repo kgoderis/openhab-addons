@@ -39,46 +39,47 @@ import org.slf4j.LoggerFactory;
  * <p>
  * The class implements a comprehensive state management system that includes:
  * <ul>
- *   <li>Value management and type conversion between HomeKit and OpenHAB formats using {@link org.openhab.core.types.State}</li>
- *   <li>Event handling and notifications through {@link HomekitEventManager} and {@link HomekitEventType}</li>
- *   <li>JSON serialization and deserialization using {@link javax.json.JsonValue} for HomeKit protocol communication</li>
- *   <li>Permission and access control for characteristic operations</li>
- *   <li>State synchronization with {@link org.openhab.core.items.Item OpenHAB items}</li>
+ * <li>Value management and type conversion between HomeKit and OpenHAB formats using
+ * {@link org.openhab.core.types.State}</li>
+ * <li>Event handling and notifications through {@link HomekitEventManager} and {@link HomekitEventType}</li>
+ * <li>JSON serialization and deserialization using {@link javax.json.JsonValue} for HomeKit protocol communication</li>
+ * <li>Permission and access control for characteristic operations</li>
+ * <li>State synchronization with {@link org.openhab.core.items.Item OpenHAB items}</li>
  * </ul>
  * </p>
  *
  * <p>
  * Key architectural features:
  * <ul>
- *   <li>Type-safe value handling through generics, ensuring type safety across the characteristic hierarchy</li>
- *   <li>Automatic event subscription and handling through {@link HomekitEventManager} and {@link HomekitEventType}</li>
- *   <li>Flexible permission system supporting paired read/write, hidden, and mandatory characteristics</li>
- *   <li>Support for advanced HomeKit features like timed writes and additional authorization</li>
- *   <li>Built-in JSON conversion utilities using {@link javax.json.JsonObject} for HomeKit protocol compliance</li>
+ * <li>Type-safe value handling through generics, ensuring type safety across the characteristic hierarchy</li>
+ * <li>Automatic event subscription and handling through {@link HomekitEventManager} and {@link HomekitEventType}</li>
+ * <li>Flexible permission system supporting paired read/write, hidden, and mandatory characteristics</li>
+ * <li>Support for advanced HomeKit features like timed writes and additional authorization</li>
+ * <li>Built-in JSON conversion utilities using {@link javax.json.JsonObject} for HomeKit protocol compliance</li>
  * </ul>
  * </p>
  *
  * <p>
  * The class integrates with several key components:
  * <ul>
- *   <li>{@link HomekitService} - Manages service lifecycle and characteristic relationships</li>
- *   <li>{@link HomekitEventManager} - Handles event distribution and subscription management</li>
- *   <li>{@link org.openhab.core.types.State} - Provides state conversion and synchronization</li>
- *   <li>{@link javax.json.JsonValue} - Enables JSON serialization for HomeKit protocol</li>
- *   <li>{@link HomekitCharacteristicUID} - Provides unique identification for characteristics</li>
- *   <li>{@link org.openhab.core.items.Item} - Represents OpenHAB items for state synchronization</li>
- *   <li>{@link org.openhab.core.types.Command} - Handles command processing for characteristic updates</li>
+ * <li>{@link HomekitService} - Manages service lifecycle and characteristic relationships</li>
+ * <li>{@link HomekitEventManager} - Handles event distribution and subscription management</li>
+ * <li>{@link org.openhab.core.types.State} - Provides state conversion and synchronization</li>
+ * <li>{@link javax.json.JsonValue} - Enables JSON serialization for HomeKit protocol</li>
+ * <li>{@link HomekitCharacteristicUID} - Provides unique identification for characteristics</li>
+ * <li>{@link org.openhab.core.items.Item} - Represents OpenHAB items for state synchronization</li>
+ * <li>{@link org.openhab.core.types.Command} - Handles command processing for characteristic updates</li>
  * </ul>
  * </p>
  *
  * <p>
  * Implementation guidelines:
  * <ul>
- *   <li>Subclasses must implement type-specific value conversion methods</li>
- *   <li>State synchronization should be handled through {@link HomekitEventManager}</li>
- *   <li>Permission changes should be managed through the builder pattern methods</li>
- *   <li>JSON serialization should follow HomeKit protocol specifications</li>
- *   <li>Error handling should use the provided logging system</li>
+ * <li>Subclasses must implement type-specific value conversion methods</li>
+ * <li>State synchronization should be handled through {@link HomekitEventManager}</li>
+ * <li>Permission changes should be managed through the builder pattern methods</li>
+ * <li>JSON serialization should follow HomeKit protocol specifications</li>
+ * <li>Error handling should use the provided logging system</li>
  * </ul>
  * </p>
  *
@@ -92,10 +93,10 @@ import org.slf4j.LoggerFactory;
  * <p>
  * The class works in conjunction with:
  * <ul>
- *   <li>{@link HomekitService} for service-level operations</li>
- *   <li>{@link HomekitAccessory} for accessory-level integration</li>
- *   <li>{@link HomekitEventManager} for event handling</li>
- *   <li>{@link org.openhab.core.thing.Channel} for OpenHAB channel integration</li>
+ * <li>{@link HomekitService} for service-level operations</li>
+ * <li>{@link HomekitAccessory} for accessory-level integration</li>
+ * <li>{@link HomekitEventManager} for event handling</li>
+ * <li>{@link org.openhab.core.thing.Channel} for OpenHAB channel integration</li>
  * </ul>
  * </p>
  *
@@ -142,9 +143,9 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
      * This constructor initializes a new characteristic with its required dependencies and sets up
      * the event subscription system. It integrates with:
      * <ul>
-     *   <li>{@link HomekitService} for service integration</li>
-     *   <li>{@link HomekitEventManager} for event handling</li>
-     *   <li>{@link HomekitEventType} for event type management</li>
+     * <li>{@link HomekitService} for service integration</li>
+     * <li>{@link HomekitEventManager} for event handling</li>
+     * <li>{@link HomekitEventType} for event type management</li>
      * </ul>
      * </p>
      *
@@ -177,10 +178,10 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
      * This constructor initializes a characteristic from a JSON configuration, allowing for
      * flexible characteristic creation and configuration. It integrates with:
      * <ul>
-     *   <li>{@link javax.json.JsonValue} for configuration parsing</li>
-     *   <li>{@link HomekitService} for service integration</li>
-     *   <li>{@link HomekitEventManager} for event handling</li>
-     *   <li>{@link HomekitEventType} for event type management</li>
+     * <li>{@link javax.json.JsonValue} for configuration parsing</li>
+     * <li>{@link HomekitService} for service integration</li>
+     * <li>{@link HomekitEventManager} for event handling</li>
+     * <li>{@link HomekitEventType} for event type management</li>
      * </ul>
      * </p>
      *
@@ -249,9 +250,9 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
      * This method sets up the characteristic's initial state based on its configuration.
      * It integrates with:
      * <ul>
-     *   <li>{@link javax.json.JsonValue} for value parsing</li>
-     *   <li>{@link HomekitEventManager} for event handling</li>
-     *   <li>{@link HomekitEventType} for event type management</li>
+     * <li>{@link javax.json.JsonValue} for value parsing</li>
+     * <li>{@link HomekitEventManager} for event handling</li>
+     * <li>{@link HomekitEventType} for event type management</li>
      * </ul>
      * </p>
      *
@@ -273,10 +274,10 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
      * This method configures the characteristic to receive and handle events through the
      * event management system. It integrates with:
      * <ul>
-     *   <li>{@link HomekitEventManager} for event handling</li>
-     *   <li>{@link HomekitEventType} for event type management</li>
-     *   <li>{@link HomekitCharacteristicChangedEvent} for change events</li>
-     *   <li>{@link HomekitCharacteristicUpdateEvent} for update events</li>
+     * <li>{@link HomekitEventManager} for event handling</li>
+     * <li>{@link HomekitEventType} for event type management</li>
+     * <li>{@link HomekitCharacteristicChangedEvent} for change events</li>
+     * <li>{@link HomekitCharacteristicUpdateEvent} for update events</li>
      * </ul>
      * </p>
      *

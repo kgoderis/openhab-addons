@@ -29,36 +29,36 @@ import org.slf4j.LoggerFactory;
  * <b>Key responsibilities:</b>
  * </p>
  * <ul>
- *   <li>Request logging (headers, method, URI, payload)</li>
- *   <li>Response logging (status, content)</li>
- *   <li>Hex dump generation for binary payloads</li>
- *   <li>Debug-level logging control</li>
- *   <li>Request/response wrapping for logging</li>
- *   <li>Error handling and recovery</li>
+ * <li>Request logging (headers, method, URI, payload)</li>
+ * <li>Response logging (status, content)</li>
+ * <li>Hex dump generation for binary payloads</li>
+ * <li>Debug-level logging control</li>
+ * <li>Request/response wrapping for logging</li>
+ * <li>Error handling and recovery</li>
  * </ul>
  *
  * <p>
  * <b>Component Integration:</b>
  * </p>
  * <ul>
- *   <li>{@link HomekitRequestWrapper} for request wrapping and logging</li>
- *   <li>{@link HomekitResponseWrapper} for response wrapping and logging</li>
- *   <li>{@link HomekitHttpParser} for parsing HTTP messages</li>
- *   <li>{@link HomekitHttpGenerator} for generating HTTP messages</li>
- *   <li>{@link HomekitHttpSender} for sending HTTP messages</li>
- *   <li>{@link HomekitHttpReceiver} for receiving HTTP messages</li>
- *   <li>{@link HomekitHttpConnection} for managing HTTP connections</li>
+ * <li>{@link HomekitRequestWrapper} for request wrapping and logging</li>
+ * <li>{@link HomekitResponseWrapper} for response wrapping and logging</li>
+ * <li>{@link HomekitHttpParser} for parsing HTTP messages</li>
+ * <li>{@link HomekitHttpGenerator} for generating HTTP messages</li>
+ * <li>{@link HomekitHttpSender} for sending HTTP messages</li>
+ * <li>{@link HomekitHttpReceiver} for receiving HTTP messages</li>
+ * <li>{@link HomekitHttpConnection} for managing HTTP connections</li>
  * </ul>
  *
  * <p>
  * <b>Implementation Details:</b>
  * </p>
  * <ul>
- *   <li>Uses {@link HexDump} for binary payload visualization</li>
- *   <li>Uses {@link IOUtils} for efficient stream handling</li>
- *   <li>Uses {@link ByteArrayOutputStream} for content buffering</li>
- *   <li>Implements debug and trace level logging</li>
- *   <li>Provides hex dump generation for binary content</li>
+ * <li>Uses {@link HexDump} for binary payload visualization</li>
+ * <li>Uses {@link IOUtils} for efficient stream handling</li>
+ * <li>Uses {@link ByteArrayOutputStream} for content buffering</li>
+ * <li>Implements debug and trace level logging</li>
+ * <li>Provides hex dump generation for binary content</li>
  * </ul>
  *
  * @author Karel Goderis - Initial Contribution
@@ -92,9 +92,9 @@ public class HomekitRequestLogHandler extends RequestLogHandler {
      * <b>Key initialization steps:</b>
      * </p>
      * <ul>
-     *   <li>Sets up logging prefixes</li>
-     *   <li>Initializes handler state</li>
-     *   <li>Configures debug logging</li>
+     * <li>Sets up logging prefixes</li>
+     * <li>Initializes handler state</li>
+     * <li>Configures debug logging</li>
      * </ul>
      */
     public HomekitRequestLogHandler() {
@@ -110,20 +110,20 @@ public class HomekitRequestLogHandler extends RequestLogHandler {
      * logging is enabled, it logs:
      * </p>
      * <ul>
-     *   <li>Request details (headers, method, URI, query parameters)</li>
-     *   <li>Request payload in hex dump format</li>
-     *   <li>Response status and content</li>
-     *   <li>Connection information</li>
+     * <li>Request details (headers, method, URI, query parameters)</li>
+     * <li>Request payload in hex dump format</li>
+     * <li>Response status and content</li>
+     * <li>Connection information</li>
      * </ul>
      *
      * <p>
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Wraps requests and responses for logging</li>
-     *   <li>Generates hex dumps for binary payloads</li>
-     *   <li>Maintains original request/response handling</li>
-     *   <li>Controls logging verbosity based on debug level</li>
+     * <li>Wraps requests and responses for logging</li>
+     * <li>Generates hex dumps for binary payloads</li>
+     * <li>Maintains original request/response handling</li>
+     * <li>Controls logging verbosity based on debug level</li>
      * </ul>
      *
      * @param target The target of the request
@@ -167,11 +167,11 @@ public class HomekitRequestLogHandler extends RequestLogHandler {
      * It logs comprehensive request details including:
      * </p>
      * <ul>
-     *   <li>Client information (IP, port)</li>
-     *   <li>Request headers</li>
-     *   <li>Request method and URI</li>
-     *   <li>Query parameters</li>
-     *   <li>Request payload (with hex dump)</li>
+     * <li>Client information (IP, port)</li>
+     * <li>Request headers</li>
+     * <li>Request method and URI</li>
+     * <li>Query parameters</li>
+     * <li>Request payload (with hex dump)</li>
      * </ul>
      *
      * @param request The wrapped HTTP request
@@ -179,8 +179,7 @@ public class HomekitRequestLogHandler extends RequestLogHandler {
      */
     private void logRequestDetails(HomekitRequestWrapper request) throws IOException {
         final String userAgent = request.getHeader("User-Agent");
-        logger.debug("{}Processing request from {}:{}", LOG_REQUEST, request.getRemoteAddr(),
-                request.getRemotePort());
+        logger.debug("{}Processing request from {}:{}", LOG_REQUEST, request.getRemoteAddr(), request.getRemotePort());
         logger.debug("{}User-Agent: {}", LOG_REQUEST, userAgent);
         logger.debug("{}Method: {}", LOG_REQUEST, request.getMethod().toUpperCase());
         logger.debug("{}Content-Type: {}", LOG_REQUEST, request.getContentType());
@@ -194,7 +193,7 @@ public class HomekitRequestLogHandler extends RequestLogHandler {
                 try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
                     HexDump.dump(body, 0, stream, 0);
                     stream.flush();
-                    logger.trace("{}Payload hex dump:\n{}", LOG_REQUEST, 
+                    logger.trace("{}Payload hex dump:\n{}", LOG_REQUEST,
                             stream.toString(StandardCharsets.UTF_8.name()));
                 }
             }
@@ -237,9 +236,9 @@ public class HomekitRequestLogHandler extends RequestLogHandler {
      * response content when trace logging is enabled. It logs:
      * </p>
      * <ul>
-     *   <li>Response status code</li>
-     *   <li>Response content size</li>
-     *   <li>Response content (with hex dump)</li>
+     * <li>Response status code</li>
+     * <li>Response content size</li>
+     * <li>Response content (with hex dump)</li>
      * </ul>
      *
      * @param response The wrapped HTTP response
@@ -247,7 +246,7 @@ public class HomekitRequestLogHandler extends RequestLogHandler {
      */
     private void logResponseDetails(HomekitResponseWrapper response) throws IOException {
         logger.debug("{}Response status: {}", LOG_RESPONSE, response.getStatus());
-        
+
         byte[] content = response.getContentAsByteArray();
         if (content.length > 0) {
             logger.debug("{}Response size: {} bytes", LOG_RESPONSE, content.length);

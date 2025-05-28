@@ -18,38 +18,42 @@ import org.slf4j.LoggerFactory;
 /**
  * Abstract base class that provides core functionality for HomeKit HTTP servlets.
  *
- * <p>This class serves as the foundation for all HomeKit servlets, implementing the
+ * <p>
+ * This class serves as the foundation for all HomeKit servlets, implementing the
  * essential security and protocol features required by the HomeKit Accessory Protocol (HAP).
  * It provides a robust framework for handling encrypted communications and message
  * processing in a secure manner.
  *
- * <p>Key security features:
+ * <p>
+ * Key security features:
  * <ul>
- *     <li>Secure message state management for protocol flow control</li>
- *     <li>Encrypted data handling with authentication tag verification</li>
- *     <li>TLV8 message encoding/decoding for protocol compliance</li>
- *     <li>BigInteger conversion utilities for cryptographic operations</li>
- *     <li>Message integrity validation</li>
- *     <li>Secure initialization and configuration</li>
+ * <li>Secure message state management for protocol flow control</li>
+ * <li>Encrypted data handling with authentication tag verification</li>
+ * <li>TLV8 message encoding/decoding for protocol compliance</li>
+ * <li>BigInteger conversion utilities for cryptographic operations</li>
+ * <li>Message integrity validation</li>
+ * <li>Secure initialization and configuration</li>
  * </ul>
  *
- * <p>Protocol implementation details:
+ * <p>
+ * Protocol implementation details:
  * <ul>
- *     <li>Message state tracking for multi-step protocol operations</li>
- *     <li>Authentication tag extraction and validation</li>
- *     <li>Encrypted payload handling with proper security boundaries</li>
- *     <li>TLV8 message format compliance for HomeKit protocol</li>
- *     <li>Proper byte array handling for cryptographic operations</li>
- *     <li>Secure message parsing and validation</li>
+ * <li>Message state tracking for multi-step protocol operations</li>
+ * <li>Authentication tag extraction and validation</li>
+ * <li>Encrypted payload handling with proper security boundaries</li>
+ * <li>TLV8 message format compliance for HomeKit protocol</li>
+ * <li>Proper byte array handling for cryptographic operations</li>
+ * <li>Secure message parsing and validation</li>
  * </ul>
  *
- * <p>The class integrates with:
+ * <p>
+ * The class integrates with:
  * <ul>
- *     <li>{@link HomekitAccessoryServer} for server instance management</li>
- *     <li>{@link HomekitServletConfig} for servlet configuration and initialization</li>
- *     <li>{@link HomekitMessage} for protocol message handling</li>
- *     <li>{@link HomekitTypeLengthValueEncoderDecoder} for secure message encoding/decoding</li>
- *     <li>{@link javax.servlet.http.HttpServlet} for base servlet functionality</li>
+ * <li>{@link HomekitAccessoryServer} for server instance management</li>
+ * <li>{@link HomekitServletConfig} for servlet configuration and initialization</li>
+ * <li>{@link HomekitMessage} for protocol message handling</li>
+ * <li>{@link HomekitTypeLengthValueEncoderDecoder} for secure message encoding/decoding</li>
+ * <li>{@link javax.servlet.http.HttpServlet} for base servlet functionality</li>
  * </ul>
  *
  * @author Karel Goderis - Initial Contribution
@@ -82,7 +86,8 @@ public abstract class HomekitBaseServlet extends HttpServlet {
     /**
      * Creates a new base servlet with the specified server instance.
      *
-     * <p>This constructor initializes the servlet with a specific server instance,
+     * <p>
+     * This constructor initializes the servlet with a specific server instance,
      * enabling proper integration with the HomeKit server infrastructure.
      *
      * @param server The HomeKit accessory server instance to associate with this servlet
@@ -95,19 +100,21 @@ public abstract class HomekitBaseServlet extends HttpServlet {
     /**
      * Initializes the servlet with the provided configuration.
      *
-     * <p>This method performs servlet initialization by:
+     * <p>
+     * This method performs servlet initialization by:
      * <ul>
-     *     <li>Validating the configuration type</li>
-     *     <li>Extracting the HomeKit accessory server instance</li>
-     *     <li>Establishing the server-servlet association</li>
+     * <li>Validating the configuration type</li>
+     * <li>Extracting the HomeKit accessory server instance</li>
+     * <li>Establishing the server-servlet association</li>
      * </ul>
      *
-     * <p>The initialization process ensures that:
+     * <p>
+     * The initialization process ensures that:
      * <ul>
-     *     <li>The servlet is properly configured with a server instance</li>
-     *     <li>The configuration is of the correct type (HomekitServletConfig)</li>
-     *     <li>The server-servlet relationship is established</li>
-     *     <li>Proper error handling for invalid configurations</li>
+     * <li>The servlet is properly configured with a server instance</li>
+     * <li>The configuration is of the correct type (HomekitServletConfig)</li>
+     * <li>The server-servlet relationship is established</li>
+     * <li>Proper error handling for invalid configurations</li>
      * </ul>
      *
      * @param config The servlet configuration containing server information
@@ -126,26 +133,29 @@ public abstract class HomekitBaseServlet extends HttpServlet {
     /**
      * Extracts the state value from a TLV8-encoded message.
      *
-     * <p>This method implements the HomeKit protocol's state management by:
+     * <p>
+     * This method implements the HomeKit protocol's state management by:
      * <ul>
-     *     <li>Decoding the TLV8-encoded message content</li>
-     *     <li>Extracting the state value from the message</li>
-     *     <li>Returning the state as a protocol-compliant short value</li>
+     * <li>Decoding the TLV8-encoded message content</li>
+     * <li>Extracting the state value from the message</li>
+     * <li>Returning the state as a protocol-compliant short value</li>
      * </ul>
      *
-     * <p>The state value is crucial for:
+     * <p>
+     * The state value is crucial for:
      * <ul>
-     *     <li>Protocol flow control</li>
-     *     <li>Message sequence validation</li>
-     *     <li>Operation state tracking</li>
-     *     <li>Security boundary enforcement</li>
+     * <li>Protocol flow control</li>
+     * <li>Message sequence validation</li>
+     * <li>Operation state tracking</li>
+     * <li>Security boundary enforcement</li>
      * </ul>
      *
-     * <p>Error handling ensures:
+     * <p>
+     * Error handling ensures:
      * <ul>
-     *     <li>Proper validation of message format</li>
-     *     <li>Detailed error logging for debugging</li>
-     *     <li>Graceful failure handling</li>
+     * <li>Proper validation of message format</li>
+     * <li>Detailed error logging for debugging</li>
+     * <li>Graceful failure handling</li>
      * </ul>
      *
      * @param content The TLV8-encoded message content
@@ -168,27 +178,30 @@ public abstract class HomekitBaseServlet extends HttpServlet {
     /**
      * Extracts the encrypted message data from a TLV8-encoded message.
      *
-     * <p>This method handles secure message processing by:
+     * <p>
+     * This method handles secure message processing by:
      * <ul>
-     *     <li>Decoding the TLV8-encoded message content</li>
-     *     <li>Separating the encrypted data from the authentication tag</li>
-     *     <li>Returning the pure encrypted message payload</li>
+     * <li>Decoding the TLV8-encoded message content</li>
+     * <li>Separating the encrypted data from the authentication tag</li>
+     * <li>Returning the pure encrypted message payload</li>
      * </ul>
      *
-     * <p>Security considerations:
+     * <p>
+     * Security considerations:
      * <ul>
-     *     <li>Maintains proper separation of encrypted data and authentication tag</li>
-     *     <li>Preserves message integrity boundaries</li>
-     *     <li>Enables proper decryption processing</li>
-     *     <li>Prevents data leakage</li>
+     * <li>Maintains proper separation of encrypted data and authentication tag</li>
+     * <li>Preserves message integrity boundaries</li>
+     * <li>Enables proper decryption processing</li>
+     * <li>Prevents data leakage</li>
      * </ul>
      *
-     * <p>Error handling ensures:
+     * <p>
+     * Error handling ensures:
      * <ul>
-     *     <li>Proper validation of message format</li>
-     *     <li>Detailed error logging for debugging</li>
-     *     <li>Graceful failure handling</li>
-     *     <li>Secure error responses</li>
+     * <li>Proper validation of message format</li>
+     * <li>Detailed error logging for debugging</li>
+     * <li>Graceful failure handling</li>
+     * <li>Secure error responses</li>
      * </ul>
      *
      * @param content The TLV8-encoded message content
@@ -212,27 +225,30 @@ public abstract class HomekitBaseServlet extends HttpServlet {
     /**
      * Extracts the authentication tag from a TLV8-encoded message.
      *
-     * <p>This method implements message authentication by:
+     * <p>
+     * This method implements message authentication by:
      * <ul>
-     *     <li>Decoding the TLV8-encoded message content</li>
-     *     <li>Extracting the 16-byte authentication tag</li>
-     *     <li>Ensuring proper tag separation from encrypted data</li>
+     * <li>Decoding the TLV8-encoded message content</li>
+     * <li>Extracting the 16-byte authentication tag</li>
+     * <li>Ensuring proper tag separation from encrypted data</li>
      * </ul>
      *
-     * <p>Security features:
+     * <p>
+     * Security features:
      * <ul>
-     *     <li>Proper extraction of the 16-byte authentication tag</li>
-     *     <li>Maintenance of message integrity boundaries</li>
-     *     <li>Support for message authentication verification</li>
-     *     <li>Prevention of tag manipulation</li>
+     * <li>Proper extraction of the 16-byte authentication tag</li>
+     * <li>Maintenance of message integrity boundaries</li>
+     * <li>Support for message authentication verification</li>
+     * <li>Prevention of tag manipulation</li>
      * </ul>
      *
-     * <p>Error handling ensures:
+     * <p>
+     * Error handling ensures:
      * <ul>
-     *     <li>Proper validation of message format</li>
-     *     <li>Detailed error logging for debugging</li>
-     *     <li>Graceful failure handling</li>
-     *     <li>Secure error responses</li>
+     * <li>Proper validation of message format</li>
+     * <li>Detailed error logging for debugging</li>
+     * <li>Graceful failure handling</li>
+     * <li>Secure error responses</li>
      * </ul>
      *
      * @param content The TLV8-encoded message content
@@ -257,26 +273,29 @@ public abstract class HomekitBaseServlet extends HttpServlet {
     /**
      * Converts a BigInteger to an unsigned byte array representation.
      *
-     * <p>This method handles cryptographic number conversion by:
+     * <p>
+     * This method handles cryptographic number conversion by:
      * <ul>
-     *     <li>Converting the BigInteger to its byte array representation</li>
-     *     <li>Removing any leading zero byte for proper unsigned interpretation</li>
-     *     <li>Ensuring consistent byte array length for cryptographic operations</li>
+     * <li>Converting the BigInteger to its byte array representation</li>
+     * <li>Removing any leading zero byte for proper unsigned interpretation</li>
+     * <li>Ensuring consistent byte array length for cryptographic operations</li>
      * </ul>
      *
-     * <p>Usage considerations:
+     * <p>
+     * Usage considerations:
      * <ul>
-     *     <li>Maintains proper unsigned number representation</li>
-     *     <li>Ensures consistent byte array format for cryptographic operations</li>
-     *     <li>Supports proper key and nonce generation</li>
-     *     <li>Preserves cryptographic value integrity</li>
+     * <li>Maintains proper unsigned number representation</li>
+     * <li>Ensures consistent byte array format for cryptographic operations</li>
+     * <li>Supports proper key and nonce generation</li>
+     * <li>Preserves cryptographic value integrity</li>
      * </ul>
      *
-     * <p>Implementation details:
+     * <p>
+     * Implementation details:
      * <ul>
-     *     <li>Handles leading zero byte removal</li>
-     *     <li>Uses efficient array copying</li>
-     *     <li>Maintains proper byte order</li>
+     * <li>Handles leading zero byte removal</li>
+     * <li>Uses efficient array copying</li>
+     * <li>Maintains proper byte order</li>
      * </ul>
      *
      * @param i The BigInteger to convert

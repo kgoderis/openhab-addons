@@ -26,28 +26,31 @@ import org.slf4j.LoggerFactory;
  * A high-performance debouncer implementation for HomeKit integration that provides efficient
  * rate limiting and event coalescing capabilities.
  *
- * <p>Key features:
+ * <p>
+ * Key features:
  * <ul>
- *     <li>Lock-free synchronization using atomic operations</li>
- *     <li>Minimal memory allocation during operation</li>
- *     <li>Configurable debounce delay</li>
- *     <li>Thread-safe operation</li>
- *     <li>Call counting and folding</li>
+ * <li>Lock-free synchronization using atomic operations</li>
+ * <li>Minimal memory allocation during operation</li>
+ * <li>Configurable debounce delay</li>
+ * <li>Thread-safe operation</li>
+ * <li>Call counting and folding</li>
  * </ul>
  *
- * <p>Integration points:
+ * <p>
+ * Integration points:
  * <ul>
- *     <li>HomeKit event handling</li>
- *     <li>State change notifications</li>
- *     <li>Rate-limited operations</li>
+ * <li>HomeKit event handling</li>
+ * <li>State change notifications</li>
+ * <li>Rate-limited operations</li>
  * </ul>
  *
- * <p>Implementation details:
+ * <p>
+ * Implementation details:
  * <ul>
- *     <li>Uses AtomicBoolean for thread-safe state transitions</li>
- *     <li>Employs AtomicInteger for call counting</li>
- *     <li>Leverages ScheduledExecutorService for timing</li>
- *     <li>Supports configurable clock source for testing</li>
+ * <li>Uses AtomicBoolean for thread-safe state transitions</li>
+ * <li>Employs AtomicInteger for call counting</li>
+ * <li>Leverages ScheduledExecutorService for timing</li>
+ * <li>Supports configurable clock source for testing</li>
  * </ul>
  *
  * @author Tim Harper - Initial contribution
@@ -74,7 +77,8 @@ public class HomekitDebouncer {
     /**
      * Creates a new HomekitDebouncer with the specified configuration.
      *
-     * <p>Note: Debounced calls are filtered synchronously, in the caller thread, without the need for locks,
+     * <p>
+     * Note: Debounced calls are filtered synchronously, in the caller thread, without the need for locks,
      * context switches, or heap allocations. We use AtomicBoolean to resolve concurrent races; the probability
      * of contending on an AtomicBoolean transition is very low.
      *
@@ -82,7 +86,7 @@ public class HomekitDebouncer {
      * @param scheduler The scheduler implementation to use for timing operations
      * @param delay The time after which to invoke action; each time {@link #call()} is invoked, this delay is reset
      * @param clock The source from which we get the current time. This input should use the same source.
-     *              Specified for testing purposes
+     *            Specified for testing purposes
      * @param action The action to invoke after the debounce period
      * @throws IllegalArgumentException if any parameter is null
      */
@@ -93,7 +97,7 @@ public class HomekitDebouncer {
         }
 
         logger.trace("{}Creating debouncer '{}' with delay {}ms", LOG_INIT, name, delay.toMillis());
-        
+
         this.name = name;
         this.scheduler = scheduler;
         this.action = action;
@@ -110,7 +114,7 @@ public class HomekitDebouncer {
         lastCallAttempt = clock.millis();
         int currentCalls = calls.incrementAndGet();
         logger.trace("{}Call registered for '{}' (total calls: {})", LOG_ACTION, name, currentCalls);
-        
+
         if (pending.compareAndSet(false, true)) {
             logger.trace("{}Scheduling action for '{}' in {}ms", LOG_ACTION, name, delayMs);
             scheduler.schedule(this::tryActionOrPostpone, delayMs, TimeUnit.MILLISECONDS);
@@ -128,8 +132,8 @@ public class HomekitDebouncer {
         if (delaySurpassed) {
             if (pending.compareAndSet(true, false)) {
                 int foldedCalls = calls.getAndSet(0);
-                logger.debug("{}Action '{}' invoked after delay {}ms ({} calls folded)", 
-                    LOG_ACTION, name, delayMs, foldedCalls);
+                logger.debug("{}Action '{}' invoked after delay {}ms ({} calls folded)", LOG_ACTION, name, delayMs,
+                        foldedCalls);
                 try {
                     action.run();
                 } catch (Exception e) {

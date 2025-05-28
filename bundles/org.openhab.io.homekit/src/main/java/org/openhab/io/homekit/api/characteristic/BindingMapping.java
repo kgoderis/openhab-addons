@@ -15,26 +15,26 @@ import java.lang.annotation.Target;
  * <p>
  * The annotation is used to:
  * <ul>
- *   <li>Map HomeKit characteristics to OpenHAB bindings</li>
- *   <li>Define supported channel types</li>
- *   <li>Specify channel properties</li>
- *   <li>Configure channel tags</li>
+ * <li>Map HomeKit characteristics to OpenHAB bindings</li>
+ * <li>Define supported channel types</li>
+ * <li>Specify channel properties</li>
+ * <li>Configure channel tags</li>
  * </ul>
  * </p>
  * <p>
  * Key implementation details:
  * <ul>
- *   <li>Runtime retention for reflection-based processing</li>
- *   <li>Type-level targeting for class annotations</li>
- *   <li>Flexible channel type configuration</li>
- *   <li>Support for multiple binding properties</li>
+ * <li>Runtime retention for reflection-based processing</li>
+ * <li>Type-level targeting for class annotations</li>
+ * <li>Flexible channel type configuration</li>
+ * <li>Support for multiple binding properties</li>
  * </ul>
  * </p>
  * <p>
  * The interface integrates with:
  * <ul>
- *   <li>{@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic} for characteristic mapping</li>
- *   <li>{@link org.openhab.core.thing.Channel} for channel configuration</li>
+ * <li>{@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic} for characteristic mapping</li>
+ * <li>{@link org.openhab.core.thing.Channel} for channel configuration</li>
  * </ul>
  * </p>
  *

@@ -6,29 +6,29 @@ package org.openhab.io.homekit.bridge;
  *
  * Configuration Sources:
  * - ITEMS_YAML: Configuration from items.yaml file
- *   - Contains item-specific HomeKit configurations
- *   - Highest priority for item-related settings
- *   - Supports item-level customization
+ * - Contains item-specific HomeKit configurations
+ * - Highest priority for item-related settings
+ * - Supports item-level customization
  *
  * - THINGS_YAML: Configuration from things.yaml file
- *   - Contains thing-specific HomeKit configurations
- *   - Used for thing-level HomeKit integration
- *   - Supports thing-level customization
+ * - Contains thing-specific HomeKit configurations
+ * - Used for thing-level HomeKit integration
+ * - Supports thing-level customization
  *
  * - CHANNELS_YAML: Configuration from channels.yaml file
- *   - Contains channel-specific HomeKit configurations
- *   - Used for channel-level HomeKit integration
- *   - Supports channel-level customization
+ * - Contains channel-specific HomeKit configurations
+ * - Used for channel-level HomeKit integration
+ * - Supports channel-level customization
  *
  * - DSL_CONFIG: Configuration from DSL files
- *   - Contains dynamic configuration rules
- *   - Supports runtime configuration changes
- *   - Used for complex configuration scenarios
+ * - Contains dynamic configuration rules
+ * - Supports runtime configuration changes
+ * - Used for complex configuration scenarios
  *
  * - METADATA: Configuration from metadata registry
- *   - Contains metadata-based configurations
- *   - Lowest priority for configuration
- *   - Used for basic configuration needs
+ * - Contains metadata-based configurations
+ * - Lowest priority for configuration
+ * - Used for basic configuration needs
  *
  * Usage:
  * - Configuration sources are checked in order of priority

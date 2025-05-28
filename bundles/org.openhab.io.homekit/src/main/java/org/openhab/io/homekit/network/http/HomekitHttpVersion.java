@@ -22,28 +22,28 @@ import org.slf4j.LoggerFactory;
  * <b>Component Integration:</b>
  * </p>
  * <ul>
- *   <li>{@link HomekitHttpParser} for protocol parsing</li>
- *   <li>{@link HomekitHttpGenerator} for protocol generation</li>
- *   <li>{@link HomekitHttpConnection} for connection handling</li>
- *   <li>{@link HomekitHttpChannel} for channel management</li>
+ * <li>{@link HomekitHttpParser} for protocol parsing</li>
+ * <li>{@link HomekitHttpGenerator} for protocol generation</li>
+ * <li>{@link HomekitHttpConnection} for connection handling</li>
+ * <li>{@link HomekitHttpChannel} for channel management</li>
  * </ul>
  *
  * <p>
  * <b>Key responsibilities:</b>
  * </p>
  * <ul>
- *   <li>Defining supported HTTP versions</li>
- *   <li>Providing version parsing utilities</li>
- *   <li>Supporting version conversion</li>
- *   <li>Managing version caching</li>
+ * <li>Defining supported HTTP versions</li>
+ * <li>Providing version parsing utilities</li>
+ * <li>Supporting version conversion</li>
+ * <li>Managing version caching</li>
  * </ul>
  *
  * <p>
  * <b>Implementation details:</b>
  * </p>
  * <ul>
- *   <li>Uses a Trie-based cache for efficient version lookups</li>
- *   <li>Provides optimized byte-level parsing for performance</li>
+ * <li>Uses a Trie-based cache for efficient version lookups</li>
+ * <li>Provides optimized byte-level parsing for performance</li>
  * </ul>
  *
  * @author Karel Goderis - Initial Contribution
@@ -110,10 +110,10 @@ public enum HomekitHttpVersion {
      * <b>Key implementation details:</b>
      * </p>
      * <ul>
-     *   <li>Performs byte-level pattern matching</li>
-     *   <li>Handles both HTTP and EVENT protocols</li>
-     *   <li>Supports case-insensitive matching</li>
-     *   <li>Optimized for performance</li>
+     * <li>Performs byte-level pattern matching</li>
+     * <li>Handles both HTTP and EVENT protocols</li>
+     * <li>Supports case-insensitive matching</li>
+     * <li>Optimized for performance</li>
      * </ul>
      *
      * @param bytes Array containing ISO-8859-1 characters

@@ -13,7 +13,6 @@ import org.openhab.io.homekit.library.characteristic.HomekitInUseCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitRemainingDurationCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitSetDurationCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitStatusFaultCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitValveTypeCharacteristic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,27 +25,27 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * <ul>
- *   <li>Valve state control (active/inactive)</li>
- *   <li>Usage status monitoring</li>
- *   <li>Duration control and monitoring</li>
- *   <li>Valve type configuration</li>
+ * <li>Valve state control (active/inactive)</li>
+ * <li>Usage status monitoring</li>
+ * <li>Duration control and monitoring</li>
+ * <li>Valve type configuration</li>
  * </ul>
  *
  * <p>
  * Required characteristics:
  * <ul>
- *   <li>Active - Current valve state (0 = Inactive, 1 = Active)</li>
- *   <li>InUse - Current usage state (0 = Not in use, 1 = In use)</li>
- *   <li>ValveType - Type of valve (0 = Generic, 1 = Irrigation, 2 = Shower, 3 = Water faucet)</li>
+ * <li>Active - Current valve state (0 = Inactive, 1 = Active)</li>
+ * <li>InUse - Current usage state (0 = Not in use, 1 = In use)</li>
+ * <li>ValveType - Type of valve (0 = Generic, 1 = Irrigation, 2 = Shower, 3 = Water faucet)</li>
  * </ul>
  * </p>
  *
  * <p>
  * Optional characteristics:
  * <ul>
- *   <li>Name - Valve name</li>
- *   <li>SetDuration - Duration setting in seconds</li>
- *   <li>RemainingDuration - Remaining duration in seconds</li>
+ * <li>Name - Valve name</li>
+ * <li>SetDuration - Duration setting in seconds</li>
+ * <li>RemainingDuration - Remaining duration in seconds</li>
  * </ul>
  * </p>
  *
@@ -110,18 +109,18 @@ public class HomekitValveService extends AbstractHomekitService {
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>Active (UUID: 000000B0-0000-1000-8000-0026BB765291)</li>
-     *   <li>InUse (UUID: 000000D2-0000-1000-8000-0026BB765291)</li>
-     *   <li>ValveType (UUID: 000000D5-0000-1000-8000-0026BB765291)</li>
+     * <li>Active (UUID: 000000B0-0000-1000-8000-0026BB765291)</li>
+     * <li>InUse (UUID: 000000D2-0000-1000-8000-0026BB765291)</li>
+     * <li>ValveType (UUID: 000000D5-0000-1000-8000-0026BB765291)</li>
      * </ul>
      * </p>
      *
      * <p>
      * Optional characteristics:
      * <ul>
-     *   <li>Name (UUID: 00000023-0000-1000-8000-0026BB765291)</li>
-     *   <li>SetDuration (UUID: 000000D3-0000-1000-8000-0026BB765291)</li>
-     *   <li>RemainingDuration (UUID: 000000D4-0000-1000-8000-0026BB765291)</li>
+     * <li>Name (UUID: 00000023-0000-1000-8000-0026BB765291)</li>
+     * <li>SetDuration (UUID: 000000D3-0000-1000-8000-0026BB765291)</li>
+     * <li>RemainingDuration (UUID: 000000D4-0000-1000-8000-0026BB765291)</li>
      * </ul>
      * </p>
      *
@@ -130,18 +129,24 @@ public class HomekitValveService extends AbstractHomekitService {
     @Override
     public void addCharacteristics() {
         // Required characteristics
-        addCharacteristic(new HomekitActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(true));
-        addCharacteristic(new HomekitInUseCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(true));
-        addCharacteristic(new HomekitValveTypeCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(true));
+        addCharacteristic(
+                new HomekitActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
+        addCharacteristic(
+                new HomekitInUseCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
+        addCharacteristic(
+                new HomekitValveTypeCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
         logger.trace("{}Added required characteristics: Active, InUse, ValveType", LOG_TRACE);
 
         // Optional characteristics
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId()));
-        addCharacteristic(new HomekitSetDurationCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId()));
-        addCharacteristic(new HomekitRemainingDurationCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(
+                new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(
+                new HomekitSetDurationCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(new HomekitRemainingDurationCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()));
         logger.trace("{}Added optional characteristics: Name, SetDuration, RemainingDuration", LOG_TRACE);
     }
 

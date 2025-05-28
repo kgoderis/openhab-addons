@@ -1,7 +1,7 @@
 package org.openhab.io.homekit.event.graph;
 
-import org.openhab.core.events.Event;
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.events.Event;
 
 /**
  * Event class representing the detection of a cycle in the HomeKit event graph.

@@ -25,26 +25,26 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * <ul>
- *   <li>State-based switch control</li>
- *   <li>Status monitoring (active, fault, low battery, tampered)</li>
- *   <li>State maintenance after triggering</li>
+ * <li>State-based switch control</li>
+ * <li>Status monitoring (active, fault, low battery, tampered)</li>
+ * <li>State maintenance after triggering</li>
  * </ul>
  *
  * <p>
  * Required characteristics:
  * <ul>
- *   <li>ProgrammableSwitchEvent - The type of event triggered by the switch</li>
+ * <li>ProgrammableSwitchEvent - The type of event triggered by the switch</li>
  * </ul>
  * </p>
  *
  * <p>
  * Optional characteristics:
  * <ul>
- *   <li>Name - Switch name</li>
- *   <li>StatusActive - Switch activation state</li>
- *   <li>StatusFault - Fault state indicator</li>
- *   <li>StatusLowBattery - Low battery indicator</li>
- *   <li>StatusTampered - Tamper detection state</li>
+ * <li>Name - Switch name</li>
+ * <li>StatusActive - Switch activation state</li>
+ * <li>StatusFault - Fault state indicator</li>
+ * <li>StatusLowBattery - Low battery indicator</li>
+ * <li>StatusTampered - Tamper detection state</li>
  * </ul>
  * </p>
  *
@@ -109,18 +109,18 @@ public class HomekitStatefulProgrammableSwitchService extends AbstractHomekitSer
      * <p>
      * Required characteristics:
      * <ul>
-     *   <li>ProgrammableSwitchEvent (UUID: 00000073-0000-1000-8000-0026BB765291)</li>
+     * <li>ProgrammableSwitchEvent (UUID: 00000073-0000-1000-8000-0026BB765291)</li>
      * </ul>
      * </p>
      *
      * <p>
      * Optional characteristics:
      * <ul>
-     *   <li>Name (UUID: 00000023-0000-1000-8000-0026BB765291)</li>
-     *   <li>StatusActive (UUID: 00000075-0000-1000-8000-0026BB765291)</li>
-     *   <li>StatusFault (UUID: 00000077-0000-1000-8000-0026BB765291)</li>
-     *   <li>StatusLowBattery (UUID: 00000079-0000-1000-8000-0026BB765291)</li>
-     *   <li>StatusTampered (UUID: 0000007A-0000-1000-8000-0026BB765291)</li>
+     * <li>Name (UUID: 00000023-0000-1000-8000-0026BB765291)</li>
+     * <li>StatusActive (UUID: 00000075-0000-1000-8000-0026BB765291)</li>
+     * <li>StatusFault (UUID: 00000077-0000-1000-8000-0026BB765291)</li>
+     * <li>StatusLowBattery (UUID: 00000079-0000-1000-8000-0026BB765291)</li>
+     * <li>StatusTampered (UUID: 0000007A-0000-1000-8000-0026BB765291)</li>
      * </ul>
      * </p>
      *
@@ -134,12 +134,19 @@ public class HomekitStatefulProgrammableSwitchService extends AbstractHomekitSer
         logger.trace("{}Added required ProgrammableSwitchEvent characteristic", LOG_TRACE);
 
         // Optional characteristics
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId()));
-        addCharacteristic(new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId()));
-        addCharacteristic(new HomekitStatusFaultCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId()));
-        addCharacteristic(new HomekitStatusLowBatteryCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId()));
-        addCharacteristic(new HomekitStatusTamperedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId()));
-        logger.trace("{}Added optional characteristics: Name, StatusActive, StatusFault, StatusLowBattery, StatusTampered", LOG_TRACE);
+        addCharacteristic(
+                new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(
+                new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(
+                new HomekitStatusFaultCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(new HomekitStatusLowBatteryCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()));
+        addCharacteristic(new HomekitStatusTamperedCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()));
+        logger.trace(
+                "{}Added optional characteristics: Name, StatusActive, StatusFault, StatusLowBattery, StatusTampered",
+                LOG_TRACE);
     }
 
     @Override

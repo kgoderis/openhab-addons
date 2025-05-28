@@ -13,27 +13,27 @@ import org.openhab.core.common.registry.Identifiable;
  * <p>
  * The interface provides:
  * <ul>
- *   <li>String representation of the UID</li>
- *   <li>Destination pairing ID management</li>
- *   <li>Source pairing ID management</li>
- *   <li>Unique identification</li>
+ * <li>String representation of the UID</li>
+ * <li>Destination pairing ID management</li>
+ * <li>Source pairing ID management</li>
+ * <li>Unique identification</li>
  * </ul>
  * </p>
  * <p>
  * Key implementation details:
  * <ul>
- *   <li>Thread-safe UID generation</li>
- *   <li>Unique ID validation</li>
- *   <li>Pairing ID association</li>
- *   <li>String format consistency</li>
- *   <li>Byte array handling</li>
+ * <li>Thread-safe UID generation</li>
+ * <li>Unique ID validation</li>
+ * <li>Pairing ID association</li>
+ * <li>String format consistency</li>
+ * <li>Byte array handling</li>
  * </ul>
  * </p>
  * <p>
  * The interface integrates with:
  * <ul>
- *   <li>{@link org.openhab.core.common.registry.Identifiable} for registry integration</li>
- *   <li>{@link org.openhab.io.homekit.api.server.HomekitAccessoryServer} for server identification</li>
+ * <li>{@link org.openhab.core.common.registry.Identifiable} for registry integration</li>
+ * <li>{@link org.openhab.io.homekit.api.server.HomekitAccessoryServer} for server identification</li>
  * </ul>
  * </p>
  *
