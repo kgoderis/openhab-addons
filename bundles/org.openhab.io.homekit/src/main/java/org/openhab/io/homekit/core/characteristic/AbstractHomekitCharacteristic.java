@@ -465,6 +465,9 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
         if (!isPairedWrite) {
             throw new Exception("Cannot modify a readonly characteristic");
         }
+        if (value != null && !isAllowedValue(value)) {
+            throw new IllegalArgumentException("Value " + value + " is not allowed for this characteristic");
+        }
         @Nullable
         T oldValue = this.value;
         setValueInternal(value);
@@ -477,7 +480,11 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
             throw new Exception("Cannot modify a readonly characteristic");
         }
         try {
-            setValue(toValue(jsonValue));
+            T convertedValue = toValue(jsonValue);
+            if (convertedValue != null && !isAllowedValue(convertedValue)) {
+                throw new IllegalArgumentException("Value " + convertedValue + " is not allowed for this characteristic");
+            }
+            setValue(convertedValue);
         } catch (Exception e) {
             logger.error("{}Error while setting JSON value: {}", LOG_ERROR, e.getMessage(), e);
             throw e;
@@ -489,10 +496,15 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
         if (!isPairedWrite) {
             throw new Exception("Cannot modify a readonly characteristic");
         }
-        try {
+        try {        
+            T convertedValue = toValue(value, conversionMap    );
+            if (convertedValue != null && !isAllowedValue(convertedValue)) {
+                throw new IllegalArgumentException("Value " + convertedValue + " is not allowed for this characteristic");
+            }
+            
             @Nullable
             T oldValue = this.value;
-            setValueInternal(toValue(value, conversionMap));
+            setValueInternal(convertedValue);
             notifyValueChanged(oldValue, this.value, metadata);
         } catch (Exception e) {
             logger.error("{}Error while setting value with metadata: {}", LOG_ERROR, e.getMessage(), e);

@@ -1,0 +1,95 @@
+# HomeKit Accessory Configuration
+
+accessories:
+  # Living Room Sonos Speaker
+  "openhab:accessory:livingroom_sonos":
+    type: "speaker"
+    metadata:
+      manufacturer: "Sonos"
+      model: "Play:1"
+    services:
+      speaker:
+        characteristics:
+          volume:
+            item: "openhab:item:Sonos_LivingRoom_Volume"
+            minValue: 0
+            maxValue: 100
+            step: 1
+          mute:
+            item: "openhab:item:Sonos_LivingRoom_Mute"
+            inverted: false
+          active:
+            item: "openhab:item:Sonos_LivingRoom_Control"
+            inverted: false
+      lightbulb:  # Optional service to visualize volume as brightness
+        characteristics:
+          on:
+            item: "openhab:item:Sonos_LivingRoom_Control"
+            inverted: false
+          brightness:
+            item: "openhab:item:Sonos_LivingRoom_Volume"
+            minValue: 0
+            maxValue: 100
+            step: 1
+
+  # Kitchen Sonos Speaker
+  "openhab:accessory:kitchen_sonos":
+    type: "speaker"
+    metadata:
+      manufacturer: "Sonos"
+      model: "Play:1"
+    services:
+      speaker:
+        characteristics:
+          volume:
+            channel: "sonos:PLAY1:kitchen:volume"
+            minValue: 0
+            maxValue: 100
+            step: 1
+          mute:
+            channel: "sonos:PLAY1:kitchen:mute"
+            inverted: false
+          active:
+            channel: "sonos:PLAY1:kitchen:control"
+            inverted: false
+
+  # Sonos Group Controller
+  "openhab:accessory:livingroom_group":
+    type: "fan"  # Using fan service to represent group state
+    metadata:
+      manufacturer: "Sonos"
+      model: "Group"
+    services:
+      fan:
+        characteristics:
+          active:
+            item: "openhab:item:Sonos_LivingRoom_Group_Active"
+            inverted: false
+          rotationSpeed:
+            item: "openhab:item:Sonos_LivingRoom_Group_Size"
+            minValue: 0
+            maxValue: 100
+            step: 1
+          swingMode:
+            item: "openhab:item:Sonos_LivingRoom_Group_Change"
+            inverted: false
+
+# Type-based mappings for all Sonos speakers
+"openhab:accessory:*_sonos":
+  type: "speaker"
+  metadata:
+    manufacturer: "Sonos"
+  services:
+    speaker:
+      characteristics:
+        volume:
+          item: "openhab:item:{name}_Volume"
+          minValue: 0
+          maxValue: 100
+          step: 1
+        mute:
+          item: "openhab:item:{name}_Mute"
+          inverted: false
+        active:
+          item: "openhab:item:{name}_Control"
+          inverted: false 

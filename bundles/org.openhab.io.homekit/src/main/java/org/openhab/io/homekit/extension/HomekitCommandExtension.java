@@ -27,8 +27,8 @@ import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.api.service.HomekitService;
-import org.openhab.io.homekit.bridge.HomekitAccessoryBridge;
 import org.openhab.io.homekit.bridge.HomekitItemBridge;
+import org.openhab.io.homekit.bridge.HomekitPassthroughBridge;
 import org.openhab.io.homekit.bridge.HomekitThingBridge;
 import org.openhab.io.homekit.config.HomekitConfigurationManager;
 import org.openhab.io.homekit.config.HomekitConfigurationManager.ConfigurationType;
@@ -100,7 +100,7 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
     private final HomekitConfigurationManager configManager;
     private final HomekitItemBridge itemBridge;
     private final HomekitThingBridge thingBridge;
-    private final HomekitAccessoryBridge accessoryBridge;
+    private final HomekitPassthroughBridge accessoryBridge;
 
     @Activate
     public HomekitCommandExtension(@Reference ItemRegistry itemRegistry, @Reference ThingRegistry thingRegistry,
@@ -108,7 +108,7 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
             @Reference HomekitAccessoryServerRegistry accessoryServerRegistry,
             @Reference ItemChannelLinkRegistry itemChannelLinkRegistry,
             @Reference HomekitConfigurationManager configManager, @Reference HomekitItemBridge itemBridge,
-            @Reference HomekitThingBridge thingBridge, @Reference HomekitAccessoryBridge accessoryBridge) {
+            @Reference HomekitThingBridge thingBridge, @Reference HomekitPassthroughBridge accessoryBridge) {
         super(COMMAND_HOMEKIT, "HomeKit integration commands");
         logger.info("{}Initializing HomeKit command extension", LOG_INIT);
         this.itemRegistry = itemRegistry;
