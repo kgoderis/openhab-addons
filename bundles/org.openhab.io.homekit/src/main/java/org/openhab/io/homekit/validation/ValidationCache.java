@@ -29,6 +29,10 @@ public class ValidationCache {
         cache.put(key, new CacheEntry(result, expirationTime));
     }
 
+    public void put(String key, ValidationResult result) {
+        put(key, result, defaultExpirationMillis);
+    }
+
     public ValidationResult get(String key) {
         CacheEntry entry = cache.get(key);
         if (entry == null || entry.isExpired()) {

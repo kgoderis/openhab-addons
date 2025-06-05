@@ -8,8 +8,10 @@ import org.openhab.io.homekit.util.HomekitUID;
  * Implementation of a unique identifier for a HomeKit peer group.
  *
  * <p>
- * This class provides a structured way to identify HomeKit peer groups within the system.
- * The UID follows a specific format: {@code homekit:peergroup:{peerGroup}} where:
+ * This class provides a structured way to identify HomeKit peer groups within
+ * the system.
+ * The UID follows a specific format: {@code homekit:peergroup:{peerGroup}}
+ * where:
  * </p>
  * <ul>
  * <li>{@code homekit} is the namespace prefix</li>
@@ -31,8 +33,10 @@ import org.openhab.io.homekit.util.HomekitUID;
  * The class integrates with:
  * </p>
  * <ul>
- * <li>{@link org.openhab.core.common.registry.Identifiable} for UID management</li>
- * <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for event handling</li>
+ * <li>{@link org.openhab.core.common.registry.Identifiable} for UID
+ * management</li>
+ * <li>{@link org.openhab.io.homekit.api.event.HomekitEvent} for event
+ * handling</li>
  * <li>OpenHAB's UID system for consistent identification</li>
  * </ul>
  *
@@ -65,7 +69,8 @@ public class HomekitPeerGroupUIDImpl extends HomekitUID implements HomekitPeerGr
      * </ul>
      *
      * @param peerGroup The unique identifier for the peer group
-     * @throws IllegalArgumentException if the peer group identifier is null or empty
+     * @throws IllegalArgumentException if the peer group identifier is null or
+     *             empty
      */
     public HomekitPeerGroupUIDImpl(String peerGroup) {
         super(PEER_GROUP_PREFIX, "homekit:" + PEER_GROUP_PREFIX + ":" + peerGroup);
@@ -76,7 +81,8 @@ public class HomekitPeerGroupUIDImpl extends HomekitUID implements HomekitPeerGr
      * Gets the UID as a string.
      *
      * <p>
-     * The string representation follows the format {@code homekit:peergroup:{peerGroup}}.
+     * The string representation follows the format
+     * {@code homekit:peergroup:{peerGroup}}.
      * This format ensures consistent identification across the system.
      * </p>
      *
@@ -92,7 +98,7 @@ public class HomekitPeerGroupUIDImpl extends HomekitUID implements HomekitPeerGr
      * @return The UID string in the format {@code homekit:peergroup:{peerGroup}}
      */
     @Override
-    public String getAsString() {
+    public String toString() {
         return String.format("homekit:peergroup:%s", peerGroup);
     }
 

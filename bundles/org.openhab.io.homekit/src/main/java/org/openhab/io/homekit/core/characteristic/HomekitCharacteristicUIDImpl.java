@@ -12,9 +12,11 @@ import org.slf4j.LoggerFactory;
  * Implementation of a unique identifier for a HomeKit characteristic.
  *
  * <p>
- * This class provides a structured way to identify HomeKit characteristics within the system.
+ * This class provides a structured way to identify HomeKit characteristics
+ * within the system.
  * The UID follows a specific format:
- * {@code homekit:characteristic:{pairingId}:{accessoryId}:{serviceId}:{characteristicId}} where:
+ * {@code homekit:characteristic:{pairingId}:{accessoryId}:{serviceId}:{characteristicId}}
+ * where:
  * </p>
  * <ul>
  * <li>{@code homekit} is the namespace prefix</li>
@@ -22,7 +24,8 @@ import org.slf4j.LoggerFactory;
  * <li>{@code pairingId} is the unique pairing identifier for the server</li>
  * <li>{@code accessoryId} is the unique identifier for the accessory</li>
  * <li>{@code serviceId} is the unique identifier for the service</li>
- * <li>{@code characteristicId} is the unique identifier for the characteristic</li>
+ * <li>{@code characteristicId} is the unique identifier for the
+ * characteristic</li>
  * </ul>
  *
  * <p>
@@ -39,8 +42,10 @@ import org.slf4j.LoggerFactory;
  * The class integrates with:
  * </p>
  * <ul>
- * <li>{@link org.openhab.core.common.registry.Identifiable} for UID management</li>
- * <li>{@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic} for characteristic identification</li>
+ * <li>{@link org.openhab.core.common.registry.Identifiable} for UID
+ * management</li>
+ * <li>{@link org.openhab.io.homekit.api.characteristic.HomekitCharacteristic}
+ * for characteristic identification</li>
  * <li>OpenHAB's UID system for consistent identification</li>
  * </ul>
  *
@@ -67,7 +72,8 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      * Creates a new characteristic UID with the specified components.
      *
      * <p>
-     * This constructor builds a complete characteristic UID instance with all required
+     * This constructor builds a complete characteristic UID instance with all
+     * required
      * identifiers. The UID is used to uniquely identify a HomeKit characteristic
      * within the system.
      * </p>
@@ -110,7 +116,8 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      * Creates a new characteristic UID from a string key.
      *
      * <p>
-     * This constructor parses an existing UID string into a characteristic identifier.
+     * This constructor parses an existing UID string into a characteristic
+     * identifier.
      * It is used when reconstructing a UID from its string representation.
      * </p>
      *
@@ -167,7 +174,7 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      *         {@code homekit:characteristic:{pairingId}:{accessoryId}:{serviceId}:{characteristicId}}
      */
     @Override
-    public String getAsString() {
+    public String toString() {
         String result = String.format("homekit:characteristic:%s:%s:%s:%s", pairingId, accessoryId, serviceId,
                 characteristicId);
         logger.trace("{}Getting UID string: {}", LOG_UID, result);
@@ -263,8 +270,10 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      * Returns the HomeKit ID part of this characteristic UID.
      *
      * <p>
-     * This method extracts the last 4 segments of the UID and joins them with the separator
-     * to form the HomeKit-specific identifier. The resulting string contains only the
+     * This method extracts the last 4 segments of the UID and joins them with the
+     * separator
+     * to form the HomeKit-specific identifier. The resulting string contains only
+     * the
      * essential identification components without the namespace and type prefixes.
      * </p>
      *
@@ -278,7 +287,8 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      * <li>Provides trace-level logging</li>
      * </ul>
      *
-     * @return The HomeKit ID in the format: pairingId:accessoryId:serviceId:characteristicId
+     * @return The HomeKit ID in the format:
+     *         pairingId:accessoryId:serviceId:characteristicId
      */
     public String getHomekitId() {
         String result = String.join(SEPARATOR,

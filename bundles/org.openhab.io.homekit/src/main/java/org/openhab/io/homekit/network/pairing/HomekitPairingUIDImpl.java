@@ -4,7 +4,10 @@ import java.util.Base64;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
+import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.api.uid.HomekitPairingUID;
+import org.openhab.io.homekit.protocol.pairing.HomekitPairing;
 import org.openhab.io.homekit.util.HomekitUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,32 +16,43 @@ import org.slf4j.LoggerFactory;
  * Implements the unique identifier functionality for HomeKit pairings.
  *
  * <p>
- * This class provides a unique identifier implementation for HomeKit pairings, which is
- * essential for managing and tracking pairing relationships between accessories and iOS
- * devices. The UID is composed of two parts: a source identifier and a destination identifier,
+ * This class provides a unique identifier implementation for HomeKit pairings,
+ * which is
+ * essential for managing and tracking pairing relationships between accessories
+ * and iOS
+ * devices. The UID is composed of two parts: a source identifier and a
+ * destination identifier,
  * which together form a unique pairing relationship.
  * </p>
  *
  * <p>
- * The class extends {@link HomekitUID} to provide base UID functionality and implements
- * {@link HomekitPairingUID} to define the pairing-specific UID contract. It works in conjunction
- * with {@link HomekitPairingImpl} to manage pairing relationships and {@link HomekitPairingRegistryImpl}
+ * The class extends {@link HomekitUID} to provide base UID functionality and
+ * implements
+ * {@link HomekitPairingUID} to define the pairing-specific UID contract. It
+ * works in conjunction
+ * with {@link HomekitPairingImpl} to manage pairing relationships and
+ * {@link HomekitPairingRegistryImpl}
  * for persistent storage of pairing information.
  * </p>
  *
  * <p>
- * The class ensures that each pairing has a unique identifier that can be used to:
+ * The class ensures that each pairing has a unique identifier that can be used
+ * to:
  * </p>
  * <ul>
  * <li>Track pairing relationships through {@link HomekitPairing}</li>
  * <li>Manage pairing lifecycle via {@link HomekitPairingRegistry}</li>
- * <li>Support pairing removal using {@link HomekitPairingImpl#removePairing(HomekitPairingUID)}</li>
- * <li>Enable pairing updates through {@link HomekitPairingRegistry#updatePairing(HomekitPairing)}</li>
+ * <li>Support pairing removal using
+ * {@link HomekitPairingImpl#removePairing(HomekitPairingUID)}</li>
+ * <li>Enable pairing updates through
+ * {@link HomekitPairingRegistry#updatePairing(HomekitPairing)}</li>
  * </ul>
  *
  * <p>
- * The implementation uses byte arrays for the identifiers to support the cryptographic
- * requirements of the HomeKit protocol. The class provides methods to access both the
+ * The implementation uses byte arrays for the identifiers to support the
+ * cryptographic
+ * requirements of the HomeKit protocol. The class provides methods to access
+ * both the
  * source and destination identifiers, as well as the complete UID.
  * </p>
  *
@@ -101,7 +115,8 @@ public class HomekitPairingUIDImpl extends HomekitUID implements HomekitPairingU
      * Initializes the HomeKit pairing UID implementation.
      *
      * <p>
-     * This method sets up the UID system with its initial configuration, preparing it
+     * This method sets up the UID system with its initial configuration, preparing
+     * it
      * for handling pairing identifiers. It extends the functionality provided by
      * {@link HomekitUID#HomekitUID(String, String)} to support pairing-specific
      * requirements.
@@ -134,7 +149,8 @@ public class HomekitPairingUIDImpl extends HomekitUID implements HomekitPairingU
      *
      * <p>
      * This method initializes a new UID with the provided source and destination
-     * identifiers, which together form a unique pairing relationship. The identifiers
+     * identifiers, which together form a unique pairing relationship. The
+     * identifiers
      * are used by {@link HomekitPairingImpl} to establish and maintain the pairing
      * relationship between the accessory and the iOS device.
      * </p>
@@ -186,7 +202,8 @@ public class HomekitPairingUIDImpl extends HomekitUID implements HomekitPairingU
      * <li>Maintains format consistency</li>
      * </ul>
      *
-     * @return The minimum number of segments (4 for homekit:pairing:sourcePairingId:destinationPairingId)
+     * @return The minimum number of segments (4 for
+     *         homekit:pairing:sourcePairingId:destinationPairingId)
      */
     @Override
     protected int getMinimalNumberOfSegments() {
@@ -199,7 +216,7 @@ public class HomekitPairingUIDImpl extends HomekitUID implements HomekitPairingU
      * <p>
      * This method provides a human-readable representation of the UID,
      * which is useful for logging and debugging purposes. It implements
-     * the contract defined in {@link HomekitPairingUID#getAsString()}.
+     * the contract defined in {@link HomekitPairingUID#toString()}.
      * </p>
      *
      * <p>
@@ -214,7 +231,7 @@ public class HomekitPairingUIDImpl extends HomekitUID implements HomekitPairingU
      * @return The string representation of the UID
      */
     @Override
-    public String getAsString() {
+    public String toString() {
         logger.debug("{}Retrieving UID string representation: {}", LOG_UID, toString());
         return toString();
     }

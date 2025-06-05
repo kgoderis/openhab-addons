@@ -8,6 +8,7 @@ import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
+import org.openhab.io.homekit.exception.HomekitServiceException;
 import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitOnCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitStatusActiveCharacteristic;
@@ -18,7 +19,8 @@ import org.slf4j.LoggerFactory;
 /**
  * HomeKit Switch Service.
  * <p>
- * This service provides control and monitoring of switches in HomeKit accessories.
+ * This service provides control and monitoring of switches in HomeKit
+ * accessories.
  * It enables tracking of switch state, activation status, and fault conditions.
  * </p>
  *
@@ -46,7 +48,8 @@ import org.slf4j.LoggerFactory;
  *
  * <p>
  * For more information, see the
- * <a href="https://developer.apple.com/documentation/HomeKit">HomeKit Accessory Protocol Specification</a>.
+ * <a href="https://developer.apple.com/documentation/HomeKit">HomeKit Accessory
+ * Protocol Specification</a>.
  * </p>
  *
  * @author Karel Goderis
@@ -118,7 +121,7 @@ public class HomekitSwitchService extends AbstractHomekitService {
      * @since 1.0
      */
     @Override
-    public void addCharacteristics() {
+    public void addCharacteristics() throws HomekitServiceException {
         logger.trace("{}Adding required characteristics to SwitchService for accessory {}", LOG_TRACE,
                 getAccessory().getLabel());
 

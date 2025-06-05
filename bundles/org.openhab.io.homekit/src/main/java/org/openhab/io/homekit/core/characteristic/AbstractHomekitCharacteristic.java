@@ -482,7 +482,8 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
         try {
             T convertedValue = toValue(jsonValue);
             if (convertedValue != null && !isAllowedValue(convertedValue)) {
-                throw new IllegalArgumentException("Value " + convertedValue + " is not allowed for this characteristic");
+                throw new IllegalArgumentException(
+                        "Value " + convertedValue + " is not allowed for this characteristic");
             }
             setValue(convertedValue);
         } catch (Exception e) {
@@ -496,12 +497,13 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
         if (!isPairedWrite) {
             throw new Exception("Cannot modify a readonly characteristic");
         }
-        try {        
-            T convertedValue = toValue(value, conversionMap    );
+        try {
+            T convertedValue = toValue(value, conversionMap);
             if (convertedValue != null && !isAllowedValue(convertedValue)) {
-                throw new IllegalArgumentException("Value " + convertedValue + " is not allowed for this characteristic");
+                throw new IllegalArgumentException(
+                        "Value " + convertedValue + " is not allowed for this characteristic");
             }
-            
+
             @Nullable
             T oldValue = this.value;
             setValueInternal(convertedValue);

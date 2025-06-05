@@ -8,6 +8,7 @@ import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
+import org.openhab.io.homekit.exception.HomekitServiceException;
 import org.openhab.io.homekit.library.characteristic.HomekitActivityIntervalCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitHeartBeatCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitPingCharacteristic;
@@ -98,7 +99,7 @@ public class HomekitAccessoryRuntimeInformationService extends AbstractHomekitSe
      * @since 1.0
      */
     @Override
-    public void addCharacteristics() {
+    public void addCharacteristics() throws HomekitServiceException {
         addCharacteristic(new HomekitPingCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                 .withMandatory(true));
         addCharacteristic(new HomekitActivityIntervalCharacteristic(this, eventManager,

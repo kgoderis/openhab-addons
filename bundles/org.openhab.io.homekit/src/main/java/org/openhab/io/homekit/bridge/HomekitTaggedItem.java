@@ -20,13 +20,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.core.items.GroupItem;
 import org.openhab.core.items.Item;
 import org.openhab.core.items.ItemRegistry;
 import org.openhab.core.items.Metadata;
 import org.openhab.core.items.MetadataKey;
 import org.openhab.core.items.MetadataRegistry;
-import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
 import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.factory.HomekitServiceFactory;
 import org.slf4j.Logger;
@@ -34,21 +34,28 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Wraps an Item with data derived from supported tags defined.
- * This class represents an openHAB item that has been tagged for Homekit integration.
- * It manages the mapping between openHAB items and their corresponding Homekit accessories or characteristics.
+ * This class represents an openHAB item that has been tagged for Homekit
+ * integration.
+ * It manages the mapping between openHAB items and their corresponding Homekit
+ * accessories or characteristics.
  *
  * The class integrates with:
  * - {@link org.openhab.core.items.ItemRegistry} for item management
  * - {@link org.openhab.core.items.MetadataRegistry} for metadata handling
- * - {@link org.openhab.io.homekit.api.factory.HomekitAccessoryFactory} for accessory creation
- * - {@link org.openhab.io.homekit.api.factory.HomekitServiceFactory} for service creation
- * - {@link org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory} for characteristic creation
+ * - {@link org.openhab.io.homekit.api.factory.HomekitAccessoryFactory} for
+ * accessory creation
+ * - {@link org.openhab.io.homekit.api.factory.HomekitServiceFactory} for
+ * service creation
+ * - {@link org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory} for
+ * characteristic creation
  *
  * <p>
  * The class handles two main types of items:
  * <ul>
- * <li>HomekitAccessory items: Items that represent complete Homekit accessories (e.g., lights, switches)</li>
- * <li>HomekitCharacteristic items: Items that represent specific characteristics of an accessory (e.g., brightness,
+ * <li>HomekitAccessory items: Items that represent complete Homekit accessories
+ * (e.g., lights, switches)</li>
+ * <li>HomekitCharacteristic items: Items that represent specific
+ * characteristics of an accessory (e.g., brightness,
  * color)</li>
  * </ul>
  * </p>
@@ -57,7 +64,8 @@ import org.slf4j.LoggerFactory;
  * Items can be tagged in two ways:
  * <ul>
  * <li>Direct tagging: The item itself is tagged as a Homekit accessory</li>
- * <li>Group membership: The item is a member of a group that is tagged as a Homekit accessory</li>
+ * <li>Group membership: The item is a member of a group that is tagged as a
+ * Homekit accessory</li>
  * </ul>
  * </p>
  *
@@ -70,7 +78,8 @@ import org.slf4j.LoggerFactory;
  * - Configuration validation
  *
  * Usage Patterns:
- * - Item tagging: Use metadata or direct tags to mark items for HomeKit integration
+ * - Item tagging: Use metadata or direct tags to mark items for HomeKit
+ * integration
  * - Group organization: Create accessory groups to organize related items
  * - Service mapping: Map items to specific HomeKit services
  * - Characteristic mapping: Map items to specific HomeKit characteristics
@@ -97,7 +106,7 @@ public class HomekitTaggedItem {
     private final Item item;
     private final ItemRegistry itemRegistry;
     private final MetadataRegistry metadataRegistry;
-    private final Collection<String> homekitTags;
+    private final Collection<@NonNull String> homekitTags;
     private final int id;
     private String serviceTag;
     private String characteristicTag;
@@ -105,7 +114,6 @@ public class HomekitTaggedItem {
     private final Logger logger = LoggerFactory.getLogger(HomekitTaggedItem.class);
     private final HomekitServiceFactory serviceFactory;
     private final HomekitCharacteristicFactory characteristicFactory;
-    private final HomekitAccessoryFactory accessoryFactory;
     private final boolean useMetadataTags;
 
     // 3. Inner classes
@@ -119,26 +127,27 @@ public class HomekitTaggedItem {
 
     /**
      * Constructs a new HomekitTaggedItem instance for the given item.
-     * Determines the item's role in Homekit integration based on its tags and group membership.
+     * Determines the item's role in Homekit integration based on its tags and group
+     * membership.
      *
      * @param item The openHAB item to wrap
      * @param itemRegistry The item registry to use for group lookups
-     * @param metadataRegistry The metadata registry to use for metadata lookups
+     * @param metadataRegistry The metadata registry to use for metadata
+     *            lookups
      * @param accessoryFactory The factory for creating Homekit accessories
      * @param serviceFactory The factory for creating Homekit services
      * @param characteristicFactory The factory for creating Homekit characteristics
-     * @param useMetadataTags Whether to use metadata-based tags (true) or real tags (false)
+     * @param useMetadataTags Whether to use metadata-based tags (true) or
+     *            real tags (false)
      * @throws BadItemConfigurationException if the item's configuration is invalid
      */
     public HomekitTaggedItem(Item item, ItemRegistry itemRegistry, MetadataRegistry metadataRegistry,
-            HomekitAccessoryFactory accessoryFactory, HomekitServiceFactory serviceFactory,
-            HomekitCharacteristicFactory characteristicFactory) {
+            HomekitServiceFactory serviceFactory, HomekitCharacteristicFactory characteristicFactory) {
         this.item = item;
         this.metadataRegistry = metadataRegistry;
         this.itemRegistry = itemRegistry;
         this.useMetadataTags = true;
         this.homekitTags = getHomekitTags(item);
-        this.accessoryFactory = accessoryFactory;
         this.serviceFactory = serviceFactory;
         this.characteristicFactory = characteristicFactory;
 
@@ -198,6 +207,7 @@ public class HomekitTaggedItem {
      *
      * @return The Homekit service type if found, null otherwise
      */
+    @SuppressWarnings("null")
     private String determineServiceTag() {
         if (!homekitTags.isEmpty()) {
             String firstTag = homekitTags.iterator().next();
@@ -214,6 +224,7 @@ public class HomekitTaggedItem {
      *
      * @return The Homekit characteristic type if found, null otherwise
      */
+    @SuppressWarnings("null")
     private String determineCharacteristicTag() {
         if (!homekitTags.isEmpty()) {
             String firstTag = homekitTags.iterator().next();
@@ -227,7 +238,8 @@ public class HomekitTaggedItem {
 
     /**
      * Checks if the item is tagged for Homekit integration.
-     * An item is considered tagged if it has either a service type or a characteristic type.
+     * An item is considered tagged if it has either a service type or a
+     * characteristic type.
      *
      * @return true if the item is tagged for Homekit integration, false otherwise
      */
@@ -240,7 +252,8 @@ public class HomekitTaggedItem {
     /**
      * Checks if the item is a group item that represents a Homekit accessory.
      *
-     * @return true if the item is a group and represents a Homekit accessory, false otherwise
+     * @return true if the item is a group and represents a Homekit accessory, false
+     *         otherwise
      */
     public boolean isGroup() {
         boolean isGroup = (isAccessory() && (this.item instanceof GroupItem));
@@ -250,7 +263,8 @@ public class HomekitTaggedItem {
 
     /**
      * Gets the Homekit service type associated with this item.
-     * This represents the type of Homekit accessory (e.g., Light, Switch, Thermostat).
+     * This represents the type of Homekit accessory (e.g., Light, Switch,
+     * Thermostat).
      *
      * @return The Homekit service type, or null if not applicable
      */
@@ -261,7 +275,8 @@ public class HomekitTaggedItem {
 
     /**
      * Gets the Homekit characteristic type associated with this item.
-     * This represents a specific property of a Homekit accessory (e.g., On, Brightness, Temperature).
+     * This represents a specific property of a Homekit accessory (e.g., On,
+     * Brightness, Temperature).
      *
      * @return The Homekit characteristic type, or null if not applicable
      */
@@ -285,7 +300,8 @@ public class HomekitTaggedItem {
 
     /**
      * Checks if this item represents a Homekit characteristic.
-     * An item is considered a characteristic if it has a characteristic type defined.
+     * An item is considered a characteristic if it has a characteristic type
+     * defined.
      * HomekitCharacteristic items must belong to a root accessory group.
      *
      * @return true if the item represents a Homekit characteristic, false otherwise
@@ -307,7 +323,8 @@ public class HomekitTaggedItem {
 
     /**
      * Gets the unique identifier for this Homekit accessory.
-     * The ID is calculated based on the item's name and is used to identify the accessory in Homekit.
+     * The ID is calculated based on the item's name and is used to identify the
+     * accessory in Homekit.
      *
      * @return The unique identifier for the accessory
      */
@@ -341,7 +358,8 @@ public class HomekitTaggedItem {
      * Checks if this item belongs to a Homekit accessory group.
      * HomekitCharacteristic items must belong to an accessory group.
      *
-     * @return true if the item belongs to a Homekit accessory group, false otherwise
+     * @return true if the item belongs to a Homekit accessory group, false
+     *         otherwise
      */
     public boolean isMemberOfAccessoryGroup() {
         boolean isMember = parentGroupItem != null;
@@ -364,7 +382,7 @@ public class HomekitTaggedItem {
         return groups;
     }
 
-    public Collection<String> getHomekitTags() {
+    public Collection<@NonNull String> getHomekitTags() {
         logger.debug("{}Getting HomeKit tags for item {}: {}", LOG_CONFIG, item.getName(), homekitTags);
         return homekitTags;
     }
@@ -375,8 +393,9 @@ public class HomekitTaggedItem {
      * @param item The item to get tags for
      * @return Collection of Homekit tags
      */
-    private Collection<String> getHomekitTags(Item item) {
-        Collection<String> tags = useMetadataTags ? getHomekitTagsFromMetaRegistry(item) : getHomekitTagsFromItem(item);
+    private Collection<@NonNull String> getHomekitTags(Item item) {
+        Collection<@NonNull String> tags = useMetadataTags ? getHomekitTagsFromMetaRegistry(item)
+                : getHomekitTagsFromItem(item);
         logger.debug("{}Retrieved {} HomeKit tags for item {}", LOG_CONFIG, tags.size(), item.getName());
         return tags;
     }
@@ -387,11 +406,11 @@ public class HomekitTaggedItem {
      * @param item The item to get tags for
      * @return Collection of Homekit tags
      */
-    private Collection<String> getHomekitTagsFromItem(Item item) {
+    private Collection<@NonNull String> getHomekitTagsFromItem(Item item) {
         return item.getTags();
     }
 
-    private Collection<String> getHomekitTagsFromMetaRegistry(Item item) {
+    private Collection<@NonNull String> getHomekitTagsFromMetaRegistry(Item item) {
         MetadataKey key = new MetadataKey("homekit", item.getName());
         Metadata metadata = metadataRegistry.get(key);
         if (metadata != null) {
@@ -404,7 +423,7 @@ public class HomekitTaggedItem {
     private List<GroupItem> findMyAccessoryGroupsInternal() {
         return item.getGroupNames().stream().map(name -> itemRegistry.get(name))
                 .filter(item -> item instanceof GroupItem).map(item -> (GroupItem) item).filter(group -> {
-                    Collection<String> groupTags = getHomekitTags(group);
+                    Collection<@NonNull String> groupTags = getHomekitTags(group);
                     boolean isAccessory = !groupTags.isEmpty()
                             && serviceFactory.supportsTag(groupTags.iterator().next());
                     logger.debug("{}Group {} is {}an accessory group", LOG_CONFIG, group.getName(),
@@ -415,7 +434,8 @@ public class HomekitTaggedItem {
 
     /**
      * Calculates a unique identifier for the Homekit accessory.
-     * The ID is based on the item's name and is guaranteed to be unique within the system.
+     * The ID is based on the item's name and is guaranteed to be unique within the
+     * system.
      * IDs 0 and 1 are reserved for special purposes.
      *
      * @param item The item to calculate the ID for

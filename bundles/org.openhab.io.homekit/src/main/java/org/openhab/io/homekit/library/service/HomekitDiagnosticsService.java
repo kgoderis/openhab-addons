@@ -8,6 +8,7 @@ import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
+import org.openhab.io.homekit.exception.HomekitServiceException;
 import org.openhab.io.homekit.library.characteristic.HomekitSupportedDiagnosticsSnapshotCharacteristic;
 
 /**
@@ -52,7 +53,7 @@ public class HomekitDiagnosticsService extends AbstractHomekitService {
      * Required: SupportedDiagnosticsSnapshot
      */
     @Override
-    public void addCharacteristics() {
+    public void addCharacteristics() throws HomekitServiceException {
         // Required characteristics
         addCharacteristic(new HomekitSupportedDiagnosticsSnapshotCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));

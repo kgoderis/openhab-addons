@@ -8,6 +8,7 @@ import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
+import org.openhab.io.homekit.exception.HomekitServiceException;
 import org.openhab.io.homekit.library.characteristic.HomekitMotionDetectedCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitStatusActiveCharacteristic;
@@ -124,7 +125,7 @@ public class HomekitMotionSensorService extends AbstractHomekitService {
      * @since 1.0
      */
     @Override
-    public void addCharacteristics() {
+    public void addCharacteristics() throws HomekitServiceException {
         logger.trace("{}Adding required characteristics to MotionSensorService for accessory {}", LOG_TRACE,
                 getAccessory().getLabel());
 

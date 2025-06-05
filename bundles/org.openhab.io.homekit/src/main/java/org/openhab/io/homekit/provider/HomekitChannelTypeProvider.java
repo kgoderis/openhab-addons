@@ -15,6 +15,7 @@ import org.openhab.core.thing.type.ChannelTypeUID;
 import org.openhab.core.thing.type.StateChannelTypeBuilder;
 import org.openhab.io.homekit.HomekitBindingConstants;
 import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
+import org.openhab.io.homekit.exception.HomekitFactoryException;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -22,10 +23,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Manages the creation and registration of HomeKit channel types in the OpenHAB ecosystem.
+ * Manages the creation and registration of HomeKit channel types in the OpenHAB
+ * ecosystem.
  *
- * This class serves as the central provider for HomeKit channel types, converting HomeKit characteristic types
- * into OpenHAB channel types. It handles the mapping between HomeKit characteristics and OpenHAB item types,
+ * This class serves as the central provider for HomeKit channel types,
+ * converting HomeKit characteristic types
+ * into OpenHAB channel types. It handles the mapping between HomeKit
+ * characteristics and OpenHAB item types,
  * ensuring proper integration between HomeKit and OpenHAB's channel system.
  *
  * The provider implements a sophisticated type conversion system that:
@@ -37,7 +41,8 @@ import org.slf4j.LoggerFactory;
  * The class integrates with:
  * - {@link StorageService} for persistent storage of channel types
  * - {@link HomekitCharacteristicFactory} for characteristic type management
- * - {@link org.openhab.core.thing.type.ChannelType OpenHAB's channel type system} for type registration
+ * - {@link org.openhab.core.thing.type.ChannelType OpenHAB's channel type
+ * system} for type registration
  *
  * Key features:
  * - Automatic channel type generation from characteristic types
@@ -66,8 +71,10 @@ public class HomekitChannelTypeProvider extends AbstractStorageBasedTypeProvider
     /**
      * Creates a new HomeKit channel type provider.
      *
-     * This constructor initializes the provider with all required services and establishes the foundation
-     * for managing HomeKit channel types. It sets up the necessary connections to various system services
+     * This constructor initializes the provider with all required services and
+     * establishes the foundation
+     * for managing HomeKit channel types. It sets up the necessary connections to
+     * various system services
      * and prepares the provider for operation.
      *
      * The initialization process includes:
@@ -91,8 +98,10 @@ public class HomekitChannelTypeProvider extends AbstractStorageBasedTypeProvider
     /**
      * Adds channel types that are dependent on specific factories.
      *
-     * This method iterates through all supported characteristic types from the characteristic factory
-     * and creates corresponding channel types for each characteristic and its accepted item types.
+     * This method iterates through all supported characteristic types from the
+     * characteristic factory
+     * and creates corresponding channel types for each characteristic and its
+     * accepted item types.
      */
     private void addFactoryDependentChannelTypes() {
         logger.debug("{}Adding factory-dependent channel types", LOG_TYPE);
@@ -100,12 +109,12 @@ public class HomekitChannelTypeProvider extends AbstractStorageBasedTypeProvider
 
         for (String characteristicType : characteristicTypes) {
             logger.debug("{}Processing characteristic type: {}", LOG_TYPE, characteristicType);
-            Set<String> acceptedItemTypes = characteristicFactory.getAcceptedItemTypes(characteristicType);
+            try {
+                Set<String> acceptedItemTypes = characteristicFactory.getAcceptedItemTypes(characteristicType);
 
-            for (String acceptedItemType : acceptedItemTypes) {
-                ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
-                        characteristicType);
-                if (channelTypeUID != null) {
+                for (String acceptedItemType : acceptedItemTypes) {
+                    ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
+                            characteristicType);
                     try {
                         StateChannelTypeBuilder builder = ChannelTypeBuilder.state(channelTypeUID, characteristicType,
                                 acceptedItemType);
@@ -117,10 +126,10 @@ public class HomekitChannelTypeProvider extends AbstractStorageBasedTypeProvider
                         logger.error("{}Failed to create channel type for characteristic {} with item type {}: {}",
                                 LOG_ERROR, characteristicType, acceptedItemType, e.getMessage(), e);
                     }
-                } else {
-                    logger.warn("{}Could not create ChannelTypeUID for characteristic type: {}", LOG_WARN,
-                            characteristicType);
                 }
+            } catch (HomekitFactoryException e) {
+                logger.error("{}Failed to get accepted item types for characteristic {}: {}", LOG_ERROR,
+                        characteristicType, e.getMessage());
             }
         }
     }
@@ -128,7 +137,8 @@ public class HomekitChannelTypeProvider extends AbstractStorageBasedTypeProvider
     /**
      * Gets all registered channel types.
      *
-     * This method returns all channel types registered with the provider, optionally filtered
+     * This method returns all channel types registered with the provider,
+     * optionally filtered
      * by locale for internationalization support.
      *
      * @param locale The locale to get channel types for, or null for default
@@ -142,11 +152,13 @@ public class HomekitChannelTypeProvider extends AbstractStorageBasedTypeProvider
     /**
      * Gets a specific channel type by its UID.
      *
-     * This method retrieves a specific channel type from the provider based on its unique
+     * This method retrieves a specific channel type from the provider based on its
+     * unique
      * identifier, optionally filtered by locale for internationalization support.
      *
      * @param channelTypeUID The UID of the channel type to get
-     * @param locale The locale to get the channel type for, or null for default
+     * @param locale The locale to get the channel type for, or null for
+     *            default
      * @return The channel type, or null if not found
      */
     @Override
@@ -154,7 +166,8 @@ public class HomekitChannelTypeProvider extends AbstractStorageBasedTypeProvider
         return super.getChannelType(channelTypeUID, locale);
     }
 
-    // public String getCharacteristicTypeFromTag(String tag) throws HomekitException {
+    // public String getCharacteristicTypeFromTag(String tag) throws
+    // HomekitException {
     // // traverse factories and get the instance type from the tag
     // for (HomekitFactory factory : homekitFactories.values()) {
     // String instanceType = factory.getCharacteristicTypeFromTag(tag);
@@ -165,7 +178,8 @@ public class HomekitChannelTypeProvider extends AbstractStorageBasedTypeProvider
     // throw new HomekitException("No factory found for tag: " + tag);
     // }
 
-    // public String getCharacteristicTag(String characteristicType) throws HomekitException {
+    // public String getCharacteristicTag(String characteristicType) throws
+    // HomekitException {
     // // get the tag from the characteristic type
     // @Nullable
     // HomekitFactory factory = homekitFactories.get(characteristicType);
@@ -175,6 +189,7 @@ public class HomekitChannelTypeProvider extends AbstractStorageBasedTypeProvider
     // return tag;
     // }
     // }
-    // throw new HomekitException("No factory found for characteristic type: " + characteristicType);
+    // throw new HomekitException("No factory found for characteristic type: " +
+    // characteristicType);
     // }
 }

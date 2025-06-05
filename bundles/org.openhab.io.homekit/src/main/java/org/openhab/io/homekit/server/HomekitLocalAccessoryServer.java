@@ -22,6 +22,7 @@ import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
 import org.openhab.io.homekit.api.service.HomekitService;
+import org.openhab.io.homekit.api.uid.HomekitCharacteristicUID;
 import org.openhab.io.homekit.core.server.HomekitAccessoryServerState;
 import org.openhab.io.homekit.event.core.HomekitEventSubscription;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
@@ -46,11 +47,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Represents a local HomeKit accessory server that runs on the same machine as OpenHAB.
+ * Represents a local HomeKit accessory server that runs on the same machine as
+ * OpenHAB.
  *
  * <p>
- * This class implements a local HomeKit accessory server that manages the lifecycle of
- * HomeKit accessories, including server initialization, accessory registration, mDNS
+ * This class implements a local HomeKit accessory server that manages the
+ * lifecycle of
+ * HomeKit accessories, including server initialization, accessory registration,
+ * mDNS
  * advertisement, HTTP request handling, and event processing.
  *
  * <p>
@@ -111,10 +115,12 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     private final Set<HomekitEventSubscription> eventSubscriptions = new HashSet<>();
 
     /**
-     * Creates a new local HomeKit accessory server with the specified configuration.
+     * Creates a new local HomeKit accessory server with the specified
+     * configuration.
      *
      * <p>
-     * This constructor initializes a local HomeKit server with explicit configuration
+     * This constructor initializes a local HomeKit server with explicit
+     * configuration
      * parameters for network settings, security, and service integration.
      *
      * <p>
@@ -149,11 +155,14 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     }
 
     /**
-     * Creates a new local HomeKit accessory server with auto-generated pairing ID and secret key.
+     * Creates a new local HomeKit accessory server with auto-generated pairing ID
+     * and secret key.
      *
      * <p>
-     * This constructor initializes a local HomeKit server with auto-generated security
-     * credentials while maintaining the same network and service configuration capabilities.
+     * This constructor initializes a local HomeKit server with auto-generated
+     * security
+     * credentials while maintaining the same network and service configuration
+     * capabilities.
      *
      * <p>
      * Key implementation details:
@@ -466,7 +475,8 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
      * <li>Logs the pairing removal</li>
      * </ul>
      *
-     * @param destinationPairingId The pairing ID of the destination device to remove
+     * @param destinationPairingId The pairing ID of the destination device to
+     *            remove
      * @throws HomekitServerException if pairing removal fails
      * @throws NullPointerException if the pairing ID is null
      */
@@ -630,7 +640,8 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
      * Creates the properties for mDNS advertisement.
      *
      * <p>
-     * This method creates a set of properties required for mDNS advertisement, including:
+     * This method creates a set of properties required for mDNS advertisement,
+     * including:
      * <ul>
      * <li>Status flags indicating pairing state</li>
      * <li>Device ID for unique identification</li>
@@ -644,21 +655,27 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     private Hashtable<String, String> createAdvertisementProperties() {
         Hashtable<String, String> props = new Hashtable<>();
 
-        // Status flags (e.g. "0x04" for bit 3). Value should be an unsigned integer. See Table 6-8 (page 58). Required.
+        // Status flags (e.g. "0x04" for bit 3). Value should be an unsigned integer.
+        // See Table 6-8 (page 58). Required.
         props.put("sf", Integer.toString(!isPaired() ? HomekitPairingStatusFlag.NOT_PAIRED.getMask()
                 : HomekitPairingStatusFlag.UNKNOWN.getMask()));
 
-        // Device ID ("5.4 Device ID" (page 31)) of the accessory. The Device ID must be formatted as
-        // "XX:XX:XX:XX:XX:XX", where "XX" is a hexadecimal string representing a byte. Required.
-        // This value is also used as the accessory's HomekitPairing Identifier. This identifier of the accessory must
-        // be a unique random number generated at every factory reset and must persist across reboots.
+        // Device ID ("5.4 Device ID" (page 31)) of the accessory. The Device ID must be
+        // formatted as
+        // "XX:XX:XX:XX:XX:XX", where "XX" is a hexadecimal string representing a byte.
+        // Required.
+        // This value is also used as the accessory's HomekitPairing Identifier. This
+        // identifier of the accessory must
+        // be a unique random number generated at every factory reset and must persist
+        // across reboots.
         props.put("id", new String(getPairingId(), StandardCharsets.UTF_8));
 
         // Model name of the accessory (e.g. "Device1,1"). Required.
         props.put("md", getClass().getSimpleName());
 
         // Current configuration number. Required.
-        // Must update when an accessory, service, or characteristic is added or removed on the accessory server.
+        // Must update when an accessory, service, or characteristic is added or removed
+        // on the accessory server.
         // Accessories must increment the config number after a firmware update.
         // This must have a range of 1-65535 and wrap to 1 when it overflows.
         // This value must persist across reboots, power cycles, etc.
@@ -680,15 +697,19 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
         // This must have a value of "1".
         props.put("s#", "1");
 
-        // HomekitPairing Feature flags (e.g. "0x3" for bits 0 and 1). Required if non-zero. See Table 5-4 (page 49).
+        // HomekitPairing Feature flags (e.g. "0x3" for bits 0 and 1). Required if
+        // non-zero. See Table 5-4 (page 49).
         props.put("ff", Integer.toString(HomekitPairingFeatureFlag.NOT_SUPPORTED.getMask()));
 
         // Protocol version string "X.Y" (e.g. "1.0"). Required if value is not "1.0".
         // props.put("pv", "1.1");
 
-        // HomekitAccessory Category Identifier. Required. Indicates the category that best describes the primary
-        // function of the accessory. This must have a range of 1-65535. This must take values defined in
-        // "13-1 HomekitAccessory Categories" (page 252). This must persist across reboots, power cycles, etc.
+        // HomekitAccessory Category Identifier. Required. Indicates the category that
+        // best describes the primary
+        // function of the accessory. This must have a range of 1-65535. This must take
+        // values defined in
+        // "13-1 HomekitAccessory Categories" (page 252). This must persist across
+        // reboots, power cycles, etc.
         props.put("ci", Integer.toString(HomekitAccessoryCategory.BRIDGES.getValue()));
 
         return props;
@@ -824,16 +845,17 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
             super.removeAccessory(accessory);
 
             // Collect all characteristic UIDs for this accessory
-            Set<String> characteristicUids = new HashSet<>();
+            Set<HomekitCharacteristicUID> characteristicUids = new HashSet<>();
             for (HomekitService service : accessory.getServices()) {
                 for (HomekitCharacteristic<?> characteristic : service.getCharacteristics()) {
-                    characteristicUids.add(characteristic.getUID().toString());
+                    characteristicUids.add(characteristic.getUID());
                 }
             }
 
             // Remove and unsubscribe only those subscriptions that match
             eventSubscriptions.removeIf(subscription -> {
-                if (characteristicUids.contains(subscription.getPublisherUID())) {
+                if (characteristicUids.stream()
+                        .anyMatch(uid -> uid.toString().equals(subscription.getPublisherUID().toString()))) {
                     eventManager.unsubscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
                             subscription.getPublisherUID(), subscription.getSubscriber());
                     logger.debug("{}Unsubscribed from events for sourceUid: {}", LOG_ACCESSORY,

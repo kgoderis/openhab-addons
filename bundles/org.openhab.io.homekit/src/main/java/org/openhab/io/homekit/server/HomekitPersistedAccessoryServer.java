@@ -7,7 +7,7 @@ import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryCategory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,9 +16,12 @@ import org.slf4j.LoggerFactory;
  * Represents a persisted HomeKit accessory server configuration.
  *
  * <p>
- * This class provides a data structure for storing and retrieving HomeKit server
- * configurations, including network settings, security keys, and accessory information.
- * It handles the serialization and deserialization of server state for persistence.
+ * This class provides a data structure for storing and retrieving HomeKit
+ * server
+ * configurations, including network settings, security keys, and accessory
+ * information.
+ * It handles the serialization and deserialization of server state for
+ * persistence.
  *
  * <p>
  * The class integrates with:
@@ -40,6 +43,7 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial Contribution
  * @since 1.0
  */
+@NonNullByDefault
 public class HomekitPersistedAccessoryServer {
 
     // ========== Log Message Prefixes ==========
@@ -78,6 +82,7 @@ public class HomekitPersistedAccessoryServer {
         pairingIdentifier = "";
         privateKey = "";
         configurationIndex = "";
+        accessories = "";
         category = HomekitAccessoryCategory.OTHER;
         serverType = ServerType.LOCAL;
     }
@@ -86,7 +91,8 @@ public class HomekitPersistedAccessoryServer {
      * Creates a new persisted server with the specified configuration.
      *
      * <p>
-     * This constructor initializes all server properties and handles the serialization
+     * This constructor initializes all server properties and handles the
+     * serialization
      * of binary data and accessory information.
      *
      * @param localAddress The network address to bind to
@@ -98,9 +104,8 @@ public class HomekitPersistedAccessoryServer {
      * @param category The category of accessories this server hosts
      * @param serverType The type of server (local or remote)
      */
-    public HomekitPersistedAccessoryServer(@NonNull InetAddress localAddress, int port, byte[] pairingId,
-            byte[] privateKey, int configurationIndex,
-            @NonNull Collection<org.openhab.io.homekit.api.accessory.HomekitAccessory> accessories,
+    public HomekitPersistedAccessoryServer(InetAddress localAddress, int port, byte[] pairingId, byte[] privateKey,
+            int configurationIndex, Collection<org.openhab.io.homekit.api.accessory.HomekitAccessory> accessories,
             HomekitAccessoryCategory category, ServerType serverType) {
         logger.debug("{}Creating new persisted server - Address: {}, Port: {}, Category: {}", LOG_INIT, localAddress,
                 port, category);
@@ -127,7 +132,7 @@ public class HomekitPersistedAccessoryServer {
      *
      * @return The server's network address, or loopback address if resolution fails
      */
-    public @NonNull InetAddress getLocalAddress() {
+    public InetAddress getLocalAddress() {
         try {
             return InetAddress.getByName(localAddress);
         } catch (UnknownHostException e) {
@@ -227,12 +232,12 @@ public class HomekitPersistedAccessoryServer {
      *
      * @param accessories The collection of accessories to persist
      */
-    public void setAccessories(@NonNull Collection<org.openhab.io.homekit.api.accessory.HomekitAccessory> accessories) {
+    public void setAccessories(Collection<org.openhab.io.homekit.api.accessory.HomekitAccessory> accessories) {
         logger.debug("{}Setting {} accessories", LOG_CONFIG, accessories.size());
         if (accessories.isEmpty()) {
             this.accessories = "";
         } else {
-            this.accessories = accessories.stream().map(accessory -> accessory.getUID().getAsString())
+            this.accessories = accessories.stream().map(accessory -> accessory.getUID().toString())
                     .collect(java.util.stream.Collectors.joining(";"));
         }
     }

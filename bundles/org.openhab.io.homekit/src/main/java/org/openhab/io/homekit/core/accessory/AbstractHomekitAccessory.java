@@ -39,10 +39,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Abstract base class for HomeKit accessories that provides core functionality and lifecycle management.
+ * Abstract base class for HomeKit accessories that provides core functionality
+ * and lifecycle management.
  *
  * <p>
- * This class implements the fundamental accessory behavior required by all HomeKit accessories, including:
+ * This class implements the fundamental accessory behavior required by all
+ * HomeKit accessories, including:
  * </p>
  * <ul>
  * <li>Unique identification and instance management</li>
@@ -73,8 +75,10 @@ import org.slf4j.LoggerFactory;
  * <li>{@link HomekitServiceFactory} for service creation</li>
  * <li>{@link HomekitCharacteristicFactory} for characteristic creation</li>
  * <li>{@link HomekitAccessoryServer} for server coordination</li>
- * <li>{@link org.openhab.core.thing.UID OpenHAB's UID system} for unique identification</li>
- * <li>{@link org.openhab.io.homekit.api.event.HomekitEvent OpenHAB's event system} for event handling</li>
+ * <li>{@link org.openhab.core.thing.UID OpenHAB's UID system} for unique
+ * identification</li>
+ * <li>{@link org.openhab.io.homekit.api.event.HomekitEvent OpenHAB's event
+ * system} for event handling</li>
  * </ul>
  *
  * @author Karel Goderis - Initial contribution
@@ -281,7 +285,8 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
 
     /**
      * Adds a service to this accessory.
-     * The service is only added if the accessory is extensible and doesn't already have a service of the same type.
+     * The service is only added if the accessory is extensible and doesn't already
+     * have a service of the same type.
      * When a service is added, it is also subscribed to state change events.
      *
      * @param service the service to add
@@ -343,7 +348,7 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
             eventManager.publishEvent(new HomekitAccessoryEvent(HomekitEventType.SERVICE_REMOVED, this, service, null));
 
             Set<HomekitEventSubscription> subscriptions = eventSubscriptions.stream()
-                    .filter(subscription -> subscription.getPublisherUID().equals(service.getUID()))
+                    .filter(subscription -> subscription.getPublisherUID().equals((UID) service.getUID()))
                     .collect(Collectors.toSet());
             subscriptions.forEach(subscription -> eventManager.unsubscribe(subscription));
             eventSubscriptions.removeAll(subscriptions);
@@ -376,7 +381,8 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
 
     /**
      * Gets all services supported by this accessory.
-     * Services are the primary way to interact with the accessory via the HomeKit protocol.
+     * Services are the primary way to interact with the accessory via the HomeKit
+     * protocol.
      *
      * @return the collection of services
      * @since 1.0
@@ -422,7 +428,8 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
      * 5. Updates the accessory's UID
      *
      * @param server The server to assign to
-     * @throws HomekitAccessoryOperationException if the accessory is already assigned
+     * @throws HomekitAccessoryOperationException if the accessory is already
+     *             assigned
      */
     @Override
     public void assignToServer(HomekitAccessoryServer server) throws HomekitAccessoryOperationException {
@@ -436,7 +443,11 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
         }
 
         // Create UID using the AID (either restored or newly assigned)
-        HomekitAccessoryUID newUID = new HomekitAccessoryUIDImpl(server.getUID().getPairingId(), this.accessoryId);
+        Long aid = this.accessoryId;
+        if (aid == null) {
+            throw new IllegalStateException("HomekitAccessory ID should be set at this point");
+        }
+        HomekitAccessoryUID newUID = new HomekitAccessoryUIDImpl(server.getUID().getPairingId(), aid.longValue());
 
         // Notify event manager of UID change to migrate subscriptions
         eventManager.notifyUIDChange(tempUID, newUID);
@@ -506,7 +517,8 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
     /**
      * Performs an operation to identify the accessory.
      * This is a no-op for virtual accessories.
-     * Physical accessories should override this method to provide visual or audio feedback.
+     * Physical accessories should override this method to provide visual or audio
+     * feedback.
      */
     @Override
     public void identify() {
@@ -542,7 +554,8 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
 
     /**
      * Releases an instance ID back to this accessory's pool.
-     * This method is thread-safe and should be called when an ID is no longer needed.
+     * This method is thread-safe and should be called when an ID is no longer
+     * needed.
      * The released ID can be reused by future calls to getNextAvailableInstanceId.
      *
      * @param id The instance ID to release
@@ -641,7 +654,8 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
      * Sets whether this accessory is extensible.
      * If true, new services can be added to the accessory after creation.
      *
-     * @param isExtensible true if the accessory should be extensible, false otherwise
+     * @param isExtensible true if the accessory should be extensible, false
+     *            otherwise
      * @return this accessory for method chaining
      */
     @Override
@@ -651,8 +665,10 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
     }
 
     /**
-     * Sets whether this accessory is orphaned (its source item/thing has been removed).
-     * Orphaned accessories are kept in the registry to prevent HomeKit controllers from deleting them.
+     * Sets whether this accessory is orphaned (its source item/thing has been
+     * removed).
+     * Orphaned accessories are kept in the registry to prevent HomeKit controllers
+     * from deleting them.
      *
      * @param orphaned true if the accessory is orphaned, false otherwise
      */
@@ -719,8 +735,11 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
 
         // Compare each service
         for (int i = 0; i < thisServices.size(); i++) {
-            if (thatServices.get(i) != null && thatServices.get(i) != null
-                    && !thisServices.get(i).equals(thatServices.get(i)))
+            @Nullable
+            HomekitService thisService = thisServices.get(i);
+            @Nullable
+            HomekitService thatService = thatServices.get(i);
+            if (thisService != null && thatService != null && !thisService.equals(thatService))
                 return false;
         }
 
@@ -755,7 +774,11 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
             return 0;
 
         // First compare by accessory ID
-        int idCompare = Long.compare(this.accessoryId, other.getAccessoryId());
+        Long thisId = this.accessoryId;
+        if (thisId == null) {
+            throw new IllegalStateException("Cannot compare accessory without ID");
+        }
+        int idCompare = Long.compare(thisId, other.getAccessoryId());
         if (idCompare != 0)
             return idCompare;
 

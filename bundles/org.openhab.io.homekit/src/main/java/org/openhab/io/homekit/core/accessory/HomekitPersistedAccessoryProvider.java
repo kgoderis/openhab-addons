@@ -1,8 +1,6 @@
 package org.openhab.io.homekit.core.accessory;
 
 import java.io.StringReader;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import javax.json.Json;
@@ -13,6 +11,7 @@ import javax.json.JsonValue;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.core.common.ThreadPoolManager;
 import org.openhab.core.common.registry.AbstractManagedProvider;
 import org.openhab.core.service.ReadyMarker;
 import org.openhab.core.service.ReadyMarkerFilter;
@@ -24,6 +23,7 @@ import org.openhab.io.homekit.api.provider.HomekitAccessoryProvider;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry;
 import org.openhab.io.homekit.api.uid.HomekitAccessoryUID;
+import org.openhab.io.homekit.exception.HomekitFactoryException;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -33,11 +33,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Manages the persistence and lifecycle of HomeKit accessories in the OpenHAB system.
+ * Manages the persistence and lifecycle of HomeKit accessories in the OpenHAB
+ * system.
  *
- * This class acts as a bridge between the OpenHAB storage system and the HomeKit accessory registry,
- * ensuring that accessories are properly persisted and restored across system restarts. It operates
- * as an OSGi service that integrates with OpenHAB's storage and ready service systems.
+ * This class acts as a bridge between the OpenHAB storage system and the
+ * HomeKit accessory registry,
+ * ensuring that accessories are properly persisted and restored across system
+ * restarts. It operates
+ * as an OSGi service that integrates with OpenHAB's storage and ready service
+ * systems.
  *
  * Key responsibilities:
  * - Managing accessory persistence through storage service
@@ -53,8 +57,10 @@ import org.slf4j.LoggerFactory;
  * - {@link HomekitAccessoryRegistry} for runtime accessory management
  * - {@link HomekitAccessoryServerRegistry} for server coordination
  * - {@link ReadyService} for system readiness management
- * - {@link org.openhab.core.service.ReadyMarker OpenHAB's ready marker system} for initialization coordination
- * - {@link org.openhab.core.storage.StorageService OpenHAB's storage system} for persistence
+ * - {@link org.openhab.core.service.ReadyMarker OpenHAB's ready marker system}
+ * for initialization coordination
+ * - {@link org.openhab.core.storage.StorageService OpenHAB's storage system}
+ * for persistence
  *
  * @author Karel Goderis - Initial contribution
  * @version 1.0
@@ -73,9 +79,7 @@ public class HomekitPersistedAccessoryProvider
     // ========== Log HomekitMessage Prefixes ==========
     private static final String LOG_PREFIX = "Homekit HomekitAccessory Provider: ";
     private static final String LOG_INIT = LOG_PREFIX + "Init - ";
-    private static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
     private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
-    private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
     static final String HOMEKIT_ACCESSORY_SERVER_REGISTRY = "homekit.accessoryServerRegistry";
     static final String HOMEKIT_MANAGED_ACCESSORY_PROVIDER = "homekit. HomekitAccessoryProvider";
@@ -85,11 +89,11 @@ public class HomekitPersistedAccessoryProvider
     private final ReadyService readyService;
 
     private volatile long lastUpdate = System.nanoTime();
-    private @Nullable ScheduledExecutorService executor;
 
     /**
      * Creates a new HomeKit persisted accessory provider.
-     * This constructor initializes the provider with required services and registers
+     * This constructor initializes the provider with required services and
+     * registers
      * it as a ready tracker for the HomeKit accessory server registry.
      *
      * @param storageService The storage service for persistence
@@ -111,7 +115,8 @@ public class HomekitPersistedAccessoryProvider
 
     /**
      * Deactivates the provider and unregisters it from the ready service.
-     * This method is called by the OSGi framework when the component is being stopped.
+     * This method is called by the OSGi framework when the component is being
+     * stopped.
      *
      * @param componentContext The OSGi component context
      */
@@ -123,24 +128,18 @@ public class HomekitPersistedAccessoryProvider
     /**
      * Performs delayed initialization of the provider.
      * This method ensures that all required services are available before marking
-     * the provider as ready. It uses a scheduled executor to handle timing.
+     * the provider as ready. It uses ThreadPoolManager to handle timing.
      */
     private synchronized void delayedInitialize() {
-        if (executor == null) {
-            executor = Executors.newSingleThreadScheduledExecutor();
-        }
-
         if (Thread.currentThread().isInterrupted()) {
             return;
         }
 
         final long diff = System.nanoTime() - lastUpdate - INITIALIZATION_DELAY_NANOS;
         if (diff < 0) {
-            executor.schedule(() -> delayedInitialize(), -diff, TimeUnit.NANOSECONDS);
+            ThreadPoolManager.getScheduledPool("homekit").schedule(() -> delayedInitialize(), -diff,
+                    TimeUnit.NANOSECONDS);
         } else {
-            executor.shutdown();
-            executor = null;
-
             logger.info("{}Marking the Managed HomekitAccessory Provider as ready", LOG_INIT);
             ReadyMarker newMarker = new ReadyMarker(HOMEKIT_MANAGED_ACCESSORY_PROVIDER, this.toString());
             readyService.markReady(newMarker);
@@ -190,9 +189,10 @@ public class HomekitPersistedAccessoryProvider
 
         String accessoryType = persistableElement.getAccessoryType();
         if (homekitAccessoryFactory.supportsAccessoryType(accessoryType)) {
-            accessory = homekitAccessoryFactory.createAccessoryWithArgs(accessoryType, (JsonValue) jsonObject);
-            if (accessory == null) {
-                logger.warn("Could not create accessory for type {}", accessoryType);
+            try {
+                accessory = homekitAccessoryFactory.createAccessoryWithArgs(accessoryType, (JsonValue) jsonObject);
+            } catch (HomekitFactoryException e) {
+                logger.error("{}Error creating accessory for type {}: {}", LOG_ERROR, accessoryType, e.getMessage());
             }
         } else {
             logger.warn("Accessory type {} is not supported by the factory", accessoryType);
@@ -223,6 +223,7 @@ public class HomekitPersistedAccessoryProvider
     @Override
     public void onReadyMarkerAdded(ReadyMarker readyMarker) {
         logger.debug("{}Ready marker added: {}", LOG_INIT, readyMarker);
+        lastUpdate = System.nanoTime();
         delayedInitialize();
     }
 

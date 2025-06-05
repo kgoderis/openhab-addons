@@ -22,7 +22,6 @@ import javax.json.JsonValue;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.event.HomekitEvent;
@@ -31,20 +30,23 @@ import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.api.uid.HomekitServiceUID;
-import org.openhab.io.homekit.core.characteristic.AbstractHomekitCharacteristic;
 import org.openhab.io.homekit.event.core.HomekitEventSubscription;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicEvent;
 import org.openhab.io.homekit.event.model.service.HomekitServiceEvent;
+import org.openhab.io.homekit.exception.HomekitFactoryException;
+import org.openhab.io.homekit.exception.HomekitServiceException;
 import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Abstract base class for HomeKit services that provides core functionality and lifecycle management.
+ * Abstract base class for HomeKit services that provides core functionality and
+ * lifecycle management.
  *
  * <p>
- * This class implements the fundamental service behavior required by all HomeKit services, including:
+ * This class implements the fundamental service behavior required by all
+ * HomeKit services, including:
  * <ul>
  * <li>Characteristic management and lifecycle</li>
  * <li>Event handling and subscriptions</li>
@@ -56,11 +58,13 @@ import org.slf4j.LoggerFactory;
  * <p>
  * The class integrates with:
  * <ul>
- * <li>{@link HomekitAccessory} for accessory lifecycle and state management</li>
+ * <li>{@link HomekitAccessory} for accessory lifecycle and state
+ * management</li>
  * <li>{@link HomekitCharacteristic} for value conversion and validation</li>
  * <li>{@link HomekitEventManager} for event handling and subscriptions</li>
  * <li>{@link HomekitCharacteristicFactory} for characteristic creation</li>
- * <li>{@link org.openhab.core.thing.UID OpenHAB's UID system} for unique identification</li>
+ * <li>{@link org.openhab.core.thing.UID OpenHAB's UID system} for unique
+ * identification</li>
  * </ul>
  * </p>
  *
@@ -96,8 +100,10 @@ public abstract class AbstractHomekitService implements HomekitService {
     /**
      * Creates a new HomeKit service with required parameters.
      *
-     * This constructor initializes a new service with the specified accessory and factories.
-     * It sets up the basic service structure and prepares it for characteristic management.
+     * This constructor initializes a new service with the specified accessory and
+     * factories.
+     * It sets up the basic service structure and prepares it for characteristic
+     * management.
      *
      * Key implementation details:
      * - Validates all required parameters
@@ -144,7 +150,8 @@ public abstract class AbstractHomekitService implements HomekitService {
      * @param eventManager The event manager for handling events
      * @param characteristicFactory The factory for creating characteristics
      * @param value The JSON value containing service configuration
-     * @throws IllegalArgumentException if the JSON value is invalid or required parameters are null
+     * @throws IllegalArgumentException if the JSON value is invalid or required
+     *             parameters are null
      */
     public AbstractHomekitService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
@@ -178,20 +185,33 @@ public abstract class AbstractHomekitService implements HomekitService {
 
         JsonArray characteristicsArray = jsonObject.getJsonArray("characteristics");
         for (JsonValue characteristicValue : characteristicsArray) {
-            createCharacteristic(characteristicValue).ifPresent(this::addCharacteristic);
+            createCharacteristic(characteristicValue).ifPresent(characteristic -> {
+                try {
+                    addCharacteristic(characteristic);
+                } catch (HomekitServiceException e) {
+                    logger.error("{}Error adding characteristic during JSON restoration: {}", LOG_ERROR,
+                            e.getMessage());
+                }
+            });
         }
         logger.debug("{}Restored service from JSON for accessory {}", LOG_INIT, accessory.getUID());
     }
 
     /**
      * Initializes the service after construction.
-     * This method should be called after construction to perform any initialization that requires overridable methods.
-     * It adds characteristics if the service is extensible and sets the name characteristic if present.
+     * This method should be called after construction to perform any initialization
+     * that requires overridable methods.
+     * It adds characteristics if the service is extensible and sets the name
+     * characteristic if present.
      */
     final public void initialise() {
         if (isExtensible()) {
-            addBaseCharacteristics();
-            addCharacteristics();
+            try {
+                addBaseCharacteristics();
+                addCharacteristics();
+            } catch (HomekitServiceException e) {
+                logger.error("{}Error adding characteristics during initialization: {}", LOG_ERROR, e.getMessage());
+            }
         }
 
         @Nullable
@@ -209,7 +229,7 @@ public abstract class AbstractHomekitService implements HomekitService {
      * Adds default characteristics to this service.
      * This method is called during initialization if the service is extensible.
      */
-    public void addBaseCharacteristics() {
+    public void addBaseCharacteristics() throws HomekitServiceException {
         addCharacteristic(
                 new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId()));
     }
@@ -303,7 +323,8 @@ public abstract class AbstractHomekitService implements HomekitService {
 
     /**
      * Checks if this service is hidden.
-     * A service is considered hidden if all its characteristics are hidden or if it is explicitly marked as hidden.
+     * A service is considered hidden if all its characteristics are hidden or if it
+     * is explicitly marked as hidden.
      * 
      * @return true if this service is hidden
      */
@@ -348,40 +369,105 @@ public abstract class AbstractHomekitService implements HomekitService {
 
     /**
      * Adds a characteristic to this service.
-     * The characteristic is only added if the service is extensible and doesn't already contain a characteristic of the
-     * same type.
-     * 
+     * The service must be extensible to add characteristics.
+     *
      * @param characteristic the characteristic to add
+     * @throws HomekitServiceException if the service is not extensible, the
+     *             characteristic is null,
+     *             or the characteristic cannot be added due to
+     *             conflicts
      */
     @Override
-    public void addCharacteristic(@NonNull HomekitCharacteristic<?> characteristic) {
-        if (getCharacteristic(characteristic.getType()).isEmpty() && isExtensible()) {
-            characteristics.add(characteristic);
-            logger.debug("Added HomekitCharacteristic '{}' (Type: {}) to HomekitService '{}' (Type: {})",
-                    characteristic.getDescription(), characteristic.getType(), this.getName(), this.getType());
-            notifyCharacteristicAdded(characteristic);
-
-            if (characteristic instanceof AbstractHomekitCharacteristic) {
-                eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
-                        (UID) characteristic.getUID(), (UID) getUID(), event -> {
-                            onEvent(event);
-                        }));
-            } else {
-                logger.warn("HomekitCharacteristic '{}' (Type: {}) is not a HomekitEventPublisher",
-                        characteristic.getDescription(), characteristic.getType());
-            }
-
-        } else {
-            logger.debug("HomekitService '{}' (Type: {}) already contains HomekitCharacteristic '{}' (Type: {})",
-                    this.getName(), this.getType(), characteristic.getDescription(), characteristic.getType());
+    public void addCharacteristic(HomekitCharacteristic<?> characteristic) throws HomekitServiceException {
+        if (characteristic == null) {
+            throw new HomekitServiceException("Characteristic cannot be null");
         }
+        if (!isExtensible()) {
+            throw new HomekitServiceException("Service is not extensible");
+        }
+
+        // Check for duplicate characteristics of the same type
+        if (getCharacteristic(characteristic.getType()).isPresent()) {
+            throw new HomekitServiceException("Characteristic of type " + characteristic.getType() + " already exists");
+        }
+
+        characteristics.add(characteristic);
+        logger.debug("{}Added HomekitCharacteristic '{}' (Type: {}) to HomekitService '{}' (Type: {})", LOG_CHAR,
+                characteristic.getDescription(), characteristic.getType(), this.getName(), this.getType());
+        notifyCharacteristicAdded(characteristic);
+    }
+
+    /**
+     * Adds all required characteristics to this service.
+     * 
+     * @throws HomekitServiceException if there is an error adding the required
+     *             characteristics
+     */
+    @Override
+    public void addCharacteristics() throws HomekitServiceException {
+        // Default implementation - subclasses should override to add specific
+        // characteristics
+        logger.debug("{}Adding characteristics for service type: {}", LOG_INIT, getType());
+    }
+
+    /**
+     * Removes a characteristic from this service.
+     * Returns true if the characteristic was removed, false if it wasn't present.
+     * 
+     * @param characteristic the characteristic to remove
+     * @return true if the characteristic was removed, false if it wasn't present
+     * @throws HomekitServiceException if the characteristic is required and cannot
+     *             be removed
+     */
+    @Override
+    public boolean removeCharacteristic(HomekitCharacteristic<?> characteristic) throws HomekitServiceException {
+        if (characteristic == null) {
+            return false;
+        }
+
+        // Check if this is a mandatory characteristic
+        if (characteristic.isMandatory()) {
+            throw new HomekitServiceException("Cannot remove mandatory characteristic: " + characteristic.getType());
+        }
+
+        boolean removed = characteristics.remove(characteristic);
+        if (removed) {
+            logger.debug("{}Removed HomekitCharacteristic '{}' (Type: {}) from HomekitService '{}' (Type: {})",
+                    LOG_CHAR, characteristic.getDescription(), characteristic.getType(), this.getName(),
+                    this.getType());
+            notifyCharacteristicRemoved(characteristic);
+        }
+        return removed;
+    }
+
+    /**
+     * Removes a characteristic of the specified class from this service.
+     * Returns true if a characteristic was removed, false if none was found.
+     *
+     * @param characteristicClass the class of characteristic to remove
+     * @return true if a characteristic was removed, false if none was found
+     * @throws HomekitServiceException if the characteristic is required and cannot
+     *             be removed
+     */
+    @Override
+    public boolean removeCharacteristic(Class<? extends HomekitCharacteristic<?>> characteristicClass)
+            throws HomekitServiceException {
+        Optional<HomekitCharacteristic<?>> characteristic = characteristics.stream()
+                .filter(c -> c.getClass() == characteristicClass).findFirst();
+
+        if (characteristic.isPresent()) {
+            return removeCharacteristic(characteristic.get());
+        }
+        return false;
     }
 
     /**
      * Creates a characteristic from a JSON value.
-     * 
-     * @param value the JSON value containing characteristic configuration
-     * @return an Optional containing the created characteristic, or empty if creation failed
+     * Uses the characteristic factory to create the appropriate characteristic
+     * type.
+     *
+     * @param value The JSON value containing characteristic data
+     * @return Optional containing the created characteristic if successful
      */
     private Optional<HomekitCharacteristic<?>> createCharacteristic(JsonValue value) {
         String characteristicType = ((JsonObject) value).getString("type");
@@ -392,38 +478,13 @@ public abstract class AbstractHomekitService implements HomekitService {
                 if (characteristic != null) {
                     return Optional.of(characteristic);
                 }
-            } catch (IllegalArgumentException e) {
-                logger.error("Error creating characteristic: {}", e.getMessage());
+            } catch (HomekitFactoryException e) {
+                logger.error("{}Error creating characteristic: {}", LOG_ERROR, e.getMessage());
                 return Optional.empty();
             }
         }
-        logger.warn("No HomekitCharacteristicFactory found to create characteristic from JSON value");
+        logger.warn("{}No HomekitCharacteristicFactory found to create characteristic from JSON value", LOG_WARN);
         return Optional.empty();
-    }
-
-    /**
-     * Removes a characteristic from this service.
-     * 
-     * @param characteristic the characteristic to remove
-     */
-    @Override
-    public void removeCharacteristic(HomekitCharacteristic<?> characteristic) {
-        if (characteristics.remove(characteristic)) {
-            logger.debug("Removed HomekitCharacteristic '{}' (Type: {}) from HomekitService '{}' (Type: {})",
-                    characteristic.getDescription(), characteristic.getType(), this.getName(), this.getType());
-            notifyCharacteristicRemoved(characteristic);
-        }
-    }
-
-    /**
-     * Removes a characteristic of the specified class from this service.
-     * 
-     * @param characteristicClass the class of the characteristic to remove
-     */
-    @Override
-    public void removeCharacteristic(Class<? extends HomekitCharacteristic<?>> characteristicClass) {
-        characteristics.stream().filter(c -> c.getClass() == characteristicClass).findFirst()
-                .ifPresent(this::removeCharacteristic);
     }
 
     /**
@@ -681,7 +742,8 @@ public abstract class AbstractHomekitService implements HomekitService {
      * Compares this service with another service.
      * 
      * @param other the service to compare with
-     * @return a negative integer, zero, or a positive integer as this service is less than, equal to, or greater than
+     * @return a negative integer, zero, or a positive integer as this service is
+     *         less than, equal to, or greater than
      *         the specified service
      */
     @Override

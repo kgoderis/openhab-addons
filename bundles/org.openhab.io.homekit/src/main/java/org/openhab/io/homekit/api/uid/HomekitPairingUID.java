@@ -6,8 +6,10 @@ import org.openhab.core.common.registry.Identifiable;
 /**
  * Interface for HomeKit pairing unique identifiers.
  * <p>
- * This interface defines the contract for pairing UIDs in the HomeKit system. It provides
- * methods for accessing and managing unique identifiers for HomeKit pairings, ensuring
+ * This interface defines the contract for pairing UIDs in the HomeKit system.
+ * It provides
+ * methods for accessing and managing unique identifiers for HomeKit pairings,
+ * ensuring
  * proper identification and security throughout the system.
  * </p>
  * <p>
@@ -32,8 +34,10 @@ import org.openhab.core.common.registry.Identifiable;
  * <p>
  * The interface integrates with:
  * <ul>
- * <li>{@link org.openhab.core.common.registry.Identifiable} for registry integration</li>
- * <li>{@link org.openhab.io.homekit.api.server.HomekitAccessoryServer} for server identification</li>
+ * <li>{@link org.openhab.core.common.registry.Identifiable} for registry
+ * integration</li>
+ * <li>{@link org.openhab.io.homekit.api.server.HomekitAccessoryServer} for
+ * server identification</li>
  * </ul>
  * </p>
  *
@@ -44,13 +48,14 @@ import org.openhab.core.common.registry.Identifiable;
 public interface HomekitPairingUID extends Identifiable<HomekitPairingUID> {
     /**
      * Gets the unique identifier string for this pairing.
-     * This method provides a string representation of the pairing's unique identifier
+     * This method provides a string representation of the pairing's unique
+     * identifier
      * that can be used for display, logging, and identification purposes.
      *
      * @return The unique identifier string
      * @since 1.0.0
      */
-    String getAsString();
+    String toString();
 
     /**
      * Gets the destination pairing ID.

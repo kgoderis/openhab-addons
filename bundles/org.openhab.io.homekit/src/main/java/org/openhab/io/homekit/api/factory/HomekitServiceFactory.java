@@ -8,10 +8,12 @@ import javax.json.JsonValue;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.service.HomekitService;
+import org.openhab.io.homekit.exception.HomekitFactoryException;
 
 /**
  * Factory interface for creating HomeKit services.
- * This factory is responsible for creating and managing HomeKit service instances
+ * This factory is responsible for creating and managing HomeKit service
+ * instances
  * based on service types, tags, or configuration.
  *
  * <p>
@@ -27,8 +29,10 @@ import org.openhab.io.homekit.api.service.HomekitService;
  * </p>
  *
  * <p>
- * Service types and tags are used to identify different kinds of HomeKit services.
- * Each service type is associated with a set of mandatory and optional characteristics
+ * Service types and tags are used to identify different kinds of HomeKit
+ * services.
+ * Each service type is associated with a set of mandatory and optional
+ * characteristics
  * that define its behavior and capabilities.
  * </p>
  *
@@ -50,14 +54,16 @@ public interface HomekitServiceFactory {
      * @param type The service type to create
      * @param accessory The accessory that will own the service
      * @return A new service instance
-     * @throws IllegalArgumentException if the service type is not supported or creation fails
+     * @throws HomekitFactoryException if the service type is not supported or
+     *             creation fails
      * @since 1.0
      */
-    HomekitService createService(String type, HomekitAccessory accessory);
+    HomekitService createService(String type, HomekitAccessory accessory) throws HomekitFactoryException;
 
     /**
      * Creates a service instance with variable arguments.
-     * This method allows for more flexible service creation by accepting any number of constructor arguments.
+     * This method allows for more flexible service creation by accepting any number
+     * of constructor arguments.
      *
      * <p>
      * The method will:
@@ -71,10 +77,11 @@ public interface HomekitServiceFactory {
      * @param type The service type to create
      * @param args The constructor arguments
      * @return A new service instance
-     * @throws IllegalArgumentException if the service type is not supported or creation fails
+     * @throws HomekitFactoryException if the service type is not supported or
+     *             creation fails
      * @since 1.0
      */
-    HomekitService createServiceWithArgs(String type, Object... args);
+    HomekitService createServiceWithArgs(String type, Object... args) throws HomekitFactoryException;
 
     /**
      * Creates a service instance from a service tag.
@@ -91,10 +98,11 @@ public interface HomekitServiceFactory {
      * @param tag The service tag to create from
      * @param accessory The accessory that will own the service
      * @return A new service instance
-     * @throws IllegalArgumentException if the tag is not supported or service creation fails
+     * @throws HomekitFactoryException if the tag is not supported or service
+     *             creation fails
      * @since 1.0
      */
-    HomekitService createServiceFromTag(String tag, HomekitAccessory accessory);
+    HomekitService createServiceFromTag(String tag, HomekitAccessory accessory) throws HomekitFactoryException;
 
     /**
      * Checks if the factory supports a specific service type.
@@ -152,7 +160,8 @@ public interface HomekitServiceFactory {
 
     /**
      * Creates a service instance from a JSON value.
-     * This method extracts the service type from the JSON value and creates the appropriate service.
+     * This method extracts the service type from the JSON value and creates the
+     * appropriate service.
      *
      * <p>
      * The JSON value must contain:
@@ -165,10 +174,11 @@ public interface HomekitServiceFactory {
      * @param accessory The accessory that will own the service
      * @param value The JSON value containing service configuration
      * @return A new service instance
-     * @throws IllegalArgumentException if the JSON value is invalid or service creation fails
+     * @throws HomekitFactoryException if the JSON value is invalid or service
+     *             creation fails
      * @since 1.0
      */
-    HomekitService createService(HomekitAccessory accessory, JsonValue value);
+    HomekitService createServiceWithValue(HomekitAccessory accessory, JsonValue value) throws HomekitFactoryException;
 
     /**
      * Gets the service tag for a given service type.
@@ -179,10 +189,11 @@ public interface HomekitServiceFactory {
      * </p>
      *
      * @param serviceType The service type to get the tag for
-     * @return The service tag, or null if not found
+     * @return The service tag
+     * @throws HomekitFactoryException if the service type is not supported
      * @since 1.0
      */
-    String getTagFromServiceType(String serviceType);
+    String getTagFromServiceType(String serviceType) throws HomekitFactoryException;
 
     /**
      * Gets the service type for a given service tag.
@@ -193,13 +204,15 @@ public interface HomekitServiceFactory {
      * </p>
      *
      * @param serviceTag The service tag to get the type for
-     * @return The service type, or null if not found
+     * @return The service type
+     * @throws HomekitFactoryException if the service tag is not supported
      * @since 1.0
      */
-    String getServiceTypeFromTag(String serviceTag);
+    String getServiceTypeFromTag(String serviceTag) throws HomekitFactoryException;
 
     /**
-     * Gets the mandatory and optional characteristic types for a given service type.
+     * Gets the mandatory and optional characteristic types for a given service
+     * type.
      *
      * <p>
      * The returned map contains two sets:
@@ -211,8 +224,8 @@ public interface HomekitServiceFactory {
      *
      * @param serviceType The service type to get characteristics for
      * @return A map containing sets of mandatory and optional characteristic types
-     * @throws IllegalArgumentException if the service type is not supported
+     * @throws HomekitFactoryException if the service type is not supported
      * @since 1.0
      */
-    Map<String, Set<String>> getCharacteristicTypes(String serviceType);
+    Map<String, Set<String>> getCharacteristicTypes(String serviceType) throws HomekitFactoryException;
 }

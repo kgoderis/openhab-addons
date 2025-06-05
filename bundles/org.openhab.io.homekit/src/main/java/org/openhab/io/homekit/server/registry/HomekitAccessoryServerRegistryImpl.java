@@ -4,11 +4,11 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.registry.AbstractRegistry;
 import org.openhab.core.common.registry.Provider;
 import org.openhab.core.net.NetworkAddressService;
@@ -48,7 +48,8 @@ import org.slf4j.LoggerFactory;
  * Implementation of the HomeKit Accessory Server Registry.
  *
  * <p>
- * This class manages the lifecycle and state of HomeKit accessory servers in the system. It provides:
+ * This class manages the lifecycle and state of HomeKit accessory servers in
+ * the system. It provides:
  * <ul>
  * <li>Server registration and discovery</li>
  * <li>Bridge accessory management</li>
@@ -277,11 +278,10 @@ public class HomekitAccessoryServerRegistryImpl
      * <li>Handles accessory operation exceptions</li>
      * </ul>
      *
-     * @return An available bridge accessory server, or null if none can be created
+     * @return An available bridge accessory server, or empty if none can be created
      */
     @Override
-    @Nullable
-    public synchronized HomekitAccessoryServer getAvailableBridgeAccessoryServer() {
+    public synchronized Optional<HomekitAccessoryServer> getAvailableBridgeAccessoryServer() {
         HomekitAccessoryServer availableServer = null;
         int highestPortNumber = LOWEST_PORT_NUMBER;
         try {
@@ -296,7 +296,7 @@ public class HomekitAccessoryServerRegistryImpl
             }
         } catch (HomekitAccessoryOperationException e) {
             logger.error("{}Error accessing server accessories: {}", LOG_ERROR, e.getMessage(), e);
-            return null;
+            return Optional.empty();
         }
 
         logger.info("{}Found {} HomekitAccessory Servers, highest port: {}", LOG_STATE, getAll().size(),
@@ -309,7 +309,7 @@ public class HomekitAccessoryServerRegistryImpl
                         accessoryRegistry, pairingRegistry, eventManager, accessoryFactory);
             } catch (UnknownHostException | HomekitServerException e) {
                 logger.error("{}Failed to create HomekitRemoteAccessoryServer: {}", LOG_ERROR, e.getMessage(), e);
-                return null;
+                return Optional.empty();
             }
         } else {
             try {
@@ -336,7 +336,7 @@ public class HomekitAccessoryServerRegistryImpl
             }
         }
 
-        return availableServer;
+        return Optional.ofNullable(availableServer);
     }
 
     /**
@@ -479,7 +479,7 @@ public class HomekitAccessoryServerRegistryImpl
         try {
             // get all the subscriptions for this accessory server
             List<HomekitEventSubscription> subscriptions = eventSubscriptions.stream()
-                    .filter(subscription -> subscription.getPublisherUID().equals(element.getUID().toString()))
+                    .filter(subscription -> subscription.getPublisherUID().equals((UID) element.getUID()))
                     .collect(Collectors.toList());
 
             // unsubscribe from the events
@@ -504,15 +504,16 @@ public class HomekitAccessoryServerRegistryImpl
      * </ul>
      *
      * @param accessoryUID The UID of the accessory to find
-     * @return The server containing the accessory, or null if not found
+     * @return Optional containing the server with the accessory, or empty if not
+     *         found
      */
-    public HomekitAccessoryServer getAccessoryServer(HomekitAccessoryUID accessoryUID) {
+    public Optional<HomekitAccessoryServer> getAccessoryServer(HomekitAccessoryUID accessoryUID) {
         return getAll().stream().filter(server -> {
             try {
                 return server.getAccessories().stream().anyMatch(accessory -> accessory.getUID().equals(accessoryUID));
             } catch (HomekitAccessoryOperationException e) {
                 return false;
             }
-        }).findFirst().orElse(null);
+        }).findFirst();
     }
 }

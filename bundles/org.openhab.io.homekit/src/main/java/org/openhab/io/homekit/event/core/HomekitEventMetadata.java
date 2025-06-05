@@ -15,10 +15,13 @@ import org.openhab.io.homekit.api.event.HomekitEvent;
 import org.openhab.io.homekit.util.HomekitUID;
 
 /**
- * HomekitEventMetadata encapsulates all contextual and propagation information for a Homekit event.
+ * HomekitEventMetadata encapsulates all contextual and propagation information
+ * for a Homekit event.
  * 
- * This class is central to the event loop prevention, correlation, and diagnostics mechanisms
- * in the OpenHAB Homekit integration. It tracks the origin, propagation path, correlation, and
+ * This class is central to the event loop prevention, correlation, and
+ * diagnostics mechanisms
+ * in the OpenHAB Homekit integration. It tracks the origin, propagation path,
+ * correlation, and
  * peer relationships of an event as it traverses the system.
  * 
  * Key Responsibilities:
@@ -26,7 +29,8 @@ import org.openhab.io.homekit.util.HomekitUID;
  * - Origin Tracking: Records the original publisher and immediate originator
  * - Hop Count: Maintains a hop count to limit event propagation
  * - Event History: Stores a history of event IDs to detect cycles
- * - Publisher History: Maintains an ordered list of publishers in the propagation chain
+ * - Publisher History: Maintains an ordered list of publishers in the
+ * propagation chain
  * - Correlation: Supports correlation IDs for grouping related events
  * - Peer Group Awareness: Tracks peer identifiers for trusted components
  * - Diagnostics: Optional detailed event history for debugging
@@ -83,18 +87,22 @@ import org.openhab.io.homekit.util.HomekitUID;
  * for loop prevention and trust relationships.
  * 
  * Usage Patterns:
- * - When an event is first created, a new HomekitEventMetadata is instantiated with the original
+ * - When an event is first created, a new HomekitEventMetadata is instantiated
+ * with the original
  * publisher UID and (optionally) a correlation ID and peer group.
- * - Each time the event is propagated, a new HomekitEventMetadata is created from the previous one,
+ * - Each time the event is propagated, a new HomekitEventMetadata is created
+ * from the previous one,
  * incrementing the hop count and updating the immediate origin.
- * - Event consumers can use the hop count, event history, publisher history, and peer group
+ * - Event consumers can use the hop count, event history, publisher history,
+ * and peer group
  * to decide whether to process, forward, or drop the event.
  * - Correlation IDs allow grouping of related events for state synchronization,
  * request/response flows, or deduplication.
  * - Debug mode enables detailed tracing of event propagation for diagnostics.
  * 
  * Best Practices:
- * - Always use the provided methods to check for loops, hop limits, and peer group membership
+ * - Always use the provided methods to check for loops, hop limits, and peer
+ * group membership
  * - Use correlation IDs for any multi-step or distributed workflows
  * - Enable debug mode only in development or troubleshooting scenarios
  * - Monitor publisher history to detect potential publisher-based loops
@@ -173,7 +181,8 @@ public class HomekitEventMetadata {
      * @param publisherUid the UID of the original publisher
      * @param correlationId optional correlation ID to link related events
      * @param immediateOrigin optional identifier of the immediate event creator
-     * @param peerIdentifiers optional set of identifiers for components that should be treated as peers
+     * @param peerIdentifiers optional set of identifiers for components that should
+     *            be treated as peers
      */
     public HomekitEventMetadata(UID publisherUid, @Nullable UID correlationId, @Nullable UID immediateOrigin,
             Set<HomekitUID> peerIdentifiers) {

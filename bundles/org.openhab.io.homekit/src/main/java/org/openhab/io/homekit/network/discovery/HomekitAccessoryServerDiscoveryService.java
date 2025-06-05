@@ -9,6 +9,7 @@ import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -61,7 +62,8 @@ import org.slf4j.LoggerFactory;
  * Discovery service for HomeKit accessories.
  *
  * <p>
- * This service is responsible for discovering and managing HomeKit accessories on the network using mDNS.
+ * This service is responsible for discovering and managing HomeKit accessories
+ * on the network using mDNS.
  * It handles the complete lifecycle of HomeKit accessories including:
  * </p>
  * <ul>
@@ -76,8 +78,10 @@ import org.slf4j.LoggerFactory;
  * <b>Configuration Options:</b>
  * </p>
  * <ul>
- * <li>auto.create.accessoryThing: Controls automatic creation of accessory things (default: true)</li>
- * <li>auto.create.serviceThing: Controls automatic creation of service things (default: true)</li>
+ * <li>auto.create.accessoryThing: Controls automatic creation of accessory
+ * things (default: true)</li>
+ * <li>auto.create.serviceThing: Controls automatic creation of service things
+ * (default: true)</li>
  * </ul>
  *
  * <p>
@@ -160,7 +164,8 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
      * Constructs a new HomeKit discovery service.
      *
      * <p>
-     * This constructor initializes the discovery service with all required dependencies
+     * This constructor initializes the discovery service with all required
+     * dependencies
      * and configuration. It sets up the service for both background and foreground
      * discovery of HomeKit accessories on the network.
      * </p>
@@ -429,9 +434,11 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
 
     /**
      * Handles the addition of a new service.
-     * Processes the service information and updates the accessory registry if needed.
+     * Processes the service information and updates the accessory registry if
+     * needed.
      *
-     * @param serviceEvent The service event containing information about the added service
+     * @param serviceEvent The service event containing information about the added
+     *            service
      */
     @Override
     public void serviceAdded(@NonNullByDefault({}) ServiceEvent serviceEvent) {
@@ -443,9 +450,11 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
 
     /**
      * Handles the removal of a service.
-     * Schedules the removal of the corresponding server after a grace period to handle temporary network issues.
+     * Schedules the removal of the corresponding server after a grace period to
+     * handle temporary network issues.
      *
-     * @param serviceEvent The service event containing information about the removed service
+     * @param serviceEvent The service event containing information about the
+     *            removed service
      */
     @Override
     public void serviceRemoved(@NonNullByDefault({}) ServiceEvent serviceEvent) {
@@ -474,9 +483,11 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
 
     /**
      * Handles the resolution of a service.
-     * Processes the resolved service information and updates the accessory registry if needed.
+     * Processes the resolved service information and updates the accessory registry
+     * if needed.
      *
-     * @param serviceEvent The service event containing information about the resolved service
+     * @param serviceEvent The service event containing information about the
+     *            resolved service
      */
     @Override
     public void serviceResolved(@NonNullByDefault({}) ServiceEvent serviceEvent) {
@@ -556,7 +567,8 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
 
     /**
      * Processes a discovered HomeKit service.
-     * Extracts and validates service properties, creates or updates the corresponding accessory server.
+     * Extracts and validates service properties, creates or updates the
+     * corresponding accessory server.
      *
      * @param serviceInfo The discovered service information
      * @return Map of service properties, or null if processing failed
@@ -706,7 +718,8 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
     /**
      * Cancels a scheduled removal task for a service.
      * 
-     * @param serviceInfo The service information for which to cancel the removal task
+     * @param serviceInfo The service information for which to cancel the removal
+     *            task
      */
     private void cancelRemovalTask(ServiceInfo serviceInfo) {
         ScheduledFuture<?> deviceRemovalTask = deviceRemovalTasks.remove(serviceInfo.getQualifiedName());
@@ -750,7 +763,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
             Collection<HomekitService> services = accessory.getServices();
             for (HomekitService service : services) {
                 String serviceType = service.getType();
-                ThingTypeUID thingTypeUID = homekitThingTypeProvider.getThingTypeUID(serviceType);
+                Optional<ThingTypeUID> thingTypeUID = homekitThingTypeProvider.getThingTypeUID(serviceType);
 
                 String serviceTag;
                 try {
@@ -761,7 +774,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                     serviceTag = serviceType;
                 }
 
-                ThingUID thingUID = new ThingUID(thingTypeUID, server.getUID().getPairingId() + "."
+                ThingUID thingUID = new ThingUID(thingTypeUID.get(), server.getUID().getPairingId() + "."
                         + accessory.getAccessoryId() + "." + service.getInstanceId());
 
                 DiscoveryResultBuilder builder = DiscoveryResultBuilder.create(thingUID).withProperties(properties)
@@ -863,7 +876,8 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
 
         if (SystemUtils.IS_OS_MAC) {
             // Use IPv4 only on MacOS due to known issues with IPv6
-            // See: https://medium.com/@quelgar/java-sockets-broken-for-ipv6-on-mac-5aae72f06b21
+            // See:
+            // https://medium.com/@quelgar/java-sockets-broken-for-ipv6-on-mac-5aae72f06b21
             if (networkAddressService.isUseIPv6()) {
                 logger.warn("{}IPv6 and mDNS do not work well on macOS - forcing IPv4", LOG_WARN);
             }

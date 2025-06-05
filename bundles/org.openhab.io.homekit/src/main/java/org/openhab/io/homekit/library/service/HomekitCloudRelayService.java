@@ -8,6 +8,7 @@ import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
+import org.openhab.io.homekit.exception.HomekitServiceException;
 import org.openhab.io.homekit.library.characteristic.HomekitRelayControlPointCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitRelayEnabledCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitRelayStateCharacteristic;
@@ -54,7 +55,7 @@ public class HomekitCloudRelayService extends AbstractHomekitService {
      * Required: CloudRelay
      */
     @Override
-    public void addCharacteristics() {
+    public void addCharacteristics() throws HomekitServiceException {
         // Required characteristics
         addCharacteristic(new HomekitRelayControlPointCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));

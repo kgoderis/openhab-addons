@@ -10,8 +10,10 @@ import org.openhab.io.homekit.util.HomekitUID;
  * Implementation of a unique identifier for a HomeKit service.
  *
  * <p>
- * This class provides a structured way to identify HomeKit services within the system.
- * The UID follows a specific format: {@code homekit:service:{pairingId}:{accessoryId}:{serviceId}} where:
+ * This class provides a structured way to identify HomeKit services within the
+ * system.
+ * The UID follows a specific format:
+ * {@code homekit:service:{pairingId}:{accessoryId}:{serviceId}} where:
  * </p>
  * <ul>
  * <li>{@code homekit} is the namespace prefix</li>
@@ -35,8 +37,10 @@ import org.openhab.io.homekit.util.HomekitUID;
  * The class integrates with:
  * </p>
  * <ul>
- * <li>{@link org.openhab.core.common.registry.Identifiable} for UID management</li>
- * <li>{@link org.openhab.io.homekit.api.service.HomekitService} for service identification</li>
+ * <li>{@link org.openhab.core.common.registry.Identifiable} for UID
+ * management</li>
+ * <li>{@link org.openhab.io.homekit.api.service.HomekitService} for service
+ * identification</li>
  * <li>OpenHAB's UID system for consistent identification</li>
  * </ul>
  *
@@ -120,7 +124,8 @@ public class HomekitServiceUIDImpl extends HomekitUID implements HomekitServiceU
      * Gets the UID as a string.
      *
      * <p>
-     * The string representation follows the format {@code homekit:service:{pairingId}:{accessoryId}:{serviceId}}.
+     * The string representation follows the format
+     * {@code homekit:service:{pairingId}:{accessoryId}:{serviceId}}.
      * This format ensures consistent identification across the system.
      * </p>
      *
@@ -133,10 +138,11 @@ public class HomekitServiceUIDImpl extends HomekitUID implements HomekitServiceU
      * <li>Preserves all identifier components</li>
      * </ul>
      *
-     * @return The UID string in the format {@code homekit:service:{pairingId}:{accessoryId}:{serviceId}}
+     * @return The UID string in the format
+     *         {@code homekit:service:{pairingId}:{accessoryId}:{serviceId}}
      */
     @Override
-    public String getAsString() {
+    public String toString() {
         return String.format("homekit:service:%s:%s:%s", pairingId, accessoryId, serviceId);
     }
 

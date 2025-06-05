@@ -5,6 +5,7 @@ import java.util.Collection;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.registry.AbstractManagedProvider;
 import org.openhab.core.io.transport.mdns.MDNSService;
 import org.openhab.core.service.ReadyMarker;
@@ -32,15 +33,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Manages the lifecycle and persistence of HomeKit accessory servers in the OpenHAB ecosystem.
+ * Manages the lifecycle and persistence of HomeKit accessory servers in the
+ * OpenHAB ecosystem.
  *
- * This class serves as the central registry for HomeKit accessory servers, providing a robust framework for managing
- * both local and remote HomeKit server instances. It handles the complete lifecycle of servers, from creation and
- * configuration to persistence and restoration, ensuring seamless integration between OpenHAB and HomeKit clients.
+ * This class serves as the central registry for HomeKit accessory servers,
+ * providing a robust framework for managing
+ * both local and remote HomeKit server instances. It handles the complete
+ * lifecycle of servers, from creation and
+ * configuration to persistence and restoration, ensuring seamless integration
+ * between OpenHAB and HomeKit clients.
  *
- * The provider implements a sophisticated persistence mechanism that maintains server configurations, accessory
- * assignments, and network settings across system restarts. It supports both local servers that advertise via mDNS
- * and remote servers for external connections, allowing flexible deployment scenarios.
+ * The provider implements a sophisticated persistence mechanism that maintains
+ * server configurations, accessory
+ * assignments, and network settings across system restarts. It supports both
+ * local servers that advertise via mDNS
+ * and remote servers for external connections, allowing flexible deployment
+ * scenarios.
  *
  * Key features include:
  * - Automatic server type detection and configuration
@@ -98,8 +106,10 @@ public class HomekitManagedAccessoryServerProvider extends
     /**
      * Creates a new managed accessory server provider.
      *
-     * This constructor initializes the provider with all required services and establishes the foundation for
-     * managing HomeKit accessory servers. It sets up the necessary connections to various system services and
+     * This constructor initializes the provider with all required services and
+     * establishes the foundation for
+     * managing HomeKit accessory servers. It sets up the necessary connections to
+     * various system services and
      * prepares the provider for operation.
      *
      * The initialization process includes:
@@ -110,10 +120,12 @@ public class HomekitManagedAccessoryServerProvider extends
      * - Setting up event management
      * - Preparing accessory creation capabilities
      *
-     * After initialization, the provider marks itself as ready, allowing other components to begin using its
+     * After initialization, the provider marks itself as ready, allowing other
+     * components to begin using its
      * services for HomeKit integration.
      *
-     * @param storageService Service for persistent storage of server configurations
+     * @param storageService Service for persistent storage of server
+     *            configurations
      * @param readyService Service for tracking system readiness state
      * @param accessoryRegistry Registry for managing HomeKit accessories
      * @param pairingRegistry Registry for managing secure pairing state
@@ -143,8 +155,10 @@ public class HomekitManagedAccessoryServerProvider extends
     /**
      * Gets the storage name for the provider.
      *
-     * This method provides a unique identifier for the storage system to manage server configurations.
-     * It uses the fully qualified class name of the HomeKit accessory server to ensure uniqueness
+     * This method provides a unique identifier for the storage system to manage
+     * server configurations.
+     * It uses the fully qualified class name of the HomeKit accessory server to
+     * ensure uniqueness
      * and proper separation of concerns in the persistence layer.
      *
      * @return The storage name for the provider
@@ -157,8 +171,10 @@ public class HomekitManagedAccessoryServerProvider extends
     /**
      * Converts a server UID to a string key.
      *
-     * This method transforms a server UID into a string representation suitable for storage operations.
-     * It ensures consistent key generation across the persistence layer, maintaining the integrity
+     * This method transforms a server UID into a string representation suitable for
+     * storage operations.
+     * It ensures consistent key generation across the persistence layer,
+     * maintaining the integrity
      * of server configurations and their relationships.
      *
      * @param key The server UID to convert
@@ -166,14 +182,16 @@ public class HomekitManagedAccessoryServerProvider extends
      */
     @Override
     protected String keyToString(HomekitAccessoryServerUID key) {
-        return key.getAsString();
+        return key.toString();
     }
 
     /**
      * Converts a persisted server to a runtime server instance.
      *
-     * This method performs the critical task of restoring a server from its persisted state to an
-     * active runtime instance. It handles the complete restoration process, including server type
+     * This method performs the critical task of restoring a server from its
+     * persisted state to an
+     * active runtime instance. It handles the complete restoration process,
+     * including server type
      * detection, configuration restoration, and accessory reassignment.
      *
      * The restoration process includes:
@@ -183,16 +201,20 @@ public class HomekitManagedAccessoryServerProvider extends
      * - Reassigning accessories to the server
      * - Setting up event handling and state management
      *
-     * Error handling is comprehensive, with detailed logging of any issues that occur during
-     * the restoration process. The method ensures that partial restorations are handled gracefully,
-     * maintaining system stability even when some components fail to restore properly.
+     * Error handling is comprehensive, with detailed logging of any issues that
+     * occur during
+     * the restoration process. The method ensures that partial restorations are
+     * handled gracefully,
+     * maintaining system stability even when some components fail to restore
+     * properly.
      *
      * @param key The storage key for the server
      * @param persistableElement The persisted server data to restore
      * @return The restored server instance, or null if restoration fails
      */
     @Override
-    protected HomekitAccessoryServer toElement(String key, HomekitPersistedAccessoryServer persistableElement) {
+    protected @Nullable HomekitAccessoryServer toElement(String key,
+            HomekitPersistedAccessoryServer persistableElement) {
         try {
             logger.debug("{}Restoring server from persistence - key: {}", LOG_STATE, key);
             HomekitAccessoryServer server;
@@ -244,8 +266,10 @@ public class HomekitManagedAccessoryServerProvider extends
     /**
      * Converts a runtime server to a persisted server instance.
      *
-     * This method handles the persistence of an active server instance, capturing its current state
-     * and configuration for later restoration. It performs a comprehensive state capture, including
+     * This method handles the persistence of an active server instance, capturing
+     * its current state
+     * and configuration for later restoration. It performs a comprehensive state
+     * capture, including
      * server type, network settings, and accessory assignments.
      *
      * The persistence process includes:
@@ -255,8 +279,10 @@ public class HomekitManagedAccessoryServerProvider extends
      * - Gathering accessory assignments
      * - Handling any errors during the persistence process
      *
-     * The method ensures that all critical server state is captured while handling any errors
-     * that might occur during the persistence process. It maintains detailed logging to track
+     * The method ensures that all critical server state is captured while handling
+     * any errors
+     * that might occur during the persistence process. It maintains detailed
+     * logging to track
      * the persistence operation and any issues that arise.
      *
      * @param element The runtime server instance to persist
@@ -271,11 +297,7 @@ public class HomekitManagedAccessoryServerProvider extends
 
         Collection<HomekitAccessory> accessories = new ArrayList<>();
         try {
-            Collection<HomekitAccessory> serverAccessories = element.getAccessories();
-            if (serverAccessories != null) {
-                accessories = serverAccessories;
-                logger.debug("{}Captured {} accessories for persistence", LOG_ACCESSORY, accessories.size());
-            }
+            accessories = element.getAccessories();
         } catch (HomekitAccessoryOperationException e) {
             logger.error("{}Failed to capture accessories for persistence: {}", LOG_ERROR, e.getMessage(), e);
         }

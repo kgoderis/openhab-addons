@@ -20,9 +20,12 @@ import org.slf4j.LoggerFactory;
  * Implements a managed provider for HomeKit pairings.
  *
  * <p>
- * This class provides a managed provider implementation for HomeKit pairings, extending
- * {@link AbstractManagedProvider} to handle persistence and runtime management of pairings.
- * It allows adding and removing pairings at runtime through the OSGi service interface.
+ * This class provides a managed provider implementation for HomeKit pairings,
+ * extending
+ * {@link AbstractManagedProvider} to handle persistence and runtime management
+ * of pairings.
+ * It allows adding and removing pairings at runtime through the OSGi service
+ * interface.
  * </p>
  *
  * <p>
@@ -41,7 +44,8 @@ import org.slf4j.LoggerFactory;
  * <b>Component Integration:</b>
  * </p>
  * <ul>
- * <li>{@link HomekitPairingRegistry} for pairing registration and management</li>
+ * <li>{@link HomekitPairingRegistry} for pairing registration and
+ * management</li>
  * <li>{@link HomekitPairingImpl} for pairing implementation details</li>
  * <li>{@link HomekitPairingUIDImpl} for unique identifier generation</li>
  * <li>{@link StorageService} for persistent storage operations</li>
@@ -180,7 +184,7 @@ public class HomekitManagedPairingProvider extends
      */
     @Override
     protected @NonNull String keyToString(HomekitPairingUID key) {
-        String keyString = key.getAsString();
+        String keyString = key.toString();
         logger.debug("{}Converting pairing UID to string: {}", LOG_PAIRING, keyString);
         return keyString;
     }

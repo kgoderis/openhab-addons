@@ -11,10 +11,12 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 /**
  * HomeKit Active Characteristic.
  * This characteristic represents whether a device is active or inactive.
- * When active (1), the device is functioning; when inactive (0), the device is not functioning.
+ * When active (1), the device is functioning; when inactive (0), the device is
+ * not functioning.
  *
  * @author Karel Goderis
- * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
+ * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP
+ *      Specification</a>
  */
 @HomekitCharacteristicType(type = "000000B0-0000-1000-8000-0026BB765291", name = "Active", tag = "active", acceptedItemTypes = {
         "Number", "String" })

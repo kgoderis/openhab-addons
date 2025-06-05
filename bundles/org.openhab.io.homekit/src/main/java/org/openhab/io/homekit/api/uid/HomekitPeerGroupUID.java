@@ -6,8 +6,10 @@ import org.openhab.core.common.registry.Identifiable;
 /**
  * Interface for HomeKit peer group unique identifiers.
  * <p>
- * This interface defines the contract for peer group UIDs in the HomeKit system. It provides
- * methods for accessing and managing unique identifiers for HomeKit peer groups, ensuring
+ * This interface defines the contract for peer group UIDs in the HomeKit
+ * system. It provides
+ * methods for accessing and managing unique identifiers for HomeKit peer
+ * groups, ensuring
  * proper identification and grouping of related accessories.
  * </p>
  * <p>
@@ -30,8 +32,10 @@ import org.openhab.core.common.registry.Identifiable;
  * <p>
  * The interface integrates with:
  * <ul>
- * <li>{@link org.openhab.core.common.registry.Identifiable} for registry integration</li>
- * <li>{@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for accessory grouping</li>
+ * <li>{@link org.openhab.core.common.registry.Identifiable} for registry
+ * integration</li>
+ * <li>{@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for
+ * accessory grouping</li>
  * </ul>
  * </p>
  *
@@ -42,13 +46,14 @@ import org.openhab.core.common.registry.Identifiable;
 public interface HomekitPeerGroupUID extends Identifiable<HomekitPeerGroupUID> {
     /**
      * Gets the unique identifier string for this peer group.
-     * This method provides a string representation of the peer group's unique identifier
+     * This method provides a string representation of the peer group's unique
+     * identifier
      * that can be used for display, logging, and identification purposes.
      *
      * @return The unique identifier string
      * @since 1.0.0
      */
-    String getAsString();
+    String toString();
 
     /**
      * Gets the peer group name.

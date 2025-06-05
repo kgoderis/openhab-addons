@@ -83,6 +83,7 @@ import org.openhab.io.homekit.event.model.server.HomekitAccessoryServerEvent;
 import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.exception.HomekitConfigurationException;
 import org.openhab.io.homekit.exception.HomekitException;
+import org.openhab.io.homekit.exception.HomekitFactoryException;
 import org.openhab.io.homekit.exception.HomekitServerException;
 import org.openhab.io.homekit.network.http.HomekitHttpClientTransport;
 import org.openhab.io.homekit.network.http.HomekitHttpDestination;
@@ -111,8 +112,10 @@ import com.nimbusds.srp6.XRoutineWithUserIdentity;
 import djb.Curve25519;
 
 /**
- * Represents a remote HomeKit accessory server that connects to a HomeKit accessory on the network.
- * This server handles remote HomeKit accessories and manages their lifecycle, including:
+ * Represents a remote HomeKit accessory server that connects to a HomeKit
+ * accessory on the network.
+ * This server handles remote HomeKit accessories and manages their lifecycle,
+ * including:
  * - Server initialization and connection
  * - Remote accessory discovery and management
  * - Event subscription and handling
@@ -160,7 +163,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     private final Set<HomekitEventSubscription> eventSubscriptions = new HashSet<>();
 
     /**
-     * Creates a new remote HomeKit accessory server with the specified configuration.
+     * Creates a new remote HomeKit accessory server with the specified
+     * configuration.
      *
      * @param category The category of accessories this server will host
      * @param address The network address of the remote server
@@ -188,7 +192,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     }
 
     /**
-     * Creates a new remote HomeKit accessory server with auto-generated pairing ID and secret key.
+     * Creates a new remote HomeKit accessory server with auto-generated pairing ID
+     * and secret key.
      *
      * @param category The category of accessories this server will host
      * @param address The network address of the remote server
@@ -1279,7 +1284,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
     /**
      * Handles characteristic events from the remote server.
-     * This method manages event subscriptions for characteristics and updates their state.
+     * This method manages event subscriptions for characteristics and updates their
+     * state.
      *
      * @param event The characteristic event to handle
      */
@@ -1321,7 +1327,11 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 JsonArray accessories = Json.createReader(new ByteArrayInputStream(contentResult.body)).readObject()
                         .getJsonArray("accessories");
                 for (JsonValue value : accessories) {
-                    result.add(accessoryFactory.createAccessoryFromTagWithValue("generic", value));
+                    try {
+                        result.add(accessoryFactory.createAccessoryFromTagWithValue("generic", value));
+                    } catch (HomekitFactoryException e) {
+                        logger.error("{}Failed to create accessory from remote data: {}", LOG_ERROR, e.getMessage());
+                    }
                 }
             }
         }
@@ -1373,7 +1383,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     }
 
     /**
-     * Updates the list of accessories by fetching remote accessories and comparing with currently managed ones.
+     * Updates the list of accessories by fetching remote accessories and comparing
+     * with currently managed ones.
      * This method:
      * 1. Fetches the current list of remote accessories
      * 2. Compares with locally managed accessories
@@ -1546,7 +1557,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     }
 
     /**
-     * Adds an accessory to this server and sets up event subscriptions for its characteristics.
+     * Adds an accessory to this server and sets up event subscriptions for its
+     * characteristics.
      *
      * @param accessory The accessory to add
      * @throws HomekitAccessoryOperationException if the operation fails
@@ -1756,7 +1768,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 if (ctor == null) {
                     return Optional.empty();
                 }
-                // Object bean = targetClass.newInstance(); Constructor.newInstance(targetClass);
+                // Object bean = targetClass.newInstance();
+                // Constructor.newInstance(targetClass);
                 Object bean = ctor.newInstance(targetClass);
 
                 for (PropertyDescriptor property : Introspector.getBeanInfo(targetClass).getPropertyDescriptors()) {

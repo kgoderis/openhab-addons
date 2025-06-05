@@ -1,6 +1,10 @@
 package org.openhab.io.homekit.core.accessory;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.io.homekit.api.accessory.HomekitAccessory;
+import org.openhab.io.homekit.api.accessory.HomekitAccessoryType;
+import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
+import org.openhab.io.homekit.api.service.HomekitService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +44,8 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * <p>
- * The persisted accessory is used by the {@link HomekitPersistedAccessoryProvider}
+ * The persisted accessory is used by the
+ * {@link HomekitPersistedAccessoryProvider}
  * to maintain accessory configurations across system restarts and to support
  * dynamic accessory management.
  * </p>
@@ -55,9 +60,6 @@ public class HomekitPersistedAccessory {
     private static final String LOG_PREFIX = "Homekit PersistedAccessory: ";
     private static final String LOG_INIT = LOG_PREFIX + "Init - ";
     private static final String LOG_STATE = LOG_PREFIX + "State - ";
-    private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
-    private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
-    private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
     private final Logger logger = LoggerFactory.getLogger(HomekitPersistedAccessory.class);
 
@@ -104,7 +106,8 @@ public class HomekitPersistedAccessory {
 
     /**
      * Gets the JSON representation of this accessory.
-     * The JSON contains all the information needed to restore the accessory's state.
+     * The JSON contains all the information needed to restore the accessory's
+     * state.
      *
      * @return The JSON representation
      * @see JsonObject

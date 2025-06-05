@@ -10,7 +10,8 @@ import org.slf4j.LoggerFactory;
  * Implementation of a unique identifier for a HomeKit accessory server.
  *
  * <p>
- * This class provides a structured way to identify HomeKit accessory servers within the system.
+ * This class provides a structured way to identify HomeKit accessory servers
+ * within the system.
  * The UID follows a specific format: {@code homekit:server:{pairingId}} where:
  * </p>
  * <ul>
@@ -33,8 +34,10 @@ import org.slf4j.LoggerFactory;
  * The class integrates with:
  * </p>
  * <ul>
- * <li>{@link org.openhab.core.common.registry.Identifiable} for UID management</li>
- * <li>{@link org.openhab.io.homekit.api.server.HomekitAccessoryServer} for server identification</li>
+ * <li>{@link org.openhab.core.common.registry.Identifiable} for UID
+ * management</li>
+ * <li>{@link org.openhab.io.homekit.api.server.HomekitAccessoryServer} for
+ * server identification</li>
  * <li>OpenHAB's UID system for consistent identification</li>
  * </ul>
  *
@@ -113,7 +116,8 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
      * Gets the UID as a string.
      *
      * <p>
-     * The string representation follows the format {@code homekit:server:{pairingId}}.
+     * The string representation follows the format
+     * {@code homekit:server:{pairingId}}.
      * This format ensures consistent identification across the system.
      * </p>
      *
@@ -130,7 +134,7 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
      * @return The UID string in the format {@code homekit:server:{pairingId}}
      */
     @Override
-    public String getAsString() {
+    public String toString() {
         String result = String.format("homekit:server:%s", pairingId);
         logger.trace("{}Getting UID string: {}", LOG_UID, result);
         return result;
@@ -140,7 +144,8 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
      * Gets the pairing ID for this server.
      *
      * <p>
-     * The pairing ID is a unique identifier used during the HomeKit pairing process.
+     * The pairing ID is a unique identifier used during the HomeKit pairing
+     * process.
      * It helps maintain the connection between the server and its paired devices.
      * </p>
      *

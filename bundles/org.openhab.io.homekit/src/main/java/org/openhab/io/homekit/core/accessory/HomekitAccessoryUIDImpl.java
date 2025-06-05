@@ -8,8 +8,10 @@ import org.openhab.io.homekit.util.HomekitUID;
  * Implementation of a unique identifier for a HomeKit accessory.
  *
  * <p>
- * This class provides a structured way to identify HomeKit accessories within the system.
- * The UID follows a specific format: {@code homekit:accessory:{pairingId}:{accessoryId}} where:
+ * This class provides a structured way to identify HomeKit accessories within
+ * the system.
+ * The UID follows a specific format:
+ * {@code homekit:accessory:{pairingId}:{accessoryId}} where:
  * </p>
  * <ul>
  * <li>{@code homekit} is the namespace prefix</li>
@@ -32,8 +34,10 @@ import org.openhab.io.homekit.util.HomekitUID;
  * The class integrates with:
  * </p>
  * <ul>
- * <li>{@link org.openhab.core.common.registry.Identifiable} for UID management</li>
- * <li>{@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for accessory identification</li>
+ * <li>{@link org.openhab.core.common.registry.Identifiable} for UID
+ * management</li>
+ * <li>{@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for
+ * accessory identification</li>
  * <li>OpenHAB's UID system for consistent identification</li>
  * </ul>
  *
@@ -111,7 +115,8 @@ public class HomekitAccessoryUIDImpl extends HomekitUID implements HomekitAccess
      * Gets the UID as a string.
      *
      * <p>
-     * The string representation follows the format {@code homekit:accessory:{pairingId}:{accessoryId}}.
+     * The string representation follows the format
+     * {@code homekit:accessory:{pairingId}:{accessoryId}}.
      * This format ensures consistent identification across the system.
      * </p>
      *
@@ -124,10 +129,11 @@ public class HomekitAccessoryUIDImpl extends HomekitUID implements HomekitAccess
      * <li>Preserves all identifier components</li>
      * </ul>
      *
-     * @return The UID string in the format {@code homekit:accessory:{pairingId}:{accessoryId}}
+     * @return The UID string in the format
+     *         {@code homekit:accessory:{pairingId}:{accessoryId}}
      */
     @Override
-    public String getAsString() {
+    public String toString() {
         return String.format("homekit:accessory:%s:%d", pairingId, accessoryId);
     }
 
@@ -135,7 +141,8 @@ public class HomekitAccessoryUIDImpl extends HomekitUID implements HomekitAccess
      * Gets the pairing ID for this accessory.
      *
      * <p>
-     * The pairing ID is a unique identifier used during the HomeKit pairing process.
+     * The pairing ID is a unique identifier used during the HomeKit pairing
+     * process.
      * It helps maintain the connection between the server and its paired devices.
      * </p>
      *
@@ -159,8 +166,10 @@ public class HomekitAccessoryUIDImpl extends HomekitUID implements HomekitAccess
      * Gets the accessory ID.
      *
      * <p>
-     * The accessory ID uniquely identifies this specific accessory within its server.
-     * It helps distinguish between multiple accessories that may be connected to the same server.
+     * The accessory ID uniquely identifies this specific accessory within its
+     * server.
+     * It helps distinguish between multiple accessories that may be connected to
+     * the same server.
      * </p>
      *
      * <p>
