@@ -221,7 +221,7 @@ public class HomekitPairingServlet extends HomekitBaseServlet {
 
             byte[] additionalControllerPairingIdentifier = d.getBytes(HomekitMessage.IDENTIFIER);
             byte[] additionalControllerLTPK = d.getBytes(HomekitMessage.PUBLIC_KEY);
-            byte[] additionalControllerPermissions = d.getBytes(HomekitMessage.PERSMISSIONS);
+            // byte[] additionalControllerPermissions = d.getBytes(HomekitMessage.PERSMISSIONS);
 
             logger.debug("{}Adding pairing for controller: {}", LOG_PAIRING,
                     HomekitByte.toHexString(additionalControllerPairingIdentifier));

@@ -30,7 +30,6 @@ import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.api.uid.HomekitServiceUID;
-import org.openhab.io.homekit.event.core.HomekitEventSubscription;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicEvent;
 import org.openhab.io.homekit.event.model.service.HomekitServiceEvent;
@@ -95,7 +94,6 @@ public abstract class AbstractHomekitService implements HomekitService {
     private boolean isExtensible;
     protected final HomekitEventManager eventManager;
     protected final HomekitCharacteristicFactory characteristicFactory;
-    private final Set<HomekitEventSubscription> eventSubscriptions;
 
     /**
      * Creates a new HomeKit service with required parameters.
@@ -131,7 +129,7 @@ public abstract class AbstractHomekitService implements HomekitService {
         this.eventManager = eventManager;
         this.characteristicFactory = characteristicFactory;
         this.characteristics = new LinkedList<>();
-        this.eventSubscriptions = new HashSet<>();
+        this.name = "";
         logger.debug("{}Created new service for accessory {}", LOG_INIT, accessory.getUID());
     }
 
@@ -178,7 +176,6 @@ public abstract class AbstractHomekitService implements HomekitService {
         this.eventManager = eventManager;
         this.characteristicFactory = characteristicFactory;
         this.characteristics = new LinkedList<>();
-        this.eventSubscriptions = new HashSet<>();
 
         this.name = jsonObject.getString("name");
         this.instanceId = jsonObject.getInt("iid");
@@ -214,15 +211,13 @@ public abstract class AbstractHomekitService implements HomekitService {
             }
         }
 
-        @Nullable
-        HomekitCharacteristic<?> nameCharacteristic = getCharacteristic(HomekitNameCharacteristic.class).orElse(null);
-        if (nameCharacteristic != null) {
+        getCharacteristic(HomekitNameCharacteristic.class).ifPresent(nameCharacteristic -> {
             try {
                 ((HomekitNameCharacteristic) nameCharacteristic).setValue(name);
             } catch (Exception e) {
                 logger.error("Error setting name characteristic value", e);
             }
-        }
+        });
     }
 
     /**

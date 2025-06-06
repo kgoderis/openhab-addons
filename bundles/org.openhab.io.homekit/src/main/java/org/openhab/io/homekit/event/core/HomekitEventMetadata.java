@@ -126,9 +126,6 @@ public class HomekitEventMetadata {
     /** Time after which correlation IDs expire (5 minutes) */
     private static final long CORRELATION_ID_EXPIRY_MS = 300000;
 
-    /** Prefix for event IDs */
-    private static final String EVENT_ID_PREFIX = "homekit:event:";
-
     // =============== Core Event Fields ===============
 
     /** Unique identifier for this event instance */
@@ -171,7 +168,7 @@ public class HomekitEventMetadata {
     private final List<UID> publisherHistory = new ArrayList<>();
 
     /** Detailed event history for debugging (null if DEBUG_MODE is false) */
-    private final List<HomekitEvent> detailedEventHistory = DEBUG_MODE ? new ArrayList<>() : null;
+    private final List<HomekitEvent> detailedEventHistory = new ArrayList<>();
 
     // =============== Constructors ===============
 
@@ -199,9 +196,6 @@ public class HomekitEventMetadata {
         }
         this.immediateOrigin = immediateOrigin;
         this.peerIdentifiers.addAll(peerIdentifiers);
-        if (DEBUG_MODE) {
-            this.detailedEventHistory.add(null);
-        }
     }
 
     /**
@@ -403,6 +397,7 @@ public class HomekitEventMetadata {
      */
     public void addToEventHistory(HomekitEvent event) {
         if (eventHistory.size() >= MAX_HISTORY_SIZE) {
+            @SuppressWarnings("null")
             UID oldestId = eventHistory.iterator().next();
             eventHistory.remove(oldestId);
             if (DEBUG_MODE) {
@@ -421,7 +416,7 @@ public class HomekitEventMetadata {
      * @return the detailed event history or null if debug mode is disabled
      */
     public List<HomekitEvent> getDetailedEventHistory() {
-        return DEBUG_MODE ? Collections.unmodifiableList(detailedEventHistory) : null;
+        return Collections.unmodifiableList(detailedEventHistory);
     }
 
     /**
@@ -471,7 +466,8 @@ public class HomekitEventMetadata {
      * @return the publisher history as a string
      */
     public String getPublisherHistoryAsString() {
-        return publisherHistory.stream().map(UID::toString).collect(Collectors.joining(" -> "));
+        String result = publisherHistory.stream().map(UID::toString).collect(Collectors.joining(" -> "));
+        return result;
     }
 
     /**

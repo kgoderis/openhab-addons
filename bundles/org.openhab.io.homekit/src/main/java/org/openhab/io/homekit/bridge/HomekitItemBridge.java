@@ -113,15 +113,6 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
     private static final Logger logger = LoggerFactory.getLogger(HomekitItemBridge.class);
 
-    // ========== Log Message Prefixes ==========
-    private static final String LOG_PREFIX = "Homekit Bridge: ";
-    private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
-    private static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
-    private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
-    private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
-    private static final String LOG_DEBUG = LOG_PREFIX + "Debug - ";
-    private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
-
     // ========== Configuration Constants ==========
     private static final boolean ENABLE_EXIT_EVENT_STATISTICS = true;
     private static final int MAX_STATISTICS_ENTRIES = 1000;
@@ -154,6 +145,13 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     private final Map<String, @Nullable ExitEvent> exitEvents;
     private final ExitEventStatisticsCollector statisticsCollector;
     private boolean orphanEnabled = true; // Default to true for backward compatibility
+
+    private static final String LOG_PREFIX = "Homekit Bridge: ";
+    private static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+    private static final String LOG_DEBUG = LOG_PREFIX + "Debug - ";
+    private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
 
     /**
      * Activates the bridge component and initializes necessary resources.
@@ -363,7 +361,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
             Optional<HomekitAccessoryServer> serverOpt = accessoryServerRegistry.getAvailableBridgeAccessoryServer();
             if (serverOpt.isPresent()) {
                 HomekitAccessoryServer server = serverOpt.get();
-                logger.debug("{}Found available server {} for item {}", LOG_CONFIG, server.getUID(),
+                logger.debug("{}Found available server {} for item {}", LOG_PREFIX, server.getUID(),
                         taggedItem.getName());
                 createAndRegisterAccessory(taggedItem, server);
             } else {

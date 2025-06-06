@@ -5,6 +5,7 @@ import java.util.Map;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
@@ -132,7 +133,7 @@ public abstract class HomekitTLV8Characteristic extends AbstractHomekitCharacter
      * @throws UnsupportedOperationException as this method requires custom implementation
      */
     @Override
-    public JsonValue toValueJson(Map<Integer, Object> value) {
+    public JsonValue toValueJson(@Nullable Map<Integer, Object> value) {
         // Implementers should override this for custom TLV8 JSON handling
         throw new UnsupportedOperationException("TLV8 JSON conversion not implemented");
     }

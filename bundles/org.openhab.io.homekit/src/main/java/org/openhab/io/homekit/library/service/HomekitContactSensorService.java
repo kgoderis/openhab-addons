@@ -65,10 +65,6 @@ public class HomekitContactSensorService extends AbstractHomekitService {
     private static final String LOG_PREFIX = "Homekit ContactSensorService: ";
     private static final String LOG_INIT = LOG_PREFIX + "Init - ";
     private static final String LOG_STATE = LOG_PREFIX + "State - ";
-    private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
-    private static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
-    private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
-    private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
     private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
 
     private final Logger logger = LoggerFactory.getLogger(HomekitContactSensorService.class);

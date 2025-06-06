@@ -67,11 +67,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
     // ========== Log Message Prefixes ==========
     private static final String LOG_PREFIX = "HomeKit Service Handler: ";
     private static final String LOG_INIT = LOG_PREFIX + "Initialization - ";
-    private static final String LOG_STATE = LOG_PREFIX + "State Change - ";
-    private static final String LOG_CONFIG = LOG_PREFIX + "Configuration - ";
     private static final String LOG_CHANNEL = LOG_PREFIX + "Channel - ";
-    private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
-    private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
     // ========== Configuration Fields ==========
     /** ID of the HomeKit service being managed */

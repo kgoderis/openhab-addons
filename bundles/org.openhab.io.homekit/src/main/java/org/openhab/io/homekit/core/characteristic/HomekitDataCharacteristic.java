@@ -152,6 +152,7 @@ public abstract class HomekitDataCharacteristic extends AbstractHomekitCharacter
      * @throws UnsupportedOperationException as this method requires custom implementation
      */
     @Override
+    @SuppressWarnings("null")
     public JsonValue toValueJson(byte[] value) {
         // Implementers should override this for custom data JSON handling
         throw new UnsupportedOperationException("Data JSON conversion not implemented");

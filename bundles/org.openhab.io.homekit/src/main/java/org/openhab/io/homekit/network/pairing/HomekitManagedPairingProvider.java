@@ -131,7 +131,7 @@ public class HomekitManagedPairingProvider extends
         this.readyService = readyService;
 
         ReadyMarker newMarker = new ReadyMarker(HOMEKIT_MANAGED_PAIRING_PROVIDER, this.toString());
-        readyService.markReady(newMarker);
+        this.readyService.markReady(newMarker);
         logger.debug("{}HomeKit managed pairing provider initialized and marked as ready", LOG_INIT);
     }
 

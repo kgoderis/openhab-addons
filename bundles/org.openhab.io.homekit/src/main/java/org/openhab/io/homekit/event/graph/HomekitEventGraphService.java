@@ -1,8 +1,11 @@
 package org.openhab.io.homekit.event.graph;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.events.EventPublisher;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +23,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  */
+@NonNullByDefault
 @Component(service = HomekitEventGraphService.class)
 public class HomekitEventGraphService {
     private static final Logger logger = LoggerFactory.getLogger(HomekitEventGraphService.class);
@@ -41,10 +45,11 @@ public class HomekitEventGraphService {
      * - Logs service startup
      */
     @Activate
-    public HomekitEventGraphService() {
+    public HomekitEventGraphService(@Reference EventPublisher eventPublisher) {
         this.eventGraph = new HomekitEventGraphProcessor();
         this.eventGraphVisualizer = new HomekitEventGraphVisualizer(eventGraph);
-        this.eventGraphIntegrations = new HomekitEventGraphIntegrations(eventGraph, eventGraphVisualizer, null) {
+        this.eventGraphIntegrations = new HomekitEventGraphIntegrations(eventGraph, eventGraphVisualizer,
+                eventPublisher) {
             @Override
             public void registerMetrics() {
                 // Override to use our custom metrics

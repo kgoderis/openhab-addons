@@ -118,13 +118,13 @@ public enum HomekitTypeLengthValue {
      * @param type The numeric type code to convert
      * @return The corresponding TLV type, or null if not found
      */
-    public static HomekitTypeLengthValue fromType(int type) {
+    public static HomekitTypeLengthValue fromType(int type) throws IllegalArgumentException {
         for (HomekitTypeLengthValue tlv : values()) {
             if (tlv.type == type) {
                 return tlv;
             }
         }
-        return null;
+        throw new IllegalArgumentException("Unknown type: " + type);
     }
 
     /**

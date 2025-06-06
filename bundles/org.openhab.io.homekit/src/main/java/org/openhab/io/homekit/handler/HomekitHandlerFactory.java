@@ -129,13 +129,13 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
      * @return A handler for the thing, or null if the thing type is not supported
      */
     @Override
-    public ThingHandler createHandler(Thing thing) {
+    public @Nullable ThingHandler createHandler(Thing thing) {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
         if (HomekitBindingConstants.THING_TYPE_ACCESSORY.equals(thingTypeUID)) {
             logger.debug("{}Creating accessory handler for thing {}", LOG_INIT, thing.getUID());
             return new HomekitAccessoryThingHandler(thing, serverRegistry, accessoryRegistry,
-                    homekitChannelTypeProvider, homekitThingTypeProvider, eventManager, serviceFactory,
-                    characteristicFactory);
+                    homekitChannelTypeProvider, channelGroupTypeProvider, homekitThingTypeProvider, eventManager,
+                    serviceFactory, characteristicFactory);
         } else if (SUPPORTED_THING_TYPES.contains(thingTypeUID)) {
             logger.debug("{}Creating service handler for thing {}", LOG_INIT, thing.getUID());
             return new HomekitServiceThingHandler(thing, serverRegistry, accessoryRegistry, homekitChannelTypeProvider,

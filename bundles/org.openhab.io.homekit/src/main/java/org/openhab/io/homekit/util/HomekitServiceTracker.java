@@ -93,7 +93,7 @@ public class HomekitServiceTracker<T> implements AutoCloseable, Supplier<T> {
         }
         this.serviceTracker = new ServiceTracker<T, T>(context, target, null);
         logger.trace("{}Created service tracker for {} in bundle {}", LOG_INIT, target.getSimpleName(),
-                bundle.getSymbolicName());
+                bundle != null ? bundle.getSymbolicName() : "unknown");
     }
 
     /**
@@ -154,32 +154,6 @@ public class HomekitServiceTracker<T> implements AutoCloseable, Supplier<T> {
         logger.trace("{}Retrieved service: {}", LOG_SERVICE,
                 service != null ? service.getClass().getSimpleName() : "null");
         return service;
-    }
-
-    /**
-     * Ensures proper cleanup of resources.
-     *
-     * <p>
-     * This method is called by the garbage collector before the object is
-     * collected. It ensures that the service tracker is properly closed.
-     * </p>
-     *
-     * <p>
-     * Key implementation details:
-     * </p>
-     * <ul>
-     * <li>Calls close() method</li>
-     * <li>Ensures resource cleanup</li>
-     * <li>Provides trace-level logging</li>
-     * </ul>
-     *
-     * @throws Throwable if an error occurs during cleanup
-     */
-    @Override
-    protected void finalize() throws Throwable {
-        logger.trace("{}Finalizing service tracker", LOG_SERVICE);
-        close();
-        super.finalize();
     }
 
     /**

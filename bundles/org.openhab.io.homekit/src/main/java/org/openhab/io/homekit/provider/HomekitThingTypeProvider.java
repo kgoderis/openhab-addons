@@ -1,8 +1,6 @@
 package org.openhab.io.homekit.provider;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -12,8 +10,6 @@ import org.openhab.core.storage.StorageService;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.binding.AbstractStorageBasedTypeProvider;
 import org.openhab.core.thing.binding.ThingTypeProvider;
-import org.openhab.core.thing.type.ChannelGroupDefinition;
-import org.openhab.core.thing.type.ChannelGroupTypeUID;
 import org.openhab.core.thing.type.ThingType;
 import org.openhab.core.thing.type.ThingTypeBuilder;
 import org.openhab.io.homekit.HomekitBindingConstants;
@@ -25,44 +21,63 @@ import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-//TODO : Rename to HomekitServiceThingTypeProvider
-//TODO : Create a HomekitAccessoryThingTypeProvider
-//TODO : make use of the HomekitChannelGroupTypeProvider and HomekitChannelTypeProvider
-//TODO : make use of ChannelTypeRegistry and ChannelGroupTypeRegistry
-//TODO : add createChannelGroupDefinitionWithIndex that takes an index and creates a channel group definition with that index
-//TODO : add createChannelDefinitionWithIndex that takes an index and creates a channel definition with that index  
+// ARCHITECTURE NOTES:
+// ===================
+// This provider creates TWO types of thing types:
+//
+// 1. SERVICE THING TYPES (homekit:lightbulb, homekit:fan, etc.)
+//    - Represent individual HomeKit services
+//    - Have direct channels (no channel groups)
+//    - Channels are added dynamically by handlers at runtime
+//
+// 2. ACCESSORY THING TYPE (homekit:accessory)
+//    - Represents entire HomeKit accessories (can contain multiple services)
+//    - Channel groups are created DYNAMICALLY at runtime by HomekitAccessoryThingHandler
+//    - Static channel group definitions are NOT possible because:
+//      * We don't know what services an accessory will have beforehand
+//      * We don't know how many instances of each service there will be
+//      * Different accessories have different service combinations
+//
+// Channel groups are handled by HomekitChannelGroupTypeProvider (defines types)
+// and HomekitAccessoryThingHandler (creates instances dynamically)  
 
 /**
- * Manages the creation and registration of HomeKit thing types in the OpenHAB
- * ecosystem.
+ * Manages the creation and registration of HomeKit thing types in the OpenHAB ecosystem.
  *
- * This class serves as the central provider for HomeKit thing types, converting
- * HomeKit service types
- * into OpenHAB thing types. It handles both factory-independent accessory types
- * and factory-specific
- * service types, ensuring proper integration between HomeKit and OpenHAB's
- * thing system.
+ * CORRECTED ARCHITECTURE: This provider creates static thing type definitions only.
+ * Channel groups are handled dynamically at runtime by thing handlers.
  *
- * The provider implements a sophisticated type conversion system that:
- * - Creates thing types for HomeKit accessories
- * - Converts HomeKit service types to thing types
- * - Manages channel group definitions
- * - Handles service type to tag conversions
- * - Maintains type persistence
+ * This class creates two distinct types of thing types:
+ *
+ * ## 1. Service Thing Types (homekit:lightbulb, homekit:fan, etc.)
+ * - Represent individual HomeKit services
+ * - Have NO static channel group definitions
+ * - Channels are added directly by service handlers at runtime
+ * - One thing = one service
+ *
+ * ## 2. Accessory Thing Type (homekit:accessory)
+ * - Represents entire HomeKit accessories (multiple services)
+ * - Has NO static channel group definitions (cannot be known beforehand)
+ * - Channel groups are created DYNAMICALLY by HomekitAccessoryThingHandler
+ * - One thing = one accessory with multiple service groups
+ *
+ * ## Why No Static Channel Groups for Accessories?
+ * - Unknown service combinations until discovery
+ * - Unknown number of service instances
+ * - Different accessories have different structures
+ * - Runtime discovery determines actual channel group needs
  *
  * The class integrates with:
  * - {@link StorageService} for persistent storage of thing types
  * - {@link HomekitServiceFactory} for service type management
- * - {@link HomekitChannelGroupTypeProvider} for channel group definitions
- * - {@link org.openhab.core.thing.type.ThingType OpenHAB's thing type system}
- * for type registration
+ * - {@link HomekitChannelGroupTypeProvider} for channel group type definitions (used by handlers)
+ * - {@link org.openhab.core.thing.type.ThingType OpenHAB's thing type system} for type registration
  *
- * Key features:
- * - Automatic thing type generation from service types
- * - Channel group definition management
+ * Key responsibilities:
+ * - Create static thing type definitions
  * - Service type to tag conversion
- * - Persistent storage of thing types
- * - Support for factory-specific and independent types
+ * - Thing type persistence
+ * - Integration with OpenHAB's type system
  *
  * @author Karel Goderis - Initial Contribution
  * @since 1.0
@@ -81,7 +96,7 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
     protected static final String LOG_TYPE = LOG_PREFIX + "Type - ";
 
     private final HomekitServiceFactory homekitServiceFactory;
-    private final HomekitChannelGroupTypeProvider channelGroupTypeProvider;
+    // NOTE: HomekitChannelGroupTypeProvider is used by handlers at runtime, not by this provider
 
     /**
      * Creates a new HomeKit thing type provider.
@@ -105,11 +120,9 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
      */
     @Activate
     public HomekitThingTypeProvider(@Reference StorageService storageService,
-            @Reference HomekitServiceFactory homekitServiceFactory,
-            @Reference HomekitChannelGroupTypeProvider channelGroupTypeProvider) {
+            @Reference HomekitServiceFactory homekitServiceFactory) {
         super(storageService);
         this.homekitServiceFactory = homekitServiceFactory;
-        this.channelGroupTypeProvider = channelGroupTypeProvider;
         logger.info("{}Initializing HomeKit thing type provider", LOG_INIT);
         addFactoryIndependentThingTypes();
         addFactoryDependentThingTypes();
@@ -178,20 +191,23 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
     /**
      * Creates a thing type for a specific service type.
      *
-     * This method handles the complete process of creating a thing type for a
-     * HomeKit service,
-     * including validation, channel group creation, and type registration.
-     *
-     * The creation process includes:
-     * - Validating service type and name
-     * - Creating channel group definitions
-     * - Building the thing type
-     * - Registering the type in the system
+     * ARCHITECTURAL FIX: Service thing types should NOT have channel groups!
+     * =====================================================================
+     * 
+     * Service thing types (e.g., "homekit:lightbulb") represent individual HomeKit services.
+     * They should have direct channels, not channel groups, because:
+     * 
+     * 1. Each service thing represents ONE service instance
+     * 2. Channels belong directly to the service (no grouping needed)
+     * 3. Channel groups are only needed for accessory things that contain multiple services
+     * 
+     * This method now creates service thing types WITHOUT channel group definitions.
+     * Channel groups are handled dynamically by the HomekitAccessoryThingHandler for accessory types.
      *
      * @param serviceType The HomeKit service type to create a thing type for
      */
     private void createThingTypeForService(String serviceType) {
-        logger.debug("{}Creating thing type for service: {}", LOG_TYPE, serviceType);
+        logger.debug("{}Creating service thing type for: {}", LOG_TYPE, serviceType);
 
         Optional<ThingTypeUID> thingTypeUIDOpt = getThingTypeUID(serviceType);
         if (thingTypeUIDOpt.isEmpty()) {
@@ -209,19 +225,18 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
                 return;
             }
 
-            List<ChannelGroupDefinition> channelGroupDefinitions = createChannelGroupDefinitions(serviceType);
-            if (channelGroupDefinitions.isEmpty()) {
-                logger.warn("{}No channel group definitions found for service type: {}", LOG_WARN, serviceType);
-                return;
-            }
-
+            // FIXED: Service thing types should NOT have channel groups
+            // They represent individual services and have direct channels
             ThingType thingType = ThingTypeBuilder.instance(thingTypeUID, serviceName)
-                    .withDescription("Homekit " + serviceName + " Service").withCategory("homekit")
-                    .withChannelGroupDefinitions(channelGroupDefinitions).build();
+                    .withDescription("HomeKit " + serviceName + " Service").withCategory("homekit").build(); // No
+                                                                                                             // channel
+                                                                                                             // group
+                                                                                                             // definitions!
 
             putThingType(thingType);
-            logger.info("{}Created thing type {} for service {} with {} channel groups", LOG_TYPE, thingTypeUID,
-                    serviceType, channelGroupDefinitions.size());
+            logger.info(
+                    "{}Created service thing type {} for service {} (no channel groups - channels added at runtime)",
+                    LOG_TYPE, thingTypeUID, serviceType);
         } catch (HomekitFactoryException e) {
             logger.error("{}Failed to get service name for service type {}: {}", LOG_ERROR, serviceType,
                     e.getMessage());
@@ -229,52 +244,15 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
         }
     }
 
-    /**
-     * Creates channel group definitions for a service type.
-     *
-     * This method handles the creation of channel group definitions for a HomeKit
-     * service,
-     * including validation and error handling.
-     *
-     * The creation process includes:
-     * - Validating service tag
-     * - Creating channel group type UID
-     * - Verifying channel group type existence
-     * - Creating channel group definition
-     *
-     * @param serviceType The service type to create channel group definitions for
-     * @return List of created channel group definitions
-     */
-    private List<ChannelGroupDefinition> createChannelGroupDefinitions(String serviceType) {
-        logger.debug("{}Creating channel group definitions for service: {}", LOG_TYPE, serviceType);
-        List<ChannelGroupDefinition> definitions = new ArrayList<>();
-
-        try {
-            String serviceTag = homekitServiceFactory.getTagFromServiceType(serviceType);
-            if (serviceTag == null || serviceTag.isEmpty()) {
-                logger.warn("{}Invalid service tag for service type: {}", LOG_WARN, serviceType);
-                return definitions;
-            }
-
-            ChannelGroupTypeUID channelGroupTypeUID = new ChannelGroupTypeUID(HomekitBindingConstants.BINDING_ID,
-                    "service-" + serviceTag);
-
-            if (channelGroupTypeProvider.getChannelGroupType(channelGroupTypeUID, null) == null) {
-                logger.warn("{}No channel group type found for service type: {}", LOG_WARN, serviceType);
-                return definitions;
-            }
-
-            definitions.add(new ChannelGroupDefinition(serviceTag + ".1", channelGroupTypeUID, serviceTag,
-                    "Homekit " + serviceTag + " Service"));
-
-            logger.debug("{}Created channel group definition for service {} with UID {}", LOG_TYPE, serviceType,
-                    channelGroupTypeUID);
-        } catch (Exception e) {
-            logger.error("{}Failed to create channel group definitions for service {}: {}", LOG_ERROR, serviceType,
-                    e.getMessage(), e);
-        }
-        return definitions;
-    }
+    // REMOVED: createChannelGroupDefinitions method
+    //
+    // This method was removed because service thing types should NOT have static channel group definitions.
+    // Channel groups are only needed for accessory thing types, and they must be created dynamically
+    // at runtime based on the actual services discovered in the accessory.
+    //
+    // For service thing types (homekit:lightbulb), channels are added directly without groups.
+    // For accessory thing types (homekit:accessory), channel groups are created dynamically
+    // by the HomekitAccessoryThingHandler when services are discovered.
 
     /**
      * Gets the thing type UID for a service type.

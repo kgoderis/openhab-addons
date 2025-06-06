@@ -1,6 +1,9 @@
 package org.openhab.io.homekit.bridge;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,10 +35,9 @@ public class HomekitItemConfigParser {
 
     // ========== Log Message Prefixes ==========
     private static final String LOG_PREFIX = "Homekit ItemConfigParser: ";
-    private static final String LOG_INIT = LOG_PREFIX + "Init - ";
-    private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
     private static final String LOG_PARSE = LOG_PREFIX + "Parse - ";
     private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
 
     private final MetadataRegistry metadataRegistry;
     private static final Pattern CONFIG_PATTERN = Pattern.compile("\\[(.*?)\\]");
@@ -60,7 +62,7 @@ public class HomekitItemConfigParser {
             throw new NullPointerException("metadataRegistry cannot be null");
         }
         this.metadataRegistry = metadataRegistry;
-        logger.debug("{}Initialized with metadata registry", LOG_INIT);
+        logger.debug("{}Initialized with metadata registry", LOG_PREFIX + "Init - ");
     }
 
     /**

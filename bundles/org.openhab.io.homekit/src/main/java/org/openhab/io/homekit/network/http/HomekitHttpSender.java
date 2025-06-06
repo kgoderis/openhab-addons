@@ -87,8 +87,6 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
 
     private byte[] encryptionKey;
     private long outboundSequenceCount = 0;
-    private ByteBuffer encryptedOutputBuffer;
-    private ByteBuffer decryptedOutputBuffer;
 
     /**
      * Creates a new HomeKit HTTP sender for the given channel.
@@ -127,20 +125,6 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
     @Override
     public HomekitHttpChannel getHttpChannel() {
         return (HomekitHttpChannel) super.getHttpChannel();
-    }
-
-    /**
-     * Gets the HTTP connection associated with this sender.
-     *
-     * <p>
-     * This method returns the specialized {@link HomekitHttpConnectionOverHTTP} instance
-     * that manages the underlying network connection.
-     * </p>
-     *
-     * @return The {@link HomekitHttpConnectionOverHTTP} instance
-     */
-    private HomekitHttpConnectionOverHTTP getHttpConnection() {
-        return (HomekitHttpConnectionOverHTTP) getHttpChannel().getHttpConnection();
     }
 
     /**

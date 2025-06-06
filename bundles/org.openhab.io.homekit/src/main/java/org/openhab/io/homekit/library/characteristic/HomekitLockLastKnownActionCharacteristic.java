@@ -57,7 +57,7 @@ public class HomekitLockLastKnownActionCharacteristic extends HomekitIntegerChar
                 if (a.code == code)
                     return a;
             }
-            return null;
+            throw new IllegalArgumentException("Invalid code: " + code);
         }
     }
 

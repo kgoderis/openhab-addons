@@ -130,7 +130,6 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
     /** Logging prefixes */
     private static final String LOG_PREFIX = "HomeKit Discovery: ";
     private static final String LOG_INIT = LOG_PREFIX + "Initialization - ";
-    private static final String LOG_STATE = LOG_PREFIX + "State Change - ";
     private static final String LOG_CONFIG = LOG_PREFIX + "Configuration - ";
     private static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
     private static final String LOG_PAIRING = LOG_PREFIX + "Pairing - ";
@@ -155,10 +154,6 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
     private HomekitAccessoryFactory accessoryFactory;
     private HomekitServiceFactory homekitServiceFactory;
     private final Map<String, ThingUID> cachedServices = new ConcurrentHashMap<>();
-    private static final String DEVICE_ID = "id";
-    private static final String CATEGORY_ID = "ci";
-    private static final String BRIDGE_CATEGORY = "2";
-    private static final String STANDALONE_CATEGORY = "1";
 
     /**
      * Constructs a new HomeKit discovery service.
@@ -608,7 +603,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
 
             // Extract and validate service configuration
             int port = serviceInfo.getPort();
-            String deviceId = serviceInfo.getPropertyString("id");
+            //String deviceId = serviceInfo.getPropertyString("id");
             String model = serviceInfo.getPropertyString("md");
             String version = serviceInfo.getPropertyString("pv");
             String configIndexStr = serviceInfo.getPropertyString("c#");
@@ -628,7 +623,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                 HomekitAccessoryCategory category = HomekitAccessoryCategory.fromValue(Integer.parseInt(categoryStr));
                 HomekitPairingStatusFlag pairingStatus = HomekitPairingStatusFlag
                         .fromValue(Integer.parseInt(pairingStatusStr));
-                int stateNumber = Integer.parseInt(stateNumberStr);
+                //int stateNumber = Integer.parseInt(stateNumberStr);
                 HomekitPairingFeatureFlag pairingFeatureFlag = HomekitPairingFeatureFlag
                         .fromValue(Integer.parseInt(pairingFeatureFlagStr));
 

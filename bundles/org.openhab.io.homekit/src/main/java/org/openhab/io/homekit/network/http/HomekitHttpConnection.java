@@ -79,8 +79,6 @@ public class HomekitHttpConnection extends HttpConnection {
     private static final String LOG_INIT = LOG_PREFIX + "Initialization - ";
     private static final String LOG_STATE = LOG_PREFIX + "State Change - ";
     private static final String LOG_CONFIG = LOG_PREFIX + "Configuration - ";
-    private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
-    private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
     /** Flag indicating if the connection can be upgraded */
     private boolean upgradable = true;

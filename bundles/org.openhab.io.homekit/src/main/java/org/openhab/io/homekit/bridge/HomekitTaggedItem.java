@@ -95,7 +95,6 @@ import org.slf4j.LoggerFactory;
 public class HomekitTaggedItem {
     // ========== Log Message Prefixes ==========
     private static final String LOG_PREFIX = "Homekit TaggedItem: ";
-    private static final String LOG_INIT = LOG_PREFIX + "Init - ";
     private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
     private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
@@ -151,7 +150,7 @@ public class HomekitTaggedItem {
         this.serviceFactory = serviceFactory;
         this.characteristicFactory = characteristicFactory;
 
-        logger.debug("{}Initializing tagged item: {}", LOG_INIT, item.getName());
+        logger.debug("{}Initializing tagged item: {}", LOG_PREFIX, item.getName());
 
         try {
             serviceTag = determineServiceTag();

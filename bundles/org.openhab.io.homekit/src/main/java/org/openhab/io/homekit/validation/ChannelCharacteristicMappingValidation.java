@@ -97,23 +97,26 @@ public class ChannelCharacteristicMappingValidation extends AbstractValidation {
                             characteristic.getClass().getSimpleName(), serviceName),
                     "MISSING_CHANNEL",
                     getContextKey(thing) + ":" + serviceUuid + ":" + characteristic.getClass().getSimpleName(), true,
-                    true, Map.of("serviceName", serviceName, "serviceUuid", serviceUuid, "characteristicType",
+                    true,
+                    Map.<String, Object>of("serviceName", serviceName, "serviceUuid", serviceUuid, "characteristicType",
                             characteristic.getClass().getSimpleName(), "channelId", channelId)));
             return;
         }
 
         // Validate channel type compatibility
         if (!isChannelTypeCompatible(channel, characteristic)) {
+            var channelTypeUID = channel.getChannelTypeUID();
+            String channelType = channelTypeUID != null ? channelTypeUID.toString() : "unknown";
             issues.add(createIssue(ValidationResult.Severity.ERROR,
                     String.format("Channel '%s' type '%s' is not compatible with characteristic '%s' in service '%s'",
-                            channelId, channel.getChannelTypeUID(), characteristic.getClass().getSimpleName(),
+                            channelId, channelTypeUID, characteristic.getClass().getSimpleName(),
                             serviceName),
                     "INCOMPATIBLE_CHANNEL_TYPE",
                     getContextKey(thing) + ":" + serviceUuid + ":" + characteristic.getClass().getSimpleName(), true,
                     true,
-                    Map.of("serviceName", serviceName, "serviceUuid", serviceUuid, "characteristicType",
+                    Map.<String, Object>of("serviceName", serviceName, "serviceUuid", serviceUuid, "characteristicType",
                             characteristic.getClass().getSimpleName(), "channelId", channelId, "channelType",
-                            channel.getChannelTypeUID().toString())));
+                            channelType)));
         }
     }
 

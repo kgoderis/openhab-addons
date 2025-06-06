@@ -108,8 +108,6 @@ public class HomekitPairingUIDImpl extends HomekitUID implements HomekitPairingU
     private final Logger logger = LoggerFactory.getLogger(HomekitPairingUIDImpl.class);
 
     private static final String PAIRING_PREFIX = "pairing";
-    private final byte[] sourceId;
-    private final byte[] destinationId;
 
     /**
      * Initializes the HomeKit pairing UID implementation.
@@ -139,8 +137,6 @@ public class HomekitPairingUIDImpl extends HomekitUID implements HomekitPairingU
     public HomekitPairingUIDImpl() {
         super(PAIRING_PREFIX, "homekit:" + PAIRING_PREFIX + ":empty:empty");
         logger.debug("{}Initializing HomeKit pairing UID", LOG_INIT);
-        this.sourceId = new byte[0];
-        this.destinationId = new byte[0];
         logger.debug("{}HomeKit pairing UID initialized successfully", LOG_INIT);
     }
 
@@ -178,8 +174,6 @@ public class HomekitPairingUIDImpl extends HomekitUID implements HomekitPairingU
         logger.debug("{}Creating new HomeKit pairing UID with source ID: {} and destination ID: {}", LOG_UID,
                 Base64.getEncoder().withoutPadding().encodeToString(sourceId),
                 Base64.getEncoder().withoutPadding().encodeToString(destinationId));
-        this.sourceId = sourceId;
-        this.destinationId = destinationId;
         logger.debug("{}HomeKit pairing UID created successfully", LOG_UID);
     }
 
@@ -232,8 +226,9 @@ public class HomekitPairingUIDImpl extends HomekitUID implements HomekitPairingU
      */
     @Override
     public String toString() {
-        logger.debug("{}Retrieving UID string representation: {}", LOG_UID, toString());
-        return toString();
+        String uid = super.toString();
+        logger.debug("{}Retrieving UID string representation: {}", LOG_UID, uid);
+        return uid;
     }
 
     /**

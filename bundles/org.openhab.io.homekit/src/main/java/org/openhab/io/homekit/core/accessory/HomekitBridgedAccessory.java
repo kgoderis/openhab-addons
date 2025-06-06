@@ -75,18 +75,12 @@ public class HomekitBridgedAccessory implements HomekitAccessory {
     // ========== Log Message Prefixes ==========
     private static final String LOG_PREFIX = "Homekit BridgedAccessory: ";
     private static final String LOG_INIT = LOG_PREFIX + "Init - ";
-    private static final String LOG_STATE = LOG_PREFIX + "State - ";
-    private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
-    private static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
-    private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
-    private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
-    private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
 
     private final Logger logger = LoggerFactory.getLogger(HomekitBridgedAccessory.class);
 
     private final HomekitAccessory remoteAccessory;
     private final HomekitAccessoryServer localServer;
-    private @Nullable Long accessoryId;
+    private long accessoryId = 0;
     private @Nullable HomekitAccessoryUID uid;
 
     /**
@@ -361,12 +355,20 @@ public class HomekitBridgedAccessory implements HomekitAccessory {
             throw new HomekitAccessoryOperationException(
                     "HomekitBridgedAccessory can only be assigned to its local server");
         }
-        if (accessoryId != null) {
+        if (accessoryId != 0) {
             throw new HomekitAccessoryOperationException("HomekitBridgedAccessory is already assigned to a server");
         }
-        this.accessoryId = server.getNextAvailableAccessoryId();
-        this.uid = new HomekitAccessoryUIDImpl(server.getUID().getPairingId(), accessoryId);
-        logger.debug("{}Assigned bridged accessory to local server with AID: {}", LOG_PREFIX, accessoryId);
+        try {
+            this.accessoryId = server.getNextAvailableAccessoryId();
+            this.uid = new HomekitAccessoryUIDImpl(server.getUID().getPairingId(), accessoryId);
+            if (uid == null) {
+                throw new HomekitAccessoryOperationException("Failed to create HomekitAccessoryUID");
+            }
+            logger.debug("{}Assigned bridged accessory to local server with AID: {}", LOG_PREFIX, accessoryId);
+
+        } catch (Exception e) {
+            throw new HomekitAccessoryOperationException("Failed to assign bridged accessory to local server", e);
+        }
     }
 
     /**
@@ -376,7 +378,7 @@ public class HomekitBridgedAccessory implements HomekitAccessory {
      */
     @Override
     public boolean isAssigned() {
-        return accessoryId != null;
+        return accessoryId != 0;
     }
 
     /**

@@ -3,6 +3,7 @@ package org.openhab.io.homekit.event.core;
 import java.util.function.Predicate;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.registry.Identifiable;
 import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.event.HomekitEvent;
@@ -85,7 +86,7 @@ public class HomekitEventSubscription {
      * @param expectedEventClass the expected class of events
      * @param filter a predicate to filter events
      */
-    public HomekitEventSubscription(HomekitEventType eventType, UID publisherUID, UID subscriberUID,
+    public HomekitEventSubscription(HomekitEventType eventType, UID publisherUID, @Nullable UID subscriberUID,
             HomekitEventSubscriber subscriber, Class<? extends HomekitEvent> expectedEventClass,
             Predicate<HomekitEvent> filter) {
         this.eventType = eventType;

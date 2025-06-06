@@ -15,8 +15,6 @@ import org.openhab.core.config.core.ConfigDescriptionParameter.Type;
 import org.openhab.core.config.core.ConfigDescriptionParameterBuilder;
 import org.openhab.core.config.core.ConfigDescriptionProvider;
 import org.osgi.service.component.annotations.Component;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Provides configuration descriptions for HomeKit configurations.
@@ -66,7 +64,6 @@ import org.slf4j.LoggerFactory;
 @Component(service = ConfigDescriptionProvider.class)
 @NonNullByDefault
 public class HomekitConfigDescriptionProvider implements ConfigDescriptionProvider {
-    private static final Logger logger = LoggerFactory.getLogger(HomekitConfigDescriptionProvider.class);
     private static final String CONFIG_URI_STRING = "homekit:config";
     private static final URI CONFIG_URI;
 
@@ -79,12 +76,12 @@ public class HomekitConfigDescriptionProvider implements ConfigDescriptionProvid
     }
 
     @Override
-    public @NonNull Collection<@NonNull ConfigDescription> getConfigDescriptions(@Nullable Locale locale) {
+    public @NonNull Collection<ConfigDescription> getConfigDescriptions(@Nullable Locale locale) {
         return Collections.singleton(createConfigDescription());
     }
 
     @Override
-    public @Nullable ConfigDescription getConfigDescription(@NonNull URI uri, @Nullable Locale locale) {
+    public @Nullable ConfigDescription getConfigDescription(URI uri, @Nullable Locale locale) {
         if (CONFIG_URI.equals(uri)) {
             return createConfigDescription();
         }

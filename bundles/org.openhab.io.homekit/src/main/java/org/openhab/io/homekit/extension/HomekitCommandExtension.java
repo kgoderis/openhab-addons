@@ -67,7 +67,6 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
     private static final String COMMAND_HOMEKIT = "homekit";
     private static final String SUBCOMMAND_SHOW = "show";
     private static final String SUBCOMMAND_LIST = "list";
-    private static final String SUBCOMMAND_PRINT = "print";
     private static final String SUBCOMMAND_HELP = "help";
     private static final String SUBCOMMAND_ITEM = "item";
     private static final String SUBCOMMAND_THING = "thing";
@@ -276,33 +275,49 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
             return;
         }
 
+        logger.debug("{}Found item: {} (type: {}, label: {})", LOG_DEBUG, itemName, item.getType(), item.getLabel());
         console.println("Item: " + itemName);
         console.println("Type: " + item.getType());
         console.println("Label: " + item.getLabel());
 
         // Get HomeKit tags
+        logger.debug("{}Retrieving HomeKit metadata for item: {}", LOG_DEBUG, itemName);
         MetadataKey key = new MetadataKey("homekit", itemName);
         Metadata metadata = metadataRegistry.get(key);
         if (metadata != null) {
+            logger.debug("{}Found HomeKit metadata for item {}: {}", LOG_DEBUG, itemName, metadata.getValue());
             console.println("HomeKit Tags: " + metadata.getValue());
+        } else {
+            logger.debug("{}No HomeKit metadata found for item: {}", LOG_DEBUG, itemName);
         }
 
         // Get configuration
+        logger.debug("{}Retrieving configuration for item: {}", LOG_DEBUG, itemName);
         Optional<Map<String, Object>> config = configManager.getConfiguration(new ItemUID(itemName),
                 ConfigurationType.ITEM);
         if (config.isPresent()) {
+            logger.debug("{}Found configuration for item {}: {} entries", LOG_DEBUG, itemName, config.get().size());
             console.println("Configuration:");
             config.get().forEach((k, v) -> console.println("  " + k + ": " + v));
+        } else {
+            logger.debug("{}No configuration found for item: {}", LOG_DEBUG, itemName);
         }
 
         // Get group membership
         if (item instanceof GroupItem) {
             GroupItem groupItem = (GroupItem) item;
+            logger.debug("{}Item {} is a group with {} members", LOG_DEBUG, itemName, groupItem.getMembers().size());
             console.println("Group Members:");
-            groupItem.getMembers().forEach(member -> console.println("  " + member.getName()));
+            groupItem.getMembers().forEach(member -> {
+                logger.debug("{}Group member: {}", LOG_DEBUG, member.getName());
+                console.println("  " + member.getName());
+            });
+        } else {
+            logger.debug("{}Item {} is not a group item", LOG_DEBUG, itemName);
         }
 
         // Get HomeKit accessory mapping
+        logger.debug("{}Looking for HomeKit accessory mapping for item: {}", LOG_DEBUG, itemName);
         itemBridge.getMappedAccessory(itemName).ifPresent(accessory -> {
             logger.debug("{}Found HomeKit accessory mapping for item {}: {}", LOG_CMD, itemName, accessory.getUID());
             console.println("HomeKit Accessory:");
@@ -310,9 +325,12 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
             console.println("  Type: " + accessory.getClass().getSimpleName());
             console.println("  Services:");
             accessory.getServices().forEach(service -> {
+                logger.debug("{}Service: {} (ID: {})", LOG_DEBUG, service.getType(), service.getInstanceId());
                 console.println("    " + service.getType());
                 console.println("      Characteristics:");
                 service.getCharacteristics().forEach(characteristic -> {
+                    logger.debug("{}Characteristic: {} (tag: {}, value: {})", LOG_DEBUG, characteristic.getType(),
+                            characteristic.getTag(), characteristic.getValue());
                     console.println("        " + characteristic.getType());
                     console.println("          Tag: " + characteristic.getTag());
                     console.println("          Value: " + characteristic.getValue());
@@ -321,16 +339,23 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         });
 
         // Get linked channels
+        logger.debug("{}Retrieving linked channels for item: {}", LOG_DEBUG, itemName);
         console.println("Linked Channels:");
         itemChannelLinkRegistry.getLinks(itemName).forEach(link -> {
+            logger.debug("{}Found linked channel: {}", LOG_DEBUG, link.getUID());
             console.println("  " + link.getUID());
             Optional<Map<String, Object>> linkConfig = configManager.getConfiguration(new ChannelUID(link.getUID()),
                     ConfigurationType.CHANNEL);
             if (linkConfig.isPresent()) {
+                logger.debug("{}Found configuration for channel {}: {} entries", LOG_DEBUG, link.getUID(),
+                        linkConfig.get().size());
                 console.println("    Configuration:");
                 linkConfig.get().forEach((k, v) -> console.println("      " + k + ": " + v));
+            } else {
+                logger.debug("{}No configuration found for channel: {}", LOG_DEBUG, link.getUID());
             }
         });
+        logger.debug("{}Completed showing mapping for item: {}", LOG_CMD, itemName);
     }
 
     /**
@@ -351,18 +376,25 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
             return;
         }
 
+        logger.debug("{}Found thing: {} (type: {}, label: {})", LOG_DEBUG, thingId, thing.getThingTypeUID(),
+                thing.getLabel());
         console.println("Thing: " + thingId);
         console.println("Type: " + thing.getThingTypeUID());
         console.println("Label: " + thing.getLabel());
 
         // Get configuration
+        logger.debug("{}Retrieving configuration for thing: {}", LOG_DEBUG, thingId);
         Optional<Map<String, Object>> config = configManager.getConfiguration(thing.getUID(), ConfigurationType.THING);
         if (config.isPresent()) {
+            logger.debug("{}Found configuration for thing {}: {} entries", LOG_DEBUG, thingId, config.get().size());
             console.println("Configuration:");
             config.get().forEach((k, v) -> console.println("  " + k + ": " + v));
+        } else {
+            logger.debug("{}No configuration found for thing: {}", LOG_DEBUG, thingId);
         }
 
         // Get HomeKit accessory mapping
+        logger.debug("{}Looking for HomeKit accessory mapping for thing: {}", LOG_DEBUG, thingId);
         thingBridge.getMappedAccessory(thing.getUID()).ifPresent(accessory -> {
             logger.debug("{}Found HomeKit accessory mapping for thing {}: {}", LOG_CMD, thingId, accessory.getUID());
             console.println("HomeKit Accessory:");
@@ -370,9 +402,12 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
             console.println("  Type: " + accessory.getClass().getSimpleName());
             console.println("  Services:");
             accessory.getServices().forEach(service -> {
+                logger.debug("{}Service: {} (ID: {})", LOG_DEBUG, service.getType(), service.getInstanceId());
                 console.println("    " + service.getType());
                 console.println("      Characteristics:");
                 service.getCharacteristics().forEach(characteristic -> {
+                    logger.debug("{}Characteristic: {} (tag: {}, value: {})", LOG_DEBUG, characteristic.getType(),
+                            characteristic.getTag(), characteristic.getValue());
                     console.println("        " + characteristic.getType());
                     console.println("          Tag: " + characteristic.getTag());
                     console.println("          Value: " + characteristic.getValue());
@@ -381,28 +416,41 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         });
 
         // Get channels
+        logger.debug("{}Retrieving channels for thing: {}", LOG_DEBUG, thingId);
         console.println("Channels:");
         thing.getChannels().forEach(channel -> {
+            logger.debug("{}Found channel: {}", LOG_DEBUG, channel.getUID());
             console.println("  " + channel.getUID());
             Optional<Map<String, Object>> channelConfig = configManager.getConfiguration(channel.getUID(),
                     ConfigurationType.CHANNEL);
             if (channelConfig.isPresent()) {
+                logger.debug("{}Found configuration for channel {}: {} entries", LOG_DEBUG, channel.getUID(),
+                        channelConfig.get().size());
                 console.println("    Configuration:");
                 channelConfig.get().forEach((k, v) -> console.println("      " + k + ": " + v));
+            } else {
+                logger.debug("{}No configuration found for channel: {}", LOG_DEBUG, channel.getUID());
             }
 
             // Get linked items
+            logger.debug("{}Retrieving linked items for channel: {}", LOG_DEBUG, channel.getUID());
             console.println("    Linked Items:");
             itemChannelLinkRegistry.getLinks(channel.getUID()).forEach(link -> {
+                logger.debug("{}Found linked item: {}", LOG_DEBUG, link.getItemName());
                 console.println("      " + link.getItemName());
                 Optional<Map<String, Object>> linkConfig = configManager.getConfiguration(new ChannelUID(link.getUID()),
                         ConfigurationType.CHANNEL);
                 if (linkConfig.isPresent()) {
+                    logger.debug("{}Found configuration for link {}: {} entries", LOG_DEBUG, link.getUID(),
+                            linkConfig.get().size());
                     console.println("        Configuration:");
                     linkConfig.get().forEach((k, v) -> console.println("          " + k + ": " + v));
+                } else {
+                    logger.debug("{}No configuration found for link: {}", LOG_DEBUG, link.getUID());
                 }
             });
         });
+        logger.debug("{}Completed showing mapping for thing: {}", LOG_CMD, thingId);
     }
 
     /**
@@ -423,6 +471,8 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
             return;
         }
 
+        logger.debug("{}Found server: {} (type: {}, port: {}, paired: {})", LOG_DEBUG, serverId,
+                server.getClass().getSimpleName(), server.getPort(), server.isPaired());
         console.println("Accessory Server: " + serverId);
         console.println("Type: " + server.getClass().getSimpleName());
         console.println("Port: " + server.getPort());
@@ -430,14 +480,19 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         console.println("State: " + (server.isPaired() ? "Paired" : "Unpaired"));
 
         // Get configuration
+        logger.debug("{}Retrieving configuration for server: {}", LOG_DEBUG, serverId);
         Optional<Map<String, Object>> config = configManager
                 .getConfiguration(new HomekitUID("homekit:server:" + serverId), ConfigurationType.BRIDGE);
         if (config.isPresent()) {
+            logger.debug("{}Found configuration for server {}: {} entries", LOG_DEBUG, serverId, config.get().size());
             console.println("Configuration:");
             config.get().forEach((k, v) -> console.println("  " + k + ": " + v));
+        } else {
+            logger.debug("{}No configuration found for server: {}", LOG_DEBUG, serverId);
         }
 
         // Get accessories
+        logger.debug("{}Retrieving accessories for server: {}", LOG_DEBUG, serverId);
         console.println("Accessories:");
         try {
             for (HomekitAccessory accessory : server.getAccessories()) {
@@ -446,17 +501,22 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
                 console.println("    Type: " + accessory.getClass().getSimpleName());
                 console.println("    Services:");
                 accessory.getServices().forEach(service -> {
+                    logger.debug("{}Service: {} (ID: {})", LOG_DEBUG, service.getType(), service.getInstanceId());
                     console.println("      " + service.getType());
                     console.println("        Characteristics:");
                     service.getCharacteristics().forEach(characteristic -> {
+                        logger.debug("{}Characteristic: {}", LOG_DEBUG, characteristic.getType());
                         console.println("          " + characteristic.getType());
                     });
                 });
             }
+            logger.debug("{}Successfully retrieved {} accessories for server: {}", LOG_DEBUG,
+                    server.getAccessories().size(), serverId);
         } catch (HomekitAccessoryOperationException e) {
             logger.error("{}Error accessing accessories for server {}: {}", LOG_ERROR, serverId, e.getMessage(), e);
             console.println("Error accessing accessories: " + e.getMessage());
         }
+        logger.debug("{}Completed showing server: {}", LOG_CMD, serverId);
     }
 
     /**
@@ -468,19 +528,27 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
      * @param console The console to write output to
      */
     private void printServers(Console console) {
+        logger.debug("{}Printing all HomeKit accessory servers", LOG_CMD);
         console.println("HomeKit Accessory Servers:");
         accessoryServerRegistry.getAll().forEach(server -> {
+            logger.debug("{}Found server: {} (type: {}, port: {})", LOG_DEBUG, server.getUID(),
+                    server.getClass().getSimpleName(), server.getPort());
             console.println("  " + server.getUID());
             console.println("    Type: " + server.getClass().getSimpleName());
             console.println("    Port: " + server.getPort());
             console.println("    Setup Code: " + server.getSetupCode());
             console.println("    State: " + (server.isPaired() ? "Paired" : "Unpaired"));
             try {
-                console.println("    Accessories: " + server.getAccessories().size());
+                int accessoryCount = server.getAccessories().size();
+                logger.debug("{}Server {} has {} accessories", LOG_DEBUG, server.getUID(), accessoryCount);
+                console.println("    Accessories: " + accessoryCount);
             } catch (HomekitAccessoryOperationException e) {
+                logger.warn("{}Error accessing accessories for server {}: {}", LOG_WARN, server.getUID(),
+                        e.getMessage());
                 console.println("    Error accessing accessories: " + e.getMessage());
             }
         });
+        logger.debug("{}Completed printing servers", LOG_CMD);
     }
 
     /**
@@ -492,30 +560,40 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
      * @param console The console to write output to
      */
     private void printBridgedAccessories(Console console) {
+        logger.debug("{}Printing all bridged HomeKit accessories", LOG_CMD);
         console.println("Bridged HomeKit Accessories:");
         console.println("----------------------------");
 
         // Print accessories from item bridge
+        logger.debug("{}Retrieving accessories from item bridge", LOG_DEBUG);
         console.println("\nItem Bridge Accessories:");
         itemBridge.getItems().forEach(item -> {
+            logger.debug("{}Checking item for accessory mapping: {}", LOG_DEBUG, item.getName());
             itemBridge.getMappedAccessory(item.getName()).ifPresent(accessory -> {
+                logger.debug("{}Found accessory for item {}: {}", LOG_DEBUG, item.getName(), accessory.getUID());
                 printAccessoryDetails(console, accessory);
             });
         });
 
         // Print accessories from thing bridge
+        logger.debug("{}Retrieving accessories from thing bridge", LOG_DEBUG);
         console.println("\nThing Bridge Accessories:");
         thingBridge.getThings().forEach(thing -> {
+            logger.debug("{}Checking thing for accessory mapping: {}", LOG_DEBUG, thing.getUID());
             thingBridge.getMappedAccessory(thing.getUID()).ifPresent(accessory -> {
+                logger.debug("{}Found accessory for thing {}: {}", LOG_DEBUG, thing.getUID(), accessory.getUID());
                 printAccessoryDetails(console, accessory);
             });
         });
 
         // Print accessories from the accessory bridge
+        logger.debug("{}Retrieving accessories from accessory bridge", LOG_DEBUG);
         console.println("\nAccessory Bridge Accessories:");
         accessoryBridge.getAccessories().forEach(accessory -> {
+            logger.debug("{}Found accessory in accessory bridge: {}", LOG_DEBUG, accessory.getUID());
             printAccessoryDetails(console, accessory);
         });
+        logger.debug("{}Completed printing bridged accessories", LOG_CMD);
     }
 
     /**
@@ -527,11 +605,14 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
      * @param console The console to write output to
      */
     private void printAccessories(Console console) {
+        logger.debug("{}Printing all HomeKit accessories", LOG_CMD);
         console.println("HomeKit Accessories:");
         console.println("--------------------");
         accessoryRegistry.getAll().forEach(accessory -> {
+            logger.debug("{}Found accessory: {} (label: {})", LOG_DEBUG, accessory.getUID(), accessory.getLabel());
             printAccessoryDetails(console, accessory);
         });
+        logger.debug("{}Completed printing accessories", LOG_CMD);
     }
 
     /**
@@ -635,6 +716,7 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
      * @param accessory The accessory to print details for
      */
     private void printAccessoryDetails(Console console, HomekitAccessory accessory) {
+        logger.debug("{}Printing details for accessory: {}", LOG_DEBUG, accessory.getUID());
         console.println("Accessory Details:");
         console.println("-----------------");
         console.println("Label: " + accessory.getLabel());
@@ -642,13 +724,18 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         console.println("Manufacturer: " + accessory.getManufacturer());
         console.println("Model: " + accessory.getModel());
         console.println("Serial Number: " + accessory.getSerialNumber());
+        logger.debug("{}Accessory {} has {} services", LOG_DEBUG, accessory.getUID(), accessory.getServices().size());
         console.println("\nServices:");
         for (HomekitService service : accessory.getServices()) {
+            logger.debug("{}Service: {} (ID: {}, {} characteristics)", LOG_DEBUG, service.getType(),
+                    service.getInstanceId(), service.getCharacteristics().size());
             console.println("  " + service.getType() + " (ID: " + service.getInstanceId() + ")");
             console.println("    Characteristics:");
             for (HomekitCharacteristic<?> characteristic : service.getCharacteristics()) {
+                logger.debug("{}Characteristic: {}", LOG_DEBUG, characteristic.getType());
                 console.println("      " + characteristic.getType());
             }
         }
+        logger.debug("{}Completed printing details for accessory: {}", LOG_DEBUG, accessory.getUID());
     }
 }

@@ -153,10 +153,10 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     private HttpClient httpClient;
 
     // ========== State Management ==========
-    private byte[] sessionKey;
-    private byte[] sharedSecret;
-    private byte[] clientPublicKey;
-    private byte[] clientPrivateKey;
+    private byte[] sessionKey = new byte[0];
+    private byte[] sharedSecret = new byte[0];
+    private byte[] clientPublicKey = new byte[0];
+    private byte[] clientPrivateKey = new byte[0];
     private boolean isPairVerified;
     private @Nullable ScheduledFuture<?> connectionMonitorJob;
 
@@ -187,7 +187,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         this.accessoryFactory = accessoryFactory;
         this.setupCode = "";
         this.isPairVerified = false;
-        this.scheduler = org.openhab.core.common.ThreadPoolManager.getScheduledPool("homekit-remote");
+        this.scheduler = org.openhab.core.common.ThreadPoolManager.getScheduledPool("homekit");
         logger.debug("{}Remote server initialization completed", LOG_INIT);
     }
 
@@ -216,6 +216,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
     // ========== Core Lifecycle Methods ==========
     @Override
+    @SuppressWarnings("null")
     protected void initializeResources() throws HomekitServerException {
         super.initializeResources();
         try {
@@ -239,9 +240,12 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             }
 
             SRP6Session = Optional.of(new HomekitClientSRP6Session());
-            SRP6Session.get().setClientEvidenceRoutine(new HomekitEncryptionEngine.ClientEvidenceRoutineImpl());
-            SRP6Session.get().setServerEvidenceRoutine(new HomekitEncryptionEngine.ServerEvidenceRoutineImpl());
-            SRP6Session.get().setXRoutine(new XRoutineWithUserIdentity());
+
+            SRP6Session.ifPresent(session -> {
+                session.setClientEvidenceRoutine(new HomekitEncryptionEngine.ClientEvidenceRoutineImpl());
+                session.setServerEvidenceRoutine(new HomekitEncryptionEngine.ServerEvidenceRoutineImpl());
+                session.setXRoutine(new XRoutineWithUserIdentity());
+            });
 
         } catch (HomekitServerException e) {
             logger.error("{}Failed to start HTTP client - Error: {}", LOG_ERROR, e.getMessage());
@@ -268,17 +272,19 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             // Create a test request to check connection using the address member
             String url = String.format("http://%s:%d", address.getHostAddress(), port);
             logger.debug("{}Testing connection to {}", LOG_INIT, url);
-            Request request = httpClient.newRequest(url);
-            request.onRequestFailure((req, failure) -> {
-                logger.warn("{}Connection failed - Server: {}", LOG_STATE, new String(getPairingId()));
-                logger.debug("{}Failure details: {}", LOG_STATE, failure);
-                try {
-                    setState(HomekitAccessoryServerState.DISCONNECTED);
-                } catch (HomekitServerException e) {
-                    logger.error("{}Failed to set state to DISCONNECTED: {}", LOG_ERROR, e.getMessage());
-                }
-            });
-            request.send();
+            if (httpClient != null) {
+                Request request = httpClient.newRequest(url);
+                request.onRequestFailure((req, failure) -> {
+                    logger.warn("{}Connection failed - Server: {}", LOG_STATE, new String(getPairingId()));
+                    logger.debug("{}Failure details: {}", LOG_STATE, failure);
+                    try {
+                        setState(HomekitAccessoryServerState.DISCONNECTED);
+                    } catch (HomekitServerException e) {
+                        logger.error("{}Failed to set state to DISCONNECTED: {}", LOG_ERROR, e.getMessage());
+                    }
+                });
+                request.send();
+            }
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             logger.error("{}Failed to start HTTP client - Error: {}", LOG_ERROR, e.getMessage());
             logger.debug("{}Exception details", LOG_ERROR, e);
@@ -320,6 +326,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     }
 
     @Override
+    @SuppressWarnings("null")
     public void close() throws Exception {
         logger.info("{}Closing server - Server: {}", LOG_STATE, new String(getPairingId()));
 
@@ -710,20 +717,20 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     // ========== HomekitPairing Stage Methods ==========
     private void resetPairingState() {
         logger.debug("{}Resetting pairing state - Server: {}", LOG_STATE, new String(getPairingId()));
-        sessionKey = null;
-        sharedSecret = null;
-        clientPublicKey = null;
-        clientPrivateKey = null;
+        sessionKey = new byte[0];
+        sharedSecret = new byte[0];
+        clientPublicKey = new byte[0];
+        clientPrivateKey = new byte[0];
         isPairVerified = false;
         logger.debug("{}HomekitPairing state reset completed - Server: {}", LOG_STATE, new String(getPairingId()));
     }
 
     private void resetVerificationState() {
         logger.debug("'{}' : Resetting verification state", new String(getPairingId()));
-        sessionKey = null;
-        sharedSecret = null;
-        clientPublicKey = null;
-        clientPrivateKey = null;
+        sessionKey = new byte[0];
+        sharedSecret = new byte[0];
+        clientPublicKey = new byte[0];
+        clientPrivateKey = new byte[0];
         isPairVerified = false;
         logger.debug("'{}' : Verification state reset completed", new String(getPairingId()));
     }
@@ -798,21 +805,24 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
         if (SRP6Session.isEmpty()) {
             SRP6Session = Optional.of(new HomekitClientSRP6Session());
-            SRP6Session.orElseThrow(() -> new HomekitServerException("SRP6 session not found"))
-                    .setClientEvidenceRoutine(new HomekitEncryptionEngine.ClientEvidenceRoutineImpl());
-            SRP6Session.orElseThrow(() -> new HomekitServerException("SRP6 session not found"))
-                    .setServerEvidenceRoutine(new HomekitEncryptionEngine.ServerEvidenceRoutineImpl());
-            SRP6Session.orElseThrow(() -> new HomekitServerException("SRP6 session not found"))
-                    .setXRoutine(new XRoutineWithUserIdentity());
+            SRP6Session.ifPresent(session -> {
+                session.setClientEvidenceRoutine(new HomekitEncryptionEngine.ClientEvidenceRoutineImpl());
+                session.setServerEvidenceRoutine(new HomekitEncryptionEngine.ServerEvidenceRoutineImpl());
+                session.setXRoutine(new XRoutineWithUserIdentity());
+            });
         }
 
-        SRP6Session.orElseThrow(() -> new HomekitServerException("SRP6 session not found")).step1("Pair-Setup",
-                setupCode);
+        SRP6Session.ifPresent(session -> session.step1("Pair-Setup", setupCode));
 
         SRP6ClientCredentials clientCredentials = null;
         try {
-            clientCredentials = SRP6Session.orElseThrow(() -> new HomekitServerException("SRP6 session not found"))
-                    .step2(HomekitEncryptionEngine.SRP6Params, salt, publicKey);
+            if (SRP6Session.isPresent()) {
+                @SuppressWarnings("null")
+                var session = SRP6Session.get();
+                clientCredentials = session.step2(HomekitEncryptionEngine.SRP6Params, salt, publicKey);
+            } else {
+                throw new HomekitServerException("SRP6 session not found");
+            }
         } catch (SRP6Exception e) {
             logger.error("{}SRP6 step 2 failed - Error: {}", LOG_ERROR, e.getMessage());
             logger.debug("{}Exception details", LOG_ERROR, e);
@@ -862,17 +872,29 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         BigInteger proof = stageResult.decodeResult.getBigInt(HomekitMessage.PROOF);
 
         try {
-            SRP6Session.orElseThrow(() -> new HomekitServerException("SRP6 session not found")).step3(proof);
+            if (SRP6Session.isPresent()) {
+                @SuppressWarnings("null")
+                var session = SRP6Session.get();
+                session.step3(proof);
+            } else {
+                throw new HomekitServerException("SRP6 session not found");
+            }
         } catch (SRP6Exception e) {
             logger.error("{}SRP6 step 3 failed - Error: {}", LOG_ERROR, e.getMessage());
             logger.debug("{}Exception details", LOG_ERROR, e);
             throw new HomekitServerException("SRP6 step 3 failed", e);
         }
 
-        MessageDigest digest = SRP6Session.orElseThrow(() -> new HomekitServerException("SRP6 session not found"))
-                .getCryptoParams().getMessageDigestInstance();
-        BigInteger S = SRP6Session.orElseThrow(() -> new HomekitServerException("SRP6 session not found"))
-                .getSessionKey(false);
+        MessageDigest digest;
+        BigInteger S;
+        if (SRP6Session.isPresent()) {
+            @SuppressWarnings("null")
+            var session = SRP6Session.get();
+            digest = session.getCryptoParams().getMessageDigestInstance();
+            S = session.getSessionKey(false);
+        } else {
+            throw new HomekitServerException("SRP6 session not found");
+        }
         byte[] sBytes = HomekitByte.toByteArray(S);
         logger.debug("{}SRP session key generated - Server: {}", LOG_STATE, new String(getPairingId()));
         sharedSecret = digest.digest(sBytes);
@@ -1102,12 +1124,22 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             byte[] readKey = HomekitEncryptionEngine.createKey("Control-Read-Encryption-Key", sharedSecret);
             logger.debug("{}Read key generated - Server: {}", LOG_STATE, new String(getPairingId()));
 
-            HomekitHttpDestination destination = (HomekitHttpDestination) httpClient.getDestination(
-                    stageResult.result.getRequest().getScheme(), stageResult.result.getRequest().getHost(),
-                    stageResult.result.getRequest().getPort());
-            logger.debug("{}Setting encryption keys on destination - Server: {}", LOG_STATE,
-                    new String(getPairingId()));
-            destination.setEncryptionKeys(readKey, writeKey);
+            if (httpClient != null && stageResult.result != null) {
+                Result result = stageResult.result;
+                if (result.getRequest() != null) {
+                    @SuppressWarnings("null")
+                    Destination dest = httpClient.getDestination(
+                            result.getRequest().getScheme(), result.getRequest().getHost(),
+                            result.getRequest().getPort());
+                    if (dest != null && dest instanceof HomekitHttpDestination) {
+                        @SuppressWarnings("resource")
+                        HomekitHttpDestination destination = (HomekitHttpDestination) dest;
+                        logger.debug("{}Setting encryption keys on destination - Server: {}", LOG_STATE,
+                                new String(getPairingId()));
+                        destination.setEncryptionKeys(readKey, writeKey);
+                    }
+                }
+            }
         }
 
         return new byte[0];
@@ -1144,43 +1176,47 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
         CompletableFuture<StageResult> completableFuture = new CompletableFuture<>();
 
-        httpClient.newRequest(uri.toString()).method(HttpMethod.POST)
-                .content(new BytesContentProvider(request), "application/pairing+tlv8")
-                .header(HttpHeader.CONNECTION.asString(), HttpHeader.KEEP_ALIVE.asString())
-                .send(new BufferingResponseListener(8 * 1024 * 1024) {
-                    @Override
-                    public void onComplete(Result result) {
-                        if (!result.isFailed()) {
-                            try {
-                                byte[] body = getContent();
+        if (httpClient != null) {
+            httpClient.newRequest(uri.toString()).method(HttpMethod.POST)
+                    .content(new BytesContentProvider(request), "application/pairing+tlv8")
+                    .header(HttpHeader.CONNECTION.asString(), HttpHeader.KEEP_ALIVE.asString())
+                    .send(new BufferingResponseListener(8 * 1024 * 1024) {
+                        @Override
+                        public void onComplete(@Nullable Result result) {
+                            if (result != null && !result.isFailed()) {
+                                try {
+                                    byte[] body = getContent();
 
-                                DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(body);
+                                    DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(body);
 
-                                if (d.getBytes(HomekitMessage.ERROR) != null) {
-                                    SRP6Session = Optional.empty();
-                                    StageResult stageResult = new StageResult(
-                                            HomekitErrorCode.fromCode(d.getByte(HomekitMessage.ERROR)));
+                                    if (d.getBytes(HomekitMessage.ERROR) != null) {
+                                        SRP6Session = Optional.empty();
+                                        StageResult stageResult = new StageResult(
+                                                HomekitErrorCode.fromCode(d.getByte(HomekitMessage.ERROR)));
+                                        completableFuture.complete(stageResult);
+                                        return;
+                                    }
+
+                                    short state = d.getByte(HomekitMessage.STATE);
+                                    logger.info("{}Received State {} - Server: {}", LOG_STATE, state,
+                                            new String(getPairingId()));
+
+                                    StageResult stageResult = new StageResult(d, result);
                                     completableFuture.complete(stageResult);
-                                    return;
+                                } catch (IOException e) {
+                                    SRP6Session = Optional.empty();
+                                    logger.error("{}Failed to decode response - Error: {}", LOG_ERROR, e.getMessage());
+                                    logger.debug("{}Exception details", LOG_ERROR, e);
                                 }
-
-                                short state = d.getByte(HomekitMessage.STATE);
-                                logger.info("{}Received State {} - Server: {}", LOG_STATE, state,
-                                        new String(getPairingId()));
-
-                                StageResult stageResult = new StageResult(d, result);
-                                completableFuture.complete(stageResult);
-                            } catch (IOException e) {
-                                SRP6Session = Optional.empty();
-                                logger.error("{}Failed to decode response - Error: {}", LOG_ERROR, e.getMessage());
-                                logger.debug("{}Exception details", LOG_ERROR, e);
+                            } else {
+                                if (result != null) {
+                                    StageResult stageResult = new StageResult(result.getResponseFailure().getMessage());
+                                    completableFuture.complete(stageResult);
+                                }
                             }
-                        } else {
-                            StageResult stageResult = new StageResult(result.getResponseFailure().getMessage());
-                            completableFuture.complete(stageResult);
                         }
-                    }
-                });
+                    });
+        }
 
         return completableFuture;
     }
@@ -1367,9 +1403,14 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 characteristic.withEvents(true);
                 return true;
             } else {
-                if (contentResult.result != null) {
+                if (contentResult != null && contentResult.result != null
+                        && contentResult.result.getResponse() != null) {
+                    var result = contentResult.result;
+                    @SuppressWarnings("null")
+                    var response = result.getResponse();
+                    int status = response.getStatus();
                     logger.warn("{}Failed to subscribe to events for characteristic {} - Status: {} - Server: {}",
-                            LOG_STATE, characteristic.getUID(), contentResult.result.getResponse().getStatus(),
+                            LOG_STATE, characteristic.getUID(), status,
                             new String(getPairingId()));
                 }
                 return false;
@@ -1587,10 +1628,10 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     public void removeAccessory(HomekitAccessory accessory) throws HomekitAccessoryOperationException {
         super.removeAccessory(accessory);
         // Collect all characteristic UIDs for this accessory
-        Set<String> characteristicUids = new HashSet<>();
+        Set<UID> characteristicUids = new HashSet<>();
         for (HomekitService service : accessory.getServices()) {
             for (HomekitCharacteristic<?> characteristic : service.getCharacteristics()) {
-                characteristicUids.add(characteristic.getUID().toString());
+                characteristicUids.add((UID) characteristic.getUID());
             }
         }
 
@@ -1610,6 +1651,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     }
 
     // ========== Inner Classes ==========
+    @SuppressWarnings("null")
     protected class StageResult {
         public StageResult(DecodeResult decodeResult, Result result) {
             this.decodeResult = decodeResult;
@@ -1637,6 +1679,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         public HomekitErrorCode error;
     }
 
+    @SuppressWarnings("null")
     public static class ContentResult {
         @Nullable
         public Result result;

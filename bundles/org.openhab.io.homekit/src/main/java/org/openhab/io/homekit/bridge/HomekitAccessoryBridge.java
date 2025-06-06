@@ -125,9 +125,9 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial Contribution
  * @since 1.0.0
  */
-@Component(service = { HomekitAccessoryBridge.class,
-        EventSubscriber.class }, immediate = true) @NonNullByDefault public class HomekitAccessoryBridge
-                implements EventSubscriber {
+@Component(service = { HomekitAccessoryBridge.class, EventSubscriber.class }, immediate = true)
+@NonNullByDefault
+public class HomekitAccessoryBridge implements EventSubscriber {
     private static final Logger logger = LoggerFactory.getLogger(HomekitAccessoryBridge.class);
     private static final String LOG_PREFIX = "Homekit Bridge: ";
     private static final String LOG_STATE = LOG_PREFIX + "State - ";
@@ -164,7 +164,8 @@ import org.slf4j.LoggerFactory;
     private static final int STATISTICS_REPORT_INTERVAL_SECONDS = 60;
     private ExitEventStatisticsCollector statisticsCollector;
 
-    @Activate public HomekitAccessoryBridge(@Reference HomekitEventManager eventManager,
+    @Activate
+    public HomekitAccessoryBridge(@Reference HomekitEventManager eventManager,
             @Reference HomekitAccessoryServerRegistryImpl serverRegistry,
             @Reference HomekitAccessoryFactory accessoryFactory,
             @Reference HomekitCharacteristicFactory characteristicFactory,
@@ -194,7 +195,8 @@ import org.slf4j.LoggerFactory;
         loadConfiguration();
     }
 
-    @Deactivate protected void deactivate() {
+    @Deactivate
+    protected void deactivate() {
         if (ENABLE_EXIT_EVENT_STATISTICS) {
             statisticsCollector.stop();
         }
@@ -320,7 +322,8 @@ import org.slf4j.LoggerFactory;
      * @param uid The unique identifier of the accessory to remove
      */
     private void removeAccessory(String uid) {
-        @Nullable HomekitAccessory accessory = accessoryMap.get(uid);
+        @Nullable
+        HomekitAccessory accessory = accessoryMap.get(uid);
         if (accessory != null) {
             try {
                 // Remove from server
@@ -366,19 +369,20 @@ import org.slf4j.LoggerFactory;
      * @param accessoryConfig The new configuration for the accessory
      */
     private void updateAccessory(String uid, Map<String, Object> accessoryConfig) {
-        @Nullable HomekitAccessory accessory = accessoryMap.get(uid);
+        @Nullable
+        HomekitAccessory accessory = accessoryMap.get(uid);
         if (accessory != null) {
             try {
                 // Update metadata
-                @SuppressWarnings("unchecked") Map<String, Object> metadata = (Map<String, Object>) accessoryConfig
-                        .get("metadata");
+                @SuppressWarnings("unchecked")
+                Map<String, Object> metadata = (Map<String, Object>) accessoryConfig.get("metadata");
                 if (metadata != null) {
                     applyMetadata(accessory, metadata);
                 }
 
                 // Update services
-                @SuppressWarnings("unchecked") Map<String, Object> services = (Map<String, Object>) accessoryConfig
-                        .get("services");
+                @SuppressWarnings("unchecked")
+                Map<String, Object> services = (Map<String, Object>) accessoryConfig.get("services");
                 if (services != null) {
                     // Remove services that are no longer in config
                     Set<String> configuredServiceTypes = services.keySet();
@@ -421,7 +425,8 @@ import org.slf4j.LoggerFactory;
     private void createAccessory(String uid, Map<String, Object> accessoryConfig) {
         try {
             // Get accessory type
-            @Nullable String type = (String) accessoryConfig.get("type");
+            @Nullable
+            String type = (String) accessoryConfig.get("type");
             if (type == null) {
                 logger.error("{}No type specified for accessory {}", LOG_PREFIX, uid);
                 return;
@@ -450,15 +455,15 @@ import org.slf4j.LoggerFactory;
             }
 
             // Apply metadata
-            @SuppressWarnings("unchecked") Map<String, Object> metadata = (Map<String, Object>) accessoryConfig
-                    .get("metadata");
+            @SuppressWarnings("unchecked")
+            Map<String, Object> metadata = (Map<String, Object>) accessoryConfig.get("metadata");
             if (metadata != null) {
                 applyMetadata(accessory, metadata);
             }
 
             // Process services
-            @SuppressWarnings("unchecked") Map<String, Object> services = (Map<String, Object>) accessoryConfig
-                    .get("services");
+            @SuppressWarnings("unchecked")
+            Map<String, Object> services = (Map<String, Object>) accessoryConfig.get("services");
             if (services != null) {
                 processServices(accessory, services);
             }
@@ -469,8 +474,8 @@ import org.slf4j.LoggerFactory;
                 try {
                     accessory.assignToServer(server);
                     accessoryMap.put(uid, accessory);
-                    @Nullable HomekitAccessoryType annotation = accessory.getClass()
-                            .getAnnotation(HomekitAccessoryType.class);
+                    @Nullable
+                    HomekitAccessoryType annotation = accessory.getClass().getAnnotation(HomekitAccessoryType.class);
                     String accessoryType = annotation != null ? annotation.type() : "unknown";
                     logger.info("{}Successfully created accessory {} of type {}", LOG_PREFIX, uid, accessoryType);
                 } catch (Exception e) {
@@ -506,12 +511,13 @@ import org.slf4j.LoggerFactory;
             metadata.forEach((key, value) -> {
                 service.getCharacteristics().stream().filter(c -> c.getTag().equals(key)).findFirst().ifPresent(c -> {
                     try {
-                        @SuppressWarnings("unchecked") HomekitCharacteristic<Object> characteristic = (HomekitCharacteristic<Object>) c;
+                        @SuppressWarnings("unchecked")
+                        HomekitCharacteristic<Object> characteristic = (HomekitCharacteristic<Object>) c;
                         characteristic.setValue(value);
                         HomekitCharacteristicUpdateEvent updateEvent = new HomekitCharacteristicUpdateEvent(
                                 (UID) bridgeUID, (UID) c.getUID(), c,
                                 characteristic.toValueJson(characteristic.getValue()),
-                                characteristic.toValueJson(value), Map.<String, Object>of(),
+                                characteristic.toValueJson(value), Map.<String, Object> of(),
                                 new HomekitEventMetadata(bridgeUID, null, bridgeUID, peerGroup));
                         eventManager.publishEvent(updateEvent);
                     } catch (Exception e) {
@@ -542,7 +548,8 @@ import org.slf4j.LoggerFactory;
             try {
                 // Create or get service
                 Optional<HomekitService> serviceOpt = accessory.getService(serviceType);
-                @Nullable HomekitService service = null;
+                @Nullable
+                HomekitService service = null;
 
                 if (serviceOpt.isPresent()) {
                     service = serviceOpt.get();
@@ -558,7 +565,8 @@ import org.slf4j.LoggerFactory;
 
                 // Process characteristics only if service is not null
                 if (service != null) {
-                    @SuppressWarnings("unchecked") Map<String, Object> characteristics = (Map<String, Object>) ((Map<String, Object>) serviceConfig)
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> characteristics = (Map<String, Object>) ((Map<String, Object>) serviceConfig)
                             .get("characteristics");
                     if (characteristics != null) {
                         processCharacteristics(service, characteristics);
@@ -591,7 +599,8 @@ import org.slf4j.LoggerFactory;
                 HomekitCharacteristic<?> characteristic = characteristicFactory.createCharacteristic(type, service);
                 if (characteristic != null) {
                     // Apply characteristic configuration
-                    @SuppressWarnings("unchecked") Map<String, Object> charConfig = (Map<String, Object>) config;
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> charConfig = (Map<String, Object>) config;
                     applyCharacteristicConfig(characteristic, charConfig);
 
                     // Add to service
@@ -644,7 +653,8 @@ import org.slf4j.LoggerFactory;
         // Apply other configuration (optional setters)
         if (characteristic instanceof AbstractHomekitCharacteristic<?> abstractCharacteristic) {
             if (config.containsKey("minValue")) {
-                @Nullable Object value = config.get("minValue");
+                @Nullable
+                Object value = config.get("minValue");
                 try {
                     var m = abstractCharacteristic.getClass().getMethod("withMinValue", double.class);
                     if (value instanceof Number) {
@@ -654,7 +664,8 @@ import org.slf4j.LoggerFactory;
                 }
             }
             if (config.containsKey("maxValue")) {
-                @Nullable Object value = config.get("maxValue");
+                @Nullable
+                Object value = config.get("maxValue");
                 try {
                     var m = abstractCharacteristic.getClass().getMethod("withMaxValue", double.class);
                     if (value instanceof Number) {
@@ -664,7 +675,8 @@ import org.slf4j.LoggerFactory;
                 }
             }
             if (config.containsKey("step")) {
-                @Nullable Object value = config.get("step");
+                @Nullable
+                Object value = config.get("step");
                 try {
                     var m = abstractCharacteristic.getClass().getMethod("withStep", double.class);
                     if (value instanceof Number) {
@@ -674,7 +686,8 @@ import org.slf4j.LoggerFactory;
                 }
             }
             if (config.containsKey("inverted")) {
-                @Nullable Object value = config.get("inverted");
+                @Nullable
+                Object value = config.get("inverted");
                 try {
                     var m = abstractCharacteristic.getClass().getMethod("withInverted", Boolean.class);
                     if (value instanceof Boolean) {
@@ -704,11 +717,13 @@ import org.slf4j.LoggerFactory;
     private HomekitEventSubscription subscribeToCharacteristicEvents(HomekitCharacteristic<?> characteristic) {
         return eventManager.subscribe(HomekitEventType.CHARACTERISTIC_VALUE_CHANGED, (UID) characteristic.getUID(),
                 bridgeUID, new HomekitEventSubscriber() {
-                    @Override public void onEvent(HomekitEvent event) {
+                    @Override
+                    public void onEvent(HomekitEvent event) {
                         handleCharacteristicEvent(characteristic, event);
                     }
 
-                    @Override public void onEventError(HomekitEvent event, Exception e) {
+                    @Override
+                    public void onEventError(HomekitEvent event, Exception e) {
                         logger.error("{}Failed to handle characteristic event: {}", LOG_PREFIX, e.getMessage());
                     }
                 });
@@ -741,7 +756,8 @@ import org.slf4j.LoggerFactory;
                 }
 
                 // First check if this is a channel-based characteristic
-                @Nullable ChannelUID channelUID = channelMap.get(characteristic.getUID().toString());
+                @Nullable
+                ChannelUID channelUID = channelMap.get(characteristic.getUID().toString());
                 if (channelUID != null) {
                     // This is a channel-based characteristic
                     changedEvent.getNewValue().ifPresent(newValue -> {
@@ -757,7 +773,8 @@ import org.slf4j.LoggerFactory;
                     });
                 } else {
                     // This is an item-based characteristic
-                    @Nullable ItemUID itemUID = itemMap.get(characteristic.getUID().toString());
+                    @Nullable
+                    ItemUID itemUID = itemMap.get(characteristic.getUID().toString());
                     if (itemUID != null) {
                         changedEvent.getNewValue().ifPresent(newValue -> {
                             State newState = characteristic.toState(newValue);
@@ -774,11 +791,13 @@ import org.slf4j.LoggerFactory;
         }
     }
 
-    @Override public Set<String> getSubscribedEventTypes() {
+    @Override
+    public Set<String> getSubscribedEventTypes() {
         return Set.of(ItemCommandEvent.TYPE, ItemStateEvent.TYPE);
     }
 
-    @Override public void receive(Event event) {
+    @Override
+    public void receive(Event event) {
         if (event instanceof ItemCommandEvent commandEvent) {
             handleItemCommand(commandEvent);
         } else if (event instanceof ItemStateEvent stateEvent) {
@@ -835,12 +854,14 @@ import org.slf4j.LoggerFactory;
             logger.debug("{}Starting to process event for item {} with value {} and characteristic {}", LOG_STATE,
                     itemName, value, characteristic.getUID());
 
-            @SuppressWarnings("unchecked") HomekitCharacteristic<Object> typedCharacteristic = (HomekitCharacteristic<Object>) characteristic;
+            @SuppressWarnings("unchecked")
+            HomekitCharacteristic<Object> typedCharacteristic = (HomekitCharacteristic<Object>) characteristic;
             JsonValue jsonValue = typedCharacteristic.toValueJson(value);
 
             if (jsonValue != null) {
                 // Check if state has actually changed
-                @Nullable ExitEvent exitEvent = exitEvents.get(itemName);
+                @Nullable
+                ExitEvent exitEvent = exitEvents.get(itemName);
                 if (exitEvent != null && !exitEvent.isExpired() && statesEqual(value, exitEvent.getState())) {
                     logger.debug("{}State unchanged for item {}, skipping event processing", LOG_STATE, itemName);
                     return;
@@ -936,12 +957,14 @@ import org.slf4j.LoggerFactory;
         logger.debug("{}Processing command {} for item {}", LOG_STATE, command, itemName);
 
         // First check if this item is linked to a channel
-        @Nullable ChannelUID channelUID = itemChannelMap.get(itemName);
+        @Nullable
+        ChannelUID channelUID = itemChannelMap.get(itemName);
         if (channelUID != null) {
             logger.debug("{}Item {} is linked to channel {}", LOG_STATE, itemName, channelUID);
 
             // This is a channel-based characteristic
-            @Nullable HomekitCharacteristic<?> characteristic = channelCharacteristicMap.get(channelUID);
+            @Nullable
+            HomekitCharacteristic<?> characteristic = channelCharacteristicMap.get(channelUID);
             if (characteristic != null) {
                 logger.debug("{}Found channel-based characteristic {} for item {}", LOG_STATE, characteristic.getUID(),
                         itemName);
@@ -954,7 +977,8 @@ import org.slf4j.LoggerFactory;
                     itemName);
 
             // This is an item-based characteristic
-            @Nullable HomekitCharacteristic<?> characteristic = characteristicMap.get(itemName);
+            @Nullable
+            HomekitCharacteristic<?> characteristic = characteristicMap.get(itemName);
             if (characteristic != null) {
                 logger.debug("{}Found item-based characteristic {} for item {}", LOG_STATE, characteristic.getUID(),
                         itemName);
@@ -1017,12 +1041,14 @@ import org.slf4j.LoggerFactory;
         logger.debug("{}Processing state {} for item {}", LOG_STATE, state, itemName);
 
         // First check if this item is linked to a channel
-        @Nullable ChannelUID channelUID = itemChannelMap.get(itemName);
+        @Nullable
+        ChannelUID channelUID = itemChannelMap.get(itemName);
         if (channelUID != null) {
             logger.debug("{}Item {} is linked to channel {}", LOG_STATE, itemName, channelUID);
 
             // This is a channel-based characteristic
-            @Nullable HomekitCharacteristic<?> characteristic = channelCharacteristicMap.get(channelUID);
+            @Nullable
+            HomekitCharacteristic<?> characteristic = channelCharacteristicMap.get(channelUID);
             if (characteristic != null) {
                 logger.debug("{}Found channel-based characteristic {} for item {}", LOG_STATE, characteristic.getUID(),
                         itemName);
@@ -1035,7 +1061,8 @@ import org.slf4j.LoggerFactory;
                     itemName);
 
             // This is an item-based characteristic
-            @Nullable HomekitCharacteristic<?> characteristic = characteristicMap.get(itemName);
+            @Nullable
+            HomekitCharacteristic<?> characteristic = characteristicMap.get(itemName);
             if (characteristic != null) {
                 logger.debug("{}Found item-based characteristic {} for item {}", LOG_STATE, characteristic.getUID(),
                         itemName);
@@ -1056,7 +1083,8 @@ import org.slf4j.LoggerFactory;
      */
     private void cleanupExpiredExitEvents() {
         exitEvents.entrySet().removeIf(entry -> {
-            @Nullable ExitEvent event = entry.getValue();
+            @Nullable
+            ExitEvent event = entry.getValue();
             return event != null && event.isExpired();
         });
     }
@@ -1201,7 +1229,8 @@ import org.slf4j.LoggerFactory;
                 int[] deciles = new int[11];
                 for (int i = 0; i <= 10; i++) {
                     int index = (int) Math.round(i * (sortedTimes.size() - 1) / 10.0);
-                    @Nullable Long value = sortedTimes.get(index);
+                    @Nullable
+                    Long value = sortedTimes.get(index);
                     deciles[i] = value != null ? value.intValue() : 0;
                 }
 

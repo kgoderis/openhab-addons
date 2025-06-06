@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -161,7 +162,6 @@ public class HomekitEventManager {
     private static final int MAX_QUEUE_SIZE = 1000;
     private static final long QUEUE_PROCESSING_DELAY_MS = 100;
     private static final long SHUTDOWN_TIMEOUT_MS = 10000; // 10 seconds
-    private static final int MAX_EVENT_HISTORY = 100;
 
     private static final Logger logger = LoggerFactory.getLogger(HomekitEventManager.class);
     private static final String LOG_PREFIX = "Homekit EventManager: ";
@@ -180,7 +180,6 @@ public class HomekitEventManager {
     private final ScheduledExecutorService eventExecutor;
     private final AtomicBoolean isRunning = new AtomicBoolean(true);
     private final AtomicInteger activeEventCount = new AtomicInteger(0);
-    private final HomekitEventLogger eventLogger;
     private final Set<UID> activePublishers = ConcurrentHashMap.newKeySet();
 
     // Metrics counters
@@ -209,7 +208,6 @@ public class HomekitEventManager {
     public HomekitEventManager(@Reference HomekitAccessoryRegistry accessoryRegistry) {
         this.accessoryRegistry = accessoryRegistry;
         this.eventExecutor = ThreadPoolManager.getScheduledPool(THREAD_POOL_NAME);
-        this.eventLogger = HomekitEventLogger.getInstance();
         registerEventLogger();
         startEventProcessor();
         logger.debug("{}Activated", LOG_INIT);
@@ -410,10 +408,10 @@ public class HomekitEventManager {
         return futures;
     }
 
-    private HomekitEventSubscription findExistingSubscription(HomekitEventType eventType, UID publisherUID,
+    private Optional<HomekitEventSubscription> findExistingSubscription(HomekitEventType eventType, UID publisherUID,
             HomekitEventSubscriber subscriber) {
         return subscriptions.stream().filter(sub -> sub.eventType == eventType && sub.publisherUID.equals(publisherUID)
-                && sub.subscriber == subscriber).findFirst().orElse(null);
+                && sub.subscriber == subscriber).findFirst();
     }
 
     private HomekitEventSubscription createAndAddSubscription(HomekitEventType eventType, UID publisherUID,
@@ -465,9 +463,10 @@ public class HomekitEventManager {
 
     public HomekitEventSubscription subscribe(HomekitEventType eventType, UID publisherUID, UID subscriberUID,
             HomekitEventSubscriber subscriber, Class<? extends HomekitEvent> expectedEventClass) {
-        HomekitEventSubscription existingSubscription = findExistingSubscription(eventType, publisherUID, subscriber);
-        return existingSubscription != null ? existingSubscription
-                : createAndAddSubscription(eventType, publisherUID, subscriberUID, subscriber, expectedEventClass);
+        @SuppressWarnings("null")
+        HomekitEventSubscription result = findExistingSubscription(eventType, publisherUID, subscriber).orElseGet(
+                () -> createAndAddSubscription(eventType, publisherUID, subscriberUID, subscriber, expectedEventClass));
+        return result;
     }
 
     public HomekitEventSubscription subscribe(HomekitEventType eventType, UID publisherUID, UID subscriberUID,
@@ -581,10 +580,11 @@ public class HomekitEventManager {
     public HomekitEventSubscription subscribe(HomekitEventType eventType, UID publisherUID, UID subscriberUID,
             HomekitEventSubscriber subscriber, Class<? extends HomekitEvent> expectedEventClass,
             Predicate<HomekitEvent> filter) {
-        HomekitEventSubscription existingSubscription = findExistingSubscription(eventType, publisherUID, subscriber);
-        return existingSubscription != null ? existingSubscription
-                : createAndAddSubscription(eventType, publisherUID, subscriberUID, subscriber, expectedEventClass,
-                        filter);
+        @SuppressWarnings("null")
+        HomekitEventSubscription result = findExistingSubscription(eventType, publisherUID, subscriber)
+                .orElseGet(() -> createAndAddSubscription(eventType, publisherUID, subscriberUID, subscriber,
+                        expectedEventClass, filter));
+        return result;
     }
 
     // Unsubscribe using the subscription object
@@ -598,25 +598,29 @@ public class HomekitEventManager {
 
     // Unsubscribe using eventType, publisherUID, and subscriber (for compatibility)
     public void unsubscribe(HomekitEventType eventType, UID publisherUID, HomekitEventSubscriber subscriber) {
-        HomekitEventSubscription removedSubscription = findExistingSubscription(eventType, publisherUID, subscriber);
-        if (removedSubscription != null && subscriptions.remove(removedSubscription)) {
-            publishEvent(new HomekitSubscriptionRemovedEvent(removedSubscription));
-            logger.debug("{}Subscriber removed for event type {} and source UID {}", LOG_SUBSCRIBER, eventType,
-                    publisherUID);
-        }
+        findExistingSubscription(eventType, publisherUID, subscriber).ifPresent(removedSubscription -> {
+            if (subscriptions.remove(removedSubscription)) {
+                publishEvent(new HomekitSubscriptionRemovedEvent(removedSubscription));
+                logger.debug("{}Subscriber removed for event type {} and source UID {}", LOG_SUBSCRIBER, eventType,
+                        publisherUID);
+            }
+        });
     }
 
     public List<HomekitEventSubscription> subscribe(Set<HomekitEventType> eventTypes, UID publisherUID,
             UID subscriberUID, HomekitEventHandler handler) {
-        return eventTypes.stream().map(eventType -> subscribe(eventType, publisherUID, subscriberUID, handler))
+        List<HomekitEventSubscription> result = eventTypes.stream()
+                .map(eventType -> subscribe(eventType, publisherUID, subscriberUID, handler))
                 .collect(Collectors.toList());
+        return result;
     }
 
     public List<HomekitEventSubscription> subscribe(Set<HomekitEventType> eventTypes, UID publisherUID,
             UID subscriberUID, HomekitEventHandler handler, Class<? extends HomekitEvent> expectedEventClass) {
-        return eventTypes.stream()
+        List<HomekitEventSubscription> result = eventTypes.stream()
                 .map(eventType -> subscribe(eventType, publisherUID, subscriberUID, handler, expectedEventClass))
                 .collect(Collectors.toList());
+        return result;
     }
 
     /**
@@ -772,7 +776,7 @@ public class HomekitEventManager {
         });
 
         // Update active publishers
-        if (activePublishers.remove(oldUID)) {
+        if (activePublishers.remove((UID) oldUID)) {
             activePublishers.add((UID) newUID);
             logger.debug("{}Updated active publisher from {} to {}", LOG_PUBLISHER, oldUID, newUID);
         }

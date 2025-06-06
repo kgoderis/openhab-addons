@@ -13,6 +13,7 @@ import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
@@ -577,13 +578,11 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
             throw new HomekitFactoryException("Unsupported service type: " + serviceType);
         }
 
+        @SuppressWarnings("null")
+        @Nullable
         String tag = tagToTypeMap.entrySet().stream().filter(entry -> entry.getValue().equals(serviceType))
-                .map(Map.Entry::getKey).findFirst().orElse(null);
-
-        if (tag == null) {
-            logger.error("{}No tag found for service type: {}", LOG_ERROR, serviceType);
-            throw new HomekitFactoryException("No tag found for service type: " + serviceType);
-        }
+                .map(Map.Entry::getKey).findFirst()
+                .orElseThrow(() -> new HomekitFactoryException("No tag found for service type: " + serviceType));
 
         logger.debug("{}Found tag {} for service type {}", LOG_STATE, tag, serviceType);
         return tag;

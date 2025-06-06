@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.core.config.core.ConfigDescriptionRegistry;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.service.WatchService;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.ThingUID;
@@ -93,7 +93,6 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     private static final String CONFIG_DIR = "conf/homekit";
 
     private final WatchService watchService;
-    private final ConfigDescriptionRegistry configDescriptionRegistry;
     private final Yaml yaml;
 
     // Separate stores for different configuration types
@@ -120,14 +119,9 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     private final Map<UID, String> networkSourceFiles = new ConcurrentHashMap<>();
     private final Map<UID, String> eventSourceFiles = new ConcurrentHashMap<>();
 
-    private final Map<UID, String> uidToYamlFile = new ConcurrentHashMap<>();
-    private final Map<String, Set<UID>> yamlFileToUIDs = new ConcurrentHashMap<>();
-
     @Activate
-    public HomekitConfigurationManager(@Reference WatchService watchService,
-            @Reference ConfigDescriptionRegistry configDescriptionRegistry, Map<String, Object> config) {
+    public HomekitConfigurationManager(@Reference WatchService watchService, Map<String, Object> config) {
         this.watchService = watchService;
-        this.configDescriptionRegistry = configDescriptionRegistry;
         this.yaml = new Yaml();
 
         // Register directory for watching
@@ -341,11 +335,18 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
         Map<String, Object> configs = (Map<String, Object>) yamlConfig.get(type.getYamlSection());
         if (configs != null) {
             for (Map.Entry<String, Object> entry : configs.entrySet()) {
+                @Nullable
                 String uidString = entry.getKey();
+                if (uidString == null) {
+                    continue;
+                }
+                @Nullable
                 Object value = entry.getValue();
+                if (value == null) {
+                    continue;
+                }
 
                 if (value instanceof Map) {
-                    @SuppressWarnings("unchecked")
                     Map<String, Object> config = (Map<String, Object>) value;
                     try {
                         UID uid = convertToUID(uidString, type);
@@ -793,6 +794,85 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     }
 
     /**
+     * Gets configuration for a given UID string without knowing the type.
+     * This method attempts to infer the configuration type from the UID format.
+     *
+     * @param uidString The UID string to look up
+     * @return An optional containing the configuration if found
+     */
+    public Optional<Map<String, Object>> getConfiguration(String uidString) {
+        UID uid = convertToUID(uidString);
+
+        // Try each configuration type to find a match
+        for (ConfigurationType type : ConfigurationType.values()) {
+            Optional<Map<String, Object>> config = getConfiguration(uid, type);
+            if (config.isPresent()) {
+                return config;
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * Updates configuration for a given UID string without knowing the type.
+     * This method attempts to infer the configuration type from the UID format.
+     *
+     * @param uidString The UID string to update
+     * @param config The configuration to store
+     */
+    public void updateConfiguration(String uidString, Map<String, Object> config) {
+        UID uid = convertToUID(uidString);
+
+        // Determine the most appropriate configuration type based on UID format
+        ConfigurationType type = determineConfigurationType(uid);
+        updateConfiguration(uid, type, config);
+    }
+
+    /**
+     * Determines the configuration type based on UID characteristics.
+     *
+     * @param uid The UID to analyze
+     * @return The most appropriate configuration type
+     */
+    private ConfigurationType determineConfigurationType(UID uid) {
+        String uidString = uid.toString();
+        String[] segments = uidString.split(":");
+
+        if (segments.length >= 2 && segments[0].equals("homekit")) {
+            switch (segments[1]) {
+                case "item":
+                    return ConfigurationType.ITEM;
+                case "accessory":
+                    return ConfigurationType.ACCESSORY;
+                case "service":
+                    return ConfigurationType.SERVICE;
+                case "characteristic":
+                    return ConfigurationType.CHARACTERISTIC;
+                case "profile":
+                    return ConfigurationType.PROFILE;
+                case "bridge":
+                    return ConfigurationType.BRIDGE;
+                case "network":
+                    return ConfigurationType.NETWORK;
+                case "event":
+                    return ConfigurationType.EVENT;
+            }
+        }
+
+        if (uid instanceof ThingUID) {
+            return ConfigurationType.THING;
+        } else if (uid instanceof ChannelUID) {
+            return ConfigurationType.CHANNEL;
+        } else if (uid instanceof ItemUID) {
+            return ConfigurationType.ITEM;
+        }
+
+        // Default fallback
+        return ConfigurationType.THING;
+    }
+
+    /**
      * Enum representing different types of configurations and their YAML section identifiers.
      * This enum defines the supported configuration types and their YAML section names.
      */
@@ -818,13 +898,14 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
             return yamlSection;
         }
 
-        public static ConfigurationType fromYamlSection(String section) {
+        public static ConfigurationType fromYamlSection(String section) throws IllegalArgumentException {
             for (ConfigurationType type : values()) {
                 if (type.yamlSection.equals(section)) {
                     return type;
                 }
             }
-            return null;
+
+            throw new IllegalArgumentException("Invalid configuration type: " + section);
         }
     }
 }

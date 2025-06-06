@@ -49,11 +49,7 @@ public class HomekitAccessCodeService extends AbstractHomekitService {
     // ========== Log Message Prefixes ==========
     private static final String LOG_PREFIX = "Homekit AccessCodeService: ";
     private static final String LOG_INIT = LOG_PREFIX + "Init - ";
-    private static final String LOG_STATE = LOG_PREFIX + "State - ";
     private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
-    private static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
-    private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
-    private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
     private final Logger logger = LoggerFactory.getLogger(HomekitAccessCodeService.class);
 

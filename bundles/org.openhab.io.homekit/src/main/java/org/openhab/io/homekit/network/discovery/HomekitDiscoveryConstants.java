@@ -13,6 +13,8 @@
 package org.openhab.io.homekit.network.discovery;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.io.homekit.api.accessory.HomekitAccessory;
+import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 
 /**
  * Defines constants used in the HomeKit discovery process.
@@ -60,14 +62,6 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  */
 @NonNullByDefault
 public class HomekitDiscoveryConstants {
-
-    /** Logging prefixes */
-    private static final String LOG_PREFIX = "HomeKit Discovery Constants: ";
-    private static final String LOG_INIT = LOG_PREFIX + "Initialization - ";
-    private static final String LOG_CONFIG = LOG_PREFIX + "Configuration - ";
-    private static final String LOG_DEVICE = LOG_PREFIX + "Device - ";
-    private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
-    private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
     /**
      * The device identifier property name.

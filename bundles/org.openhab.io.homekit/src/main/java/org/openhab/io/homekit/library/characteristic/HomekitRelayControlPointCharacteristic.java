@@ -83,6 +83,7 @@ public class HomekitRelayControlPointCharacteristic extends HomekitTLV8Character
      */
     @Override
     public org.openhab.core.types.State toState(java.util.Map<Integer, Object> value) {
-        return null;
+        throw new UnsupportedOperationException(
+                "TLV8 to State conversion must be implemented for the specific device.");
     }
 }

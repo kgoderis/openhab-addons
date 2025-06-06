@@ -102,6 +102,7 @@ public class HomekitPairVerifyCharacteristic extends HomekitTLV8Characteristic {
      */
     @Override
     public State toState(Map<Integer, Object> value) {
-        return null;
+        throw new UnsupportedOperationException(
+                "TLV8 to State conversion must be implemented for the specific device.");
     }
 }

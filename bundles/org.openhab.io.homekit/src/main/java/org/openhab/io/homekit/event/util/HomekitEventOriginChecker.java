@@ -1,6 +1,7 @@
 package org.openhab.io.homekit.event.util;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.event.HomekitEvent;
 
@@ -105,11 +106,12 @@ public class HomekitEventOriginChecker {
      * The type identifies the category of the event source.
      *
      * @param origin The event origin
-     * @return The type component, or null if the origin is invalid
+     * @return The type component
+     * @throws IllegalArgumentException if the origin is invalid
      */
     public static String getType(String origin) {
         if (!isValidOrigin(origin)) {
-            return null;
+            throw new IllegalArgumentException("Invalid origin format: " + origin);
         }
         return origin.split(ORIGIN_SEPARATOR)[0];
     }
@@ -119,11 +121,12 @@ public class HomekitEventOriginChecker {
      * The source identifies the specific component that generated the event.
      *
      * @param origin The event origin
-     * @return The source component, or null if the origin is invalid
+     * @return The source component
+     * @throws IllegalArgumentException if the origin is invalid
      */
     public static String getSource(String origin) {
         if (!isValidOrigin(origin)) {
-            return null;
+            throw new IllegalArgumentException("Invalid origin format: " + origin);
         }
         return origin.split(ORIGIN_SEPARATOR)[1];
     }
@@ -133,11 +136,12 @@ public class HomekitEventOriginChecker {
      * The target identifies the specific component that the event is intended for.
      *
      * @param origin The event origin
-     * @return The target component, or null if the origin is invalid or doesn't have a target
+     * @return The target component, or null if no target is specified
+     * @throws IllegalArgumentException if the origin is invalid
      */
-    public static String getTarget(String origin) {
+    public static @Nullable String getTarget(String origin) {
         if (!isValidOrigin(origin)) {
-            return null;
+            throw new IllegalArgumentException("Invalid origin format: " + origin);
         }
         String[] parts = origin.split(ORIGIN_SEPARATOR);
         return parts.length > 2 ? parts[2] : null;

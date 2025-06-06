@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
@@ -483,13 +484,11 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
             throw new HomekitFactoryException("Unsupported characteristic type: " + characteristicType);
         }
 
+        @SuppressWarnings("null")
+        @Nullable
         String tag = tagToTypeMap.entrySet().stream().filter(entry -> entry.getValue().equals(characteristicType))
-                .map(Map.Entry::getKey).findFirst().orElse(null);
-
-        if (tag == null) {
-            logger.error("{}No tag found for characteristic type: {}", LOG_ERROR, characteristicType);
-            throw new HomekitFactoryException("No tag found for characteristic type: " + characteristicType);
-        }
+                .map(Map.Entry::getKey).findFirst().orElseThrow(() -> new HomekitFactoryException(
+                        "No tag found for characteristic type: " + characteristicType));
 
         logger.debug("{}Found tag {} for characteristic type {}", LOG_STATE, tag, characteristicType);
         return tag;
