@@ -1,10 +1,25 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.validation;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.core.thing.Thing;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -15,6 +30,8 @@ import org.osgi.service.component.annotations.Component;
 /**
  * Performs validation of accessory information to ensure required characteristics are present and valid.
  * This validation is essential for HomeKit accessory functionality.
+ * 
+ * @author Karel Goderis - Initial contribution
  */
 @Component(service = Validation.class)
 public class AccessoryInformationValidation extends AbstractValidation {
@@ -26,51 +43,56 @@ public class AccessoryInformationValidation extends AbstractValidation {
     }
 
     @Override
-    protected ValidationResult doValidate(ValidationContext context) {
+    protected Optional<ValidationResult> doValidate(ValidationContext context) {
         Object object = context.getTarget();
         if (!(object instanceof Thing)) {
             List<ValidationIssue> issues = new ArrayList<>();
             issues.add(createIssue(ValidationResult.Severity.ERROR, "Invalid object type: expected Thing",
                     "INVALID_TYPE", getContextKey(object), true, true));
-            return createResult(issues);
+            return Optional.of(createResult(issues));
         }
 
         Thing thing = (Thing) object;
         List<ValidationIssue> issues = new ArrayList<>();
 
         // Get all services for this thing
-        List<HomekitService> services = getServices(thing);
-        if (services == null) {
+        Optional<List<HomekitService>> servicesOpt = getServices(thing);
+        if (servicesOpt.isEmpty()) {
             issues.add(createIssue(ValidationResult.Severity.ERROR, "No HomeKit services found for thing",
                     "NO_SERVICES", getContextKey(thing), true, true));
-            return createResult(issues);
+            return Optional.of(createResult(issues));
         }
 
         // Find the accessory information service
-        HomekitService accessoryInfoService = findAccessoryInformationService(services);
-        if (accessoryInfoService == null) {
+        @SuppressWarnings("null") // get() is safe after isEmpty() check above
+        List<HomekitService> services = servicesOpt.get();
+        Optional<HomekitService> accessoryInfoServiceOpt = findAccessoryInformationService(services);
+        if (accessoryInfoServiceOpt.isEmpty()) {
             issues.add(createIssue(ValidationResult.Severity.ERROR, "Accessory Information service not found",
                     "MISSING_ACCESSORY_INFO_SERVICE", getContextKey(thing), true, true));
-            return createResult(issues);
+            return Optional.of(createResult(issues));
         }
 
         // Validate the accessory information service
+        @SuppressWarnings("null") // get() is safe after isEmpty() check above
+        HomekitService accessoryInfoService = accessoryInfoServiceOpt.get();
         validateAccessoryInformationService(accessoryInfoService, thing, issues);
 
-        return createResult(issues);
+        return Optional.of(createResult(issues));
     }
 
-    private HomekitService findAccessoryInformationService(List<HomekitService> services) {
+    private Optional<HomekitService> findAccessoryInformationService(List<HomekitService> services) {
         for (HomekitService service : services) {
             if (service instanceof HomekitAccessoryInformationService) {
-                return service;
+                return Optional.of(service);
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     private void validateAccessoryInformationService(HomekitService service, Thing thing,
             List<ValidationIssue> issues) {
+        @SuppressWarnings("null") // getAnnotation() can return null, handled by null check below
         HomekitServiceType serviceType = service.getClass().getAnnotation(HomekitServiceType.class);
         if (serviceType == null) {
             issues.add(createIssue(ValidationResult.Severity.ERROR,
@@ -79,11 +101,12 @@ public class AccessoryInformationValidation extends AbstractValidation {
             return;
         }
 
-        String serviceName = serviceType.name();
+        // String serviceName = serviceType.name();
         String serviceUuid = serviceType.type();
 
         // Get all characteristics for this service
-        Set<HomekitCharacteristic<?>> characteristics = service.getCharacteristics();
+        @NonNull
+        Set<@NonNull HomekitCharacteristic<?>> characteristics = service.getCharacteristics();
         if (characteristics == null) {
             issues.add(createIssue(ValidationResult.Severity.ERROR,
                     "No characteristics found for Accessory Information service", "NO_CHARACTERISTICS",
@@ -99,7 +122,7 @@ public class AccessoryInformationValidation extends AbstractValidation {
         validateRequiredCharacteristic(characteristics, "Identify", thing, service, issues);
     }
 
-    private void validateRequiredCharacteristic(Set<HomekitCharacteristic<?>> characteristics,
+    private void validateRequiredCharacteristic(@NonNull Set<@NonNull HomekitCharacteristic<?>> characteristics,
             String characteristicName, Thing thing, HomekitService service, List<ValidationIssue> issues) {
         boolean found = false;
         for (HomekitCharacteristic<?> characteristic : characteristics) {
@@ -115,21 +138,23 @@ public class AccessoryInformationValidation extends AbstractValidation {
                             characteristicName),
                     "MISSING_REQUIRED_CHARACTERISTIC",
                     getContextKey(thing) + ":" + service.getType() + ":" + characteristicName, true, true,
-                    Map.of("serviceName", service.getName(), "serviceUuid", service.getType(), "characteristicName",
-                            characteristicName)));
+                    Map.<String, Object> of("serviceName", service.getName(), "serviceUuid", service.getType(),
+                            "characteristicName", characteristicName)));
         }
     }
 
-    private List<HomekitService> getServices(Thing thing) {
+    private Optional<List<HomekitService>> getServices(Thing thing) {
         // TODO: Implement service retrieval from thing configuration
         // This will depend on how services are stored in the thing configuration
-        return null;
+        return Optional.empty();
     }
 
     @Override
     protected String getContextKey(Object object) {
         if (object instanceof Thing) {
-            return ((Thing) object).getUID().toString();
+            @SuppressWarnings("null") // Thing.getUID() is guaranteed non-null in openHAB framework
+            String thingUID = ((Thing) object).getUID().toString();
+            return thingUID;
         }
         return super.getContextKey(object);
     }

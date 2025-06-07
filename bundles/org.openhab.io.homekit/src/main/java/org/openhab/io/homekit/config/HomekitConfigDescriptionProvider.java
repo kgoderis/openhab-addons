@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.config;
 
 import java.net.URI;
@@ -5,9 +18,9 @@ import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.config.core.ConfigDescription;
 import org.openhab.core.config.core.ConfigDescriptionBuilder;
@@ -60,9 +73,8 @@ import org.osgi.service.component.annotations.Component;
  * - Supports localization
  *
  * @author Karel Goderis - Initial contribution
- */
+     */
 @Component(service = ConfigDescriptionProvider.class)
-@NonNullByDefault
 public class HomekitConfigDescriptionProvider implements ConfigDescriptionProvider {
     private static final String CONFIG_URI_STRING = "homekit:config";
     private static final URI CONFIG_URI;
@@ -86,6 +98,21 @@ public class HomekitConfigDescriptionProvider implements ConfigDescriptionProvid
             return createConfigDescription();
         }
         return null;
+    }
+
+    /**
+     * Gets the configuration description for a specific URI.
+     * This is an Optional-based version of the OpenHAB interface method.
+     * 
+     * @param uri The URI to get the configuration description for
+     * @param locale The locale for localization, or null for default
+     * @return Optional containing the configuration description, or empty if not found
+     */
+    public Optional<ConfigDescription> getConfigDescriptionOptional(URI uri, @Nullable Locale locale) {
+        if (CONFIG_URI.equals(uri)) {
+            return Optional.of(createConfigDescription());
+        }
+        return Optional.empty();
     }
 
     private ConfigDescription createConfigDescription() {

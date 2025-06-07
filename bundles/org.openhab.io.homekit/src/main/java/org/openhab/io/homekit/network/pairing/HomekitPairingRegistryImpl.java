@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2010-2019 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -10,13 +10,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
+
 package org.openhab.io.homekit.network.pairing;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.AbstractRegistry;
 import org.openhab.core.common.registry.Provider;
 import org.openhab.core.service.ReadyMarker;
@@ -94,16 +94,14 @@ import org.slf4j.LoggerFactory;
  * <li>Supports dynamic provider management</li>
  * </ul>
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0
- */
-@NonNullByDefault
+     */
 @Component(immediate = true, service = HomekitPairingRegistry.class)
 public class HomekitPairingRegistryImpl
         extends AbstractRegistry<HomekitPairing, HomekitPairingUID, HomekitPairingProvider>
         implements HomekitPairingRegistry, ReadyService.ReadyTracker {
 
-    /** Logger instance for this class */
     private final Logger logger = LoggerFactory.getLogger(HomekitPairingRegistry.class);
 
     // ========== Log Message Prefixes ==========
@@ -115,18 +113,12 @@ public class HomekitPairingRegistryImpl
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
-    /** Ready marker for the pairing registry */
     private static final String HOMEKIT_PAIRING_REGISTRY = "homekit.pairingRegistry";
-    /** Ready marker for the managed pairing provider */
     private static final String HOMEKIT_MANAGED_PAIRING_PROVIDER = "homekit.managedPairingProvider";
-    /** Ready marker for the accessory server registry */
     private static final String HOMEKIT_ACCESSORY_SERVER_REGISTRY = "homekit.accessoryServerRegistry";
 
-    /** Service for tracking component readiness */
     private final ReadyService readyService;
-    /** Flag indicating if the accessory server registry is ready */
     private boolean accessoryServerRegistryReady = false;
-    /** Flag indicating if the managed pairing provider is ready */
     private boolean managedPairingProviderReady = false;
 
     /**
@@ -294,8 +286,10 @@ public class HomekitPairingRegistryImpl
     @Override
     public Collection<HomekitPairing> get(byte[] pairingId) {
         logger.debug("{}Retrieving pairings for ID: {}", LOG_STATE, HomekitByte.toHexString(pairingId));
-        return getAll().stream().filter(p -> Arrays.equals(p.getUID().getSourcePairingId(), pairingId))
-                .collect(Collectors.toList());
+        @SuppressWarnings("null") // stream().collect() always returns non-null List
+        Collection<HomekitPairing> result = getAll().stream()
+                .filter(p -> Arrays.equals(p.getUID().getSourcePairingId(), pairingId)).collect(Collectors.toList());
+        return result;
     }
 
     /**
@@ -372,7 +366,9 @@ public class HomekitPairingRegistryImpl
 
         if (readyMarker.getType() == HOMEKIT_MANAGED_PAIRING_PROVIDER) {
             if (getManagedProvider().isPresent()) {
-                super.addProvider(getManagedProvider().get());
+                @SuppressWarnings("null") // Optional.get() is safe after isPresent() check
+                Provider<HomekitPairing> managedProviderInstance = getManagedProvider().get();
+                super.addProvider(managedProviderInstance);
             }
             managedPairingProviderReady = true;
             logger.debug("{}Managed pairing provider is ready", LOG_STATE);

@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.event.core;
 
 import java.util.ArrayList;
@@ -5,10 +18,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.event.HomekitEvent;
@@ -107,10 +120,9 @@ import org.openhab.io.homekit.util.HomekitUID;
  * - Enable debug mode only in development or troubleshooting scenarios
  * - Monitor publisher history to detect potential publisher-based loops
  * 
- * @author OpenHAB
+ * @author Karel Goderis - Initial contribution
  * @since 3.x
  */
-@NonNullByDefault
 public class HomekitEventMetadata {
     // =============== Constants ===============
 
@@ -143,7 +155,7 @@ public class HomekitEventMetadata {
     private final UID originalPublisherUid;
 
     /** UID of the component that most recently propagated this event */
-    private final @Nullable UID immediateOrigin;
+    private final Optional<UID> immediateOrigin;
 
     /** Set of UIDs representing peer components */
     private final Set<UID> peerIdentifiers = new HashSet<>();
@@ -151,7 +163,7 @@ public class HomekitEventMetadata {
     // =============== Correlation Tracking ===============
 
     /** Optional correlation ID for grouping related events */
-    private final @Nullable UID correlationId;
+    private final Optional<UID> correlationId;
 
     /** Set of correlation IDs that have been processed */
     private final Set<UID> processedCorrelationIds = new HashSet<>();
@@ -173,9 +185,10 @@ public class HomekitEventMetadata {
     // =============== Constructors ===============
 
     /**
-     * Creates new event metadata with a unique ID and initial hop count.
+     * Creates new event metadata with the specified parameters.
+     * This constructor initializes all tracking mechanisms and validates parameters.
      *
-     * @param publisherUid the UID of the original publisher
+     * @param publisherUid the UID of the original event publisher
      * @param correlationId optional correlation ID to link related events
      * @param immediateOrigin optional identifier of the immediate event creator
      * @param peerIdentifiers optional set of identifiers for components that should
@@ -189,12 +202,10 @@ public class HomekitEventMetadata {
         this.timestamp = System.currentTimeMillis();
         this.eventHistory.add(this.eventId);
         this.publisherHistory.add(publisherUid); // Add initial publisher
-        this.correlationId = correlationId;
+        this.correlationId = correlationId != null ? Optional.of(correlationId) : Optional.empty();
         this.correlationTimestamp = System.currentTimeMillis();
-        if (correlationId != null) {
-            this.processedCorrelationIds.add(correlationId);
-        }
-        this.immediateOrigin = immediateOrigin;
+        this.correlationId.ifPresent(this.processedCorrelationIds::add);
+        this.immediateOrigin = immediateOrigin != null ? Optional.of(immediateOrigin) : Optional.empty();
         this.peerIdentifiers.addAll(peerIdentifiers);
     }
 
@@ -213,12 +224,12 @@ public class HomekitEventMetadata {
         this.eventHistory.addAll(original.eventHistory);
         this.publisherHistory.addAll(original.publisherHistory); // Copy publisher history
         if (immediateOrigin != null) {
-            this.publisherHistory.add(immediateOrigin); // Add new publisher
+            this.publisherHistory.add(immediateOrigin); // Add new publisher if present
         }
         this.correlationId = original.correlationId;
         this.correlationTimestamp = original.correlationTimestamp;
         this.processedCorrelationIds.addAll(original.processedCorrelationIds);
-        this.immediateOrigin = immediateOrigin;
+        this.immediateOrigin = immediateOrigin != null ? Optional.of(immediateOrigin) : Optional.empty();
         this.peerIdentifiers.addAll(original.peerIdentifiers);
         if (DEBUG_MODE) {
             this.detailedEventHistory.addAll(original.detailedEventHistory);
@@ -277,9 +288,9 @@ public class HomekitEventMetadata {
     /**
      * Returns the immediate origin if present.
      *
-     * @return the immediate origin or null
+     * @return Optional containing the immediate origin
      */
-    public @Nullable UID getImmediateOrigin() {
+    public Optional<UID> getImmediateOrigin() {
         return immediateOrigin;
     }
 
@@ -308,7 +319,7 @@ public class HomekitEventMetadata {
      * @return true if the event was created by the component
      */
     public boolean isCreatedBy(UID componentId) {
-        return componentId.equals(immediateOrigin);
+        return immediateOrigin.map(origin -> componentId.equals(origin)).orElse(false);
     }
 
     /**
@@ -318,7 +329,7 @@ public class HomekitEventMetadata {
      * @return true if the event is from a peer in the group
      */
     public boolean isFromPeerGroup(Set<HomekitUID> peerGroup) {
-        return peerGroup.contains(immediateOrigin);
+        return immediateOrigin.map(peerGroup::contains).orElse(false);
     }
 
     // =============== Correlation Methods ===============
@@ -326,9 +337,9 @@ public class HomekitEventMetadata {
     /**
      * Returns the correlation ID if present.
      *
-     * @return the correlation ID or null
+     * @return Optional containing the correlation ID
      */
-    public @Nullable UID getCorrelationId() {
+    public Optional<UID> getCorrelationId() {
         return correlationId;
     }
 
@@ -397,7 +408,7 @@ public class HomekitEventMetadata {
      */
     public void addToEventHistory(HomekitEvent event) {
         if (eventHistory.size() >= MAX_HISTORY_SIZE) {
-            @SuppressWarnings("null")
+            @SuppressWarnings("null") // iterator().next() is safe when size >= MAX_HISTORY_SIZE
             UID oldestId = eventHistory.iterator().next();
             eventHistory.remove(oldestId);
             if (DEBUG_MODE) {

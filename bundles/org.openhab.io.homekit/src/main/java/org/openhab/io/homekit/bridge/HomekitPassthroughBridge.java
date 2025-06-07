@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.bridge;
 
 import java.util.ArrayList;
@@ -8,7 +21,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
@@ -52,11 +64,10 @@ import org.slf4j.LoggerFactory;
  * - {@link HomekitEventSubscription} for event subscription management
  * - {@link HomekitAccessoryServerEvent} for server event handling
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0.0
- */
+     */
 @Component(service = HomekitPassthroughBridge.class, immediate = true)
-@NonNullByDefault
 public class HomekitPassthroughBridge {
     private static final Logger logger = LoggerFactory.getLogger(HomekitPassthroughBridge.class);
     // ========== Log Message Prefixes ==========

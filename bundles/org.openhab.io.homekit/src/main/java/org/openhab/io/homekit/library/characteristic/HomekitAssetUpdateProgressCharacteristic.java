@@ -1,10 +1,22 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.library.characteristic;
 
 import java.util.Map;
 
 import javax.json.JsonValue;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -16,10 +28,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * This characteristic represents the asset update progress in TLV8 format.
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/AssetUpdateProgress">HomeKit Documentation</a>
+ * @author Karel Goderis - Initial contribution
  */
 @HomekitCharacteristicType(type = "0000026B-0000-1000-8000-0026BB765291", name = "Asset Update Progress", tag = "assetUpdateProgress", acceptedItemTypes = {
         "String" })
-@NonNullByDefault
 public class HomekitAssetUpdateProgressCharacteristic extends HomekitTLV8Characteristic {
     public HomekitAssetUpdateProgressCharacteristic(HomekitService service, HomekitEventManager eventManager,
             long instanceId) {

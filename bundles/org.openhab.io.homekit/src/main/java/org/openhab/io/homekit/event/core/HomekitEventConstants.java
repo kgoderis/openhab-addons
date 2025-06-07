@@ -1,6 +1,19 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.event.core;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.io.homekit.api.event.HomekitEvent;
 
 /**
  * Constants used throughout the HomeKit event system in the OpenHAB HomeKit integration.
@@ -49,10 +62,9 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * <li>Maintain thread-related constants for system configuration</li>
  * </ul>
  *
- * @author OpenHAB
+ * @author Karel Goderis - Initial contribution
  * @since 3.x
  */
-@NonNullByDefault
 public class HomekitEventConstants {
     public static final String EVENT_THREAD_NAME = "homekit-event-dispatcher";
     public static final int SHUTDOWN_TIMEOUT_SECONDS = 5;

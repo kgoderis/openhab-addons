@@ -1,7 +1,19 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.network.pairing;
 
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.registry.AbstractManagedProvider;
 import org.openhab.core.service.ReadyMarker;
 import org.openhab.core.service.ReadyService;
@@ -74,15 +86,13 @@ import org.slf4j.LoggerFactory;
  * <li>Maintains data consistency</li>
  * </ul>
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0
- */
-@NonNullByDefault
+     */
 @Component(immediate = true, service = { HomekitPairingProvider.class, HomekitManagedPairingProvider.class })
 public class HomekitManagedPairingProvider extends
         AbstractManagedProvider<HomekitPairing, HomekitPairingUID, HomekitPairing> implements HomekitPairingProvider {
 
-    /** Logger instance for this class */
     private final Logger logger = LoggerFactory.getLogger(HomekitManagedPairingProvider.class);
 
     // ========== Log Message Prefixes ==========
@@ -94,10 +104,8 @@ public class HomekitManagedPairingProvider extends
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
-    /** Ready marker for the managed pairing provider */
     private static final String HOMEKIT_MANAGED_PAIRING_PROVIDER = "homekit.managedPairingProvider";
 
-    /** Service for tracking component readiness */
     private final ReadyService readyService;
 
     /**
@@ -183,7 +191,7 @@ public class HomekitManagedPairingProvider extends
      * @return The string representation of the UID
      */
     @Override
-    protected @NonNull String keyToString(HomekitPairingUID key) {
+    protected String keyToString(HomekitPairingUID key) {
         String keyString = key.toString();
         logger.debug("{}Converting pairing UID to string: {}", LOG_PAIRING, keyString);
         return keyString;
@@ -212,7 +220,7 @@ public class HomekitManagedPairingProvider extends
      * @return The converted pairing
      */
     @Override
-    protected HomekitPairing toElement(String key, HomekitPairing persistableElement) {
+    protected @Nullable HomekitPairing toElement(String key, HomekitPairing persistableElement) {
         logger.debug("{}Converting stored element to pairing with key: {}", LOG_PAIRING, key);
         return persistableElement;
     }

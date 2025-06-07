@@ -1,3 +1,17 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
+
 package org.openhab.io.homekit.core.service;
 
 import java.util.ArrayList;
@@ -20,7 +34,6 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
@@ -70,8 +83,7 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @version 1.0
  * @since 1.0
- */
-@NonNullByDefault
+     */
 public abstract class AbstractHomekitService implements HomekitService {
 
     protected static final Logger logger = LoggerFactory.getLogger(AbstractHomekitService.class);
@@ -279,6 +291,7 @@ public abstract class AbstractHomekitService implements HomekitService {
      */
     @Override
     final public String getType() {
+        @SuppressWarnings("null") // getAnnotation() can return null but we check for it
         HomekitServiceType annotation = getClass().getAnnotation(HomekitServiceType.class);
         if (annotation == null) {
             throw new IllegalStateException(
@@ -301,6 +314,7 @@ public abstract class AbstractHomekitService implements HomekitService {
      */
     @Override
     final public String getTag() {
+        @SuppressWarnings("null") // getAnnotation() can return null but we provide fallback
         HomekitServiceType annotation = getClass().getAnnotation(HomekitServiceType.class);
         return annotation != null ? annotation.tag() : getType();
     }
@@ -451,7 +465,9 @@ public abstract class AbstractHomekitService implements HomekitService {
                 .filter(c -> c.getClass() == characteristicClass).findFirst();
 
         if (characteristic.isPresent()) {
-            return removeCharacteristic(characteristic.get());
+            @SuppressWarnings("null") // Optional.get() is safe after isPresent() check
+            HomekitCharacteristic<?> actualCharacteristic = characteristic.get();
+            return removeCharacteristic(actualCharacteristic);
         }
         return false;
     }
@@ -613,7 +629,9 @@ public abstract class AbstractHomekitService implements HomekitService {
      */
     public void onEvent(HomekitEvent event) {
         if (event instanceof HomekitCharacteristicEvent characteristicEvent) {
-            notifyCharacteristicStateChanged(characteristicEvent.getCharacteristic().get());
+            @SuppressWarnings("null") // Optional.get() is safe - event system ensures characteristic is present
+            HomekitCharacteristic<?> characteristic = characteristicEvent.getCharacteristic().get();
+            notifyCharacteristicStateChanged(characteristic);
         }
     }
 
@@ -716,7 +734,11 @@ public abstract class AbstractHomekitService implements HomekitService {
 
         // Compare each characteristic
         for (int i = 0; i < thisChars.size(); i++) {
-            if (!thisChars.get(i).equals(thatChars.get(i)))
+            @SuppressWarnings("null") // List.get() is safe within bounds check
+            HomekitCharacteristic<?> thisChar = thisChars.get(i);
+            @SuppressWarnings("null") // List.get() is safe within bounds check
+            HomekitCharacteristic<?> thatChar = thatChars.get(i);
+            if (!thisChar.equals(thatChar))
                 return false;
         }
 
@@ -784,7 +806,11 @@ public abstract class AbstractHomekitService implements HomekitService {
 
         // Compare each characteristic
         for (int i = 0; i < thisChars.size(); i++) {
-            int charCompare = thisChars.get(i).compareTo(thatChars.get(i));
+            @SuppressWarnings("null") // List.get() is safe within bounds check
+            HomekitCharacteristic<?> thisChar = thisChars.get(i);
+            @SuppressWarnings("null") // List.get() is safe within bounds check
+            HomekitCharacteristic<?> thatChar = thatChars.get(i);
+            int charCompare = thisChar.compareTo(thatChar);
             if (charCompare != 0)
                 return charCompare;
         }

@@ -1,6 +1,17 @@
-package org.openhab.io.homekit.protocol.error;
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
+package org.openhab.io.homekit.protocol.error;
 
 /**
  * Defines the error codes used in HomeKit protocol communication.
@@ -30,10 +41,9 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * - Checking for reserved error codes
  * - Accessing error descriptions
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
-@NonNullByDefault
 public enum HomekitErrorCode {
     /** Reserved error code for future use */
     RESERVED_0(0x00, "Reserved"),

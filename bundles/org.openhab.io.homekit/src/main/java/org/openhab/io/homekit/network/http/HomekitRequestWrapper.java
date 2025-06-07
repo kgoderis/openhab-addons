@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.network.http;
 
 import java.io.ByteArrayInputStream;
@@ -35,9 +48,9 @@ import org.apache.commons.io.IOUtils;
  * - {@link ByteArrayInputStream} for body caching
  * - {@link ServletInputStream} for stream delegation
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0
- */
+     */
 public class HomekitRequestWrapper extends HttpServletRequestWrapper {
 
     // ========== Log Message Prefixes ==========
@@ -98,7 +111,7 @@ public class HomekitRequestWrapper extends HttpServletRequestWrapper {
          * stream, which will be used for reading the request body.
          *
          * @param sourceStream The source stream to delegate to (never null)
-         */
+     */
         public DelegatingServletInputStream(InputStream sourceStream) {
             this.sourceStream = sourceStream;
         }
@@ -107,7 +120,7 @@ public class HomekitRequestWrapper extends HttpServletRequestWrapper {
          * Gets the underlying source stream.
          *
          * @return The source stream used for reading
-         */
+     */
         public final InputStream getSourceStream() {
             return this.sourceStream;
         }
@@ -120,7 +133,7 @@ public class HomekitRequestWrapper extends HttpServletRequestWrapper {
          *
          * @return The next byte of data, or -1 if the end of the stream is reached
          * @throws IOException if an I/O error occurs
-         */
+     */
         @Override
         public int read() throws IOException {
             int data = this.sourceStream.read();
@@ -135,7 +148,7 @@ public class HomekitRequestWrapper extends HttpServletRequestWrapper {
          *
          * @return The number of bytes available
          * @throws IOException if an I/O error occurs
-         */
+     */
         @Override
         public int available() throws IOException {
             return this.sourceStream.available();
@@ -145,7 +158,7 @@ public class HomekitRequestWrapper extends HttpServletRequestWrapper {
          * Closes the stream and its underlying source stream.
          *
          * @throws IOException if an I/O error occurs
-         */
+     */
         @Override
         public void close() throws IOException {
             super.close();
@@ -156,7 +169,7 @@ public class HomekitRequestWrapper extends HttpServletRequestWrapper {
          * Checks if the stream has reached its end.
          *
          * @return true if the stream has finished reading
-         */
+     */
         @Override
         public boolean isFinished() {
             return this.finished;
@@ -169,7 +182,7 @@ public class HomekitRequestWrapper extends HttpServletRequestWrapper {
          * is already cached in memory.
          *
          * @return true
-         */
+     */
         @Override
         public boolean isReady() {
             return true;
@@ -183,7 +196,7 @@ public class HomekitRequestWrapper extends HttpServletRequestWrapper {
          *
          * @param readListener The read listener to set
          * @throws UnsupportedOperationException always
-         */
+     */
         @Override
         public void setReadListener(ReadListener readListener) {
             throw new UnsupportedOperationException();

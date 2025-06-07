@@ -1,7 +1,21 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.validation;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +23,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Abstract base class for all validation components.
  * Provides common functionality and default implementations for validation operations.
+ * 
+ * @author Karel Goderis - Initial contribution
  */
 public abstract class AbstractValidation implements Validation {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
@@ -41,19 +57,19 @@ public abstract class AbstractValidation implements Validation {
     }
 
     @Override
-    public ValidationResult validate(ValidationContext context) {
+    public Optional<ValidationResult> validate(ValidationContext context) {
         if (!isEnabled()) {
             logger.debug("Validation {} is disabled, skipping validation", id);
-            return ValidationResult.builder().valid(true).build();
+            return Optional.of(ValidationResult.builder().valid(true).build());
         }
 
         try {
             return doValidate(context);
         } catch (Exception e) {
             logger.error("Error in validation {}: {}", id, e.getMessage(), e);
-            return ValidationResult.builder().valid(false).severity(ValidationResult.Severity.ERROR)
+            return Optional.of(ValidationResult.builder().valid(false).severity(ValidationResult.Severity.ERROR)
                     .message("Validation failed: " + e.getMessage()).code("VALIDATION_ERROR")
-                    .contextKey(getContextKey(context.getTarget())).rootCause(true).blocking(true).build();
+                    .contextKey(getContextKey(context.getTarget())).rootCause(true).blocking(true).build());
         }
     }
 
@@ -61,7 +77,7 @@ public abstract class AbstractValidation implements Validation {
      * Performs the actual validation.
      * Subclasses must implement this method.
      */
-    protected abstract ValidationResult doValidate(ValidationContext context);
+    protected abstract Optional<ValidationResult> doValidate(ValidationContext context);
 
     /**
      * Generates a context key for the given object.

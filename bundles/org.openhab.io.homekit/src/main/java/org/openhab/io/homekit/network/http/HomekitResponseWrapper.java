@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.network.http;
 
 import java.io.IOException;
@@ -40,9 +53,9 @@ import org.openhab.io.homekit.util.HomekitResizableByteArrayOutputStream;
  * - {@link PrintWriter} for character content
  * - {@link StandardCharsets} for character encoding
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0
- */
+     */
 public class HomekitResponseWrapper extends HttpServletResponseWrapper {
 
     // ========== Log Message Prefixes ==========
@@ -142,9 +155,19 @@ public class HomekitResponseWrapper extends HttpServletResponseWrapper {
     @Override
     public ServletOutputStream getOutputStream() throws IOException {
         if (this.outputStream == null) {
-            this.outputStream = new ResponseServletOutputStream(getResponse().getOutputStream());
+            ServletOutputStream responseStream = getResponse().getOutputStream();
+            if (responseStream != null) {
+                this.outputStream = new ResponseServletOutputStream(responseStream);
+            } else {
+                throw new IOException("ServletOutputStream is null");
+            }
         }
-        return this.outputStream;
+        ServletOutputStream currentStream = this.outputStream;
+        if (currentStream != null) {
+            return currentStream;
+        } else {
+            throw new IOException("ServletOutputStream not initialized");
+        }
     }
 
     /**
@@ -160,10 +183,17 @@ public class HomekitResponseWrapper extends HttpServletResponseWrapper {
     public PrintWriter getWriter() throws IOException {
         if (this.writer == null) {
             String characterEncoding = getCharacterEncoding();
-            this.writer = (characterEncoding != null ? new ResponsePrintWriter(characterEncoding)
+            @SuppressWarnings("null") // ResponsePrintWriter constructor guaranteed non-null result
+            PrintWriter newWriter = (characterEncoding != null ? new ResponsePrintWriter(characterEncoding)
                     : new ResponsePrintWriter(StandardCharsets.UTF_8.name()));
+            this.writer = newWriter;
         }
-        return this.writer;
+        PrintWriter currentWriter = this.writer;
+        if (currentWriter != null) {
+            return currentWriter;
+        } else {
+            throw new IOException("PrintWriter is null");
+        }
     }
 
     /**
@@ -325,7 +355,7 @@ public class HomekitResponseWrapper extends HttpServletResponseWrapper {
          * Creates a new response servlet output stream.
          *
          * @param os The servlet output stream to delegate to
-         */
+     */
         public ResponseServletOutputStream(ServletOutputStream os) {
             this.os = os;
         }
@@ -338,7 +368,7 @@ public class HomekitResponseWrapper extends HttpServletResponseWrapper {
          *
          * @param b The byte to write
          * @throws IOException if an I/O error occurs
-         */
+     */
         @Override
         public void write(int b) throws IOException {
             content.write(b);
@@ -354,7 +384,7 @@ public class HomekitResponseWrapper extends HttpServletResponseWrapper {
          * @param off The offset in the array
          * @param len The number of bytes to write
          * @throws IOException if an I/O error occurs
-         */
+     */
         @Override
         public void write(byte[] b, int off, int len) throws IOException {
             content.write(b, off, len);
@@ -364,7 +394,7 @@ public class HomekitResponseWrapper extends HttpServletResponseWrapper {
          * Checks if the stream is ready for writing.
          *
          * @return true if the stream is ready
-         */
+     */
         @Override
         public boolean isReady() {
             return this.os.isReady();
@@ -378,7 +408,7 @@ public class HomekitResponseWrapper extends HttpServletResponseWrapper {
          *
          * @param writeListener The write listener to set
          * @throws UnsupportedOperationException always
-         */
+     */
         @Override
         public void setWriteListener(WriteListener writeListener) {
             throw new UnsupportedOperationException();
@@ -399,7 +429,7 @@ public class HomekitResponseWrapper extends HttpServletResponseWrapper {
          *
          * @param characterEncoding The character encoding to use
          * @throws UnsupportedEncodingException if the encoding is not supported
-         */
+     */
         public ResponsePrintWriter(String characterEncoding) throws UnsupportedEncodingException {
             super(new OutputStreamWriter(content, characterEncoding));
         }
@@ -413,7 +443,7 @@ public class HomekitResponseWrapper extends HttpServletResponseWrapper {
          * @param buf The character array to write
          * @param off The offset in the array
          * @param len The number of characters to write
-         */
+     */
         @Override
         public void write(char[] buf, int off, int len) {
             super.write(buf, off, len);
@@ -429,7 +459,7 @@ public class HomekitResponseWrapper extends HttpServletResponseWrapper {
          * @param s The string to write
          * @param off The offset in the string
          * @param len The number of characters to write
-         */
+     */
         @Override
         public void write(String s, int off, int len) {
             super.write(s, off, len);
@@ -443,7 +473,7 @@ public class HomekitResponseWrapper extends HttpServletResponseWrapper {
          * underlying writer.
          *
          * @param c The character to write
-         */
+     */
         @Override
         public void write(int c) {
             super.write(c);

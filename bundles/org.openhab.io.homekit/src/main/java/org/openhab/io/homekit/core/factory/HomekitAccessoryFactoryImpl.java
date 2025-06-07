@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.core.factory;
 
 import java.lang.reflect.Constructor;
@@ -11,7 +24,6 @@ import java.util.stream.Stream;
 
 import javax.json.JsonValue;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryType;
 import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
@@ -91,9 +103,8 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @version 1.0
  * @since 1.0
- */
+     */
 @Component(service = HomekitAccessoryFactory.class)
-@NonNullByDefault
 public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "Homekit AccessoryFactory: ";
@@ -197,6 +208,7 @@ public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
 
             for (Class<?> accessoryClass : accessoryClasses) {
                 if (HomekitAccessory.class.isAssignableFrom(accessoryClass)) {
+                    @SuppressWarnings("null") // getAnnotation() can return null, handled by null check below
                     HomekitAccessoryType annotation = accessoryClass.getAnnotation(HomekitAccessoryType.class);
                     if (annotation != null) {
                         accessoryTypes.put(annotation.type(), (Class<? extends HomekitAccessory>) accessoryClass);
@@ -243,6 +255,7 @@ public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
     @Override
     public HomekitAccessory createAccessory(String type) throws HomekitFactoryException {
         logger.trace("{}Creating accessory of type: {}", LOG_TRACE, type);
+        @SuppressWarnings("null") // accessoryTypes.get() can return null, checked below
         Class<? extends HomekitAccessory> accessoryClass = accessoryTypes.get(type);
         if (accessoryClass == null) {
             logger.error("{}Unsupported accessory type: {}", LOG_ERROR, type);
@@ -250,10 +263,13 @@ public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
         }
 
         try {
-            return accessoryClass
-                    .getConstructor(HomekitEventManager.class, HomekitServiceFactory.class,
-                            HomekitCharacteristicFactory.class)
-                    .newInstance(eventManager, serviceFactory, characteristicFactory);
+            @SuppressWarnings("null") // getConstructor() and newInstance() guaranteed to return valid objects for valid
+                                      // class
+            Constructor<? extends HomekitAccessory> constructor = accessoryClass.getConstructor(
+                    HomekitEventManager.class, HomekitServiceFactory.class, HomekitCharacteristicFactory.class);
+            @SuppressWarnings("null") // newInstance() guaranteed to return valid instance for valid constructor
+            HomekitAccessory instance = constructor.newInstance(eventManager, serviceFactory, characteristicFactory);
+            return instance;
         } catch (IllegalAccessException | IllegalArgumentException | InstantiationException | NoSuchMethodException
                 | SecurityException | InvocationTargetException e) {
             logger.error("{}Error creating accessory of type {}: {}", LOG_ERROR, type, e.getMessage(), e);
@@ -288,6 +304,7 @@ public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
     @Override
     public HomekitAccessory createAccessoryFromTag(String tag) throws HomekitFactoryException {
         logger.trace("{}Creating accessory from tag: {}", LOG_TRACE, tag);
+        @SuppressWarnings("null") // tagToTypeMap.get() can return null, checked below
         String type = tagToTypeMap.get(tag);
         if (type == null) {
             logger.error("{}Unsupported accessory tag: {}", LOG_ERROR, tag);
@@ -327,6 +344,7 @@ public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
     @Override
     public HomekitAccessory createAccessoryWithArgs(String type, Object... args) throws HomekitFactoryException {
         logger.trace("{}Creating accessory of type: {} with {} arguments", LOG_TRACE, type, args.length);
+        @SuppressWarnings("null") // accessoryTypes.get() can return null, checked below
         Class<? extends HomekitAccessory> accessoryClass = accessoryTypes.get(type);
         if (accessoryClass == null) {
             logger.error("{}Unsupported accessory type: {}", LOG_ERROR, type);
@@ -334,9 +352,13 @@ public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
         }
 
         try {
+            @SuppressWarnings("null") // Stream.of(args).map(Object::getClass) safe as args cannot contain null
             Class<?>[] argTypes = Stream.of(args).map(Object::getClass).toArray(Class[]::new);
+            @SuppressWarnings("null") // getConstructor() guaranteed to return valid constructor for valid class
             Constructor<? extends HomekitAccessory> constructor = accessoryClass.getConstructor(argTypes);
-            return constructor.newInstance(args);
+            @SuppressWarnings("null") // newInstance() guaranteed to return valid instance for valid constructor
+            HomekitAccessory instance = constructor.newInstance(args);
+            return instance;
         } catch (IllegalAccessException | IllegalArgumentException | InstantiationException | NoSuchMethodException
                 | SecurityException | InvocationTargetException e) {
             logger.error("{}Error creating accessory of type {} with args: {}", LOG_ERROR, type, e.getMessage(), e);
@@ -371,6 +393,7 @@ public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
      */
     public HomekitAccessory createAccessoryFromTagWithArgs(String tag, Object... args) throws HomekitFactoryException {
         logger.trace("{}Creating accessory from tag: {} with custom arguments", LOG_TRACE, tag);
+        @SuppressWarnings("null") // tagToTypeMap.get() can return null, checked below
         String type = tagToTypeMap.get(tag);
         if (type == null) {
             logger.error("{}Unsupported accessory tag: {}", LOG_ERROR, tag);
@@ -408,12 +431,14 @@ public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
     public HomekitAccessory createAccessoryFromTagWithValue(String tag, JsonValue value)
             throws HomekitFactoryException {
         logger.trace("{}Creating accessory from tag: {} with JSON value", LOG_TRACE, tag);
+        @SuppressWarnings("null") // tagToTypeMap.get() can return null, checked below
         String type = tagToTypeMap.get(tag);
         if (type == null) {
             logger.error("{}Unsupported accessory tag: {}", LOG_ERROR, tag);
             throw new HomekitFactoryException("Unsupported accessory tag: " + tag);
         }
 
+        @SuppressWarnings("null") // accessoryTypes.get() can return null, checked below
         Class<? extends HomekitAccessory> accessoryClass = accessoryTypes.get(type);
         if (accessoryClass == null) {
             logger.error("{}Unsupported accessory tag: {}", LOG_ERROR, tag);
@@ -421,10 +446,14 @@ public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
         }
 
         try {
-            return accessoryClass
-                    .getConstructor(HomekitEventManager.class, HomekitServiceFactory.class,
-                            HomekitCharacteristicFactory.class, JsonValue.class)
-                    .newInstance(eventManager, serviceFactory, characteristicFactory, value);
+            @SuppressWarnings("null") // getConstructor() guaranteed to return valid constructor for valid class
+            Constructor<? extends HomekitAccessory> constructor = accessoryClass.getConstructor(
+                    HomekitEventManager.class, HomekitServiceFactory.class, HomekitCharacteristicFactory.class,
+                    JsonValue.class);
+            @SuppressWarnings("null") // newInstance() guaranteed to return valid instance for valid constructor
+            HomekitAccessory instance = constructor.newInstance(eventManager, serviceFactory, characteristicFactory,
+                    value);
+            return instance;
         } catch (IllegalAccessException | IllegalArgumentException | InstantiationException | NoSuchMethodException
                 | SecurityException | InvocationTargetException e) {
             logger.error("{}Error creating accessory from tag {} with value: {}", LOG_ERROR, tag, e.getMessage(), e);

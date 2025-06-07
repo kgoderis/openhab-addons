@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.network.http;
 
 import java.nio.ByteBuffer;
@@ -72,15 +85,13 @@ import org.slf4j.LoggerFactory;
  * <li>Detailed logging</li>
  * </ul>
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0
- */
+     */
 public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements HomekitHttpParser.ResponseHandler {
 
-    /** Logger instance for this class */
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpReceiver.class);
 
-    /** Debug flag for detailed logging */
     protected static final boolean debug = logger.isDebugEnabled();
 
     // ========== Log Message Prefixes ==========

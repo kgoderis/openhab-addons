@@ -1,6 +1,18 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.library.service;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
@@ -20,7 +32,6 @@ import org.openhab.io.homekit.library.characteristic.HomekitVersionCharacteristi
  * @author Karel Goderis
  */
 @HomekitServiceType(type = "00000253-0000-1000-8000-0026BB765291", name = "SiriEndpoint", tag = "SiriEndpoint")
-@NonNullByDefault
 public class HomekitSiriEndpointService extends AbstractHomekitService {
     /**
      * Creates a new SiriEndpoint service.

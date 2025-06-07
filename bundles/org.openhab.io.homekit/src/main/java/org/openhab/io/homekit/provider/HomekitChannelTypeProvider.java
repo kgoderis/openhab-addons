@@ -1,10 +1,22 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.provider;
 
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.storage.StorageService;
 import org.openhab.core.thing.binding.AbstractStorageBasedTypeProvider;
@@ -50,10 +62,9 @@ import org.slf4j.LoggerFactory;
  * - Persistent storage of channel types
  * - Factory-dependent type management
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0
- */
-@NonNullByDefault
+     */
 @Component(service = { ChannelTypeProvider.class })
 public class HomekitChannelTypeProvider extends AbstractStorageBasedTypeProvider {
     private final Logger logger = LoggerFactory.getLogger(HomekitChannelTypeProvider.class);

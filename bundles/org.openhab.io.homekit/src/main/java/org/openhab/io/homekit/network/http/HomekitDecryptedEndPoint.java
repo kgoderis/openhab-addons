@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.network.http;
 
 import java.io.IOException;
@@ -19,6 +32,16 @@ import org.openhab.io.homekit.util.HomekitByte;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * HomeKit decrypted endpoint implementation that provides encryption/decryption
+ * capabilities for HomeKit communication.
+ * 
+ * This class wraps an encrypted endpoint and provides transparent encryption and
+ * decryption of data using HomeKit's encryption protocol. It implements the Jetty
+ * EndPoint interface to integrate seamlessly with the HTTP server infrastructure.
+ * 
+ * @author Karel Goderis - Initial contribution
+     */
 public class HomekitDecryptedEndPoint implements EndPoint {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitDecryptedEndPoint.class);

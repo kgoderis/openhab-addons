@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.network.http;
 
 import org.eclipse.jetty.http.HttpCompliance;
@@ -66,12 +79,11 @@ import org.slf4j.LoggerFactory;
  * <li>Provides detailed logging</li>
  * </ul>
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0
- */
+     */
 public class HomekitHttpConnection extends HttpConnection {
 
-    /** Logger instance for this class */
     private static final Logger logger = LoggerFactory.getLogger(HomekitHttpConnection.class);
 
     // ========== Log Message Prefixes ==========
@@ -80,7 +92,6 @@ public class HomekitHttpConnection extends HttpConnection {
     private static final String LOG_STATE = LOG_PREFIX + "State Change - ";
     private static final String LOG_CONFIG = LOG_PREFIX + "Configuration - ";
 
-    /** Flag indicating if the connection can be upgraded */
     private boolean upgradable = true;
 
     /**

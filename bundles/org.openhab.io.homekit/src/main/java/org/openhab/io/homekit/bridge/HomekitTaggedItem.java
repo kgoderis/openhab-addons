@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2010-2020 Contributors to the openHAB project
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -10,12 +10,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
+
 package org.openhab.io.homekit.bridge;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -91,7 +93,7 @@ import org.slf4j.LoggerFactory;
  * - Enforces proper group hierarchy
  *
  * @author Karel Goderis - Initial contribution
- */
+     */
 public class HomekitTaggedItem {
     // ========== Log Message Prefixes ==========
     private static final String LOG_PREFIX = "Homekit TaggedItem: ";
@@ -153,8 +155,8 @@ public class HomekitTaggedItem {
         logger.debug("{}Initializing tagged item: {}", LOG_PREFIX, item.getName());
 
         try {
-            serviceTag = determineServiceTag();
-            characteristicTag = determineCharacteristicTag();
+            serviceTag = determineServiceTagOptional().orElse(null);
+            characteristicTag = determineCharacteristicTagOptional().orElse(null);
             if (serviceTag != null && characteristicTag != null) {
                 throw new BadItemConfigurationException(
                         "Items cannot be tagged as both a characteristic and an accessory type");
@@ -176,7 +178,10 @@ public class HomekitTaggedItem {
                         throw new BadItemConfigurationException("Nested HomekitAccessory Groups are not supported");
                     }
 
-                    parentGroupItem = matchingGroupItems.get(0);
+                    @SuppressWarnings("null") // List.get(0) is safe here as case 1 guarantees list has exactly 1
+                                              // element
+                    GroupItem firstGroup = matchingGroupItems.get(0);
+                    parentGroupItem = firstGroup;
                     logger.debug("{}Item {} belongs to accessory group {}", LOG_CONFIG, item.getName(),
                             parentGroupItem.getName());
                 }
@@ -203,36 +208,40 @@ public class HomekitTaggedItem {
 
     /**
      * Determines the Homekit service type from the item's tags.
+     * This is an Optional-based version to replace the nullable return type.
      *
-     * @return The Homekit service type if found, null otherwise
+     * @return Optional containing the Homekit service type if found, empty otherwise
      */
     @SuppressWarnings("null")
-    private String determineServiceTag() {
+    private Optional<String> determineServiceTagOptional() {
         if (!homekitTags.isEmpty()) {
+            @SuppressWarnings("null") // iterator().next() is safe after isEmpty() check
             String firstTag = homekitTags.iterator().next();
             if (serviceFactory.supportsTag(firstTag)) {
                 logger.debug("{}Found service tag {} for item {}", LOG_CONFIG, firstTag, item.getName());
-                return firstTag;
+                return Optional.of(firstTag);
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     /**
      * Determines the Homekit characteristic type from the item's tags.
+     * This is an Optional-based version to replace the nullable return type.
      *
-     * @return The Homekit characteristic type if found, null otherwise
+     * @return Optional containing the Homekit characteristic type if found, empty otherwise
      */
     @SuppressWarnings("null")
-    private String determineCharacteristicTag() {
+    private Optional<String> determineCharacteristicTagOptional() {
         if (!homekitTags.isEmpty()) {
+            @SuppressWarnings("null") // iterator().next() is safe after isEmpty() check
             String firstTag = homekitTags.iterator().next();
             if (characteristicFactory.supportsTag(firstTag)) {
                 logger.debug("{}Found characteristic tag {} for item {}", LOG_CONFIG, firstTag, item.getName());
-                return firstTag;
+                return Optional.of(firstTag);
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     /**
@@ -411,6 +420,7 @@ public class HomekitTaggedItem {
 
     private Collection<@NonNull String> getHomekitTagsFromMetaRegistry(Item item) {
         MetadataKey key = new MetadataKey("homekit", item.getName());
+        @SuppressWarnings("null") // metadataRegistry.get() can return null, which is checked below
         Metadata metadata = metadataRegistry.get(key);
         if (metadata != null) {
             logger.debug("{}Found metadata for item {}: {}", LOG_CONFIG, item.getName(), metadata.getValue());
@@ -420,15 +430,22 @@ public class HomekitTaggedItem {
     }
 
     private List<GroupItem> findMyAccessoryGroupsInternal() {
-        return item.getGroupNames().stream().map(name -> itemRegistry.get(name))
-                .filter(item -> item instanceof GroupItem).map(item -> (GroupItem) item).filter(group -> {
-                    Collection<@NonNull String> groupTags = getHomekitTags(group);
-                    boolean isAccessory = !groupTags.isEmpty()
-                            && serviceFactory.supportsTag(groupTags.iterator().next());
-                    logger.debug("{}Group {} is {}an accessory group", LOG_CONFIG, group.getName(),
-                            isAccessory ? "" : "not ");
-                    return isAccessory;
-                }).collect(Collectors.toList());
+        return item.getGroupNames().stream().map(name -> {
+            @SuppressWarnings("null") // itemRegistry.get() can return null, which is filtered out below
+            Item groupItem = itemRegistry.get(name);
+            return groupItem;
+        }).filter(item -> item instanceof GroupItem).map(item -> (GroupItem) item).filter(group -> {
+            Collection<@NonNull String> groupTags = getHomekitTags(group);
+            if (!groupTags.isEmpty()) {
+                @SuppressWarnings("null") // iterator().next() is safe after isEmpty() check
+                String firstTag = groupTags.iterator().next();
+                boolean isAccessory = serviceFactory.supportsTag(firstTag);
+                logger.debug("{}Group {} is {}an accessory group", LOG_CONFIG, group.getName(),
+                        isAccessory ? "" : "not ");
+                return isAccessory;
+            }
+            return false;
+        }).collect(Collectors.toList());
     }
 
     /**

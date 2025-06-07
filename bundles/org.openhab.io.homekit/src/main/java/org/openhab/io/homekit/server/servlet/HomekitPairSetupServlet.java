@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.server.servlet;
 
 import java.io.IOException;
@@ -68,10 +81,9 @@ import com.nimbusds.srp6.XRoutineWithUserIdentity;
  * <li>{@link HomekitTypeLengthValueEncoderDecoder} for TLV8 encoding/decoding</li>
  * </ul>
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0
- */
-@SuppressWarnings("serial")
+     */
 public class HomekitPairSetupServlet extends HomekitBaseServlet {
 
     // ========== Log Message Prefixes ==========
@@ -82,7 +94,6 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
     protected static final String LOG_SECURITY = LOG_PREFIX + "Security - ";
 
-    /** The session key used for encrypted communication after successful pairing */
     protected byte[] sessionKey;
 
     /**
@@ -221,6 +232,12 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         logger.debug("{}Starting Stage 1 setup", LOG_SECURITY);
         logger.trace("{}Received request body: {}", LOG_SECURITY, HomekitByte.toHexString(body));
 
+        if (server == null) {
+            logger.error("{}Server instance is null", LOG_ERROR);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
+        }
+
         HttpSession session = request.getSession();
         HomekitServerSRP6Session SRP6Session = (HomekitServerSRP6Session) session.getAttribute("SRP6Session");
 
@@ -242,7 +259,9 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         verifierGenerator.setXRoutine(new XRoutineWithUserIdentity());
 
         BigInteger salt = generateSalt();
-        BigInteger verifier = verifierGenerator.generateVerifier(salt, "Pair-Setup", server.getSetupCode());
+        @SuppressWarnings("null") // server null check performed at method start
+        var setupCode = server.getSetupCode();
+        BigInteger verifier = verifierGenerator.generateVerifier(salt, "Pair-Setup", setupCode);
         logger.trace("{}Generated verifier", LOG_SECURITY);
 
         Encoder encoder = HomekitTypeLengthValueEncoderDecoder.getEncoder();
@@ -378,6 +397,12 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
             throws ServletException, IOException {
         logger.debug("{}Starting Stage 3 setup", LOG_SECURITY);
         logger.trace("{}Received request body: {}", LOG_SECURITY, HomekitByte.toHexString(body));
+
+        if (server == null) {
+            logger.error("{}Server instance is null", LOG_ERROR);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
+        }
 
         HttpSession session = request.getSession();
         HomekitServerSRP6Session SRP6Session = (HomekitServerSRP6Session) session.getAttribute("SRP6Session");
@@ -637,7 +662,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
          * @param ctx The client evidence context containing session values
          * @return The computed M1 value as a BigInteger
          * @throws RuntimeException if the hash algorithm is not available
-         */
+     */
         @Override
         public BigInteger computeClientEvidence(SRP6CryptoParams cryptoParams, SRP6ClientEvidenceContext ctx) {
             MessageDigest digest;
@@ -681,7 +706,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
          * @param b1 The first byte array
          * @param b2 The second byte array
          * @return The result of the XOR operation as a byte array
-         */
+     */
         private byte[] xor(byte[] b1, byte[] b2) {
             byte[] result = new byte[b1.length];
             for (int i = 0; i < b1.length; i++) {

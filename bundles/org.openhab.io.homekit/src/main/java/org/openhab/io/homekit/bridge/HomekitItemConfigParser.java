@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.bridge;
 
 import java.util.ArrayList;
@@ -27,9 +40,9 @@ import org.slf4j.LoggerFactory;
  * - {@link org.openhab.core.items.Item} for item information and state
  * - {@link org.openhab.core.items.Metadata} for configuration storage and retrieval
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0.0
- */
+     */
 public class HomekitItemConfigParser {
     private static final Logger logger = LoggerFactory.getLogger(HomekitItemConfigParser.class);
 
@@ -90,6 +103,7 @@ public class HomekitItemConfigParser {
 
         // Get metadata from registry
         MetadataKey key = new MetadataKey("homekit", item.getName());
+        @SuppressWarnings("null") // metadataRegistry.get() can return null, which is checked below
         Metadata metadata = metadataRegistry.get(key);
 
         if (metadata != null) {

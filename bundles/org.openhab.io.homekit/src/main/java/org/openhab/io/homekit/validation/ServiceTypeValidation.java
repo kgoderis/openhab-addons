@@ -1,8 +1,22 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.validation;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.openhab.core.thing.Thing;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -12,6 +26,8 @@ import org.osgi.service.component.annotations.Component;
 /**
  * Performs validation of HomeKit services to ensure they have valid types and are compatible
  * with their parent accessory. This validation is essential for proper HomeKit service integration.
+ * 
+ * @author Karel Goderis - Initial contribution
  */
 @Component(service = Validation.class)
 public class ServiceTypeValidation extends AbstractValidation {
@@ -23,36 +39,39 @@ public class ServiceTypeValidation extends AbstractValidation {
     }
 
     @Override
-    protected ValidationResult doValidate(ValidationContext context) {
+    protected Optional<ValidationResult> doValidate(ValidationContext context) {
         Object object = context.getTarget();
         if (!(object instanceof Thing)) {
             List<ValidationIssue> issues = new ArrayList<>();
             issues.add(createIssue(ValidationResult.Severity.ERROR, "Invalid object type: expected Thing",
                     "INVALID_TYPE", getContextKey(object), true, true));
-            return createResult(issues);
+            return Optional.of(createResult(issues));
         }
 
         Thing thing = (Thing) object;
         List<ValidationIssue> issues = new ArrayList<>();
 
         // Get all services for this thing
-        List<HomekitService> services = getServices(thing);
-        if (services == null) {
+        Optional<List<HomekitService>> servicesOpt = getServices(thing);
+        if (servicesOpt.isEmpty()) {
             issues.add(createIssue(ValidationResult.Severity.ERROR, "No HomeKit services found for thing",
                     "NO_SERVICES", getContextKey(thing), true, true));
-            return createResult(issues);
+            return Optional.of(createResult(issues));
         }
 
         // Check each service's type
+        @SuppressWarnings("null") // get() is safe after isEmpty() check above
+        List<HomekitService> services = servicesOpt.get();
         for (HomekitService service : services) {
             validateServiceType(service, thing, services, issues);
         }
 
-        return createResult(issues);
+        return Optional.of(createResult(issues));
     }
 
     private void validateServiceType(HomekitService service, Thing thing, List<HomekitService> allServices,
             List<ValidationIssue> issues) {
+        @SuppressWarnings("null") // getAnnotation() can return null, handled by null check below
         HomekitServiceType serviceType = service.getClass().getAnnotation(HomekitServiceType.class);
         if (serviceType == null) {
             issues.add(createIssue(ValidationResult.Severity.ERROR, "Service type annotation not found",
@@ -74,12 +93,13 @@ public class ServiceTypeValidation extends AbstractValidation {
 
         // Check if service type is compatible with thing type
         if (!isServiceTypeCompatible(serviceType, thing)) {
+            @SuppressWarnings("null") // Thing.getThingTypeUID() is guaranteed non-null in openHAB framework
+            String thingTypeString = thing.getThingTypeUID().toString();
             issues.add(createIssue(ValidationResult.Severity.ERROR,
                     String.format("Service type '%s' is not compatible with thing type '%s'", serviceName,
                             thing.getThingTypeUID()),
                     "INCOMPATIBLE_SERVICE_TYPE", getContextKey(thing) + ":" + serviceUuid, true, true,
-                    Map.of("serviceName", serviceName, "serviceUuid", serviceUuid, "thingType",
-                            thing.getThingTypeUID().toString())));
+                    Map.of("serviceName", serviceName, "serviceUuid", serviceUuid, "thingType", thingTypeString)));
         }
 
         // Check for duplicate service types
@@ -104,6 +124,7 @@ public class ServiceTypeValidation extends AbstractValidation {
     }
 
     private boolean hasDuplicateServiceType(HomekitService service, List<HomekitService> allServices) {
+        @SuppressWarnings("null") // getAnnotation() can return null, handled by null check below
         HomekitServiceType serviceType = service.getClass().getAnnotation(HomekitServiceType.class);
         if (serviceType == null) {
             return false;
@@ -111,6 +132,7 @@ public class ServiceTypeValidation extends AbstractValidation {
 
         int count = 0;
         for (HomekitService otherService : allServices) {
+            @SuppressWarnings("null") // getAnnotation() can return null, handled by null check below
             HomekitServiceType otherType = otherService.getClass().getAnnotation(HomekitServiceType.class);
             if (otherType != null && otherType.type().equals(serviceType.type())) {
                 count++;
@@ -122,16 +144,18 @@ public class ServiceTypeValidation extends AbstractValidation {
         return false;
     }
 
-    private List<HomekitService> getServices(Thing thing) {
+    private Optional<List<HomekitService>> getServices(Thing thing) {
         // TODO: Implement service retrieval from thing configuration
         // This will depend on how services are stored in the thing configuration
-        return null;
+        return Optional.empty();
     }
 
     @Override
     protected String getContextKey(Object object) {
         if (object instanceof Thing) {
-            return ((Thing) object).getUID().toString();
+            @SuppressWarnings("null") // Thing.getUID() is guaranteed non-null in openHAB framework
+            String thingUID = ((Thing) object).getUID().toString();
+            return thingUID;
         }
         return super.getContextKey(object);
     }

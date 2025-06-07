@@ -1,10 +1,25 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.validation;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.core.thing.Thing;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
@@ -15,6 +30,8 @@ import org.osgi.service.component.annotations.Component;
 /**
  * Performs validation of HomeKit characteristics to ensure they have valid types and are compatible
  * with their parent service. This validation is crucial for maintaining HomeKit protocol compliance.
+ * 
+ * @author Karel Goderis - Initial contribution
  */
 @Component(service = Validation.class)
 public class CharacteristicTypeValidation extends AbstractValidation {
@@ -26,35 +43,38 @@ public class CharacteristicTypeValidation extends AbstractValidation {
     }
 
     @Override
-    protected ValidationResult doValidate(ValidationContext context) {
+    protected Optional<ValidationResult> doValidate(ValidationContext context) {
         Object object = context.getTarget();
         if (!(object instanceof Thing)) {
             List<ValidationIssue> issues = new ArrayList<>();
             issues.add(createIssue(ValidationResult.Severity.ERROR, "Invalid object type: expected Thing",
                     "INVALID_TYPE", getContextKey(object), true, true));
-            return createResult(issues);
+            return Optional.of(createResult(issues));
         }
 
         Thing thing = (Thing) object;
         List<ValidationIssue> issues = new ArrayList<>();
 
         // Get all services for this thing
-        List<HomekitService> services = getServices(thing);
-        if (services == null) {
+        Optional<List<HomekitService>> servicesOpt = getServices(thing);
+        if (servicesOpt.isEmpty()) {
             issues.add(createIssue(ValidationResult.Severity.ERROR, "No HomeKit services found for thing",
                     "NO_SERVICES", getContextKey(thing), true, true));
-            return createResult(issues);
+            return Optional.of(createResult(issues));
         }
+        @SuppressWarnings("null") // get() is safe after isEmpty() check above
+        List<HomekitService> services = servicesOpt.get();
 
         // Check each service's characteristics
         for (HomekitService service : services) {
             validateServiceCharacteristics(service, thing, issues);
         }
 
-        return createResult(issues);
+        return Optional.of(createResult(issues));
     }
 
     private void validateServiceCharacteristics(HomekitService service, Thing thing, List<ValidationIssue> issues) {
+        @SuppressWarnings("null") // getAnnotation() can return null, handled by null check below
         HomekitServiceType serviceType = service.getClass().getAnnotation(HomekitServiceType.class);
         if (serviceType == null) {
             issues.add(createIssue(ValidationResult.Severity.ERROR, "Service type annotation not found",
@@ -66,7 +86,8 @@ public class CharacteristicTypeValidation extends AbstractValidation {
         String serviceUuid = serviceType.type();
 
         // Get all characteristics for this service
-        Set<HomekitCharacteristic<?>> characteristics = service.getCharacteristics();
+        @NonNull
+        Set<@NonNull HomekitCharacteristic<?>> characteristics = service.getCharacteristics();
         if (characteristics == null) {
             issues.add(createIssue(ValidationResult.Severity.ERROR,
                     String.format("No characteristics found for service '%s'", serviceName), "NO_CHARACTERISTICS",
@@ -82,6 +103,7 @@ public class CharacteristicTypeValidation extends AbstractValidation {
 
     private void validateCharacteristicType(HomekitCharacteristic<?> characteristic, HomekitService service,
             Thing thing, List<ValidationIssue> issues) {
+        @SuppressWarnings("null") // getAnnotation() can return null, handled by null check below
         HomekitCharacteristicType characteristicType = characteristic.getClass()
                 .getAnnotation(HomekitCharacteristicType.class);
         if (characteristicType == null) {
@@ -104,8 +126,8 @@ public class CharacteristicTypeValidation extends AbstractValidation {
                             characteristicUuid),
                     "INVALID_CHARACTERISTIC_UUID",
                     getContextKey(thing) + ":" + service.getType() + ":" + characteristicUuid, true, true,
-                    Map.of("serviceName", service.getName(), "serviceUuid", service.getType(), "characteristicName",
-                            characteristicName, "characteristicUuid", characteristicUuid)));
+                    Map.<String, Object> of("serviceName", service.getName(), "serviceUuid", service.getType(),
+                            "characteristicName", characteristicName, "characteristicUuid", characteristicUuid)));
             return;
         }
 
@@ -116,8 +138,8 @@ public class CharacteristicTypeValidation extends AbstractValidation {
                             characteristicName, service.getName()),
                     "INCOMPATIBLE_CHARACTERISTIC_TYPE",
                     getContextKey(thing) + ":" + service.getType() + ":" + characteristicUuid, true, true,
-                    Map.of("serviceName", service.getName(), "serviceUuid", service.getType(), "characteristicName",
-                            characteristicName, "characteristicUuid", characteristicUuid)));
+                    Map.<String, Object> of("serviceName", service.getName(), "serviceUuid", service.getType(),
+                            "characteristicName", characteristicName, "characteristicUuid", characteristicUuid)));
         }
 
         // Check for duplicate characteristic types within the service
@@ -127,8 +149,8 @@ public class CharacteristicTypeValidation extends AbstractValidation {
                             service.getName()),
                     "DUPLICATE_CHARACTERISTIC_TYPE",
                     getContextKey(thing) + ":" + service.getType() + ":" + characteristicUuid, true, true,
-                    Map.of("serviceName", service.getName(), "serviceUuid", service.getType(), "characteristicName",
-                            characteristicName, "characteristicUuid", characteristicUuid)));
+                    Map.<String, Object> of("serviceName", service.getName(), "serviceUuid", service.getType(),
+                            "characteristicName", characteristicName, "characteristicUuid", characteristicUuid)));
         }
     }
 
@@ -146,19 +168,22 @@ public class CharacteristicTypeValidation extends AbstractValidation {
     }
 
     private boolean hasDuplicateCharacteristicType(HomekitCharacteristic<?> characteristic, HomekitService service) {
+        @SuppressWarnings("null") // getAnnotation() can return null, handled by null check below
         HomekitCharacteristicType characteristicType = characteristic.getClass()
                 .getAnnotation(HomekitCharacteristicType.class);
         if (characteristicType == null) {
             return false;
         }
 
-        Set<HomekitCharacteristic<?>> characteristics = service.getCharacteristics();
+        @NonNull
+        Set<@NonNull HomekitCharacteristic<?>> characteristics = service.getCharacteristics();
         if (characteristics == null) {
             return false;
         }
 
         int count = 0;
         for (HomekitCharacteristic<?> otherCharacteristic : characteristics) {
+            @SuppressWarnings("null") // getAnnotation() can return null, handled by null check below
             HomekitCharacteristicType otherType = otherCharacteristic.getClass()
                     .getAnnotation(HomekitCharacteristicType.class);
             if (otherType != null && otherType.type().equals(characteristicType.type())) {
@@ -171,16 +196,18 @@ public class CharacteristicTypeValidation extends AbstractValidation {
         return false;
     }
 
-    private List<HomekitService> getServices(Thing thing) {
+    private Optional<List<HomekitService>> getServices(Thing thing) {
         // TODO: Implement service retrieval from thing configuration
         // This will depend on how services are stored in the thing configuration
-        return null;
+        return Optional.empty();
     }
 
     @Override
     protected String getContextKey(Object object) {
         if (object instanceof Thing) {
-            return ((Thing) object).getUID().toString();
+            @SuppressWarnings("null") // Thing.getUID() is guaranteed non-null in openHAB framework
+            String thingUID = ((Thing) object).getUID().toString();
+            return thingUID;
         }
         return super.getContextKey(object);
     }

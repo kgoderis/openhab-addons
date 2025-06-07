@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.extension;
 
 import java.util.Arrays;
@@ -6,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.io.console.Console;
 import org.openhab.core.io.console.extensions.AbstractConsoleCommandExtension;
 import org.openhab.core.io.console.extensions.ConsoleCommandExtension;
@@ -59,8 +71,7 @@ import org.slf4j.LoggerFactory;
  * followed by various subcommands.
  *
  * @author Karel Goderis - Initial contribution
- */
-@NonNullByDefault
+     */
 @Component(service = ConsoleCommandExtension.class)
 public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
     // ========== Command Constants ==========
@@ -87,7 +98,6 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
     private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
     private static final String LOG_DEBUG = LOG_PREFIX + "Debug - ";
 
-    /** Logger instance for this class */
     private final Logger logger = LoggerFactory.getLogger(HomekitCommandExtension.class);
 
     private final ItemRegistry itemRegistry;
@@ -268,6 +278,7 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
      */
     private void showItemMapping(String itemName, Console console) {
         logger.debug("{}Showing mapping for item: {}", LOG_CMD, itemName);
+        @SuppressWarnings("null") // itemRegistry.get() can return null, which is checked below
         Item item = itemRegistry.get(itemName);
         if (item == null) {
             logger.warn("{}Item not found: {}", LOG_WARN, itemName);
@@ -283,6 +294,7 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         // Get HomeKit tags
         logger.debug("{}Retrieving HomeKit metadata for item: {}", LOG_DEBUG, itemName);
         MetadataKey key = new MetadataKey("homekit", itemName);
+        @SuppressWarnings("null") // metadataRegistry.get() can return null, which is checked below
         Metadata metadata = metadataRegistry.get(key);
         if (metadata != null) {
             logger.debug("{}Found HomeKit metadata for item {}: {}", LOG_DEBUG, itemName, metadata.getValue());
@@ -296,9 +308,11 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         Optional<Map<String, Object>> config = configManager.getConfiguration(new ItemUID(itemName),
                 ConfigurationType.ITEM);
         if (config.isPresent()) {
-            logger.debug("{}Found configuration for item {}: {} entries", LOG_DEBUG, itemName, config.get().size());
+            @SuppressWarnings("null") // Optional.get() is safe after isPresent() check
+            Map<String, Object> configMap = config.get();
+            logger.debug("{}Found configuration for item {}: {} entries", LOG_DEBUG, itemName, configMap.size());
             console.println("Configuration:");
-            config.get().forEach((k, v) -> console.println("  " + k + ": " + v));
+            configMap.forEach((k, v) -> console.println("  " + k + ": " + v));
         } else {
             logger.debug("{}No configuration found for item: {}", LOG_DEBUG, itemName);
         }
@@ -347,10 +361,12 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
             Optional<Map<String, Object>> linkConfig = configManager.getConfiguration(new ChannelUID(link.getUID()),
                     ConfigurationType.CHANNEL);
             if (linkConfig.isPresent()) {
+                @SuppressWarnings("null") // Optional.get() is safe after isPresent() check
+                Map<String, Object> linkConfigMap = linkConfig.get();
                 logger.debug("{}Found configuration for channel {}: {} entries", LOG_DEBUG, link.getUID(),
-                        linkConfig.get().size());
+                        linkConfigMap.size());
                 console.println("    Configuration:");
-                linkConfig.get().forEach((k, v) -> console.println("      " + k + ": " + v));
+                linkConfigMap.forEach((k, v) -> console.println("      " + k + ": " + v));
             } else {
                 logger.debug("{}No configuration found for channel: {}", LOG_DEBUG, link.getUID());
             }
@@ -369,6 +385,7 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
      */
     private void showThingMapping(String thingId, Console console) {
         logger.debug("{}Showing mapping for thing: {}", LOG_CMD, thingId);
+        @SuppressWarnings("null") // thingRegistry.get() can return null, which is checked below
         Thing thing = thingRegistry.get(new ThingUID(thingId));
         if (thing == null) {
             logger.warn("{}Thing not found: {}", LOG_WARN, thingId);
@@ -386,9 +403,11 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         logger.debug("{}Retrieving configuration for thing: {}", LOG_DEBUG, thingId);
         Optional<Map<String, Object>> config = configManager.getConfiguration(thing.getUID(), ConfigurationType.THING);
         if (config.isPresent()) {
-            logger.debug("{}Found configuration for thing {}: {} entries", LOG_DEBUG, thingId, config.get().size());
+            @SuppressWarnings("null") // Optional.get() is safe after isPresent() check
+            Map<String, Object> configMap = config.get();
+            logger.debug("{}Found configuration for thing {}: {} entries", LOG_DEBUG, thingId, configMap.size());
             console.println("Configuration:");
-            config.get().forEach((k, v) -> console.println("  " + k + ": " + v));
+            configMap.forEach((k, v) -> console.println("  " + k + ": " + v));
         } else {
             logger.debug("{}No configuration found for thing: {}", LOG_DEBUG, thingId);
         }
@@ -424,10 +443,12 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
             Optional<Map<String, Object>> channelConfig = configManager.getConfiguration(channel.getUID(),
                     ConfigurationType.CHANNEL);
             if (channelConfig.isPresent()) {
+                @SuppressWarnings("null") // Optional.get() is safe after isPresent() check
+                Map<String, Object> channelConfigMap = channelConfig.get();
                 logger.debug("{}Found configuration for channel {}: {} entries", LOG_DEBUG, channel.getUID(),
-                        channelConfig.get().size());
+                        channelConfigMap.size());
                 console.println("    Configuration:");
-                channelConfig.get().forEach((k, v) -> console.println("      " + k + ": " + v));
+                channelConfigMap.forEach((k, v) -> console.println("      " + k + ": " + v));
             } else {
                 logger.debug("{}No configuration found for channel: {}", LOG_DEBUG, channel.getUID());
             }
@@ -441,10 +462,12 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
                 Optional<Map<String, Object>> linkConfig = configManager.getConfiguration(new ChannelUID(link.getUID()),
                         ConfigurationType.CHANNEL);
                 if (linkConfig.isPresent()) {
+                    @SuppressWarnings("null") // Optional.get() is safe after isPresent() check
+                    Map<String, Object> linkConfigMap = linkConfig.get();
                     logger.debug("{}Found configuration for link {}: {} entries", LOG_DEBUG, link.getUID(),
-                            linkConfig.get().size());
+                            linkConfigMap.size());
                     console.println("        Configuration:");
-                    linkConfig.get().forEach((k, v) -> console.println("          " + k + ": " + v));
+                    linkConfigMap.forEach((k, v) -> console.println("          " + k + ": " + v));
                 } else {
                     logger.debug("{}No configuration found for link: {}", LOG_DEBUG, link.getUID());
                 }
@@ -464,6 +487,7 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
      */
     private void showServer(String serverId, Console console) {
         logger.debug("{}Showing server: {}", LOG_CMD, serverId);
+        @SuppressWarnings("null") // accessoryServerRegistry.get() can return null, which is checked below
         HomekitAccessoryServer server = accessoryServerRegistry.get(new HomekitAccessoryServerUIDImpl(serverId));
         if (server == null) {
             logger.warn("{}Server not found: {}", LOG_WARN, serverId);
@@ -484,9 +508,11 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         Optional<Map<String, Object>> config = configManager
                 .getConfiguration(new HomekitUID("homekit:server:" + serverId), ConfigurationType.BRIDGE);
         if (config.isPresent()) {
-            logger.debug("{}Found configuration for server {}: {} entries", LOG_DEBUG, serverId, config.get().size());
+            @SuppressWarnings("null") // Optional.get() is safe after isPresent() check
+            Map<String, Object> configMap = config.get();
+            logger.debug("{}Found configuration for server {}: {} entries", LOG_DEBUG, serverId, configMap.size());
             console.println("Configuration:");
-            config.get().forEach((k, v) -> console.println("  " + k + ": " + v));
+            configMap.forEach((k, v) -> console.println("  " + k + ": " + v));
         } else {
             logger.debug("{}No configuration found for server: {}", LOG_DEBUG, serverId);
         }
@@ -629,11 +655,13 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
             console.println("  Server: " + server.getUID());
             try {
                 server.getPairings().forEach(pairing -> {
-                    logger.debug("{}Found pairing for server {}: {}", LOG_CMD, server.getUID(),
-                            Base64.getEncoder().encodeToString(pairing.getDestinationId()));
-                    console.println(
-                            "    Pairing ID: " + Base64.getEncoder().encodeToString(pairing.getDestinationId()));
-                    console.println("      Public Key: " + Base64.getEncoder().encodeToString(pairing.getPublicKey()));
+                    @SuppressWarnings("null") // Base64.getEncoder().encodeToString() always returns non-null
+                    String destinationIdEncoded = Base64.getEncoder().encodeToString(pairing.getDestinationId());
+                    @SuppressWarnings("null") // Base64.getEncoder().encodeToString() always returns non-null
+                    String publicKeyEncoded = Base64.getEncoder().encodeToString(pairing.getPublicKey());
+                    logger.debug("{}Found pairing for server {}: {}", LOG_CMD, server.getUID(), destinationIdEncoded);
+                    console.println("    Pairing ID: " + destinationIdEncoded);
+                    console.println("      Public Key: " + publicKeyEncoded);
                 });
             } catch (HomekitServerException e) {
                 logger.error("{}Error getting pairings from server {}: {}", LOG_ERROR, server.getUID(), e.getMessage(),
@@ -656,6 +684,7 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
      */
     private void addPairing(String serverId, String setupCode, Console console) {
         logger.debug("{}Adding pairing to server {} with setup code {}", LOG_CMD, serverId, setupCode);
+        @SuppressWarnings("null") // accessoryServerRegistry.get() can return null, which is checked below
         HomekitAccessoryServer server = accessoryServerRegistry.get(new HomekitAccessoryServerUIDImpl(serverId));
         if (server == null) {
             logger.warn("{}Server not found: {}", LOG_WARN, serverId);
@@ -687,6 +716,7 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
      */
     private void removePairing(String serverId, String pairingId, Console console) {
         logger.debug("{}Removing pairing {} from server {}", LOG_CMD, pairingId, serverId);
+        @SuppressWarnings("null") // accessoryServerRegistry.get() can return null, which is checked below
         HomekitAccessoryServer server = accessoryServerRegistry.get(new HomekitAccessoryServerUIDImpl(serverId));
         if (server == null) {
             logger.warn("{}Server not found: {}", LOG_WARN, serverId);
@@ -695,7 +725,9 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         }
 
         try {
-            server.removePairing(Base64.getDecoder().decode(pairingId));
+            @SuppressWarnings("null") // Base64.getDecoder().decode() always returns non-null byte array
+            byte[] decodedPairingId = Base64.getDecoder().decode(pairingId);
+            server.removePairing(decodedPairingId);
             logger.info("{}Successfully removed pairing from server: {}", LOG_STATE, serverId);
             console.println("Successfully removed pairing from server: " + serverId);
         } catch (HomekitServerException e) {

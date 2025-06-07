@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.server.servlet;
 
 import java.io.IOException;
@@ -5,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
+import java.util.Optional;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -58,10 +72,9 @@ import djb.Curve25519;
  * <li>{@link djb.Curve25519} for key exchange operations</li>
  * </ul>
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0
- */
-@SuppressWarnings("serial")
+     */
 public class HomekitPairVerificationServlet extends HomekitBaseServlet {
 
     // ========== Log Message Prefixes ==========
@@ -210,6 +223,12 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
         logger.debug("{}Starting Stage 1 verification", LOG_SECURITY);
         logger.trace("{}Received request body: {}", LOG_SECURITY, HomekitByte.toHexString(body));
 
+        if (server == null) {
+            logger.error("{}Server instance is null", LOG_ERROR);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
+        }
+
         HttpSession session = request.getSession();
 
         byte[] clientPublicKey = getClientPublicKey(body);
@@ -309,6 +328,12 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
         logger.debug("{}Starting Stage 2 verification", LOG_SECURITY);
         logger.trace("{}Received request body: {}", LOG_SECURITY, HomekitByte.toHexString(body));
 
+        if (server == null) {
+            logger.error("{}Server instance is null", LOG_ERROR);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
+        }
+
         try {
             boolean isError = false;
             HttpSession session = request.getSession();
@@ -353,8 +378,10 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
                 clientSignature = d.getBytes(HomekitMessage.SIGNATURE);
                 logger.trace("{}Retrieved client pairing ID and signature", LOG_SECURITY);
 
-                clientLongtermPublicKey = server.getPublicKey(clientPairingId);
-                if (clientLongtermPublicKey == null) {
+                Optional<byte[]> clientLongtermPublicKeyOptional = server.getPublicKey(clientPairingId);
+                if (clientLongtermPublicKeyOptional.isPresent()) {
+                    clientLongtermPublicKey = clientLongtermPublicKeyOptional.get();
+                } else {
                     logger.warn("{}Unknown pairing ID: {}", LOG_WARN,
                             new String(clientPairingId, StandardCharsets.UTF_8));
                     isError = true;

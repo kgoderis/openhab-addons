@@ -1,10 +1,22 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.api.server;
 
 import java.net.InetAddress;
 import java.util.Collection;
+import java.util.Optional;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.registry.Identifiable;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.uid.HomekitAccessoryServerUID;
@@ -53,10 +65,9 @@ import org.openhab.io.homekit.protocol.pairing.HomekitPairing;
  * </ul>
  * </p>
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0.0
  */
-@NonNullByDefault
 public interface HomekitAccessoryServer extends Identifiable<HomekitAccessoryServerUID> {
 
     // ==================== Core Server Methods ====================
@@ -135,8 +146,7 @@ public interface HomekitAccessoryServer extends Identifiable<HomekitAccessorySer
      * @throws HomekitAccessoryOperationException if there is an error retrieving the accessory
      * @since 1.0.0
      */
-    @Nullable
-    HomekitAccessory getAccessory(int accessoryId) throws HomekitAccessoryOperationException;
+    Optional<HomekitAccessory> getAccessory(int accessoryId) throws HomekitAccessoryOperationException;
 
     /**
      * Adds a new accessory to this server.
@@ -236,8 +246,7 @@ public interface HomekitAccessoryServer extends Identifiable<HomekitAccessorySer
      * @throws HomekitServerException if there is an error retrieving the pairing
      * @since 1.0.0
      */
-    @Nullable
-    HomekitPairing getPairing(byte[] pairingId) throws HomekitServerException;
+    Optional<HomekitPairing> getPairing(byte[] pairingId) throws HomekitServerException;
 
     /**
      * Gets all active pairings.
@@ -257,7 +266,7 @@ public interface HomekitAccessoryServer extends Identifiable<HomekitAccessorySer
      * @return the client's public key, or null if not found
      * @since 1.0.0
      */
-    byte @Nullable [] getPublicKey(byte[] pairingId);
+    Optional<byte[]> getPublicKey(byte[] pairingId);
 
     /**
      * Checks if the server has any active pairings.

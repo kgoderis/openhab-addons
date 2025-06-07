@@ -1,6 +1,20 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.validation;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -8,6 +22,8 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Manages caching of validation results with expiration.
+ * 
+ * @author Karel Goderis - Initial contribution
  */
 public class ValidationCache {
     private final Map<String, CacheEntry> cache;
@@ -33,13 +49,19 @@ public class ValidationCache {
         put(key, result, defaultExpirationMillis);
     }
 
-    public ValidationResult get(String key) {
+    /**
+     * Gets a validation result from the cache.
+     * 
+     * @param key The cache key
+     * @return Optional containing the validation result, or empty if not found or expired
+     */
+    public Optional<ValidationResult> get(String key) {
         CacheEntry entry = cache.get(key);
         if (entry == null || entry.isExpired()) {
             cache.remove(key);
-            return null;
+            return Optional.empty();
         }
-        return entry.getResult();
+        return Optional.of(entry.getResult());
     }
 
     public void remove(String key) {

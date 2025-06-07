@@ -1,7 +1,20 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.event.util;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
+import java.util.Optional;
+
 import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.event.HomekitEvent;
 
@@ -43,7 +56,6 @@ import org.openhab.io.homekit.api.event.HomekitEvent;
  *
  * @author Karel Goderis - Initial contribution
  */
-@NonNullByDefault
 public class HomekitEventOriginChecker {
     private static final String ORIGIN_SEPARATOR = ":";
     private static final String WILDCARD = "*";
@@ -113,7 +125,9 @@ public class HomekitEventOriginChecker {
         if (!isValidOrigin(origin)) {
             throw new IllegalArgumentException("Invalid origin format: " + origin);
         }
-        return origin.split(ORIGIN_SEPARATOR)[0];
+        @SuppressWarnings("null") // split() result is validated by isValidOrigin() check above
+        String[] parts = origin.split(ORIGIN_SEPARATOR);
+        return parts[0];
     }
 
     /**
@@ -128,7 +142,9 @@ public class HomekitEventOriginChecker {
         if (!isValidOrigin(origin)) {
             throw new IllegalArgumentException("Invalid origin format: " + origin);
         }
-        return origin.split(ORIGIN_SEPARATOR)[1];
+        @SuppressWarnings("null") // split() result is validated by isValidOrigin() check above
+        String[] parts = origin.split(ORIGIN_SEPARATOR);
+        return parts[1];
     }
 
     /**
@@ -139,12 +155,12 @@ public class HomekitEventOriginChecker {
      * @return The target component, or null if no target is specified
      * @throws IllegalArgumentException if the origin is invalid
      */
-    public static @Nullable String getTarget(String origin) {
+    public static Optional<String> getTarget(String origin) {
         if (!isValidOrigin(origin)) {
             throw new IllegalArgumentException("Invalid origin format: " + origin);
         }
         String[] parts = origin.split(ORIGIN_SEPARATOR);
-        return parts.length > 2 ? parts[2] : null;
+        return parts.length > 2 ? Optional.of(parts[2]) : Optional.empty();
     }
 
     /**
@@ -276,9 +292,8 @@ public class HomekitEventOriginChecker {
      * @return true if the events share the same correlation ID
      */
     public static boolean isCorrelated(HomekitEvent event1, HomekitEvent event2) {
-        UID correlationId1 = event1.getMetadata().getCorrelationId();
-        UID correlationId2 = event2.getMetadata().getCorrelationId();
-        return correlationId1 != null && correlationId1.equals(correlationId2);
+        return event1.getMetadata().getCorrelationId().isPresent()
+                && event1.getMetadata().getCorrelationId().equals(event2.getMetadata().getCorrelationId());
     }
 
     /**

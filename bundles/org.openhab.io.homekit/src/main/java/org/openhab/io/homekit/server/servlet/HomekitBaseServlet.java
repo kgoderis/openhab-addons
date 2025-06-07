@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.server.servlet;
 
 import java.io.IOException;
@@ -7,6 +20,7 @@ import java.util.Arrays;
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServlet;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.network.http.HomekitServletConfig;
 import org.openhab.io.homekit.protocol.message.HomekitMessage;
@@ -56,10 +70,9 @@ import org.slf4j.LoggerFactory;
  * <li>{@link javax.servlet.http.HttpServlet} for base servlet functionality</li>
  * </ul>
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0
- */
-@SuppressWarnings("serial")
+     */
 public abstract class HomekitBaseServlet extends HttpServlet {
 
     // ========== Log Message Prefixes ==========
@@ -73,7 +86,7 @@ public abstract class HomekitBaseServlet extends HttpServlet {
     protected static final String LOG_SECURITY = LOG_PREFIX + "Security - ";
     protected static final String LOG_MESSAGE = LOG_PREFIX + "Message - ";
 
-    /** The HomeKit accessory server instance associated with this servlet */
+    @Nullable
     protected HomekitAccessoryServer server;
 
     /**
@@ -120,13 +133,14 @@ public abstract class HomekitBaseServlet extends HttpServlet {
      * @param config The servlet configuration containing server information
      */
     @Override
-    public void init(ServletConfig config) {
+    public void init(@Nullable ServletConfig config) {
         logger.debug("{}Initializing servlet with configuration", LOG_INIT);
         if (config instanceof HomekitServletConfig) {
             this.server = (HomekitAccessoryServer) ((HomekitServletConfig) config).getAccessoryServer();
             logger.debug("{}Successfully initialized with server instance", LOG_INIT);
         } else {
-            logger.warn("{}Invalid configuration type: {}", LOG_WARN, config.getClass().getName());
+            logger.warn("{}Invalid configuration type: {}", LOG_WARN,
+                    config != null ? config.getClass().getName() : "null");
         }
     }
 

@@ -1,8 +1,20 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.library.service;
 
 import javax.json.JsonValue;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
@@ -53,104 +65,99 @@ import org.slf4j.LoggerFactory;
  * @since 1.0
  */
 @HomekitServiceType(type = "000000BB-0000-1000-8000-0026BB765291", name = "Air Purifier", tag = "airPurifier")
-@NonNullByDefault
 public class HomekitAirPurifierService extends AbstractHomekitService {
-        // ========== Log Message Prefixes ==========
-        private static final String LOG_PREFIX = "Homekit AirPurifierService: ";
-        private static final String LOG_INIT = LOG_PREFIX + "Init - ";
-        private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    // ========== Log Message Prefixes ==========
+    private static final String LOG_PREFIX = "Homekit AirPurifierService: ";
+    private static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
 
-        private final Logger logger = LoggerFactory.getLogger(HomekitAirPurifierService.class);
+    private final Logger logger = LoggerFactory.getLogger(HomekitAirPurifierService.class);
 
-        /**
-         * Creates a new Air Purifier service.
-         *
-         * @param accessory The accessory this service belongs to
-         * @param eventManager The event manager for handling HomeKit events
-         * @param characteristicFactory Factory for creating HomeKit characteristics
-         * @since 1.0
-         */
-        public HomekitAirPurifierService(HomekitAccessory accessory, HomekitEventManager eventManager,
-                        HomekitCharacteristicFactory characteristicFactory) {
-                super(accessory, eventManager, characteristicFactory);
-                withName("Air Purifier").withPrimary(false).withHidden(false);
-                logger.debug("{}Created new Air Purifier service for accessory {}", LOG_INIT, accessory.getLabel());
-        }
+    /**
+     * Creates a new Air Purifier service.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @since 1.0
+     */
+    public HomekitAirPurifierService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory) {
+        super(accessory, eventManager, characteristicFactory);
+        withName("Air Purifier").withPrimary(false).withHidden(false);
+        logger.debug("{}Created new Air Purifier service for accessory {}", LOG_INIT, accessory.getLabel());
+    }
 
-        /**
-         * Creates a new Air Purifier service from a JSON configuration.
-         *
-         * @param accessory The accessory this service belongs to
-         * @param eventManager The event manager for handling HomeKit events
-         * @param characteristicFactory Factory for creating HomeKit characteristics
-         * @param value JSON value containing service configuration
-         * @since 1.0
-         */
-        public HomekitAirPurifierService(HomekitAccessory accessory, HomekitEventManager eventManager,
-                        HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
-                super(accessory, eventManager, characteristicFactory, value);
-                logger.debug("{}Created new Air Purifier service from JSON configuration for accessory {}", LOG_INIT,
-                                accessory.getLabel());
-        }
+    /**
+     * Creates a new Air Purifier service from a JSON configuration.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @param value JSON value containing service configuration
+     * @since 1.0
+     */
+    public HomekitAirPurifierService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
+        super(accessory, eventManager, characteristicFactory, value);
+        logger.debug("{}Created new Air Purifier service from JSON configuration for accessory {}", LOG_INIT,
+                accessory.getLabel());
+    }
 
-        /**
-         * Adds the required and optional characteristics for this service.
-         * 
-         * <p>
-         * Required characteristics:
-         * <ul>
-         * <li>Active (UUID: 000000B0-0000-1000-8000-0026BB765291)</li>
-         * <li>CurrentAirPurifierState (UUID: 000000A9-0000-1000-8000-0026BB765291)</li>
-         * <li>TargetAirPurifierState (UUID: 000000A8-0000-1000-8000-0026BB765291)</li>
-         * </ul>
-         * </p>
-         *
-         * <p>
-         * Optional characteristics:
-         * <ul>
-         * <li>LockPhysicalControls (UUID: 000000A7-0000-1000-8000-0026BB765291)</li>
-         * <li>Name (UUID: 00000023-0000-1000-8000-0026BB765291)</li>
-         * <li>RotationSpeed (UUID: 00000029-0000-1000-8000-0026BB765291)</li>
-         * <li>SwingMode (UUID: 000000B6-0000-1000-8000-0026BB765291)</li>
-         * </ul>
-         * </p>
-         *
-         * @since 1.0
-         */
-        @Override
-        public void addCharacteristics() throws HomekitServiceException {
-                addCharacteristic(
-                                new HomekitActiveCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(true));
-                addCharacteristic(new HomekitCurrentAirPurifierStateCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-                addCharacteristic(new HomekitTargetAirPurifierStateCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-                addCharacteristic(new HomekitLockPhysicalControlsCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-                addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId())
-                                .withMandatory(false));
-                addCharacteristic(
-                                new HomekitRotationSpeedCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                addCharacteristic(
-                                new HomekitSwingModeCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                logger.debug("{}Added characteristics for Air Purifier service", LOG_CONFIG);
-        }
+    /**
+     * Adds the required and optional characteristics for this service.
+     * 
+     * <p>
+     * Required characteristics:
+     * <ul>
+     * <li>Active (UUID: 000000B0-0000-1000-8000-0026BB765291)</li>
+     * <li>CurrentAirPurifierState (UUID: 000000A9-0000-1000-8000-0026BB765291)</li>
+     * <li>TargetAirPurifierState (UUID: 000000A8-0000-1000-8000-0026BB765291)</li>
+     * </ul>
+     * </p>
+     *
+     * <p>
+     * Optional characteristics:
+     * <ul>
+     * <li>LockPhysicalControls (UUID: 000000A7-0000-1000-8000-0026BB765291)</li>
+     * <li>Name (UUID: 00000023-0000-1000-8000-0026BB765291)</li>
+     * <li>RotationSpeed (UUID: 00000029-0000-1000-8000-0026BB765291)</li>
+     * <li>SwingMode (UUID: 000000B6-0000-1000-8000-0026BB765291)</li>
+     * </ul>
+     * </p>
+     *
+     * @since 1.0
+     */
+    @Override
+    public void addCharacteristics() throws HomekitServiceException {
+        addCharacteristic(
+                new HomekitActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
+        addCharacteristic(new HomekitCurrentAirPurifierStateCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(new HomekitTargetAirPurifierStateCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(new HomekitLockPhysicalControlsCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(false));
+        addCharacteristic(
+                new HomekitRotationSpeedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        addCharacteristic(
+                new HomekitSwingModeCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        logger.debug("{}Added characteristics for Air Purifier service", LOG_CONFIG);
+    }
 
-        /**
-         * Indicates whether this service can be extended with additional characteristics.
-         *
-         * @return false, as this service does not support extension
-         * @since 1.0
-         */
-        @Override
-        public boolean isExtensible() {
-                return false;
-        }
+    /**
+     * Indicates whether this service can be extended with additional characteristics.
+     *
+     * @return false, as this service does not support extension
+     * @since 1.0
+     */
+    @Override
+    public boolean isExtensible() {
+        return false;
+    }
 }

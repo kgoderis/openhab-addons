@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.network.http;
 
 import org.eclipse.jetty.client.ProtocolHandler;
@@ -41,12 +54,11 @@ import org.slf4j.LoggerFactory;
  * <li>{@link org.eclipse.jetty.client.api.Response Response} for response handling</li>
  * </ul>
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0
- */
+     */
 public class HomekitProtocolHandler implements ProtocolHandler {
 
-    /** Logger instance for this class */
     protected static final Logger logger = LoggerFactory.getLogger(HomekitProtocolHandler.class);
 
     // ========== Log Message Prefixes ==========
@@ -56,7 +68,6 @@ public class HomekitProtocolHandler implements ProtocolHandler {
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
-    /** The HomeKit remote accessory server instance */
     protected HomekitRemoteAccessoryServer server;
 
     /**
@@ -166,7 +177,7 @@ public class HomekitProtocolHandler implements ProtocolHandler {
          * </p>
          *
          * @param maxLength The maximum content length to buffer in bytes
-         */
+     */
         public HomekitResponseListener(int maxLength) {
             super(maxLength);
             logger.debug("{}Created response listener with max length: {} bytes", LOG_INIT, maxLength);
@@ -182,7 +193,7 @@ public class HomekitProtocolHandler implements ProtocolHandler {
          * </p>
          *
          * @param response The HTTP response that was successfully processed
-         */
+     */
         @Override
         public void onSuccess(Response response) {
             logger.debug("{}Processing successful response", LOG_STATE);
@@ -204,7 +215,7 @@ public class HomekitProtocolHandler implements ProtocolHandler {
          * </p>
          *
          * @param result The result of the response processing
-         */
+     */
         @Override
         public void onComplete(Result result) {
             if (result.isFailed()) {

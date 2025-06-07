@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.provider;
 
 import java.util.ArrayList;
@@ -9,7 +22,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.storage.StorageService;
 import org.openhab.core.thing.binding.AbstractStorageBasedTypeProvider;
@@ -58,10 +70,9 @@ import org.slf4j.LoggerFactory;
  * - Dynamic type updates and refresh
  * - Factory-dependent type management
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0
- */
-@NonNullByDefault
+     */
 @Component(service = { ChannelGroupTypeProvider.class })
 public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypeProvider {
     // ========== Log Message Prefixes ==========
@@ -209,7 +220,9 @@ public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypePro
             List<ChannelDefinition> channelDefinitions = new ArrayList<>();
 
             // Process mandatory characteristics
-            for (String characteristicType : characteristicTypes.get("mandatory")) {
+            @SuppressWarnings("null") // Map.get() return type interpretation
+            Set<String> mandatoryCharacteristics = characteristicTypes.get("mandatory");
+            for (String characteristicType : mandatoryCharacteristics) {
                 logger.debug("{}Processing mandatory characteristic: {}", LOG_TYPE, characteristicType);
                 String characteristicTag = characteristicFactory.getTagFromCharacteristicType(characteristicType);
                 if (characteristicTag == null || characteristicTag.isEmpty()) {
@@ -227,7 +240,9 @@ public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypePro
             }
 
             // Process optional characteristics
-            for (String characteristicType : characteristicTypes.get("optional")) {
+            @SuppressWarnings("null") // Map.get() return type interpretation
+            Set<String> optionalCharacteristics = characteristicTypes.get("optional");
+            for (String characteristicType : optionalCharacteristics) {
                 logger.debug("{}Processing optional characteristic: {}", LOG_TYPE, characteristicType);
                 String characteristicTag = characteristicFactory.getTagFromCharacteristicType(characteristicType);
                 if (characteristicTag == null || characteristicTag.isEmpty()) {
@@ -282,6 +297,7 @@ public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypePro
             @Nullable Locale locale) {
         logger.debug("{}Getting channel group type for UID: {}", LOG_TYPE, channelGroupTypeUID);
 
+        @SuppressWarnings("null") // Map.get() return type interpretation
         ChannelGroupType cachedType = channelGroupTypeCache.get(channelGroupTypeUID);
         if (cachedType != null) {
             logger.debug("{}Found channel group type in cache", LOG_TYPE);

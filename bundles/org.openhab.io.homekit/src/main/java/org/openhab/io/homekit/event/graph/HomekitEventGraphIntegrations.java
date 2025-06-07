@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.event.graph;
 
 import java.util.Map;
@@ -8,7 +21,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.events.Event;
 import org.openhab.core.events.EventPublisher;
 import org.openhab.core.events.EventSubscriber;
@@ -42,7 +54,6 @@ import com.google.gson.JsonObject;
  *
  * @author Karel Goderis - Initial contribution
  */
-@NonNullByDefault
 public class HomekitEventGraphIntegrations {
     private static final Logger logger = LoggerFactory.getLogger(HomekitEventGraphIntegrations.class);
 

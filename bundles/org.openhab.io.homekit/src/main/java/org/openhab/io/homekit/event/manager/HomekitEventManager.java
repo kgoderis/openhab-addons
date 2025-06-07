@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.event.manager;
 
 import java.util.ArrayList;
@@ -17,7 +30,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.ThreadPoolManager;
 import org.openhab.core.common.registry.Identifiable;
@@ -152,7 +164,6 @@ import org.slf4j.LoggerFactory;
  * @author
  * @since 3.x
  */
-@NonNullByDefault
 @Component(service = HomekitEventManager.class)
 public class HomekitEventManager {
     private static final String THREAD_POOL_NAME = "homekit-event-manager";
@@ -291,14 +302,16 @@ public class HomekitEventManager {
         }
 
         // Check correlation ID for loops using HomekitEventMetadata
-        UID correlationId = event.getMetadata().getCorrelationId();
-        if (correlationId != null) {
-            if (event.getMetadata().hasProcessedCorrelationId(correlationId)) {
+        Optional<UID> correlationId = event.getMetadata().getCorrelationId();
+        if (correlationId.isPresent()) {
+            @SuppressWarnings("null") // Optional.get() is safe after isPresent() check
+            UID validCorrelationId = correlationId.get();
+            if (event.getMetadata().hasProcessedCorrelationId(validCorrelationId)) {
                 logger.debug("{}Event with correlation ID {} already processed, skipping", LOG_EVENT, correlationId);
                 droppedEventsDueToCorrelation.incrementAndGet();
                 return;
             }
-            event.getMetadata().addProcessedCorrelationId(correlationId);
+            event.getMetadata().addProcessedCorrelationId(validCorrelationId);
         }
 
         UID publisherUID = event.getPublisherUID();
@@ -308,7 +321,7 @@ public class HomekitEventManager {
             boolean queued = false;
             while (!queued && isRunning.get()) {
                 if (eventQueue.size() >= MAX_QUEUE_SIZE) {
-                    @Nullable
+                    @SuppressWarnings("null") // Queue.poll() can return null but we check for it
                     HomekitEvent oldestEvent = eventQueue.poll();
                     if (oldestEvent != null) {
                         logger.warn("{}Event queue is full, oldest event discarded: type={}, timestamp={}", LOG_QUEUE,
@@ -357,14 +370,22 @@ public class HomekitEventManager {
         List<HomekitEventSubscription> matchingSubs = new ArrayList<>();
 
         // Get the destination UID from the event metadata if present
-        UID destinationUID = event.getSubscriberUID();
+        Optional<UID> destinationUID = event.getSubscriberUID();
 
         // If we have a specific destination, only match subscriptions for that subscriber
-        if (destinationUID != null && !destinationUID.equals(HomekitUID.WILDCARD_UID)) {
-            matchingSubs = getSubscriptionsBySubscriberUid(destinationUID).stream()
-                    .filter(sub -> sub.eventType.matches(event.getType())
-                            && sub.getExpectedEventClass().isAssignableFrom(event.getClass()) && sub.filter.test(event))
-                    .collect(Collectors.toList());
+        if (destinationUID.isPresent()) {
+            @SuppressWarnings("null") // Optional.get() is safe after isPresent() check
+            UID validDestinationUID = destinationUID.get();
+            if (!validDestinationUID.equals(HomekitUID.WILDCARD_UID)) {
+                @SuppressWarnings("null") // collect(Collectors.toList()) is safe - always returns non-null list
+                List<HomekitEventSubscription> filteredSubs = getSubscriptionsBySubscriberUid(validDestinationUID)
+                        .stream()
+                        .filter(sub -> sub.eventType.matches(event.getType())
+                                && sub.getExpectedEventClass().isAssignableFrom(event.getClass())
+                                && sub.filter.test(event))
+                        .collect(Collectors.toList());
+                matchingSubs = filteredSubs;
+            }
         } else {
             // Broadcast case - match all relevant subscriptions
             for (HomekitEventSubscription sub : subscriptions) {
@@ -378,8 +399,10 @@ public class HomekitEventManager {
 
         List<CompletableFuture<Void>> futures = createSubscriberFutures(event, matchingSubs, retryCount, retry);
 
-        return CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new))
-                .orTimeout(EVENT_TIMEOUT_MS, TimeUnit.MILLISECONDS).exceptionally(throwable -> {
+        @SuppressWarnings({ "null", "unchecked" }) // toArray() with array generator is safe - returns non-null array
+        CompletableFuture<Void>[] futuresArray = futures.toArray(CompletableFuture[]::new);
+        return CompletableFuture.allOf(futuresArray).orTimeout(EVENT_TIMEOUT_MS, TimeUnit.MILLISECONDS)
+                .exceptionally(throwable -> {
                     logger.error("{}Error during synchronized event publishing: {}", LOG_ERROR, throwable.getMessage(),
                             throwable);
                     return null;
@@ -505,21 +528,28 @@ public class HomekitEventManager {
 
     public List<HomekitEventSubscription> subscribe(Set<HomekitEventType> eventTypes, UID publisherUID,
             HomekitEventSubscriber subscriber) {
-        return eventTypes.stream().map(eventType -> subscribe(eventType, publisherUID, subscriber))
-                .collect(Collectors.toList());
+        @SuppressWarnings("null") // collect(Collectors.toList()) is safe - always returns non-null list
+        List<HomekitEventSubscription> result = eventTypes.stream()
+                .map(eventType -> subscribe(eventType, publisherUID, subscriber)).collect(Collectors.toList());
+        return result;
     }
 
     public List<HomekitEventSubscription> subscribe(Set<HomekitEventType> eventTypes, UID publisherUID,
             UID subscriberUID, HomekitEventSubscriber subscriber) {
-        return eventTypes.stream().map(eventType -> subscribe(eventType, publisherUID, subscriberUID, subscriber))
+        @SuppressWarnings("null") // collect(Collectors.toList()) is safe - always returns non-null list
+        List<HomekitEventSubscription> result = eventTypes.stream()
+                .map(eventType -> subscribe(eventType, publisherUID, subscriberUID, subscriber))
                 .collect(Collectors.toList());
+        return result;
     }
 
     public List<HomekitEventSubscription> subscribe(Set<HomekitEventType> eventTypes, UID publisherUID,
             UID subscriberUID, HomekitEventSubscriber subscriber, Class<? extends HomekitEvent> expectedEventClass) {
-        return eventTypes.stream()
+        @SuppressWarnings("null") // collect(Collectors.toList()) is safe - always returns non-null list
+        List<HomekitEventSubscription> result = eventTypes.stream()
                 .map(eventType -> subscribe(eventType, publisherUID, subscriberUID, subscriber, expectedEventClass))
                 .collect(Collectors.toList());
+        return result;
     }
 
     /**
@@ -609,6 +639,7 @@ public class HomekitEventManager {
 
     public List<HomekitEventSubscription> subscribe(Set<HomekitEventType> eventTypes, UID publisherUID,
             UID subscriberUID, HomekitEventHandler handler) {
+        @SuppressWarnings("null") // collect(Collectors.toList()) is safe - always returns non-null list
         List<HomekitEventSubscription> result = eventTypes.stream()
                 .map(eventType -> subscribe(eventType, publisherUID, subscriberUID, handler))
                 .collect(Collectors.toList());
@@ -617,6 +648,7 @@ public class HomekitEventManager {
 
     public List<HomekitEventSubscription> subscribe(Set<HomekitEventType> eventTypes, UID publisherUID,
             UID subscriberUID, HomekitEventHandler handler, Class<? extends HomekitEvent> expectedEventClass) {
+        @SuppressWarnings("null") // collect(Collectors.toList()) is safe - always returns non-null list
         List<HomekitEventSubscription> result = eventTypes.stream()
                 .map(eventType -> subscribe(eventType, publisherUID, subscriberUID, handler, expectedEventClass))
                 .collect(Collectors.toList());
@@ -703,6 +735,7 @@ public class HomekitEventManager {
         eventExecutor.shutdown();
         try {
             if (!eventExecutor.awaitTermination(SHUTDOWN_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
+                @SuppressWarnings("null") // shutdownNow() can return null but we check size() which handles null
                 List<Runnable> remainingTasks = eventExecutor.shutdownNow();
                 logger.warn("{} tasks were still running after shutdown", remainingTasks.size());
             }
@@ -748,7 +781,7 @@ public class HomekitEventManager {
      */
     public void updateAccessoryUID(HomekitAccessoryUID oldUID, HomekitAccessoryUID newUID) {
         // Update direct subscriptions
-        subscriptions.stream().filter(sub -> sub.publisherUID.equals(oldUID)).forEach(sub -> {
+        subscriptions.stream().filter(sub -> sub.publisherUID.equals((UID) oldUID)).forEach(sub -> {
             subscriptions.remove(sub);
             HomekitEventSubscription newSub = new HomekitEventSubscription(sub.eventType, (UID) newUID,
                     sub.subscriberUID, sub.subscriber, sub.expectedEventClass);
@@ -759,7 +792,7 @@ public class HomekitEventManager {
         // Update wildcard subscriptions
         subscriptions.stream().filter(sub -> sub.publisherUID.equals((UID) HomekitUID.WILDCARD_UID)
                 || matchesPublisherPattern(sub.publisherUID, (UID) oldUID)).forEach(sub -> {
-                    if (sub.subscriberUID.equals(oldUID)) {
+                    if (sub.subscriberUID.equals((UID) oldUID)) {
                         subscriptions.remove(sub);
                         HomekitEventSubscription newSub = new HomekitEventSubscription(sub.eventType, sub.publisherUID,
                                 (UID) newUID, sub.subscriber, sub.expectedEventClass);
@@ -770,7 +803,7 @@ public class HomekitEventManager {
                 });
 
         // Update events in the queue
-        eventQueue.stream().filter(event -> event.getPublisherUID().equals(oldUID)).forEach(event -> {
+        eventQueue.stream().filter(event -> event.getPublisherUID().equals((UID) oldUID)).forEach(event -> {
             event.setPublisherUID((UID) newUID);
             logger.debug("{}Updated event publisher UID from {} to {}", LOG_EVENT, oldUID, newUID);
         });
@@ -783,6 +816,7 @@ public class HomekitEventManager {
 
         // Publish a notification event about the UID change
         HomekitAccessoryUID accessoryUID = newUID;
+        @SuppressWarnings("null") // accessoryRegistry.get() can return null, which is checked below
         HomekitAccessory accessory = accessoryRegistry.get(accessoryUID);
         if (accessory != null) {
             publishEvent(
@@ -806,8 +840,10 @@ public class HomekitEventManager {
      * @return list of matching subscriptions
      */
     public List<HomekitEventSubscription> getSubscriptionsBySubscriberUid(UID subscriberUid) {
-        return subscriptions.stream().filter(sub -> sub.getSubscriberUID().equals(subscriberUid))
-                .collect(Collectors.toList());
+        @SuppressWarnings("null") // collect(Collectors.toList()) is safe - always returns non-null list
+        List<HomekitEventSubscription> result = subscriptions.stream()
+                .filter(sub -> sub.getSubscriberUID().equals(subscriberUid)).collect(Collectors.toList());
+        return result;
     }
 
     /**
@@ -817,7 +853,10 @@ public class HomekitEventManager {
      * @return list of matching subscriptions
      */
     public List<HomekitEventSubscription> getSubscriptionsByPublisherUid(UID publisherUid) {
-        return subscriptions.stream().filter(sub -> sub.publisherUID.equals(publisherUid)).collect(Collectors.toList());
+        @SuppressWarnings("null") // collect(Collectors.toList()) is safe - always returns non-null list
+        List<HomekitEventSubscription> result = subscriptions.stream()
+                .filter(sub -> sub.publisherUID.equals(publisherUid)).collect(Collectors.toList());
+        return result;
     }
 
     /**
@@ -827,7 +866,10 @@ public class HomekitEventManager {
      * @return list of matching subscriptions
      */
     public List<HomekitEventSubscription> getSubscriptionsByEventType(HomekitEventType eventType) {
-        return subscriptions.stream().filter(sub -> sub.eventType == eventType).collect(Collectors.toList());
+        @SuppressWarnings("null") // collect(Collectors.toList()) is safe - always returns non-null list
+        List<HomekitEventSubscription> result = subscriptions.stream().filter(sub -> sub.eventType == eventType)
+                .collect(Collectors.toList());
+        return result;
     }
 
     /**
@@ -931,6 +973,7 @@ public class HomekitEventManager {
         logger.info("{}Active publishers: {}", LOG_PUBLISHER, activePublishers.size());
 
         // Group subscriptions by publisher
+        @SuppressWarnings("null") // collect(Collectors.groupingBy()) is safe - always returns non-null map
         Map<UID, Long> publisherCounts = subscriptions.stream()
                 .collect(Collectors.groupingBy(sub -> sub.publisherUID, Collectors.counting()));
 
@@ -939,6 +982,7 @@ public class HomekitEventManager {
         });
 
         // Group subscriptions by event type
+        @SuppressWarnings("null") // collect(Collectors.groupingBy()) is safe - always returns non-null map
         Map<HomekitEventType, Long> eventTypeCounts = subscriptions.stream()
                 .collect(Collectors.groupingBy(sub -> sub.eventType, Collectors.counting()));
 

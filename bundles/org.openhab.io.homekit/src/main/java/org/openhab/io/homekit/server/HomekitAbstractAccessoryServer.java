@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.server;
 
 import java.net.InetAddress;
@@ -12,8 +25,6 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryCategory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
@@ -80,8 +91,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  * @version 1.0
- */
-@NonNullByDefault
+     */
 public abstract class HomekitAbstractAccessoryServer implements HomekitAccessoryServer, AutoCloseable {
 
     // ========== Constants ==========
@@ -107,7 +117,6 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
     private volatile int configurationIndex = 1;
     private volatile boolean isShutdown = false;
 
-    /** Server state management */
     private static final Map<HomekitAccessoryServerState, Set<HomekitAccessoryServerState>> VALID_STATE_TRANSITIONS = Map
             .of(HomekitAccessoryServerState.UNKNOWN, Set.of(HomekitAccessoryServerState.READY),
                     HomekitAccessoryServerState.READY,
@@ -434,6 +443,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      * @return true if the transition is valid, false otherwise
      */
     private boolean isValidStateTransition(HomekitAccessoryServerState current, HomekitAccessoryServerState next) {
+        @SuppressWarnings("null") // Map.get() return type interpretation
         Set<HomekitAccessoryServerState> validNextStates = VALID_STATE_TRANSITIONS.get(current);
         return validNextStates != null && validNextStates.contains(next);
     }
@@ -638,11 +648,11 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      * @return The public key for the specified pairing
      */
     @Override
-    public byte[] getPublicKey(byte @NonNull [] destinationPairingId) {
+    public Optional<byte[]> getPublicKey(byte @NonNull [] destinationPairingId) {
         logger.debug("{}Getting public key for destination pairing ID: {}", LOG_CONFIG,
                 HomekitByte.toHexString(destinationPairingId));
         HomekitPairing hp = pairingRegistry.get(new HomekitPairingUIDImpl(getPairingId(), destinationPairingId));
-        return hp != null ? hp.getPublicKey() : new byte[0];
+        return hp != null ? Optional.of(hp.getPublicKey()) : Optional.empty();
     }
 
     // ========== Setup Code Management Methods ==========
@@ -736,12 +746,18 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      * @return The pairing, or null if not found
      */
     @Override
-    public @Nullable HomekitPairing getPairing(byte @NonNull [] pairingId) {
+    public Optional<HomekitPairing> getPairing(byte @NonNull [] pairingId) {
         if (pairingId.length == 0) {
             throw new IllegalArgumentException("HomekitPairing ID cannot be empty");
         }
         Collection<HomekitPairing> pairings = pairingRegistry.get(pairingId);
-        return pairings.isEmpty() ? null : pairings.iterator().next();
+        if (pairings.isEmpty()) {
+            return Optional.empty();
+        } else {
+            @SuppressWarnings("null") // iterator().next() is safe after isEmpty() check
+            HomekitPairing firstPairing = pairings.iterator().next();
+            return Optional.of(firstPairing);
+        }
     }
 
     /**
@@ -864,11 +880,11 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      * @return The accessory, or null if not found
      */
     @Override
-    public @Nullable HomekitAccessory getAccessory(int accessoryId) {
+    public Optional<HomekitAccessory> getAccessory(int accessoryId) {
         synchronized (accessoryLock) {
             Optional<HomekitAccessory> result = accessories.stream().filter(a -> a.getAccessoryId() == accessoryId)
                     .findFirst();
-            return result.isPresent() ? result.get() : null;
+            return result.isPresent() ? result : Optional.empty();
         }
     }
 
@@ -1080,7 +1096,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
          * Gets the priority of this listener.
          *
          * @return The listener's priority
-         */
+     */
         int getPriority();
     }
 

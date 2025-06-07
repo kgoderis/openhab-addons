@@ -1,6 +1,19 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.event.graph;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.events.Event;
 
 /**
@@ -21,7 +34,6 @@ import org.openhab.core.events.Event;
  *
  * @author Karel Goderis - Initial contribution
  */
-@NonNullByDefault
 public class HomekitEventCycleDetectedEvent implements Event {
     /** The type identifier for this event. */
     public static final String TYPE = "HomekitEventCycleDetectedEvent";
@@ -89,7 +101,7 @@ public class HomekitEventCycleDetectedEvent implements Event {
      * @return the event source identifier
      */
     @Override
-    public String getSource() {
+    public @Nullable String getSource() {
         return "homekit-event-graph";
     }
 }

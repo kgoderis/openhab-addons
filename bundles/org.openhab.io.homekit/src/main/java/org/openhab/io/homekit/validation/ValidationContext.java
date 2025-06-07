@@ -1,11 +1,27 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.validation;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Context object that holds the state and configuration for validation.
  * This includes the object being validated, any cached results, and validation settings.
+ * 
+ * @author Karel Goderis - Initial contribution
  */
 public class ValidationContext {
     private final Object target;
@@ -28,8 +44,8 @@ public class ValidationContext {
         attributes.put(key, value);
     }
 
-    public Object getAttribute(String key) {
-        return attributes.get(key);
+    public Optional<Object> getAttribute(String key) {
+        return Optional.ofNullable(attributes.get(key));
     }
 
     public void cacheResult(String key, ValidationResult result) {
@@ -38,8 +54,8 @@ public class ValidationContext {
         }
     }
 
-    public ValidationResult getCachedResult(String key) {
-        return settings.isCachingEnabled() ? cachedResults.get(key) : null;
+    public Optional<ValidationResult> getCachedResult(String key) {
+        return Optional.ofNullable(settings.isCachingEnabled() ? cachedResults.get(key) : null);
     }
 
     public ValidationSettings getSettings() {

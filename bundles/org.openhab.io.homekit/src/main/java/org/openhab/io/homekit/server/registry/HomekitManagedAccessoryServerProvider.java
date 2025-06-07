@@ -1,10 +1,22 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.server.registry;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.registry.AbstractManagedProvider;
 import org.openhab.core.io.transport.mdns.MDNSService;
@@ -73,10 +85,9 @@ import org.slf4j.LoggerFactory;
  * - Validates server configurations
  * - Ensures secure accessory assignments
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0
- */
-@NonNullByDefault
+     */
 @Component(immediate = true, service = { HomekitAccessoryServerProvider.class,
         HomekitManagedAccessoryServerProvider.class }, configurationPid = "org.openhab.homekit")
 public class HomekitManagedAccessoryServerProvider extends
@@ -85,7 +96,6 @@ public class HomekitManagedAccessoryServerProvider extends
 
     private final Logger logger = LoggerFactory.getLogger(HomekitManagedAccessoryServerProvider.class);
 
-    /** Provider identifier for the managed accessory server provider */
     private static final String HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER = "homekit.managedAccessoryServerProvider";
 
     // ========== Log Message Prefixes ==========

@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2010-2020 Contributors to the openHAB project
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -16,7 +16,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.config.core.Configuration;
 import org.openhab.core.thing.Thing;
@@ -63,10 +62,9 @@ import org.slf4j.LoggerFactory;
  * - {@link HomekitCharacteristicFactory} for characteristic creation
  * - {@link HomekitChannelGroupTypeProvider} for channel group definitions
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
-@NonNullByDefault
 @Component(configurationPid = "io.homekit", service = ThingHandlerFactory.class)
 public class HomekitHandlerFactory extends BaseThingHandlerFactory {
 
@@ -87,7 +85,7 @@ public class HomekitHandlerFactory extends BaseThingHandlerFactory {
     protected final HomekitAccessoryRegistry accessoryRegistry;
     protected final HomekitPairingRegistry pairingRegistry;
     protected final HomekitAccessoryServerRegistry serverRegistry;
-    protected final @NonNullByDefault({}) BundleContext bundleContext;
+    protected final BundleContext bundleContext;
     protected final HomekitThingTypeProvider homekitThingTypeProvider;
     protected final HomekitChannelTypeProvider homekitChannelTypeProvider;
     protected final HomekitEventManager eventManager;

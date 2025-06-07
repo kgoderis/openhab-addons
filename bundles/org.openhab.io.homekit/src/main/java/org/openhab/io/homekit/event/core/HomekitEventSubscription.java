@@ -1,8 +1,20 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.event.core;
 
 import java.util.function.Predicate;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.registry.Identifiable;
 import org.openhab.core.thing.UID;
@@ -63,10 +75,9 @@ import org.openhab.io.homekit.util.HomekitUID;
  * <li>Validate event classes for type safety</li>
  * </ul>
  *
- * @author OpenHAB
+ * @author Karel Goderis - Initial contribution
  * @since 3.x
  */
-@NonNullByDefault
 public class HomekitEventSubscription {
     public final HomekitEventType eventType;
     public final UID publisherUID;

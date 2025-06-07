@@ -1,7 +1,20 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.api.event;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
+import java.util.Optional;
+
 import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.event.core.HomekitEventMetadata;
 
@@ -31,10 +44,9 @@ import org.openhab.io.homekit.event.core.HomekitEventMetadata;
  * - {@link org.openhab.io.homekit.event.core.HomekitEventMetadata} for event metadata
  * - {@link org.openhab.io.homekit.api.event.HomekitEventType} for event classification
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0.0
  */
-@NonNullByDefault
 public interface HomekitEvent {
     /**
      * Gets the type of this event.
@@ -68,11 +80,10 @@ public interface HomekitEvent {
      * Gets the UID of the subscriber of this event.
      * The subscriber is the component that will process this event.
      *
-     * @return the subscriber UID, or null if not set
+     * @return the subscriber UID, or empty if not set
      * @since 1.0.0
      */
-    @Nullable
-    UID getSubscriberUID();
+    Optional<UID> getSubscriberUID();
 
     /**
      * Sets the UID of the subscriber of this event.

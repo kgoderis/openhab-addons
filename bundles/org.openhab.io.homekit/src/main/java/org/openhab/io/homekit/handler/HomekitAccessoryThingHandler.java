@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.handler;
 
 import java.util.ArrayList;
@@ -7,7 +20,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.config.core.Configuration;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ChannelUID;
@@ -57,10 +69,9 @@ import org.slf4j.LoggerFactory;
  * - {@link HomekitAccessoryServerRegistry} for server instance management
  * - {@link HomekitEventManager} for event handling
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
-@NonNullByDefault
 public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
     // ========== Log Message Prefixes ==========
     private static final String LOG_PREFIX = "HomeKit Accessory Handler: ";
@@ -110,32 +121,39 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
                 characteristicMap.clear();
             }
 
-            HomekitAccessory currentAccessory = getAccessory();
-            if (currentAccessory == null) {
+            Optional<HomekitAccessory> currentAccessory = getAccessory();
+            if (currentAccessory.isEmpty()) {
                 throw new IllegalStateException("HomekitAccessory is not initialized");
             }
 
             // If the Thing does not have any channels, traverse the services of the accessory
             if (thing.getChannels().isEmpty()) {
                 logger.info("{}Thing has no channels, traversing services of accessory", LOG_INIT);
-                for (HomekitService service : currentAccessory.getServices()) {
+                @SuppressWarnings("null") // Optional.get() is safe after isEmpty() check above
+                HomekitAccessory currentAccessoryInstance = currentAccessory.get();
+                for (HomekitService service : currentAccessoryInstance.getServices()) {
                     addChannelGroupForService(service);
                 }
             } else {
                 // traverse channels and add them to the characteristicMap
+                @SuppressWarnings("null") // Optional.get() is safe after isEmpty() check above
+                HomekitAccessory currentAccessoryInstance = currentAccessory.get();
                 for (Channel channel : thing.getChannels()) {
                     if (channel.getUID().getGroupId() == null) {
                         logger.warn("{}Channel {} has no group ID", LOG_WARN, channel.getUID());
                         continue;
                     }
 
-                    if (channel.getUID().getGroupId().split("\\.").length != 2) {
+                    @SuppressWarnings("null") // Channel.getUID().getGroupId() is guaranteed non-null in openHAB
+                                              // framework
+                    String[] groupIdParts = channel.getUID().getGroupId().split("\\.");
+                    if (groupIdParts.length != 2) {
                         logger.warn("{}Channel {} has an invalid group ID", LOG_WARN, channel.getUID());
                         continue;
                     }
 
-                    String serviceTag = channel.getUID().getGroupId().split("\\.")[0];
-                    String serviceId = channel.getUID().getGroupId().split("\\.")[1];
+                    String serviceTag = groupIdParts[0];
+                    String serviceId = groupIdParts[1];
 
                     String serviceType;
                     try {
@@ -146,16 +164,18 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
                         continue;
                     }
 
-                    Optional<HomekitService> service = currentAccessory.getService(serviceType);
+                    Optional<HomekitService> service = currentAccessoryInstance.getService(serviceType);
                     if (service.isEmpty()) {
                         logger.warn("{}HomekitService {} not found in accessory", LOG_WARN, serviceTag);
                         continue;
                     }
 
                     // verify that the serviceId matches the serviceId of the service
-                    if (service.get().getInstanceId() != Long.parseLong(serviceId)) {
+                    @SuppressWarnings("null") // Optional.get() is safe after isEmpty() check above
+                    HomekitService serviceInstance = service.get();
+                    if (serviceInstance.getInstanceId() != Long.parseLong(serviceId)) {
                         logger.warn("{}HomekitService ID {} does not match service ID {} for service {}", LOG_WARN,
-                                serviceId, service.get().getInstanceId(), serviceTag);
+                                serviceId, serviceInstance.getInstanceId(), serviceTag);
                         continue;
                     }
 
@@ -169,7 +189,7 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
                         continue;
                     }
 
-                    Optional<HomekitCharacteristic<?>> characteristic = service.get()
+                    Optional<HomekitCharacteristic<?>> characteristic = serviceInstance
                             .getCharacteristic(characteristicType);
                     if (characteristic.isEmpty()) {
                         logger.warn("{}HomekitCharacteristic {} not found in service {}", LOG_WARN, characteristicType,
@@ -177,7 +197,9 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
                         continue;
                     }
                     synchronized (characteristicMapLock) {
-                        characteristicMap.put(channel, characteristic.get());
+                        @SuppressWarnings("null") // Optional.get() is safe after isEmpty() check above
+                        HomekitCharacteristic<?> characteristicInstance = characteristic.get();
+                        characteristicMap.put(channel, characteristicInstance);
                     }
                 }
             }
@@ -239,12 +261,12 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
             // Create channels with group IDs in their UIDs - OpenHAB will group them automatically
             List<Channel> channels = new ArrayList<>();
             for (HomekitCharacteristic<?> characteristic : service.getCharacteristics()) {
-                Channel channel = addChannelForCharacteristic(characteristic);
-                if (channel != null) {
+                Optional<Channel> channelOpt = addChannelForCharacteristic(characteristic);
+                channelOpt.ifPresent(channel -> {
                     channels.add(channel);
                     logger.debug("{}Added channel '{}' to group '{}' (type: {})", LOG_CHANNEL, channel.getUID().getId(),
                             groupId, channelGroupType != null ? channelGroupType.getLabel() : "basic");
-                }
+                });
             }
 
             if (channels.isEmpty()) {
@@ -294,7 +316,8 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
      * @throws HomekitException if there is an error creating the channel or if the characteristic type is not found
      */
     @Override
-    protected Channel addChannelForCharacteristic(HomekitCharacteristic<?> characteristic) throws HomekitException {
+    protected Optional<Channel> addChannelForCharacteristic(HomekitCharacteristic<?> characteristic)
+            throws HomekitException {
         try {
             // Let subclasses determine the channel ID
             ChannelUID channelUID = getChannelUID(characteristic);
@@ -302,9 +325,7 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
             ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
                     characteristic.getType());
             ChannelType channelType = homekitChannelTypeProvider.getChannelType(channelTypeUID, null);
-
             if (channelType == null) {
-                logger.warn("{}No ChannelType found for characteristic {}", LOG_CHANNEL, characteristic.getUID());
                 throw new HomekitException("No ChannelType found for characteristic " + characteristic.getUID());
             }
 
@@ -316,13 +337,13 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
                 characteristicMap.put(channel, characteristic);
             }
 
-            logger.debug("{}Added channel {} for characteristic {}", LOG_CHANNEL, channelUID, characteristic.getUID());
-            return channel;
-        } catch (HomekitException e) {
-            logger.warn("{}Unexpected error adding channel for characteristic {}: {}", LOG_CHANNEL,
-                    characteristic.getUID(), e.getMessage());
-            throw new HomekitException("Unexpected error adding channel for characteristic " + characteristic.getUID(),
-                    e);
+            updateThing(editThing().withChannel(channel).build());
+
+            return Optional.of(channel);
+        } catch (Exception e) {
+            logger.warn("{}Failed to create channel for characteristic {}: {}", LOG_CHANNEL, characteristic.getUID(),
+                    e.getMessage());
+            throw new HomekitException("Failed to create channel for characteristic", e);
         }
     }
 
@@ -420,10 +441,12 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
      */
     @Override
     protected Set<HomekitCharacteristic<?>> getCurrentCharacteristics() {
-        HomekitAccessory currentAccessory = getAccessory();
-        if (currentAccessory != null) {
+        Optional<HomekitAccessory> currentAccessory = getAccessory();
+        if (currentAccessory.isPresent()) {
             Set<HomekitCharacteristic<?>> characteristics = new HashSet<>();
-            for (HomekitService service : currentAccessory.getServices()) {
+            @SuppressWarnings("null") // Optional.get() is safe after isPresent() check
+            HomekitAccessory currentAccessoryInstance = currentAccessory.get();
+            for (HomekitService service : currentAccessoryInstance.getServices()) {
                 for (HomekitCharacteristic<?> characteristic : service.getCharacteristics()) {
                     characteristics.add(characteristic);
                 }
@@ -490,9 +513,11 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
      */
     @Override
     protected boolean validateCharacteristicBelongsToHandler(HomekitCharacteristic<?> characteristic) {
-        HomekitAccessory currentAccessory = getAccessory();
-        if (currentAccessory != null) {
-            for (HomekitService service : currentAccessory.getServices()) {
+        Optional<HomekitAccessory> currentAccessory = getAccessory();
+        if (currentAccessory.isPresent()) {
+            @SuppressWarnings("null") // Optional.get() is safe after isPresent() check
+            HomekitAccessory currentAccessoryInstance = currentAccessory.get();
+            for (HomekitService service : currentAccessoryInstance.getServices()) {
                 if (service.getCharacteristics().contains(characteristic)) {
                     return true;
                 }

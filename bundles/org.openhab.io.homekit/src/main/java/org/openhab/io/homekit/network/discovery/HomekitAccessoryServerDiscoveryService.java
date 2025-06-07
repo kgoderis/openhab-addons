@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.network.discovery;
 
 import java.io.IOException;
@@ -19,7 +32,6 @@ import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 
 import org.apache.commons.lang.SystemUtils;
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.config.discovery.AbstractDiscoveryService;
 import org.openhab.core.config.discovery.DiscoveryResultBuilder;
@@ -109,10 +121,9 @@ import org.slf4j.LoggerFactory;
  * <li>{@link HomekitServiceFactory} - For service creation</li>
  * </ul>
  *
- * @author OpenHAB
+ * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
-@NonNullByDefault
 @Component(immediate = true, service = DiscoveryService.class, configurationPid = "discovery.homekit")
 public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoveryService implements ServiceListener {
     /** Timeout for foreground scans in milliseconds */
@@ -364,13 +375,14 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
 
         for (ServiceInfo serviceInfo : services) {
             logger.debug("{}Processing discovered service: {}", LOG_SERVER, serviceInfo.getName());
-            Map<String, Object> properties = processService(serviceInfo);
-
-            if (properties == null) {
+            Optional<Map<String, Object>> propertiesOpt = processService(serviceInfo);
+            if (propertiesOpt.isEmpty()) {
                 logger.debug("{}Skipping service {} - invalid or missing properties", LOG_SERVER,
                         serviceInfo.getName());
                 continue;
             }
+            @SuppressWarnings("null")
+            Map<String, Object> properties = propertiesOpt.get();
 
             String deviceId = (String) properties.get("id");
             if (deviceId == null || deviceId.isEmpty()) {
@@ -436,7 +448,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
      *            service
      */
     @Override
-    public void serviceAdded(@NonNullByDefault({}) ServiceEvent serviceEvent) {
+    public void serviceAdded(ServiceEvent serviceEvent) {
         logger.debug("{}Processing new service discovery: {}", LOG_EVENT, serviceEvent.getName());
         if (isBackgroundDiscoveryEnabled()) {
             considerService(serviceEvent);
@@ -452,7 +464,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
      *            removed service
      */
     @Override
-    public void serviceRemoved(@NonNullByDefault({}) ServiceEvent serviceEvent) {
+    public void serviceRemoved(ServiceEvent serviceEvent) {
         ServiceInfo serviceInfo = serviceEvent.getInfo();
         if (serviceInfo != null) {
             logger.debug("{}Processing service removal: {}", LOG_EVENT, serviceInfo.getName());
@@ -485,7 +497,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
      *            resolved service
      */
     @Override
-    public void serviceResolved(@NonNullByDefault({}) ServiceEvent serviceEvent) {
+    public void serviceResolved(ServiceEvent serviceEvent) {
         logger.debug("{}Processing service resolution: {}", LOG_EVENT, serviceEvent.getName());
         if (isBackgroundDiscoveryEnabled()) {
             considerService(serviceEvent);
@@ -505,11 +517,13 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
             return;
         }
 
-        Map<String, Object> properties = processService(serviceInfo);
-        if (properties == null) {
+        Optional<Map<String, Object>> propertiesOpt = processService(serviceInfo);
+        if (propertiesOpt.isEmpty()) {
             logger.debug("{}Skipping service {} - invalid properties", LOG_EVENT, serviceInfo.getName());
             return;
         }
+        @SuppressWarnings("null")
+        Map<String, Object> properties = propertiesOpt.get();
 
         String deviceId = (String) properties.get("id");
         if (deviceId == null || deviceId.isEmpty()) {
@@ -566,18 +580,18 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
      * corresponding accessory server.
      *
      * @param serviceInfo The discovered service information
-     * @return Map of service properties, or null if processing failed
+     * @return Optional containing the map of service properties, or empty if processing failed
      */
-    private @Nullable Map<String, Object> processService(@Nullable ServiceInfo serviceInfo) {
+    private Optional<Map<String, Object>> processService(@Nullable ServiceInfo serviceInfo) {
         if (serviceInfo == null || !serviceInfo.hasData()) {
             logger.debug("{}Skipping service - no data available", LOG_SERVER);
-            return null;
+            return Optional.empty();
         }
 
         try {
             if (!serviceInfo.hasData() || !serviceInfo.getApplication().contains("hap") || serviceInfo.getPort() == 0) {
                 logger.debug("{}Skipping service {} - invalid service data", LOG_SERVER, serviceInfo.getName());
-                return null;
+                return Optional.empty();
             }
 
             logger.debug("{}Processing HomeKit service: {}", LOG_SERVER, serviceInfo.getName());
@@ -585,6 +599,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
             Map<String, Object> properties = new HashMap<>();
             Enumeration<String> serviceProperties = serviceInfo.getPropertyNames();
             while (serviceProperties.hasMoreElements()) {
+                @SuppressWarnings("null")
                 String element = serviceProperties.nextElement();
                 String value = serviceInfo.getPropertyString(element);
                 if (value != null) {
@@ -603,7 +618,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
 
             // Extract and validate service configuration
             int port = serviceInfo.getPort();
-            //String deviceId = serviceInfo.getPropertyString("id");
+            // String deviceId = serviceInfo.getPropertyString("id");
             String model = serviceInfo.getPropertyString("md");
             String version = serviceInfo.getPropertyString("pv");
             String configIndexStr = serviceInfo.getPropertyString("c#");
@@ -623,7 +638,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                 HomekitAccessoryCategory category = HomekitAccessoryCategory.fromValue(Integer.parseInt(categoryStr));
                 HomekitPairingStatusFlag pairingStatus = HomekitPairingStatusFlag
                         .fromValue(Integer.parseInt(pairingStatusStr));
-                //int stateNumber = Integer.parseInt(stateNumberStr);
+                // int stateNumber = Integer.parseInt(stateNumberStr);
                 HomekitPairingFeatureFlag pairingFeatureFlag = HomekitPairingFeatureFlag
                         .fromValue(Integer.parseInt(pairingFeatureFlagStr));
 
@@ -645,15 +660,15 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                             "{}Discovered new HomeKit server - ID: {}, Category: {}, Model: {}, Version: {}, Config Index: {}, Pairing Status: {}, Feature Flag: {}",
                             LOG_SERVER, id, category, model, version, configIndex, pairingStatus, pairingFeatureFlag);
 
-                    String hostAddress = getHostAddress(serviceInfo);
-                    if (hostAddress == null) {
+                    Optional<String> hostAddressOpt = getHostAddress(serviceInfo);
+                    if (hostAddressOpt.isEmpty()) {
                         logger.warn("{}No valid host address found for server {}", LOG_WARN, id);
-                        return null;
+                        return Optional.empty();
                     }
 
                     try {
                         HomekitAccessoryServer server = new HomekitRemoteAccessoryServer(category,
-                                InetAddress.getByName(hostAddress), port, accessoryRegistry, pairingRegistry,
+                                InetAddress.getByName(hostAddressOpt.get()), port, accessoryRegistry, pairingRegistry,
                                 eventManager, accessoryFactory);
                         server.setConfigurationIndex(configIndex);
                         accessoryServerRegistry.add(server);
@@ -673,28 +688,26 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
             }
 
             // Cache the service
-            ThingUID thingUID = getThingUID(serviceInfo);
-            if (thingUID != null) {
-                cachedServices.put(serviceInfo.getQualifiedName(), thingUID);
-            }
+            Optional<ThingUID> thingUIDOpt = getThingUID(serviceInfo);
+            thingUIDOpt.ifPresent(thingUID -> cachedServices.put(serviceInfo.getQualifiedName(), thingUID));
 
-            return properties;
+            return Optional.of(properties);
         } catch (IllegalStateException e) {
             logger.error("{}Error processing service {}: {}", LOG_ERROR, serviceInfo.getName(), e.getMessage());
-            return null;
+            return Optional.empty();
         }
     }
 
-    private @Nullable ThingUID getThingUID(ServiceInfo serviceInfo) {
+    private Optional<ThingUID> getThingUID(ServiceInfo serviceInfo) {
         if (!serviceInfo.hasData() || !serviceInfo.getApplication().contains("hap")) {
-            return null;
+            return Optional.empty();
         }
 
         String deviceId = serviceInfo.getPropertyString(HomekitDiscoveryConstants.DEVICE_ID);
         String category = serviceInfo.getPropertyString(HomekitDiscoveryConstants.CATEGORY_ID);
 
         if (deviceId == null || category == null) {
-            return null;
+            return Optional.empty();
         }
 
         // Clean device ID by removing colons
@@ -702,12 +715,12 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
 
         // Determine thing type based on category
         if (HomekitDiscoveryConstants.BRIDGE_CATEGORY.equals(category)) {
-            return new ThingUID(HomekitBindingConstants.THING_TYPE_BRIDGE, cleanDeviceId);
+            return Optional.of(new ThingUID(HomekitBindingConstants.THING_TYPE_BRIDGE, cleanDeviceId));
         } else if (HomekitDiscoveryConstants.STANDALONE_CATEGORY.equals(category)) {
-            return new ThingUID(HomekitBindingConstants.THING_TYPE_STANDALONE_ACCESSORY, cleanDeviceId);
+            return Optional.of(new ThingUID(HomekitBindingConstants.THING_TYPE_STANDALONE_ACCESSORY, cleanDeviceId));
         }
 
-        return null;
+        return Optional.empty();
     }
 
     /**
@@ -860,11 +873,11 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
      * Handles platform-specific requirements for IPv4/IPv6 selection.
      * 
      * @param serviceInfo The service information
-     * @return The host address, or null if no valid address is found
+     * @return Optional containing the host address, or empty if no valid address is found
      */
-    private @Nullable String getHostAddress(ServiceInfo serviceInfo) {
+    private Optional<String> getHostAddress(ServiceInfo serviceInfo) {
         if (serviceInfo == null) {
-            return null;
+            return Optional.empty();
         }
 
         String hostAddress = null;
@@ -894,9 +907,9 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
 
         if (hostAddress == null) {
             logger.warn("{}No valid host address found for service {}", LOG_WARN, serviceInfo.getName());
-            return null;
+            return Optional.empty();
         }
 
-        return hostAddress;
+        return Optional.of(hostAddress);
     }
 }

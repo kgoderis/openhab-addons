@@ -1,9 +1,21 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.network.pairing;
 
 import java.util.Base64;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.api.uid.HomekitPairingUID;
@@ -91,10 +103,9 @@ import org.slf4j.LoggerFactory;
  * <li>Maintains data consistency</li>
  * </ul>
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0
- */
-@NonNullByDefault
+     */
 public class HomekitPairingUIDImpl extends HomekitUID implements HomekitPairingUID {
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "HomeKit Pairing UID: ";

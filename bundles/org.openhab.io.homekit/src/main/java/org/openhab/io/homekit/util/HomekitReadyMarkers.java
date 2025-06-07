@@ -1,6 +1,17 @@
-package org.openhab.io.homekit.util;
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
+package org.openhab.io.homekit.util;
 
 /**
  * Central definition of ReadyService markers for HomeKit component startup
@@ -28,81 +39,59 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * <li><b>Level 8:</b> System Ready</li>
  * </ul>
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0
- */
-@NonNullByDefault
+     */
 public final class HomekitReadyMarkers {
 
     // ========== Level 1: Core Infrastructure ==========
-    /** Ready marker for the HomeKit event manager */
     public static final String HOMEKIT_EVENT_MANAGER = "homekit.eventManager";
 
-    /** Ready marker for the HomeKit configuration manager */
     public static final String HOMEKIT_CONFIGURATION_MANAGER = "homekit.configurationManager";
 
     // ========== Level 2: Factories ==========
-    /** Ready marker for the HomeKit characteristic factory */
     public static final String HOMEKIT_CHARACTERISTIC_FACTORY = "homekit.characteristicFactory";
 
-    /** Ready marker for the HomeKit service factory */
     public static final String HOMEKIT_SERVICE_FACTORY = "homekit.serviceFactory";
 
-    /** Ready marker for the HomeKit accessory factory */
     public static final String HOMEKIT_ACCESSORY_FACTORY = "homekit.accessoryFactory";
 
     // ========== Level 3: Basic Registries and Providers ==========
-    /** Ready marker for the HomeKit accessory registry */
     public static final String HOMEKIT_ACCESSORY_REGISTRY = "homekit.accessoryRegistry";
 
-    /** Ready marker for the managed pairing provider */
     public static final String HOMEKIT_MANAGED_PAIRING_PROVIDER = "homekit.managedPairingProvider";
 
-    /** Ready marker for the pairing registry */
     public static final String HOMEKIT_PAIRING_REGISTRY = "homekit.pairingRegistry";
 
     // ========== Level 4: Advanced Providers and Registries ==========
-    /** Ready marker for the managed accessory server provider */
     public static final String HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER = "homekit.managedAccessoryServerProvider";
 
-    /** Ready marker for the accessory server registry */
     public static final String HOMEKIT_ACCESSORY_SERVER_REGISTRY = "homekit.accessoryServerRegistry";
 
-    /** Ready marker for the persisted accessory provider */
     public static final String HOMEKIT_PERSISTED_ACCESSORY_PROVIDER = "homekit.persistedAccessoryProvider";
 
     // ========== Level 5: Type Providers ==========
-    /** Ready marker for the thing type provider */
     public static final String HOMEKIT_THING_TYPE_PROVIDER = "homekit.thingTypeProvider";
 
-    /** Ready marker for the channel type provider */
     public static final String HOMEKIT_CHANNEL_TYPE_PROVIDER = "homekit.channelTypeProvider";
 
-    /** Ready marker for the channel group type provider */
     public static final String HOMEKIT_CHANNEL_GROUP_TYPE_PROVIDER = "homekit.channelGroupTypeProvider";
 
     // ========== Level 6: Bridges ==========
-    /** Ready marker for the accessory bridge */
     public static final String HOMEKIT_ACCESSORY_BRIDGE = "homekit.accessoryBridge";
 
-    /** Ready marker for the item bridge */
     public static final String HOMEKIT_ITEM_BRIDGE = "homekit.itemBridge";
 
-    /** Ready marker for the thing bridge */
     public static final String HOMEKIT_THING_BRIDGE = "homekit.thingBridge";
 
-    /** Ready marker for the passthrough bridge */
     public static final String HOMEKIT_PASSTHROUGH_BRIDGE = "homekit.passthroughBridge";
 
     // ========== Level 7: Discovery and Handlers ==========
-    /** Ready marker for the discovery service */
     public static final String HOMEKIT_DISCOVERY_SERVICE = "homekit.discoveryService";
 
-    /** Ready marker for the handler factory */
     public static final String HOMEKIT_HANDLER_FACTORY = "homekit.handlerFactory";
 
     // ========== Level 8: System Ready ==========
-    /** Ready marker indicating the entire HomeKit system is ready */
     public static final String HOMEKIT_SYSTEM_READY = "homekit.systemReady";
 
     /**

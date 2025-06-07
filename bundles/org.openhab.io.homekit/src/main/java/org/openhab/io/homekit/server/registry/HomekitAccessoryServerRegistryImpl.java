@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.server.registry;
 
 import java.net.InetAddress;
@@ -8,7 +21,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.AbstractRegistry;
 import org.openhab.core.common.registry.Provider;
 import org.openhab.core.net.NetworkAddressService;
@@ -87,25 +99,20 @@ import org.slf4j.LoggerFactory;
  * <li>Handles graceful shutdown</li>
  * </ul>
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0
- */
-@NonNullByDefault
+     */
 @Component(immediate = true, service = HomekitAccessoryServerRegistry.class)
 public class HomekitAccessoryServerRegistryImpl
         extends AbstractRegistry<HomekitAccessoryServer, HomekitAccessoryServerUID, HomekitAccessoryServerProvider>
         implements HomekitAccessoryServerRegistry, ReadyService.ReadyTracker {
 
-    /** Registry identifier for the HomeKit accessory server registry */
     private static final String HOMEKIT_ACCESSORY_SERVER_REGISTRY = "homekit.accessoryServerRegistry";
 
-    /** Registry identifier for the managed accessory server provider */
     private static final String HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER = "homekit.managedAccessoryServerProvider";
 
-    /** Maximum number of accessories allowed per server */
     private static final int MAX_ACCESSORIES_PER_SERVER = 150;
 
-    /** Starting port number for server allocation */
     private static final int LOWEST_PORT_NUMBER = 9000;
 
     // ========== Log Message Prefixes ==========
@@ -117,7 +124,6 @@ public class HomekitAccessoryServerRegistryImpl
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
-    /** Unique identifier for the registry subscriber */
     private final HomekitUID subscriberUID = new HomekitUID("registry:");
 
     private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryServerRegistryImpl.class);
@@ -357,7 +363,9 @@ public class HomekitAccessoryServerRegistryImpl
                 readyMarker.getIdentifier());
 
         if (getManagedProvider().isPresent()) {
-            addProviderWithReadyMarker(getManagedProvider().get());
+            @SuppressWarnings("null") // get() is safe after isPresent() check
+            Provider<HomekitAccessoryServer> provider = getManagedProvider().get();
+            addProviderWithReadyMarker(provider);
         }
     }
 
@@ -395,7 +403,9 @@ public class HomekitAccessoryServerRegistryImpl
         switch (event.getType()) {
             case SERVER_STATE_CHANGED -> {
                 if (event.getServer() != null && event.getServer().isPresent()) {
-                    this.update(event.getServer().get());
+                    @SuppressWarnings("null") // get() is safe after isPresent() check
+                    HomekitAccessoryServer server = event.getServer().get();
+                    this.update(server);
                 }
             }
             default -> {

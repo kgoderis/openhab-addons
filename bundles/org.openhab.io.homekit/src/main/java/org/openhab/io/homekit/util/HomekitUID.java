@@ -1,8 +1,20 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.util;
 
 import java.util.UUID;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.UID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,8 +55,7 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @version 1.0
  * @since 1.0
- */
-@NonNullByDefault
+     */
 public class HomekitUID extends UID {
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "Homekit UID: ";
@@ -55,7 +66,6 @@ public class HomekitUID extends UID {
     private static final String HOMEKIT_PREFIX = "homekit";
     private final String prefix;
 
-    /** Wildcard UID that matches any subscriber */
     public static final UID WILDCARD_UID = new HomekitUID("*");
 
     /**

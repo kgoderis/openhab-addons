@@ -1,8 +1,22 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.validation;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -16,6 +30,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Manages and orchestrates the validation process.
  * Handles validation component registration, validation execution, and result caching.
+ * 
+ * @author Karel Goderis - Initial contribution
  */
 @Component(service = ValidationManager.class)
 public class ValidationManager {
@@ -59,29 +75,34 @@ public class ValidationManager {
 
         for (Validation validation : sortedValidations) {
             String cacheKey = generateCacheKey(target, validation);
-            ValidationResult result = null;
+            Optional<ValidationResult> result = Optional.empty();
 
             if (settings.isCachingEnabled()) {
                 result = cache.get(cacheKey);
             }
 
-            if (result == null) {
+            if (result.isEmpty()) {
                 try {
-                    result = validation.validate(context);
-                    if (settings.isCachingEnabled()) {
-                        cache.put(cacheKey, result, settings.getCacheDuration());
+                    Optional<ValidationResult> validationResult = validation.validate(context);
+                    result = validationResult;
+                    if (result.isPresent() && settings.isCachingEnabled()) {
+                        cache.put(cacheKey, result.get(), settings.getCacheDuration());
                     }
                 } catch (Exception e) {
                     logger.error("Error executing validation {}: {}", validation.getId(), e.getMessage(), e);
-                    result = ValidationResult.builder().valid(false).severity(ValidationResult.Severity.ERROR)
+                    ValidationResult errorResult = ValidationResult.builder().valid(false)
+                            .severity(ValidationResult.Severity.ERROR)
                             .message("Validation execution failed: " + e.getMessage()).build();
+                    result = Optional.of(errorResult);
                 }
             }
 
-            results.add(result);
+            if (result.isPresent()) {
+                results.add(result.get());
 
-            if (!result.isValid() && settings.isFailFast()) {
-                break;
+                if (!result.get().isValid() && settings.isFailFast()) {
+                    break;
+                }
             }
         }
 

@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.server;
 
 import java.net.InetAddress;
@@ -7,7 +20,6 @@ import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryCategory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,10 +52,9 @@ import org.slf4j.LoggerFactory;
  * <li>Server type differentiation</li>
  * </ul>
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0
- */
-@NonNullByDefault
+     */
 public class HomekitPersistedAccessoryServer {
 
     // ========== Log Message Prefixes ==========
@@ -57,9 +68,7 @@ public class HomekitPersistedAccessoryServer {
      * Defines the type of HomeKit server.
      */
     public enum ServerType {
-        /** Local server running on the same network */
         LOCAL,
-        /** Remote server accessible over the internet */
         REMOTE
     }
 
@@ -121,8 +130,10 @@ public class HomekitPersistedAccessoryServer {
         if (accessories.isEmpty()) {
             this.accessories = "";
         } else {
-            this.accessories = accessories.stream().map(Object::toString)
+            @SuppressWarnings("null") // stream().collect() always returns non-null String
+            String accessoriesString = accessories.stream().map(Object::toString)
                     .collect(java.util.stream.Collectors.joining(";"));
+            this.accessories = accessoriesString;
         }
         logger.debug("{}Persisted server created with {} accessories", LOG_INIT, accessories.size());
     }
@@ -237,8 +248,10 @@ public class HomekitPersistedAccessoryServer {
         if (accessories.isEmpty()) {
             this.accessories = "";
         } else {
-            this.accessories = accessories.stream().map(accessory -> accessory.getUID().toString())
+            @SuppressWarnings("null") // stream().collect() always returns non-null String
+            String accessoriesString = accessories.stream().map(accessory -> accessory.getUID().toString())
                     .collect(java.util.stream.Collectors.joining(";"));
+            this.accessories = accessoriesString;
         }
     }
 

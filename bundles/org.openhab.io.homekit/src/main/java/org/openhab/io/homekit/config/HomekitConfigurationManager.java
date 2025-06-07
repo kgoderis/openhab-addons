@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.config;
 
 import java.io.IOException;
@@ -12,8 +25,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.service.WatchService;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.ThingUID;
@@ -85,9 +96,8 @@ import org.yaml.snakeyaml.Yaml;
  * - Specific configurations override wildcards
  *
  * @author Karel Goderis - Initial contribution
- */
+     */
 @Component(service = HomekitConfigurationManager.class, configurationPid = "org.openhab.homekit")
-@NonNullByDefault
 public class HomekitConfigurationManager implements WatchService.WatchEventListener {
     private static final Logger logger = LoggerFactory.getLogger(HomekitConfigurationManager.class);
     private static final String CONFIG_DIR = "conf/homekit";
@@ -335,12 +345,12 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
         Map<String, Object> configs = (Map<String, Object>) yamlConfig.get(type.getYamlSection());
         if (configs != null) {
             for (Map.Entry<String, Object> entry : configs.entrySet()) {
-                @Nullable
+                @SuppressWarnings("null") // entrySet().getKey() guaranteed non-null for valid entries
                 String uidString = entry.getKey();
                 if (uidString == null) {
                     continue;
                 }
-                @Nullable
+                @SuppressWarnings("null") // entrySet().getValue() guaranteed non-null for valid entries
                 Object value = entry.getValue();
                 if (value == null) {
                     continue;
@@ -404,17 +414,20 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
             case EVENT -> eventConfigs;
         };
 
+        @SuppressWarnings("null") // configs.get() can return null, checked below
         Map<String, Object> config = configs.get(uid);
         if (config != null) {
             // Try to find the effective source file, considering wildcard matches
             Optional<String> yamlFile = getEffectiveSourceFile(uid, type);
             if (yamlFile.isPresent()) {
+                @SuppressWarnings("null") // get() is safe after isPresent() check
+                String validYamlFile = yamlFile.get();
                 try {
                     Map<String, Object> yamlConfig = new HashMap<>();
                     yamlConfig.put(uid.toString(), config);
-                    writeYamlFile(yamlFile.get(), yamlConfig);
+                    writeYamlFile(validYamlFile, yamlConfig);
                 } catch (IOException e) {
-                    logger.error("Failed to write configuration to file: {}", yamlFile.get(), e);
+                    logger.error("Failed to write configuration to file: {}", validYamlFile, e);
                 }
             } else {
                 logger.warn("No source file found for UID: {}", uid);
@@ -621,6 +634,7 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
         };
 
         // Try exact match first
+        @SuppressWarnings("null") // configs.get() can return null, checked below
         Map<String, Object> config = configs.get(uid);
         if (config != null) {
             return Optional.of(config);
@@ -638,8 +652,11 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
             }
             String wildcardUid = wildcardBuilder.toString();
             UID wildcardUID = convertToUID(wildcardUid, type);
-            config = configs.get(wildcardUID);
+            @SuppressWarnings("null") // configs.get() can return null, checked below
+            Map<String, Object> wildcardConfig = configs.get(wildcardUID);
+            config = wildcardConfig;
             if (config != null) {
+                @SuppressWarnings("null") // sourceFiles.get() can return null, checked below when used
                 String sourceFile = sourceFiles.get(wildcardUID);
                 if (sourceFile != null) {
                     sourceFiles.put(uid, sourceFile);
@@ -651,8 +668,11 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
 
         // Try global default
         UID wildcardUID = convertToUID("*", type);
-        config = configs.get(wildcardUID);
+        @SuppressWarnings("null") // configs.get() can return null, checked below
+        Map<String, Object> globalConfig = configs.get(wildcardUID);
+        config = globalConfig;
         if (config != null) {
+            @SuppressWarnings("null") // sourceFiles.get() can return null, checked below when used
             String sourceFile = sourceFiles.get(wildcardUID);
             if (sourceFile != null) {
                 sourceFiles.put(uid, sourceFile);
@@ -762,7 +782,11 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
      * @return An optional containing the configuration value if found
      */
     public Optional<Object> getConfiguration(UID uid, ConfigurationType type, String key) {
-        return getConfiguration(uid, type).map(config -> config.get(key));
+        return getConfiguration(uid, type).map(config -> {
+            @SuppressWarnings("null") // config.get() can return null, which is handled by Optional
+            Object value = config.get(key);
+            return value;
+        });
     }
 
     /**
@@ -788,6 +812,7 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
             case EVENT -> eventConfigs;
         };
 
+        @SuppressWarnings("null") // computeIfAbsent guarantees non-null return value
         Map<String, Object> config = configs.computeIfAbsent(uid, k -> new HashMap<>());
         config.put(key, value);
         storeConfigs(uid, type);

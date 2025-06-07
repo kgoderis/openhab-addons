@@ -1,10 +1,22 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.handler;
 
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.config.core.Configuration;
 import org.openhab.core.thing.Channel;
@@ -54,10 +66,9 @@ import org.openhab.io.homekit.provider.HomekitThingTypeProvider;
  * - {@link HomekitAccessoryServerRegistry} for server instance management
  * - {@link HomekitEventManager} for event handling
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
-@NonNullByDefault
 public class HomekitServiceThingHandler extends AbstractHomekitHandler {
 
     // ========== Constants ==========
@@ -193,10 +204,12 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
         String thingType = thing.getThingTypeUID().getId();
         @Nullable
         String serviceTag = null;
-        HomekitService currentService = getService();
-        if (currentService == null) {
+        Optional<HomekitService> currentServiceOpt = getService();
+        if (currentServiceOpt.isEmpty()) {
             throw new IllegalArgumentException("No HomekitService found for serviceId: " + serviceId);
         }
+        @SuppressWarnings("null") // Optional.get() is safe after isEmpty() check
+        HomekitService currentService = currentServiceOpt.get();
         try {
             serviceTag = serviceFactory.getTagFromServiceType(currentService.getType());
         } catch (Exception e) {
@@ -226,10 +239,12 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
             characteristicMap.clear();
         }
 
-        HomekitService currentService = getService();
-        if (currentService == null) {
+        Optional<HomekitService> currentServiceOpt = getService();
+        if (currentServiceOpt.isEmpty()) {
             throw new IllegalStateException("HomekitService is not initialized");
         }
+        @SuppressWarnings("null") // Optional.get() is safe after isEmpty() check
+        HomekitService currentService = currentServiceOpt.get();
 
         if (thing.getChannels().isEmpty()) {
             // If no channels configured, add all characteristics as channels
@@ -255,10 +270,12 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
                     handleRecoverableError(ThingStatusDetail.CONFIGURATION_ERROR, "HomekitCharacteristic "
                             + characteristicType + " not found in HomekitService " + currentService.getUID(), null);
                 } else {
+                    @SuppressWarnings("null") // Optional.get() is safe after isEmpty() check
+                    HomekitCharacteristic<?> characteristicInstance = characteristic.get();
                     synchronized (characteristicMapLock) {
-                        characteristicMap.put(channel, characteristic.get());
+                        characteristicMap.put(channel, characteristicInstance);
                     }
-                    handleChannelTypeChange(channel, characteristic.get());
+                    handleChannelTypeChange(channel, characteristicInstance);
                     updateThing(editThing().withChannel(channel).build());
                 }
             }
@@ -274,7 +291,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
      * @return The created channel, or null if creation fails
      */
     @Override
-    protected @Nullable Channel addChannelForCharacteristic(HomekitCharacteristic<?> characteristic) {
+    protected Optional<Channel> addChannelForCharacteristic(HomekitCharacteristic<?> characteristic) {
         try {
             // Let subclasses determine the channel ID
             ChannelUID channelUID = getChannelUID(characteristic);
@@ -284,7 +301,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
             ChannelType channelType = homekitChannelTypeProvider.getChannelType(channelTypeUID, null);
             if (channelType == null) {
                 logger.warn("{}No ChannelType found for characteristic {}", LOG_CHANNEL, characteristic.getUID());
-                return null;
+                return Optional.empty();
             }
 
             Channel channel = ChannelBuilder.create(channelUID).withType(channelTypeUID)
@@ -296,10 +313,10 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
             }
 
             updateThing(editThing().withChannel(channel).build());
-            return channel;
+            return Optional.of(channel);
         } catch (Exception e) {
             logger.warn("Failed to create channel for characteristic {}: {}", characteristic.getUID(), e.getMessage());
-            return null;
+            return Optional.empty();
         }
     }
 
@@ -314,7 +331,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
         synchronized (serviceLock) {
             if (service != null) {
                 try {
-                    tearDownSubscriptionsForPublisher(service.getUID().toString());
+                    tearDownSubscriptionsForPublisher((UID) service.getUID());
                     logger.debug("{}Removed service change listener", LOG_CLEANUP);
                 } catch (Exception e) {
                     logger.warn("{}Failed to remove service change listener: {}", LOG_CLEANUP, e.getMessage());
@@ -337,7 +354,9 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
     @Override
     protected void validateSpecificConfiguration(Configuration config) {
         // No additional validation needed for service handler
-        this.serviceId = (String) config.get(CONFIG_SERVICE_ID);
+        @SuppressWarnings("null") // Configuration.get() returns Object, safe to cast to String
+        String serviceIdFromConfig = (String) config.get(CONFIG_SERVICE_ID);
+        this.serviceId = serviceIdFromConfig;
         if (serviceId == null || serviceId.trim().isEmpty()) {
             throw new IllegalArgumentException("Configuration must contain a valid serviceId");
         }
@@ -573,11 +592,12 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
      */
     @Override
     protected Set<HomekitCharacteristic<?>> getCurrentCharacteristics() {
-        HomekitService currentService = getService();
-        if (currentService != null) {
-            return currentService.getCharacteristics();
+        synchronized (serviceLock) {
+            if (service != null) {
+                return service.getCharacteristics();
+            }
+            return Collections.emptySet();
         }
-        return Collections.emptySet();
     }
 
     /**
@@ -632,17 +652,19 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
         synchronized (serviceLock) {
             if (service == null && accessory != null) {
                 Optional<HomekitService> foundService = accessory.getService(serviceId);
-                foundService.ifPresentOrElse(someService -> {
-                    setService(someService);
-                    eventSubscriptions.add(
-                            eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED, (UID) someService.getUID(),
-                                    thing.getUID(), someEvent -> onServiceEvent((HomekitServiceEvent) someEvent)));
+                if (foundService.isPresent()) {
+                    @SuppressWarnings("null") // isPresent() check ensures get() is safe
+                    HomekitService recoveredService = foundService.get();
+                    setService(recoveredService);
+                    eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED,
+                            (UID) recoveredService.getUID(), thing.getUID(),
+                            someEvent -> onServiceEvent((HomekitServiceEvent) someEvent)));
                     logger.debug("{}Recovered service connection", LOG_INIT);
-                }, () -> {
+                } else {
                     setService(null);
                     logger.warn("{}HomekitService not found in accessory after recovery", LOG_EVENT);
                     updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "HomekitService not found");
-                });
+                }
             }
         }
     }
@@ -652,9 +674,12 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
      * 
      * @return The current service, or null if no service is set
      */
-    protected @Nullable HomekitService getService() {
+    protected Optional<HomekitService> getService() {
         synchronized (serviceLock) {
-            return service;
+            if (service != null) {
+                return Optional.ofNullable(service);
+            }
+            return Optional.empty();
         }
     }
 

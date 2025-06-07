@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.network.http;
 
 import java.io.IOException;
@@ -92,18 +105,16 @@ import org.slf4j.LoggerFactory;
  * <dd>Optional X-Powered-By header inclusion</dd>
  * </dl>
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
+
 public class HomekitHttpGenerator extends HttpGenerator {
 
-    /** Logger instance for this class */
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpGenerator.class);
 
-    /** Debug flag for detailed logging */
     protected static final boolean debug = logger.isDebugEnabled();
 
-    /** Log message prefixes */
     protected static final String LOG_PREFIX = "HomeKit HTTP Generator: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Initialization - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State Change - ";
@@ -112,13 +123,10 @@ public class HomekitHttpGenerator extends HttpGenerator {
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
-    /** Strict mode flag */
     public final static boolean __STRICT = Boolean.getBoolean("org.eclipse.jetty.http.HttpGenerator.STRICT");
 
-    /** Colon and space bytes for header formatting */
     private final static byte[] __colon_space = new byte[] { ':', ' ' };
 
-    /** HTTP token constants */
     static final byte COLON = (byte) ':';
     static final byte TAB = 0x09;
     static final byte LINE_FEED = 0x0A;
@@ -126,10 +134,8 @@ public class HomekitHttpGenerator extends HttpGenerator {
     static final byte SPACE = 0x20;
     static final byte[] CRLF = { CARRIAGE_RETURN, LINE_FEED };
 
-    /** Close header value array */
     private final static HttpHeaderValue[] CLOSE = { HttpHeaderValue.CLOSE };
 
-    /** Common response metadata */
     public static final MetaData.Response CONTINUE_100_INFO = new MetaData.Response(HttpVersion.HTTP_1_1, 100, null,
             null, -1);
     public static final MetaData.Response PROGRESS_102_INFO = new MetaData.Response(HttpVersion.HTTP_1_1, 102, null,
@@ -141,7 +147,6 @@ public class HomekitHttpGenerator extends HttpGenerator {
                 }
             }, 0);
 
-    /** Chunk size constant */
     public static final int CHUNK_SIZE = 12;
 
     private State _state = State.START;

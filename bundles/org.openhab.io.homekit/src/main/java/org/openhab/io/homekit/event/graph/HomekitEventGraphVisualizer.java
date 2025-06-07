@@ -1,9 +1,21 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.event.graph;
 
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +42,6 @@ import com.google.gson.JsonObject;
  *
  * @author Karel Goderis - Initial contribution
  */
-@NonNullByDefault
 public class HomekitEventGraphVisualizer {
     private static final Logger logger = LoggerFactory.getLogger(HomekitEventGraphVisualizer.class);
     private final HomekitEventGraphProcessor eventGraph;
@@ -121,15 +132,21 @@ public class HomekitEventGraphVisualizer {
 
         // Add nodes with metadata
         for (HomekitEventGraphProcessor.EventProcessingNode node : eventGraph.getNodes().values()) {
-            String label = String.format("%s\\nType: %s\\nEvents: %s", node.id, node.metadata.get("type"),
-                    node.metadata.get("eventTypes"));
+            @SuppressWarnings("null") // Map.get() can return null but we provide fallback in formatting
+            Object nodeType = node.metadata.get("type");
+            @SuppressWarnings("null") // Map.get() can return null but we provide fallback in formatting
+            Object nodeEventTypes = node.metadata.get("eventTypes");
+            String label = String.format("%s\\nType: %s\\nEvents: %s", node.id, nodeType, nodeEventTypes);
             dot.append(String.format("  \"%s\" [label=\"%s\"];\n", node.id, label));
         }
 
         // Add edges with metadata
         for (Map.Entry<String, Set<String>> entry : eventGraph.getGraph().entrySet()) {
+            @SuppressWarnings("null") // Map.Entry.getKey() is safe for valid map entries
             String source = entry.getKey();
-            for (String target : entry.getValue()) {
+            @SuppressWarnings("null") // Map.Entry.getValue() is safe for valid map entries
+            Set<String> targets = entry.getValue();
+            for (String target : targets) {
                 dot.append(String.format("  \"%s\" -> \"%s\";\n", source, target));
             }
         }
@@ -159,15 +176,22 @@ public class HomekitEventGraphVisualizer {
         for (HomekitEventGraphProcessor.EventProcessingNode node : eventGraph.getNodes().values()) {
             JsonObject nodeJson = new JsonObject();
             nodeJson.addProperty("id", node.id);
-            nodeJson.addProperty("type", (String) node.metadata.get("type"));
-            nodeJson.addProperty("eventTypes", (String) node.metadata.get("eventTypes"));
+            @SuppressWarnings("null") // Map.get() can return null but cast to String handles it
+            String nodeType = (String) node.metadata.get("type");
+            nodeJson.addProperty("type", nodeType);
+            @SuppressWarnings("null") // Map.get() can return null but cast to String handles it
+            String nodeEventTypes = (String) node.metadata.get("eventTypes");
+            nodeJson.addProperty("eventTypes", nodeEventTypes);
             nodes.add(nodeJson);
         }
 
         // Add edges
         for (Map.Entry<String, Set<String>> entry : eventGraph.getGraph().entrySet()) {
+            @SuppressWarnings("null") // Map.Entry.getKey() is safe for valid map entries
             String source = entry.getKey();
-            for (String target : entry.getValue()) {
+            @SuppressWarnings("null") // Map.Entry.getValue() is safe for valid map entries
+            Set<String> targets = entry.getValue();
+            for (String target : targets) {
                 JsonObject edgeJson = new JsonObject();
                 edgeJson.addProperty("source", source);
                 edgeJson.addProperty("target", target);
@@ -201,21 +225,28 @@ public class HomekitEventGraphVisualizer {
             JsonObject nodeStats = new JsonObject();
             nodeStats.addProperty("incomingEdges", node.incomingEdges.size());
             nodeStats.addProperty("outgoingEdges", node.outgoingEdges.size());
-            nodeStats.addProperty("eventCount", (Integer) node.metadata.getOrDefault("eventCount", 0));
+            @SuppressWarnings("null") // getOrDefault() provides non-null fallback, cast is safe
+            Integer eventCount = (Integer) node.metadata.getOrDefault("eventCount", 0);
+            nodeStats.addProperty("eventCount", eventCount);
             nodeMetrics.add(node.id, nodeStats);
         }
 
         // Edge metrics
         JsonObject edgeMetrics = new JsonObject();
         for (Map.Entry<String, Set<String>> entry : eventGraph.getGraph().entrySet()) {
+            @SuppressWarnings("null") // Map.Entry.getKey() is safe for valid map entries
             String source = entry.getKey();
-            for (String target : entry.getValue()) {
+            @SuppressWarnings("null") // Map.Entry.getValue() is safe for valid map entries
+            Set<String> targets = entry.getValue();
+            for (String target : targets) {
                 String edgeId = source + "->" + target;
                 JsonObject edgeStats = new JsonObject();
-                edgeStats.addProperty("eventCount",
-                        (Integer) eventGraph.getEdgeMetadata(edgeId).getOrDefault("eventCount", 0));
-                edgeStats.addProperty("averageLatency",
-                        (Double) eventGraph.getEdgeMetadata(edgeId).getOrDefault("averageLatency", 0.0));
+                @SuppressWarnings("null") // getOrDefault() provides non-null fallback, cast is safe
+                Integer edgeEventCount = (Integer) eventGraph.getEdgeMetadata(edgeId).getOrDefault("eventCount", 0);
+                edgeStats.addProperty("eventCount", edgeEventCount);
+                @SuppressWarnings("null") // getOrDefault() provides non-null fallback, cast is safe
+                Double averageLatency = (Double) eventGraph.getEdgeMetadata(edgeId).getOrDefault("averageLatency", 0.0);
+                edgeStats.addProperty("averageLatency", averageLatency);
                 edgeMetrics.add(edgeId, edgeStats);
             }
         }

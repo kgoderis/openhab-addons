@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.server.servlet;
 
 import java.io.IOException;
@@ -7,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.http.HttpHeader;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.exception.HomekitServerException;
@@ -60,10 +74,9 @@ import org.slf4j.LoggerFactory;
  * <li>{@link org.eclipse.jetty.http.HttpHeader} for HTTP header management</li>
  * </ul>
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0
- */
-@SuppressWarnings("serial")
+     */
 public class HomekitPairingServlet extends HomekitBaseServlet {
 
     // ========== Log Message Prefixes ==========
@@ -136,8 +149,16 @@ public class HomekitPairingServlet extends HomekitBaseServlet {
      * @throws ServletException if the request cannot be handled
      */
     @Override
-    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    public void doPost(@Nullable HttpServletRequest request, @Nullable HttpServletResponse response)
+            throws IOException, ServletException {
         logger.debug("{}Handling POST request for pairing management", LOG_REQUEST);
+        if (request == null || response == null) {
+            logger.error("{}Request or response is null", LOG_ERROR);
+            if (response != null) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            }
+            return;
+        }
         try {
             byte[] body = IOUtils.toByteArray(request.getInputStream());
             logger.trace("{}Received request body ({} bytes)", LOG_REQUEST, body.length);
@@ -227,7 +248,13 @@ public class HomekitPairingServlet extends HomekitBaseServlet {
                     HomekitByte.toHexString(additionalControllerPairingIdentifier));
 
             try {
-                server.addPairing(additionalControllerPairingIdentifier, additionalControllerLTPK);
+                if (server != null) {
+                    server.addPairing(additionalControllerPairingIdentifier, additionalControllerLTPK);
+                } else {
+                    logger.error("{}Server instance is null", LOG_ERROR);
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    return;
+                }
             } catch (HomekitServerException e) {
                 logger.error("{}Error adding pairing", LOG_ERROR, e);
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -299,7 +326,13 @@ public class HomekitPairingServlet extends HomekitBaseServlet {
                     HomekitByte.toHexString(removedControllerPairingIdentifier));
 
             try {
-                server.removePairing(removedControllerPairingIdentifier);
+                if (server != null) {
+                    server.removePairing(removedControllerPairingIdentifier);
+                } else {
+                    logger.error("{}Server instance is null", LOG_ERROR);
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    return;
+                }
             } catch (HomekitServerException e) {
                 logger.error("{}Error removing pairing", LOG_ERROR, e);
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);

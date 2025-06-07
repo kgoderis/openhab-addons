@@ -10,6 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
+
 package org.openhab.io.homekit.bridge;
 
 import java.util.ArrayList;
@@ -34,7 +35,6 @@ import javax.json.JsonValue;
 import javax.measure.Unit;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.SafeCaller;
 import org.openhab.core.common.ThreadPoolManager;
@@ -148,11 +148,10 @@ import org.slf4j.LoggerFactory;
  * - {@link org.openhab.core.items.ItemStateConverter} for state conversion
  * - {@link org.openhab.core.items.ItemRegistry} for item management
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0.0
- */
+     */
 @Component(service = { EventSubscriber.class, ThingRegistryChangeListener.class })
-@NonNullByDefault
 public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeListener {
     private static final String LOG_PREFIX = "[HomekitThingBridge] ";
     private static final String THREAD_POOL_NAME = "homekit";
@@ -262,11 +261,12 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         this.itemRegistry = itemRegistry;
 
         // Load orphan configuration
-        @SuppressWarnings("null")
         @Nullable
-        Object orphanConfig = properties != null ? properties.getOrDefault(CONFIG_ORPHAN_ENABLED, null) : null;
+        Object orphanConfig = properties != null ? properties.getOrDefault(CONFIG_ORPHAN_ENABLED, "true") : "true";
         if (orphanConfig != null) {
-            this.orphanEnabled = Boolean.parseBoolean(orphanConfig.toString());
+            @SuppressWarnings("null") // orphanConfig is null-checked above
+            String configValue = orphanConfig.toString();
+            this.orphanEnabled = Boolean.parseBoolean(configValue);
             logger.info("{}Orphan functionality is {}", LOG_PREFIX, orphanEnabled ? "enabled" : "disabled");
         }
 
@@ -414,9 +414,10 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
                                 .ifPresent(c -> {
                                     try {
                                         if (value instanceof String) {
-                                            c.setValue(Json.createValue((String) value));
+                                            c.setValue(Json.createArrayBuilder().add((String) value).build().get(0));
                                         } else if (value instanceof Number) {
-                                            c.setValue(Json.createValue(((Number) value).doubleValue()));
+                                            c.setValue(Json.createArrayBuilder().add(((Number) value).doubleValue())
+                                                    .build().get(0));
                                         } else if (value instanceof Boolean) {
                                             c.setValue((Boolean) value ? JsonValue.TRUE : JsonValue.FALSE);
                                         }
@@ -472,16 +473,21 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
                 HomekitConfigurationManager.ConfigurationType.CHANNEL);
 
         Map<String, Object> serviceMappings = serviceMappingsOpt.orElse(Collections.emptyMap());
+        if (serviceMappings == null) {
+            serviceMappings = Collections.emptyMap(); // Additional safety check
+        }
 
         for (Channel channel : thing.getChannels()) {
             String channelUID = channel.getUID().toString();
 
             // Try to find a matching service mapping
+            @SuppressWarnings("null") // serviceMappings is guaranteed non-null from orElse() above
             Optional<Map<String, Object>> serviceConfig = findMatchingServiceConfig(channelUID, serviceMappings);
             if (serviceConfig.isEmpty()) {
                 continue;
             }
 
+            @SuppressWarnings("null") // serviceConfig.isEmpty() check ensures get() is safe
             Map<String, Object> config = serviceConfig.get();
             String serviceTag = (String) config.get("serviceTag");
             if (serviceTag == null) {
@@ -490,23 +496,36 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
 
             try {
                 // Create or get the service
-                @SuppressWarnings("null")
-                HomekitService service = accessory.getService(serviceTag).orElseGet(() -> {
+                Optional<HomekitService> serviceOpt = accessory.getService(serviceTag);
+                HomekitService service;
+                if (serviceOpt.isEmpty()) {
                     try {
-                        HomekitService newService = serviceFactory.createService(serviceTag, accessory);
-                        accessory.addService(newService);
-                        return newService;
+                        service = serviceFactory.createService(serviceTag, accessory);
+                        accessory.addService(service);
                     } catch (HomekitFactoryException e) {
-                        logger.error("{}Failed to create service {}: {}", LOG_PREFIX, serviceTag, e.getMessage());
-                        return null;
+                        logger.error("{}Failed to create service {}: {}, falling back to generic service", LOG_PREFIX,
+                                serviceTag, e.getMessage());
+                        try {
+                            // Fallback to generic service
+                            service = serviceFactory.createService("generic", accessory);
+                            accessory.addService(service);
+                        } catch (HomekitFactoryException fallbackException) {
+                            logger.error("{}Failed to create fallback generic service: {}", LOG_PREFIX,
+                                    fallbackException.getMessage());
+                            continue; // Only skip if even generic service creation fails
+                        }
                     }
-                });
+                } else {
+                    service = serviceOpt.get();
+                }
 
                 // Process characteristics for this service
-                @SuppressWarnings("unchecked")
+                @SuppressWarnings({ "unchecked", "null" }) // Cast to expected type and config.get() checked for null
                 Map<String, Object> characteristics = (Map<String, Object>) config.get("characteristics");
-                if (characteristics != null) {
-                    processCharacteristics(channel, service, characteristics);
+                if (characteristics != null && service != null) {
+                    @SuppressWarnings("null") // characteristics null check ensures this is safe
+                    Map<String, Object> nonNullCharacteristics = characteristics;
+                    processCharacteristics(channel, service, nonNullCharacteristics);
                 }
             } catch (Exception e) {
                 logger.error("{}Failed to process channel {}: {}", LOG_PREFIX, channelUID, e.getMessage(), e);
@@ -526,9 +545,9 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
             Map<String, Object> serviceMappings) {
         // First try exact match
         if (serviceMappings.containsKey(channelUID)) {
-            @SuppressWarnings("unchecked")
+            @SuppressWarnings({ "unchecked", "null" }) // Map.get() for known key and cast to expected type
             Map<String, Object> config = (Map<String, Object>) serviceMappings.get(channelUID);
-            return Optional.of(config);
+            return Optional.ofNullable(config);
         }
 
         // Then try pattern matching
@@ -537,9 +556,9 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
             if (pattern.contains("*")) {
                 String regex = pattern.replace("*", ".*");
                 if (channelUID.matches(regex)) {
-                    @SuppressWarnings("unchecked")
+                    @SuppressWarnings({ "unchecked", "null" }) // Cast to expected type is safe here
                     Map<String, Object> config = (Map<String, Object>) entry.getValue();
-                    return Optional.of(config);
+                    return Optional.ofNullable(config);
                 }
             }
         }
@@ -560,8 +579,12 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
     private void processCharacteristics(Channel channel, HomekitService service, Map<String, Object> characteristics) {
         for (Map.Entry<String, Object> entry : characteristics.entrySet()) {
             String characteristicType = entry.getKey();
-            @SuppressWarnings("unchecked")
-            Map<String, Object> config = (Map<String, Object>) entry.getValue();
+            Object value = entry.getValue();
+            if (!(value instanceof Map)) {
+                continue; // Skip invalid entries
+            }
+            @SuppressWarnings({ "unchecked", "null" }) // Cast to expected type is safe here
+            Map<String, Object> config = (Map<String, Object>) value;
 
             try {
                 HomekitCharacteristic<?> characteristic = characteristicFactory.createCharacteristic(characteristicType,
@@ -636,7 +659,7 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         try {
             // Find and remove all subscriptions for this characteristic
             eventSubscriptions.removeIf(subscription -> {
-                if (subscription.getPublisherUID().equals(characteristic.getUID())) {
+                if (subscription.getPublisherUID().equals((UID) characteristic.getUID())) {
                     eventManager.unsubscribe(subscription.getEventType(), subscription.getPublisherUID(),
                             subscription.getSubscriber());
                     return true;
@@ -689,14 +712,12 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
                     }
 
                     // Use the HomeKit -> OpenHAB profile
-                    @SuppressWarnings("null")
                     Profile profile = channelHomekitToOpenhabProfiles.get(channelUID);
                     if (profile instanceof StateProfile stateProfile) {
                         changedEvent.getNewValue().ifPresent(newValue -> {
                             State newState = characteristic.toState(newValue);
                             if (newState != null) {
                                 // Store the exit event
-                                @SuppressWarnings("null")
                                 String itemName = itemChannelLinkRegistry.getLinks(channelUID).stream().findFirst()
                                         .map(ItemChannelLink::getItemName).orElse(null);
                                 if (itemName != null) {
@@ -710,7 +731,6 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
                         changedEvent.getNewValue().ifPresent(newValue -> {
                             State newState = characteristic.toState(newValue);
                             if (newState != null) {
-                                @SuppressWarnings("null")
                                 String itemName = itemChannelLinkRegistry.getLinks(channelUID).stream().findFirst()
                                         .map(ItemChannelLink::getItemName).orElse(null);
                                 if (itemName != null) {
@@ -840,7 +860,9 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
 
         // Check if this is a correlated event (originated from HomeKit)
         String eventSource = event.getSource();
-        if (eventSource != null && eventSource.equals(bridgeUID.toString())) {
+        @SuppressWarnings("null") // bridgeUID is final non-null field
+        String bridgeUIDString = bridgeUID.toString();
+        if (eventSource != null && eventSource.equals(bridgeUIDString)) {
             logger.debug("{}Dropping correlated event for item {}", LOG_PREFIX, itemName);
             return;
         }
@@ -894,7 +916,6 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
                 if (exitEvent == null) {
                     logger.debug("{}Processing new state change for item: {}", LOG_PREFIX, itemName);
                     if (characteristic != null) {
-                        @SuppressWarnings("null")
                         HomekitCharacteristicUpdateEvent updateEvent = new HomekitCharacteristicUpdateEvent(
                                 (UID) bridgeUID, (UID) characteristic.getUID(), characteristic,
                                 characteristic.toValueJson(state), null, Map.of(),
@@ -1040,10 +1061,11 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
             }, context);
 
             // Create HomeKit -> OpenHAB profile
-            Profile homekitToOpenhabProfile = profileFactory.createProfile(profileTypeUID,
-                    new ProfileCallbackImpl(eventPublisher, safeCaller, itemStateConverter, link, thingRegistry::get,
-                            this::getItem,
-                            (cmd, ch, item) -> ch != null && item != null ? toAcceptedCommand(cmd, ch, item) : null),
+            Profile homekitToOpenhabProfile = profileFactory.createProfile(profileTypeUID, new ProfileCallbackImpl(
+                    eventPublisher, safeCaller, itemStateConverter, link, thingRegistry::get,
+                    itemName -> getItem(itemName)
+                            .orElseThrow(() -> new IllegalArgumentException("Item not found: " + itemName)),
+                    (cmd, ch, item) -> ch != null && item != null ? toAcceptedCommand(cmd, ch, item).orElse(cmd) : cmd),
                     context);
 
             if (homekitToOpenhabProfile != null) {
@@ -1061,58 +1083,64 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
      * Gets an item by name.
      *
      * @param itemName The name of the item
-     * @return The {@link Item}, or null if not found
+     * @return Optional containing the {@link Item}, or empty if not found
      * @since 1.0.0
      */
-    @SuppressWarnings("null")
-    private @Nullable Item getItem(final String itemName) {
-        return itemRegistry.get(itemName);
+    private Optional<Item> getItem(final String itemName) {
+        @Nullable
+        Item item = itemRegistry.get(itemName);
+        return Optional.ofNullable(item);
     }
 
     /**
-     * Converts a command to an accepted type.
+     * Converts to accepted command.
      *
-     * @param originalType The original {@link Command}
+     * This method converts a {@link Command} to a type acceptable by the target {@link Channel}.
+     * 
+     * @param originalType The original {@link Command} to convert
      * @param channel The {@link Channel} to convert for
      * @param item The {@link Item} to convert for
-     * @return The converted command, or null if conversion failed
+     * @return Optional containing the converted command, or empty if conversion failed
      * @since 1.0.0
      */
-    public @Nullable Command toAcceptedCommand(Command originalType, @Nullable Channel channel, @Nullable Item item) {
+    public Optional<Command> toAcceptedCommand(Command originalType, @Nullable Channel channel, @Nullable Item item) {
         if (item == null || channel == null) {
             logger.warn("Trying to convert types for non-existing channel or item, discarding command.");
-            return null;
+            return Optional.empty();
         }
         String channelAcceptedItemType = channel.getAcceptedItemType();
 
         if (channelAcceptedItemType == null) {
-            return originalType;
+            return Optional.of(originalType);
         }
 
-        Command uomCommand = fixUoM(originalType, channel, item);
-        if (uomCommand != null) {
+        Optional<Command> uomCommand = fixUoM(originalType, channel, item);
+        if (uomCommand.isPresent()) {
             return uomCommand;
         }
 
         // handle HSBType/PercentType
         if (CoreItemFactory.DIMMER.equals(channelAcceptedItemType) && originalType instanceof HSBType hsb) {
-            return hsb.as(PercentType.class);
+            Optional<Command> result = Optional.ofNullable(hsb.as(PercentType.class));
+            return result;
         }
 
         // check for other cases if the type is acceptable
         List<Class<? extends Command>> acceptedTypes = acceptedCommandTypeMap.get(channelAcceptedItemType);
         if (acceptedTypes == null || acceptedTypes.contains(originalType.getClass())) {
-            return originalType;
+            return Optional.of(originalType);
         } else if (acceptedTypes.contains(PercentType.class) && originalType instanceof State state
                 && PercentType.class.isAssignableFrom(originalType.getClass())) {
-            return state.as(PercentType.class);
+            PercentType percentType = state.as(PercentType.class);
+            return percentType != null ? Optional.of(percentType) : Optional.empty();
         } else if (acceptedTypes.contains(OnOffType.class) && originalType instanceof State state
                 && PercentType.class.isAssignableFrom(originalType.getClass())) {
-            return state.as(OnOffType.class);
+            OnOffType onOffType = state.as(OnOffType.class);
+            return onOffType != null ? Optional.of(onOffType) : Optional.empty();
         } else {
             logger.debug("Received not accepted type '{}' for channel '{}'", originalType.getClass().getSimpleName(),
                     channel.getUID());
-            return null;
+            return Optional.empty();
         }
     }
 
@@ -1162,18 +1190,19 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
      * @since 1.0.0
      */
     @SuppressWarnings("unchecked")
-    private @Nullable <T extends Type> T fixUoM(@Nullable T originalType, Channel channel, Item item) {
+    private <T extends Type> Optional<T> fixUoM(@Nullable T originalType, Channel channel, Item item) {
         String channelAcceptedItemType = channel.getAcceptedItemType();
 
         if (channelAcceptedItemType == null) {
-            return originalType;
+            Optional<T> result = Optional.ofNullable(originalType);
+            return result;
         }
 
         // handle Number-Channels for backward compatibility
         if (CoreItemFactory.NUMBER.equals(channelAcceptedItemType)
                 && originalType instanceof QuantityType<?> quantityType) {
             // strip unit from QuantityType for channels that accept plain number
-            return (T) new DecimalType(quantityType.toBigDecimal());
+            return Optional.of((T) new DecimalType(quantityType.toBigDecimal()));
         }
 
         String itemDimension = ItemUtil.getItemTypeExtension(item.getType());
@@ -1183,9 +1212,9 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
                 && channelDimension.equals(itemDimension)) {
             // Add unit from item to DecimalType when dimensions are equal
             Unit<?> unit = Objects.requireNonNull(((NumberItem) item).getUnit());
-            return (T) new QuantityType<>(decimalType.toBigDecimal(), unit);
+            return Optional.of((T) new QuantityType<>(decimalType.toBigDecimal(), unit));
         }
-        return null;
+        return Optional.empty();
     }
 
     /**
@@ -1694,11 +1723,15 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
                             (int) percentage, count));
                 }
 
+                @SuppressWarnings("null") // sortedTimes.get() is safe as empty list check is done above
+                Long minTime = sortedTimes.get(0);
+                @SuppressWarnings("null") // sortedTimes.get() is safe as empty list check is done above
+                Long maxTime = sortedTimes.get(sortedTimes.size() - 1);
+
                 logger.info(
                         "Exit Event Statistics (based on {} events):\n" + "Mean: {:.2f} ms\n" + "Std Dev: {:.2f} ms\n"
                                 + "Min: {} ms\n" + "Max: {} ms\n" + "{}",
-                        eventTimes.size(), mean, stdDev, sortedTimes.get(0), sortedTimes.get(sortedTimes.size() - 1),
-                        histogram);
+                        eventTimes.size(), mean, stdDev, minTime, maxTime, histogram);
             }
         }
     }

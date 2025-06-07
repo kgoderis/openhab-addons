@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.core.factory;
 
 import java.lang.reflect.Constructor;
@@ -12,8 +25,6 @@ import java.util.stream.Stream;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
@@ -93,9 +104,8 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @version 1.0
  * @since 1.0
- */
+     */
 @Component(service = HomekitServiceFactory.class)
-@NonNullByDefault
 public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "Homekit ServiceFactory: ";
@@ -197,6 +207,7 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
 
             for (Class<?> serviceClass : serviceClasses) {
                 if (HomekitService.class.isAssignableFrom(serviceClass)) {
+                    @SuppressWarnings("null") // getAnnotation() can return null, handled by null check below
                     HomekitServiceType annotation = serviceClass.getAnnotation(HomekitServiceType.class);
                     if (annotation != null) {
                         String type = annotation.type();
@@ -272,6 +283,7 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
     @Override
     public HomekitService createService(String type, HomekitAccessory accessory) throws HomekitFactoryException {
         logger.trace("{}Creating service of type: {} for accessory: {}", LOG_TRACE, type, accessory.getUID());
+        @SuppressWarnings("null") // serviceTypes.get() can return null, checked below
         Class<? extends HomekitService> serviceClass = serviceTypes.get(type);
         if (serviceClass == null) {
             logger.error("{}Unsupported service type: {}", LOG_ERROR, type);
@@ -279,10 +291,12 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
         }
 
         try {
-            return serviceClass
-                    .getConstructor(HomekitAccessory.class, HomekitEventManager.class,
-                            HomekitCharacteristicFactory.class)
-                    .newInstance(accessory, eventManager, characteristicFactory);
+            @SuppressWarnings("null") // getConstructor() guaranteed to return valid constructor for valid class
+            Constructor<? extends HomekitService> constructor = serviceClass.getConstructor(HomekitAccessory.class,
+                    HomekitEventManager.class, HomekitCharacteristicFactory.class);
+            @SuppressWarnings("null") // newInstance() guaranteed to return valid instance for valid constructor
+            HomekitService instance = constructor.newInstance(accessory, eventManager, characteristicFactory);
+            return instance;
         } catch (IllegalAccessException | IllegalArgumentException | InstantiationException | NoSuchMethodException
                 | SecurityException | InvocationTargetException e) {
             logger.error("{}Error creating service of type {}: {}", LOG_ERROR, type, e.getMessage(), e);
@@ -321,6 +335,7 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
     @Override
     public HomekitService createServiceWithArgs(String type, Object... args) throws HomekitFactoryException {
         logger.trace("{}Creating service of type: {} with {} arguments", LOG_TRACE, type, args.length);
+        @SuppressWarnings("null") // serviceTypes.get() can return null, checked below
         Class<? extends HomekitService> serviceClass = serviceTypes.get(type);
         if (serviceClass == null) {
             logger.error("{}Unsupported service type: {}", LOG_ERROR, type);
@@ -328,9 +343,13 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
         }
 
         try {
+            @SuppressWarnings("null") // Stream.of(args).map(Object::getClass) safe as args cannot contain null
             Class<?>[] argTypes = Stream.of(args).map(Object::getClass).toArray(Class[]::new);
+            @SuppressWarnings("null") // getConstructor() guaranteed to return valid constructor for valid class
             Constructor<? extends HomekitService> constructor = serviceClass.getConstructor(argTypes);
-            return constructor.newInstance(args);
+            @SuppressWarnings("null") // newInstance() guaranteed to return valid instance for valid constructor
+            HomekitService instance = constructor.newInstance(args);
+            return instance;
         } catch (IllegalAccessException | IllegalArgumentException | InstantiationException | NoSuchMethodException
                 | SecurityException | InvocationTargetException e) {
             logger.error("{}Error creating service of type {} with args: {}", LOG_ERROR, type, e.getMessage(), e);
@@ -366,6 +385,7 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
     @Override
     public HomekitService createServiceFromTag(String tag, HomekitAccessory accessory) throws HomekitFactoryException {
         logger.trace("{}Creating service from tag: {} for accessory: {}", LOG_TRACE, tag, accessory.getUID());
+        @SuppressWarnings("null") // tagToTypeMap.get() can return null, checked below
         String type = tagToTypeMap.get(tag);
         if (type == null) {
             logger.error("{}Unsupported service tag: {}", LOG_ERROR, tag);
@@ -417,6 +437,7 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
         }
 
         String type = jsonObject.getString("type");
+        @SuppressWarnings("null") // serviceTypes.get() can return null, checked below
         Class<? extends HomekitService> serviceClass = serviceTypes.get(type);
         if (serviceClass == null) {
             logger.error("{}Unsupported service type: {}", LOG_ERROR, type);
@@ -424,10 +445,12 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
         }
 
         try {
-            return serviceClass
-                    .getConstructor(HomekitAccessory.class, HomekitEventManager.class,
-                            HomekitCharacteristicFactory.class, JsonValue.class)
-                    .newInstance(accessory, eventManager, characteristicFactory, value);
+            @SuppressWarnings("null") // getConstructor() guaranteed to return valid constructor for valid class
+            Constructor<? extends HomekitService> constructor = serviceClass.getConstructor(HomekitAccessory.class,
+                    HomekitEventManager.class, HomekitCharacteristicFactory.class, JsonValue.class);
+            @SuppressWarnings("null") // newInstance() guaranteed to return valid instance for valid constructor
+            HomekitService instance = constructor.newInstance(accessory, eventManager, characteristicFactory, value);
+            return instance;
         } catch (IllegalAccessException | IllegalArgumentException | InstantiationException | NoSuchMethodException
                 | SecurityException | InvocationTargetException e) {
             logger.error("{}Error creating service from JSON: {}", LOG_ERROR, e.getMessage(), e);
@@ -578,11 +601,16 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
             throw new HomekitFactoryException("Unsupported service type: " + serviceType);
         }
 
-        @SuppressWarnings("null")
-        @Nullable
-        String tag = tagToTypeMap.entrySet().stream().filter(entry -> entry.getValue().equals(serviceType))
-                .map(Map.Entry::getKey).findFirst()
-                .orElseThrow(() -> new HomekitFactoryException("No tag found for service type: " + serviceType));
+        @SuppressWarnings("null") // entrySet().getValue() guaranteed non-null for valid entries
+        String tag = tagToTypeMap.entrySet().stream().filter(entry -> {
+            @SuppressWarnings("null") // entry.getValue() guaranteed non-null for valid map entries
+            String value = entry.getValue();
+            return value.equals(serviceType);
+        }).map(entry -> {
+            @SuppressWarnings("null") // entry.getKey() guaranteed non-null for valid map entries
+            String key = entry.getKey();
+            return key;
+        }).findFirst().orElseThrow(() -> new HomekitFactoryException("No tag found for service type: " + serviceType));
 
         logger.debug("{}Found tag {} for service type {}", LOG_STATE, tag, serviceType);
         return tag;
@@ -614,6 +642,7 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
     @Override
     public String getServiceTypeFromTag(String serviceTag) throws HomekitFactoryException {
         logger.trace("{}Looking up service type for tag: {}", LOG_TRACE, serviceTag);
+        @SuppressWarnings("null") // tagToTypeMap.get() can return null, checked below
         String type = tagToTypeMap.get(serviceTag);
         if (type == null) {
             logger.error("{}No service type found for tag: {}", LOG_ERROR, serviceTag);
@@ -651,6 +680,7 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
     @Override
     public Map<String, Set<String>> getCharacteristicTypes(String serviceType) throws HomekitFactoryException {
         logger.trace("{}Retrieving characteristic types for service type: {}", LOG_TRACE, serviceType);
+        @SuppressWarnings("null") // serviceTypes.get() can return null, checked below
         Class<? extends HomekitService> serviceClass = serviceTypes.get(serviceType);
         if (serviceClass == null) {
             logger.error("{}Unsupported service type: {}", LOG_ERROR, serviceType);

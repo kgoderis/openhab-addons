@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.server.servlet;
 
 import java.io.IOException;
@@ -7,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -27,6 +41,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
@@ -79,9 +94,9 @@ import org.slf4j.LoggerFactory;
  * <li>{@link HomekitAccessory} for accessory lifecycle management</li>
  * </ul>
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0
- */
+     */
 @WebServlet(asyncSupported = true)
 public class HomekitCharacteristicServlet extends HomekitBaseServlet {
     // ========== Log Message Prefixes ==========
@@ -95,22 +110,16 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
     private static final String LOG_REQUEST = LOG_PREFIX + "Request - ";
     private static final String LOG_SUBSCRIPTION = LOG_PREFIX + "Subscription - ";
 
-    /** Map of characteristic subscriptions to their async contexts */
     private final Map<HomekitCharacteristic<?>, Set<AsyncContext>> characteristicSubscriptions = new ConcurrentHashMap<>();
 
-    /** Scheduler for handling debounced updates */
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
-    /** Map of debouncers for each async context */
     private final Map<AsyncContext, HomekitDebouncer> debouncers = new ConcurrentHashMap<>();
 
-    /** Map of pending updates for each async context */
     private final Map<AsyncContext, List<JsonObject>> pendingUpdates = new ConcurrentHashMap<>();
 
-    /** Delay for debouncing updates */
     private static final Duration DEBOUNCE_DELAY = Duration.ofSeconds(1);
 
-    /** Event manager for publishing characteristic updates */
     private final HomekitEventManager eventManager;
 
     /**
@@ -194,6 +203,7 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
      * @throws IOException if an I/O error occurs during response writing
      */
     @Override
+    @SuppressWarnings("null") // HttpServlet inherited method parameters may have different null constraints
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         logger.debug("{}Handling GET request for characteristics", LOG_REQUEST);
@@ -232,19 +242,23 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
                         int aid = Integer.parseInt(parts[0]);
                         int iid = Integer.parseInt(parts[1]);
 
-                        HomekitAccessory accessory = server.getAccessory(aid);
-                        if (accessory != null) {
-                            accessory.getServices().stream()
-                                    .map(service -> (HomekitCharacteristic<?>) service.getCharacteristic(iid).get())
-                                    .filter(characteristic -> characteristic != null).findFirst()
+                        server.getAccessory(aid).ifPresent(accessory -> {
+                            accessory.getServices().stream().map(service -> {
+                                @SuppressWarnings("null") // getCharacteristic() returns Optional with nullable content
+                                HomekitCharacteristic<?> characteristic = (HomekitCharacteristic<?>) service
+                                        .getCharacteristic(iid).get();
+                                return characteristic;
+                            }).filter(characteristic -> characteristic != null).findFirst()
                                     .ifPresent(characteristic -> {
-                                        characteristicSubscriptions
-                                                .computeIfAbsent(characteristic, c -> ConcurrentHashMap.newKeySet())
-                                                .add(asyncContext);
+                                        @SuppressWarnings("null") // computeIfAbsent with non-null function guarantees
+                                                                  // non-null result
+                                        Set<AsyncContext> subscribers = characteristicSubscriptions
+                                                .computeIfAbsent(characteristic, c -> ConcurrentHashMap.newKeySet());
+                                        subscribers.add(asyncContext);
                                         logger.debug("{}Subscribed to characteristic {}.{}", LOG_SUBSCRIPTION, aid,
                                                 iid);
                                     });
-                        }
+                        });
                     } catch (NumberFormatException e) {
                         logger.error("{}Invalid characteristic ID format: {}", LOG_ERROR, id);
                         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -255,31 +269,33 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
                 }
 
                 // Add cleanup on client disconnect
-                asyncContext.addListener(new AsyncListener() {
+                @SuppressWarnings("null") // AsyncListener interface methods may have nullable parameters
+                AsyncListener listener = new AsyncListener() {
                     @Override
-                    public void onComplete(AsyncEvent event) {
+                    public void onComplete(@Nullable AsyncEvent asyncEvent) {
                         logger.debug("{}Client disconnected, cleaning up subscription", LOG_SUBSCRIPTION);
                         removeSubscription(asyncContext);
                     }
 
                     @Override
-                    public void onTimeout(AsyncEvent event) {
+                    public void onTimeout(@Nullable AsyncEvent asyncEvent) {
                         logger.debug("{}Subscription timeout, cleaning up", LOG_SUBSCRIPTION);
                         removeSubscription(asyncContext);
                     }
 
                     @Override
-                    public void onError(AsyncEvent event) {
+                    public void onError(@Nullable AsyncEvent asyncEvent) {
                         logger.error("{}Subscription error, cleaning up: {}", LOG_ERROR,
-                                event.getThrowable().getMessage());
+                                asyncEvent != null ? asyncEvent.getThrowable().getMessage() : "Unknown error");
                         removeSubscription(asyncContext);
                     }
 
                     @Override
-                    public void onStartAsync(AsyncEvent event) {
+                    public void onStartAsync(@Nullable AsyncEvent asyncEvent) {
                         logger.trace("{}Async context started", LOG_SUBSCRIPTION);
                     }
-                });
+                };
+                asyncContext.addListener(listener);
 
                 return;
             }
@@ -299,16 +315,18 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
                     int aid = Integer.parseInt(parts[0]);
                     int iid = Integer.parseInt(parts[1]);
 
-                    HomekitAccessory accessory = server.getAccessory(aid);
-                    if (accessory != null) {
-                        accessory.getServices().stream()
-                                .map(service -> (HomekitCharacteristic<?>) service.getCharacteristic(iid).get())
-                                .filter(characteristic -> characteristic != null).forEach(characteristic -> {
-                                    characteristics.add(characteristic.toJson(includeMeta, includePermissions,
-                                            includeType, includeEvent));
-                                    logger.trace("{}Retrieved value for characteristic {}.{}", LOG_REQUEST, aid, iid);
-                                });
-                    }
+                    server.getAccessory(aid).ifPresent(accessory -> {
+                        accessory.getServices().stream().map(service -> {
+                            @SuppressWarnings("null") // getCharacteristic() returns Optional with nullable content
+                            HomekitCharacteristic<?> characteristic = (HomekitCharacteristic<?>) service
+                                    .getCharacteristic(iid).get();
+                            return characteristic;
+                        }).filter(characteristic -> characteristic != null).forEach(characteristic -> {
+                            characteristics.add(
+                                    characteristic.toJson(includeMeta, includePermissions, includeType, includeEvent));
+                            logger.trace("{}Retrieved value for characteristic {}.{}", LOG_REQUEST, aid, iid);
+                        });
+                    });
                 } catch (NumberFormatException e) {
                     logger.error("{}Invalid characteristic ID format: {}", LOG_ERROR, id);
                     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -367,6 +385,7 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
      * @throws IOException if an I/O error occurs during response writing
      */
     @Override
+    @SuppressWarnings("null") // HttpServlet inherited method parameters may have different null constraints
     protected void doPut(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         logger.debug("{}Handling PUT request for characteristic updates", LOG_REQUEST);
@@ -382,39 +401,45 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
 
                 logger.trace("{}Processing update for characteristic {}.{}", LOG_REQUEST, aid, iid);
 
-                HomekitAccessory accessory = server.getAccessory(aid);
-                if (accessory == null) {
+                Optional<HomekitAccessory> accessoryOpt = server.getAccessory(aid);
+                if (accessoryOpt.isEmpty()) {
                     logger.warn("{}Accessory {} not found", LOG_WARN, aid);
                     continue;
                 }
+                @SuppressWarnings("null") // isEmpty() check ensures get() is safe
+                HomekitAccessory accessory = accessoryOpt.get();
 
-                accessory.getServices().stream()
-                        .map(service -> (HomekitCharacteristic<?>) service.getCharacteristic(iid).get())
-                        .filter(characteristic -> characteristic != null).forEach(characteristic -> {
-                            if (characteristicWrite.containsKey("value")) {
-                                try {
-                                    if (characteristic instanceof AbstractHomekitCharacteristic<?> genericCharacteristic) {
-                                        logger.debug("{}Updating value for characteristic {}.{}", LOG_REQUEST, aid,
-                                                iid);
-                                        HomekitEvent newEvent = new HomekitCharacteristicUpdateEvent(
-                                                (UID) server.getUID(), (UID) genericCharacteristic.getUID(),
-                                                genericCharacteristic, JsonValue.NULL, characteristicWrite.get("value"),
-                                                Collections.emptyMap(), new HomekitEventMetadata((UID) server.getUID(),
-                                                        null, (UID) server.getUID(), Collections.emptySet()));
-                                        eventManager.publishEvent(newEvent);
-                                    }
-                                } catch (Exception e) {
-                                    logger.error("{}Error setting characteristic value for {}.{}: {}", LOG_ERROR, aid,
-                                            iid, e.getMessage(), e);
-                                }
+                accessory.getServices().stream().map(service -> {
+                    @SuppressWarnings("null") // getCharacteristic() returns Optional with nullable content
+                    HomekitCharacteristic<?> characteristic = (HomekitCharacteristic<?>) service.getCharacteristic(iid)
+                            .get();
+                    return characteristic;
+                }).filter(characteristic -> characteristic != null).forEach(characteristic -> {
+                    if (characteristicWrite.containsKey("value")) {
+                        try {
+                            if (characteristic instanceof AbstractHomekitCharacteristic<?> genericCharacteristic) {
+                                logger.debug("{}Updating value for characteristic {}.{}", LOG_REQUEST, aid, iid);
+                                @SuppressWarnings("null") // JsonObject.get() for known key
+                                JsonValue characteristicValue = characteristicWrite.get("value");
+                                HomekitEvent newEvent = new HomekitCharacteristicUpdateEvent((UID) server.getUID(),
+                                        (UID) genericCharacteristic.getUID(), genericCharacteristic, JsonValue.NULL,
+                                        characteristicValue, Collections.emptyMap(),
+                                        new HomekitEventMetadata((UID) server.getUID(), null, (UID) server.getUID(),
+                                                Collections.emptySet()));
+                                eventManager.publishEvent(newEvent);
                             }
-                            if (characteristicWrite.containsKey("ev")) {
-                                boolean subscribe = characteristicWrite.getBoolean("ev");
-                                logger.debug("{}Updating subscription state for characteristic {}.{} to {}",
-                                        LOG_SUBSCRIPTION, aid, iid, subscribe);
-                                handleEventSubscription(characteristic, subscribe);
-                            }
-                        });
+                        } catch (Exception e) {
+                            logger.error("{}Error setting characteristic value for {}.{}: {}", LOG_ERROR, aid, iid,
+                                    e.getMessage(), e);
+                        }
+                    }
+                    if (characteristicWrite.containsKey("ev")) {
+                        boolean subscribe = characteristicWrite.getBoolean("ev");
+                        logger.debug("{}Updating subscription state for characteristic {}.{} to {}", LOG_SUBSCRIPTION,
+                                aid, iid, subscribe);
+                        handleEventSubscription(characteristic, subscribe);
+                    }
+                });
             }
 
             response.setStatus(HttpServletResponse.SC_NO_CONTENT);
@@ -466,6 +491,7 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
      * @param characteristic The characteristic that was updated
      */
     public void publishCharacteristicUpdate(HomekitCharacteristic<?> characteristic) {
+        @SuppressWarnings("null") // Map.get() can return null but we check for it
         Set<AsyncContext> subscribers = characteristicSubscriptions.get(characteristic);
         if (subscribers == null || subscribers.isEmpty()) {
             logger.trace("{}No subscribers for characteristic update", LOG_EVENT);
@@ -478,9 +504,12 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
 
         subscribers.forEach(context -> {
             // Add update to pending list
-            pendingUpdates.computeIfAbsent(context, k -> new ArrayList<>()).add(update);
+            @SuppressWarnings("null") // computeIfAbsent with non-null function guarantees non-null result
+            List<JsonObject> updates = pendingUpdates.computeIfAbsent(context, k -> new ArrayList<>());
+            updates.add(update);
 
             // Create or get debouncer for this context
+            @SuppressWarnings("null") // computeIfAbsent with non-null function guarantees non-null result
             HomekitDebouncer debouncer = debouncers.computeIfAbsent(context,
                     k -> new HomekitDebouncer("Homekit-Updates-" + context.hashCode(), scheduler, DEBOUNCE_DELAY,
                             Clock.systemUTC(), () -> sendBatchedUpdates(context)));
@@ -523,6 +552,7 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
      * @param context The async context for which to send updates
      */
     private void sendBatchedUpdates(AsyncContext context) {
+        @SuppressWarnings("null") // Map.get() can return null but we check for it
         List<JsonObject> updates = pendingUpdates.get(context);
         if (updates == null || updates.isEmpty()) {
             return;
@@ -590,6 +620,7 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
             characteristic.withEvents(true);
             logger.debug("{}Enabled events for characteristic", LOG_SUBSCRIPTION);
         } else {
+            @SuppressWarnings("null") // Map.get() can return null but we check for it
             Set<AsyncContext> subscribers = characteristicSubscriptions.get(characteristic);
             if (subscribers != null) {
                 subscribers.clear();

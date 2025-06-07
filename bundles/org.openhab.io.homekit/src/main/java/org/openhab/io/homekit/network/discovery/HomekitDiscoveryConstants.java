@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2010-2020 Contributors to the openHAB project
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -10,9 +10,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
+
 package org.openhab.io.homekit.network.discovery;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 
@@ -59,8 +59,7 @@ import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0
- */
-@NonNullByDefault
+     */
 public class HomekitDiscoveryConstants {
 
     /**

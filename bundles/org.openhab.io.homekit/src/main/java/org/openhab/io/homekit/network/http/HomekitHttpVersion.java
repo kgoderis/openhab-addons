@@ -1,6 +1,20 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.network.http;
 
 import java.nio.ByteBuffer;
+import java.util.Optional;
 
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.util.ArrayTrie;
@@ -46,9 +60,9 @@ import org.slf4j.LoggerFactory;
  * <li>Provides optimized byte-level parsing for performance</li>
  * </ul>
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0
- */
+     */
 public enum HomekitHttpVersion {
     HTTP_0_9("HTTP/0.9", 9),
     HTTP_1_0("HTTP/1.0", 10),
@@ -56,7 +70,6 @@ public enum HomekitHttpVersion {
     HTTP_2("HTTP/2.0", 20),
     EVENT_1_0("EVENT/1.0", 30);
 
-    /** Logger instance for this class */
     private static final Logger logger = LoggerFactory.getLogger(HomekitHttpVersion.class);
 
     // ========== Log Message Prefixes ==========
@@ -87,14 +100,15 @@ public enum HomekitHttpVersion {
      * </p>
      *
      * @param version The version string to parse
-     * @return The corresponding HomekitHttpVersion or null if not found
+     * @return The corresponding HomekitHttpVersion or empty if not found
      */
-    public static HomekitHttpVersion get(String version) {
+    public static Optional<HomekitHttpVersion> get(String version) {
         HomekitHttpVersion result = CACHE.get(version);
         if (result == null) {
             logger.debug("{}Version not found in cache: {}", LOG_STATE, version);
+            return Optional.empty();
         }
-        return result;
+        return Optional.of(result);
     }
 
     /**
@@ -119,13 +133,13 @@ public enum HomekitHttpVersion {
      * @param bytes Array containing ISO-8859-1 characters
      * @param position The first valid index
      * @param limit The first non-valid index
-     * @return A HomekitHttpVersion if a match is found, null otherwise
+     * @return A HomekitHttpVersion if a match is found, empty otherwise
      */
-    public static HomekitHttpVersion lookAheadGet(byte[] bytes, int position, int limit) {
+    public static Optional<HomekitHttpVersion> lookAheadGet(byte[] bytes, int position, int limit) {
         int length = limit - position;
         if (length < 9) {
             logger.trace("{}Buffer too short for version lookup: {}", LOG_STATE, length);
-            return null;
+            return Optional.empty();
         }
 
         if (bytes[position + 4] == '/' && bytes[position + 6] == '.'
@@ -138,24 +152,24 @@ public enum HomekitHttpVersion {
                 case '1':
                     switch (bytes[position + 7]) {
                         case '0':
-                            return HomekitHttpVersion.HTTP_1_0;
+                            return Optional.of(HomekitHttpVersion.HTTP_1_0);
                         case '1':
-                            return HomekitHttpVersion.HTTP_1_1;
+                            return Optional.of(HomekitHttpVersion.HTTP_1_1);
                         default:
                             logger.trace("{}Invalid HTTP/1.x version: {}", LOG_STATE, bytes[position + 7]);
-                            return null;
+                            return Optional.empty();
                     }
                 case '2':
                     switch (bytes[position + 7]) {
                         case '0':
-                            return HomekitHttpVersion.HTTP_2;
+                            return Optional.of(HomekitHttpVersion.HTTP_2);
                         default:
                             logger.trace("{}Invalid HTTP/2.x version: {}", LOG_STATE, bytes[position + 7]);
-                            return null;
+                            return Optional.empty();
                     }
                 default:
                     logger.trace("{}Invalid HTTP major version: {}", LOG_STATE, bytes[position + 5]);
-                    return null;
+                    return Optional.empty();
             }
         }
 
@@ -169,19 +183,19 @@ public enum HomekitHttpVersion {
                 case '1':
                     switch (bytes[position + 8]) {
                         case '0':
-                            return HomekitHttpVersion.EVENT_1_0;
+                            return Optional.of(HomekitHttpVersion.EVENT_1_0);
                         default:
                             logger.trace("{}Invalid EVENT/1.x version: {}", LOG_STATE, bytes[position + 8]);
-                            return null;
+                            return Optional.empty();
                     }
                 default:
                     logger.trace("{}Invalid EVENT major version: {}", LOG_STATE, bytes[position + 6]);
-                    return null;
+                    return Optional.empty();
             }
         }
 
         logger.trace("{}No valid version pattern found", LOG_STATE);
-        return null;
+        return Optional.empty();
     }
 
     /**
@@ -193,15 +207,15 @@ public enum HomekitHttpVersion {
      * </p>
      *
      * @param buffer Buffer containing ISO-8859-1 characters
-     * @return A HomekitHttpVersion if a match is found, null otherwise
+     * @return A HomekitHttpVersion if a match is found, empty otherwise
      */
-    public static HomekitHttpVersion lookAheadGet(ByteBuffer buffer) {
+    public static Optional<HomekitHttpVersion> lookAheadGet(ByteBuffer buffer) {
         if (buffer.hasArray()) {
             return lookAheadGet(buffer.array(), buffer.arrayOffset() + buffer.position(),
                     buffer.arrayOffset() + buffer.limit());
         }
         logger.trace("{}Buffer does not have array backing", LOG_STATE);
-        return null;
+        return Optional.empty();
     }
 
     private final String _string;
@@ -288,14 +302,15 @@ public enum HomekitHttpVersion {
      * </p>
      *
      * @param version The version string to convert
-     * @return The corresponding HomekitHttpVersion or null if not found
+     * @return The corresponding HomekitHttpVersion or empty if not found
      */
-    public static HomekitHttpVersion fromString(String version) {
+    public static Optional<HomekitHttpVersion> fromString(String version) {
         HomekitHttpVersion result = CACHE.get(version);
         if (result == null) {
             logger.debug("{}Version not found: {}", LOG_STATE, version);
+            return Optional.empty();
         }
-        return result;
+        return Optional.of(result);
     }
 
     /**
@@ -344,14 +359,15 @@ public enum HomekitHttpVersion {
      * @param buffer The buffer to search in
      * @param i The starting position
      * @param remaining The number of bytes to consider
-     * @return The best matching HomekitHttpVersion or null if none found
+     * @return The best matching HomekitHttpVersion or empty if none found
      */
-    public static HomekitHttpVersion getBest(ByteBuffer buffer, int i, int remaining) {
+    public static Optional<HomekitHttpVersion> getBest(ByteBuffer buffer, int i, int remaining) {
         HomekitHttpVersion result = CACHE.getBest(buffer, i, remaining);
         if (result == null) {
             logger.trace("{}No matching version found in buffer", LOG_STATE);
+            return Optional.empty();
         }
-        return result;
+        return Optional.of(result);
     }
 
     /**

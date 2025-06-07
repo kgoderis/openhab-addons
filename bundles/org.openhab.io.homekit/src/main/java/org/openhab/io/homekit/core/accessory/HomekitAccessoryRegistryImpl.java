@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2010-2019 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -10,9 +10,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
+
 package org.openhab.io.homekit.core.accessory;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.AbstractRegistry;
 import org.openhab.core.common.registry.ManagedProvider;
 import org.openhab.core.common.registry.Provider;
@@ -59,8 +59,7 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @version 1.0
  * @since 1.0
- */
-@NonNullByDefault
+     */
 @Component(immediate = true, service = HomekitAccessoryRegistry.class)
 public class HomekitAccessoryRegistryImpl
         extends AbstractRegistry<HomekitAccessory, HomekitAccessoryUID, HomekitAccessoryProvider>

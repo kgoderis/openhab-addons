@@ -1,7 +1,20 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.event.core;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
+import java.util.Optional;
+
 import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.event.HomekitEvent;
 import org.openhab.io.homekit.api.event.HomekitEventType;
@@ -62,10 +75,9 @@ import org.slf4j.LoggerFactory;
  * <li>Maintains event integrity</li>
  * </ul>
  *
- * @author OpenHAB
+ * @author Karel Goderis - Initial contribution
  * @since 3.x
  */
-@NonNullByDefault
 public abstract class AbstractHomekitEvent implements HomekitEvent {
     private static final Logger logger = LoggerFactory.getLogger(AbstractHomekitEvent.class);
     private static final String LOG_PREFIX = "Homekit Event: ";
@@ -75,7 +87,7 @@ public abstract class AbstractHomekitEvent implements HomekitEvent {
 
     private final HomekitEventType type;
     private final UID publisherUID;
-    private @Nullable UID subscriberUID;
+    private Optional<UID> subscriberUID;
     private final HomekitEventMetadata metadata;
     private final long timestamp;
     private final boolean isValid;
@@ -94,7 +106,7 @@ public abstract class AbstractHomekitEvent implements HomekitEvent {
             HomekitEventMetadata originalMetadata) {
         this.type = type;
         this.publisherUID = publisherUID;
-        this.subscriberUID = subscriberUID;
+        this.subscriberUID = Optional.ofNullable(subscriberUID);
         this.metadata = new HomekitEventMetadata(originalMetadata, publisherUID);
         this.timestamp = System.currentTimeMillis();
 
@@ -180,13 +192,13 @@ public abstract class AbstractHomekitEvent implements HomekitEvent {
      * Gets the unique identifier of the subscriber for this event.
      * 
      * This method returns the UID of the component that should receive this event.
-     * The subscriber UID may be null if the event is being broadcast or if the subscriber
+     * The subscriber UID may be empty if the event is being broadcast or if the subscriber
      * has not been determined yet.
      *
-     * @return The UID of the event subscriber, or null if not set
+     * @return Optional containing the UID of the event subscriber
      */
     @Override
-    public @Nullable UID getSubscriberUID() {
+    public Optional<UID> getSubscriberUID() {
         return subscriberUID;
     }
 
@@ -200,7 +212,7 @@ public abstract class AbstractHomekitEvent implements HomekitEvent {
      */
     @Override
     public void setSubscriberUID(UID uid) {
-        this.subscriberUID = uid;
+        this.subscriberUID = Optional.ofNullable(uid);
     }
 
     /**

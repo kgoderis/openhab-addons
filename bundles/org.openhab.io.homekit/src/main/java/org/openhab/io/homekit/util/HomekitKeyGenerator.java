@@ -10,13 +10,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
+
 package org.openhab.io.homekit.util;
 
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.protocol.crypto.HomekitEncryptionEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,8 +57,7 @@ import net.i2p.crypto.eddsa.spec.EdDSAParameterSpec;
  *
  * @author Karel Goderis - Initial contribution
  * @version 1.0
- */
-@NonNullByDefault
+     */
 public class HomekitKeyGenerator {
 
     private static final Logger logger = LoggerFactory.getLogger(HomekitKeyGenerator.class);

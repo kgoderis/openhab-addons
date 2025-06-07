@@ -1,10 +1,22 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.api.factory;
 
 import java.net.InetAddress;
+import java.util.Optional;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 
 //TODO : ServerFactory that can create AccessoryHolder for the client side
@@ -34,10 +46,9 @@ import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
  * - {@link org.openhab.io.homekit.api.server.HomekitAccessoryServer} for server instances
  * - {@link java.net.InetAddress} for network configuration
  *
- * @author Karel Goderis - Initial Contribution
+ * @author Karel Goderis - Initial contribution
  * @since 1.0.0
  */
-@NonNullByDefault
 public interface HomekitAccessoryServerFactory {
 
     /**
@@ -47,11 +58,10 @@ public interface HomekitAccessoryServerFactory {
      * @param factoryType The type of server to create
      * @param localAddress The local network address to bind to
      * @param port The port number to listen on
-     * @return A new server instance, or null if the factory type is not supported
+     * @return Optional containing a new server instance, or empty if the factory type is not supported
      * @since 1.0.0
      */
-    @Nullable
-    HomekitAccessoryServer createServer(String factoryType, InetAddress localAddress, int port);
+    Optional<HomekitAccessoryServer> createServer(String factoryType, InetAddress localAddress, int port);
 
     /**
      * Creates a new HomeKit accessory server instance with advanced security configuration.
@@ -63,12 +73,11 @@ public interface HomekitAccessoryServerFactory {
      * @param pairingId The unique identifier for pairing
      * @param privateKey The private key for encryption
      * @param configurationIndex The configuration index for the server
-     * @return A new server instance, or null if the factory type is not supported
+     * @return Optional containing a new server instance, or empty if the factory type is not supported
      * @since 1.0.0
      */
-    @Nullable
-    HomekitAccessoryServer createServer(String factoryType, InetAddress localAddress, int port, byte[] pairingId,
-            byte[] privateKey, int configurationIndex);
+    Optional<HomekitAccessoryServer> createServer(String factoryType, InetAddress localAddress, int port,
+            byte[] pairingId, byte[] privateKey, int configurationIndex);
 
     /**
      * Gets all server types supported by this factory.

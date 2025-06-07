@@ -1,8 +1,22 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.validation;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.openhab.core.thing.Channel;
@@ -15,6 +29,8 @@ import org.osgi.service.component.annotations.Component;
 /**
  * Performs validation of channel mappings to ensure they are correctly associated with HomeKit characteristics.
  * This validation is crucial for maintaining proper communication between openHAB channels and HomeKit accessories.
+ * 
+ * @author Karel Goderis - Initial contribution
  */
 @Component(service = Validation.class)
 public class ChannelCharacteristicMappingValidation extends AbstractValidation {
@@ -26,35 +42,38 @@ public class ChannelCharacteristicMappingValidation extends AbstractValidation {
     }
 
     @Override
-    protected ValidationResult doValidate(ValidationContext context) {
+    protected Optional<ValidationResult> doValidate(ValidationContext context) {
         Object object = context.getTarget();
         if (!(object instanceof Thing)) {
             List<ValidationIssue> issues = new ArrayList<>();
             issues.add(createIssue(ValidationResult.Severity.ERROR, "Invalid object type: expected Thing",
                     "INVALID_TYPE", getContextKey(object), true, true));
-            return createResult(issues);
+            return Optional.of(createResult(issues));
         }
 
         Thing thing = (Thing) object;
         List<ValidationIssue> issues = new ArrayList<>();
 
         // Get all services for this thing
-        List<HomekitService> services = getServices(thing);
-        if (services == null) {
+        Optional<List<HomekitService>> servicesOpt = getServices(thing);
+        if (servicesOpt.isEmpty()) {
             issues.add(createIssue(ValidationResult.Severity.ERROR, "No HomeKit services found for thing",
                     "NO_SERVICES", getContextKey(thing), true, true));
-            return createResult(issues);
+            return Optional.of(createResult(issues));
         }
 
         // Check each service's characteristics against channels
+        @SuppressWarnings("null") // get() is safe after isEmpty() check above
+        List<HomekitService> services = servicesOpt.get();
         for (HomekitService service : services) {
             validateServiceChannels(service, thing, issues);
         }
 
-        return createResult(issues);
+        return Optional.of(createResult(issues));
     }
 
     private void validateServiceChannels(HomekitService service, Thing thing, List<ValidationIssue> issues) {
+        @SuppressWarnings("null") // getAnnotation() can return null, handled by null check below
         HomekitServiceType serviceType = service.getClass().getAnnotation(HomekitServiceType.class);
         if (serviceType == null) {
             issues.add(createIssue(ValidationResult.Severity.ERROR, "Service type annotation not found",
@@ -66,6 +85,7 @@ public class ChannelCharacteristicMappingValidation extends AbstractValidation {
         String serviceUuid = serviceType.type();
 
         // Get all characteristics for this service
+        @SuppressWarnings("null") // service.getCharacteristics() returns non-null set
         Set<HomekitCharacteristic<?>> characteristics = service.getCharacteristics();
         if (characteristics == null) {
             issues.add(createIssue(ValidationResult.Severity.ERROR,
@@ -83,11 +103,13 @@ public class ChannelCharacteristicMappingValidation extends AbstractValidation {
     private void validateCharacteristicChannel(HomekitCharacteristic<?> characteristic, Thing thing, String serviceName,
             String serviceUuid, List<ValidationIssue> issues) {
         // Get the channel ID from the characteristic configuration
-        String channelId = getChannelId(characteristic);
-        if (channelId == null) {
+        Optional<String> channelIdOpt = getChannelId(characteristic);
+        if (channelIdOpt.isEmpty()) {
             // Skip validation if no channel mapping is required
             return;
         }
+        @SuppressWarnings("null") // get() is safe after isEmpty() check above
+        String channelId = channelIdOpt.get();
 
         // Check if the channel exists
         Channel channel = thing.getChannel(channelId);
@@ -97,9 +119,8 @@ public class ChannelCharacteristicMappingValidation extends AbstractValidation {
                             characteristic.getClass().getSimpleName(), serviceName),
                     "MISSING_CHANNEL",
                     getContextKey(thing) + ":" + serviceUuid + ":" + characteristic.getClass().getSimpleName(), true,
-                    true,
-                    Map.<String, Object>of("serviceName", serviceName, "serviceUuid", serviceUuid, "characteristicType",
-                            characteristic.getClass().getSimpleName(), "channelId", channelId)));
+                    true, Map.<String, Object> of("serviceName", serviceName, "serviceUuid", serviceUuid,
+                            "characteristicType", characteristic.getClass().getSimpleName(), "channelId", channelId)));
             return;
         }
 
@@ -109,21 +130,20 @@ public class ChannelCharacteristicMappingValidation extends AbstractValidation {
             String channelType = channelTypeUID != null ? channelTypeUID.toString() : "unknown";
             issues.add(createIssue(ValidationResult.Severity.ERROR,
                     String.format("Channel '%s' type '%s' is not compatible with characteristic '%s' in service '%s'",
-                            channelId, channelTypeUID, characteristic.getClass().getSimpleName(),
-                            serviceName),
+                            channelId, channelTypeUID, characteristic.getClass().getSimpleName(), serviceName),
                     "INCOMPATIBLE_CHANNEL_TYPE",
                     getContextKey(thing) + ":" + serviceUuid + ":" + characteristic.getClass().getSimpleName(), true,
                     true,
-                    Map.<String, Object>of("serviceName", serviceName, "serviceUuid", serviceUuid, "characteristicType",
-                            characteristic.getClass().getSimpleName(), "channelId", channelId, "channelType",
-                            channelType)));
+                    Map.<String, Object> of("serviceName", serviceName, "serviceUuid", serviceUuid,
+                            "characteristicType", characteristic.getClass().getSimpleName(), "channelId", channelId,
+                            "channelType", channelType)));
         }
     }
 
-    private String getChannelId(HomekitCharacteristic<?> characteristic) {
+    private Optional<String> getChannelId(HomekitCharacteristic<?> characteristic) {
         // TODO: Implement channel ID retrieval from characteristic configuration
         // This will depend on how channel mappings are stored in the characteristic configuration
-        return null;
+        return Optional.empty();
     }
 
     private boolean isChannelTypeCompatible(Channel channel, HomekitCharacteristic<?> characteristic) {
@@ -132,16 +152,18 @@ public class ChannelCharacteristicMappingValidation extends AbstractValidation {
         return true;
     }
 
-    private List<HomekitService> getServices(Thing thing) {
+    private Optional<List<HomekitService>> getServices(Thing thing) {
         // TODO: Implement service retrieval from thing configuration
         // This will depend on how services are stored in the thing configuration
-        return null;
+        return Optional.empty();
     }
 
     @Override
     protected String getContextKey(Object object) {
         if (object instanceof Thing) {
-            return ((Thing) object).getUID().toString();
+            @SuppressWarnings("null") // Thing.getUID() is guaranteed non-null in openHAB framework
+            String thingUID = ((Thing) object).getUID().toString();
+            return thingUID;
         }
         return super.getContextKey(object);
     }

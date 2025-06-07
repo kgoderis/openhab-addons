@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.util;
 
 import java.nio.charset.Charset;
@@ -42,7 +55,7 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @version 1.0
  * @since 1.0
- */
+     */
 public class HomekitUUID5 {
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "Homekit UUID5: ";
@@ -57,17 +70,12 @@ public class HomekitUUID5 {
     // public static final UUID NAMESPACE_OID = UUID.fromString("6ba7b812-9dad-11d1-80b4-00c04fd430c8");
     // public static final UUID NAMESPACE_X500 = UUID.fromString("6ba7b814-9dad-11d1-80b4-00c04fd430c8");
 
-    /** HomeKit namespace UUID */
     public static final UUID NAMESPACE_HOMEKIT = UUID.fromString("00000000-1000-2000-8000-0026BB765291");
-    /** OpenHAB namespace UUID */
     public static final UUID NAMESPACE_OPENHAB = HomekitUUID5.fromNamespaceAndString(NAMESPACE_HOMEKIT, "openhab.org");
-    /** Accessory namespace UUID */
     public static final UUID NAMESPACE_ACCESSORY = HomekitUUID5.fromNamespaceAndString(NAMESPACE_OPENHAB,
             "HomekitAccessory");
-    /** Service namespace UUID */
     public static final UUID NAMESPACE_SERVICE = HomekitUUID5.fromNamespaceAndString(NAMESPACE_OPENHAB,
             "HomekitService");
-    /** Characteristic namespace UUID */
     public static final UUID NAMESPACE_CHARACTERISTIC = HomekitUUID5.fromNamespaceAndString(NAMESPACE_OPENHAB,
             "HomekitCharacteristic");
 
@@ -135,10 +143,6 @@ public class HomekitUUID5 {
         md.update(toBytes(Objects.requireNonNull(namespace, "namespace is null")));
         md.update(Objects.requireNonNull(name, "name is null"));
         byte[] sha1Bytes = md.digest();
-        sha1Bytes[6] &= 0x0f; /* clear version */
-        sha1Bytes[6] |= 0x50; /* set to version 5 */
-        sha1Bytes[8] &= 0x3f; /* clear variant */
-        sha1Bytes[8] |= 0x80; /* set to IETF variant */
         UUID result = fromBytes(sha1Bytes);
         logger.trace("{}Generated UUID: {}", LOG_UUID, result);
         return result;

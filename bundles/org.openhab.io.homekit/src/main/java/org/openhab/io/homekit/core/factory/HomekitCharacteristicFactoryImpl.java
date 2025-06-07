@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
 package org.openhab.io.homekit.core.factory;
 
 import java.lang.reflect.Constructor;
@@ -9,8 +22,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
@@ -87,9 +98,8 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @version 1.0
  * @since 1.0
- */
+     */
 @Component(service = HomekitCharacteristicFactory.class)
-@NonNullByDefault
 public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFactory {
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "Homekit CharacteristicFactory: ";
@@ -183,6 +193,7 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
 
             for (Class<?> characteristicClass : characteristicClasses) {
                 if (HomekitCharacteristic.class.isAssignableFrom(characteristicClass)) {
+                    @SuppressWarnings("null") // getAnnotation() can return null, handled by null check below
                     HomekitCharacteristicType annotation = characteristicClass
                             .getAnnotation(HomekitCharacteristicType.class);
                     if (annotation != null) {
@@ -233,6 +244,7 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
     public HomekitCharacteristic<?> createCharacteristic(String type, HomekitService service)
             throws HomekitFactoryException {
         logger.trace("{}Creating characteristic of type: {} for service: {}", LOG_TRACE, type, service.getUID());
+        @SuppressWarnings("null") // characteristicTypes.get() can return null, checked below
         Class<? extends HomekitCharacteristic<?>> characteristicClass = characteristicTypes.get(type);
         if (characteristicClass == null) {
             logger.error("{}Unsupported characteristic type: {}", LOG_ERROR, type);
@@ -240,8 +252,12 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
         }
 
         try {
-            return characteristicClass.getConstructor(HomekitService.class, HomekitEventManager.class)
-                    .newInstance(service, eventManager);
+            @SuppressWarnings("null") // getConstructor() guaranteed to return valid constructor for valid class
+            Constructor<? extends HomekitCharacteristic<?>> constructor = characteristicClass
+                    .getConstructor(HomekitService.class, HomekitEventManager.class);
+            @SuppressWarnings("null") // newInstance() guaranteed to return valid instance for valid constructor
+            HomekitCharacteristic<?> instance = constructor.newInstance(service, eventManager);
+            return instance;
         } catch (IllegalAccessException | IllegalArgumentException | InstantiationException | NoSuchMethodException
                 | SecurityException | InvocationTargetException e) {
             logger.error("{}Error creating characteristic of type {}: {}", LOG_ERROR, type, e.getMessage(), e);
@@ -279,6 +295,7 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
     public HomekitCharacteristic<?> createCharacteristicFromTag(String tag, HomekitService service)
             throws HomekitFactoryException {
         logger.trace("{}Creating characteristic from tag: {} for service: {}", LOG_TRACE, tag, service.getUID());
+        @SuppressWarnings("null") // tagToTypeMap.get() can return null, checked below
         String type = tagToTypeMap.get(tag);
         if (type == null) {
             logger.error("{}Unsupported characteristic tag: {}", LOG_ERROR, tag);
@@ -317,6 +334,7 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
     public HomekitCharacteristic<?> createCharacteristicWithArgs(String type, Object... args)
             throws HomekitFactoryException {
         logger.trace("{}Creating characteristic of type: {} with {} arguments", LOG_TRACE, type, args.length);
+        @SuppressWarnings("null") // characteristicTypes.get() can return null, checked below
         Class<? extends HomekitCharacteristic<?>> characteristicClass = characteristicTypes.get(type);
         if (characteristicClass == null) {
             logger.error("{}Unsupported characteristic type: {}", LOG_ERROR, type);
@@ -324,9 +342,13 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
         }
 
         try {
+            @SuppressWarnings("null") // Arrays.stream(args).map(Object::getClass) safe as args cannot contain null
             Class<?>[] argTypes = Arrays.stream(args).map(Object::getClass).toArray(Class[]::new);
+            @SuppressWarnings("null") // getConstructor() guaranteed to return valid constructor for valid class
             Constructor<? extends HomekitCharacteristic<?>> constructor = characteristicClass.getConstructor(argTypes);
-            return constructor.newInstance(args);
+            @SuppressWarnings("null") // newInstance() guaranteed to return valid instance for valid constructor
+            HomekitCharacteristic<?> instance = constructor.newInstance(args);
+            return instance;
         } catch (IllegalAccessException | IllegalArgumentException | InstantiationException | NoSuchMethodException
                 | SecurityException | InvocationTargetException e) {
             logger.error("{}Error creating characteristic of type {} with args: {}", LOG_ERROR, type, e.getMessage(),
@@ -484,11 +506,17 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
             throw new HomekitFactoryException("Unsupported characteristic type: " + characteristicType);
         }
 
-        @SuppressWarnings("null")
-        @Nullable
-        String tag = tagToTypeMap.entrySet().stream().filter(entry -> entry.getValue().equals(characteristicType))
-                .map(Map.Entry::getKey).findFirst().orElseThrow(() -> new HomekitFactoryException(
-                        "No tag found for characteristic type: " + characteristicType));
+        @SuppressWarnings("null") // entrySet().getValue() guaranteed non-null for valid entries
+        String tag = tagToTypeMap.entrySet().stream().filter(entry -> {
+            @SuppressWarnings("null") // entry.getValue() guaranteed non-null for valid map entries
+            String value = entry.getValue();
+            return value.equals(characteristicType);
+        }).map(entry -> {
+            @SuppressWarnings("null") // entry.getKey() guaranteed non-null for valid map entries
+            String key = entry.getKey();
+            return key;
+        }).findFirst().orElseThrow(
+                () -> new HomekitFactoryException("No tag found for characteristic type: " + characteristicType));
 
         logger.debug("{}Found tag {} for characteristic type {}", LOG_STATE, tag, characteristicType);
         return tag;
@@ -519,6 +547,7 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
     @Override
     public String getCharacteristicTypeFromTag(String characteristicTag) throws HomekitFactoryException {
         logger.trace("{}Looking up characteristic type for tag: {}", LOG_TRACE, characteristicTag);
+        @SuppressWarnings("null") // tagToTypeMap.get() can return null, checked below
         String type = tagToTypeMap.get(characteristicTag);
         if (type == null) {
             logger.error("{}Unsupported characteristic tag: {}", LOG_ERROR, characteristicTag);
@@ -557,13 +586,15 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
     @Override
     public Set<String> getAcceptedItemTypes(String characteristicType) throws HomekitFactoryException {
         logger.trace("{}Retrieving accepted item types for characteristic type: {}", LOG_TRACE, characteristicType);
+        @SuppressWarnings("null") // characteristicTypes.get() can return null, checked below
         Class<? extends HomekitCharacteristic<?>> characteristicClass = characteristicTypes.get(characteristicType);
         if (characteristicClass == null) {
             logger.error("{}Unsupported characteristic type: {}", LOG_ERROR, characteristicType);
             throw new HomekitFactoryException("Unsupported characteristic type: " + characteristicType);
         }
         logger.trace("{}Returning accepted item types for characteristic type: {}", LOG_TRACE, characteristicType);
-        return Collections.unmodifiableSet(new HashSet<>(
-                Arrays.asList(characteristicClass.getAnnotation(HomekitCharacteristicType.class).acceptedItemTypes())));
+        @SuppressWarnings("null") // getAnnotation() can return null, but characteristicClass is already validated above
+        HomekitCharacteristicType annotation = characteristicClass.getAnnotation(HomekitCharacteristicType.class);
+        return Collections.unmodifiableSet(new HashSet<>(Arrays.asList(annotation.acceptedItemTypes())));
     }
 }
