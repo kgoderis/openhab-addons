@@ -13,6 +13,8 @@
 
 package org.openhab.io.homekit.protocol.pairing;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Defines the pairing types used in HomeKit protocol.
  *
@@ -39,6 +41,7 @@ package org.openhab.io.homekit.protocol.pairing;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
+@NonNullByDefault
 public enum HomekitPairingType {
     /**
      * Transient pairing type that performs Pair Setup M1-M4 without exchanging public keys.

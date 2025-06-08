@@ -17,6 +17,7 @@ import java.util.Map;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -31,9 +32,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
-     */
+ */
 @HomekitCharacteristicType(type = "00000201-0000-1000-8000-0026BB765291", name = "Setup Transfer Transport", tag = "setupTransferTransport", acceptedItemTypes = {
         "String" })
+@NonNullByDefault
 public class HomekitSetupTransferTransportCharacteristic extends HomekitTLV8Characteristic {
     public HomekitSetupTransferTransportCharacteristic(HomekitService service, HomekitEventManager eventManager,
             long instanceId) {

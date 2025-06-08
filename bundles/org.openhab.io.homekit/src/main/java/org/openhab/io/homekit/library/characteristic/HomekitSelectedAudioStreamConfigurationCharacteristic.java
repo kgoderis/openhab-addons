@@ -17,6 +17,7 @@ import java.util.Map;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -32,9 +33,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
-     */
+ */
 @HomekitCharacteristicType(type = "00000128-0000-1000-8000-0026BB765291", name = "Selected Audio Stream Configuration", tag = "selectedAudioStreamConfiguration", acceptedItemTypes = {
         "String" })
+@NonNullByDefault
 public class HomekitSelectedAudioStreamConfigurationCharacteristic extends HomekitTLV8Characteristic {
     /**
      * Constructs the characteristic for selected audio stream configuration.

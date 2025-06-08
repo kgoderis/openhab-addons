@@ -13,6 +13,7 @@
 
 package org.openhab.io.homekit.network.pairing;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.registry.AbstractManagedProvider;
 import org.openhab.core.service.ReadyMarker;
@@ -88,8 +89,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0
-     */
+ */
 @Component(immediate = true, service = { HomekitPairingProvider.class, HomekitManagedPairingProvider.class })
+@NonNullByDefault
 public class HomekitManagedPairingProvider extends
         AbstractManagedProvider<HomekitPairing, HomekitPairingUID, HomekitPairing> implements HomekitPairingProvider {
 

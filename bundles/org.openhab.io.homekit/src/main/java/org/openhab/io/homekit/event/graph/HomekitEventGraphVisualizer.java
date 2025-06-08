@@ -16,6 +16,7 @@ package org.openhab.io.homekit.event.graph;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +43,7 @@ import com.google.gson.JsonObject;
  *
  * @author Karel Goderis - Initial contribution
  */
+@NonNullByDefault
 public class HomekitEventGraphVisualizer {
     private static final Logger logger = LoggerFactory.getLogger(HomekitEventGraphVisualizer.class);
     private final HomekitEventGraphProcessor eventGraph;

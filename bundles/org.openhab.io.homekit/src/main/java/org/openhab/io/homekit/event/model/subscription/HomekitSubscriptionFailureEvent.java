@@ -15,6 +15,7 @@ package org.openhab.io.homekit.event.model.subscription;
 
 import java.util.Collections;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.openhab.io.homekit.event.core.AbstractHomekitEvent;
@@ -69,6 +70,7 @@ import org.openhab.io.homekit.util.HomekitUID;
  * @author Karel Goderis - Initial contribution
  * @since 3.x
  */
+@NonNullByDefault
 public class HomekitSubscriptionFailureEvent extends AbstractHomekitEvent {
     private final UID subscriberUid;
     private final HomekitEventType failedEventType;

@@ -13,6 +13,7 @@
 
 package org.openhab.io.homekit.protocol.pairing;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.Identifiable;
 import org.openhab.io.homekit.api.uid.HomekitPairingUID;
 
@@ -44,6 +45,7 @@ import org.openhab.io.homekit.api.uid.HomekitPairingUID;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
+@NonNullByDefault
 public interface HomekitPairing extends Identifiable<HomekitPairingUID> {
 
     /**

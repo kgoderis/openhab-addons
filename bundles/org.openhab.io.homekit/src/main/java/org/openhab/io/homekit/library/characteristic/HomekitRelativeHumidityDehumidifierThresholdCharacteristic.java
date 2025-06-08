@@ -15,6 +15,7 @@ package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitFloatCharacteristic;
@@ -26,9 +27,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
  * @author Karel Goderis - Initial contribution
-     */
+ */
 @HomekitCharacteristicType(type = "000000C9-0000-1000-8000-0026BB765291", name = "Relative Humidity Dehumidifier Threshold", tag = "relativeHumidityDehumidifierThreshold", acceptedItemTypes = {
         "Number" })
+@NonNullByDefault
 public class HomekitRelativeHumidityDehumidifierThresholdCharacteristic extends HomekitFloatCharacteristic {
     public HomekitRelativeHumidityDehumidifierThresholdCharacteristic(HomekitService service,
             HomekitEventManager eventManager, long instanceId) {

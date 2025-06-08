@@ -28,6 +28,7 @@ import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
 import org.bouncycastle.util.Pack;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jetty.util.BufferUtil;
 import org.openhab.io.homekit.util.HomekitByte;
 import org.openhab.io.homekit.util.HomekitByteBufferOutputStream;
@@ -70,6 +71,7 @@ import com.nimbusds.srp6.ServerEvidenceRoutine;
  *
  * @author Karel Goderis - Initial contribution
  */
+@NonNullByDefault
 public class HomekitEncryptionEngine {
 
     /** Logger instance for this class */

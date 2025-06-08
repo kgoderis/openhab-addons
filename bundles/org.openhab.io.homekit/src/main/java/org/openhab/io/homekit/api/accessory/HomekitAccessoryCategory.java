@@ -13,6 +13,8 @@
 
 package org.openhab.io.homekit.api.accessory;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Enum representing HomeKit accessory categories as defined by Apple's HomeKit Accessory Protocol.
  * <p>
@@ -49,6 +51,7 @@ package org.openhab.io.homekit.api.accessory;
  * @author Karel Goderis - Initial contribution
  * @since 1.0.0
  */
+@NonNullByDefault
 public enum HomekitAccessoryCategory {
     OTHER(1, "Other"),
     BRIDGES(2, "Bridges"),

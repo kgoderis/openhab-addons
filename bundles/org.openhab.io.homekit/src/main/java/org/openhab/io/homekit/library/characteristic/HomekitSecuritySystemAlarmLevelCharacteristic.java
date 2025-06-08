@@ -17,6 +17,7 @@ import java.util.Set;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
@@ -34,6 +35,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  */
 @HomekitCharacteristicType(type = "0000008F-0000-1000-8000-0026BB765291", name = "Security System Alarm Level", tag = "securitySystemAlarmLevel", acceptedItemTypes = {
         "Number", "String" })
+@NonNullByDefault
 public class HomekitSecuritySystemAlarmLevelCharacteristic extends HomekitEnumCharacteristic {
     /**
      * Enum representing the possible alarm levels for a security system.

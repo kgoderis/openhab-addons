@@ -15,6 +15,7 @@ package org.openhab.io.homekit.event.util;
 
 import java.util.Optional;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.event.HomekitEvent;
 
@@ -56,6 +57,7 @@ import org.openhab.io.homekit.api.event.HomekitEvent;
  *
  * @author Karel Goderis - Initial contribution
  */
+@NonNullByDefault
 public class HomekitEventOriginChecker {
     private static final String ORIGIN_SEPARATOR = ":";
     private static final String WILDCARD = "*";

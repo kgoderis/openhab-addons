@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.items.Item;
 import org.openhab.core.items.Metadata;
 import org.openhab.core.items.MetadataKey;
@@ -42,7 +43,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0.0
-     */
+ */
+@NonNullByDefault
 public class HomekitItemConfigParser {
     private static final Logger logger = LoggerFactory.getLogger(HomekitItemConfigParser.class);
 

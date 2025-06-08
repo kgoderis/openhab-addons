@@ -13,6 +13,7 @@
 
 package org.openhab.io.homekit.util;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.service.ReadyMarker;
 import org.openhab.core.service.ReadyMarkerFilter;
 import org.openhab.core.service.ReadyService;
@@ -54,8 +55,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0
-     */
+ */
 @Component(service = HomekitSystemReadyTracker.class)
+@NonNullByDefault
 public class HomekitSystemReadyTracker implements ReadyService.ReadyTracker {
 
     private static final Logger logger = LoggerFactory.getLogger(HomekitSystemReadyTracker.class);

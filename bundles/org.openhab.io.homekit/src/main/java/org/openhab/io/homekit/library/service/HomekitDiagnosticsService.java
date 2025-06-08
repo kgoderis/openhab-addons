@@ -15,6 +15,7 @@ package org.openhab.io.homekit.library.service;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
@@ -31,6 +32,7 @@ import org.openhab.io.homekit.library.characteristic.HomekitSupportedDiagnostics
  * @author Karel Goderis
  */
 @HomekitServiceType(type = "00000237-0000-1000-8000-0026BB765291", name = "Diagnostics", tag = "diagnostics")
+@NonNullByDefault
 public class HomekitDiagnosticsService extends AbstractHomekitService {
 
     /**

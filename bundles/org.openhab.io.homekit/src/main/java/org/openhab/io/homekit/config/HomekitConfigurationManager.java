@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.service.WatchService;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.ThingUID;
@@ -96,8 +97,9 @@ import org.yaml.snakeyaml.Yaml;
  * - Specific configurations override wildcards
  *
  * @author Karel Goderis - Initial contribution
-     */
+ */
 @Component(service = HomekitConfigurationManager.class, configurationPid = "org.openhab.homekit")
+@NonNullByDefault
 public class HomekitConfigurationManager implements WatchService.WatchEventListener {
     private static final Logger logger = LoggerFactory.getLogger(HomekitConfigurationManager.class);
     private static final String CONFIG_DIR = "conf/homekit";

@@ -11,13 +11,13 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-
 package org.openhab.io.homekit.core.characteristic;
 
 import java.util.Map;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -62,7 +62,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis - Initial contribution
  * @version 1.0
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public abstract class HomekitTLV8Characteristic extends AbstractHomekitCharacteristic<Map<Integer, Object>> {
     /**
      * Creates a new TLV8 characteristic with default settings.

@@ -15,6 +15,7 @@ package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitStringCharacteristic;
@@ -44,6 +45,7 @@ import org.slf4j.LoggerFactory;
  */
 @HomekitCharacteristicType(type = "00000057-0000-1000-8000-0026BB765291", name = "Accessory Identifier", tag = "accessoryIdentifier", acceptedItemTypes = {
         "String", "Text" })
+@NonNullByDefault
 public class HomekitAccessoryIdentifierCharacteristic extends HomekitStringCharacteristic {
     // ========== Log Message Prefixes ==========
     private static final String LOG_PREFIX = "Homekit AccessoryIdentifierCharacteristic: ";

@@ -17,6 +17,7 @@ import java.util.Map;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -35,6 +36,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  */
 @HomekitCharacteristicType(type = "0000011C-0000-1000-8000-0026BB765291", name = "Lock Management Control Point", tag = "lockManagementControlPoint", acceptedItemTypes = {
         "String" })
+@NonNullByDefault
 public class HomekitLockManagementControlPointCharacteristic extends HomekitTLV8Characteristic {
     /**
      * Constructs a new Lock Management Control Point characteristic.

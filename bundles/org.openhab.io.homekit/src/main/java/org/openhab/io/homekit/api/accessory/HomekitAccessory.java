@@ -18,6 +18,7 @@ import java.util.Optional;
 
 import javax.json.JsonObject;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.Identifiable;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -56,6 +57,7 @@ import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
+@NonNullByDefault
 public interface HomekitAccessory extends Identifiable<HomekitAccessoryUID>, Comparable<HomekitAccessory> {
 
     /**

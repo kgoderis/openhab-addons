@@ -15,6 +15,7 @@ package org.openhab.io.homekit.event.core;
 
 import java.util.function.Predicate;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.registry.Identifiable;
 import org.openhab.core.thing.UID;
@@ -78,6 +79,7 @@ import org.openhab.io.homekit.util.HomekitUID;
  * @author Karel Goderis - Initial contribution
  * @since 3.x
  */
+@NonNullByDefault
 public class HomekitEventSubscription {
     public final HomekitEventType eventType;
     public final UID publisherUID;

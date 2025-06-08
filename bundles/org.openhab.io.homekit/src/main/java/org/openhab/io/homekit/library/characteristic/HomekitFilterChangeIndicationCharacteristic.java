@@ -17,6 +17,7 @@ import java.util.Set;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitIntegerCharacteristic;
@@ -34,6 +35,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  */
 @HomekitCharacteristicType(type = "000000AC-0000-1000-8000-0026BB765291", name = "Filter Change Indication", tag = "filterChangeIndication", acceptedItemTypes = {
         "Number", "String" })
+@NonNullByDefault
 public class HomekitFilterChangeIndicationCharacteristic extends HomekitIntegerCharacteristic {
     /**
      * Enum representing the possible filter change indications.

@@ -17,6 +17,7 @@ import java.util.Set;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.exception.HomekitFactoryException;
 
@@ -51,6 +52,7 @@ import org.openhab.io.homekit.exception.HomekitFactoryException;
  * @author Karel Goderis - Initial contribution
  * @since 1.0.0
  */
+@NonNullByDefault
 public interface HomekitAccessoryFactory {
     /**
      * Creates a new accessory instance of the specified type.

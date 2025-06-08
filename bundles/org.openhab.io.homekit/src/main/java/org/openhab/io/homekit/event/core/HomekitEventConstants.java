@@ -13,6 +13,7 @@
 
 package org.openhab.io.homekit.event.core;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.event.HomekitEvent;
 
 /**
@@ -65,6 +66,7 @@ import org.openhab.io.homekit.api.event.HomekitEvent;
  * @author Karel Goderis - Initial contribution
  * @since 3.x
  */
+@NonNullByDefault
 public class HomekitEventConstants {
     public static final String EVENT_THREAD_NAME = "homekit-event-dispatcher";
     public static final int SHUTDOWN_TIMEOUT_SECONDS = 5;

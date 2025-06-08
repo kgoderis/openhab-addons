@@ -18,6 +18,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Annotation used to define binding mappings between HomeKit characteristics and OpenHAB channels.
  * <p>
@@ -56,6 +58,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
+@NonNullByDefault
 public @interface BindingMapping {
     /**
      * The OpenHAB binding ID that this characteristic maps to.

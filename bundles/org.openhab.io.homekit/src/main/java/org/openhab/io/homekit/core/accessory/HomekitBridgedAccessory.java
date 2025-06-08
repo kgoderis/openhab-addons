@@ -18,6 +18,7 @@ import java.util.Optional;
 
 import javax.json.JsonObject;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryType;
@@ -80,8 +81,9 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @version 1.0
  * @since 1.0
-     */
+ */
 @HomekitAccessoryType(name = "Bridged Accessory", type = "1110002-0000-1000-8000-0026BB765291", tag = "bridged")
+@NonNullByDefault
 public class HomekitBridgedAccessory implements HomekitAccessory {
     // ========== Log Message Prefixes ==========
     private static final String LOG_PREFIX = "Homekit BridgedAccessory: ";

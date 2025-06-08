@@ -15,6 +15,7 @@ package org.openhab.io.homekit.core.server;
 
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +57,7 @@ import org.slf4j.LoggerFactory;
  * @version 1.0
  * @since 1.0
  */
+@NonNullByDefault
 public class HomekitAccessoryServerState {
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "Homekit ServerState: ";

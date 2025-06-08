@@ -11,7 +11,6 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-
 package org.openhab.io.homekit.core.characteristic;
 
 import java.math.BigDecimal;
@@ -30,6 +29,7 @@ import javax.json.JsonString;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
@@ -118,7 +118,8 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @version 1.0
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public abstract class AbstractHomekitCharacteristic<@NonNull T> implements HomekitCharacteristic<@NonNull T> {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractHomekitCharacteristic.class);

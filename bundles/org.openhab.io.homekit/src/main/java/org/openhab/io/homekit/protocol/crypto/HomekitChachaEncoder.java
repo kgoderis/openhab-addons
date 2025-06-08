@@ -19,6 +19,7 @@ import org.bouncycastle.crypto.engines.ChaChaEngine;
 import org.bouncycastle.crypto.generators.Poly1305KeyGenerator;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
  * Provides ChaCha20-Poly1305 encryption for HomeKit protocol messages.
@@ -50,6 +51,7 @@ import org.bouncycastle.crypto.params.ParametersWithIV;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
+@NonNullByDefault
 public class HomekitChachaEncoder {
 
     /** The ChaCha20 cipher instance used for encryption */

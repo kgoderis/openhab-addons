@@ -15,6 +15,7 @@ package org.openhab.io.homekit.network.http;
 
 import java.nio.ByteBuffer;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpExchange;
 import org.eclipse.jetty.client.http.HttpChannelOverHTTP;
@@ -87,7 +88,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements HomekitHttpParser.ResponseHandler {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpReceiver.class);

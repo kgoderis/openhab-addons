@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.Thing;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -34,6 +35,7 @@ import org.osgi.service.component.annotations.Component;
  * @author Karel Goderis - Initial contribution
  */
 @Component(service = Validation.class)
+@NonNullByDefault
 public class MandatoryCharacteristicValidation extends AbstractValidation {
     private static final String ID = "mandatory-characteristic";
     private static final int PRIORITY = 50; // High priority but after service type validation

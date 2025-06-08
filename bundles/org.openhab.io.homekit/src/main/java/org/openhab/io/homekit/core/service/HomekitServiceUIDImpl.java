@@ -15,6 +15,7 @@ package org.openhab.io.homekit.core.service;
 
 import java.util.List;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.uid.HomekitServiceUID;
 import org.openhab.io.homekit.util.HomekitUID;
 
@@ -59,7 +60,8 @@ import org.openhab.io.homekit.util.HomekitUID;
  * @author Karel Goderis - Initial contribution
  * @version 1.0
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public class HomekitServiceUIDImpl extends HomekitUID implements HomekitServiceUID {
     private static final String SERVICE_PREFIX = "service";
     private final long instanceId;

@@ -15,6 +15,7 @@ package org.openhab.io.homekit.util;
 
 import java.util.function.Supplier;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
@@ -55,7 +56,8 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @version 1.0
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public class HomekitServiceTracker<T> implements AutoCloseable, Supplier<T> {
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "Homekit ServiceTracker: ";

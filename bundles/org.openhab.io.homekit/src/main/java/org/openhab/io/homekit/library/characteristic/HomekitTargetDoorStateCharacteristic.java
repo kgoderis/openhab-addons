@@ -15,6 +15,7 @@ package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
@@ -31,6 +32,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  */
 @HomekitCharacteristicType(type = "00000032-0000-1000-8000-0026BB765291", name = "Target Door State", tag = "targetDoorState", acceptedItemTypes = {
         "Number", "String" })
+@NonNullByDefault
 public class HomekitTargetDoorStateCharacteristic extends HomekitEnumCharacteristic {
     public enum TargetDoorState {
         OPEN(0),

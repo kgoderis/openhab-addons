@@ -15,6 +15,7 @@ package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitBooleanCharacteristic;
@@ -26,9 +27,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href=\"https://developer.apple.com/documentation/HomeKit\">HAP Specification</a>
  * @author Karel Goderis - Initial contribution
-     */
+ */
 @HomekitCharacteristicType(type = "00000060-0000-1000-8000-0026BB765291", name = "Tunneled Accessory Advertising", tag = "tunneledAccessoryAdvertising", acceptedItemTypes = {
         "Switch", "Contact" })
+@NonNullByDefault
 public class HomekitTunneledAccessoryAdvertisingCharacteristic extends HomekitBooleanCharacteristic {
 
     public HomekitTunneledAccessoryAdvertisingCharacteristic(HomekitService service, HomekitEventManager eventManager,

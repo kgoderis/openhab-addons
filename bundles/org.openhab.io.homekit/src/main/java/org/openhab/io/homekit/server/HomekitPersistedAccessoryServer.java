@@ -20,6 +20,7 @@ import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryCategory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +55,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public class HomekitPersistedAccessoryServer {
 
     // ========== Log Message Prefixes ==========

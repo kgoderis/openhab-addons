@@ -16,6 +16,7 @@ package org.openhab.io.homekit.network.http;
 import java.nio.ByteBuffer;
 import java.util.Optional;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.util.ArrayTrie;
 import org.eclipse.jetty.util.StringUtil;
@@ -62,7 +63,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public enum HomekitHttpVersion {
     HTTP_0_9("HTTP/0.9", 9),
     HTTP_1_0("HTTP/1.0", 10),

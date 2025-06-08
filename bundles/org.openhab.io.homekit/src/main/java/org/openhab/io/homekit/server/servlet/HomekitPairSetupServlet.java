@@ -30,6 +30,7 @@ import org.apache.commons.io.IOUtils;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jetty.http.HttpHeader;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.protocol.crypto.HomekitChachaDecoder;
@@ -83,7 +84,8 @@ import com.nimbusds.srp6.XRoutineWithUserIdentity;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public class HomekitPairSetupServlet extends HomekitBaseServlet {
 
     // ========== Log Message Prefixes ==========
@@ -662,7 +664,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
          * @param ctx The client evidence context containing session values
          * @return The computed M1 value as a BigInteger
          * @throws RuntimeException if the hash algorithm is not available
-     */
+         */
         @Override
         public BigInteger computeClientEvidence(SRP6CryptoParams cryptoParams, SRP6ClientEvidenceContext ctx) {
             MessageDigest digest;
@@ -706,7 +708,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
          * @param b1 The first byte array
          * @param b2 The second byte array
          * @return The result of the XOR operation as a byte array
-     */
+         */
         private byte[] xor(byte[] b1, byte[] b2) {
             byte[] result = new byte[b1.length];
             for (int i = 0; i < b1.length; i++) {

@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Locale;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.storage.StorageService;
 import org.openhab.core.thing.binding.AbstractStorageBasedTypeProvider;
@@ -64,8 +65,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0
-     */
+ */
 @Component(service = { ChannelTypeProvider.class })
+@NonNullByDefault
 public class HomekitChannelTypeProvider extends AbstractStorageBasedTypeProvider {
     private final Logger logger = LoggerFactory.getLogger(HomekitChannelTypeProvider.class);
 

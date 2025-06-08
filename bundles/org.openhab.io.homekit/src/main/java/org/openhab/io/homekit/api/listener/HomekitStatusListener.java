@@ -13,6 +13,7 @@
 
 package org.openhab.io.homekit.api.listener;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.Bridge;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
@@ -51,6 +52,7 @@ import org.openhab.io.homekit.api.service.HomekitService;
  * @author Karel Goderis - Initial contribution
  * @since 1.0.0
  */
+@NonNullByDefault
 public interface HomekitStatusListener {
     /**
      * Called when a new accessory is added to the bridge.

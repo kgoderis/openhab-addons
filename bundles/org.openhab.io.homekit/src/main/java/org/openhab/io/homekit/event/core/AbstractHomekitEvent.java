@@ -15,6 +15,7 @@ package org.openhab.io.homekit.event.core;
 
 import java.util.Optional;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.event.HomekitEvent;
 import org.openhab.io.homekit.api.event.HomekitEventType;
@@ -78,6 +79,7 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @since 3.x
  */
+@NonNullByDefault
 public abstract class AbstractHomekitEvent implements HomekitEvent {
     private static final Logger logger = LoggerFactory.getLogger(AbstractHomekitEvent.class);
     private static final String LOG_PREFIX = "Homekit Event: ";

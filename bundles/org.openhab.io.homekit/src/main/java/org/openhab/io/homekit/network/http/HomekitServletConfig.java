@@ -16,6 +16,7 @@ package org.openhab.io.homekit.network.http;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 
 /**
@@ -49,7 +50,8 @@ import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public class HomekitServletConfig implements ServletConfig {
 
     private final HomekitAccessoryServer server;

@@ -18,6 +18,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Annotation used to mark HomeKit service classes and provide metadata about the service.
  * This annotation is used by the {@link org.openhab.io.homekit.api.factory.HomekitServiceFactory} to discover and
@@ -58,6 +60,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
+@NonNullByDefault
 public @interface HomekitServiceType {
     /**
      * The type identifier for the service.

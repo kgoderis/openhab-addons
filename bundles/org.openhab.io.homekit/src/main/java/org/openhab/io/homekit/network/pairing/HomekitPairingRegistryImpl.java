@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.AbstractRegistry;
 import org.openhab.core.common.registry.Provider;
 import org.openhab.core.service.ReadyMarker;
@@ -96,8 +97,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0
-     */
+ */
 @Component(immediate = true, service = HomekitPairingRegistry.class)
+@NonNullByDefault
 public class HomekitPairingRegistryImpl
         extends AbstractRegistry<HomekitPairing, HomekitPairingUID, HomekitPairingProvider>
         implements HomekitPairingRegistry, ReadyService.ReadyTracker {

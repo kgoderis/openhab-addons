@@ -15,6 +15,7 @@ package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
@@ -28,9 +29,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/homekit/hap-characteristic-types/firmware-update-status">HAP
  *      Specification</a>
-     */
+ */
 @HomekitCharacteristicType(type = "00000235-0000-1000-8000-0026BB765291", name = "Firmware Update Status", tag = "firmwareUpdateStatus", acceptedItemTypes = {
         "Number", "String" })
+@NonNullByDefault
 public class HomekitFirmwareUpdateStatusCharacteristic extends HomekitEnumCharacteristic {
     public enum FirmwareUpdateStatus {
         IDLE(0),

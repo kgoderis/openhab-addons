@@ -13,6 +13,7 @@
 
 package org.openhab.io.homekit.event.graph;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.events.Event;
 
@@ -29,6 +30,7 @@ import org.openhab.core.events.Event;
  *
  * @author Karel Goderis - Initial contribution
  */
+@NonNullByDefault
 public class HomekitEventGraphUpdatedEvent implements Event {
     /** The type identifier for this event. */
     public static final String TYPE = "HomekitEventGraphUpdatedEvent";

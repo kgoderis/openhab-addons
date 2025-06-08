@@ -21,6 +21,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jetty.http.BadMessageException;
 import org.eclipse.jetty.http.HostPortHttpField;
 import org.eclipse.jetty.http.HttpCompliance;
@@ -131,7 +132,8 @@ import org.slf4j.LoggerFactory;
  * @see <a href="http://tools.ietf.org/html/rfc7230">RFC 7230</a>
  * @author Karel Goderis - Initial contribution
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public class HomekitHttpParser {
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpParser.class);
 
@@ -667,7 +669,7 @@ public class HomekitHttpParser {
     /*
      * Quick lookahead for the start state looking for a request method or an HTTP version,
      * otherwise skip white space until something else to parse.
-     * */
+     */
     private boolean quickStart(ByteBuffer buffer) {
         if (_requestHandler != null) {
             _method = HttpMethod.lookAheadGet(buffer);
@@ -757,7 +759,7 @@ public class HomekitHttpParser {
 
     /*
      * Parse a request or response line
-     * */
+     */
     private boolean parseLine(ByteBuffer buffer) {
         boolean handle = false;
 
@@ -1243,7 +1245,7 @@ public class HomekitHttpParser {
 
     /*
      * Parse the message headers and return true if the handler has signalled for a return
-     * */
+     */
     protected boolean parseFields(ByteBuffer buffer) {
         // Process headers
         while ((_state == State.HEADER || _state == State.TRAILER) && buffer.hasRemaining()) {
@@ -2052,70 +2054,70 @@ public class HomekitHttpParser {
          *
          * @param item The content buffer
          * @return true if the caller should process events
-        */
+         */
         boolean content(ByteBuffer item);
 
         /**
          * Called when header parsing is complete.
          *
          * @return true if the caller should process events
-        */
+         */
         boolean headerComplete();
 
         /**
          * Called when content parsing is complete.
          *
          * @return true if the caller should process events
-        */
+         */
         boolean contentComplete();
 
         /**
          * Called when message parsing is complete.
          *
          * @return true if the caller should process events
-        */
+         */
         boolean messageComplete();
 
         /**
          * This is the method called by parser when an HTTP Header name and value is found
          *
          * @param field The field parsed
-        */
+         */
         void parsedHeader(HttpField field);
 
         /**
          * This is the method called by parser when an HTTP Trailer name and value is found
          *
          * @param field The field parsed
-        */
+         */
         default void parsedTrailer(HttpField field) {
         }
 
         /**
          * Called to signal that an EOF was received unexpectedly
          * during the parsing of an HTTP message
-        */
+         */
         void earlyEOF();
 
         /**
          * Called to signal that a bad HTTP message has been received.
          *
          * @param failure the failure with the bad message information
-        */
+         */
         default void badMessage(BadMessageException failure) {
             badMessage(failure.getCode(), failure.getReason());
         }
 
         /**
          * @deprecated use {@link #badMessage(BadMessageException)} instead
-        */
+         */
         @Deprecated
         default void badMessage(int status, String reason) {
         }
 
         /**
          * @return the size in bytes of the per parser header cache
-        */
+         */
         int getHeaderCacheSize();
     }
 
@@ -2131,7 +2133,7 @@ public class HomekitHttpParser {
          *            parser is reset and reused.
          * @param version the http version in use
          * @return true if handling parsing should return.
-        */
+         */
         boolean startRequest(String method, String uri, HttpVersion version);
     }
 
@@ -2146,7 +2148,7 @@ public class HomekitHttpParser {
          * @param status the response status
          * @param reason the response reason phrase
          * @return true if handling parsing should return
-        */
+         */
         boolean startResponse(HomekitHttpVersion version, int status, String reason);
     }
 
@@ -2156,7 +2158,7 @@ public class HomekitHttpParser {
     public interface ComplianceHandler extends HttpHandler {
         /**
          * @deprecated use {@link #onComplianceViolation(HttpCompliance, HttpComplianceSection, String)} instead
-        */
+         */
         @Deprecated
         default void onComplianceViolation(HttpCompliance compliance, HttpCompliance required, String reason) {
         }
@@ -2167,7 +2169,7 @@ public class HomekitHttpParser {
          * @param compliance The current compliance mode
          * @param violation The section that was violated
          * @param details The details of the violation
-        */
+         */
         default void onComplianceViolation(HttpCompliance compliance, HttpComplianceSection violation, String details) {
             onComplianceViolation(compliance, HttpCompliance.requiredCompliance(violation), details);
         }
@@ -2183,7 +2185,7 @@ public class HomekitHttpParser {
          * @param state The parser state when the error occurred
          * @param token The illegal token encountered
          * @param buffer The buffer being parsed
-        */
+         */
         private IllegalCharacterException(State state, HttpTokens.Token token, ByteBuffer buffer) {
             super(400, String.format("Illegal character %s", token));
             if (logger.isDebugEnabled()) {

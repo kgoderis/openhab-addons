@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.Thing;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
@@ -33,6 +34,7 @@ import org.osgi.service.component.annotations.Component;
  * @author Karel Goderis - Initial contribution
  */
 @Component(service = Validation.class)
+@NonNullByDefault
 public class ChannelCharacteristicMappingValidation extends AbstractValidation {
     private static final String ID = "channel-characteristic-mapping";
     private static final int PRIORITY = 90; // High priority but after mandatory characteristics

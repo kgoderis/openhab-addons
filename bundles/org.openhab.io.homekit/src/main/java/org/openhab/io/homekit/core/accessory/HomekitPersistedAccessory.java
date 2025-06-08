@@ -13,6 +13,7 @@
 
 package org.openhab.io.homekit.core.accessory;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryType;
 import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
@@ -65,7 +66,8 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @version 1.0
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public class HomekitPersistedAccessory {
     // ========== Log Message Prefixes ==========
     private static final String LOG_PREFIX = "Homekit PersistedAccessory: ";

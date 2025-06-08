@@ -13,6 +13,8 @@
 
 package org.openhab.io.homekit.protocol.pairing;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Defines the Type-Length-Value (TLV) types used in HomeKit protocol.
  *
@@ -44,6 +46,7 @@ package org.openhab.io.homekit.protocol.pairing;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
+@NonNullByDefault
 public enum HomekitTypeLengthValue {
     /** Specifies the HomeKit method to use for pairing */
     METHOD(0x00, "HomekitMethod", "HomekitMethod to use for pairing"),

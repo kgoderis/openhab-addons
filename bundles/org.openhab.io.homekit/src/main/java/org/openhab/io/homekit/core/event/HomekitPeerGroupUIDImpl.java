@@ -13,6 +13,7 @@
 
 package org.openhab.io.homekit.core.event;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.uid.HomekitPeerGroupUID;
 import org.openhab.io.homekit.util.HomekitUID;
 
@@ -55,7 +56,8 @@ import org.openhab.io.homekit.util.HomekitUID;
  * @author Karel Goderis - Initial contribution
  * @version 1.0
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public class HomekitPeerGroupUIDImpl extends HomekitUID implements HomekitPeerGroupUID {
     private static final String PEER_GROUP_PREFIX = "peergroup";
     private final String peerGroup;

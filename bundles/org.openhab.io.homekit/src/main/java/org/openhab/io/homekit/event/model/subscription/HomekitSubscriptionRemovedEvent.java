@@ -15,6 +15,7 @@ package org.openhab.io.homekit.event.model.subscription;
 
 import java.util.Collections;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.openhab.io.homekit.event.core.AbstractHomekitEvent;
@@ -68,6 +69,7 @@ import org.openhab.io.homekit.event.core.HomekitEventSubscription;
  * @author Karel Goderis - Initial contribution
  * @since 3.x
  */
+@NonNullByDefault
 public class HomekitSubscriptionRemovedEvent extends AbstractHomekitEvent {
     private final HomekitEventSubscription subscription;
 

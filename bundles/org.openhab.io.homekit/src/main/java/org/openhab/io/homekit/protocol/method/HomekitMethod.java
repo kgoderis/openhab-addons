@@ -17,6 +17,8 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Defines the set of supported HomeKit protocol methods for device pairing and management.
  *
@@ -38,6 +40,7 @@ import java.util.Map;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
+@NonNullByDefault
 public enum HomekitMethod {
     /** Initial pairing process method */
     PAIR_SETUP(0),

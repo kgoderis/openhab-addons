@@ -13,6 +13,8 @@
 
 package org.openhab.io.homekit.protocol.error;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Defines the error codes used in HomeKit protocol communication.
  *
@@ -44,6 +46,7 @@ package org.openhab.io.homekit.protocol.error;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
+@NonNullByDefault
 public enum HomekitErrorCode {
     /** Reserved error code for future use */
     RESERVED_0(0x00, "Reserved"),

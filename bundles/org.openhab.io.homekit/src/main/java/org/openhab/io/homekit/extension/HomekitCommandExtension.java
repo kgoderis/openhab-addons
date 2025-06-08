@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.io.console.Console;
 import org.openhab.core.io.console.extensions.AbstractConsoleCommandExtension;
 import org.openhab.core.io.console.extensions.ConsoleCommandExtension;
@@ -71,8 +72,9 @@ import org.slf4j.LoggerFactory;
  * followed by various subcommands.
  *
  * @author Karel Goderis - Initial contribution
-     */
+ */
 @Component(service = ConsoleCommandExtension.class)
+@NonNullByDefault
 public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
     // ========== Command Constants ==========
     private static final String COMMAND_HOMEKIT = "homekit";

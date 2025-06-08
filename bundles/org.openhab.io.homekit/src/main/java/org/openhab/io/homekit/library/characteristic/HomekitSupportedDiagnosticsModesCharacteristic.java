@@ -15,6 +15,7 @@ package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitIntegerCharacteristic;
@@ -29,6 +30,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  */
 @HomekitCharacteristicType(type = "0000024C-0000-1000-8000-0026BB765291", name = "Supported Diagnostics Modes", tag = "supportedDiagnosticsModes", acceptedItemTypes = {
         "Number" })
+@NonNullByDefault
 public class HomekitSupportedDiagnosticsModesCharacteristic extends HomekitIntegerCharacteristic {
 
     /**

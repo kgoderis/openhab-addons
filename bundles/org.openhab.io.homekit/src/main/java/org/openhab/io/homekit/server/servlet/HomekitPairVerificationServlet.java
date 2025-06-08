@@ -29,6 +29,7 @@ import org.apache.commons.io.IOUtils;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.protocol.crypto.HomekitChachaDecoder;
 import org.openhab.io.homekit.protocol.crypto.HomekitChachaEncoder;
@@ -74,7 +75,8 @@ import djb.Curve25519;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public class HomekitPairVerificationServlet extends HomekitBaseServlet {
 
     // ========== Log Message Prefixes ==========

@@ -13,6 +13,8 @@
 
 package org.openhab.io.homekit.api.event;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Enum representing the different types of events in the HomeKit integration.
  *
@@ -37,6 +39,7 @@ package org.openhab.io.homekit.api.event;
  * @author Karel Goderis - Initial contribution
  * @since 1.0.0
  */
+@NonNullByDefault
 public enum HomekitEventType {
     // HomekitCharacteristic events
     CHARACTERISTIC_VALUE_CHANGED,

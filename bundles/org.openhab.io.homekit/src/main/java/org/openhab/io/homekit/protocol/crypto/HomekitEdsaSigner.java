@@ -19,6 +19,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.Signature;
 import java.security.SignatureException;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import net.i2p.crypto.eddsa.EdDSAEngine;
 import net.i2p.crypto.eddsa.EdDSAPrivateKey;
 import net.i2p.crypto.eddsa.EdDSAPublicKey;
@@ -49,6 +51,7 @@ import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
+@NonNullByDefault
 public class HomekitEdsaSigner {
 
     /** The public key used for signature verification by other parties */

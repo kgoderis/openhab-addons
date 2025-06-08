@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Utility class for tracking and managing HomeKit event graph metrics.
  * This class provides functionality to collect and maintain various metrics related to the event graph,
@@ -37,6 +39,7 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * @author Karel Goderis - Initial contribution
  */
+@NonNullByDefault
 public class HomekitEventGraphMetrics {
     private final Map<String, AtomicLong> nodeMetrics = new ConcurrentHashMap<>();
     private final Map<String, AtomicLong> edgeMetrics = new ConcurrentHashMap<>();

@@ -13,6 +13,8 @@
 
 package org.openhab.io.homekit.exception;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Exception thrown when there is an error during HomeKit service or characteristic registration.
  * 
@@ -30,6 +32,7 @@ package org.openhab.io.homekit.exception;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
+@NonNullByDefault
 public class HomekitRegistrationException extends HomekitFactoryException {
     private static final long serialVersionUID = 1L;
 

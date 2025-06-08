@@ -15,6 +15,7 @@ package org.openhab.io.homekit.api.registry;
 
 import java.util.Optional;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.Registry;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.api.uid.HomekitAccessoryServerUID;
@@ -61,6 +62,7 @@ import org.openhab.io.homekit.api.uid.HomekitAccessoryUID;
  * @author Karel Goderis - Initial contribution
  * @since 1.0.0
  */
+@NonNullByDefault
 public interface HomekitAccessoryServerRegistry extends Registry<HomekitAccessoryServer, HomekitAccessoryServerUID> {
 
     /**

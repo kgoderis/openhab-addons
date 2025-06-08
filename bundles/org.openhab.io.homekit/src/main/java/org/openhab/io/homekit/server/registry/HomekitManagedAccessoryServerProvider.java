@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.registry.AbstractManagedProvider;
 import org.openhab.core.io.transport.mdns.MDNSService;
@@ -87,9 +88,10 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0
-     */
+ */
 @Component(immediate = true, service = { HomekitAccessoryServerProvider.class,
         HomekitManagedAccessoryServerProvider.class }, configurationPid = "org.openhab.homekit")
+@NonNullByDefault
 public class HomekitManagedAccessoryServerProvider extends
         AbstractManagedProvider<HomekitAccessoryServer, HomekitAccessoryServerUID, HomekitPersistedAccessoryServer>
         implements HomekitAccessoryServerProvider {

@@ -66,6 +66,7 @@ import javax.json.JsonValue.ValueType;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.ProtocolHandlers;
@@ -136,7 +137,8 @@ import djb.Curve25519;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         implements HomekitCharacteristicChangeListener {
 

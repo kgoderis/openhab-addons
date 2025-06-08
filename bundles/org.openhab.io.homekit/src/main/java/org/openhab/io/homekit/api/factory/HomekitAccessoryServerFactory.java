@@ -17,6 +17,7 @@ import java.net.InetAddress;
 import java.util.Optional;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 
 //TODO : ServerFactory that can create AccessoryHolder for the client side
@@ -49,6 +50,7 @@ import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
  * @author Karel Goderis - Initial contribution
  * @since 1.0.0
  */
+@NonNullByDefault
 public interface HomekitAccessoryServerFactory {
 
     /**

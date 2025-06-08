@@ -16,6 +16,8 @@ package org.openhab.io.homekit.server.servlet;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import com.nimbusds.srp6.SRP6ClientEvidenceContext;
 import com.nimbusds.srp6.SRP6CryptoParams;
 import com.nimbusds.srp6.SRP6Exception;
@@ -56,7 +58,8 @@ import com.nimbusds.srp6.URoutineContext;
  * </ul>
  *
  * @author Vladimir Dzhuvinov
-     */
+ */
+@NonNullByDefault
 public class HomekitServerSRP6Session extends SRP6Session {
 
     public static enum State {
@@ -64,21 +67,21 @@ public class HomekitServerSRP6Session extends SRP6Session {
         /**
          * The session is initialised and ready to begin authentication, by proceeding to {@link
          * #STEP_1}.
-     */
+         */
         INIT,
 
         /**
          * The user identity 'I' is received from the client and the server has returned its public
          * value 'B' based on the matching password verifier 'v'. The session is ready to proceed to
          * {@link #STEP_2}.
-     */
+         */
         STEP_1,
 
         /**
          * The client public key 'A' and evidence message 'M1' are received and the server has replied
          * with its own evidence message 'M2'. The session is finished (authentication was successful or
          * failed).
-     */
+         */
         STEP_2
     }
 

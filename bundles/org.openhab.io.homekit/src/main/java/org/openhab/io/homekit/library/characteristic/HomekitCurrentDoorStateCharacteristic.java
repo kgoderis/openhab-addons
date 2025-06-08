@@ -15,6 +15,7 @@ package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
@@ -26,9 +27,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  * @author Karel Goderis - Initial contribution
-     */
+ */
 @HomekitCharacteristicType(type = "0000000E-0000-1000-8000-0026BB765291", name = "Current Door State", tag = "currentDoorState", acceptedItemTypes = {
         "Number", "String" })
+@NonNullByDefault
 public class HomekitCurrentDoorStateCharacteristic extends HomekitEnumCharacteristic {
     /**
      * Enum representing the possible states of a door.
@@ -51,7 +53,7 @@ public class HomekitCurrentDoorStateCharacteristic extends HomekitEnumCharacteri
          * Gets the integer code for this door state.
          *
          * @return the integer code
-     */
+         */
         public int getCode() {
             return code;
         }
@@ -62,7 +64,7 @@ public class HomekitCurrentDoorStateCharacteristic extends HomekitEnumCharacteri
          *
          * @param code the integer code to convert
          * @return the corresponding DoorState, or STOPPED if not found
-     */
+         */
         public static DoorState fromCode(int code) {
             for (DoorState s : values()) {
                 if (s.code == code) {

@@ -15,6 +15,7 @@ package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitIntegerCharacteristic;
@@ -26,9 +27,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @author Karel Goderis - Initial contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
-     */
+ */
 @HomekitCharacteristicType(type = "0000024B-0000-1000-8000-0026BB765291", name = "Characteristic Value Active Transition Count", tag = "characteristicValueActiveTransitionCount", acceptedItemTypes = {
         "Number" })
+@NonNullByDefault
 public class HomekitCharacteristicValueActiveTransitionCountCharacteristic extends HomekitIntegerCharacteristic {
 
     /**

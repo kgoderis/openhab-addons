@@ -13,6 +13,7 @@
 
 package org.openhab.io.homekit.network.http;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jetty.client.HttpDestination;
 import org.eclipse.jetty.client.api.Connection;
 import org.eclipse.jetty.client.http.HttpChannelOverHTTP;
@@ -54,7 +55,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpConnectionOverHTTP.class);

@@ -13,6 +13,7 @@
 
 package org.openhab.io.homekit.api.listener;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.event.model.server.HomekitAccessoryServerEvent;
 
 /**
@@ -38,6 +39,7 @@ import org.openhab.io.homekit.event.model.server.HomekitAccessoryServerEvent;
  * @author Karel Goderis - Initial contribution
  * @since 1.0.0
  */
+@NonNullByDefault
 public interface HomekitAccessoryServerChangeListener {
     /**
      * Called when a server event occurs.

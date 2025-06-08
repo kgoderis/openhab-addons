@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryCategory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
@@ -91,7 +92,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  * @version 1.0
-     */
+ */
+@NonNullByDefault
 public abstract class HomekitAbstractAccessoryServer implements HomekitAccessoryServer, AutoCloseable {
 
     // ========== Constants ==========
@@ -1096,7 +1098,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
          * Gets the priority of this listener.
          *
          * @return The listener's priority
-     */
+         */
         int getPriority();
     }
 

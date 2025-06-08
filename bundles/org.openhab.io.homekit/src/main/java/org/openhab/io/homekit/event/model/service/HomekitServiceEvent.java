@@ -16,6 +16,7 @@ package org.openhab.io.homekit.event.model.service;
 import java.util.Collections;
 import java.util.Optional;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
@@ -75,6 +76,7 @@ import org.openhab.io.homekit.util.HomekitUID;
  * @author Karel Goderis - Initial contribution
  * @since 3.x
  */
+@NonNullByDefault
 public class HomekitServiceEvent extends AbstractHomekitEvent {
     private final Optional<HomekitService> HomekitService;
     private final Optional<HomekitCharacteristic<?>> HomekitCharacteristic;

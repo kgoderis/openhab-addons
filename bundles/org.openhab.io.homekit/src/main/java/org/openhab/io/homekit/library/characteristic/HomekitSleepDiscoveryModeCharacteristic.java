@@ -15,6 +15,7 @@ package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
@@ -28,9 +29,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @author Karel Goderis
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
-     */
+ */
 @HomekitCharacteristicType(type = "000000E8-0000-1000-8000-0026BB765291", name = "Sleep Discovery Mode", tag = "sleepDiscoveryMode", acceptedItemTypes = {
         "Number", "String" })
+@NonNullByDefault
 public class HomekitSleepDiscoveryModeCharacteristic extends HomekitEnumCharacteristic {
     public enum SleepDiscoveryMode {
         NOT_DISCOVERABLE(0),

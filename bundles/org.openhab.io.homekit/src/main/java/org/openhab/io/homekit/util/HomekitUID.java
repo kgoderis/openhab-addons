@@ -15,6 +15,7 @@ package org.openhab.io.homekit.util;
 
 import java.util.UUID;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.UID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +56,8 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @version 1.0
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public class HomekitUID extends UID {
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "Homekit UID: ";

@@ -13,11 +13,14 @@
 
 package org.openhab.io.homekit.server.servlet;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Placeholder for HomeKit async characteristic servlet implementation.
  *
  * @author Karel Goderis - Initial contribution
-     */
+ */
+@NonNullByDefault
 public class HomekitAsyncCharacteristicServlet {
     // Implementation placeholder
 }

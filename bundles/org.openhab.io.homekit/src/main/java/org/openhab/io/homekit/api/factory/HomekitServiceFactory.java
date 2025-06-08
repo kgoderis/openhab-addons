@@ -18,6 +18,7 @@ import java.util.Set;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.exception.HomekitFactoryException;
@@ -52,6 +53,7 @@ import org.openhab.io.homekit.exception.HomekitFactoryException;
  * @version 1.0
  * @since 1.0
  */
+@NonNullByDefault
 public interface HomekitServiceFactory {
     /**
      * Creates a new service instance for the specified type and accessory.

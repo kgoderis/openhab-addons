@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jetty.http.BadMessageException;
 import org.eclipse.jetty.http.HttpField;
 import org.eclipse.jetty.http.HttpFields;
@@ -109,6 +110,7 @@ import org.slf4j.LoggerFactory;
  * @since 1.0
  */
 
+@NonNullByDefault
 public class HomekitHttpGenerator extends HttpGenerator {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpGenerator.class);

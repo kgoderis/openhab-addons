@@ -15,6 +15,7 @@ package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
@@ -26,9 +27,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/FirmwareUpdateReadiness">HomeKit Documentation</a>
  * @author Karel Goderis - Initial contribution
-     */
+ */
 @HomekitCharacteristicType(type = "00000234-0000-1000-8000-0026BB765291", name = "Firmware Update Readiness", tag = "firmwareUpdateReadiness", acceptedItemTypes = {
         "Number", "String" })
+@NonNullByDefault
 public class HomekitFirmwareUpdateReadinessCharacteristic extends HomekitEnumCharacteristic {
     public static final int READY = 0;
     public static final int NOT_READY = 1;

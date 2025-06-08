@@ -13,12 +13,15 @@
 
 package org.openhab.io.homekit.server.servlet;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Placeholder for HomeKit old characteristic servlet implementation.
  *
  * @author Karel Goderis - Initial contribution
-     */
-    
+ */
+
+@NonNullByDefault
 public class HomekitOldCharacteristicServlet {
     // Implementation placeholder - code is commented out below
 }

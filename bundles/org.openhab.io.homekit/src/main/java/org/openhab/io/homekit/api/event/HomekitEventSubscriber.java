@@ -13,6 +13,8 @@
 
 package org.openhab.io.homekit.api.event;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Interface for subscribing to and handling HomeKit events in the system.
  * <p>
@@ -40,6 +42,7 @@ package org.openhab.io.homekit.api.event;
  * @author Karel Goderis - Initial contribution
  * @since 1.0.0
  */
+@NonNullByDefault
 public interface HomekitEventSubscriber {
     /**
      * Handles a received HomeKit event.

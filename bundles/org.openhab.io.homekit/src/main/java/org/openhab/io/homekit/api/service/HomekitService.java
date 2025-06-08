@@ -20,6 +20,7 @@ import java.util.Set;
 import javax.json.JsonObject;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.Identifiable;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
@@ -67,6 +68,7 @@ import org.openhab.io.homekit.exception.HomekitServiceException;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
+@NonNullByDefault
 public interface HomekitService extends Identifiable<HomekitServiceUID>, Comparable<HomekitService> {
 
     // Core identification and type methods

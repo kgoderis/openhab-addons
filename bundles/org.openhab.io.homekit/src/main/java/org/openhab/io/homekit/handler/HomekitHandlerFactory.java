@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.config.core.Configuration;
 import org.openhab.core.thing.Thing;
@@ -65,6 +66,7 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
+@NonNullByDefault
 @Component(configurationPid = "io.homekit", service = ThingHandlerFactory.class)
 public class HomekitHandlerFactory extends BaseThingHandlerFactory {
 

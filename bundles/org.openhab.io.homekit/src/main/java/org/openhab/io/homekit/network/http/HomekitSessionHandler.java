@@ -20,6 +20,7 @@ import javax.servlet.DispatcherType;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.slf4j.Logger;
@@ -71,7 +72,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public class HomekitSessionHandler extends SessionHandler {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitSessionHandler.class);

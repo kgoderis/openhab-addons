@@ -15,6 +15,8 @@ package org.openhab.io.homekit.validation;
 
 import java.util.Optional;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Interface for all validation components in the HomeKit integration.
  * Validation components are responsible for checking specific aspects of the HomeKit configuration
@@ -22,6 +24,7 @@ import java.util.Optional;
  * 
  * @author Karel Goderis - Initial contribution
  */
+@NonNullByDefault
 public interface Validation {
     /**
      * Performs validation on the given object using the provided context.

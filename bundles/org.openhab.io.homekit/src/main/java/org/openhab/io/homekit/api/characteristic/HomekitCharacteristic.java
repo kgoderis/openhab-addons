@@ -19,6 +19,7 @@ import java.util.Set;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.Identifiable;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -63,6 +64,7 @@ import org.openhab.io.homekit.api.uid.HomekitCharacteristicUID;
  * @author Karel Goderis - Initial contribution
  * @since 1.0.0
  */
+@NonNullByDefault
 public interface HomekitCharacteristic<T>
         extends Identifiable<HomekitCharacteristicUID>, Comparable<HomekitCharacteristic<?>> {
 

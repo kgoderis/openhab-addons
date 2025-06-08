@@ -15,6 +15,7 @@ package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitIntegerCharacteristic;
@@ -29,6 +30,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  */
 @HomekitCharacteristicType(type = "00000245-0000-1000-8000-0026BB765291", name = "CCA Signal Detect Threshold", tag = "ccaSignalDetectThreshold", acceptedItemTypes = {
         "Number" })
+@NonNullByDefault
 public class HomekitCCASignalDetectThresholdCharacteristic extends HomekitIntegerCharacteristic {
     public HomekitCCASignalDetectThresholdCharacteristic(HomekitService service, HomekitEventManager eventManager,
             long instanceId) {

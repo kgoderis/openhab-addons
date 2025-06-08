@@ -21,6 +21,7 @@ import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.protocol.error.HomekitErrorCode;
 import org.openhab.io.homekit.protocol.message.HomekitMessage;
 import org.slf4j.Logger;
@@ -59,7 +60,8 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @version 1.0
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public class HomekitTypeLengthValueEncoderDecoder {
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "Homekit TLV: ";
@@ -180,7 +182,7 @@ public class HomekitTypeLengthValueEncoderDecoder {
          * @param type The message type
          * @param i The BigInteger value to add
          * @throws IOException if an I/O error occurs
-     */
+         */
         public void add(HomekitMessage type, BigInteger i) throws IOException {
             add(type, HomekitByte.toByteArray(i));
         }
@@ -199,7 +201,7 @@ public class HomekitTypeLengthValueEncoderDecoder {
          *
          * @param type The message type
          * @param b The short value to add
-     */
+         */
         public void add(HomekitMessage type, short b) {
             baos.write(type.getKey());
             baos.write(1);
@@ -220,7 +222,7 @@ public class HomekitTypeLengthValueEncoderDecoder {
          *
          * @param type The message type
          * @param e The error code to add
-     */
+         */
         public void add(HomekitMessage type, HomekitErrorCode e) {
             baos.write(type.getKey());
             baos.write(1);
@@ -242,7 +244,7 @@ public class HomekitTypeLengthValueEncoderDecoder {
          * @param type The message type
          * @param bytes The byte array to add
          * @throws IOException if an I/O error occurs
-     */
+         */
         public void add(HomekitMessage type, byte[] bytes) throws IOException {
             InputStream bais = new ByteArrayInputStream(bytes);
             while (bais.available() > 0) {
@@ -268,7 +270,7 @@ public class HomekitTypeLengthValueEncoderDecoder {
          * </ul>
          *
          * @return The encoded TLV data
-     */
+         */
         public byte[] toByteArray() {
             return baos.toByteArray();
         }
@@ -310,7 +312,7 @@ public class HomekitTypeLengthValueEncoderDecoder {
          *
          * @param type The message type
          * @return The byte value
-     */
+         */
         public byte getByte(HomekitMessage type) {
             return result.get(type.getKey())[0];
         }
@@ -328,7 +330,7 @@ public class HomekitTypeLengthValueEncoderDecoder {
          *
          * @param type The message type
          * @return The BigInteger value
-     */
+         */
         public BigInteger getBigInt(HomekitMessage type) {
             return new BigInteger(1, result.get(type.getKey()));
         }
@@ -346,7 +348,7 @@ public class HomekitTypeLengthValueEncoderDecoder {
          *
          * @param type The message type
          * @return The byte array value
-     */
+         */
         public byte[] getBytes(HomekitMessage type) {
             return result.get(type.getKey());
         }
@@ -366,7 +368,7 @@ public class HomekitTypeLengthValueEncoderDecoder {
          * @param type The message type
          * @param dest The destination array
          * @param srcOffset The source offset
-     */
+         */
         public void getBytes(HomekitMessage type, byte[] dest, int srcOffset) {
             byte[] b = result.get(type.getKey());
             System.arraycopy(b, srcOffset, dest, 0, Math.min(dest.length, b.length));
@@ -385,7 +387,7 @@ public class HomekitTypeLengthValueEncoderDecoder {
          *
          * @param type The message type
          * @return The length of the value
-     */
+         */
         public int getLength(HomekitMessage type) {
             return result.get(type.getKey()).length;
         }
@@ -404,7 +406,7 @@ public class HomekitTypeLengthValueEncoderDecoder {
          *
          * @param type The message type
          * @param bytes The bytes to add
-     */
+         */
         private void add(short type, byte[] bytes) {
             result.merge(type, bytes, HomekitByte::joinBytes);
         }

@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
 import org.apache.commons.io.IOUtils;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
  * Wraps HTTP requests to enable multiple reads of the request body.
@@ -50,7 +51,8 @@ import org.apache.commons.io.IOUtils;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public class HomekitRequestWrapper extends HttpServletRequestWrapper {
 
     // ========== Log Message Prefixes ==========
@@ -111,7 +113,7 @@ public class HomekitRequestWrapper extends HttpServletRequestWrapper {
          * stream, which will be used for reading the request body.
          *
          * @param sourceStream The source stream to delegate to (never null)
-     */
+         */
         public DelegatingServletInputStream(InputStream sourceStream) {
             this.sourceStream = sourceStream;
         }
@@ -120,7 +122,7 @@ public class HomekitRequestWrapper extends HttpServletRequestWrapper {
          * Gets the underlying source stream.
          *
          * @return The source stream used for reading
-     */
+         */
         public final InputStream getSourceStream() {
             return this.sourceStream;
         }
@@ -133,7 +135,7 @@ public class HomekitRequestWrapper extends HttpServletRequestWrapper {
          *
          * @return The next byte of data, or -1 if the end of the stream is reached
          * @throws IOException if an I/O error occurs
-     */
+         */
         @Override
         public int read() throws IOException {
             int data = this.sourceStream.read();
@@ -148,7 +150,7 @@ public class HomekitRequestWrapper extends HttpServletRequestWrapper {
          *
          * @return The number of bytes available
          * @throws IOException if an I/O error occurs
-     */
+         */
         @Override
         public int available() throws IOException {
             return this.sourceStream.available();
@@ -158,7 +160,7 @@ public class HomekitRequestWrapper extends HttpServletRequestWrapper {
          * Closes the stream and its underlying source stream.
          *
          * @throws IOException if an I/O error occurs
-     */
+         */
         @Override
         public void close() throws IOException {
             super.close();
@@ -169,7 +171,7 @@ public class HomekitRequestWrapper extends HttpServletRequestWrapper {
          * Checks if the stream has reached its end.
          *
          * @return true if the stream has finished reading
-     */
+         */
         @Override
         public boolean isFinished() {
             return this.finished;
@@ -182,7 +184,7 @@ public class HomekitRequestWrapper extends HttpServletRequestWrapper {
          * is already cached in memory.
          *
          * @return true
-     */
+         */
         @Override
         public boolean isReady() {
             return true;
@@ -196,7 +198,7 @@ public class HomekitRequestWrapper extends HttpServletRequestWrapper {
          *
          * @param readListener The read listener to set
          * @throws UnsupportedOperationException always
-     */
+         */
         @Override
         public void setReadListener(ReadListener readListener) {
             throw new UnsupportedOperationException();

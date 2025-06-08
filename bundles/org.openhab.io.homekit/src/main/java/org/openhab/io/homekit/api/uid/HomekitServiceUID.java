@@ -13,6 +13,7 @@
 
 package org.openhab.io.homekit.api.uid;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.Identifiable;
 
 /**
@@ -54,6 +55,7 @@ import org.openhab.core.common.registry.Identifiable;
  * @author Karel Goderis - Initial contribution
  * @since 1.0.0
  */
+@NonNullByDefault
 public interface HomekitServiceUID extends Identifiable<HomekitServiceUID> {
     /**
      * Gets the unique identifier string for this service.

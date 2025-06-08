@@ -13,6 +13,7 @@
 
 package org.openhab.io.homekit.api.provider;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.Provider;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 
@@ -52,6 +53,7 @@ import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
  * @author Karel Goderis - Initial contribution
  * @since 1.0.0
  */
+@NonNullByDefault
 public interface HomekitAccessoryServerProvider extends Provider<HomekitAccessoryServer> {
 
 }

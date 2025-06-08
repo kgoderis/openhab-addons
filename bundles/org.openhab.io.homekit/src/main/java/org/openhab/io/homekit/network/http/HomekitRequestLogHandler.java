@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.HexDump;
 import org.apache.commons.io.IOUtils;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
 import org.slf4j.Logger;
@@ -76,7 +77,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public class HomekitRequestLogHandler extends RequestLogHandler {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitRequestLogHandler.class);

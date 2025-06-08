@@ -16,6 +16,7 @@ package org.openhab.io.homekit.network.pairing;
 import java.util.Base64;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.uid.HomekitPairingUID;
 import org.openhab.io.homekit.protocol.pairing.HomekitPairing;
 import org.slf4j.Logger;
@@ -75,7 +76,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public class HomekitPairingImpl implements HomekitPairing {
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "HomeKit Pairing: ";

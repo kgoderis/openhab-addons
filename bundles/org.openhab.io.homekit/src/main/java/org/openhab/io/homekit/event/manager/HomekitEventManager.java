@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.ThreadPoolManager;
 import org.openhab.core.common.registry.Identifiable;
@@ -165,6 +166,7 @@ import org.slf4j.LoggerFactory;
  * @since 3.x
  */
 @Component(service = HomekitEventManager.class)
+@NonNullByDefault
 public class HomekitEventManager {
     private static final String THREAD_POOL_NAME = "homekit-event-manager";
     private static final int MAX_RETRIES = 3;

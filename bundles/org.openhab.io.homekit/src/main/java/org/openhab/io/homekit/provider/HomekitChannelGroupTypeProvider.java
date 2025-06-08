@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.storage.StorageService;
 import org.openhab.core.thing.binding.AbstractStorageBasedTypeProvider;
@@ -72,8 +73,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0
-     */
+ */
 @Component(service = { ChannelGroupTypeProvider.class })
+@NonNullByDefault
 public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypeProvider {
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "Homekit ChannelGroupType Provider: ";

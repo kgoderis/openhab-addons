@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.Thing;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
@@ -30,6 +31,7 @@ import org.osgi.service.component.annotations.Component;
  * @author Karel Goderis - Initial contribution
  */
 @Component(service = Validation.class)
+@NonNullByDefault
 public class ServiceTypeValidation extends AbstractValidation {
     private static final String ID = "service-type";
     private static final int PRIORITY = 80; // High priority but after channel mapping

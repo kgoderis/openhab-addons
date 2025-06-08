@@ -13,6 +13,7 @@
 
 package org.openhab.io.homekit.event.graph;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.events.EventPublisher;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -36,6 +37,7 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  */
 @Component(service = HomekitEventGraphService.class)
+@NonNullByDefault
 public class HomekitEventGraphService {
     private static final Logger logger = LoggerFactory.getLogger(HomekitEventGraphService.class);
 

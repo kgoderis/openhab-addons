@@ -17,6 +17,7 @@ import java.util.Map;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -29,9 +30,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developers.homebridge.io/#/characteristic/WiFiConfigurationControl">HomeKit Documentation</a>
  * @author Karel Goderis - Initial contribution
-     */
+ */
 @HomekitCharacteristicType(type = "0000022D-0000-1000-8000-0026BB765291", name = "WiFi Configuration Control", tag = "wifiConfigurationControl", acceptedItemTypes = {
         "String" })
+@NonNullByDefault
 public class HomekitWiFiConfigurationControlCharacteristic extends HomekitTLV8Characteristic {
     public HomekitWiFiConfigurationControlCharacteristic(HomekitService service, HomekitEventManager eventManager,
             long instanceId) {

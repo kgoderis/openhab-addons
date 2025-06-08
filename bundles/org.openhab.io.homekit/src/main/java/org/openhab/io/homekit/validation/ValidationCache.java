@@ -20,11 +20,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Manages caching of validation results with expiration.
  * 
  * @author Karel Goderis - Initial contribution
  */
+@NonNullByDefault
 public class ValidationCache {
     private final Map<String, CacheEntry> cache;
     private final ScheduledExecutorService cleanupExecutor;

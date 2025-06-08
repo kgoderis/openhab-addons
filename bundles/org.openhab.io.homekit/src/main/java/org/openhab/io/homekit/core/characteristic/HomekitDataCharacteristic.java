@@ -11,13 +11,13 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-
 package org.openhab.io.homekit.core.characteristic;
 
 import java.util.Map;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -62,7 +62,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis - Initial contribution
  * @version 1.0
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public abstract class HomekitDataCharacteristic extends AbstractHomekitCharacteristic<byte[]> {
     /**
      * Creates a new binary data characteristic with default settings.
@@ -95,16 +96,15 @@ public abstract class HomekitDataCharacteristic extends AbstractHomekitCharacter
      * Indicates that this characteristic is not hidden in the HomeKit interface.
      *
      * @return false, as binary data characteristics are always visible
-     */
-    @Override
-    public boolean isHidden() {
-        return false;
-    }
-
-    /**
-     * Encodes the binary data for storage or transmission.
-     * This method provides a default identity encoding that can be overridden
-     * by subclasses to implement custom encoding logic.
+     * @Override
+     *           public boolean isHidden() {
+     *           return false;
+     *           }
+     * 
+     *           /**
+     *           Encodes the binary data for storage or transmission.
+     *           This method provides a default identity encoding that can be overridden
+     *           by subclasses to implement custom encoding logic.
      *
      * @param value the binary data to encode
      * @return the encoded binary data

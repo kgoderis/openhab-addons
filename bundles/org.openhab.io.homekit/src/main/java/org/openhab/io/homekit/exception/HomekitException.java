@@ -13,6 +13,8 @@
 
 package org.openhab.io.homekit.exception;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Base exception class for all HomeKit integration exceptions.
  * 
@@ -34,6 +36,7 @@ package org.openhab.io.homekit.exception;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
+@NonNullByDefault
 public class HomekitException extends Exception {
 
     private static final long serialVersionUID = -9188483500104140469L;

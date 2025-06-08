@@ -15,6 +15,7 @@ package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
@@ -28,9 +29,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
-     */
+ */
 @HomekitCharacteristicType(type = "0000021E-0000-1000-8000-0026BB765291", name = "WiFi Satellite Status", tag = "wifiSatelliteStatus", acceptedItemTypes = {
         "Number", "String" })
+@NonNullByDefault
 public class HomekitWiFiSatelliteStatusCharacteristic extends HomekitEnumCharacteristic {
     /**
      * Enum representing the possible WiFi satellite statuses.
@@ -51,7 +53,7 @@ public class HomekitWiFiSatelliteStatusCharacteristic extends HomekitEnumCharact
          * Returns the integer code for this status.
          * 
          * @return the code
-     */
+         */
         public int getCode() {
             return code;
         }
@@ -61,7 +63,7 @@ public class HomekitWiFiSatelliteStatusCharacteristic extends HomekitEnumCharact
          * 
          * @param code the code
          * @return the WiFiSatelliteStatus
-     */
+         */
         public static WiFiSatelliteStatus fromCode(int code) {
             for (WiFiSatelliteStatus status : values()) {
                 if (status.code == code) {

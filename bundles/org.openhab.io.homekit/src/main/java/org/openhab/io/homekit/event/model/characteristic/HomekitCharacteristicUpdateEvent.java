@@ -17,6 +17,7 @@ import java.util.Map;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
@@ -75,6 +76,7 @@ import org.openhab.io.homekit.event.core.HomekitEventMetadata;
  * @author Karel Goderis - Initial contribution
  * @since 3.x
  */
+@NonNullByDefault
 public class HomekitCharacteristicUpdateEvent extends HomekitCharacteristicEvent {
     private final Map<String, Object> itemConfiguration;
 

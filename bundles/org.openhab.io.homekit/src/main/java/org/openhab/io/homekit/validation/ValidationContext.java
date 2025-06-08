@@ -17,12 +17,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Context object that holds the state and configuration for validation.
  * This includes the object being validated, any cached results, and validation settings.
  * 
  * @author Karel Goderis - Initial contribution
  */
+@NonNullByDefault
 public class ValidationContext {
     private final Object target;
     private final Map<String, Object> attributes;

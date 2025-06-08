@@ -20,6 +20,7 @@ import java.util.Arrays;
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServlet;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.network.http.HomekitServletConfig;
@@ -72,7 +73,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public abstract class HomekitBaseServlet extends HttpServlet {
 
     // ========== Log Message Prefixes ==========

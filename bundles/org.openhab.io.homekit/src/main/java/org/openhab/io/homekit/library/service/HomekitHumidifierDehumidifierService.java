@@ -15,6 +15,7 @@ package org.openhab.io.homekit.library.service;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
@@ -39,6 +40,7 @@ import org.openhab.io.homekit.library.characteristic.HomekitWaterLevelCharacteri
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitServiceType(type = "000000BD-0000-1000-8000-0026BB765291", name = "Humidifier Dehumidifier", tag = "humidifierDehumidifier")
+@NonNullByDefault
 public class HomekitHumidifierDehumidifierService extends AbstractHomekitService {
 
     /**

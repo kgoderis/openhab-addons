@@ -25,6 +25,7 @@ package org.openhab.io.homekit.library.characteristic;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
@@ -38,6 +39,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  */
 @HomekitCharacteristicType(type = "00000075-0000-1000-8000-0026BB765291", name = "Status Active", tag = "statusActive", acceptedItemTypes = {
         "Switch", "Contact" })
+@NonNullByDefault
 public class HomekitStatusActiveCharacteristic extends HomekitBooleanCharacteristic {
 
     public HomekitStatusActiveCharacteristic(HomekitService service, HomekitEventManager eventManager,

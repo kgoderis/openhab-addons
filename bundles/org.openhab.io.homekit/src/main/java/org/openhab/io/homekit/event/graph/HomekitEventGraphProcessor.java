@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.event.HomekitEventType;
 
 /**
@@ -41,6 +42,7 @@ import org.openhab.io.homekit.api.event.HomekitEventType;
  *
  * @author Karel Goderis - Initial contribution
  */
+@NonNullByDefault
 public class HomekitEventGraphProcessor {
     protected final Map<String, EventProcessingNode> nodes = new HashMap<>();
     protected final Map<String, Set<String>> graph = new HashMap<>();

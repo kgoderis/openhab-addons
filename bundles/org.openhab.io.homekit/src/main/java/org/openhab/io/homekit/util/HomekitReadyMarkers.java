@@ -13,6 +13,8 @@
 
 package org.openhab.io.homekit.util;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Central definition of ReadyService markers for HomeKit component startup
  * sequencing.
@@ -41,7 +43,8 @@ package org.openhab.io.homekit.util;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public final class HomekitReadyMarkers {
 
     // ========== Level 1: Core Infrastructure ==========

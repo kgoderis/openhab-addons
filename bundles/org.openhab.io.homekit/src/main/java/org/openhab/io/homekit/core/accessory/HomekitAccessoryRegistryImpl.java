@@ -13,6 +13,7 @@
 
 package org.openhab.io.homekit.core.accessory;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.AbstractRegistry;
 import org.openhab.core.common.registry.ManagedProvider;
 import org.openhab.core.common.registry.Provider;
@@ -59,8 +60,9 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @version 1.0
  * @since 1.0
-     */
+ */
 @Component(immediate = true, service = HomekitAccessoryRegistry.class)
+@NonNullByDefault
 public class HomekitAccessoryRegistryImpl
         extends AbstractRegistry<HomekitAccessory, HomekitAccessoryUID, HomekitAccessoryProvider>
         implements HomekitAccessoryRegistry, ReadyService.ReadyTracker {

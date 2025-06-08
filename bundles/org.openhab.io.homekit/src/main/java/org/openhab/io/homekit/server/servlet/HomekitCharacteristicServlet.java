@@ -41,6 +41,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
@@ -96,8 +97,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0
-     */
+ */
 @WebServlet(asyncSupported = true)
+@NonNullByDefault
 public class HomekitCharacteristicServlet extends HomekitBaseServlet {
     // ========== Log Message Prefixes ==========
     private static final Logger logger = LoggerFactory.getLogger(HomekitCharacteristicServlet.class);

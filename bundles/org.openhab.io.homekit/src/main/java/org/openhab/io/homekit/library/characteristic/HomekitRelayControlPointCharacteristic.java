@@ -15,6 +15,7 @@ package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitTLV8Characteristic;
@@ -29,6 +30,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  */
 @HomekitCharacteristicType(type = "0000005E-0000-1000-8000-0026BB765291", name = "Relay Control Point", tag = "relayControlPoint", acceptedItemTypes = {
         "String" })
+@NonNullByDefault
 public class HomekitRelayControlPointCharacteristic extends HomekitTLV8Characteristic {
 
     public HomekitRelayControlPointCharacteristic(HomekitService service, HomekitEventManager eventManager,

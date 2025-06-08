@@ -13,6 +13,7 @@
 
 package org.openhab.io.homekit.network.http;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jetty.client.ProtocolHandler;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.api.Response;
@@ -56,7 +57,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public class HomekitProtocolHandler implements ProtocolHandler {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitProtocolHandler.class);
@@ -177,7 +179,7 @@ public class HomekitProtocolHandler implements ProtocolHandler {
          * </p>
          *
          * @param maxLength The maximum content length to buffer in bytes
-     */
+         */
         public HomekitResponseListener(int maxLength) {
             super(maxLength);
             logger.debug("{}Created response listener with max length: {} bytes", LOG_INIT, maxLength);
@@ -193,7 +195,7 @@ public class HomekitProtocolHandler implements ProtocolHandler {
          * </p>
          *
          * @param response The HTTP response that was successfully processed
-     */
+         */
         @Override
         public void onSuccess(Response response) {
             logger.debug("{}Processing successful response", LOG_STATE);
@@ -215,7 +217,7 @@ public class HomekitProtocolHandler implements ProtocolHandler {
          * </p>
          *
          * @param result The result of the response processing
-     */
+         */
         @Override
         public void onComplete(Result result) {
             if (result.isFailed()) {

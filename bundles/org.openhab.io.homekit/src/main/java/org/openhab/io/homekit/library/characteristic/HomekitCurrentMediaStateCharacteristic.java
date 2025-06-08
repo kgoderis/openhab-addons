@@ -15,6 +15,7 @@ package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitIntegerCharacteristic;
@@ -26,9 +27,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  *
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  * @author Karel Goderis - Initial contribution
-     */
+ */
 @HomekitCharacteristicType(type = "000000E0-0000-1000-8000-0026BB765291", name = "Current Media State", tag = "currentMediaState", acceptedItemTypes = {
         "Number", "String" })
+@NonNullByDefault
 public class HomekitCurrentMediaStateCharacteristic extends HomekitIntegerCharacteristic {
     /**
      * Enum representing the possible states of a media device.
@@ -51,7 +53,7 @@ public class HomekitCurrentMediaStateCharacteristic extends HomekitIntegerCharac
          * Gets the integer code for this media state.
          *
          * @return the integer code
-     */
+         */
         public int getCode() {
             return code;
         }
@@ -62,7 +64,7 @@ public class HomekitCurrentMediaStateCharacteristic extends HomekitIntegerCharac
          *
          * @param code the integer code to convert
          * @return the corresponding CurrentMediaState, or STOP if not found
-     */
+         */
         public static CurrentMediaState fromCode(int code) {
             for (CurrentMediaState s : values()) {
                 if (s.code == code) {

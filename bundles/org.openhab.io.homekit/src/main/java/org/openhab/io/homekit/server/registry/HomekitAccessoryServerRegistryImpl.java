@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.AbstractRegistry;
 import org.openhab.core.common.registry.Provider;
 import org.openhab.core.net.NetworkAddressService;
@@ -101,8 +102,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0
-     */
+ */
 @Component(immediate = true, service = HomekitAccessoryServerRegistry.class)
+@NonNullByDefault
 public class HomekitAccessoryServerRegistryImpl
         extends AbstractRegistry<HomekitAccessoryServer, HomekitAccessoryServerUID, HomekitAccessoryServerProvider>
         implements HomekitAccessoryServerRegistry, ReadyService.ReadyTracker {

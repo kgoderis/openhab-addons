@@ -13,6 +13,8 @@
 
 package org.openhab.io.homekit.protocol.status;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Defines the status codes used in HomeKit protocol communication.
  *
@@ -44,6 +46,7 @@ package org.openhab.io.homekit.protocol.status;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
+@NonNullByDefault
 public enum HomekitStatusCode {
     /** Operation completed successfully */
     SUCCESS(0),

@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.ThreadPoolManager;
 import org.openhab.core.events.EventPublisher;
 import org.openhab.core.items.GroupItem;
@@ -119,8 +120,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0.0
-     */
+ */
 @Component(service = HomekitItemBridge.class, immediate = true)
+@NonNullByDefault
 public class HomekitItemBridge implements ItemRegistryChangeListener, StateChangeListener {
 
     private static final Logger logger = LoggerFactory.getLogger(HomekitItemBridge.class);
@@ -1071,7 +1073,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
          * @param state The {@link State} associated with this event
          * @param metadata The {@link HomekitEventMetadata} for event correlation
          * @since 1.0.0
-     */
+         */
         public ExitEvent(State state, HomekitEventMetadata metadata) {
             this.state = state;
             this.metadata = metadata;
@@ -1083,7 +1085,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
          *
          * @return true if the event has expired, false otherwise
          * @since 1.0.0
-     */
+         */
         public boolean isExpired() {
             return System.currentTimeMillis() - timestamp > correlationWindowMs;
         }
@@ -1093,7 +1095,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
          *
          * @return The {@link State} associated with this event
          * @since 1.0.0
-     */
+         */
         public State getState() {
             return state;
         }
@@ -1103,7 +1105,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
          *
          * @return The {@link HomekitEventMetadata} for event correlation
          * @since 1.0.0
-     */
+         */
         public HomekitEventMetadata getMetadata() {
             return metadata;
         }
@@ -1113,7 +1115,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
          *
          * @return The timestamp in milliseconds
          * @since 1.0.0
-     */
+         */
         public long getTimestamp() {
             return timestamp;
         }
@@ -1144,7 +1146,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
          * This method initializes the scheduled task for periodic statistics reporting.
          *
          * @since 1.0.0
-     */
+         */
         public void start() {
             @SuppressWarnings("null") // ThreadPoolManager.getScheduledPool() can return null, handled by
                                       // Optional.ofNullable
@@ -1163,7 +1165,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
          * This method cancels the scheduled task and cleans up resources.
          *
          * @since 1.0.0
-     */
+         */
         public void stop() {
             scheduledTask.ifPresent(task -> task.cancel(false));
             scheduledTask = Optional.empty();
@@ -1177,7 +1179,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
          *
          * @param timeMs The event time in milliseconds
          * @since 1.0.0
-     */
+         */
         public void recordEvent(long timeMs) {
             synchronized (lock) {
                 if (eventTimes.size() >= MAX_STATISTICS_ENTRIES) {
@@ -1195,7 +1197,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
          * - Time distribution histogram
          *
          * @since 1.0.0
-     */
+         */
         private void printStatistics() {
             synchronized (lock) {
                 if (eventTimes.isEmpty()) {

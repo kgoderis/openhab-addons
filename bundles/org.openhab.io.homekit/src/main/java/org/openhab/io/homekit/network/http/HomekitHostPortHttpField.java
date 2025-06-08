@@ -13,6 +13,7 @@
 
 package org.openhab.io.homekit.network.http;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jetty.http.HostPortHttpField;
 import org.eclipse.jetty.http.HttpHeader;
 
@@ -44,7 +45,8 @@ import org.eclipse.jetty.http.HttpHeader;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public class HomekitHostPortHttpField extends HostPortHttpField {
 
     /**

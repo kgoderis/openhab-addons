@@ -13,6 +13,7 @@
 
 package org.openhab.io.homekit.event.util;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.event.HomekitEventType;
 
@@ -54,6 +55,7 @@ import org.openhab.io.homekit.api.event.HomekitEventType;
  *
  * @author Karel Goderis - Initial contribution
  */
+@NonNullByDefault
 public class HomekitEventUID extends UID {
     private static final String HOMEKIT_PREFIX = "homekit";
     private static final String EVENT_PREFIX = "event";

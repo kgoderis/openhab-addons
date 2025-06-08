@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.ThreadPoolManager;
 import org.openhab.core.events.Event;
@@ -136,8 +137,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0.0
-     */
+ */
 @Component(service = { HomekitAccessoryBridge.class, EventSubscriber.class }, immediate = true)
+@NonNullByDefault
 public class HomekitAccessoryBridge implements EventSubscriber {
     private static final Logger logger = LoggerFactory.getLogger(HomekitAccessoryBridge.class);
     private static final String LOG_PREFIX = "Homekit Bridge: ";
@@ -1146,7 +1148,7 @@ public class HomekitAccessoryBridge implements EventSubscriber {
          *
          * @param state The state that triggered the event
          * @param metadata The event metadata for correlation
-     */
+         */
         public ExitEvent(State state, HomekitEventMetadata metadata) {
             this.state = state;
             this.metadata = metadata;
@@ -1157,7 +1159,7 @@ public class HomekitAccessoryBridge implements EventSubscriber {
          * Checks if this exit event has expired.
          *
          * @return true if the event has expired, false otherwise
-     */
+         */
         public boolean isExpired() {
             return System.currentTimeMillis() - timestamp > EXIT_EVENT_TIMEOUT;
         }
@@ -1166,7 +1168,7 @@ public class HomekitAccessoryBridge implements EventSubscriber {
          * Gets the state that triggered this event.
          *
          * @return The state that triggered the event
-     */
+         */
         public State getState() {
             return state;
         }
@@ -1175,7 +1177,7 @@ public class HomekitAccessoryBridge implements EventSubscriber {
          * Gets the metadata for this event.
          *
          * @return The event metadata
-     */
+         */
         public HomekitEventMetadata getMetadata() {
             return metadata;
         }

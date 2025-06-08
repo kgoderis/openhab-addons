@@ -13,11 +13,14 @@
 
 package org.openhab.io.homekit.network.http;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Placeholder for HomeKit HTTP response implementation.
  *
  * @author Karel Goderis - Initial contribution
-     */
+ */
+@NonNullByDefault
 public class HomekitHttpResponse {
     // Implementation placeholder - code is commented out below
 }

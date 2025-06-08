@@ -13,6 +13,8 @@
 
 package org.openhab.io.homekit.protocol.pairing;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Defines the feature flags used in HomeKit pairing protocol.
  *
@@ -40,6 +42,7 @@ package org.openhab.io.homekit.protocol.pairing;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
+@NonNullByDefault
 public enum HomekitPairingFeatureFlag {
     /** Indicates no special features are supported */
     NOT_SUPPORTED(0x00, "Not Supported"),

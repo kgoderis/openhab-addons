@@ -13,6 +13,8 @@
 
 package org.openhab.io.homekit.exception;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Exception thrown when there is an error with HomeKit server operations.
  * 
@@ -31,6 +33,7 @@ package org.openhab.io.homekit.exception;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
+@NonNullByDefault
 public class HomekitServerException extends HomekitException {
     private static final long serialVersionUID = 1L;
 

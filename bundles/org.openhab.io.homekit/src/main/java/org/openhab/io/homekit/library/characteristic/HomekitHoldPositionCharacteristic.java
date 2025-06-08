@@ -19,6 +19,7 @@ package org.openhab.io.homekit.library.characteristic;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
@@ -36,6 +37,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  */
 @HomekitCharacteristicType(type = "0000006F-0000-1000-8000-0026BB765291", name = "Hold Position", tag = "holdPosition", acceptedItemTypes = {
         "Switch", "Contact" })
+@NonNullByDefault
 public class HomekitHoldPositionCharacteristic extends HomekitBooleanCharacteristic {
 
     public HomekitHoldPositionCharacteristic(HomekitService service, HomekitEventManager eventManager,

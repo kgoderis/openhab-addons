@@ -15,6 +15,7 @@ package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -31,9 +32,10 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
  * @author Karel Goderis
-     */
+ */
 @HomekitCharacteristicType(type = "00000014-0000-1000-8000-0026BB765291", name = "Identify", tag = "identify", acceptedItemTypes = {
         "Switch", "Contact" })
+@NonNullByDefault
 public class HomekitIdentifyCharacteristic extends HomekitBooleanCharacteristic {
 
     /**

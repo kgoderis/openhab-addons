@@ -31,6 +31,7 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
@@ -96,7 +97,8 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @version 1.0
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public abstract class AbstractHomekitAccessory implements HomekitAccessory {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractHomekitAccessory.class);

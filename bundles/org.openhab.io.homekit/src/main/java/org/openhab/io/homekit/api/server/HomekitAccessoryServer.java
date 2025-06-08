@@ -17,6 +17,7 @@ import java.net.InetAddress;
 import java.util.Collection;
 import java.util.Optional;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.Identifiable;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.uid.HomekitAccessoryServerUID;
@@ -68,6 +69,7 @@ import org.openhab.io.homekit.protocol.pairing.HomekitPairing;
  * @author Karel Goderis - Initial contribution
  * @since 1.0.0
  */
+@NonNullByDefault
 public interface HomekitAccessoryServer extends Identifiable<HomekitAccessoryServerUID> {
 
     // ==================== Core Server Methods ====================

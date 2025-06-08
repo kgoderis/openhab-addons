@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
@@ -98,8 +99,9 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @version 1.0
  * @since 1.0
-     */
+ */
 @Component(service = HomekitCharacteristicFactory.class)
+@NonNullByDefault
 public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFactory {
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "Homekit CharacteristicFactory: ";

@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
@@ -34,6 +35,7 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  */
 @Component(service = ValidationManager.class)
+@NonNullByDefault
 public class ValidationManager {
     private final Logger logger = LoggerFactory.getLogger(ValidationManager.class);
     private final Map<String, Validation> validations = new ConcurrentHashMap<>();

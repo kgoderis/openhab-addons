@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import org.apache.commons.io.HexDump;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jetty.util.BufferUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +63,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  * @version 1.0
-     */
+ */
+@NonNullByDefault
 public class HomekitByte {
 
     private static final Logger logger = LoggerFactory.getLogger(HomekitByte.class);

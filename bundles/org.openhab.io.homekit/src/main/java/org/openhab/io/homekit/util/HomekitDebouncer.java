@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +57,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author Tim Harper - Initial contribution
  * @version 1.0
-     */
+ */
+@NonNullByDefault
 public class HomekitDebouncer {
 
     private static final Logger logger = LoggerFactory.getLogger(HomekitDebouncer.class);

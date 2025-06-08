@@ -17,6 +17,7 @@ import java.util.Set;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitIntegerCharacteristic;
@@ -31,6 +32,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  */
 @HomekitCharacteristicType(type = "00000215-0000-1000-8000-0026BB765291", name = "Managed Network Enable", tag = "managedNetworkEnable", acceptedItemTypes = {
         "Number" })
+@NonNullByDefault
 public class HomekitManagedNetworkEnableCharacteristic extends HomekitIntegerCharacteristic {
     /**
      * Enum representing the possible states for managed network enable.

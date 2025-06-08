@@ -16,6 +16,7 @@ package org.openhab.io.homekit.network.http;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpContent;
 import org.eclipse.jetty.client.HttpExchange;
@@ -79,7 +80,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public class HomekitHttpSender extends HttpSenderOverHTTP {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpSender.class);
@@ -468,7 +470,7 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
          * @param exchange The HTTP exchange
          * @param content The HTTP content
          * @param callback The callback to invoke on completion
-     */
+         */
         public HeadersCallback(HttpExchange exchange, HttpContent content, Callback callback) {
             super(false);
             this.exchange = exchange;
@@ -501,7 +503,7 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
          *
          * @return The next action to take
          * @throws Exception if an error occurs
-     */
+         */
         @Override
         protected Action process() throws Exception {
             while (true) {
@@ -576,7 +578,7 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
 
         /**
          * Handles successful completion of the callback.
-     */
+         */
         @Override
         public void succeeded() {
             release();
@@ -587,7 +589,7 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
          * Handles failure of the callback.
          *
          * @param x The exception that caused the failure
-     */
+         */
         @Override
         public void failed(Throwable x) {
             release();
@@ -597,7 +599,7 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
 
         /**
          * Handles successful completion of the callback.
-     */
+         */
         @Override
         protected void onCompleteSuccess() {
             super.onCompleteSuccess();
@@ -606,7 +608,7 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
 
         /**
          * Releases the buffers used by this callback.
-     */
+         */
         private void release() {
             ByteBufferPool bufferPool = httpClient.getByteBufferPool();
             if (!BufferUtil.isTheEmptyBuffer(headerBuffer)) {
@@ -637,7 +639,7 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
          * @param callback The callback to invoke on completion
          * @param pool The buffer pool to use
          * @param buffers The buffers to recycle
-     */
+         */
         private ByteBufferRecyclerCallback(Callback callback, ByteBufferPool pool, ByteBuffer... buffers) {
             super(callback);
             this.pool = pool;
@@ -646,7 +648,7 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
 
         /**
          * Handles successful completion of the callback.
-     */
+         */
         @Override
         public void succeeded() {
             for (ByteBuffer buffer : buffers) {
@@ -660,7 +662,7 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
          * Handles failure of the callback.
          *
          * @param x The exception that caused the failure
-     */
+         */
         @Override
         public void failed(Throwable x) {
             for (ByteBuffer buffer : buffers) {

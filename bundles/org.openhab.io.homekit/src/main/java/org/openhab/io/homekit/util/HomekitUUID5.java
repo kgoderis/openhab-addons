@@ -19,6 +19,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +56,8 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @version 1.0
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public class HomekitUUID5 {
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "Homekit UUID5: ";

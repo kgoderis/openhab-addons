@@ -13,6 +13,7 @@
 
 package org.openhab.io.homekit.api.event;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
@@ -45,6 +46,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * @author Karel Goderis - Initial contribution
  * @since 1.0.0
  */
+@NonNullByDefault
 public interface HomekitEventPublisher {
     /**
      * Gets the unique identifier of the event publisher.

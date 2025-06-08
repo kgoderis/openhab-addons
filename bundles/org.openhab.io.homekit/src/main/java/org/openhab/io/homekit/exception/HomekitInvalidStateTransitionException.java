@@ -13,6 +13,7 @@
 
 package org.openhab.io.homekit.exception;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.core.server.HomekitAccessoryServerState;
 
 /**
@@ -30,6 +31,7 @@ import org.openhab.io.homekit.core.server.HomekitAccessoryServerState;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
+@NonNullByDefault
 public class HomekitInvalidStateTransitionException extends HomekitServerException {
     private static final long serialVersionUID = 1L;
 

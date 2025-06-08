@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
@@ -66,8 +67,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0.0
-     */
+ */
 @Component(service = HomekitPassthroughBridge.class, immediate = true)
+@NonNullByDefault
 public class HomekitPassthroughBridge {
     private static final Logger logger = LoggerFactory.getLogger(HomekitPassthroughBridge.class);
     // ========== Log Message Prefixes ==========

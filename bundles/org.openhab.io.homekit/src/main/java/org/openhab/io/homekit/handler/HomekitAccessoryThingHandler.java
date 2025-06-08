@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.config.core.Configuration;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ChannelUID;
@@ -72,6 +73,7 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
+@NonNullByDefault
 public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
     // ========== Log Message Prefixes ==========
     private static final String LOG_PREFIX = "HomeKit Accessory Handler: ";

@@ -22,6 +22,7 @@ import org.bouncycastle.crypto.params.ParametersWithIV;
 import org.bouncycastle.tls.AlertDescription;
 import org.bouncycastle.tls.TlsFatalAlert;
 import org.bouncycastle.util.Arrays;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
  * Provides ChaCha20-Poly1305 decryption for HomeKit protocol messages.
@@ -54,6 +55,7 @@ import org.bouncycastle.util.Arrays;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
+@NonNullByDefault
 public class HomekitChachaDecoder {
 
     /** The ChaCha20 cipher instance used for decryption */

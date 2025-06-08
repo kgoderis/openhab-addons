@@ -15,6 +15,7 @@ package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.HSBType;
 import org.openhab.core.types.State;
@@ -33,6 +34,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  */
 @HomekitCharacteristicType(type = "00000013-0000-1000-8000-0026BB765291", name = "Hue", tag = "hue", acceptedItemTypes = {
         "Number", "Color" })
+@NonNullByDefault
 public class HomekitHueCharacteristic extends HomekitFloatCharacteristic {
     public HomekitHueCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager, 0.0, 360.0, 1.0, "arcdegrees");

@@ -35,6 +35,7 @@ import javax.json.JsonValue;
 import javax.measure.Unit;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.SafeCaller;
 import org.openhab.core.common.ThreadPoolManager;
@@ -150,8 +151,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0.0
-     */
+ */
 @Component(service = { EventSubscriber.class, ThingRegistryChangeListener.class })
+@NonNullByDefault
 public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeListener {
     private static final String LOG_PREFIX = "[HomekitThingBridge] ";
     private static final String THREAD_POOL_NAME = "homekit";

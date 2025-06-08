@@ -19,6 +19,8 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import com.nimbusds.srp6.SRP6ClientCredentials;
 import com.nimbusds.srp6.SRP6ClientEvidenceContext;
 import com.nimbusds.srp6.SRP6CryptoParams;
@@ -61,6 +63,7 @@ import com.nimbusds.srp6.XRoutine;
  * @author Bernard Wittwer
  * @author Karel Goderis - HomeKit adaptation
  */
+@NonNullByDefault
 public class HomekitClientSRP6Session extends SRP6Session implements Serializable {
 
     /** Serializable class version number */

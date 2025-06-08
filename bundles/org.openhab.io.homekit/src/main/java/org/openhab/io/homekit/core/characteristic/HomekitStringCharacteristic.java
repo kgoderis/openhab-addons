@@ -19,6 +19,7 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.types.State;
@@ -73,6 +74,7 @@ import org.slf4j.LoggerFactory;
  * @version 1.0
  * @since 1.0
  */
+@NonNullByDefault
 public abstract class HomekitStringCharacteristic extends AbstractHomekitCharacteristic<String> {
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "Homekit String: ";

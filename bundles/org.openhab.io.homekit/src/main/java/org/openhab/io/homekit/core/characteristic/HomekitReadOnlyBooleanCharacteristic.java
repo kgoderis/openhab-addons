@@ -11,7 +11,6 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-
 package org.openhab.io.homekit.core.characteristic;
 
 import java.util.Map;
@@ -20,6 +19,7 @@ import javax.json.JsonNumber;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.event.HomekitEventType;
@@ -70,7 +70,8 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @version 1.0
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public abstract class HomekitReadOnlyBooleanCharacteristic extends AbstractHomekitCharacteristic<Boolean> {
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "Homekit ReadOnlyBoolean: ";

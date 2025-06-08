@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +27,7 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Karel Goderis - Initial contribution
  */
+@NonNullByDefault
 public abstract class AbstractValidation implements Validation {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     private final String id;

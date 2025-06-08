@@ -17,6 +17,7 @@ import java.util.Set;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.HSBType;
 import org.openhab.core.library.types.PercentType;
@@ -38,6 +39,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  */
 @HomekitCharacteristicType(type = "00000008-0000-1000-8000-0026BB765291", name = "Brightness", tag = "brightness", acceptedItemTypes = {
         "Number", "Dimmer" })
+@NonNullByDefault
 public class HomekitBrightnessCharacteristic extends HomekitFloatCharacteristic {
 
     /**

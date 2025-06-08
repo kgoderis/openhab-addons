@@ -18,6 +18,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Annotation used to define HomeKit accessory types and their metadata.
  * <p>
@@ -56,6 +58,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
+@NonNullByDefault
 public @interface HomekitAccessoryType {
     /**
      * The HomeKit characteristic type UUID that identifies this accessory type.

@@ -32,6 +32,7 @@ import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 
 import org.apache.commons.lang.SystemUtils;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.config.discovery.AbstractDiscoveryService;
 import org.openhab.core.config.discovery.DiscoveryResultBuilder;
@@ -125,6 +126,7 @@ import org.slf4j.LoggerFactory;
  * @since 1.0
  */
 @Component(immediate = true, service = DiscoveryService.class, configurationPid = "discovery.homekit")
+@NonNullByDefault
 public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoveryService implements ServiceListener {
     /** Timeout for foreground scans in milliseconds */
     private static final Duration FOREGROUND_SCAN_TIMEOUT = Duration.ofMillis(200);

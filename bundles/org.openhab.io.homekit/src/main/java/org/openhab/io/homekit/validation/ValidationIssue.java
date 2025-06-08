@@ -16,11 +16,14 @@ package org.openhab.io.homekit.validation;
 import java.util.Map;
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Represents an individual validation issue.
  * 
  * @author Karel Goderis - Initial contribution
  */
+@NonNullByDefault
 public class ValidationIssue {
     private final ValidationResult.Severity severity;
     private final String message;

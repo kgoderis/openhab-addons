@@ -13,6 +13,8 @@
 
 package org.openhab.io.homekit.bridge;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Enum representing different sources of HomeKit configurations.
  * The order of declaration determines the priority (first = highest priority).
@@ -51,7 +53,8 @@ package org.openhab.io.homekit.bridge;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0.0
-     */
+ */
+@NonNullByDefault
 public enum ConfigurationSource {
     ITEMS_YAML, // Configuration from items.yaml
     THINGS_YAML, // Configuration from things.yaml

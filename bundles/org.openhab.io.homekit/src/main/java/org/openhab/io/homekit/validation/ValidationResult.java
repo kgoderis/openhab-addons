@@ -17,11 +17,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Represents the result of a validation check.
  * 
  * @author Karel Goderis - Initial contribution
  */
+@NonNullByDefault
 public class ValidationResult {
     private final boolean valid;
     private final Severity severity;

@@ -13,6 +13,7 @@
 
 package org.openhab.io.homekit.library.service;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
@@ -32,6 +33,7 @@ import org.openhab.io.homekit.library.characteristic.HomekitTokenCharacteristic;
  * @author Karel Goderis
  */
 @HomekitServiceType(type = "0000022E-0000-1000-8000-0026BB765291", name = "TapManagement", tag = "TapManagement")
+@NonNullByDefault
 public class HomekitTapManagementService extends AbstractHomekitService {
     /**
      * Creates a new TapManagement service.

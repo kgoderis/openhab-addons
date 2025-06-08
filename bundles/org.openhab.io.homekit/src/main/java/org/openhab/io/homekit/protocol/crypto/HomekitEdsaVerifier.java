@@ -17,6 +17,8 @@ import java.security.MessageDigest;
 import java.security.PublicKey;
 import java.security.Signature;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import net.i2p.crypto.eddsa.EdDSAEngine;
 import net.i2p.crypto.eddsa.EdDSAPublicKey;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
@@ -44,6 +46,7 @@ import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
+@NonNullByDefault
 public class HomekitEdsaVerifier {
 
     /** The public key used for signature verification */

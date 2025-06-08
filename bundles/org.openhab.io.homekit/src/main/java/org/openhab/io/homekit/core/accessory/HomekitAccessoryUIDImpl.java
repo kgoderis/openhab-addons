@@ -13,6 +13,7 @@
 
 package org.openhab.io.homekit.core.accessory;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.uid.HomekitAccessoryUID;
 import org.openhab.io.homekit.util.HomekitUID;
 
@@ -56,7 +57,8 @@ import org.openhab.io.homekit.util.HomekitUID;
  * @author Karel Goderis - Initial contribution
  * @version 1.0
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public class HomekitAccessoryUIDImpl extends HomekitUID implements HomekitAccessoryUID {
     private static final String ACCESSORY_PREFIX = "accessory";
     private final String pairingId;

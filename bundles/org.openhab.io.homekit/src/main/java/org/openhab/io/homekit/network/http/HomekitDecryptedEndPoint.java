@@ -20,6 +20,7 @@ import java.nio.channels.ReadPendingException;
 import java.nio.channels.WritePendingException;
 import java.util.concurrent.Executor;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jetty.io.AbstractConnection;
 import org.eclipse.jetty.io.ByteBufferPool;
 import org.eclipse.jetty.io.Connection;
@@ -41,7 +42,8 @@ import org.slf4j.LoggerFactory;
  * EndPoint interface to integrate seamlessly with the HTTP server infrastructure.
  * 
  * @author Karel Goderis - Initial contribution
-     */
+ */
+@NonNullByDefault
 public class HomekitDecryptedEndPoint implements EndPoint {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitDecryptedEndPoint.class);

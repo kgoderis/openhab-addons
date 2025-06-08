@@ -13,7 +13,7 @@
 
 package org.openhab.io.homekit.api.uid;
 
-import org.openhab.core.common.registry.Identifiable;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
  * Interface for HomeKit accessory unique identifiers.
@@ -55,7 +55,17 @@ import org.openhab.core.common.registry.Identifiable;
  * @author Karel Goderis - Initial contribution
  * @since 1.0.0
  */
-public interface HomekitAccessoryUID extends Identifiable<HomekitAccessoryUID> {
+@NonNullByDefault
+public interface HomekitAccessoryUID {
+    /**
+     * Gets the UID for this accessory.
+     * Required for compatibility with the Identifiable interface.
+     *
+     * @return This UID instance
+     * @since 1.0.0
+     */
+    HomekitAccessoryUID getUID();
+
     /**
      * Gets the unique identifier string for this accessory.
      * This method provides a string representation of the accessory's unique

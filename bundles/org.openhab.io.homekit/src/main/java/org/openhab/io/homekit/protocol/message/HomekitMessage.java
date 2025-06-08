@@ -17,6 +17,8 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Defines the message types used in HomeKit protocol communication.
  *
@@ -48,6 +50,7 @@ import java.util.Map;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
+@NonNullByDefault
 public enum HomekitMessage {
     /** Specifies the operation method to use */
     METHOD(0),

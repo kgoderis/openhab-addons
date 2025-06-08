@@ -15,6 +15,7 @@ package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitStringCharacteristic;
@@ -42,9 +43,10 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
-     */
+ */
 @HomekitCharacteristicType(type = "00000021-0000-1000-8000-0026BB765291", name = "Model", tag = "model", acceptedItemTypes = {
         "String", "Text" })
+@NonNullByDefault
 public class HomekitModelCharacteristic extends HomekitStringCharacteristic {
     // ========== Log Message Prefixes ==========
     private static final String LOG_PREFIX = "Homekit ModelCharacteristic: ";

@@ -15,6 +15,7 @@ package org.openhab.io.homekit.api.event;
 
 import java.util.Optional;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.event.core.HomekitEventMetadata;
 
@@ -47,6 +48,7 @@ import org.openhab.io.homekit.event.core.HomekitEventMetadata;
  * @author Karel Goderis - Initial contribution
  * @since 1.0.0
  */
+@NonNullByDefault
 public interface HomekitEvent {
     /**
      * Gets the type of this event.

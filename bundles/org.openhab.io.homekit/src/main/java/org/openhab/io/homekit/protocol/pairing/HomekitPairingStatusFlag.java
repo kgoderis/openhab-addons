@@ -13,6 +13,8 @@
 
 package org.openhab.io.homekit.protocol.pairing;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Defines the status flags used in HomeKit pairing protocol.
  *
@@ -42,6 +44,7 @@ package org.openhab.io.homekit.protocol.pairing;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
+@NonNullByDefault
 public enum HomekitPairingStatusFlag {
     /** Indicates an unknown or undetermined pairing status */
     UNKNOWN(0x00, 1, "HomekitAccessory has an unknown pairing status"),

@@ -15,6 +15,7 @@ package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -30,6 +31,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  */
 @HomekitCharacteristicType(type = "00000050-0000-1000-8000-0026BB765291", name = "List Pairings", tag = "listPairings", acceptedItemTypes = {
         "String" })
+@NonNullByDefault
 public class HomekitListPairingsCharacteristic extends HomekitTLV8Characteristic {
 
     public HomekitListPairingsCharacteristic(HomekitService service, HomekitEventManager eventManager,

@@ -13,6 +13,7 @@
 
 package org.openhab.io.homekit;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.ThingTypeUID;
 
 /**
@@ -20,7 +21,8 @@ import org.openhab.core.thing.ThingTypeUID;
  * used across the whole binding.
  *
  * @author Karel Goderis - Initial contribution
-     */
+ */
+@NonNullByDefault
 public class HomekitBindingConstants {
 
     public static final String BINDING_ID = "homekit";

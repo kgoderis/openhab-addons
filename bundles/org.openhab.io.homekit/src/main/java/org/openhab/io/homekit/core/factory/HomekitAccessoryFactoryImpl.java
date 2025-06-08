@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryType;
 import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
@@ -103,8 +104,9 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @version 1.0
  * @since 1.0
-     */
+ */
 @Component(service = HomekitAccessoryFactory.class)
+@NonNullByDefault
 public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "Homekit AccessoryFactory: ";

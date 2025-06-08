@@ -15,6 +15,7 @@ package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.library.types.OpenClosedType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
@@ -31,6 +32,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  */
 @HomekitCharacteristicType(type = "0000006A-0000-1000-8000-0026BB765291", name = "Contact Sensor State", tag = "contactSensorState", acceptedItemTypes = {
         "Number", "String", "Contact" })
+@NonNullByDefault
 public class HomekitContactSensorStateCharacteristic extends HomekitEnumCharacteristic {
 
     public enum ContactSensorState {

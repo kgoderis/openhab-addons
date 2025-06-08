@@ -13,6 +13,7 @@
 
 package org.openhab.io.homekit.event.util;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.event.HomekitEvent;
 import org.openhab.io.homekit.api.event.HomekitEventSubscriber;
 import org.slf4j.Logger;
@@ -55,6 +56,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  */
+@NonNullByDefault
 public class HomekitEventLogger implements HomekitEventSubscriber {
     private static final Logger logger = LoggerFactory.getLogger(HomekitEventLogger.class);
     private static final String LOG_PREFIX = "Homekit EventLogger: ";

@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.config.core.ConfigDescription;
 import org.openhab.core.config.core.ConfigDescriptionBuilder;
@@ -73,8 +74,9 @@ import org.osgi.service.component.annotations.Component;
  * - Supports localization
  *
  * @author Karel Goderis - Initial contribution
-     */
+ */
 @Component(service = ConfigDescriptionProvider.class)
+@NonNullByDefault
 public class HomekitConfigDescriptionProvider implements ConfigDescriptionProvider {
     private static final String CONFIG_URI_STRING = "homekit:config";
     private static final URI CONFIG_URI;

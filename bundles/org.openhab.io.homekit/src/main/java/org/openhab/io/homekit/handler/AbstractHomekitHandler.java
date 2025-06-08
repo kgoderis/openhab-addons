@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.config.core.Configuration;
 import org.openhab.core.thing.Channel;
@@ -88,6 +89,7 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
+@NonNullByDefault
 public abstract class AbstractHomekitHandler extends BaseThingHandler {
 
     // ========== Constants ==========
@@ -197,7 +199,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
      * 
      * This method is called during the initialization phase to set up the handler.
      * It validates the configuration, initializes components, and sets up event processing.
-     * */
+     */
     @Override
     public void initialize() {
         try {
@@ -255,7 +257,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
      * 
      * This method is called during disposal to clean up resources.
      * It handles specific disposal operations and cleans up channels.
-     * */
+     */
     @Override
     public void dispose() {
         synchronized (stateLock) {
@@ -302,7 +304,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
      * It checks for required configuration parameters and validates specific configurations.
      *
      * @throws ConfigurationException if the configuration is invalid
-     * */
+     */
     protected void validateConfiguration(Configuration config) {
         this.accessoryServerPairingId = (String) config.get(CONFIG_DEVICE_ID);
         this.accessoryId = (String) config.get(CONFIG_ACCESSORY_ID);
@@ -370,7 +372,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
      * the appropriate thing status. It should be implemented by subclasses.
      *
      * @return The determined thing status
-     * */
+     */
     protected abstract ThingStatus determineThingStatus();
 
     /**
@@ -380,7 +382,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
      * the appropriate status detail. It should be implemented by subclasses.
      *
      * @return The determined thing status detail
-     * */
+     */
     protected abstract ThingStatusDetail determineThingStatusDetail();
 
     /**
@@ -390,7 +392,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
      * an appropriate status description. It should be implemented by subclasses.
      *
      * @return A description of the current thing status
-     * */
+     */
     protected abstract String determineThingStatusDescription();
 
     protected void updateState(ThingStatus status, ThingStatusDetail detail, @Nullable String description) {
@@ -759,7 +761,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
      * </p>
      * 
      * @param characteristic The characteristic that was added
-     * */
+     */
     private void handleCharacteristicAdded(HomekitServiceEvent event) {
         Optional<HomekitCharacteristic<?>> addedCharacteristicOpt = event.getCharacteristic();
         if (addedCharacteristicOpt.isEmpty()) {
@@ -817,7 +819,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
      * </p>
      * 
      * @param characteristic The characteristic that was removed
-     * */
+     */
     private void handleCharacteristicRemoved(HomekitServiceEvent event) {
         event.getCharacteristic().ifPresentOrElse(removedCharacteristic -> {
 
@@ -877,7 +879,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
      * </p>
      * 
      * @param event The characteristic event
-     * */
+     */
     protected void handleCharacteristicEvent(HomekitCharacteristicEvent event) {
 
         event.getCharacteristic().ifPresentOrElse(characteristic -> {
@@ -1151,7 +1153,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
      * It should be implemented by subclasses.
      *
      * @return A set of characteristics for the handler
-     * */
+     */
     protected abstract Set<HomekitCharacteristic<?>> getCurrentCharacteristics();
 
     /**
@@ -1162,7 +1164,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
      *
      * @param characteristic The characteristic to validate
      * @return true if the characteristic belongs to this handler, false otherwise
-     * */
+     */
     protected abstract boolean validateCharacteristicBelongsToHandler(HomekitCharacteristic<?> characteristic);
 
     /**
@@ -1170,7 +1172,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
      * 
      * This method removes all channels associated with the handler.
      * It is called during disposal to ensure proper cleanup.
-     * */
+     */
     protected void cleanupChannels() {
         try {
             synchronized (characteristicMapLock) {
@@ -1205,7 +1207,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
      *
      * @param characteristic The characteristic to get the channel UID for
      * @return The channel UID for the characteristic
-     * */
+     */
     protected abstract ChannelUID getChannelUID(HomekitCharacteristic<?> characteristic);
 
     /**
@@ -1213,7 +1215,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
      * 
      * This method removes a channel for a characteristic.
      * It should be implemented by subclasses.
-     * */
+     */
     protected void removeChannelForCharacteristic(HomekitCharacteristic<?> characteristic) {
 
         try {
@@ -1406,7 +1408,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
      * </p>
      * 
      * @param channelUID The UID of the channel being linked
-     * */
+     */
     @Override
     public void channelLinked(ChannelUID channelUID) {
         if (disposed || channelUID == null) {
@@ -1464,7 +1466,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
      * </p>
      * 
      * @param channelUID The UID of the channel being unlinked
-     * */
+     */
     @Override
     public void channelUnlinked(ChannelUID channelUID) {
         if (disposed || channelUID == null) {

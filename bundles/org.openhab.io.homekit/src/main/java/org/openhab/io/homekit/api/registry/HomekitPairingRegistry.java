@@ -15,6 +15,7 @@ package org.openhab.io.homekit.api.registry;
 
 import java.util.Collection;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.Registry;
 import org.openhab.io.homekit.api.uid.HomekitPairingUID;
 import org.openhab.io.homekit.protocol.pairing.HomekitPairing;
@@ -60,6 +61,7 @@ import org.openhab.io.homekit.protocol.pairing.HomekitPairing;
  * @author Karel Goderis - Initial contribution
  * @since 1.0.0
  */
+@NonNullByDefault
 public interface HomekitPairingRegistry extends Registry<HomekitPairing, HomekitPairingUID> {
 
     /**

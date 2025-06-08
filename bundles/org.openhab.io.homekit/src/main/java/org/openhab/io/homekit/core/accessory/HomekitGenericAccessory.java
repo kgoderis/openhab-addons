@@ -15,6 +15,7 @@ package org.openhab.io.homekit.core.accessory;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryType;
 import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.factory.HomekitServiceFactory;
@@ -74,8 +75,9 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @version 1.0
  * @since 1.0
-     */
+ */
 @HomekitAccessoryType(name = "Generic Accessory", type = "1110001-0000-1000-8000-0026BB765291", tag = "generic")
+@NonNullByDefault
 public class HomekitGenericAccessory extends AbstractHomekitAccessory {
     // ========== Log Message Prefixes ==========
     private static final String LOG_PREFIX = "Homekit GenericAccessory: ";

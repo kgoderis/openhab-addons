@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.items.GroupItem;
 import org.openhab.core.items.Item;
 import org.openhab.core.items.ItemRegistry;
@@ -93,7 +94,8 @@ import org.slf4j.LoggerFactory;
  * - Enforces proper group hierarchy
  *
  * @author Karel Goderis - Initial contribution
-     */
+ */
+@NonNullByDefault
 public class HomekitTaggedItem {
     // ========== Log Message Prefixes ==========
     private static final String LOG_PREFIX = "Homekit TaggedItem: ";

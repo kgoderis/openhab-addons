@@ -13,6 +13,8 @@
 
 package org.openhab.io.homekit.exception;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Exception thrown when validation or argument errors occur in the HomeKit
  * integration.
@@ -36,6 +38,7 @@ package org.openhab.io.homekit.exception;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
+@NonNullByDefault
 public class HomekitValidationException extends HomekitException {
 
     private static final long serialVersionUID = -2847593847593847593L;

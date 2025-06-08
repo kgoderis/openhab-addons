@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.config.core.Configuration;
 import org.openhab.core.thing.Channel;
@@ -69,6 +70,7 @@ import org.openhab.io.homekit.provider.HomekitThingTypeProvider;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
+@NonNullByDefault
 public class HomekitServiceThingHandler extends AbstractHomekitHandler {
 
     // ========== Constants ==========

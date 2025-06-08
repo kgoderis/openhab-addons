@@ -15,6 +15,7 @@ package org.openhab.io.homekit.library.characteristic;
 
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
@@ -29,6 +30,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  */
 @HomekitCharacteristicType(type = "0000000F-0000-1000-8000-0026BB765291", name = "Current Heating Cooling State", tag = "currentHeatingCoolingState", acceptedItemTypes = {
         "Number", "String" })
+@NonNullByDefault
 public class HomekitCurrentHeatingCoolingStateCharacteristic extends HomekitEnumCharacteristic {
     /**
      * Enum representing the possible states of a heating/cooling system.

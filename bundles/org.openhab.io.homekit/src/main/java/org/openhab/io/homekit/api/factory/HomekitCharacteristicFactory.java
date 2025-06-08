@@ -15,6 +15,7 @@ package org.openhab.io.homekit.api.factory;
 
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.exception.HomekitFactoryException;
@@ -51,6 +52,7 @@ import org.openhab.io.homekit.exception.HomekitFactoryException;
  * @author Karel Goderis - Initial contribution
  * @since 1.0.0
  */
+@NonNullByDefault
 public interface HomekitCharacteristicFactory {
     /**
      * Creates a new HomeKit characteristic instance.

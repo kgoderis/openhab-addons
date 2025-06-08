@@ -13,6 +13,7 @@
 
 package org.openhab.io.homekit.network.discovery;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 
@@ -59,7 +60,8 @@ import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
  *
  * @author Karel Goderis - Initial contribution
  * @since 1.0
-     */
+ */
+@NonNullByDefault
 public class HomekitDiscoveryConstants {
 
     /**

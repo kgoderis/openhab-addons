@@ -11,7 +11,6 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-
 /**
  * Abstract base class for HomeKit characteristics that handle boolean values.
  * This class extends {@link AbstractHomekitCharacteristic} to provide specialized handling for
@@ -61,6 +60,7 @@ import javax.json.JsonNumber;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.types.State;
@@ -70,7 +70,8 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 /**
  * @author Karel Goderis - Initial contribution
  *
-     */
+ */
+@NonNullByDefault
 public abstract class HomekitBooleanCharacteristic extends AbstractHomekitCharacteristic<Boolean> {
 
     /**

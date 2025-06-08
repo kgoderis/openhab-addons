@@ -13,6 +13,8 @@
 
 package org.openhab.io.homekit.api.factory;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Enum representing the different types of factories in the HomeKit integration.
  *
@@ -34,6 +36,7 @@ package org.openhab.io.homekit.api.factory;
  * @author Karel Goderis - Initial contribution
  * @since 1.0.0
  */
+@NonNullByDefault
 public enum HomekitFactoryType {
     /**
      * Factory type for creating HomeKit accessories.

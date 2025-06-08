@@ -18,6 +18,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jetty.client.AbstractConnectionPool;
 import org.eclipse.jetty.client.HttpDestination;
 import org.eclipse.jetty.client.api.Connection;
@@ -29,7 +30,8 @@ import org.eclipse.jetty.util.annotation.ManagedAttribute;
  * Custom DuplexConnectionPool that exposes all connections (idle and active).
  * 
  * @author Karel Goderis - Initial contribution
-     */
+ */
+@NonNullByDefault
 public class HomekitConnectionPool extends AbstractConnectionPool {
     private final List<Connection> idleConnections = new CopyOnWriteArrayList<>();
     private final List<Connection> activeConnections = new CopyOnWriteArrayList<>();

@@ -13,6 +13,7 @@
 
 package org.openhab.io.homekit.api.listener;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.event.model.accessory.HomekitAccessoryEvent;
 
 /**
@@ -48,6 +49,7 @@ import org.openhab.io.homekit.event.model.accessory.HomekitAccessoryEvent;
  * @author Karel Goderis - Initial contribution
  * @since 1.0.0
  */
+@NonNullByDefault
 public interface HomekitAccessoryChangeListener {
     void onAccessoryEvent(HomekitAccessoryEvent accessoryEvent);
 }
