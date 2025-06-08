@@ -450,7 +450,11 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
      *            service
      */
     @Override
-    public void serviceAdded(ServiceEvent serviceEvent) {
+    public void serviceAdded(@Nullable ServiceEvent serviceEvent) {
+        if (serviceEvent == null) {
+            logger.debug("{}Received null service event for serviceAdded", LOG_EVENT);
+            return;
+        }
         logger.debug("{}Processing new service discovery: {}", LOG_EVENT, serviceEvent.getName());
         if (isBackgroundDiscoveryEnabled()) {
             considerService(serviceEvent);
@@ -466,7 +470,11 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
      *            removed service
      */
     @Override
-    public void serviceRemoved(ServiceEvent serviceEvent) {
+    public void serviceRemoved(@Nullable ServiceEvent serviceEvent) {
+        if (serviceEvent == null) {
+            logger.debug("{}Received null service event for serviceRemoved", LOG_EVENT);
+            return;
+        }
         ServiceInfo serviceInfo = serviceEvent.getInfo();
         if (serviceInfo != null) {
             logger.debug("{}Processing service removal: {}", LOG_EVENT, serviceInfo.getName());
@@ -499,7 +507,11 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
      *            resolved service
      */
     @Override
-    public void serviceResolved(ServiceEvent serviceEvent) {
+    public void serviceResolved(@Nullable ServiceEvent serviceEvent) {
+        if (serviceEvent == null) {
+            logger.debug("{}Received null service event for serviceResolved", LOG_EVENT);
+            return;
+        }
         logger.debug("{}Processing service resolution: {}", LOG_EVENT, serviceEvent.getName());
         if (isBackgroundDiscoveryEnabled()) {
             considerService(serviceEvent);

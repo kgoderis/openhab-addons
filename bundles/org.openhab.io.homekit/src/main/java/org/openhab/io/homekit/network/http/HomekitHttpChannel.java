@@ -14,10 +14,12 @@
 package org.openhab.io.homekit.network.http;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.client.http.HttpChannelOverHTTP;
 import org.eclipse.jetty.client.http.HttpConnectionOverHTTP;
 import org.eclipse.jetty.client.http.HttpReceiverOverHTTP;
 import org.eclipse.jetty.client.http.HttpSenderOverHTTP;
+import org.openhab.io.homekit.protocol.crypto.HomekitEncryptionEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,9 +96,8 @@ public class HomekitHttpChannel extends HttpChannelOverHTTP {
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
-    protected byte[] decryptionKey;
-
-    protected byte[] encryptionKey;
+    protected byte @Nullable [] decryptionKey = null;
+    protected byte @Nullable [] encryptionKey = null;
 
     /**
      * Creates a new HomeKit HTTP channel for the given connection.
@@ -378,7 +379,7 @@ public class HomekitHttpChannel extends HttpChannelOverHTTP {
      *
      * @return The decryption key, or null if not configured
      */
-    public byte[] getDecryptionKey() {
+    public byte @Nullable [] getDecryptionKey() {
         logger.trace("{}Retrieving decryption key", LOG_STATE);
         return decryptionKey;
     }
@@ -401,7 +402,7 @@ public class HomekitHttpChannel extends HttpChannelOverHTTP {
      *
      * @return The encryption key, or null if not configured
      */
-    public byte[] getEncryptionKey() {
+    public byte @Nullable [] getEncryptionKey() {
         logger.trace("{}Retrieving encryption key", LOG_STATE);
         return encryptionKey;
     }

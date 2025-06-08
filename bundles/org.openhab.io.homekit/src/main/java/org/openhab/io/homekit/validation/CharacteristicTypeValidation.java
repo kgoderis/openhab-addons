@@ -89,7 +89,7 @@ public class CharacteristicTypeValidation extends AbstractValidation {
 
         // Get all characteristics for this service
         @NonNull
-        Set<@NonNull HomekitCharacteristic<?>> characteristics = service.getCharacteristics();
+        Set<HomekitCharacteristic<?>> characteristics = service.getCharacteristics();
         if (characteristics == null) {
             issues.add(createIssue(ValidationResult.Severity.ERROR,
                     String.format("No characteristics found for service '%s'", serviceName), "NO_CHARACTERISTICS",
@@ -128,7 +128,7 @@ public class CharacteristicTypeValidation extends AbstractValidation {
                             characteristicUuid),
                     "INVALID_CHARACTERISTIC_UUID",
                     getContextKey(thing) + ":" + service.getType() + ":" + characteristicUuid, true, true,
-                    Map.<String, Object> of("serviceName", service.getName(), "serviceUuid", service.getType(),
+                    Map.<String, Object>of("serviceName", service.getName(), "serviceUuid", service.getType(),
                             "characteristicName", characteristicName, "characteristicUuid", characteristicUuid)));
             return;
         }
@@ -140,7 +140,7 @@ public class CharacteristicTypeValidation extends AbstractValidation {
                             characteristicName, service.getName()),
                     "INCOMPATIBLE_CHARACTERISTIC_TYPE",
                     getContextKey(thing) + ":" + service.getType() + ":" + characteristicUuid, true, true,
-                    Map.<String, Object> of("serviceName", service.getName(), "serviceUuid", service.getType(),
+                    Map.<String, Object>of("serviceName", service.getName(), "serviceUuid", service.getType(),
                             "characteristicName", characteristicName, "characteristicUuid", characteristicUuid)));
         }
 
@@ -151,7 +151,7 @@ public class CharacteristicTypeValidation extends AbstractValidation {
                             service.getName()),
                     "DUPLICATE_CHARACTERISTIC_TYPE",
                     getContextKey(thing) + ":" + service.getType() + ":" + characteristicUuid, true, true,
-                    Map.<String, Object> of("serviceName", service.getName(), "serviceUuid", service.getType(),
+                    Map.<String, Object>of("serviceName", service.getName(), "serviceUuid", service.getType(),
                             "characteristicName", characteristicName, "characteristicUuid", characteristicUuid)));
         }
     }
@@ -178,7 +178,7 @@ public class CharacteristicTypeValidation extends AbstractValidation {
         }
 
         @NonNull
-        Set<@NonNull HomekitCharacteristic<?>> characteristics = service.getCharacteristics();
+        Set<HomekitCharacteristic<?>> characteristics = service.getCharacteristics();
         if (characteristics == null) {
             return false;
         }

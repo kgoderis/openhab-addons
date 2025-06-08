@@ -14,6 +14,7 @@
 package org.openhab.io.homekit.network.http;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.client.ConnectionPool;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.Origin;
@@ -95,9 +96,9 @@ public class HomekitHttpDestination extends HttpDestinationOverHTTP {
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
-    private byte[] decryptionKey;
+    private byte @Nullable [] decryptionKey = null;
 
-    private byte[] encryptionKey;
+    private byte @Nullable [] encryptionKey = null;
 
     /**
      * Creates a new HomeKit HTTP destination.
@@ -232,7 +233,7 @@ public class HomekitHttpDestination extends HttpDestinationOverHTTP {
      *
      * @return The decryption key, or null if not configured
      */
-    public byte[] getDecryptionKey() {
+    public byte @Nullable [] getDecryptionKey() {
         logger.trace("{}Retrieving decryption key", LOG_STATE);
         return decryptionKey;
     }
@@ -255,7 +256,7 @@ public class HomekitHttpDestination extends HttpDestinationOverHTTP {
      *
      * @return The encryption key, or null if not configured
      */
-    public byte[] getEncryptionKey() {
+    public byte @Nullable [] getEncryptionKey() {
         logger.trace("{}Retrieving encryption key", LOG_STATE);
         return encryptionKey;
     }

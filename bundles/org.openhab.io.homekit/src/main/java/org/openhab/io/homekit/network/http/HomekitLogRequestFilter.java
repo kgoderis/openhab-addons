@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.io.HexDump;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,7 +90,8 @@ public class HomekitLogRequestFilter implements Filter {
      * @throws ServletException if initialization fails
      */
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
+    @SuppressWarnings("null") // Parent Filter interface doesn't constrain this parameter
+    public void init(@Nullable FilterConfig filterConfig) throws ServletException {
         logger.debug("{}Initializing filter with configuration", LOG_INIT);
     }
 
@@ -113,8 +115,14 @@ public class HomekitLogRequestFilter implements Filter {
      * @throws ServletException if the request cannot be processed
      */
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
+    @SuppressWarnings("null") // Parent Filter interface doesn't constrain these parameters
+    public void doFilter(@Nullable ServletRequest request, @Nullable ServletResponse response,
+            @Nullable FilterChain chain) throws IOException, ServletException {
+
+        if (request == null || response == null || chain == null) {
+            return;
+        }
+
         try {
             logger.debug("{}Processing request: {}", LOG_REQUEST, ((HttpServletRequest) request).getRequestURI());
             if (logger.isDebugEnabled()) {

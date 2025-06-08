@@ -114,8 +114,15 @@ public class HomekitTypeLengthValueEncoderDecoder {
             byte[] part = new byte[length];
             bais.read(part);
             ret.add(type, part);
-            logger.trace("{}Decoded T {} L {} V {}", LOG_DECODE, HomekitMessage.get(type).name(), length,
-                    HomekitByte.toHexString(part));
+            HomekitMessage message = HomekitMessage.get(type);
+            if (message != null) {
+                String messageName = message.name();
+                logger.trace("{}Decoded T {} L {} V {}", LOG_DECODE, messageName, length,
+                        HomekitByte.toHexString(part));
+            } else {
+                logger.trace("{}Decoded T {} L {} V {}", LOG_DECODE, "unknown", length,
+                        HomekitByte.toHexString(part));
+            }
         }
         return ret;
     }
@@ -314,7 +321,11 @@ public class HomekitTypeLengthValueEncoderDecoder {
          * @return The byte value
          */
         public byte getByte(HomekitMessage type) {
-            return result.get(type.getKey())[0];
+            byte[] bytes = result.get(type.getKey());
+            if (bytes == null) {
+                throw new IllegalArgumentException("No data found for message type: " + type);
+            }
+            return bytes[0];
         }
 
         /**
@@ -350,7 +361,11 @@ public class HomekitTypeLengthValueEncoderDecoder {
          * @return The byte array value
          */
         public byte[] getBytes(HomekitMessage type) {
-            return result.get(type.getKey());
+            byte[] bytes = result.get(type.getKey());
+            if (bytes == null) {
+                throw new IllegalArgumentException("No data found for message type: " + type);
+            }
+            return bytes;
         }
 
         /**
@@ -389,7 +404,11 @@ public class HomekitTypeLengthValueEncoderDecoder {
          * @return The length of the value
          */
         public int getLength(HomekitMessage type) {
-            return result.get(type.getKey()).length;
+            byte[] bytes = result.get(type.getKey());
+            if (bytes == null) {
+                throw new IllegalArgumentException("No data found for message type: " + type);
+            }
+            return bytes.length;
         }
 
         /**

@@ -18,8 +18,10 @@ import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
+import java.util.Objects;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.nimbusds.srp6.SRP6ClientCredentials;
 import com.nimbusds.srp6.SRP6ClientEvidenceContext;
@@ -88,18 +90,21 @@ public class HomekitClientSRP6Session extends SRP6Session implements Serializabl
     }
 
     /** The user password 'P' */
-    private String password;
+    private @Nullable String password;
 
     /** The password key 'x' */
+    @Nullable
     private BigInteger x = null;
 
     /** The client private value 'a' */
+    @Nullable
     private BigInteger a = null;
 
     /** The current SRP-6a authentication state */
     private State state;
 
     /** Custom routine for password key 'x' computation */
+    @Nullable
     private XRoutine xRoutine = null;
 
     /**
@@ -139,9 +144,9 @@ public class HomekitClientSRP6Session extends SRP6Session implements Serializabl
     /**
      * Gets the current password key computation routine.
      *
-     * @return The custom routine instance, or null if using the default
+     * @return An Optional containing the custom routine instance, or empty if using the default
      */
-    public XRoutine getXRoutine() {
+    public @Nullable XRoutine getXRoutine() {
         return xRoutine;
     }
 
@@ -236,6 +241,11 @@ public class HomekitClientSRP6Session extends SRP6Session implements Serializabl
             throw new IllegalStateException("State violation: Session must be in STEP_1 state");
         }
 
+        // Password should be set by step1
+        if (password == null) {
+            throw new IllegalStateException("Password must be set via step1() before calling step2()");
+        }
+
         // Check timeout
         if (hasTimedOut()) {
             throw new SRP6Exception("Session timeout", SRP6Exception.CauseType.TIMEOUT);
@@ -247,15 +257,17 @@ public class HomekitClientSRP6Session extends SRP6Session implements Serializabl
         }
 
         // Compute the password key 'x'
-        if (xRoutine != null) {
+        if (xRoutine != null && password != null && userID != null) {
 
             // With custom routine
             x = xRoutine.computeX(config.getMessageDigestInstance(), s.toByteArray(),
-                    userID.getBytes(Charset.forName("UTF-8")), password.getBytes(Charset.forName("UTF-8")));
+                    Objects.requireNonNull(userID).getBytes(Charset.forName("UTF-8")),
+                    Objects.requireNonNull(password).getBytes(Charset.forName("UTF-8")));
 
         } else {
             // With default routine
-            x = SRP6Routines.computeX(digest, s.toByteArray(), password.getBytes(Charset.forName("UTF-8")));
+            x = SRP6Routines.computeX(digest, s.toByteArray(),
+                    Objects.requireNonNull(password).getBytes(Charset.forName("UTF-8")));
             digest.reset();
         }
 

@@ -89,7 +89,7 @@ public class MandatoryCharacteristicValidation extends AbstractValidation {
 
         // Get all characteristics for this service
         @NonNull
-        Set<@NonNull HomekitCharacteristic<?>> characteristics = service.getCharacteristics();
+        Set<HomekitCharacteristic<?>> characteristics = service.getCharacteristics();
         if (characteristics == null) {
             issues.add(createIssue(ValidationResult.Severity.ERROR,
                     String.format("No characteristics found for service '%s'", serviceName), "NO_CHARACTERISTICS",
@@ -128,7 +128,7 @@ public class MandatoryCharacteristicValidation extends AbstractValidation {
                             service.getName()),
                     "MISSING_MANDATORY_CHARACTERISTIC",
                     getContextKey(thing) + ":" + service.getType() + ":" + characteristicName, true, true,
-                    Map.<String, Object> of("serviceName", service.getName(), "serviceUuid", service.getType(),
+                    Map.<String, Object>of("serviceName", service.getName(), "serviceUuid", service.getType(),
                             "characteristicName", characteristicName)));
         }
     }

@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.http.HttpHeader;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
@@ -163,8 +164,17 @@ public class HomekitAccessoryServlet extends HomekitBaseServlet {
      * @throws ServletException if the request cannot be handled
      */
     @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    public void doGet(@Nullable HttpServletRequest request, @Nullable HttpServletResponse response)
+            throws IOException, ServletException {
         logger.debug("{}Handling GET request for accessory information", LOG_REQUEST);
+
+        if (request == null || response == null) {
+            logger.error("{}Request or response is null", LOG_ERROR);
+            if (response != null) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            }
+            return;
+        }
         JsonArrayBuilder accessories = Json.createArrayBuilder();
 
         try {

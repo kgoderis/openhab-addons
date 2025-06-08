@@ -215,9 +215,7 @@ public class HomekitAccessoryBridge implements EventSubscriber {
         }
         // Unsubscribe all tracked subscriptions
         eventSubscriptions.forEach(sub -> {
-            if (sub != null) {
-                eventManager.unsubscribe(sub);
-            }
+            eventManager.unsubscribe(sub);
         });
         eventSubscriptions.clear();
         cleanup();
@@ -530,7 +528,7 @@ public class HomekitAccessoryBridge implements EventSubscriber {
                         HomekitCharacteristicUpdateEvent updateEvent = new HomekitCharacteristicUpdateEvent(
                                 (UID) bridgeUID, (UID) c.getUID(), c,
                                 characteristic.toValueJson(characteristic.getValue()),
-                                characteristic.toValueJson(value), Map.<String, Object> of(),
+                                characteristic.toValueJson(value), Map.<String, Object>of(),
                                 new HomekitEventMetadata(bridgeUID, null, bridgeUID, peerGroup));
                         eventManager.publishEvent(updateEvent);
                     } catch (Exception e) {
@@ -622,9 +620,7 @@ public class HomekitAccessoryBridge implements EventSubscriber {
 
                     // Set up event subscription and track it
                     HomekitEventSubscription subscription = subscribeToCharacteristicEvents(characteristic);
-                    if (subscription != null) {
-                        eventSubscriptions.add(subscription);
-                    }
+                    eventSubscriptions.add(subscription);
                 }
             } catch (Exception e) {
                 logger.error("{}Failed to create characteristic {}: {}", LOG_PREFIX, type, e.getMessage());
@@ -775,14 +771,12 @@ public class HomekitAccessoryBridge implements EventSubscriber {
                     // This is a channel-based characteristic
                     changedEvent.getNewValue().ifPresent(newValue -> {
                         State newState = characteristic.toState(newValue);
-                        if (newState != null) {
-                            // Find linked items for this channel
-                            linkRegistry.getLinks(channelUID).forEach(link -> {
-                                String itemName = link.getItemName();
-                                exitEvents.put(itemName, new ExitEvent(newState, event.getMetadata()));
-                                eventPublisher.post(ItemEventFactory.createStateEvent(itemName, newState));
-                            });
-                        }
+                        // Find linked items for this channel
+                        linkRegistry.getLinks(channelUID).forEach(link -> {
+                            String itemName = link.getItemName();
+                            exitEvents.put(itemName, new ExitEvent(newState, event.getMetadata()));
+                            eventPublisher.post(ItemEventFactory.createStateEvent(itemName, newState));
+                        });
                     });
                 } else {
                     // This is an item-based characteristic
@@ -791,10 +785,8 @@ public class HomekitAccessoryBridge implements EventSubscriber {
                     if (itemUID != null) {
                         changedEvent.getNewValue().ifPresent(newValue -> {
                             State newState = characteristic.toState(newValue);
-                            if (newState != null) {
-                                exitEvents.put(itemUID.toString(), new ExitEvent(newState, event.getMetadata()));
-                                eventPublisher.post(ItemEventFactory.createStateEvent(itemUID.getItemName(), newState));
-                            }
+                            exitEvents.put(itemUID.toString(), new ExitEvent(newState, event.getMetadata()));
+                            eventPublisher.post(ItemEventFactory.createStateEvent(itemUID.getItemName(), newState));
                         });
                     }
                 }
@@ -950,10 +942,6 @@ public class HomekitAccessoryBridge implements EventSubscriber {
      * @param event The {@link ItemCommandEvent} to process
      */
     public void handleItemCommand(ItemCommandEvent event) {
-        if (event == null || event.getItemName() == null) {
-            logger.warn("{}Received null or invalid item command event", LOG_WARN);
-            return;
-        }
 
         logger.debug("{}Processing item command event: {}", LOG_STATE, event);
 
@@ -962,10 +950,6 @@ public class HomekitAccessoryBridge implements EventSubscriber {
 
         String itemName = event.getItemName();
         Command command = event.getItemCommand();
-        if (command == null) {
-            logger.warn("{}Received null command for item {}", LOG_WARN, itemName);
-            return;
-        }
 
         logger.debug("{}Processing command {} for item {}", LOG_STATE, command, itemName);
 
@@ -1034,10 +1018,6 @@ public class HomekitAccessoryBridge implements EventSubscriber {
      * @param event The {@link ItemStateEvent} to process
      */
     public void handleItemState(ItemStateEvent event) {
-        if (event == null || event.getItemName() == null) {
-            logger.warn("{}Received null or invalid item state event", LOG_WARN);
-            return;
-        }
 
         logger.debug("{}Processing item state event: {}", LOG_STATE, event);
 
@@ -1046,10 +1026,6 @@ public class HomekitAccessoryBridge implements EventSubscriber {
 
         String itemName = event.getItemName();
         State state = event.getItemState();
-        if (state == null) {
-            logger.warn("{}Received null state for item {}", LOG_WARN, itemName);
-            return;
-        }
 
         logger.debug("{}Processing state {} for item {}", LOG_STATE, state, itemName);
 
@@ -1096,9 +1072,8 @@ public class HomekitAccessoryBridge implements EventSubscriber {
      */
     private void cleanupExpiredExitEvents() {
         exitEvents.entrySet().removeIf(entry -> {
-            @Nullable
             ExitEvent event = entry.getValue();
-            return event != null && event.isExpired();
+            return event.isExpired();
         });
     }
 
@@ -1121,8 +1096,6 @@ public class HomekitAccessoryBridge implements EventSubscriber {
     private boolean statesEqual(Object state1, Object state2) {
         if (state1 == state2)
             return true;
-        if (state1 == null || state2 == null)
-            return false;
         return state1.equals(state2);
     }
 
@@ -1194,16 +1167,20 @@ public class HomekitAccessoryBridge implements EventSubscriber {
         private @Nullable ScheduledExecutorService executor;
 
         public void start() {
-            executor = ThreadPoolManager.getScheduledPool("homekit");
-            if (executor != null) {
+            @Nullable
+            ScheduledExecutorService newExecutor = ThreadPoolManager.getScheduledPool("homekit");
+            if (newExecutor != null) {
+                executor = newExecutor;
                 scheduledTask = executor.scheduleAtFixedRate(this::printStatistics, STATISTICS_REPORT_INTERVAL_SECONDS,
                         STATISTICS_REPORT_INTERVAL_SECONDS, TimeUnit.SECONDS);
             }
         }
 
         public void stop() {
-            if (scheduledTask != null) {
-                scheduledTask.cancel(false);
+            @Nullable
+            ScheduledFuture<?> currentTask = scheduledTask;
+            if (currentTask != null) {
+                currentTask.cancel(false);
                 scheduledTask = null;
             }
             executor = null;
@@ -1242,9 +1219,8 @@ public class HomekitAccessoryBridge implements EventSubscriber {
                 int[] deciles = new int[11];
                 for (int i = 0; i <= 10; i++) {
                     int index = (int) Math.round(i * (sortedTimes.size() - 1) / 10.0);
-                    @Nullable
                     Long value = sortedTimes.get(index);
-                    deciles[i] = value != null ? value.intValue() : 0;
+                    deciles[i] = value.intValue();
                 }
 
                 // Build histogram

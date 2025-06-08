@@ -328,6 +328,7 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
             return;
         }
 
+        @SuppressWarnings("null") // Safe after isEmpty() check above
         Map<String, Object> thingConfig = thingConfigOpt.get();
         if (!Boolean.TRUE.equals(thingConfig.get("bridge"))) {
             logger.debug("{}Thing {} not configured as bridge", LOG_PREFIX, thing.getUID());
@@ -474,6 +475,7 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         Optional<Map<String, Object>> serviceMappingsOpt = configManager.getConfiguration(thing.getUID(),
                 HomekitConfigurationManager.ConfigurationType.CHANNEL);
 
+        @Nullable
         Map<String, Object> serviceMappings = serviceMappingsOpt.orElse(Collections.emptyMap());
         if (serviceMappings == null) {
             serviceMappings = Collections.emptyMap(); // Additional safety check
@@ -518,7 +520,9 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
                         }
                     }
                 } else {
-                    service = serviceOpt.get();
+                    @SuppressWarnings("null") // Safe after isEmpty() check above
+                    HomekitService nonNullService = serviceOpt.get();
+                    service = nonNullService;
                 }
 
                 // Process characteristics for this service
@@ -554,7 +558,11 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
 
         // Then try pattern matching
         for (Map.Entry<String, Object> entry : serviceMappings.entrySet()) {
+            @Nullable
             String pattern = entry.getKey();
+            if (pattern == null) {
+                continue;
+            }
             if (pattern.contains("*")) {
                 String regex = pattern.replace("*", ".*");
                 if (channelUID.matches(regex)) {
@@ -580,8 +588,16 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
      */
     private void processCharacteristics(Channel channel, HomekitService service, Map<String, Object> characteristics) {
         for (Map.Entry<String, Object> entry : characteristics.entrySet()) {
+            @Nullable
             String characteristicType = entry.getKey();
+            if (characteristicType == null) {
+                continue;
+            }
+            @Nullable
             Object value = entry.getValue();
+            if (value == null) {
+                continue;
+            }
             if (!(value instanceof Map)) {
                 continue; // Skip invalid entries
             }
@@ -714,17 +730,17 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
                     }
 
                     // Use the HomeKit -> OpenHAB profile
+                    @Nullable
                     Profile profile = channelHomekitToOpenhabProfiles.get(channelUID);
                     if (profile instanceof StateProfile stateProfile) {
                         changedEvent.getNewValue().ifPresent(newValue -> {
                             State newState = characteristic.toState(newValue);
                             if (newState != null) {
                                 // Store the exit event
-                                String itemName = itemChannelLinkRegistry.getLinks(channelUID).stream().findFirst()
-                                        .map(ItemChannelLink::getItemName).orElse(null);
-                                if (itemName != null) {
-                                    exitEvents.put(itemName, new ExitEvent(newState, event.getMetadata()));
-                                }
+                                itemChannelLinkRegistry.getLinks(channelUID).stream().findFirst()
+                                        .map(ItemChannelLink::getItemName).ifPresent(itemName -> {
+                                            exitEvents.put(itemName, new ExitEvent(newState, event.getMetadata()));
+                                        });
                                 stateProfile.onStateUpdateFromHandler(newState);
                             }
                         });
@@ -733,12 +749,11 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
                         changedEvent.getNewValue().ifPresent(newValue -> {
                             State newState = characteristic.toState(newValue);
                             if (newState != null) {
-                                String itemName = itemChannelLinkRegistry.getLinks(channelUID).stream().findFirst()
-                                        .map(ItemChannelLink::getItemName).orElse(null);
-                                if (itemName != null) {
-                                    exitEvents.put(itemName, new ExitEvent(newState, event.getMetadata()));
-                                    eventPublisher.post(ItemEventFactory.createStateEvent(itemName, newState));
-                                }
+                                itemChannelLinkRegistry.getLinks(channelUID).stream().findFirst()
+                                        .map(ItemChannelLink::getItemName).ifPresent(itemName -> {
+                                            exitEvents.put(itemName, new ExitEvent(newState, event.getMetadata()));
+                                            eventPublisher.post(ItemEventFactory.createStateEvent(itemName, newState));
+                                        });
                             }
                         });
                     }
@@ -803,18 +818,21 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         Command command = event.getItemCommand();
 
         // Find the Channel linked to this Item
+        @Nullable
         ChannelUID channelUID = itemChannelMap.get(itemName);
         if (channelUID == null) {
             return;
         }
 
         // Find the Characteristic for this Channel
+        @Nullable
         HomekitCharacteristic<?> characteristic = channelCharacteristicMap.get(channelUID);
         if (characteristic == null) {
             return;
         }
 
         // Check if we have a profile for this channel
+        @Nullable
         Profile profile = channelProfiles.get(channelUID);
         if (profile != null) {
             // Use the profile to handle the command
@@ -824,8 +842,10 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         } else {
             // Direct communication - convert and send event
             try {
+                HomekitCharacteristic<?> nonNullCharacteristic = Objects.requireNonNull(characteristic);
                 HomekitCharacteristicUpdateEvent updateEvent = new HomekitCharacteristicUpdateEvent((UID) bridgeUID,
-                        (UID) characteristic.getUID(), characteristic, characteristic.toValueJson((State) command),
+                        (UID) nonNullCharacteristic.getUID(), nonNullCharacteristic,
+                        nonNullCharacteristic.toValueJson((State) command),
                         null, Map.of(), new HomekitEventMetadata(bridgeUID, null, bridgeUID, Set.of()));
                 eventManager.publishEvent(updateEvent);
             } catch (Exception e) {
@@ -869,14 +889,14 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
             return;
         }
 
-        // Find the Channel linked to this Item
+        // Find the Channel linked to this Item (itemChannelMap is not null)
         @Nullable
         ChannelUID channelUID = itemChannelMap.get(itemName);
         if (channelUID == null) {
             return;
         }
 
-        // Find the Characteristic for this Channel
+        // Find the Characteristic for this Channel (channelCharacteristicMap is not null)
         @Nullable
         HomekitCharacteristic<?> characteristic = channelCharacteristicMap.get(channelUID);
         if (characteristic == null) {
@@ -918,9 +938,10 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
                 if (exitEvent == null) {
                     logger.debug("{}Processing new state change for item: {}", LOG_PREFIX, itemName);
                     if (characteristic != null) {
+                        HomekitCharacteristic<?> nonNullCharacteristic = Objects.requireNonNull(characteristic);
                         HomekitCharacteristicUpdateEvent updateEvent = new HomekitCharacteristicUpdateEvent(
-                                (UID) bridgeUID, (UID) characteristic.getUID(), characteristic,
-                                characteristic.toValueJson(state), null, Map.of(),
+                                (UID) bridgeUID, (UID) nonNullCharacteristic.getUID(), nonNullCharacteristic,
+                                nonNullCharacteristic.toValueJson(state), null, Map.of(),
                                 new HomekitEventMetadata(bridgeUID, null, bridgeUID, peerGroup));
                         eventManager.publishEvent(updateEvent);
                     }
@@ -1091,7 +1112,7 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
     private Optional<Item> getItem(final String itemName) {
         @Nullable
         Item item = itemRegistry.get(itemName);
-        return Optional.ofNullable(item);
+        return item != null ? Optional.of(item) : Optional.empty();
     }
 
     /**
@@ -1123,11 +1144,13 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
 
         // handle HSBType/PercentType
         if (CoreItemFactory.DIMMER.equals(channelAcceptedItemType) && originalType instanceof HSBType hsb) {
-            Optional<Command> result = Optional.ofNullable(hsb.as(PercentType.class));
+            PercentType midresult = hsb.as(PercentType.class);
+            Optional<Command> result = midresult != null ? Optional.of(midresult) : Optional.empty();
             return result;
         }
 
         // check for other cases if the type is acceptable
+        @Nullable
         List<Class<? extends Command>> acceptedTypes = acceptedCommandTypeMap.get(channelAcceptedItemType);
         if (acceptedTypes == null || acceptedTypes.contains(originalType.getClass())) {
             return Optional.of(originalType);
@@ -1196,8 +1219,7 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         String channelAcceptedItemType = channel.getAcceptedItemType();
 
         if (channelAcceptedItemType == null) {
-            Optional<T> result = Optional.ofNullable(originalType);
-            return result;
+            return originalType != null ? Optional.of(originalType) : Optional.empty();
         }
 
         // handle Number-Channels for backward compatibility
@@ -1252,6 +1274,7 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
      * @since 1.0.0
      */
     private void handleProfileCommand(ChannelUID channelUID, Command command) {
+        @Nullable
         HomekitCharacteristic<?> characteristic = channelCharacteristicMap.get(channelUID);
         if (characteristic != null) {
             try {
@@ -1276,6 +1299,7 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
      * @since 1.0.0
      */
     private void handleProfileState(ChannelUID channelUID, State state) {
+        @Nullable
         HomekitCharacteristic<?> characteristic = channelCharacteristicMap.get(channelUID);
         if (characteristic != null) {
             try {
@@ -1445,6 +1469,7 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
     public void removed(Thing thing) {
         logger.debug("{}Thing {} removed", LOG_PREFIX, thing.getUID());
 
+        @Nullable
         HomekitAccessory accessory = thingAccessoryMap.get(thing.getUID());
         if (accessory != null) {
             try {
@@ -1470,6 +1495,7 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
 
                     // Remove all characteristics associated with this thing's channels
                     thing.getChannels().forEach(channel -> {
+                        @Nullable
                         HomekitCharacteristic<?> characteristic = channelCharacteristicMap.remove(channel.getUID());
                         if (characteristic != null) {
                             // Remove from bidirectional map
@@ -1614,6 +1640,7 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
      * @since 1.0.0
      */
     public boolean isOrphaned(Thing thing) {
+        @Nullable
         HomekitAccessory accessory = thingAccessoryMap.get(thing.getUID());
         return accessory != null && accessory.isOrphaned();
     }
@@ -1708,7 +1735,7 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
                 int[] deciles = new int[11];
                 for (int i = 0; i <= 10; i++) {
                     int index = (int) Math.round(i * (sortedTimes.size() - 1) / 10.0);
-                    deciles[i] = sortedTimes.get(index).intValue();
+                    deciles[i] = Objects.requireNonNull(sortedTimes.get(index)).intValue();
                 }
 
                 // Build histogram
@@ -1745,8 +1772,10 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
      * @since 1.0.0
      */
     public Collection<Thing> getThings() {
-        return thingAccessoryMap.keySet().stream().map(thingRegistry::get).filter(Objects::nonNull)
+        @SuppressWarnings("null") // Collectors.toList() never returns null
+        Collection<Thing> result = thingAccessoryMap.keySet().stream().map(thingRegistry::get).filter(Objects::nonNull)
                 .collect(Collectors.toList());
+        return result;
     }
 
     /**

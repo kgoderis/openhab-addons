@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Defines the set of supported HomeKit protocol methods for device pairing and management.
@@ -100,7 +101,7 @@ public enum HomekitMethod {
      * @param code The numeric key to look up
      * @return The corresponding HomeKit method, or null if not found
      */
-    public static HomekitMethod get(short code) {
+    public static @Nullable HomekitMethod get(short code) {
         return lookup.get(code);
     }
 }

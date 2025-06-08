@@ -16,6 +16,7 @@ package org.openhab.io.homekit.core.server;
 import java.util.Objects;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -296,6 +297,7 @@ public class HomekitAccessoryServerState {
      * @return A string in the format "{name} ({description})"
      */
     @Override
+    @SuppressWarnings("null") // Return type compatibility with Object.toString()
     public String toString() {
         String result = String.format("%s (%s)", name, description);
         logger.trace("{}Converting state to string: {}", LOG_STATE, result);
@@ -324,7 +326,8 @@ public class HomekitAccessoryServerState {
      * @return true if the objects are equal, false otherwise
      */
     @Override
-    public boolean equals(Object obj) {
+    @SuppressWarnings("null") // Parameter type compatibility with Object.equals()
+    public boolean equals(@Nullable Object obj) {
         logger.trace("{}Comparing state {} with object: {}", LOG_STATE, name, obj);
         if (this == obj) {
             return true;

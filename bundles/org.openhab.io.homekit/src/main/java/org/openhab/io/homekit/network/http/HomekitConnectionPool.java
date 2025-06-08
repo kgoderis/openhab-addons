@@ -13,12 +13,14 @@
 
 package org.openhab.io.homekit.network.http;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
+import java.util.Queue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.client.AbstractConnectionPool;
 import org.eclipse.jetty.client.HttpDestination;
 import org.eclipse.jetty.client.api.Connection;
@@ -45,6 +47,7 @@ public class HomekitConnectionPool extends AbstractConnectionPool {
     }
 
     @Deprecated
+    @SuppressWarnings("null") // Framework type Pool<Connection> has incomplete null annotations
     public HomekitConnectionPool(HttpDestination destination, Pool<Connection> pool, Callback requester) {
         super(destination, pool, requester);
     }
@@ -61,26 +64,38 @@ public class HomekitConnectionPool extends AbstractConnectionPool {
     }
 
     @Override
-    protected void onCreated(Connection connection) {
-        idleConnections.add(connection);
+    @SuppressWarnings("null") // connection is guaranteed non-null by framework interface constraints
+    protected void onCreated(@Nullable Connection connection) {
+        if (connection != null) {
+            idleConnections.add(connection);
+        }
     }
 
     @Override
-    protected void removed(Connection connection) {
-        idleConnections.remove(connection);
-        activeConnections.remove(connection);
+    @SuppressWarnings("null") // connection is guaranteed non-null by framework interface constraints
+    protected void removed(@Nullable Connection connection) {
+        if (connection != null) {
+            idleConnections.remove(connection);
+            activeConnections.remove(connection);
+        }
     }
 
     @Override
-    protected void acquired(Connection connection) {
-        idleConnections.remove(connection);
-        activeConnections.add(connection);
+    @SuppressWarnings("null") // connection is guaranteed non-null by framework interface constraints
+    protected void acquired(@Nullable Connection connection) {
+        if (connection != null) {
+            idleConnections.remove(connection);
+            activeConnections.add(connection);
+        }
     }
 
     @Override
-    protected void released(Connection connection) {
-        activeConnections.remove(connection);
-        idleConnections.add(connection);
+    @SuppressWarnings("null") // connection is guaranteed non-null by framework interface constraints
+    protected void released(@Nullable Connection connection) {
+        if (connection != null) {
+            activeConnections.remove(connection);
+            idleConnections.add(connection);
+        }
     }
 
     /**
@@ -93,12 +108,14 @@ public class HomekitConnectionPool extends AbstractConnectionPool {
     }
 
     @Override
-    public BlockingQueue<Connection> getIdleConnections() {
+    @SuppressWarnings("all") // Framework interface compatibility: AbstractConnectionPool interface constraints cannot be overridden
+    public Queue<Connection> getIdleConnections() {
         return new LinkedBlockingQueue<>(idleConnections);
     }
 
     @Override
-    public List<Connection> getActiveConnections() {
+    @SuppressWarnings("all") // Framework interface compatibility: AbstractConnectionPool interface constraints cannot be overridden
+    public Collection<Connection> getActiveConnections() {
         return new CopyOnWriteArrayList<>(activeConnections);
     }
 }

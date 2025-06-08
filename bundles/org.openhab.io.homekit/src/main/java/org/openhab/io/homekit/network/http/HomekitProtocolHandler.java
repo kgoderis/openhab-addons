@@ -14,6 +14,7 @@
 package org.openhab.io.homekit.network.http;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.client.ProtocolHandler;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.api.Response;
@@ -123,7 +124,11 @@ public class HomekitProtocolHandler implements ProtocolHandler {
      * @return true if the response contains the HomeKit event header
      */
     @Override
-    public boolean accept(Request request, Response response) {
+    @SuppressWarnings("null") // Parent ProtocolHandler interface doesn't constrain these parameters
+    public boolean accept(@Nullable Request request, @Nullable Response response) {
+        if (request == null || response == null) {
+            return false;
+        }
         boolean accepted = response.getHeaders().contains("X-HOMEKIT-EVENT", "True");
         if (accepted) {
             logger.debug("{}Accepted HomeKit event response", LOG_STATE);
@@ -197,7 +202,8 @@ public class HomekitProtocolHandler implements ProtocolHandler {
          * @param response The HTTP response that was successfully processed
          */
         @Override
-        public void onSuccess(Response response) {
+        @SuppressWarnings("null") // Parent ProtocolHandler interface doesn't constrain these parameters
+        public void onSuccess(@Nullable Response response) {
             logger.debug("{}Processing successful response", LOG_STATE);
             try {
                 server.handleEvent(getContent());
@@ -219,8 +225,9 @@ public class HomekitProtocolHandler implements ProtocolHandler {
          * @param result The result of the response processing
          */
         @Override
-        public void onComplete(Result result) {
-            if (result.isFailed()) {
+        @SuppressWarnings("null") // Parent ProtocolHandler interface doesn't constrain these parameters
+        public void onComplete(@Nullable Result result) {
+            if (result != null && result.isFailed()) {
                 logger.error("{}Response processing failed: {}", LOG_ERROR, result.getFailure().getMessage());
             } else {
                 logger.debug("{}Response processing completed successfully", LOG_STATE);

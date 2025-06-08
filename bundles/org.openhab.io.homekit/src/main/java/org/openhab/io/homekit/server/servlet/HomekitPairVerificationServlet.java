@@ -18,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.servlet.ServletException;
@@ -30,6 +31,7 @@ import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.protocol.crypto.HomekitChachaDecoder;
 import org.openhab.io.homekit.protocol.crypto.HomekitChachaEncoder;
@@ -158,10 +160,18 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
      * @throws ServletException if the request cannot be processed
      */
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    protected void doPost(@Nullable HttpServletRequest request, @Nullable HttpServletResponse response)
             throws ServletException, IOException {
         logger.debug("{}Handling pair verification request", LOG_SECURITY);
         try {
+            if (request == null || response == null) {
+                logger.error("{}Request or response is null", LOG_ERROR);
+                if (response != null) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                }
+                return;
+            }
+
             byte[] body = IOUtils.toByteArray(request.getInputStream());
             short stage = getState(body);
             logger.trace("{}Processing verification stage {}", LOG_SECURITY, stage);
@@ -183,7 +193,9 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
             }
         } catch (Exception e) {
             logger.error("{}Error processing verification request: {}", LOG_ERROR, e.getMessage(), e);
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            if (response != null) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            }
         }
     }
 
@@ -249,24 +261,44 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
         session.setAttribute("sharedSecret", sharedSecret);
         logger.trace("{}Computed shared secret", LOG_SECURITY);
 
-        byte[] accessoryInfo = org.openhab.io.homekit.util.HomekitByte.joinBytes(accessoryPublicKey,
-                server.getPairingId(), clientPublicKey);
+        byte[] accessoryInfo = null;
+        if (server != null) {
+            accessoryInfo = org.openhab.io.homekit.util.HomekitByte.joinBytes(accessoryPublicKey,
+                    server.getPairingId(), clientPublicKey);
+        } else {
+            logger.error("{}Server instance is null", LOG_ERROR);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
+        }
         logger.trace("{}Generated accessory info", LOG_SECURITY);
 
         byte[] accessorySignature = null;
-        try {
-            accessorySignature = new HomekitEdsaSigner(server.getSecretKey()).sign(accessoryInfo);
-            logger.trace("{}Generated accessory signature", LOG_SECURITY);
-        } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException e) {
-            logger.error("{}Failed to create accessory signature: {}", LOG_ERROR, e.getMessage(), e);
+        if (server != null) {
+            try {
+                accessorySignature = new HomekitEdsaSigner(server.getSecretKey()).sign(accessoryInfo);
+                logger.trace("{}Generated accessory signature", LOG_SECURITY);
+            } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException e) {
+                logger.error("{}Failed to create accessory signature: {}", LOG_ERROR, e.getMessage(), e);
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                return;
+            }
+        } else {
+            logger.error("{}Server instance is null", LOG_ERROR);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return;
         }
 
+        byte @Nullable [] plaintext = null;
         Encoder encoder = HomekitTypeLengthValueEncoderDecoder.getEncoder();
-        encoder.add(HomekitMessage.IDENTIFIER, server.getPairingId());
-        encoder.add(HomekitMessage.SIGNATURE, accessorySignature);
-        byte[] plaintext = encoder.toByteArray();
+        if (server != null) {
+            encoder.add(HomekitMessage.IDENTIFIER, server.getPairingId());
+            encoder.add(HomekitMessage.SIGNATURE, accessorySignature);
+            plaintext = encoder.toByteArray();
+        } else {
+            logger.error("{}Server instance is null", LOG_ERROR);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
+        }
 
         HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA512Digest());
         hkdf.init(new HKDFParameters(sharedSecret, "Pair-Verify-Encrypt-Salt".getBytes(StandardCharsets.UTF_8),
@@ -339,7 +371,7 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
         try {
             boolean isError = false;
             HttpSession session = request.getSession();
-            byte[] sessionKey = (byte[]) session.getAttribute("sessionKey");
+            byte @Nullable [] sessionKey = (byte[]) session.getAttribute("sessionKey");
             if (sessionKey == null) {
                 logger.error("{}Session key not found", LOG_ERROR);
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -347,63 +379,91 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
             }
             logger.trace("{}Retrieved session key", LOG_SECURITY);
 
-            byte[] clientPublicKey = (byte[]) session.getAttribute("clientPublicKey");
-            byte[] accessoryPublicKey = (byte[]) session.getAttribute("accessoryPublicKey");
-            byte[] sharedSecret = (byte[]) session.getAttribute("sharedSecret");
+            // After null check, create non-null sessionKey
+            byte[] nonNullSessionKey = sessionKey;
+
+            byte @Nullable [] clientPublicKey = (byte[]) session.getAttribute("clientPublicKey");
+            byte @Nullable [] accessoryPublicKey = (byte[]) session.getAttribute("accessoryPublicKey");
+            byte @Nullable [] sharedSecret = (byte[]) session.getAttribute("sharedSecret");
             if (clientPublicKey == null || accessoryPublicKey == null || sharedSecret == null) {
                 logger.error("{}Missing required session attributes", LOG_ERROR);
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
 
+            // After null check, create non-null variables
+            byte[] nonNullClientPublicKey = clientPublicKey;
+            byte[] nonNullAccessoryPublicKey = accessoryPublicKey;
+            byte[] nonNullSharedSecret = sharedSecret;
+
             Encoder encoder = HomekitTypeLengthValueEncoderDecoder.getEncoder();
 
-            byte[] plaintext = null;
-            HomekitChachaDecoder chacha = new HomekitChachaDecoder(sessionKey,
+            byte @Nullable [] plaintext = null;
+            HomekitChachaDecoder chacha = new HomekitChachaDecoder(nonNullSessionKey,
                     "PV-Msg03".getBytes(StandardCharsets.UTF_8));
             try {
-                plaintext = chacha.decodeCiphertext(getAuthTagData(body), getMessageData(body));
+                plaintext = chacha.decodeCiphertext(Objects.requireNonNull(getAuthTagData(body)),
+                        Objects.requireNonNull(getMessageData(body)));
                 logger.trace("{}Decrypted client data", LOG_SECURITY);
             } catch (Exception e) {
                 logger.warn("{}Failed to decode ciphertext: {}", LOG_WARN, e.getMessage());
                 isError = true;
             }
 
-            byte[] clientPairingId = null;
-            byte[] clientLongtermPublicKey = null;
-            byte[] clientSignature = null;
+            byte @Nullable [] clientPairingId = null;
+            byte @Nullable [] clientLongtermPublicKey = null;
+            byte @Nullable [] clientSignature = null;
 
-            if (!isError) {
-                DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(plaintext);
+            if (!isError && plaintext != null) {
+                // After null check, create non-null plaintext
+                byte[] nonNullPlaintext = plaintext;
+                DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(nonNullPlaintext);
 
                 clientPairingId = d.getBytes(HomekitMessage.IDENTIFIER);
                 clientSignature = d.getBytes(HomekitMessage.SIGNATURE);
                 logger.trace("{}Retrieved client pairing ID and signature", LOG_SECURITY);
 
-                Optional<byte[]> clientLongtermPublicKeyOptional = server.getPublicKey(clientPairingId);
-                if (clientLongtermPublicKeyOptional.isPresent()) {
-                    clientLongtermPublicKey = clientLongtermPublicKeyOptional.get();
-                } else {
-                    logger.warn("{}Unknown pairing ID: {}", LOG_WARN,
-                            new String(clientPairingId, StandardCharsets.UTF_8));
-                    isError = true;
-                }
-            }
+                if (clientPairingId != null && clientSignature != null) {
+                    // Create non-null variables after null check
+                    byte[] nonNullClientPairingId = clientPairingId;
+                    byte[] nonNullClientSignature = clientSignature;
 
-            if (!isError) {
-                byte[] clientDeviceInfo = HomekitByte.joinBytes(clientPublicKey, clientPairingId, accessoryPublicKey);
-
-                try {
-                    boolean signatureVerification = new HomekitEdsaVerifier(clientLongtermPublicKey)
-                            .verify(clientDeviceInfo, clientSignature);
-                    if (!signatureVerification) {
-                        logger.warn("{}Client signature verification failed", LOG_WARN);
-                        isError = true;
+                    if (server != null) {
+                        Optional<byte[]> clientLongtermPublicKeyOptional = server.getPublicKey(nonNullClientPairingId);
+                        if (clientLongtermPublicKeyOptional.isPresent()) {
+                            clientLongtermPublicKey = clientLongtermPublicKeyOptional.get();
+                        } else {
+                            logger.warn("{}Unknown pairing ID: {}", LOG_WARN,
+                                    new String(nonNullClientPairingId, StandardCharsets.UTF_8));
+                            isError = true;
+                        }
                     } else {
-                        logger.trace("{}Client signature verified", LOG_SECURITY);
+                        logger.error("{}Server instance is null", LOG_ERROR);
+                        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                        return;
                     }
-                } catch (Exception e) {
-                    logger.error("{}Error during signature verification: {}", LOG_ERROR, e.getMessage(), e);
+
+                    if (!isError && clientLongtermPublicKey != null) {
+                        byte[] nonNullClientLongtermPublicKey = clientLongtermPublicKey;
+                        byte[] clientDeviceInfo = HomekitByte.joinBytes(nonNullClientPublicKey, nonNullClientPairingId,
+                                nonNullAccessoryPublicKey);
+
+                        try {
+                            boolean signatureVerification = new HomekitEdsaVerifier(nonNullClientLongtermPublicKey)
+                                    .verify(clientDeviceInfo, nonNullClientSignature);
+                            if (!signatureVerification) {
+                                logger.warn("{}Client signature verification failed", LOG_WARN);
+                                isError = true;
+                            } else {
+                                logger.trace("{}Client signature verified", LOG_SECURITY);
+                            }
+                        } catch (Exception e) {
+                            logger.error("{}Error during signature verification: {}", LOG_ERROR, e.getMessage(), e);
+                            isError = true;
+                        }
+                    }
+                } else {
+                    logger.error("{}Missing client pairing ID or signature", LOG_ERROR);
                     isError = true;
                 }
             }
@@ -412,9 +472,9 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
                 logger.debug("{}Pair verification successful", LOG_SECURITY);
 
                 session.setAttribute("Control-Write-Encryption-Key",
-                        HomekitEncryptionEngine.createKey("Control-Write-Encryption-Key", sharedSecret));
+                        HomekitEncryptionEngine.createKey("Control-Write-Encryption-Key", nonNullSharedSecret));
                 session.setAttribute("Control-Read-Encryption-Key",
-                        HomekitEncryptionEngine.createKey("Control-Read-Encryption-Key", sharedSecret));
+                        HomekitEncryptionEngine.createKey("Control-Read-Encryption-Key", nonNullSharedSecret));
                 logger.trace("{}Established encryption keys", LOG_SECURITY);
 
                 request.setAttribute("HomekitEncryptionEnabled", true);

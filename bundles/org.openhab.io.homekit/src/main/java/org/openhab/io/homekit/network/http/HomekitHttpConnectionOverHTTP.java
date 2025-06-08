@@ -14,6 +14,7 @@
 package org.openhab.io.homekit.network.http;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.client.HttpDestination;
 import org.eclipse.jetty.client.api.Connection;
 import org.eclipse.jetty.client.http.HttpChannelOverHTTP;
@@ -68,9 +69,8 @@ public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
-    private byte[] decryptionKey;
-
-    private byte[] encryptionKey;
+    private byte @Nullable [] decryptionKey = null;
+    private byte @Nullable [] encryptionKey = null;
 
     /**
      * Creates a new HTTP-specific HomeKit connection.
@@ -84,6 +84,7 @@ public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
      * @param destination The HTTP destination
      * @param promise The connection promise
      */
+    @SuppressWarnings("null") // Framework type Promise<Connection> has incomplete null annotations
     public HomekitHttpConnectionOverHTTP(EndPoint endPoint, HttpDestination destination, Promise<Connection> promise) {
         super(endPoint, destination, promise);
         logger.debug("{}Created new HTTP connection to {}", LOG_INIT, endPoint.getRemoteAddress());
@@ -186,7 +187,7 @@ public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
      * @param failure The failure reason, or null if none
      */
     @Override
-    public void close(Throwable failure) {
+    public void close(@Nullable Throwable failure) {
         if (failure != null) {
             logger.error("{}Closing connection due to failure: {}", LOG_ERROR, failure.getMessage());
         } else {
@@ -244,7 +245,7 @@ public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
      * @return true if both encryption and decryption keys are set
      */
     public boolean hasEncryptionKeys() {
-        return (decryptionKey != null && encryptionKey != null);
+        return decryptionKey != null && encryptionKey != null;
     }
 
     /**
@@ -254,9 +255,9 @@ public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
      * This method returns the key used for decrypting incoming messages.
      * </p>
      *
-     * @return The decryption key
+     * @return The decryption key, or null if not set
      */
-    public byte[] getDecryptionKey() {
+    public byte @Nullable [] getDecryptionKey() {
         return decryptionKey;
     }
 
@@ -267,9 +268,9 @@ public class HomekitHttpConnectionOverHTTP extends HttpConnectionOverHTTP {
      * This method returns the key used for encrypting outgoing messages.
      * </p>
      *
-     * @return The encryption key
+     * @return The encryption key, or null if not set
      */
-    public byte[] getEncryptionKey() {
+    public byte @Nullable [] getEncryptionKey() {
         return encryptionKey;
     }
 }

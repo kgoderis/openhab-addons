@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Defines the message types used in HomeKit protocol communication.
@@ -119,7 +120,7 @@ public enum HomekitMessage {
      * @param code The numeric key to look up
      * @return The corresponding message type, or null if not found
      */
-    public static HomekitMessage get(short code) {
+    public static @Nullable HomekitMessage get(short code) {
         return lookup.get(code);
     }
 }

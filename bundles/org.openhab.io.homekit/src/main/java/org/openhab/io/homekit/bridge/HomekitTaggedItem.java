@@ -22,8 +22,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.items.GroupItem;
 import org.openhab.core.items.Item;
 import org.openhab.core.items.ItemRegistry;
@@ -109,11 +109,11 @@ public class HomekitTaggedItem {
     private final Item item;
     private final ItemRegistry itemRegistry;
     private final MetadataRegistry metadataRegistry;
-    private final Collection<@NonNull String> homekitTags;
+    private final Collection<String> homekitTags;
     private final int id;
-    private String serviceTag;
-    private String characteristicTag;
-    private GroupItem parentGroupItem;
+    private @Nullable String serviceTag;
+    private @Nullable String characteristicTag;
+    private @Nullable GroupItem parentGroupItem;
     private final Logger logger = LoggerFactory.getLogger(HomekitTaggedItem.class);
     private final HomekitServiceFactory serviceFactory;
     private final HomekitCharacteristicFactory characteristicFactory;
@@ -157,8 +157,10 @@ public class HomekitTaggedItem {
         logger.debug("{}Initializing tagged item: {}", LOG_PREFIX, item.getName());
 
         try {
-            serviceTag = determineServiceTagOptional().orElse(null);
-            characteristicTag = determineCharacteristicTagOptional().orElse(null);
+            var serviceOpt = determineServiceTagOptional();
+            serviceTag = serviceOpt.isPresent() ? serviceOpt.get() : null;
+            var characteristicOpt = determineCharacteristicTagOptional();
+            characteristicTag = characteristicOpt.isPresent() ? characteristicOpt.get() : null;
             if (serviceTag != null && characteristicTag != null) {
                 throw new BadItemConfigurationException(
                         "Items cannot be tagged as both a characteristic and an accessory type");
@@ -185,7 +187,7 @@ public class HomekitTaggedItem {
                     GroupItem firstGroup = matchingGroupItems.get(0);
                     parentGroupItem = firstGroup;
                     logger.debug("{}Item {} belongs to accessory group {}", LOG_CONFIG, item.getName(),
-                            parentGroupItem.getName());
+                            parentGroupItem != null ? parentGroupItem.getName() : "unknown");
                 }
                 default -> { // Belongs to more than one accessory group
                     throw new BadItemConfigurationException(
@@ -278,7 +280,7 @@ public class HomekitTaggedItem {
      *
      * @return The Homekit service type, or null if not applicable
      */
-    public String getServiceTag() {
+    public @Nullable String getServiceTag() {
         logger.debug("{}Getting service tag for item {}: {}", LOG_CONFIG, item.getName(), serviceTag);
         return serviceTag;
     }
@@ -290,7 +292,7 @@ public class HomekitTaggedItem {
      *
      * @return The Homekit characteristic type, or null if not applicable
      */
-    public String getCharacteristicTag() {
+    public @Nullable String getCharacteristicTag() {
         logger.debug("{}Getting characteristic tag for item {}: {}", LOG_CONFIG, item.getName(), characteristicTag);
         return characteristicTag;
     }
@@ -358,7 +360,7 @@ public class HomekitTaggedItem {
      *
      * @return The root device group item, or null if the item is not in a group
      */
-    public GroupItem getRootDeviceGroupItem() {
+    public @Nullable GroupItem getRootDeviceGroupItem() {
         logger.debug("{}Getting root device group for item {}: {}", LOG_CONFIG, item.getName(),
                 parentGroupItem != null ? parentGroupItem.getName() : "none");
         return parentGroupItem;
@@ -392,7 +394,7 @@ public class HomekitTaggedItem {
         return groups;
     }
 
-    public Collection<@NonNull String> getHomekitTags() {
+    public Collection<String> getHomekitTags() {
         logger.debug("{}Getting HomeKit tags for item {}: {}", LOG_CONFIG, item.getName(), homekitTags);
         return homekitTags;
     }
@@ -403,8 +405,8 @@ public class HomekitTaggedItem {
      * @param item The item to get tags for
      * @return Collection of Homekit tags
      */
-    private Collection<@NonNull String> getHomekitTags(Item item) {
-        Collection<@NonNull String> tags = useMetadataTags ? getHomekitTagsFromMetaRegistry(item)
+    private Collection<String> getHomekitTags(Item item) {
+        Collection<String> tags = useMetadataTags ? getHomekitTagsFromMetaRegistry(item)
                 : getHomekitTagsFromItem(item);
         logger.debug("{}Retrieved {} HomeKit tags for item {}", LOG_CONFIG, tags.size(), item.getName());
         return tags;
@@ -416,11 +418,11 @@ public class HomekitTaggedItem {
      * @param item The item to get tags for
      * @return Collection of Homekit tags
      */
-    private Collection<@NonNull String> getHomekitTagsFromItem(Item item) {
+    private Collection<String> getHomekitTagsFromItem(Item item) {
         return item.getTags();
     }
 
-    private Collection<@NonNull String> getHomekitTagsFromMetaRegistry(Item item) {
+    private Collection<String> getHomekitTagsFromMetaRegistry(Item item) {
         MetadataKey key = new MetadataKey("homekit", item.getName());
         @SuppressWarnings("null") // metadataRegistry.get() can return null, which is checked below
         Metadata metadata = metadataRegistry.get(key);
@@ -432,12 +434,13 @@ public class HomekitTaggedItem {
     }
 
     private List<GroupItem> findMyAccessoryGroupsInternal() {
-        return item.getGroupNames().stream().map(name -> {
+        @SuppressWarnings("null") // Collectors.toList() never returns null
+        List<GroupItem> result = item.getGroupNames().stream().map(name -> {
             @SuppressWarnings("null") // itemRegistry.get() can return null, which is filtered out below
             Item groupItem = itemRegistry.get(name);
             return groupItem;
         }).filter(item -> item instanceof GroupItem).map(item -> (GroupItem) item).filter(group -> {
-            Collection<@NonNull String> groupTags = getHomekitTags(group);
+            Collection<String> groupTags = getHomekitTags(group);
             if (!groupTags.isEmpty()) {
                 @SuppressWarnings("null") // iterator().next() is safe after isEmpty() check
                 String firstTag = groupTags.iterator().next();
@@ -447,7 +450,8 @@ public class HomekitTaggedItem {
                 return isAccessory;
             }
             return false;
-        }).collect(Collectors.toList());
+        }).collect(Collectors.<GroupItem>toList());
+        return result;
     }
 
     /**

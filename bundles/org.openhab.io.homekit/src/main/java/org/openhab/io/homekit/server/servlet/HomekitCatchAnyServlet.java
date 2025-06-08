@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -130,9 +131,16 @@ public class HomekitCatchAnyServlet extends HomekitBaseServlet {
      * @throws IOException if an I/O error occurs during processing
      */
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    protected void doPost(@Nullable HttpServletRequest request, @Nullable HttpServletResponse response)
             throws ServletException, IOException {
         logger.debug("{}Handling POST request by delegating to doGet", LOG_REQUEST);
+        if (request == null || response == null) {
+            logger.error("{}Request or response is null", LOG_ERROR);
+            if (response != null) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            }
+            return;
+        }
         doGet(request, response);
     }
 
@@ -164,8 +172,17 @@ public class HomekitCatchAnyServlet extends HomekitBaseServlet {
      * @throws IOException if an I/O error occurs during processing
      */
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    protected void doGet(@Nullable HttpServletRequest request, @Nullable HttpServletResponse response)
             throws ServletException, IOException {
+        logger.debug("{}Handling GET request by delegating to doGet", LOG_REQUEST);
+        if (request == null || response == null) {
+            logger.error("{}Request or response is null", LOG_ERROR);
+            if (response != null) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            }
+            return;
+        }
+
         String requestURI = request.getRequestURI();
         logger.warn("{}Unmatched request received: {}", LOG_WARN, requestURI);
 

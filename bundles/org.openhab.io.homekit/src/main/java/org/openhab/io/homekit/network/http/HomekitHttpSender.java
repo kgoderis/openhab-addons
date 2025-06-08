@@ -15,8 +15,10 @@ package org.openhab.io.homekit.network.http;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpContent;
 import org.eclipse.jetty.client.HttpExchange;
@@ -99,7 +101,7 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
     private final HttpClient httpClient;
     private boolean shutdown;
 
-    private byte[] encryptionKey;
+    private byte @Nullable [] encryptionKey = null;
     private long outboundSequenceCount = 0;
 
     /**
@@ -164,7 +166,16 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
      * @param callback The callback to invoke on completion
      */
     @Override
-    protected void sendHeaders(HttpExchange exchange, HttpContent content, Callback callback) {
+    @SuppressWarnings("null") // Parent HttpSenderOverHTTP interface doesn't constrain these parameters
+    protected void sendHeaders(@Nullable HttpExchange exchange, @Nullable HttpContent content,
+            @Nullable Callback callback) {
+        if (exchange == null || content == null || callback == null) {
+            if (callback != null) {
+                callback.failed(new IllegalArgumentException("Exchange, content, and callback cannot be null"));
+            }
+            return;
+        }
+
         try {
             logger.debug("{}Sending headers for exchange {}", LOG_REQUEST, exchange);
             new HeadersCallback(exchange, content, callback).iterate();
@@ -198,7 +209,16 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
      * @param callback The callback to invoke on completion
      */
     @Override
-    protected void sendContent(HttpExchange exchange, HttpContent content, Callback callback) {
+    @SuppressWarnings("null") // Parent HttpSenderOverHTTP interface doesn't constrain these parameters
+    protected void sendContent(@Nullable HttpExchange exchange, @Nullable HttpContent content,
+            @Nullable Callback callback) {
+        if (exchange == null || content == null || callback == null) {
+            if (callback != null) {
+                callback.failed(new IllegalArgumentException("Exchange, content, and callback cannot be null"));
+            }
+            return;
+        }
+
         try {
             ByteBufferPool bufferPool = httpClient.getByteBufferPool();
             ByteBuffer chunk = null;
@@ -308,7 +328,11 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
 
         SequenceBuffer sBuffer = null;
         try {
-            sBuffer = HomekitEncryptionEngine.encryptBuffer(encryptedBuffer, flushBuffer, encryptionKey,
+            byte[] nonNullEncryptionKey = encryptionKey;
+            if (nonNullEncryptionKey == null) {
+                throw new IllegalStateException("Encryption key is null but encryption was requested");
+            }
+            sBuffer = HomekitEncryptionEngine.encryptBuffer(encryptedBuffer, flushBuffer, nonNullEncryptionKey,
                     outboundSequenceCount);
             encryptedBuffer = sBuffer.buffer;
             outboundSequenceCount = sBuffer.sequenceNumber;
@@ -395,10 +419,7 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
     /**
      * Sets the encryption key for this sender.
      *
-     * This method configures the key used for encrypting outgoing messages.
-     * The key is used by {@link HomekitEncryptionEngine} for secure communication.
-     *
-     * @param encryptionKey The key to use for encryption
+     * @param encryptionKey The encryption key to set
      */
     public void setEncryptionKey(byte[] encryptionKey) {
         this.encryptionKey = encryptionKey;
@@ -411,7 +432,7 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
      * @return true if an encryption key is set
      */
     public boolean hasEncryptionKey() {
-        return (encryptionKey != null);
+        return encryptionKey != null;
     }
 
     /**
@@ -419,7 +440,7 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
      *
      * @return The encryption key, or null if not set
      */
-    public byte[] getEncryptionKey() {
+    public byte @Nullable [] getEncryptionKey() {
         return encryptionKey;
     }
 
@@ -458,9 +479,9 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
         private final HttpExchange exchange;
         private final Callback callback;
         private final MetaData.Request metaData;
-        private ByteBuffer headerBuffer;
-        private ByteBuffer chunkBuffer;
-        private ByteBuffer contentBuffer;
+        private @Nullable ByteBuffer headerBuffer;
+        private @Nullable ByteBuffer chunkBuffer;
+        private @Nullable ByteBuffer contentBuffer;
         private boolean lastContent;
         private boolean generated;
 
@@ -537,19 +558,23 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
                         if (contentBuffer == null) {
                             contentBuffer = BufferUtil.EMPTY_BUFFER;
                         }
-                        long bytes = headerBuffer.remaining() + chunkBuffer.remaining() + contentBuffer.remaining();
-                        ((HomekitHttpConnectionOverHTTP) getHttpChannel().getHttpConnection()).addBytesOut(bytes);
+                        if (headerBuffer != null && chunkBuffer != null && contentBuffer != null) {
+                            long bytes = Objects.requireNonNull(headerBuffer).remaining()
+                                    + Objects.requireNonNull(chunkBuffer).remaining()
+                                    + Objects.requireNonNull(contentBuffer).remaining();
+                            ((HomekitHttpConnectionOverHTTP) getHttpChannel().getHttpConnection()).addBytesOut(bytes);
 
-                        if (!hasEncryptionKey()) {
-                            endPoint.write(this, headerBuffer, chunkBuffer, contentBuffer);
-                        } else {
-                            ByteBuffer encryptedBuffer = encryptBuffers(endPoint, headerBuffer, chunkBuffer,
-                                    contentBuffer);
-                            endPoint.write(this, encryptedBuffer);
+                            if (!hasEncryptionKey()) {
+                                endPoint.write(this, headerBuffer, chunkBuffer, contentBuffer);
+                            } else {
+                                ByteBuffer encryptedBuffer = encryptBuffers(endPoint, headerBuffer, chunkBuffer,
+                                        contentBuffer);
+                                endPoint.write(this, encryptedBuffer);
+                            }
+
+                            generated = true;
+                            return Action.SCHEDULED;
                         }
-
-                        generated = true;
-                        return Action.SCHEDULED;
                     }
                     case SHUTDOWN_OUT: {
                         shutdownOutput();
@@ -591,10 +616,16 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
          * @param x The exception that caused the failure
          */
         @Override
-        public void failed(Throwable x) {
+        @SuppressWarnings("null") // Parent IteratingCallback interface doesn't constrain this parameter
+        public void failed(@Nullable Throwable x) {
             release();
-            callback.failed(x);
-            super.failed(x);
+            if (x != null) {
+                callback.failed(x);
+                super.failed(x);
+            } else {
+                callback.failed(new IllegalStateException("Failed with null throwable"));
+                super.failed(new IllegalStateException("Failed with null throwable"));
+            }
         }
 
         /**
@@ -664,11 +695,16 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
          * @param x The exception that caused the failure
          */
         @Override
-        public void failed(Throwable x) {
+        @SuppressWarnings("null") // Parent Callback.Nested interface doesn't constrain this parameter
+        public void failed(@Nullable Throwable x) {
             for (ByteBuffer buffer : buffers) {
                 pool.release(buffer);
             }
-            super.failed(x);
+            if (x != null) {
+                super.failed(x);
+            } else {
+                super.failed(new IllegalStateException("Failed with null throwable"));
+            }
         }
     }
 }

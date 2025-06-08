@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequestWrapper;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Wraps HTTP requests to enable multiple reads of the request body.
@@ -200,7 +201,8 @@ public class HomekitRequestWrapper extends HttpServletRequestWrapper {
          * @throws UnsupportedOperationException always
          */
         @Override
-        public void setReadListener(ReadListener readListener) {
+        @SuppressWarnings("null") // Parent ServletInputStream doesn't constrain this parameter
+        public void setReadListener(@Nullable ReadListener readListener) {
             throw new UnsupportedOperationException();
         }
     }

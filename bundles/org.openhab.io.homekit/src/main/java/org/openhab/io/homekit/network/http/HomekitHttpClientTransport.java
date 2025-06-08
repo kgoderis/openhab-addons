@@ -14,6 +14,7 @@
 package org.openhab.io.homekit.network.http;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.client.HttpDestination;
 import org.eclipse.jetty.client.Origin;
 import org.eclipse.jetty.client.api.Connection;
@@ -143,39 +144,84 @@ public class HomekitHttpClientTransport extends HttpClientTransportOverHTTP {
      * </ul>
      *
      * @param endPoint The endpoint for the connection
-     * @param destination The destination for the connection
-     * @param promise The promise to be completed when the connection is established
+     * @param destination The destination for the connection  
+     * @param connectionPromise The promise to be completed when the connection is established
      * @return A new HTTP connection instance
      */
-    @Override
-    protected HttpConnectionOverHTTP newHttpConnection(EndPoint endPoint, HttpDestination destination,
-            Promise<Connection> promise) {
+    protected HomekitHttpConnectionOverHTTP createHomekitConnection(@Nullable EndPoint endPoint,
+            @Nullable HttpDestination destination, @Nullable Promise<Connection> connectionPromise) {
+
+        if (endPoint == null || destination == null || connectionPromise == null) {
+            throw new IllegalArgumentException("EndPoint, destination, and promise cannot be null");
+        }
 
         logger.debug("{}Creating new connection for endpoint {} and destination {}", LOG_CONFIG, endPoint.toString(),
                 destination.toString());
         logger.info("{}Initializing connection for endpoint {} to destination {}", LOG_STATE,
                 endPoint.getRemoteAddress().toString(), destination.toString());
 
-        HomekitHttpConnectionOverHTTP newConnection = new HomekitHttpConnectionOverHTTP(endPoint, destination, promise);
+        HomekitHttpConnectionOverHTTP newConnection = new HomekitHttpConnectionOverHTTP(endPoint, destination,
+                connectionPromise);
 
         if (destination instanceof HomekitHttpDestination
                 && ((HomekitHttpDestination) destination).hasEncryptionKeys()) {
             logger.info("{}Configuring encryption for connection {} to destination {}", LOG_CONFIG,
                     endPoint.getRemoteAddress().toString(), destination.toString());
-            if (logger.isTraceEnabled()) {
-                logger.trace("{}Decryption key: {}", LOG_CONFIG, javax.xml.bind.DatatypeConverter
-                        .printHexBinary(((HomekitHttpDestination) destination).getDecryptionKey()));
-                logger.trace("{}Encryption key: {}", LOG_CONFIG, javax.xml.bind.DatatypeConverter
-                        .printHexBinary(((HomekitHttpDestination) destination).getEncryptionKey()));
+
+            HomekitHttpDestination homekitDestination = (HomekitHttpDestination) destination;
+            byte @Nullable [] decryptionKey = homekitDestination.getDecryptionKey();
+            byte @Nullable [] encryptionKey = homekitDestination.getEncryptionKey();
+
+            if (decryptionKey != null && encryptionKey != null) {
+                if (logger.isTraceEnabled()) {
+                    logger.trace("{}Decryption key: {}", LOG_CONFIG,
+                            javax.xml.bind.DatatypeConverter.printHexBinary(decryptionKey));
+                    logger.trace("{}Encryption key: {}", LOG_CONFIG,
+                            javax.xml.bind.DatatypeConverter.printHexBinary(encryptionKey));
+                }
+                newConnection.setEncryptionKeys(decryptionKey, encryptionKey);
+            } else {
+                logger.warn("{}Encryption keys are null despite hasEncryptionKeys() returning true", LOG_WARN);
             }
-            newConnection.setEncryptionKeys(((HomekitHttpDestination) destination).getDecryptionKey(),
-                    ((HomekitHttpDestination) destination).getEncryptionKey());
         } else {
             logger.info("{}No encryption keys configured for endpoint {}", LOG_STATE,
                     endPoint.getRemoteAddress().toString());
         }
 
         return newConnection;
+    }
+
+    /**
+     * Creates a new HTTP connection for the given endpoint and destination.
+     *
+     * <p>
+     * This method creates a specialized HomeKit HTTP connection that supports
+     * encryption if the destination has encryption keys configured. It handles
+     * the setup of secure communication channels.
+     * </p>
+     *
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     * <li>Creates HomeKit connection instance</li>
+     * <li>Configures encryption keys</li>
+     * <li>Sets up secure channel</li>
+     * <li>Maintains thread safety</li>
+     * <li>Ensures state consistency</li>
+     * <li>Logs connection details</li>
+     * </ul>
+     *
+     * @param endPoint The endpoint for the connection
+     * @param destination The destination for the connection
+     * @param promise The promise to be completed when the connection is established
+     * @return A new HTTP connection instance
+     */
+    @Override
+    @SuppressWarnings("all") // Framework interface compatibility: HttpClientTransportOverHTTP interface constraints cannot be overridden
+    protected HttpConnectionOverHTTP newHttpConnection(@Nullable EndPoint endPoint,
+            @Nullable HttpDestination destination, @Nullable Promise<Connection> promise) {
+        return createHomekitConnection(endPoint, destination, promise);
     }
 
     /**
@@ -202,7 +248,10 @@ public class HomekitHttpClientTransport extends HttpClientTransportOverHTTP {
      * @return A new HTTP destination instance
      */
     @Override
-    public HttpDestination newHttpDestination(Origin origin) {
+    public HttpDestination newHttpDestination(@Nullable Origin origin) {
+        if (origin == null) {
+            throw new IllegalArgumentException("Origin cannot be null");
+        }
         return new HomekitHttpDestination(getHttpClient(), origin);
     }
 }

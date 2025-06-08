@@ -14,12 +14,16 @@
 package org.openhab.io.homekit.network.http;
 
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpExchange;
 import org.eclipse.jetty.client.http.HttpChannelOverHTTP;
 import org.eclipse.jetty.client.http.HttpReceiverOverHTTP;
+import org.eclipse.jetty.http.BadMessageException;
+import org.eclipse.jetty.http.HttpField;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.io.ByteBufferPool;
@@ -110,13 +114,16 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
     private boolean shutdown;
     private boolean complete;
     @SuppressWarnings("unused")
-    private HomekitHttpVersion version;
+    private @Nullable HomekitHttpVersion version;
 
-    private byte[] decryptionKey;
+    private byte @Nullable [] decryptionKey;
     private long inboundSequenceCount = 0;
+    @Nullable
     private ByteBuffer decryptedInputBuffer;
+    @Nullable
     private ByteBuffer encryptedInputBuffer;
     @SuppressWarnings("unused")
+    @Nullable
     private ByteBuffer encryptedOutputBuffer;
 
     /**
@@ -215,7 +222,11 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
      */
     @Override
     protected ByteBuffer getResponseBuffer() {
-        return decryptedInputBuffer;
+        ByteBuffer buffer = decryptedInputBuffer;
+        if (buffer == null) {
+            throw new IllegalStateException("Decrypted input buffer is not initialized");
+        }
+        return buffer;
     }
 
     /**
@@ -239,7 +250,7 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
      * @param buffer The buffer to release
      * @throws IllegalStateException if the buffer is null or contains content
      */
-    private void releaseBuffer(ByteBuffer buffer) {
+    private void releaseBuffer(@Nullable ByteBuffer buffer) {
         if (buffer == null) {
             logger.error("{}Cannot release null buffer", LOG_ERROR);
             throw new IllegalStateException("Buffer cannot be null");
@@ -277,14 +288,14 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
      */
     @Override
     protected ByteBuffer onUpgradeFrom() {
-        if (BufferUtil.hasContent(decryptedInputBuffer)) {
+        if (decryptedInputBuffer != null && decryptedInputBuffer.hasRemaining()) {
             logger.debug("{}Handling protocol upgrade with remaining content", LOG_STATE);
-            ByteBuffer upgradeBuffer = ByteBuffer.allocate(decryptedInputBuffer.remaining());
+            ByteBuffer upgradeBuffer = ByteBuffer.allocate(Objects.requireNonNull(decryptedInputBuffer).remaining());
             upgradeBuffer.put(decryptedInputBuffer).flip();
             return upgradeBuffer;
         }
         logger.debug("{}Protocol upgrade with no remaining content", LOG_STATE);
-        return null;
+        return ByteBuffer.allocate(0); // Return empty buffer instead of null
     }
 
     /**
@@ -392,7 +403,8 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
                                 BufferUtil.toDetailString(encryptedInputBuffer), endPoint.toString());
                     }
 
-                    if (encryptedInputBuffer.hasRemaining()) {
+                    if (encryptedInputBuffer != null && encryptedInputBuffer.hasRemaining()
+                            && decryptedInputBuffer != null) {
 
                         if (logger.isTraceEnabled()) {
                             logger.trace(
@@ -402,30 +414,40 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
                                     BufferUtil.toDetailString(decryptedInputBuffer));
                         }
 
-                        int position = decryptedInputBuffer.position();
-                        SequenceBuffer sBuffer = HomekitEncryptionEngine.decryptBuffer(decryptedInputBuffer,
-                                encryptedInputBuffer, decryptionKey, inboundSequenceCount);
-                        BufferUtil.flipToFlush(decryptedInputBuffer, position);
+                        // Add null checks before calling decryptBuffer
+                        if (decryptedInputBuffer != null && encryptedInputBuffer != null && decryptionKey != null) {
+                            // Use Objects.requireNonNull to ensure compiler understands these are non-null
+                            ByteBuffer nonNullDecryptedBuffer = Objects.requireNonNull(decryptedInputBuffer);
+                            ByteBuffer nonNullEncryptedBuffer = Objects.requireNonNull(encryptedInputBuffer);
+                            byte[] nonNullDecryptionKey = Objects.requireNonNull(decryptionKey);
 
-                        if (logger.isTraceEnabled()) {
-                            logger.trace(
-                                    "[{}] Receive : After decryption : encryptedInputBuffer={}, decryptedInputBuffer={}, sBuffer={}}",
-                                    endPoint.getRemoteAddress().toString(),
-                                    BufferUtil.toDetailString(encryptedInputBuffer),
-                                    BufferUtil.toDetailString(decryptedInputBuffer),
-                                    BufferUtil.toDetailString(sBuffer.buffer));
-                        }
+                            int position = nonNullDecryptedBuffer.position();
+                            SequenceBuffer sBuffer = HomekitEncryptionEngine.decryptBuffer(nonNullDecryptedBuffer,
+                                    nonNullEncryptedBuffer, nonNullDecryptionKey, inboundSequenceCount);
+                            BufferUtil.flipToFlush(nonNullDecryptedBuffer, position);
 
-                        // read = BufferUtil.append(decryptedInputBuffer, sBuffer.buffer);
-                        // decryptedInputBuffer = sBuffer.buffer;
-                        inboundSequenceCount = sBuffer.sequenceNumber;
+                            if (logger.isTraceEnabled()) {
+                                logger.trace(
+                                        "[{}] Receive : After decryption : encryptedInputBuffer={}, decryptedInputBuffer={}, sBuffer={}}",
+                                        endPoint.getRemoteAddress().toString(),
+                                        BufferUtil.toDetailString(nonNullEncryptedBuffer),
+                                        BufferUtil.toDetailString(nonNullDecryptedBuffer),
+                                        BufferUtil.toDetailString(sBuffer.buffer));
+                            }
 
-                        if (logger.isTraceEnabled()) {
-                            logger.trace(
-                                    "[{}] Receive : Before parsing : encryptedInputBuffer={}, decryptedInputBuffer={}",
-                                    endPoint.getRemoteAddress().toString(),
-                                    BufferUtil.toDetailString(encryptedInputBuffer),
-                                    BufferUtil.toDetailString(decryptedInputBuffer));
+                            // read = BufferUtil.append(decryptedInputBuffer, sBuffer.buffer);
+                            // decryptedInputBuffer = sBuffer.buffer;
+                            inboundSequenceCount = sBuffer.sequenceNumber;
+
+                            if (logger.isTraceEnabled()) {
+                                logger.trace(
+                                        "[{}] Receive : Before parsing : encryptedInputBuffer={}, decryptedInputBuffer={}",
+                                        endPoint.getRemoteAddress().toString(),
+                                        BufferUtil.toDetailString(nonNullEncryptedBuffer),
+                                        BufferUtil.toDetailString(nonNullDecryptedBuffer));
+                            }
+                        } else {
+                            logger.warn("{}Cannot decrypt: buffers or key are null", LOG_WARN);
                         }
 
                     } else {
@@ -444,7 +466,7 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
                         return;
                     }
                 } else if (read == 0) {
-                    if (decryptedInputBuffer.hasRemaining()) {
+                    if (decryptedInputBuffer != null && decryptedInputBuffer.hasRemaining()) {
                         if (parse()) {
                             return;
                         }
@@ -454,10 +476,14 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
                     fillInterested();
                     return;
                 } else {
-                    releaseBuffer(decryptedInputBuffer);
-                    decryptedInputBuffer = null;
-                    releaseBuffer(encryptedInputBuffer);
-                    encryptedInputBuffer = null;
+                    if (decryptedInputBuffer != null) {
+                        releaseBuffer(decryptedInputBuffer);
+                        decryptedInputBuffer = null;
+                    }
+                    if (encryptedInputBuffer != null) {
+                        releaseBuffer(encryptedInputBuffer);
+                        encryptedInputBuffer = null;
+                    }
                     shutdown();
                     return;
                 }
@@ -466,8 +492,8 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
             if (logger.isDebugEnabled()) {
                 logger.debug("{}Exception caught in receive", LOG_ERROR, x);
             }
-            BufferUtil.clear(decryptedInputBuffer);
             if (decryptedInputBuffer != null) {
+                BufferUtil.clear(decryptedInputBuffer);
                 releaseBuffer(decryptedInputBuffer);
                 decryptedInputBuffer = null;
             }
@@ -488,26 +514,30 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
      * @return true if parsing should be interrupted (will be resumed by another thread)
      */
     private boolean parse() {
+        ByteBuffer buffer = decryptedInputBuffer;
+        if (buffer == null) {
+            return false;
+        }
+
         while (true) {
-            boolean handle = parser.parseNext(decryptedInputBuffer);
+            boolean handle = parser.parseNext(buffer);
             boolean complete = this.complete;
             this.complete = false;
             if (logger.isDebugEnabled()) {
-                logger.debug("{}Parsed {}, remaining {} {}", LOG_STATE, handle, decryptedInputBuffer.remaining(),
-                        parser);
+                logger.debug("{}Parsed {}, remaining {} {}", LOG_STATE, handle, buffer.remaining(), parser);
             }
             if (handle) {
                 return true;
             }
-            if (!decryptedInputBuffer.hasRemaining()) {
+            if (!buffer.hasRemaining()) {
                 return false;
             }
             if (complete) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("{}Discarding unexpected content after response: {}", LOG_WARN,
-                            BufferUtil.toDetailString(decryptedInputBuffer));
+                            BufferUtil.toDetailString(buffer));
                 }
-                BufferUtil.clear(decryptedInputBuffer);
+                BufferUtil.clear(buffer);
                 return false;
             }
         }
@@ -567,6 +597,8 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
      */
     @Override
     public boolean startResponse(HomekitHttpVersion version, int status, String reason) {
+        this.version = version; // Store version for potential future use
+
         HttpExchange exchange = getHttpExchange();
         if (exchange == null) {
             return false;
@@ -676,14 +708,46 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
      * - {@link org.eclipse.jetty.http.HttpStatus HttpStatus} for status code handling
      * - {@link org.eclipse.jetty.client.http.HttpReceiverOverHTTP HttpReceiverOverHTTP} for base handling
      *
-     * @param status The response status code
-     * @param reason The response reason phrase
+     * @param exception The bad message exception
      */
-    @SuppressWarnings("deprecation")
     @Override
-    public void badMessage(int status, String reason) {
-        super.badMessage(status, reason);
+    public void badMessage(@Nullable BadMessageException exception) {
+        if (exception != null) {
+            logger.warn("{}Bad message received - Status: {}, Reason: {}", LOG_WARN, exception.getCode(),
+                    exception.getReason());
+            badMessage(exception.getCode(), exception.getReason());
+        }
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public void badMessage(int status, @Nullable String reason) {
         logger.warn("{}Bad message received - Status: {}, Reason: {}", LOG_WARN, status, reason);
+        super.badMessage(status, reason);
+    }
+
+    @Override
+    public void parsedTrailer(@Nullable HttpField trailer) {
+        if (trailer != null) {
+            logger.debug("{}Parsed trailer: {}", LOG_STATE, trailer);
+        }
+        super.parsedTrailer(trailer);
+    }
+
+    @Override
+    public void parsedHeader(@Nullable HttpField header) {
+        if (header != null) {
+            logger.debug("{}Parsed header: {}", LOG_STATE, header);
+        }
+        super.parsedHeader(header);
+    }
+
+    @Override
+    public boolean content(@Nullable ByteBuffer buffer) {
+        if (buffer != null) {
+            logger.debug("{}Received content: {} bytes", LOG_STATE, buffer.remaining());
+        }
+        return super.content(buffer);
     }
 
     /**
@@ -714,7 +778,7 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
      *
      * @return The decryption key, or null if not set
      */
-    public byte[] getDecryptionKey() {
+    public byte @Nullable [] getDecryptionKey() {
         return decryptionKey;
     }
 }

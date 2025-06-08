@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.ThreadPoolManager;
 import org.openhab.core.events.EventPublisher;
 import org.openhab.core.items.GroupItem;
@@ -501,8 +502,12 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
         try {
             logger.debug("{}Creating accessory for item: {}", LOG_DEBUG, taggedItem.getName());
-            Optional<HomekitTaggedItem> primaryAccessory = getPrimaryAccessory(taggedItem, taggedItem.getServiceTag(),
-                    itemRegistry);
+            String serviceTag = taggedItem.getServiceTag();
+            if (serviceTag == null) {
+                logger.warn("{}Service tag is null for item: {}", LOG_ERROR, taggedItem.getName());
+                return Optional.empty();
+            }
+            Optional<HomekitTaggedItem> primaryAccessory = getPrimaryAccessory(taggedItem, serviceTag, itemRegistry);
             Map<String, Item> characteristicItems = getCharacteristicTypeItemMap(taggedItem);
 
             if (primaryAccessory.isPresent()) {
@@ -552,8 +557,12 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
 
         try {
             logger.debug("{}Creating primary service for item: {}", LOG_DEBUG, taggedItem.getName());
-            HomekitService primaryService = serviceFactory.createServiceFromTag(primaryAccessoryItem.getServiceTag(),
-                    accessory);
+            String serviceTag = primaryAccessoryItem.getServiceTag();
+            if (serviceTag == null) {
+                logger.warn("{}Service tag is null for item: {}", LOG_ERROR, taggedItem.getName());
+                return Optional.empty();
+            }
+            HomekitService primaryService = serviceFactory.createServiceFromTag(serviceTag, accessory);
             primaryService.withInstanceId(accessory.getNextAvailableInstanceId())
                     .withName("Primary HomekitService for " + taggedItem.getItem().getName()).withExtensible(true);
 
@@ -693,7 +702,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                     .map(item -> new HomekitTaggedItem(item, itemRegistry, metadataRegistry, serviceFactory,
                             characteristicFactory))
                     .findFirst();
-        } else if (serviceType.equals(taggedItem.getServiceTag())) {
+        } else if (Objects.equals(serviceType, taggedItem.getServiceTag())) {
             return Optional.of(taggedItem);
         }
         return Optional.empty();
@@ -1138,8 +1147,9 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     private class ExitEventStatisticsCollector {
         private final List<Long> eventTimes = new ArrayList<>();
         private final Object lock = new Object();
-        private Optional<ScheduledFuture<?>> scheduledTask = Optional.empty();
-        private Optional<ScheduledExecutorService> executor = Optional.empty();
+
+        private @Nullable ScheduledFuture<?> scheduledTask = null;
+        private @Nullable ScheduledExecutorService executor = null;
 
         /**
          * Starts the statistics collector.
@@ -1148,16 +1158,11 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
          * @since 1.0.0
          */
         public void start() {
-            @SuppressWarnings("null") // ThreadPoolManager.getScheduledPool() can return null, handled by
-                                      // Optional.ofNullable
-            ScheduledExecutorService executorService = ThreadPoolManager.getScheduledPool("homekit");
-            executor = Optional.ofNullable(executorService);
-            executor.ifPresent(exec -> {
-                @SuppressWarnings("null") // exec.scheduleAtFixedRate() can return null, handled by Optional.ofNullable
-                ScheduledFuture<?> task = exec.scheduleAtFixedRate(this::printStatistics,
-                        STATISTICS_REPORT_INTERVAL_SECONDS, STATISTICS_REPORT_INTERVAL_SECONDS, TimeUnit.SECONDS);
-                scheduledTask = Optional.ofNullable(task);
-            });
+            executor = ThreadPoolManager.getScheduledPool("homekit");
+            if (executor != null) {
+                scheduledTask = executor.scheduleAtFixedRate(this::printStatistics, STATISTICS_REPORT_INTERVAL_SECONDS,
+                        STATISTICS_REPORT_INTERVAL_SECONDS, TimeUnit.SECONDS);
+            }
         }
 
         /**
@@ -1167,9 +1172,11 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
          * @since 1.0.0
          */
         public void stop() {
-            scheduledTask.ifPresent(task -> task.cancel(false));
-            scheduledTask = Optional.empty();
-            executor = Optional.empty();
+            if (scheduledTask != null) {
+                scheduledTask.cancel(false);
+            }
+            scheduledTask = null;
+            executor = null;
         }
 
         /**

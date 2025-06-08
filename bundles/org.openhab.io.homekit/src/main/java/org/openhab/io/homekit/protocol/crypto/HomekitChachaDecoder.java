@@ -23,6 +23,7 @@ import org.bouncycastle.tls.AlertDescription;
 import org.bouncycastle.tls.TlsFatalAlert;
 import org.bouncycastle.util.Arrays;
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Provides ChaCha20-Poly1305 decryption for HomeKit protocol messages.
@@ -91,7 +92,8 @@ public class HomekitChachaDecoder {
      * @throws IOException if the decryption process fails
      * @throws TlsFatalAlert if message authentication fails
      */
-    public byte[] decodeCiphertext(byte[] receivedMAC, byte[] additionalData, byte[] ciphertext) throws IOException {
+    public byte[] decodeCiphertext(byte[] receivedMAC, byte @Nullable [] additionalData, byte[] ciphertext)
+            throws IOException {
         KeyParameter macKey = initRecordMAC(decryptCipher);
 
         byte[] calculatedMAC = HomekitPolyKeyCreator.create(macKey, additionalData, ciphertext);

@@ -20,8 +20,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.http.BadMessageException;
 import org.eclipse.jetty.http.HostPortHttpField;
 import org.eclipse.jetty.http.HttpCompliance;
@@ -216,16 +218,16 @@ public class HomekitHttpParser {
 
     private final boolean debug = logger.isDebugEnabled(); // Cache debug to help branch prediction
     private final HttpHandler _handler;
-    private final RequestHandler _requestHandler;
-    private final ResponseHandler _responseHandler;
-    private final ComplianceHandler _complianceHandler;
+    private final @Nullable RequestHandler _requestHandler;
+    private final @Nullable ResponseHandler _responseHandler;
+    private final @Nullable ComplianceHandler _complianceHandler;
     private final int _maxHeaderBytes;
     private final HttpCompliance _compliance;
     private final EnumSet<HttpComplianceSection> _compliances;
-    private HttpField _field;
-    private HttpHeader _header;
-    private String _headerString;
-    private String _valueString;
+    private @Nullable HttpField _field;
+    private @Nullable HttpHeader _header;
+    private @Nullable String _headerString;
+    private @Nullable String _valueString;
     private int _responseStatus;
     private int _headerBytes;
     private boolean _host;
@@ -234,11 +236,11 @@ public class HomekitHttpParser {
     private volatile State _state = State.START;
     private volatile FieldState _fieldState = FieldState.FIELD;
     private volatile boolean _eof;
-    private HttpMethod _method;
-    private String _methodString;
-    private HomekitHttpVersion _version;
+    private @Nullable HttpMethod _method;
+    private @Nullable String _methodString;
+    private @Nullable HomekitHttpVersion _version;
     private Utf8StringBuilder _uri = new Utf8StringBuilder(INITIAL_URI_LENGTH); // Tune?
-    private EndOfContent _endOfContent;
+    private @Nullable EndOfContent _endOfContent;
     private boolean _hasContentLength;
     private boolean _hasTransferEncoding;
     private long _contentLength = -1;
@@ -247,8 +249,8 @@ public class HomekitHttpParser {
     private int _chunkPosition;
     private boolean _headResponse;
     private boolean _cr;
-    private ByteBuffer _contentChunk;
-    private Trie<HttpField> _fieldCache;
+    private @Nullable ByteBuffer _contentChunk;
+    private @Nullable Trie<HttpField> _fieldCache;
 
     private int _length;
     private final StringBuilder _string = new StringBuilder();
@@ -411,15 +413,19 @@ public class HomekitHttpParser {
         this(null, handler, maxHeaderBytes, compliance == null ? compliance() : compliance);
     }
 
-    private HomekitHttpParser(RequestHandler requestHandler, ResponseHandler responseHandler, int maxHeaderBytes,
-            HttpCompliance compliance) {
-        _handler = requestHandler != null ? requestHandler : responseHandler;
+    private HomekitHttpParser(@Nullable RequestHandler requestHandler, @Nullable ResponseHandler responseHandler,
+            int maxHeaderBytes, HttpCompliance compliance) {
+        HttpHandler handler = requestHandler != null ? requestHandler : responseHandler;
+        if (handler == null) {
+            throw new IllegalArgumentException("Either requestHandler or responseHandler must be non-null");
+        }
+        _handler = handler;
         _requestHandler = requestHandler;
         _responseHandler = responseHandler;
         _maxHeaderBytes = maxHeaderBytes;
         _compliance = compliance;
         _compliances = compliance.sections();
-        _complianceHandler = (ComplianceHandler) (_handler instanceof ComplianceHandler ? _handler : null);
+        _complianceHandler = (_handler instanceof ComplianceHandler) ? (ComplianceHandler) _handler : null;
     }
 
     /**
@@ -448,7 +454,7 @@ public class HomekitHttpParser {
      * @param reason The reason for the violation
      * @return True if the current compliance level is set so as to Not allow this violation
      */
-    protected boolean complianceViolation(HttpComplianceSection violation, String reason) {
+    protected boolean complianceViolation(HttpComplianceSection violation, @Nullable String reason) {
         if (_compliances.contains(violation)) {
             return true;
         }
@@ -456,7 +462,10 @@ public class HomekitHttpParser {
             reason = violation.getDescription();
         }
         if (_complianceHandler != null) {
-            _complianceHandler.onComplianceViolation(_compliance, violation, reason);
+            String nonNullReason = reason;
+            if (nonNullReason != null && _complianceHandler != null) {
+                _complianceHandler.onComplianceViolation(_compliance, violation, nonNullReason);
+            }
         }
         return false;
     }
@@ -617,7 +626,7 @@ public class HomekitHttpParser {
         return _state == state;
     }
 
-    private HttpTokens.Token next(ByteBuffer buffer) {
+    private HttpTokens.@Nullable Token next(ByteBuffer buffer) {
         byte ch = buffer.get();
 
         HttpTokens.Token t = HttpTokens.TOKENS[0xff & ch];
@@ -675,15 +684,16 @@ public class HomekitHttpParser {
             _method = HttpMethod.lookAheadGet(buffer);
             if (_method != null) {
                 _methodString = _method.asString();
-                buffer.position(buffer.position() + _methodString.length() + 1);
+                buffer.position(buffer.position() + Objects.requireNonNull(_methodString).length() + 1);
 
                 setState(State.SPACE1);
                 return false;
             }
         } else if (_responseHandler != null) {
-            _version = HomekitHttpVersion.lookAheadGet(buffer).orElse(null);
-            if (_version != null) {
-                buffer.position(buffer.position() + _version.asString().length() + 1);
+            var versionOptional = HomekitHttpVersion.lookAheadGet(buffer);
+            if (versionOptional.isPresent()) {
+                _version = versionOptional.get();
+                buffer.position(buffer.position() + Objects.requireNonNull(_version).asString().length() + 1);
                 setState(State.SPACE1);
                 return false;
             }
@@ -764,7 +774,8 @@ public class HomekitHttpParser {
         boolean handle = false;
 
         // Process headers
-        while (_state.ordinal() < State.HEADER.ordinal() && buffer.hasRemaining() && !handle) {
+        while (_state.ordinal() < State.HEADER.ordinal() && buffer.hasRemaining() && !handle
+                && _responseHandler != null) {
             // process each character
             HttpTokens.Token t = next(buffer);
             if (t == null) {
@@ -796,7 +807,8 @@ public class HomekitHttpParser {
 
                                 if (method != null) {
                                     if (!method.asString().equals(_methodString)) {
-                                        handleViolation(HttpComplianceSection.METHOD_CASE_SENSITIVE, _methodString);
+                                        handleViolation(HttpComplianceSection.METHOD_CASE_SENSITIVE,
+                                                Objects.requireNonNull(_methodString));
                                     }
                                     _methodString = method.asString();
                                 }
@@ -824,7 +836,9 @@ public class HomekitHttpParser {
                         case SPACE:
                             _length = _string.length();
                             String version = takeString();
-                            _version = HomekitHttpVersion.get(version).orElse(null);
+                            _version = HomekitHttpVersion.get(version)
+                                    .orElseThrow(() -> new BadMessageException(HttpStatus.BAD_REQUEST_400,
+                                            "Unknown Version: " + version));
                             checkVersion();
                             setState(State.SPACE1);
                             break;
@@ -906,7 +920,8 @@ public class HomekitHttpParser {
 
                         case LF:
                             setState(State.HEADER);
-                            _responseHandler.startResponse(_version, _responseStatus, null);
+                            Objects.requireNonNull(_responseHandler).startResponse(Objects.requireNonNull(_version),
+                                    _responseStatus, "");
                             break;
 
                         default:
@@ -925,7 +940,9 @@ public class HomekitHttpParser {
                             if (complianceViolation(HttpComplianceSection.NO_HTTP_0_9, "No request version")) {
                                 throw new BadMessageException("HTTP/0.9 not supported");
                             }
-                            _requestHandler.startRequest(_methodString, _uri.toString(), HttpVersion.HTTP_0_9);
+                            Objects.requireNonNull(_requestHandler).startRequest(Objects.requireNonNull(_methodString),
+                                    _uri.toString(),
+                                    HttpVersion.HTTP_0_9);
                             setState(State.CONTENT);
                             _endOfContent = EndOfContent.NO_CONTENT;
                             BufferUtil.clear(buffer);
@@ -965,14 +982,23 @@ public class HomekitHttpParser {
                                 setState(State.REQUEST_VERSION);
 
                                 // try quick look ahead for HTTP Version
-                                HomekitHttpVersion version;
+                                HomekitHttpVersion version = null;
                                 if (buffer.position() > 0 && buffer.hasArray()) {
-                                    version = HomekitHttpVersion
+                                    var versionOpt = HomekitHttpVersion
                                             .lookAheadGet(buffer.array(), buffer.arrayOffset() + buffer.position() - 1,
-                                                    buffer.arrayOffset() + buffer.limit())
-                                            .orElse(null);
+                                                    buffer.arrayOffset() + buffer.limit());
+                                    if (versionOpt.isPresent()) {
+                                        @SuppressWarnings("null") // Safe after isPresent() check
+                                        HomekitHttpVersion nonNullVersion = versionOpt.get();
+                                        version = nonNullVersion;
+                                    }
                                 } else {
-                                    version = HomekitHttpVersion.getBest(buffer, 0, buffer.remaining()).orElse(null);
+                                    var versionOpt = HomekitHttpVersion.getBest(buffer, 0, buffer.remaining());
+                                    if (versionOpt.isPresent()) {
+                                        @SuppressWarnings("null") // Safe after isPresent() check
+                                        HomekitHttpVersion nonNullVersion = versionOpt.get();
+                                        version = nonNullVersion;
+                                    }
                                 }
 
                                 if (version != null) {
@@ -999,14 +1025,17 @@ public class HomekitHttpParser {
                         case LF:
                             if (_responseHandler != null) {
                                 setState(State.HEADER);
-                                _responseHandler.startResponse(_version, _responseStatus, null);
+                                Objects.requireNonNull(_responseHandler).startResponse(Objects.requireNonNull(_version),
+                                        _responseStatus, "");
                             } else {
                                 // HTTP/0.9
                                 if (complianceViolation(HttpComplianceSection.NO_HTTP_0_9, "No request version")) {
                                     throw new BadMessageException("HTTP/0.9 not supported");
                                 }
 
-                                _requestHandler.startRequest(_methodString, _uri.toString(), HttpVersion.HTTP_0_9);
+                                Objects.requireNonNull(_requestHandler).startRequest(
+                                        Objects.requireNonNull(_methodString), _uri.toString(),
+                                        HttpVersion.HTTP_0_9);
                                 setState(State.CONTENT);
                                 _endOfContent = EndOfContent.NO_CONTENT;
                                 BufferUtil.clear(buffer);
@@ -1024,21 +1053,27 @@ public class HomekitHttpParser {
                         case LF:
                             if (_version == null) {
                                 _length = _string.length();
-                                _version = HomekitHttpVersion.get(takeString()).orElse(null);
+                                var versionOpt = HomekitHttpVersion.get(takeString());
+                                if (versionOpt.isPresent()) {
+                                    @SuppressWarnings("null") // Safe after isPresent() check
+                                    HomekitHttpVersion nonNullVersion = versionOpt.get();
+                                    _version = nonNullVersion;
+                                }
                             }
                             checkVersion();
 
                             // Should we try to cache header fields?
                             int headerCache = _handler.getHeaderCacheSize();
-                            if (_fieldCache == null && _version.getVersion() >= HomekitHttpVersion.HTTP_1_1.getVersion()
-                                    && headerCache > 0) {
+                            if (_fieldCache == null && Objects.requireNonNull(_version)
+                                    .getVersion() >= HomekitHttpVersion.HTTP_1_1.getVersion() && headerCache > 0) {
                                 _fieldCache = new ArrayTernaryTrie<>(headerCache);
                             }
 
                             setState(State.HEADER);
 
-                            _requestHandler.startRequest(_methodString, _uri.toString(),
-                                    HomekitHttpVersion.convert(_version));
+                            Objects.requireNonNull(_requestHandler).startRequest(Objects.requireNonNull(_methodString),
+                                    _uri.toString(),
+                                    HomekitHttpVersion.convert(Objects.requireNonNull(_version)));
                             continue;
 
                         case ALPHA:
@@ -1059,7 +1094,8 @@ public class HomekitHttpParser {
                         case LF:
                             String reason = takeString();
                             setState(State.HEADER);
-                            _responseHandler.startResponse(_version, _responseStatus, reason);
+                            Objects.requireNonNull(_responseHandler).startResponse(Objects.requireNonNull(_version),
+                                    _responseStatus, reason);
                             continue;
 
                         case ALPHA:
@@ -1095,7 +1131,7 @@ public class HomekitHttpParser {
             throw new BadMessageException(HttpStatus.BAD_REQUEST_400, "Unknown Version");
         }
 
-        if (_version.getVersion() < 10 || _version.getVersion() > 30) {
+        if (Objects.requireNonNull(_version).getVersion() < 10 || Objects.requireNonNull(_version).getVersion() > 30) {
             throw new BadMessageException(HttpStatus.BAD_REQUEST_400, "Bad Version");
         }
     }
@@ -1106,7 +1142,7 @@ public class HomekitHttpParser {
             // Handle known headers
             if (_header != null) {
                 boolean addToConnectionTrie = false;
-                switch (_header) {
+                switch (Objects.requireNonNull(_header)) {
                     case CONTENT_LENGTH:
                         if (_hasTransferEncoding && complianceViolation(TRANSFER_ENCODING_WITH_CONTENT_LENGTH)) {
                             throw new BadMessageException(HttpStatus.BAD_REQUEST_400,
@@ -1114,7 +1150,7 @@ public class HomekitHttpParser {
                         }
 
                         if (_hasContentLength) {
-                            if (convertContentLength(_valueString) != _contentLength) {
+                            if (convertContentLength(Objects.requireNonNull(_valueString)) != _contentLength) {
                                 throw new BadMessageException(HttpStatus.BAD_REQUEST_400,
                                         "Invalid Content-Length Value");
                             }
@@ -1122,7 +1158,7 @@ public class HomekitHttpParser {
                         _hasContentLength = true;
 
                         if (_endOfContent != EndOfContent.CHUNKED_CONTENT) {
-                            _contentLength = convertContentLength(_valueString);
+                            _contentLength = convertContentLength(Objects.requireNonNull(_valueString));
                             if (_contentLength <= 0) {
                                 _endOfContent = EndOfContent.NO_CONTENT;
                             } else {
@@ -1175,11 +1211,11 @@ public class HomekitHttpParser {
                     case HOST:
                         _host = true;
                         if (!(_field instanceof HostPortHttpField) && _valueString != null && !_valueString.isEmpty()) {
-                            _field = new HomekitHostPortHttpField(_header,
+                            _field = new HomekitHostPortHttpField(Objects.requireNonNull(_header),
                                     _compliances.contains(HttpComplianceSection.FIELD_NAME_CASE_INSENSITIVE)
-                                            ? _header.asString()
-                                            : _headerString,
-                                    _valueString);
+                                            ? Objects.requireNonNull(_header).asString()
+                                            : Objects.requireNonNull(_headerString),
+                                    Objects.requireNonNull(_valueString));
                             addToConnectionTrie = _fieldCache != null;
                         }
                         break;
@@ -1207,15 +1243,20 @@ public class HomekitHttpParser {
                         break;
                 }
 
-                if (addToConnectionTrie && !_fieldCache.isFull() && _header != null && _valueString != null) {
+                if (addToConnectionTrie && _fieldCache != null && !_fieldCache.isFull() && _header != null
+                        && _valueString != null) {
                     if (_field == null) {
-                        _field = new HttpField(_header, caseInsensitiveHeader(_headerString, _header.asString()),
-                                _valueString);
+                        _field = new HttpField(Objects.requireNonNull(_header),
+                                caseInsensitiveHeader(Objects.requireNonNull(_headerString),
+                                        Objects.requireNonNull(_header).asString()),
+                                Objects.requireNonNull(_valueString));
                     }
-                    _fieldCache.put(_field);
+                    Objects.requireNonNull(_fieldCache).put(Objects.requireNonNull(_field));
                 }
             }
-            _handler.parsedHeader(_field != null ? _field : new HttpField(_header, _headerString, _valueString));
+            _handler.parsedHeader(_field != null ? Objects.requireNonNull(_field)
+                    : new HttpField(Objects.requireNonNull(_header), Objects.requireNonNull(_headerString),
+                            Objects.requireNonNull(_valueString)));
         }
 
         _headerString = _valueString = null;
@@ -1226,7 +1267,9 @@ public class HomekitHttpParser {
     private void parsedTrailer() {
         // handler last header if any. Delayed to here just in case there was a continuation line (above)
         if (_headerString != null || _valueString != null) {
-            _handler.parsedTrailer(_field != null ? _field : new HttpField(_header, _headerString, _valueString));
+            _handler.parsedTrailer(_field != null ? Objects.requireNonNull(_field)
+                    : new HttpField(Objects.requireNonNull(_header), Objects.requireNonNull(_headerString),
+                            Objects.requireNonNull(_valueString)));
         }
 
         _headerString = _valueString = null;
@@ -1278,7 +1321,7 @@ public class HomekitHttpParser {
                                 _string.setLength(0);
                                 _length = 0;
                             } else {
-                                setString(_valueString);
+                                setString(Objects.requireNonNull(_valueString));
                                 _string.append(' ');
                                 _length++;
                                 _valueString = null;
@@ -1336,7 +1379,7 @@ public class HomekitHttpParser {
                             }
 
                             // How is the message ended?
-                            switch (_endOfContent) {
+                            switch (Objects.requireNonNull(_endOfContent)) {
                                 case EOF_CONTENT: {
                                     setState(State.EOF_CONTENT);
                                     boolean handle = _handler.headerComplete();
@@ -1371,10 +1414,13 @@ public class HomekitHttpParser {
                             // handle new header
                             if (buffer.hasRemaining()) {
                                 // Try a look ahead for the known header name and value.
+                                @SuppressWarnings("null") // Null check performed above
                                 HttpField cachedField = _fieldCache == null ? null
                                         : _fieldCache.getBest(buffer, -1, buffer.remaining());
                                 if (cachedField == null) {
-                                    cachedField = CACHE.getBest(buffer, -1, buffer.remaining());
+                                    @SuppressWarnings("null") // CACHE is non-null static final field
+                                    HttpField globalCachedField = CACHE.getBest(buffer, -1, buffer.remaining());
+                                    cachedField = globalCachedField;
                                 }
 
                                 if (cachedField != null) {
@@ -1775,7 +1821,10 @@ public class HomekitHttpParser {
         }
     }
 
-    protected boolean parseContent(ByteBuffer buffer) {
+    protected boolean parseContent(@Nullable ByteBuffer buffer) {
+        if (buffer == null) {
+            return false;
+        }
         int remaining = buffer.remaining();
         if (remaining == 0) {
             switch (_state) {
@@ -1802,7 +1851,7 @@ public class HomekitHttpParser {
                     _contentChunk = buffer.asReadOnlyBuffer();
                     _contentPosition += remaining;
                     buffer.position(buffer.position() + remaining);
-                    if (_handler.content(_contentChunk)) {
+                    if (_handler.content(Objects.requireNonNull(_contentChunk))) {
                         return true;
                     }
                     break;
@@ -1819,13 +1868,14 @@ public class HomekitHttpParser {
                         if (remaining > content) {
                             // We can cast remaining to an int as we know that it is smaller than
                             // or equal to length which is already an int.
-                            _contentChunk.limit(_contentChunk.position() + (int) content);
+                            Objects.requireNonNull(_contentChunk)
+                                    .limit(Objects.requireNonNull(_contentChunk).position() + (int) content);
                         }
 
-                        _contentPosition += _contentChunk.remaining();
-                        buffer.position(buffer.position() + _contentChunk.remaining());
+                        _contentPosition += Objects.requireNonNull(_contentChunk).remaining();
+                        buffer.position(buffer.position() + Objects.requireNonNull(_contentChunk).remaining());
 
-                        if (_handler.content(_contentChunk)) {
+                        if (_handler.content(Objects.requireNonNull(_contentChunk))) {
                             return true;
                         }
 
@@ -1933,14 +1983,15 @@ public class HomekitHttpParser {
                         _contentChunk = buffer.asReadOnlyBuffer();
 
                         if (remaining > chunk) {
-                            _contentChunk.limit(_contentChunk.position() + chunk);
+                            Objects.requireNonNull(_contentChunk)
+                                    .limit(Objects.requireNonNull(_contentChunk).position() + chunk);
                         }
-                        chunk = _contentChunk.remaining();
+                        chunk = Objects.requireNonNull(_contentChunk).remaining();
 
                         _contentPosition += chunk;
                         _chunkPosition += chunk;
                         buffer.position(buffer.position() + chunk);
-                        if (_handler.content(_contentChunk)) {
+                        if (_handler.content(Objects.requireNonNull(_contentChunk))) {
                             return true;
                         }
                     }
@@ -2031,7 +2082,7 @@ public class HomekitHttpParser {
     }
 
     public Trie<HttpField> getFieldCache() {
-        return _fieldCache;
+        return Objects.requireNonNull(_fieldCache, "Field cache not initialized");
     }
 
     @Override

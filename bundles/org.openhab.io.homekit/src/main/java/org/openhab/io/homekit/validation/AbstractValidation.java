@@ -15,6 +15,7 @@ package org.openhab.io.homekit.validation;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -116,8 +117,9 @@ public abstract class AbstractValidation implements Validation {
         }
 
         boolean isValid = false;
-        ValidationResult.Severity maxSeverity = issues.stream().map(ValidationIssue::getSeverity).max(Enum::compareTo)
-                .orElse(ValidationResult.Severity.INFO);
+        ValidationResult.Severity maxSeverity = Objects.requireNonNull(issues.stream().map(ValidationIssue::getSeverity)
+                .filter(Objects::nonNull).max(Enum::compareTo).orElse(ValidationResult.Severity.INFO),
+                "Severity cannot be null");
 
         return ValidationResult.builder().valid(isValid).severity(maxSeverity).issues(issues).build();
     }

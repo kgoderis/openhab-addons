@@ -58,7 +58,7 @@ public class ValidationContext {
     }
 
     public Optional<ValidationResult> getCachedResult(String key) {
-        return Optional.ofNullable(settings.isCachingEnabled() ? cachedResults.get(key) : null);
+        return settings.isCachingEnabled() ? Optional.ofNullable(cachedResults.get(key)) : Optional.empty();
     }
 
     public ValidationSettings getSettings() {

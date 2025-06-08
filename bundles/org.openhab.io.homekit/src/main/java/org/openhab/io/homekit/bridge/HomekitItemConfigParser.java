@@ -112,7 +112,10 @@ public class HomekitItemConfigParser {
             String value = metadata.getValue();
             config.put("type", item.getClass().getSimpleName());
             config.put("name", item.getName());
-            config.put("label", item.getLabel());
+            String label = item.getLabel();
+            if (label != null) {
+                config.put("label", label);
+            }
 
             // Parse the metadata value
             parseMetadataValue(value, config);
@@ -264,7 +267,10 @@ public class HomekitItemConfigParser {
         String[] fields = { "serviceType", "characteristics", "parameters" };
         for (String field : fields) {
             if (fullConfig.containsKey(field)) {
-                filteredConfig.put(field, fullConfig.get(field));
+                Object value = fullConfig.get(field);
+                if (value != null) {
+                    filteredConfig.put(field, value);
+                }
             }
         }
 

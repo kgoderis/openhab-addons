@@ -14,6 +14,7 @@
 package org.openhab.io.homekit.network.http;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.http.HttpCompliance;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.io.Connection;
@@ -76,7 +77,7 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
     private HttpCompliance httpCompliance;
     private boolean recordHttpComplianceViolations = false;
     private boolean useDirectBuffers = false;
-    private HomekitSessionHandler sessionHandler;
+    private @Nullable HomekitSessionHandler sessionHandler;
 
     /**
      * Creates a new HomeKit HTTP connection factory with a session handler.
@@ -120,7 +121,7 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
      * @throws IllegalArgumentException if config is null
      */
     public HomekitHttpConnectionFactory(@Name("config") HttpConfiguration config,
-            @Name("compliance") HttpCompliance compliance) {
+            @Name("compliance") @Nullable HttpCompliance compliance) {
         super(HttpVersion.HTTP_1_1.asString(), "HOMEKIT");
         this.config = config;
         httpCompliance = compliance == null ? HttpCompliance.RFC7230 : compliance;
@@ -238,17 +239,29 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
      * @return A new {@link Connection} instance
      */
     @Override
-    public Connection newConnection(Connector connector, EndPoint endPoint) {
+    public Connection newConnection(@Nullable Connector connector, @Nullable EndPoint endPoint) {
+        if (connector == null || endPoint == null) {
+            throw new IllegalArgumentException("Connector and EndPoint cannot be null");
+        }
+
         logger.trace("{}Creating a new connection for Endpoint {} {}", LOG_STATE,
                 endPoint.getRemoteAddress().toString(), endPoint.toString());
 
-        String sessionId = sessionHandler
-                .getSessionId(endPoint.getRemoteAddress().getAddress().getHostAddress().toString() + ":"
-                        + endPoint.getRemoteAddress().getPort());
+        String sessionId = sessionHandler != null
+                ? sessionHandler.getSessionId(endPoint.getRemoteAddress().getAddress().getHostAddress().toString() + ":"
+                        + endPoint.getRemoteAddress().getPort())
+                : null;
 
-        if (sessionId != null) {
+        if (sessionId != null && sessionHandler != null) {
             logger.trace("{}Fetching Session {} {}", LOG_STATE, endPoint.getRemoteAddress().toString(), sessionId);
-            Session session = sessionHandler.getSession(sessionId);
+
+            @Nullable
+            Session session;
+            if (sessionHandler != null) {
+                session = sessionHandler.getSession(sessionId);
+            } else {
+                session = null;
+            }
 
             if (session != null) {
                 if (session.getAttribute("Control-Read-Encryption-Key") != null) {

@@ -24,6 +24,7 @@ import java.util.Arrays;
 
 import org.apache.commons.io.HexDump;
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.util.BufferUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,7 +80,7 @@ public class HomekitByte {
      * @return A new byte array containing all input arrays concatenated
      * @throws IllegalArgumentException if any input array is null
      */
-    public static byte[] joinBytes(byte[]... piece) {
+    public static byte[] joinBytes(byte @Nullable []... piece) {
         if (piece == null) {
             throw new IllegalArgumentException("Input arrays cannot be null");
         }

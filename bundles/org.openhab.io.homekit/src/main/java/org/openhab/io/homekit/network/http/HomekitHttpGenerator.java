@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.http.BadMessageException;
 import org.eclipse.jetty.http.HttpField;
 import org.eclipse.jetty.http.HttpFields;
@@ -156,7 +157,7 @@ public class HomekitHttpGenerator extends HttpGenerator {
 
     private long _contentPrepared = 0;
     private boolean _noContent = false;
-    private Boolean _persistent = null;
+    private @Nullable Boolean _persistent = null;
     private boolean _needCRLF = false;
 
     private final int _send;
@@ -180,11 +181,11 @@ public class HomekitHttpGenerator extends HttpGenerator {
 
     // Build cache of response lines for status
     private static class PreparedResponse {
-        byte[] _reason;
+        byte[] _reason = new byte[0]; // Properly initialized in static block
         @SuppressWarnings("unused")
-        byte[] _schemeCode;
+        byte[] _schemeCode = new byte[0]; // Properly initialized in static block
         @SuppressWarnings("unused")
-        byte[] _responseLine;
+        byte @Nullable [] _responseLine; // Can be null for uninitialized HTTP status codes
     }
 
     private static final PreparedResponse[] __preprepared = new PreparedResponse[HttpStatus.MAX_CODE + 1];
@@ -243,8 +244,8 @@ public class HomekitHttpGenerator extends HttpGenerator {
         }
     }
 
-    private void putContentLength(ByteBuffer header, long contentLength, boolean contentType, MetaData.Request request,
-            MetaData.Response response) {
+    private void putContentLength(ByteBuffer header, long contentLength, boolean contentType,
+            MetaData.@Nullable Request request, MetaData.@Nullable Response response) {
         if (contentLength > 0) {
             header.put(HttpHeader.CONTENT_LENGTH.getBytesColonSpace());
             BufferUtil.putDecLong(header, contentLength);
@@ -391,7 +392,7 @@ public class HomekitHttpGenerator extends HttpGenerator {
      * @return true if the generator is in the specified state
      */
     @Override
-    public boolean isState(State state) {
+    public boolean isState(@Nullable State state) {
         return _state == state;
     }
 
@@ -562,7 +563,7 @@ public class HomekitHttpGenerator extends HttpGenerator {
     public void abort() {
         _persistent = false;
         _state = State.END;
-        _endOfContent = null;
+        _endOfContent = EndOfContent.UNKNOWN_CONTENT;
     }
 
     /**
@@ -595,9 +596,9 @@ public class HomekitHttpGenerator extends HttpGenerator {
      * @throws IOException if an I/O error occurs
      */
     @Override
-    public Result generateRequest(MetaData.Request info, ByteBuffer header, ByteBuffer chunk, ByteBuffer content,
-            boolean last) throws IOException {
-        if (debug) {
+    public Result generateRequest(MetaData.@Nullable Request info, @Nullable ByteBuffer header,
+            @Nullable ByteBuffer chunk, @Nullable ByteBuffer content, boolean last) throws IOException {
+        if (debug && info != null) {
             logger.debug("{}Generating request: method={}, uri={}", LOG_STATE, info.getMethod(), info.getURI());
         }
         switch (_state) {
@@ -740,8 +741,8 @@ public class HomekitHttpGenerator extends HttpGenerator {
      * @throws IOException If an I/O error occurs during generation
      */
     @Override
-    public Result generateResponse(MetaData.Response info, ByteBuffer header, ByteBuffer chunk, ByteBuffer content,
-            boolean last) throws IOException {
+    public Result generateResponse(MetaData.@Nullable Response info, @Nullable ByteBuffer header,
+            @Nullable ByteBuffer chunk, @Nullable ByteBuffer content, boolean last) throws IOException {
         return generateResponse(info, false, header, chunk, content, last);
     }
 
@@ -766,8 +767,8 @@ public class HomekitHttpGenerator extends HttpGenerator {
      * @throws IOException If an I/O error occurs during generation
      */
     @Override
-    public Result generateResponse(MetaData.Response info, boolean head, ByteBuffer header, ByteBuffer chunk,
-            ByteBuffer content, boolean last) throws IOException {
+    public Result generateResponse(MetaData.@Nullable Response info, boolean head, @Nullable ByteBuffer header,
+            @Nullable ByteBuffer chunk, @Nullable ByteBuffer content, boolean last) throws IOException {
         switch (_state) {
             case START: {
                 if (info == null) {
@@ -793,7 +794,7 @@ public class HomekitHttpGenerator extends HttpGenerator {
                     default:
                         _persistent = false;
                         _endOfContent = EndOfContent.EOF_CONTENT;
-                        if (BufferUtil.hasContent(content)) {
+                        if (BufferUtil.hasContent(content) && content != null) {
                             _contentPrepared += content.remaining();
                         }
                         _state = last ? State.COMPLETING : State.COMMITTED;
@@ -1052,9 +1053,11 @@ public class HomekitHttpGenerator extends HttpGenerator {
      * @param content The content buffer
      * @param last Whether this is the last content
      */
-    private void generateHeaders(MetaData _info, ByteBuffer header, ByteBuffer content, boolean last) {
-        final MetaData.Request request = (_info instanceof MetaData.Request) ? (MetaData.Request) _info : null;
-        final MetaData.Response response = (_info instanceof MetaData.Response) ? (MetaData.Response) _info : null;
+    private void generateHeaders(MetaData _info, ByteBuffer header, @Nullable ByteBuffer content, boolean last) {
+        final MetaData.@Nullable Request request = (_info instanceof MetaData.Request) ? (MetaData.Request) _info
+                : null;
+        final MetaData.@Nullable Response response = (_info instanceof MetaData.Response) ? (MetaData.Response) _info
+                : null;
 
         // default field values
         int send = _send;
@@ -1211,7 +1214,7 @@ public class HomekitHttpGenerator extends HttpGenerator {
                 } else if (last) {
                     // we have seen all the _content there is, so we can be content-length limited.
                     _endOfContent = EndOfContent.CONTENT_LENGTH;
-                    long actual_length = _contentPrepared + BufferUtil.length(content);
+                    long actual_length = _contentPrepared + (content != null ? BufferUtil.length(content) : 0);
 
                     if (content_length >= 0 && content_length != actual_length) {
                         throw new BadMessageException(500,
@@ -1323,7 +1326,7 @@ public class HomekitHttpGenerator extends HttpGenerator {
      * @param code The HTTP status code
      * @return The byte array containing the reason phrase, or null if not found
      */
-    public static byte[] getReasonBuffer(int code) {
+    public static byte @Nullable [] getReasonBuffer(int code) {
         PreparedResponse status = code < __preprepared.length ? __preprepared[code] : null;
         if (status != null) {
             return status._reason;

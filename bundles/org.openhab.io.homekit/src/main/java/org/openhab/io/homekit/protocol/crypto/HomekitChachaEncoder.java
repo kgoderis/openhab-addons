@@ -20,6 +20,7 @@ import org.bouncycastle.crypto.generators.Poly1305KeyGenerator;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Provides ChaCha20-Poly1305 encryption for HomeKit protocol messages.
@@ -96,7 +97,7 @@ public class HomekitChachaEncoder {
      * @return The encrypted data with authentication tag
      * @throws IOException if the encryption process fails
      */
-    public byte[] encodeCiphertext(byte[] plaintext, byte[] additionalData) throws IOException {
+    public byte[] encodeCiphertext(byte[] plaintext, byte @Nullable [] additionalData) throws IOException {
         KeyParameter macKey = initRecordMAC(encryptCipher);
 
         byte[] ciphertext = new byte[plaintext.length];

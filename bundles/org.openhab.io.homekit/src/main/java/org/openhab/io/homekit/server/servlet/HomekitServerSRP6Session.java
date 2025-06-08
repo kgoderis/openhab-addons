@@ -17,6 +17,7 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.nimbusds.srp6.SRP6ClientEvidenceContext;
 import com.nimbusds.srp6.SRP6CryptoParams;
@@ -87,9 +88,11 @@ public class HomekitServerSRP6Session extends SRP6Session {
 
     private boolean noSuchUserIdentity = false;
 
-    private BigInteger v = null;
+    @Nullable
+    private BigInteger v;
 
-    private BigInteger b = null;
+    @Nullable
+    private BigInteger b;
 
     private State state;
 

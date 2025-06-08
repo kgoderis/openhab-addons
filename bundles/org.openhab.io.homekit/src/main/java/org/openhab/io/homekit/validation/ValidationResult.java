@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Represents the result of a validation check.
@@ -38,9 +39,9 @@ public class ValidationResult {
     private ValidationResult(Builder builder) {
         this.valid = builder.valid;
         this.severity = builder.severity;
-        this.message = builder.message;
-        this.code = builder.code;
-        this.contextKey = builder.contextKey;
+        this.message = Objects.requireNonNull(builder.message, "message cannot be null");
+        this.code = Objects.requireNonNull(builder.code, "code cannot be null");
+        this.contextKey = Objects.requireNonNull(builder.contextKey, "contextKey cannot be null");
         this.rootCause = builder.rootCause;
         this.blocking = builder.blocking;
         this.issues = builder.issues;
@@ -85,9 +86,9 @@ public class ValidationResult {
     public static class Builder {
         private boolean valid = true;
         private Severity severity = Severity.INFO;
-        private String message;
-        private String code;
-        private String contextKey;
+        private @Nullable String message;
+        private @Nullable String code;
+        private @Nullable String contextKey;
         private boolean rootCause = false;
         private boolean blocking = false;
         private List<ValidationIssue> issues = new ArrayList<>();
@@ -150,7 +151,7 @@ public class ValidationResult {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         if (this == o)
             return true;
         if (o == null || getClass() != o.getClass())
@@ -160,6 +161,7 @@ public class ValidationResult {
     }
 
     @Override
+    @SuppressWarnings("null") // hashCode() return type compatibility with Object.hashCode()
     public int hashCode() {
         return Objects.hash(code, contextKey);
     }

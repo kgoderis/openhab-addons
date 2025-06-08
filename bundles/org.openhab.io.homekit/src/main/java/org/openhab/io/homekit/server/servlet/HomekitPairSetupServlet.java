@@ -20,6 +20,7 @@ import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
+import java.util.Objects;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -31,6 +32,7 @@ import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.http.HttpHeader;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.protocol.crypto.HomekitChachaDecoder;
@@ -96,7 +98,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
     protected static final String LOG_SECURITY = LOG_PREFIX + "Security - ";
 
-    protected byte[] sessionKey;
+    protected byte @Nullable [] sessionKey;
 
     /**
      * Creates a new pair setup servlet.
@@ -164,9 +166,18 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
      * @throws ServletException if the request cannot be processed
      */
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    protected void doPost(@Nullable HttpServletRequest request, @Nullable HttpServletResponse response)
             throws ServletException, IOException {
+
         logger.debug("{}Handling pair setup request", LOG_SECURITY);
+        if (request == null || response == null) {
+            logger.error("{}Request or response is null", LOG_ERROR);
+            if (response != null) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            }
+            return;
+        }
+
         try {
             byte[] body = IOUtils.toByteArray(request.getInputStream());
             short state = getState(body);
@@ -262,7 +273,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
 
         BigInteger salt = generateSalt();
         @SuppressWarnings("null") // server null check performed at method start
-        var setupCode = server.getSetupCode();
+        String setupCode = server.getSetupCode();
         BigInteger verifier = verifierGenerator.generateVerifier(salt, "Pair-Setup", setupCode);
         logger.trace("{}Generated verifier", LOG_SECURITY);
 
@@ -431,9 +442,11 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         hkdf.generateBytes(sessionKey, 0, 32);
         logger.trace("{}Generated session key", LOG_SECURITY);
 
-        HomekitChachaDecoder chachaDecoder = new HomekitChachaDecoder(sessionKey,
+        HomekitChachaDecoder chachaDecoder = new HomekitChachaDecoder(Objects.requireNonNull(sessionKey),
                 "PS-Msg05".getBytes(StandardCharsets.UTF_8));
-        byte[] plaintext = chachaDecoder.decodeCiphertext(getAuthTagData(body), getMessageData(body));
+        byte[] authTag = Objects.requireNonNull(getAuthTagData(body));
+        byte[] messageData = Objects.requireNonNull(getMessageData(body));
+        byte[] plaintext = chachaDecoder.decodeCiphertext(authTag, messageData);
         logger.trace("{}Decrypted client data", LOG_SECURITY);
 
         DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(plaintext);
@@ -484,7 +497,13 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         } else {
             logger.debug("{}Adding pairing for server", LOG_SECURITY);
             try {
-                server.addPairing(clientPairingIdentifier, clientLongtermPublicKey);
+                if (server != null) {
+                    server.addPairing(clientPairingIdentifier, clientLongtermPublicKey);
+                } else {
+                    logger.error("{}Server instance is null", LOG_ERROR);
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    return;
+                }
             } catch (Exception e) {
                 logger.error("{}Failed to add pairing: {}", LOG_ERROR, e.getMessage(), e);
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -499,14 +518,28 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
             hkdf.generateBytes(accessoryDeviceX, 0, 32);
             logger.trace("{}Generated accessory device X", LOG_SECURITY);
 
-            HomekitEdsaSigner signer = new HomekitEdsaSigner(server.getSecretKey());
-            byte[] accessoryInfo = HomekitByte.joinBytes(accessoryDeviceX, server.getPairingId(),
-                    signer.getPublicKey());
-            logger.trace("{}Generated accessory info", LOG_SECURITY);
+            HomekitEdsaSigner signer = null;
+            byte[] accessoryInfo = null;
+            if (server != null) {
+                signer = new HomekitEdsaSigner(server.getSecretKey());
+                accessoryInfo = HomekitByte.joinBytes(accessoryDeviceX, Objects.requireNonNull(server).getPairingId(),
+                        Objects.requireNonNull(signer).getPublicKey());
+                logger.trace("{}Generated accessory info", LOG_SECURITY);
+            } else {
+                logger.error("{}Server instance is null", LOG_ERROR);
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                return;
+            }
 
             byte[] accessorySignature = null;
             try {
-                accessorySignature = signer.sign(accessoryInfo);
+                if (signer != null) {
+                    accessorySignature = signer.sign(accessoryInfo);
+                } else {
+                    logger.error("{}Signer instance is null", LOG_ERROR);
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    return;
+                }
                 logger.trace("{}Generated accessory signature", LOG_SECURITY);
             } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException e) {
                 logger.error("{}Failed to create accessory signature: {}", LOG_ERROR, e.getMessage(), e);
@@ -514,13 +547,19 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
                 return;
             }
 
-            encoder.add(HomekitMessage.IDENTIFIER, server.getPairingId());
-            encoder.add(HomekitMessage.PUBLIC_KEY, signer.getPublicKey());
-            encoder.add(HomekitMessage.SIGNATURE, accessorySignature);
+            if (server != null) {
+                encoder.add(HomekitMessage.IDENTIFIER, server.getPairingId());
+                encoder.add(HomekitMessage.PUBLIC_KEY, signer.getPublicKey());
+                encoder.add(HomekitMessage.SIGNATURE, accessorySignature);
+            } else {
+                logger.error("{}Server instance is null", LOG_ERROR);
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                return;
+            }
 
-            plaintext = encoder.toByteArray();
+            plaintext = Objects.requireNonNull(encoder.toByteArray(), "Failed to encode plaintext data");
 
-            HomekitChachaEncoder chachaEncoder = new HomekitChachaEncoder(sessionKey,
+            HomekitChachaEncoder chachaEncoder = new HomekitChachaEncoder(Objects.requireNonNull(sessionKey),
                     "PS-Msg06".getBytes(StandardCharsets.UTF_8));
             byte[] ciphertext = chachaEncoder.encodeCiphertext(plaintext);
 
@@ -666,7 +705,12 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
          * @throws RuntimeException if the hash algorithm is not available
          */
         @Override
-        public BigInteger computeClientEvidence(SRP6CryptoParams cryptoParams, SRP6ClientEvidenceContext ctx) {
+        @SuppressWarnings("null") // Parent ClientEvidenceRoutine interface doesn't constrain these parameters
+        public BigInteger computeClientEvidence(@Nullable SRP6CryptoParams cryptoParams,
+                @Nullable SRP6ClientEvidenceContext ctx) {
+            if (cryptoParams == null || ctx == null) {
+                throw new IllegalArgumentException("CryptoParams and context cannot be null");
+            }
             MessageDigest digest;
             try {
                 digest = MessageDigest.getInstance(cryptoParams.H);

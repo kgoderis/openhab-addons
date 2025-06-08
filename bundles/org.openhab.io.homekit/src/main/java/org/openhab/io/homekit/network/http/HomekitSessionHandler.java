@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.slf4j.Logger;
@@ -138,7 +139,12 @@ public class HomekitSessionHandler extends SessionHandler {
      * @param request The HTTP request to check
      */
     @Override
-    protected void checkRequestedSessionId(Request baseRequest, HttpServletRequest request) {
+    protected void checkRequestedSessionId(@Nullable Request baseRequest, @Nullable HttpServletRequest request) {
+        if (baseRequest == null || request == null) {
+            return;
+        }
+
+        @Nullable
         String requestedSessionId = request.getRequestedSessionId();
         String clientId = baseRequest.getRemoteAddr() + ":" + baseRequest.getRemotePort();
 
@@ -197,7 +203,8 @@ public class HomekitSessionHandler extends SessionHandler {
      * @param ipAddress The client's IP address and port
      * @return The associated session ID, or null if none exists
      */
-    public String getSessionId(String ipAddress) {
+    public @Nullable String getSessionId(String ipAddress) {
+        @Nullable
         String sessionId = ipSessionIds.get(ipAddress);
         logger.debug("{}Retrieved session ID {} for IP {}", LOG_STATE, sessionId, ipAddress);
         return sessionId;
@@ -226,7 +233,11 @@ public class HomekitSessionHandler extends SessionHandler {
      * @return The newly created HTTP session
      */
     @Override
-    public HttpSession newHttpSession(HttpServletRequest request) {
+    public HttpSession newHttpSession(@Nullable HttpServletRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("Request cannot be null");
+        }
+
         HttpSession session = super.newHttpSession(request);
         String clientId = request.getRemoteAddr() + ":" + request.getRemotePort();
         ipSessionIds.put(clientId, session.getId());
@@ -256,7 +267,11 @@ public class HomekitSessionHandler extends SessionHandler {
      * @param id The session ID to invalidate
      */
     @Override
-    public void invalidate(String id) {
+    public void invalidate(@Nullable String id) {
+        if (id == null) {
+            return;
+        }
+
         logger.debug("{}Invalidating session {}", LOG_STATE, id);
         ipSessionIds.entrySet().removeIf(entry -> entry.getValue().equals(id));
         super.invalidate(id);

@@ -120,8 +120,8 @@ public class HomekitResponseWrapper extends HttpServletResponseWrapper {
      * @throws IOException if an I/O error occurs
      */
     @Override
-    @SuppressWarnings("deprecation")
-    public void sendError(int sc, String msg) throws IOException {
+    @SuppressWarnings({ "deprecation", "null" }) // Parent HttpServletResponseWrapper doesn't constrain this parameter
+    public void sendError(int sc, @Nullable String msg) throws IOException {
         copyBodyToResponse(false);
         try {
             super.sendError(sc, msg);
@@ -140,9 +140,13 @@ public class HomekitResponseWrapper extends HttpServletResponseWrapper {
      * @throws IOException if an I/O error occurs
      */
     @Override
-    public void sendRedirect(String location) throws IOException {
+    public void sendRedirect(@Nullable String location) throws IOException {
         copyBodyToResponse(false);
-        super.sendRedirect(location);
+        if (location != null) {
+            super.sendRedirect(location);
+        } else {
+            throw new IOException("Redirect location cannot be null");
+        }
     }
 
     /**
@@ -185,9 +189,9 @@ public class HomekitResponseWrapper extends HttpServletResponseWrapper {
     public PrintWriter getWriter() throws IOException {
         if (this.writer == null) {
             String characterEncoding = getCharacterEncoding();
+            String encoding = (characterEncoding != null ? characterEncoding : StandardCharsets.UTF_8.name());
             @SuppressWarnings("null") // ResponsePrintWriter constructor guaranteed non-null result
-            PrintWriter newWriter = (characterEncoding != null ? new ResponsePrintWriter(characterEncoding)
-                    : new ResponsePrintWriter(StandardCharsets.UTF_8.name()));
+            PrintWriter newWriter = new ResponsePrintWriter(encoding);
             this.writer = newWriter;
         }
         PrintWriter currentWriter = this.writer;
@@ -388,8 +392,10 @@ public class HomekitResponseWrapper extends HttpServletResponseWrapper {
          * @throws IOException if an I/O error occurs
          */
         @Override
-        public void write(byte[] b, int off, int len) throws IOException {
-            content.write(b, off, len);
+        public void write(byte @Nullable [] b, int off, int len) throws IOException {
+            if (b != null) {
+                content.write(b, off, len);
+            }
         }
 
         /**
@@ -412,7 +418,7 @@ public class HomekitResponseWrapper extends HttpServletResponseWrapper {
          * @throws UnsupportedOperationException always
          */
         @Override
-        public void setWriteListener(WriteListener writeListener) {
+        public void setWriteListener(@Nullable WriteListener writeListener) {
             throw new UnsupportedOperationException();
         }
     }
@@ -447,9 +453,11 @@ public class HomekitResponseWrapper extends HttpServletResponseWrapper {
          * @param len The number of characters to write
          */
         @Override
-        public void write(char[] buf, int off, int len) {
-            super.write(buf, off, len);
-            super.flush();
+        public void write(char @Nullable [] buf, int off, int len) {
+            if (buf != null) {
+                super.write(buf, off, len);
+                super.flush();
+            }
         }
 
         /**
@@ -463,9 +471,11 @@ public class HomekitResponseWrapper extends HttpServletResponseWrapper {
          * @param len The number of characters to write
          */
         @Override
-        public void write(String s, int off, int len) {
-            super.write(s, off, len);
-            super.flush();
+        public void write(@Nullable String s, int off, int len) {
+            if (s != null) {
+                super.write(s, off, len);
+                super.flush();
+            }
         }
 
         /**

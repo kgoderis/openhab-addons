@@ -29,6 +29,7 @@ import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
 import org.bouncycastle.util.Pack;
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.util.BufferUtil;
 import org.openhab.io.homekit.util.HomekitByte;
 import org.openhab.io.homekit.util.HomekitByteBufferOutputStream;
@@ -88,7 +89,7 @@ public class HomekitEncryptionEngine {
     public static final SRP6CryptoParams SRP6Params = new SRP6CryptoParams(N_3072, G, "SHA-512");
 
     /** Thread-safe secure random number generator */
-    private static volatile SecureRandom secureRandom;
+    private static volatile @Nullable SecureRandom secureRandom;
 
     /**
      * Represents a buffer with its associated sequence number.
@@ -290,7 +291,12 @@ public class HomekitEncryptionEngine {
          * @return The calculated client evidence message
          */
         @Override
-        public BigInteger computeClientEvidence(SRP6CryptoParams cryptoParams, SRP6ClientEvidenceContext ctx) {
+        public BigInteger computeClientEvidence(@Nullable SRP6CryptoParams cryptoParams,
+                @Nullable SRP6ClientEvidenceContext ctx) {
+            if (cryptoParams == null || ctx == null) {
+                throw new IllegalArgumentException("CryptoParams and context cannot be null");
+            }
+
             MessageDigest digest;
             try {
                 digest = MessageDigest.getInstance(cryptoParams.H);
@@ -353,7 +359,12 @@ public class HomekitEncryptionEngine {
          * @return The calculated server evidence message
          */
         @Override
-        public BigInteger computeServerEvidence(SRP6CryptoParams cryptoParams, SRP6ServerEvidenceContext ctx) {
+        public BigInteger computeServerEvidence(@Nullable SRP6CryptoParams cryptoParams,
+                @Nullable SRP6ServerEvidenceContext ctx) {
+            if (cryptoParams == null || ctx == null) {
+                throw new IllegalArgumentException("CryptoParams and context cannot be null");
+            }
+
             MessageDigest digest;
             try {
                 digest = MessageDigest.getInstance(cryptoParams.H);
@@ -400,6 +411,10 @@ public class HomekitEncryptionEngine {
                 }
             }
         }
-        return secureRandom;
+        SecureRandom result = secureRandom;
+        if (result == null) {
+            throw new IllegalStateException("SecureRandom initialization failed");
+        }
+        return result;
     }
 }

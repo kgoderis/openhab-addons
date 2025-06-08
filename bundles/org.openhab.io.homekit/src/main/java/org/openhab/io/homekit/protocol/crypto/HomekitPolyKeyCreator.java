@@ -16,6 +16,7 @@ package org.openhab.io.homekit.protocol.crypto;
 import org.bouncycastle.crypto.macs.Poly1305;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.util.Pack;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Provides Poly1305 Message Authentication Code (MAC) generation for HomeKit protocol.
@@ -68,7 +69,7 @@ class HomekitPolyKeyCreator {
      * @param ciphertext The encrypted data to authenticate
      * @return The generated MAC value
      */
-    public static byte[] create(KeyParameter macKey, byte[] additionalData, byte[] ciphertext) {
+    public static byte[] create(KeyParameter macKey, byte @Nullable [] additionalData, byte[] ciphertext) {
         Poly1305 poly = new Poly1305();
         poly.init(macKey);
 

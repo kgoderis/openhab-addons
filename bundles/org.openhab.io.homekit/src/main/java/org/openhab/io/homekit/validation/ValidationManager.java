@@ -16,6 +16,7 @@ package org.openhab.io.homekit.validation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -128,8 +129,11 @@ public class ValidationManager {
         }
 
         boolean isValid = filteredResults.stream().allMatch(ValidationResult::isValid);
-        ValidationResult.Severity maxSeverity = filteredResults.stream().map(ValidationResult::getSeverity)
-                .max(Enum::compareTo).orElse(ValidationResult.Severity.INFO);
+        ValidationResult.Severity maxSeverity = Objects
+                .requireNonNull(
+                        filteredResults.stream().map(ValidationResult::getSeverity).filter(Objects::nonNull)
+                                .max(Enum::compareTo).orElse(ValidationResult.Severity.INFO),
+                        "Severity cannot be null");
 
         List<ValidationIssue> allIssues = filteredResults.stream().flatMap(r -> r.getIssues().stream())
                 .collect(Collectors.toList());

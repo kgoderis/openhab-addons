@@ -108,7 +108,7 @@ public class AccessoryInformationValidation extends AbstractValidation {
 
         // Get all characteristics for this service
         @NonNull
-        Set<@NonNull HomekitCharacteristic<?>> characteristics = service.getCharacteristics();
+        Set<HomekitCharacteristic<?>> characteristics = service.getCharacteristics();
         if (characteristics == null) {
             issues.add(createIssue(ValidationResult.Severity.ERROR,
                     "No characteristics found for Accessory Information service", "NO_CHARACTERISTICS",
@@ -124,7 +124,7 @@ public class AccessoryInformationValidation extends AbstractValidation {
         validateRequiredCharacteristic(characteristics, "Identify", thing, service, issues);
     }
 
-    private void validateRequiredCharacteristic(@NonNull Set<@NonNull HomekitCharacteristic<?>> characteristics,
+    private void validateRequiredCharacteristic(Set<HomekitCharacteristic<?>> characteristics,
             String characteristicName, Thing thing, HomekitService service, List<ValidationIssue> issues) {
         boolean found = false;
         for (HomekitCharacteristic<?> characteristic : characteristics) {
@@ -140,7 +140,7 @@ public class AccessoryInformationValidation extends AbstractValidation {
                             characteristicName),
                     "MISSING_REQUIRED_CHARACTERISTIC",
                     getContextKey(thing) + ":" + service.getType() + ":" + characteristicName, true, true,
-                    Map.<String, Object> of("serviceName", service.getName(), "serviceUuid", service.getType(),
+                    Map.<String, Object>of("serviceName", service.getName(), "serviceUuid", service.getType(),
                             "characteristicName", characteristicName)));
         }
     }

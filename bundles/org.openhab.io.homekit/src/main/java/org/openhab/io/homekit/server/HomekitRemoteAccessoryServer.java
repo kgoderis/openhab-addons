@@ -59,6 +59,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
@@ -157,9 +158,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     protected static final String LOG_SERVER = LOG_PREFIX + "Server - ";
 
     // ========== Core Dependencies ==========
-    @SuppressWarnings("null") // Eclipse can't verify initialization across constructor chains
     private final ScheduledExecutorService scheduler;
-    @SuppressWarnings("null") // Eclipse can't verify initialization across constructor chains
     private final HomekitAccessoryFactory accessoryFactory;
 
     // ========== Component References and Locks ==========
@@ -690,11 +689,13 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             Future<StageResult> stageFuture = sendPairing(encoder.toByteArray());
             StageResult stageResult = Objects.requireNonNull(stageFuture.get(), "StageResult is null");
 
-            // Verify response state
-            if (stageResult.decodeResult == null) {
+            DecodeResult decodeResult = stageResult.decodeResult;
+            if (decodeResult == null) {
                 throw new HomekitServerException("No decode result in response");
             }
-            short state = stageResult.decodeResult.getByte(HomekitMessage.STATE);
+
+            // Verify response state
+            short state = decodeResult.getByte(HomekitMessage.STATE);
             if (state != 2) {
                 logger.error("{}Invalid state in remove pairing response: {} - Server: {}", LOG_ERROR, state,
                         new String(getPairingId()));
@@ -702,12 +703,11 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             }
 
             // Check for errors in response
-            if (stageResult.decodeResult == null) {
+            if (decodeResult == null) {
                 throw new HomekitServerException("No decode result in response");
             }
-            @SuppressWarnings("null") // Already null-checked above
-            DecodeResult decodeResult = stageResult.decodeResult;
-            if (decodeResult.getBytes(HomekitMessage.ERROR) != null) {
+
+            if (decodeResult != null && decodeResult.getBytes(HomekitMessage.ERROR) != null) {
                 HomekitErrorCode error = HomekitErrorCode.fromCode(decodeResult.getByte(HomekitMessage.ERROR));
                 logger.warn("{}HomekitAccessory failed to remove pairing: {} - Server: {}", LOG_STATE, error,
                         new String(getPairingId()));
@@ -814,15 +814,20 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     protected byte[] doPairSetupStage1(StageResult stageResult) throws IOException, HomekitServerException {
         logger.debug("{}Starting pair setup stage 1 - Server: {}", LOG_STATE, new String(getPairingId()));
 
-        short state = stageResult.decodeResult.getByte(HomekitMessage.STATE);
+        DecodeResult decodeResult = stageResult.decodeResult;
+        if (decodeResult == null) {
+            throw new HomekitServerException("No decode result in response");
+        }
+
+        short state = decodeResult.getByte(HomekitMessage.STATE);
         if (state != 2) {
             throw new HomekitServerException("Wrong STATE");
         }
 
-        BigInteger publicKey = stageResult.decodeResult.getBigInt(HomekitMessage.PUBLIC_KEY);
+        BigInteger publicKey = decodeResult.getBigInt(HomekitMessage.PUBLIC_KEY);
         logger.debug("{}Public key received - Server: {}", LOG_STATE, new String(getPairingId()));
 
-        BigInteger salt = stageResult.decodeResult.getBigInt(HomekitMessage.SALT);
+        BigInteger salt = decodeResult.getBigInt(HomekitMessage.SALT);
         logger.debug("{}Salt received - Server: {}", LOG_STATE, new String(getPairingId()));
 
         if (SRP6Session.isEmpty()) {
@@ -886,12 +891,17 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     protected byte[] doPairSetupStage2(StageResult stageResult) throws IOException, HomekitServerException {
         logger.debug("{}Starting pair setup stage 2 - Server: {}", LOG_STATE, new String(getPairingId()));
 
-        short state = stageResult.decodeResult.getByte(HomekitMessage.STATE);
+        DecodeResult decodeResult = stageResult.decodeResult;
+        if (decodeResult == null) {
+            throw new HomekitServerException("No decode result in response");
+        }
+
+        short state = decodeResult.getByte(HomekitMessage.STATE);
         if (state != 4) {
             throw new HomekitServerException("Wrong STATE");
         }
 
-        BigInteger proof = stageResult.decodeResult.getBigInt(HomekitMessage.PROOF);
+        BigInteger proof = decodeResult.getBigInt(HomekitMessage.PROOF);
 
         try {
             if (SRP6Session.isPresent()) {
@@ -968,15 +978,20 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     protected byte[] doPairSetupStage3(StageResult stageResult) throws IOException, HomekitServerException {
         logger.debug("{}Starting pair setup stage 3 - Server: {}", LOG_STATE, new String(getPairingId()));
 
-        short state = stageResult.decodeResult.getByte(HomekitMessage.STATE);
+        DecodeResult decodeResult = stageResult.decodeResult;
+        if (decodeResult == null) {
+            throw new HomekitServerException("No decode result in response");
+        }
+
+        short state = decodeResult.getByte(HomekitMessage.STATE);
         if (state != 6) {
             throw new HomekitServerException("Wrong STATE");
         }
 
-        byte[] messageData = new byte[stageResult.decodeResult.getLength(HomekitMessage.ENCRYPTED_DATA) - 16];
-        stageResult.decodeResult.getBytes(HomekitMessage.ENCRYPTED_DATA, messageData, 0);
+        byte[] messageData = new byte[decodeResult.getLength(HomekitMessage.ENCRYPTED_DATA) - 16];
+        decodeResult.getBytes(HomekitMessage.ENCRYPTED_DATA, messageData, 0);
         byte[] authTagData = new byte[16];
-        stageResult.decodeResult.getBytes(HomekitMessage.ENCRYPTED_DATA, authTagData, messageData.length);
+        decodeResult.getBytes(HomekitMessage.ENCRYPTED_DATA, authTagData, messageData.length);
 
         HomekitChachaDecoder chachaDecoder = new HomekitChachaDecoder(sessionKey,
                 "PS-Msg06".getBytes(StandardCharsets.UTF_8));
@@ -1037,18 +1052,23 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     protected byte[] doPairVerifyStage1(StageResult stageResult) throws IOException, HomekitServerException {
         logger.debug("{}Starting pair verify stage 1 - Server: {}", LOG_STATE, new String(getPairingId()));
 
-        short state = stageResult.decodeResult.getByte(HomekitMessage.STATE);
+        DecodeResult decodeResult = stageResult.decodeResult;
+        if (decodeResult == null) {
+            throw new HomekitServerException("No decode result in response");
+        }
+
+        short state = decodeResult.getByte(HomekitMessage.STATE);
         if (state != 2) {
             throw new HomekitServerException("Wrong STATE");
         }
 
-        byte[] destinationPublicKey = stageResult.decodeResult.getBytes(HomekitMessage.PUBLIC_KEY);
+        byte[] destinationPublicKey = decodeResult.getBytes(HomekitMessage.PUBLIC_KEY);
         logger.debug("{}Destination public key received - Server: {}", LOG_STATE, new String(getPairingId()));
 
-        byte[] messageData = new byte[stageResult.decodeResult.getLength(HomekitMessage.ENCRYPTED_DATA) - 16];
-        stageResult.decodeResult.getBytes(HomekitMessage.ENCRYPTED_DATA, messageData, 0);
+        byte[] messageData = new byte[decodeResult.getLength(HomekitMessage.ENCRYPTED_DATA) - 16];
+        decodeResult.getBytes(HomekitMessage.ENCRYPTED_DATA, messageData, 0);
         byte[] authTagData = new byte[16];
-        stageResult.decodeResult.getBytes(HomekitMessage.ENCRYPTED_DATA, authTagData, messageData.length);
+        decodeResult.getBytes(HomekitMessage.ENCRYPTED_DATA, authTagData, messageData.length);
 
         sharedSecret = new byte[32];
         Curve25519.curve(sharedSecret, clientPrivateKey, destinationPublicKey);
@@ -1138,8 +1158,13 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     protected byte[] doPairVerifyStage2(StageResult stageResult) throws IOException, HomekitServerException {
         logger.debug("{}Starting pair verify stage 2 - Server: {}", LOG_STATE, new String(getPairingId()));
 
+        DecodeResult decodeResult = stageResult.decodeResult;
+        if (decodeResult == null) {
+            throw new HomekitServerException("No decode result in response");
+        }
+
         if (stageResult != null && stageResult.result != null) {
-            short state = stageResult.decodeResult.getByte(HomekitMessage.STATE);
+            short state = decodeResult.getByte(HomekitMessage.STATE);
             if (state != 4) {
                 throw new HomekitServerException("Wrong STATE");
             }
@@ -1235,7 +1260,6 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                                 }
                             } else {
                                 if (result != null) {
-                                    @SuppressWarnings("null") // getResponseFailure().getMessage() can be null
                                     String failureMessage = result.getResponseFailure().getMessage();
                                     StageResult stageResult = new StageResult(
                                             failureMessage != null ? failureMessage : "Unknown failure");
@@ -1275,7 +1299,6 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                                 completableFuture.complete(stageResult);
                             } else {
                                 if (result != null) {
-                                    @SuppressWarnings("null") // getResponseFailure().getMessage() can be null
                                     String failureMessage = result.getResponseFailure().getMessage();
                                     ContentResult stageResult = new ContentResult(
                                             (failureMessage != null ? failureMessage : "Unknown failure").getBytes(),
@@ -1319,7 +1342,6 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                                 completableFuture.complete(stageResult);
                             } else {
                                 if (result != null) {
-                                    @SuppressWarnings("null") // getResponseFailure().getMessage() can be null
                                     String failureMessage = result.getResponseFailure().getMessage();
                                     ContentResult stageResult = new ContentResult(
                                             (failureMessage != null ? failureMessage : "Unknown failure").getBytes(),
@@ -1684,19 +1706,18 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     }
 
     // ========== Inner Classes ==========
-    @SuppressWarnings("null")
     protected class StageResult {
-        public StageResult(DecodeResult decodeResult, Result result) {
+        public StageResult(@Nullable DecodeResult decodeResult, @Nullable Result result) {
             this.decodeResult = decodeResult;
             this.result = result;
         }
 
-        public StageResult(String message) {
+        public StageResult(@Nullable String message) {
             this.message = message;
             this.decodeResult = null; // Initialize explicitly for Eclipse null analysis
         }
 
-        public StageResult(HomekitErrorCode error) {
+        public StageResult(@Nullable HomekitErrorCode error) {
             this.error = error;
             this.decodeResult = null; // Initialize explicitly for Eclipse null analysis
         }
@@ -1715,7 +1736,6 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         public HomekitErrorCode error;
     }
 
-    @SuppressWarnings("null")
     public static class ContentResult {
         @Nullable
         public Result result;
@@ -1737,13 +1757,15 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     // ========== Utility Methods ==========
     // Note: These utility methods use comprehensive @SuppressWarnings("null") due to Eclipse's
     // overly conservative null analysis in complex JSON parsing and reflection operations
-    @SuppressWarnings({ "null", "unchecked", "resource" }) // Comprehensive suppression for JSON decode utility methods
+    @SuppressWarnings("unchecked") // Safe cast - decode method ensures type compatibility
     public static <T> T fromJson(String json, Class<T> beanClass) {
-        JsonValue value = Json.createReader(new StringReader(json)).read();
-        return (T) decode(value, beanClass);
+        try (JsonReader reader = Json.createReader(new StringReader(json))) {
+            JsonValue value = reader.read();
+            return (T) decode(value, beanClass).orElseThrow(
+                    () -> new IllegalArgumentException("Failed to decode JSON to " + beanClass.getSimpleName()));
+        }
     }
 
-    @SuppressWarnings({ "null", "resource" }) // Comprehensive suppression - Eclipse overly conservative
     private static Optional<Object> decode(JsonValue jsonValue, Type targetType) {
         if (jsonValue.getValueType() == ValueType.NULL) {
             return Optional.empty();
@@ -1762,7 +1784,6 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         }
     }
 
-    @SuppressWarnings({ "null", "resource" }) // Comprehensive suppression for JSON boolean processing
     private static Optional<Object> decodeBoolean(JsonValue jsonValue, Type targetType) {
         if (targetType == boolean.class || targetType == Boolean.class) {
             return Optional.of(Boolean.valueOf(jsonValue.toString()));
@@ -1771,7 +1792,6 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         }
     }
 
-    @SuppressWarnings({ "null", "resource" }) // Comprehensive suppression for JSON number processing
     private static Optional<Object> decodeNumber(JsonNumber jsonNumber, Type targetType) {
         if (targetType == int.class || targetType == Integer.class) {
             return Optional.of(jsonNumber.intValue());
@@ -1782,7 +1802,6 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         }
     }
 
-    @SuppressWarnings({ "null", "resource" }) // Comprehensive suppression for JSON string processing
     private static Optional<Object> decodeString(JsonString jsonString, Type targetType) {
         if (targetType == String.class) {
             return Optional.of(jsonString.getString());

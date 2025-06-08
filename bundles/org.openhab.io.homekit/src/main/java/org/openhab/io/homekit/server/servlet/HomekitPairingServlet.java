@@ -169,23 +169,25 @@ public class HomekitPairingServlet extends HomekitBaseServlet {
             HomekitMethod method = HomekitMethod.get(d.getByte(HomekitMessage.METHOD));
             logger.debug("{}Processing pairing method: {}", LOG_REQUEST, method);
 
-            switch (method) {
-                case ADD_PAIRING: {
-                    doAddPairing(request, response, body);
-                    break;
-                }
-                case REMOVE_PAIRING: {
-                    doRemovePairing(request, response, body);
-                    break;
-                }
-                case LIST_PAIRINGS: {
-                    doListPairing(request, response, body);
-                    break;
-                }
-                default: {
-                    logger.warn("{}Unsupported pairing method: {}", LOG_WARN, method);
-                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    break;
+            if (method != null) {
+                switch (method) {
+                    case ADD_PAIRING: {
+                        doAddPairing(request, response, body);
+                        break;
+                    }
+                    case REMOVE_PAIRING: {
+                        doRemovePairing(request, response, body);
+                        break;
+                    }
+                    case LIST_PAIRINGS: {
+                        doListPairing(request, response, body);
+                        break;
+                    }
+                    default: {
+                        logger.warn("{}Unsupported pairing method: {}", LOG_WARN, method);
+                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        break;
+                    }
                 }
             }
         } catch (IOException e) {

@@ -21,6 +21,7 @@ import java.nio.channels.WritePendingException;
 import java.util.concurrent.Executor;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.io.AbstractConnection;
 import org.eclipse.jetty.io.ByteBufferPool;
 import org.eclipse.jetty.io.Connection;
@@ -58,23 +59,23 @@ public class HomekitDecryptedEndPoint implements EndPoint {
     protected static final String LOG_SERVER = LOG_PREFIX + "Server - ";
     protected static final String LOG_PAIRING = LOG_PREFIX + "HomekitPairing - ";
 
-    private Throwable failure;
+    private @Nullable Throwable failure;
 
     private final long created = System.currentTimeMillis();
 
     @SuppressWarnings("unused")
     private Executor executor;
-    private Connection connection;
+    private @Nullable Connection connection;
     @SuppressWarnings("unused")
-    private Callback connectionCallback;
+    private @Nullable Callback connectionCallback;
 
     private final ByteBufferPool bufferPool;
     private int inputBufferSize = 2048;
     private boolean encryptedInputBufferUnderflown;
     private boolean useDirectBuffers = false;
-    private ByteBuffer decryptedInputBuffer;
-    private ByteBuffer encryptedInputBuffer;
-    private ByteBuffer encryptedOutputBuffer;
+    private @Nullable ByteBuffer decryptedInputBuffer;
+    private @Nullable ByteBuffer encryptedInputBuffer;
+    private @Nullable ByteBuffer encryptedOutputBuffer;
 
     private long inboundSequenceCount = 0;
     private long outboundSequenceCount = 0;
@@ -143,7 +144,8 @@ public class HomekitDecryptedEndPoint implements EndPoint {
     }
 
     @Override
-    public void setConnection(Connection connection) {
+    @SuppressWarnings("null") // Parent EndPoint interface doesn't constrain this parameter
+    public void setConnection(@Nullable Connection connection) {
         if (connection instanceof AbstractConnection) {
             AbstractConnection a = (AbstractConnection) connection;
             if (a.getInputBufferSize() < inputBufferSize) {
@@ -154,7 +156,11 @@ public class HomekitDecryptedEndPoint implements EndPoint {
     }
 
     @Override
-    public int fill(ByteBuffer buffer) throws IOException {
+    @SuppressWarnings("null") // Parent EndPoint interface doesn't constrain this parameter
+    public int fill(@Nullable ByteBuffer buffer) throws IOException {
+        if (buffer == null) {
+            return -1;
+        }
 
         // int bufferPosition = buffer.position();
 
@@ -174,7 +180,9 @@ public class HomekitDecryptedEndPoint implements EndPoint {
                                     getRemoteAddress().toString(), BufferUtil.toDetailString(decryptedInputBuffer),
                                     BufferUtil.toDetailString(buffer));
                         }
-                        return filled = BufferUtil.append(buffer, decryptedInputBuffer);
+                        @SuppressWarnings("null") // hasContent check ensures decryptedInputBuffer is not null
+                        int appendResult = BufferUtil.append(buffer, decryptedInputBuffer);
+                        return filled = appendResult;
                     }
 
                     // loop filling and unwrapping until we have something
@@ -204,13 +212,21 @@ public class HomekitDecryptedEndPoint implements EndPoint {
                         if (encryptedInputBuffer.hasRemaining()) {
 
                             if (logger.isTraceEnabled()) {
-                                HomekitByte.logBuffer(logger, "Fill", getRemoteAddress().toString(),
-                                        encryptedInputBuffer);
+                                ByteBuffer logBuffer = encryptedInputBuffer;
+                                if (logBuffer != null) {
+                                    HomekitByte.logBuffer(logger, "Fill", getRemoteAddress().toString(), logBuffer);
+                                }
                             }
 
                             encryptedInputBufferUnderflown = false;
-                            SequenceBuffer sBuffer = HomekitEncryptionEngine.decryptBuffer(decryptedInputBuffer,
-                                    encryptedInputBuffer, decryptionKey, inboundSequenceCount);
+                            // Ensure buffers are non-null before decryption
+                            ByteBuffer nonNullDecryptedBuffer = decryptedInputBuffer;
+                            ByteBuffer nonNullEncryptedBuffer = encryptedInputBuffer;
+                            if (nonNullDecryptedBuffer == null || nonNullEncryptedBuffer == null) {
+                                throw new IllegalStateException("Buffers must be allocated before decryption");
+                            }
+                            SequenceBuffer sBuffer = HomekitEncryptionEngine.decryptBuffer(nonNullDecryptedBuffer,
+                                    nonNullEncryptedBuffer, decryptionKey, inboundSequenceCount);
                             decryptedInputBuffer = sBuffer.buffer;
                             inboundSequenceCount = sBuffer.sequenceNumber;
 
@@ -218,17 +234,26 @@ public class HomekitDecryptedEndPoint implements EndPoint {
                                 logger.trace(
                                         "[{}] Fill : Buffers : decrypted={}, encryptedInputBuffer={}, decryptedInputBuffer={}, buffer={}",
                                         getRemoteAddress().toString(), netFilled,
-                                        BufferUtil.toSummaryString(encryptedInputBuffer),
-                                        BufferUtil.toDetailString(decryptedInputBuffer),
+                                        encryptedInputBuffer != null ? BufferUtil.toSummaryString(encryptedInputBuffer)
+                                                : "null",
+                                        decryptedInputBuffer != null ? BufferUtil.toDetailString(decryptedInputBuffer)
+                                                : "null",
                                         BufferUtil.toDetailString(buffer));
                             }
 
                             if (logger.isTraceEnabled()) {
                                 logger.trace("[{}] Fill : Appending {} to {}", getRemoteAddress().toString(),
-                                        BufferUtil.toDetailString(decryptedInputBuffer),
+                                        decryptedInputBuffer != null ? BufferUtil.toDetailString(decryptedInputBuffer)
+                                                : "null",
                                         BufferUtil.toDetailString(buffer));
                             }
-                            return filled = BufferUtil.append(buffer, decryptedInputBuffer);
+                            // Ensure decryptedInputBuffer is non-null after decryption
+                            ByteBuffer nonNullAppendBuffer = decryptedInputBuffer;
+                            if (nonNullAppendBuffer == null) {
+                                throw new IllegalStateException("Decrypted buffer should not be null after decryption");
+                            }
+                            int appendResult = BufferUtil.append(buffer, nonNullAppendBuffer);
+                            return filled = appendResult;
                         } else {
                             filled = netFilled;
                             return filled;
@@ -249,7 +274,10 @@ public class HomekitDecryptedEndPoint implements EndPoint {
                     }
 
                     if (logger.isTraceEnabled()) {
-                        HomekitByte.logBuffer(logger, "Decrypt", getRemoteAddress().toString(), buffer);
+                        ByteBuffer nonNullBuffer = buffer;
+                        if (nonNullBuffer != null) {
+                            HomekitByte.logBuffer(logger, "Decrypt", getRemoteAddress().toString(), nonNullBuffer);
+                        }
                     }
 
                     if (logger.isTraceEnabled()) {
@@ -270,7 +298,12 @@ public class HomekitDecryptedEndPoint implements EndPoint {
     }
 
     @Override
-    public boolean flush(ByteBuffer... buffers) throws IOException {
+    @SuppressWarnings("null") // Parent EndPoint interface doesn't constrain this parameter
+    public boolean flush(ByteBuffer @Nullable... buffers) throws IOException {
+        if (buffers == null) {
+            return true;
+        }
+
         try {
             synchronized (this) {
                 if (logger.isTraceEnabled()) {
@@ -325,14 +358,22 @@ public class HomekitDecryptedEndPoint implements EndPoint {
                             HomekitByte.logBuffer(logger, "Flush", getRemoteAddress().toString(), flushBuffer);
                         }
 
-                        SequenceBuffer sBuffer = HomekitEncryptionEngine.encryptBuffer(encryptedOutputBuffer,
+                        // Ensure encryptedOutputBuffer is non-null before encryption
+                        ByteBuffer nonNullEncryptedOutputBuffer = encryptedOutputBuffer;
+                        if (nonNullEncryptedOutputBuffer == null) {
+                            throw new IllegalStateException(
+                                    "Encrypted output buffer should be allocated before encryption");
+                        }
+                        SequenceBuffer sBuffer = HomekitEncryptionEngine.encryptBuffer(nonNullEncryptedOutputBuffer,
                                 flushBuffer, encryptionKey, outboundSequenceCount);
                         encryptedOutputBuffer = sBuffer.buffer;
                         outboundSequenceCount = sBuffer.sequenceNumber;
 
                         if (logger.isTraceEnabled()) {
                             logger.trace("[{}] Flush : Encrypted : encryptedOutputBuffer={}",
-                                    getRemoteAddress().toString(), BufferUtil.toSummaryString(encryptedOutputBuffer));
+                                    getRemoteAddress().toString(),
+                                    encryptedOutputBuffer != null ? BufferUtil.toSummaryString(encryptedOutputBuffer)
+                                            : "null");
                         }
 
                         // Was all the data consumed?
@@ -403,13 +444,20 @@ public class HomekitDecryptedEndPoint implements EndPoint {
     }
 
     @Override
-    public void fillInterested(Callback callback) throws ReadPendingException {
-        encryptedEndPoint.fillInterested(callback);
+    @SuppressWarnings("null") // Parent EndPoint interface doesn't constrain this parameter
+    public void fillInterested(@Nullable Callback callback) throws ReadPendingException {
+        if (callback != null) {
+            encryptedEndPoint.fillInterested(callback);
+        }
         // TODO Verify we need this in the server implementation.
     }
 
     @Override
-    public boolean tryFillInterested(Callback callback) {
+    @SuppressWarnings("null") // Parent EndPoint interface doesn't constrain this parameter
+    public boolean tryFillInterested(@Nullable Callback callback) {
+        if (callback == null) {
+            return false;
+        }
         return encryptedEndPoint.tryFillInterested(callback);
     }
 
@@ -419,18 +467,23 @@ public class HomekitDecryptedEndPoint implements EndPoint {
     }
 
     @Override
-    public void write(Callback callback, ByteBuffer... buffers) throws WritePendingException {
+    @SuppressWarnings("null") // Parent EndPoint interface doesn't constrain these parameters
+    public void write(@Nullable Callback callback, ByteBuffer @Nullable... buffers) throws WritePendingException {
         if (logger.isTraceEnabled()) {
             logger.trace("[{}] Write : Start [{}]", getRemoteAddress().toString(), this.toString());
         }
 
         try {
-            if (this.flush(buffers)) {
-                callback.succeeded();
+            if (buffers != null && this.flush(buffers)) {
+                if (callback != null) {
+                    callback.succeeded();
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
-            callback.failed(e);
+            if (callback != null) {
+                callback.failed(e);
+            }
         }
 
         if (logger.isTraceEnabled()) {
@@ -440,7 +493,11 @@ public class HomekitDecryptedEndPoint implements EndPoint {
 
     @Override
     public Connection getConnection() {
-        return connection;
+        Connection nonNullConnection = connection;
+        if (nonNullConnection == null) {
+            throw new IllegalStateException("Connection not set");
+        }
+        return nonNullConnection;
     }
 
     @Override
@@ -459,7 +516,10 @@ public class HomekitDecryptedEndPoint implements EndPoint {
     }
 
     @Override
-    public void upgrade(Connection newConnection) {
+    public void upgrade(@Nullable Connection newConnection) {
+        if (newConnection == null) {
+            return;
+        }
 
         if (logger.isTraceEnabled()) {
             logger.trace("[{}] Upgrade : Start [{}]", getRemoteAddress().toString(), this.toString());
@@ -500,12 +560,16 @@ public class HomekitDecryptedEndPoint implements EndPoint {
                     logger.trace(this + " stored " + context + " exception", x);
                 }
             } else if (x != failure) {
-                failure.addSuppressed(x);
-                if (logger.isTraceEnabled()) {
-                    logger.trace(this + " suppressed " + context + " exception", x);
+                Throwable nonNullFailure = failure;
+                if (nonNullFailure != null) {
+                    nonNullFailure.addSuppressed(x);
+                    if (logger.isTraceEnabled()) {
+                        logger.trace(this + " suppressed " + context + " exception", x);
+                    }
                 }
             }
-            return failure;
+            Throwable result = failure;
+            return result != null ? result : x;
         }
     }
 

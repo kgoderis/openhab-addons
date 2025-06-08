@@ -18,6 +18,7 @@ import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.util.BufferUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -165,7 +166,8 @@ public class HomekitByteBufferOutputStream extends OutputStream {
     }
 
     @Override
-    public void write(final byte[] bytes) {
+    @SuppressWarnings("null") // Parent OutputStream interface doesn't constrain this parameter
+    public void write(final byte @Nullable [] bytes) {
         if (bytes == null) {
             throw new NullPointerException("Input array cannot be null");
         }
@@ -173,7 +175,8 @@ public class HomekitByteBufferOutputStream extends OutputStream {
     }
 
     @Override
-    public void write(final byte[] bytes, final int off, final int len) {
+    @SuppressWarnings("null") // Parent OutputStream interface doesn't constrain this parameter
+    public void write(final byte @Nullable [] bytes, final int off, final int len) {
         if (bytes == null) {
             throw new NullPointerException("Input array cannot be null");
         }

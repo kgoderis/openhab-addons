@@ -17,10 +17,12 @@ import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Objects;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -112,17 +114,17 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     protected static final String LOG_SERVER = LOG_PREFIX + "Server - ";
 
     // ========== Server Components ==========
-    private Server server;
-    private HomekitCharacteristicServlet characteristicServlet;
+    private @Nullable Server server;
+    private @Nullable HomekitCharacteristicServlet characteristicServlet;
     protected final MDNSService mdnsService;
-    protected ServiceDescription announcedServiceDescription;
+    protected @Nullable ServiceDescription announcedServiceDescription;
 
     // ========== Synchronization ==========
     protected final Object notificationLock = new Object();
     private final Object instanceIdLock = new Object();
 
     // ========== Instance Management ==========
-    protected String label;
+    protected @Nullable String label;
     private final Set<Long> usedInstanceIds = new HashSet<>();
     private long nextInstanceId = 1;
 
@@ -250,7 +252,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
             logger.debug("{}Configured server connector - Port: {}, Idle timeout: {}", LOG_INIT, http.getPort(),
                     http.getIdleTimeout());
 
-            server.addConnector(http);
+            Objects.requireNonNull(server).addConnector(http);
             try {
                 characteristicServlet = new HomekitCharacteristicServlet(this, eventManager);
                 logger.debug("{}Created characteristic servlet", LOG_INIT);
@@ -272,7 +274,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
             requestLogHandler.setHandler(servletContextHandler);
             logger.debug("{}Added request log handler", LOG_INIT);
 
-            server.setHandler(requestLogHandler);
+            Objects.requireNonNull(server).setHandler(requestLogHandler);
             logger.debug("{}Server handler configuration completed", LOG_INIT);
 
         } catch (Exception e) {
@@ -355,7 +357,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
 
             // Initialize Jetty server if not already initialized
             if (server != null && !server.isStarted()) {
-                server.start();
+                Objects.requireNonNull(server).start();
                 logger.info("{}Jetty server started successfully", LOG_SERVER);
             } else {
                 logger.debug("{}Jetty server already running", LOG_SERVER);
@@ -378,7 +380,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
         try {
             // Stop Jetty server
             if (server != null && server.isStarted()) {
-                server.stop();
+                Objects.requireNonNull(server).stop();
                 logger.info("{}Jetty server stopped successfully", LOG_SERVER);
             } else {
                 logger.debug("{}Jetty server already stopped", LOG_SERVER);
@@ -403,7 +405,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
             // Clean up Jetty server resources
             if (server != null) {
                 logger.debug("{}Destroying Jetty server - Server: {}", LOG_SERVER, getUID());
-                server.destroy();
+                Objects.requireNonNull(server).destroy();
             }
 
             // Clean up mDNS service registration
@@ -625,7 +627,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     public synchronized void advertise() {
         logger.debug("{}Starting server advertisement for {}", LOG_SERVER, getUID());
 
-        if (!server.isStarted()) {
+        if (server != null && !server.isStarted()) {
             try {
                 start();
                 logger.debug("{}Server started for advertisement", LOG_SERVER);
@@ -641,7 +643,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
         }
 
         // Announce the accessory via MDNS
-        Hashtable<String, String> props = createAdvertisementProperties();
+        Hashtable<@Nullable String, @Nullable String> props = createAdvertisementProperties();
         logger.debug("{}Created advertisement properties: {}", LOG_SERVER, props);
 
         if (announcedServiceDescription != null) {
@@ -667,8 +669,8 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
      *
      * @return Hashtable containing the advertisement properties
      */
-    private Hashtable<String, String> createAdvertisementProperties() {
-        Hashtable<String, String> props = new Hashtable<>();
+    private Hashtable<@Nullable String, @Nullable String> createAdvertisementProperties() {
+        Hashtable<@Nullable String, @Nullable String> props = new Hashtable<>();
 
         // Status flags (e.g. "0x04" for bit 3). Value should be an unsigned integer.
         // See Table 6-8 (page 58). Required.
@@ -743,11 +745,13 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
      *
      * @param props The new advertisement properties
      */
-    private void updateExistingAdvertisement(Hashtable<String, String> props) {
+    private void updateExistingAdvertisement(Hashtable<@Nullable String, @Nullable String> props) {
         logger.debug("{}Updating existing advertisement", LOG_SERVER);
-        announcedServiceDescription.serviceProperties = props;
-        mdnsService.unregisterService(announcedServiceDescription);
-        mdnsService.registerService(announcedServiceDescription);
+        if (announcedServiceDescription != null) {
+            Objects.requireNonNull(announcedServiceDescription).serviceProperties = props;
+            Objects.requireNonNull(mdnsService).unregisterService(announcedServiceDescription);
+            Objects.requireNonNull(mdnsService).registerService(announcedServiceDescription);
+        }
         try {
             setState(HomekitAccessoryServerState.READY);
         } catch (HomekitServerException ex) {
@@ -769,7 +773,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
      *
      * @param props The advertisement properties
      */
-    private void createNewAdvertisement(Hashtable<String, String> props) {
+    private void createNewAdvertisement(Hashtable<@Nullable String, @Nullable String> props) {
         logger.debug("{}Creating new advertisement", LOG_SERVER);
         announcedServiceDescription = new ServiceDescription(SERVICE_TYPE,
                 "openHAB " + getClass().getSimpleName() + " " + getPort(), getPort(), props);
@@ -787,7 +791,8 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     protected void handleCharacteristicEvent(HomekitCharacteristicEvent event) {
         logger.debug("{}Received characteristic event - Type: {}, HomekitCharacteristic: {}", LOG_EVENT,
                 event.getType(), event.getCharacteristic().getClass().getSimpleName());
-        if (event.getType() == HomekitEventType.CHARACTERISTIC_STATE_CHANGED && event.getCharacteristic() != null) {
+        if (event.getType() == HomekitEventType.CHARACTERISTIC_STATE_CHANGED && event.getCharacteristic() != null
+                && characteristicServlet != null) {
             characteristicServlet.publishCharacteristicUpdate(event.getCharacteristic().get());
             logger.debug("{}Published characteristic update", LOG_EVENT);
         }
@@ -810,7 +815,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
      * @throws NullPointerException if the accessory is null
      */
     @Override
-    public void addAccessory(@NonNull HomekitAccessory accessory) throws HomekitAccessoryOperationException {
+    public void addAccessory(HomekitAccessory accessory) throws HomekitAccessoryOperationException {
         logger.debug("{}Adding accessory - ID: {}, Type: {}", LOG_ACCESSORY, accessory.getAccessoryId(),
                 accessory.getClass().getSimpleName());
         try {
@@ -852,7 +857,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
      * @throws NullPointerException if the accessory is null
      */
     @Override
-    public void removeAccessory(@NonNull HomekitAccessory accessory) throws HomekitAccessoryOperationException {
+    public void removeAccessory(HomekitAccessory accessory) throws HomekitAccessoryOperationException {
         logger.debug("{}Removing accessory - ID: {}, Type: {}", LOG_ACCESSORY, accessory.getAccessoryId(),
                 accessory.getClass().getSimpleName());
         try {

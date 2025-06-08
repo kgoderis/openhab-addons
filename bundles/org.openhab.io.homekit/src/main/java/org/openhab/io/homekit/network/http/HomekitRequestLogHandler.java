@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.HexDump;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
 import org.slf4j.Logger;
@@ -148,8 +149,12 @@ public class HomekitRequestLogHandler extends RequestLogHandler {
      * @throws ServletException if a servlet error occurs
      */
     @Override
-    public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException {
+    public void handle(@Nullable String target, @Nullable Request baseRequest, @Nullable HttpServletRequest request,
+            @Nullable HttpServletResponse response) throws IOException, ServletException {
+
+        if (target == null || baseRequest == null || request == null || response == null) {
+            return;
+        }
 
         if (logger.isDebugEnabled()) {
             try {

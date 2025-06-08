@@ -13,10 +13,12 @@
 
 package org.openhab.io.homekit.validation;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Represents an individual validation issue.
@@ -35,12 +37,12 @@ public class ValidationIssue {
 
     private ValidationIssue(Builder builder) {
         this.severity = builder.severity;
-        this.message = builder.message;
-        this.code = builder.code;
-        this.contextKey = builder.contextKey;
+        this.message = Objects.requireNonNull(builder.message, "message cannot be null");
+        this.code = Objects.requireNonNull(builder.code, "code cannot be null");
+        this.contextKey = Objects.requireNonNull(builder.contextKey, "contextKey cannot be null");
         this.rootCause = builder.rootCause;
         this.blocking = builder.blocking;
-        this.details = builder.details;
+        this.details = Objects.requireNonNullElse(builder.details, Collections.emptyMap());
     }
 
     public ValidationResult.Severity getSeverity() {
@@ -77,12 +79,12 @@ public class ValidationIssue {
 
     public static class Builder {
         private ValidationResult.Severity severity = ValidationResult.Severity.INFO;
-        private String message;
-        private String code;
-        private String contextKey;
+        private @Nullable String message;
+        private @Nullable String code;
+        private @Nullable String contextKey;
         private boolean rootCause = false;
         private boolean blocking = false;
-        private Map<String, Object> details;
+        private @Nullable Map<String, Object> details;
 
         public Builder severity(ValidationResult.Severity severity) {
             this.severity = severity;
@@ -125,7 +127,7 @@ public class ValidationIssue {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         if (this == o)
             return true;
         if (o == null || getClass() != o.getClass())
@@ -135,6 +137,7 @@ public class ValidationIssue {
     }
 
     @Override
+    @SuppressWarnings("null") // hashCode() return type compatibility with Object.hashCode()
     public int hashCode() {
         return Objects.hash(code, contextKey);
     }

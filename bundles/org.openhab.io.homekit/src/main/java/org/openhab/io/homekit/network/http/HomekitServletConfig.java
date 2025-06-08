@@ -13,10 +13,14 @@
 
 package org.openhab.io.homekit.network.http;
 
+import java.util.Collections;
+import java.util.Enumeration;
+
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 
 /**
@@ -130,8 +134,18 @@ public class HomekitServletConfig implements ServletConfig {
      * @return Always returns null
      */
     @Override
-    public String getInitParameter(String name) {
+    @SuppressWarnings("null") // Parent ServletConfig interface doesn't constrain this parameter
+    public @Nullable String getInitParameter(@Nullable String name) {
         return null;
+    }
+
+    /**
+     * Gets an empty enumeration of initialization parameter names (internal implementation).
+     * 
+     * @return An empty enumeration of parameter names
+     */
+    public Enumeration<String> getEmptyParameterNames() {
+        return Collections.emptyEnumeration();
     }
 
     /**
@@ -146,8 +160,9 @@ public class HomekitServletConfig implements ServletConfig {
      * @return An empty enumeration of parameter names
      */
     @Override
+    @SuppressWarnings("all") // Framework interface compatibility: ServletConfig interface constraints cannot be overridden
     public java.util.Enumeration<String> getInitParameterNames() {
-        return java.util.Collections.emptyEnumeration();
+        return getEmptyParameterNames();
     }
 
     /**

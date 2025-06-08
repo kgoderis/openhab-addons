@@ -979,7 +979,8 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         try {
             validateLifecycleOperation("remove accessory");
         } catch (HomekitServerException e) {
-            throw new HomekitAccessoryOperationException(e.getMessage(), e);
+            String message = e.getMessage();
+            throw new HomekitAccessoryOperationException(message != null ? message : "Server exception occurred", e);
         }
         validateAccessoryExists(accessory);
 
