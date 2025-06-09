@@ -140,7 +140,7 @@ public class AccessoryInformationValidation extends AbstractValidation {
                             characteristicName),
                     "MISSING_REQUIRED_CHARACTERISTIC",
                     getContextKey(thing) + ":" + service.getType() + ":" + characteristicName, true, true,
-                    Map.<String, Object>of("serviceName", service.getName(), "serviceUuid", service.getType(),
+                    Map.<String, Object> of("serviceName", service.getName(), "serviceUuid", service.getType(),
                             "characteristicName", characteristicName)));
         }
     }

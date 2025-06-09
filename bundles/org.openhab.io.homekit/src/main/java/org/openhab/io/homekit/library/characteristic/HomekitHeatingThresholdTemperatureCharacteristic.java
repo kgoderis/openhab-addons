@@ -18,6 +18,7 @@ import java.util.Set;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
@@ -73,7 +74,7 @@ public class HomekitHeatingThresholdTemperatureCharacteristic extends HomekitFlo
      * @return true if the value is allowed, false otherwise
      */
     @Override
-    public boolean isAllowedValue(Double value) {
+    public boolean isAllowedValue(@Nullable Double value) {
         return value != null && value >= 0.0 && value <= 25.0;
     }
 

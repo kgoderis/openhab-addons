@@ -109,7 +109,7 @@ public class HomekitStatusLowBatteryCharacteristic extends HomekitEnumCharacteri
     }
 
     @Override
-    public boolean isAllowedValue(Integer value) {
+    public boolean isAllowedValue(@Nullable Integer value) {
         if (value == null)
             return false;
         try {

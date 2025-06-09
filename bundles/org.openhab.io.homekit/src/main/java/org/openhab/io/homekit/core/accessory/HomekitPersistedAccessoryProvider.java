@@ -33,7 +33,6 @@ import org.openhab.core.storage.StorageService;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
 import org.openhab.io.homekit.api.provider.HomekitAccessoryProvider;
-import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry;
 import org.openhab.io.homekit.api.uid.HomekitAccessoryUID;
 import org.openhab.io.homekit.exception.HomekitFactoryException;

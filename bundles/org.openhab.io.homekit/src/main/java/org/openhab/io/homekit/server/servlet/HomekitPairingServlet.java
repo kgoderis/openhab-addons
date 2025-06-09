@@ -81,6 +81,8 @@ import org.slf4j.LoggerFactory;
 @NonNullByDefault
 public class HomekitPairingServlet extends HomekitBaseServlet {
 
+    private static final long serialVersionUID = 1L;
+
     // ========== Log Message Prefixes ==========
     protected static final Logger logger = LoggerFactory.getLogger(HomekitPairingServlet.class);
     protected static final String LOG_PREFIX = "Homekit PairingServlet: ";

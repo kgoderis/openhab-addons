@@ -19,6 +19,7 @@ import java.util.Set;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -156,7 +157,7 @@ public class HomekitStreamingStatusCharacteristic extends HomekitTLV8Characteris
      * @return true if the value is allowed, false otherwise
      */
     @Override
-    public boolean isAllowedValue(Map<Integer, Object> value) {
+    public boolean isAllowedValue(@Nullable Map<Integer, Object> value) {
         // Implement a proper check if you know the allowed values, otherwise:
         return true;
     }

@@ -528,7 +528,7 @@ public class HomekitAccessoryBridge implements EventSubscriber {
                         HomekitCharacteristicUpdateEvent updateEvent = new HomekitCharacteristicUpdateEvent(
                                 (UID) bridgeUID, (UID) c.getUID(), c,
                                 characteristic.toValueJson(characteristic.getValue()),
-                                characteristic.toValueJson(value), Map.<String, Object>of(),
+                                characteristic.toValueJson(value), Map.<String, Object> of(),
                                 new HomekitEventMetadata(bridgeUID, null, bridgeUID, peerGroup));
                         eventManager.publishEvent(updateEvent);
                     } catch (Exception e) {

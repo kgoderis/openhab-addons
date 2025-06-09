@@ -16,6 +16,7 @@ package org.openhab.io.homekit.library.characteristic;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitDataCharacteristic;
@@ -46,7 +47,7 @@ public class HomekitBinaryDataCharacteristic extends HomekitDataCharacteristic {
     // Optionally override toValue/toState if needed
 
     @Override
-    public boolean isAllowedValue(byte[] value) {
+    public boolean isAllowedValue(byte @Nullable [] value) {
         return value != null; // All non-null binary data is allowed
     }
 

@@ -16,6 +16,7 @@ package org.openhab.io.homekit.library.characteristic;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
@@ -85,7 +86,7 @@ public class HomekitOccupancyDetectedCharacteristic extends HomekitEnumCharacter
     }
 
     @Override
-    public boolean isAllowedValue(Integer value) {
+    public boolean isAllowedValue(@Nullable Integer value) {
         return value != null
                 && (value == OccupancyDetected.NOT_DETECTED.getCode() || value == OccupancyDetected.DETECTED.getCode());
     }

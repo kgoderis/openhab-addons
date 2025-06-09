@@ -27,8 +27,6 @@ import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
-import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
-import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
 import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.factory.HomekitServiceFactory;
 import org.openhab.io.homekit.api.service.HomekitService;

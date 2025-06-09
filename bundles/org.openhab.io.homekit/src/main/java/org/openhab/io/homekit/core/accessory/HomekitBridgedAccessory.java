@@ -142,11 +142,10 @@ public class HomekitBridgedAccessory implements HomekitAccessory {
      */
     @Override
     public long getAccessoryId() {
-        Long aid = this.accessoryId;
-        if (aid == null) {
+        if (this.accessoryId == 0) {
             throw new IllegalStateException("HomekitAccessory ID has not been set");
         }
-        return aid;
+        return this.accessoryId;
     }
 
     /**

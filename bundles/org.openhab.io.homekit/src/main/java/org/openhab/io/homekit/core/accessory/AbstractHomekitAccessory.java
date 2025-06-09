@@ -492,7 +492,7 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
 
         // Always include AID in JSON to maintain consistency across reboots
         if (accessoryId != null) {
-            builder.add("aid", accessoryId);
+            builder.add("aid", accessoryId.longValue());
         }
 
         return builder.build();
@@ -521,7 +521,7 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
 
         // Always include AID in reduced JSON to maintain consistency
         if (accessoryId != null) {
-            builder.add("aid", accessoryId);
+            builder.add("aid", accessoryId.longValue());
         }
 
         return builder.build();

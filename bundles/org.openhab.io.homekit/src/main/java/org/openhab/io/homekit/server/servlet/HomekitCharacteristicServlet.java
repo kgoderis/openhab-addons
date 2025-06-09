@@ -101,6 +101,8 @@ import org.slf4j.LoggerFactory;
 @WebServlet(asyncSupported = true)
 @NonNullByDefault
 public class HomekitCharacteristicServlet extends HomekitBaseServlet {
+    private static final long serialVersionUID = 1L;
+
     // ========== Log Message Prefixes ==========
     private static final Logger logger = LoggerFactory.getLogger(HomekitCharacteristicServlet.class);
     private static final int SC_MULTI_STATUS = 207;

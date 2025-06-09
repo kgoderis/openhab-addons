@@ -13,7 +13,6 @@
 
 package org.openhab.io.homekit.network.http;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.client.HttpDestination;
 import org.eclipse.jetty.client.Origin;
@@ -84,7 +83,6 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
-@NonNullByDefault
 public class HomekitHttpClientTransport extends HttpClientTransportOverHTTP {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitHttpClientTransport.class);
@@ -144,7 +142,7 @@ public class HomekitHttpClientTransport extends HttpClientTransportOverHTTP {
      * </ul>
      *
      * @param endPoint The endpoint for the connection
-     * @param destination The destination for the connection  
+     * @param destination The destination for the connection
      * @param connectionPromise The promise to be completed when the connection is established
      * @return A new HTTP connection instance
      */
@@ -218,7 +216,8 @@ public class HomekitHttpClientTransport extends HttpClientTransportOverHTTP {
      * @return A new HTTP connection instance
      */
     @Override
-    @SuppressWarnings("all") // Framework interface compatibility: HttpClientTransportOverHTTP interface constraints cannot be overridden
+    @SuppressWarnings("all") // Framework interface compatibility: HttpClientTransportOverHTTP interface constraints
+                             // cannot be overridden
     protected HttpConnectionOverHTTP newHttpConnection(@Nullable EndPoint endPoint,
             @Nullable HttpDestination destination, @Nullable Promise<Connection> promise) {
         return createHomekitConnection(endPoint, destination, promise);

@@ -73,9 +73,6 @@ public class HomekitItemConfigParser {
      * @throws NullPointerException if metadataRegistry is null
      */
     public HomekitItemConfigParser(MetadataRegistry metadataRegistry) {
-        if (metadataRegistry == null) {
-            throw new NullPointerException("metadataRegistry cannot be null");
-        }
         this.metadataRegistry = metadataRegistry;
         logger.debug("{}Initialized with metadata registry", LOG_PREFIX + "Init - ");
     }
@@ -97,9 +94,6 @@ public class HomekitItemConfigParser {
      * @throws NullPointerException if item is null
      */
     public Map<String, Object> parseItemConfig(Item item) {
-        if (item == null) {
-            throw new NullPointerException("item cannot be null");
-        }
         logger.debug("{}Parsing configuration for item {}", LOG_PARSE, item.getName());
         Map<String, Object> config = new HashMap<>();
 
@@ -121,7 +115,7 @@ public class HomekitItemConfigParser {
             parseMetadataValue(value, config);
 
             // Add group membership if applicable
-            if (item.getGroupNames() != null && !item.getGroupNames().isEmpty()) {
+            if (!item.getGroupNames().isEmpty()) {
                 config.put("groups", new ArrayList<>(item.getGroupNames()));
                 logger.debug("{}Item {} belongs to groups: {}", LOG_PARSE, item.getName(), item.getGroupNames());
             }
@@ -148,9 +142,6 @@ public class HomekitItemConfigParser {
      * @throws NullPointerException if value or config is null
      */
     private void parseMetadataValue(String value, Map<String, Object> config) {
-        if (value == null || config == null) {
-            throw new NullPointerException("value and config cannot be null");
-        }
         logger.debug("{}Parsing metadata value: {}", LOG_PARSE, value);
 
         // Split the value into service type and characteristics

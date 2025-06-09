@@ -112,9 +112,6 @@ public class HomekitByte {
      * @throws IllegalArgumentException if the input is null
      */
     public static byte[] toByteArray(BigInteger i) {
-        if (i == null) {
-            throw new IllegalArgumentException("BigInteger cannot be null");
-        }
 
         byte[] array = i.toByteArray();
         if (array[0] == 0) {
@@ -135,9 +132,6 @@ public class HomekitByte {
      * @throws IllegalArgumentException if any parameter is null or length is negative
      */
     public static void copyStream(InputStream input, OutputStream output, int length) throws IOException {
-        if (input == null || output == null) {
-            throw new IllegalArgumentException("Streams cannot be null");
-        }
         if (length < 0) {
             throw new IllegalArgumentException("Length cannot be negative");
         }
@@ -166,9 +160,6 @@ public class HomekitByte {
      * @throws IllegalArgumentException if the input is null
      */
     public static String toHexString(byte[] input) {
-        if (input == null) {
-            throw new IllegalArgumentException("Input array cannot be null");
-        }
 
         StringBuilder sb = new StringBuilder();
         for (byte b : input) {
@@ -190,9 +181,6 @@ public class HomekitByte {
      * @throws IllegalArgumentException if any parameter is null
      */
     public static void logBuffer(Logger logger, String label, String remote, ByteBuffer buf) throws IOException {
-        if (logger == null || label == null || remote == null || buf == null) {
-            throw new IllegalArgumentException("Parameters cannot be null");
-        }
 
         if (buf.hasRemaining()) {
             try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {

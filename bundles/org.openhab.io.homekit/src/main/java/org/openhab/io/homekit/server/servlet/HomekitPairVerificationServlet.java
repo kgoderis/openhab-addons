@@ -81,6 +81,8 @@ import djb.Curve25519;
 @NonNullByDefault
 public class HomekitPairVerificationServlet extends HomekitBaseServlet {
 
+    private static final long serialVersionUID = 1L;
+
     // ========== Log Message Prefixes ==========
     protected static final Logger logger = LoggerFactory.getLogger(HomekitPairVerificationServlet.class);
     protected static final String LOG_PREFIX = "Homekit PairVerificationServlet: ";
@@ -263,8 +265,8 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
 
         byte[] accessoryInfo = null;
         if (server != null) {
-            accessoryInfo = org.openhab.io.homekit.util.HomekitByte.joinBytes(accessoryPublicKey,
-                    server.getPairingId(), clientPublicKey);
+            accessoryInfo = org.openhab.io.homekit.util.HomekitByte.joinBytes(accessoryPublicKey, server.getPairingId(),
+                    clientPublicKey);
         } else {
             logger.error("{}Server instance is null", LOG_ERROR);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

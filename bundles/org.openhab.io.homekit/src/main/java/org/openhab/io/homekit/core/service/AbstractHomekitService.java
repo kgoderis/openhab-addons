@@ -128,15 +128,6 @@ public abstract class AbstractHomekitService implements HomekitService {
      */
     public AbstractHomekitService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
-        if (accessory == null) {
-            throw new IllegalArgumentException("Accessory cannot be null");
-        }
-        if (eventManager == null) {
-            throw new IllegalArgumentException("EventManager cannot be null");
-        }
-        if (characteristicFactory == null) {
-            throw new IllegalArgumentException("CharacteristicFactory cannot be null");
-        }
 
         this.accessory = accessory;
         this.eventManager = eventManager;
@@ -166,16 +157,7 @@ public abstract class AbstractHomekitService implements HomekitService {
      */
     public AbstractHomekitService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
-        if (accessory == null) {
-            throw new IllegalArgumentException("Accessory cannot be null");
-        }
-        if (eventManager == null) {
-            throw new IllegalArgumentException("EventManager cannot be null");
-        }
-        if (characteristicFactory == null) {
-            throw new IllegalArgumentException("CharacteristicFactory cannot be null");
-        }
-        if (value == null || !value.getValueType().equals(JsonValue.ValueType.OBJECT)) {
+        if (!value.getValueType().equals(JsonValue.ValueType.OBJECT)) {
             throw new IllegalArgumentException("Invalid JSON value for service creation");
         }
 

@@ -90,7 +90,7 @@ public class HomekitCurrentRelativeHumidityCharacteristic extends HomekitFloatCh
     }
 
     @Override
-    public boolean isAllowedValue(Double value) {
+    public boolean isAllowedValue(@Nullable Double value) {
         return value != null && value >= 0.0 && value <= 100.0;
     }
 

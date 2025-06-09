@@ -347,16 +347,8 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
         Map<String, Object> configs = (Map<String, Object>) yamlConfig.get(type.getYamlSection());
         if (configs != null) {
             for (Map.Entry<String, Object> entry : configs.entrySet()) {
-                @SuppressWarnings("null") // entrySet().getKey() guaranteed non-null for valid entries
                 String uidString = entry.getKey();
-                if (uidString == null) {
-                    continue;
-                }
-                @SuppressWarnings("null") // entrySet().getValue() guaranteed non-null for valid entries
                 Object value = entry.getValue();
-                if (value == null) {
-                    continue;
-                }
 
                 if (value instanceof Map) {
                     Map<String, Object> config = (Map<String, Object>) value;

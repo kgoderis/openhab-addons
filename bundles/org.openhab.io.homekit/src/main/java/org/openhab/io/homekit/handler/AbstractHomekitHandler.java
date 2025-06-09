@@ -29,6 +29,7 @@ import javax.json.JsonValue;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.config.core.Configuration;
+import org.openhab.core.i18n.ConfigurationException;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
@@ -309,10 +310,10 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
         this.accessoryServerPairingId = (String) config.get(CONFIG_DEVICE_ID);
         this.accessoryId = (String) config.get(CONFIG_ACCESSORY_ID);
 
-        if (accessoryServerPairingId == null || accessoryServerPairingId.trim().isEmpty()) {
+        if (accessoryServerPairingId.trim().isEmpty()) {
             throw new IllegalArgumentException("Configuration must contain a valid deviceId");
         }
-        if (accessoryId == null || accessoryId.trim().isEmpty()) {
+        if (accessoryId.trim().isEmpty()) {
             accessoryId = DEFAULT_ACCESSORY_ID;
         }
 
@@ -515,11 +516,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
                     logger.debug("{}Received event for different server, ignoring", LOG_EVENT);
                     return;
                 }
-                @SuppressWarnings({ "null", "potential_null_pointer_access" }) // Optional.get() is safe after isEmpty()
-                                                                               // checks
                 HomekitAccessoryServer eventServer = event.getServer().get();
-                @SuppressWarnings({ "null", "potential_null_pointer_access" }) // Optional.get() is safe after isEmpty()
-                                                                               // checks
                 HomekitAccessoryServer currentServerInstance = currentServer.get();
                 if (!eventServer.equals(currentServerInstance)) {
                     logger.debug("{}Received event for different server, ignoring", LOG_EVENT);
@@ -578,8 +575,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
                         logger.debug("{}Received event for different accessory, ignoring", LOG_EVENT);
                         return;
                     }
-                    @SuppressWarnings({ "null", "potential_null_pointer_access" }) // Optional.get() is safe after
-                                                                                   // isEmpty() check
+                    // isEmpty() check
                     HomekitAccessory currentAccessoryInstance = currentAccessory.get();
                     boolean isDifferentAccessory = !eventAccessory.equals(currentAccessoryInstance);
                     if (isDifferentAccessory) {
@@ -768,7 +764,6 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
             logger.warn("{}Characteristic added event received with null characteristic", LOG_EVENT);
             return;
         }
-        @SuppressWarnings({ "null", "potential_null_pointer_access" }) // Optional.get() is safe after isEmpty() check
         HomekitCharacteristic<?> addedCharacteristic = addedCharacteristicOpt.get();
 
         // Validate that the characteristic belongs to this handler
@@ -925,7 +920,6 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
         });
     }
 
-    @SuppressWarnings({ "null", "potential_null_pointer_access" })
     private void handleCharacteristicValueChanged(HomekitCharacteristicEvent event) {
         try {
             event.getCharacteristic().ifPresentOrElse(characteristic -> {
@@ -937,8 +931,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
                 }
 
                 if (event.getNewValue().isPresent()) {
-                    @SuppressWarnings({ "null", "potential_null_pointer_access" }) // Optional.get() is safe after
-                                                                                   // isPresent() check
+                    // isPresent() check
                     JsonValue newValue = event.getNewValue().get();
                     ThingStatus currentThingStatus = thing.getStatus();
                     handleChannelStateTransition(channel, characteristic, newValue, currentThingStatus,
@@ -995,7 +988,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
     // ========== Channel Management Methods ==========
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
-        if (disposed || channelUID == null || command == null) {
+        if (disposed) {
             return;
         }
 
@@ -1018,9 +1011,6 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
     }
 
     private <T> void handleCharacteristicCommand(HomekitCharacteristic<T> characteristic, Command command) {
-        if (characteristic == null || command == null) {
-            return;
-        }
 
         try {
             if (command instanceof State state) {
@@ -1053,13 +1043,12 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
         try {
             // Get current characteristics based on handler type
             Set<HomekitCharacteristic<?>> currentCharacteristics = getCurrentCharacteristics();
-            if (currentCharacteristics == null || currentCharacteristics.isEmpty()) {
+            if (currentCharacteristics.isEmpty()) {
                 logger.warn("{}Cannot synchronize channels: no characteristics available", LOG_CHANNEL);
                 return;
             }
 
-            @SuppressWarnings({ "null", "potential_null_pointer_access" }) // stream().collect() always returns non-null
-                                                                           // Set
+            // Set
             Set<String> currentCharacteristicTypes = currentCharacteristics.stream().map(HomekitCharacteristic::getType)
                     .collect(Collectors.toSet());
 
@@ -1068,13 +1057,11 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
             synchronized (characteristicMapLock) {
                 for (Map.Entry<Channel, org.openhab.io.homekit.api.characteristic.HomekitCharacteristic<?>> entry : characteristicMap
                         .entrySet()) {
-                    @SuppressWarnings({ "null", "potential_null_pointer_access" }) // Map.Entry.getValue() is guaranteed
-                                                                                   // non-null for valid entries
+                    // non-null for valid entries
                     HomekitCharacteristic<?> characteristic = entry.getValue();
-                    if (characteristic != null && !currentCharacteristicTypes.contains(characteristic.getType())) {
-                        @SuppressWarnings({ "null", "potential_null_pointer_access" }) // Map.Entry.getKey() is
-                                                                                       // guaranteed non-null for valid
-                                                                                       // entries
+                    if (!currentCharacteristicTypes.contains(characteristic.getType())) {
+                        // guaranteed non-null for valid
+                        // entries
                         Channel channelToRemove = entry.getKey();
                         channelsToRemove.add(channelToRemove);
                         logger.debug("{}Removing channel for characteristic: {}", LOG_CHANNEL,
@@ -1084,8 +1071,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
 
                 // Remove obsolete channels
                 channelsToRemove.forEach(channel -> {
-                    @SuppressWarnings({ "null", "potential_null_pointer_access" }) // Map.get() may return null, checked
-                                                                                   // in following if statement
+                    // in following if statement
                     HomekitCharacteristic<?> characteristic = characteristicMap.get(channel);
                     if (characteristic != null) {
                         teardownSubscriptionsForPublisher((UID) characteristic.getUID(),
@@ -1126,14 +1112,12 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
             synchronized (characteristicMapLock) {
                 for (Map.Entry<Channel, org.openhab.io.homekit.api.characteristic.HomekitCharacteristic<?>> entry : characteristicMap
                         .entrySet()) {
-                    @SuppressWarnings({ "null", "potential_null_pointer_access" }) // Map.Entry.getKey() is guaranteed
-                                                                                   // non-null for valid entries
+                    // non-null for valid entries
                     Channel channel = entry.getKey();
-                    @SuppressWarnings({ "null", "potential_null_pointer_access" }) // Map.Entry.getValue() is guaranteed
-                                                                                   // non-null for valid entries
+                    // non-null for valid entries
                     HomekitCharacteristic<?> characteristic = entry.getValue();
 
-                    if (characteristic != null && characteristic.getValue() instanceof State state) {
+                    if (characteristic.getValue() instanceof State state) {
                         updateState(channel.getUID(), state);
                         logger.debug("{}Updated state for channel {}: {}", LOG_CHANNEL, channel.getUID(),
                                 characteristic.getValue());
@@ -1179,8 +1163,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
                 // Remove all channels from the thing
                 List<Channel> channelsToRemove = new ArrayList<>(characteristicMap.keySet());
                 for (Channel channel : channelsToRemove) {
-                    @SuppressWarnings({ "null", "potential_null_pointer_access" }) // Map.get() may return null, checked
-                                                                                   // in following if statement
+                    // in following if statement
                     HomekitCharacteristic<?> characteristic = characteristicMap.get(channel);
                     if (characteristic != null) {
                         removeChannelForCharacteristic(characteristic);
@@ -1231,18 +1214,12 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
             synchronized (characteristicMapLock) {
                 for (Map.Entry<Channel, org.openhab.io.homekit.api.characteristic.HomekitCharacteristic<?>> entry : characteristicMap
                         .entrySet()) {
-                    @SuppressWarnings({ "null", "potential_null_pointer_access" }) // Map.Entry.getValue() is guaranteed
-                                                                                   // non-null for valid entries
+                    // non-null for valid entries
                     HomekitCharacteristic<?> entryValue = entry.getValue();
-                    if (entryValue != null && entryValue == characteristic) {
-                        @SuppressWarnings({ "null", "potential_null_pointer_access" }) // Map.Entry.getKey() is
-                                                                                       // guaranteed non-null for valid
-                                                                                       // entries
-                        Channel possibleChannel = entry.getKey();
-                        if (possibleChannel != null) {
-                            channelToRemove = possibleChannel;
-                            break;
-                        }
+                    if (entryValue == characteristic) {
+                        // guaranteed non-null for valid entries
+                        channelToRemove = entry.getKey();
+                        break;
                     }
                 }
 
@@ -1265,9 +1242,6 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
     protected void handleChannelStateTransition(Channel channel, HomekitCharacteristic<?> characteristic,
             JsonValue newValue, ThingStatus oldStatus, ThingStatus newStatus) {
         try {
-            if (channel == null || characteristic == null) {
-                return;
-            }
 
             if (currentStatus != newStatus) {
                 logger.debug("{}Channel state transition - Channel: {}, Current Status: {}, Target Status: {}",
@@ -1294,9 +1268,6 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
 
     protected void handleChannelTypeChange(Channel channel, HomekitCharacteristic<?> characteristic) {
         try {
-            if (channel == null || characteristic == null) {
-                return;
-            }
 
             ChannelTypeUID newChannelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
                     characteristic.getType());
@@ -1331,16 +1302,11 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
         synchronized (characteristicMapLock) {
             for (Map.Entry<Channel, org.openhab.io.homekit.api.characteristic.HomekitCharacteristic<?>> entry : characteristicMap
                     .entrySet()) {
-                @SuppressWarnings({ "null", "potential_null_pointer_access" }) // Map.Entry.getValue() is guaranteed
-                                                                               // non-null for valid entries
+                // non-null for valid entries
                 HomekitCharacteristic<?> entryValue = entry.getValue();
-                if (entryValue != null && entryValue == characteristic) {
-                    @SuppressWarnings({ "null", "potential_null_pointer_access" }) // Map.Entry.getKey() is guaranteed
-                                                                                   // non-null for valid entries
-                    Channel possibleChannel = entry.getKey();
-                    if (possibleChannel != null) {
-                        return Optional.of(possibleChannel);
-                    }
+                if (entryValue == characteristic) {
+                    // non-null for valid entries
+                    return Optional.of(entry.getKey());
                 }
             }
         }
@@ -1348,39 +1314,19 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
     }
 
     private void validateEventData(HomekitAccessoryServerEvent event) {
-        if (event.getServer() == null) {
-            throw new IllegalArgumentException("Event server cannot be null");
-        }
-        if (event.getType() == null) {
-            throw new IllegalArgumentException("Event type cannot be null");
-        }
+        // Event data validation - server and type are guaranteed non-null by interface
     }
 
     private void validateEventData(HomekitServiceEvent event) {
-        if (event.getService() == null) {
-            throw new IllegalArgumentException("Event service cannot be null");
-        }
-        if (event.getType() == null) {
-            throw new IllegalArgumentException("Event type cannot be null");
-        }
+        // Event data validation - service and type are guaranteed non-null by interface
     }
 
     private void validateEventData(HomekitAccessoryEvent event) {
-        if (event.getAccessory() == null) {
-            throw new IllegalArgumentException("Event accessory cannot be null");
-        }
-        if (event.getType() == null) {
-            throw new IllegalArgumentException("Event type cannot be null");
-        }
+        // Event data validation - accessory and type are guaranteed non-null by interface
     }
 
     private void validateEventData(HomekitCharacteristicEvent event) {
-        if (event.getCharacteristic() == null) {
-            throw new IllegalArgumentException("Event characteristic cannot be null");
-        }
-        if (event.getType() == null) {
-            throw new IllegalArgumentException("Event type cannot be null");
-        }
+        // Event data validation - characteristic and type are guaranteed non-null by interface
     }
 
     /**
@@ -1411,7 +1357,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
      */
     @Override
     public void channelLinked(ChannelUID channelUID) {
-        if (disposed || channelUID == null) {
+        if (disposed) {
             return;
         }
 
@@ -1469,7 +1415,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
      */
     @Override
     public void channelUnlinked(ChannelUID channelUID) {
-        if (disposed || channelUID == null) {
+        if (disposed) {
             return;
         }
 
@@ -1601,7 +1547,6 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
     // ========== Getters and Setters ==========
     protected Optional<HomekitAccessoryServer> getServer() {
         synchronized (serverLock) {
-            @SuppressWarnings({ "null", "potential_null_pointer_access" })
             Optional<HomekitAccessoryServer> result = Optional.ofNullable(server);
             return result;
         }
@@ -1621,7 +1566,6 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
 
     protected Optional<HomekitAccessory> getAccessory() {
         synchronized (accessoryLock) {
-            @SuppressWarnings({ "null", "potential_null_pointer_access" })
             Optional<HomekitAccessory> result = Optional.ofNullable(accessory);
             return result;
         }
@@ -1649,44 +1593,33 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
 
         Optional<HomekitAccessoryServer> foundServerOpt = getServer();
         if (foundServerOpt.isPresent()) {
-            @SuppressWarnings({ "null", "potential_null_pointer_access" }) // Optional.get() is safe after isPresent()
-                                                                           // check
+            // check
             HomekitAccessoryServer foundServer = foundServerOpt.get();
-            if (foundServer.getUID() != null) {
-                eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVER_STATE_CHANGED,
-                        (UID) foundServer.getUID(), (UID) thing.getUID(),
-                        event -> onAccessoryServerEvent((HomekitAccessoryServerEvent) event)));
-            }
+            eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVER_STATE_CHANGED,
+                    (UID) foundServer.getUID(), (UID) thing.getUID(),
+                    event -> onAccessoryServerEvent((HomekitAccessoryServerEvent) event)));
         }
 
         // HomekitAccessory subscriptions
 
         Optional<HomekitAccessory> foundAccessoryOpt = getAccessory();
         if (foundAccessoryOpt.isPresent()) {
-            @SuppressWarnings({ "null", "potential_null_pointer_access" }) // Optional.get() is safe after isPresent()
-                                                                           // check
+            // check
             HomekitAccessory foundAccessory = foundAccessoryOpt.get();
-            if (foundAccessory.getUID() != null) {
-                eventSubscriptions.add(
-                        eventManager.subscribe(HomekitEventType.ACCESSORY_STATE_CHANGED, (UID) foundAccessory.getUID(),
-                                (UID) thing.getUID(), event -> onAccessoryEvent((HomekitAccessoryEvent) event)));
+            eventSubscriptions
+                    .add(eventManager.subscribe(HomekitEventType.ACCESSORY_STATE_CHANGED, (UID) foundAccessory.getUID(),
+                            (UID) thing.getUID(), event -> onAccessoryEvent((HomekitAccessoryEvent) event)));
 
-                // HomekitService subscriptions
-                for (HomekitService foundService : foundAccessory.getServices()) {
-                    if (foundService != null && foundService.getUID() != null) {
-                        eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED,
-                                (UID) foundService.getUID(), (UID) thing.getUID(),
-                                event -> onServiceEvent((HomekitServiceEvent) event)));
+            // HomekitService subscriptions
+            for (HomekitService foundService : foundAccessory.getServices()) {
+                eventSubscriptions
+                        .add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED, (UID) foundService.getUID(),
+                                (UID) thing.getUID(), event -> onServiceEvent((HomekitServiceEvent) event)));
 
-                        for (HomekitCharacteristic<?> foundCharacteristic : foundService.getCharacteristics()) {
-                            if (foundCharacteristic != null && foundCharacteristic.getUID() != null) {
-                                eventSubscriptions
-                                        .add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
-                                                (UID) foundCharacteristic.getUID(), (UID) thing.getUID(),
-                                                event -> onCharacteristicEvent((HomekitCharacteristicEvent) event)));
-                            }
-                        }
-                    }
+                for (HomekitCharacteristic<?> foundCharacteristic : foundService.getCharacteristics()) {
+                    eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
+                            (UID) foundCharacteristic.getUID(), (UID) thing.getUID(),
+                            event -> onCharacteristicEvent((HomekitCharacteristicEvent) event)));
                 }
             }
         }
@@ -1705,7 +1638,6 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
 
     protected void tearDownSubscriptionsForPublisher(UID publisherUID) {
         // get set of subscriptions for the publisher from the eventSubscriptions set
-        @SuppressWarnings({ "null", "potential_null_pointer_access" }) // stream().collect() always returns non-null Set
         Set<HomekitEventSubscription> subscriptions = eventSubscriptions.stream()
                 .filter(subscription -> subscription.getPublisherUID().equals(publisherUID))
                 .collect(Collectors.toSet());
@@ -1717,7 +1649,6 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
 
     protected void teardownSubscriptionsForPublisher(UID publisherUID, HomekitEventType eventType) {
         // get set of subscriptions for the publisher from the eventSubscriptions set
-        @SuppressWarnings({ "null", "potential_null_pointer_access" }) // stream().collect() always returns non-null Set
         Set<HomekitEventSubscription> subscriptions = eventSubscriptions.stream()
                 .filter(subscription -> subscription.getPublisherUID().equals(publisherUID)
                         && subscription.getEventType().equals(eventType))

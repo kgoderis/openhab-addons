@@ -209,7 +209,7 @@ public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypePro
         logger.debug("{}Creating channel group type for service: {}", LOG_TYPE, serviceType);
         try {
             String serviceTag = serviceFactory.getTagFromServiceType(serviceType);
-            if (serviceTag == null || serviceTag.isEmpty()) {
+            if (serviceTag.isEmpty()) {
                 logger.warn("{}Invalid service tag for service type: {}", LOG_WARN, serviceType);
                 return;
             }
@@ -227,7 +227,7 @@ public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypePro
             for (String characteristicType : mandatoryCharacteristics) {
                 logger.debug("{}Processing mandatory characteristic: {}", LOG_TYPE, characteristicType);
                 String characteristicTag = characteristicFactory.getTagFromCharacteristicType(characteristicType);
-                if (characteristicTag == null || characteristicTag.isEmpty()) {
+                if (characteristicTag.isEmpty()) {
                     logger.warn("{}Invalid characteristic tag for type: {}", LOG_WARN, characteristicType);
                     continue;
                 }
@@ -247,7 +247,7 @@ public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypePro
             for (String characteristicType : optionalCharacteristics) {
                 logger.debug("{}Processing optional characteristic: {}", LOG_TYPE, characteristicType);
                 String characteristicTag = characteristicFactory.getTagFromCharacteristicType(characteristicType);
-                if (characteristicTag == null || characteristicTag.isEmpty()) {
+                if (characteristicTag.isEmpty()) {
                     logger.warn("{}Invalid characteristic tag for type: {}", LOG_WARN, characteristicType);
                     continue;
                 }

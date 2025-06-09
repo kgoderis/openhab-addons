@@ -128,7 +128,7 @@ public class MandatoryCharacteristicValidation extends AbstractValidation {
                             service.getName()),
                     "MISSING_MANDATORY_CHARACTERISTIC",
                     getContextKey(thing) + ":" + service.getType() + ":" + characteristicName, true, true,
-                    Map.<String, Object>of("serviceName", service.getName(), "serviceUuid", service.getType(),
+                    Map.<String, Object> of("serviceName", service.getName(), "serviceUuid", service.getType(),
                             "characteristicName", characteristicName)));
         }
     }

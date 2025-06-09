@@ -389,9 +389,8 @@ public class HomekitPassthroughBridge {
                         accessory.getUID());
                 return;
             }
-            @Nullable
             Map<String, Object> config = configOpt.get();
-            if (config == null || !Boolean.TRUE.equals(config.get("bridge"))) {
+            if (!Boolean.TRUE.equals(config.get("bridge"))) {
                 logger.debug("{}Accessory {} not configured for bridging (missing or false 'bridge' parameter)",
                         LOG_PREFIX, accessory.getUID());
                 return;
@@ -410,24 +409,14 @@ public class HomekitPassthroughBridge {
                 logger.error("{}No available local server found for bridging", LOG_PREFIX);
                 return;
             }
-            @Nullable
             HomekitAccessoryServer localServer = localServerOpt.get();
-            if (localServer == null) {
-                logger.error("{}Local server is null", LOG_PREFIX);
-                return;
-            }
 
             Optional<HomekitAccessory> localAccessoryOpt = createLocalAccessory(accessory, localServer);
             if (localAccessoryOpt.isEmpty()) {
                 logger.error("{}Failed to create local accessory for {}", LOG_PREFIX, accessory.getUID());
                 return;
             }
-            @Nullable
             HomekitAccessory localAccessory = localAccessoryOpt.get();
-            if (localAccessory == null) {
-                logger.error("{}Local accessory is null", LOG_PREFIX);
-                return;
-            }
 
             bridgeAccessory(accessory, remoteServer, localServer, localAccessory);
             logger.info("{}Successfully bridged accessory {} from remote server {} to local server {}", LOG_PREFIX,

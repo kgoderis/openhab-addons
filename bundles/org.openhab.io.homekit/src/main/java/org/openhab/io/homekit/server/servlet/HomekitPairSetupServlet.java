@@ -90,6 +90,8 @@ import com.nimbusds.srp6.XRoutineWithUserIdentity;
 @NonNullByDefault
 public class HomekitPairSetupServlet extends HomekitBaseServlet {
 
+    private static final long serialVersionUID = 1L;
+
     // ========== Log Message Prefixes ==========
     protected static final Logger logger = LoggerFactory.getLogger(HomekitPairSetupServlet.class);
     protected static final String LOG_PREFIX = "Homekit PairSetupServlet: ";

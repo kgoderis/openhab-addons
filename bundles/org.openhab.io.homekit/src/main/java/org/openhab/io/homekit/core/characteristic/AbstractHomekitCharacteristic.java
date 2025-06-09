@@ -170,12 +170,6 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
      * @since 1.0
      */
     public AbstractHomekitCharacteristic(HomekitService service, HomekitEventManager eventManager) {
-        if (service == null) {
-            throw new IllegalArgumentException("Service cannot be null");
-        }
-        if (eventManager == null) {
-            throw new IllegalArgumentException("EventManager cannot be null");
-        }
 
         this.service = service;
         this.eventManager = eventManager;
@@ -207,13 +201,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
      * @since 1.0
      */
     public AbstractHomekitCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
-        if (service == null) {
-            throw new IllegalArgumentException("Service cannot be null");
-        }
-        if (eventManager == null) {
-            throw new IllegalArgumentException("EventManager cannot be null");
-        }
-        if (value == null || !value.getValueType().equals(JsonValue.ValueType.OBJECT)) {
+        if (!value.getValueType().equals(JsonValue.ValueType.OBJECT)) {
             throw new IllegalArgumentException("Invalid JSON value for characteristic creation");
         }
 
@@ -277,16 +265,8 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
         if (initialValue != null) {
             // Use explicit conditional logic to help compiler with null analysis
             JsonValue valueToConvert = initialValue;
-            if (valueToConvert != null) {
-                T convertedValue = toValue(valueToConvert);
-                if (convertedValue != null) {
-                    this.value = convertedValue;
-                } else {
-                    this.value = getDefault();
-                }
-            } else {
-                this.value = getDefault();
-            }
+            T convertedValue = toValue(valueToConvert);
+            this.value = convertedValue;
             initialValue = null;
         } else {
             this.value = getDefault();
@@ -323,12 +303,8 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
                                     if (changeEvent.getNewValue().isPresent()) {
                                         @SuppressWarnings("null") // Optional.get() after isPresent() check is safe
                                         JsonValue newValue = changeEvent.getNewValue().get();
-                                        if (newValue != null) {
-                                            @SuppressWarnings("null") // newValue null check performed above
-                                            JsonValue nonNullNewValue = newValue;
-                                            AbstractHomekitCharacteristic.this.setValue(nonNullNewValue,
-                                                    changeEvent.getItemConfiguration(), changeEvent.getMetadata());
-                                        }
+                                        AbstractHomekitCharacteristic.this.setValue(newValue,
+                                                changeEvent.getItemConfiguration(), changeEvent.getMetadata());
                                     }
                                 } catch (Exception e) {
                                     // Handle error
@@ -493,9 +469,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
             JsonValue valueToConvert = initialValue;
             if (valueToConvert != null) {
                 T convertedValue = toValue(valueToConvert);
-                if (convertedValue != null) {
-                    value = convertedValue;
-                }
+                value = convertedValue;
             }
             initialValue = null;
         }
@@ -512,10 +486,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
      */
     @SuppressWarnings("null") // Comprehensive suppression for Eclipse generic type analysis limitations
     private T returnSafeValue(@Nullable T candidate) {
-        if (candidate != null) {
-            return candidate;
-        }
-        return getDefault();
+        return candidate;
     }
 
     /**
@@ -528,7 +499,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
         if (!isPairedWrite) {
             throw new Exception("Cannot modify a readonly characteristic");
         }
-        if (value != null && !isAllowedValue(value)) {
+        if (!isAllowedValue(value)) {
             throw new IllegalArgumentException("Value " + value + " is not allowed for this characteristic");
         }
         @Nullable
@@ -545,7 +516,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
         try {
             @SuppressWarnings("null") // toValue implementation guarantees non-null result
             T convertedValue = toValue(jsonValue);
-            if (convertedValue != null && !isAllowedValue(convertedValue)) {
+            if (!isAllowedValue(convertedValue)) {
                 throw new IllegalArgumentException(
                         "Value " + convertedValue + " is not allowed for this characteristic");
             }
@@ -564,19 +535,14 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
         try {
             @SuppressWarnings("null") // toValue implementation guarantees non-null result
             T convertedValue = toValue(value, conversionMap);
-            if (convertedValue != null && !isAllowedValue(convertedValue)) {
+            if (!isAllowedValue(convertedValue)) {
                 throw new IllegalArgumentException(
                         "Value " + convertedValue + " is not allowed for this characteristic");
             }
 
             @Nullable
             T oldValue = this.value;
-            // Use conditional logic to handle nullable value properly
-            if (convertedValue != null) {
-                setValueInternal(convertedValue);
-            } else {
-                setValueInternal(null);
-            }
+            setValueInternal(convertedValue);
             notifyValueChanged(oldValue, this.value, metadata);
         } catch (Exception e) {
             logger.error("{}Error while setting value with metadata: {}", LOG_ERROR, e.getMessage(), e);
@@ -699,7 +665,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
         builder.add("description", description);
         builder.add("ev", hasEvents);
         JsonObject baseJson = builder.build();
-        return getValue() != null ? enrich(baseJson, "value", getValue()) : baseJson;
+        return enrich(baseJson, "value", getValue());
     }
 
     /**
@@ -717,7 +683,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
         builder.add("description", description);
         builder.add("ev", hasEvents);
         JsonObject baseJson = builder.build();
-        return getValue() != null ? enrich(baseJson, "value", getValue()) : baseJson;
+        return enrich(baseJson, "value", getValue());
     }
 
     /**
@@ -731,7 +697,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
         builder.add("iid", instanceId);
         builder.add("aid", service.getAccessory().getAccessoryId());
         JsonObject baseJson = builder.build();
-        return getValue() != null ? enrich(baseJson, "value", getValue()) : baseJson;
+        return enrich(baseJson, "value", getValue());
     }
 
     /**
@@ -746,7 +712,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
         builder.add("iid", instanceId);
         builder.add("aid", service.getAccessory().getAccessoryId());
         JsonObject baseJson = builder.build();
-        return value != null ? enrich(baseJson, "value", value) : baseJson;
+        return enrich(baseJson, "value", value);
     }
 
     /**
@@ -759,7 +725,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
     public JsonValue toValueJson(@Nullable T value) {
         JsonObjectBuilder builder = Json.createObjectBuilder();
         JsonObject baseJson = builder.build();
-        return value != null ? enrich(baseJson, "value", value) : baseJson;
+        return enrich(baseJson, "value", value);
     }
 
     /**
@@ -781,7 +747,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
      * @param value the value to add
      * @return the enriched JSON object
      */
-    protected JsonObject enrich(JsonObject source, String key, Object value) {
+    protected JsonObject enrich(JsonObject source, String key, @Nullable Object value) {
         JsonObjectBuilder builder = Json.createObjectBuilder();
         addValue(builder, key, value);
         source.entrySet().forEach(e -> builder.add(e.getKey(), e.getValue()));
@@ -795,7 +761,10 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
      * @param name the name of the value
      * @param value the value to add
      */
-    protected void addValue(JsonObjectBuilder builder, String name, Object value) {
+    protected void addValue(JsonObjectBuilder builder, String name, @Nullable Object value) {
+        if (value == null) {
+            return;
+        }
         if (value instanceof Boolean aBoolean) {
             builder.add(name, aBoolean);
         } else if (value instanceof Double aDouble) {
@@ -816,7 +785,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
             builder.add(name, aJsonArrayBuilder);
         } else if (value instanceof JsonObject aJsonObject) {
             builder.add(name, aJsonObject);
-        } else if (value != null) {
+        } else {
             builder.add(name, value.toString());
         }
     }
@@ -1118,7 +1087,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
     }
 
     @Override
-    public boolean isAllowedValue(T value) {
+    public boolean isAllowedValue(@Nullable T value) {
         return true; // By default, all values are allowed
     }
 

@@ -37250,7 +37250,7 @@ Based on the code analysis, I can explain how HomeKit characteristics handle con
    Each characteristic implements `isAllowedValue()` to validate values:
    ```java
    @Override
-   public boolean isAllowedValue(Double value) {
+   public boolean isAllowedValue(@Nullable Long value) {
        return value != null && value >= 10.0 && value <= 38.0;
    }
    ```
@@ -37291,7 +37291,7 @@ This architecture allows for flexible configuration of characteristics while mai
 
 ```java
    @Override
-   public boolean isAllowedValue(Double value) {
+   public boolean isAllowedValue(@Nullable Long value) {
        return value != null && value >= 10.0 && value <= 38.0;
    }
 ```
@@ -37349,7 +37349,7 @@ public abstract class HomekitIntegerCharacteristic extends AbstractHomekitCharac
     
     // Add validation method
     @Override
-    public boolean isAllowedValue(Integer value) {
+    public boolean isAllowedValue(@Nullable Integer value) {
         return value != null && value >= minValue && value <= maxValue;
     }
 }
@@ -37380,7 +37380,7 @@ characteristics:
 ```java
 public class HomekitTargetTemperatureCharacteristic extends HomekitFloatCharacteristic {
     @Override
-    public boolean isAllowedValue(Double value) {
+    public boolean isAllowedValue(@Nullable Long value) {
         // First check the base range (10-38)
         if (value == null || value < 10.0 || value > 38.0) {
             return false;
@@ -37425,7 +37425,7 @@ public abstract class HomekitIntegerCharacteristic extends AbstractHomekitCharac
     
     // Add validation method
     @Override
-    public boolean isAllowedValue(Integer value) {
+    public boolean isAllowedValue(@Nullable Integer value) {
         return value != null && value >= minValue && value <= maxValue;
     }
 }
@@ -37443,7 +37443,7 @@ characteristics:
 ```java
 public class HomekitTargetTemperatureCharacteristic extends HomekitFloatCharacteristic {
     @Override
-    public boolean isAllowedValue(Double value) {
+    public boolean isAllowedValue(@Nullable Long value) {
         // First check the base range (10-38)
         if (value == null || value < 10.0 || value > 38.0) {
             return false;

@@ -21,6 +21,7 @@ import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.types.State;
@@ -240,7 +241,7 @@ public abstract class HomekitLongCharacteristic extends AbstractHomekitCharacter
      * @return true if the value is non-null and within range [minValue, maxValue]
      */
     @Override
-    public boolean isAllowedValue(Long value) {
+    public boolean isAllowedValue(@Nullable Long value) {
         return value != null && value >= minValue && value <= maxValue;
     }
 

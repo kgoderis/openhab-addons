@@ -18,6 +18,7 @@ import java.util.Set;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitIntegerCharacteristic;
@@ -79,7 +80,7 @@ public class HomekitRecordingAudioActiveCharacteristic extends HomekitIntegerCha
      * @return true if the value is DISABLE or ENABLE, false otherwise
      */
     @Override
-    public boolean isAllowedValue(Integer value) {
+    public boolean isAllowedValue(@Nullable Integer value) {
         return value != null
                 && (value == RecordingAudioState.DISABLE.getCode() || value == RecordingAudioState.ENABLE.getCode());
     }

@@ -16,6 +16,7 @@ package org.openhab.io.homekit.library.characteristic;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitEnumCharacteristic;
@@ -93,7 +94,7 @@ public class HomekitWiFiSatelliteStatusCharacteristic extends HomekitEnumCharact
      * @return true if allowed, false otherwise
      */
     @Override
-    public boolean isAllowedValue(Integer value) {
+    public boolean isAllowedValue(@Nullable Integer value) {
         return value != null && value >= 0 && value < WiFiSatelliteStatus.values().length;
     }
 

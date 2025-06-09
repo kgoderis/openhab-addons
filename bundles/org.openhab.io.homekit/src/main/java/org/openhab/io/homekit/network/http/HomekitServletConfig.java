@@ -19,7 +19,6 @@ import java.util.Enumeration;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 
@@ -55,7 +54,6 @@ import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
-@NonNullByDefault
 public class HomekitServletConfig implements ServletConfig {
 
     private final HomekitAccessoryServer server;
@@ -160,8 +158,7 @@ public class HomekitServletConfig implements ServletConfig {
      * @return An empty enumeration of parameter names
      */
     @Override
-    @SuppressWarnings("all") // Framework interface compatibility: ServletConfig interface constraints cannot be overridden
-    public java.util.Enumeration<String> getInitParameterNames() {
+    public Enumeration<String> getInitParameterNames() {
         return getEmptyParameterNames();
     }
 

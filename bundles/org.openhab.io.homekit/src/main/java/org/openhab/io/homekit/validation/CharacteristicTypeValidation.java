@@ -128,7 +128,7 @@ public class CharacteristicTypeValidation extends AbstractValidation {
                             characteristicUuid),
                     "INVALID_CHARACTERISTIC_UUID",
                     getContextKey(thing) + ":" + service.getType() + ":" + characteristicUuid, true, true,
-                    Map.<String, Object>of("serviceName", service.getName(), "serviceUuid", service.getType(),
+                    Map.<String, Object> of("serviceName", service.getName(), "serviceUuid", service.getType(),
                             "characteristicName", characteristicName, "characteristicUuid", characteristicUuid)));
             return;
         }
@@ -140,7 +140,7 @@ public class CharacteristicTypeValidation extends AbstractValidation {
                             characteristicName, service.getName()),
                     "INCOMPATIBLE_CHARACTERISTIC_TYPE",
                     getContextKey(thing) + ":" + service.getType() + ":" + characteristicUuid, true, true,
-                    Map.<String, Object>of("serviceName", service.getName(), "serviceUuid", service.getType(),
+                    Map.<String, Object> of("serviceName", service.getName(), "serviceUuid", service.getType(),
                             "characteristicName", characteristicName, "characteristicUuid", characteristicUuid)));
         }
 
@@ -151,7 +151,7 @@ public class CharacteristicTypeValidation extends AbstractValidation {
                             service.getName()),
                     "DUPLICATE_CHARACTERISTIC_TYPE",
                     getContextKey(thing) + ":" + service.getType() + ":" + characteristicUuid, true, true,
-                    Map.<String, Object>of("serviceName", service.getName(), "serviceUuid", service.getType(),
+                    Map.<String, Object> of("serviceName", service.getName(), "serviceUuid", service.getType(),
                             "characteristicName", characteristicName, "characteristicUuid", characteristicUuid)));
         }
     }

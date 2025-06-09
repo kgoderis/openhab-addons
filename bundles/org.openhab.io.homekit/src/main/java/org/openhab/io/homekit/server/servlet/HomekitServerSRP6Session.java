@@ -109,10 +109,6 @@ public class HomekitServerSRP6Session extends SRP6Session {
 
         super(timeout);
 
-        if (config == null) {
-            throw new IllegalArgumentException("The SRP-6a crypto parameters must not be null");
-        }
-
         this.config = config;
 
         digest = config.getMessageDigestInstance();
@@ -158,21 +154,13 @@ public class HomekitServerSRP6Session extends SRP6Session {
 
         // Check arguments
 
-        if (userID == null || userID.trim().isEmpty()) {
-            throw new IllegalArgumentException("The user identity 'I' must not be null or empty");
+        if (userID.trim().isEmpty()) {
+            throw new IllegalArgumentException("The user identity 'I' must not be empty");
         }
 
         this.userID = userID;
 
-        if (s == null) {
-            throw new IllegalArgumentException("The salt 's' must not be null");
-        }
-
         this.s = s;
-
-        if (v == null) {
-            throw new IllegalArgumentException("The verifier 'v' must not be null");
-        }
 
         this.v = v;
 
@@ -251,15 +239,7 @@ public class HomekitServerSRP6Session extends SRP6Session {
 
         // Check arguments
 
-        if (A == null) {
-            throw new IllegalArgumentException("The client public value 'A' must not be null");
-        }
-
         this.A = A;
-
-        if (M1 == null) {
-            throw new IllegalArgumentException("The client evidence message 'M1' must not be null");
-        }
 
         this.M1 = M1;
 

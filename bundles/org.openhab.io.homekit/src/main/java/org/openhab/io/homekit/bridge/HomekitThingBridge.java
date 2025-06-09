@@ -263,14 +263,10 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         this.itemRegistry = itemRegistry;
 
         // Load orphan configuration
-        @Nullable
-        Object orphanConfig = properties != null ? properties.getOrDefault(CONFIG_ORPHAN_ENABLED, "true") : "true";
-        if (orphanConfig != null) {
-            @SuppressWarnings("null") // orphanConfig is null-checked above
-            String configValue = orphanConfig.toString();
-            this.orphanEnabled = Boolean.parseBoolean(configValue);
-            logger.info("{}Orphan functionality is {}", LOG_PREFIX, orphanEnabled ? "enabled" : "disabled");
-        }
+        Object orphanConfig = properties.getOrDefault(CONFIG_ORPHAN_ENABLED, "true");
+        String configValue = orphanConfig.toString();
+        this.orphanEnabled = Boolean.parseBoolean(configValue);
+        logger.info("{}Orphan functionality is {}", LOG_PREFIX, orphanEnabled ? "enabled" : "disabled");
 
         // Initialize existing Things
         initializeExistingThings();
@@ -344,10 +340,8 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
 
         try {
             HomekitAccessory accessory = createAccessoryForThing(thing, serverOpt.get(), thingConfig);
-            if (accessory != null) {
-                thingAccessoryMap.put(thing.getUID(), accessory);
-                processChannels(thing, accessory);
-            }
+            thingAccessoryMap.put(thing.getUID(), accessory);
+            processChannels(thing, accessory);
         } catch (Exception e) {
             logger.error("{}Failed to create accessory for thing {}: {}", LOG_PREFIX, thing.getUID(), e.getMessage(),
                     e);
@@ -528,10 +522,8 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
                 // Process characteristics for this service
                 @SuppressWarnings({ "unchecked", "null" }) // Cast to expected type and config.get() checked for null
                 Map<String, Object> characteristics = (Map<String, Object>) config.get("characteristics");
-                if (characteristics != null && service != null) {
-                    @SuppressWarnings("null") // characteristics null check ensures this is safe
-                    Map<String, Object> nonNullCharacteristics = characteristics;
-                    processCharacteristics(channel, service, nonNullCharacteristics);
+                if (characteristics != null) {
+                    processCharacteristics(channel, service, characteristics);
                 }
             } catch (Exception e) {
                 logger.error("{}Failed to process channel {}: {}", LOG_PREFIX, channelUID, e.getMessage(), e);
@@ -558,11 +550,7 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
 
         // Then try pattern matching
         for (Map.Entry<String, Object> entry : serviceMappings.entrySet()) {
-            @Nullable
             String pattern = entry.getKey();
-            if (pattern == null) {
-                continue;
-            }
             if (pattern.contains("*")) {
                 String regex = pattern.replace("*", ".*");
                 if (channelUID.matches(regex)) {
@@ -588,16 +576,8 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
      */
     private void processCharacteristics(Channel channel, HomekitService service, Map<String, Object> characteristics) {
         for (Map.Entry<String, Object> entry : characteristics.entrySet()) {
-            @Nullable
             String characteristicType = entry.getKey();
-            if (characteristicType == null) {
-                continue;
-            }
-            @Nullable
             Object value = entry.getValue();
-            if (value == null) {
-                continue;
-            }
             if (!(value instanceof Map)) {
                 continue; // Skip invalid entries
             }
@@ -607,30 +587,31 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
             try {
                 HomekitCharacteristic<?> characteristic = characteristicFactory.createCharacteristic(characteristicType,
                         service);
-                if (characteristic != null) {
-                    // Apply characteristic configuration
-                    if (config.containsKey("inverted")
-                            && characteristic instanceof AbstractHomekitCharacteristic<?> abstractCharacteristic) {
-                        // Set the inverted property through the characteristic's configuration
+                // Apply characteristic configuration
+                if (config.containsKey("inverted")
+                        && characteristic instanceof AbstractHomekitCharacteristic<?> abstractCharacteristic) {
+                    // Set the inverted property through the characteristic's configuration
+                    Object invertedValue = config.get("inverted");
+                    if (invertedValue instanceof Boolean invertedBoolean) {
                         JsonObjectBuilder builder = Json.createObjectBuilder();
-                        builder.add("inverted", (Boolean) config.get("inverted"));
+                        builder.add("inverted", invertedBoolean);
                         abstractCharacteristic.setValue(builder.build());
                     }
-
-                    // Add bidirectional mapping
-                    channelCharacteristicMap.put(channel.getUID(), characteristic);
-                    characteristicChannelMap.put(characteristic, channel.getUID());
-                    service.addCharacteristic(characteristic);
-
-                    // Subscribe to characteristic events
-                    subscribeToCharacteristicEvents(characteristic);
-
-                    // Find linked Item and create profiles
-                    linkRegistry.getLinks(channel.getUID()).forEach(link -> {
-                        itemChannelMap.put(link.getItemName(), channel.getUID());
-                        createProfileForChannel(channel, link);
-                    });
                 }
+
+                // Add bidirectional mapping
+                channelCharacteristicMap.put(channel.getUID(), characteristic);
+                characteristicChannelMap.put(characteristic, channel.getUID());
+                service.addCharacteristic(characteristic);
+
+                // Subscribe to characteristic events
+                subscribeToCharacteristicEvents(characteristic);
+
+                // Find linked Item and create profiles
+                linkRegistry.getLinks(channel.getUID()).forEach(link -> {
+                    itemChannelMap.put(link.getItemName(), channel.getUID());
+                    createProfileForChannel(channel, link);
+                });
             } catch (Exception e) {
                 logger.error("{}Failed to create characteristic {} for channel {}: {}", LOG_PREFIX, characteristicType,
                         channel.getUID(), e.getMessage(), e);
@@ -735,26 +716,22 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
                     if (profile instanceof StateProfile stateProfile) {
                         changedEvent.getNewValue().ifPresent(newValue -> {
                             State newState = characteristic.toState(newValue);
-                            if (newState != null) {
-                                // Store the exit event
-                                itemChannelLinkRegistry.getLinks(channelUID).stream().findFirst()
-                                        .map(ItemChannelLink::getItemName).ifPresent(itemName -> {
-                                            exitEvents.put(itemName, new ExitEvent(newState, event.getMetadata()));
-                                        });
-                                stateProfile.onStateUpdateFromHandler(newState);
-                            }
+                            // Store the exit event
+                            itemChannelLinkRegistry.getLinks(channelUID).stream().findFirst()
+                                    .map(ItemChannelLink::getItemName).ifPresent(itemName -> {
+                                        exitEvents.put(itemName, new ExitEvent(newState, event.getMetadata()));
+                                    });
+                            stateProfile.onStateUpdateFromHandler(newState);
                         });
                     } else {
                         // If no profile is used, directly handle the state
                         changedEvent.getNewValue().ifPresent(newValue -> {
                             State newState = characteristic.toState(newValue);
-                            if (newState != null) {
-                                itemChannelLinkRegistry.getLinks(channelUID).stream().findFirst()
-                                        .map(ItemChannelLink::getItemName).ifPresent(itemName -> {
-                                            exitEvents.put(itemName, new ExitEvent(newState, event.getMetadata()));
-                                            eventPublisher.post(ItemEventFactory.createStateEvent(itemName, newState));
-                                        });
-                            }
+                            itemChannelLinkRegistry.getLinks(channelUID).stream().findFirst()
+                                    .map(ItemChannelLink::getItemName).ifPresent(itemName -> {
+                                        exitEvents.put(itemName, new ExitEvent(newState, event.getMetadata()));
+                                        eventPublisher.post(ItemEventFactory.createStateEvent(itemName, newState));
+                                    });
                         });
                     }
                 }
@@ -845,8 +822,8 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
                 HomekitCharacteristic<?> nonNullCharacteristic = Objects.requireNonNull(characteristic);
                 HomekitCharacteristicUpdateEvent updateEvent = new HomekitCharacteristicUpdateEvent((UID) bridgeUID,
                         (UID) nonNullCharacteristic.getUID(), nonNullCharacteristic,
-                        nonNullCharacteristic.toValueJson((State) command),
-                        null, Map.of(), new HomekitEventMetadata(bridgeUID, null, bridgeUID, Set.of()));
+                        nonNullCharacteristic.toValueJson((State) command), null, Map.of(),
+                        new HomekitEventMetadata(bridgeUID, null, bridgeUID, Set.of()));
                 eventManager.publishEvent(updateEvent);
             } catch (Exception e) {
                 logger.error("{}Failed to handle command for item {}: {}", LOG_PREFIX, itemName, e.getMessage(), e);
@@ -937,14 +914,12 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
                 // Handle uncorrelated state change
                 if (exitEvent == null) {
                     logger.debug("{}Processing new state change for item: {}", LOG_PREFIX, itemName);
-                    if (characteristic != null) {
-                        HomekitCharacteristic<?> nonNullCharacteristic = Objects.requireNonNull(characteristic);
-                        HomekitCharacteristicUpdateEvent updateEvent = new HomekitCharacteristicUpdateEvent(
-                                (UID) bridgeUID, (UID) nonNullCharacteristic.getUID(), nonNullCharacteristic,
-                                nonNullCharacteristic.toValueJson(state), null, Map.of(),
-                                new HomekitEventMetadata(bridgeUID, null, bridgeUID, peerGroup));
-                        eventManager.publishEvent(updateEvent);
-                    }
+                    HomekitCharacteristic<?> nonNullCharacteristic = Objects.requireNonNull(characteristic);
+                    HomekitCharacteristicUpdateEvent updateEvent = new HomekitCharacteristicUpdateEvent((UID) bridgeUID,
+                            (UID) nonNullCharacteristic.getUID(), nonNullCharacteristic,
+                            nonNullCharacteristic.toValueJson(state), null, Map.of(),
+                            new HomekitEventMetadata(bridgeUID, null, bridgeUID, peerGroup));
+                    eventManager.publishEvent(updateEvent);
                 }
             } catch (Exception e) {
                 logger.error("{}Failed to handle state update for item {}: {}", LOG_PREFIX, itemName, e.getMessage(),
@@ -975,8 +950,6 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
     private boolean statesEqual(State state1, State state2) {
         if (state1 == state2)
             return true;
-        if (state1 == null || state2 == null)
-            return false;
         return state1.equals(state2);
     }
 

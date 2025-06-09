@@ -105,13 +105,7 @@ public enum HomekitHttpVersion {
      * @return The corresponding HomekitHttpVersion or empty if not found
      */
     public static Optional<HomekitHttpVersion> get(String version) {
-        @SuppressWarnings("null") // Trie.get() has incomplete null annotations
-        HomekitHttpVersion result = CACHE.get(version);
-        if (result == null) {
-            logger.debug("{}Version not found in cache: {}", LOG_STATE, version);
-            return Optional.empty();
-        }
-        return Optional.of(result);
+        return Optional.ofNullable(CACHE.get(version));
     }
 
     /**
@@ -308,13 +302,7 @@ public enum HomekitHttpVersion {
      * @return The corresponding HomekitHttpVersion or empty if not found
      */
     public static Optional<HomekitHttpVersion> fromString(String version) {
-        @SuppressWarnings("null") // Trie.get() has incomplete null annotations
-        HomekitHttpVersion result = CACHE.get(version);
-        if (result == null) {
-            logger.debug("{}Version not found: {}", LOG_STATE, version);
-            return Optional.empty();
-        }
-        return Optional.of(result);
+        return Optional.ofNullable(CACHE.get(version));
     }
 
     /**
@@ -366,13 +354,7 @@ public enum HomekitHttpVersion {
      * @return The best matching HomekitHttpVersion or empty if none found
      */
     public static Optional<HomekitHttpVersion> getBest(ByteBuffer buffer, int i, int remaining) {
-        @SuppressWarnings("null") // Trie.getBest() has incomplete null annotations
-        HomekitHttpVersion result = CACHE.getBest(buffer, i, remaining);
-        if (result == null) {
-            logger.trace("{}No matching version found in buffer", LOG_STATE);
-            return Optional.empty();
-        }
-        return Optional.of(result);
+        return Optional.ofNullable(CACHE.getBest(buffer, i, remaining));
     }
 
     /**

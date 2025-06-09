@@ -560,7 +560,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     public @NonNull String getSetupCode() {
         logger.debug("{}Getting setup code", LOG_CONFIG);
         String currentCode = super.getSetupCode();
-        if (currentCode == null || currentCode.isEmpty()) {
+        if (currentCode.isEmpty()) {
             String newCode;
             if (logger.isDebugEnabled()) {
                 newCode = "123-12-123";

@@ -93,7 +93,6 @@ public abstract class HomekitReadOnlyStringCharacteristic extends AbstractHomeki
      * <ul>
      * <li>{@link HomekitService} for service integration</li>
      * <li>{@link HomekitEventManager} for event handling</li>
-     * <li>{@link HomekitEventType} for event type management</li>
      * </ul>
      *
      * <p>
@@ -130,7 +129,6 @@ public abstract class HomekitReadOnlyStringCharacteristic extends AbstractHomeki
      * <li>{@link javax.json.JsonValue} for configuration parsing</li>
      * <li>{@link HomekitService} for service integration</li>
      * <li>{@link HomekitEventManager} for event handling</li>
-     * <li>{@link HomekitEventType} for event type management</li>
      * </ul>
      *
      * <p>

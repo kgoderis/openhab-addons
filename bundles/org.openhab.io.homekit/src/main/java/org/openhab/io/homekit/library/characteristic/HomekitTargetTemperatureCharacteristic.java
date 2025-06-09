@@ -16,6 +16,7 @@ package org.openhab.io.homekit.library.characteristic;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitFloatCharacteristic;
@@ -62,7 +63,7 @@ public class HomekitTargetTemperatureCharacteristic extends HomekitFloatCharacte
     }
 
     @Override
-    public boolean isAllowedValue(Double value) {
+    public boolean isAllowedValue(@Nullable Double value) {
         return value != null && value >= 10.0 && value <= 38.0;
     }
 

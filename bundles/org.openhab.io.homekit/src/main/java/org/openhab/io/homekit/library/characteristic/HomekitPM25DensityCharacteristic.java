@@ -16,6 +16,7 @@ package org.openhab.io.homekit.library.characteristic;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitFloatCharacteristic;
@@ -63,8 +64,8 @@ public class HomekitPM25DensityCharacteristic extends HomekitFloatCharacteristic
      * @return true if the value is between 0.0 and 1000.0, false otherwise
      */
     @Override
-    public boolean isAllowedValue(Double value) {
-        return value != null && value >= 0.0 && value <= 1000.0;
+    public boolean isAllowedValue(@Nullable Double value) {
+        return value != null && value >= 0.0 && value <= 11000.0;
     }
 
     /**

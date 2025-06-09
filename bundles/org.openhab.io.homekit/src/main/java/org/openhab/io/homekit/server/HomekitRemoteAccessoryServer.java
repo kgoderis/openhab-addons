@@ -390,7 +390,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
     @Override
     public boolean isSecure() {
-        if (httpClient != null && address != null && port != 0) {
+        if (httpClient != null && port != 0) {
             Destination destination = httpClient.getDestination(HTTP_SCHEME, address.getHostAddress(), port);
 
             if (destination instanceof HomekitHttpDestination) {
@@ -510,7 +510,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         logger.debug("{}Current state: {}", LOG_STATE, currentState);
 
         // Validate setup code
-        if (setupCode == null || setupCode.isEmpty()) {
+        if (setupCode.isEmpty()) {
             logger.warn("{}Unable to pair with {}:{} because no setup code is set - Server: {}", LOG_STATE,
                     address.getHostAddress(), port, new String(getPairingId()));
             setState(HomekitAccessoryServerState.MISSING_SETUP_CODE);
@@ -703,11 +703,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             }
 
             // Check for errors in response
-            if (decodeResult == null) {
-                throw new HomekitServerException("No decode result in response");
-            }
-
-            if (decodeResult != null && decodeResult.getBytes(HomekitMessage.ERROR) != null) {
+            if (decodeResult.getBytes(HomekitMessage.ERROR).length > 0) {
                 HomekitErrorCode error = HomekitErrorCode.fromCode(decodeResult.getByte(HomekitMessage.ERROR));
                 logger.warn("{}HomekitAccessory failed to remove pairing: {} - Server: {}", LOG_STATE, error,
                         new String(getPairingId()));
@@ -1163,7 +1159,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             throw new HomekitServerException("No decode result in response");
         }
 
-        if (stageResult != null && stageResult.result != null) {
+        if (stageResult.result != null) {
             short state = decodeResult.getByte(HomekitMessage.STATE);
             if (state != 4) {
                 throw new HomekitServerException("Wrong STATE");
@@ -1239,7 +1235,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
                                     DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(body);
 
-                                    if (d.getBytes(HomekitMessage.ERROR) != null) {
+                                    if (d.getBytes(HomekitMessage.ERROR).length > 0) {
                                         SRP6Session = Optional.empty();
                                         StageResult stageResult = new StageResult(
                                                 HomekitErrorCode.fromCode(d.getByte(HomekitMessage.ERROR)));
@@ -1459,8 +1455,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 characteristic.withEvents(true);
                 return true;
             } else {
-                if (contentResult != null && contentResult.result != null
-                        && contentResult.result.getResponse() != null) {
+                if (contentResult.result != null && contentResult.result.getResponse() != null) {
                     var result = contentResult.result;
                     @SuppressWarnings("null")
                     var response = result.getResponse();

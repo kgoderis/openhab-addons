@@ -19,7 +19,6 @@ import java.util.Queue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.client.AbstractConnectionPool;
 import org.eclipse.jetty.client.HttpDestination;
@@ -33,7 +32,6 @@ import org.eclipse.jetty.util.annotation.ManagedAttribute;
  * 
  * @author Karel Goderis - Initial contribution
  */
-@NonNullByDefault
 public class HomekitConnectionPool extends AbstractConnectionPool {
     private final List<Connection> idleConnections = new CopyOnWriteArrayList<>();
     private final List<Connection> activeConnections = new CopyOnWriteArrayList<>();
@@ -108,13 +106,15 @@ public class HomekitConnectionPool extends AbstractConnectionPool {
     }
 
     @Override
-    @SuppressWarnings("all") // Framework interface compatibility: AbstractConnectionPool interface constraints cannot be overridden
+    @SuppressWarnings("all") // Framework interface compatibility: AbstractConnectionPool interface constraints cannot
+                             // be overridden
     public Queue<Connection> getIdleConnections() {
         return new LinkedBlockingQueue<>(idleConnections);
     }
 
     @Override
-    @SuppressWarnings("all") // Framework interface compatibility: AbstractConnectionPool interface constraints cannot be overridden
+    @SuppressWarnings("all") // Framework interface compatibility: AbstractConnectionPool interface constraints cannot
+                             // be overridden
     public Collection<Connection> getActiveConnections() {
         return new CopyOnWriteArrayList<>(activeConnections);
     }

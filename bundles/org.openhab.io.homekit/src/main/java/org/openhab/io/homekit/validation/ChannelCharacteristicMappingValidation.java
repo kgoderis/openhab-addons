@@ -87,9 +87,8 @@ public class ChannelCharacteristicMappingValidation extends AbstractValidation {
         String serviceUuid = serviceType.type();
 
         // Get all characteristics for this service
-        @SuppressWarnings("null") // service.getCharacteristics() returns non-null set
         Set<HomekitCharacteristic<?>> characteristics = service.getCharacteristics();
-        if (characteristics == null) {
+        if (characteristics.isEmpty()) {
             issues.add(createIssue(ValidationResult.Severity.ERROR,
                     String.format("No characteristics found for service '%s'", serviceName), "NO_CHARACTERISTICS",
                     getContextKey(thing) + ":" + serviceUuid, true, true));

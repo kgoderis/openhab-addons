@@ -15,7 +15,6 @@ package org.openhab.io.homekit.util;
 
 import java.util.function.Supplier;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
@@ -57,7 +56,6 @@ import org.slf4j.LoggerFactory;
  * @version 1.0
  * @since 1.0
  */
-@NonNullByDefault
 public class HomekitServiceTracker<T> implements AutoCloseable, Supplier<T> {
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "Homekit ServiceTracker: ";
@@ -159,6 +157,7 @@ public class HomekitServiceTracker<T> implements AutoCloseable, Supplier<T> {
      * @return The current service instance, or null if not available
      */
     @Override
+    @SuppressWarnings("null") // We check for null and throw exception, ensuring non-null return
     public T get() {
         if (closed) {
             logger.trace("{}Opening service tracker", LOG_SERVICE);
@@ -166,8 +165,10 @@ public class HomekitServiceTracker<T> implements AutoCloseable, Supplier<T> {
             closed = false;
         }
         T service = serviceTracker.getService();
-        logger.trace("{}Retrieved service: {}", LOG_SERVICE,
-                service != null ? service.getClass().getSimpleName() : "null");
+        if (service == null) {
+            throw new IllegalStateException("Service not available");
+        }
+        logger.trace("{}Retrieved service: {}", LOG_SERVICE, service.getClass().getSimpleName());
         return service;
     }
 

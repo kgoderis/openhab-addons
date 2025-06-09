@@ -19,7 +19,6 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryType;
 import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.factory.HomekitServiceFactory;
-import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

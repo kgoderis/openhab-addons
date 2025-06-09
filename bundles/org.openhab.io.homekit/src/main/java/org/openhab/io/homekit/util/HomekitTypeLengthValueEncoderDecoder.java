@@ -120,8 +120,7 @@ public class HomekitTypeLengthValueEncoderDecoder {
                 logger.trace("{}Decoded T {} L {} V {}", LOG_DECODE, messageName, length,
                         HomekitByte.toHexString(part));
             } else {
-                logger.trace("{}Decoded T {} L {} V {}", LOG_DECODE, "unknown", length,
-                        HomekitByte.toHexString(part));
+                logger.trace("{}Decoded T {} L {} V {}", LOG_DECODE, "unknown", length, HomekitByte.toHexString(part));
             }
         }
         return ret;

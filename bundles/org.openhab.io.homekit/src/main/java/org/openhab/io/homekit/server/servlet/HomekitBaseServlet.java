@@ -77,6 +77,8 @@ import org.slf4j.LoggerFactory;
 @NonNullByDefault
 public abstract class HomekitBaseServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 1L;
+
     // ========== Log Message Prefixes ==========
     protected static final Logger logger = LoggerFactory.getLogger(HomekitBaseServlet.class);
     protected static final String LOG_PREFIX = "Homekit BaseServlet: ";

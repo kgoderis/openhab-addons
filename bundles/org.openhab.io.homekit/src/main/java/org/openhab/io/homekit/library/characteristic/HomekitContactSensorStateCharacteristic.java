@@ -16,6 +16,7 @@ package org.openhab.io.homekit.library.characteristic;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.library.types.OpenClosedType;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
@@ -84,7 +85,7 @@ public class HomekitContactSensorStateCharacteristic extends HomekitEnumCharacte
     }
 
     @Override
-    public boolean isAllowedValue(Integer value) {
+    public boolean isAllowedValue(@Nullable Integer value) {
         return value != null && (value == ContactSensorState.CONTACT_DETECTED.getCode()
                 || value == ContactSensorState.CONTACT_NOT_DETECTED.getCode());
     }

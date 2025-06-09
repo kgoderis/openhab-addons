@@ -614,11 +614,9 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
             logger.debug("{}Adding characteristic {} to service", LOG_DEBUG, characteristicTag);
             HomekitCharacteristic<?> characteristic = characteristicFactory
                     .createCharacteristicFromTag(characteristicTag, service);
-            if (characteristic != null) {
-                service.addCharacteristic(characteristic);
-                addCharacteristic(item.getName(), characteristic);
-                subscribeToEvents(characteristic, item);
-            }
+            service.addCharacteristic(characteristic);
+            addCharacteristic(item.getName(), characteristic);
+            subscribeToEvents(characteristic, item);
             logger.debug("{}Successfully added characteristic {} to service", LOG_DEBUG, characteristicTag);
         } catch (Exception e) {
             logger.warn("{}Error creating Homekit characteristic for item {}: {}", LOG_ERROR, item.getName(),
@@ -666,13 +664,11 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
             @SuppressWarnings("null") // get() is safe after isPresent() check
             JsonValue newValue = newValueOpt.get();
             State newState = eventCharacteristic.toState(newValue);
-            if (newState != null) {
-                // Store the exit event
-                exitEvents.put(item.getName(), new ExitEvent(newState, event.getMetadata()));
+            // Store the exit event
+            exitEvents.put(item.getName(), new ExitEvent(newState, event.getMetadata()));
 
-                // Post the state change to OpenHAB
-                eventPublisher.post(ItemEventFactory.createStateEvent(item.getName(), newState));
-            }
+            // Post the state change to OpenHAB
+            eventPublisher.post(ItemEventFactory.createStateEvent(item.getName(), newState));
         }
     }
 
@@ -689,9 +685,6 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      */
     private Optional<HomekitTaggedItem> getPrimaryAccessory(HomekitTaggedItem taggedItem, String serviceType,
             ItemRegistry itemRegistry) {
-        if (taggedItem == null || serviceType == null || itemRegistry == null) {
-            return Optional.empty();
-        }
 
         logger.debug("{}: isGroup? {}, isMember? {}", taggedItem.getName(), taggedItem.isGroup(),
                 taggedItem.isMemberOfAccessoryGroup());
@@ -945,9 +938,6 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      */
     @Override
     public void stateChanged(Item item, State oldState, State newState) {
-        if (item == null || newState == null) {
-            return;
-        }
 
         // Get configuration with proper priority
         Map<String, Object> itemConfiguration = getItemConfiguration(item);
@@ -1009,9 +999,6 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      */
     @Override
     public void stateUpdated(Item item, State state) {
-        if (item == null || state == null) {
-            return;
-        }
 
         // Get configuration with proper priority
         Map<String, Object> itemConfiguration = getItemConfiguration(item);
@@ -1042,8 +1029,6 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     private boolean statesEqual(State state1, State state2) {
         if (state1 == state2)
             return true;
-        if (state1 == null || state2 == null)
-            return false;
 
         // Handle different state types appropriately
         if (state1 instanceof DecimalType && state2 instanceof DecimalType) {

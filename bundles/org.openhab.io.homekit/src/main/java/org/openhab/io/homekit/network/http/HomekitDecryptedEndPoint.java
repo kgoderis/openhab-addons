@@ -613,9 +613,6 @@ public class HomekitDecryptedEndPoint implements EndPoint {
 
     public String toConnectionString() {
         Connection connection = getConnection();
-        if (connection == null) {
-            return "<null>";
-        }
         if (connection instanceof AbstractConnection) {
             return ((AbstractConnection) connection).toConnectionString();
         }

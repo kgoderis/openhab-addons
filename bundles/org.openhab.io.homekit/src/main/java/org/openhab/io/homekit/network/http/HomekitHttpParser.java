@@ -29,7 +29,6 @@ import org.eclipse.jetty.http.HostPortHttpField;
 import org.eclipse.jetty.http.HttpCompliance;
 import org.eclipse.jetty.http.HttpComplianceSection;
 import org.eclipse.jetty.http.HttpField;
-import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpHeaderValue;
 import org.eclipse.jetty.http.HttpMethod;
@@ -941,8 +940,7 @@ public class HomekitHttpParser {
                                 throw new BadMessageException("HTTP/0.9 not supported");
                             }
                             Objects.requireNonNull(_requestHandler).startRequest(Objects.requireNonNull(_methodString),
-                                    _uri.toString(),
-                                    HttpVersion.HTTP_0_9);
+                                    _uri.toString(), HttpVersion.HTTP_0_9);
                             setState(State.CONTENT);
                             _endOfContent = EndOfContent.NO_CONTENT;
                             BufferUtil.clear(buffer);
@@ -984,9 +982,9 @@ public class HomekitHttpParser {
                                 // try quick look ahead for HTTP Version
                                 HomekitHttpVersion version = null;
                                 if (buffer.position() > 0 && buffer.hasArray()) {
-                                    var versionOpt = HomekitHttpVersion
-                                            .lookAheadGet(buffer.array(), buffer.arrayOffset() + buffer.position() - 1,
-                                                    buffer.arrayOffset() + buffer.limit());
+                                    var versionOpt = HomekitHttpVersion.lookAheadGet(buffer.array(),
+                                            buffer.arrayOffset() + buffer.position() - 1,
+                                            buffer.arrayOffset() + buffer.limit());
                                     if (versionOpt.isPresent()) {
                                         @SuppressWarnings("null") // Safe after isPresent() check
                                         HomekitHttpVersion nonNullVersion = versionOpt.get();
@@ -1034,8 +1032,7 @@ public class HomekitHttpParser {
                                 }
 
                                 Objects.requireNonNull(_requestHandler).startRequest(
-                                        Objects.requireNonNull(_methodString), _uri.toString(),
-                                        HttpVersion.HTTP_0_9);
+                                        Objects.requireNonNull(_methodString), _uri.toString(), HttpVersion.HTTP_0_9);
                                 setState(State.CONTENT);
                                 _endOfContent = EndOfContent.NO_CONTENT;
                                 BufferUtil.clear(buffer);
@@ -1072,8 +1069,7 @@ public class HomekitHttpParser {
                             setState(State.HEADER);
 
                             Objects.requireNonNull(_requestHandler).startRequest(Objects.requireNonNull(_methodString),
-                                    _uri.toString(),
-                                    HomekitHttpVersion.convert(Objects.requireNonNull(_version)));
+                                    _uri.toString(), HomekitHttpVersion.convert(Objects.requireNonNull(_version)));
                             continue;
 
                         case ALPHA:
@@ -2230,6 +2226,8 @@ public class HomekitHttpParser {
      * Exception thrown when an illegal character is encountered during parsing.
      */
     private static class IllegalCharacterException extends BadMessageException {
+        private static final long serialVersionUID = 1L;
+
         /**
          * Create a new illegal character exception.
          *

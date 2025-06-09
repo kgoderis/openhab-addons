@@ -110,7 +110,7 @@ public class HomekitPositionStateCharacteristic extends HomekitEnumCharacteristi
     }
 
     @Override
-    public boolean isAllowedValue(Integer value) {
+    public boolean isAllowedValue(@Nullable Integer value) {
         if (value == null) {
             return false;
         }

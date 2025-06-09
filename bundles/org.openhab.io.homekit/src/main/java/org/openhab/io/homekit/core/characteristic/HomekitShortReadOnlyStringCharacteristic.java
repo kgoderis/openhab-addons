@@ -24,7 +24,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.types.State;
-import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.slf4j.Logger;

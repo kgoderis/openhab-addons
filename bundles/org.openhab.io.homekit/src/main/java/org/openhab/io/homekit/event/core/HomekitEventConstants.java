@@ -14,7 +14,6 @@
 package org.openhab.io.homekit.event.core;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.io.homekit.api.event.HomekitEvent;
 
 /**
  * Constants used throughout the HomeKit event system in the OpenHAB HomeKit integration.

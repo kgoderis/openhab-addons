@@ -90,8 +90,8 @@ public class HomekitCarbonDioxideLevelCharacteristic extends HomekitFloatCharact
     }
 
     @Override
-    public boolean isAllowedValue(Double value) {
-        return value != null && value >= 0.0 && value <= 100000.0;
+    public boolean isAllowedValue(@Nullable Double value) {
+        return value != null && value >= 0.0 && value <= 1001000.0;
     }
 
     @Override

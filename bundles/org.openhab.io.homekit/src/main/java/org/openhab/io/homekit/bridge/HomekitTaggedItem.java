@@ -406,8 +406,7 @@ public class HomekitTaggedItem {
      * @return Collection of Homekit tags
      */
     private Collection<String> getHomekitTags(Item item) {
-        Collection<String> tags = useMetadataTags ? getHomekitTagsFromMetaRegistry(item)
-                : getHomekitTagsFromItem(item);
+        Collection<String> tags = useMetadataTags ? getHomekitTagsFromMetaRegistry(item) : getHomekitTagsFromItem(item);
         logger.debug("{}Retrieved {} HomeKit tags for item {}", LOG_CONFIG, tags.size(), item.getName());
         return tags;
     }
@@ -450,7 +449,7 @@ public class HomekitTaggedItem {
                 return isAccessory;
             }
             return false;
-        }).collect(Collectors.<GroupItem>toList());
+        }).collect(Collectors.<GroupItem> toList());
         return result;
     }
 

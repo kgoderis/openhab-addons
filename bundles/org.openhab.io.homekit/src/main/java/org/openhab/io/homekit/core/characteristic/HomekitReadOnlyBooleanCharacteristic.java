@@ -22,7 +22,6 @@ import javax.json.JsonValue.ValueType;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.types.State;
-import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.slf4j.Logger;
@@ -88,7 +87,6 @@ public abstract class HomekitReadOnlyBooleanCharacteristic extends AbstractHomek
      * <ul>
      * <li>{@link HomekitService} for service integration</li>
      * <li>{@link HomekitEventManager} for event handling</li>
-     * <li>{@link HomekitEventType} for event type management</li>
      * </ul>
      *
      * @param service the service this characteristic belongs to
@@ -112,7 +110,6 @@ public abstract class HomekitReadOnlyBooleanCharacteristic extends AbstractHomek
      * <li>{@link javax.json.JsonValue} for configuration parsing</li>
      * <li>{@link HomekitService} for service integration</li>
      * <li>{@link HomekitEventManager} for event handling</li>
-     * <li>{@link HomekitEventType} for event type management</li>
      * </ul>
      *
      * @param service the service this characteristic belongs to

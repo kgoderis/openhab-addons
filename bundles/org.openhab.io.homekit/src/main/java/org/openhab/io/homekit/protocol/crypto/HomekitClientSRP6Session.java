@@ -162,15 +162,11 @@ public class HomekitClientSRP6Session extends SRP6Session implements Serializabl
      * @throws IllegalStateException if called in a state other than INIT
      */
     public void step1(final String userID, final String password) {
-        if (userID == null || userID.trim().isEmpty()) {
+        if (userID.trim().isEmpty()) {
             throw new IllegalArgumentException("The user identity 'I' must not be null or empty");
         }
 
         this.userID = userID;
-
-        if (password == null) {
-            throw new IllegalArgumentException("The user password 'P' must not be null");
-        }
 
         this.password = password;
 
@@ -212,9 +208,6 @@ public class HomekitClientSRP6Session extends SRP6Session implements Serializabl
             throws SRP6Exception {
 
         // Check arguments
-        if (config == null) {
-            throw new IllegalArgumentException("The SRP-6a crypto parameters must not be null");
-        }
 
         this.config = config;
 
@@ -224,15 +217,7 @@ public class HomekitClientSRP6Session extends SRP6Session implements Serializabl
             throw new IllegalArgumentException("Unsupported hash algorithm 'H': " + config.H);
         }
 
-        if (s == null) {
-            throw new IllegalArgumentException("The salt 's' must not be null");
-        }
-
         this.s = s;
-
-        if (B == null) {
-            throw new IllegalArgumentException("The public server value 'B' must not be null");
-        }
 
         this.B = B;
 

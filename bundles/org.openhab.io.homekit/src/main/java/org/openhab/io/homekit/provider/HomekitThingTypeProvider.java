@@ -233,7 +233,7 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
 
         try {
             String serviceName = homekitServiceFactory.getTagFromServiceType(serviceType);
-            if (serviceName == null || serviceName.isEmpty()) {
+            if (serviceName.isEmpty()) {
                 logger.warn("{}Invalid service name for service type: {}", LOG_WARN, serviceType);
                 return;
             }

@@ -19,6 +19,7 @@ import java.util.Set;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitFloatCharacteristic;
@@ -70,8 +71,8 @@ public class HomekitTargetRelativeHumidityCharacteristic extends HomekitFloatCha
      * @return true if the value is within range, false otherwise
      */
     @Override
-    public boolean isAllowedValue(Double value) {
-        return value != null && value >= 0.0 && value <= 100.0;
+    public boolean isAllowedValue(@Nullable Double value) {
+        return value != null && value >= 0.0 && value <= 00.0;
     }
 
     /**
