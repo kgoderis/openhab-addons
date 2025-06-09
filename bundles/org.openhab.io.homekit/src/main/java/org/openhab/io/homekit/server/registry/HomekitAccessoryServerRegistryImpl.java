@@ -321,7 +321,7 @@ public class HomekitAccessoryServerRegistryImpl
             }
         } else {
             try {
-                if (availableServer.getAccessory(1) == null) {
+                if (availableServer.getAccessory(1).isEmpty()) {
                     try {
                         logger.info(
                                 "{}Adding Bridge HomekitAccessory to Server - UID: {}, Type: {}, Port: {}, Setup Code: {}",
@@ -404,7 +404,7 @@ public class HomekitAccessoryServerRegistryImpl
     public void handleAccessoryServerEvent(HomekitAccessoryServerEvent event) {
         switch (event.getType()) {
             case SERVER_STATE_CHANGED -> {
-                if (event.getServer() != null && event.getServer().isPresent()) {
+                if (event.getServer().isPresent()) {
                     @SuppressWarnings("null") // get() is safe after isPresent() check
                     HomekitAccessoryServer server = event.getServer().get();
                     this.update(server);

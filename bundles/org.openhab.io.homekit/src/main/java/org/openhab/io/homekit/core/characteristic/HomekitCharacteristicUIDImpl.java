@@ -111,9 +111,9 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
     public HomekitCharacteristicUIDImpl(String pairingId, long accessoryId, long serviceId, long characteristicId) {
         super(CHARACTERISTIC_PREFIX, "homekit:" + CHARACTERISTIC_PREFIX + ":" + pairingId + ":" + accessoryId + ":"
                 + serviceId + ":" + characteristicId);
-        if (pairingId == null || pairingId.isEmpty()) {
-            logger.error("{}Pairing ID cannot be null or empty", LOG_ERROR);
-            throw new IllegalArgumentException("Pairing ID cannot be null or empty");
+        if (pairingId.isEmpty()) {
+            logger.error("{}Pairing ID cannot be empty", LOG_ERROR);
+            throw new IllegalArgumentException("Pairing ID cannot be empty");
         }
         this.pairingId = pairingId;
         this.accessoryId = accessoryId;

@@ -791,7 +791,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     protected void handleCharacteristicEvent(HomekitCharacteristicEvent event) {
         logger.debug("{}Received characteristic event - Type: {}, HomekitCharacteristic: {}", LOG_EVENT,
                 event.getType(), event.getCharacteristic().getClass().getSimpleName());
-        if (event.getType() == HomekitEventType.CHARACTERISTIC_STATE_CHANGED && event.getCharacteristic() != null
+        if (event.getType() == HomekitEventType.CHARACTERISTIC_STATE_CHANGED && event.getCharacteristic().isPresent()
                 && characteristicServlet != null) {
             characteristicServlet.publishCharacteristicUpdate(event.getCharacteristic().get());
             logger.debug("{}Published characteristic update", LOG_EVENT);

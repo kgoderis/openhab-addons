@@ -72,11 +72,11 @@ public class HomekitEventOriginChecker {
      * @throws IllegalArgumentException if either parameter is null or empty
      */
     public static boolean isOrigin(String eventOrigin, String expectedOrigin) {
-        if (eventOrigin == null || eventOrigin.isEmpty()) {
-            throw new IllegalArgumentException("Event origin cannot be null or empty");
+        if (eventOrigin.isEmpty()) {
+            throw new IllegalArgumentException("Event origin cannot be empty");
         }
-        if (expectedOrigin == null || expectedOrigin.isEmpty()) {
-            throw new IllegalArgumentException("Expected origin cannot be null or empty");
+        if (expectedOrigin.isEmpty()) {
+            throw new IllegalArgumentException("Expected origin cannot be empty");
         }
 
         String[] eventParts = eventOrigin.split(ORIGIN_SEPARATOR);
@@ -107,7 +107,7 @@ public class HomekitEventOriginChecker {
      * @return true if the origin is valid, false otherwise
      */
     public static boolean isValidOrigin(String origin) {
-        if (origin == null || origin.isEmpty()) {
+        if (origin.isEmpty()) {
             return false;
         }
 
@@ -318,7 +318,7 @@ public class HomekitEventOriginChecker {
         }
 
         // Check if this component has already processed a correlated event
-        if (event.getMetadata().getCorrelationId() != null) {
+        if (event.getMetadata().getCorrelationId().isPresent()) {
             // This would require tracking processed correlation IDs per component
             // Implementation depends on your specific needs
         }

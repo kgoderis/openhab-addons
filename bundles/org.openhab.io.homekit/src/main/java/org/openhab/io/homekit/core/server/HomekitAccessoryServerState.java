@@ -98,17 +98,13 @@ public class HomekitAccessoryServerState {
      */
     private HomekitAccessoryServerState(String name, String description, HomekitEventType eventType,
             boolean isTransient) {
-        if (name == null || name.isEmpty()) {
-            logger.error("{}State name cannot be null or empty", LOG_ERROR);
-            throw new IllegalArgumentException("State name cannot be null or empty");
+        if (name.isEmpty()) {
+            logger.error("{}State name cannot be empty", LOG_ERROR);
+            throw new IllegalArgumentException("State name cannot be empty");
         }
-        if (description == null || description.isEmpty()) {
-            logger.error("{}State description cannot be null or empty", LOG_ERROR);
-            throw new IllegalArgumentException("State description cannot be null or empty");
-        }
-        if (eventType == null) {
-            logger.error("{}Event type cannot be null", LOG_ERROR);
-            throw new IllegalArgumentException("Event type cannot be null");
+        if (description.isEmpty()) {
+            logger.error("{}State description cannot be empty", LOG_ERROR);
+            throw new IllegalArgumentException("State description cannot be empty");
         }
 
         this.name = name;

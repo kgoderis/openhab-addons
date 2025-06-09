@@ -116,7 +116,7 @@ public class ServiceTypeValidation extends AbstractValidation {
     private boolean isValidServiceUuid(String uuid) {
         // TODO: Implement UUID format validation
         // This should validate that the UUID follows the HomeKit service UUID format
-        return uuid != null && uuid.matches("^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$");
+        return uuid.matches("^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$");
     }
 
     private boolean isServiceTypeCompatible(HomekitServiceType serviceType, Thing thing) {

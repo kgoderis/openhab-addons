@@ -147,6 +147,11 @@ public enum HomekitTypeLengthValue {
      * @return true if the type code is known, false otherwise
      */
     public static boolean isKnownType(int type) {
-        return fromType(type) != null;
+        try {
+            fromType(type);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 }

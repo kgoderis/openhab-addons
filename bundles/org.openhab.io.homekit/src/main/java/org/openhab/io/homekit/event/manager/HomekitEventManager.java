@@ -323,7 +323,6 @@ public class HomekitEventManager {
             boolean queued = false;
             while (!queued && isRunning.get()) {
                 if (eventQueue.size() >= MAX_QUEUE_SIZE) {
-                    @SuppressWarnings("null") // Queue.poll() can return null but we check for it
                     HomekitEvent oldestEvent = eventQueue.poll();
                     if (oldestEvent != null) {
                         logger.warn("{}Event queue is full, oldest event discarded: type={}, timestamp={}", LOG_QUEUE,
@@ -452,9 +451,8 @@ public class HomekitEventManager {
                     default -> HomekitEvent.class;
                 };
 
-        HomekitEventSubscription subscription = subscriberUID != null
-                ? new HomekitEventSubscription(eventType, publisherUID, subscriberUID, subscriber, eventClass)
-                : new HomekitEventSubscription(eventType, publisherUID, subscriber, eventClass);
+        HomekitEventSubscription subscription = new HomekitEventSubscription(eventType, publisherUID, subscriberUID,
+                subscriber, eventClass);
         if (subscriptions.add(subscription)) {
             publishEvent(new HomekitSubscriptionAddedEvent(subscription));
             logger.debug("{}Subscriber added for event type {} and source UID {}", LOG_SUBSCRIBER, eventType,
@@ -942,11 +940,7 @@ public class HomekitEventManager {
             }
 
             // Check if subscriber is still valid (using WeakReference)
-            if (sub.subscriber == null) {
-                isOrphaned = true;
-                logger.warn("{}Orphaned subscription detected - Subscriber for publisher {} is no longer valid",
-                        LOG_WARN, sub.publisherUID);
-            }
+            // Note: subscriber field is @NonNull, so no null check needed
 
             // Check for idle subscriptions (no events in last hour)
             if (currentTime - sub.getLastEventTime() > TimeUnit.HOURS.toMillis(1)) {

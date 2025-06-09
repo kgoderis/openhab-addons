@@ -118,9 +118,9 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
      */
     public HomekitAccessoryServerUIDImpl(String pairingId) {
         super(SERVER_PREFIX, "homekit:" + SERVER_PREFIX + ":" + pairingId);
-        if (pairingId == null || pairingId.isEmpty()) {
-            logger.error("{}Pairing ID cannot be null or empty", LOG_ERROR);
-            throw new IllegalArgumentException("Pairing ID cannot be null or empty");
+        if (pairingId.isEmpty()) {
+            logger.error("{}Pairing ID cannot be empty", LOG_ERROR);
+            throw new IllegalArgumentException("Pairing ID cannot be empty");
         }
         this.pairingId = pairingId;
         logger.trace("{}Created server UID with pairing ID: {}", LOG_UID, pairingId);

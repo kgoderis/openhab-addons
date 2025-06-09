@@ -180,7 +180,7 @@ public class HomekitAccessoryServlet extends HomekitBaseServlet {
         JsonArrayBuilder accessories = Json.createArrayBuilder();
 
         try {
-            if (server != null && server.getAccessories() != null) {
+            if (server != null) {
                 @SuppressWarnings("null") // getAccessories() returns non-null list
                 var serverAccessories = server.getAccessories();
                 for (HomekitAccessory accessory : serverAccessories) {

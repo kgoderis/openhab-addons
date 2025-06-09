@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.Thing;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
@@ -88,9 +87,8 @@ public class CharacteristicTypeValidation extends AbstractValidation {
         String serviceUuid = serviceType.type();
 
         // Get all characteristics for this service
-        @NonNull
         Set<HomekitCharacteristic<?>> characteristics = service.getCharacteristics();
-        if (characteristics == null) {
+        if (characteristics.isEmpty()) {
             issues.add(createIssue(ValidationResult.Severity.ERROR,
                     String.format("No characteristics found for service '%s'", serviceName), "NO_CHARACTERISTICS",
                     getContextKey(thing) + ":" + serviceUuid, true, true));
@@ -159,7 +157,7 @@ public class CharacteristicTypeValidation extends AbstractValidation {
     private boolean isValidCharacteristicUuid(String uuid) {
         // TODO: Implement UUID format validation
         // This should validate that the UUID follows the HomeKit characteristic UUID format
-        return uuid != null && uuid.matches("^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$");
+        return uuid.matches("^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$");
     }
 
     private boolean isCharacteristicTypeCompatible(HomekitCharacteristicType characteristicType,
@@ -177,9 +175,8 @@ public class CharacteristicTypeValidation extends AbstractValidation {
             return false;
         }
 
-        @NonNull
         Set<HomekitCharacteristic<?>> characteristics = service.getCharacteristics();
-        if (characteristics == null) {
+        if (characteristics.isEmpty()) {
             return false;
         }
 

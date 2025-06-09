@@ -77,9 +77,6 @@ public class HomekitByteBufferOutputStream extends OutputStream {
      * @throws IllegalArgumentException if wrappedBuffer is null
      */
     public HomekitByteBufferOutputStream(final ByteBuffer wrappedBuffer, final boolean autoEnlarge) {
-        if (wrappedBuffer == null) {
-            throw new IllegalArgumentException("Buffer cannot be null");
-        }
         logger.trace("{}Creating stream with buffer: {}, autoEnlarge: {}", LOG_INIT,
                 BufferUtil.toSummaryString(wrappedBuffer), autoEnlarge);
         this.wrappedBuffer = wrappedBuffer;

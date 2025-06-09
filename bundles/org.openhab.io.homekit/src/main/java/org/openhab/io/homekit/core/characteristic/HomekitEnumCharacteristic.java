@@ -181,8 +181,7 @@ public abstract class HomekitEnumCharacteristic extends AbstractHomekitCharacter
         } else if (value == JsonValue.FALSE) {
             return 0;
         } else {
-            throw new IndexOutOfBoundsException(
-                    "Cannot convert " + (value != null ? value.getClass() : "null") + " to Integer");
+            throw new IndexOutOfBoundsException("Cannot convert " + value.getClass() + " to Integer");
         }
     }
 

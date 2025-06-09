@@ -125,9 +125,6 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
         super(HttpVersion.HTTP_1_1.asString(), "HOMEKIT");
         this.config = config;
         httpCompliance = compliance == null ? HttpCompliance.RFC7230 : compliance;
-        if (config == null) {
-            throw new IllegalArgumentException("Null HttpConfiguration");
-        }
         addBean(config);
     }
 

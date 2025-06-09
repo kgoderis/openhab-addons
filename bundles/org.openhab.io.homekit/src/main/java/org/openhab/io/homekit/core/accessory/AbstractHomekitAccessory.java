@@ -381,9 +381,7 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
         if (serviceFactory.supportsServiceType(serviceType)) {
             try {
                 HomekitService service = serviceFactory.createService(serviceType, this);
-                if (service != null) {
-                    return Optional.of(service);
-                }
+                return Optional.of(service);
             } catch (Exception e) {
                 logger.error("{}Error creating service: {}", LOG_ERROR, e.getMessage(), e);
             }
@@ -748,11 +746,9 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
 
         // Compare each service
         for (int i = 0; i < thisServices.size(); i++) {
-            @Nullable
             HomekitService thisService = thisServices.get(i);
-            @Nullable
             HomekitService thatService = thatServices.get(i);
-            if (thisService != null && thatService != null && !thisService.equals(thatService))
+            if (!thisService.equals(thatService))
                 return false;
         }
 
@@ -811,13 +807,10 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
 
         // Compare each service
         for (int i = 0; i < thisServices.size(); i++) {
-            @Nullable
             HomekitService thisService = thisServices.get(i);
-            if (thisService != null) {
-                int serviceCompare = thisService.compareTo(thatServices.get(i));
-                if (serviceCompare != 0)
-                    return serviceCompare;
-            }
+            int serviceCompare = thisService.compareTo(thatServices.get(i));
+            if (serviceCompare != 0)
+                return serviceCompare;
         }
 
         return 0;

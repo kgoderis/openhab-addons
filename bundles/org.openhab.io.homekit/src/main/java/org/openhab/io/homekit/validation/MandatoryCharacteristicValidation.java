@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.Thing;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
@@ -88,9 +87,8 @@ public class MandatoryCharacteristicValidation extends AbstractValidation {
         String serviceUuid = serviceType.type();
 
         // Get all characteristics for this service
-        @NonNull
         Set<HomekitCharacteristic<?>> characteristics = service.getCharacteristics();
-        if (characteristics == null) {
+        if (characteristics.isEmpty()) {
             issues.add(createIssue(ValidationResult.Severity.ERROR,
                     String.format("No characteristics found for service '%s'", serviceName), "NO_CHARACTERISTICS",
                     getContextKey(thing) + ":" + serviceUuid, true, true));
@@ -106,8 +104,8 @@ public class MandatoryCharacteristicValidation extends AbstractValidation {
         List<String> mandatoryCharacteristics = mandatoryCharacteristicsOpt.get();
 
         // Check each mandatory characteristic
-        for (String characteristicName : mandatoryCharacteristics) {
-            validateMandatoryCharacteristic(characteristicName, characteristics, service, thing, issues);
+        for (String mandatoryCharacteristic : mandatoryCharacteristics) {
+            validateMandatoryCharacteristic(mandatoryCharacteristic, characteristics, service, thing, issues);
         }
     }
 

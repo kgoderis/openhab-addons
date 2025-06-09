@@ -75,7 +75,11 @@ public class HomekitTargetFanStateCharacteristic extends HomekitEnumCharacterist
     @Override
     public boolean isAllowedValue(@Nullable Integer value) {
         try {
-            return value != null && TargetFanState.fromValue(value) != null;
+            if (value == null) {
+                return false;
+            }
+            TargetFanState.fromValue(value);
+            return true;
         } catch (IllegalArgumentException e) {
             return false;
         }

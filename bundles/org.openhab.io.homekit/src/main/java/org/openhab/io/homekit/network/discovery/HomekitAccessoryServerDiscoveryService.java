@@ -413,7 +413,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
 
                 try {
                     for (HomekitAccessory accessory : server.getAccessories()) {
-                        if (accessoryRegistry != null && accessoryRegistry.get(accessory.getUID()) == null) {
+                        if (accessoryRegistry.get(accessory.getUID()) == null) {
                             logger.debug("{}Registering new accessory {} in registry", LOG_ACCESSORY,
                                     accessory.getUID());
                             accessoryRegistry.add(accessory);
@@ -566,7 +566,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
 
             try {
                 for (HomekitAccessory accessory : server.getAccessories()) {
-                    if (accessoryRegistry != null && accessoryRegistry.get(accessory.getUID()) == null) {
+                    if (accessoryRegistry.get(accessory.getUID()) == null) {
                         logger.debug("{}Registering new accessory {} in registry", LOG_ACCESSORY, accessory.getUID());
                         accessoryRegistry.add(accessory);
                         try {
@@ -779,7 +779,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
         logger.debug("{}Creating thing from accessory {} on server {}", LOG_ACCESSORY, accessory.getUID(),
                 server.getUID());
 
-        if (autoCreateServiceThing && homekitThingTypeProvider != null) {
+        if (autoCreateServiceThing) {
             Map<String, Object> properties = new HashMap<>();
 
             Collection<HomekitService> services = accessory.getServices();

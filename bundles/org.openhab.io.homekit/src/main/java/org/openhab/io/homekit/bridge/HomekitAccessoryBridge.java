@@ -608,20 +608,18 @@ public class HomekitAccessoryBridge implements EventSubscriber {
         characteristics.forEach((type, config) -> {
             try {
                 HomekitCharacteristic<?> characteristic = characteristicFactory.createCharacteristic(type, service);
-                if (characteristic != null) {
-                    // Apply characteristic configuration
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> charConfig = (Map<String, Object>) config;
-                    applyCharacteristicConfig(characteristic, charConfig);
+                // Apply characteristic configuration
+                @SuppressWarnings("unchecked")
+                Map<String, Object> charConfig = (Map<String, Object>) config;
+                applyCharacteristicConfig(characteristic, charConfig);
 
-                    // Add to service
-                    service.addCharacteristic(characteristic);
-                    characteristicMap.put(characteristic.getUID().toString(), characteristic);
+                // Add to service
+                service.addCharacteristic(characteristic);
+                characteristicMap.put(characteristic.getUID().toString(), characteristic);
 
-                    // Set up event subscription and track it
-                    HomekitEventSubscription subscription = subscribeToCharacteristicEvents(characteristic);
-                    eventSubscriptions.add(subscription);
-                }
+                // Set up event subscription and track it
+                HomekitEventSubscription subscription = subscribeToCharacteristicEvents(characteristic);
+                eventSubscriptions.add(subscription);
             } catch (Exception e) {
                 logger.error("{}Failed to create characteristic {}: {}", LOG_PREFIX, type, e.getMessage());
             }
@@ -863,46 +861,41 @@ public class HomekitAccessoryBridge implements EventSubscriber {
             HomekitCharacteristic<Object> typedCharacteristic = (HomekitCharacteristic<Object>) characteristic;
             JsonValue jsonValue = typedCharacteristic.toValueJson(value);
 
-            if (jsonValue != null) {
-                // Check if state has actually changed
-                @Nullable
-                ExitEvent exitEvent = exitEvents.get(itemName);
-                if (exitEvent != null && !exitEvent.isExpired() && statesEqual(value, exitEvent.getState())) {
-                    logger.debug("{}State unchanged for item {}, skipping event processing", LOG_STATE, itemName);
-                    return;
-                }
+            // Check if state has actually changed
+            @Nullable
+            ExitEvent exitEvent = exitEvents.get(itemName);
+            if (exitEvent != null && !exitEvent.isExpired() && statesEqual(value, exitEvent.getState())) {
+                logger.debug("{}State unchanged for item {}, skipping event processing", LOG_STATE, itemName);
+                return;
+            }
 
-                logger.debug("{}Successfully converted value {} to HomeKit format for item {}", LOG_STATE, value,
+            logger.debug("{}Successfully converted value {} to HomeKit format for item {}", LOG_STATE, value, itemName);
+
+            // Check for exit event correlation
+            if (exitEvent != null && !exitEvent.isExpired()) {
+                logger.debug("{}Found valid exit event correlation for item {}, using existing metadata", LOG_STATE,
                         itemName);
 
-                // Check for exit event correlation
-                if (exitEvent != null && !exitEvent.isExpired()) {
-                    logger.debug("{}Found valid exit event correlation for item {}, using existing metadata", LOG_STATE,
-                            itemName);
-
-                    // Use the metadata from the exit event to prevent loops
-                    HomekitCharacteristicUpdateEvent updateEvent = new HomekitCharacteristicUpdateEvent(characteristic,
-                            null, // old value
-                            jsonValue, Collections.emptyMap(), exitEvent.getMetadata());
-                    eventManager.publishEvent(updateEvent);
-                    exitEvents.remove(itemName);
-                    statisticsCollector.recordEvent(System.currentTimeMillis() - exitEvent.getTimestamp());
-                    logger.debug("{}Published correlated update event for item {}", LOG_STATE, itemName);
-                } else {
-                    logger.debug("{}No valid exit event correlation found for item {}, creating new metadata",
-                            LOG_STATE, itemName);
-
-                    // Create new metadata for uncorrelated event
-                    HomekitEventMetadata metadata = new HomekitEventMetadata((UID) bridgeUID, null, (UID) bridgeUID,
-                            peerGroup);
-                    HomekitCharacteristicUpdateEvent updateEvent = new HomekitCharacteristicUpdateEvent(characteristic,
-                            null, // old value
-                            jsonValue, Collections.emptyMap(), metadata);
-                    eventManager.publishEvent(updateEvent);
-                    logger.debug("{}Published uncorrelated update event for item {}", LOG_STATE, itemName);
-                }
+                // Use the metadata from the exit event to prevent loops
+                HomekitCharacteristicUpdateEvent updateEvent = new HomekitCharacteristicUpdateEvent(characteristic,
+                        null, // old value
+                        jsonValue, Collections.emptyMap(), exitEvent.getMetadata());
+                eventManager.publishEvent(updateEvent);
+                exitEvents.remove(itemName);
+                statisticsCollector.recordEvent(System.currentTimeMillis() - exitEvent.getTimestamp());
+                logger.debug("{}Published correlated update event for item {}", LOG_STATE, itemName);
             } else {
-                logger.warn("{}Failed to convert value {} to HomeKit format for item {}", LOG_WARN, value, itemName);
+                logger.debug("{}No valid exit event correlation found for item {}, creating new metadata", LOG_STATE,
+                        itemName);
+
+                // Create new metadata for uncorrelated event
+                HomekitEventMetadata metadata = new HomekitEventMetadata((UID) bridgeUID, null, (UID) bridgeUID,
+                        peerGroup);
+                HomekitCharacteristicUpdateEvent updateEvent = new HomekitCharacteristicUpdateEvent(characteristic,
+                        null, // old value
+                        jsonValue, Collections.emptyMap(), metadata);
+                eventManager.publishEvent(updateEvent);
+                logger.debug("{}Published uncorrelated update event for item {}", LOG_STATE, itemName);
             }
         } catch (Exception e) {
             logger.error("{}Failed to handle event for item {} with value {}: {}", LOG_ERROR, itemName, value,

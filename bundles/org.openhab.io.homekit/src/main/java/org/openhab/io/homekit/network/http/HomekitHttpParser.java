@@ -29,6 +29,7 @@ import org.eclipse.jetty.http.HostPortHttpField;
 import org.eclipse.jetty.http.HttpCompliance;
 import org.eclipse.jetty.http.HttpComplianceSection;
 import org.eclipse.jetty.http.HttpField;
+import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpHeaderValue;
 import org.eclipse.jetty.http.HttpMethod;
@@ -405,11 +406,11 @@ public class HomekitHttpParser {
     }
 
     public HomekitHttpParser(RequestHandler handler, int maxHeaderBytes, HttpCompliance compliance) {
-        this(handler, null, maxHeaderBytes, compliance == null ? compliance() : compliance);
+        this(handler, null, maxHeaderBytes, compliance);
     }
 
     public HomekitHttpParser(ResponseHandler handler, int maxHeaderBytes, HttpCompliance compliance) {
-        this(null, handler, maxHeaderBytes, compliance == null ? compliance() : compliance);
+        this(null, handler, maxHeaderBytes, compliance);
     }
 
     private HomekitHttpParser(@Nullable RequestHandler requestHandler, @Nullable ResponseHandler responseHandler,

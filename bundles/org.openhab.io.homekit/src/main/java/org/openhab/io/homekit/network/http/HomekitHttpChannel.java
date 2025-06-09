@@ -322,14 +322,10 @@ public class HomekitHttpChannel extends HttpChannelOverHTTP {
         this.encryptionKey = encryptionKey;
 
         HomekitHttpSender sender = getHttpSender();
-        if (sender != null) {
-            sender.setEncryptionKey(encryptionKey);
-        }
+        sender.setEncryptionKey(encryptionKey);
 
         HomekitHttpReceiver receiver = getHttpReceiver();
-        if (receiver != null) {
-            receiver.setDecryptionKey(decryptionKey);
-        }
+        receiver.setDecryptionKey(decryptionKey);
 
         logger.info("{}Encryption keys configured successfully", LOG_CONFIG);
     }

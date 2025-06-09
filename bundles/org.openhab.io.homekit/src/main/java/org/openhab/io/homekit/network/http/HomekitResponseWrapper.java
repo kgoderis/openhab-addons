@@ -162,11 +162,7 @@ public class HomekitResponseWrapper extends HttpServletResponseWrapper {
     public ServletOutputStream getOutputStream() throws IOException {
         if (this.outputStream == null) {
             ServletOutputStream responseStream = getResponse().getOutputStream();
-            if (responseStream != null) {
-                this.outputStream = new ResponseServletOutputStream(responseStream);
-            } else {
-                throw new IOException("ServletOutputStream is null");
-            }
+            this.outputStream = new ResponseServletOutputStream(responseStream);
         }
         ServletOutputStream currentStream = this.outputStream;
         if (currentStream != null) {

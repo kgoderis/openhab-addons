@@ -789,8 +789,8 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      */
     @Override
     public void removePairing(byte @NonNull [] pairingId) throws HomekitServerException {
-        if (pairingId == null || pairingId.length == 0) {
-            String error = "HomekitPairing ID cannot be null or empty";
+        if (pairingId.length == 0) {
+            String error = "HomekitPairing ID cannot be empty";
             logger.error("{}HomekitPairing validation error: {}", LOG_ERROR, error);
             throw new HomekitServerException(error);
         }

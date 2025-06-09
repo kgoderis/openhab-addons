@@ -177,8 +177,7 @@ public class HomekitAccessoryEvent extends AbstractHomekitEvent {
      */
     public HomekitAccessoryEvent(HomekitEventType type, HomekitAccessory accessory, HomekitAccessoryUID oldUid,
             HomekitAccessoryUID newUid, HomekitEventMetadata metadata) {
-        super(type, accessory != null ? (UID) accessory.getUID() : (UID) new HomekitUID("accessory"),
-                HomekitUID.WILDCARD_UID, metadata);
+        super(type, (UID) accessory.getUID(), HomekitUID.WILDCARD_UID, metadata);
         this.accessory = Optional.ofNullable(accessory);
         this.service = Optional.empty();
         this.characteristic = Optional.empty();

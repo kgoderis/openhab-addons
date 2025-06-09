@@ -77,7 +77,11 @@ public class HomekitTargetHumidifierDehumidifierStateCharacteristic extends Home
     @Override
     public boolean isAllowedValue(@Nullable Integer value) {
         try {
-            return value != null && TargetHumidifierDehumidifierState.fromValue(value) != null;
+            if (value == null) {
+                return false;
+            }
+            TargetHumidifierDehumidifierState.fromValue(value);
+            return true;
         } catch (IllegalArgumentException e) {
             return false;
         }

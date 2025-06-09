@@ -74,7 +74,11 @@ public class HomekitTemperatureDisplayUnitsCharacteristic extends HomekitEnumCha
     @Override
     public boolean isAllowedValue(@Nullable Integer value) {
         try {
-            return value != null && TemperatureDisplayUnits.fromValue(value) != null;
+            if (value == null) {
+                return false;
+            }
+            TemperatureDisplayUnits.fromValue(value);
+            return true;
         } catch (IllegalArgumentException e) {
             return false;
         }

@@ -87,7 +87,7 @@ public abstract class AbstractValidation implements Validation {
      * Subclasses should override this method to provide meaningful context keys.
      */
     protected String getContextKey(Object object) {
-        return object != null ? object.getClass().getSimpleName() : "null";
+        return object.getClass().getSimpleName();
     }
 
     /**

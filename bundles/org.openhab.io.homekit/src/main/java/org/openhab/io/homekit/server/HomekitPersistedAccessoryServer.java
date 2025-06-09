@@ -263,7 +263,7 @@ public class HomekitPersistedAccessoryServer {
      * @return A collection of accessory UIDs
      */
     public Collection<String> getAccessoryUIDs() {
-        if (accessories == null || accessories.isEmpty()) {
+        if (accessories.isEmpty()) {
             return Collections.emptyList();
         }
         return Arrays.asList(accessories.split(";"));

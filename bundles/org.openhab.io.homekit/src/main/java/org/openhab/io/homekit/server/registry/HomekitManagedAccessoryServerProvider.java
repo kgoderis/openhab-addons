@@ -247,22 +247,20 @@ public class HomekitManagedAccessoryServerProvider extends
             logger.info("{}Server restored successfully - UID: {}, Setup Code: {}", LOG_STATE, server.getUID(),
                     server.getSetupCode());
 
-            if (accessoryRegistry != null) {
-                Collection<String> accessoryUIDs = persistableElement.getAccessoryUIDs();
-                logger.debug("{}Restoring {} accessories", LOG_ACCESSORY, accessoryUIDs.size());
-                for (String accessoryUID : accessoryUIDs) {
-                    HomekitAccessory accessory = accessoryRegistry.get(new HomekitAccessoryUIDImpl(accessoryUID));
-                    if (accessory != null) {
-                        try {
-                            server.addAccessory(accessory);
-                            logger.debug("{}Accessory restored - UID: {}", LOG_ACCESSORY, accessoryUID);
-                        } catch (HomekitAccessoryOperationException e) {
-                            logger.error("{}Failed to restore accessory {}: {}", LOG_ERROR, accessoryUID,
-                                    e.getMessage(), e);
-                        }
-                    } else {
-                        logger.warn("{}Accessory not found in registry - UID: {}", LOG_WARN, accessoryUID);
+            Collection<String> accessoryUIDs = persistableElement.getAccessoryUIDs();
+            logger.debug("{}Restoring {} accessories", LOG_ACCESSORY, accessoryUIDs.size());
+            for (String accessoryUID : accessoryUIDs) {
+                HomekitAccessory accessory = accessoryRegistry.get(new HomekitAccessoryUIDImpl(accessoryUID));
+                if (accessory != null) {
+                    try {
+                        server.addAccessory(accessory);
+                        logger.debug("{}Accessory restored - UID: {}", LOG_ACCESSORY, accessoryUID);
+                    } catch (HomekitAccessoryOperationException e) {
+                        logger.error("{}Failed to restore accessory {}: {}", LOG_ERROR, accessoryUID, e.getMessage(),
+                                e);
                     }
+                } else {
+                    logger.warn("{}Accessory not found in registry - UID: {}", LOG_WARN, accessoryUID);
                 }
             }
 

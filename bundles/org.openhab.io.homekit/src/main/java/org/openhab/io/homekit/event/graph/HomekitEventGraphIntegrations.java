@@ -149,34 +149,32 @@ public class HomekitEventGraphIntegrations {
      * @throws RuntimeException if event subscriber registration fails
      */
     public void registerEventListeners() {
-        if (eventPublisher != null) {
-            EventSubscriber subscriber = new EventSubscriber() {
-                @Override
-                public void receive(Event event) {
-                    if (event instanceof HomekitEventGraphUpdatedEvent) {
-                        HomekitEventGraphUpdatedEvent graphEvent = (HomekitEventGraphUpdatedEvent) event;
-                        eventGraph.addNode(graphEvent.getNodeId());
-                        eventGraph.addEdge(graphEvent.getNodeId(), graphEvent.getEdgeId());
+        EventSubscriber subscriber = new EventSubscriber() {
+            @Override
+            public void receive(Event event) {
+                if (event instanceof HomekitEventGraphUpdatedEvent) {
+                    HomekitEventGraphUpdatedEvent graphEvent = (HomekitEventGraphUpdatedEvent) event;
+                    eventGraph.addNode(graphEvent.getNodeId());
+                    eventGraph.addEdge(graphEvent.getNodeId(), graphEvent.getEdgeId());
 
-                        if (eventGraph.hasCycle()) {
-                            eventPublisher.post(new HomekitEventCycleDetectedEvent(eventGraph.getCyclePath()));
-                        }
+                    if (eventGraph.hasCycle()) {
+                        eventPublisher.post(new HomekitEventCycleDetectedEvent(eventGraph.getCyclePath()));
                     }
                 }
-
-                @Override
-                public Set<String> getSubscribedEventTypes() {
-                    return Set.of(HomekitEventGraphUpdatedEvent.TYPE);
-                }
-            };
-
-            // Register the subscriber using the appropriate method
-            try {
-                eventPublisher.getClass().getMethod("addEventSubscriber", EventSubscriber.class).invoke(eventPublisher,
-                        subscriber);
-            } catch (Exception e) {
-                logger.warn("Failed to register event subscriber: {}", e.getMessage());
             }
+
+            @Override
+            public Set<String> getSubscribedEventTypes() {
+                return Set.of(HomekitEventGraphUpdatedEvent.TYPE);
+            }
+        };
+
+        // Register the subscriber using the appropriate method
+        try {
+            eventPublisher.getClass().getMethod("addEventSubscriber", EventSubscriber.class).invoke(eventPublisher,
+                    subscriber);
+        } catch (Exception e) {
+            logger.warn("Failed to register event subscriber: {}", e.getMessage());
         }
     }
 

@@ -87,9 +87,6 @@ public class HomekitProtocolHandler implements ProtocolHandler {
      * @throws IllegalArgumentException if server is null
      */
     public HomekitProtocolHandler(HomekitRemoteAccessoryServer server) {
-        if (server == null) {
-            throw new IllegalArgumentException("HomeKit server cannot be null");
-        }
         this.server = server;
         logger.debug("{}Initialized with server instance", LOG_INIT);
     }

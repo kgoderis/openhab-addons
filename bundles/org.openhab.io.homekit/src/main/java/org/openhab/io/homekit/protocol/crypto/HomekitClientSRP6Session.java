@@ -318,12 +318,6 @@ public class HomekitClientSRP6Session extends SRP6Session implements Serializabl
      */
     public void step3(final BigInteger M2) throws SRP6Exception {
 
-        // Check argument
-
-        if (M2 == null) {
-            throw new IllegalArgumentException("The server evidence message 'M2' must not be null");
-        }
-
         this.M2 = M2;
 
         // Check current state

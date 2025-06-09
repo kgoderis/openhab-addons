@@ -235,10 +235,6 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
      * @throws HomekitException if there is an error creating the channel group or if the service is null
      */
     protected void addChannelGroupForService(HomekitService service) throws HomekitException {
-        if (service == null) {
-            return;
-        }
-
         try {
             String serviceTag = serviceFactory.getTagFromServiceType(service.getType());
             String groupId = serviceTag + "." + service.getInstanceId();

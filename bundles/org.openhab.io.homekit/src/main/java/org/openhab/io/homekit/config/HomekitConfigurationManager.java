@@ -154,9 +154,6 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
 
     @Modified
     protected void modified(Map<String, Object> config) {
-        if (config == null) {
-            return;
-        }
 
         config.forEach((key, value) -> {
             String[] parts = key.split("\\.");
@@ -228,8 +225,8 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
      * @throws IllegalArgumentException if the UID string is null, empty, or invalid
      */
     private UID convertToUID(String uidString, ConfigurationType type) {
-        if (uidString == null || uidString.isEmpty()) {
-            throw new IllegalArgumentException("UID string cannot be null or empty");
+        if (uidString.isEmpty()) {
+            throw new IllegalArgumentException("UID string cannot be empty");
         }
 
         // Handle wildcard UIDs

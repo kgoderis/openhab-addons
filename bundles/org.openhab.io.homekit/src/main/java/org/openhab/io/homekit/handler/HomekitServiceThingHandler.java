@@ -359,7 +359,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
         @SuppressWarnings("null") // Configuration.get() returns Object, safe to cast to String
         String serviceIdFromConfig = (String) config.get(CONFIG_SERVICE_ID);
         this.serviceId = serviceIdFromConfig;
-        if (serviceId == null || serviceId.trim().isEmpty()) {
+        if (serviceId.trim().isEmpty()) {
             throw new IllegalArgumentException("Configuration must contain a valid serviceId");
         }
     }

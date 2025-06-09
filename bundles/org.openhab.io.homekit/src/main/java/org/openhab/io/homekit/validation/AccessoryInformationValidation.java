@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.Thing;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
@@ -107,7 +106,6 @@ public class AccessoryInformationValidation extends AbstractValidation {
         String serviceUuid = serviceType.type();
 
         // Get all characteristics for this service
-        @NonNull
         Set<HomekitCharacteristic<?>> characteristics = service.getCharacteristics();
         if (characteristics == null) {
             issues.add(createIssue(ValidationResult.Severity.ERROR,

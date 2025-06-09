@@ -60,7 +60,7 @@ public class HomekitLockControlPointCharacteristic extends HomekitTLV8Characteri
 
     @Override
     protected byte[] encodeTLV8(Map<Integer, Object> value) {
-        if (value == null || value.isEmpty()) {
+        if (value.isEmpty()) {
             return new byte[0];
         }
 
@@ -72,7 +72,7 @@ public class HomekitLockControlPointCharacteristic extends HomekitTLV8Characteri
 
     @Override
     protected Map<Integer, Object> decodeTLV8(byte[] data) {
-        if (data == null || data.length == 0) {
+        if (data.length == 0) {
             return Collections.emptyMap();
         }
 

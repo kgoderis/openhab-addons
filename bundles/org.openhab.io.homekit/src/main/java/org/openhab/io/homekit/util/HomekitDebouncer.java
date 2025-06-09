@@ -95,10 +95,6 @@ public class HomekitDebouncer {
      */
     public HomekitDebouncer(String name, ScheduledExecutorService scheduler, Duration delay, Clock clock,
             Runnable action) {
-        if (name == null || scheduler == null || delay == null || clock == null || action == null) {
-            throw new IllegalArgumentException("All parameters must be non-null");
-        }
-
         logger.trace("{}Creating debouncer '{}' with delay {}ms", LOG_INIT, name, delay.toMillis());
 
         this.name = name;

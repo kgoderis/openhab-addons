@@ -398,7 +398,7 @@ public class HomekitPassthroughBridge {
 
             // Only bridge if accessory belongs to a remote accessory server (not a local
             // server)
-            if (remoteServer == null || isLocalServer(remoteServer)) {
+            if (isLocalServer(remoteServer)) {
                 logger.debug("{}Accessory {} is not from a remote server, skipping bridging", LOG_PREFIX,
                         accessory.getUID());
                 return;
@@ -540,11 +540,8 @@ public class HomekitPassthroughBridge {
         logger.debug("{}Looking for available local server", LOG_STATE);
         Optional<HomekitAccessoryServer> server = serverRegistry.getAvailableBridgeAccessoryServer();
         if (server.isPresent()) {
-            @Nullable
             HomekitAccessoryServer localServer = server.get();
-            if (localServer != null) {
-                logger.debug("{}Found available local server {}", LOG_STATE, localServer.getUID());
-            }
+            logger.debug("{}Found available local server {}", LOG_STATE, localServer.getUID());
         } else {
             logger.warn("{}No available local server found", LOG_WARN);
         }
@@ -645,10 +642,8 @@ public class HomekitPassthroughBridge {
         logger.info("{}Disposing HomeKit Passthrough Bridge", LOG_INIT);
 
         // Unsubscribe from all event subscriptions
-        if (eventSubscriptions != null) {
-            logger.debug("{}Unsubscribing from {} event subscriptions", LOG_STATE, eventSubscriptions.size());
-            eventSubscriptions.forEach(eventManager::unsubscribe);
-        }
+        logger.debug("{}Unsubscribing from {} event subscriptions", LOG_STATE, eventSubscriptions.size());
+        eventSubscriptions.forEach(eventManager::unsubscribe);
 
         // Unbridge all accessories
         logger.debug("{}Unbridging {} accessories", LOG_STATE, bridgedAccessories.size());

@@ -263,9 +263,9 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
      */
     public void initializeValue() {
         if (initialValue != null) {
-            // Use explicit conditional logic to help compiler with null analysis
-            JsonValue valueToConvert = initialValue;
-            T convertedValue = toValue(valueToConvert);
+            // Use Objects.requireNonNull to satisfy null-safety constraints
+            JsonValue safeValue = Objects.requireNonNull(initialValue, "initialValue cannot be null");
+            T convertedValue = toValue(safeValue);
             this.value = convertedValue;
             initialValue = null;
         } else {
@@ -484,9 +484,8 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
      * @param candidate the value to return if non-null
      * @return the value if non-null, otherwise the default value
      */
-    @SuppressWarnings("null") // Comprehensive suppression for Eclipse generic type analysis limitations
     private T returnSafeValue(@Nullable T candidate) {
-        return candidate;
+        return candidate != null ? candidate : getDefault();
     }
 
     /**
@@ -514,7 +513,6 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
             throw new Exception("Cannot modify a readonly characteristic");
         }
         try {
-            @SuppressWarnings("null") // toValue implementation guarantees non-null result
             T convertedValue = toValue(jsonValue);
             if (!isAllowedValue(convertedValue)) {
                 throw new IllegalArgumentException(
@@ -533,7 +531,6 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
             throw new Exception("Cannot modify a readonly characteristic");
         }
         try {
-            @SuppressWarnings("null") // toValue implementation guarantees non-null result
             T convertedValue = toValue(value, conversionMap);
             if (!isAllowedValue(convertedValue)) {
                 throw new IllegalArgumentException(

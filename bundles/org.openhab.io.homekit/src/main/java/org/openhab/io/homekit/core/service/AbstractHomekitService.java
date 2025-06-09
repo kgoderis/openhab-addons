@@ -371,9 +371,6 @@ public abstract class AbstractHomekitService implements HomekitService {
      */
     @Override
     public void addCharacteristic(HomekitCharacteristic<?> characteristic) throws HomekitServiceException {
-        if (characteristic == null) {
-            throw new HomekitServiceException("Characteristic cannot be null");
-        }
         if (!isExtensible()) {
             throw new HomekitServiceException("Service is not extensible");
         }
@@ -413,10 +410,6 @@ public abstract class AbstractHomekitService implements HomekitService {
      */
     @Override
     public boolean removeCharacteristic(HomekitCharacteristic<?> characteristic) throws HomekitServiceException {
-        if (characteristic == null) {
-            return false;
-        }
-
         // Check if this is a mandatory characteristic
         if (characteristic.isMandatory()) {
             throw new HomekitServiceException("Cannot remove mandatory characteristic: " + characteristic.getType());
@@ -469,9 +462,7 @@ public abstract class AbstractHomekitService implements HomekitService {
             try {
                 HomekitCharacteristic<?> characteristic = characteristicFactory.createCharacteristic(characteristicType,
                         this);
-                if (characteristic != null) {
-                    return Optional.of(characteristic);
-                }
+                return Optional.of(characteristic);
             } catch (HomekitFactoryException e) {
                 logger.error("{}Error creating characteristic: {}", LOG_ERROR, e.getMessage());
                 return Optional.empty();

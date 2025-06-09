@@ -186,9 +186,6 @@ public class HomekitItemConfigParser {
      * @throws NullPointerException if configStr is null
      */
     private Map<String, Object> parseConfigParameters(String configStr) {
-        if (configStr == null) {
-            throw new NullPointerException("configStr cannot be null");
-        }
         logger.debug("{}Parsing configuration parameters: {}", LOG_PARSE, configStr);
         Map<String, Object> params = new HashMap<>();
 
@@ -247,9 +244,6 @@ public class HomekitItemConfigParser {
      * @throws NullPointerException if item is null
      */
     public Map<String, Object> getFilteredConfig(Item item) {
-        if (item == null) {
-            throw new NullPointerException("item cannot be null");
-        }
         logger.debug("{}Getting filtered configuration for item {}", LOG_CONFIG, item.getName());
         Map<String, Object> fullConfig = parseItemConfig(item);
         Map<String, Object> filteredConfig = new HashMap<>();
