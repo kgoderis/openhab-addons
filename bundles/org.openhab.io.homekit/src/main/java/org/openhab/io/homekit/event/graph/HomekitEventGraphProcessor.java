@@ -106,9 +106,20 @@ public class HomekitEventGraphProcessor {
         addNode(sourceId);
         addNode(targetId);
 
-        graph.get(sourceId).add(targetId);
-        nodes.get(sourceId).outgoingEdges.add(targetId);
-        nodes.get(targetId).incomingEdges.add(sourceId);
+        Set<String> sourceEdges = graph.get(sourceId);
+        if (sourceEdges != null) {
+            sourceEdges.add(targetId);
+        }
+
+        EventProcessingNode sourceNode = nodes.get(sourceId);
+        if (sourceNode != null) {
+            sourceNode.outgoingEdges.add(targetId);
+        }
+
+        EventProcessingNode targetNode = nodes.get(targetId);
+        if (targetNode != null) {
+            targetNode.incomingEdges.add(sourceId);
+        }
 
         String edgeId = sourceId + "->" + targetId;
         edgeMetadata.computeIfAbsent(edgeId, k -> new HashMap<>());

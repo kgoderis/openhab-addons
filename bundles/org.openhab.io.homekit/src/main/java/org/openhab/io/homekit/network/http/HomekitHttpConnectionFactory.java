@@ -13,6 +13,8 @@
 
 package org.openhab.io.homekit.network.http;
 
+import java.net.InetSocketAddress;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.http.HttpCompliance;
@@ -244,10 +246,14 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
         logger.trace("{}Creating a new connection for Endpoint {} {}", LOG_STATE,
                 endPoint.getRemoteAddress().toString(), endPoint.toString());
 
-        String sessionId = sessionHandler != null
-                ? sessionHandler.getSessionId(endPoint.getRemoteAddress().getAddress().getHostAddress().toString() + ":"
-                        + endPoint.getRemoteAddress().getPort())
-                : null;
+        String sessionId = null;
+        if (sessionHandler != null) {
+            InetSocketAddress remoteAddress = endPoint.getRemoteAddress();
+            if (remoteAddress != null && remoteAddress.getAddress() != null) {
+                sessionId = sessionHandler
+                        .getSessionId(remoteAddress.getAddress().getHostAddress() + ":" + remoteAddress.getPort());
+            }
+        }
 
         if (sessionId != null && sessionHandler != null) {
             logger.trace("{}Fetching Session {} {}", LOG_STATE, endPoint.getRemoteAddress().toString(), sessionId);
@@ -261,11 +267,12 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
             }
 
             if (session != null) {
-                if (session.getAttribute("Control-Read-Encryption-Key") != null) {
+                Object readKey = session.getAttribute("Control-Read-Encryption-Key");
+                Object writeKey = session.getAttribute("Control-Write-Encryption-Key");
+                if (readKey != null && writeKey != null) {
                     HomekitDecryptedEndPoint appEndPoint = new HomekitDecryptedEndPoint(endPoint,
-                            connector.getExecutor(), connector.getByteBufferPool(), isDirectBuffers(),
-                            (byte[]) session.getAttribute("Control-Read-Encryption-Key"),
-                            (byte[]) session.getAttribute("Control-Write-Encryption-Key"));
+                            connector.getExecutor(), connector.getByteBufferPool(), isDirectBuffers(), (byte[]) readKey,
+                            (byte[]) writeKey);
 
                     HomekitHttpConnection appConnection = new HomekitHttpConnection(config, connector, appEndPoint,
                             httpCompliance, isRecordHttpComplianceViolations());

@@ -186,8 +186,8 @@ public class HomekitTaggedItem {
                                               // element
                     GroupItem firstGroup = matchingGroupItems.get(0);
                     parentGroupItem = firstGroup;
-                    logger.debug("{}Item {} belongs to accessory group {}", LOG_CONFIG, item.getName(),
-                            parentGroupItem != null ? parentGroupItem.getName() : "unknown");
+                    String groupName = parentGroupItem != null ? parentGroupItem.getName() : "unknown";
+                    logger.debug("{}Item {} belongs to accessory group {}", LOG_CONFIG, item.getName(), groupName);
                 }
                 default -> { // Belongs to more than one accessory group
                     throw new BadItemConfigurationException(
@@ -361,8 +361,8 @@ public class HomekitTaggedItem {
      * @return The root device group item, or null if the item is not in a group
      */
     public @Nullable GroupItem getRootDeviceGroupItem() {
-        logger.debug("{}Getting root device group for item {}: {}", LOG_CONFIG, item.getName(),
-                parentGroupItem != null ? parentGroupItem.getName() : "none");
+        String groupName = parentGroupItem != null ? parentGroupItem.getName() : "none";
+        logger.debug("{}Getting root device group for item {}: {}", LOG_CONFIG, item.getName(), groupName);
         return parentGroupItem;
     }
 

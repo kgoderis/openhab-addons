@@ -84,14 +84,14 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
 
     // ========== Configuration Fields ==========
     /** ID of the HomeKit service being managed */
-    private String serviceId = "";
+    private Optional<String> serviceId = Optional.empty();
 
     // ========== Component References and Locks ==========
     /** Lock for synchronizing service access */
     private final Object serviceLock = new Object();
 
     /** Reference to the HomeKit service being managed */
-    private @Nullable HomekitService service;
+    private Optional<HomekitService> service = Optional.empty();
 
     // ========== State Management ==========
     /** Flag indicating whether the service is available */
@@ -208,7 +208,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
         String serviceTag = null;
         Optional<HomekitService> currentServiceOpt = getService();
         if (currentServiceOpt.isEmpty()) {
-            throw new IllegalArgumentException("No HomekitService found for serviceId: " + serviceId);
+            throw new IllegalArgumentException("No HomekitService found for serviceId: " + serviceId.orElse(""));
         }
         @SuppressWarnings("null") // Optional.get() is safe after isEmpty() check
         HomekitService currentService = currentServiceOpt.get();
@@ -329,18 +329,17 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
      */
     @Override
     protected void handleSpecificDispose() {
-        // No additional cleanup needed for service handler
         synchronized (serviceLock) {
-            if (service != null) {
+            service.ifPresent(s -> {
                 try {
-                    tearDownSubscriptionsForPublisher((UID) service.getUID());
+                    tearDownSubscriptionsForPublisher((UID) s.getUID());
                     logger.debug("{}Removed service change listener", LOG_CLEANUP);
                 } catch (Exception e) {
                     logger.warn("{}Failed to remove service change listener: {}", LOG_CLEANUP, e.getMessage());
                 }
-                service = null;
-                serviceAvailable = false;
-            }
+            });
+            service = Optional.empty();
+            serviceAvailable = false;
         }
     }
 
@@ -355,13 +354,11 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
      */
     @Override
     protected void validateSpecificConfiguration(Configuration config) {
-        // No additional validation needed for service handler
-        @SuppressWarnings("null") // Configuration.get() returns Object, safe to cast to String
         String serviceIdFromConfig = (String) config.get(CONFIG_SERVICE_ID);
-        this.serviceId = serviceIdFromConfig;
-        if (serviceId.trim().isEmpty()) {
+        if (serviceIdFromConfig == null || serviceIdFromConfig.trim().isEmpty()) {
             throw new IllegalArgumentException("Configuration must contain a valid serviceId");
         }
+        this.serviceId = Optional.of(serviceIdFromConfig.trim());
     }
 
     /**
@@ -447,7 +444,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
             characteristicMap.clear();
         }
         synchronized (serviceLock) {
-            service = null;
+            service = Optional.empty();
         }
         updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.GONE, "HomekitService removed");
     }
@@ -595,10 +592,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
     @Override
     protected Set<HomekitCharacteristic<?>> getCurrentCharacteristics() {
         synchronized (serviceLock) {
-            if (service != null) {
-                return service.getCharacteristics();
-            }
-            return Collections.emptySet();
+            return service.map(HomekitService::getCharacteristics).orElse(Collections.emptySet());
         }
     }
 
@@ -632,15 +626,15 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
     @SuppressWarnings("null")
     protected boolean validateCharacteristicBelongsToHandler(HomekitCharacteristic<?> characteristic) {
         HomekitService charService = characteristic.getService();
-        if (charService == null || service == null) {
+        if (charService == null || service.isEmpty()) {
             return false;
         }
 
-        if (charService.getUID() == null || service.getUID() == null) {
+        if (charService.getUID() == null || service.get().getUID() == null) {
             return false;
         }
 
-        return charService.getUID().equals(service.getUID());
+        return charService.getUID().equals(service.get().getUID());
     }
 
     /**
@@ -652,8 +646,8 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
     protected void performSpecificRecovery() throws Exception {
         // No additional recovery steps needed for service handler
         synchronized (serviceLock) {
-            if (service == null && accessory != null) {
-                Optional<HomekitService> foundService = accessory.getService(serviceId);
+            if (service.isEmpty() && accessory != null) {
+                Optional<HomekitService> foundService = accessory.getService(serviceId.orElse(""));
                 if (foundService.isPresent()) {
                     @SuppressWarnings("null") // isPresent() check ensures get() is safe
                     HomekitService recoveredService = foundService.get();
@@ -678,22 +672,19 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
      */
     protected Optional<HomekitService> getService() {
         synchronized (serviceLock) {
-            if (service != null) {
-                return Optional.ofNullable(service);
-            }
-            return Optional.empty();
+            return service;
         }
     }
 
     /**
      * Sets the current service.
      * 
-     * @param service The service to set, or null to clear the current service
+     * @param newService The service to set, or null to clear the current service
      */
-    protected void setService(@Nullable HomekitService service) {
+    protected void setService(@Nullable HomekitService newService) {
         synchronized (serviceLock) {
-            this.service = service;
-            serviceAvailable = (service != null);
+            service = Optional.ofNullable(newService);
+            serviceAvailable = newService != null;
         }
         synchronizeChannels();
     }

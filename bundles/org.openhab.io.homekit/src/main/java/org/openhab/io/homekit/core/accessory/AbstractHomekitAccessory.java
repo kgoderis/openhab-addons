@@ -489,8 +489,9 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
         JsonObjectBuilder builder = Json.createObjectBuilder().add("services", jsonServices);
 
         // Always include AID in JSON to maintain consistency across reboots
-        if (accessoryId != null) {
-            builder.add("aid", accessoryId.longValue());
+        Long currentAccessoryId = accessoryId;
+        if (currentAccessoryId != null) {
+            builder.add("aid", currentAccessoryId.longValue());
         }
 
         return builder.build();
@@ -518,8 +519,9 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
         JsonObjectBuilder builder = Json.createObjectBuilder().add("services", jsonServices);
 
         // Always include AID in reduced JSON to maintain consistency
-        if (accessoryId != null) {
-            builder.add("aid", accessoryId.longValue());
+        Long currentAccessoryId = accessoryId;
+        if (currentAccessoryId != null) {
+            builder.add("aid", currentAccessoryId.longValue());
         }
 
         return builder.build();

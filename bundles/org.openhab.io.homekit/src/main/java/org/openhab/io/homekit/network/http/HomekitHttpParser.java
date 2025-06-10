@@ -630,6 +630,9 @@ public class HomekitHttpParser {
         byte ch = buffer.get();
 
         HttpTokens.Token t = HttpTokens.TOKENS[0xff & ch];
+        if (t == null) {
+            throw new IllegalArgumentException("Invalid token at character: " + ch);
+        }
 
         switch (t.getType()) {
             case CNTL:

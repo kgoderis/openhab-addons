@@ -1660,16 +1660,18 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         private @Nullable ScheduledExecutorService executor;
 
         public void start() {
-            executor = ThreadPoolManager.getScheduledPool("homekit");
-            if (executor != null) {
+            ScheduledExecutorService newExecutor = ThreadPoolManager.getScheduledPool("homekit");
+            if (newExecutor != null) {
+                executor = newExecutor;
                 scheduledTask = executor.scheduleAtFixedRate(this::printStatistics, STATISTICS_REPORT_INTERVAL_SECONDS,
                         STATISTICS_REPORT_INTERVAL_SECONDS, TimeUnit.SECONDS);
             }
         }
 
         public void stop() {
-            if (scheduledTask != null) {
-                scheduledTask.cancel(false);
+            ScheduledFuture<?> currentTask = scheduledTask;
+            if (currentTask != null) {
+                currentTask.cancel(false);
                 scheduledTask = null;
             }
             executor = null;
@@ -1708,7 +1710,8 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
                 int[] deciles = new int[11];
                 for (int i = 0; i <= 10; i++) {
                     int index = (int) Math.round(i * (sortedTimes.size() - 1) / 10.0);
-                    deciles[i] = Objects.requireNonNull(sortedTimes.get(index)).intValue();
+                    Long value = sortedTimes.get(index);
+                    deciles[i] = value != null ? value.intValue() : 0;
                 }
 
                 // Build histogram
@@ -1725,10 +1728,13 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
                             (int) percentage, count));
                 }
 
-                @SuppressWarnings("null") // sortedTimes.get() is safe as empty list check is done above
                 Long minTime = sortedTimes.get(0);
-                @SuppressWarnings("null") // sortedTimes.get() is safe as empty list check is done above
                 Long maxTime = sortedTimes.get(sortedTimes.size() - 1);
+
+                if (minTime == null)
+                    minTime = 0L;
+                if (maxTime == null)
+                    maxTime = 0L;
 
                 logger.info(
                         "Exit Event Statistics (based on {} events):\n" + "Mean: {:.2f} ms\n" + "Std Dev: {:.2f} ms\n"

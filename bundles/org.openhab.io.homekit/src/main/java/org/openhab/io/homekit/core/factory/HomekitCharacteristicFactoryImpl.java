@@ -25,7 +25,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
+import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
 import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
+import org.openhab.io.homekit.api.factory.HomekitServiceFactory;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.exception.HomekitFactoryException;
@@ -595,6 +597,9 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
         logger.trace("{}Returning accepted item types for characteristic type: {}", LOG_TRACE, characteristicType);
         @SuppressWarnings("null") // getAnnotation() can return null, but characteristicClass is already validated above
         HomekitCharacteristicType annotation = characteristicClass.getAnnotation(HomekitCharacteristicType.class);
+        if (annotation == null) {
+            return Collections.emptySet();
+        }
         return Collections.unmodifiableSet(new HashSet<>(Arrays.asList(annotation.acceptedItemTypes())));
     }
 }

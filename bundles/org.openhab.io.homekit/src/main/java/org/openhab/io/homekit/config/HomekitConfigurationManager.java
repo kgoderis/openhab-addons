@@ -803,9 +803,10 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
             case EVENT -> eventConfigs;
         };
 
-        @SuppressWarnings("null") // computeIfAbsent guarantees non-null return value
         Map<String, Object> config = configs.computeIfAbsent(uid, k -> new HashMap<>());
-        config.put(key, value);
+        if (config != null) {
+            config.put(key, value);
+        }
         storeConfigs(uid, type);
     }
 

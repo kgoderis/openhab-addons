@@ -601,10 +601,10 @@ public class HomekitDecryptedEndPoint implements EndPoint {
         int di = b == null ? -1 : b.remaining();
 
         Class<?> c = getClass();
-        String name = c.getSimpleName();
-        while (name.length() == 0 && c.getSuperclass() != null) {
+        String name = c != null ? c.getSimpleName() : "Unknown";
+        while (name.length() == 0 && c != null && c.getSuperclass() != null) {
             c = c.getSuperclass();
-            name = c.getSimpleName();
+            name = c != null ? c.getSimpleName() : "Unknown";
         }
 
         return String.format("%s~>%s@%h{encryptedInputBuffer=%d,encryptedOutputBuffer=%d,decryptedInputBuffer=%d}",

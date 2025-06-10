@@ -403,8 +403,8 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
             }
 
             if (currentStatus != status || currentStatusDetail != detail
-                    || (currentStatusDescription == null && description != null)
-                    || (currentStatusDescription != null && !currentStatusDescription.equals(description))) {
+                    || (currentStatusDescription == null && description != null) || (currentStatusDescription != null
+                            && description != null && !currentStatusDescription.equals(description))) {
 
                 currentStatus = status;
                 currentStatusDetail = detail;

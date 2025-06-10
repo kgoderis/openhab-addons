@@ -508,18 +508,20 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
 
         subscribers.forEach(context -> {
             // Add update to pending list
-            @SuppressWarnings("null") // computeIfAbsent with non-null function guarantees non-null result
             List<JsonObject> updates = pendingUpdates.computeIfAbsent(context, k -> new ArrayList<>());
-            updates.add(update);
+            if (updates != null) {
+                updates.add(update);
+            }
 
             // Create or get debouncer for this context
-            @SuppressWarnings("null") // computeIfAbsent with non-null function guarantees non-null result
             HomekitDebouncer debouncer = debouncers.computeIfAbsent(context,
                     k -> new HomekitDebouncer("Homekit-Updates-" + context.hashCode(), scheduler, DEBOUNCE_DELAY,
                             Clock.systemUTC(), () -> sendBatchedUpdates(context)));
 
             // Trigger debounced send
-            debouncer.call();
+            if (debouncer != null) {
+                debouncer.call();
+            }
         });
     }
 

@@ -200,7 +200,8 @@ public class HomekitRequestLogHandler extends RequestLogHandler {
         final String userAgent = request.getHeader("User-Agent");
         logger.debug("{}Processing request from {}:{}", LOG_REQUEST, request.getRemoteAddr(), request.getRemotePort());
         logger.debug("{}User-Agent: {}", LOG_REQUEST, userAgent);
-        logger.debug("{}Method: {}", LOG_REQUEST, request.getMethod().toUpperCase());
+        String method = request.getMethod();
+        logger.debug("{}Method: {}", LOG_REQUEST, method != null ? method.toUpperCase() : "UNKNOWN");
         logger.debug("{}Content-Type: {}", LOG_REQUEST, request.getContentType());
         logger.debug("{}URI: {}", LOG_REQUEST, request.getRequestURI());
         logger.debug("{}Query: {}", LOG_REQUEST, request.getQueryString());

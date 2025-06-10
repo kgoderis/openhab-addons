@@ -1213,7 +1213,7 @@ public class HomekitAccessoryBridge implements EventSubscriber {
                 for (int i = 0; i <= 10; i++) {
                     int index = (int) Math.round(i * (sortedTimes.size() - 1) / 10.0);
                     Long value = sortedTimes.get(index);
-                    deciles[i] = value.intValue();
+                    deciles[i] = value != null ? value.intValue() : 0;
                 }
 
                 // Build histogram

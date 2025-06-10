@@ -778,7 +778,9 @@ public class HomekitHttpGenerator extends HttpGenerator {
                 if (version == null) {
                     throw new BadMessageException(500, "No version");
                 }
-                switch (version) {
+                @SuppressWarnings("null") // version is checked for null above
+                HttpVersion checkedVersion = version;
+                switch (checkedVersion) {
                     case HTTP_1_0:
                         if (_persistent == null) {
                             _persistent = Boolean.FALSE;
@@ -794,7 +796,7 @@ public class HomekitHttpGenerator extends HttpGenerator {
                     default:
                         _persistent = false;
                         _endOfContent = EndOfContent.EOF_CONTENT;
-                        if (BufferUtil.hasContent(content) && content != null) {
+                        if (content != null && BufferUtil.hasContent(content)) {
                             _contentPrepared += content.remaining();
                         }
                         _state = last ? State.COMPLETING : State.COMMITTED;

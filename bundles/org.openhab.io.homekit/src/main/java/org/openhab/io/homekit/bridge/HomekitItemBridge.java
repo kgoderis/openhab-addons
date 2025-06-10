@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.ThreadPoolManager;
 import org.openhab.core.events.EventPublisher;
 import org.openhab.core.items.GroupItem;
@@ -319,10 +318,11 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      */
     private void addCharacteristic(String itemName, HomekitCharacteristic<?> characteristic) {
         synchronized (characteristicLock) {
-            @SuppressWarnings("null") // computeIfAbsent guarantees non-null return value
             Collection<HomekitCharacteristic<?>> characteristics = characteristicMap.computeIfAbsent(itemName,
                     k -> new ArrayList<>());
-            characteristics.add(characteristic);
+            if (characteristics != null) {
+                characteristics.add(characteristic);
+            }
         }
     }
 
@@ -719,12 +719,13 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                     @SuppressWarnings("null")
                     String tag = tagOpt.get();
                     if (characteristicItems.containsKey(tag)) {
-                        @SuppressWarnings("null") // characteristicItems.get(tag) is safe because containsKey(tag) check
-                                                  // guarantees presence
                         Item existingItem = characteristicItems.get(tag);
-                        logger.warn("incorrect configuration for {} detected: {} and {} are tagged as {}, skipping {}",
-                                taggedItem.getItem().getUID(), existingItem.getUID(), item.getUID(), tag,
-                                item.getUID());
+                        if (existingItem != null) {
+                            logger.warn(
+                                    "incorrect configuration for {} detected: {} and {} are tagged as {}, skipping {}",
+                                    taggedItem.getItem().getUID(), existingItem.getUID(), item.getUID(), tag,
+                                    item.getUID());
+                        }
                     } else {
                         characteristicItems.put(tag, item);
                     }
@@ -1133,8 +1134,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
         private final List<Long> eventTimes = new ArrayList<>();
         private final Object lock = new Object();
 
-        private @Nullable ScheduledFuture<?> scheduledTask = null;
-        private @Nullable ScheduledExecutorService executor = null;
+        private Optional<ScheduledFuture<?>> scheduledTask = Optional.empty();
+        private Optional<ScheduledExecutorService> executor = Optional.empty();
 
         /**
          * Starts the statistics collector.
@@ -1143,10 +1144,11 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
          * @since 1.0.0
          */
         public void start() {
-            executor = ThreadPoolManager.getScheduledPool("homekit");
-            if (executor != null) {
-                scheduledTask = executor.scheduleAtFixedRate(this::printStatistics, STATISTICS_REPORT_INTERVAL_SECONDS,
-                        STATISTICS_REPORT_INTERVAL_SECONDS, TimeUnit.SECONDS);
+            ScheduledExecutorService newExecutor = ThreadPoolManager.getScheduledPool("homekit");
+            if (newExecutor != null) {
+                executor = Optional.of(newExecutor);
+                scheduledTask = Optional.of(executor.get().scheduleAtFixedRate(this::printStatistics,
+                        STATISTICS_REPORT_INTERVAL_SECONDS, STATISTICS_REPORT_INTERVAL_SECONDS, TimeUnit.SECONDS));
             }
         }
 
@@ -1157,11 +1159,11 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
          * @since 1.0.0
          */
         public void stop() {
-            if (scheduledTask != null) {
-                scheduledTask.cancel(false);
-            }
-            scheduledTask = null;
-            executor = null;
+            scheduledTask.ifPresent(task -> {
+                task.cancel(false);
+                scheduledTask = Optional.empty();
+            });
+            executor = Optional.empty();
         }
 
         /**
@@ -1214,9 +1216,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                 int[] deciles = new int[11];
                 for (int i = 0; i <= 10; i++) {
                     int index = (int) Math.round(i * (sortedTimes.size() - 1) / 10.0);
-                    @SuppressWarnings("null") // sortedTimes.get(index) is safe as index is calculated within bounds
                     Long timeValue = sortedTimes.get(index);
-                    deciles[i] = timeValue.intValue();
+                    deciles[i] = timeValue != null ? timeValue.intValue() : 0;
                 }
 
                 // Build histogram
@@ -1233,10 +1234,13 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                             (int) percentage, count));
                 }
 
-                @SuppressWarnings("null") // sortedTimes.get() is safe as empty list check is done above
                 Long minTime = sortedTimes.get(0);
-                @SuppressWarnings("null") // sortedTimes.get() is safe as empty list check is done above
                 Long maxTime = sortedTimes.get(sortedTimes.size() - 1);
+
+                if (minTime == null)
+                    minTime = 0L;
+                if (maxTime == null)
+                    maxTime = 0L;
 
                 logger.info(
                         "Exit Event Statistics (based on {} events):\n" + "Mean: {:.2f} ms\n" + "Std Dev: {:.2f} ms\n"
@@ -1254,12 +1258,11 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      */
     @SuppressWarnings("null") // Stream.filter(Objects::nonNull) guarantees non-null items in result
     public Collection<Item> getItems() {
-        return accessoryMap.keySet().stream().map(itemName -> {
-            @SuppressWarnings("null") // itemRegistry.get() can return null, which is handled by
-                                      // filter(Objects::nonNull)
-            Item item = itemRegistry.get(itemName);
-            return item;
-        }).filter(Objects::nonNull).collect(Collectors.toList());
+        return accessoryMap.keySet().stream()
+                .map(itemName -> Optional.ofNullable(itemRegistry.get(itemName)))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
     }
 
     /**

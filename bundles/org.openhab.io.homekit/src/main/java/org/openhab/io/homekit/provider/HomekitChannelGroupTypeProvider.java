@@ -222,43 +222,45 @@ public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypePro
             List<ChannelDefinition> channelDefinitions = new ArrayList<>();
 
             // Process mandatory characteristics
-            @SuppressWarnings("null") // Map.get() return type interpretation
             Set<String> mandatoryCharacteristics = characteristicTypes.get("mandatory");
-            for (String characteristicType : mandatoryCharacteristics) {
-                logger.debug("{}Processing mandatory characteristic: {}", LOG_TYPE, characteristicType);
-                String characteristicTag = characteristicFactory.getTagFromCharacteristicType(characteristicType);
-                if (characteristicTag.isEmpty()) {
-                    logger.warn("{}Invalid characteristic tag for type: {}", LOG_WARN, characteristicType);
-                    continue;
+            if (mandatoryCharacteristics != null) {
+                for (String characteristicType : mandatoryCharacteristics) {
+                    logger.debug("{}Processing mandatory characteristic: {}", LOG_TYPE, characteristicType);
+                    String characteristicTag = characteristicFactory.getTagFromCharacteristicType(characteristicType);
+                    if (characteristicTag.isEmpty()) {
+                        logger.warn("{}Invalid characteristic tag for type: {}", LOG_WARN, characteristicType);
+                        continue;
+                    }
+
+                    ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
+                            characteristicType);
+
+                    channelDefinitions.add(new ChannelDefinitionBuilder(characteristicTag, channelTypeUID)
+                            .withLabel(characteristicTag)
+                            .withDescription("HomeKit " + characteristicTag + " Characteristic (Mandatory)").build());
+                    logger.debug("{}Added mandatory channel definition for: {}", LOG_TYPE, characteristicTag);
                 }
-
-                ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
-                        characteristicType);
-
-                channelDefinitions.add(new ChannelDefinitionBuilder(characteristicTag, channelTypeUID)
-                        .withLabel(characteristicTag)
-                        .withDescription("HomeKit " + characteristicTag + " Characteristic (Mandatory)").build());
-                logger.debug("{}Added mandatory channel definition for: {}", LOG_TYPE, characteristicTag);
             }
 
             // Process optional characteristics
-            @SuppressWarnings("null") // Map.get() return type interpretation
             Set<String> optionalCharacteristics = characteristicTypes.get("optional");
-            for (String characteristicType : optionalCharacteristics) {
-                logger.debug("{}Processing optional characteristic: {}", LOG_TYPE, characteristicType);
-                String characteristicTag = characteristicFactory.getTagFromCharacteristicType(characteristicType);
-                if (characteristicTag.isEmpty()) {
-                    logger.warn("{}Invalid characteristic tag for type: {}", LOG_WARN, characteristicType);
-                    continue;
+            if (optionalCharacteristics != null) {
+                for (String characteristicType : optionalCharacteristics) {
+                    logger.debug("{}Processing optional characteristic: {}", LOG_TYPE, characteristicType);
+                    String characteristicTag = characteristicFactory.getTagFromCharacteristicType(characteristicType);
+                    if (characteristicTag.isEmpty()) {
+                        logger.warn("{}Invalid characteristic tag for type: {}", LOG_WARN, characteristicType);
+                        continue;
+                    }
+
+                    ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
+                            characteristicType);
+
+                    channelDefinitions.add(new ChannelDefinitionBuilder(characteristicTag, channelTypeUID)
+                            .withLabel(characteristicTag)
+                            .withDescription("HomeKit " + characteristicTag + " Characteristic (Optional)").build());
+                    logger.debug("{}Added optional channel definition for: {}", LOG_TYPE, characteristicTag);
                 }
-
-                ChannelTypeUID channelTypeUID = new ChannelTypeUID(HomekitBindingConstants.BINDING_ID,
-                        characteristicType);
-
-                channelDefinitions.add(new ChannelDefinitionBuilder(characteristicTag, channelTypeUID)
-                        .withLabel(characteristicTag)
-                        .withDescription("HomeKit " + characteristicTag + " Characteristic (Optional)").build());
-                logger.debug("{}Added optional channel definition for: {}", LOG_TYPE, characteristicTag);
             }
 
             if (channelDefinitions.isEmpty()) {

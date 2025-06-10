@@ -65,7 +65,7 @@ public class HomekitPM25DensityCharacteristic extends HomekitFloatCharacteristic
      */
     @Override
     public boolean isAllowedValue(@Nullable Double value) {
-        return value != null && value >= 0.0 && value <= 11000.0;
+        return value != null && value >= 0.0 && value <= 000.0;
     }
 
     /**

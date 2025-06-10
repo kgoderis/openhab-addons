@@ -321,8 +321,8 @@ public class HomekitEventMetadata {
      * @return true if the event was created by the component
      */
     public boolean isCreatedBy(UID componentId) {
-        return immediateOrigin.map(origin -> Boolean.valueOf(componentId.equals(origin))).orElse(Boolean.FALSE)
-                .booleanValue();
+        Boolean result = immediateOrigin.map(origin -> componentId.equals(origin)).orElse(Boolean.FALSE);
+        return result != null ? result.booleanValue() : false;
     }
 
     /**
@@ -332,8 +332,8 @@ public class HomekitEventMetadata {
      * @return true if the event is from a peer in the group
      */
     public boolean isFromPeerGroup(Set<HomekitUID> peerGroup) {
-        return immediateOrigin.map(origin -> Boolean.valueOf(peerGroup.contains(origin))).orElse(Boolean.FALSE)
-                .booleanValue();
+        Boolean result = immediateOrigin.map(origin -> peerGroup.contains(origin)).orElse(Boolean.FALSE);
+        return result != null ? result.booleanValue() : false;
     }
 
     // =============== Correlation Methods ===============

@@ -152,7 +152,8 @@ public class HomekitLogRequestFilter implements Filter {
         logger.debug("{}Request details:", LOG_REQUEST);
         logger.debug("{}Source: {}:{} ; User-Agent: {}", LOG_REQUEST, request.getRemoteAddr(), request.getRemotePort(),
                 userAgent);
-        logger.debug("{}Method: {}", LOG_REQUEST, request.getMethod().toUpperCase());
+        String method = request.getMethod();
+        logger.debug("{}Method: {}", LOG_REQUEST, method != null ? method.toUpperCase() : "UNKNOWN");
         logger.debug("{}Content-Type: {}", LOG_REQUEST, request.getContentType());
         logger.debug("{}Content-Length: {}", LOG_REQUEST, request.getContentLength());
         logger.debug("{}URI: {}", LOG_REQUEST, request.getRequestURI());

@@ -59,7 +59,10 @@ public class HomekitEventGraphMetrics {
      */
     public void incrementNodeMetric(String nodeId, String metric) {
         String key = String.format("node.%s.%s", nodeId, metric);
-        nodeMetrics.computeIfAbsent(key, k -> new AtomicLong()).incrementAndGet();
+        AtomicLong counter = nodeMetrics.computeIfAbsent(key, k -> new AtomicLong());
+        if (counter != null) {
+            counter.incrementAndGet();
+        }
     }
 
     /**
@@ -77,7 +80,10 @@ public class HomekitEventGraphMetrics {
      */
     public void incrementEdgeMetric(String sourceId, String targetId, String metric) {
         String key = String.format("edge.%s->%s.%s", sourceId, targetId, metric);
-        edgeMetrics.computeIfAbsent(key, k -> new AtomicLong()).incrementAndGet();
+        AtomicLong counter = edgeMetrics.computeIfAbsent(key, k -> new AtomicLong());
+        if (counter != null) {
+            counter.incrementAndGet();
+        }
     }
 
     /**
@@ -94,7 +100,10 @@ public class HomekitEventGraphMetrics {
      */
     public void incrementCycleMetric(String cyclePath, String metric) {
         String key = String.format("cycle.%s.%s", cyclePath, metric);
-        cycleMetrics.computeIfAbsent(key, k -> new AtomicLong()).incrementAndGet();
+        AtomicLong counter = cycleMetrics.computeIfAbsent(key, k -> new AtomicLong());
+        if (counter != null) {
+            counter.incrementAndGet();
+        }
     }
 
     /**
