@@ -897,7 +897,7 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
                 @Nullable
                 ExitEvent exitEvent = exitEvents.get(itemName);
                 if (exitEvent != null && !exitEvent.isExpired()) {
-                    if (statesEqual(exitEvent.getState(), state)) {
+                    if (isStateEqual(exitEvent.getState(), state)) {
                         logger.debug("{}Processing correlated state change for item: {}", LOG_PREFIX, itemName);
                         if (ENABLE_EXIT_EVENT_STATISTICS) {
                             statisticsCollector.recordEvent(System.currentTimeMillis() - exitEvent.getTimestamp());
@@ -947,10 +947,16 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
      * @return true if the states are equal, false otherwise
      * @since 1.0.0
      */
-    private boolean statesEqual(State state1, State state2) {
-        if (state1 == state2)
+    private boolean isStateEqual(State state1, State state2) {
+        if (state1 == state2) {
             return true;
-        return state1.equals(state2);
+        }
+        // States are @NonNull by annotation in method signature
+        // The null check is redundant since we're using @NonNullByDefault at the class level
+        if (state1 instanceof DecimalType && state2 instanceof DecimalType) {
+            return ((DecimalType) state1).doubleValue() == ((DecimalType) state2).doubleValue();
+        }
+        return Objects.equals(state1, state2);
     }
 
     /**
@@ -1118,23 +1124,21 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         // handle HSBType/PercentType
         if (CoreItemFactory.DIMMER.equals(channelAcceptedItemType) && originalType instanceof HSBType hsb) {
             PercentType midresult = hsb.as(PercentType.class);
-            Optional<Command> result = midresult != null ? Optional.of(midresult) : Optional.empty();
-            return result;
+            return Optional.ofNullable(midresult);
         }
 
         // check for other cases if the type is acceptable
-        @Nullable
         List<Class<? extends Command>> acceptedTypes = acceptedCommandTypeMap.get(channelAcceptedItemType);
         if (acceptedTypes == null || acceptedTypes.contains(originalType.getClass())) {
             return Optional.of(originalType);
         } else if (acceptedTypes.contains(PercentType.class) && originalType instanceof State state
                 && PercentType.class.isAssignableFrom(originalType.getClass())) {
             PercentType percentType = state.as(PercentType.class);
-            return percentType != null ? Optional.of(percentType) : Optional.empty();
+            return Optional.ofNullable(percentType);
         } else if (acceptedTypes.contains(OnOffType.class) && originalType instanceof State state
                 && PercentType.class.isAssignableFrom(originalType.getClass())) {
             OnOffType onOffType = state.as(OnOffType.class);
-            return onOffType != null ? Optional.of(onOffType) : Optional.empty();
+            return Optional.ofNullable(onOffType);
         } else {
             logger.debug("Received not accepted type '{}' for channel '{}'", originalType.getClass().getSimpleName(),
                     channel.getUID());
@@ -1656,40 +1660,46 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
     private class ExitEventStatisticsCollector {
         private final List<Long> eventTimes = new ArrayList<>();
         private final Object lock = new Object();
-        private @Nullable ScheduledFuture<?> scheduledTask;
-        private @Nullable ScheduledExecutorService executor;
+        private Optional<ScheduledFuture<?>> scheduledTask = Optional.empty();
+        private Optional<ScheduledExecutorService> executor = Optional.empty();
 
         public void start() {
-            ScheduledExecutorService newExecutor = ThreadPoolManager.getScheduledPool("homekit");
-            if (newExecutor != null) {
-                executor = newExecutor;
-                scheduledTask = executor.scheduleAtFixedRate(this::printStatistics, STATISTICS_REPORT_INTERVAL_SECONDS,
-                        STATISTICS_REPORT_INTERVAL_SECONDS, TimeUnit.SECONDS);
+            synchronized (lock) {
+                if (executor.isEmpty()) {
+                    executor = Optional.of(ThreadPoolManager.getScheduledPool(THREAD_POOL_NAME));
+                }
+                if (scheduledTask.isEmpty()) {
+                    scheduledTask = Optional.of(executor.get().scheduleAtFixedRate(this::printStatistics,
+                            STATISTICS_REPORT_INTERVAL_SECONDS, STATISTICS_REPORT_INTERVAL_SECONDS, TimeUnit.SECONDS));
+                }
             }
         }
 
         public void stop() {
-            ScheduledFuture<?> currentTask = scheduledTask;
-            if (currentTask != null) {
-                currentTask.cancel(false);
-                scheduledTask = null;
+            synchronized (lock) {
+                scheduledTask.ifPresent(task -> {
+                    task.cancel(false);
+                    scheduledTask = Optional.empty();
+                });
+                executor.ifPresent(exec -> {
+                    exec.shutdown();
+                    executor = Optional.empty();
+                });
             }
-            executor = null;
         }
 
         public void recordEvent(long timeMs) {
             synchronized (lock) {
-                if (eventTimes.size() >= MAX_STATISTICS_ENTRIES) {
+                eventTimes.add(timeMs);
+                if (eventTimes.size() > MAX_STATISTICS_ENTRIES) {
                     eventTimes.remove(0);
                 }
-                eventTimes.add(timeMs);
             }
         }
 
         private void printStatistics() {
             synchronized (lock) {
                 if (eventTimes.isEmpty()) {
-                    logger.info("No exit event statistics available yet");
                     return;
                 }
 
@@ -1711,7 +1721,7 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
                 for (int i = 0; i <= 10; i++) {
                     int index = (int) Math.round(i * (sortedTimes.size() - 1) / 10.0);
                     Long value = sortedTimes.get(index);
-                    deciles[i] = value != null ? value.intValue() : 0;
+                    deciles[i] = value.intValue();
                 }
 
                 // Build histogram
@@ -1728,17 +1738,13 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
                             (int) percentage, count));
                 }
 
-                Long minTime = sortedTimes.get(0);
-                Long maxTime = sortedTimes.get(sortedTimes.size() - 1);
-
-                if (minTime == null)
-                    minTime = 0L;
-                if (maxTime == null)
-                    maxTime = 0L;
+                // These values cannot be null since they come from a non-empty ArrayList
+                // that we just created and sorted above
+                long minTime = sortedTimes.get(0);
+                long maxTime = sortedTimes.get(sortedTimes.size() - 1);
 
                 logger.info(
-                        "Exit Event Statistics (based on {} events):\n" + "Mean: {:.2f} ms\n" + "Std Dev: {:.2f} ms\n"
-                                + "Min: {} ms\n" + "Max: {} ms\n" + "{}",
+                        "Exit Event Statistics (based on {} events):\nMean: {:.2f} ms\nStd Dev: {:.2f} ms\nMin: {} ms\nMax: {} ms\n{}",
                         eventTimes.size(), mean, stdDev, minTime, maxTime, histogram);
             }
         }

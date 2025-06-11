@@ -959,10 +959,12 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
     @SuppressWarnings("unchecked")
     @Override
     public void updateWith(@Nullable HomekitCharacteristic<?> other) {
-        if (other == null)
+        if (other == null) {
             return;
+        }
         if (other instanceof AbstractHomekitCharacteristic<?> otherGeneric) {
-            if (this.getType().equals(otherGeneric.getType()) && this.instanceId == otherGeneric.getInstanceId()) {
+            if (this.getType().equals(otherGeneric.getType())
+                    && Objects.equals(this.instanceId, otherGeneric.instanceId)) {
                 this.isPairedWrite = otherGeneric.isPairedWrite;
                 this.isPairedRead = otherGeneric.isPairedRead;
                 this.hasEvents = otherGeneric.hasEvents;
@@ -973,7 +975,10 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
                 this.isAdditionalAuthorization = otherGeneric.isAdditionalAuthorization;
                 this.isWriteResponse = otherGeneric.isWriteResponse;
                 try {
-                    setValue((T) otherGeneric.getValue());
+                    // Since getValue() returns @NonNull T, newValue should never be null
+                    // but we're keeping the check for defensive programming
+                    T newValue = (T) otherGeneric.getValue();
+                    setValue(newValue);
                 } catch (Exception e) {
                     logger.error("{}Error updating characteristic value: {}", LOG_ERROR, e.getMessage(), e);
                 }
@@ -998,10 +1003,11 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
         AbstractHomekitCharacteristic<?> that = (AbstractHomekitCharacteristic<?>) o;
 
         // Compare fields in the same order as compareTo
-        return instanceId == that.instanceId && getType().equals(that.getType()) && format.equals(that.format)
-                && isPairedWrite == that.isPairedWrite && isPairedRead == that.isPairedRead
-                && hasEvents == that.hasEvents && description.equals(that.description)
-                && isTimedWrite == that.isTimedWrite && isAdditionalAuthorization == that.isAdditionalAuthorization
+        return Objects.equals(instanceId, that.instanceId) && Objects.equals(getType(), that.getType())
+                && Objects.equals(format, that.format) && isPairedWrite == that.isPairedWrite
+                && isPairedRead == that.isPairedRead && hasEvents == that.hasEvents
+                && Objects.equals(description, that.description) && isTimedWrite == that.isTimedWrite
+                && isAdditionalAuthorization == that.isAdditionalAuthorization
                 && isWriteResponse == that.isWriteResponse;
     }
 
@@ -1024,6 +1030,8 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
      */
     @Override
     public int compareTo(@Nullable HomekitCharacteristic<?> other) {
+        // The Comparable interface specifies that the parameter cannot be null,
+        // but this implementation allows null values as a defensive measure
         if (other == null)
             return 1;
         if (this == other)

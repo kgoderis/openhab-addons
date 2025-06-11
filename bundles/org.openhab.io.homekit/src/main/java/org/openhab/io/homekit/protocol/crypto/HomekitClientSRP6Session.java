@@ -243,6 +243,9 @@ public class HomekitClientSRP6Session extends SRP6Session implements Serializabl
 
         // Compute the password key 'x'
         if (xRoutine != null && password != null && userID != null) {
+            // Null Pointer Access Warning Checked
+            // We're explicitly checking that xRoutine, password, and userID are not null above
+            // The requireNonNull calls are for static analysis only, as we've already checked
 
             // With custom routine
             x = xRoutine.computeX(config.getMessageDigestInstance(), s.toByteArray(),
@@ -251,6 +254,13 @@ public class HomekitClientSRP6Session extends SRP6Session implements Serializabl
 
         } else {
             // With default routine
+            // Null Pointer Access Warning Checked
+            // password is required for this code path but might be null according to static analysis
+            // We need to explicitly check it before use
+            if (password == null) {
+                throw new SRP6Exception("Password cannot be null", SRP6Exception.CauseType.BAD_CREDENTIALS);
+            }
+
             x = SRP6Routines.computeX(digest, s.toByteArray(),
                     Objects.requireNonNull(password).getBytes(Charset.forName("UTF-8")));
             digest.reset();

@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+These is a rule to be applied when compilling the solution
+
+- Do "mvn spotless:apply" before to clean up formatting
+- Categorize and count the errors and warnings
+- Propose a plan to address them

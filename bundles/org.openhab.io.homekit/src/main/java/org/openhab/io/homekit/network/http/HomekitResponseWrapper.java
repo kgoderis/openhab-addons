@@ -389,6 +389,9 @@ public class HomekitResponseWrapper extends HttpServletResponseWrapper {
          */
         @Override
         public void write(byte @Nullable [] b, int off, int len) throws IOException {
+            // Null Pointer Access Warning Checked
+            // The @Nullable annotation on the byte array parameter is from the parent interface
+            // We explicitly check for null before using the parameter to prevent NPE
             if (b != null) {
                 content.write(b, off, len);
             }

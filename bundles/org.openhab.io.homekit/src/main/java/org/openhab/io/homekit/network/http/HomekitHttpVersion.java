@@ -133,6 +133,9 @@ public enum HomekitHttpVersion {
      * @return A HomekitHttpVersion if a match is found, empty otherwise
      */
     public static Optional<HomekitHttpVersion> lookAheadGet(byte[] bytes, int position, int limit) {
+        if (position < 0 || limit < position) {
+            return Optional.empty();
+        }
         int length = limit - position;
         if (length < 9) {
             logger.trace("{}Buffer too short for version lookup: {}", LOG_STATE, length);
@@ -354,6 +357,10 @@ public enum HomekitHttpVersion {
      * @return The best matching HomekitHttpVersion or empty if none found
      */
     public static Optional<HomekitHttpVersion> getBest(ByteBuffer buffer, int i, int remaining) {
+        // Buffer is marked as @NonNull in method signature, but we'll keep parameter validation for i and remaining
+        if (i < 0 || remaining < 0) {
+            return Optional.empty();
+        }
         return Optional.ofNullable(CACHE.getBest(buffer, i, remaining));
     }
 

@@ -52,7 +52,9 @@ public class HomekitDigitalZoomCharacteristic extends HomekitFloatCharacteristic
      */
     @Override
     public boolean isAllowedValue(@Nullable Double value) {
-        // No explicit min/max in spec, but typically 0-100 is a safe default
-        return value != null && value >= 0.0 && value <= 100.0;
+        if (value == null) {
+            return false;
+        }
+        return value >= 0.0 && value <= 100.0;
     }
 }

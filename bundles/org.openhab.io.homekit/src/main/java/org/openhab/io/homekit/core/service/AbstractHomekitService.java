@@ -128,7 +128,6 @@ public abstract class AbstractHomekitService implements HomekitService {
      */
     public AbstractHomekitService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
-
         this.accessory = accessory;
         this.eventManager = eventManager;
         this.characteristicFactory = characteristicFactory;
@@ -685,7 +684,7 @@ public abstract class AbstractHomekitService implements HomekitService {
         AbstractHomekitService that = (AbstractHomekitService) obj;
 
         // Compare basic fields
-        if (instanceId != that.instanceId)
+        if (!Objects.equals(instanceId, that.instanceId))
             return false;
         if (isHidden != that.isHidden)
             return false;

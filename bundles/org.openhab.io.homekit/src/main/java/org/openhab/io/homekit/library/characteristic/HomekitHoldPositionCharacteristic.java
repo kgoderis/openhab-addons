@@ -16,12 +16,9 @@
  */
 package org.openhab.io.homekit.library.characteristic;
 
-import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitBooleanCharacteristic;
@@ -43,48 +40,12 @@ public class HomekitHoldPositionCharacteristic extends HomekitBooleanCharacteris
     public HomekitHoldPositionCharacteristic(HomekitService service, HomekitEventManager eventManager,
             long instanceId) {
         super(service, eventManager);
-        withInstanceId(instanceId).withPairedRead(true).withPairedWrite(true).withEvents(true)
+        withInstanceId(instanceId).withPairedWrite(true).withPairedRead(true).withEvents(true)
                 .withDescription("Hold Position");
     }
 
     public HomekitHoldPositionCharacteristic(HomekitService service, HomekitEventManager eventManager,
             JsonValue value) {
         super(service, eventManager, value);
-    }
-
-    @Override
-    public JsonObject toEventJson(Boolean value) {
-        return super.toEventJson(value);
-    }
-
-    @Override
-    public JsonObject toEventJson() {
-        return super.toEventJson();
-    }
-
-    @Override
-    public JsonValue toValueJson(@Nullable Boolean value) {
-        return super.toValueJson(value);
-    }
-
-    @Override
-    public JsonObject toJson() {
-        return super.toJson();
-    }
-
-    @Override
-    public JsonObject toJson(boolean includeMeta, boolean includePermissions, boolean includeType,
-            boolean includeEvent) {
-        return super.toJson(includeMeta, includePermissions, includeType, includeEvent);
-    }
-
-    @Override
-    public JsonObject toReducedJson() {
-        return super.toReducedJson();
-    }
-
-    @Override
-    public State toState(Boolean value) {
-        return super.toState(value);
     }
 }

@@ -128,10 +128,12 @@ public class ValidationIssue {
 
     @Override
     public boolean equals(@Nullable Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
+        }
         ValidationIssue that = (ValidationIssue) o;
         return Objects.equals(code, that.code) && Objects.equals(contextKey, that.contextKey);
     }

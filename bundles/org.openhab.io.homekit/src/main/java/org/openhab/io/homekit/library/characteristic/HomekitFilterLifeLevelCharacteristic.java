@@ -67,7 +67,10 @@ public class HomekitFilterLifeLevelCharacteristic extends HomekitFloatCharacteri
      */
     @Override
     public boolean isAllowedValue(@Nullable Double value) {
-        return value != null && value >= 0.0 && value <= 00.0;
+        if (value == null) {
+            return false;
+        }
+        return value >= 0.0 && value <= 100.0;
     }
 
     /**

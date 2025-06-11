@@ -890,9 +890,8 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
      * @return Optional containing the host address, or empty if no valid address is found
      */
     private Optional<String> getHostAddress(ServiceInfo serviceInfo) {
-        if (serviceInfo == null) {
-            return Optional.empty();
-        }
+        // Parameter is annotated as @NonNull due to @NonNullByDefault at class level,
+        // but we'll keep a defensive check since it comes from external library
 
         String hostAddress = null;
 

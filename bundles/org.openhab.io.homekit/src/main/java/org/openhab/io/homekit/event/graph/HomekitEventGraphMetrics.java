@@ -59,10 +59,10 @@ public class HomekitEventGraphMetrics {
      */
     public void incrementNodeMetric(String nodeId, String metric) {
         String key = String.format("node.%s.%s", nodeId, metric);
+        // Null Pointer Access Warning Checked
+        // computeIfAbsent cannot return null since we're providing a non-null supplier function
         AtomicLong counter = nodeMetrics.computeIfAbsent(key, k -> new AtomicLong());
-        if (counter != null) {
-            counter.incrementAndGet();
-        }
+        counter.incrementAndGet();
     }
 
     /**
@@ -80,10 +80,10 @@ public class HomekitEventGraphMetrics {
      */
     public void incrementEdgeMetric(String sourceId, String targetId, String metric) {
         String key = String.format("edge.%s->%s.%s", sourceId, targetId, metric);
+        // Null Pointer Access Warning Checked
+        // computeIfAbsent cannot return null since we're providing a non-null supplier function
         AtomicLong counter = edgeMetrics.computeIfAbsent(key, k -> new AtomicLong());
-        if (counter != null) {
-            counter.incrementAndGet();
-        }
+        counter.incrementAndGet();
     }
 
     /**
@@ -100,10 +100,10 @@ public class HomekitEventGraphMetrics {
      */
     public void incrementCycleMetric(String cyclePath, String metric) {
         String key = String.format("cycle.%s.%s", cyclePath, metric);
+        // Null Pointer Access Warning Checked
+        // computeIfAbsent cannot return null since we're providing a non-null supplier function
         AtomicLong counter = cycleMetrics.computeIfAbsent(key, k -> new AtomicLong());
-        if (counter != null) {
-            counter.incrementAndGet();
-        }
+        counter.incrementAndGet();
     }
 
     /**

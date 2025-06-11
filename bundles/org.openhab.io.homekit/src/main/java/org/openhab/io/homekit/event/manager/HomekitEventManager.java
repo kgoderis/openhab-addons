@@ -264,7 +264,6 @@ public class HomekitEventManager {
      * Processes all events currently in the queue, dispatching them to the appropriate subscribers.
      */
     private void processEvents() {
-        @Nullable
         HomekitEvent event;
         while (isRunning.get() && (event = eventQueue.poll()) != null) {
             activeEventCount.incrementAndGet();
@@ -327,6 +326,8 @@ public class HomekitEventManager {
                     if (oldestEvent != null) {
                         logger.warn("{}Event queue is full, oldest event discarded: type={}, timestamp={}", LOG_QUEUE,
                                 oldestEvent.getType(), oldestEvent.getTimestamp());
+                    } else {
+                        logger.warn("{}Event queue is full, but could not retrieve oldest event to discard", LOG_QUEUE);
                     }
                 }
                 queued = eventQueue.offer(event, 100, TimeUnit.MILLISECONDS);
@@ -486,7 +487,7 @@ public class HomekitEventManager {
 
     public HomekitEventSubscription subscribe(HomekitEventType eventType, UID publisherUID, UID subscriberUID,
             HomekitEventSubscriber subscriber, Class<? extends HomekitEvent> expectedEventClass) {
-        @SuppressWarnings("null")
+        @SuppressWarnings("null") // Optional.orElseGet() is safe - createAndAddSubscription always returns non-null
         HomekitEventSubscription result = findExistingSubscription(eventType, publisherUID, subscriber).orElseGet(
                 () -> createAndAddSubscription(eventType, publisherUID, subscriberUID, subscriber, expectedEventClass));
         return result;
@@ -610,7 +611,7 @@ public class HomekitEventManager {
     public HomekitEventSubscription subscribe(HomekitEventType eventType, UID publisherUID, UID subscriberUID,
             HomekitEventSubscriber subscriber, Class<? extends HomekitEvent> expectedEventClass,
             Predicate<HomekitEvent> filter) {
-        @SuppressWarnings("null")
+        @SuppressWarnings("null") // Optional.orElseGet() is safe - createAndAddSubscription always returns non-null
         HomekitEventSubscription result = findExistingSubscription(eventType, publisherUID, subscriber)
                 .orElseGet(() -> createAndAddSubscription(eventType, publisherUID, subscriberUID, subscriber,
                         expectedEventClass, filter));
@@ -639,7 +640,7 @@ public class HomekitEventManager {
 
     public List<HomekitEventSubscription> subscribe(Set<HomekitEventType> eventTypes, UID publisherUID,
             UID subscriberUID, HomekitEventHandler handler) {
-        @SuppressWarnings("null") // collect(Collectors.toList()) is safe - always returns non-null list
+        // @SuppressWarnings("null") // collect(Collectors.toList()) is safe - always returns non-null list
         List<HomekitEventSubscription> result = eventTypes.stream()
                 .map(eventType -> subscribe(eventType, publisherUID, subscriberUID, handler))
                 .collect(Collectors.toList());

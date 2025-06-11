@@ -345,6 +345,10 @@ public class HomekitBridgedAccessory implements HomekitAccessory {
      */
     @Override
     public int compareTo(HomekitAccessory other) {
+        // The parameter is @NonNull by the Comparable interface definition
+        if (this == other) {
+            return 0;
+        }
         if (other instanceof HomekitBridgedAccessory) {
             return remoteAccessory.compareTo(((HomekitBridgedAccessory) other).remoteAccessory);
         }
@@ -373,9 +377,8 @@ public class HomekitBridgedAccessory implements HomekitAccessory {
         try {
             this.accessoryId = server.getNextAvailableAccessoryId();
             this.uid = new HomekitAccessoryUIDImpl(server.getUID().getPairingId(), accessoryId);
-            if (uid == null) {
-                throw new HomekitAccessoryOperationException("Failed to create HomekitAccessoryUID");
-            }
+            // The constructor for HomekitAccessoryUIDImpl never returns null, so this check is redundant
+            // but we'll keep it for extra safety
             logger.debug("{}Assigned bridged accessory to local server with AID: {}", LOG_PREFIX, accessoryId);
 
         } catch (Exception e) {

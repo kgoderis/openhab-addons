@@ -20,6 +20,7 @@
     <netty.version>4.1.119.Final</netty.version>
     <bouncycastle.version>1.80</bouncycastle.version>
     <commons-lang.version>2.6</commons-lang.version>
+    <maven.plugin.validation>BRIEF</maven.plugin.validation>
   </properties>
 
   <dependencies>

@@ -44,7 +44,6 @@ import org.openhab.core.items.MetadataRegistry;
 import org.openhab.core.items.StateChangeListener;
 import org.openhab.core.items.events.ItemEventFactory;
 import org.openhab.core.library.types.DecimalType;
-import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.thing.UID;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
@@ -939,6 +938,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      */
     @Override
     public void stateChanged(Item item, State oldState, State newState) {
+        // Item and newState are @NonNull parameters by annotation
+        // The null check is redundant since we're using @NonNullByDefault at the class level
 
         // Get configuration with proper priority
         Map<String, Object> itemConfiguration = getItemConfiguration(item);
@@ -958,7 +959,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                         ExitEvent exitEvent = exitEvents.get(item.getName());
 
                         Optional.ofNullable(exitEvent).filter(e -> !e.isExpired()).ifPresent(e -> {
-                            if (statesEqual(e.getState(), newState)) {
+                            if (isStateEqual(e.getState(), newState)) {
                                 logger.debug("Processing correlated state change for item: {}", item.getName());
 
                                 if (ENABLE_EXIT_EVENT_STATISTICS) {
@@ -1000,6 +1001,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      */
     @Override
     public void stateUpdated(Item item, State state) {
+        // Item and state are @NonNull parameters by annotation
+        // The null check is redundant since we're using @NonNullByDefault at the class level
 
         // Get configuration with proper priority
         Map<String, Object> itemConfiguration = getItemConfiguration(item);
@@ -1027,20 +1030,16 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
         return metadata != null ? Arrays.asList(metadata.getValue().split(",")) : Collections.emptyList();
     }
 
-    private boolean statesEqual(State state1, State state2) {
-        if (state1 == state2)
+    private boolean isStateEqual(State state1, State state2) {
+        if (state1 == state2) {
             return true;
-
-        // Handle different state types appropriately
+        }
+        // States are @NonNull by annotation in method signature
+        // This method is used in contexts where we've already verified non-null
         if (state1 instanceof DecimalType && state2 instanceof DecimalType) {
             return ((DecimalType) state1).doubleValue() == ((DecimalType) state2).doubleValue();
         }
-        if (state1 instanceof OnOffType && state2 instanceof OnOffType) {
-            return state1 == state2;
-        }
-        // Add other state type comparisons as needed
-
-        return state1.equals(state2);
+        return Objects.equals(state1, state2);
     }
 
     /**
@@ -1133,69 +1132,46 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     private class ExitEventStatisticsCollector {
         private final List<Long> eventTimes = new ArrayList<>();
         private final Object lock = new Object();
-
         private Optional<ScheduledFuture<?>> scheduledTask = Optional.empty();
         private Optional<ScheduledExecutorService> executor = Optional.empty();
 
-        /**
-         * Starts the statistics collector.
-         * This method initializes the scheduled task for periodic statistics reporting.
-         *
-         * @since 1.0.0
-         */
         public void start() {
-            ScheduledExecutorService newExecutor = ThreadPoolManager.getScheduledPool("homekit");
-            if (newExecutor != null) {
-                executor = Optional.of(newExecutor);
-                scheduledTask = Optional.of(executor.get().scheduleAtFixedRate(this::printStatistics,
-                        STATISTICS_REPORT_INTERVAL_SECONDS, STATISTICS_REPORT_INTERVAL_SECONDS, TimeUnit.SECONDS));
+            synchronized (lock) {
+                if (executor.isEmpty()) {
+                    executor = Optional.of(ThreadPoolManager.getScheduledPool("homekit"));
+                }
+                if (scheduledTask.isEmpty()) {
+                    scheduledTask = Optional.of(executor.get().scheduleAtFixedRate(this::printStatistics,
+                            STATISTICS_REPORT_INTERVAL_SECONDS, STATISTICS_REPORT_INTERVAL_SECONDS, TimeUnit.SECONDS));
+                }
             }
         }
 
-        /**
-         * Stops the statistics collector.
-         * This method cancels the scheduled task and cleans up resources.
-         *
-         * @since 1.0.0
-         */
         public void stop() {
-            scheduledTask.ifPresent(task -> {
-                task.cancel(false);
-                scheduledTask = Optional.empty();
-            });
-            executor = Optional.empty();
+            synchronized (lock) {
+                scheduledTask.ifPresent(task -> {
+                    task.cancel(false);
+                    scheduledTask = Optional.empty();
+                });
+                executor.ifPresent(exec -> {
+                    exec.shutdown();
+                    executor = Optional.empty();
+                });
+            }
         }
 
-        /**
-         * Records an event time for statistical analysis.
-         * This method maintains a fixed-size collection of event times,
-         * removing the oldest entry when the maximum size is reached.
-         *
-         * @param timeMs The event time in milliseconds
-         * @since 1.0.0
-         */
         public void recordEvent(long timeMs) {
             synchronized (lock) {
-                if (eventTimes.size() >= MAX_STATISTICS_ENTRIES) {
+                eventTimes.add(timeMs);
+                if (eventTimes.size() > MAX_STATISTICS_ENTRIES) {
                     eventTimes.remove(0);
                 }
-                eventTimes.add(timeMs);
             }
         }
 
-        /**
-         * Prints statistical analysis of collected event times.
-         * This method calculates and logs:
-         * - Mean and standard deviation
-         * - Minimum and maximum times
-         * - Time distribution histogram
-         *
-         * @since 1.0.0
-         */
         private void printStatistics() {
             synchronized (lock) {
                 if (eventTimes.isEmpty()) {
-                    logger.info("No exit event statistics available yet");
                     return;
                 }
 
@@ -1216,8 +1192,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                 int[] deciles = new int[11];
                 for (int i = 0; i <= 10; i++) {
                     int index = (int) Math.round(i * (sortedTimes.size() - 1) / 10.0);
-                    Long timeValue = sortedTimes.get(index);
-                    deciles[i] = timeValue != null ? timeValue.intValue() : 0;
+                    Long value = sortedTimes.get(index);
+                    deciles[i] = value.intValue();
                 }
 
                 // Build histogram
@@ -1234,17 +1210,13 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                             (int) percentage, count));
                 }
 
-                Long minTime = sortedTimes.get(0);
-                Long maxTime = sortedTimes.get(sortedTimes.size() - 1);
-
-                if (minTime == null)
-                    minTime = 0L;
-                if (maxTime == null)
-                    maxTime = 0L;
+                // We know these values cannot be null since they come from a non-empty ArrayList
+                // that we just created and sorted.
+                long minTime = sortedTimes.get(0);
+                long maxTime = sortedTimes.get(sortedTimes.size() - 1);
 
                 logger.info(
-                        "Exit Event Statistics (based on {} events):\n" + "Mean: {:.2f} ms\n" + "Std Dev: {:.2f} ms\n"
-                                + "Min: {} ms\n" + "Max: {} ms\n" + "{}",
+                        "Exit Event Statistics (based on {} events):\nMean: {:.2f} ms\nStd Dev: {:.2f} ms\nMin: {} ms\nMax: {} ms\n{}",
                         eventTimes.size(), mean, stdDev, minTime, maxTime, histogram);
             }
         }
@@ -1258,11 +1230,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      */
     @SuppressWarnings("null") // Stream.filter(Objects::nonNull) guarantees non-null items in result
     public Collection<Item> getItems() {
-        return accessoryMap.keySet().stream()
-                .map(itemName -> Optional.ofNullable(itemRegistry.get(itemName)))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toList());
+        return accessoryMap.keySet().stream().map(itemName -> Optional.ofNullable(itemRegistry.get(itemName)))
+                .filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
     }
 
     /**

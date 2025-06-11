@@ -68,7 +68,7 @@ public class HomekitAssetUpdateProgressCharacteristic extends HomekitTLV8Charact
     }
 
     @Override
-    public Map<Integer, Object> toValue(org.openhab.core.types.State state) {
+    public Map<Integer, Object> toValue(State state) {
         throw new UnsupportedOperationException(
                 "State to TLV8 conversion must be implemented for the specific device.");
     }

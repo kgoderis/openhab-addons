@@ -98,8 +98,11 @@ public class HomekitFilterChangeIndicationCharacteristic extends HomekitIntegerC
      */
     @Override
     public boolean isAllowedValue(@Nullable Integer value) {
-        return value != null && (value == FilterChangeIndication.FILTER_OK.getCode()
-                || value == FilterChangeIndication.CHANGE_FILTER.getCode());
+        if (value == null) {
+            return false;
+        }
+        return value == FilterChangeIndication.FILTER_OK.getCode()
+                || value == FilterChangeIndication.CHANGE_FILTER.getCode();
     }
 
     /**

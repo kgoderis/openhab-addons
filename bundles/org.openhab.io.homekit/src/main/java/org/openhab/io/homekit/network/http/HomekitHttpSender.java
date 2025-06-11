@@ -559,16 +559,23 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
                             contentBuffer = BufferUtil.EMPTY_BUFFER;
                         }
                         if (headerBuffer != null && chunkBuffer != null && contentBuffer != null) {
-                            long bytes = Objects.requireNonNull(headerBuffer).remaining()
-                                    + Objects.requireNonNull(chunkBuffer).remaining()
-                                    + Objects.requireNonNull(contentBuffer).remaining();
+                            // Null Pointer Access Warning Checked
+                            // The buffers are all guaranteed non-null at this point due to the checks above
+                            // Using Objects.requireNonNull to satisfy static analysis as the if-statement
+                            // already confirms these are not null
+                            ByteBuffer safeHeaderBuffer = Objects.requireNonNull(headerBuffer);
+                            ByteBuffer safeChunkBuffer = Objects.requireNonNull(chunkBuffer);
+                            ByteBuffer safeContentBuffer = Objects.requireNonNull(contentBuffer);
+
+                            long bytes = safeHeaderBuffer.remaining() + safeChunkBuffer.remaining()
+                                    + safeContentBuffer.remaining();
                             ((HomekitHttpConnectionOverHTTP) getHttpChannel().getHttpConnection()).addBytesOut(bytes);
 
                             if (!hasEncryptionKey()) {
-                                endPoint.write(this, headerBuffer, chunkBuffer, contentBuffer);
+                                endPoint.write(this, safeHeaderBuffer, safeChunkBuffer, safeContentBuffer);
                             } else {
-                                ByteBuffer encryptedBuffer = encryptBuffers(endPoint, headerBuffer, chunkBuffer,
-                                        contentBuffer);
+                                ByteBuffer encryptedBuffer = encryptBuffers(endPoint, safeHeaderBuffer, safeChunkBuffer,
+                                        safeContentBuffer);
                                 endPoint.write(this, encryptedBuffer);
                             }
 

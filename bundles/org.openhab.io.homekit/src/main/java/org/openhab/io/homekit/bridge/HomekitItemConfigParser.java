@@ -94,6 +94,8 @@ public class HomekitItemConfigParser {
      * @throws NullPointerException if item is null
      */
     public Map<String, Object> parseItemConfig(Item item) {
+        // Item parameter is @NonNull by annotation, so the null check is redundant
+        // We'll remove it since we have @NonNullByDefault at the class level
         logger.debug("{}Parsing configuration for item {}", LOG_PARSE, item.getName());
         Map<String, Object> config = new HashMap<>();
 

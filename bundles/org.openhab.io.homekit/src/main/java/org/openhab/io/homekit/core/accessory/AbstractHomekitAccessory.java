@@ -731,7 +731,7 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
         AbstractHomekitAccessory that = (AbstractHomekitAccessory) o;
 
         // Compare accessory ID
-        if (accessoryId != that.accessoryId)
+        if (!Objects.equals(accessoryId, that.accessoryId))
             return false;
 
         // Compare services

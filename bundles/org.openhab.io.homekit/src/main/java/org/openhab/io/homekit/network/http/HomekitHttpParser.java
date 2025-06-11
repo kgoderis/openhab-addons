@@ -462,8 +462,10 @@ public class HomekitHttpParser {
             reason = violation.getDescription();
         }
         if (_complianceHandler != null) {
+            // Null Pointer Access Warning Checked
             String nonNullReason = reason;
-            if (nonNullReason != null && _complianceHandler != null) {
+            if (nonNullReason != null) {
+                // _complianceHandler is already checked for null above
                 _complianceHandler.onComplianceViolation(_compliance, violation, nonNullReason);
             }
         }
@@ -477,6 +479,7 @@ public class HomekitHttpParser {
      * @param reason The reason for the violation
      */
     protected void handleViolation(HttpComplianceSection section, String reason) {
+        // Null Pointer Access Warning Checked
         if (_complianceHandler != null) {
             _complianceHandler.onComplianceViolation(_compliance, section, reason);
         }
@@ -687,6 +690,8 @@ public class HomekitHttpParser {
             _method = HttpMethod.lookAheadGet(buffer);
             if (_method != null) {
                 _methodString = _method.asString();
+                // Null Pointer Access Warning Checked
+                // _methodString is non-null here because _method is non-null and asString() returns non-null
                 buffer.position(buffer.position() + Objects.requireNonNull(_methodString).length() + 1);
 
                 setState(State.SPACE1);
@@ -696,6 +701,8 @@ public class HomekitHttpParser {
             var versionOptional = HomekitHttpVersion.lookAheadGet(buffer);
             if (versionOptional.isPresent()) {
                 _version = versionOptional.get();
+                // Null Pointer Access Warning Checked
+                // _version is non-null here because versionOptional.isPresent() is true
                 buffer.position(buffer.position() + Objects.requireNonNull(_version).asString().length() + 1);
                 setState(State.SPACE1);
                 return false;
@@ -1245,15 +1252,18 @@ public class HomekitHttpParser {
 
                 if (addToConnectionTrie && _fieldCache != null && !_fieldCache.isFull() && _header != null
                         && _valueString != null) {
+                    // Null Pointer Access Warning Checked
                     if (_field == null) {
                         _field = new HttpField(Objects.requireNonNull(_header),
                                 caseInsensitiveHeader(Objects.requireNonNull(_headerString),
                                         Objects.requireNonNull(_header).asString()),
                                 Objects.requireNonNull(_valueString));
                     }
+                    // Null Pointer Access Warning Checked
                     Objects.requireNonNull(_fieldCache).put(Objects.requireNonNull(_field));
                 }
             }
+            // Null Pointer Access Warning Checked
             _handler.parsedHeader(_field != null ? Objects.requireNonNull(_field)
                     : new HttpField(Objects.requireNonNull(_header), Objects.requireNonNull(_headerString),
                             Objects.requireNonNull(_valueString)));
@@ -1267,6 +1277,7 @@ public class HomekitHttpParser {
     private void parsedTrailer() {
         // handler last header if any. Delayed to here just in case there was a continuation line (above)
         if (_headerString != null || _valueString != null) {
+            // Null Pointer Access Warning Checked
             _handler.parsedTrailer(_field != null ? Objects.requireNonNull(_field)
                     : new HttpField(Objects.requireNonNull(_header), Objects.requireNonNull(_headerString),
                             Objects.requireNonNull(_valueString)));
@@ -1379,6 +1390,7 @@ public class HomekitHttpParser {
                             }
 
                             // How is the message ended?
+                            // Null Pointer Access Warning Checked
                             switch (Objects.requireNonNull(_endOfContent)) {
                                 case EOF_CONTENT: {
                                     setState(State.EOF_CONTENT);
@@ -1414,18 +1426,15 @@ public class HomekitHttpParser {
                             // handle new header
                             if (buffer.hasRemaining()) {
                                 // Try a look ahead for the known header name and value.
-                                @SuppressWarnings("null") // Null check performed above
-                                HttpField cachedField = _fieldCache == null ? null
+                                HttpField fieldToUse = _fieldCache == null ? null
                                         : _fieldCache.getBest(buffer, -1, buffer.remaining());
-                                if (cachedField == null) {
-                                    @SuppressWarnings("null") // CACHE is non-null static final field
-                                    HttpField globalCachedField = CACHE.getBest(buffer, -1, buffer.remaining());
-                                    cachedField = globalCachedField;
+                                if (fieldToUse == null) {
+                                    fieldToUse = CACHE.getBest(buffer, -1, buffer.remaining());
                                 }
 
-                                if (cachedField != null) {
-                                    String n = cachedField.getName();
-                                    String v = cachedField.getValue();
+                                if (fieldToUse != null) {
+                                    String n = fieldToUse.getName();
+                                    String v = fieldToUse.getValue();
 
                                     if (!_compliances.contains(HttpComplianceSection.FIELD_NAME_CASE_INSENSITIVE)) {
                                         // Have to get the fields exactly from the buffer to match case
@@ -1434,7 +1443,7 @@ public class HomekitHttpParser {
                                         if (!n.equals(en)) {
                                             handleViolation(HttpComplianceSection.FIELD_NAME_CASE_INSENSITIVE, en);
                                             n = en;
-                                            cachedField = new HttpField(cachedField.getHeader(), n, v);
+                                            fieldToUse = new HttpField(fieldToUse.getHeader(), n, v);
                                         }
                                     }
 
@@ -1446,11 +1455,11 @@ public class HomekitHttpParser {
                                             handleViolation(HttpComplianceSection.CASE_INSENSITIVE_FIELD_VALUE_CACHE,
                                                     ev + "!=" + v);
                                             v = ev;
-                                            cachedField = new HttpField(cachedField.getHeader(), n, v);
+                                            fieldToUse = new HttpField(fieldToUse.getHeader(), n, v);
                                         }
                                     }
 
-                                    _header = cachedField.getHeader();
+                                    _header = fieldToUse.getHeader();
                                     _headerString = n;
 
                                     if (v == null) {
@@ -1466,7 +1475,7 @@ public class HomekitHttpParser {
                                     int pos = buffer.position() + n.length() + v.length() + 1;
                                     byte peek = buffer.get(pos);
                                     if (peek == CARRIAGE_RETURN || peek == LINE_FEED) {
-                                        _field = cachedField;
+                                        _field = fieldToUse;
                                         _valueString = v;
                                         setState(FieldState.IN_VALUE);
 

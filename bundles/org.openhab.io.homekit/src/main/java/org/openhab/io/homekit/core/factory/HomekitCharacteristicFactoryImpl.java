@@ -595,9 +595,10 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
             throw new HomekitFactoryException("Unsupported characteristic type: " + characteristicType);
         }
         logger.trace("{}Returning accepted item types for characteristic type: {}", LOG_TRACE, characteristicType);
-        @SuppressWarnings("null") // getAnnotation() can return null, but characteristicClass is already validated above
         HomekitCharacteristicType annotation = characteristicClass.getAnnotation(HomekitCharacteristicType.class);
         if (annotation == null) {
+            logger.warn("{}No HomekitCharacteristicType annotation found for characteristic type: {}", LOG_WARN,
+                    characteristicType);
             return Collections.emptySet();
         }
         return Collections.unmodifiableSet(new HashSet<>(Arrays.asList(annotation.acceptedItemTypes())));

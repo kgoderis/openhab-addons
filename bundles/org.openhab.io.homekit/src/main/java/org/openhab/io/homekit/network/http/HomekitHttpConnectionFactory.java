@@ -243,37 +243,42 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
             throw new IllegalArgumentException("Connector and EndPoint cannot be null");
         }
 
-        logger.trace("{}Creating a new connection for Endpoint {} {}", LOG_STATE,
-                endPoint.getRemoteAddress().toString(), endPoint.toString());
+        InetSocketAddress remoteAddress = endPoint.getRemoteAddress();
+        String remoteAddressStr = remoteAddress != null ? remoteAddress.toString() : "unknown";
+        logger.trace("{}Creating a new connection for Endpoint {} {}", LOG_STATE, remoteAddressStr,
+                endPoint.toString());
 
         String sessionId = null;
-        if (sessionHandler != null) {
-            InetSocketAddress remoteAddress = endPoint.getRemoteAddress();
-            if (remoteAddress != null && remoteAddress.getAddress() != null) {
-                sessionId = sessionHandler
-                        .getSessionId(remoteAddress.getAddress().getHostAddress() + ":" + remoteAddress.getPort());
-            }
+        if (sessionHandler != null && remoteAddress != null && remoteAddress.getAddress() != null) {
+            sessionId = sessionHandler
+                    .getSessionId(remoteAddress.getAddress().getHostAddress() + ":" + remoteAddress.getPort());
         }
 
-        if (sessionId != null && sessionHandler != null) {
-            logger.trace("{}Fetching Session {} {}", LOG_STATE, endPoint.getRemoteAddress().toString(), sessionId);
+        // Ensure sessionHandler is not null before using it
+        HomekitSessionHandler localSessionHandler = sessionHandler;
+        if (sessionId != null && localSessionHandler != null) {
+            logger.trace("{}Fetching Session {} {}", LOG_STATE, remoteAddressStr, sessionId);
 
-            @Nullable
-            Session session;
-            if (sessionHandler != null) {
-                session = sessionHandler.getSession(sessionId);
-            } else {
-                session = null;
-            }
-
+            // localSessionHandler.getSession() is safe to call as we've checked that localSessionHandler is not null
+            Session session = localSessionHandler.getSession(sessionId);
             if (session != null) {
+                // session.getAttribute() returns @Nullable Object
+                // We need to safely check both for null and proper type before casting
                 Object readKey = session.getAttribute("Control-Read-Encryption-Key");
                 Object writeKey = session.getAttribute("Control-Write-Encryption-Key");
-                if (readKey != null && writeKey != null) {
-                    HomekitDecryptedEndPoint appEndPoint = new HomekitDecryptedEndPoint(endPoint,
-                            connector.getExecutor(), connector.getByteBufferPool(), isDirectBuffers(), (byte[]) readKey,
-                            (byte[]) writeKey);
 
+                // Null Pointer Access Warning Checked
+                // Properly check both that the objects are not null and that they are of the correct type
+                if (readKey instanceof byte[] && writeKey instanceof byte[]) {
+                    byte[] readKeyBytes = (byte[]) readKey;
+                    byte[] writeKeyBytes = (byte[]) writeKey;
+
+                    // Create the decrypted endpoint with all non-null values
+                    HomekitDecryptedEndPoint appEndPoint = new HomekitDecryptedEndPoint(endPoint,
+                            connector.getExecutor(), connector.getByteBufferPool(), isDirectBuffers(), readKeyBytes,
+                            writeKeyBytes);
+
+                    // Create the HTTP connection with all non-null values
                     HomekitHttpConnection appConnection = new HomekitHttpConnection(config, connector, appEndPoint,
                             httpCompliance, isRecordHttpComplianceViolations());
                     appConnection.setUpgradable(false);
@@ -285,7 +290,7 @@ public class HomekitHttpConnectionFactory extends AbstractConnectionFactory
         }
 
         if (logger.isDebugEnabled()) {
-            logger.trace("{}There is no existing Session {}", LOG_STATE, endPoint.getRemoteAddress().toString());
+            logger.trace("{}There is no existing Session {}", LOG_STATE, remoteAddressStr);
         }
 
         HttpConnection conn = new HomekitHttpConnection(config, connector, endPoint, httpCompliance,

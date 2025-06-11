@@ -356,13 +356,23 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
             logger.debug("{}Base server initialization completed", LOG_SERVER);
 
             // Initialize Jetty server if not already initialized
-            if (server != null && !server.isStarted()) {
-                Objects.requireNonNull(server).start();
+            Server currentServer = server;
+            if (currentServer == null) {
+                logger.error("{}Jetty server is not initialized", LOG_ERROR);
+                throw new HomekitServerException("Jetty server is not initialized");
+            }
+
+            if (!currentServer.isStarted()) {
+                currentServer.start();
                 logger.info("{}Jetty server started successfully", LOG_SERVER);
             } else {
                 logger.debug("{}Jetty server already running", LOG_SERVER);
             }
 
+            // Only advertise if announcedServiceDescription is null
+            if (announcedServiceDescription == null) {
+                advertise();
+            }
         } catch (Exception e) {
             logger.error("{}Failed to start server: {}", LOG_ERROR, e.getMessage(), e);
             try {
@@ -379,8 +389,11 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
         logger.debug("{}Stopping Homekit server", LOG_SERVER);
         try {
             // Stop Jetty server
-            if (server != null && server.isStarted()) {
-                Objects.requireNonNull(server).stop();
+            Server currentServer = server;
+            if (currentServer == null) {
+                logger.warn("{}Jetty server is not initialized", LOG_WARN);
+            } else if (currentServer.isStarted()) {
+                currentServer.stop();
                 logger.info("{}Jetty server stopped successfully", LOG_SERVER);
             } else {
                 logger.debug("{}Jetty server already stopped", LOG_SERVER);
@@ -403,15 +416,18 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
             stop();
 
             // Clean up Jetty server resources
-            if (server != null) {
+            Server currentServer = server;
+            if (currentServer != null) {
                 logger.debug("{}Destroying Jetty server - Server: {}", LOG_SERVER, getUID());
-                Objects.requireNonNull(server).destroy();
+                currentServer.destroy();
+                server = null;
             }
 
             // Clean up mDNS service registration
-            if (announcedServiceDescription != null) {
+            ServiceDescription currentServiceDescription = announcedServiceDescription;
+            if (currentServiceDescription != null) {
                 logger.debug("{}Unregistering mDNS service - Server: {}", LOG_SERVER, getUID());
-                mdnsService.unregisterService(announcedServiceDescription);
+                mdnsService.unregisterService(currentServiceDescription);
                 announcedServiceDescription = null;
             }
 
@@ -748,6 +764,10 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     private void updateExistingAdvertisement(Hashtable<@Nullable String, @Nullable String> props) {
         logger.debug("{}Updating existing advertisement", LOG_SERVER);
         if (announcedServiceDescription != null) {
+            // Null Pointer Access Warning Checked
+            // We've already verified announcedServiceDescription is not null in the if-condition,
+            // but static analysis still flags this as a potential null pointer access
+            // Objects.requireNonNull is used to satisfy the static analyzer
             Objects.requireNonNull(announcedServiceDescription).serviceProperties = props;
             Objects.requireNonNull(mdnsService).unregisterService(announcedServiceDescription);
             Objects.requireNonNull(mdnsService).registerService(announcedServiceDescription);
@@ -790,11 +810,14 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
 
     protected void handleCharacteristicEvent(HomekitCharacteristicEvent event) {
         logger.debug("{}Received characteristic event - Type: {}, HomekitCharacteristic: {}", LOG_EVENT,
-                event.getType(), event.getCharacteristic().getClass().getSimpleName());
+                event.getType(), event.getCharacteristic().map(c -> c.getClass().getSimpleName()).orElse("Unknown"));
         if (event.getType() == HomekitEventType.CHARACTERISTIC_STATE_CHANGED && event.getCharacteristic().isPresent()
                 && characteristicServlet != null) {
-            characteristicServlet.publishCharacteristicUpdate(event.getCharacteristic().get());
-            logger.debug("{}Published characteristic update", LOG_EVENT);
+            HomekitCharacteristicServlet servlet = characteristicServlet;
+            if (servlet != null) {
+                servlet.publishCharacteristicUpdate(event.getCharacteristic().get());
+                logger.debug("{}Published characteristic update", LOG_EVENT);
+            }
         }
     }
 

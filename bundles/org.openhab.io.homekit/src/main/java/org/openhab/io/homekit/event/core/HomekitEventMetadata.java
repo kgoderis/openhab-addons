@@ -321,8 +321,10 @@ public class HomekitEventMetadata {
      * @return true if the event was created by the component
      */
     public boolean isCreatedBy(UID componentId) {
-        Boolean result = immediateOrigin.map(origin -> componentId.equals(origin)).orElse(Boolean.FALSE);
-        return result != null ? result.booleanValue() : false;
+        if (immediateOrigin.isPresent()) {
+            return immediateOrigin.get().equals(componentId);
+        }
+        return false;
     }
 
     /**
@@ -332,8 +334,10 @@ public class HomekitEventMetadata {
      * @return true if the event is from a peer in the group
      */
     public boolean isFromPeerGroup(Set<HomekitUID> peerGroup) {
-        Boolean result = immediateOrigin.map(origin -> peerGroup.contains(origin)).orElse(Boolean.FALSE);
-        return result != null ? result.booleanValue() : false;
+        if (immediateOrigin.isPresent()) {
+            return peerGroup.contains(immediateOrigin.get());
+        }
+        return false;
     }
 
     // =============== Correlation Methods ===============
@@ -372,6 +376,8 @@ public class HomekitEventMetadata {
      * @return true if the correlation tracking has expired
      */
     public boolean hasCorrelationExpired() {
+        // Null Pointer Access Warning Checked
+        // correlationTimestamp is a primitive long, so it cannot be null
         return System.currentTimeMillis() - correlationTimestamp > CORRELATION_ID_EXPIRY_MS;
     }
 

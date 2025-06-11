@@ -1,0 +1,6 @@
+Warning Categories:
+1. Potential null pointer access: 37
+2. Redundant null checks: 5
+3. Unused imports: 16
+4. Unused methods/fields: 3
+5. Plugin validation issues: 1

@@ -290,6 +290,7 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
     protected ByteBuffer onUpgradeFrom() {
         if (decryptedInputBuffer != null && decryptedInputBuffer.hasRemaining()) {
             logger.debug("{}Handling protocol upgrade with remaining content", LOG_STATE);
+            // Null Pointer Access Warning Checked
             ByteBuffer upgradeBuffer = ByteBuffer.allocate(Objects.requireNonNull(decryptedInputBuffer).remaining());
             upgradeBuffer.put(decryptedInputBuffer).flip();
             return upgradeBuffer;
@@ -414,24 +415,24 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
                                     BufferUtil.toDetailString(decryptedInputBuffer));
                         }
 
-                        // Add null checks before calling decryptBuffer
-                        if (decryptedInputBuffer != null && encryptedInputBuffer != null && decryptionKey != null) {
-                            // Use Objects.requireNonNull to ensure compiler understands these are non-null
-                            ByteBuffer nonNullDecryptedBuffer = Objects.requireNonNull(decryptedInputBuffer);
-                            ByteBuffer nonNullEncryptedBuffer = Objects.requireNonNull(encryptedInputBuffer);
-                            byte[] nonNullDecryptionKey = Objects.requireNonNull(decryptionKey);
+                        if (decryptionKey != null) {
+                            // Null Pointer Access Warning Checked
+                            // Explicitly check and assign to local variables to prevent NPE
+                            ByteBuffer safeDecryptedBuffer = Objects.requireNonNull(decryptedInputBuffer);
+                            ByteBuffer safeEncryptedBuffer = Objects.requireNonNull(encryptedInputBuffer);
+                            byte[] safeDecryptionKey = Objects.requireNonNull(decryptionKey);
 
-                            int position = nonNullDecryptedBuffer.position();
-                            SequenceBuffer sBuffer = HomekitEncryptionEngine.decryptBuffer(nonNullDecryptedBuffer,
-                                    nonNullEncryptedBuffer, nonNullDecryptionKey, inboundSequenceCount);
-                            BufferUtil.flipToFlush(nonNullDecryptedBuffer, position);
+                            int position = safeDecryptedBuffer.position();
+                            SequenceBuffer sBuffer = HomekitEncryptionEngine.decryptBuffer(safeDecryptedBuffer,
+                                    safeEncryptedBuffer, safeDecryptionKey, inboundSequenceCount);
+                            BufferUtil.flipToFlush(safeDecryptedBuffer, position);
 
                             if (logger.isTraceEnabled()) {
                                 logger.trace(
                                         "[{}] Receive : After decryption : encryptedInputBuffer={}, decryptedInputBuffer={}, sBuffer={}}",
                                         endPoint.getRemoteAddress().toString(),
-                                        BufferUtil.toDetailString(nonNullEncryptedBuffer),
-                                        BufferUtil.toDetailString(nonNullDecryptedBuffer),
+                                        BufferUtil.toDetailString(safeEncryptedBuffer),
+                                        BufferUtil.toDetailString(safeDecryptedBuffer),
                                         BufferUtil.toDetailString(sBuffer.buffer));
                             }
 
@@ -443,11 +444,11 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
                                 logger.trace(
                                         "[{}] Receive : Before parsing : encryptedInputBuffer={}, decryptedInputBuffer={}",
                                         endPoint.getRemoteAddress().toString(),
-                                        BufferUtil.toDetailString(nonNullEncryptedBuffer),
-                                        BufferUtil.toDetailString(nonNullDecryptedBuffer));
+                                        BufferUtil.toDetailString(safeEncryptedBuffer),
+                                        BufferUtil.toDetailString(safeDecryptedBuffer));
                             }
                         } else {
-                            logger.warn("{}Cannot decrypt: buffers or key are null", LOG_WARN);
+                            logger.warn("{}Cannot decrypt: decryption key is null", LOG_WARN);
                         }
 
                     } else {
@@ -471,6 +472,7 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
                             return;
                         }
                     }
+                    // Null Pointer Access Warning Checked
                     releaseBuffer(decryptedInputBuffer);
                     decryptedInputBuffer = null;
                     fillInterested();
@@ -605,6 +607,10 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
         }
 
         String method = exchange.getRequest().getMethod();
+        if (method == null) {
+            return false;
+        }
+
         parser.setHeadResponse(
                 HttpMethod.HEAD.is(method) || (HttpMethod.CONNECT.is(method) && status == HttpStatus.OK_200));
         exchange.getResponse().version(HomekitHttpVersion.convert(version)).status(status).reason(reason);

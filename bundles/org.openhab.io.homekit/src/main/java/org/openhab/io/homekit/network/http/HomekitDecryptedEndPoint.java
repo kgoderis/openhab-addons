@@ -20,7 +20,6 @@ import java.nio.channels.ReadPendingException;
 import java.nio.channels.WritePendingException;
 import java.util.concurrent.Executor;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.io.AbstractConnection;
 import org.eclipse.jetty.io.ByteBufferPool;
@@ -44,7 +43,6 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Karel Goderis - Initial contribution
  */
-@NonNullByDefault
 public class HomekitDecryptedEndPoint implements EndPoint {
 
     protected static final Logger logger = LoggerFactory.getLogger(HomekitDecryptedEndPoint.class);
@@ -299,7 +297,7 @@ public class HomekitDecryptedEndPoint implements EndPoint {
 
     @Override
     @SuppressWarnings("null") // Parent EndPoint interface doesn't constrain this parameter
-    public boolean flush(ByteBuffer @Nullable... buffers) throws IOException {
+    public boolean flush(ByteBuffer... buffers) throws IOException {
         if (buffers == null) {
             return true;
         }
@@ -588,11 +586,14 @@ public class HomekitDecryptedEndPoint implements EndPoint {
 
     @Override
     public String toString() {
-        return String.format("%s->%s", toEndPointString(), toConnectionString());
+        InetSocketAddress remoteAddress = getRemoteAddress();
+        String remoteAddressStr = remoteAddress != null ? remoteAddress.toString() : "unknown";
+        Connection conn = getConnection();
+        String connStr = conn != null ? conn.toString() : "null";
+        return String.format("%s@%x[%s,%s]", getClass().getSimpleName(), hashCode(), remoteAddressStr, connStr);
     }
 
     public String toEndPointString() {
-
         ByteBuffer b = encryptedInputBuffer;
         int ei = b == null ? -1 : b.remaining();
         b = encryptedOutputBuffer;
@@ -600,11 +601,21 @@ public class HomekitDecryptedEndPoint implements EndPoint {
         b = decryptedInputBuffer;
         int di = b == null ? -1 : b.remaining();
 
+        // getClass() always returns a non-null value for any object instance
         Class<?> c = getClass();
-        String name = c != null ? c.getSimpleName() : "Unknown";
-        while (name.length() == 0 && c != null && c.getSuperclass() != null) {
-            c = c.getSuperclass();
-            name = c != null ? c.getSimpleName() : "Unknown";
+        String name = c.getSimpleName();
+        // If we have an anonymous class, the simple name will be empty - try to get parent class name
+        while (name.length() == 0) {
+            Class<?> superClass = c.getSuperclass();
+            if (superClass == null) {
+                break;
+            }
+            c = superClass;
+            name = c.getSimpleName();
+        }
+        // Use "Unknown" as fallback if we couldn't determine a name
+        if (name.length() == 0) {
+            name = "Unknown";
         }
 
         return String.format("%s~>%s@%h{encryptedInputBuffer=%d,encryptedOutputBuffer=%d,decryptedInputBuffer=%d}",

@@ -106,10 +106,10 @@ public class HomekitEventGraphProcessor {
         addNode(sourceId);
         addNode(targetId);
 
-        Set<String> sourceEdges = graph.get(sourceId);
-        if (sourceEdges != null) {
-            sourceEdges.add(targetId);
-        }
+        // Null Pointer Access Warning Checked
+        // computeIfAbsent cannot return null since we're providing a non-null supplier function
+        Set<String> edges = graph.computeIfAbsent(sourceId, k -> new HashSet<>());
+        edges.add(targetId);
 
         EventProcessingNode sourceNode = nodes.get(sourceId);
         if (sourceNode != null) {
@@ -122,7 +122,9 @@ public class HomekitEventGraphProcessor {
         }
 
         String edgeId = sourceId + "->" + targetId;
-        edgeMetadata.computeIfAbsent(edgeId, k -> new HashMap<>());
+        // Null Pointer Access Warning Checked
+        // computeIfAbsent cannot return null since we're providing a non-null supplier function
+        Map<String, Object> metadata = edgeMetadata.computeIfAbsent(edgeId, k -> new HashMap<>());
     }
 
     /**

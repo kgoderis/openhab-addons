@@ -70,8 +70,10 @@ public class HomekitCurrentVisibilityStateCharacteristic extends HomekitEnumChar
 
     @Override
     public boolean isAllowedValue(@Nullable Integer value) {
-        return value != null && (value == CurrentVisibilityState.SHOWN.getCode()
-                || value == CurrentVisibilityState.HIDDEN.getCode());
+        if (value == null) {
+            return false;
+        }
+        return value == CurrentVisibilityState.SHOWN.getCode() || value == CurrentVisibilityState.HIDDEN.getCode();
     }
 
     @Override

@@ -51,6 +51,9 @@ public class HomekitFirmwareUpdateReadinessCharacteristic extends HomekitEnumCha
 
     @Override
     public boolean isAllowedValue(@Nullable Integer value) {
-        return value != null && value >= READY && value <= IN_PROGRESS;
+        if (value == null) {
+            return false;
+        }
+        return value >= READY && value <= IN_PROGRESS;
     }
 }

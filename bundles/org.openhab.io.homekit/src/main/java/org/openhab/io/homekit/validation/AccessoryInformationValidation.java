@@ -107,7 +107,9 @@ public class AccessoryInformationValidation extends AbstractValidation {
 
         // Get all characteristics for this service
         Set<HomekitCharacteristic<?>> characteristics = service.getCharacteristics();
-        if (characteristics == null) {
+        // Due to the @NonNullByDefault annotation and the interface design, characteristics cannot be null
+        // If empty, we should still validate but there will be missing required characteristics
+        if (characteristics.isEmpty()) {
             issues.add(createIssue(ValidationResult.Severity.ERROR,
                     "No characteristics found for Accessory Information service", "NO_CHARACTERISTICS",
                     getContextKey(thing) + ":" + serviceUuid, true, true));

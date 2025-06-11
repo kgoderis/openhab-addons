@@ -182,11 +182,11 @@ public class HomekitTaggedItem {
                         throw new BadItemConfigurationException("Nested HomekitAccessory Groups are not supported");
                     }
 
-                    @SuppressWarnings("null") // List.get(0) is safe here as case 1 guarantees list has exactly 1
-                                              // element
+                    // Case 1 guarantees list has exactly 1 element
                     GroupItem firstGroup = matchingGroupItems.get(0);
                     parentGroupItem = firstGroup;
-                    String groupName = parentGroupItem != null ? parentGroupItem.getName() : "unknown";
+                    // We know firstGroup cannot be null at this point (we just got it from a non-empty list)
+                    String groupName = firstGroup.getName();
                     logger.debug("{}Item {} belongs to accessory group {}", LOG_CONFIG, item.getName(), groupName);
                 }
                 default -> { // Belongs to more than one accessory group
@@ -216,16 +216,17 @@ public class HomekitTaggedItem {
      *
      * @return Optional containing the Homekit service type if found, empty otherwise
      */
-    @SuppressWarnings("null")
     private Optional<String> determineServiceTagOptional() {
-        if (!homekitTags.isEmpty()) {
-            @SuppressWarnings("null") // iterator().next() is safe after isEmpty() check
-            String firstTag = homekitTags.iterator().next();
-            if (serviceFactory.supportsTag(firstTag)) {
-                logger.debug("{}Found service tag {} for item {}", LOG_CONFIG, firstTag, item.getName());
-                return Optional.of(firstTag);
-            }
+        if (homekitTags.isEmpty()) {
+            return Optional.empty();
         }
+
+        String firstTag = homekitTags.iterator().next();
+        if (serviceFactory.supportsTag(firstTag)) {
+            logger.debug("{}Found service tag {} for item {}", LOG_CONFIG, firstTag, item.getName());
+            return Optional.of(firstTag);
+        }
+
         return Optional.empty();
     }
 
@@ -235,16 +236,17 @@ public class HomekitTaggedItem {
      *
      * @return Optional containing the Homekit characteristic type if found, empty otherwise
      */
-    @SuppressWarnings("null")
     private Optional<String> determineCharacteristicTagOptional() {
-        if (!homekitTags.isEmpty()) {
-            @SuppressWarnings("null") // iterator().next() is safe after isEmpty() check
-            String firstTag = homekitTags.iterator().next();
-            if (characteristicFactory.supportsTag(firstTag)) {
-                logger.debug("{}Found characteristic tag {} for item {}", LOG_CONFIG, firstTag, item.getName());
-                return Optional.of(firstTag);
-            }
+        if (homekitTags.isEmpty()) {
+            return Optional.empty();
         }
+
+        String firstTag = homekitTags.iterator().next();
+        if (characteristicFactory.supportsTag(firstTag)) {
+            logger.debug("{}Found characteristic tag {} for item {}", LOG_CONFIG, firstTag, item.getName());
+            return Optional.of(firstTag);
+        }
+
         return Optional.empty();
     }
 
@@ -433,24 +435,20 @@ public class HomekitTaggedItem {
     }
 
     private List<GroupItem> findMyAccessoryGroupsInternal() {
-        @SuppressWarnings("null") // Collectors.toList() never returns null
-        List<GroupItem> result = item.getGroupNames().stream().map(name -> {
-            @SuppressWarnings("null") // itemRegistry.get() can return null, which is filtered out below
-            Item groupItem = itemRegistry.get(name);
-            return groupItem;
-        }).filter(item -> item instanceof GroupItem).map(item -> (GroupItem) item).filter(group -> {
-            Collection<String> groupTags = getHomekitTags(group);
-            if (!groupTags.isEmpty()) {
-                @SuppressWarnings("null") // iterator().next() is safe after isEmpty() check
-                String firstTag = groupTags.iterator().next();
-                boolean isAccessory = serviceFactory.supportsTag(firstTag);
-                logger.debug("{}Group {} is {}an accessory group", LOG_CONFIG, group.getName(),
-                        isAccessory ? "" : "not ");
-                return isAccessory;
-            }
-            return false;
-        }).collect(Collectors.<GroupItem> toList());
-        return result;
+        @SuppressWarnings("null") // itemRegistry.getItemsByTag() will never return null
+        Collection<Item> accessoryGroups = itemRegistry.getItemsByTag("Homekit");
+        logger.debug("{}Found {} groups with HomeKit tag for item {}", LOG_CONFIG, accessoryGroups.size(),
+                item.getName());
+
+        return accessoryGroups.stream().filter(i -> i instanceof GroupItem).map(i -> (GroupItem) i)
+                .filter(groupItem -> {
+                    // Null Pointer Access Warning Checked
+                    // groupItem is non-null due to filter and map operations above
+                    boolean isAccessory = groupItem.getMembers().contains(item);
+                    logger.debug("{}Group {} {} item {}", LOG_CONFIG, groupItem.getName(),
+                            isAccessory ? "contains" : "does not contain", item.getName());
+                    return isAccessory;
+                }).collect(Collectors.toList());
     }
 
     /**

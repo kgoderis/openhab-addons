@@ -255,6 +255,9 @@ public class HomekitPairingServlet extends HomekitBaseServlet {
 
             try {
                 if (server != null) {
+                    // Both parameters are non-null as they were retrieved from the decoder
+                    // If they were null, an error would have been logged and we wouldn't reach this point
+                    // Null Pointer Access Warning Checked
                     server.addPairing(additionalControllerPairingIdentifier, additionalControllerLTPK);
                 } else {
                     logger.error("{}Server instance is null", LOG_ERROR);
@@ -333,6 +336,9 @@ public class HomekitPairingServlet extends HomekitBaseServlet {
 
             try {
                 if (server != null) {
+                    // removedControllerPairingIdentifier is non-null as it was retrieved from the decoder
+                    // If it was null, an error would have been logged and we wouldn't reach this point
+                    // Null Pointer Access Warning Checked
                     server.removePairing(removedControllerPairingIdentifier);
                 } else {
                     logger.error("{}Server instance is null", LOG_ERROR);

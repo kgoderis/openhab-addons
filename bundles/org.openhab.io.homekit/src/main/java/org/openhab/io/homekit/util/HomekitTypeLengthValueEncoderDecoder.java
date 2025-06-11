@@ -384,8 +384,13 @@ public class HomekitTypeLengthValueEncoderDecoder {
          * @param srcOffset The source offset
          */
         public void getBytes(HomekitMessage type, byte[] dest, int srcOffset) {
+            // Null Pointer Access Warning Checked
             byte[] b = result.get(type.getKey());
-            System.arraycopy(b, srcOffset, dest, 0, Math.min(dest.length, b.length));
+            if (b != null) {
+                System.arraycopy(b, srcOffset, dest, 0, Math.min(dest.length, b.length));
+            } else {
+                throw new IllegalArgumentException("No data found for message type: " + type);
+            }
         }
 
         /**

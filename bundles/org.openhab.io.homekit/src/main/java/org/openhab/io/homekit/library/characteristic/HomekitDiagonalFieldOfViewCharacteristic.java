@@ -67,6 +67,9 @@ public class HomekitDiagonalFieldOfViewCharacteristic extends HomekitFloatCharac
      */
     @Override
     public boolean isAllowedValue(@Nullable Double value) {
-        return value != null && value >= 0.0 && value <= 360.0;
+        if (value == null) {
+            return false;
+        }
+        return value >= 0.0 && value <= 360.0;
     }
 }

@@ -73,7 +73,10 @@ public class HomekitCurrentHeaterCoolerStateCharacteristic extends HomekitEnumCh
 
     @Override
     public boolean isAllowedValue(@Nullable Integer value) {
-        return value != null && value >= 0 && value < HeaterCoolerState.values().length;
+        if (value == null) {
+            return false;
+        }
+        return value >= 0 && value < HeaterCoolerState.values().length;
     }
 
     @Override

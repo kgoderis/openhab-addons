@@ -606,16 +606,23 @@ public class HomekitHttpGenerator extends HttpGenerator {
                 if (info == null) {
                     return Result.NEED_INFO;
                 }
-
                 if (header == null) {
                     return Result.NEED_HEADER;
                 }
 
                 // If we have not been told our persistence, set the default
                 if (_persistent == null) {
-                    _persistent = info.getHttpVersion().ordinal() > HttpVersion.HTTP_1_0.ordinal();
-                    if (!_persistent && HttpMethod.CONNECT.is(info.getMethod())) {
-                        _persistent = true;
+                    HttpVersion version = info.getHttpVersion();
+                    // Null Pointer Access Warning Checked
+                    if (version != null) {
+                        _persistent = version.ordinal() > HttpVersion.HTTP_1_0.ordinal();
+                        String method = info.getMethod();
+                        // Method might be null, but HttpMethod.CONNECT.is(method) handles this safely
+                        if (!_persistent && method != null && HttpMethod.CONNECT.is(method)) {
+                            _persistent = true;
+                        }
+                    } else {
+                        _persistent = false;
                     }
                 }
 
@@ -778,9 +785,7 @@ public class HomekitHttpGenerator extends HttpGenerator {
                 if (version == null) {
                     throw new BadMessageException(500, "No version");
                 }
-                @SuppressWarnings("null") // version is checked for null above
-                HttpVersion checkedVersion = version;
-                switch (checkedVersion) {
+                switch (version) {
                     case HTTP_1_0:
                         if (_persistent == null) {
                             _persistent = Boolean.FALSE;
@@ -797,6 +802,10 @@ public class HomekitHttpGenerator extends HttpGenerator {
                         _persistent = false;
                         _endOfContent = EndOfContent.EOF_CONTENT;
                         if (content != null && BufferUtil.hasContent(content)) {
+                            // Safe to access content.remaining() since we've performed two checks:
+                            // 1. content != null - verifies the buffer exists
+                            // 2. BufferUtil.hasContent(content) - ensures the buffer has actual content
+                            // Both checks are required before safely calling content.remaining()
                             _contentPrepared += content.remaining();
                         }
                         _state = last ? State.COMPLETING : State.COMMITTED;
@@ -967,11 +976,15 @@ public class HomekitHttpGenerator extends HttpGenerator {
      * @param header The buffer to write the request line to
      */
     private void generateRequestLine(MetaData.Request request, ByteBuffer header) {
+        HttpVersion version = request.getHttpVersion();
+        if (version == null) {
+            throw new BadMessageException(500, "No version");
+        }
         header.put(StringUtil.getBytes(request.getMethod()));
         header.put((byte) ' ');
         header.put(StringUtil.getBytes(request.getURIString()));
         header.put((byte) ' ');
-        header.put(request.getHttpVersion().toBytes());
+        header.put(version.toBytes());
         header.put(CRLF);
     }
 
@@ -991,51 +1004,23 @@ public class HomekitHttpGenerator extends HttpGenerator {
      * @param version The HTTP version bytes to use
      */
     private void generateResponseLine(MetaData.Response response, ByteBuffer header, byte[] version) {
-        // Look for prepared response line
+        HttpVersion httpVersion = response.getHttpVersion();
+        if (httpVersion == null) {
+            httpVersion = HttpVersion.HTTP_1_1;
+        }
+
         int status = response.getStatus();
         String reason = response.getReason();
+        if (reason == null) {
+            HttpStatus.Code code = HttpStatus.getCode(status);
+            reason = code != null ? code.getMessage() : "Unknown";
+        }
 
         header.put(version);
-        header.put((byte) ('0' + status / 100));
-        header.put((byte) ('0' + (status % 100) / 10));
-        header.put((byte) ('0' + (status % 10)));
-        header.put((byte) ' ');
-        if (reason == null) {
-            header.put((byte) ('0' + status / 100));
-            header.put((byte) ('0' + (status % 100) / 10));
-            header.put((byte) ('0' + (status % 10)));
-        } else {
-            header.put(getReasonBytes(reason));
-        }
+        header.put(StringUtil.getBytes(String.valueOf(status)));
+        header.put(SPACE);
+        header.put(StringUtil.getBytes(reason));
         header.put(CRLF);
-    }
-
-    /**
-     * Gets the reason phrase bytes for a given reason string.
-     *
-     * This method sanitizes the reason string and converts it to bytes,
-     * ensuring it is valid for HTTP headers.
-     *
-     * Key implementation details:
-     * - Truncates long reasons
-     * - Sanitizes invalid characters
-     * - Converts to bytes
-     *
-     * @param reason The reason phrase string
-     * @return The sanitized reason phrase bytes
-     */
-    private byte[] getReasonBytes(String reason) {
-        if (reason.length() > 1024) {
-            reason = reason.substring(0, 1024);
-        }
-        byte[] _bytes = StringUtil.getBytes(reason);
-
-        for (int i = _bytes.length; i-- > 0;) {
-            if (_bytes[i] == '\r' || _bytes[i] == '\n') {
-                _bytes[i] = '?';
-            }
-        }
-        return _bytes;
     }
 
     /**

@@ -74,7 +74,10 @@ public class HomekitCurrentHumidifierDehumidifierStateCharacteristic extends Hom
 
     @Override
     public boolean isAllowedValue(@Nullable Integer value) {
-        return value != null && value >= 0 && value < CurrentHumidifierDehumidifierState.values().length;
+        if (value == null) {
+            return false;
+        }
+        return value >= 0 && value < CurrentHumidifierDehumidifierState.values().length;
     }
 
     @Override

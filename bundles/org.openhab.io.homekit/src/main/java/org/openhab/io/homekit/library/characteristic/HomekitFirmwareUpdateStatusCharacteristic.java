@@ -76,7 +76,9 @@ public class HomekitFirmwareUpdateStatusCharacteristic extends HomekitEnumCharac
 
     @Override
     public boolean isAllowedValue(@Nullable Integer value) {
-        return value != null && value >= FirmwareUpdateStatus.IDLE.getValue()
-                && value <= FirmwareUpdateStatus.FAILED.getValue();
+        if (value == null) {
+            return false;
+        }
+        return value >= FirmwareUpdateStatus.IDLE.getValue() && value <= FirmwareUpdateStatus.DOWNLOADING.getValue();
     }
 }

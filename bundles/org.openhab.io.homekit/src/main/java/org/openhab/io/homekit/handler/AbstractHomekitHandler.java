@@ -29,7 +29,6 @@ import javax.json.JsonValue;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.config.core.Configuration;
-import org.openhab.core.i18n.ConfigurationException;
 import org.openhab.core.thing.Channel;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
@@ -402,16 +401,19 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
                 return;
             }
 
-            if (currentStatus != status || currentStatusDetail != detail
+            if (status != currentStatus || detail != currentStatusDetail
                     || (currentStatusDescription == null && description != null) || (currentStatusDescription != null
-                            && description != null && !currentStatusDescription.equals(description))) {
+                            && description != null && !Objects.equals(currentStatusDescription, description))) {
 
                 currentStatus = status;
                 currentStatusDetail = detail;
                 currentStatusDescription = description;
 
+                // The updateStatus method from BaseThingHandler safely handles null description values
+                // We'll avoid the unnecessary null check here since description is already @Nullable
                 updateStatus(status, detail, description);
-                logger.debug("{}State updated to {} ({}): {}", LOG_PREFIX, status, detail, description);
+                logger.debug("{}State updated to {} ({}): {}", LOG_PREFIX, status, detail,
+                        description != null ? description : "no description");
             }
         }
     }
@@ -457,7 +459,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
             validateEventData(event);
             handleAccessoryServerEvent(event);
         } catch (IllegalArgumentException e) {
-            logger.error("{}Invalid server event data: {}", e.getMessage());
+            logger.error("{}Invalid server event data: {}", LOG_EVENT, e.getMessage());
         }
     }
 
@@ -1484,9 +1486,12 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
                                 .get(new HomekitAccessoryServerUIDImpl(accessoryServerPairingId));
                         if (foundServer != null) {
                             setServer(foundServer);
-                            eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVER_STATE_CHANGED,
-                                    (UID) foundServer.getUID(), (UID) thing.getUID(),
-                                    event -> onAccessoryServerEvent((HomekitAccessoryServerEvent) event)));
+                            // Make sure to safely cast to UID by using Objects.requireNonNull
+                            UID serverUID = Objects.requireNonNull((UID) foundServer.getUID());
+                            UID thingUID = Objects.requireNonNull((UID) thing.getUID());
+                            eventSubscriptions.add(
+                                    eventManager.subscribe(HomekitEventType.SERVER_STATE_CHANGED, serverUID, thingUID,
+                                            event -> onAccessoryServerEvent((HomekitAccessoryServerEvent) event)));
                             logger.debug("{}Recovered server connection", LOG_INIT);
                         } else {
                             logger.warn("{}Server not found during recovery", LOG_INIT);
@@ -1503,9 +1508,11 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
                                 .get(new HomekitAccessoryUIDImpl(accessoryId));
                         if (foundAccessory != null) {
                             setAccessory(foundAccessory);
+                            // Make sure to safely cast to UID by using Objects.requireNonNull
+                            UID accessoryUID = Objects.requireNonNull((UID) foundAccessory.getUID());
+                            UID thingUID = Objects.requireNonNull((UID) thing.getUID());
                             eventSubscriptions.add(eventManager.subscribe(HomekitEventType.ACCESSORY_STATE_CHANGED,
-                                    (UID) foundAccessory.getUID(), (UID) thing.getUID(),
-                                    event -> onAccessoryEvent((HomekitAccessoryEvent) event)));
+                                    accessoryUID, thingUID, event -> onAccessoryEvent((HomekitAccessoryEvent) event)));
                             logger.debug("{}Recovered accessory connection", LOG_INIT);
                         } else {
                             logger.warn("{}HomekitAccessory not found during recovery", LOG_INIT);
