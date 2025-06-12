@@ -1797,10 +1797,10 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     // overly conservative null analysis in complex JSON parsing and reflection operations
     @SuppressWarnings("unchecked") // Safe cast - decode method ensures type compatibility
     public static <T> T fromJson(String json, Class<T> beanClass) {
-        try (JsonReader reader = Json.createReader(new StringReader(json))) {
-            JsonValue value = reader.read();
-            return (T) decode(value, beanClass).orElseThrow(
-                    () -> new IllegalArgumentException("Failed to decode JSON to " + beanClass.getSimpleName()));
+        try (JsonReader jsonReader = Json.createReader(new StringReader(json))) {
+            JsonValue jsonValue = jsonReader.read();
+            Optional<Object> decoded = decode(jsonValue, beanClass);
+            return (T) decoded.orElseThrow(() -> new IllegalStateException("Failed to decode JSON to " + beanClass));
         }
     }
 
@@ -1855,18 +1855,17 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         }
     }
 
-    @SuppressWarnings({ "null", "resource" }) // Comprehensive suppression needed for reflection type
-                                              // operations
+    @SuppressWarnings({ "null" }) // Needed for reflection type operations
     private static Optional<Object> decodeArray(JsonArray jsonArray, Type targetType) {
         Class<?> targetClass = (Class<?>) ((targetType instanceof ParameterizedType)
                 ? ((ParameterizedType) targetType).getRawType()
                 : targetType);
 
         if (List.class.isAssignableFrom(targetClass)) {
-            // Comprehensive suppression for ParameterizedType operations - Eclipse overly conservative
-            @SuppressWarnings({ "null", "resource" })
+            // Suppression for ParameterizedType operations - Eclipse overly conservative
+            @SuppressWarnings({ "null" })
             ParameterizedType paramType = (ParameterizedType) targetType;
-            @SuppressWarnings({ "null", "resource" })
+            @SuppressWarnings({ "null" })
             Class<?> elementClass = (Class<?>) paramType.getActualTypeArguments()[0];
             List<Object> list = new ArrayList<>();
 
@@ -1899,18 +1898,17 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         }
     }
 
-    @SuppressWarnings({ "null", "resource" }) // Comprehensive suppression - Eclipse overly conservative
-                                              // with JSON & reflection
+    @SuppressWarnings({ "null" }) // Needed for reflection & JSON operations
     private static Optional<Object> decodeObject(JsonObject object, Type targetType) {
         Class<?> targetClass = (Class<?>) ((targetType instanceof ParameterizedType)
                 ? ((ParameterizedType) targetType).getRawType()
                 : targetType);
 
         if (Map.class.isAssignableFrom(targetClass)) {
-            // Comprehensive suppression for ParameterizedType operations - Eclipse overly conservative
-            @SuppressWarnings({ "null", "resource" })
+            // Suppression for ParameterizedType operations - Eclipse overly conservative
+            @SuppressWarnings({ "null" })
             ParameterizedType paramType = (ParameterizedType) targetType;
-            @SuppressWarnings({ "null", "resource" })
+            @SuppressWarnings({ "null" })
             Class<?> valueClass = (Class<?>) paramType.getActualTypeArguments()[1];
             Map<String, Object> map = new LinkedHashMap<>();
 
@@ -1939,10 +1937,12 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 @SuppressWarnings("null") // Constructor.newInstance() is safe with targetClass parameter
                 Object bean = ctor.newInstance(targetClass);
 
-                // The following block uses comprehensive null suppression due to Eclipse's overly
-                // conservative analysis of reflection operations and JSON parsing
-                @SuppressWarnings({ "null", "resource" })
-                PropertyDescriptor[] properties = Introspector.getBeanInfo(targetClass).getPropertyDescriptors();
+                // Get PropertyDescriptors from BeanInfo and ensure resources are properly managed
+                var beanInfo = Introspector.getBeanInfo(targetClass);
+                PropertyDescriptor[] properties = beanInfo.getPropertyDescriptors();
+                // Flush the BeanInfo caches to prevent resource leaks
+                Introspector.flushCaches();
+
                 for (PropertyDescriptor property : properties) {
                     @SuppressWarnings("null")
                     java.lang.reflect.Method writeMethod = property.getWriteMethod();

@@ -29,12 +29,10 @@ import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.exception.HomekitFactoryException;
+import org.openhab.io.homekit.util.HomekitAnnotationScanner;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-import org.reflections.Reflections;
-import org.reflections.scanners.Scanners;
-import org.reflections.util.ConfigurationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -154,7 +152,7 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
      * characteristic classes.
      *
      * <p>
-     * This method uses reflection to discover and register all characteristic types
+     * This method uses Java's reflection APIs to discover and register all characteristic types
      * and their associated metadata.
      * The initialization process:
      * </p>
@@ -170,7 +168,7 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
      * Key implementation details:
      * </p>
      * <ul>
-     * <li>Uses Reflections library for annotation scanning</li>
+     * <li>Uses HomekitAnnotationScanner for annotation scanning</li>
      * <li>Maintains thread-safe collections for characteristic types</li>
      * <li>Analyzes characteristic annotations for metadata</li>
      * <li>Logs detailed information about discovered characteristics</li>
@@ -183,12 +181,9 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
     private void initializeCharacteristicTypes() {
         logger.debug("{}Starting characteristic type initialization", LOG_INIT);
         try {
-            // Configure Reflections to scan the characteristic package
-            ConfigurationBuilder config = new ConfigurationBuilder()
-                    .forPackages("org.openhab.io.homekit.internal.characteristic").setScanners(Scanners.TypesAnnotated);
-
-            Reflections reflections = new Reflections(config);
-            Set<Class<?>> characteristicClasses = reflections.getTypesAnnotatedWith(HomekitCharacteristicType.class);
+            // Use HomekitAnnotationScanner to find annotated classes
+            Set<Class<?>> characteristicClasses = HomekitAnnotationScanner.findAnnotatedClasses(
+                    "org.openhab.io.homekit.internal.characteristic", HomekitCharacteristicType.class);
             logger.trace("{}Found {} annotated characteristic classes", LOG_TRACE, characteristicClasses.size());
 
             for (Class<?> characteristicClass : characteristicClasses) {

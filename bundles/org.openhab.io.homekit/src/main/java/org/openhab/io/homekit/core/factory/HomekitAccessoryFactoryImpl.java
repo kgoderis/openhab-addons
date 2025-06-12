@@ -32,12 +32,10 @@ import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.factory.HomekitServiceFactory;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.exception.HomekitFactoryException;
+import org.openhab.io.homekit.util.HomekitAnnotationScanner;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-import org.reflections.Reflections;
-import org.reflections.scanners.Scanners;
-import org.reflections.util.ConfigurationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -171,7 +169,7 @@ public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
      * classes.
      *
      * <p>
-     * This method uses reflection to discover and register all accessory types and
+     * This method uses Java's reflection APIs to discover and register all accessory types and
      * their associated metadata.
      * The initialization process:
      * </p>
@@ -187,7 +185,7 @@ public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
      * Key implementation details:
      * </p>
      * <ul>
-     * <li>Uses Reflections library for annotation scanning</li>
+     * <li>Uses HomekitAnnotationScanner for annotation scanning</li>
      * <li>Maintains thread-safe collections for accessory types</li>
      * <li>Analyzes accessory annotations for metadata</li>
      * <li>Logs detailed information about discovered accessories</li>
@@ -200,12 +198,9 @@ public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
     private void initializeAccessoryTypes() {
         logger.debug("{}Starting accessory type initialization", LOG_INIT);
         try {
-            // Configure Reflections to scan the accessory package
-            ConfigurationBuilder config = new ConfigurationBuilder()
-                    .forPackages("org.openhab.io.homekit.internal.accessory").setScanners(Scanners.TypesAnnotated);
-
-            Reflections reflections = new Reflections(config);
-            Set<Class<?>> accessoryClasses = reflections.getTypesAnnotatedWith(HomekitAccessoryType.class);
+            // Use HomekitAnnotationScanner to find annotated classes
+            Set<Class<?>> accessoryClasses = HomekitAnnotationScanner
+                    .findAnnotatedClasses("org.openhab.io.homekit.internal.accessory", HomekitAccessoryType.class);
             logger.trace("{}Found {} annotated accessory classes", LOG_TRACE, accessoryClasses.size());
 
             for (Class<?> accessoryClass : accessoryClasses) {

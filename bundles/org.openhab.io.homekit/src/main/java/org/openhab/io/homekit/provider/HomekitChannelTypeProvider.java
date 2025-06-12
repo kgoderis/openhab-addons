@@ -66,7 +66,7 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
-@Component(service = { ChannelTypeProvider.class })
+@Component(service = { HomekitChannelTypeProvider.class, ChannelTypeProvider.class })
 @NonNullByDefault
 public class HomekitChannelTypeProvider extends AbstractStorageBasedTypeProvider {
     private final Logger logger = LoggerFactory.getLogger(HomekitChannelTypeProvider.class);

@@ -53,6 +53,7 @@ import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
 import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.factory.HomekitServiceFactory;
+import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -140,7 +141,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     // ========== Service Dependencies ==========
     private final ItemRegistry itemRegistry;
     private final EventPublisher eventPublisher;
-    private final HomekitAccessoryRegistryImpl accessoryRegistry;
+    private final HomekitAccessoryRegistry accessoryRegistry;
     private final MetadataRegistry metadataRegistry;
     private final HomekitAccessoryServerRegistry accessoryServerRegistry;
     private final HomekitEventManager eventManager;
@@ -200,7 +201,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
      */
     @Activate
     public HomekitItemBridge(@Reference ItemRegistry itemRegistry, @Reference EventPublisher eventPublisher,
-            @Reference HomekitAccessoryRegistryImpl accessoryRegistry, @Reference MetadataRegistry metadataRegistry,
+            @Reference HomekitAccessoryRegistry accessoryRegistry, @Reference MetadataRegistry metadataRegistry,
             @Reference HomekitAccessoryServerRegistry accessoryServerRegistry,
             @Reference HomekitEventManager eventManager, @Reference HomekitAccessoryFactory accessoryFactory,
             @Reference HomekitServiceFactory serviceFactory,

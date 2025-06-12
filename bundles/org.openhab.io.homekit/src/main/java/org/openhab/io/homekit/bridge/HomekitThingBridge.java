@@ -64,7 +64,6 @@ import org.openhab.core.thing.ThingRegistry;
 import org.openhab.core.thing.ThingRegistryChangeListener;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.UID;
-import org.openhab.core.thing.internal.profiles.ProfileCallbackImpl;
 import org.openhab.core.thing.link.ItemChannelLink;
 import org.openhab.core.thing.link.ItemChannelLinkRegistry;
 import org.openhab.core.thing.profiles.Profile;
@@ -151,7 +150,7 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @since 1.0.0
  */
-@Component(service = { EventSubscriber.class, ThingRegistryChangeListener.class })
+@Component(service = { EventSubscriber.class, ThingRegistryChangeListener.class, HomekitThingBridge.class })
 @NonNullByDefault
 public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeListener {
     private static final String LOG_PREFIX = "[HomekitThingBridge] ";
@@ -1062,11 +1061,17 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
             }, context);
 
             // Create HomeKit -> OpenHAB profile
-            Profile homekitToOpenhabProfile = profileFactory.createProfile(profileTypeUID, new ProfileCallbackImpl(
-                    eventPublisher, safeCaller, itemStateConverter, link, thingRegistry::get,
-                    itemName -> getItem(itemName)
-                            .orElseThrow(() -> new IllegalArgumentException("Item not found: " + itemName)),
-                    (cmd, ch, item) -> ch != null && item != null ? toAcceptedCommand(cmd, ch, item).orElse(cmd) : cmd),
+            Profile homekitToOpenhabProfile = profileFactory.createProfile(profileTypeUID,
+                    new HomekitProfileCallbackImpl(eventPublisher, itemStateConverter, link, thingRegistry::get,
+                            itemName -> getItem(itemName)
+                                    .orElseThrow(() -> new IllegalArgumentException("Item not found: " + itemName)),
+                            (cmd, ch, item) -> {
+                                if (ch != null && item != null && cmd != null) {
+                                    Command result = toAcceptedCommand(cmd, ch, item).orElse(null);
+                                    return result != null ? result : cmd;
+                                }
+                                return cmd;
+                            }),
                     context);
 
             if (homekitToOpenhabProfile != null) {
@@ -1250,18 +1255,20 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
      * @since 1.0.0
      */
     private void handleProfileCommand(ChannelUID channelUID, Command command) {
-        @Nullable
         HomekitCharacteristic<?> characteristic = channelCharacteristicMap.get(channelUID);
-        if (characteristic != null) {
-            try {
-                HomekitCharacteristicUpdateEvent updateEvent = new HomekitCharacteristicUpdateEvent((UID) bridgeUID,
-                        (UID) characteristic.getUID(), characteristic, characteristic.toValueJson((State) command),
-                        null, Map.of(), new HomekitEventMetadata(bridgeUID, null, bridgeUID, Set.of()));
-                eventManager.publishEvent(updateEvent);
-            } catch (Exception e) {
-                logger.error("{}Failed to handle command for channel {}: {}", LOG_PREFIX, channelUID, e.getMessage(),
-                        e);
-            }
+        if (characteristic == null) {
+            logger.debug("{}Channel UID {} is not mapped to a characteristic", LOG_PREFIX, channelUID);
+            return;
+        }
+
+        logger.debug("{}Received command {} for channel {}", LOG_PREFIX, command, channelUID);
+        try {
+            HomekitCharacteristicUpdateEvent updateEvent = new HomekitCharacteristicUpdateEvent((UID) bridgeUID,
+                    (UID) characteristic.getUID(), characteristic, characteristic.toValueJson((State) command), null,
+                    Map.of(), new HomekitEventMetadata(bridgeUID, null, bridgeUID, Set.of()));
+            eventManager.publishEvent(updateEvent);
+        } catch (Exception e) {
+            logger.error("{}Failed to handle command for channel {}: {}", LOG_PREFIX, channelUID, e.getMessage(), e);
         }
     }
 

@@ -440,7 +440,9 @@ public class HomekitTaggedItem {
         logger.debug("{}Found {} groups with HomeKit tag for item {}", LOG_CONFIG, accessoryGroups.size(),
                 item.getName());
 
-        return accessoryGroups.stream().filter(i -> i instanceof GroupItem).map(i -> (GroupItem) i)
+        // Suppress the unsafe null type conversion warning as we know the collection is safe
+        @SuppressWarnings("restriction") // Suppress the warning about unsafe null type conversion
+        List<GroupItem> result = accessoryGroups.stream().filter(i -> i instanceof GroupItem).map(i -> (GroupItem) i)
                 .filter(groupItem -> {
                     // Null Pointer Access Warning Checked
                     // groupItem is non-null due to filter and map operations above
@@ -449,6 +451,8 @@ public class HomekitTaggedItem {
                             isAccessory ? "contains" : "does not contain", item.getName());
                     return isAccessory;
                 }).collect(Collectors.toList());
+
+        return result;
     }
 
     /**

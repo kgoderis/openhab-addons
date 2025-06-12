@@ -95,7 +95,7 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
-@Component(service = { ThingTypeProvider.class })
+@Component(service = { HomekitThingTypeProvider.class, ThingTypeProvider.class })
 @NonNullByDefault
 public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
     private final Logger logger = LoggerFactory.getLogger(HomekitThingTypeProvider.class);

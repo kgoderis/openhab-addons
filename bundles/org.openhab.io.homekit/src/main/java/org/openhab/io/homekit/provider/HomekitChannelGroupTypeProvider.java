@@ -74,7 +74,7 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  * @since 1.0
  */
-@Component(service = { ChannelGroupTypeProvider.class })
+@Component(service = { HomekitChannelGroupTypeProvider.class, ChannelGroupTypeProvider.class })
 @NonNullByDefault
 public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypeProvider {
     // ========== Log Message Prefixes ==========
