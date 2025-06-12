@@ -86,17 +86,18 @@ public class HomekitCharacteristicEvent extends AbstractHomekitEvent {
     private final Optional<JsonValue> newValue;
 
     /**
-     * Creates a new characteristic event with explicit publisher and subscriber UIDs.
+     * Creates a new characteristic event with a specific subscriber.
      *
      * @param type the type of event
-     * @param publisherUID the UID of the publisher that generated the event
-     * @param subscriberUID the UID of the subscriber that will receive the event
-     * @param characteristic the characteristic associated with the event
-     * @param oldValue the previous value of the characteristic
-     * @param newValue the new value of the characteristic
+     * @param publisherUID the UID of the publisher
+     * @param subscriberUID the UID of the subscriber
+     * @param characteristic the characteristic that generated the event
+     * @param serviceUID the UID of the service that contains the characteristic
+     * @param value the value associated with the event (may be null)
      * @param metadata additional metadata for the event
      */
-    @SuppressWarnings("null")
+    @SuppressWarnings("null") // Suppresses null analysis warnings for nullable parameters and null-safe casting
+                              // operations
     public HomekitCharacteristicEvent(HomekitEventType type, UID publisherUID, UID subscriberUID,
             HomekitCharacteristic<?> characteristic, @Nullable JsonValue oldValue, @Nullable JsonValue newValue,
             HomekitEventMetadata metadata) {
@@ -107,14 +108,15 @@ public class HomekitCharacteristicEvent extends AbstractHomekitEvent {
     }
 
     /**
-     * Creates a new characteristic event with default publisher and subscriber UIDs.
+     * Creates a new characteristic event with default metadata.
      *
      * @param type the type of event
-     * @param characteristic the characteristic associated with the event
-     * @param oldValue the previous value of the characteristic
-     * @param newValue the new value of the characteristic
+     * @param characteristic the characteristic that generated the event
+     * @param serviceUID the UID of the service that contains the characteristic
+     * @param value the value associated with the event (may be null)
      */
-    @SuppressWarnings("null")
+    @SuppressWarnings("null") // Suppresses null analysis warnings for nullable parameters and null-safe casting
+                              // operations
     public HomekitCharacteristicEvent(HomekitEventType type, HomekitCharacteristic<?> characteristic,
             @Nullable JsonValue oldValue, @Nullable JsonValue newValue) {
         super(type, characteristic != null ? (UID) characteristic.getUID() : (UID) new HomekitUID("characteristic"),
@@ -128,15 +130,16 @@ public class HomekitCharacteristicEvent extends AbstractHomekitEvent {
     }
 
     /**
-     * Creates a new characteristic event with metadata.
+     * Creates a new characteristic event with custom metadata.
      *
      * @param type the type of event
-     * @param characteristic the characteristic associated with the event
-     * @param oldValue the previous value of the characteristic
-     * @param newValue the new value of the characteristic
+     * @param characteristic the characteristic that generated the event
+     * @param serviceUID the UID of the service that contains the characteristic
+     * @param value the value associated with the event (may be null)
      * @param metadata additional metadata for the event
      */
-    @SuppressWarnings("null")
+    @SuppressWarnings("null") // Suppresses null analysis warnings for nullable parameters and null-safe casting
+                              // operations
     public HomekitCharacteristicEvent(HomekitEventType type, HomekitCharacteristic<?> characteristic,
             @Nullable JsonValue oldValue, @Nullable JsonValue newValue, HomekitEventMetadata metadata) {
         super(type, characteristic != null ? (UID) characteristic.getUID() : (UID) new HomekitUID("characteristic"),

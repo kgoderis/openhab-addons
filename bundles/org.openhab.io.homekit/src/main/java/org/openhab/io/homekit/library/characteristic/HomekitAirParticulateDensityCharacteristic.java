@@ -27,7 +27,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * This characteristic represents the density of particulate matter in the air.
  * The value ranges from 0 to 1000 micrograms per cubic meter.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000064-0000-1000-8000-0026BB765291", name = "Air Particulate Density", tag = "airParticulateDensity", acceptedItemTypes = {

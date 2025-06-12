@@ -32,7 +32,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * <p>
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  */
 @HomekitCharacteristicType(type = "0000025B-0000-1000-8000-0026BB765291", name = "Power Mode Selection", tag = "powerModeSelection", acceptedItemTypes = {
         "Number" })

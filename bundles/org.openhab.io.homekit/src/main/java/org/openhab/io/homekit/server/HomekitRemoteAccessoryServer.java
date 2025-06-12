@@ -289,7 +289,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 final Request request = currentClient.newRequest(url);
                 request.onRequestFailure((req, failure) -> {
                     logger.warn("{}Connection failed - Server: {}", LOG_STATE, new String(getPairingId()));
-                    logger.debug("{}Failure details: {}", LOG_STATE, failure);
+                    logger.debug("{}Failure details: {}", LOG_STATE, failure.getMessage());
                     try {
                         setState(HomekitAccessoryServerState.DISCONNECTED);
                     } catch (HomekitServerException e) {

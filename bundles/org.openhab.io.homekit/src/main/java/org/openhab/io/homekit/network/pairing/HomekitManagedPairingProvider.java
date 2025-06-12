@@ -20,7 +20,6 @@ import org.openhab.core.service.ReadyMarker;
 import org.openhab.core.service.ReadyService;
 import org.openhab.core.storage.StorageService;
 import org.openhab.io.homekit.api.provider.HomekitPairingProvider;
-import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
 import org.openhab.io.homekit.api.uid.HomekitPairingUID;
 import org.openhab.io.homekit.protocol.pairing.HomekitPairing;
 import org.osgi.service.component.annotations.Activate;
@@ -57,7 +56,7 @@ import org.slf4j.LoggerFactory;
  * <b>Component Integration:</b>
  * </p>
  * <ul>
- * <li>{@link HomekitPairingRegistry} for pairing registration and
+ * <li>{@link org.openhab.io.homekit.api.registry.HomekitPairingRegistry} for pairing registration and
  * management</li>
  * <li>{@link HomekitPairingImpl} for pairing implementation details</li>
  * <li>{@link HomekitPairingUIDImpl} for unique identifier generation</li>

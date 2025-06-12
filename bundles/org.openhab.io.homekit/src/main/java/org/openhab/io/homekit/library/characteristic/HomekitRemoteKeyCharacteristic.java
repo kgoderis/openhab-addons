@@ -28,7 +28,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * The key can be one of: REWIND, FAST_FORWARD, NEXT_TRACK, PREVIOUS_TRACK, ARROW_UP,
  * ARROW_DOWN, ARROW_LEFT, ARROW_RIGHT, SELECT, BACK, EXIT, PLAY_PAUSE, or INFORMATION.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "000000E1-0000-1000-8000-0026BB765291", name = "Remote Key", tag = "remoteKey", acceptedItemTypes = {

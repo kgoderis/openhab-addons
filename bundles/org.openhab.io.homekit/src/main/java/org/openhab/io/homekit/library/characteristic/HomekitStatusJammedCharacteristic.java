@@ -28,7 +28,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * The status can be one of: NOT_JAMMED (0) or JAMMED (1).
  * This is used to report when a mechanical device is stuck or unable to operate properly.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000078-0000-1000-8000-0026BB765291", name = "Status Jammed", tag = "statusJammed", acceptedItemTypes = {

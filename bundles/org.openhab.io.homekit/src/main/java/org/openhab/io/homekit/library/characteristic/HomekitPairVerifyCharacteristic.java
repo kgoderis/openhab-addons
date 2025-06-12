@@ -33,7 +33,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * <p>
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  */
 @HomekitCharacteristicType(type = "0000004E-0000-1000-8000-0026BB765291", name = "Pair Verify", tag = "pairVerify", acceptedItemTypes = {
         "String" })

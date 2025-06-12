@@ -28,7 +28,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * The timeout is expressed in seconds, ranging from 0 to 3600 seconds (1 hour).
  * This is used to specify how long a tunnel connection should remain active before timing out.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000061-0000-1000-8000-0026BB765291", name = "Tunnel Connection Timeout", tag = "tunnelConnectionTimeout", acceptedItemTypes = {

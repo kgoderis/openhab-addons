@@ -179,9 +179,12 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
         try {
             logger.debug("{}Sending headers for exchange {}", LOG_REQUEST, exchange);
             new HeadersCallback(exchange, content, callback).iterate();
-        } catch (Throwable x) {
-            logger.error("{}Failed to send headers: {}", LOG_ERROR, x.getMessage(), x);
-            callback.failed(x);
+        } catch (RuntimeException e) {
+            logger.error("{}Failed to send headers: {}", LOG_ERROR, e.getMessage(), e);
+            callback.failed(e);
+        } catch (Error e) {
+            logger.error("{}Failed to send headers: {}", LOG_ERROR, e.getMessage(), e);
+            callback.failed(e);
         }
     }
 
@@ -278,9 +281,15 @@ public class HomekitHttpSender extends HttpSenderOverHTTP {
                     }
                 }
             }
-        } catch (Throwable x) {
-            logger.error("{}Failed to send content: {}", LOG_ERROR, x.getMessage(), x);
-            callback.failed(x);
+        } catch (IOException e) {
+            logger.error("{}Failed to send content: {}", LOG_ERROR, e.getMessage(), e);
+            callback.failed(e);
+        } catch (RuntimeException e) {
+            logger.error("{}Failed to send content: {}", LOG_ERROR, e.getMessage(), e);
+            callback.failed(e);
+        } catch (Error e) {
+            logger.error("{}Failed to send content: {}", LOG_ERROR, e.getMessage(), e);
+            callback.failed(e);
         }
     }
 

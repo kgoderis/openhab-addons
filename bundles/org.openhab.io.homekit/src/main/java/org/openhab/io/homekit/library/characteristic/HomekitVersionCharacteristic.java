@@ -21,18 +21,22 @@ import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.core.characteristic.HomekitStringCharacteristic;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * HomeKit Version Characteristic.
  * This characteristic represents the version string for the accessory or service.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000037-0000-1000-8000-0026BB765291", name = "Version", tag = "version", acceptedItemTypes = {
         "String", "Text" })
 @NonNullByDefault
 public class HomekitVersionCharacteristic extends HomekitStringCharacteristic {
+    private static final Logger logger = LoggerFactory.getLogger(HomekitVersionCharacteristic.class);
+
     public HomekitVersionCharacteristic(HomekitService service, HomekitEventManager eventManager, long instanceId) {
         super(service, eventManager);
         withInstanceId(instanceId).withPairedWrite(false).withPairedRead(true).withEvents(false)
@@ -41,7 +45,8 @@ public class HomekitVersionCharacteristic extends HomekitStringCharacteristic {
             setValueInternal("1.0.0");
         } catch (Exception e) {
             // This should never happen since we're using setValueInternal
-            throw new RuntimeException(e);
+            logger.error("Failed to set initial version value", e);
+            throw new IllegalStateException("Failed to initialize version characteristic", e);
         }
     }
 
@@ -59,7 +64,8 @@ public class HomekitVersionCharacteristic extends HomekitStringCharacteristic {
             setValueInternal(version);
         } catch (Exception e) {
             // This should never happen since we're using setValueInternal
-            throw new RuntimeException(e);
+            logger.error("Failed to set version value: {}", version, e);
+            throw new IllegalStateException("Failed to set version value", e);
         }
     }
 }

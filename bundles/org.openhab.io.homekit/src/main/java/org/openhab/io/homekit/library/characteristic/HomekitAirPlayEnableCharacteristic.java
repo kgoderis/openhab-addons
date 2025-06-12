@@ -27,7 +27,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * This characteristic represents whether AirPlay is enabled on the device.
  * When enabled, the device can receive and process AirPlay streams.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/homekit/hap-characteristic-types/airplay-enable">HAP
  *      Specification</a>
  */

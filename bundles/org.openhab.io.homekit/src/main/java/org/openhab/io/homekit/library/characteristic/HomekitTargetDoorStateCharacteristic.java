@@ -28,7 +28,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * The state can be one of: OPEN (0) or CLOSED (1).
  * This is used to set the desired state of a door.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000032-0000-1000-8000-0026BB765291", name = "Target Door State", tag = "targetDoorState", acceptedItemTypes = {

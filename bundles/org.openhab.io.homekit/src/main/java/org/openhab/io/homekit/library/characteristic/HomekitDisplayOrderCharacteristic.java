@@ -33,7 +33,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * displayed in a user interface, allowing for custom organization and grouping
  * of HomeKit devices.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000136-0000-1000-8000-0026BB765291", name = "Display Order", tag = "displayOrder", acceptedItemTypes = {

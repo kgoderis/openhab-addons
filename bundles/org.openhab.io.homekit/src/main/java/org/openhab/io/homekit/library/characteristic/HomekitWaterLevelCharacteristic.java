@@ -28,7 +28,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * The level is expressed as a percentage, ranging from 0% to 100%.
  * This is used to indicate the current water level in devices like washing machines, dishwashers, or water tanks.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "000000B5-0000-1000-8000-0026BB765291", name = "Water Level", tag = "waterLevel", acceptedItemTypes = {

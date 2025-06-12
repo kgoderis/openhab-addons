@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.Optional;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.config.core.ConfigDescription;
@@ -90,7 +89,7 @@ public class HomekitConfigDescriptionProvider implements ConfigDescriptionProvid
     }
 
     @Override
-    public @NonNull Collection<ConfigDescription> getConfigDescriptions(@Nullable Locale locale) {
+    public Collection<ConfigDescription> getConfigDescriptions(@Nullable Locale locale) {
         return Collections.singleton(createConfigDescription());
     }
 

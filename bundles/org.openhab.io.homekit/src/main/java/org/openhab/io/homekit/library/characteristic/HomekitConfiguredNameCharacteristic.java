@@ -26,7 +26,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * This characteristic represents the user-configured name of the accessory.
  * It is a string value that can be read and written, allowing users to customize the name of their accessories.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "000000E3-0000-1000-8000-0026BB765291", name = "Configured Name", tag = "configuredName", acceptedItemTypes = {

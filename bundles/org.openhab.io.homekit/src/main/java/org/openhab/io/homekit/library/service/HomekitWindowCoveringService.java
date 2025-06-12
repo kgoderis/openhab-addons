@@ -36,7 +36,7 @@ import org.openhab.io.homekit.library.characteristic.HomekitTargetVerticalTiltAn
  * Service that represents a window covering in HomeKit.
  * This service provides control over window coverings like blinds, shades, and curtains.
  * 
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitServiceType(type = "0000008C-0000-1000-8000-0026BB765291", name = "WindowCovering", tag = "windowCovering")

@@ -58,7 +58,8 @@ import com.nimbusds.srp6.URoutineContext;
  * failure to the client.
  * </ul>
  *
- * @author Vladimir Dzhuvinov
+ * @author Vladimir Dzhuvinov - Initial contribution
+ * @author Karel Goderis - Documentation and additional adjustments
  */
 @NonNullByDefault
 public class HomekitServerSRP6Session extends SRP6Session {

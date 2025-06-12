@@ -116,7 +116,7 @@ public class HomekitAccessoryUIDImpl extends HomekitUID implements HomekitAccess
     public HomekitAccessoryUIDImpl(String uid) {
         super(uid);
         String[] segments = uid.split(":");
-        if (segments.length != 4 || !segments[0].equals("homekit") || !segments[1].equals("accessory")) {
+        if (segments.length != 4 || !"homekit".equals(segments[0]) || !"accessory".equals(segments[1])) {
             throw new IllegalArgumentException("Invalid HomeKit accessory UID format: " + uid);
         }
         this.pairingId = segments[2];

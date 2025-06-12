@@ -36,7 +36,7 @@ import org.openhab.io.homekit.library.characteristic.HomekitStatusFaultCharacter
  * This service represents a lightbulb in HomeKit, providing control over light state, brightness, and color.
  * For more information, see https://developer.apple.com/documentation/HomeKit
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  */
 @HomekitServiceType(type = "00000043-0000-1000-8000-0026BB765291", name = "Lightbulb", tag = "lightbulb")
 @NonNullByDefault

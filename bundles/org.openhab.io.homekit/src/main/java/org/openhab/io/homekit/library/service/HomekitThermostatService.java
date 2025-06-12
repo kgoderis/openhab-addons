@@ -41,7 +41,7 @@ import org.openhab.io.homekit.library.characteristic.HomekitTemperatureDisplayUn
  * Service that represents a thermostat in HomeKit.
  * This service provides control over temperature, humidity, and heating/cooling states.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitServiceType(type = "0000004A-0000-1000-8000-0026BB765291", name = "Thermostat", tag = "thermostat")

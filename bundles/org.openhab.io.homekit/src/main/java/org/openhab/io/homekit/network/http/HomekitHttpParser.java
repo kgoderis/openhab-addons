@@ -29,7 +29,6 @@ import org.eclipse.jetty.http.HostPortHttpField;
 import org.eclipse.jetty.http.HttpCompliance;
 import org.eclipse.jetty.http.HttpComplianceSection;
 import org.eclipse.jetty.http.HttpField;
-import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpHeaderValue;
 import org.eclipse.jetty.http.HttpMethod;
@@ -82,7 +81,7 @@ import org.slf4j.LoggerFactory;
  * is used to lookup common combinations of headers and values
  * (eg. "Connection: close"), or just header names (eg. "Connection:" ).
  * For headers who's value is not known statically (eg. Host, COOKIE) then a
- * per parser dynamic Trie of {@link HttpFields} from previous parsed messages
+ * per parser dynamic Trie of {@link org.eclipse.jetty.http.HttpFields} from previous parsed messages
  * is used to help the parsing of subsequent messages.
  * </p>
  *
@@ -1781,7 +1780,7 @@ public class HomekitHttpParser {
 
                     default:
                         if (debug) {
-                            logger.debug("{}EOF in {}", LOG_STATE, this, _state);
+                            logger.debug("{}EOF in {} {}", LOG_STATE, this, _state);
                         }
                         setState(State.CLOSED);
                         _handler.badMessage(new BadMessageException(HttpStatus.BAD_REQUEST_400));
@@ -1791,10 +1790,14 @@ public class HomekitHttpParser {
         } catch (BadMessageException x) {
             BufferUtil.clear(buffer);
             badMessage(x);
-        } catch (Throwable x) {
+        } catch (RuntimeException e) {
             BufferUtil.clear(buffer);
             badMessage(new BadMessageException(HttpStatus.BAD_REQUEST_400,
-                    _requestHandler != null ? "Bad Request" : "Bad Response", x));
+                    _requestHandler != null ? "Bad Request" : "Bad Response", e));
+        } catch (Error e) {
+            BufferUtil.clear(buffer);
+            badMessage(new BadMessageException(HttpStatus.BAD_REQUEST_400,
+                    _requestHandler != null ? "Bad Request" : "Bad Response", e));
         }
         return false;
     }

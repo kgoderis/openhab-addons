@@ -27,7 +27,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * This characteristic represents whether motion has been detected.
  * The value is an enumeration with two states: NOT_DETECTED and DETECTED.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/homekit/hap-characteristic-types/motion-detected">HAP
  *      Specification</a>
  */

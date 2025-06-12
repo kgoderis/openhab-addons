@@ -108,7 +108,8 @@ public class HomekitAccessoryEvent extends AbstractHomekitEvent {
      * @param service the service associated with the event, if any
      * @param characteristic the characteristic associated with the event, if any
      */
-    @SuppressWarnings("null")
+    @SuppressWarnings("null") // Suppresses null analysis warnings for nullable parameters with null checks in
+                              // constructor
     public HomekitAccessoryEvent(HomekitEventType type, @Nullable HomekitAccessory accessory,
             @Nullable HomekitService service, @Nullable HomekitCharacteristic<?> characteristic) {
         super(type, accessory != null ? (UID) accessory.getUID() : (UID) new HomekitUID("accessory"),
@@ -131,7 +132,8 @@ public class HomekitAccessoryEvent extends AbstractHomekitEvent {
      * @param characteristic the characteristic associated with the event, if any
      * @param metadata additional metadata for the event
      */
-    @SuppressWarnings("null")
+    @SuppressWarnings("null") // Suppresses null analysis warnings for nullable parameters with null checks in
+                              // constructor
     public HomekitAccessoryEvent(HomekitEventType type, @Nullable HomekitAccessory accessory,
             @Nullable HomekitService service, @Nullable HomekitCharacteristic<?> characteristic,
             HomekitEventMetadata metadata) {
@@ -152,7 +154,8 @@ public class HomekitAccessoryEvent extends AbstractHomekitEvent {
      * @param oldUid the previous UID of the accessory
      * @param newUid the new UID of the accessory
      */
-    @SuppressWarnings("null")
+    @SuppressWarnings("null") // Suppresses null analysis warnings for nullable parameters with null checks in
+                              // constructor
     public HomekitAccessoryEvent(HomekitEventType type, @Nullable HomekitAccessory accessory,
             HomekitAccessoryUID oldUid, HomekitAccessoryUID newUid) {
         super(type, accessory != null ? (UID) accessory.getUID() : (UID) new HomekitUID("accessory"),

@@ -17,10 +17,7 @@ import java.util.Base64;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
-import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.api.uid.HomekitPairingUID;
-import org.openhab.io.homekit.protocol.pairing.HomekitPairing;
 import org.openhab.io.homekit.util.HomekitUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,12 +50,12 @@ import org.slf4j.LoggerFactory;
  * to:
  * </p>
  * <ul>
- * <li>Track pairing relationships through {@link HomekitPairing}</li>
- * <li>Manage pairing lifecycle via {@link HomekitPairingRegistry}</li>
+ * <li>Track pairing relationships through {@link org.openhab.io.homekit.protocol.pairing.HomekitPairing}</li>
+ * <li>Manage pairing lifecycle via {@link org.openhab.io.homekit.api.registry.HomekitPairingRegistry}</li>
  * <li>Support pairing removal using
  * {@link HomekitPairingImpl#removePairing(HomekitPairingUID)}</li>
  * <li>Enable pairing updates through
- * {@link HomekitPairingRegistry#updatePairing(HomekitPairing)}</li>
+ * {@link org.openhab.io.homekit.api.registry.HomekitPairingRegistry#updatePairing(org.openhab.io.homekit.protocol.pairing.HomekitPairing)}</li>
  * </ul>
  *
  * <p>
@@ -75,11 +72,11 @@ import org.slf4j.LoggerFactory;
  * <ul>
  * <li>{@link HomekitPairingImpl} for pairing management</li>
  * <li>{@link HomekitPairingRegistryImpl} for pairing storage</li>
- * <li>{@link HomekitAccessoryServer} for accessory communication</li>
+ * <li>{@link org.openhab.io.homekit.api.server.HomekitAccessoryServer} for accessory communication</li>
  * <li>{@link HomekitUID} for base UID functionality</li>
  * <li>{@link HomekitPairingUID} for the pairing UID interface</li>
- * <li>{@link HomekitPairing} for pairing operations</li>
- * <li>{@link HomekitPairingRegistry} for pairing registration</li>
+ * <li>{@link org.openhab.io.homekit.protocol.pairing.HomekitPairing} for pairing operations</li>
+ * <li>{@link org.openhab.io.homekit.api.registry.HomekitPairingRegistry} for pairing registration</li>
  * </ul>
  *
  * <p>

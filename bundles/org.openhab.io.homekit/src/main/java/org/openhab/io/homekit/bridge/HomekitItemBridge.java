@@ -1031,7 +1031,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     }
 
     private boolean isStateEqual(State state1, State state2) {
-        if (state1 == state2) {
+        if (Objects.equals(state1, state2)) {
             return true;
         }
         // States are @NonNull by annotation in method signature
@@ -1039,7 +1039,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
         if (state1 instanceof DecimalType && state2 instanceof DecimalType) {
             return ((DecimalType) state1).doubleValue() == ((DecimalType) state2).doubleValue();
         }
-        return Objects.equals(state1, state2);
+        return false;
     }
 
     /**
@@ -1141,7 +1141,7 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                     executor = Optional.of(ThreadPoolManager.getScheduledPool("homekit"));
                 }
                 if (scheduledTask.isEmpty()) {
-                    scheduledTask = Optional.of(executor.get().scheduleAtFixedRate(this::printStatistics,
+                    scheduledTask = Optional.of(executor.get().scheduleWithFixedDelay(this::printStatistics,
                             STATISTICS_REPORT_INTERVAL_SECONDS, STATISTICS_REPORT_INTERVAL_SECONDS, TimeUnit.SECONDS));
                 }
             }
@@ -1216,8 +1216,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                 long maxTime = sortedTimes.get(sortedTimes.size() - 1);
 
                 logger.info(
-                        "Exit Event Statistics (based on {} events):\nMean: {:.2f} ms\nStd Dev: {:.2f} ms\nMin: {} ms\nMax: {} ms\n{}",
-                        eventTimes.size(), mean, stdDev, minTime, maxTime, histogram);
+                        "Exit Event Statistics (based on {} events):\nMean: {} ms\nStd Dev: {} ms\nMin: {} ms\nMax: {} ms\nHistogram:{}",
+                        eventTimes.size(), mean, stdDev, minTime, maxTime, histogram.toString());
             }
         }
     }

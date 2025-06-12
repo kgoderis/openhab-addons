@@ -32,7 +32,6 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
@@ -229,7 +228,6 @@ public abstract class AbstractHomekitService implements HomekitService {
      * @return the HomekitServiceUID for this service
      */
     @Override
-    @NonNull
     public HomekitServiceUID getUID() {
         return new HomekitServiceUIDImpl(getAccessory().getUID().getPairingId(), getAccessory().getAccessoryId(),
                 getInstanceId());
@@ -738,30 +736,36 @@ public abstract class AbstractHomekitService implements HomekitService {
      */
     @Override
     public int compareTo(@Nullable HomekitService other) {
-        if (other == null)
+        if (other == null) {
             return 1;
-        if (this == other)
+        }
+        if (this.equals(other)) {
             return 0;
+        }
 
         // Compare by instance ID
         int idCompare = Long.compare(this.instanceId, other.getInstanceId());
-        if (idCompare != 0)
+        if (idCompare != 0) {
             return idCompare;
+        }
 
         // Compare by instance type
         int typeCompare = this.getType().compareTo(other.getType());
-        if (typeCompare != 0)
+        if (typeCompare != 0) {
             return typeCompare;
+        }
 
         // Compare by isHidden
         int hiddenCompare = Boolean.compare(this.isHidden, other.isHidden());
-        if (hiddenCompare != 0)
+        if (hiddenCompare != 0) {
             return hiddenCompare;
+        }
 
         // Compare by isPrimary
         int primaryCompare = Boolean.compare(this.isPrimary, other.isPrimary());
-        if (primaryCompare != 0)
+        if (primaryCompare != 0) {
             return primaryCompare;
+        }
 
         // Compare characteristics
         AbstractHomekitService that = (AbstractHomekitService) other;
@@ -774,8 +778,9 @@ public abstract class AbstractHomekitService implements HomekitService {
 
         // Compare sizes first
         int sizeCompare = Integer.compare(thisChars.size(), thatChars.size());
-        if (sizeCompare != 0)
+        if (sizeCompare != 0) {
             return sizeCompare;
+        }
 
         // Compare each characteristic
         for (int i = 0; i < thisChars.size(); i++) {
@@ -784,8 +789,9 @@ public abstract class AbstractHomekitService implements HomekitService {
             @SuppressWarnings("null") // List.get() is safe within bounds check
             HomekitCharacteristic<?> thatChar = thatChars.get(i);
             int charCompare = thisChar.compareTo(thatChar);
-            if (charCompare != 0)
+            if (charCompare != 0) {
                 return charCompare;
+            }
         }
 
         return 0;

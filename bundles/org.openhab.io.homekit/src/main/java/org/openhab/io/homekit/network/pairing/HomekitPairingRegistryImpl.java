@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2019 Contributors to the openHAB project
+ * Copyright (c) 2010-2025 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -104,7 +104,7 @@ public class HomekitPairingRegistryImpl
         extends AbstractRegistry<HomekitPairing, HomekitPairingUID, HomekitPairingProvider>
         implements HomekitPairingRegistry, ReadyService.ReadyTracker {
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitPairingRegistry.class);
+    private final Logger logger = LoggerFactory.getLogger(HomekitPairingRegistryImpl.class);
 
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "HomeKit Pairing Registry: ";

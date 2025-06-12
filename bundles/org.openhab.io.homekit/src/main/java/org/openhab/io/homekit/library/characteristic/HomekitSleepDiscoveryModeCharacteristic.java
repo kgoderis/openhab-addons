@@ -28,7 +28,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * The mode can be one of: NOT_DISCOVERABLE (0), ALWAYS_DISCOVERABLE (1), or DISCOVERABLE_WHEN_SLEEPING (2).
  * This determines when the device is discoverable in the HomeKit network.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "000000E8-0000-1000-8000-0026BB765291", name = "Sleep Discovery Mode", tag = "sleepDiscoveryMode", acceptedItemTypes = {

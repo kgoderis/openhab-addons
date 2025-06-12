@@ -165,7 +165,7 @@ public class ItemUID extends UID {
      * @return true if this UID matches the pattern
      */
     public boolean matches(String pattern) {
-        if (pattern.equals("*")) {
+        if ("*".equals(pattern)) {
             logger.trace("{}Pattern matches wildcard: {}", LOG_MATCH, pattern);
             return true;
         }

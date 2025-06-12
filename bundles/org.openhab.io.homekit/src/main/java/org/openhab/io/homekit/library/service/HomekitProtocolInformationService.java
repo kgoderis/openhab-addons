@@ -30,7 +30,7 @@ import org.openhab.io.homekit.library.characteristic.HomekitVersionCharacteristi
  * This service provides protocol version information for HomeKit accessories.
  * For more information, see https://developer.apple.com/documentation/HomeKit
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  */
 @HomekitServiceType(type = "000000A2-0000-1000-8000-0026BB765291", name = "Protocol Information", tag = "protocolInformation")
 @NonNullByDefault

@@ -174,7 +174,7 @@ public class HomekitEventOriginChecker {
      * @return true if the part matches the pattern, false otherwise
      */
     private static boolean matchesPart(String part, String pattern) {
-        return WILDCARD.equals(pattern) || part.equals(pattern);
+        return WILDCARD.equals(pattern) || pattern.equals(part);
     }
 
     /**
@@ -225,7 +225,7 @@ public class HomekitEventOriginChecker {
      */
     public static boolean isFromAccessory(HomekitEvent event, String bridgeUID, String accessoryUID) {
         UID originalPublisher = event.getMetadata().getOriginalPublisherUID();
-        return originalPublisher.toString().equals("bridge:" + bridgeUID + ":accessory:" + accessoryUID);
+        return ("bridge:" + bridgeUID + ":accessory:" + accessoryUID).equals(originalPublisher.toString());
     }
 
     /**
@@ -240,8 +240,8 @@ public class HomekitEventOriginChecker {
      */
     public static boolean isFromService(HomekitEvent event, String bridgeUID, String accessoryUID, String serviceUID) {
         UID originalPublisher = event.getMetadata().getOriginalPublisherUID();
-        return originalPublisher.toString()
-                .equals("bridge:" + bridgeUID + ":accessory:" + accessoryUID + ":service:" + serviceUID);
+        return ("bridge:" + bridgeUID + ":accessory:" + accessoryUID + ":service:" + serviceUID)
+                .equals(originalPublisher.toString());
     }
 
     /**
@@ -258,8 +258,8 @@ public class HomekitEventOriginChecker {
     public static boolean isFromCharacteristic(HomekitEvent event, String bridgeUID, String accessoryUID,
             String serviceUID, String characteristicUID) {
         UID originalPublisher = event.getMetadata().getOriginalPublisherUID();
-        return originalPublisher.toString().equals("bridge:" + bridgeUID + ":accessory:" + accessoryUID + ":service:"
-                + serviceUID + ":characteristic:" + characteristicUID);
+        return ("bridge:" + bridgeUID + ":accessory:" + accessoryUID + ":service:" + serviceUID + ":characteristic:"
+                + characteristicUID).equals(originalPublisher.toString());
     }
 
     /**

@@ -24,7 +24,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryCategory;
@@ -650,7 +649,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      * @return The public key for the specified pairing
      */
     @Override
-    public Optional<byte[]> getPublicKey(byte @NonNull [] destinationPairingId) {
+    public Optional<byte[]> getPublicKey(byte[] destinationPairingId) {
         logger.debug("{}Getting public key for destination pairing ID: {}", LOG_CONFIG,
                 HomekitByte.toHexString(destinationPairingId));
         HomekitPairing hp = pairingRegistry.get(new HomekitPairingUIDImpl(getPairingId(), destinationPairingId));
@@ -700,7 +699,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      * @throws HomekitServerException if the pairing cannot be added
      */
     @Override
-    public void addPairing(byte @NonNull [] pairingId, byte @NonNull [] publicKey) throws HomekitServerException {
+    public void addPairing(byte[] pairingId, byte[] publicKey) throws HomekitServerException {
         if (pairingId.length == 0) {
             throw new HomekitServerException("HomekitPairing ID cannot be empty");
         }
@@ -748,7 +747,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      * @return The pairing, or null if not found
      */
     @Override
-    public Optional<HomekitPairing> getPairing(byte @NonNull [] pairingId) {
+    public Optional<HomekitPairing> getPairing(byte[] pairingId) {
         if (pairingId.length == 0) {
             throw new IllegalArgumentException("HomekitPairing ID cannot be empty");
         }
@@ -788,7 +787,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      * @throws HomekitServerException if the pairing cannot be removed
      */
     @Override
-    public void removePairing(byte @NonNull [] pairingId) throws HomekitServerException {
+    public void removePairing(byte[] pairingId) throws HomekitServerException {
         if (pairingId.length == 0) {
             String error = "HomekitPairing ID cannot be empty";
             logger.error("{}HomekitPairing validation error: {}", LOG_ERROR, error);

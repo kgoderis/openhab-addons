@@ -27,7 +27,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * This characteristic represents the target position for a window covering or door.
  * The position is expressed as a percentage, where 0% means fully closed and 100% means fully open.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "0000007C-0000-1000-8000-0026BB765291", name = "Target Position", tag = "targetPosition", acceptedItemTypes = {

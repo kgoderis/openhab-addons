@@ -383,7 +383,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                         serviceInfo.getName());
                 continue;
             }
-            @SuppressWarnings("null")
+            @SuppressWarnings("null") // Optional.get() is safe after isEmpty() check above
             Map<String, Object> properties = propertiesOpt.get();
 
             String deviceId = (String) properties.get("id");
@@ -536,7 +536,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
             logger.debug("{}Skipping service {} - invalid properties", LOG_EVENT, serviceInfo.getName());
             return;
         }
-        @SuppressWarnings("null")
+        @SuppressWarnings("null") // Optional.get() is safe after isEmpty() check above
         Map<String, Object> properties = propertiesOpt.get();
 
         String deviceId = (String) properties.get("id");
@@ -613,7 +613,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
             Map<String, Object> properties = new HashMap<>();
             Enumeration<String> serviceProperties = serviceInfo.getPropertyNames();
             while (serviceProperties.hasMoreElements()) {
-                @SuppressWarnings("null")
+                @SuppressWarnings("null") // Enumeration.nextElement() is guaranteed non-null by contract
                 String element = serviceProperties.nextElement();
                 String value = serviceInfo.getPropertyString(element);
                 if (value != null) {

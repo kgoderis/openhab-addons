@@ -27,7 +27,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * This characteristic represents the swing mode for a device (e.g., fan or air conditioner).
  * The mode can be one of: SWING_DISABLED or SWING_ENABLED.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "000000B6-0000-1000-8000-0026BB765291", name = "Swing Mode", tag = "swingMode", acceptedItemTypes = {

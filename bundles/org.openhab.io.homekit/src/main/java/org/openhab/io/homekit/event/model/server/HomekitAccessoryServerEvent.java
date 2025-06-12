@@ -98,7 +98,7 @@ public class HomekitAccessoryServerEvent extends AbstractHomekitEvent {
      * @param service the service associated with the event, if any
      * @param characteristic the characteristic associated with the event, if any
      */
-    @SuppressWarnings("null")
+    @SuppressWarnings("null") // Suppresses null analysis warnings for nullable parameters and type casting operations
     public HomekitAccessoryServerEvent(HomekitEventType type, HomekitAccessoryServer server,
             @Nullable HomekitAccessory accessory, @Nullable HomekitService service,
             @Nullable HomekitCharacteristic<?> characteristic) {
@@ -121,7 +121,7 @@ public class HomekitAccessoryServerEvent extends AbstractHomekitEvent {
      * @param characteristic the characteristic associated with the event, if any
      * @param metadata additional metadata for the event
      */
-    @SuppressWarnings("null")
+    @SuppressWarnings("null") // Suppresses null analysis warnings for nullable parameters and type casting operations
     public HomekitAccessoryServerEvent(HomekitEventType type, HomekitAccessoryServer server,
             @Nullable HomekitAccessory accessory, @Nullable HomekitService service,
             @Nullable HomekitCharacteristic<?> characteristic, HomekitEventMetadata metadata) {

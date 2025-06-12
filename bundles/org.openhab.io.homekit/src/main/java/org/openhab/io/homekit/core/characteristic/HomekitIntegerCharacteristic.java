@@ -26,13 +26,18 @@ import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 
-/*
- * Abstract base class for HomeKit characteristics that handle integer values.
- * This class extends {@link AbstractHomekitCharacteristic} to provide specialized handling for
- * integer characteristics in the HomeKit protocol.
+/**
+ * Abstract base class for HomeKit characteristics with integer values.
+ * 
+ * <p>
+ * This class provides a foundation for integer-based HomeKit characteristics.
+ * It manages integer values with constraints (minimum and maximum values)
+ * and unit of measurement specifications.
+ * </p>
  *
  * <p>
- * The class implements integer value management with:
+ * <b>Key features:</b>
+ * </p>
  * <ul>
  * <li>Configurable value range (minValue to maxValue)</li>
  * <li>Unit specification for value representation</li>
@@ -63,11 +68,9 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * <li>{@link org.openhab.core.library.CoreItemFactory} - Item type factory for numbers</li>
  * </ul>
  * </p>
- *
+ * 
  * @author Karel Goderis - Initial contribution
- * @version 1.0
- * @since 1.0
-     */
+ */
 @NonNullByDefault
 public abstract class HomekitIntegerCharacteristic extends AbstractHomekitCharacteristic<Integer> {
 

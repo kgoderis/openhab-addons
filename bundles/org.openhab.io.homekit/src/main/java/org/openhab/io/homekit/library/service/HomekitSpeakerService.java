@@ -30,7 +30,7 @@ import org.openhab.io.homekit.library.characteristic.HomekitVolumeCharacteristic
  * Service that represents a speaker in HomeKit.
  * This service provides control over speaker settings and operation.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitServiceType(type = "00000113-0000-1000-8000-0026BB765291", name = "Speaker", tag = "speaker")

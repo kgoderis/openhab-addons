@@ -30,7 +30,7 @@ import org.openhab.io.homekit.library.characteristic.HomekitVersionCharacteristi
  * This service represents the SiriEndpoint functionality in HomeKit.
  * For more information, see https://developer.apple.com/documentation/HomeKit
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  */
 @HomekitServiceType(type = "00000253-0000-1000-8000-0026BB765291", name = "SiriEndpoint", tag = "SiriEndpoint")
 @NonNullByDefault

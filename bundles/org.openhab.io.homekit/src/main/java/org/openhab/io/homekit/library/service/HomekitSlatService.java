@@ -31,7 +31,7 @@ import org.openhab.io.homekit.library.characteristic.HomekitTargetTiltAngleChara
  * Service that represents a slat in HomeKit.
  * This service provides control over slats like those in blinds or shades.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitServiceType(type = "000000B9-0000-1000-8000-0026BB765291", name = "Slat", tag = "slat")

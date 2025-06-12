@@ -27,7 +27,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * This characteristic represents binary data that can be read from or written to a device.
  * It is used for raw data transfer between the device and HomeKit.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "000000D2-0000-1000-8000-0026BB765291", name = "Data", tag = "data", acceptedItemTypes = {

@@ -35,7 +35,7 @@ import org.openhab.io.homekit.library.characteristic.HomekitTargetFanStateCharac
  * Service that represents a fan v2 in HomeKit.
  * This service provides enhanced control over fan settings and operation.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitServiceType(type = "000000B7-0000-1000-8000-0026BB765291", name = "Fan v2", tag = "fanV2")

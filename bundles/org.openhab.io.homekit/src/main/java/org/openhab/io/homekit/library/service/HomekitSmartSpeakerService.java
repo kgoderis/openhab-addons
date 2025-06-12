@@ -35,7 +35,7 @@ import org.openhab.io.homekit.library.characteristic.HomekitVolumeCharacteristic
  * This service provides smart speaker functionality in HomeKit.
  * For more information, see https://developer.apple.com/documentation/HomeKit
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  */
 @HomekitServiceType(type = "00000228-0000-1000-8000-0026BB765291", name = "SmartSpeaker", tag = "smartSpeaker")
 @NonNullByDefault

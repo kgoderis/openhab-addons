@@ -82,13 +82,32 @@ public class HomekitServiceEvent extends AbstractHomekitEvent {
     private final Optional<HomekitCharacteristic<?>> HomekitCharacteristic;
 
     /**
+     * Creates a new service event with default publisher and subscriber.
+     *
+     * @param type the type of event
+     * @param HomekitService the service associated with this event
+     */
+    @SuppressWarnings("null") // Suppresses null analysis warnings for nullable parameters with null checks in
+                              // constructor
+    public HomekitServiceEvent(HomekitEventType type, @Nullable HomekitService HomekitService) {
+        super(type, HomekitService != null ? (UID) HomekitService.getUID() : (UID) new HomekitUID("HomekitService"),
+                HomekitUID.WILDCARD_UID,
+                new HomekitEventMetadata(
+                        HomekitService != null ? (UID) HomekitService.getUID() : (UID) new HomekitUID("HomekitService"),
+                        null, null, Collections.emptySet()));
+        this.HomekitService = Optional.ofNullable(HomekitService);
+        this.HomekitCharacteristic = Optional.empty();
+    }
+
+    /**
      * Creates a new service event with default subscriber UID.
      *
      * @param type the type of event
      * @param HomekitService the service associated with the event, if any
      * @param HomekitCharacteristic the characteristic associated with the event, if any
      */
-    @SuppressWarnings("null")
+    @SuppressWarnings("null") // Suppresses null analysis warnings for nullable parameters with null checks in
+                              // constructor
     public HomekitServiceEvent(HomekitEventType type, @Nullable HomekitService HomekitService,
             @Nullable HomekitCharacteristic<?> HomekitCharacteristic) {
         super(type, HomekitService != null ? (UID) HomekitService.getUID() : (UID) new HomekitUID("HomekitService"),
@@ -108,7 +127,8 @@ public class HomekitServiceEvent extends AbstractHomekitEvent {
      * @param subscriberUID the UID of the subscriber that will receive the event
      * @param HomekitCharacteristic the characteristic associated with the event, if any
      */
-    @SuppressWarnings("null")
+    @SuppressWarnings("null") // Suppresses null analysis warnings for nullable parameters with null checks in
+                              // constructor
     public HomekitServiceEvent(HomekitEventType type, @Nullable HomekitService HomekitService, UID subscriberUID,
             @Nullable HomekitCharacteristic<?> HomekitCharacteristic) {
         super(type, HomekitService != null ? (UID) HomekitService.getUID() : (UID) new HomekitUID("HomekitService"),

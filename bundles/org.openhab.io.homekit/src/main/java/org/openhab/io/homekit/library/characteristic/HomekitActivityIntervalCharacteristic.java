@@ -27,7 +27,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * This characteristic represents the time interval between activities.
  * The value is a non-negative integer that specifies the interval in seconds.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "0000023B-0000-1000-8000-0026BB765291", name = "Activity Interval", tag = "activityInterval", acceptedItemTypes = {

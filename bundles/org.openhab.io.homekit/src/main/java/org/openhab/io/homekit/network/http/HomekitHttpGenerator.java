@@ -656,10 +656,10 @@ public class HomekitHttpGenerator extends HttpGenerator {
                     }
 
                     return Result.FLUSH;
+                } catch (BufferOverflowException e) {
+                    throw new BadMessageException(500, "Request header too large", e);
                 } catch (Exception e) {
-                    String message = (e instanceof BufferOverflowException) ? "Request header too large"
-                            : e.getMessage();
-                    throw new BadMessageException(500, message, e);
+                    throw new BadMessageException(500, e.getMessage(), e);
                 } finally {
                     BufferUtil.flipToFlush(header, pos);
                 }
@@ -851,10 +851,10 @@ public class HomekitHttpGenerator extends HttpGenerator {
                         }
                     }
                     _state = last ? State.COMPLETING : State.COMMITTED;
+                } catch (BufferOverflowException e) {
+                    throw new BadMessageException(500, "Response header too large", e);
                 } catch (Exception e) {
-                    String message = (e instanceof BufferOverflowException) ? "Response header too large"
-                            : e.getMessage();
-                    throw new BadMessageException(500, message, e);
+                    throw new BadMessageException(500, e.getMessage(), e);
                 } finally {
                     BufferUtil.flipToFlush(header, pos);
                 }

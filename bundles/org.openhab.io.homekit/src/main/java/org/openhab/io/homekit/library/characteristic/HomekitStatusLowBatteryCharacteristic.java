@@ -33,7 +33,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * The status can be one of: BATTERY_LEVEL_NORMAL (0) or BATTERY_LEVEL_LOW (1).
  * This is used to report the battery status of the accessory.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000079-0000-1000-8000-0026BB765291", name = "Status Low Battery", tag = "statusLowBattery", acceptedItemTypes = {

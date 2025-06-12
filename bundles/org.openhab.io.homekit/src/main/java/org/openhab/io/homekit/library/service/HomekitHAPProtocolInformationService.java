@@ -28,7 +28,7 @@ import org.openhab.io.homekit.library.characteristic.HomekitVersionCharacteristi
  * Service that represents the HAP Protocol Information in HomeKit.
  * This service provides protocol version information for HomeKit accessories.
  * 
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitServiceType(type = "000000A2-0000-1000-8000-0026BB765291", name = "HAP Protocol Information", tag = "hapProtocolInformation")

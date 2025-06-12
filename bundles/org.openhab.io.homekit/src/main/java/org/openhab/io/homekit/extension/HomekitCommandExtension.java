@@ -669,7 +669,6 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
                 logger.error("{}Error getting pairings from server {}: {}", LOG_ERROR, server.getUID(), e.getMessage(),
                         e);
                 console.println("Error getting pairings from server: " + e.getMessage());
-                e.printStackTrace();
             }
         });
     }
@@ -702,7 +701,6 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         } catch (HomekitServerException e) {
             logger.error("{}Error adding pairing to server {}: {}", LOG_ERROR, serverId, e.getMessage(), e);
             console.println("Error adding pairing to server: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -735,7 +733,6 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
         } catch (HomekitServerException e) {
             logger.error("{}Error removing pairing from server {}: {}", LOG_ERROR, serverId, e.getMessage(), e);
             console.println("Error removing pairing from server: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 

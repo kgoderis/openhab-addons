@@ -28,7 +28,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * The state can be one of: MANUAL (0) or AUTO (1).
  * This is used to control whether the fan should operate in manual mode or automatically adjust its speed.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/homekit/hap-characteristic-types/target-fan-state">HAP
  *      Specification</a>
  */

@@ -19,7 +19,6 @@ import java.util.Set;
 
 import javax.json.JsonObject;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.common.registry.Identifiable;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
@@ -78,7 +77,6 @@ public interface HomekitService extends Identifiable<HomekitServiceUID>, Compara
      * @return the HomekitServiceUID that uniquely identifies this service
      */
     @Override
-    @NonNull
     HomekitServiceUID getUID();
 
     /**

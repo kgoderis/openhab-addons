@@ -27,7 +27,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * This characteristic represents the type of input device.
  * The type can be one of: OTHER, KEYBOARD, MOUSE, TOUCHPAD, or GAMEPAD.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "000000DC-0000-1000-8000-0026BB765291", name = "Input Device Type", tag = "inputDeviceType", acceptedItemTypes = {

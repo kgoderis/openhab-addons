@@ -228,7 +228,7 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
             return;
         }
 
-        @SuppressWarnings("null")
+        @SuppressWarnings("null") // Optional.get() is safe after isEmpty() check above
         ThingTypeUID thingTypeUID = thingTypeUIDOpt.get();
 
         try {

@@ -64,7 +64,7 @@ Every file verified needs to be "saved" so that its last modified date gets upda
  * HomeKit Service Name.
  * This service represents [description].
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  */
 @HomekitServiceType(type = "UUID", name = "Name", tag = "camelCaseName")
 @NonNullByDefault

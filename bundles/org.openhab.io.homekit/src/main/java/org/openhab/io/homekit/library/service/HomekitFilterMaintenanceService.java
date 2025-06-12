@@ -31,7 +31,7 @@ import org.openhab.io.homekit.library.characteristic.HomekitResetFilterIndicatio
  * Service that represents filter maintenance in HomeKit.
  * This service provides information about filter status and maintenance.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitServiceType(type = "000000BA-0000-1000-8000-0026BB765291", name = "Filter Maintenance", tag = "filterMaintenance")

@@ -24,6 +24,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.types.State;
+import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.slf4j.Logger;
@@ -195,12 +196,12 @@ public abstract class HomekitShortReadOnlyStringCharacteristic extends AbstractH
      * </ul>
      *
      * @param value the value to set (ignored)
-     * @throws Exception always thrown as this is a read-only characteristic
+     * @throws IllegalStateException always thrown as this is a read-only characteristic
      */
     @Override
-    public void setValue(@Nullable String value) throws Exception {
+    public void setValue(@Nullable String value) throws IllegalStateException {
         logger.error("{}Attempted to modify read-only characteristic", LOG_ERROR);
-        throw new Exception("Can not modify a readonly characteristic");
+        throw new IllegalStateException("Can not modify a readonly characteristic");
     }
 
     /**

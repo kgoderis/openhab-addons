@@ -31,7 +31,7 @@ import org.openhab.io.homekit.library.characteristic.HomekitRelayStateCharacteri
  * This service provides functionality for cloud relay in HomeKit.
  * For more information, see https://developer.apple.com/documentation/HomeKit
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  */
 @HomekitServiceType(type = "0000005A-0000-1000-8000-0026BB765291", name = "CloudRelay", tag = "cloudRelay")
 @NonNullByDefault

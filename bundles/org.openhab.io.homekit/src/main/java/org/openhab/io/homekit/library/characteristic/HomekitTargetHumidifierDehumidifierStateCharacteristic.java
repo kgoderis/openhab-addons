@@ -28,7 +28,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * The state can be one of: HUMIDIFIER (0), DEHUMIDIFIER (1), or AUTO (2).
  * This is used to control whether the device should humidify, dehumidify, or automatically switch between modes.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href=
  *      "https://developer.apple.com/documentation/homekit/hap-characteristic-types/target-humidifier-dehumidifier-state">HAP
  *      Specification</a>

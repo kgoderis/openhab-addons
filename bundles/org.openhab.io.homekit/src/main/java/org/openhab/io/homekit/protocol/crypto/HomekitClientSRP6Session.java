@@ -61,8 +61,8 @@ import com.nimbusds.srp6.XRoutine;
  * 3. Process server response with salt and public value (STEP_2)
  * 4. Verify server evidence message (STEP_3)
  *
- * @author Vladimir Dzhuvinov
- * @author Bernard Wittwer
+ * @author Vladimir Dzhuvinov - Initial contribution
+ * @author Bernard Wittwer - SRP protocol implementation
  * @author Karel Goderis - HomeKit adaptation
  */
 @NonNullByDefault

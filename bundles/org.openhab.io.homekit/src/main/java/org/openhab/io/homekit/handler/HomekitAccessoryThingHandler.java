@@ -110,6 +110,7 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
      * 
      * This method initializes the channels for the accessory and sets up event subscriptions.
      */
+    @SuppressWarnings("null") // Safe to call initializeChannels() here - field initialization complete
     @Override
     protected void intializeSpecificComponents() {
         initializeChannels();

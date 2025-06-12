@@ -27,7 +27,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * This characteristic represents the access control level of a device.
  * The levels range from 0 to 2, where 0 is the lowest level of access and 2 is the highest.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "000000E5-0000-1000-8000-0026BB765291", name = "Access Control Level", tag = "accessControlLevel", acceptedItemTypes = {

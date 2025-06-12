@@ -346,7 +346,7 @@ public class HomekitBridgedAccessory implements HomekitAccessory {
     @Override
     public int compareTo(HomekitAccessory other) {
         // The parameter is @NonNull by the Comparable interface definition
-        if (this == other) {
+        if (this.equals(other)) {
             return 0;
         }
         if (other instanceof HomekitBridgedAccessory) {
@@ -367,7 +367,7 @@ public class HomekitBridgedAccessory implements HomekitAccessory {
      */
     @Override
     public void assignToServer(HomekitAccessoryServer server) throws HomekitAccessoryOperationException {
-        if (server != localServer) {
+        if (!server.equals(localServer)) {
             throw new HomekitAccessoryOperationException(
                     "HomekitBridgedAccessory can only be assigned to its local server");
         }

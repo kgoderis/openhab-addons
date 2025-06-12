@@ -147,7 +147,7 @@ public class ValidationManager {
         }
 
         // Check if this result's issues are likely caused by previous validation failures
-        return allResults.stream().filter(r -> r != result).filter(r -> !r.isValid())
+        return allResults.stream().filter(r -> !r.equals(result)).filter(r -> !r.isValid())
                 .anyMatch(r -> r.getIssues().stream().anyMatch(issue -> result.getIssues().stream()
                         .anyMatch(resultIssue -> resultIssue.getContextKey().startsWith(issue.getContextKey()))));
     }

@@ -14,8 +14,6 @@
 package org.openhab.io.homekit.network.discovery;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.io.homekit.api.accessory.HomekitAccessory;
-import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 
 /**
  * Defines constants used in the HomeKit discovery process.
@@ -43,8 +41,8 @@ import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
  * </p>
  * <ul>
  * <li>{@link HomekitAccessoryServerDiscoveryService} for device discovery and management</li>
- * <li>{@link HomekitAccessoryServer} for device configuration and communication</li>
- * <li>{@link HomekitAccessory} for device identification and state management</li>
+ * <li>{@link org.openhab.io.homekit.api.server.HomekitAccessoryServer} for device configuration and communication</li>
+ * <li>{@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for device identification and state management</li>
  * <li>{@link org.openhab.core.config.discovery.DiscoveryService} for integration with OpenHAB's discovery system</li>
  * </ul>
  *

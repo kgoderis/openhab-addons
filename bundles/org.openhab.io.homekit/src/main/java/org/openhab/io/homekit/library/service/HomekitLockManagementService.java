@@ -37,7 +37,7 @@ import org.openhab.io.homekit.library.characteristic.HomekitVersionCharacteristi
  * Service that represents lock management in HomeKit.
  * This service provides control over lock settings and operation.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitServiceType(type = "00000044-0000-1000-8000-0026BB765291", name = "Lock Management", tag = "lockManagement")

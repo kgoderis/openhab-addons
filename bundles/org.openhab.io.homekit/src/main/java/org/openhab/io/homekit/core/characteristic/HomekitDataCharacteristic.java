@@ -165,7 +165,7 @@ public abstract class HomekitDataCharacteristic extends AbstractHomekitCharacter
      * @throws UnsupportedOperationException as this method requires custom implementation
      */
     @Override
-    @SuppressWarnings("null")
+    @SuppressWarnings("null") // byte @Nullable [] is properly checked by callers before use
     public JsonValue toValueJson(byte @Nullable [] value) {
         // Implementers should override this for custom data JSON handling
         throw new UnsupportedOperationException("Data JSON conversion not implemented");

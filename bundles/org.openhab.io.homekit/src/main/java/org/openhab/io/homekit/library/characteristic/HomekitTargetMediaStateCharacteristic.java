@@ -27,7 +27,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * This characteristic represents the target state for a media device.
  * The state can be one of: PLAY, PAUSE, STOP, or FAST_FORWARD.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000137-0000-1000-8000-0026BB765291", name = "Target Media State", tag = "targetMediaState", acceptedItemTypes = {

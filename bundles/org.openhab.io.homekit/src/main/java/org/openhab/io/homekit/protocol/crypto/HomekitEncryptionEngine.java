@@ -263,12 +263,13 @@ public class HomekitEncryptionEngine {
                 nonce = Pack.longToLittleEndian(sequenceNumber);
             }
             return new HomekitChachaDecoder(key, nonce).decodeCiphertext(mac, additionalData, ciphertext);
-        } catch (Exception e) {
-            if (e instanceof org.bouncycastle.tls.TlsFatalAlert) {
-                logger.error("Decrypt : Exception while decrypting : Description = {}",
-                        ((org.bouncycastle.tls.TlsFatalAlert) e).getAlertDescription());
-            }
-            throw new RuntimeException(e);
+        } catch (org.bouncycastle.tls.TlsFatalAlert e) {
+            logger.error("Decrypt : Exception while decrypting : Description = {}", e.getAlertDescription());
+            throw new IllegalStateException("Decryption failed: authentication check failed", e);
+        } catch (IOException e) {
+            throw new IllegalStateException("Decryption failed: I/O error", e);
+        } catch (RuntimeException e) {
+            throw new IllegalStateException("Decryption failed", e);
         }
     }
 
@@ -301,7 +302,7 @@ public class HomekitEncryptionEngine {
             try {
                 digest = MessageDigest.getInstance(cryptoParams.H);
             } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException("Could not locate requested algorithm", e);
+                throw new IllegalStateException("Could not locate requested algorithm", e);
             }
             digest.update(HomekitByte.toByteArray(cryptoParams.N));
             byte[] hN = digest.digest();
@@ -369,7 +370,7 @@ public class HomekitEncryptionEngine {
             try {
                 digest = MessageDigest.getInstance(cryptoParams.H);
             } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException("Could not locate requested algorithm", e);
+                throw new IllegalStateException("Could not locate requested algorithm", e);
             }
 
             byte[] hS = digest.digest(HomekitByte.toByteArray(ctx.S));

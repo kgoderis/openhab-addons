@@ -29,7 +29,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * This characteristic represents the supported asset types in TLV8 format.
  * It provides information about the types of assets that can be managed by the device.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000268-0000-1000-8000-0026BB765291", name = "Supported Asset Types", tag = "supportedAssetTypes", acceptedItemTypes = {

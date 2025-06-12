@@ -27,7 +27,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * This characteristic represents the target state for a security system.
  * The state can be one of: STAY_ARM (0), AWAY_ARM (1), NIGHT_ARM (2), or DISARM (3).
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000067-0000-1000-8000-0026BB765291", name = "Security System Target State", tag = "securitySystemTargetState", acceptedItemTypes = {

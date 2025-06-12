@@ -29,7 +29,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * This characteristic represents the MAC transmission counters in TLV8 format.
  * It provides information about the number of successful and failed MAC transmissions.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000248-0000-1000-8000-0026BB765291", name = "MAC Transmission Counters", tag = "macTransmissionCounters", acceptedItemTypes = {

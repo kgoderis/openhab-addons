@@ -39,7 +39,7 @@ public class ValidationCache {
         this.cleanupExecutor = Executors.newSingleThreadScheduledExecutor();
 
         // Schedule periodic cleanup of expired entries
-        cleanupExecutor.scheduleAtFixedRate(this::cleanup, defaultExpirationMillis, defaultExpirationMillis,
+        cleanupExecutor.scheduleWithFixedDelay(this::cleanup, defaultExpirationMillis, defaultExpirationMillis,
                 TimeUnit.MILLISECONDS);
     }
 

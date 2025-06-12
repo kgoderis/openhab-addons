@@ -65,7 +65,7 @@ import org.slf4j.LoggerFactory;
  * Protocol Specification</a>.
  * </p>
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @version 1.0
  * @since 1.0
  */

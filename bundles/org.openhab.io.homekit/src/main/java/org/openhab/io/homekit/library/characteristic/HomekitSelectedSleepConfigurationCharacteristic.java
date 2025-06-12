@@ -31,7 +31,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * such as sleep schedules, power management, and device-specific sleep modes.
  * The data is encoded in TLV8 format.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000252-0000-1000-8000-0026BB765291", name = "Selected Sleep Configuration", tag = "selectedSleepConfiguration", acceptedItemTypes = {

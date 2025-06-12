@@ -322,7 +322,8 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
     protected abstract void validateSpecificConfiguration(Configuration config);
 
     @Override
-    @SuppressWarnings("null")
+    @SuppressWarnings("null") // Configuration parameters are validated before use and Objects.requireNonNull ensures
+                              // non-null map
     public void handleConfigurationUpdate(Map<String, Object> configurationParameters) {
         try {
             if (disposed) {
@@ -345,7 +346,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
 
             validateAndUpdateState();
         } catch (Exception e) {
-            logger.error("{}Failed to update configuration: {}", e.getMessage(), e);
+            logger.error("{}Failed to update configuration: {}", LOG_PREFIX, e.getMessage(), e);
             updateState(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, e.getMessage());
         }
     }
@@ -967,7 +968,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
 
                     // Update the channel state
                     synchronized (characteristicMapLock) {
-                        if (characteristicMap.get(foundChannel) == characteristic) {
+                        if (characteristicMap.get(foundChannel).equals(characteristic)) {
                             Object value = characteristic.getValue();
                             if (value instanceof State state) {
                                 updateState(foundChannel.getUID(), state);
@@ -1218,7 +1219,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
                         .entrySet()) {
                     // non-null for valid entries
                     HomekitCharacteristic<?> entryValue = entry.getValue();
-                    if (entryValue == characteristic) {
+                    if (entryValue.equals(characteristic)) {
                         // guaranteed non-null for valid entries
                         channelToRemove = entry.getKey();
                         break;
@@ -1244,7 +1245,6 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
     protected void handleChannelStateTransition(Channel channel, HomekitCharacteristic<?> characteristic,
             JsonValue newValue, ThingStatus oldStatus, ThingStatus newStatus) {
         try {
-
             if (currentStatus != newStatus) {
                 logger.debug("{}Channel state transition - Channel: {}, Current Status: {}, Target Status: {}",
                         LOG_EVENT, channel.getUID(), currentStatus, newStatus);
@@ -1306,7 +1306,7 @@ public abstract class AbstractHomekitHandler extends BaseThingHandler {
                     .entrySet()) {
                 // non-null for valid entries
                 HomekitCharacteristic<?> entryValue = entry.getValue();
-                if (entryValue == characteristic) {
+                if (entryValue.equals(characteristic)) {
                     // non-null for valid entries
                     return Optional.of(entry.getKey());
                 }

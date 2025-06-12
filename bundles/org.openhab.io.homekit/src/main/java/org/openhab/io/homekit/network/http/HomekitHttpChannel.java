@@ -19,7 +19,6 @@ import org.eclipse.jetty.client.http.HttpChannelOverHTTP;
 import org.eclipse.jetty.client.http.HttpConnectionOverHTTP;
 import org.eclipse.jetty.client.http.HttpReceiverOverHTTP;
 import org.eclipse.jetty.client.http.HttpSenderOverHTTP;
-import org.openhab.io.homekit.protocol.crypto.HomekitEncryptionEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +39,7 @@ import org.slf4j.LoggerFactory;
  * <li>{@link HomekitHttpSender} for sending encrypted requests and message formatting</li>
  * <li>{@link HomekitHttpReceiver} for receiving encrypted responses and message parsing</li>
  * <li>{@link HomekitHttpConnectionOverHTTP} for connection lifecycle management</li>
- * <li>{@link HomekitEncryptionEngine} for encryption/decryption operations</li>
+ * <li>{@link org.openhab.io.homekit.protocol.crypto.HomekitEncryptionEngine} for encryption/decryption operations</li>
  * <li>{@link org.eclipse.jetty.client.http.HttpConnectionOverHTTP HttpConnectionOverHTTP} for connection handling</li>
  * </ul>
  *

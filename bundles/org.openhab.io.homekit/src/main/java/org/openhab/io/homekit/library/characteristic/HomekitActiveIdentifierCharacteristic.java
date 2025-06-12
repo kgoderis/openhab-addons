@@ -27,7 +27,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * This characteristic represents the identifier of the currently active input or source.
  * The value is a 32-bit unsigned integer (0 to 0xFFFFFFFF) that identifies the active input.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "000000E7-0000-1000-8000-0026BB765291", name = "Active Identifier", tag = "activeIdentifier", acceptedItemTypes = {

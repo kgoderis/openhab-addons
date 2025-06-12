@@ -27,7 +27,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * This is used to identify the hardware version of a device, typically
  * following a version numbering scheme like "1.0.0" or "Rev A".
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000053-0000-1000-8000-0026BB765291", name = "Hardware Revision", tag = "hardwareRevision", acceptedItemTypes = {

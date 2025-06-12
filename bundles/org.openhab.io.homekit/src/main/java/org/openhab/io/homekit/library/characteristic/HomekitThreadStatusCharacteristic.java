@@ -29,7 +29,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * This characteristic represents the Thread network status in TLV8 format.
  * It provides information about the Thread network connectivity and state.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000703-0000-1000-8000-0026BB765291", name = "Thread Status", tag = "threadStatus", acceptedItemTypes = {

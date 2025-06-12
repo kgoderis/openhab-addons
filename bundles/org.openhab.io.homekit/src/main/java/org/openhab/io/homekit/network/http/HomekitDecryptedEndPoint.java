@@ -257,9 +257,39 @@ public class HomekitDecryptedEndPoint implements EndPoint {
                             return filled;
                         }
                     }
-                } catch (Throwable x) {
-                    Throwable failure = handleException(x, "fill");
-                    throw failure;
+                } catch (IOException e) {
+                    Throwable failure = handleException(e, "fill");
+                    if (failure instanceof IOException) {
+                        throw (IOException) failure;
+                    } else if (failure instanceof RuntimeException) {
+                        throw (RuntimeException) failure;
+                    } else if (failure instanceof Error) {
+                        throw (Error) failure;
+                    } else {
+                        throw new IOException(failure);
+                    }
+                } catch (RuntimeException e) {
+                    Throwable failure = handleException(e, "fill");
+                    if (failure instanceof IOException) {
+                        throw (IOException) failure;
+                    } else if (failure instanceof RuntimeException) {
+                        throw (RuntimeException) failure;
+                    } else if (failure instanceof Error) {
+                        throw (Error) failure;
+                    } else {
+                        throw new IOException(failure);
+                    }
+                } catch (Error e) {
+                    Throwable failure = handleException(e, "fill");
+                    if (failure instanceof IOException) {
+                        throw (IOException) failure;
+                    } else if (failure instanceof RuntimeException) {
+                        throw (RuntimeException) failure;
+                    } else if (failure instanceof Error) {
+                        throw (Error) failure;
+                    } else {
+                        throw new IOException(failure);
+                    }
                 } finally {
                     if (encryptedInputBuffer != null && !encryptedInputBuffer.hasRemaining()) {
                         bufferPool.release(encryptedInputBuffer);
@@ -288,8 +318,16 @@ public class HomekitDecryptedEndPoint implements EndPoint {
                     }
                 }
             }
-        } catch (Throwable x) {
-            rethrow(x);
+        } catch (IOException e) {
+            rethrow(e);
+            // Never reached.
+            throw new AssertionError();
+        } catch (RuntimeException e) {
+            rethrow(e);
+            // Never reached.
+            throw new AssertionError();
+        } catch (Error e) {
+            rethrow(e);
             // Never reached.
             throw new AssertionError();
         }
@@ -400,9 +438,39 @@ public class HomekitDecryptedEndPoint implements EndPoint {
                             return false;
                         }
                     }
-                } catch (Throwable x) {
-                    Throwable failure = handleException(x, "flush");
-                    throw failure;
+                } catch (IOException e) {
+                    Throwable failure = handleException(e, "flush");
+                    if (failure instanceof IOException) {
+                        throw (IOException) failure;
+                    } else if (failure instanceof RuntimeException) {
+                        throw (RuntimeException) failure;
+                    } else if (failure instanceof Error) {
+                        throw (Error) failure;
+                    } else {
+                        throw new IOException(failure);
+                    }
+                } catch (RuntimeException e) {
+                    Throwable failure = handleException(e, "flush");
+                    if (failure instanceof IOException) {
+                        throw (IOException) failure;
+                    } else if (failure instanceof RuntimeException) {
+                        throw (RuntimeException) failure;
+                    } else if (failure instanceof Error) {
+                        throw (Error) failure;
+                    } else {
+                        throw new IOException(failure);
+                    }
+                } catch (Error e) {
+                    Throwable failure = handleException(e, "flush");
+                    if (failure instanceof IOException) {
+                        throw (IOException) failure;
+                    } else if (failure instanceof RuntimeException) {
+                        throw (RuntimeException) failure;
+                    } else if (failure instanceof Error) {
+                        throw (Error) failure;
+                    } else {
+                        throw new IOException(failure);
+                    }
                 } finally {
                     if (!Thread.holdsLock(this)) {
                         throw new IllegalStateException();
@@ -419,8 +487,16 @@ public class HomekitDecryptedEndPoint implements EndPoint {
                     }
                 }
             }
-        } catch (Throwable x) {
-            rethrow(x);
+        } catch (IOException e) {
+            rethrow(e);
+            // Never reached.
+            throw new AssertionError();
+        } catch (RuntimeException e) {
+            rethrow(e);
+            // Never reached.
+            throw new AssertionError();
+        } catch (Error e) {
+            rethrow(e);
             // Never reached.
             throw new AssertionError();
         }
@@ -478,7 +554,7 @@ public class HomekitDecryptedEndPoint implements EndPoint {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.trace("{} Write : Exception", getRemoteAddress().toString(), e);
             if (callback != null) {
                 callback.failed(e);
             }
@@ -555,14 +631,14 @@ public class HomekitDecryptedEndPoint implements EndPoint {
             if (failure == null) {
                 failure = x;
                 if (logger.isTraceEnabled()) {
-                    logger.trace(this + " stored " + context + " exception", x);
+                    logger.trace("{} stored {} exception", this, context, x);
                 }
-            } else if (x != failure) {
+            } else if (!x.equals(failure)) {
                 Throwable nonNullFailure = failure;
                 if (nonNullFailure != null) {
                     nonNullFailure.addSuppressed(x);
                     if (logger.isTraceEnabled()) {
-                        logger.trace(this + " suppressed " + context + " exception", x);
+                        logger.trace("{} suppressed {} exception", this, context, x);
                     }
                 }
             }
@@ -572,15 +648,18 @@ public class HomekitDecryptedEndPoint implements EndPoint {
     }
 
     private void rethrow(Throwable x) throws IOException {
+        failure = x;
+
+        if (x instanceof IOException) {
+            throw (IOException) x;
+        }
         if (x instanceof RuntimeException) {
             throw (RuntimeException) x;
         }
         if (x instanceof Error) {
             throw (Error) x;
         }
-        if (x instanceof IOException) {
-            throw (IOException) x;
-        }
+
         throw new IOException(x);
     }
 

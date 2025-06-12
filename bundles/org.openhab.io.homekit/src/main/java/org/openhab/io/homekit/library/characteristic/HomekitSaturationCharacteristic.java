@@ -27,7 +27,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * This characteristic represents the saturation level of a color.
  * The value ranges from 0% (completely desaturated) to 100% (fully saturated).
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "0000002F-0000-1000-8000-0026BB765291", name = "Saturation", tag = "saturation", acceptedItemTypes = {

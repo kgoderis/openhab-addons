@@ -13,6 +13,7 @@
 
 package org.openhab.io.homekit.network.http;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
@@ -330,7 +331,7 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
             HomekitHttpConnectionOverHTTP connection = getHttpConnection();
             EndPoint endPoint = connection.getEndPoint();
             while (true) {
-                boolean upgraded = connection != endPoint.getConnection();
+                boolean upgraded = !connection.equals(endPoint.getConnection());
 
                 // Connection may be closed or upgraded in a parser callback.
                 if (connection.isClosed() || upgraded) {
@@ -490,16 +491,36 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
                     return;
                 }
             }
-        } catch (Throwable x) {
+        } catch (IOException e) {
             if (logger.isDebugEnabled()) {
-                logger.debug("{}Exception caught in receive", LOG_ERROR, x);
+                logger.debug("{}Exception caught in receive", LOG_ERROR, e);
             }
             if (decryptedInputBuffer != null) {
                 BufferUtil.clear(decryptedInputBuffer);
                 releaseBuffer(decryptedInputBuffer);
                 decryptedInputBuffer = null;
             }
-            failAndClose(x);
+            failAndClose(e);
+        } catch (RuntimeException e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("{}Exception caught in receive", LOG_ERROR, e);
+            }
+            if (decryptedInputBuffer != null) {
+                BufferUtil.clear(decryptedInputBuffer);
+                releaseBuffer(decryptedInputBuffer);
+                decryptedInputBuffer = null;
+            }
+            failAndClose(e);
+        } catch (Error e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("{}Exception caught in receive", LOG_ERROR, e);
+            }
+            if (decryptedInputBuffer != null) {
+                BufferUtil.clear(decryptedInputBuffer);
+                releaseBuffer(decryptedInputBuffer);
+                decryptedInputBuffer = null;
+            }
+            failAndClose(e);
         }
     }
 

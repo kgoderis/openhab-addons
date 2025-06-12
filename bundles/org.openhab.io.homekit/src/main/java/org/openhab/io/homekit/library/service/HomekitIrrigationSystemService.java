@@ -34,7 +34,7 @@ import org.openhab.io.homekit.library.characteristic.HomekitStatusFaultCharacter
  * Service that represents an irrigation system in HomeKit.
  * This service provides control over irrigation system operation and scheduling.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitServiceType(type = "000000CF-0000-1000-8000-0026BB765291", name = "Irrigation System", tag = "irrigationSystem")

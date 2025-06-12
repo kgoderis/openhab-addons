@@ -31,7 +31,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * This characteristic is used to send lock control commands to a lock device.
  * The TLV8 format is used to encode the control commands.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/homekit/hap-characteristic-types/lock-control-point">HAP
  *      Specification</a>
  */

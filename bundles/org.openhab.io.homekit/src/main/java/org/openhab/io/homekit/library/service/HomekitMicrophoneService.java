@@ -30,7 +30,7 @@ import org.openhab.io.homekit.library.characteristic.HomekitVolumeCharacteristic
  * Service that represents a microphone in HomeKit.
  * This service provides control over microphone settings and operation.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitServiceType(type = "00000112-0000-1000-8000-0026BB765291", name = "Microphone", tag = "microphone")

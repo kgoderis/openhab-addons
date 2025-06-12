@@ -166,7 +166,7 @@ public class HomekitByteBufferOutputStream extends OutputStream {
     @SuppressWarnings("null") // Parent OutputStream interface doesn't constrain this parameter
     public void write(final byte @Nullable [] bytes) {
         if (bytes == null) {
-            throw new NullPointerException("Input array cannot be null");
+            throw new IllegalArgumentException("Input array cannot be null");
         }
         write(bytes, 0, bytes.length);
     }
@@ -175,7 +175,7 @@ public class HomekitByteBufferOutputStream extends OutputStream {
     @SuppressWarnings("null") // Parent OutputStream interface doesn't constrain this parameter
     public void write(final byte @Nullable [] bytes, final int off, final int len) {
         if (bytes == null) {
-            throw new NullPointerException("Input array cannot be null");
+            throw new IllegalArgumentException("Input array cannot be null");
         }
         if (off < 0 || len < 0 || off + len > bytes.length) {
             throw new IndexOutOfBoundsException("Invalid offset or length");

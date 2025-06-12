@@ -28,7 +28,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * The value ranges from 1 to 255, where each number corresponds to a specific label.
  * This is used to identify and organize services in the HomeKit ecosystem.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "000000CB-0000-1000-8000-0026BB765291", name = "Service Label Index", tag = "serviceLabelIndex", acceptedItemTypes = {

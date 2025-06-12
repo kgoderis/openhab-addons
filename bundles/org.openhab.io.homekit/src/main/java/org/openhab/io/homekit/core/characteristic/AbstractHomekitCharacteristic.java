@@ -321,7 +321,6 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
      * @return the HomekitCharacteristicUID for this characteristic
      */
     @Override
-    @NonNull
     public HomekitCharacteristicUIDImpl getUID() {
         return new HomekitCharacteristicUIDImpl(getService().getAccessory().getUID().getPairingId(),
                 getService().getAccessory().getAccessoryId(), getService().getInstanceId(), getInstanceId());
@@ -494,23 +493,28 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
      * @param value the new value to set
      */
     @Override
-    public void setValue(@Nullable T value) throws Exception {
+    public void setValue(@Nullable T value) throws IllegalStateException {
         if (!isPairedWrite) {
-            throw new Exception("Cannot modify a readonly characteristic");
+            throw new IllegalStateException("Cannot modify a readonly characteristic");
         }
         if (!isAllowedValue(value)) {
             throw new IllegalArgumentException("Value " + value + " is not allowed for this characteristic");
         }
         @Nullable
         T oldValue = this.value;
-        setValueInternal(value);
-        notifyValueChanged(oldValue, this.value);
+        try {
+            setValueInternal(value);
+            notifyValueChanged(oldValue, this.value);
+        } catch (Exception e) {
+            logger.error("{}Error while setting value: {}", LOG_ERROR, e.getMessage(), e);
+            throw new IllegalStateException("Cannot set characteristic value", e);
+        }
     }
 
     @Override
-    public final void setValue(JsonValue jsonValue) throws Exception {
+    public final void setValue(JsonValue jsonValue) throws IllegalStateException {
         if (!isPairedWrite) {
-            throw new Exception("Cannot modify a readonly characteristic");
+            throw new IllegalStateException("Cannot modify a readonly characteristic");
         }
         try {
             T convertedValue = toValue(jsonValue);
@@ -521,14 +525,14 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
             setValue(convertedValue);
         } catch (Exception e) {
             logger.error("{}Error while setting JSON value: {}", LOG_ERROR, e.getMessage(), e);
-            throw e;
+            throw new IllegalStateException("Cannot set characteristic value from JSON", e);
         }
     }
 
     protected void setValue(JsonValue value, Map<String, Object> conversionMap, HomekitEventMetadata metadata)
-            throws Exception {
+            throws IllegalStateException {
         if (!isPairedWrite) {
-            throw new Exception("Cannot modify a readonly characteristic");
+            throw new IllegalStateException("Cannot modify a readonly characteristic");
         }
         try {
             T convertedValue = toValue(value, conversionMap);
@@ -543,7 +547,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
             notifyValueChanged(oldValue, this.value, metadata);
         } catch (Exception e) {
             logger.error("{}Error while setting value with metadata: {}", LOG_ERROR, e.getMessage(), e);
-            throw e;
+            throw new IllegalStateException("Cannot set characteristic value with metadata", e);
         }
     }
 
@@ -1032,60 +1036,71 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
     public int compareTo(@Nullable HomekitCharacteristic<?> other) {
         // The Comparable interface specifies that the parameter cannot be null,
         // but this implementation allows null values as a defensive measure
-        if (other == null)
+        if (other == null) {
             return 1;
-        if (this == other)
+        }
+        if (this.equals(other)) {
             return 0;
+        }
 
         // Compare by instance ID
         int idCompare = Long.compare(this.instanceId, other.getInstanceId());
-        if (idCompare != 0)
+        if (idCompare != 0) {
             return idCompare;
+        }
 
         // Compare by instance type
         int typeCompare = this.getType().compareTo(other.getType());
-        if (typeCompare != 0)
+        if (typeCompare != 0) {
             return typeCompare;
+        }
 
         // Compare by format
         int formatCompare = this.format.compareTo(((AbstractHomekitCharacteristic<?>) other).format);
-        if (formatCompare != 0)
+        if (formatCompare != 0) {
             return formatCompare;
+        }
 
         // Compare by isWritable
         int writableCompare = Boolean.compare(this.isPairedWrite,
                 ((AbstractHomekitCharacteristic<?>) other).isPairedWrite);
-        if (writableCompare != 0)
+        if (writableCompare != 0) {
             return writableCompare;
+        }
 
         // Compare by isReadable
         int readableCompare = Boolean.compare(this.isPairedRead,
                 ((AbstractHomekitCharacteristic<?>) other).isPairedRead);
-        if (readableCompare != 0)
+        if (readableCompare != 0) {
             return readableCompare;
+        }
 
         // Compare by hasEvents
         int eventsCompare = Boolean.compare(this.hasEvents, ((AbstractHomekitCharacteristic<?>) other).hasEvents);
-        if (eventsCompare != 0)
+        if (eventsCompare != 0) {
             return eventsCompare;
+        }
 
         // Compare by isTimedWrite
         int timedWriteCompare = Boolean.compare(this.isTimedWrite,
                 ((AbstractHomekitCharacteristic<?>) other).isTimedWrite);
-        if (timedWriteCompare != 0)
+        if (timedWriteCompare != 0) {
             return timedWriteCompare;
+        }
 
         // Compare by isWriteResponse
         int writeResponseCompare = Boolean.compare(this.isWriteResponse,
                 ((AbstractHomekitCharacteristic<?>) other).isWriteResponse);
-        if (writeResponseCompare != 0)
+        if (writeResponseCompare != 0) {
             return writeResponseCompare;
+        }
 
         // Compare by isAdditionalAuthorization
         int additionalAuthorizationCompare = Boolean.compare(this.isAdditionalAuthorization,
                 ((AbstractHomekitCharacteristic<?>) other).isAdditionalAuthorization);
-        if (additionalAuthorizationCompare != 0)
+        if (additionalAuthorizationCompare != 0) {
             return additionalAuthorizationCompare;
+        }
 
         // Finally compare by description
         return this.description.compareTo(((AbstractHomekitCharacteristic<?>) other).description);

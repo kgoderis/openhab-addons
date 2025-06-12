@@ -21,7 +21,6 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonValue;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.common.ThreadPoolManager;
@@ -33,6 +32,7 @@ import org.openhab.core.storage.StorageService;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
 import org.openhab.io.homekit.api.provider.HomekitAccessoryProvider;
+import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry;
 import org.openhab.io.homekit.api.uid.HomekitAccessoryUID;
 import org.openhab.io.homekit.exception.HomekitFactoryException;
@@ -177,7 +177,7 @@ public class HomekitPersistedAccessoryProvider
      * @return The string representation of the UID
      */
     @Override
-    protected @NonNull String keyToString(HomekitAccessoryUID key) {
+    protected String keyToString(HomekitAccessoryUID key) {
         return key.toString();
     }
 
@@ -221,7 +221,7 @@ public class HomekitPersistedAccessoryProvider
      * @return The persisted accessory data
      */
     @Override
-    protected @NonNull HomekitPersistedAccessory toPersistableElement(HomekitAccessory element) {
+    protected HomekitPersistedAccessory toPersistableElement(HomekitAccessory element) {
         return new HomekitPersistedAccessory(element.getClass().getName(), element.toJson().toString());
     }
 

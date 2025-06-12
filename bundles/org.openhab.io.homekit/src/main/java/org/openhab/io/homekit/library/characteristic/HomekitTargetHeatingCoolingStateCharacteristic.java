@@ -28,7 +28,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * The state can be one of: OFF (0), HEAT (1), COOL (2), or AUTO (3).
  * This is used to set the desired operating mode of a heating/cooling system.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000033-0000-1000-8000-0026BB765291", name = "Target Heating Cooling State", tag = "targetHeatingCoolingState", acceptedItemTypes = {

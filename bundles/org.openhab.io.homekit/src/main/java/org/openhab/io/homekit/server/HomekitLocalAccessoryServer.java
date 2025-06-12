@@ -20,7 +20,6 @@ import java.util.Hashtable;
 import java.util.Objects;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -488,8 +487,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
      * @throws NullPointerException if either parameter is null
      */
     @Override
-    public void addPairing(byte @NonNull [] destinationPairingId, byte @NonNull [] destinationPublicKey)
-            throws HomekitServerException {
+    public void addPairing(byte[] destinationPairingId, byte[] destinationPublicKey) throws HomekitServerException {
         logger.debug("{}Adding pairing - Destination ID: {}", LOG_PAIRING,
                 HomekitByte.toHexString(destinationPairingId));
         super.addPairing(destinationPairingId, destinationPublicKey);
@@ -514,7 +512,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
      * @throws NullPointerException if the pairing ID is null
      */
     @Override
-    public void removePairing(byte @NonNull [] destinationPairingId) throws HomekitServerException {
+    public void removePairing(byte[] destinationPairingId) throws HomekitServerException {
         logger.debug("{}Removing pairing - Destination ID: {}", LOG_PAIRING,
                 HomekitByte.toHexString(destinationPairingId));
         super.removePairing(destinationPairingId);
@@ -573,7 +571,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
 
     // ========== Setup Code Management ==========
     @Override
-    public @NonNull String getSetupCode() {
+    public String getSetupCode() {
         logger.debug("{}Getting setup code", LOG_CONFIG);
         String currentCode = super.getSetupCode();
         if (currentCode.isEmpty()) {
@@ -613,10 +611,10 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     }
 
     private boolean isReservedSetupCode(String code) {
-        return code.equals("000-00-000") || code.equals("111-11-111") || code.equals("222-22-222")
-                || code.equals("333-33-333") || code.equals("444-44-444") || code.equals("555-55-555")
-                || code.equals("666-66-666") || code.equals("777-77-777") || code.equals("888-88-888")
-                || code.equals("999-99-999") || code.equals("123-45-678") || code.equals("876-54-321");
+        return "000-00-000".equals(code) || "111-11-111".equals(code) || "222-22-222".equals(code)
+                || "333-33-333".equals(code) || "444-44-444".equals(code) || "555-55-555".equals(code)
+                || "666-66-666".equals(code) || "777-77-777".equals(code) || "888-88-888".equals(code)
+                || "999-99-999".equals(code) || "123-45-678".equals(code) || "876-54-321".equals(code);
     }
 
     // ========== Security Management ==========

@@ -230,14 +230,14 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
         }
 
         // Handle wildcard UIDs
-        if (uidString.equals("*")) {
+        if ("*".equals(uidString)) {
             return HomekitUID.WILDCARD_UID;
         }
 
         String[] segments = uidString.split(":");
 
         // Handle HomeKit UIDs
-        if (segments.length >= 2 && segments[0].equals("homekit")) {
+        if (segments.length >= 2 && "homekit".equals(segments[0])) {
             switch (segments[1]) {
                 case "item":
                     return new ItemUID(uidString);
@@ -305,7 +305,7 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     private UID convertToUID(String uidString) {
         // Try to determine type from the UID string first
         String[] segments = uidString.split(":");
-        if (segments.length >= 2 && segments[0].equals("homekit")) {
+        if (segments.length >= 2 && "homekit".equals(segments[0])) {
             try {
                 ConfigurationType type = ConfigurationType.valueOf(segments[1].toUpperCase());
                 return convertToUID(uidString, type);
@@ -856,7 +856,7 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
         String uidString = uid.toString();
         String[] segments = uidString.split(":");
 
-        if (segments.length >= 2 && segments[0].equals("homekit")) {
+        if (segments.length >= 2 && "homekit".equals(segments[0])) {
             switch (segments[1]) {
                 case "item":
                     return ConfigurationType.ITEM;

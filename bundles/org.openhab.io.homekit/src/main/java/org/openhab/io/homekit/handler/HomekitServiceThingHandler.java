@@ -708,7 +708,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
                     UID subscriberUID = thingUid;
 
                     // Add the subscription with all warnings suppressed
-                    @SuppressWarnings("null")
+                    @SuppressWarnings("null") // All parameters are validated and non-null at this point
                     HomekitEventSubscription subscription = eventManager.subscribe(
                             HomekitEventType.SERVICE_STATE_CHANGED, uidForSubscription, subscriberUID, eventHandler);
                     eventSubscriptions.add(subscription);

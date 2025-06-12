@@ -30,7 +30,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * It provides information about how data should be transferred between devices.
  * The TLV8 format allows for flexible encoding of transport-specific configuration data.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/HomeKit">HAP Specification</a>
  */
 @HomekitCharacteristicType(type = "00000201-0000-1000-8000-0026BB765291", name = "Setup Transfer Transport", tag = "setupTransferTransport", acceptedItemTypes = {

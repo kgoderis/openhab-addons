@@ -27,7 +27,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * This characteristic represents the status of a firmware update.
  * The status can be one of: IDLE, DOWNLOADING, INSTALLING, SUCCESS, or FAILED.
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  * @see <a href="https://developer.apple.com/documentation/homekit/hap-characteristic-types/firmware-update-status">HAP
  *      Specification</a>
  */

@@ -34,7 +34,7 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
  * <p>
  * See the HomeKit Accessory Protocol (HAP) specification for details: https://developer.apple.com/documentation/HomeKit
  *
- * @author Karel Goderis
+ * @author Karel Goderis - Initial Contribution
  */
 @HomekitCharacteristicType(type = "00000120-0000-1000-8000-0026BB765291", name = "Streaming Status", tag = "streamingStatus", acceptedItemTypes = {
         "String" })

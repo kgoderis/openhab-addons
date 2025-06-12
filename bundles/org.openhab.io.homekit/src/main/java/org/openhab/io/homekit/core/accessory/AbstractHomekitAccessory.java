@@ -30,7 +30,6 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.thing.UID;
@@ -203,7 +202,6 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
      * @return the unique identifier for this accessory
      */
     @Override
-    @NonNull
     public HomekitAccessoryUID getUID() {
         HomekitAccessoryUID uid = this.accessoryUID;
         if (uid == null) {
@@ -235,7 +233,6 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
      * @return the display label
      */
     @Override
-    @NonNull
     public String getLabel() {
         return label.isEmpty() ? getUID().toString() : label;
     }
@@ -247,7 +244,6 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
      * @return the serial number
      */
     @Override
-    @NonNull
     public String getSerialNumber() {
         return serialNumber.isEmpty() ? getUID().toString() : serialNumber;
     }
@@ -259,7 +255,6 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
      * @return the model name
      */
     @Override
-    @NonNull
     public String getModel() {
         return model.isEmpty() ? this.getClass().getSimpleName() : model;
     }
@@ -271,7 +266,6 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
      * @return the manufacturer name
      */
     @Override
-    @NonNull
     public String getManufacturer() {
         return manufacturer;
     }
@@ -399,9 +393,8 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
      * @since 1.0
      */
     @Override
-    @NonNull
     public Collection<HomekitService> getServices() {
-        return services;
+        return new ArrayList<>(services);
     }
 
     /**
@@ -478,22 +471,16 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
      * @return the JSON representation
      */
     @Override
-    @NonNull
     public JsonObject toJson() {
-        JsonArrayBuilder jsonServices = Json.createArrayBuilder();
+        JsonObjectBuilder builder = Json.createObjectBuilder();
+        builder.add("aid", getAccessoryId());
 
+        JsonArrayBuilder servicesBuilder = Json.createArrayBuilder();
         for (HomekitService service : getServices()) {
-            jsonServices.add(service.toJson());
+            servicesBuilder.add(service.toJson());
         }
 
-        JsonObjectBuilder builder = Json.createObjectBuilder().add("services", jsonServices);
-
-        // Always include AID in JSON to maintain consistency across reboots
-        Long currentAccessoryId = accessoryId;
-        if (currentAccessoryId != null) {
-            builder.add("aid", currentAccessoryId.longValue());
-        }
-
+        builder.add("services", servicesBuilder.build());
         return builder.build();
     }
 
@@ -508,22 +495,16 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
      * @return the reduced JSON representation
      */
     @Override
-    @NonNull
     public JsonObject toReducedJson() {
-        JsonArrayBuilder jsonServices = Json.createArrayBuilder();
+        JsonObjectBuilder builder = Json.createObjectBuilder();
+        builder.add("aid", getAccessoryId());
 
+        JsonArrayBuilder servicesBuilder = Json.createArrayBuilder();
         for (HomekitService service : getServices()) {
-            jsonServices.add(service.toReducedJson());
+            servicesBuilder.add(service.toReducedJson());
         }
 
-        JsonObjectBuilder builder = Json.createObjectBuilder().add("services", jsonServices);
-
-        // Always include AID in reduced JSON to maintain consistency
-        Long currentAccessoryId = accessoryId;
-        if (currentAccessoryId != null) {
-            builder.add("aid", currentAccessoryId.longValue());
-        }
-
+        builder.add("services", servicesBuilder.build());
         return builder.build();
     }
 
@@ -723,16 +704,19 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
      */
     @Override
     public boolean equals(@Nullable Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
+        }
 
         AbstractHomekitAccessory that = (AbstractHomekitAccessory) o;
 
         // Compare accessory ID
-        if (!Objects.equals(accessoryId, that.accessoryId))
+        if (!Objects.equals(accessoryId, that.accessoryId)) {
             return false;
+        }
 
         // Compare services
         List<HomekitService> thisServices = new ArrayList<>(this.services);
@@ -742,16 +726,20 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
         thisServices.sort((s1, s2) -> Long.compare(s1.getInstanceId(), s2.getInstanceId()));
         thatServices.sort((s1, s2) -> Long.compare(s1.getInstanceId(), s2.getInstanceId()));
 
-        // Compare sizes
-        if (thisServices.size() != thatServices.size())
+        // Compare sizes first
+        if (thisServices.size() != thatServices.size()) {
             return false;
+        }
 
         // Compare each service
         for (int i = 0; i < thisServices.size(); i++) {
+            @SuppressWarnings("null") // List.get() is safe within bounds check
             HomekitService thisService = thisServices.get(i);
+            @SuppressWarnings("null") // List.get() is safe within bounds check
             HomekitService thatService = thatServices.get(i);
-            if (!thisService.equals(thatService))
+            if (!Objects.equals(thisService, thatService)) {
                 return false;
+            }
         }
 
         return true;
@@ -781,7 +769,7 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
      */
     @Override
     public int compareTo(HomekitAccessory other) {
-        if (this == other)
+        if (this.equals(other))
             return 0;
 
         // First compare by accessory ID
