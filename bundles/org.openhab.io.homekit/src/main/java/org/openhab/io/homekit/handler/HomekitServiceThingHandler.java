@@ -680,6 +680,7 @@ public class HomekitServiceThingHandler extends AbstractHomekitHandler {
                     return;
                 }
                 String serviceIdValue = serviceId.get();
+                @SuppressWarnings("null") // accessory is not null at this point
                 Optional<HomekitService> foundService = accessory.getService(serviceIdValue);
                 if (foundService.isPresent()) {
                     HomekitService recoveredService = foundService.get();

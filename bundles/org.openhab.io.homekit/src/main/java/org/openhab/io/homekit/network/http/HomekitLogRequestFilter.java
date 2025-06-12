@@ -13,9 +13,8 @@
 
 package org.openhab.io.homekit.network.http;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.util.HexFormat;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -25,8 +24,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.io.HexDump;
-import org.apache.commons.io.IOUtils;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.slf4j.Logger;
@@ -160,13 +157,46 @@ public class HomekitLogRequestFilter implements Filter {
         logger.debug("{}Query: {}", LOG_REQUEST, request.getQueryString());
         logger.debug("{}Payload:", LOG_REQUEST);
         try {
-            byte[] body = IOUtils.toByteArray(request.getInputStream());
-
-            try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
-                HexDump.dump(body, 0, stream, 0);
-                stream.flush();
-                logger.trace("{}{}", LOG_REQUEST, stream.toString(StandardCharsets.UTF_8.name()));
+            // Read request body using Java standard library
+            byte[] body;
+            try (var inputStream = request.getInputStream()) {
+                body = inputStream.readAllBytes();
             }
+
+            // Create hex dump using Java's HexFormat
+            StringBuilder hexDump = new StringBuilder();
+            HexFormat hexFormat = HexFormat.of();
+
+            for (int i = 0; i < body.length; i += 16) {
+                hexDump.append(String.format("%08X: ", i));
+
+                // Print hex values
+                for (int j = 0; j < 16; j++) {
+                    if (i + j < body.length) {
+                        hexDump.append(hexFormat.formatHex(new byte[] { body[i + j] })).append(' ');
+                    } else {
+                        hexDump.append("   ");
+                    }
+
+                    if (j == 7) {
+                        hexDump.append(' ');
+                    }
+                }
+
+                // Print ASCII representation
+                hexDump.append(" |");
+                for (int j = 0; j < 16; j++) {
+                    if (i + j < body.length) {
+                        char c = (char) body[i + j];
+                        hexDump.append(c >= 32 && c < 127 ? c : '.');
+                    } else {
+                        hexDump.append(' ');
+                    }
+                }
+                hexDump.append("|\n");
+            }
+
+            logger.trace("{}{}", LOG_REQUEST, hexDump.toString());
 
         } catch (IOException e) {
             logger.error("{}Failed to read request payload: {}", LOG_ERROR, e.getMessage(), e);

@@ -25,7 +25,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.commons.io.IOUtils;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
@@ -174,7 +173,11 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
                 return;
             }
 
-            byte[] body = IOUtils.toByteArray(request.getInputStream());
+            // Read the request body as bytes using standard Java
+            byte[] body;
+            try (var inputStream = request.getInputStream()) {
+                body = inputStream.readAllBytes();
+            }
             short stage = getState(body);
             logger.trace("{}Processing verification stage {}", LOG_SECURITY, stage);
 

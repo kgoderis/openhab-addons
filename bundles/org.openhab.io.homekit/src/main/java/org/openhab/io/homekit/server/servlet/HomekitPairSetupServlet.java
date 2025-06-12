@@ -26,7 +26,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.commons.io.IOUtils;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
@@ -180,7 +179,11 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         }
 
         try {
-            byte[] body = IOUtils.toByteArray(request.getInputStream());
+            // Read the request body as bytes using standard Java
+            byte[] body;
+            try (var inputStream = request.getInputStream()) {
+                body = inputStream.readAllBytes();
+            }
             short state = getState(body);
             logger.trace("{}Processing setup stage {}", LOG_SECURITY, state);
 
@@ -253,17 +256,17 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         }
 
         HttpSession session = request.getSession();
-        HomekitServerSRP6Session SRP6Session = (HomekitServerSRP6Session) session.getAttribute("SRP6Session");
+        HomekitServerSRP6Session srp6Session = (HomekitServerSRP6Session) session.getAttribute("SRP6Session");
 
-        if (SRP6Session == null) {
-            SRP6Session = new HomekitServerSRP6Session(HomekitEncryptionEngine.SRP6Params);
-            SRP6Session.setClientEvidenceRoutine(new HomekitEncryptionEngine.ClientEvidenceRoutineImpl());
-            SRP6Session.setServerEvidenceRoutine(new HomekitEncryptionEngine.ServerEvidenceRoutineImpl());
-            session.setAttribute("SRP6Session", SRP6Session);
+        if (srp6Session == null) {
+            srp6Session = new HomekitServerSRP6Session(HomekitEncryptionEngine.SRP6Params);
+            srp6Session.setClientEvidenceRoutine(new HomekitEncryptionEngine.ClientEvidenceRoutineImpl());
+            srp6Session.setServerEvidenceRoutine(new HomekitEncryptionEngine.ServerEvidenceRoutineImpl());
+            session.setAttribute("SRP6Session", srp6Session);
             logger.debug("{}Created new SRP session", LOG_SECURITY);
         }
 
-        if (SRP6Session.getState() != State.INIT) {
+        if (srp6Session.getState() != State.INIT) {
             logger.error("{}Session is not in INIT state", LOG_ERROR);
             response.setStatus(HttpServletResponse.SC_CONFLICT);
             return;
@@ -282,7 +285,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         encoder.add(HomekitMessage.STATE, (short) 0x02);
         encoder.add(HomekitMessage.SALT, salt);
 
-        BigInteger publicKey = SRP6Session.step1("Pair-Setup", salt, verifier);
+        BigInteger publicKey = srp6Session.step1("Pair-Setup", salt, verifier);
         encoder.add(HomekitMessage.PUBLIC_KEY, publicKey);
 
         logger.debug("{}Completing Stage 1 setup", LOG_SECURITY);
@@ -334,16 +337,16 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         logger.trace("{}Received request body: {}", LOG_SECURITY, HomekitByte.toHexString(body));
 
         HttpSession session = request.getSession();
-        HomekitServerSRP6Session SRP6Session = (HomekitServerSRP6Session) session.getAttribute("SRP6Session");
+        HomekitServerSRP6Session srp6Session = (HomekitServerSRP6Session) session.getAttribute("SRP6Session");
 
-        if (SRP6Session == null) {
+        if (srp6Session == null) {
             logger.error("{}No SRP session found", LOG_ERROR);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
         logger.trace("{}Retrieved SRP session", LOG_SECURITY);
-        if (SRP6Session.getState() != State.STEP_1) {
+        if (srp6Session.getState() != State.STEP_1) {
             logger.error("{}Session is not in STEP_1 state", LOG_ERROR);
             response.setStatus(HttpServletResponse.SC_CONFLICT);
             return;
@@ -352,7 +355,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         BigInteger proof = null;
         Encoder encoder = HomekitTypeLengthValueEncoderDecoder.getEncoder();
         try {
-            proof = SRP6Session.step2(getPublicKey(body), getProof(body));
+            proof = srp6Session.step2(getPublicKey(body), getProof(body));
             encoder.add(HomekitMessage.STATE, (short) 0x04);
             encoder.add(HomekitMessage.PROOF, proof);
 
@@ -419,17 +422,17 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         }
 
         HttpSession session = request.getSession();
-        HomekitServerSRP6Session SRP6Session = (HomekitServerSRP6Session) session.getAttribute("SRP6Session");
+        HomekitServerSRP6Session srp6Session = (HomekitServerSRP6Session) session.getAttribute("SRP6Session");
 
-        if (SRP6Session == null) {
+        if (srp6Session == null) {
             logger.error("{}No SRP session found", LOG_ERROR);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
         logger.trace("{}Retrieved SRP session", LOG_SECURITY);
-        MessageDigest digest = SRP6Session.getCryptoParams().getMessageDigestInstance();
-        BigInteger S = SRP6Session.getSessionKey(false);
+        MessageDigest digest = srp6Session.getCryptoParams().getMessageDigestInstance();
+        BigInteger S = srp6Session.getSessionKey(false);
         byte[] sBytes = bigIntegerToUnsignedByteArray(S);
         logger.trace("{}Retrieved SRP session key", LOG_SECURITY);
 
@@ -707,7 +710,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
          * @param cryptoParams The SRP-6a cryptographic parameters
          * @param ctx The client evidence context containing session values
          * @return The computed M1 value as a BigInteger
-         * @throws RuntimeException if the hash algorithm is not available
+         * @throws IllegalStateException if the hash algorithm is not available
          */
         @Override
         @SuppressWarnings("null") // Parent ClientEvidenceRoutine interface doesn't constrain these parameters with
@@ -724,7 +727,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
             try {
                 digest = MessageDigest.getInstance(cryptoParams.H);
             } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException("Could not locate requested algorithm", e);
+                throw new IllegalStateException("Could not locate requested algorithm", e);
             }
 
             digest.update(bigIntegerToUnsignedByteArray(cryptoParams.N));

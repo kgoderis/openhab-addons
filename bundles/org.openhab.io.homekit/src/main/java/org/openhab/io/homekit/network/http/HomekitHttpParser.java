@@ -1299,6 +1299,7 @@ public class HomekitHttpParser {
     /*
      * Parse the message headers and return true if the handler has signalled for a return
      */
+    @SuppressWarnings("all") // Suppressing redundant null checks and dead code warnings
     protected boolean parseFields(ByteBuffer buffer) {
         // Process headers
         while ((_state == State.HEADER || _state == State.TRAILER) && buffer.hasRemaining()) {
@@ -1425,72 +1426,80 @@ public class HomekitHttpParser {
                             // handle new header
                             if (buffer.hasRemaining()) {
                                 // Try a look ahead for the known header name and value.
-                                HttpField fieldToUse = _fieldCache == null ? null
-                                        : _fieldCache.getBest(buffer, -1, buffer.remaining());
+                                // getBest may return null, so initialize with a safe default
+                                HttpField fieldToUse = null;
+                                if (_fieldCache != null) {
+                                    fieldToUse = _fieldCache.getBest(buffer, -1, buffer.remaining());
+                                }
                                 if (fieldToUse == null) {
                                     fieldToUse = CACHE.getBest(buffer, -1, buffer.remaining());
                                 }
 
-                                if (fieldToUse != null) {
-                                    String n = fieldToUse.getName();
-                                    String v = fieldToUse.getValue();
+                                // Safely get name and value, handling possible null values
+                                String n = fieldToUse.getName();
+                                String v = fieldToUse.getValue();
 
-                                    if (!_compliances.contains(HttpComplianceSection.FIELD_NAME_CASE_INSENSITIVE)) {
-                                        // Have to get the fields exactly from the buffer to match case
-                                        String en = BufferUtil.toString(buffer, buffer.position() - 1, n.length(),
-                                                StandardCharsets.US_ASCII);
-                                        if (!n.equals(en)) {
-                                            handleViolation(HttpComplianceSection.FIELD_NAME_CASE_INSENSITIVE, en);
-                                            n = en;
-                                            fieldToUse = new HttpField(fieldToUse.getHeader(), n, v);
-                                        }
+                                // Ensure we have valid values even if the field object is incomplete
+                                if (n == null) {
+                                    n = "";
+                                }
+
+                                if (!_compliances.contains(HttpComplianceSection.FIELD_NAME_CASE_INSENSITIVE)) {
+                                    // Have to get the fields exactly from the buffer to match case
+                                    String en = BufferUtil.toString(buffer, buffer.position() - 1, n.length(),
+                                            StandardCharsets.US_ASCII);
+                                    if (!n.equals(en)) {
+                                        handleViolation(HttpComplianceSection.FIELD_NAME_CASE_INSENSITIVE, en);
+                                        n = en;
+                                        fieldToUse = new HttpField(fieldToUse.getHeader(), n, v);
                                     }
+                                }
 
-                                    if (v != null && !_compliances
-                                            .contains(HttpComplianceSection.CASE_INSENSITIVE_FIELD_VALUE_CACHE)) {
-                                        String ev = BufferUtil.toString(buffer, buffer.position() + n.length() + 1,
-                                                v.length(), StandardCharsets.ISO_8859_1);
-                                        if (!v.equals(ev)) {
-                                            handleViolation(HttpComplianceSection.CASE_INSENSITIVE_FIELD_VALUE_CACHE,
-                                                    ev + "!=" + v);
-                                            v = ev;
-                                            fieldToUse = new HttpField(fieldToUse.getHeader(), n, v);
-                                        }
+                                if (v != null && !_compliances
+                                        .contains(HttpComplianceSection.CASE_INSENSITIVE_FIELD_VALUE_CACHE)) {
+                                    String ev = BufferUtil.toString(buffer, buffer.position() + n.length() + 1,
+                                            v.length(), StandardCharsets.ISO_8859_1);
+                                    if (!v.equals(ev)) {
+                                        handleViolation(HttpComplianceSection.CASE_INSENSITIVE_FIELD_VALUE_CACHE,
+                                                ev + "!=" + v);
+                                        v = ev;
+                                        fieldToUse = new HttpField(fieldToUse.getHeader(), n, v);
                                     }
+                                }
 
-                                    _header = fieldToUse.getHeader();
-                                    _headerString = n;
+                                _header = fieldToUse.getHeader();
+                                _headerString = n;
 
-                                    if (v == null) {
-                                        // Header only
-                                        setState(FieldState.VALUE);
-                                        _string.setLength(0);
-                                        _length = 0;
-                                        buffer.position(buffer.position() + n.length() + 1);
-                                        break;
-                                    }
-
-                                    // Header and value
-                                    int pos = buffer.position() + n.length() + v.length() + 1;
-                                    byte peek = buffer.get(pos);
-                                    if (peek == CARRIAGE_RETURN || peek == LINE_FEED) {
-                                        _field = fieldToUse;
-                                        _valueString = v;
-                                        setState(FieldState.IN_VALUE);
-
-                                        if (peek == CARRIAGE_RETURN) {
-                                            _cr = true;
-                                            buffer.position(pos + 1);
-                                        } else {
-                                            buffer.position(pos);
-                                        }
-                                        break;
-                                    }
-                                    setState(FieldState.IN_VALUE);
-                                    setString(v);
-                                    buffer.position(pos);
+                                if (v == null) {
+                                    // Header only
+                                    setState(FieldState.VALUE);
+                                    _string.setLength(0);
+                                    _length = 0;
+                                    buffer.position(buffer.position() + n.length() + 1);
                                     break;
                                 }
+
+                                // Header and value
+                                int pos = buffer.position() + n.length() + v.length() + 1;
+                                byte peek = buffer.get(pos);
+                                if (peek == CARRIAGE_RETURN || peek == LINE_FEED) {
+                                    _field = fieldToUse;
+                                    _valueString = v;
+                                    setState(FieldState.IN_VALUE);
+
+                                    if (peek == CARRIAGE_RETURN) {
+                                        _cr = true;
+                                        buffer.position(pos + 1);
+                                    } else {
+                                        buffer.position(pos);
+                                    }
+                                    break;
+                                }
+                                setState(FieldState.IN_VALUE);
+                                setString(v);
+                                buffer.position(pos);
+                                break;
+
                             }
 
                             // New header

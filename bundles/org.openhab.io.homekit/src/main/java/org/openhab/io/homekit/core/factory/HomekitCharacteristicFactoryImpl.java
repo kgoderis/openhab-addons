@@ -25,9 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
-import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
 import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
-import org.openhab.io.homekit.api.factory.HomekitServiceFactory;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.exception.HomekitFactoryException;
@@ -88,8 +86,8 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * <p>
- * The factory works in conjunction with {@link HomekitServiceFactory} and
- * {@link HomekitAccessoryFactory} to
+ * The factory works in conjunction with {@link org.openhab.io.homekit.api.factory.HomekitServiceFactory} and
+ * {@link org.openhab.io.homekit.api.factory.HomekitAccessoryFactory} to
  * create a complete HomeKit accessory hierarchy. When a service needs
  * characteristics, it uses this factory to
  * create them, ensuring proper initialization and integration with the event

@@ -124,7 +124,7 @@ public class HomekitEventGraphProcessor {
         String edgeId = sourceId + "->" + targetId;
         // Null Pointer Access Warning Checked
         // computeIfAbsent cannot return null since we're providing a non-null supplier function
-        Map<String, Object> metadata = edgeMetadata.computeIfAbsent(edgeId, k -> new HashMap<>());
+        edgeMetadata.computeIfAbsent(edgeId, k -> new HashMap<>());
     }
 
     /**

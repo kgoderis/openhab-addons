@@ -14,10 +14,6 @@
 package org.openhab.io.homekit.core.accessory;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.io.homekit.api.accessory.HomekitAccessory;
-import org.openhab.io.homekit.api.accessory.HomekitAccessoryType;
-import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
-import org.openhab.io.homekit.api.service.HomekitService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,9 +45,9 @@ import org.slf4j.LoggerFactory;
  * <p>
  * The class integrates with several key components:
  * <ul>
- * <li>{@link HomekitAccessory} - Base accessory interface</li>
- * <li>{@link HomekitAccessoryFactory} - Accessory creation</li>
- * <li>{@link HomekitService} - Service management</li>
+ * <li>{@link org.openhab.io.homekit.api.accessory.HomekitAccessory} - Base accessory interface</li>
+ * <li>{@link org.openhab.io.homekit.api.factory.HomekitAccessoryFactory} - Accessory creation</li>
+ * <li>{@link org.openhab.io.homekit.api.service.HomekitService} - Service management</li>
  * <li>{@link JsonObject} - State serialization</li>
  * </ul>
  * </p>
@@ -97,7 +93,7 @@ public class HomekitPersistedAccessory {
      * @param accessoryType The type of the accessory
      * @param json The JSON representation of the accessory
      * @throws IllegalArgumentException if either parameter is null
-     * @see HomekitAccessoryType
+     * @see org.openhab.io.homekit.api.accessory.HomekitAccessoryType
      * @see JsonObject
      */
     public HomekitPersistedAccessory(String accessoryType, String json) {
@@ -111,7 +107,7 @@ public class HomekitPersistedAccessory {
      * The type is used to identify the correct factory for restoring the accessory.
      *
      * @return The accessory type
-     * @see HomekitAccessoryType
+     * @see org.openhab.io.homekit.api.accessory.HomekitAccessoryType
      */
     public String getAccessoryType() {
         return accessoryType;
@@ -146,7 +142,7 @@ public class HomekitPersistedAccessory {
      * This method is used to change the accessory type if needed.
      *
      * @param accessoryType The new accessory type
-     * @see HomekitAccessoryType
+     * @see org.openhab.io.homekit.api.accessory.HomekitAccessoryType
      */
     public void setAccessoryType(String accessoryType) {
         this.accessoryType = accessoryType;

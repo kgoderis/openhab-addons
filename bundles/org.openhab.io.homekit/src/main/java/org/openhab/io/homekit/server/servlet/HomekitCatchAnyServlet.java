@@ -19,7 +19,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.IOUtils;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
@@ -62,7 +61,6 @@ import org.slf4j.LoggerFactory;
  * <ul>
  * <li>{@link HomekitBaseServlet} for base servlet functionality</li>
  * <li>{@link HomekitAccessoryServer} for server instance management</li>
- * <li>{@link org.apache.commons.io.IOUtils} for request body handling</li>
  * </ul>
  *
  * @author Karel Goderis - Initial contribution
@@ -189,7 +187,11 @@ public class HomekitCatchAnyServlet extends HomekitBaseServlet {
         logger.warn("{}Unmatched request received: {}", LOG_WARN, requestURI);
 
         try {
-            byte[] body = IOUtils.toByteArray(request.getInputStream());
+            // Read the request body as bytes using standard Java
+            byte[] body;
+            try (var inputStream = request.getInputStream()) {
+                body = inputStream.readAllBytes();
+            }
             if (body.length > 0) {
                 logger.debug("{}Request body captured ({} bytes)", LOG_REQUEST, body.length);
             }

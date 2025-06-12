@@ -17,11 +17,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.items.GroupItem;
@@ -461,7 +461,7 @@ public class HomekitTaggedItem {
      * @return A unique identifier for the accessory
      */
     private int calculateId(Item item) {
-        int id = new HashCodeBuilder().append(item.getName()).toHashCode();
+        int id = Objects.hash(item.getName());
         if (CREATED_ACCESSORY_IDS.containsKey(id)) {
             logger.warn("{}ID collision detected for item {} with existing item {}", LOG_WARN, item.getName(),
                     CREATED_ACCESSORY_IDS.get(id));

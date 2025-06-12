@@ -22,7 +22,6 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
-import org.apache.commons.io.IOUtils;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -46,7 +45,7 @@ import org.eclipse.jdt.annotation.Nullable;
  * 4. Memory-efficient body handling
  *
  * The implementation uses:
- * - {@link IOUtils} for efficient stream handling
+ * - Java's InputStream.readAllBytes() for efficient stream handling
  * - {@link ByteArrayInputStream} for body caching
  * - {@link ServletInputStream} for stream delegation
  *
@@ -74,7 +73,7 @@ public class HomekitRequestWrapper extends HttpServletRequestWrapper {
     public HomekitRequestWrapper(HttpServletRequest request) {
         super(request);
         try {
-            body = IOUtils.toByteArray(request.getInputStream());
+            body = request.getInputStream().readAllBytes();
         } catch (IOException ex) {
             body = new byte[0];
         }
@@ -198,12 +197,11 @@ public class HomekitRequestWrapper extends HttpServletRequestWrapper {
          * in memory and read synchronously.
          *
          * @param readListener The read listener to set
-         * @throws UnsupportedOperationException always
          */
         @Override
         @SuppressWarnings("null") // Parent ServletInputStream doesn't constrain this parameter
         public void setReadListener(@Nullable ReadListener readListener) {
-            throw new UnsupportedOperationException();
+            throw new UnsupportedOperationException("Asynchronous reading not supported");
         }
     }
 }

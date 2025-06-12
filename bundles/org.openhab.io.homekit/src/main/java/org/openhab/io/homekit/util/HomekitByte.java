@@ -19,10 +19,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.HexFormat;
 
-import org.apache.commons.io.HexDump;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.util.BufferUtil;
@@ -188,11 +187,40 @@ public class HomekitByte {
                 byte[] bytes = new byte[buf.remaining()];
                 buffer.get(bytes, 0, buffer.remaining());
 
-                HexDump.dump(bytes, 0, stream, 0);
-                stream.flush();
+                // Generate hex dump using Java's HexFormat
+                HexFormat hexFormat = HexFormat.of();
+                StringBuilder hexDump = new StringBuilder();
 
-                logger.trace("[{}] {} {}:%n{}%n", remote, label, BufferUtil.toDetailString(buf),
-                        stream.toString(StandardCharsets.UTF_8.name()));
+                for (int i = 0; i < bytes.length; i += 16) {
+                    hexDump.append(String.format("%08X: ", i));
+
+                    // Print hex values
+                    for (int j = 0; j < 16; j++) {
+                        if (i + j < bytes.length) {
+                            hexDump.append(hexFormat.formatHex(new byte[] { bytes[i + j] })).append(' ');
+                        } else {
+                            hexDump.append("   ");
+                        }
+
+                        if (j == 7) {
+                            hexDump.append(' ');
+                        }
+                    }
+
+                    // Print ASCII representation
+                    hexDump.append(" |");
+                    for (int j = 0; j < 16; j++) {
+                        if (i + j < bytes.length) {
+                            char c = (char) bytes[i + j];
+                            hexDump.append(c >= 32 && c < 127 ? c : '.');
+                        } else {
+                            hexDump.append(' ');
+                        }
+                    }
+                    hexDump.append("|\n");
+                }
+
+                logger.trace("[{}] {} {}:%n{}%n", remote, label, BufferUtil.toDetailString(buf), hexDump.toString());
             }
         }
     }

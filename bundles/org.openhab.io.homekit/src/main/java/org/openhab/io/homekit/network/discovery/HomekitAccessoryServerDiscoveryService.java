@@ -31,7 +31,6 @@ import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 
-import org.apache.commons.lang.SystemUtils;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.config.discovery.AbstractDiscoveryService;
@@ -895,7 +894,10 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
 
         String hostAddress = null;
 
-        if (SystemUtils.IS_OS_MAC) {
+        // Check if running on MacOS using Java's standard library
+        boolean isMacOS = System.getProperty("os.name", "").toLowerCase().contains("mac");
+
+        if (isMacOS) {
             // Use IPv4 only on MacOS due to known issues with IPv6
             // See:
             // https://medium.com/@quelgar/java-sockets-broken-for-ipv6-on-mac-5aae72f06b21

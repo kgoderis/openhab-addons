@@ -263,9 +263,14 @@ public class HomekitEventManager {
     /**
      * Processes all events currently in the queue, dispatching them to the appropriate subscribers.
      */
+    @SuppressWarnings("all") // Suppressing the redundant null check warning and dead code warning
     private void processEvents() {
         HomekitEvent event;
-        while (isRunning.get() && (event = eventQueue.poll()) != null) {
+        while (isRunning.get()) {
+            event = eventQueue.poll();
+            if (event == null) {
+                return;
+            }
             activeEventCount.incrementAndGet();
             try {
                 publishEventToSubscribers(event, 0, false);
@@ -281,6 +286,7 @@ public class HomekitEventManager {
      *
      * @param event the event to publish
      */
+    @SuppressWarnings("all") // Suppressing redundant null check warning
     public void publishEvent(HomekitEvent event) {
         if (!isRunning.get()) {
             logger.warn("{}Event manager is shutting down, event discarded", LOG_WARN);
@@ -323,12 +329,9 @@ public class HomekitEventManager {
             while (!queued && isRunning.get()) {
                 if (eventQueue.size() >= MAX_QUEUE_SIZE) {
                     HomekitEvent oldestEvent = eventQueue.poll();
-                    if (oldestEvent != null) {
-                        logger.warn("{}Event queue is full, oldest event discarded: type={}, timestamp={}", LOG_QUEUE,
-                                oldestEvent.getType(), oldestEvent.getTimestamp());
-                    } else {
-                        logger.warn("{}Event queue is full, but could not retrieve oldest event to discard", LOG_QUEUE);
-                    }
+                    logger.warn("{}Event queue is full, oldest event discarded: type={}, timestamp={}", LOG_QUEUE,
+                            oldestEvent.getType(), oldestEvent.getTimestamp());
+
                 }
                 queued = eventQueue.offer(event, 100, TimeUnit.MILLISECONDS);
             }

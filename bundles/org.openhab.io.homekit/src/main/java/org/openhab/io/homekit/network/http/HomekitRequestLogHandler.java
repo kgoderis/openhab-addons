@@ -13,16 +13,13 @@
 
 package org.openhab.io.homekit.network.http;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.util.HexFormat;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.HexDump;
-import org.apache.commons.io.IOUtils;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.server.Request;
@@ -69,9 +66,7 @@ import org.slf4j.LoggerFactory;
  * <b>Implementation Details:</b>
  * </p>
  * <ul>
- * <li>Uses {@link HexDump} for binary payload visualization</li>
- * <li>Uses {@link IOUtils} for efficient stream handling</li>
- * <li>Uses {@link ByteArrayOutputStream} for content buffering</li>
+ * <li>Uses standard Java libraries for hex dump generation</li>
  * <li>Implements debug and trace level logging</li>
  * <li>Provides hex dump generation for binary content</li>
  * </ul>
@@ -181,8 +176,8 @@ public class HomekitRequestLogHandler extends RequestLogHandler {
      * Logs detailed information about the incoming request.
      *
      * <p>
-     * This method uses {@link IOUtils} to efficiently read the request body
-     * and {@link HexDump} to generate readable hex dumps of binary content.
+     * This method uses standard Java libraries to efficiently read the request body
+     * and generate readable hex dumps of binary content.
      * It logs comprehensive request details including:
      * </p>
      * <ul>
@@ -206,16 +201,49 @@ public class HomekitRequestLogHandler extends RequestLogHandler {
         logger.debug("{}URI: {}", LOG_REQUEST, request.getRequestURI());
         logger.debug("{}Query: {}", LOG_REQUEST, request.getQueryString());
 
-        byte[] body = IOUtils.toByteArray(request.getInputStream());
+        // Read request body using Java standard library
+        byte[] body;
+        try (var inputStream = request.getInputStream()) {
+            body = inputStream.readAllBytes();
+        }
+
         if (body.length > 0) {
             logger.debug("{}Payload size: {} bytes", LOG_REQUEST, body.length);
             if (logger.isTraceEnabled()) {
-                try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
-                    HexDump.dump(body, 0, stream, 0);
-                    stream.flush();
-                    logger.trace("{}Payload hex dump:\n{}", LOG_REQUEST,
-                            stream.toString(StandardCharsets.UTF_8.name()));
+                // Create hex dump using Java's HexFormat
+                StringBuilder hexDump = new StringBuilder();
+                HexFormat hexFormat = HexFormat.of();
+
+                for (int i = 0; i < body.length; i += 16) {
+                    hexDump.append(String.format("%08X: ", i));
+
+                    // Print hex values
+                    for (int j = 0; j < 16; j++) {
+                        if (i + j < body.length) {
+                            hexDump.append(hexFormat.formatHex(new byte[] { body[i + j] })).append(' ');
+                        } else {
+                            hexDump.append("   ");
+                        }
+
+                        if (j == 7) {
+                            hexDump.append(' ');
+                        }
+                    }
+
+                    // Print ASCII representation
+                    hexDump.append(" |");
+                    for (int j = 0; j < 16; j++) {
+                        if (i + j < body.length) {
+                            char c = (char) body[i + j];
+                            hexDump.append(c >= 32 && c < 127 ? c : '.');
+                        } else {
+                            hexDump.append(' ');
+                        }
+                    }
+                    hexDump.append("|\n");
                 }
+
+                logger.trace("{}Payload hex dump:\n{}", LOG_REQUEST, hexDump.toString());
             }
         } else {
             logger.debug("{}No request payload", LOG_REQUEST);
@@ -252,7 +280,7 @@ public class HomekitRequestLogHandler extends RequestLogHandler {
      * Logs detailed information about the outgoing response.
      *
      * <p>
-     * This method uses {@link HexDump} to generate readable hex dumps of binary
+     * This method uses standard Java libraries to generate readable hex dumps of binary
      * response content when trace logging is enabled. It logs:
      * </p>
      * <ul>
@@ -271,12 +299,40 @@ public class HomekitRequestLogHandler extends RequestLogHandler {
         if (content.length > 0) {
             logger.debug("{}Response size: {} bytes", LOG_RESPONSE, content.length);
             if (logger.isTraceEnabled()) {
-                try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
-                    HexDump.dump(content, 0, stream, 0);
-                    stream.flush();
-                    logger.trace("{}Response hex dump:\n{}", LOG_RESPONSE,
-                            stream.toString(StandardCharsets.UTF_8.name()));
+                // Create hex dump using Java's HexFormat
+                StringBuilder hexDump = new StringBuilder();
+                HexFormat hexFormat = HexFormat.of();
+
+                for (int i = 0; i < content.length; i += 16) {
+                    hexDump.append(String.format("%08X: ", i));
+
+                    // Print hex values
+                    for (int j = 0; j < 16; j++) {
+                        if (i + j < content.length) {
+                            hexDump.append(hexFormat.formatHex(new byte[] { content[i + j] })).append(' ');
+                        } else {
+                            hexDump.append("   ");
+                        }
+
+                        if (j == 7) {
+                            hexDump.append(' ');
+                        }
+                    }
+
+                    // Print ASCII representation
+                    hexDump.append(" |");
+                    for (int j = 0; j < 16; j++) {
+                        if (i + j < content.length) {
+                            char c = (char) content[i + j];
+                            hexDump.append(c >= 32 && c < 127 ? c : '.');
+                        } else {
+                            hexDump.append(' ');
+                        }
+                    }
+                    hexDump.append("|\n");
                 }
+
+                logger.trace("{}Response hex dump:\n{}", LOG_RESPONSE, hexDump.toString());
             }
         } else {
             logger.debug("{}No response content", LOG_RESPONSE);

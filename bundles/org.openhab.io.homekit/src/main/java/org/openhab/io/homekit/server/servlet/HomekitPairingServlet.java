@@ -19,7 +19,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.IOUtils;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.http.HttpHeader;
@@ -164,7 +163,11 @@ public class HomekitPairingServlet extends HomekitBaseServlet {
             return;
         }
         try {
-            byte[] body = IOUtils.toByteArray(request.getInputStream());
+            // Read the request body as bytes using standard Java
+            byte[] body;
+            try (var inputStream = request.getInputStream()) {
+                body = inputStream.readAllBytes();
+            }
             logger.trace("{}Received request body ({} bytes)", LOG_REQUEST, body.length);
 
             DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(body);

@@ -32,12 +32,10 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
-import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
-import org.openhab.io.homekit.api.uid.HomekitCharacteristicUID;
 import org.openhab.io.homekit.event.core.AbstractHomekitEvent;
 import org.openhab.io.homekit.event.core.HomekitEventMetadata;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
@@ -81,7 +79,8 @@ import org.slf4j.LoggerFactory;
  * <li>{@link HomekitEventManager} - Handles event distribution and subscription management</li>
  * <li>{@link org.openhab.core.types.State} - Provides state conversion and synchronization</li>
  * <li>{@link javax.json.JsonValue} - Enables JSON serialization for HomeKit protocol</li>
- * <li>{@link HomekitCharacteristicUID} - Provides unique identification for characteristics</li>
+ * <li>{@link org.openhab.io.homekit.api.uid.HomekitCharacteristicUID} - Provides unique identification for
+ * characteristics</li>
  * <li>{@link org.openhab.core.items.Item} - Represents OpenHAB items for state synchronization</li>
  * <li>{@link org.openhab.core.types.Command} - Handles command processing for characteristic updates</li>
  * </ul>
@@ -109,7 +108,7 @@ import org.slf4j.LoggerFactory;
  * The class works in conjunction with:
  * <ul>
  * <li>{@link HomekitService} for service-level operations</li>
- * <li>{@link HomekitAccessory} for accessory-level integration</li>
+ * <li>{@link org.openhab.io.homekit.api.accessory.HomekitAccessory} for accessory-level integration</li>
  * <li>{@link HomekitEventManager} for event handling</li>
  * <li>{@link org.openhab.core.thing.Channel} for OpenHAB channel integration</li>
  * </ul>

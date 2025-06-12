@@ -32,7 +32,6 @@ import org.openhab.core.storage.StorageService;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
 import org.openhab.io.homekit.api.provider.HomekitAccessoryProvider;
-import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitAccessoryServerRegistry;
 import org.openhab.io.homekit.api.uid.HomekitAccessoryUID;
 import org.openhab.io.homekit.exception.HomekitFactoryException;
@@ -66,7 +65,7 @@ import org.slf4j.LoggerFactory;
  * - {@link AbstractManagedProvider} for base provider functionality
  * - {@link StorageService} for persistent storage management
  * - {@link HomekitAccessoryFactory} for accessory creation and restoration
- * - {@link HomekitAccessoryRegistry} for runtime accessory management
+ * - {@link org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry} for runtime accessory management
  * - {@link HomekitAccessoryServerRegistry} for server coordination
  * - {@link ReadyService} for system readiness management
  * - {@link org.openhab.core.service.ReadyMarker OpenHAB's ready marker system}

@@ -161,7 +161,7 @@ public class HomekitEncryptionEngine {
                         decrypted.write(decrypt(msg, writeKey, currentSequenceNumber++));
                     } catch (Exception e) {
                         logger.error("Failed to decrypt message", e);
-                        throw new RuntimeException(e);
+                        throw new IllegalStateException("Failed to decrypt message", e);
                     }
                 }
                 resultingBuffer = decrypted.toByteBuffer();
