@@ -104,6 +104,15 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     private static final Logger logger = LoggerFactory.getLogger(HomekitConfigurationManager.class);
     private static final String CONFIG_DIR = "conf/homekit";
 
+    // ========== Log Message Prefixes ==========
+    protected static final String LOG_PREFIX = "Homekit ConfigurationManager: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    protected static final String LOG_FILE = LOG_PREFIX + "File - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+
     private final WatchService watchService;
     private final Yaml yaml;
 
@@ -136,26 +145,36 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
         this.watchService = watchService;
         this.yaml = new Yaml();
 
+        logger.info("{}Initializing HomeKit configuration manager", LOG_INIT);
+
         // Register directory for watching
         Path confDir = Paths.get(CONFIG_DIR);
         this.watchService.registerListener(this, confDir);
+        logger.debug("{}Registered watch service for directory: {}", LOG_FILE, confDir);
 
         // Initial load of all YAML files in the directory
         try (Stream<Path> paths = Files.walk(confDir, 1)) {
             paths.filter(Files::isRegularFile).filter(path -> path.toString().toLowerCase().endsWith(".yaml")
                     || path.toString().toLowerCase().endsWith(".yml")).forEach(this::processConfigFile);
         } catch (IOException e) {
-            logger.error("Error scanning configuration directory: {}", e.getMessage());
+            logger.error("{}Error scanning configuration directory: {}", LOG_ERROR, e.getMessage(), e);
         }
 
         // Process OSGi configuration
         modified(config);
+        logger.info("{}HomeKit configuration manager initialized successfully", LOG_INIT);
     }
 
     @Modified
     protected void modified(Map<String, Object> config) {
-
+        logger.debug("{}Processing configuration update", LOG_CONFIG);
         config.forEach((key, value) -> {
+            // Skip OSGi-specific properties
+            if (key.startsWith("osgi.")) {
+                logger.debug("{}Skipping OSGi-specific property: {}", LOG_CONFIG, key);
+                return;
+            }
+
             String[] parts = key.split("\\.");
             if (parts.length >= 3) {
                 String typeStr = parts[0];
@@ -166,8 +185,9 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
                     ConfigurationType type = ConfigurationType.valueOf(typeStr.toUpperCase());
                     UID uid = convertToUID(uidStr, type);
                     updateConfiguration(uid, type, configKey, value);
+                    logger.debug("{}Updated configuration for {} {}: {} = {}", LOG_CONFIG, type, uid, configKey, value);
                 } catch (IllegalArgumentException e) {
-                    logger.warn("Invalid configuration key format: {}", key, e);
+                    logger.warn("{}Invalid configuration key format: {}", LOG_WARN, key, e);
                 }
             }
         });
@@ -175,6 +195,7 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
 
     @Override
     public void processWatchEvent(WatchService.Kind kind, Path path) {
+        logger.debug("{}Processing watch event: {} for path: {}", LOG_FILE, kind, path);
         if (kind == WatchService.Kind.CREATE || kind == WatchService.Kind.MODIFY) {
             processConfigFile(path);
         }
@@ -196,16 +217,20 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     private void processConfigFile(Path file) {
         try {
             String fileName = file.getFileName().toString();
+            logger.debug("{}Processing configuration file: {}", LOG_FILE, fileName);
+
             Map<String, Object> yamlConfig = yaml.load(Files.readString(file));
 
             // Process each section in the YAML file
             for (ConfigurationType type : ConfigurationType.values()) {
                 if (yamlConfig.containsKey(type.getYamlSection())) {
+                    logger.debug("{}Found {} section in {}", LOG_CONFIG, type.getYamlSection(), fileName);
                     processConfigs(yamlConfig, fileName, type);
                 }
             }
+            logger.debug("{}Successfully processed configuration file: {}", LOG_FILE, fileName);
         } catch (IOException e) {
-            logger.error("Error processing config file {}: {}", file, e.getMessage());
+            logger.error("{}Error processing config file {}: {}", LOG_ERROR, file, e.getMessage(), e);
         }
     }
 
@@ -375,7 +400,9 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
      */
     private void writeYamlFile(String yamlFile, Map<String, Object> yamlConfig) throws IOException {
         Path configPath = Paths.get(CONFIG_DIR, yamlFile);
+        logger.debug("{}Writing configuration to file: {}", LOG_FILE, configPath);
         yaml.dump(yamlConfig, Files.newBufferedWriter(configPath));
+        logger.debug("{}Successfully wrote configuration to file: {}", LOG_FILE, configPath);
     }
 
     /**
@@ -417,11 +444,12 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
                     Map<String, Object> yamlConfig = new HashMap<>();
                     yamlConfig.put(uid.toString(), config);
                     writeYamlFile(validYamlFile, yamlConfig);
+                    logger.debug("{}Stored configuration for {} {} in {}", LOG_CONFIG, type, uid, validYamlFile);
                 } catch (IOException e) {
-                    logger.error("Failed to write configuration to file: {}", validYamlFile, e);
+                    logger.error("{}Failed to write configuration to file: {}", LOG_ERROR, validYamlFile, e);
                 }
             } else {
-                logger.warn("No source file found for UID: {}", uid);
+                logger.warn("{}No source file found for UID: {}", LOG_WARN, uid);
             }
         }
     }
@@ -683,6 +711,7 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
      * @param config The configuration to store
      */
     public void updateConfiguration(UID uid, ConfigurationType type, Map<String, Object> config) {
+        logger.debug("{}Updating configuration for {} {}", LOG_CONFIG, type, uid);
         Map<UID, Map<String, Object>> configs = switch (type) {
             case ITEM -> itemConfigs;
             case THING -> thingConfigs;
@@ -697,6 +726,7 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
         };
         configs.put(uid, config);
         storeConfigs(uid, type);
+        logger.debug("{}Configuration updated successfully for {} {}", LOG_CONFIG, type, uid);
     }
 
     /**
@@ -709,6 +739,7 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
      * @param yamlFile The source file to associate
      */
     public void updateConfiguration(UID uid, ConfigurationType type, Map<String, Object> config, String yamlFile) {
+        logger.debug("{}Updating configuration for {} {} from file {}", LOG_CONFIG, type, uid, yamlFile);
         updateConfiguration(uid, type, config);
         Map<UID, String> sourceFiles = switch (type) {
             case ITEM -> itemSourceFiles;
@@ -724,6 +755,7 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
         };
         sourceFiles.put(uid, yamlFile);
         storeConfigs(uid, type);
+        logger.debug("{}Configuration and source file updated successfully for {} {}", LOG_CONFIG, type, uid);
     }
 
     /**
@@ -734,6 +766,7 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
      * @param type The type of configuration to remove
      */
     public void removeConfiguration(UID uid, ConfigurationType type) {
+        logger.debug("{}Removing configuration for {} {}", LOG_CONFIG, type, uid);
         Map<UID, Map<String, Object>> configs = switch (type) {
             case ITEM -> itemConfigs;
             case THING -> thingConfigs;
@@ -761,6 +794,7 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
             case EVENT -> eventSourceFiles;
         };
         sourceFiles.remove(uid);
+        logger.debug("{}Configuration removed successfully for {} {}", LOG_CONFIG, type, uid);
     }
 
     /**
@@ -790,6 +824,7 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
      * @param value The value to store
      */
     public void updateConfiguration(UID uid, ConfigurationType type, String key, Object value) {
+        logger.debug("{}Updating configuration key {} for {} {}", LOG_CONFIG, key, type, uid);
         Map<UID, Map<String, Object>> configs = switch (type) {
             case ITEM -> itemConfigs;
             case THING -> thingConfigs;
@@ -806,6 +841,9 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
         Map<String, Object> config = configs.computeIfAbsent(uid, k -> new HashMap<>());
         if (config != null) {
             config.put(key, value);
+            logger.debug("{}Configuration key {} updated successfully for {} {}", LOG_CONFIG, key, type, uid);
+        } else {
+            logger.warn("{}Failed to update configuration key {} for {} {}", LOG_WARN, key, type, uid);
         }
         storeConfigs(uid, type);
     }
@@ -926,3 +964,4 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
         }
     }
 }
+// Test
