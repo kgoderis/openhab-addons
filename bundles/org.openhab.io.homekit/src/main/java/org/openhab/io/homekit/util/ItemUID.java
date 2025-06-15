@@ -68,7 +68,7 @@ public class ItemUID extends UID {
     private static final String ITEM_PREFIX = "openhab:item";
     private final String itemName;
 
-    public static final ItemUID WILDCARD_UID = new ItemUID("*");
+    public static final ItemUID WILDCARD_UID = new ItemUID("-");
 
     /**
      * Creates a new ItemUID for the specified item.

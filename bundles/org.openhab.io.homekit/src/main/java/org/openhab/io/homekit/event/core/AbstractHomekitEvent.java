@@ -84,9 +84,6 @@ public abstract class AbstractHomekitEvent implements HomekitEvent {
     private static final Logger logger = LoggerFactory.getLogger(AbstractHomekitEvent.class);
     private static final String LOG_PREFIX = "Homekit Event: ";
 
-    /** Wildcard UID that matches any subscriber */
-    public static final UID WILDCARD_UID = new HomekitUID("*");
-
     private final HomekitEventType type;
     private final UID publisherUID;
     private Optional<UID> subscriberUID;
