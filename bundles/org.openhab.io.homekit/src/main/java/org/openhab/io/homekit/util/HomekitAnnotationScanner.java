@@ -131,7 +131,7 @@ public class HomekitAnnotationScanner {
             while (resources.hasMoreElements()) {
                 URL resource = resources.nextElement();
                 String protocol = resource.getProtocol();
-                logger.trace("{}Found resource: {} with protocol: {}", LOG_TRACE, resource.getPath(), protocol);
+                logger.debug("{}Found resource: {} with protocol: {}", LOG_TRACE, resource.getPath(), protocol);
 
                 if ("file".equals(protocol)) {
                     dirs.add(new File(URLDecoder.decode(resource.getFile(), StandardCharsets.UTF_8.name())));
@@ -285,12 +285,12 @@ public class HomekitAnnotationScanner {
             Class<?> clazz = Class.forName(className);
             if (clazz.isAnnotationPresent(annotationClass)) {
                 result.add(clazz);
-                logger.trace("{}Added annotated class: {}", LOG_TRACE, className);
+                logger.debug("{}Added annotated class: {}", LOG_TRACE, className);
             }
         } catch (ClassNotFoundException e) {
-            logger.trace("{}Could not load class: {}", LOG_TRACE, className);
+            logger.debug("{}Could not load class: {}", LOG_TRACE, className);
         } catch (NoClassDefFoundError e) {
-            logger.trace("{}Error loading class {}: {}", LOG_TRACE, className, e.getMessage());
+            logger.debug("{}Error loading class {}: {}", LOG_TRACE, className, e.getMessage());
         } catch (Exception e) {
             logger.warn("{}Unexpected error checking class {}: {}", LOG_WARN, className, e.getMessage());
         }
@@ -329,7 +329,7 @@ public class HomekitAnnotationScanner {
                 @SuppressWarnings("unchecked")
                 Class<? extends T> subclass = (Class<? extends T>) clazz;
                 result.add(subclass);
-                logger.trace("{}Added subclass: {}", LOG_TRACE, clazz.getName());
+                logger.debug("{}Added subclass: {}", LOG_TRACE, clazz.getName());
             }
         }
 
@@ -374,7 +374,7 @@ public class HomekitAnnotationScanner {
             while (resources.hasMoreElements()) {
                 URL resource = resources.nextElement();
                 String protocol = resource.getProtocol();
-                logger.trace("{}Found resource: {} with protocol: {}", LOG_TRACE, resource.getPath(), protocol);
+                logger.debug("{}Found resource: {} with protocol: {}", LOG_TRACE, resource.getPath(), protocol);
 
                 if ("file".equals(protocol)) {
                     dirs.add(new File(URLDecoder.decode(resource.getFile(), StandardCharsets.UTF_8.name())));
@@ -518,11 +518,11 @@ public class HomekitAnnotationScanner {
         try {
             Class<?> clazz = Class.forName(className);
             result.add(clazz);
-            logger.trace("{}Added class: {}", LOG_TRACE, className);
+            logger.debug("{}Added class: {}", LOG_TRACE, className);
         } catch (ClassNotFoundException e) {
-            logger.trace("{}Could not load class: {}", LOG_TRACE, className);
+            logger.debug("{}Could not load class: {}", LOG_TRACE, className);
         } catch (NoClassDefFoundError e) {
-            logger.trace("{}Error loading class {}: {}", LOG_TRACE, className, e.getMessage());
+            logger.debug("{}Error loading class {}: {}", LOG_TRACE, className, e.getMessage());
         } catch (Exception e) {
             logger.warn("{}Unexpected error loading class {}: {}", LOG_WARN, className, e.getMessage());
         }

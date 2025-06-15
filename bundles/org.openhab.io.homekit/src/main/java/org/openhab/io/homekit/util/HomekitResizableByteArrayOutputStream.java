@@ -95,7 +95,7 @@ public class HomekitResizableByteArrayOutputStream extends ByteArrayOutputStream
      */
     public HomekitResizableByteArrayOutputStream() {
         super(DEFAULT_INITIAL_CAPACITY);
-        logger.trace("{}Created new stream with default capacity: {}", LOG_INIT, DEFAULT_INITIAL_CAPACITY);
+        logger.debug("{}Created new stream with default capacity: {}", LOG_INIT, DEFAULT_INITIAL_CAPACITY);
     }
 
     /**
@@ -121,7 +121,7 @@ public class HomekitResizableByteArrayOutputStream extends ByteArrayOutputStream
      */
     public HomekitResizableByteArrayOutputStream(int initialCapacity) {
         super(initialCapacity);
-        logger.trace("{}Created new stream with custom capacity: {}", LOG_INIT, initialCapacity);
+        logger.debug("{}Created new stream with custom capacity: {}", LOG_INIT, initialCapacity);
     }
 
     /**
@@ -159,7 +159,7 @@ public class HomekitResizableByteArrayOutputStream extends ByteArrayOutputStream
         byte[] resizedBuffer = new byte[targetCapacity];
         System.arraycopy(this.buf, 0, resizedBuffer, 0, this.count);
         this.buf = resizedBuffer;
-        logger.trace("{}Resized buffer from {} to {} bytes", LOG_BUFFER, this.buf.length, targetCapacity);
+        logger.debug("{}Resized buffer from {} to {} bytes", LOG_BUFFER, this.buf.length, targetCapacity);
     }
 
     /**
@@ -188,7 +188,7 @@ public class HomekitResizableByteArrayOutputStream extends ByteArrayOutputStream
     public synchronized void grow(int additionalCapacity) {
         if (this.count + additionalCapacity > this.buf.length) {
             int newCapacity = Math.max(this.buf.length * 2, this.count + additionalCapacity);
-            logger.trace("{}Growing buffer from {} to {} bytes", LOG_BUFFER, this.buf.length, newCapacity);
+            logger.debug("{}Growing buffer from {} to {} bytes", LOG_BUFFER, this.buf.length, newCapacity);
             resize(newCapacity);
         }
     }
@@ -214,7 +214,7 @@ public class HomekitResizableByteArrayOutputStream extends ByteArrayOutputStream
      * @return The current capacity of the buffer in bytes
      */
     public synchronized int capacity() {
-        logger.trace("{}Getting buffer capacity: {}", LOG_BUFFER, this.buf.length);
+        logger.debug("{}Getting buffer capacity: {}", LOG_BUFFER, this.buf.length);
         return this.buf.length;
     }
 }

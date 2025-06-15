@@ -156,9 +156,9 @@ public class HomekitHttpDestination extends HttpDestinationOverHTTP {
         logger.info("{}Configuring encryption for destination {}", LOG_CONFIG, this);
 
         if (logger.isTraceEnabled()) {
-            logger.trace("{}Decryption key: {}", LOG_CONFIG,
+            logger.debug("{}Decryption key: {}", LOG_CONFIG,
                     javax.xml.bind.DatatypeConverter.printHexBinary(decryptionKey));
-            logger.trace("{}Encryption key: {}", LOG_CONFIG,
+            logger.debug("{}Encryption key: {}", LOG_CONFIG,
                     javax.xml.bind.DatatypeConverter.printHexBinary(encryptionKey));
         }
 
@@ -211,7 +211,7 @@ public class HomekitHttpDestination extends HttpDestinationOverHTTP {
      */
     public boolean hasEncryptionKeys() {
         boolean hasKeys = decryptionKey != null && encryptionKey != null;
-        logger.trace("{}Encryption keys configured: {}", LOG_STATE, hasKeys);
+        logger.debug("{}Encryption keys configured: {}", LOG_STATE, hasKeys);
         return hasKeys;
     }
 
@@ -234,7 +234,7 @@ public class HomekitHttpDestination extends HttpDestinationOverHTTP {
      * @return The decryption key, or null if not configured
      */
     public byte @Nullable [] getDecryptionKey() {
-        logger.trace("{}Retrieving decryption key", LOG_STATE);
+        logger.debug("{}Retrieving decryption key", LOG_STATE);
         return decryptionKey;
     }
 
@@ -257,7 +257,7 @@ public class HomekitHttpDestination extends HttpDestinationOverHTTP {
      * @return The encryption key, or null if not configured
      */
     public byte @Nullable [] getEncryptionKey() {
-        logger.trace("{}Retrieving encryption key", LOG_STATE);
+        logger.debug("{}Retrieving encryption key", LOG_STATE);
         return encryptionKey;
     }
 }

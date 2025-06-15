@@ -79,6 +79,7 @@ import org.eclipse.jetty.client.util.BytesContentProvider;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
 import org.openhab.core.thing.UID;
+import org.openhab.io.homekit.HomekitBindingConstants;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryCategory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
@@ -199,7 +200,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 port);
         this.accessoryFactory = accessoryFactory;
         this.setupCode = "";
-        this.scheduler = org.openhab.core.common.ThreadPoolManager.getScheduledPool("homekit");
+        this.scheduler = org.openhab.core.common.ThreadPoolManager
+                .getScheduledPool(HomekitBindingConstants.THREAD_POOL_NAME);
         logger.debug("{}Remote server initialization completed", LOG_INIT);
     }
 

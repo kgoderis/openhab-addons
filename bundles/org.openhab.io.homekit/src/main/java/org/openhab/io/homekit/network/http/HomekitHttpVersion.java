@@ -89,7 +89,7 @@ public enum HomekitHttpVersion {
     static {
         for (HomekitHttpVersion version : HomekitHttpVersion.values()) {
             CACHE.put(version.toString(), version);
-            logger.trace("{}Created version: {} ({})", LOG_INIT, version._string, version._version);
+            logger.debug("{}Created version: {} ({})", LOG_INIT, version._string, version._version);
         }
     }
 
@@ -138,7 +138,7 @@ public enum HomekitHttpVersion {
         }
         int length = limit - position;
         if (length < 9) {
-            logger.trace("{}Buffer too short for version lookup: {}", LOG_STATE, length);
+            logger.debug("{}Buffer too short for version lookup: {}", LOG_STATE, length);
             return Optional.empty();
         }
 
@@ -156,7 +156,7 @@ public enum HomekitHttpVersion {
                         case '1':
                             return Optional.of(HomekitHttpVersion.HTTP_1_1);
                         default:
-                            logger.trace("{}Invalid HTTP/1.x version: {}", LOG_STATE, bytes[position + 7]);
+                            logger.debug("{}Invalid HTTP/1.x version: {}", LOG_STATE, bytes[position + 7]);
                             return Optional.empty();
                     }
                 case '2':
@@ -164,11 +164,11 @@ public enum HomekitHttpVersion {
                         case '0':
                             return Optional.of(HomekitHttpVersion.HTTP_2);
                         default:
-                            logger.trace("{}Invalid HTTP/2.x version: {}", LOG_STATE, bytes[position + 7]);
+                            logger.debug("{}Invalid HTTP/2.x version: {}", LOG_STATE, bytes[position + 7]);
                             return Optional.empty();
                     }
                 default:
-                    logger.trace("{}Invalid HTTP major version: {}", LOG_STATE, bytes[position + 5]);
+                    logger.debug("{}Invalid HTTP major version: {}", LOG_STATE, bytes[position + 5]);
                     return Optional.empty();
             }
         }
@@ -185,16 +185,16 @@ public enum HomekitHttpVersion {
                         case '0':
                             return Optional.of(HomekitHttpVersion.EVENT_1_0);
                         default:
-                            logger.trace("{}Invalid EVENT/1.x version: {}", LOG_STATE, bytes[position + 8]);
+                            logger.debug("{}Invalid EVENT/1.x version: {}", LOG_STATE, bytes[position + 8]);
                             return Optional.empty();
                     }
                 default:
-                    logger.trace("{}Invalid EVENT major version: {}", LOG_STATE, bytes[position + 6]);
+                    logger.debug("{}Invalid EVENT major version: {}", LOG_STATE, bytes[position + 6]);
                     return Optional.empty();
             }
         }
 
-        logger.trace("{}No valid version pattern found", LOG_STATE);
+        logger.debug("{}No valid version pattern found", LOG_STATE);
         return Optional.empty();
     }
 
@@ -214,7 +214,7 @@ public enum HomekitHttpVersion {
             return lookAheadGet(buffer.array(), buffer.arrayOffset() + buffer.position(),
                     buffer.arrayOffset() + buffer.limit());
         }
-        logger.trace("{}Buffer does not have array backing", LOG_STATE);
+        logger.debug("{}Buffer does not have array backing", LOG_STATE);
         return Optional.empty();
     }
 
@@ -388,7 +388,7 @@ public enum HomekitHttpVersion {
                 break;
             }
         }
-        logger.trace("{}Converted {} to {}", LOG_STATE, version, result);
+        logger.debug("{}Converted {} to {}", LOG_STATE, version, result);
         return result;
     }
 }

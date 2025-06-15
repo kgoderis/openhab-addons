@@ -65,7 +65,7 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
     protected static final String LOG_UID = LOG_PREFIX + "UID - ";
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryServerUIDImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitAccessoryServerUIDImpl.class);
     private static final String SERVER_PREFIX = "server";
     private String pairingId;
 
@@ -90,7 +90,7 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
     HomekitAccessoryServerUIDImpl() {
         super(SERVER_PREFIX, "homekit:" + SERVER_PREFIX + ":");
         this.pairingId = "";
-        logger.trace("{}Created default server UID instance", LOG_UID);
+        logger.debug("{}Created default server UID instance", LOG_UID);
     }
 
     /**
@@ -123,7 +123,7 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
             throw new IllegalArgumentException("Pairing ID cannot be empty");
         }
         this.pairingId = pairingId;
-        logger.trace("{}Created server UID with pairing ID: {}", LOG_UID, pairingId);
+        logger.debug("{}Created server UID with pairing ID: {}", LOG_UID, pairingId);
     }
 
     /**
@@ -150,7 +150,7 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
     @Override
     public String toString() {
         String result = String.format("homekit:server:%s", pairingId);
-        logger.trace("{}Getting UID string: {}", LOG_UID, result);
+        logger.debug("{}Getting UID string: {}", LOG_UID, result);
         return result;
     }
 

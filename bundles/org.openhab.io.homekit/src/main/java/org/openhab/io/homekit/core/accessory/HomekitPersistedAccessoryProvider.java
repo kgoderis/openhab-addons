@@ -29,6 +29,7 @@ import org.openhab.core.service.ReadyMarker;
 import org.openhab.core.service.ReadyMarkerFilter;
 import org.openhab.core.service.ReadyService;
 import org.openhab.core.storage.StorageService;
+import org.openhab.io.homekit.HomekitBindingConstants;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
 import org.openhab.io.homekit.api.provider.HomekitAccessoryProvider;
@@ -148,7 +149,8 @@ public class HomekitPersistedAccessoryProvider
 
         final long diff = System.nanoTime() - lastUpdate - INITIALIZATION_DELAY_NANOS;
         if (diff < 0) {
-            ThreadPoolManager.getScheduledPool("homekit").schedule(() -> delayedInitialize(), -diff,
+            ThreadPoolManager.getScheduledPool(HomekitBindingConstants.THREAD_POOL_NAME).schedule(
+                    () -> delayedInitialize(), -diff,
                     TimeUnit.NANOSECONDS);
         } else {
             logger.info("{}Marking the Managed HomekitAccessory Provider as ready", LOG_INIT);

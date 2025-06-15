@@ -27,6 +27,9 @@ public class HomekitBindingConstants {
 
     public static final String BINDING_ID = "homekit";
 
+    // Thread pool name for HomeKit operations
+    public static final String THREAD_POOL_NAME = "homekit";
+
     // List of all Thing Type UIDs
     public static final ThingTypeUID THING_TYPE_BRIDGE = new ThingTypeUID(BINDING_ID, "bridge");
     public static final ThingTypeUID THING_TYPE_ACCESSORY = new ThingTypeUID(BINDING_ID, "accessory");

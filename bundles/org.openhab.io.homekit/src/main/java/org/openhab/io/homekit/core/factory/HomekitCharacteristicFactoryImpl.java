@@ -183,7 +183,7 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
         try {
             // Use HomekitAnnotationScanner to find annotated classes
             Set<Class<?>> characteristicClasses = HomekitAnnotationScanner.findAnnotatedClasses(
-                    "org.openhab.io.homekit.internal.characteristic", HomekitCharacteristicType.class);
+                    "org.openhab.io.homekit.library.characteristic", HomekitCharacteristicType.class);
             logger.trace("{}Found {} annotated characteristic classes", LOG_TRACE, characteristicClasses.size());
 
             for (Class<?> characteristicClass : characteristicClasses) {

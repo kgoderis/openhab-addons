@@ -83,7 +83,7 @@ public class HomekitKeyGenerator {
      * @throws IllegalStateException if the Ed25519 curve parameters cannot be retrieved
      */
     public static byte[] generateSecretKey() {
-        logger.trace("{}Generating secret key using Ed25519 curve", LOG_KEY);
+        logger.debug("{}Generating secret key using Ed25519 curve", LOG_KEY);
 
         EdDSAParameterSpec spec = EdDSANamedCurveTable.getByName("ed25519-sha-512");
         if (spec == null) {
@@ -94,7 +94,7 @@ public class HomekitKeyGenerator {
         byte[] seed = new byte[spec.getCurve().getField().getb() / 8];
         HomekitEncryptionEngine.getSecureRandom().nextBytes(seed);
 
-        logger.trace("{}Generated secret key of length {} bytes", LOG_KEY, seed.length);
+        logger.debug("{}Generated secret key of length {} bytes", LOG_KEY, seed.length);
         return seed;
     }
 
@@ -121,14 +121,14 @@ public class HomekitKeyGenerator {
      * @return A byte array containing the generated identifier in UTF-8 encoding
      */
     public static byte[] generateHexidecimalId() {
-        logger.trace("{}Generating hexadecimal identifier", LOG_ID);
+        logger.debug("{}Generating hexadecimal identifier", LOG_ID);
 
         int byte1 = ((HomekitEncryptionEngine.getSecureRandom().nextInt(255) + 1) | 2) & 0xFE;
         String id = Integer.toHexString(byte1).toUpperCase() + ":"
                 + Stream.generate(() -> HomekitEncryptionEngine.getSecureRandom().nextInt(255) + 1).limit(5)
                         .map(i -> Integer.toHexString(i).toUpperCase()).collect(Collectors.joining(":"));
 
-        logger.trace("{}Generated identifier: {}", LOG_ID, id);
+        logger.debug("{}Generated identifier: {}", LOG_ID, id);
         return id.getBytes(StandardCharsets.UTF_8);
     }
 }

@@ -105,7 +105,7 @@ public class HomekitUUID5 {
      * @throws NullPointerException if namespace or name is null
      */
     public static UUID fromNamespaceAndString(UUID namespace, String name) {
-        logger.trace("{}Generating UUID from namespace {} and string {}", LOG_UUID, namespace, name);
+        logger.debug("{}Generating UUID from namespace {} and string {}", LOG_UUID, namespace, name);
         return fromNamespaceAndBytes(namespace, Objects.requireNonNull(name, "name == null").getBytes(UTF8));
     }
 
@@ -134,7 +134,7 @@ public class HomekitUUID5 {
      * @throws InternalError if SHA-1 algorithm is not available
      */
     public static UUID fromNamespaceAndBytes(UUID namespace, byte[] name) {
-        logger.trace("{}Generating UUID from namespace {} and bytes", LOG_UUID, namespace);
+        logger.debug("{}Generating UUID from namespace {} and bytes", LOG_UUID, namespace);
         MessageDigest md;
         try {
             md = MessageDigest.getInstance("SHA-1");
@@ -146,7 +146,7 @@ public class HomekitUUID5 {
         md.update(Objects.requireNonNull(name, "name is null"));
         byte[] sha1Bytes = md.digest();
         UUID result = fromBytes(sha1Bytes);
-        logger.trace("{}Generated UUID: {}", LOG_UUID, result);
+        logger.debug("{}Generated UUID: {}", LOG_UUID, result);
         return result;
     }
 
@@ -173,7 +173,7 @@ public class HomekitUUID5 {
      * @throws AssertionError if data length is less than 16 bytes
      */
     private static UUID fromBytes(byte[] data) {
-        logger.trace("{}Creating UUID from {} bytes", LOG_UUID, data.length);
+        logger.debug("{}Creating UUID from {} bytes", LOG_UUID, data.length);
         long msb = 0;
         long lsb = 0;
         assert data.length >= 16;
@@ -208,7 +208,7 @@ public class HomekitUUID5 {
      * @return A 16-byte array
      */
     private static byte[] toBytes(UUID uuid) {
-        logger.trace("{}Converting UUID {} to bytes", LOG_UUID, uuid);
+        logger.debug("{}Converting UUID {} to bytes", LOG_UUID, uuid);
         byte[] out = new byte[16];
         long msb = uuid.getMostSignificantBits();
         long lsb = uuid.getLeastSignificantBits();

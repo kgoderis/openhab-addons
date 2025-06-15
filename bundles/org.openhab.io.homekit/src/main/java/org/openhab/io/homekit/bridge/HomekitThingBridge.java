@@ -76,6 +76,7 @@ import org.openhab.core.types.Command;
 import org.openhab.core.types.State;
 import org.openhab.core.types.TimeSeries;
 import org.openhab.core.types.Type;
+import org.openhab.io.homekit.HomekitBindingConstants;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.event.HomekitEvent;
@@ -153,8 +154,7 @@ import org.slf4j.LoggerFactory;
 @Component(service = { EventSubscriber.class, ThingRegistryChangeListener.class, HomekitThingBridge.class })
 @NonNullByDefault
 public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeListener {
-    private static final String LOG_PREFIX = "[HomekitThingBridge] ";
-    private static final String THREAD_POOL_NAME = "homekit";
+    private static final String LOG_PREFIX = "HomekitThingBridge: ";
     private final Logger logger = LoggerFactory.getLogger(HomekitThingBridge.class);
 
     // Configuration key for orphan functionality
@@ -1026,7 +1026,7 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
 
                 @Override
                 public ScheduledExecutorService getExecutorService() {
-                    return ThreadPoolManager.getScheduledPool(THREAD_POOL_NAME);
+                    return ThreadPoolManager.getScheduledPool(HomekitBindingConstants.THREAD_POOL_NAME);
                 }
             };
 
@@ -1672,7 +1672,8 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
         public void start() {
             synchronized (lock) {
                 if (executor.isEmpty()) {
-                    executor = Optional.of(ThreadPoolManager.getScheduledPool(THREAD_POOL_NAME));
+                    executor = Optional
+                            .of(ThreadPoolManager.getScheduledPool(HomekitBindingConstants.THREAD_POOL_NAME));
                 }
                 if (scheduledTask.isEmpty()) {
                     scheduledTask = Optional.of(executor.get().scheduleWithFixedDelay(this::printStatistics,
@@ -1688,7 +1689,6 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
                     scheduledTask = Optional.empty();
                 });
                 executor.ifPresent(exec -> {
-                    exec.shutdown();
                     executor = Optional.empty();
                 });
             }

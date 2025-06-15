@@ -99,7 +99,7 @@ public class HomekitAssistantService extends AbstractHomekitService {
      */
     @Override
     public void addCharacteristics() throws HomekitServiceException {
-        logger.trace("{}Adding required characteristics to AssistantService for accessory {}", LOG_TRACE,
+        logger.debug("{}Adding required characteristics to AssistantService for accessory {}", LOG_TRACE,
                 getAccessory().getLabel());
 
         // Required characteristics

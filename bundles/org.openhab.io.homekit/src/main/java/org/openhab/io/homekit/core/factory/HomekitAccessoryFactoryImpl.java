@@ -200,7 +200,7 @@ public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
         try {
             // Use HomekitAnnotationScanner to find annotated classes
             Set<Class<?>> accessoryClasses = HomekitAnnotationScanner
-                    .findAnnotatedClasses("org.openhab.io.homekit.internal.accessory", HomekitAccessoryType.class);
+                    .findAnnotatedClasses("org.openhab.io.homekit.library.accessory", HomekitAccessoryType.class);
             logger.trace("{}Found {} annotated accessory classes", LOG_TRACE, accessoryClasses.size());
 
             for (Class<?> accessoryClass : accessoryClasses) {

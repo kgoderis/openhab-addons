@@ -140,7 +140,7 @@ public class HomekitStatelessProgrammableSwitchService extends AbstractHomekitSe
         // Required characteristics
         addCharacteristic(new HomekitProgrammableSwitchEventCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        logger.trace("{}Added required ProgrammableSwitchEvent characteristic", LOG_TRACE);
+        logger.debug("{}Added required ProgrammableSwitchEvent characteristic", LOG_TRACE);
 
         // Optional characteristics
         addCharacteristic(
@@ -153,7 +153,7 @@ public class HomekitStatelessProgrammableSwitchService extends AbstractHomekitSe
                 getAccessory().getNextAvailableInstanceId()));
         addCharacteristic(new HomekitStatusTamperedCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()));
-        logger.trace(
+        logger.debug(
                 "{}Added optional characteristics: Name, StatusActive, StatusFault, StatusLowBattery, StatusTampered",
                 LOG_TRACE);
     }

@@ -21,6 +21,7 @@ import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.openhab.io.homekit.event.core.AbstractHomekitEvent;
 import org.openhab.io.homekit.event.core.HomekitEventMetadata;
 import org.openhab.io.homekit.event.core.HomekitEventSubscription;
+import org.openhab.io.homekit.util.HomekitUID;
 
 /**
  * Event class representing the addition of a new HomeKit subscription.
@@ -79,7 +80,7 @@ public class HomekitSubscriptionAddedEvent extends AbstractHomekitEvent {
      * @param subscription the subscription that was added
      */
     public HomekitSubscriptionAddedEvent(HomekitEventSubscription subscription) {
-        super(HomekitEventType.SUBSCRIPTION_ADDED, subscription.getPublisherUID(), WILDCARD_UID,
+        super(HomekitEventType.SUBSCRIPTION_ADDED, subscription.getPublisherUID(), HomekitUID.WILDCARD_UID,
                 new HomekitEventMetadata(subscription.getPublisherUID(), null, null, Collections.emptySet()));
         this.subscription = subscription;
     }

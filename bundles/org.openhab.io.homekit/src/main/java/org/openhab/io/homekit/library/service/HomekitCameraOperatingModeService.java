@@ -109,7 +109,7 @@ public class HomekitCameraOperatingModeService extends AbstractHomekitService {
      */
     @Override
     public void addCharacteristics() throws HomekitServiceException {
-        logger.trace("{}Adding required characteristics to CameraOperatingModeService for accessory {}", LOG_TRACE,
+        logger.debug("{}Adding required characteristics to CameraOperatingModeService for accessory {}", LOG_TRACE,
                 getAccessory().getLabel());
 
         // Required characteristics

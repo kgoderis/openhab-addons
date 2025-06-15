@@ -217,7 +217,7 @@ public class HomekitHttpClientTransport extends HttpClientTransportOverHTTP {
      */
     @Override
     @SuppressWarnings("all") // Framework interface compatibility: HttpClientTransportOverHTTP interface constraints
-                             // cannot be overridden
+                                       // cannot be overridden
     protected HttpConnectionOverHTTP newHttpConnection(@Nullable EndPoint endPoint,
             @Nullable HttpDestination destination, @Nullable Promise<Connection> promise) {
         return createHomekitConnection(endPoint, destination, promise);

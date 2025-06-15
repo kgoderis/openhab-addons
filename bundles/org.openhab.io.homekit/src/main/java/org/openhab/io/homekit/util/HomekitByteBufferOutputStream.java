@@ -77,7 +77,7 @@ public class HomekitByteBufferOutputStream extends OutputStream {
      * @throws IllegalArgumentException if wrappedBuffer is null
      */
     public HomekitByteBufferOutputStream(final ByteBuffer wrappedBuffer, final boolean autoEnlarge) {
-        logger.trace("{}Creating stream with buffer: {}, autoEnlarge: {}", LOG_INIT,
+        logger.debug("{}Creating stream with buffer: {}, autoEnlarge: {}", LOG_INIT,
                 BufferUtil.toSummaryString(wrappedBuffer), autoEnlarge);
         this.wrappedBuffer = wrappedBuffer;
         this.autoEnlarge = autoEnlarge;
@@ -90,7 +90,7 @@ public class HomekitByteBufferOutputStream extends OutputStream {
      * @return A new ByteBuffer containing the written data
      */
     public ByteBuffer toByteBuffer() {
-        logger.trace("{}Converting to ByteBuffer", LOG_BUFFER);
+        logger.debug("{}Converting to ByteBuffer", LOG_BUFFER);
         final ByteBuffer byteBuffer = wrappedBuffer.duplicate();
         byteBuffer.flip();
         return byteBuffer;
@@ -101,7 +101,7 @@ public class HomekitByteBufferOutputStream extends OutputStream {
      * The output stream can be used again, reusing the already allocated buffer space.
      */
     public void reset() {
-        logger.trace("{}Resetting buffer position", LOG_BUFFER);
+        logger.debug("{}Resetting buffer position", LOG_BUFFER);
         wrappedBuffer.rewind();
     }
 
@@ -114,10 +114,10 @@ public class HomekitByteBufferOutputStream extends OutputStream {
      */
     private void growTo(final int minCapacity) {
         final int oldCapacity = wrappedBuffer.capacity();
-        logger.trace("{}Growing buffer from {} to {}", LOG_BUFFER, oldCapacity, minCapacity);
+        logger.debug("{}Growing buffer from {} to {}", LOG_BUFFER, oldCapacity, minCapacity);
 
         if (wrappedBuffer.limit() < oldCapacity) {
-            logger.trace("{}Expanding buffer to full capacity", LOG_BUFFER);
+            logger.debug("{}Expanding buffer to full capacity", LOG_BUFFER);
             wrappedBuffer.limit(oldCapacity);
             return;
         }
@@ -135,14 +135,14 @@ public class HomekitByteBufferOutputStream extends OutputStream {
         }
 
         final ByteBuffer oldWrappedBuffer = wrappedBuffer;
-        logger.trace("{}Creating new buffer with capacity {}", LOG_BUFFER, newCapacity);
+        logger.debug("{}Creating new buffer with capacity {}", LOG_BUFFER, newCapacity);
 
         wrappedBuffer = wrappedBuffer.isDirect() ? ByteBuffer.allocateDirect(newCapacity)
                 : ByteBuffer.allocate(newCapacity);
 
         oldWrappedBuffer.flip();
         wrappedBuffer.put(oldWrappedBuffer);
-        logger.trace("{}Buffer growth complete", LOG_BUFFER);
+        logger.debug("{}Buffer growth complete", LOG_BUFFER);
     }
 
     @Override
@@ -151,7 +151,7 @@ public class HomekitByteBufferOutputStream extends OutputStream {
             wrappedBuffer.put((byte) bty);
         } catch (final BufferOverflowException ex) {
             if (autoEnlarge) {
-                logger.trace("{}Buffer overflow, auto-enlarging", LOG_BUFFER);
+                logger.debug("{}Buffer overflow, auto-enlarging", LOG_BUFFER);
                 final int newBufferSize = wrappedBuffer.capacity() * 2;
                 growTo(newBufferSize);
                 write(bty);
@@ -187,7 +187,7 @@ public class HomekitByteBufferOutputStream extends OutputStream {
             wrappedBuffer.put(bytes, off, len);
         } catch (final BufferOverflowException ex) {
             if (autoEnlarge) {
-                logger.trace("{}Buffer overflow, auto-enlarging for {} bytes", LOG_BUFFER, len);
+                logger.debug("{}Buffer overflow, auto-enlarging for {} bytes", LOG_BUFFER, len);
                 final int newBufferSize = Math.max(wrappedBuffer.capacity() * 2, oldPosition + len);
                 growTo(newBufferSize);
                 write(bytes, off, len);

@@ -184,7 +184,7 @@ public class HomekitAccessoryServlet extends HomekitBaseServlet {
                 @SuppressWarnings("null") // getAccessories() returns non-null list
                 var serverAccessories = server.getAccessories();
                 for (HomekitAccessory accessory : serverAccessories) {
-                    logger.trace("{}Processing accessory: {}", LOG_ACCESSORY, accessory.getClass().getSimpleName());
+                    logger.debug("{}Processing accessory: {}", LOG_ACCESSORY, accessory.getClass().getSimpleName());
                     accessories.add(accessory.toReducedJson());
                 }
             }

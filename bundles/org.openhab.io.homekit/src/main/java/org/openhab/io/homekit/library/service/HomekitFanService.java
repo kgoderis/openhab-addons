@@ -132,7 +132,7 @@ public class HomekitFanService extends AbstractHomekitService {
      */
     @Override
     public void addCharacteristics() throws HomekitServiceException {
-        logger.trace("{}Adding required characteristics to FanService for accessory {}", LOG_TRACE,
+        logger.debug("{}Adding required characteristics to FanService for accessory {}", LOG_TRACE,
                 getAccessory().getLabel());
 
         addCharacteristic(new HomekitOnCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())

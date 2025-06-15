@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Configuration
-OPENHAB_VERSION="4.1.0"
-RUNTIME_DIR="runtime"
-DOWNLOAD_URL="https://github.com/openhab/openhab-distro/releases/download/${OPENHAB_VERSION}/openhab-${OPENHAB_VERSION}.zip"
+OPENHAB_VERSION="5.0.0-SNAPSHOT"
+RUNTIME_DIR="/Users/kgoderis/Development/openhab/runtime"
+DOWNLOAD_URL="https://ci.openhab.org/job/openHAB-Distribution/lastSuccessfulBuild/artifact/distributions/openhab/target/openhab-${OPENHAB_VERSION}.zip"
 
 # Create runtime directory if it doesn't exist
 mkdir -p "${RUNTIME_DIR}"
@@ -25,35 +25,35 @@ mkdir -p "${RUNTIME_DIR}/userdata"
 mkdir -p "${RUNTIME_DIR}/addons"
 
 # Create a basic configuration
-cat > "${RUNTIME_DIR}/conf/services/addons.cfg" << EOL
-# Add-on configuration
-package = standard
-binding = 
-ui = 
-transformation = 
-voice = 
-misc = 
-EOL
+# cat > "${RUNTIME_DIR}/conf/services/addons.cfg" << EOL
+# # Add-on configuration
+# package = standard
+# binding = 
+# ui = 
+# transformation = 
+# voice = 
+# misc = 
+# EOL
 
 # Create a basic logging configuration
-cat > "${RUNTIME_DIR}/conf/logback.xml" << EOL
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-        </encoder>
-    </appender>
+# cat > "${RUNTIME_DIR}/conf/logback.xml" << EOL
+# <?xml version="1.0" encoding="UTF-8"?>
+# <configuration>
+#     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+#         <encoder>
+#             <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+#         </encoder>
+#     </appender>
 
-    <logger name="org.openhab.io.homekit" level="DEBUG" additivity="false">
-        <appender-ref ref="STDOUT"/>
-    </logger>
+#     <logger name="org.openhab.io.homekit" level="DEBUG" additivity="false">
+#         <appender-ref ref="STDOUT"/>
+#     </logger>
 
-    <root level="INFO">
-        <appender-ref ref="STDOUT"/>
-    </root>
-</configuration>
-EOL
+#     <root level="INFO">
+#         <appender-ref ref="STDOUT"/>
+#     </root>
+# </configuration>
+# EOL
 
 # Make start script executable
 chmod +x "${RUNTIME_DIR}/start_debug.sh"

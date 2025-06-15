@@ -126,7 +126,7 @@ public class HomekitAccessoryServerRegistryImpl
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
-    private final HomekitUID subscriberUID = new HomekitUID("registry:");
+    private final HomekitUID subscriberUID = new HomekitUID("registry");
 
     private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryServerRegistryImpl.class);
 

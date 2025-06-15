@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -43,7 +42,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.core.common.ThreadPoolManager;
 import org.openhab.core.thing.UID;
+import org.openhab.io.homekit.HomekitBindingConstants;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.event.HomekitEvent;
@@ -116,7 +117,8 @@ public class HomekitCharacteristicServlet extends HomekitBaseServlet {
 
     private final Map<HomekitCharacteristic<?>, Set<AsyncContext>> characteristicSubscriptions = new ConcurrentHashMap<>();
 
-    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private final ScheduledExecutorService scheduler = ThreadPoolManager
+            .getScheduledPool(HomekitBindingConstants.THREAD_POOL_NAME);
 
     private final Map<AsyncContext, HomekitDebouncer> debouncers = new ConcurrentHashMap<>();
 

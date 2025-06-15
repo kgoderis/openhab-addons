@@ -27,8 +27,6 @@ import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
-import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
-import org.openhab.io.homekit.api.factory.HomekitAccessoryFactory;
 import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.factory.HomekitServiceFactory;
 import org.openhab.io.homekit.api.service.HomekitService;
@@ -84,7 +82,6 @@ import org.slf4j.LoggerFactory;
  * ownership</li>
  * <li>{@link HomekitEventManager} for event handling and state updates</li>
  * <li>{@link HomekitServiceType} for type annotations and metadata</li>
- * <li>{@link HomekitCharacteristic} for characteristic management</li>
  * <li>{@link org.openhab.core.items.Item OpenHAB's item system} for state
  * synchronization</li>
  * <li>{@link org.openhab.core.thing.ChannelTypeUID OpenHAB's channel type
@@ -92,8 +89,8 @@ import org.slf4j.LoggerFactory;
  * </ul>
  *
  * <p>
- * The factory works in conjunction with {@link HomekitAccessoryFactory} and
- * {@link HomekitCharacteristicFactory} to
+ * The factory works in conjunction with {@link org.openhab.io.homekit.api.factory.HomekitAccessoryFactory} and
+ * {@link org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory} to
  * create a complete HomeKit accessory hierarchy. When a service is created, it
  * uses the characteristic factory to
  * create its characteristics, ensuring proper initialization and integration
@@ -199,7 +196,7 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
         try {
             // Use HomekitAnnotationScanner to find annotated classes
             Set<Class<?>> serviceClasses = HomekitAnnotationScanner
-                    .findAnnotatedClasses("org.openhab.io.homekit.internal.service", HomekitServiceType.class);
+                    .findAnnotatedClasses("org.openhab.io.homekit.library.service", HomekitServiceType.class);
             logger.trace("{}Found {} annotated service classes", LOG_TRACE, serviceClasses.size());
 
             for (Class<?> serviceClass : serviceClasses) {

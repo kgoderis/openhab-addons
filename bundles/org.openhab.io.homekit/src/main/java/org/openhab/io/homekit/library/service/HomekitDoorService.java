@@ -136,7 +136,7 @@ public class HomekitDoorService extends AbstractHomekitService {
      */
     @Override
     public void addCharacteristics() throws HomekitServiceException {
-        logger.trace("{}Adding required characteristics to DoorService for accessory {}", LOG_TRACE,
+        logger.debug("{}Adding required characteristics to DoorService for accessory {}", LOG_TRACE,
                 getAccessory().getLabel());
 
         addCharacteristic(new HomekitCurrentPositionCharacteristic(this, eventManager,

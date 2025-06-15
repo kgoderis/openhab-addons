@@ -113,7 +113,7 @@ public class HomekitAudioStreamManagementService extends AbstractHomekitService 
      */
     @Override
     public void addCharacteristics() throws HomekitServiceException {
-        logger.trace("{}Adding required characteristics to AudioStreamManagementService for accessory {}", LOG_TRACE,
+        logger.debug("{}Adding required characteristics to AudioStreamManagementService for accessory {}", LOG_TRACE,
                 getAccessory().getLabel());
 
         addCharacteristic(new HomekitSelectedAudioStreamConfigurationCharacteristic(this, eventManager,

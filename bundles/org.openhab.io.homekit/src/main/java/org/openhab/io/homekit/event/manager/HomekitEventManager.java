@@ -735,19 +735,6 @@ public class HomekitEventManager {
             logger.warn("{} events still active after shutdown timeout", activeEventCount.get());
         }
 
-        // Shutdown executor
-        eventExecutor.shutdown();
-        try {
-            if (!eventExecutor.awaitTermination(SHUTDOWN_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
-                @SuppressWarnings("null") // shutdownNow() can return null but we check size() which handles null
-                List<Runnable> remainingTasks = eventExecutor.shutdownNow();
-                logger.warn("{} tasks were still running after shutdown", remainingTasks.size());
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            eventExecutor.shutdownNow();
-        }
-
         // Final cleanup
         subscriptions.clear();
     }

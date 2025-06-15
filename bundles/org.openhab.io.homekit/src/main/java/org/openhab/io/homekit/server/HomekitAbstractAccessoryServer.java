@@ -594,7 +594,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      */
     @Override
     public InetAddress getAddress() {
-        logger.debug("{}Getting server address: {}", LOG_CONFIG, address);
+        logger.trace("{}Getting server address: {}", LOG_CONFIG, address);
         return address;
     }
 
@@ -605,7 +605,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      */
     @Override
     public int getPort() {
-        logger.debug("{}Getting server port: {}", LOG_CONFIG, port);
+        logger.trace("{}Getting server port: {}", LOG_CONFIG, port);
         return port;
     }
 
@@ -616,7 +616,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      */
     @Override
     public byte[] getPairingId() {
-        logger.debug("{}Getting pairing ID", LOG_CONFIG);
+        logger.trace("{}Getting pairing ID", LOG_CONFIG);
         return pairingIdentifier;
     }
 
@@ -627,7 +627,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      */
     @Override
     public HomekitAccessoryServerUID getUID() {
-        logger.debug("{}Getting server UID", LOG_CONFIG);
+        logger.trace("{}Getting server UID", LOG_CONFIG);
         return new HomekitAccessoryServerUIDImpl(new String(getPairingId(), StandardCharsets.UTF_8).replace(":", ""));
     }
 
@@ -638,7 +638,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      */
     @Override
     public byte[] getSecretKey() {
-        logger.debug("{}Getting secret key", LOG_CONFIG);
+        logger.trace("{}Getting secret key", LOG_CONFIG);
         return secretKey;
     }
 
@@ -664,7 +664,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      */
     @Override
     public String getSetupCode() {
-        logger.debug("{}Getting setup code", LOG_CONFIG);
+        logger.trace("{}Getting setup code", LOG_CONFIG);
         return setupCode;
     }
 

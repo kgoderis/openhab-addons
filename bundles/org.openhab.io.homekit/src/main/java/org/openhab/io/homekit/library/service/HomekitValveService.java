@@ -147,7 +147,7 @@ public class HomekitValveService extends AbstractHomekitService {
         addCharacteristic(
                 new HomekitValveTypeCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(true));
-        logger.trace("{}Added required characteristics: Active, InUse, ValveType", LOG_TRACE);
+        logger.debug("{}Added required characteristics: Active, InUse, ValveType", LOG_TRACE);
 
         // Optional characteristics
         addCharacteristic(
@@ -156,7 +156,7 @@ public class HomekitValveService extends AbstractHomekitService {
                 new HomekitSetDurationCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId()));
         addCharacteristic(new HomekitRemainingDurationCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()));
-        logger.trace("{}Added optional characteristics: Name, SetDuration, RemainingDuration", LOG_TRACE);
+        logger.debug("{}Added optional characteristics: Name, SetDuration, RemainingDuration", LOG_TRACE);
     }
 
     @Override

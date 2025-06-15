@@ -115,7 +115,7 @@ public class HomekitBatteryService extends AbstractHomekitService {
      */
     @Override
     public void addCharacteristics() throws HomekitServiceException {
-        logger.trace("{}Adding required characteristics to BatteryService for accessory {}", LOG_TRACE,
+        logger.debug("{}Adding required characteristics to BatteryService for accessory {}", LOG_TRACE,
                 getAccessory().getLabel());
 
         addCharacteristic(

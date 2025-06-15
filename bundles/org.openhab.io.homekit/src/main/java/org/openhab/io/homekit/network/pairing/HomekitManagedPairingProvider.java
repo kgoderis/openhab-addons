@@ -94,7 +94,7 @@ import org.slf4j.LoggerFactory;
 public class HomekitManagedPairingProvider extends
         AbstractManagedProvider<HomekitPairing, HomekitPairingUID, HomekitPairing> implements HomekitPairingProvider {
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitManagedPairingProvider.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitManagedPairingProvider.class);
 
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "HomeKit Managed Pairing Provider: ";

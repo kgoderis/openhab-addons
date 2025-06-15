@@ -317,6 +317,11 @@ public class HomekitPairingRegistryImpl
      */
     @Override
     protected void addProvider(Provider<HomekitPairing> provider) {
+        if (provider == null) {
+            logger.warn("{}Attempted to add null provider", LOG_PROVIDER);
+            return;
+        }
+
         logger.debug("{}Adding provider: {}", LOG_PROVIDER, provider);
 
         ReadyMarker newMarker = new ReadyMarker(HOMEKIT_MANAGED_PAIRING_PROVIDER, provider.toString());

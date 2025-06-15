@@ -36,11 +36,11 @@ import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
-import org.openhab.io.homekit.event.core.AbstractHomekitEvent;
 import org.openhab.io.homekit.event.core.HomekitEventMetadata;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicChangedEvent;
 import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicUpdateEvent;
+import org.openhab.io.homekit.util.HomekitUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -289,8 +289,8 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
      * @since 1.0
      */
     protected final void setupSubscription() {
-        eventManager.subscribe(HomekitEventType.CHARACTERISTIC_CHANGE_VALUE, AbstractHomekitEvent.WILDCARD_UID,
-                getUID(), event -> {
+        eventManager.subscribe(HomekitEventType.CHARACTERISTIC_CHANGE_VALUE, HomekitUID.WILDCARD_UID, getUID(),
+                event -> {
                     if (event instanceof HomekitCharacteristicUpdateEvent changeEvent) {
                         // Optionally check if the event is for this characteristic
                         if (changeEvent.getCharacteristic().isPresent()) {

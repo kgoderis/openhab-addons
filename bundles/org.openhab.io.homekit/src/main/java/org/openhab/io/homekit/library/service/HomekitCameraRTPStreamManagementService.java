@@ -127,7 +127,7 @@ public class HomekitCameraRTPStreamManagementService extends AbstractHomekitServ
      */
     @Override
     public void addCharacteristics() throws HomekitServiceException {
-        logger.trace("{}Adding required characteristics to CameraRTPStreamManagementService for accessory {}",
+        logger.debug("{}Adding required characteristics to CameraRTPStreamManagementService for accessory {}",
                 LOG_TRACE, getAccessory().getLabel());
 
         addCharacteristic(new HomekitStreamingStatusCharacteristic(this, eventManager,

@@ -46,6 +46,7 @@ import org.openhab.core.items.events.ItemEventFactory;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.thing.UID;
 import org.openhab.core.types.State;
+import org.openhab.io.homekit.HomekitBindingConstants;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.event.HomekitEvent;
@@ -1139,7 +1140,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
         public void start() {
             synchronized (lock) {
                 if (executor.isEmpty()) {
-                    executor = Optional.of(ThreadPoolManager.getScheduledPool("homekit"));
+                    executor = Optional
+                            .of(ThreadPoolManager.getScheduledPool(HomekitBindingConstants.THREAD_POOL_NAME));
                 }
                 if (scheduledTask.isEmpty()) {
                     scheduledTask = Optional.of(executor.get().scheduleWithFixedDelay(this::printStatistics,
@@ -1155,7 +1157,6 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                     scheduledTask = Optional.empty();
                 });
                 executor.ifPresent(exec -> {
-                    exec.shutdown();
                     executor = Optional.empty();
                 });
             }

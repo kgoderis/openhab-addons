@@ -95,7 +95,7 @@ public class HomekitDebouncer {
      */
     public HomekitDebouncer(String name, ScheduledExecutorService scheduler, Duration delay, Clock clock,
             Runnable action) {
-        logger.trace("{}Creating debouncer '{}' with delay {}ms", LOG_INIT, name, delay.toMillis());
+        logger.debug("{}Creating debouncer '{}' with delay {}ms", LOG_INIT, name, delay.toMillis());
 
         this.name = name;
         this.scheduler = scheduler;
@@ -112,10 +112,10 @@ public class HomekitDebouncer {
     public void call() {
         lastCallAttempt = clock.millis();
         int currentCalls = calls.incrementAndGet();
-        logger.trace("{}Call registered for '{}' (total calls: {})", LOG_ACTION, name, currentCalls);
+        logger.debug("{}Call registered for '{}' (total calls: {})", LOG_ACTION, name, currentCalls);
 
         if (pending.compareAndSet(false, true)) {
-            logger.trace("{}Scheduling action for '{}' in {}ms", LOG_ACTION, name, delayMs);
+            logger.debug("{}Scheduling action for '{}' in {}ms", LOG_ACTION, name, delayMs);
             scheduler.schedule(this::tryActionOrPostpone, delayMs, TimeUnit.MILLISECONDS);
         }
     }
@@ -143,7 +143,7 @@ public class HomekitDebouncer {
             }
         } else {
             long delay = Math.max(1, lastCallAttempt - now + delayMs);
-            logger.trace("{}Rescheduling action '{}' in {}ms", LOG_ACTION, name, delay);
+            logger.debug("{}Rescheduling action '{}' in {}ms", LOG_ACTION, name, delay);
             scheduler.schedule(this::tryActionOrPostpone, delay, TimeUnit.MILLISECONDS);
         }
     }

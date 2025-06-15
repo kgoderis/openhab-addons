@@ -120,7 +120,7 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
         this.serviceId = serviceId;
         this.characteristicId = characteristicId;
         this.instanceId = 0;
-        logger.trace(
+        logger.debug(
                 "{}Created characteristic UID with pairing ID: {}, accessory ID: {}, service ID: {}, characteristic ID: {}",
                 LOG_UID, pairingId, accessoryId, serviceId, characteristicId);
     }
@@ -161,7 +161,7 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
         this.serviceId = Long.parseLong(segments.get(4));
         this.characteristicId = Long.parseLong(segments.get(5));
         this.instanceId = 0;
-        logger.trace(
+        logger.debug(
                 "{}Parsed characteristic UID from key: {} with pairing ID: {}, accessory ID: {}, service ID: {}, characteristic ID: {}",
                 LOG_UID, key, pairingId, accessoryId, serviceId, characteristicId);
     }
@@ -192,7 +192,7 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
     public String toString() {
         String result = String.format("homekit:characteristic:%s:%s:%s:%s", pairingId, accessoryId, serviceId,
                 characteristicId);
-        logger.trace("{}Getting UID string: {}", LOG_UID, result);
+        logger.debug("{}Getting UID string: {}", LOG_UID, result);
         return result;
     }
 
@@ -218,7 +218,7 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      */
     @Override
     public long getInstanceId() {
-        logger.trace("{}Getting instance ID: {}", LOG_UID, instanceId);
+        logger.debug("{}Getting instance ID: {}", LOG_UID, instanceId);
         return instanceId;
     }
 
@@ -251,7 +251,7 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      */
     @Override
     protected int getMinimalNumberOfSegments() {
-        logger.trace("{}Getting minimal number of segments: 6", LOG_UID);
+        logger.debug("{}Getting minimal number of segments: 6", LOG_UID);
         return 6;
     }
 
@@ -277,7 +277,7 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      */
     @Override
     public HomekitCharacteristicUID getUID() {
-        logger.trace("{}Getting UID instance", LOG_UID);
+        logger.debug("{}Getting UID instance", LOG_UID);
         return this;
     }
 
@@ -308,7 +308,7 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
     public String getHomekitId() {
         String result = String.join(SEPARATOR,
                 getAllSegments().subList(getAllSegments().size() - 4, getAllSegments().size()));
-        logger.trace("{}Getting HomeKit ID: {}", LOG_UID, result);
+        logger.debug("{}Getting HomeKit ID: {}", LOG_UID, result);
         return result;
     }
 
@@ -335,7 +335,7 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
     @Override
     protected List<String> getAllSegments() {
         List<String> segments = super.getAllSegments();
-        logger.trace("{}Getting all segments: {}", LOG_UID, segments);
+        logger.debug("{}Getting all segments: {}", LOG_UID, segments);
         return segments;
     }
 }

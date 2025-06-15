@@ -102,7 +102,7 @@ public class HomekitAccessoryServerEvent extends AbstractHomekitEvent {
     public HomekitAccessoryServerEvent(HomekitEventType type, HomekitAccessoryServer server,
             @Nullable HomekitAccessory accessory, @Nullable HomekitService service,
             @Nullable HomekitCharacteristic<?> characteristic) {
-        super(type, server != null ? (UID) server.getUID() : (UID) new HomekitUID("server"), WILDCARD_UID,
+        super(type, server != null ? (UID) server.getUID() : (UID) new HomekitUID("server"), HomekitUID.WILDCARD_UID,
                 new HomekitEventMetadata(server != null ? (UID) server.getUID() : (UID) new HomekitUID("server"), null,
                         null, Collections.emptySet()));
         this.server = Optional.ofNullable(server);
@@ -125,7 +125,8 @@ public class HomekitAccessoryServerEvent extends AbstractHomekitEvent {
     public HomekitAccessoryServerEvent(HomekitEventType type, HomekitAccessoryServer server,
             @Nullable HomekitAccessory accessory, @Nullable HomekitService service,
             @Nullable HomekitCharacteristic<?> characteristic, HomekitEventMetadata metadata) {
-        super(type, server != null ? (UID) server.getUID() : (UID) new HomekitUID("server"), WILDCARD_UID, metadata);
+        super(type, server != null ? (UID) server.getUID() : (UID) new HomekitUID("server"), HomekitUID.WILDCARD_UID,
+                metadata);
         this.server = Optional.ofNullable(server);
         this.accessory = Optional.ofNullable(accessory);
         this.service = Optional.ofNullable(service);

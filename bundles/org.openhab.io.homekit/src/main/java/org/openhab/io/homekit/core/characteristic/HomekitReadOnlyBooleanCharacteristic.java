@@ -98,7 +98,7 @@ public abstract class HomekitReadOnlyBooleanCharacteristic extends AbstractHomek
         super(service, eventManager);
         withFormat("bool").withPairedWrite(false).withPairedRead(true).withEvents(false);
         initializeValue();
-        logger.trace("{}Created new read-only boolean characteristic for service: {}", LOG_CHAR, service);
+        logger.debug("{}Created new read-only boolean characteristic for service: {}", LOG_CHAR, service);
     }
 
     /**
@@ -122,7 +122,7 @@ public abstract class HomekitReadOnlyBooleanCharacteristic extends AbstractHomek
             JsonValue value) {
         super(service, eventManager, value);
         initializeValue();
-        logger.trace("{}Created new read-only boolean characteristic from JSON for service: {}", LOG_CHAR, service);
+        logger.debug("{}Created new read-only boolean characteristic from JSON for service: {}", LOG_CHAR, service);
     }
 
     /**
@@ -133,7 +133,7 @@ public abstract class HomekitReadOnlyBooleanCharacteristic extends AbstractHomek
      */
     @Override
     public Boolean getDefault() {
-        logger.trace("{}Getting default value: false", LOG_CHAR);
+        logger.debug("{}Getting default value: false", LOG_CHAR);
         return false;
     }
 
@@ -162,7 +162,7 @@ public abstract class HomekitReadOnlyBooleanCharacteristic extends AbstractHomek
         } else {
             result = jsonValue.equals(JsonValue.TRUE);
         }
-        logger.trace("{}Converted JSON value to boolean: {}", LOG_CHAR, result);
+        logger.debug("{}Converted JSON value to boolean: {}", LOG_CHAR, result);
         return result;
     }
 
@@ -187,11 +187,11 @@ public abstract class HomekitReadOnlyBooleanCharacteristic extends AbstractHomek
     public Boolean toValue(State state, Map<String, Object> conversionMap) {
         OnOffType convertedState = state.as(OnOffType.class);
         if (convertedState == null) {
-            logger.trace("{}State conversion failed, using default value", LOG_CHAR);
+            logger.debug("{}State conversion failed, using default value", LOG_CHAR);
             return getDefault();
         }
         Boolean result = convertedState.equals(OnOffType.ON);
-        logger.trace("{}Converted state to boolean: {}", LOG_CHAR, result);
+        logger.debug("{}Converted state to boolean: {}", LOG_CHAR, result);
         return result;
     }
 
@@ -213,7 +213,7 @@ public abstract class HomekitReadOnlyBooleanCharacteristic extends AbstractHomek
     @Override
     public State toState(Boolean value) {
         State result = value ? OnOffType.ON : OnOffType.OFF;
-        logger.trace("{}Converted boolean to state: {}", LOG_CHAR, result);
+        logger.debug("{}Converted boolean to state: {}", LOG_CHAR, result);
         return result;
     }
 }

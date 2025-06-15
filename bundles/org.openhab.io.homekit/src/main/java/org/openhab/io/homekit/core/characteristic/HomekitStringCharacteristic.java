@@ -115,7 +115,7 @@ public abstract class HomekitStringCharacteristic extends AbstractHomekitCharact
         super(service, eventManager);
         withFormat("string").withPairedWrite(true).withPairedRead(true).withEvents(true);
         initializeValue();
-        logger.trace("{}Created new read-write string characteristic for service: {}", LOG_CHAR, service);
+        logger.debug("{}Created new read-write string characteristic for service: {}", LOG_CHAR, service);
     }
 
     /**
@@ -151,7 +151,7 @@ public abstract class HomekitStringCharacteristic extends AbstractHomekitCharact
     public HomekitStringCharacteristic(HomekitService service, HomekitEventManager eventManager, JsonValue value) {
         super(service, eventManager, value);
         initializeValue();
-        logger.trace("{}Created new read-write string characteristic from JSON for service: {}", LOG_CHAR, service);
+        logger.debug("{}Created new read-write string characteristic from JSON for service: {}", LOG_CHAR, service);
     }
 
     /**
@@ -171,7 +171,7 @@ public abstract class HomekitStringCharacteristic extends AbstractHomekitCharact
      */
     @Override
     public boolean isHidden() {
-        logger.trace("{}Checking if characteristic is hidden: false", LOG_CHAR);
+        logger.debug("{}Checking if characteristic is hidden: false", LOG_CHAR);
         return false;
     }
 
@@ -192,7 +192,7 @@ public abstract class HomekitStringCharacteristic extends AbstractHomekitCharact
      */
     @Override
     public String getDefault() {
-        logger.trace("{}Getting default value: empty string", LOG_CHAR);
+        logger.debug("{}Getting default value: empty string", LOG_CHAR);
         return "";
     }
 
@@ -232,7 +232,7 @@ public abstract class HomekitStringCharacteristic extends AbstractHomekitCharact
             throw new IllegalArgumentException("Invalid JSON value type for string conversion");
         }
         String result = ((JsonString) jsonValue).getString();
-        logger.trace("{}Converted JSON value to string: {}", LOG_CHAR, result);
+        logger.debug("{}Converted JSON value to string: {}", LOG_CHAR, result);
         return result;
     }
 
@@ -255,7 +255,7 @@ public abstract class HomekitStringCharacteristic extends AbstractHomekitCharact
     public JsonObject toJson() {
         JsonObject base = super.toJson();
         JsonObject result = enrich(base, "maxLen", MAX_LEN);
-        logger.trace("{}Converted characteristic to JSON with max length: {}", LOG_CHAR, MAX_LEN);
+        logger.debug("{}Converted characteristic to JSON with max length: {}", LOG_CHAR, MAX_LEN);
         return result;
     }
 
@@ -278,7 +278,7 @@ public abstract class HomekitStringCharacteristic extends AbstractHomekitCharact
     public JsonObject toReducedJson() {
         JsonObject base = super.toReducedJson();
         JsonObject result = enrich(base, "maxLen", MAX_LEN);
-        logger.trace("{}Converted characteristic to reduced JSON with max length: {}", LOG_CHAR, MAX_LEN);
+        logger.debug("{}Converted characteristic to reduced JSON with max length: {}", LOG_CHAR, MAX_LEN);
         return result;
     }
 
@@ -306,7 +306,7 @@ public abstract class HomekitStringCharacteristic extends AbstractHomekitCharact
             boolean includeEvent) {
         JsonObject base = super.toJson(includeMeta, includePermissions, includeType, includeEvent);
         JsonObject result = enrich(base, "maxLen", MAX_LEN);
-        logger.trace("{}Converted characteristic to JSON with specified metadata and max length: {}", LOG_CHAR,
+        logger.debug("{}Converted characteristic to JSON with specified metadata and max length: {}", LOG_CHAR,
                 MAX_LEN);
         return result;
     }
@@ -344,11 +344,11 @@ public abstract class HomekitStringCharacteristic extends AbstractHomekitCharact
     public String toValue(State state, Map<String, Object> conversionMap) {
         StringType convertedState = state.as(StringType.class);
         if (convertedState == null) {
-            logger.trace("{}State conversion failed, using default value", LOG_CHAR);
+            logger.debug("{}State conversion failed, using default value", LOG_CHAR);
             return getDefault();
         }
         String result = convertedState.toFullString();
-        logger.trace("{}Converted state to string: {}", LOG_CHAR, result);
+        logger.debug("{}Converted state to string: {}", LOG_CHAR, result);
         return result;
     }
 
@@ -380,7 +380,7 @@ public abstract class HomekitStringCharacteristic extends AbstractHomekitCharact
     @Override
     public State toState(String value) {
         State result = new StringType(value);
-        logger.trace("{}Converted string to state: {}", LOG_CHAR, result);
+        logger.debug("{}Converted string to state: {}", LOG_CHAR, result);
         return result;
     }
 
@@ -399,7 +399,7 @@ public abstract class HomekitStringCharacteristic extends AbstractHomekitCharact
      * @return The string item type identifier
      */
     public static String getAcceptedItemType() {
-        logger.trace("{}Getting accepted item type: {}", LOG_CHAR, CoreItemFactory.STRING);
+        logger.debug("{}Getting accepted item type: {}", LOG_CHAR, CoreItemFactory.STRING);
         return CoreItemFactory.STRING;
     }
 }

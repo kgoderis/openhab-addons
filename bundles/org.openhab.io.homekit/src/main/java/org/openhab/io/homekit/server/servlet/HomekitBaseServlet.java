@@ -181,11 +181,11 @@ public abstract class HomekitBaseServlet extends HttpServlet {
      * @throws IOException if the content cannot be decoded or is malformed
      */
     protected short getState(byte[] content) throws IOException {
-        logger.trace("{}Extracting state from message", LOG_STATE);
+        logger.debug("{}Extracting state from message", LOG_STATE);
         try {
             DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(content);
             short state = d.getByte(HomekitMessage.STATE);
-            logger.trace("{}Extracted state value: {}", LOG_STATE, state);
+            logger.debug("{}Extracted state value: {}", LOG_STATE, state);
             return state;
         } catch (Exception e) {
             logger.error("{}Failed to extract state from message: {}", LOG_ERROR, e.getMessage(), e);
@@ -227,12 +227,12 @@ public abstract class HomekitBaseServlet extends HttpServlet {
      * @throws IOException if the content cannot be decoded or is malformed
      */
     protected byte[] getMessageData(byte[] content) throws IOException {
-        logger.trace("{}Extracting encrypted message data", LOG_SECURITY);
+        logger.debug("{}Extracting encrypted message data", LOG_SECURITY);
         try {
             DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(content);
             byte[] messageData = new byte[d.getLength(HomekitMessage.ENCRYPTED_DATA) - 16];
             d.getBytes(HomekitMessage.ENCRYPTED_DATA, messageData, 0);
-            logger.trace("{}Extracted {} bytes of encrypted data", LOG_SECURITY, messageData.length);
+            logger.debug("{}Extracted {} bytes of encrypted data", LOG_SECURITY, messageData.length);
             return messageData;
         } catch (Exception e) {
             logger.error("{}Failed to extract encrypted message data: {}", LOG_ERROR, e.getMessage(), e);
@@ -274,13 +274,13 @@ public abstract class HomekitBaseServlet extends HttpServlet {
      * @throws IOException if the content cannot be decoded or is malformed
      */
     protected byte[] getAuthTagData(byte[] content) throws IOException {
-        logger.trace("{}Extracting authentication tag", LOG_SECURITY);
+        logger.debug("{}Extracting authentication tag", LOG_SECURITY);
         try {
             DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(content);
             byte[] messageData = getMessageData(content);
             byte[] authTagData = new byte[16];
             d.getBytes(HomekitMessage.ENCRYPTED_DATA, authTagData, messageData.length);
-            logger.trace("{}Extracted 16-byte authentication tag", LOG_SECURITY);
+            logger.debug("{}Extracted 16-byte authentication tag", LOG_SECURITY);
             return authTagData;
         } catch (Exception e) {
             logger.error("{}Failed to extract authentication tag: {}", LOG_ERROR, e.getMessage(), e);
@@ -320,13 +320,13 @@ public abstract class HomekitBaseServlet extends HttpServlet {
      * @return The unsigned byte array representation
      */
     protected static byte[] bigIntegerToUnsignedByteArray(BigInteger i) {
-        logger.trace("{}Converting BigInteger to unsigned byte array", LOG_SECURITY);
+        logger.debug("{}Converting BigInteger to unsigned byte array", LOG_SECURITY);
         byte[] array = i.toByteArray();
         if (array[0] == 0) {
             array = Arrays.copyOfRange(array, 1, array.length);
-            logger.trace("{}Removed leading zero byte", LOG_SECURITY);
+            logger.debug("{}Removed leading zero byte", LOG_SECURITY);
         }
-        logger.trace("{}Converted to {} bytes", LOG_SECURITY, array.length);
+        logger.debug("{}Converted to {} bytes", LOG_SECURITY, array.length);
         return array;
     }
 }
