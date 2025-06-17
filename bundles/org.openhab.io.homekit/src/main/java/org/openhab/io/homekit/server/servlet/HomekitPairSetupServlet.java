@@ -714,7 +714,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
          */
         @Override
         @SuppressWarnings("null") // Parent ClientEvidenceRoutine interface doesn't constrain these parameters with
-                                            // @NonNull
+                                  // @NonNull
         public BigInteger computeClientEvidence(@Nullable SRP6CryptoParams cryptoParams,
                 @Nullable SRP6ClientEvidenceContext ctx) {
             // Null Pointer Access Warning Checked

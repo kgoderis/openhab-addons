@@ -54,9 +54,7 @@ public final class HomekitReadyMarkers {
 
     // ========== Level 2: Factories ==========
     public static final String HOMEKIT_CHARACTERISTIC_FACTORY = "homekit.characteristicFactory";
-
     public static final String HOMEKIT_SERVICE_FACTORY = "homekit.serviceFactory";
-
     public static final String HOMEKIT_ACCESSORY_FACTORY = "homekit.accessoryFactory";
 
     // ========== Level 3: Basic Registries and Providers ==========

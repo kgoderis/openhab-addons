@@ -196,7 +196,7 @@ public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
      */
     @SuppressWarnings("unchecked")
     private void initializeAccessoryTypes() {
-        logger.debug("{}Starting accessory type initialization", LOG_INIT);
+        logger.debug("{}Starizting accessory type initialation", LOG_INIT);
         try {
             // Use HomekitAnnotationScanner to find annotated classes
             Set<Class<?>> accessoryClasses = HomekitAnnotationScanner

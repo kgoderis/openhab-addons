@@ -75,7 +75,7 @@ import org.slf4j.LoggerFactory;
  * @version 1.0
  * @since 1.0
  */
-@HomekitServiceType(type = "00000110-0000-1000-8000-0026BB765291", name = "Camera RTP Stream Management", tag = "cameraRTPStreamManagement")
+@HomekitServiceType(type = "00000110-0000-1000-8000-0026BB765291", name = "Camera RTP Stream Management", tag = "cameraControl")
 @NonNullByDefault
 public class HomekitCameraControlService extends AbstractHomekitService {
     // ========== Log Message Prefixes ==========

@@ -20,6 +20,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
@@ -28,6 +29,9 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.wiring.BundleWiring;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,12 +77,19 @@ public class HomekitAnnotationScanner {
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "Homekit AnnotationScanner: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
-    protected static final String LOG_SCAN = LOG_PREFIX + "Scan - ";
-    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
-    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
-    protected static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
+    private static final String LOG_SCAN = LOG_PREFIX + "Scan - ";
+    private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+    private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
 
     private static final Logger logger = LoggerFactory.getLogger(HomekitAnnotationScanner.class);
+
+    static {
+        // Verify logger is working
+        logger.info("{}HomekitAnnotationScanner initialized", LOG_SCAN);
+        logger.debug("{}Debug logging enabled", LOG_SCAN);
+        logger.trace("{}Trace logging enabled", LOG_TRACE);
+    }
 
     /**
      * Private constructor to prevent instantiation.
@@ -107,7 +118,6 @@ public class HomekitAnnotationScanner {
      * <li>Uses class loader to find package resources</li>
      * <li>Handles both file system and JAR-based scanning</li>
      * <li>Performs minimal class loading to check annotations</li>
-     * <li>Provides comprehensive error handling and logging</li>
      * </ul>
      *
      * @param packageName The package to scan (e.g., "org.openhab.io.homekit.library")
@@ -117,46 +127,90 @@ public class HomekitAnnotationScanner {
      */
     public static <T extends Annotation> Set<Class<?>> findAnnotatedClasses(String packageName,
             Class<T> annotationClass) {
-        logger.debug("{}Scanning package '{}' for classes with annotation '{}'", LOG_SCAN, packageName,
+        logger.debug("{}Starting scan for package '{}' with annotation '{}'", LOG_SCAN, packageName,
                 annotationClass.getName());
         Set<Class<?>> result = new HashSet<>();
         try {
-            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-            String path = packageName.replace('.', '/');
-            Enumeration<URL> resources = classLoader.getResources(path);
+            // First try OSGi bundle scanning
+            Bundle bundle = FrameworkUtil.getBundle(HomekitAnnotationScanner.class);
+            if (bundle != null) {
+                logger.debug("{}Using OSGi bundle scanning for bundle: {}", LOG_SCAN, bundle.getSymbolicName());
+                BundleWiring wiring = bundle.adapt(BundleWiring.class);
+                if (wiring != null) {
+                    String path = packageName.replace('.', '/');
+                    Collection<String> resources = wiring.listResources(path, "*.class",
+                            BundleWiring.LISTRESOURCES_RECURSE);
+                    logger.debug("{}Found {} resources in bundle", LOG_SCAN, resources.size());
 
-            List<File> dirs = new ArrayList<>();
-            List<String> jarFiles = new ArrayList<>();
-
-            while (resources.hasMoreElements()) {
-                URL resource = resources.nextElement();
-                String protocol = resource.getProtocol();
-                logger.debug("{}Found resource: {} with protocol: {}", LOG_TRACE, resource.getPath(), protocol);
-
-                if ("file".equals(protocol)) {
-                    dirs.add(new File(URLDecoder.decode(resource.getFile(), StandardCharsets.UTF_8.name())));
-                } else if ("jar".equals(protocol)) {
-                    String jarPath = resource.getPath();
-                    if (jarPath.startsWith("file:")) {
-                        jarPath = jarPath.substring("file:".length());
+                    for (String resource : resources) {
+                        String className = resource.replace('/', '.').substring(0, resource.length() - 6);
+                        logger.debug("{}Processing bundle resource: {}", LOG_SCAN, className);
+                        tryAddAnnotatedClass(result, className, annotationClass);
                     }
-                    jarPath = jarPath.substring(0, jarPath.indexOf('!'));
-                    jarFiles.add(URLDecoder.decode(jarPath, StandardCharsets.UTF_8.name()));
                 }
             }
 
-            // Process directories
-            for (File directory : dirs) {
-                result.addAll(findAnnotatedClassesInDirectory(directory, packageName, annotationClass));
+            // Fall back to traditional classpath scanning if no bundle found or no results
+            if (result.isEmpty()) {
+                logger.debug("{}Falling back to traditional classpath scanning", LOG_SCAN);
+                // Use the bundle's class loader for resource discovery
+                ClassLoader classLoader = HomekitAnnotationScanner.class.getClassLoader();
+                logger.debug("{}Using class loader: {}", LOG_SCAN, classLoader.getClass().getName());
+
+                String path = packageName.replace('.', '/');
+                logger.debug("{}Looking for resources at path: {}", LOG_SCAN, path);
+
+                Enumeration<URL> resources = classLoader.getResources(path);
+                logger.debug("{}Found {} resources for path {}", LOG_SCAN,
+                        resources.hasMoreElements() ? "at least one" : "none", path);
+
+                List<File> dirs = new ArrayList<>();
+                List<String> jarFiles = new ArrayList<>();
+
+                while (resources.hasMoreElements()) {
+                    URL resource = resources.nextElement();
+                    String protocol = resource.getProtocol();
+                    logger.debug("{}Processing resource: {} with protocol: {}", LOG_SCAN, resource.getPath(), protocol);
+
+                    if ("file".equals(protocol)) {
+                        File dir = new File(URLDecoder.decode(resource.getFile(), StandardCharsets.UTF_8.name()));
+                        dirs.add(dir);
+                        logger.debug("{}Added directory: {}", LOG_SCAN, dir.getAbsolutePath());
+                    } else if ("jar".equals(protocol)) {
+                        String jarPath = resource.getPath();
+                        if (jarPath.startsWith("file:")) {
+                            jarPath = jarPath.substring("file:".length());
+                        }
+                        jarPath = jarPath.substring(0, jarPath.indexOf('!'));
+                        jarFiles.add(URLDecoder.decode(jarPath, StandardCharsets.UTF_8.name()));
+                        logger.debug("{}Added JAR file: {}", LOG_SCAN, jarPath);
+                    } else if ("bundleresource".equals(protocol)) {
+                        logger.debug("{}Skipping bundleresource as it was already processed", LOG_SCAN);
+                    }
+                }
+
+                logger.debug("{}Found {} directories and {} JAR files to scan", LOG_SCAN, dirs.size(), jarFiles.size());
+
+                // Process directories
+                for (File directory : dirs) {
+                    logger.debug("{}Scanning directory: {}", LOG_SCAN, directory.getAbsolutePath());
+                    Set<Class<?>> dirResults = findAnnotatedClassesInDirectory(directory, packageName, annotationClass);
+                    result.addAll(dirResults);
+                    logger.debug("{}Found {} annotated classes in directory {}", LOG_SCAN, dirResults.size(),
+                            directory.getAbsolutePath());
+                }
+
+                // Process JARs
+                for (String jarPath : jarFiles) {
+                    logger.debug("{}Scanning JAR file: {}", LOG_SCAN, jarPath);
+                    Set<Class<?>> jarResults = findAnnotatedClassesInJar(jarPath, packageName, annotationClass);
+                    result.addAll(jarResults);
+                    logger.debug("{}Found {} annotated classes in JAR {}", LOG_SCAN, jarResults.size(), jarPath);
+                }
             }
 
-            // Process JARs
-            for (String jarPath : jarFiles) {
-                result.addAll(findAnnotatedClassesInJar(jarPath, packageName, annotationClass));
-            }
-
-            logger.info("{}Found {} classes in package '{}' with annotation '{}'", LOG_SCAN, result.size(), packageName,
-                    annotationClass.getName());
+            logger.info("{}Completed scan. Found {} classes in package '{}' with annotation '{}'", LOG_SCAN,
+                    result.size(), packageName, annotationClass.getName());
         } catch (IOException e) {
             logger.error("{}Error scanning for annotated classes: {}", LOG_ERROR, e.getMessage(), e);
         }
@@ -200,12 +254,16 @@ public class HomekitAnnotationScanner {
             return result;
         }
 
+        logger.debug("{}Scanning {} files in directory {}", LOG_SCAN, files.length, directory.getAbsolutePath());
+
         for (File file : files) {
             if (file.isDirectory()) {
                 String subPackage = packageName + "." + file.getName();
+                logger.debug("{}Scanning subdirectory: {}", LOG_SCAN, subPackage);
                 result.addAll(findAnnotatedClassesInDirectory(file, subPackage, annotationClass));
             } else if (file.getName().endsWith(".class")) {
                 String className = packageName + "." + file.getName().substring(0, file.getName().length() - 6);
+                logger.debug("{}Found class file: {}", LOG_SCAN, className);
                 tryAddAnnotatedClass(result, className, annotationClass);
             }
         }
@@ -282,15 +340,23 @@ public class HomekitAnnotationScanner {
     private static <T extends Annotation> void tryAddAnnotatedClass(Set<Class<?>> result, String className,
             Class<T> annotationClass) {
         try {
-            Class<?> clazz = Class.forName(className);
+            // Use the bundle's class loader for resource discovery
+            ClassLoader classLoader = HomekitAnnotationScanner.class.getClassLoader();
+            logger.debug("{}Attempting to load class: {} with class loader: {}", LOG_SCAN, className,
+                    classLoader.getClass().getName());
+
+            Class<?> clazz = Class.forName(className, false, classLoader);
             if (clazz.isAnnotationPresent(annotationClass)) {
                 result.add(clazz);
-                logger.debug("{}Added annotated class: {}", LOG_TRACE, className);
+                logger.debug("{}Successfully added annotated class: {}", LOG_SCAN, className);
+            } else {
+                logger.debug("{}Class {} does not have required annotation {}", LOG_SCAN, className,
+                        annotationClass.getName());
             }
         } catch (ClassNotFoundException e) {
-            logger.debug("{}Could not load class: {}", LOG_TRACE, className);
+            logger.debug("{}Could not load class: {} - {}", LOG_SCAN, className, e.getMessage());
         } catch (NoClassDefFoundError e) {
-            logger.debug("{}Error loading class {}: {}", LOG_TRACE, className, e.getMessage());
+            logger.debug("{}Error loading class {}: {}", LOG_SCAN, className, e.getMessage());
         } catch (Exception e) {
             logger.warn("{}Unexpected error checking class {}: {}", LOG_WARN, className, e.getMessage());
         }

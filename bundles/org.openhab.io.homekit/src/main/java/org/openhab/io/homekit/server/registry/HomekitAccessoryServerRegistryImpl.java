@@ -137,27 +137,34 @@ public class HomekitAccessoryServerRegistryImpl
     private final HomekitEventManager eventManager;
     private final Set<HomekitEventSubscription> eventSubscriptions = new HashSet<>();
     private final HomekitAccessoryFactory accessoryFactory;
+    private volatile boolean readyMarkerRegistered = false;
 
     /**
-     * Creates a new HomeKit accessory server registry.
+     * Initializes the HomeKit accessory server registry.
      *
      * <p>
-     * This constructor initializes the registry with all required services:
+     * This constructor sets up the registry with its dependencies and prepares
+     * it for managing accessory servers. It registers with the ready service to track
+     * the initialization of required components.
+     * </p>
+     *
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
      * <ul>
-     * <li>ReadyService for system readiness tracking</li>
-     * <li>NetworkAddressService for network configuration</li>
-     * <li>HomekitAccessoryRegistry for accessory management</li>
-     * <li>HomekitPairingRegistry for pairing state</li>
-     * <li>HomekitEventManager for event handling</li>
-     * <li>HomekitAccessoryFactory for accessory creation</li>
+     * <li>Initializes registry state</li>
+     * <li>Sets up ready service tracking</li>
+     * <li>Prepares for provider management</li>
+     * <li>Registers ready markers for dependencies</li>
+     * <li>Ensures thread safety</li>
      * </ul>
      *
-     * @param readyService Service for tracking system readiness
-     * @param networkAddressService Service for network configuration
-     * @param accessoryRegistry Registry for HomeKit accessories
-     * @param pairingRegistry Registry for pairing state
-     * @param eventManager Manager for event handling
-     * @param accessoryFactory Factory for creating accessories
+     * @param readyService The service for tracking component readiness
+     * @param networkAddressService The service for network address management
+     * @param accessoryRegistry The registry for accessories
+     * @param pairingRegistry The registry for pairings
+     * @param eventManager The manager for events
+     * @param accessoryFactory The factory for creating accessories
      */
     @Activate
     public HomekitAccessoryServerRegistryImpl(@Reference ReadyService readyService,
@@ -165,12 +172,16 @@ public class HomekitAccessoryServerRegistryImpl
             @Reference HomekitAccessoryRegistry accessoryRegistry, @Reference HomekitPairingRegistry pairingRegistry,
             @Reference HomekitEventManager eventManager, @Reference HomekitAccessoryFactory accessoryFactory) {
         super(HomekitAccessoryServerProvider.class);
+        logger.debug("{}Initializing HomeKit accessory server registry", LOG_INIT);
         this.readyService = readyService;
         this.networkAddressService = networkAddressService;
         this.accessoryRegistry = accessoryRegistry;
         this.pairingRegistry = pairingRegistry;
         this.eventManager = eventManager;
         this.accessoryFactory = accessoryFactory;
+
+        readyService.registerTracker(this, new ReadyMarkerFilter().withType(HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER));
+        logger.debug("{}HomeKit accessory server registry initialized successfully", LOG_INIT);
     }
 
     /**
@@ -440,9 +451,13 @@ public class HomekitAccessoryServerRegistryImpl
             }
         }
 
-        logger.info("{}Marking HomekitAccessory Server Registry as ready", LOG_STATE);
-        ReadyMarker newMarker = new ReadyMarker(HOMEKIT_ACCESSORY_SERVER_REGISTRY, this.toString());
-        readyService.markReady(newMarker);
+        // Only register the ready marker once, even if multiple providers are added
+        if (!readyMarkerRegistered) {
+            logger.info("{}Marking HomekitAccessory Server Registry as ready", LOG_STATE);
+            ReadyMarker newMarker = new ReadyMarker(HOMEKIT_ACCESSORY_SERVER_REGISTRY, this.toString());
+            readyService.markReady(newMarker);
+            readyMarkerRegistered = true;
+        }
     }
 
     /**

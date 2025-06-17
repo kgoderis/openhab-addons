@@ -90,7 +90,7 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
     HomekitAccessoryServerUIDImpl() {
         super(SERVER_PREFIX, "homekit:" + SERVER_PREFIX + ":");
         this.pairingId = "";
-        logger.debug("{}Created default server UID instance", LOG_UID);
+        logger.trace("{}Created default server UID instance", LOG_UID);
     }
 
     /**

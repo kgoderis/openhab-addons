@@ -120,8 +120,9 @@ public class HomekitPairingRegistryImpl
     private static final String HOMEKIT_ACCESSORY_SERVER_REGISTRY = "homekit.accessoryServerRegistry";
 
     private final ReadyService readyService;
-    private boolean accessoryServerRegistryReady = false;
-    private boolean managedPairingProviderReady = false;
+    private volatile boolean readyMarkerRegistered = false;
+    private volatile boolean managedPairingProviderReady = false;
+    private volatile boolean accessoryServerRegistryReady = false;
 
     /**
      * Initializes the HomeKit pairing registry.
@@ -378,10 +379,9 @@ public class HomekitPairingRegistryImpl
                 super.addProvider(managedProviderInstance);
             }
             managedPairingProviderReady = true;
-            logger.debug("{}Managed pairing provider is ready", LOG_STATE);
         }
 
-        if (accessoryServerRegistryReady && managedPairingProviderReady) {
+        if (accessoryServerRegistryReady && managedPairingProviderReady && !readyMarkerRegistered) {
             for (HomekitPairing aPairing : getAll()) {
                 logger.debug("{}Pairing {} with public key {} is available", LOG_STATE, aPairing.getUID(),
                         HomekitByte.toHexString(aPairing.getPublicKey()));
@@ -390,6 +390,7 @@ public class HomekitPairingRegistryImpl
             logger.info("{}Marking HomekitPairingRegistry as ready", LOG_STATE);
             ReadyMarker newMarker = new ReadyMarker(HOMEKIT_PAIRING_REGISTRY, this.toString());
             readyService.markReady(newMarker);
+            readyMarkerRegistered = true;
         }
     }
 
