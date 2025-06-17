@@ -101,7 +101,7 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
     private final Logger logger = LoggerFactory.getLogger(HomekitThingTypeProvider.class);
 
     // ========== Log Message Prefixes ==========
-    protected static final String LOG_PREFIX = "Homekit ThingType Provider: ";
+    protected static final String LOG_PREFIX = "Homekit ThingTypeProvider: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
@@ -242,9 +242,9 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
             // They represent individual services and have direct channels
             ThingType thingType = ThingTypeBuilder.instance(thingTypeUID, serviceName)
                     .withDescription("HomeKit " + serviceName + " Service").withCategory("homekit").build(); // No
-                                                                                                             // channel
-                                                                                                             // group
-                                                                                                             // definitions!
+                                                                                                                                                                                       // channel
+                                                                                                                                                                                       // group
+                                                                                                                                                                                       // definitions!
 
             putThingType(thingType);
             logger.info(

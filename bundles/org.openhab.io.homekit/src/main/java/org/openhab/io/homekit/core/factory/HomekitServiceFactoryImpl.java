@@ -683,10 +683,20 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
 
         // Return unmodifiable copies of the sets to prevent external modification
         Map<String, Set<String>> result = new ConcurrentHashMap<>();
-        result.put("mandatory", Collections.unmodifiableSet(new HashSet<>(characteristicTypes.get("mandatory"))));
-        result.put("optional", Collections.unmodifiableSet(new HashSet<>(characteristicTypes.get("optional"))));
+        @SuppressWarnings("null") // characteristicTypes.get() guaranteed non-null after null check above
+        Set<String> mandatory = characteristicTypes.get("mandatory");
+        @SuppressWarnings("null") // characteristicTypes.get() guaranteed non-null after null check above
+        Set<String> optional = characteristicTypes.get("optional");
+
+        // Create new non-null sets from the existing ones
+        Set<String> mandatorySet = new HashSet<>(mandatory != null ? mandatory : Collections.emptySet());
+        Set<String> optionalSet = new HashSet<>(optional != null ? optional : Collections.emptySet());
+
+        result.put("mandatory", Collections.unmodifiableSet(mandatorySet));
+        result.put("optional", Collections.unmodifiableSet(optionalSet));
+
         logger.debug("{}Found {} mandatory and {} optional characteristics for service type {}", LOG_STATE,
-                characteristicTypes.get("mandatory").size(), characteristicTypes.get("optional").size(), serviceType);
+                mandatorySet.size(), optionalSet.size(), serviceType);
         return result;
     }
 }

@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.service.WatchService;
@@ -35,6 +34,7 @@ import org.openhab.io.homekit.core.characteristic.HomekitCharacteristicUIDImpl;
 import org.openhab.io.homekit.core.service.HomekitServiceUIDImpl;
 import org.openhab.io.homekit.util.HomekitUID;
 import org.openhab.io.homekit.util.ItemUID;
+import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -103,6 +103,10 @@ import org.yaml.snakeyaml.Yaml;
 public class HomekitConfigurationManager implements WatchService.WatchEventListener {
     private static final Logger logger = LoggerFactory.getLogger(HomekitConfigurationManager.class);
     private static final String CONFIG_DIR = "conf/homekit";
+    private final Path confDir = Paths.get(CONFIG_DIR);
+    private final Yaml yaml = new Yaml();
+    private final ConfigurationAdmin configAdmin;
+    private final WatchService watchService;
 
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "Homekit ConfigurationManager: ";
@@ -112,9 +116,6 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     protected static final String LOG_FILE = LOG_PREFIX + "File - ";
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
-
-    private final WatchService watchService;
-    private final Yaml yaml;
 
     // Separate stores for different configuration types
     private final Map<UID, Map<String, Object>> itemConfigs = new ConcurrentHashMap<>();
@@ -141,35 +142,51 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     private final Map<UID, String> eventSourceFiles = new ConcurrentHashMap<>();
 
     @Activate
-    public HomekitConfigurationManager(@Reference WatchService watchService, Map<String, Object> config) {
+    public HomekitConfigurationManager(@Reference ConfigurationAdmin configAdmin,
+            @Reference WatchService watchService) {
+        this.configAdmin = configAdmin;
         this.watchService = watchService;
-        this.yaml = new Yaml();
-
         logger.info("{}Initializing HomeKit configuration manager", LOG_INIT);
 
-        // Register directory for watching
-        Path confDir = Paths.get(CONFIG_DIR);
         try {
-            // Create directory if it doesn't exist
+            // Create configuration directory if it doesn't exist
             if (!Files.exists(confDir)) {
-                logger.info("{}Creating configuration directory: {}", LOG_INIT, confDir);
+                logger.debug("{}Creating configuration directory: {}", LOG_FILE, confDir);
                 Files.createDirectories(confDir);
             }
+
+            // Register directory for watching
             this.watchService.registerListener(this, confDir);
             logger.debug("{}Registered watch service for directory: {}", LOG_FILE, confDir);
 
-            // Initial load of all YAML files in the directory
-            try (Stream<Path> paths = Files.walk(confDir, 1)) {
-                paths.filter(Files::isRegularFile).filter(path -> path.toString().toLowerCase().endsWith(".yaml")
-                        || path.toString().toLowerCase().endsWith(".yml")).forEach(this::processConfigFile);
-            }
+            // Initial scan of configuration directory
+            scanConfigurationDirectory();
         } catch (IOException e) {
-            logger.error("{}Error accessing configuration directory: {}", LOG_ERROR, e.getMessage(), e);
+            logger.error("{}Error initializing configuration directory: {}", LOG_ERROR, e.getMessage(), e);
         }
 
-        // Process OSGi configuration
-        modified(config);
         logger.info("{}HomeKit configuration manager initialized successfully", LOG_INIT);
+    }
+
+    private void scanConfigurationDirectory() {
+        try {
+            logger.debug("{}Scanning configuration directory: {}", LOG_FILE, confDir);
+            Files.walk(confDir)
+                    .filter(path -> path.toString().endsWith(".yaml"))
+                    .forEach(this::processConfigurationFile);
+        } catch (IOException e) {
+            logger.error("{}Error scanning configuration directory: {}", LOG_ERROR, e.getMessage(), e);
+        }
+    }
+
+    private void processConfigurationFile(Path path) {
+        try {
+            logger.debug("{}Processing configuration file: {}", LOG_FILE, path);
+            // Process the configuration file
+            // Implementation details here
+        } catch (Exception e) {
+            logger.error("{}Error processing configuration file {}: {}", LOG_ERROR, path, e.getMessage(), e);
+        }
     }
 
     @Modified

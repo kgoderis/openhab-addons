@@ -72,7 +72,7 @@ public class HomekitChannelTypeProvider extends AbstractStorageBasedTypeProvider
     private final Logger logger = LoggerFactory.getLogger(HomekitChannelTypeProvider.class);
 
     // ========== Log Message Prefixes ==========
-    protected static final String LOG_PREFIX = "Homekit ChannelType Provider: ";
+    protected static final String LOG_PREFIX = "HomekitChannelType Provider: ";
     protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
     protected static final String LOG_STATE = LOG_PREFIX + "State - ";
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";

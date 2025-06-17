@@ -1,0 +1,986 @@
+[
+  {
+    "type": "00000001-0000-1000-8000-0026BB765291",
+    "name": "AdministratorOnlyAccess"
+  },
+  {
+    "type": "00000005-0000-1000-8000-0026BB765291",
+    "name": "AudioFeedback"
+  },
+  {
+    "type": "00000008-0000-1000-8000-0026BB765291",
+    "name": "Brightness"
+  },
+  {
+    "type": "0000000D-0000-1000-8000-0026BB765291",
+    "name": "CoolingThresholdTemperature"
+  },
+  {
+    "type": "0000000E-0000-1000-8000-0026BB765291",
+    "name": "CurrentDoorState"
+  },
+  {
+    "type": "0000000F-0000-1000-8000-0026BB765291",
+    "name": "CurrentHeatingCoolingState"
+  },
+  {
+    "type": "00000010-0000-1000-8000-0026BB765291",
+    "name": "CurrentRelativeHumidity"
+  },
+  {
+    "type": "00000011-0000-1000-8000-0026BB765291",
+    "name": "CurrentTemperature"
+  },
+  {
+    "type": "00000012-0000-1000-8000-0026BB765291",
+    "name": "HeatingThresholdTemperature"
+  },
+  {
+    "type": "00000013-0000-1000-8000-0026BB765291",
+    "name": "Hue"
+  },
+  {
+    "type": "00000014-0000-1000-8000-0026BB765291",
+    "name": "Identify"
+  },
+  {
+    "type": "00000019-0000-1000-8000-0026BB765291",
+    "name": "LockControlPoint"
+  },
+  {
+    "type": "0000001A-0000-1000-8000-0026BB765291",
+    "name": "LockManagementAutoSecurityTimeout"
+  },
+  {
+    "type": "0000001C-0000-1000-8000-0026BB765291",
+    "name": "LockLastKnownAction"
+  },
+  {
+    "type": "0000001D-0000-1000-8000-0026BB765291",
+    "name": "LockCurrentState"
+  },
+  {
+    "type": "0000001E-0000-1000-8000-0026BB765291",
+    "name": "LockTargetState"
+  },
+  {
+    "type": "0000001F-0000-1000-8000-0026BB765291",
+    "name": "Logs"
+  },
+  {
+    "type": "00000020-0000-1000-8000-0026BB765291",
+    "name": "Manufacturer"
+  },
+  {
+    "type": "00000021-0000-1000-8000-0026BB765291",
+    "name": "Model"
+  },
+  {
+    "type": "00000022-0000-1000-8000-0026BB765291",
+    "name": "MotionDetected"
+  },
+  {
+    "type": "00000023-0000-1000-8000-0026BB765291",
+    "name": "Name"
+  },
+  {
+    "type": "00000024-0000-1000-8000-0026BB765291",
+    "name": "ObstructionDetected"
+  },
+  {
+    "type": "00000025-0000-1000-8000-0026BB765291",
+    "name": "On"
+  },
+  {
+    "type": "00000026-0000-1000-8000-0026BB765291",
+    "name": "OutletInUse"
+  },
+  {
+    "type": "00000028-0000-1000-8000-0026BB765291",
+    "name": "RotationDirection"
+  },
+  {
+    "type": "00000029-0000-1000-8000-0026BB765291",
+    "name": "RotationSpeed"
+  },
+  {
+    "type": "0000002F-0000-1000-8000-0026BB765291",
+    "name": "Saturation"
+  },
+  {
+    "type": "00000030-0000-1000-8000-0026BB765291",
+    "name": "SerialNumber"
+  },
+  {
+    "type": "00000032-0000-1000-8000-0026BB765291",
+    "name": "TargetDoorState"
+  },
+  {
+    "type": "00000033-0000-1000-8000-0026BB765291",
+    "name": "TargetHeatingCoolingState"
+  },
+  {
+    "type": "00000034-0000-1000-8000-0026BB765291",
+    "name": "TargetRelativeHumidity"
+  },
+  {
+    "type": "00000035-0000-1000-8000-0026BB765291",
+    "name": "TargetTemperature"
+  },
+  {
+    "type": "00000036-0000-1000-8000-0026BB765291",
+    "name": "TemperatureDisplayUnits"
+  },
+  {
+    "type": "00000037-0000-1000-8000-0026BB765291",
+    "name": "Version"
+  },
+  {
+    "type": "0000004C-0000-1000-8000-0026BB765291",
+    "name": "PairSetup"
+  },
+  {
+    "type": "0000004E-0000-1000-8000-0026BB765291",
+    "name": "PairVerify"
+  },
+  {
+    "type": "0000004F-0000-1000-8000-0026BB765291",
+    "name": "PairingFeatures"
+  },
+  {
+    "type": "00000050-0000-1000-8000-0026BB765291",
+    "name": "ListPairings"
+  },
+  {
+    "type": "00000052-0000-1000-8000-0026BB765291",
+    "name": "FirmwareRevision"
+  },
+  {
+    "type": "00000053-0000-1000-8000-0026BB765291",
+    "name": "HardwareRevision"
+  },
+  {
+    "type": "00000054-0000-1000-8000-0026BB765291",
+    "name": "SoftwareRevision"
+  },
+  {
+    "type": "00000057-0000-1000-8000-0026BB765291",
+    "name": "AccessoryIdentifier"
+  },
+  {
+    "type": "00000058-0000-1000-8000-0026BB765291",
+    "name": "TunneledAccessoryStateNumber"
+  },
+  {
+    "type": "00000059-0000-1000-8000-0026BB765291",
+    "name": "TunneledAccessoryConnected"
+  },
+  {
+    "type": "0000005B-0000-1000-8000-0026BB765291",
+    "name": "RelayEnabled"
+  },
+  {
+    "type": "0000005C-0000-1000-8000-0026BB765291",
+    "name": "RelayState"
+  },
+  {
+    "type": "0000005E-0000-1000-8000-0026BB765291",
+    "name": "RelayControlPoint"
+  },
+  {
+    "type": "00000060-0000-1000-8000-0026BB765291",
+    "name": "TunneledAccessoryAdvertising"
+  },
+  {
+    "type": "00000061-0000-1000-8000-0026BB765291",
+    "name": "TunnelConnectionTimeout"
+  },
+  {
+    "type": "00000064-0000-1000-8000-0026BB765291",
+    "name": "AirParticulateDensity"
+  },
+  {
+    "type": "00000065-0000-1000-8000-0026BB765291",
+    "name": "AirParticulateSize"
+  },
+  {
+    "type": "00000066-0000-1000-8000-0026BB765291",
+    "name": "SecuritySystemCurrentState"
+  },
+  {
+    "type": "00000067-0000-1000-8000-0026BB765291",
+    "name": "SecuritySystemTargetState"
+  },
+  {
+    "type": "00000068-0000-1000-8000-0026BB765291",
+    "name": "BatteryLevel"
+  },
+  {
+    "type": "00000069-0000-1000-8000-0026BB765291",
+    "name": "CarbonMonoxideDetected"
+  },
+  {
+    "type": "0000006A-0000-1000-8000-0026BB765291",
+    "name": "ContactSensorState"
+  },
+  {
+    "type": "0000006B-0000-1000-8000-0026BB765291",
+    "name": "CurrentAmbientLightLevel"
+  },
+  {
+    "type": "0000006C-0000-1000-8000-0026BB765291",
+    "name": "CurrentHorizontalTiltAngle"
+  },
+  {
+    "type": "0000006D-0000-1000-8000-0026BB765291",
+    "name": "CurrentPosition"
+  },
+  {
+    "type": "0000006E-0000-1000-8000-0026BB765291",
+    "name": "CurrentVerticalTiltAngle"
+  },
+  {
+    "type": "0000006F-0000-1000-8000-0026BB765291",
+    "name": "HoldPosition"
+  },
+  {
+    "type": "00000070-0000-1000-8000-0026BB765291",
+    "name": "LeakDetected"
+  },
+  {
+    "type": "00000071-0000-1000-8000-0026BB765291",
+    "name": "OccupancyDetected"
+  },
+  {
+    "type": "00000072-0000-1000-8000-0026BB765291",
+    "name": "PositionState"
+  },
+  {
+    "type": "00000073-0000-1000-8000-0026BB765291",
+    "name": "ProgrammableSwitchEvent"
+  },
+  {
+    "type": "00000074-0000-1000-8000-0026BB765291",
+    "name": "ProgrammableSwitchOutputState"
+  },
+  {
+    "type": "00000075-0000-1000-8000-0026BB765291",
+    "name": "StatusActive"
+  },
+  {
+    "type": "00000076-0000-1000-8000-0026BB765291",
+    "name": "SmokeDetected"
+  },
+  {
+    "type": "00000077-0000-1000-8000-0026BB765291",
+    "name": "StatusFault"
+  },
+  {
+    "type": "00000078-0000-1000-8000-0026BB765291",
+    "name": "StatusJammed"
+  },
+  {
+    "type": "00000079-0000-1000-8000-0026BB765291",
+    "name": "StatusLowBattery"
+  },
+  {
+    "type": "0000007A-0000-1000-8000-0026BB765291",
+    "name": "StatusTampered"
+  },
+  {
+    "type": "0000007B-0000-1000-8000-0026BB765291",
+    "name": "TargetHorizontalTiltAngle"
+  },
+  {
+    "type": "0000007C-0000-1000-8000-0026BB765291",
+    "name": "TargetPosition"
+  },
+  {
+    "type": "0000007D-0000-1000-8000-0026BB765291",
+    "name": "TargetVerticalTiltAngle"
+  },
+  {
+    "type": "0000008E-0000-1000-8000-0026BB765291",
+    "name": "SecuritySystemAlarmType"
+  },
+  {
+    "type": "0000008F-0000-1000-8000-0026BB765291",
+    "name": "ChargingState"
+  },
+  {
+    "type": "00000090-0000-1000-8000-0026BB765291",
+    "name": "CarbonMonoxideLevel"
+  },
+  {
+    "type": "00000091-0000-1000-8000-0026BB765291",
+    "name": "CarbonMonoxidePeakLevel"
+  },
+  {
+    "type": "00000092-0000-1000-8000-0026BB765291",
+    "name": "CarbonDioxideDetected"
+  },
+  {
+    "type": "00000093-0000-1000-8000-0026BB765291",
+    "name": "CarbonDioxideLevel"
+  },
+  {
+    "type": "00000094-0000-1000-8000-0026BB765291",
+    "name": "CarbonDioxidePeakLevel"
+  },
+  {
+    "type": "00000095-0000-1000-8000-0026BB765291",
+    "name": "AirQuality"
+  },
+  {
+    "type": "000000A4-0000-1000-8000-0026BB765291",
+    "name": "AppMatchingIdentifier"
+  },
+  {
+    "type": "000000A6-0000-1000-8000-0026BB765291",
+    "name": "AccessoryFlags"
+  },
+  {
+    "type": "000000A7-0000-1000-8000-0026BB765291",
+    "name": "LockPhysicalControls"
+  },
+  {
+    "type": "000000A8-0000-1000-8000-0026BB765291",
+    "name": "TargetAirPurifierState"
+  },
+  {
+    "type": "000000A9-0000-1000-8000-0026BB765291",
+    "name": "CurrentAirPurifierState"
+  },
+  {
+    "type": "000000AA-0000-1000-8000-0026BB765291",
+    "name": "CurrentSlatState"
+  },
+  {
+    "type": "000000AB-0000-1000-8000-0026BB765291",
+    "name": "FilterLifeLevel"
+  },
+  {
+    "type": "000000AC-0000-1000-8000-0026BB765291",
+    "name": "FilterChangeIndication"
+  },
+  {
+    "type": "000000AD-0000-1000-8000-0026BB765291",
+    "name": "ResetFilterIndication"
+  },
+  {
+    "type": "000000AF-0000-1000-8000-0026BB765291",
+    "name": "CurrentFanState"
+  },
+  {
+    "type": "000000B0-0000-1000-8000-0026BB765291",
+    "name": "Active"
+  },
+  {
+    "type": "000000B1-0000-1000-8000-0026BB765291",
+    "name": "CurrentHeaterCoolerState"
+  },
+  {
+    "type": "000000B2-0000-1000-8000-0026BB765291",
+    "name": "TargetHeaterCoolerState"
+  },
+  {
+    "type": "000000B3-0000-1000-8000-0026BB765291",
+    "name": "CurrentHumidifierDehumidifierState"
+  },
+  {
+    "type": "000000B4-0000-1000-8000-0026BB765291",
+    "name": "TargetHumidifierDehumidifierState"
+  },
+  {
+    "type": "000000B5-0000-1000-8000-0026BB765291",
+    "name": "WaterLevel"
+  },
+  {
+    "type": "000000B6-0000-1000-8000-0026BB765291",
+    "name": "SwingMode"
+  },
+  {
+    "type": "000000BF-0000-1000-8000-0026BB765291",
+    "name": "TargetFanState"
+  },
+  {
+    "type": "000000C0-0000-1000-8000-0026BB765291",
+    "name": "SlatType"
+  },
+  {
+    "type": "000000C1-0000-1000-8000-0026BB765291",
+    "name": "CurrentTiltAngle"
+  },
+  {
+    "type": "000000C2-0000-1000-8000-0026BB765291",
+    "name": "TargetTiltAngle"
+  },
+  {
+    "type": "000000C3-0000-1000-8000-0026BB765291",
+    "name": "OzoneDensity"
+  },
+  {
+    "type": "000000C4-0000-1000-8000-0026BB765291",
+    "name": "NitrogenDioxideDensity"
+  },
+  {
+    "type": "000000C5-0000-1000-8000-0026BB765291",
+    "name": "SulphurDioxideDensity"
+  },
+  {
+    "type": "000000C6-0000-1000-8000-0026BB765291",
+    "name": "PM2_5Density"
+  },
+  {
+    "type": "000000C7-0000-1000-8000-0026BB765291",
+    "name": "PM10Density"
+  },
+  {
+    "type": "000000C8-0000-1000-8000-0026BB765291",
+    "name": "VOCDensity"
+  },
+  {
+    "type": "000000C9-0000-1000-8000-0026BB765291",
+    "name": "RelativeHumidityDehumidifierThreshold"
+  },
+  {
+    "type": "000000CA-0000-1000-8000-0026BB765291",
+    "name": "RelativeHumidityHumidifierThreshold"
+  },
+  {
+    "type": "000000CB-0000-1000-8000-0026BB765291",
+    "name": "ServiceLabelIndex"
+  },
+  {
+    "type": "000000CD-0000-1000-8000-0026BB765291",
+    "name": "ServiceLabelNamespace"
+  },
+  {
+    "type": "000000CE-0000-1000-8000-0026BB765291",
+    "name": "ColorTemperature"
+  },
+  {
+    "type": "000000D1-0000-1000-8000-0026BB765291",
+    "name": "ProgramMode"
+  },
+  {
+    "type": "000000D2-0000-1000-8000-0026BB765291",
+    "name": "InUse"
+  },
+  {
+    "type": "000000D3-0000-1000-8000-0026BB765291",
+    "name": "SetDuration"
+  },
+  {
+    "type": "000000D4-0000-1000-8000-0026BB765291",
+    "name": "RemainingDuration"
+  },
+  {
+    "type": "000000D5-0000-1000-8000-0026BB765291",
+    "name": "ValveType"
+  },
+  {
+    "type": "000000D6-0000-1000-8000-0026BB765291",
+    "name": "IsConfigured"
+  },
+  {
+    "type": "000000DB-0000-1000-8000-0026BB765291",
+    "name": "InputSourceType"
+  },
+  {
+    "type": "000000DC-0000-1000-8000-0026BB765291",
+    "name": "InputDeviceType"
+  },
+  {
+    "type": "000000DD-0000-1000-8000-0026BB765291",
+    "name": "ClosedCaptions"
+  },
+  {
+    "type": "000000DF-0000-1000-8000-0026BB765291",
+    "name": "PowerModeSelection"
+  },
+  {
+    "type": "000000E0-0000-1000-8000-0026BB765291",
+    "name": "CurrentMediaState"
+  },
+  {
+    "type": "000000E1-0000-1000-8000-0026BB765291",
+    "name": "RemoteKey"
+  },
+  {
+    "type": "000000E2-0000-1000-8000-0026BB765291",
+    "name": "PictureMode"
+  },
+  {
+    "type": "000000E3-0000-1000-8000-0026BB765291",
+    "name": "ConfiguredName"
+  },
+  {
+    "type": "000000E4-0000-1000-8000-0026BB765291",
+    "name": "PasswordSetting"
+  },
+  {
+    "type": "000000E5-0000-1000-8000-0026BB765291",
+    "name": "AccessControlLevel"
+  },
+  {
+    "type": "000000E6-0000-1000-8000-0026BB765291",
+    "name": "Identifier"
+  },
+  {
+    "type": "000000E7-0000-1000-8000-0026BB765291",
+    "name": "ActiveIdentifier"
+  },
+  {
+    "type": "000000E8-0000-1000-8000-0026BB765291",
+    "name": "SleepDiscoveryMode"
+  },
+  {
+    "type": "000000E9-0000-1000-8000-0026BB765291",
+    "name": "VolumeControlType"
+  },
+  {
+    "type": "000000EA-0000-1000-8000-0026BB765291",
+    "name": "VolumeSelector"
+  },
+  {
+    "type": "00000114-0000-1000-8000-0026BB765291",
+    "name": "SupportedVideoStreamConfiguration"
+  },
+  {
+    "type": "00000115-0000-1000-8000-0026BB765291",
+    "name": "SupportedAudioStreamConfiguration"
+  },
+  {
+    "type": "00000116-0000-1000-8000-0026BB765291",
+    "name": "SupportedRTPConfiguration"
+  },
+  {
+    "type": "00000117-0000-1000-8000-0026BB765291",
+    "name": "SelectedRTPStreamConfiguration"
+  },
+  {
+    "type": "00000118-0000-1000-8000-0026BB765291",
+    "name": "SetupEndpoints"
+  },
+  {
+    "type": "00000119-0000-1000-8000-0026BB765291",
+    "name": "Volume"
+  },
+  {
+    "type": "0000011A-0000-1000-8000-0026BB765291",
+    "name": "Mute"
+  },
+  {
+    "type": "0000011B-0000-1000-8000-0026BB765291",
+    "name": "NightVision"
+  },
+  {
+    "type": "0000011C-0000-1000-8000-0026BB765291",
+    "name": "OpticalZoom"
+  },
+  {
+    "type": "0000011D-0000-1000-8000-0026BB765291",
+    "name": "DigitalZoom"
+  },
+  {
+    "type": "0000011E-0000-1000-8000-0026BB765291",
+    "name": "ImageRotation"
+  },
+  {
+    "type": "0000011F-0000-1000-8000-0026BB765291",
+    "name": "ImageMirroring"
+  },
+  {
+    "type": "00000120-0000-1000-8000-0026BB765291",
+    "name": "StreamingStatus"
+  },
+  {
+    "type": "00000123-0000-1000-8000-0026BB765291",
+    "name": "TargetControlSupportedConfiguration"
+  },
+  {
+    "type": "00000124-0000-1000-8000-0026BB765291",
+    "name": "TargetControlList"
+  },
+  {
+    "type": "00000126-0000-1000-8000-0026BB765291",
+    "name": "ButtonEvent"
+  },
+  {
+    "type": "00000128-0000-1000-8000-0026BB765291",
+    "name": "SelectedAudioStreamConfiguration"
+  },
+  {
+    "type": "00000130-0000-1000-8000-0026BB765291",
+    "name": "SupportedDataStreamTransportConfiguration"
+  },
+  {
+    "type": "00000131-0000-1000-8000-0026BB765291",
+    "name": "SetupDataStreamTransport"
+  },
+  {
+    "type": "00000132-0000-1000-8000-0026BB765291",
+    "name": "SiriInputType"
+  },
+  {
+    "type": "00000134-0000-1000-8000-0026BB765291",
+    "name": "TargetVisibilityState"
+  },
+  {
+    "type": "00000135-0000-1000-8000-0026BB765291",
+    "name": "CurrentVisibilityState"
+  },
+  {
+    "type": "00000136-0000-1000-8000-0026BB765291",
+    "name": "DisplayOrder"
+  },
+  {
+    "type": "00000137-0000-1000-8000-0026BB765291",
+    "name": "TargetMediaState"
+  },
+  {
+    "type": "00000138-0000-1000-8000-0026BB765291",
+    "name": "DataStreamHAPTransport"
+  },
+  {
+    "type": "00000139-0000-1000-8000-0026BB765291",
+    "name": "DataStreamHAPTransportInterrupt"
+  },
+  {
+    "type": "00000143-0000-1000-8000-0026BB765291",
+    "name": "CharacteristicValueTransitionControl"
+  },
+  {
+    "type": "00000144-0000-1000-8000-0026BB765291",
+    "name": "SupportedCharacteristicValueTransitionConfiguration"
+  },
+  {
+    "type": "00000201-0000-1000-8000-0026BB765291",
+    "name": "SetupTransferTransport"
+  },
+  {
+    "type": "00000202-0000-1000-8000-0026BB765291",
+    "name": "SupportedTransferTransportConfiguration"
+  },
+  {
+    "type": "00000205-0000-1000-8000-0026BB765291",
+    "name": "SupportedCameraRecordingConfiguration"
+  },
+  {
+    "type": "00000206-0000-1000-8000-0026BB765291",
+    "name": "SupportedVideoRecordingConfiguration"
+  },
+  {
+    "type": "00000207-0000-1000-8000-0026BB765291",
+    "name": "SupportedAudioRecordingConfiguration"
+  },
+  {
+    "type": "00000209-0000-1000-8000-0026BB765291",
+    "name": "SelectedCameraRecordingConfiguration"
+  },
+  {
+    "type": "0000020C-0000-1000-8000-0026BB765291",
+    "name": "NetworkClientProfileControl"
+  },
+  {
+    "type": "0000020D-0000-1000-8000-0026BB765291",
+    "name": "NetworkClientStatusControl"
+  },
+  {
+    "type": "0000020E-0000-1000-8000-0026BB765291",
+    "name": "RouterStatus"
+  },
+  {
+    "type": "00000210-0000-1000-8000-0026BB765291",
+    "name": "SupportedRouterConfiguration"
+  },
+  {
+    "type": "00000211-0000-1000-8000-0026BB765291",
+    "name": "WANConfigurationList"
+  },
+  {
+    "type": "00000212-0000-1000-8000-0026BB765291",
+    "name": "WANStatusList"
+  },
+  {
+    "type": "00000215-0000-1000-8000-0026BB765291",
+    "name": "ManagedNetworkEnable"
+  },
+  {
+    "type": "0000021B-0000-1000-8000-0026BB765291",
+    "name": "HomeKitCameraActive"
+  },
+  {
+    "type": "0000021C-0000-1000-8000-0026BB765291",
+    "name": "ThirdPartyCameraActive"
+  },
+  {
+    "type": "0000021D-0000-1000-8000-0026BB765291",
+    "name": "CameraOperatingModeIndicator"
+  },
+  {
+    "type": "0000021E-0000-1000-8000-0026BB765291",
+    "name": "WiFiSatelliteStatus"
+  },
+  {
+    "type": "0000021F-0000-1000-8000-0026BB765291",
+    "name": "NetworkAccessViolationControl"
+  },
+  {
+    "type": "00000220-0000-1000-8000-0026BB765291",
+    "name": "ProductData"
+  },
+  {
+    "type": "00000222-0000-1000-8000-0026BB765291",
+    "name": "WakeConfiguration"
+  },
+  {
+    "type": "00000223-0000-1000-8000-0026BB765291",
+    "name": "EventSnapshotsActive"
+  },
+  {
+    "type": "00000224-0000-1000-8000-0026BB765291",
+    "name": "DiagonalFieldOfView"
+  },
+  {
+    "type": "00000225-0000-1000-8000-0026BB765291",
+    "name": "PeriodicSnapshotsActive"
+  },
+  {
+    "type": "00000226-0000-1000-8000-0026BB765291",
+    "name": "RecordingAudioActive"
+  },
+  {
+    "type": "00000227-0000-1000-8000-0026BB765291",
+    "name": "ManuallyDisabled"
+  },
+  {
+    "type": "00000229-0000-1000-8000-0026BB765291",
+    "name": "VideoAnalysisActive"
+  },
+  {
+    "type": "0000022B-0000-1000-8000-0026BB765291",
+    "name": "CurrentTransport"
+  },
+  {
+    "type": "0000022C-0000-1000-8000-0026BB765291",
+    "name": "WiFiCapabilities"
+  },
+  {
+    "type": "0000022D-0000-1000-8000-0026BB765291",
+    "name": "WiFiConfigurationControl"
+  },
+  {
+    "type": "0000022F-0000-1000-8000-0026BB765291",
+    "name": "TapType"
+  },
+  {
+    "type": "00000231-0000-1000-8000-0026BB765291",
+    "name": "Token"
+  },
+  {
+    "type": "00000232-0000-1000-8000-0026BB765291",
+    "name": "OperatingStateResponse"
+  },
+  {
+    "type": "00000233-0000-1000-8000-0026BB765291",
+    "name": "SupportedFirmwareUpdateConfiguration"
+  },
+  {
+    "type": "00000234-0000-1000-8000-0026BB765291",
+    "name": "FirmwareUpdateReadiness"
+  },
+  {
+    "type": "00000235-0000-1000-8000-0026BB765291",
+    "name": "FirmwareUpdateStatus"
+  },
+  {
+    "type": "00000238-0000-1000-8000-0026BB765291",
+    "name": "SupportedDiagnosticsSnapshot"
+  },
+  {
+    "type": "0000023A-0000-1000-8000-0026BB765291",
+    "name": "SleepInterval"
+  },
+  {
+    "type": "0000023B-0000-1000-8000-0026BB765291",
+    "name": "ActivityInterval"
+  },
+  {
+    "type": "0000023C-0000-1000-8000-0026BB765291",
+    "name": "Ping"
+  },
+  {
+    "type": "0000023D-0000-1000-8000-0026BB765291",
+    "name": "EventRetransmissionMaximum"
+  },
+  {
+    "type": "0000023E-0000-1000-8000-0026BB765291",
+    "name": "EventTransmissionCounters"
+  },
+  {
+    "type": "0000023F-0000-1000-8000-0026BB765291",
+    "name": "ReceivedSignalStrengthIndication"
+  },
+  {
+    "type": "00000241-0000-1000-8000-0026BB765291",
+    "name": "SignalToNoiseRatio"
+  },
+  {
+    "type": "00000242-0000-1000-8000-0026BB765291",
+    "name": "TransmitPower"
+  },
+  {
+    "type": "00000243-0000-1000-8000-0026BB765291",
+    "name": "MaximumTransmitPower"
+  },
+  {
+    "type": "00000244-0000-1000-8000-0026BB765291",
+    "name": "ReceiverSensitivity"
+  },
+  {
+    "type": "00000245-0000-1000-8000-0026BB765291",
+    "name": "CCASignalDetectThreshold"
+  },
+  {
+    "type": "00000246-0000-1000-8000-0026BB765291",
+    "name": "CCAEnergyDetectThreshold"
+  },
+  {
+    "type": "00000247-0000-1000-8000-0026BB765291",
+    "name": "MACRetransmissionMaximum"
+  },
+  {
+    "type": "00000248-0000-1000-8000-0026BB765291",
+    "name": "MACTransmissionCounters"
+  },
+  {
+    "type": "00000249-0000-1000-8000-0026BB765291",
+    "name": "StagedFirmwareVersion"
+  },
+  {
+    "type": "0000024A-0000-1000-8000-0026BB765291",
+    "name": "HeartBeat"
+  },
+  {
+    "type": "0000024B-0000-1000-8000-0026BB765291",
+    "name": "CharacteristicValueActiveTransitionCount"
+  },
+  {
+    "type": "0000024C-0000-1000-8000-0026BB765291",
+    "name": "SupportedDiagnosticsModes"
+  },
+  {
+    "type": "0000024D-0000-1000-8000-0026BB765291",
+    "name": "SelectedDiagnosticsModes"
+  },
+  {
+    "type": "00000250-0000-1000-8000-0026BB765291",
+    "name": "CryptoHash"
+  },
+  {
+    "type": "00000251-0000-1000-8000-0026BB765291",
+    "name": "SupportedSleepConfiguration"
+  },
+  {
+    "type": "00000252-0000-1000-8000-0026BB765291",
+    "name": "SelectedSleepConfiguration"
+  },
+  {
+    "type": "00000254-0000-1000-8000-0026BB765291",
+    "name": "SiriEndpointSessionStatus"
+  },
+  {
+    "type": "00000255-0000-1000-8000-0026BB765291",
+    "name": "SiriEnable"
+  },
+  {
+    "type": "00000256-0000-1000-8000-0026BB765291",
+    "name": "SiriListening"
+  },
+  {
+    "type": "00000257-0000-1000-8000-0026BB765291",
+    "name": "SiriTouchToUse"
+  },
+  {
+    "type": "00000258-0000-1000-8000-0026BB765291",
+    "name": "SiriLightOnUse"
+  },
+  {
+    "type": "0000025A-0000-1000-8000-0026BB765291",
+    "name": "SiriEngineVersion"
+  },
+  {
+    "type": "0000025B-0000-1000-8000-0026BB765291",
+    "name": "AirPlayEnable"
+  },
+  {
+    "type": "00000261-0000-1000-8000-0026BB765291",
+    "name": "AccessCodeSupportedConfiguration"
+  },
+  {
+    "type": "00000262-0000-1000-8000-0026BB765291",
+    "name": "AccessCodeControlPoint"
+  },
+  {
+    "type": "00000263-0000-1000-8000-0026BB765291",
+    "name": "ConfigurationState"
+  },
+  {
+    "type": "00000264-0000-1000-8000-0026BB765291",
+    "name": "NFCAccessControlPoint"
+  },
+  {
+    "type": "00000265-0000-1000-8000-0026BB765291",
+    "name": "NFCAccessSupportedConfiguration"
+  },
+  {
+    "type": "00000268-0000-1000-8000-0026BB765291",
+    "name": "SupportedAssetTypes"
+  },
+  {
+    "type": "00000269-0000-1000-8000-0026BB765291",
+    "name": "AssetUpdateReadiness"
+  },
+  {
+    "type": "0000026B-0000-1000-8000-0026BB765291",
+    "name": "MultifunctionButton"
+  },
+  {
+    "type": "0000026C-0000-1000-8000-0026BB765291",
+    "name": "HardwareFinish"
+  },
+  {
+    "type": "0000026D-0000-1000-8000-0026BB765291",
+    "name": "MatterFirmwareRevisionNumber"
+  },
+  {
+    "type": "0000026E-0000-1000-8000-0026BB765291",
+    "name": "MatterFirmwareUpdateStatus"
+  },
+  {
+    "type": "00000271-0000-1000-8000-0026BB765291",
+    "name": "SupportedMetrics"
+  },
+  {
+    "type": "00000272-0000-1000-8000-0026BB765291",
+    "name": "MetricsBufferFullState"
+  },
+  {
+    "type": "00000702-0000-1000-8000-0026BB765291",
+    "name": "ThreadNodeCapabilities"
+  },
+  {
+    "type": "00000703-0000-1000-8000-0026BB765291",
+    "name": "ThreadStatus"
+  },
+  {
+    "type": "00000704-0000-1000-8000-0026BB765291",
+    "name": "ThreadControlPoint"
+  },
+  {
+    "type": "00000706-0000-1000-8000-0026BB765291",
+    "name": "ThreadOpenThreadVersion"
+  }
+]

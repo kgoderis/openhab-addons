@@ -145,8 +145,7 @@ public class HomekitSystemReadyTracker implements ReadyService.ReadyTracker {
                 .withType(HomekitReadyMarkers.HOMEKIT_CHANNEL_GROUP_TYPE_PROVIDER)
                 // Level 6: Bridges
                 .withType(HomekitReadyMarkers.HOMEKIT_ACCESSORY_BRIDGE)
-                .withType(HomekitReadyMarkers.HOMEKIT_ITEM_BRIDGE)
-                .withType(HomekitReadyMarkers.HOMEKIT_THING_BRIDGE)
+                .withType(HomekitReadyMarkers.HOMEKIT_ITEM_BRIDGE).withType(HomekitReadyMarkers.HOMEKIT_THING_BRIDGE)
                 .withType(HomekitReadyMarkers.HOMEKIT_PASSTHROUGH_BRIDGE)
                 // Level 7: Discovery and Handlers
                 .withType(HomekitReadyMarkers.HOMEKIT_DISCOVERY_SERVICE)
