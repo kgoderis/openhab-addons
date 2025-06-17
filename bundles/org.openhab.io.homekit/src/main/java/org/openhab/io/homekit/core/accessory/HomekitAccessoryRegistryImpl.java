@@ -82,19 +82,38 @@ public class HomekitAccessoryRegistryImpl
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
     private final ReadyService readyService;
+    private volatile boolean readyMarkerRegistered = false;
 
     /**
-     * Creates a new HomeKit accessory registry instance.
-     * This constructor initializes the registry with the required ready service
-     * for managing system initialization.
+     * Initializes the HomeKit accessory registry.
      *
-     * @param readyService The service for managing system readiness
-     * @see ReadyService
+     * <p>
+     * This constructor sets up the registry with its dependencies and prepares
+     * it for managing accessories. It registers with the ready service to track
+     * the initialization of required components.
+     * </p>
+     *
+     * <p>
+     * <b>Implementation details:</b>
+     * </p>
+     * <ul>
+     * <li>Initializes registry state</li>
+     * <li>Sets up ready service tracking</li>
+     * <li>Prepares for provider management</li>
+     * <li>Registers ready markers for dependencies</li>
+     * <li>Ensures thread safety</li>
+     * </ul>
+     *
+     * @param readyService The service for tracking component readiness
      */
     @Activate
     public HomekitAccessoryRegistryImpl(@Reference ReadyService readyService) {
         super(HomekitAccessoryProvider.class);
+        logger.debug("{}Initializing HomeKit accessory registry", LOG_INIT);
         this.readyService = readyService;
+
+        readyService.registerTracker(this, new ReadyMarkerFilter().withType(HOMEKIT_MANAGED_ACCESSORY_PROVIDER));
+        logger.debug("{}HomeKit accessory registry initialized successfully", LOG_INIT);
     }
 
     /**
@@ -202,21 +221,26 @@ public class HomekitAccessoryRegistryImpl
     }
 
     /**
-     * Adds a provider to the registry and marks the registry as ready.
-     * This method is called when a provider is ready to be added to the registry.
+     * Adds a provider with a ready marker.
+     *
+     * <p>
+     * This method:
+     * <ul>
+     * <li>Adds the provider to the registry</li>
+     * <li>Marks the registry as ready</li>
+     * </ul>
      *
      * @param provider The provider to add
-     * @see Provider
      */
     public synchronized void addProviderWithReadyMarker(Provider<HomekitAccessory> provider) {
         super.addProvider(provider);
 
-        for (HomekitAccessory accessory : getAll()) {
-            logger.debug("{}HomekitAccessory available in registry - UID: {}", LOG_ACCESSORY, accessory.getUID());
+        // Only register the ready marker once, even if multiple providers are added
+        if (!readyMarkerRegistered) {
+            logger.info("{}Marking HomekitAccessory Registry as ready", LOG_STATE);
+            ReadyMarker newMarker = new ReadyMarker(HOMEKIT_ACCESSORY_REGISTRY, this.toString());
+            readyService.markReady(newMarker);
+            readyMarkerRegistered = true;
         }
-
-        logger.info("{}Marking HomekitAccessory Registry as ready", LOG_STATE);
-        ReadyMarker newMarker = new ReadyMarker(HOMEKIT_ACCESSORY_REGISTRY, this.toString());
-        readyService.markReady(newMarker);
     }
 }

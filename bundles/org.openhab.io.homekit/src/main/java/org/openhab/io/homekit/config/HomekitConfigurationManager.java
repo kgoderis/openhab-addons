@@ -149,15 +149,22 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
 
         // Register directory for watching
         Path confDir = Paths.get(CONFIG_DIR);
-        this.watchService.registerListener(this, confDir);
-        logger.debug("{}Registered watch service for directory: {}", LOG_FILE, confDir);
+        try {
+            // Create directory if it doesn't exist
+            if (!Files.exists(confDir)) {
+                logger.info("{}Creating configuration directory: {}", LOG_INIT, confDir);
+                Files.createDirectories(confDir);
+            }
+            this.watchService.registerListener(this, confDir);
+            logger.debug("{}Registered watch service for directory: {}", LOG_FILE, confDir);
 
-        // Initial load of all YAML files in the directory
-        try (Stream<Path> paths = Files.walk(confDir, 1)) {
-            paths.filter(Files::isRegularFile).filter(path -> path.toString().toLowerCase().endsWith(".yaml")
-                    || path.toString().toLowerCase().endsWith(".yml")).forEach(this::processConfigFile);
+            // Initial load of all YAML files in the directory
+            try (Stream<Path> paths = Files.walk(confDir, 1)) {
+                paths.filter(Files::isRegularFile).filter(path -> path.toString().toLowerCase().endsWith(".yaml")
+                        || path.toString().toLowerCase().endsWith(".yml")).forEach(this::processConfigFile);
+            }
         } catch (IOException e) {
-            logger.error("{}Error scanning configuration directory: {}", LOG_ERROR, e.getMessage(), e);
+            logger.error("{}Error accessing configuration directory: {}", LOG_ERROR, e.getMessage(), e);
         }
 
         // Process OSGi configuration

@@ -674,19 +674,19 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
     @Override
     public Map<String, Set<String>> getCharacteristicTypes(String serviceType) throws HomekitFactoryException {
         logger.trace("{}Retrieving characteristic types for service type: {}", LOG_TRACE, serviceType);
-        @SuppressWarnings("null") // serviceTypes.get() can return null, checked below
-        Class<? extends HomekitService> serviceClass = serviceTypes.get(serviceType);
-        if (serviceClass == null) {
+        @SuppressWarnings("null") // serviceCharacteristicTypes.get() can return null, checked below
+        Map<String, Set<String>> characteristicTypes = serviceCharacteristicTypes.get(serviceType);
+        if (characteristicTypes == null) {
             logger.error("{}Unsupported service type: {}", LOG_ERROR, serviceType);
             throw new HomekitFactoryException("No characteristic types found for service type: " + serviceType);
         }
 
-        // Implementation would analyze service class annotations to determine
-        // characteristics
-        // For now, return empty sets
+        // Return unmodifiable copies of the sets to prevent external modification
         Map<String, Set<String>> result = new ConcurrentHashMap<>();
-        result.put("mandatory", new HashSet<>());
-        result.put("optional", new HashSet<>());
+        result.put("mandatory", Collections.unmodifiableSet(new HashSet<>(characteristicTypes.get("mandatory"))));
+        result.put("optional", Collections.unmodifiableSet(new HashSet<>(characteristicTypes.get("optional"))));
+        logger.debug("{}Found {} mandatory and {} optional characteristics for service type {}", LOG_STATE,
+                characteristicTypes.get("mandatory").size(), characteristicTypes.get("optional").size(), serviceType);
         return result;
     }
 }

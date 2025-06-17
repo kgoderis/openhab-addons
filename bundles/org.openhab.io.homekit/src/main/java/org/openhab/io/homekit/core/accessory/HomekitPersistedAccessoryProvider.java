@@ -101,6 +101,7 @@ public class HomekitPersistedAccessoryProvider
     private final ReadyService readyService;
 
     private volatile long lastUpdate = System.nanoTime();
+    private volatile boolean readyMarkerRegistered = false;
 
     /**
      * Creates a new HomeKit persisted accessory provider.
@@ -143,19 +144,19 @@ public class HomekitPersistedAccessoryProvider
      * the provider as ready. It uses ThreadPoolManager to handle timing.
      */
     private synchronized void delayedInitialize() {
-        if (Thread.currentThread().isInterrupted()) {
+        if (Thread.currentThread().isInterrupted() || readyMarkerRegistered) {
             return;
         }
 
         final long diff = System.nanoTime() - lastUpdate - INITIALIZATION_DELAY_NANOS;
         if (diff < 0) {
-            ThreadPoolManager.getScheduledPool(HomekitBindingConstants.THREAD_POOL_NAME).schedule(
-                    () -> delayedInitialize(), -diff,
-                    TimeUnit.NANOSECONDS);
+            ThreadPoolManager.getScheduledPool(HomekitBindingConstants.THREAD_POOL_NAME)
+                    .schedule(() -> delayedInitialize(), -diff, TimeUnit.NANOSECONDS);
         } else {
             logger.info("{}Marking the Managed HomekitAccessory Provider as ready", LOG_INIT);
             ReadyMarker newMarker = new ReadyMarker(HOMEKIT_MANAGED_ACCESSORY_PROVIDER, this.toString());
             readyService.markReady(newMarker);
+            readyMarkerRegistered = true;
         }
     }
 
