@@ -171,8 +171,7 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
     private void scanConfigurationDirectory() {
         try {
             logger.debug("{}Scanning configuration directory: {}", LOG_FILE, confDir);
-            Files.walk(confDir)
-                    .filter(path -> path.toString().endsWith(".yaml"))
+            Files.walk(confDir).filter(path -> path.toString().endsWith(".yaml"))
                     .forEach(this::processConfigurationFile);
         } catch (IOException e) {
             logger.error("{}Error scanning configuration directory: {}", LOG_ERROR, e.getMessage(), e);

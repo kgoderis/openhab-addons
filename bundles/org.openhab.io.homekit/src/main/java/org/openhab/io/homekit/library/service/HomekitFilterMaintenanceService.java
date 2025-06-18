@@ -48,7 +48,8 @@ public class HomekitFilterMaintenanceService extends AbstractHomekitService {
     public HomekitFilterMaintenanceService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Filter Maintenance").withPrimary(false).withHidden(false);
+        withName("Filter Maintenance").withPrimary(false).withHidden(false).withExtensible(false);
+        logger.debug("{}Created FilterMaintenanceService for accessory {}", LOG_INIT, accessory.getLabel());
     }
 
     /**
@@ -74,10 +75,5 @@ public class HomekitFilterMaintenanceService extends AbstractHomekitService {
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                 .withMandatory(false));
-    }
-
-    @Override
-    public boolean isExtensible() {
-        return false;
     }
 }

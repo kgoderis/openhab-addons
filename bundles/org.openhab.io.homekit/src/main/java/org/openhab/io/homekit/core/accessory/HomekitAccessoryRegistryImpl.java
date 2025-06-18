@@ -67,7 +67,7 @@ public class HomekitAccessoryRegistryImpl
         extends AbstractRegistry<HomekitAccessory, HomekitAccessoryUID, HomekitAccessoryProvider>
         implements HomekitAccessoryRegistry, ReadyService.ReadyTracker {
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryRegistryImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitAccessoryRegistryImpl.class);
 
     private static final String HOMEKIT_MANAGED_ACCESSORY_PROVIDER = "homekit.managedAccessoryProvider";
     private static final String HOMEKIT_ACCESSORY_REGISTRY = "homekit.accessoryRegistry";

@@ -67,7 +67,7 @@ public class HomekitAccessoryMetricsService extends AbstractHomekitService {
     private static final String LOG_INIT = LOG_PREFIX + "Init - ";
     private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryMetricsService.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitAccessoryMetricsService.class);
 
     /**
      * Creates a new Accessory Metrics service.

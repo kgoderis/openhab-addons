@@ -104,7 +104,7 @@ public class HomekitPairingRegistryImpl
         extends AbstractRegistry<HomekitPairing, HomekitPairingUID, HomekitPairingProvider>
         implements HomekitPairingRegistry, ReadyService.ReadyTracker {
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitPairingRegistryImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitPairingRegistryImpl.class);
 
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "HomeKit Pairing Registry: ";

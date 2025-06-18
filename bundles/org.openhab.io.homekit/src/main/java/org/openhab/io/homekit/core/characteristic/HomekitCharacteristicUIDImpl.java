@@ -73,7 +73,7 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
     protected static final String LOG_UID = LOG_PREFIX + "UID - ";
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitCharacteristicUIDImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitCharacteristicUIDImpl.class);
     private static final String CHARACTERISTIC_PREFIX = "characteristic";
     private final long instanceId;
     private final String pairingId;

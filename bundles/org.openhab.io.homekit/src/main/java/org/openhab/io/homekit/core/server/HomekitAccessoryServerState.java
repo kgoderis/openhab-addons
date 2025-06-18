@@ -66,7 +66,7 @@ public class HomekitAccessoryServerState {
     protected static final String LOG_TRANSITION = LOG_PREFIX + "Transition - ";
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryServerState.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitAccessoryServerState.class);
     private final String name;
     private final String description;
     private final HomekitEventType eventType;

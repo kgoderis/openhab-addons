@@ -47,7 +47,8 @@ public class HomekitSlatService extends AbstractHomekitService {
     public HomekitSlatService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Slat").withPrimary(false).withHidden(false);
+        withName("Slat").withPrimary(false).withHidden(false).withExtensible(false);
+        logger.debug("{}Created SlatService for accessory {}", LOG_INIT, accessory.getLabel());
     }
 
     /**
@@ -74,10 +75,5 @@ public class HomekitSlatService extends AbstractHomekitService {
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         addCharacteristic(new HomekitTargetTiltAngleCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-    }
-
-    @Override
-    public boolean isExtensible() {
-        return false;
     }
 }

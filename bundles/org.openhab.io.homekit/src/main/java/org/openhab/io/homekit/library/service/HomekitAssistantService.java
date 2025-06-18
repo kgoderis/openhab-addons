@@ -67,7 +67,7 @@ public class HomekitAssistantService extends AbstractHomekitService {
     private static final String LOG_STATE = LOG_PREFIX + "State - ";
     private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitAssistantService.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitAssistantService.class);
 
     /**
      * Creates a new Assistant service.

@@ -80,7 +80,7 @@ public class HomekitValveService extends AbstractHomekitService {
     private static final String LOG_INIT = LOG_PREFIX + "Init - ";
     private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitValveService.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitValveService.class);
 
     /**
      * Creates a new Valve service.

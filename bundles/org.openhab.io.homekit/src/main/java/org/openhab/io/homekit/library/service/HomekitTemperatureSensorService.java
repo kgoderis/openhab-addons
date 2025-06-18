@@ -64,7 +64,7 @@ public class HomekitTemperatureSensorService extends AbstractHomekitService {
     private static final String LOG_STATE = LOG_PREFIX + "State - ";
     private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitTemperatureSensorService.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitTemperatureSensorService.class);
 
     /**
      * Creates a new Temperature Sensor service.
@@ -77,7 +77,7 @@ public class HomekitTemperatureSensorService extends AbstractHomekitService {
     public HomekitTemperatureSensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Temperature Sensor").withPrimary(false).withHidden(false);
+        withName("Temperature Sensor").withPrimary(false).withHidden(false).withExtensible(false);
         logger.debug("{}Created TemperatureSensorService for accessory {}", LOG_INIT, accessory.getLabel());
     }
 
@@ -115,17 +115,5 @@ public class HomekitTemperatureSensorService extends AbstractHomekitService {
         addCharacteristic(new HomekitCurrentTemperatureCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         logger.debug("{}Added CurrentTemperatureCharacteristic to TemperatureSensorService", LOG_STATE);
-    }
-
-    /**
-     * Indicates that this service is not extensible.
-     * Temperature Sensor service has a fixed set of characteristics.
-     *
-     * @return false, as this service is not extensible
-     * @since 1.0
-     */
-    @Override
-    public boolean isExtensible() {
-        return false;
     }
 }

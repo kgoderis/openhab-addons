@@ -1622,7 +1622,7 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
     private static final String LOG_TRACE = LOG_PREFIX + "[TRACE] ";
 
     private static final String THREAD_POOL_NAME = "homekit";
-    private final Logger logger = LoggerFactory.getLogger(HomekitThingBridge.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitThingBridge.class);
 
     // Configuration key for orphan functionality
     private static final String CONFIG_ORPHAN_ENABLED = "orphanEnabled";
@@ -35623,7 +35623,7 @@ import org.openhab.io.homekit.api.event.HomekitEventType;
 
 public class HomekitAccessoryBridge extends BaseBridgeHandler implements EventSubscriber {
     private static final String LOG_PREFIX = "[HomekitAccessoryBridge] ";
-    private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryBridge.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitAccessoryBridge.class);
     private final Map<String, HomekitCharacteristic<?>> characteristicMap = new ConcurrentHashMap<>();
     private final Map<String, ChannelUID> itemChannelMap = new ConcurrentHashMap<>();
     private final Map<ChannelUID, HomekitCharacteristic<?>> channelCharacteristicMap = new ConcurrentHashMap<>();
@@ -35651,7 +35651,7 @@ Let me fix the remaining linter errors by implementing the required methods and 
 // ... existing code ...
 public class HomekitAccessoryBridge extends BaseBridgeHandler implements EventSubscriber {
     private static final String LOG_PREFIX = "[HomekitAccessoryBridge] ";
-    private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryBridge.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitAccessoryBridge.class);
     private final Map<String, HomekitCharacteristic<?>> characteristicMap = new ConcurrentHashMap<>();
     private final Map<String, ChannelUID> itemChannelMap = new ConcurrentHashMap<>();
     private final Map<ChannelUID, HomekitCharacteristic<?>> channelCharacteristicMap = new ConcurrentHashMap<>();
@@ -35716,7 +35716,7 @@ import org.openhab.core.thing.ThingStatus;
 
 public class HomekitAccessoryBridge extends BaseBridgeHandler implements EventSubscriber {
     private static final String LOG_PREFIX = "[HomekitAccessoryBridge] ";
-    private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryBridge.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitAccessoryBridge.class);
     private final Map<String, HomekitCharacteristic<?>> characteristicMap = new ConcurrentHashMap<>();
     private final Map<String, ChannelUID> itemChannelMap = new ConcurrentHashMap<>();
     private final Map<ChannelUID, HomekitCharacteristic<?>> channelCharacteristicMap = new ConcurrentHashMap<>();
@@ -35751,7 +35751,7 @@ import org.openhab.core.thing.ThingStatus;
 
 public class HomekitAccessoryBridge extends BaseBridgeHandler implements EventSubscriber {
     private static final String LOG_PREFIX = "[HomekitAccessoryBridge] ";
-    private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryBridge.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitAccessoryBridge.class);
     private final Map<String, HomekitCharacteristic<?>> characteristicMap = new ConcurrentHashMap<>();
     private final Map<String, ChannelUID> itemChannelMap = new ConcurrentHashMap<>();
     private final Map<ChannelUID, HomekitCharacteristic<?>> channelCharacteristicMap = new ConcurrentHashMap<>();
@@ -35788,7 +35788,7 @@ import org.openhab.core.thing.ThingStatus;
 
 public class HomekitAccessoryBridge extends BaseBridgeHandler implements EventSubscriber {
     private static final String LOG_PREFIX = "[HomekitAccessoryBridge] ";
-    private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryBridge.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitAccessoryBridge.class);
     private final Map<String, HomekitCharacteristic<?>> characteristicMap = new ConcurrentHashMap<>();
     private final Map<String, ChannelUID> itemChannelMap = new ConcurrentHashMap<>();
     private final Map<ChannelUID, HomekitCharacteristic<?>> channelCharacteristicMap = new ConcurrentHashMap<>();
@@ -35835,7 +35835,7 @@ import org.openhab.core.thing.ThingStatus;
 
 public class HomekitAccessoryBridge extends BaseBridgeHandler implements EventSubscriber {
     private static final String LOG_PREFIX = "[HomekitAccessoryBridge] ";
-    private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryBridge.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitAccessoryBridge.class);
     private final Map<String, HomekitCharacteristic<?>> characteristicMap = new ConcurrentHashMap<>();
     private final Map<String, ChannelUID> itemChannelMap = new ConcurrentHashMap<>();
     private final Map<ChannelUID, HomekitCharacteristic<?>> channelCharacteristicMap = new ConcurrentHashMap<>();
@@ -39310,7 +39310,7 @@ Example usage in a service:
 ```java
 @Component(service = EventSubscriber.class)
 public class YourService implements EventSubscriber {
-    private final Logger logger = LoggerFactory.getLogger(YourService.class);
+    private static final Logger logger = LoggerFactory.getLogger(YourService.class);
     private final Map<ChannelUID, State> channelStates = new ConcurrentHashMap<>();
 
     @Override
@@ -39481,7 +39481,7 @@ public class ChannelStateListener {
 ```java
 @Component(service = EventSubscriber.class)
 public class YourService implements EventSubscriber {
-    private final Logger logger = LoggerFactory.getLogger(YourService.class);
+    private static final Logger logger = LoggerFactory.getLogger(YourService.class);
     private final Map<ChannelUID, State> channelStates = new ConcurrentHashMap<>();
 
     @Override
@@ -39626,7 +39626,7 @@ The most robust approach would be to combine these methods:
 ```java
 @Component(service = { EventSubscriber.class, ThingRegistryChangeListener.class })
 public class YourChannelManager implements EventSubscriber, ThingRegistryChangeListener {
-    private final Logger logger = LoggerFactory.getLogger(YourChannelManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(YourChannelManager.class);
     private final Map<ChannelUID, State> channelStates = new ConcurrentHashMap<>();
     private final Set<ChannelUID> monitoredChannels = new HashSet<>();
 
@@ -39807,7 +39807,7 @@ public class ChannelStateManager {
 ```java
 @Component(service = { EventSubscriber.class, ThingRegistryChangeListener.class })
 public class YourChannelManager implements EventSubscriber, ThingRegistryChangeListener {
-    private final Logger logger = LoggerFactory.getLogger(YourChannelManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(YourChannelManager.class);
     private final Map<ChannelUID, State> channelStates = new ConcurrentHashMap<>();
     private final Set<ChannelUID> monitoredChannels = new HashSet<>();
 

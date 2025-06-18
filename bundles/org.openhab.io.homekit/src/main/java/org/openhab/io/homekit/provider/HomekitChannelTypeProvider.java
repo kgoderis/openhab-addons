@@ -69,7 +69,7 @@ import org.slf4j.LoggerFactory;
 @Component(service = { HomekitChannelTypeProvider.class, ChannelTypeProvider.class })
 @NonNullByDefault
 public class HomekitChannelTypeProvider extends AbstractStorageBasedTypeProvider {
-    private final Logger logger = LoggerFactory.getLogger(HomekitChannelTypeProvider.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitChannelTypeProvider.class);
 
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "HomekitChannelType Provider: ";

@@ -41,54 +41,53 @@ import org.openhab.io.homekit.library.characteristic.HomekitTargetVisibilityStat
 @NonNullByDefault
 public class HomekitInputSourceService extends AbstractHomekitService {
 
-    /**
-     * Creates a new HomekitInputSourceService.
-     *
-     * @param accessory The accessory this service belongs to
-     * @param eventManager The event manager for handling HomeKit events
-     * @param characteristicFactory Factory for creating HomeKit characteristics
-     */
-    public HomekitInputSourceService(HomekitAccessory accessory, HomekitEventManager eventManager,
-            HomekitCharacteristicFactory characteristicFactory) {
-        super(accessory, eventManager, characteristicFactory);
-        withName("Input Source").withPrimary(false).withHidden(false);
-    }
+        /**
+         * Creates a new HomekitInputSourceService.
+         *
+         * @param accessory The accessory this service belongs to
+         * @param eventManager The event manager for handling HomeKit events
+         * @param characteristicFactory Factory for creating HomeKit characteristics
+         */
+        public HomekitInputSourceService(HomekitAccessory accessory, HomekitEventManager eventManager,
+                        HomekitCharacteristicFactory characteristicFactory) {
+                super(accessory, eventManager, characteristicFactory);
+                withName("Input Source").withPrimary(false).withHidden(false).withExtensible(false);
+                logger.debug("{}Created InputSourceService for accessory {}", LOG_INIT, accessory.getLabel());
+        }
 
-    /**
-     * Creates a new HomekitInputSourceService from a JSON value.
-     *
-     * @param accessory The accessory this service belongs to
-     * @param eventManager The event manager for handling HomeKit events
-     * @param characteristicFactory Factory for creating HomeKit characteristics
-     * @param value JSON value containing service configuration
-     */
-    public HomekitInputSourceService(HomekitAccessory accessory, HomekitEventManager eventManager,
-            HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
-        super(accessory, eventManager, characteristicFactory, value);
-    }
+        /**
+         * Creates a new HomekitInputSourceService from a JSON value.
+         *
+         * @param accessory The accessory this service belongs to
+         * @param eventManager The event manager for handling HomeKit events
+         * @param characteristicFactory Factory for creating HomeKit characteristics
+         * @param value JSON value containing service configuration
+         */
+        public HomekitInputSourceService(HomekitAccessory accessory, HomekitEventManager eventManager,
+                        HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
+                super(accessory, eventManager, characteristicFactory, value);
+        }
 
-    @Override
-    public void addCharacteristics() throws HomekitServiceException {
-        addCharacteristic(
-                new HomekitConfiguredNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                        .withMandatory(true));
-        addCharacteristic(new HomekitInputDeviceTypeCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitInputSourceTypeCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(
-                new HomekitIsConfiguredCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                        .withMandatory(true));
-        addCharacteristic(new HomekitCurrentVisibilityStateCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitTargetVisibilityStateCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(false));
-    }
-
-    @Override
-    public boolean isExtensible() {
-        return false;
-    }
+        @Override
+        public void addCharacteristics() throws HomekitServiceException {
+                addCharacteristic(
+                                new HomekitConfiguredNameCharacteristic(this, eventManager,
+                                                getAccessory().getNextAvailableInstanceId())
+                                                .withMandatory(true));
+                addCharacteristic(new HomekitInputDeviceTypeCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+                addCharacteristic(new HomekitInputSourceTypeCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+                addCharacteristic(
+                                new HomekitIsConfiguredCharacteristic(this, eventManager,
+                                                getAccessory().getNextAvailableInstanceId())
+                                                .withMandatory(true));
+                addCharacteristic(new HomekitCurrentVisibilityStateCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+                addCharacteristic(new HomekitTargetVisibilityStateCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+                addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId())
+                                .withMandatory(false));
+        }
 }

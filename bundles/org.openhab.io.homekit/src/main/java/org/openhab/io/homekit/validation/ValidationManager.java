@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 @Component(service = ValidationManager.class)
 @NonNullByDefault
 public class ValidationManager {
-    private final Logger logger = LoggerFactory.getLogger(ValidationManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(ValidationManager.class);
     private final Map<String, Validation> validations = new ConcurrentHashMap<>();
     private final ValidationCache cache;
     private final ValidationContext.ValidationSettings defaultSettings;

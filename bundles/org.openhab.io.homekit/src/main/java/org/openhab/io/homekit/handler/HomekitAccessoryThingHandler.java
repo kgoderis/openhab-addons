@@ -82,7 +82,7 @@ public class HomekitAccessoryThingHandler extends AbstractHomekitHandler {
     private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
     /** Logger instance for this class */
-    private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryThingHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitAccessoryThingHandler.class);
 
     /** Factory for creating HomeKit services */
     private final HomekitServiceFactory serviceFactory;

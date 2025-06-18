@@ -52,7 +52,7 @@ public class HomekitModelCharacteristic extends HomekitStringCharacteristic {
     private static final String LOG_PREFIX = "Homekit ModelCharacteristic: ";
     private static final String LOG_INIT = LOG_PREFIX + "Init - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitModelCharacteristic.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitModelCharacteristic.class);
 
     /**
      * Creates a new Model characteristic.

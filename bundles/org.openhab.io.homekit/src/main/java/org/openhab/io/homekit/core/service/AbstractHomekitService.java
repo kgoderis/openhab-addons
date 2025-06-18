@@ -133,6 +133,8 @@ public abstract class AbstractHomekitService implements HomekitService {
         this.characteristics = new LinkedList<>();
         this.name = "";
         logger.debug("{}Created new service for accessory {}", LOG_INIT, accessory.getUID());
+
+        initialise();
     }
 
     /**
@@ -195,13 +197,15 @@ public abstract class AbstractHomekitService implements HomekitService {
      * characteristic if present.
      */
     final public void initialise() {
-        if (isExtensible()) {
-            try {
-                addBaseCharacteristics();
-                addCharacteristics();
-            } catch (HomekitServiceException e) {
-                logger.error("{}Error adding characteristics during initialization: {}", LOG_ERROR, e.getMessage());
-            }
+
+        boolean currentExtensible = isExtensible();
+        isExtensible = true;
+
+        try {
+            addBaseCharacteristics();
+            addCharacteristics();
+        } catch (HomekitServiceException e) {
+            logger.error("{}Error adding characteristics during initialization: {}", LOG_ERROR, e.getMessage());
         }
 
         getCharacteristic(HomekitNameCharacteristic.class).ifPresent(nameCharacteristic -> {
@@ -211,6 +215,8 @@ public abstract class AbstractHomekitService implements HomekitService {
                 logger.error("Error setting name characteristic value", e);
             }
         });
+
+        isExtensible = currentExtensible;
     }
 
     /**

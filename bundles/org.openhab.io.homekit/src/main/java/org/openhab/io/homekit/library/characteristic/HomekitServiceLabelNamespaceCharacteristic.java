@@ -62,7 +62,7 @@ public class HomekitServiceLabelNamespaceCharacteristic extends HomekitIntegerCh
     private static final String LOG_PREFIX = "Homekit ServiceLabelNamespaceCharacteristic: ";
     private static final String LOG_INIT = LOG_PREFIX + "Init - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitServiceLabelNamespaceCharacteristic.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitServiceLabelNamespaceCharacteristic.class);
 
     public enum ServiceLabelNamespace {
         DOTS(0),

@@ -33,6 +33,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.types.State;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
+import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
@@ -354,10 +355,10 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
     @Override
     final public String getType() {
         @SuppressWarnings("null") // getAnnotation() can return null, handled by null check below
-        HomekitServiceType annotation = getClass().getAnnotation(HomekitServiceType.class);
+        HomekitCharacteristicType annotation = getClass().getAnnotation(HomekitCharacteristicType.class);
         if (annotation == null) {
             throw new IllegalStateException(
-                    "Service class " + getClass().getName() + " must be annotated with @HomekitServiceType");
+                    "Service class " + getClass().getName() + " must be annotated with @HomekitCharacteristicType");
         }
         String type = annotation.type();
 

@@ -70,7 +70,7 @@ public class HomekitPersistedAccessory {
     private static final String LOG_INIT = LOG_PREFIX + "Init - ";
     private static final String LOG_STATE = LOG_PREFIX + "State - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitPersistedAccessory.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitPersistedAccessory.class);
 
     private String json;
     private String accessoryType;

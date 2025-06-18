@@ -85,7 +85,7 @@ public class HomekitCarbonDioxideSensorService extends AbstractHomekitService {
     private static final String LOG_STATE = LOG_PREFIX + "State - ";
     private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitCarbonDioxideSensorService.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitCarbonDioxideSensorService.class);
 
     /**
      * Creates a new Carbon Dioxide Sensor service.

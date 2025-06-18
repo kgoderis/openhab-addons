@@ -100,7 +100,7 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
     private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
     private static final String LOG_DEBUG = LOG_PREFIX + "Debug - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitCommandExtension.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitCommandExtension.class);
 
     private final ItemRegistry itemRegistry;
     private final ThingRegistry thingRegistry;

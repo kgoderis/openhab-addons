@@ -42,58 +42,59 @@ import org.openhab.io.homekit.library.characteristic.HomekitTargetFanStateCharac
 @NonNullByDefault
 public class HomekitFanV2Service extends AbstractHomekitService {
 
-    /**
-     * Creates a new HomekitFanV2Service.
-     *
-     * @param accessory The accessory this service belongs to
-     * @param eventManager The event manager for handling HomeKit events
-     * @param characteristicFactory Factory for creating HomeKit characteristics
-     */
-    public HomekitFanV2Service(HomekitAccessory accessory, HomekitEventManager eventManager,
-            HomekitCharacteristicFactory characteristicFactory) {
-        super(accessory, eventManager, characteristicFactory);
-        withName("Fan v2").withPrimary(false).withHidden(false);
-    }
+        /**
+         * Creates a new HomekitFanV2Service.
+         *
+         * @param accessory The accessory this service belongs to
+         * @param eventManager The event manager for handling HomeKit events
+         * @param characteristicFactory Factory for creating HomeKit characteristics
+         */
+        public HomekitFanV2Service(HomekitAccessory accessory, HomekitEventManager eventManager,
+                        HomekitCharacteristicFactory characteristicFactory) {
+                super(accessory, eventManager, characteristicFactory);
+                withName("Fan V2").withPrimary(false).withHidden(false).withExtensible(false);
+                logger.debug("{}Created FanV2Service for accessory {}", LOG_INIT, accessory.getLabel());
+        }
 
-    /**
-     * Creates a new HomekitFanV2Service from a JSON value.
-     *
-     * @param accessory The accessory this service belongs to
-     * @param eventManager The event manager for handling HomeKit events
-     * @param characteristicFactory Factory for creating HomeKit characteristics
-     * @param value JSON value containing service configuration
-     */
-    public HomekitFanV2Service(HomekitAccessory accessory, HomekitEventManager eventManager,
-            HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
-        super(accessory, eventManager, characteristicFactory, value);
-    }
+        /**
+         * Creates a new HomekitFanV2Service from a JSON value.
+         *
+         * @param accessory The accessory this service belongs to
+         * @param eventManager The event manager for handling HomeKit events
+         * @param characteristicFactory Factory for creating HomeKit characteristics
+         * @param value JSON value containing service configuration
+         */
+        public HomekitFanV2Service(HomekitAccessory accessory, HomekitEventManager eventManager,
+                        HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
+                super(accessory, eventManager, characteristicFactory, value);
+        }
 
-    @Override
-    public void addCharacteristics() throws HomekitServiceException {
-        addCharacteristic(
-                new HomekitActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                        .withMandatory(true));
-        addCharacteristic(new HomekitCurrentFanStateCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(
-                new HomekitTargetFanStateCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                        .withMandatory(true));
-        addCharacteristic(new HomekitRotationDirectionCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(
-                new HomekitRotationSpeedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                        .withMandatory(false));
-        addCharacteristic(
-                new HomekitSwingModeCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                        .withMandatory(false));
-        addCharacteristic(new HomekitLockPhysicalControlsCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(false));
-    }
-
-    @Override
-    public boolean isExtensible() {
-        return false;
-    }
+        @Override
+        public void addCharacteristics() throws HomekitServiceException {
+                addCharacteristic(
+                                new HomekitActiveCharacteristic(this, eventManager,
+                                                getAccessory().getNextAvailableInstanceId())
+                                                .withMandatory(true));
+                addCharacteristic(new HomekitCurrentFanStateCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+                addCharacteristic(
+                                new HomekitTargetFanStateCharacteristic(this, eventManager,
+                                                getAccessory().getNextAvailableInstanceId())
+                                                .withMandatory(true));
+                addCharacteristic(new HomekitRotationDirectionCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+                addCharacteristic(
+                                new HomekitRotationSpeedCharacteristic(this, eventManager,
+                                                getAccessory().getNextAvailableInstanceId())
+                                                .withMandatory(false));
+                addCharacteristic(
+                                new HomekitSwingModeCharacteristic(this, eventManager,
+                                                getAccessory().getNextAvailableInstanceId())
+                                                .withMandatory(false));
+                addCharacteristic(new HomekitLockPhysicalControlsCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+                addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId())
+                                .withMandatory(false));
+        }
 }

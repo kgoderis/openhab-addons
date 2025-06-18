@@ -114,7 +114,7 @@ public class HomekitTaggedItem {
     private @Nullable String serviceTag;
     private @Nullable String characteristicTag;
     private @Nullable GroupItem parentGroupItem;
-    private final Logger logger = LoggerFactory.getLogger(HomekitTaggedItem.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitTaggedItem.class);
     private final HomekitServiceFactory serviceFactory;
     private final HomekitCharacteristicFactory characteristicFactory;
     private final boolean useMetadataTags;

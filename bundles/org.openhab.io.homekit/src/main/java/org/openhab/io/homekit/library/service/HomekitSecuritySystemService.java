@@ -79,7 +79,7 @@ public class HomekitSecuritySystemService extends AbstractHomekitService {
     private static final String LOG_STATE = LOG_PREFIX + "State - ";
     private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitSecuritySystemService.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitSecuritySystemService.class);
 
     /**
      * Creates a new Security System service.

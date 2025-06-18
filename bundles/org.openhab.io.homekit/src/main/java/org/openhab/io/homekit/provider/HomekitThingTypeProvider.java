@@ -98,7 +98,7 @@ import org.slf4j.LoggerFactory;
 @Component(service = { HomekitThingTypeProvider.class, ThingTypeProvider.class })
 @NonNullByDefault
 public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
-    private final Logger logger = LoggerFactory.getLogger(HomekitThingTypeProvider.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitThingTypeProvider.class);
 
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "Homekit ThingTypeProvider: ";
@@ -242,9 +242,9 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
             // They represent individual services and have direct channels
             ThingType thingType = ThingTypeBuilder.instance(thingTypeUID, serviceName)
                     .withDescription("HomeKit " + serviceName + " Service").withCategory("homekit").build(); // No
-                                                                                                                                                                                       // channel
-                                                                                                                                                                                       // group
-                                                                                                                                                                                       // definitions!
+                                                                                                             // channel
+                                                                                                             // group
+                                                                                                             // definitions!
 
             putThingType(thingType);
             logger.info(

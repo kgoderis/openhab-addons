@@ -19,6 +19,9 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryType;
 import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.factory.HomekitServiceFactory;
+import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
+import org.openhab.io.homekit.api.service.HomekitService;
+import org.openhab.io.homekit.api.uid.HomekitAccessoryUID;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,7 +85,7 @@ public class HomekitGenericAccessory extends AbstractHomekitAccessory {
     private static final String LOG_PREFIX = "Homekit GenericAccessory: ";
     private static final String LOG_INIT = LOG_PREFIX + "Init - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitGenericAccessory.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitGenericAccessory.class);
 
     /**
      * Creates a new generic HomeKit accessory with the specified factories and event manager.

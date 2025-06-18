@@ -115,7 +115,7 @@ public class HomekitPairingUIDImpl extends HomekitUID implements HomekitPairingU
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitPairingUIDImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitPairingUIDImpl.class);
 
     private static final String PAIRING_PREFIX = "pairing";
 

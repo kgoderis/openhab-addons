@@ -155,7 +155,7 @@ import org.slf4j.LoggerFactory;
 @NonNullByDefault
 public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeListener {
     private static final String LOG_PREFIX = "HomekitThingBridge: ";
-    private final Logger logger = LoggerFactory.getLogger(HomekitThingBridge.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitThingBridge.class);
 
     // Configuration key for orphan functionality
     private static final String CONFIG_ORPHAN_ENABLED = "orphanEnabled";
@@ -1019,6 +1019,7 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
 
             // Create the profile context using OpenHAB's thread pool
             ProfileContext context = new ProfileContext() {
+
                 @Override
                 public Configuration getConfiguration() {
                     return link.getConfiguration();

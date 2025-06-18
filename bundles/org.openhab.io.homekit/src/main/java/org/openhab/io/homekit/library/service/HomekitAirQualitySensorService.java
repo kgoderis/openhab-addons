@@ -74,7 +74,7 @@ public class HomekitAirQualitySensorService extends AbstractHomekitService {
     private static final String LOG_INIT = LOG_PREFIX + "Init - ";
     private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitAirQualitySensorService.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitAirQualitySensorService.class);
 
     /**
      * Creates a new Air Quality Sensor service.

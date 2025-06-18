@@ -89,7 +89,7 @@ public class HomekitBridgedAccessory implements HomekitAccessory {
     private static final String LOG_PREFIX = "Homekit BridgedAccessory: ";
     private static final String LOG_INIT = LOG_PREFIX + "Init - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitBridgedAccessory.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitBridgedAccessory.class);
 
     private final HomekitAccessory remoteAccessory;
     private final HomekitAccessoryServer localServer;

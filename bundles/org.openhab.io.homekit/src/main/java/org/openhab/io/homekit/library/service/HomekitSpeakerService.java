@@ -47,7 +47,8 @@ public class HomekitSpeakerService extends AbstractHomekitService {
     public HomekitSpeakerService(HomekitAccessory accessory, HomekitEventManager eventManager,
             HomekitCharacteristicFactory characteristicFactory) {
         super(accessory, eventManager, characteristicFactory);
-        withName("Speaker").withPrimary(false).withHidden(false);
+        withName("Speaker").withPrimary(false).withHidden(false).withExtensible(false);
+        logger.debug("{}Created SpeakerService for accessory {}", LOG_INIT, accessory.getLabel());
     }
 
     /**
@@ -72,10 +73,5 @@ public class HomekitSpeakerService extends AbstractHomekitService {
                         .withMandatory(false));
         addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                 .withMandatory(false));
-    }
-
-    @Override
-    public boolean isExtensible() {
-        return false;
     }
 }

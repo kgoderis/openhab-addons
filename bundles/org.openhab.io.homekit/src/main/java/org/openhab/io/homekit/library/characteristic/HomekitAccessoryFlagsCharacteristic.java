@@ -54,7 +54,7 @@ public class HomekitAccessoryFlagsCharacteristic extends HomekitLongCharacterist
     private static final String LOG_INIT = LOG_PREFIX + "Init - ";
     private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryFlagsCharacteristic.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitAccessoryFlagsCharacteristic.class);
 
     /**
      * Creates a new Accessory Flags characteristic.

@@ -116,7 +116,7 @@ public class HomekitAccessoryFactoryImpl implements HomekitAccessoryFactory {
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
     protected static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryFactoryImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitAccessoryFactoryImpl.class);
     private final Map<String, Class<? extends HomekitAccessory>> accessoryTypes = new ConcurrentHashMap<>();
     private final Map<String, String> tagToTypeMap = new ConcurrentHashMap<>();
     private final HomekitEventManager eventManager;

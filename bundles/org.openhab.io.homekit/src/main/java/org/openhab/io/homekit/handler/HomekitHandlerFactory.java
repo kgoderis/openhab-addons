@@ -71,7 +71,7 @@ import org.slf4j.LoggerFactory;
 public class HomekitHandlerFactory extends BaseThingHandlerFactory {
 
     /** Logger instance for this class */
-    private final Logger logger = LoggerFactory.getLogger(HomekitHandlerFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitHandlerFactory.class);
 
     /** Log message prefixes */
     protected static final String LOG_PREFIX = "HomeKit Handler Factory: ";

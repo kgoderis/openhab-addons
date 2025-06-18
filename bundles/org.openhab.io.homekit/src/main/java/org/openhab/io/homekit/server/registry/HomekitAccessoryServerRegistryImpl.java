@@ -128,7 +128,7 @@ public class HomekitAccessoryServerRegistryImpl
 
     private final HomekitUID subscriberUID = new HomekitUID("registry");
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryServerRegistryImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitAccessoryServerRegistryImpl.class);
 
     private final ReadyService readyService;
     private final NetworkAddressService networkAddressService;

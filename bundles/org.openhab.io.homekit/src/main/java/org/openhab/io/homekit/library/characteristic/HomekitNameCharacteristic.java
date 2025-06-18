@@ -52,7 +52,7 @@ public class HomekitNameCharacteristic extends HomekitReadOnlyStringCharacterist
     private static final String LOG_PREFIX = "Homekit NameCharacteristic: ";
     private static final String LOG_INIT = LOG_PREFIX + "Init - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitNameCharacteristic.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitNameCharacteristic.class);
 
     /**
      * Creates a new Name characteristic.

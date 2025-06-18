@@ -79,7 +79,7 @@ public class HomekitStatelessProgrammableSwitchService extends AbstractHomekitSe
     private static final String LOG_INIT = LOG_PREFIX + "Init - ";
     private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitStatelessProgrammableSwitchService.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitStatelessProgrammableSwitchService.class);
 
     /**
      * Creates a new Stateless Programmable Switch service.

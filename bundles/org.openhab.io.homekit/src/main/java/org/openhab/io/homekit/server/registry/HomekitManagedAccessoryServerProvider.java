@@ -96,7 +96,7 @@ public class HomekitManagedAccessoryServerProvider extends
         AbstractManagedProvider<HomekitAccessoryServer, HomekitAccessoryServerUID, HomekitPersistedAccessoryServer>
         implements HomekitAccessoryServerProvider {
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitManagedAccessoryServerProvider.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitManagedAccessoryServerProvider.class);
 
     private static final String HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER = "homekit.managedAccessoryServerProvider";
 

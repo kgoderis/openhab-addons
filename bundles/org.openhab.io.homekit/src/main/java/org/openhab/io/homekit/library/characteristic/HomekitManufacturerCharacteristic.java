@@ -51,7 +51,7 @@ public class HomekitManufacturerCharacteristic extends HomekitStringCharacterist
     private static final String LOG_PREFIX = "Homekit ManufacturerCharacteristic: ";
     private static final String LOG_INIT = LOG_PREFIX + "Init - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitManufacturerCharacteristic.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitManufacturerCharacteristic.class);
 
     /**
      * Creates a new Manufacturer characteristic.

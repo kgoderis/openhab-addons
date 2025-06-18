@@ -51,7 +51,7 @@ public class HomekitAccessoryIdentifierCharacteristic extends HomekitStringChara
     private static final String LOG_PREFIX = "Homekit AccessoryIdentifierCharacteristic: ";
     private static final String LOG_INIT = LOG_PREFIX + "Init - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryIdentifierCharacteristic.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitAccessoryIdentifierCharacteristic.class);
 
     /**
      * Creates a new Accessory Identifier characteristic.

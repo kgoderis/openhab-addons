@@ -86,7 +86,7 @@ public class HomekitChannelGroupTypeProvider extends AbstractStorageBasedTypePro
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
     protected static final String LOG_TYPE = LOG_PREFIX + "Type - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitChannelGroupTypeProvider.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitChannelGroupTypeProvider.class);
     private final HomekitServiceFactory serviceFactory;
     private final HomekitCharacteristicFactory characteristicFactory;
     private final Map<ChannelGroupTypeUID, ChannelGroupType> channelGroupTypeCache = new ConcurrentHashMap<>();

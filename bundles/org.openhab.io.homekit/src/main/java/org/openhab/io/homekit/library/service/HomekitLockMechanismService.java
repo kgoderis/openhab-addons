@@ -83,7 +83,7 @@ public class HomekitLockMechanismService extends AbstractHomekitService {
     private static final String LOG_STATE = LOG_PREFIX + "State - ";
     private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitLockMechanismService.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitLockMechanismService.class);
 
     /**
      * Creates a new Lock Mechanism service.

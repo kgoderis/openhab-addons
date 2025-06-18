@@ -88,7 +88,7 @@ public class HomekitPairingImpl implements HomekitPairing {
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitPairingImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitPairingImpl.class);
 
     private final String sourcePairingId;
     private final String destinationPairingId;

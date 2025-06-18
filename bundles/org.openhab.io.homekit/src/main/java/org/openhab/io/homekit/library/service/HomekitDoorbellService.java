@@ -40,53 +40,53 @@ import org.openhab.io.homekit.library.characteristic.HomekitStatusTamperedCharac
 @NonNullByDefault
 public class HomekitDoorbellService extends AbstractHomekitService {
 
-    /**
-     * Creates a new HomekitDoorbellService.
-     *
-     * @param accessory The accessory this service belongs to
-     * @param eventManager The event manager for handling HomeKit events
-     * @param characteristicFactory Factory for creating HomeKit characteristics
-     */
-    public HomekitDoorbellService(HomekitAccessory accessory, HomekitEventManager eventManager,
-            HomekitCharacteristicFactory characteristicFactory) {
-        super(accessory, eventManager, characteristicFactory);
-        withName("Doorbell").withPrimary(false).withHidden(false);
-    }
+        /**
+         * Creates a new HomekitDoorbellService.
+         *
+         * @param accessory The accessory this service belongs to
+         * @param eventManager The event manager for handling HomeKit events
+         * @param characteristicFactory Factory for creating HomeKit characteristics
+         */
+        public HomekitDoorbellService(HomekitAccessory accessory, HomekitEventManager eventManager,
+                        HomekitCharacteristicFactory characteristicFactory) {
+                super(accessory, eventManager, characteristicFactory);
+                withName("Doorbell").withPrimary(false).withHidden(false).withExtensible(false);
+                logger.debug("{}Created DoorbellService for accessory {}", LOG_INIT, accessory.getLabel());
+        }
 
-    /**
-     * Creates a new HomekitDoorbellService from a JSON value.
-     *
-     * @param accessory The accessory this service belongs to
-     * @param eventManager The event manager for handling HomeKit events
-     * @param characteristicFactory Factory for creating HomeKit characteristics
-     * @param value JSON value containing service configuration
-     */
-    public HomekitDoorbellService(HomekitAccessory accessory, HomekitEventManager eventManager,
-            HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
-        super(accessory, eventManager, characteristicFactory, value);
-    }
+        /**
+         * Creates a new HomekitDoorbellService from a JSON value.
+         *
+         * @param accessory The accessory this service belongs to
+         * @param eventManager The event manager for handling HomeKit events
+         * @param characteristicFactory Factory for creating HomeKit characteristics
+         * @param value JSON value containing service configuration
+         */
+        public HomekitDoorbellService(HomekitAccessory accessory, HomekitEventManager eventManager,
+                        HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
+                super(accessory, eventManager, characteristicFactory, value);
+        }
 
-    @Override
-    public void addCharacteristics() throws HomekitServiceException {
-        addCharacteristic(new HomekitProgrammableSwitchEventCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(false));
-        addCharacteristic(
-                new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                        .withMandatory(false));
-        addCharacteristic(
-                new HomekitStatusFaultCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                        .withMandatory(false));
-        addCharacteristic(new HomekitStatusLowBatteryCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(
-                new HomekitStatusTamperedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                        .withMandatory(false));
-    }
-
-    @Override
-    public boolean isExtensible() {
-        return false;
-    }
+        @Override
+        public void addCharacteristics() throws HomekitServiceException {
+                addCharacteristic(new HomekitProgrammableSwitchEventCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+                addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId())
+                                .withMandatory(false));
+                addCharacteristic(
+                                new HomekitStatusActiveCharacteristic(this, eventManager,
+                                                getAccessory().getNextAvailableInstanceId())
+                                                .withMandatory(false));
+                addCharacteristic(
+                                new HomekitStatusFaultCharacteristic(this, eventManager,
+                                                getAccessory().getNextAvailableInstanceId())
+                                                .withMandatory(false));
+                addCharacteristic(new HomekitStatusLowBatteryCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+                addCharacteristic(
+                                new HomekitStatusTamperedCharacteristic(this, eventManager,
+                                                getAccessory().getNextAvailableInstanceId())
+                                                .withMandatory(false));
+        }
 }

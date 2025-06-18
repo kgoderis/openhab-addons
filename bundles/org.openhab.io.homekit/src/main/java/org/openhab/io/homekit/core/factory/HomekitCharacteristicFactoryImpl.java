@@ -109,7 +109,7 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
     protected static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitCharacteristicFactoryImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitCharacteristicFactoryImpl.class);
     private final Map<String, Class<? extends HomekitCharacteristic<?>>> characteristicTypes = new ConcurrentHashMap<>();
     private final Map<String, String> tagToTypeMap = new ConcurrentHashMap<>();
     private final HomekitEventManager eventManager;

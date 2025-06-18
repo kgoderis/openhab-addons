@@ -15,23 +15,31 @@ package org.openhab.io.homekit.core.factory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
+import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
+import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.factory.HomekitCharacteristicFactory;
 import org.openhab.io.homekit.api.factory.HomekitServiceFactory;
+import org.openhab.io.homekit.api.server.HomekitAccessoryServer;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.api.service.HomekitServiceType;
+import org.openhab.io.homekit.api.uid.HomekitAccessoryUID;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
+import org.openhab.io.homekit.exception.HomekitAccessoryOperationException;
 import org.openhab.io.homekit.exception.HomekitFactoryException;
 import org.openhab.io.homekit.util.HomekitAnnotationScanner;
 import org.osgi.service.component.annotations.Activate;
@@ -114,12 +122,14 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
     protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
     protected static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitServiceFactoryImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitServiceFactoryImpl.class);
     private final Map<String, Class<? extends HomekitService>> serviceTypes = new ConcurrentHashMap<>();
     private final Map<String, String> tagToTypeMap = new ConcurrentHashMap<>();
     private final Map<String, Map<String, Set<String>>> serviceCharacteristicTypes = new ConcurrentHashMap<>();
     private final HomekitEventManager eventManager;
     private final HomekitCharacteristicFactory characteristicFactory;
+    private final Set<String> mandatoryCharacteristics = new HashSet<>();
+    private final Set<String> optionalCharacteristics = new HashSet<>();
 
     /**
      * Creates a new HomekitServiceFactoryImpl instance.
@@ -213,20 +223,26 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
                         Set<String> mandatory = new HashSet<>();
                         Set<String> optional = new HashSet<>();
 
-                        // Get all methods that return HomekitCharacteristic
-                        for (java.lang.reflect.Method method : serviceClass.getMethods()) {
-                            if (method.getReturnType().getName().contains("HomekitCharacteristic")) {
-                                String characteristicType = method.getName().replace("get", "");
-                                if (method.getName().startsWith("getMandatory")) {
+                        // Get characteristics directly from the service instance
+                        try {
+                            HomekitService service = createService(type, new DummyAccessory());
+                            Set<HomekitCharacteristic<?>> characteristics = service.getCharacteristics();
+
+                            for (HomekitCharacteristic<?> characteristic : characteristics) {
+                                String characteristicType = characteristic.getType();
+                                if (characteristic.isMandatory()) {
                                     mandatory.add(characteristicType);
                                     logger.trace("{}Added mandatory characteristic: {} for service: {}", LOG_TRACE,
                                             characteristicType, type);
-                                } else if (method.getName().startsWith("getOptional")) {
+                                } else {
                                     optional.add(characteristicType);
                                     logger.trace("{}Added optional characteristic: {} for service: {}", LOG_TRACE,
                                             characteristicType, type);
                                 }
                             }
+                        } catch (HomekitFactoryException e) {
+                            logger.error("{}Error creating service for characteristic discovery: {}", LOG_ERROR,
+                                    e.getMessage());
                         }
 
                         characteristicTypes.put("mandatory", mandatory);
@@ -530,7 +546,9 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
      * @since 1.0
      */
     @Override
+    @NonNull
     public Set<String> getSupportedTags() {
+        @NonNull
         Set<String> tags = Collections.unmodifiableSet(new HashSet<>(tagToTypeMap.keySet()));
         logger.trace("{}Returning {} supported tags", LOG_TRACE, tags.size());
         return tags;
@@ -558,7 +576,9 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
      * @since 1.0
      */
     @Override
+    @NonNull
     public Set<String> getSupportedServiceTypes() {
+        @NonNull
         Set<String> types = Collections.unmodifiableSet(new HashSet<>(serviceTypes.keySet()));
         logger.trace("{}Returning {} supported service types", LOG_TRACE, types.size());
         return types;
@@ -698,5 +718,202 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
         logger.debug("{}Found {} mandatory and {} optional characteristics for service type {}", LOG_STATE,
                 mandatorySet.size(), optionalSet.size(), serviceType);
         return result;
+    }
+
+    private void discoverCharacteristics() {
+        for (String type : getSupportedServiceTypes()) {
+            try {
+                // Get the service class from the registry
+                Class<? extends HomekitService> serviceClass = serviceTypes.get(type);
+                if (serviceClass == null) {
+                    logger.warn("{}Service class not found for type: {}", LOG_WARN, type);
+                    continue;
+                }
+
+                // Get the service type annotation
+                HomekitServiceType serviceTypeAnnotation = serviceClass.getAnnotation(HomekitServiceType.class);
+                if (serviceTypeAnnotation == null) {
+                    logger.warn("{}Service type annotation not found for: {}", LOG_WARN, type);
+                    continue;
+                }
+
+                // Create a minimal service instance
+                Constructor<? extends HomekitService> constructor = serviceClass.getDeclaredConstructor(
+                        HomekitAccessory.class, HomekitEventManager.class, HomekitCharacteristicFactory.class);
+                HomekitService service = constructor.newInstance(null, eventManager, characteristicFactory);
+
+                // Get characteristics from the service
+                Set<HomekitCharacteristic<?>> characteristics = service.getCharacteristics();
+                if (characteristics == null || characteristics.isEmpty()) {
+                    logger.warn("{}No characteristics found for service: {}", LOG_WARN, type);
+                    continue;
+                }
+
+                // Add characteristics to the appropriate sets
+                for (HomekitCharacteristic<?> characteristic : characteristics) {
+                    String characteristicType = characteristic.getType();
+                    if (characteristicType == null) {
+                        logger.warn("{}Characteristic type is null for service: {}", LOG_WARN, type);
+                        continue;
+                    }
+
+                    if (characteristic.isMandatory()) {
+                        mandatoryCharacteristics.add(characteristicType);
+                        logger.trace("{}Added mandatory characteristic: {} for service: {}", LOG_TRACE,
+                                characteristicType, type);
+                    } else {
+                        optionalCharacteristics.add(characteristicType);
+                        logger.trace("{}Added optional characteristic: {} for service: {}", LOG_TRACE,
+                                characteristicType, type);
+                    }
+                }
+            } catch (Exception e) {
+                logger.error("{}Error discovering characteristics for service: {}", LOG_ERROR, type, e);
+            }
+        }
+    }
+
+    private static class DummyAccessory implements HomekitAccessory {
+        private final String label = "Dummy Accessory";
+        private final String manufacturer = "openHAB";
+        private final String model = "Dummy";
+        private final String serialNumber = "DUMMY-123";
+        private final long accessoryId = 1;
+        private final String pairingId = "DUMMY";
+        private boolean orphaned = false;
+        private boolean assigned = false;
+        private boolean extensible = true;
+
+        @Override
+        public HomekitAccessoryUID getUID() {
+            return new org.openhab.io.homekit.core.accessory.HomekitAccessoryUIDImpl(pairingId, accessoryId);
+        }
+
+        @Override
+        public long getAccessoryId() {
+            return accessoryId;
+        }
+
+        @Override
+        public String getLabel() {
+            return label;
+        }
+
+        @Override
+        public String getSerialNumber() {
+            return serialNumber;
+        }
+
+        @Override
+        public String getModel() {
+            return model;
+        }
+
+        @Override
+        public String getManufacturer() {
+            return manufacturer;
+        }
+
+        @Override
+        public boolean isExtensible() {
+            return extensible;
+        }
+
+        @Override
+        public boolean isAssigned() {
+            return assigned;
+        }
+
+        @Override
+        public void addService(HomekitService service) {
+        }
+
+        @Override
+        public void addServices() {
+        }
+
+        @Override
+        public void removeService(HomekitService service) {
+        }
+
+        @Override
+        public Collection<HomekitService> getServices() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public Optional<HomekitService> getService(String serviceType) {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<HomekitService> getPrimaryService() {
+            return Optional.empty();
+        }
+
+        @Override
+        public void assignToServer(HomekitAccessoryServer server) throws HomekitAccessoryOperationException {
+            throw new HomekitAccessoryOperationException("DummyAccessory cannot be assigned");
+        }
+
+        @Override
+        public JsonObject toJson() {
+            return Json.createObjectBuilder().build();
+        }
+
+        @Override
+        public JsonObject toReducedJson() {
+            return Json.createObjectBuilder().build();
+        }
+
+        @Override
+        public void identify() {
+        }
+
+        @Override
+        public long getNextAvailableInstanceId() {
+            return 1;
+        }
+
+        @Override
+        public HomekitAccessory withLabel(String label) {
+            return this;
+        }
+
+        @Override
+        public HomekitAccessory withSerialNumber(String serialNumber) {
+            return this;
+        }
+
+        @Override
+        public HomekitAccessory withModel(String model) {
+            return this;
+        }
+
+        @Override
+        public HomekitAccessory withManufacturer(String manufacturer) {
+            return this;
+        }
+
+        @Override
+        public HomekitAccessory withExtensible(boolean isExtensible) {
+            this.extensible = isExtensible;
+            return this;
+        }
+
+        @Override
+        public void setOrphaned(boolean orphaned) {
+            this.orphaned = orphaned;
+        }
+
+        @Override
+        public boolean isOrphaned() {
+            return orphaned;
+        }
+
+        @Override
+        public int compareTo(HomekitAccessory other) {
+            return Long.compare(this.accessoryId, other.getAccessoryId());
+        }
     }
 }

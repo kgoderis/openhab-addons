@@ -56,7 +56,7 @@ import org.slf4j.LoggerFactory;
 @NonNullByDefault
 public class HomekitLogRequestFilter implements Filter {
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitLogRequestFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitLogRequestFilter.class);
 
     // ========== Log Message Prefixes ==========
     protected static final String LOG_PREFIX = "Homekit HomekitLogRequestFilter: ";

@@ -176,7 +176,7 @@ Let me try a more targeted search.
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/client/AccessoryServerConfigurationChangeParticipant.java` | L10 | `// import org.openhab.core.config.discovery.DiscoveryResult;` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/client/AccessoryServerConfigurationChangeParticipant.java` | L11 | `// import org.openhab.core.config.discovery.mdns.MDNSDiscoveryParticipant;` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/client/AccessoryServerConfigurationChangeParticipant.java` | L18 | `// public class AccessoryServerConfigurationChangeParticipant implements MDNSDiscoveryParticipant {` |
-| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/client/AccessoryServerConfigurationChangeParticipant.java` | L22 | `// private final Logger logger = LoggerFactory.getLogger(AccessoryServerConfigurationChangeParticipant.class);` |
+| `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/client/AccessoryServerConfigurationChangeParticipant.java` | L22 | `// private static final Logger logger = LoggerFactory.getLogger(AccessoryServerConfigurationChangeParticipant.class);` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/client/AccessoryServerConfigurationChangeParticipant.java` | L25 | `// int lastConfigurationNumber;` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/client/AccessoryServerConfigurationChangeParticipant.java` | L27 | `// public AccessoryServerConfigurationChangeParticipant(@NonNull StandAloneRemoteAccessoryServer participant) {` |
 | `file:///Users/kgoderis/Development/openhab/git/openhab-addons/bundles/org.openhab.io.homekit/src/main/java/org/openhab/io/homekit/internal/client/AccessoryServerConfigurationChangeParticipant.java` | L45 | `// int configurationNumber = Integer.parseInt(service.getPropertyString("c#"));` |
@@ -897,7 +897,7 @@ import org.slf4j.LoggerFactory;
 )
 @NonNullByDefault
 public class EventManagerConfiguration {
-    private final Logger logger = LoggerFactory.getLogger(EventManagerConfiguration.class);
+    private static final Logger logger = LoggerFactory.getLogger(EventManagerConfiguration.class);
 
     private int maxRetries;
     private long retryDelayMs;
@@ -980,7 +980,7 @@ import org.slf4j.LoggerFactory;
 @Component(service = HomekitEventManager.class)
 @NonNullByDefault
 public class HomekitEventManager {
-    private final Logger logger = LoggerFactory.getLogger(HomekitEventManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitEventManager.class);
     private final EventManagerConfiguration config;
     private final PriorityBlockingQueue<HomekitEvent> eventQueue;
     private final ScheduledExecutorService eventExecutor;
@@ -1188,7 +1188,7 @@ import org.slf4j.LoggerFactory;
 )
 @NonNullByDefault
 public class HomekitConfigurationServiceImpl implements HomekitConfigurationService {
-    private final Logger logger = LoggerFactory.getLogger(HomekitConfigurationServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitConfigurationServiceImpl.class);
 
     // Configuration fields with default values
     private int eventMaxRetries = 3;

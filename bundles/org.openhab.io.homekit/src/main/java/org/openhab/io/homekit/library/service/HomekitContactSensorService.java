@@ -74,107 +74,100 @@ import org.slf4j.LoggerFactory;
 @HomekitServiceType(type = "00000080-0000-1000-8000-0026BB765291", name = "Contact Sensor", tag = "contactSensor")
 @NonNullByDefault
 public class HomekitContactSensorService extends AbstractHomekitService {
-    // ========== Log Message Prefixes ==========
-    private static final String LOG_PREFIX = "Homekit ContactSensorService: ";
-    private static final String LOG_INIT = LOG_PREFIX + "Init - ";
-    private static final String LOG_STATE = LOG_PREFIX + "State - ";
-    private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
+        // ========== Log Message Prefixes ==========
+        private static final String LOG_PREFIX = "Homekit ContactSensorService: ";
+        private static final String LOG_INIT = LOG_PREFIX + "Init - ";
+        private static final String LOG_STATE = LOG_PREFIX + "State - ";
+        private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitContactSensorService.class);
+        private static final Logger logger = LoggerFactory.getLogger(HomekitContactSensorService.class);
 
-    /**
-     * Creates a new Contact Sensor service.
-     *
-     * @param accessory The accessory this service belongs to
-     * @param eventManager The event manager for handling HomeKit events
-     * @param characteristicFactory Factory for creating HomeKit characteristics
-     * @since 1.0
-     */
-    public HomekitContactSensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
-            HomekitCharacteristicFactory characteristicFactory) {
-        super(accessory, eventManager, characteristicFactory);
-        withName("Contact Sensor").withPrimary(false).withHidden(false);
-        logger.debug("{}Created ContactSensorService for accessory {}", LOG_INIT, accessory.getLabel());
-    }
+        /**
+         * Creates a new Contact Sensor service.
+         *
+         * @param accessory The accessory this service belongs to
+         * @param eventManager The event manager for handling HomeKit events
+         * @param characteristicFactory Factory for creating HomeKit characteristics
+         * @since 1.0
+         */
+        public HomekitContactSensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
+                        HomekitCharacteristicFactory characteristicFactory) {
+                super(accessory, eventManager, characteristicFactory);
+                withName("Contact Sensor").withPrimary(false).withHidden(false).withExtensible(false);
+                logger.debug("{}Created ContactSensorService for accessory {}", LOG_INIT, accessory.getLabel());
+        }
 
-    /**
-     * Creates a new Contact Sensor service from a JSON configuration.
-     *
-     * @param accessory The accessory this service belongs to
-     * @param eventManager The event manager for handling HomeKit events
-     * @param characteristicFactory Factory for creating HomeKit characteristics
-     * @param value JSON value containing service configuration
-     * @since 1.0
-     */
-    public HomekitContactSensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
-            HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
-        super(accessory, eventManager, characteristicFactory, value);
-        logger.debug("{}Created ContactSensorService from JSON for accessory {}", LOG_INIT, accessory.getLabel());
-    }
+        /**
+         * Creates a new Contact Sensor service from a JSON configuration.
+         *
+         * @param accessory The accessory this service belongs to
+         * @param eventManager The event manager for handling HomeKit events
+         * @param characteristicFactory Factory for creating HomeKit characteristics
+         * @param value JSON value containing service configuration
+         * @since 1.0
+         */
+        public HomekitContactSensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
+                        HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
+                super(accessory, eventManager, characteristicFactory, value);
+                logger.debug("{}Created ContactSensorService from JSON for accessory {}", LOG_INIT,
+                                accessory.getLabel());
+        }
 
-    /**
-     * Adds the required and optional characteristics for this service.
-     * <p>
-     * Required characteristics:
-     * <ul>
-     * <li>ContactSensorState - Current contact state (open/closed)</li>
-     * </ul>
-     * </p>
-     * <p>
-     * Optional characteristics:
-     * <ul>
-     * <li>Name - Sensor name</li>
-     * <li>StatusActive - Sensor activation state</li>
-     * <li>StatusFault - Fault state indicator</li>
-     * <li>StatusLowBattery - Low battery warning</li>
-     * <li>StatusTampered - Tamper detection state</li>
-     * </ul>
-     * </p>
-     * 
-     * @since 1.0
-     */
-    @Override
-    public void addCharacteristics() throws HomekitServiceException {
-        logger.debug("{}Adding required characteristics to ContactSensorService for accessory {}", LOG_TRACE,
-                getAccessory().getLabel());
+        /**
+         * Adds the required and optional characteristics for this service.
+         * <p>
+         * Required characteristics:
+         * <ul>
+         * <li>ContactSensorState - Current contact state (open/closed)</li>
+         * </ul>
+         * </p>
+         * <p>
+         * Optional characteristics:
+         * <ul>
+         * <li>Name - Sensor name</li>
+         * <li>StatusActive - Sensor activation state</li>
+         * <li>StatusFault - Fault state indicator</li>
+         * <li>StatusLowBattery - Low battery warning</li>
+         * <li>StatusTampered - Tamper detection state</li>
+         * </ul>
+         * </p>
+         * 
+         * @since 1.0
+         */
+        @Override
+        public void addCharacteristics() throws HomekitServiceException {
+                logger.debug("{}Adding required characteristics to ContactSensorService for accessory {}", LOG_TRACE,
+                                getAccessory().getLabel());
 
-        addCharacteristic(new HomekitContactSensorStateCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        logger.debug("{}Added ContactSensorStateCharacteristic to ContactSensorService", LOG_STATE);
+                addCharacteristic(new HomekitContactSensorStateCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+                logger.debug("{}Added ContactSensorStateCharacteristic to ContactSensorService", LOG_STATE);
 
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(false));
-        logger.debug("{}Added NameCharacteristic to ContactSensorService", LOG_STATE);
+                addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId())
+                                .withMandatory(false));
+                logger.debug("{}Added NameCharacteristic to ContactSensorService", LOG_STATE);
 
-        addCharacteristic(
-                new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                        .withMandatory(false));
-        logger.debug("{}Added StatusActiveCharacteristic to ContactSensorService", LOG_STATE);
+                addCharacteristic(
+                                new HomekitStatusActiveCharacteristic(this, eventManager,
+                                                getAccessory().getNextAvailableInstanceId())
+                                                .withMandatory(false));
+                logger.debug("{}Added StatusActiveCharacteristic to ContactSensorService", LOG_STATE);
 
-        addCharacteristic(
-                new HomekitStatusFaultCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                        .withMandatory(false));
-        logger.debug("{}Added StatusFaultCharacteristic to ContactSensorService", LOG_STATE);
+                addCharacteristic(
+                                new HomekitStatusFaultCharacteristic(this, eventManager,
+                                                getAccessory().getNextAvailableInstanceId())
+                                                .withMandatory(false));
+                logger.debug("{}Added StatusFaultCharacteristic to ContactSensorService", LOG_STATE);
 
-        addCharacteristic(new HomekitStatusLowBatteryCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        logger.debug("{}Added StatusLowBatteryCharacteristic to ContactSensorService", LOG_STATE);
+                addCharacteristic(new HomekitStatusLowBatteryCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+                logger.debug("{}Added StatusLowBatteryCharacteristic to ContactSensorService", LOG_STATE);
 
-        addCharacteristic(
-                new HomekitStatusTamperedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                        .withMandatory(false));
-        logger.debug("{}Added StatusTamperedCharacteristic to ContactSensorService", LOG_STATE);
-    }
-
-    /**
-     * Indicates that this service is not extensible.
-     * Contact sensor service has a fixed set of characteristics.
-     *
-     * @return false, as this service is not extensible
-     * @since 1.0
-     */
-    @Override
-    public boolean isExtensible() {
-        return false;
-    }
+                addCharacteristic(
+                                new HomekitStatusTamperedCharacteristic(this, eventManager,
+                                                getAccessory().getNextAvailableInstanceId())
+                                                .withMandatory(false));
+                logger.debug("{}Added StatusTamperedCharacteristic to ContactSensorService", LOG_STATE);
+        }
 }

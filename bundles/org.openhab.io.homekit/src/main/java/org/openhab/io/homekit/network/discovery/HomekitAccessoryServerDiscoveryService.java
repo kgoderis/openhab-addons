@@ -150,7 +150,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
     private static final String LOG_SERVER = LOG_PREFIX + "Server - ";
     private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitAccessoryServerDiscoveryService.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitAccessoryServerDiscoveryService.class);
 
     private final MDNSClient mdnsClient;
     private final HomekitAccessoryServerRegistry accessoryServerRegistry;

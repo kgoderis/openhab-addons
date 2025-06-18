@@ -64,7 +64,7 @@ public class HomekitCameraOperatingModeService extends AbstractHomekitService {
     private static final String LOG_STATE = LOG_PREFIX + "State - ";
     private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitCameraOperatingModeService.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitCameraOperatingModeService.class);
 
     /**
      * Creates a new Camera Operating Mode service.

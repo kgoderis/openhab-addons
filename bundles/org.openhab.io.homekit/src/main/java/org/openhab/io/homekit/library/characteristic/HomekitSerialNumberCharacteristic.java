@@ -52,7 +52,7 @@ public class HomekitSerialNumberCharacteristic extends HomekitReadOnlyStringChar
     private static final String LOG_PREFIX = "Homekit SerialNumberCharacteristic: ";
     private static final String LOG_INIT = LOG_PREFIX + "Init - ";
 
-    private final Logger logger = LoggerFactory.getLogger(HomekitSerialNumberCharacteristic.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitSerialNumberCharacteristic.class);
 
     /**
      * Creates a new Serial Number characteristic.
