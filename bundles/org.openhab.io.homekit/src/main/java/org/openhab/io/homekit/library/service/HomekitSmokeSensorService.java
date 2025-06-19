@@ -76,101 +76,96 @@ import org.slf4j.LoggerFactory;
 @HomekitServiceType(type = "00000087-0000-1000-8000-0026BB765291", name = "Smoke Sensor", tag = "smokeSensor")
 @NonNullByDefault
 public class HomekitSmokeSensorService extends AbstractHomekitService {
-        // ========== Log Message Prefixes ==========
-        private static final String LOG_PREFIX = "Homekit SmokeSensorService: ";
-        private static final String LOG_INIT = LOG_PREFIX + "Init - ";
-        private static final String LOG_STATE = LOG_PREFIX + "State - ";
-        private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
+    // ========== Log Message Prefixes ==========
+    private static final String LOG_PREFIX = "Homekit SmokeSensorService: ";
+    private static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    private static final String LOG_STATE = LOG_PREFIX + "State - ";
+    private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
 
-        private static final Logger logger = LoggerFactory.getLogger(HomekitSmokeSensorService.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitSmokeSensorService.class);
 
-        /**
-         * Creates a new Smoke Sensor service.
-         *
-         * @param accessory The accessory this service belongs to
-         * @param eventManager The event manager for handling HomeKit events
-         * @param characteristicFactory Factory for creating HomeKit characteristics
-         * @since 1.0
-         */
-        public HomekitSmokeSensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
-                        HomekitCharacteristicFactory characteristicFactory) {
-                super(accessory, eventManager, characteristicFactory);
-                withName("Smoke Sensor").withPrimary(false).withHidden(false).withExtensible(false);
-                logger.debug("{}Created SmokeSensorService for accessory {}", LOG_INIT, accessory.getLabel());
-        }
+    /**
+     * Creates a new Smoke Sensor service.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @since 1.0
+     */
+    public HomekitSmokeSensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory) {
+        super(accessory, eventManager, characteristicFactory);
+        withName("Smoke Sensor").withPrimary(false).withHidden(false).withExtensible(false);
+        logger.debug("{}Created SmokeSensorService for accessory {}", LOG_INIT, accessory.getLabel());
+    }
 
-        /**
-         * Creates a new Smoke Sensor service from a JSON configuration.
-         *
-         * @param accessory The accessory this service belongs to
-         * @param eventManager The event manager for handling HomeKit events
-         * @param characteristicFactory Factory for creating HomeKit characteristics
-         * @param value JSON value containing service configuration
-         * @since 1.0
-         */
-        public HomekitSmokeSensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
-                        HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
-                super(accessory, eventManager, characteristicFactory, value);
-                logger.debug("{}Created SmokeSensorService from JSON for accessory {}", LOG_INIT, accessory.getLabel());
-        }
+    /**
+     * Creates a new Smoke Sensor service from a JSON configuration.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @param value JSON value containing service configuration
+     * @since 1.0
+     */
+    public HomekitSmokeSensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
+        super(accessory, eventManager, characteristicFactory, value);
+        logger.debug("{}Created SmokeSensorService from JSON for accessory {}", LOG_INIT, accessory.getLabel());
+    }
 
-        /**
-         * Adds the required and optional characteristics for this service.
-         * <p>
-         * Required characteristics:
-         * <ul>
-         * <li>SmokeDetected - Current smoke detection state (0 = Smoke Not Detected, 1 = Smoke Detected)</li>
-         * </ul>
-         * </p>
-         * <p>
-         * Optional characteristics:
-         * <ul>
-         * <li>Name - Smoke sensor name</li>
-         * <li>StatusActive - Sensor activation state</li>
-         * <li>StatusFault - Fault state indicator</li>
-         * <li>StatusLowBattery - Low battery indicator</li>
-         * <li>StatusTampered - Tamper detection indicator</li>
-         * </ul>
-         * </p>
-         * 
-         * @since 1.0
-         */
-        @Override
-        public void addCharacteristics() throws HomekitServiceException {
-                logger.debug("{}Adding required characteristics to SmokeSensorService for accessory {}", LOG_TRACE,
-                                getAccessory().getLabel());
+    /**
+     * Adds the required and optional characteristics for this service.
+     * <p>
+     * Required characteristics:
+     * <ul>
+     * <li>SmokeDetected - Current smoke detection state (0 = Smoke Not Detected, 1 = Smoke Detected)</li>
+     * </ul>
+     * </p>
+     * <p>
+     * Optional characteristics:
+     * <ul>
+     * <li>Name - Smoke sensor name</li>
+     * <li>StatusActive - Sensor activation state</li>
+     * <li>StatusFault - Fault state indicator</li>
+     * <li>StatusLowBattery - Low battery indicator</li>
+     * <li>StatusTampered - Tamper detection indicator</li>
+     * </ul>
+     * </p>
+     * 
+     * @since 1.0
+     */
+    @Override
+    public void addCharacteristics() throws HomekitServiceException {
+        logger.debug("{}Adding required characteristics to SmokeSensorService for accessory {}", LOG_TRACE,
+                getAccessory().getLabel());
 
-                addCharacteristic(
-                                new HomekitSmokeDetectedCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(true));
-                logger.debug("{}Added SmokeDetectedCharacteristic to SmokeSensorService", LOG_STATE);
+        addCharacteristic(
+                new HomekitSmokeDetectedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
+        logger.debug("{}Added SmokeDetectedCharacteristic to SmokeSensorService", LOG_STATE);
 
-                addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId())
-                                .withMandatory(false));
-                logger.debug("{}Added NameCharacteristic to SmokeSensorService", LOG_STATE);
+        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(false));
+        logger.debug("{}Added NameCharacteristic to SmokeSensorService", LOG_STATE);
 
-                addCharacteristic(
-                                new HomekitStatusActiveCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                logger.debug("{}Added StatusActiveCharacteristic to SmokeSensorService", LOG_STATE);
+        addCharacteristic(
+                new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        logger.debug("{}Added StatusActiveCharacteristic to SmokeSensorService", LOG_STATE);
 
-                addCharacteristic(
-                                new HomekitStatusFaultCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                logger.debug("{}Added StatusFaultCharacteristic to SmokeSensorService", LOG_STATE);
+        addCharacteristic(
+                new HomekitStatusFaultCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        logger.debug("{}Added StatusFaultCharacteristic to SmokeSensorService", LOG_STATE);
 
-                addCharacteristic(new HomekitStatusLowBatteryCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-                logger.debug("{}Added StatusLowBatteryCharacteristic to SmokeSensorService", LOG_STATE);
+        addCharacteristic(new HomekitStatusLowBatteryCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        logger.debug("{}Added StatusLowBatteryCharacteristic to SmokeSensorService", LOG_STATE);
 
-                addCharacteristic(
-                                new HomekitStatusTamperedCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                logger.debug("{}Added StatusTamperedCharacteristic to SmokeSensorService", LOG_STATE);
-        }
+        addCharacteristic(
+                new HomekitStatusTamperedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        logger.debug("{}Added StatusTamperedCharacteristic to SmokeSensorService", LOG_STATE);
+    }
 }

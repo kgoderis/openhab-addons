@@ -42,69 +42,62 @@ import org.openhab.io.homekit.library.characteristic.HomekitStatusFaultCharacter
 @NonNullByDefault
 public class HomekitLightBulbService extends AbstractHomekitService {
 
-        /**
-         * Creates a new Lightbulb service.
-         *
-         * @param accessory The accessory this service belongs to
-         * @param eventManager The event manager for handling HomeKit events
-         * @param characteristicFactory Factory for creating HomeKit characteristics
-         */
-        public HomekitLightBulbService(HomekitAccessory accessory, HomekitEventManager eventManager,
-                        HomekitCharacteristicFactory characteristicFactory) {
-                super(accessory, eventManager, characteristicFactory);
-                withName("Lightbulb").withPrimary(false).withHidden(false).withExtensible(false);
-                logger.debug("{}Created LightBulbService for accessory {}", LOG_INIT, accessory.getLabel());
-        }
+    /**
+     * Creates a new Lightbulb service.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     */
+    public HomekitLightBulbService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory) {
+        super(accessory, eventManager, characteristicFactory);
+        withName("Lightbulb").withPrimary(false).withHidden(false).withExtensible(false);
+        logger.debug("{}Created LightBulbService for accessory {}", LOG_INIT, accessory.getLabel());
+    }
 
-        /**
-         * Creates a new Lightbulb service from a JSON configuration.
-         *
-         * @param accessory The accessory this service belongs to
-         * @param eventManager The event manager for handling HomeKit events
-         * @param characteristicFactory Factory for creating HomeKit characteristics
-         * @param value JSON value containing service configuration
-         */
-        public HomekitLightBulbService(HomekitAccessory accessory, HomekitEventManager eventManager,
-                        HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
-                super(accessory, eventManager, characteristicFactory, value);
-        }
+    /**
+     * Creates a new Lightbulb service from a JSON configuration.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @param value JSON value containing service configuration
+     */
+    public HomekitLightBulbService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
+        super(accessory, eventManager, characteristicFactory, value);
+    }
 
-        /**
-         * Adds the required and optional characteristics for this service.
-         * Required: On
-         * Optional: Brightness, Hue, Saturation, Color Temperature, Name, Status Active, Status Fault
-         */
-        @Override
-        public void addCharacteristics() throws HomekitServiceException {
-                // Required characteristics
-                addCharacteristic(new HomekitOnCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId())
-                                .withMandatory(true));
+    /**
+     * Adds the required and optional characteristics for this service.
+     * Required: On
+     * Optional: Brightness, Hue, Saturation, Color Temperature, Name, Status Active, Status Fault
+     */
+    @Override
+    public void addCharacteristics() throws HomekitServiceException {
+        // Required characteristics
+        addCharacteristic(new HomekitOnCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(true));
 
-                // Optional characteristics
-                addCharacteristic(
-                                new HomekitBrightnessCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                addCharacteristic(new HomekitHueCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId())
-                                .withMandatory(false));
-                addCharacteristic(
-                                new HomekitSaturationCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                addCharacteristic(new HomekitColorTemperatureCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-                addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId())
-                                .withMandatory(false));
-                addCharacteristic(
-                                new HomekitStatusActiveCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                addCharacteristic(
-                                new HomekitStatusFaultCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-        }
+        // Optional characteristics
+        addCharacteristic(
+                new HomekitBrightnessCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        addCharacteristic(new HomekitHueCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(false));
+        addCharacteristic(
+                new HomekitSaturationCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        addCharacteristic(new HomekitColorTemperatureCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(false));
+        addCharacteristic(
+                new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        addCharacteristic(
+                new HomekitStatusFaultCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+    }
 }

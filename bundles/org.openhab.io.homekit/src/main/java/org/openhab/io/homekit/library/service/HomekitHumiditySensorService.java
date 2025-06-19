@@ -73,99 +73,91 @@ import org.slf4j.LoggerFactory;
 @HomekitServiceType(type = "00000082-0000-1000-8000-0026BB765291", name = "Humidity Sensor", tag = "humiditySensor")
 @NonNullByDefault
 public class HomekitHumiditySensorService extends AbstractHomekitService {
-        // ========== Log Message Prefixes ==========
-        private static final String LOG_PREFIX = "Homekit HumiditySensorService: ";
-        private static final String LOG_INIT = LOG_PREFIX + "Init - ";
-        private static final String LOG_STATE = LOG_PREFIX + "State - ";
-        private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
+    // ========== Log Message Prefixes ==========
+    private static final String LOG_PREFIX = "Homekit HumiditySensorService: ";
+    private static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    private static final String LOG_STATE = LOG_PREFIX + "State - ";
+    private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
 
-        private static final Logger logger = LoggerFactory.getLogger(HomekitHumiditySensorService.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitHumiditySensorService.class);
 
-        /**
-         * Creates a new Humidity Sensor service.
-         *
-         * @param accessory The accessory this service belongs to
-         * @param eventManager The event manager for handling HomeKit events
-         * @param characteristicFactory Factory for creating HomeKit characteristics
-         * @since 1.0
-         */
-        public HomekitHumiditySensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
-                        HomekitCharacteristicFactory characteristicFactory) {
-                super(accessory, eventManager, characteristicFactory);
-                withName("Humidity Sensor").withPrimary(false).withHidden(false).withExtensible(false);
-                logger.debug("{}Created HumiditySensorService for accessory {}", LOG_INIT, accessory.getLabel());
-        }
+    /**
+     * Creates a new Humidity Sensor service.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @since 1.0
+     */
+    public HomekitHumiditySensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory) {
+        super(accessory, eventManager, characteristicFactory);
+        withName("Humidity Sensor").withPrimary(false).withHidden(false).withExtensible(false);
+        logger.debug("{}Created HumiditySensorService for accessory {}", LOG_INIT, accessory.getLabel());
+    }
 
-        /**
-         * Creates a new Humidity Sensor service from a JSON configuration.
-         *
-         * @param accessory The accessory this service belongs to
-         * @param eventManager The event manager for handling HomeKit events
-         * @param characteristicFactory Factory for creating HomeKit characteristics
-         * @param value JSON value containing service configuration
-         * @since 1.0
-         */
-        public HomekitHumiditySensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
-                        HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
-                super(accessory, eventManager, characteristicFactory, value);
-                logger.debug("{}Created HumiditySensorService from JSON for accessory {}", LOG_INIT,
-                                accessory.getLabel());
-        }
+    /**
+     * Creates a new Humidity Sensor service from a JSON configuration.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @param value JSON value containing service configuration
+     * @since 1.0
+     */
+    public HomekitHumiditySensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
+        super(accessory, eventManager, characteristicFactory, value);
+        logger.debug("{}Created HumiditySensorService from JSON for accessory {}", LOG_INIT, accessory.getLabel());
+    }
 
-        /**
-         * Adds the required and optional characteristics for this service.
-         * <p>
-         * Required characteristics:
-         * <ul>
-         * <li>CurrentRelativeHumidity - Current relative humidity level (0-100%)</li>
-         * </ul>
-         * </p>
-         * <p>
-         * Optional characteristics:
-         * <ul>
-         * <li>Name - Sensor name</li>
-         * <li>StatusActive - Sensor activation state</li>
-         * <li>StatusFault - Fault state indicator</li>
-         * <li>StatusLowBattery - Low battery warning</li>
-         * <li>StatusTampered - Tamper detection state</li>
-         * </ul>
-         * </p>
-         * 
-         * @since 1.0
-         */
-        @Override
-        public void addCharacteristics() throws HomekitServiceException {
-                logger.debug("{}Adding required characteristics to HumiditySensorService for accessory {}", LOG_TRACE,
-                                getAccessory().getLabel());
+    /**
+     * Adds the required and optional characteristics for this service.
+     * <p>
+     * Required characteristics:
+     * <ul>
+     * <li>CurrentRelativeHumidity - Current relative humidity level (0-100%)</li>
+     * </ul>
+     * </p>
+     * <p>
+     * Optional characteristics:
+     * <ul>
+     * <li>Name - Sensor name</li>
+     * <li>StatusActive - Sensor activation state</li>
+     * <li>StatusFault - Fault state indicator</li>
+     * <li>StatusLowBattery - Low battery warning</li>
+     * <li>StatusTampered - Tamper detection state</li>
+     * </ul>
+     * </p>
+     * 
+     * @since 1.0
+     */
+    @Override
+    public void addCharacteristics() throws HomekitServiceException {
+        logger.debug("{}Adding required characteristics to HumiditySensorService for accessory {}", LOG_TRACE,
+                getAccessory().getLabel());
 
-                addCharacteristic(
-                                new HomekitCurrentRelativeHumidityCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(true));
-                logger.debug("{}Added CurrentRelativeHumidityCharacteristic to HumiditySensorService", LOG_STATE);
+        addCharacteristic(new HomekitCurrentRelativeHumidityCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        logger.debug("{}Added CurrentRelativeHumidityCharacteristic to HumiditySensorService", LOG_STATE);
 
-                addCharacteristic(
-                                new HomekitStatusActiveCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                logger.debug("{}Added StatusActiveCharacteristic to HumiditySensorService", LOG_STATE);
+        addCharacteristic(
+                new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        logger.debug("{}Added StatusActiveCharacteristic to HumiditySensorService", LOG_STATE);
 
-                addCharacteristic(
-                                new HomekitStatusFaultCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                logger.debug("{}Added StatusFaultCharacteristic to HumiditySensorService", LOG_STATE);
+        addCharacteristic(
+                new HomekitStatusFaultCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        logger.debug("{}Added StatusFaultCharacteristic to HumiditySensorService", LOG_STATE);
 
-                addCharacteristic(
-                                new HomekitStatusTamperedCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                logger.debug("{}Added StatusTamperedCharacteristic to HumiditySensorService", LOG_STATE);
+        addCharacteristic(
+                new HomekitStatusTamperedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        logger.debug("{}Added StatusTamperedCharacteristic to HumiditySensorService", LOG_STATE);
 
-                addCharacteristic(
-                                new HomekitNameCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                logger.debug("{}Added NameCharacteristic to HumiditySensorService", LOG_STATE);
-        }
+        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(false));
+        logger.debug("{}Added NameCharacteristic to HumiditySensorService", LOG_STATE);
+    }
 }

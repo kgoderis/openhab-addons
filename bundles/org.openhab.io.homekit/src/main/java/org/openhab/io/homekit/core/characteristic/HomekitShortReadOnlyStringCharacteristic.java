@@ -61,6 +61,7 @@ import org.slf4j.LoggerFactory;
  * <li>JSON serialization for HomeKit protocol communication</li>
  * <li>Integration with OpenHAB's state management system</li>
  * <li>Support for short string values (limited length)</li>
+ * <li>One-time value setting capability - value can be set exactly once, then becomes read-only</li>
  * </ul>
  *
  * <p>
@@ -84,6 +85,9 @@ public abstract class HomekitShortReadOnlyStringCharacteristic extends AbstractH
 
     private static final Logger logger = LoggerFactory.getLogger(HomekitShortReadOnlyStringCharacteristic.class);
     private static final int MAX_LEN = 64;
+
+    // Flag to track if the value has been set once
+    private boolean valueSet = false;
 
     /**
      * Creates a new read-only short string characteristic.
@@ -159,6 +163,136 @@ public abstract class HomekitShortReadOnlyStringCharacteristic extends AbstractH
     }
 
     /**
+     * Sets the value of this characteristic. This method can only be called once.
+     * After the first call, the characteristic becomes read-only.
+     *
+     * <p>
+     * This method overrides the base implementation to enforce the one-time setting behavior.
+     * It integrates with:
+     * </p>
+     * <ul>
+     * <li>{@link AbstractHomekitCharacteristic} for base value setting</li>
+     * <li>{@link HomekitEventManager} for event handling</li>
+     * </ul>
+     *
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     * <li>Checks if value has already been set</li>
+     * <li>Allows first value setting</li>
+     * <li>Makes characteristic read-only after first set</li>
+     * <li>Provides trace-level logging</li>
+     * </ul>
+     *
+     * @param value the new value to set
+     * @throws IllegalStateException if the value has already been set
+     * @since 1.0
+     */
+    @Override
+    public void setValue(@Nullable String value) throws IllegalStateException {
+        if (valueSet) {
+            logger.warn("{}Attempting to set value on read-only characteristic that has already been set", LOG_ERROR);
+            throw new IllegalStateException("Cannot modify a read-only characteristic that has already been set");
+        }
+
+        // Temporarily enable write permission for the first set
+        withPairedWrite(true);
+
+        try {
+            super.setValue(value);
+            valueSet = true;
+
+            // Make it read-only after setting
+            withPairedWrite(false);
+
+            logger.debug("{}Value set successfully, characteristic is now read-only", LOG_CHAR);
+        } catch (Exception e) {
+            // Restore read-only state if setting failed
+            withPairedWrite(false);
+            throw e;
+        }
+    }
+
+    /**
+     * Sets the value of this characteristic with metadata. This method can only be called once.
+     * After the first call, the characteristic becomes read-only.
+     *
+     * <p>
+     * This method overrides the base implementation to enforce the one-time setting behavior.
+     * It integrates with:
+     * </p>
+     * <ul>
+     * <li>{@link javax.json.JsonValue} for value parsing</li>
+     * <li>{@link AbstractHomekitCharacteristic} for base value setting</li>
+     * <li>{@link HomekitEventManager} for event handling</li>
+     * <li>{@link org.openhab.io.homekit.event.core.HomekitEventMetadata} for metadata handling</li>
+     * </ul>
+     *
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     * <li>Checks if value has already been set</li>
+     * <li>Allows first value setting</li>
+     * <li>Makes characteristic read-only after first set</li>
+     * <li>Provides trace-level logging</li>
+     * </ul>
+     *
+     * @param value the JSON value to set
+     * @param conversionMap a map of conversion rules for the value
+     * @param metadata the event metadata
+     * @throws IllegalStateException if the value has already been set
+     * @since 1.0
+     */
+    @Override
+    protected void setValue(JsonValue value, Map<String, Object> conversionMap,
+            org.openhab.io.homekit.event.core.HomekitEventMetadata metadata) throws IllegalStateException {
+        if (valueSet) {
+            logger.warn("{}Attempting to set value with metadata on read-only characteristic that has already been set",
+                    LOG_ERROR);
+            throw new IllegalStateException("Cannot modify a read-only characteristic that has already been set");
+        }
+
+        // Temporarily enable write permission for the first set
+        withPairedWrite(true);
+
+        try {
+            super.setValue(value, conversionMap, metadata);
+            valueSet = true;
+
+            // Make it read-only after setting
+            withPairedWrite(false);
+
+            logger.debug("{}Value with metadata set successfully, characteristic is now read-only", LOG_CHAR);
+        } catch (Exception e) {
+            // Restore read-only state if setting failed
+            withPairedWrite(false);
+            throw e;
+        }
+    }
+
+    /**
+     * Checks if the value has been set for this characteristic.
+     *
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     * <li>Returns the value set flag</li>
+     * <li>Used to determine if characteristic is still writable</li>
+     * <li>Provides trace-level logging</li>
+     * </ul>
+     *
+     * @return true if the value has been set, false otherwise
+     * @since 1.0
+     */
+    public boolean isValueSet() {
+        logger.debug("{}Checking if value has been set: {}", LOG_CHAR, valueSet);
+        return valueSet;
+    }
+
+    /**
      * Sets the read-only value for this characteristic.
      * This method allows internal updates to the characteristic's value
      * while maintaining its read-only nature for external access.
@@ -177,28 +311,6 @@ public abstract class HomekitShortReadOnlyStringCharacteristic extends AbstractH
     public void setReadOnlyValue(String value) {
         this.value = value;
         logger.trace("{}Set read-only value: {}", LOG_CHAR, value);
-    }
-
-    /**
-     * Attempts to set a new value for this characteristic.
-     * This method always throws an exception as the characteristic is read-only.
-     *
-     * <p>
-     * Key implementation details:
-     * </p>
-     * <ul>
-     * <li>Always throws exception</li>
-     * <li>Enforces read-only nature</li>
-     * <li>Provides error logging</li>
-     * </ul>
-     *
-     * @param value the value to set (ignored)
-     * @throws IllegalStateException always thrown as this is a read-only characteristic
-     */
-    @Override
-    public void setValue(@Nullable String value) throws IllegalStateException {
-        logger.error("{}Attempted to modify read-only characteristic", LOG_ERROR);
-        throw new IllegalStateException("Can not modify a readonly characteristic");
     }
 
     /**

@@ -20,6 +20,7 @@ import javax.json.JsonString;
 import javax.json.JsonValue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.library.CoreItemFactory;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.types.State;
@@ -60,6 +61,7 @@ import org.slf4j.LoggerFactory;
  * <li>JSON serialization for HomeKit protocol communication</li>
  * <li>Integration with OpenHAB's state management system</li>
  * <li>Support for string validation and constraints</li>
+ * <li>One-time value setting capability - value can be set exactly once, then becomes read-only</li>
  * </ul>
  *
  * <p>
@@ -82,6 +84,9 @@ public abstract class HomekitReadOnlyStringCharacteristic extends AbstractHomeki
 
     private static final Logger logger = LoggerFactory.getLogger(HomekitReadOnlyStringCharacteristic.class);
     private static final int MAX_LEN = 255;
+
+    // Flag to track if the value has been set once
+    private boolean valueSet = false;
 
     /**
      * Creates a new read-only string characteristic.
@@ -153,6 +158,136 @@ public abstract class HomekitReadOnlyStringCharacteristic extends AbstractHomeki
         super(service, eventManager, value);
         initializeValue();
         logger.debug("{}Created new read-only string characteristic from JSON for service: {}", LOG_CHAR, service);
+    }
+
+    /**
+     * Sets the value of this characteristic. This method can only be called once.
+     * After the first call, the characteristic becomes read-only.
+     *
+     * <p>
+     * This method overrides the base implementation to enforce the one-time setting behavior.
+     * It integrates with:
+     * </p>
+     * <ul>
+     * <li>{@link AbstractHomekitCharacteristic} for base value setting</li>
+     * <li>{@link HomekitEventManager} for event handling</li>
+     * </ul>
+     *
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     * <li>Checks if value has already been set</li>
+     * <li>Allows first value setting</li>
+     * <li>Makes characteristic read-only after first set</li>
+     * <li>Provides trace-level logging</li>
+     * </ul>
+     *
+     * @param value the new value to set
+     * @throws IllegalStateException if the value has already been set
+     * @since 1.0
+     */
+    @Override
+    public void setValue(@Nullable String value) throws IllegalStateException {
+        if (valueSet) {
+            logger.warn("{}Attempting to set value on read-only characteristic that has already been set", LOG_ERROR);
+            throw new IllegalStateException("Cannot modify a read-only characteristic that has already been set");
+        }
+
+        // Temporarily enable write permission for the first set
+        withPairedWrite(true);
+
+        try {
+            super.setValue(value);
+            valueSet = true;
+
+            // Make it read-only after setting
+            withPairedWrite(false);
+
+            logger.debug("{}Value set successfully, characteristic is now read-only", LOG_CHAR);
+        } catch (Exception e) {
+            // Restore read-only state if setting failed
+            withPairedWrite(false);
+            throw e;
+        }
+    }
+
+    /**
+     * Sets the value of this characteristic with metadata. This method can only be called once.
+     * After the first call, the characteristic becomes read-only.
+     *
+     * <p>
+     * This method overrides the base implementation to enforce the one-time setting behavior.
+     * It integrates with:
+     * </p>
+     * <ul>
+     * <li>{@link javax.json.JsonValue} for value parsing</li>
+     * <li>{@link AbstractHomekitCharacteristic} for base value setting</li>
+     * <li>{@link HomekitEventManager} for event handling</li>
+     * <li>{@link org.openhab.io.homekit.event.core.HomekitEventMetadata} for metadata handling</li>
+     * </ul>
+     *
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     * <li>Checks if value has already been set</li>
+     * <li>Allows first value setting</li>
+     * <li>Makes characteristic read-only after first set</li>
+     * <li>Provides trace-level logging</li>
+     * </ul>
+     *
+     * @param value the JSON value to set
+     * @param conversionMap a map of conversion rules for the value
+     * @param metadata the event metadata
+     * @throws IllegalStateException if the value has already been set
+     * @since 1.0
+     */
+    @Override
+    protected void setValue(JsonValue value, Map<String, Object> conversionMap,
+            org.openhab.io.homekit.event.core.HomekitEventMetadata metadata) throws IllegalStateException {
+        if (valueSet) {
+            logger.warn("{}Attempting to set value with metadata on read-only characteristic that has already been set",
+                    LOG_ERROR);
+            throw new IllegalStateException("Cannot modify a read-only characteristic that has already been set");
+        }
+
+        // Temporarily enable write permission for the first set
+        withPairedWrite(true);
+
+        try {
+            super.setValue(value, conversionMap, metadata);
+            valueSet = true;
+
+            // Make it read-only after setting
+            withPairedWrite(false);
+
+            logger.debug("{}Value with metadata set successfully, characteristic is now read-only", LOG_CHAR);
+        } catch (Exception e) {
+            // Restore read-only state if setting failed
+            withPairedWrite(false);
+            throw e;
+        }
+    }
+
+    /**
+     * Checks if the value has been set for this characteristic.
+     *
+     * <p>
+     * Key implementation details:
+     * </p>
+     * <ul>
+     * <li>Returns the value set flag</li>
+     * <li>Used to determine if characteristic is still writable</li>
+     * <li>Provides trace-level logging</li>
+     * </ul>
+     *
+     * @return true if the value has been set, false otherwise
+     * @since 1.0
+     */
+    public boolean isValueSet() {
+        logger.debug("{}Checking if value has been set: {}", LOG_CHAR, valueSet);
+        return valueSet;
     }
 
     /**

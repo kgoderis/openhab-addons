@@ -48,69 +48,65 @@ import org.openhab.io.homekit.library.characteristic.HomekitTemperatureDisplayUn
 @NonNullByDefault
 public class HomekitThermostatService extends AbstractHomekitService {
 
-        /**
-         * Creates a new HomekitThermostatService.
-         *
-         * @param accessory The accessory this service belongs to
-         * @param eventManager The event manager for handling HomeKit events
-         * @param characteristicFactory Factory for creating HomeKit characteristics
-         */
-        public HomekitThermostatService(HomekitAccessory accessory, HomekitEventManager eventManager,
-                        HomekitCharacteristicFactory characteristicFactory) {
-                super(accessory, eventManager, characteristicFactory);
-                withName("Thermostat").withPrimary(false).withHidden(false).withExtensible(false);
-                logger.debug("{}Created ThermostatService for accessory {}", LOG_INIT, accessory.getLabel());
-        }
+    /**
+     * Creates a new HomekitThermostatService.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     */
+    public HomekitThermostatService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory) {
+        super(accessory, eventManager, characteristicFactory);
+        withName("Thermostat").withPrimary(false).withHidden(false).withExtensible(false);
+        logger.debug("{}Created ThermostatService for accessory {}", LOG_INIT, accessory.getLabel());
+    }
 
-        /**
-         * Creates a new HomekitThermostatService from a JSON value.
-         *
-         * @param accessory The accessory this service belongs to
-         * @param eventManager The event manager for handling HomeKit events
-         * @param characteristicFactory Factory for creating HomeKit characteristics
-         * @param value JSON value containing service configuration
-         */
-        public HomekitThermostatService(HomekitAccessory accessory, HomekitEventManager eventManager,
-                        HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
-                super(accessory, eventManager, characteristicFactory, value);
-        }
+    /**
+     * Creates a new HomekitThermostatService from a JSON value.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @param value JSON value containing service configuration
+     */
+    public HomekitThermostatService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
+        super(accessory, eventManager, characteristicFactory, value);
+    }
 
-        @Override
-        public void addCharacteristics() throws HomekitServiceException {
-                addCharacteristic(new HomekitCurrentHeatingCoolingStateCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-                addCharacteristic(new HomekitTargetHeatingCoolingStateCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-                addCharacteristic(new HomekitCurrentTemperatureCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-                addCharacteristic(new HomekitTargetTemperatureCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-                addCharacteristic(new HomekitTemperatureDisplayUnitsCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-                addCharacteristic(new HomekitCurrentRelativeHumidityCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-                addCharacteristic(new HomekitTargetRelativeHumidityCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-                addCharacteristic(new HomekitCoolingThresholdTemperatureCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-                addCharacteristic(new HomekitHeatingThresholdTemperatureCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-                addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId())
-                                .withMandatory(false));
-                addCharacteristic(
-                                new HomekitStatusActiveCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                addCharacteristic(
-                                new HomekitStatusFaultCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                addCharacteristic(new HomekitStatusLowBatteryCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-                addCharacteristic(
-                                new HomekitStatusTamperedCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-        }
+    @Override
+    public void addCharacteristics() throws HomekitServiceException {
+        addCharacteristic(new HomekitCurrentHeatingCoolingStateCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(new HomekitTargetHeatingCoolingStateCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(new HomekitCurrentTemperatureCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(new HomekitTargetTemperatureCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(new HomekitTemperatureDisplayUnitsCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(new HomekitCurrentRelativeHumidityCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitTargetRelativeHumidityCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitCoolingThresholdTemperatureCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitHeatingThresholdTemperatureCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(false));
+        addCharacteristic(
+                new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        addCharacteristic(
+                new HomekitStatusFaultCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        addCharacteristic(new HomekitStatusLowBatteryCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(
+                new HomekitStatusTamperedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+    }
 }

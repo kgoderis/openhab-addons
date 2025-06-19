@@ -72,95 +72,90 @@ import org.slf4j.LoggerFactory;
 @HomekitServiceType(type = "00000040-0000-1000-8000-0026BB765291", name = "Fan", tag = "fan")
 @NonNullByDefault
 public class HomekitFanService extends AbstractHomekitService {
-        // ========== Log Message Prefixes ==========
-        private static final String LOG_PREFIX = "Homekit FanService: ";
-        private static final String LOG_INIT = LOG_PREFIX + "Init - ";
-        private static final String LOG_STATE = LOG_PREFIX + "State - ";
-        private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
+    // ========== Log Message Prefixes ==========
+    private static final String LOG_PREFIX = "Homekit FanService: ";
+    private static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    private static final String LOG_STATE = LOG_PREFIX + "State - ";
+    private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
 
-        private static final Logger logger = LoggerFactory.getLogger(HomekitFanService.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitFanService.class);
 
-        /**
-         * Creates a new Fan service.
-         *
-         * @param accessory The accessory this service belongs to
-         * @param eventManager The event manager for handling HomeKit events
-         * @param characteristicFactory Factory for creating HomeKit characteristics
-         * @since 1.0
-         */
-        public HomekitFanService(HomekitAccessory accessory, HomekitEventManager eventManager,
-                        HomekitCharacteristicFactory characteristicFactory) {
-                super(accessory, eventManager, characteristicFactory);
-                withName("Fan").withPrimary(false).withHidden(false).withExtensible(false);
-                logger.debug("{}Created FanService for accessory {}", LOG_INIT, accessory.getLabel());
-        }
+    /**
+     * Creates a new Fan service.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @since 1.0
+     */
+    public HomekitFanService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory) {
+        super(accessory, eventManager, characteristicFactory);
+        withName("Fan").withPrimary(false).withHidden(false).withExtensible(false);
+        logger.debug("{}Created FanService for accessory {}", LOG_INIT, accessory.getLabel());
+    }
 
-        /**
-         * Creates a new Fan service from a JSON configuration.
-         *
-         * @param accessory The accessory this service belongs to
-         * @param eventManager The event manager for handling HomeKit events
-         * @param characteristicFactory Factory for creating HomeKit characteristics
-         * @param value JSON value containing service configuration
-         * @since 1.0
-         */
-        public HomekitFanService(HomekitAccessory accessory, HomekitEventManager eventManager,
-                        HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
-                super(accessory, eventManager, characteristicFactory, value);
-                logger.debug("{}Created FanService from JSON for accessory {}", LOG_INIT, accessory.getLabel());
-        }
+    /**
+     * Creates a new Fan service from a JSON configuration.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @param value JSON value containing service configuration
+     * @since 1.0
+     */
+    public HomekitFanService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
+        super(accessory, eventManager, characteristicFactory, value);
+        logger.debug("{}Created FanService from JSON for accessory {}", LOG_INIT, accessory.getLabel());
+    }
 
-        /**
-         * Adds the required and optional characteristics for this service.
-         * <p>
-         * Required characteristics:
-         * <ul>
-         * <li>On - Power state of the fan</li>
-         * </ul>
-         * </p>
-         * <p>
-         * Optional characteristics:
-         * <ul>
-         * <li>RotationSpeed - Fan speed control (0-100%)</li>
-         * <li>Name - Fan name</li>
-         * <li>StatusActive - Fan activation state</li>
-         * <li>StatusFault - Fault state indicator</li>
-         * </ul>
-         * </p>
-         * 
-         * @since 1.0
-         */
-        @Override
-        public void addCharacteristics() throws HomekitServiceException {
-                logger.debug("{}Adding required characteristics to FanService for accessory {}", LOG_TRACE,
-                                getAccessory().getLabel());
+    /**
+     * Adds the required and optional characteristics for this service.
+     * <p>
+     * Required characteristics:
+     * <ul>
+     * <li>On - Power state of the fan</li>
+     * </ul>
+     * </p>
+     * <p>
+     * Optional characteristics:
+     * <ul>
+     * <li>RotationSpeed - Fan speed control (0-100%)</li>
+     * <li>Name - Fan name</li>
+     * <li>StatusActive - Fan activation state</li>
+     * <li>StatusFault - Fault state indicator</li>
+     * </ul>
+     * </p>
+     * 
+     * @since 1.0
+     */
+    @Override
+    public void addCharacteristics() throws HomekitServiceException {
+        logger.debug("{}Adding required characteristics to FanService for accessory {}", LOG_TRACE,
+                getAccessory().getLabel());
 
-                addCharacteristic(new HomekitOnCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId())
-                                .withMandatory(true));
-                logger.debug("{}Added OnCharacteristic to FanService", LOG_STATE);
+        addCharacteristic(new HomekitOnCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(true));
+        logger.debug("{}Added OnCharacteristic to FanService", LOG_STATE);
 
-                addCharacteristic(
-                                new HomekitRotationSpeedCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                logger.debug("{}Added RotationSpeedCharacteristic to FanService", LOG_STATE);
+        addCharacteristic(
+                new HomekitRotationSpeedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        logger.debug("{}Added RotationSpeedCharacteristic to FanService", LOG_STATE);
 
-                addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId())
-                                .withMandatory(false));
-                logger.debug("{}Added NameCharacteristic to FanService", LOG_STATE);
+        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(false));
+        logger.debug("{}Added NameCharacteristic to FanService", LOG_STATE);
 
-                addCharacteristic(
-                                new HomekitStatusActiveCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                logger.debug("{}Added StatusActiveCharacteristic to FanService", LOG_STATE);
+        addCharacteristic(
+                new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        logger.debug("{}Added StatusActiveCharacteristic to FanService", LOG_STATE);
 
-                addCharacteristic(
-                                new HomekitStatusFaultCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                logger.debug("{}Added StatusFaultCharacteristic to FanService", LOG_STATE);
-        }
+        addCharacteristic(
+                new HomekitStatusFaultCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        logger.debug("{}Added StatusFaultCharacteristic to FanService", LOG_STATE);
+    }
 }
