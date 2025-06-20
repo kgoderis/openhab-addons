@@ -617,6 +617,9 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                 String value = serviceInfo.getPropertyString(element);
                 if (value != null) {
                     properties.put(element, value);
+                    logger.trace("{}Service property - {}: {}", LOG_SERVER, element, value);
+                } else {
+                    logger.trace("{}Service property - {}: null", LOG_SERVER, element);
                 }
             }
 
@@ -639,6 +642,11 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
             String pairingStatusStr = serviceInfo.getPropertyString("sf");
             String stateNumberStr = serviceInfo.getPropertyString("s#");
             String pairingFeatureFlagStr = serviceInfo.getPropertyString("ff");
+
+            logger.trace(
+                    "{}Extracted service properties - Port: {}, Model: {}, Version: {}, ConfigIndex: {}, Category: {}, PairingStatus: {}, StateNumber: {}, FeatureFlag: {}",
+                    LOG_SERVER, port, model, version, configIndexStr, categoryStr, pairingStatusStr, stateNumberStr,
+                    pairingFeatureFlagStr);
 
             if (configIndexStr == null || categoryStr == null || pairingStatusStr == null || stateNumberStr == null
                     || pairingFeatureFlagStr == null) {
