@@ -23,7 +23,6 @@ import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.exception.HomekitServiceException;
 import org.openhab.io.homekit.library.characteristic.HomekitCurrentAmbientLightLevelCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitStatusActiveCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitStatusFaultCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitStatusLowBatteryCharacteristic;
@@ -141,10 +140,6 @@ public class HomekitLightSensorService extends AbstractHomekitService {
         addCharacteristic(new HomekitCurrentAmbientLightLevelCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         logger.debug("{}Added CurrentAmbientLightLevelCharacteristic to LightSensorService", LOG_STATE);
-
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(false));
-        logger.debug("{}Added NameCharacteristic to LightSensorService", LOG_STATE);
 
         addCharacteristic(
                 new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())

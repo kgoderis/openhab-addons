@@ -22,7 +22,6 @@ import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.exception.HomekitServiceException;
-import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitProgrammableSwitchEventCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitStatusActiveCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitStatusFaultCharacteristic;
@@ -144,8 +143,6 @@ public class HomekitStatelessProgrammableSwitchService extends AbstractHomekitSe
         logger.debug("{}Added required ProgrammableSwitchEvent characteristic", LOG_TRACE);
 
         // Optional characteristics
-        addCharacteristic(
-                new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId()));
         addCharacteristic(
                 new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId()));
         addCharacteristic(

@@ -25,7 +25,6 @@ import org.openhab.io.homekit.exception.HomekitServiceException;
 import org.openhab.io.homekit.library.characteristic.HomekitActiveCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitCurrentHumidifierDehumidifierStateCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitCurrentRelativeHumidityCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitRelativeHumidityDehumidifierThresholdCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitRelativeHumidityHumidifierThresholdCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitRotationSpeedCharacteristic;
@@ -90,8 +89,6 @@ public class HomekitHumidifierDehumidifierService extends AbstractHomekitService
         addCharacteristic(
                 new HomekitWaterLevelCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(false));
         logger.debug("{}Added characteristics for Humidifier Dehumidifier service", LOG_CONFIG);
     }
 }

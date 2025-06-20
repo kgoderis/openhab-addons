@@ -27,7 +27,6 @@ import org.openhab.io.homekit.library.characteristic.HomekitCoolingThresholdTemp
 import org.openhab.io.homekit.library.characteristic.HomekitCurrentHeaterCoolerStateCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitCurrentTemperatureCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitHeatingThresholdTemperatureCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitRotationSpeedCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitSwingModeCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitTargetHeaterCoolerStateCharacteristic;
@@ -93,8 +92,6 @@ public class HomekitHeaterCoolerService extends AbstractHomekitService {
         addCharacteristic(
                 new HomekitSwingModeCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(false));
         logger.debug("{}Added characteristics for Heater Cooler service", LOG_CONFIG);
     }
 }

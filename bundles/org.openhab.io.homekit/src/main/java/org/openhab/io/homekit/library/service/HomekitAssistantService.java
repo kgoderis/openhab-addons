@@ -22,7 +22,6 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.exception.HomekitServiceException;
 import org.openhab.io.homekit.library.characteristic.HomekitActiveCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitIdentifierCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -112,9 +111,5 @@ public class HomekitAssistantService extends AbstractHomekitService {
                 new HomekitIdentifierCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(true));
         logger.debug("{}Added IdentifierCharacteristic to AssistantService", LOG_STATE);
-
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(true));
-        logger.debug("{}Added NameCharacteristic to AssistantService", LOG_STATE);
     }
 }

@@ -25,7 +25,6 @@ import org.openhab.io.homekit.exception.HomekitServiceException;
 import org.openhab.io.homekit.library.characteristic.HomekitActiveCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitCurrentAirPurifierStateCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitLockPhysicalControlsCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitRotationSpeedCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitSwingModeCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitTargetAirPurifierStateCharacteristic;
@@ -141,8 +140,6 @@ public class HomekitAirPurifierService extends AbstractHomekitService {
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         addCharacteristic(new HomekitLockPhysicalControlsCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(false));
         addCharacteristic(
                 new HomekitRotationSpeedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));

@@ -22,7 +22,6 @@ import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.exception.HomekitServiceException;
-import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitOnCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitRotationSpeedCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitStatusActiveCharacteristic;
@@ -143,10 +142,6 @@ public class HomekitFanService extends AbstractHomekitService {
                 new HomekitRotationSpeedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
         logger.debug("{}Added RotationSpeedCharacteristic to FanService", LOG_STATE);
-
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(false));
-        logger.debug("{}Added NameCharacteristic to FanService", LOG_STATE);
 
         addCharacteristic(
                 new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())

@@ -26,7 +26,6 @@ import org.openhab.io.homekit.library.characteristic.HomekitAirPlayEnableCharact
 import org.openhab.io.homekit.library.characteristic.HomekitConfiguredNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitCurrentMediaStateCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitMuteCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitTargetMediaStateCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitVolumeCharacteristic;
 
@@ -85,8 +84,6 @@ public class HomekitSmartSpeakerService extends AbstractHomekitService {
                 new HomekitConfiguredNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
         addCharacteristic(new HomekitMuteCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(false));
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                 .withMandatory(false));
         addCharacteristic(
                 new HomekitVolumeCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())

@@ -24,7 +24,6 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.exception.HomekitServiceException;
 import org.openhab.io.homekit.library.characteristic.HomekitFilterChangeIndicationCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitFilterLifeLevelCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitResetFilterIndicationCharacteristic;
 
 /**
@@ -73,7 +72,5 @@ public class HomekitFilterMaintenanceService extends AbstractHomekitService {
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         addCharacteristic(new HomekitResetFilterIndicationCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(false));
     }
 }

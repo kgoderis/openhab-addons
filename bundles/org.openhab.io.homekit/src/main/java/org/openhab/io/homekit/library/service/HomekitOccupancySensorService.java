@@ -22,7 +22,6 @@ import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.exception.HomekitServiceException;
-import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitOccupancyDetectedCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitStatusActiveCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitStatusFaultCharacteristic;
@@ -155,9 +154,5 @@ public class HomekitOccupancySensorService extends AbstractHomekitService {
                 new HomekitStatusTamperedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
         logger.debug("{}Added StatusTamperedCharacteristic to OccupancySensorService", LOG_STATE);
-
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(false));
-        logger.debug("{}Added NameCharacteristic to OccupancySensorService", LOG_STATE);
     }
 }

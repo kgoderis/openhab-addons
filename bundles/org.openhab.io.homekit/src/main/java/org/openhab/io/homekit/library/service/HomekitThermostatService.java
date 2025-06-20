@@ -27,7 +27,6 @@ import org.openhab.io.homekit.library.characteristic.HomekitCurrentHeatingCoolin
 import org.openhab.io.homekit.library.characteristic.HomekitCurrentRelativeHumidityCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitCurrentTemperatureCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitHeatingThresholdTemperatureCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitStatusActiveCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitStatusFaultCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitStatusLowBatteryCharacteristic;
@@ -95,8 +94,6 @@ public class HomekitThermostatService extends AbstractHomekitService {
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
         addCharacteristic(new HomekitHeatingThresholdTemperatureCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(false));
         addCharacteristic(
                 new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));

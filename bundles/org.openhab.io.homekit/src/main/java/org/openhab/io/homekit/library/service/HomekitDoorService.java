@@ -24,7 +24,6 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.exception.HomekitServiceException;
 import org.openhab.io.homekit.library.characteristic.HomekitCurrentPositionCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitHoldPositionCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitObstructionDetectedCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitPositionStateCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitTargetPositionCharacteristic;
@@ -161,9 +160,5 @@ public class HomekitDoorService extends AbstractHomekitService {
                 new HomekitHoldPositionCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
         logger.debug("{}Added HoldPositionCharacteristic to DoorService", LOG_STATE);
-
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(false));
-        logger.debug("{}Added NameCharacteristic to DoorService", LOG_STATE);
     }
 }

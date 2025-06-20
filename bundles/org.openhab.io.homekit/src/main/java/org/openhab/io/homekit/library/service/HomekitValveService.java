@@ -24,7 +24,6 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.exception.HomekitServiceException;
 import org.openhab.io.homekit.library.characteristic.HomekitActiveCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitInUseCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitRemainingDurationCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitSetDurationCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitValveTypeCharacteristic;
@@ -151,8 +150,6 @@ public class HomekitValveService extends AbstractHomekitService {
         logger.debug("{}Added required characteristics: Active, InUse, ValveType", LOG_TRACE);
 
         // Optional characteristics
-        addCharacteristic(
-                new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId()));
         addCharacteristic(
                 new HomekitSetDurationCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId()));
         addCharacteristic(new HomekitRemainingDurationCharacteristic(this, eventManager,

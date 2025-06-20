@@ -22,7 +22,6 @@ import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.exception.HomekitServiceException;
-import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitSecuritySystemCurrentStateCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitSecuritySystemTargetStateCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitStatusFaultCharacteristic;
@@ -144,10 +143,6 @@ public class HomekitSecuritySystemService extends AbstractHomekitService {
         addCharacteristic(new HomekitSecuritySystemTargetStateCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(true));
         logger.debug("{}Added SecuritySystemTargetStateCharacteristic to SecuritySystemService", LOG_STATE);
-
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(false));
-        logger.debug("{}Added NameCharacteristic to SecuritySystemService", LOG_STATE);
 
         addCharacteristic(
                 new HomekitStatusFaultCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())

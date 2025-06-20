@@ -25,7 +25,6 @@ import org.openhab.io.homekit.exception.HomekitServiceException;
 import org.openhab.io.homekit.library.characteristic.HomekitBrightnessCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitColorTemperatureCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitHueCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitOnCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitSaturationCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitStatusActiveCharacteristic;
@@ -91,8 +90,6 @@ public class HomekitLightBulbService extends AbstractHomekitService {
                         .withMandatory(false));
         addCharacteristic(new HomekitColorTemperatureCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(false));
         addCharacteristic(
                 new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));

@@ -27,7 +27,6 @@ import org.openhab.io.homekit.library.characteristic.HomekitCurrentVisibilitySta
 import org.openhab.io.homekit.library.characteristic.HomekitInputDeviceTypeCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitInputSourceTypeCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitIsConfiguredCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitTargetVisibilityStateCharacteristic;
 
 /**
@@ -84,7 +83,5 @@ public class HomekitInputSourceService extends AbstractHomekitService {
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
         addCharacteristic(new HomekitTargetVisibilityStateCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(false));
     }
 }

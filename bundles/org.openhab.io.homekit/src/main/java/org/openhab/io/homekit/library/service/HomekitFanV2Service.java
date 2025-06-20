@@ -25,7 +25,6 @@ import org.openhab.io.homekit.exception.HomekitServiceException;
 import org.openhab.io.homekit.library.characteristic.HomekitActiveCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitCurrentFanStateCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitLockPhysicalControlsCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitRotationDirectionCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitRotationSpeedCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitSwingModeCharacteristic;
@@ -89,7 +88,5 @@ public class HomekitFanV2Service extends AbstractHomekitService {
                         .withMandatory(false));
         addCharacteristic(new HomekitLockPhysicalControlsCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(false));
     }
 }

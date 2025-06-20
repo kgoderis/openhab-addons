@@ -24,7 +24,6 @@ import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.exception.HomekitServiceException;
 import org.openhab.io.homekit.library.characteristic.HomekitActiveCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitInUseCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitProgramModeCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitRemainingDurationCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitSetDurationCharacteristic;
@@ -83,8 +82,6 @@ public class HomekitIrrigationSystemService extends AbstractHomekitService {
         addCharacteristic(
                 new HomekitSetDurationCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(true));
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(false));
         addCharacteristic(
                 new HomekitStatusFaultCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));

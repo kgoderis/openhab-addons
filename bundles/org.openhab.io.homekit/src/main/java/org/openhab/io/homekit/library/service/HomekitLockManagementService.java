@@ -30,7 +30,6 @@ import org.openhab.io.homekit.library.characteristic.HomekitLockLastKnownActionC
 import org.openhab.io.homekit.library.characteristic.HomekitLockManagementAutoSecurityTimeoutCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitLogsCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitMotionDetectedCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitVersionCharacteristic;
 
 /**
@@ -93,8 +92,6 @@ public class HomekitLockManagementService extends AbstractHomekitService {
         addCharacteristic(
                 new HomekitMotionDetectedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(false));
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(false));
         logger.debug("{}Added characteristics for Lock Management service", LOG_CONFIG);
     }
 }

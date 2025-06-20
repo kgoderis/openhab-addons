@@ -27,7 +27,6 @@ import org.openhab.io.homekit.library.characteristic.HomekitHardwareRevisionChar
 import org.openhab.io.homekit.library.characteristic.HomekitIdentifyCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitManufacturerCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitModelCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitSerialNumberCharacteristic;
 
 /**
@@ -127,8 +126,6 @@ public class HomekitAccessoryInformationService extends AbstractHomekitService {
         addCharacteristic(
                 new HomekitModelCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(true));
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(true));
         addCharacteristic(
                 new HomekitSerialNumberCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
                         .withMandatory(true));
