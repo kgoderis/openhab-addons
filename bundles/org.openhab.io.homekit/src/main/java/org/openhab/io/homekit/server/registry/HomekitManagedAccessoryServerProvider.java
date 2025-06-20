@@ -41,6 +41,7 @@ import org.openhab.io.homekit.server.HomekitPersistedAccessoryServer;
 import org.openhab.io.homekit.server.HomekitRemoteAccessoryServer;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,6 +115,7 @@ public class HomekitManagedAccessoryServerProvider extends
     private final MDNSService mdnsService;
     private final HomekitEventManager eventManager;
     private final HomekitAccessoryFactory accessoryFactory;
+    private volatile boolean readyMarkerRegistered = false;
 
     /**
      * Creates a new managed accessory server provider.
@@ -159,9 +161,38 @@ public class HomekitManagedAccessoryServerProvider extends
         this.accessoryFactory = accessoryFactory;
 
         logger.info("{}Initializing HomeKit accessory server provider", LOG_INIT);
-        ReadyMarker newMarker = new ReadyMarker(HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER, this.toString());
-        this.readyService.markReady(newMarker);
-        logger.info("{}HomeKit accessory server provider ready", LOG_STATE);
+    }
+
+    /**
+     * Activates the provider.
+     *
+     * This method is called by OSGi when the component becomes active.
+     * It marks the provider as ready for use.
+     */
+    @Activate
+    protected void activate() {
+        if (!readyMarkerRegistered) {
+            ReadyMarker newMarker = new ReadyMarker(HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER, this.toString());
+            this.readyService.markReady(newMarker);
+            readyMarkerRegistered = true;
+            logger.info("{}HomeKit accessory server provider ready", LOG_STATE);
+        }
+    }
+
+    /**
+     * Deactivates the provider.
+     *
+     * This method is called by OSGi when the component becomes inactive.
+     * It cleans up the ready marker and resets the state.
+     */
+    @Deactivate
+    protected void deactivate() {
+        if (readyMarkerRegistered) {
+            ReadyMarker marker = new ReadyMarker(HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER, this.toString());
+            this.readyService.unmarkReady(marker);
+            readyMarkerRegistered = false;
+            logger.debug("{}HomeKit accessory server provider deactivated", LOG_STATE);
+        }
     }
 
     /**
