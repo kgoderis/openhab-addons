@@ -138,6 +138,7 @@ public class HomekitAccessoryServerRegistryImpl
     private final Set<HomekitEventSubscription> eventSubscriptions = new HashSet<>();
     private final HomekitAccessoryFactory accessoryFactory;
     private volatile boolean readyMarkerRegistered = false;
+    private final Set<String> processedReadyMarkers = new HashSet<>();
 
     /**
      * Initializes the HomeKit accessory server registry.
@@ -371,7 +372,16 @@ public class HomekitAccessoryServerRegistryImpl
      * @param readyMarker The ready marker that was added
      */
     @Override
-    public void onReadyMarkerAdded(ReadyMarker readyMarker) {
+    public synchronized void onReadyMarkerAdded(ReadyMarker readyMarker) {
+        String markerKey = readyMarker.getType() + ":" + readyMarker.getIdentifier();
+
+        if (processedReadyMarkers.contains(markerKey)) {
+            logger.debug("{}Duplicate ready marker ignored - Type: {}, Identifier: {}", LOG_STATE,
+                    readyMarker.getType(), readyMarker.getIdentifier());
+            return;
+        }
+
+        processedReadyMarkers.add(markerKey);
         logger.debug("{}Ready marker added - Type: {}, Identifier: {}", LOG_STATE, readyMarker.getType(),
                 readyMarker.getIdentifier());
 
