@@ -264,7 +264,7 @@ public class HomekitManagedAccessoryServerProvider extends
             // Check if serverId is valid - ignore legacy servers without serverId
             String serverId = persistableElement.getServerId();
             if (serverId == null || serverId.isEmpty()) {
-                logger.warn("{}Ignoring legacy server without serverId - key: {}", LOG_WARN, key);
+                logger.warn("{}Ignoring a server without serverId - key: {}", LOG_WARN, key);
                 return null;
             }
 
