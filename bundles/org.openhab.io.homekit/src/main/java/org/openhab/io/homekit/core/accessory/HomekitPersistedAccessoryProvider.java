@@ -14,6 +14,8 @@
 package org.openhab.io.homekit.core.accessory;
 
 import java.io.StringReader;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import javax.json.Json;
@@ -103,6 +105,8 @@ public class HomekitPersistedAccessoryProvider
     private volatile long lastUpdate = System.nanoTime();
     private volatile boolean readyMarkerRegistered = false;
 
+    private final Set<ReadyMarker> processedReadyMarkers = ConcurrentHashMap.newKeySet();
+
     /**
      * Creates a new HomeKit persisted accessory provider.
      * This constructor initializes the provider with required services and
@@ -136,6 +140,8 @@ public class HomekitPersistedAccessoryProvider
     @Deactivate
     protected synchronized void deactivate(ComponentContext componentContext) {
         readyService.unregisterTracker(this);
+        processedReadyMarkers.clear();
+        readyMarkerRegistered = false;
     }
 
     /**
@@ -237,8 +243,13 @@ public class HomekitPersistedAccessoryProvider
      */
     @Override
     public void onReadyMarkerAdded(ReadyMarker readyMarker) {
+        if (processedReadyMarkers.contains(readyMarker)) {
+            logger.debug("{}Ready marker already processed: {}", LOG_INIT, readyMarker);
+            return;
+        }
         logger.debug("{}Ready marker added: {}", LOG_INIT, readyMarker);
         lastUpdate = System.nanoTime();
+        processedReadyMarkers.add(readyMarker);
         delayedInitialize();
     }
 
