@@ -261,24 +261,11 @@ public class HomekitManagedAccessoryServerProvider extends
         try {
             logger.debug("{}Restoring server from persistence - key: {}", LOG_STATE, key);
 
-            // Handle legacy servers that don't have a serverId
+            // Check if serverId is valid - ignore legacy servers without serverId
             String serverId = persistableElement.getServerId();
             if (serverId == null || serverId.isEmpty()) {
-                // Generate a serverId based on the pairing identifier for backward compatibility
-                byte[] pairingId = persistableElement.getPairingIdentifier();
-                if (pairingId != null && pairingId.length > 0) {
-                    // Use first 8 bytes of pairing ID as serverId
-                    StringBuilder sb = new StringBuilder();
-                    for (int i = 0; i < Math.min(8, pairingId.length); i++) {
-                        sb.append(String.format("%02X", pairingId[i]));
-                    }
-                    serverId = "legacy-" + sb.toString();
-                    logger.debug("{}Generated serverId for legacy server: {}", LOG_STATE, serverId);
-                } else {
-                    // Fallback to using the key as serverId
-                    serverId = "legacy-" + key.replace("homekit:server:", "").replace(":", "");
-                    logger.debug("{}Using key as serverId for legacy server: {}", LOG_STATE, serverId);
-                }
+                logger.warn("{}Ignoring legacy server without serverId - key: {}", LOG_WARN, key);
+                return null;
             }
 
             HomekitAccessoryServer server;
