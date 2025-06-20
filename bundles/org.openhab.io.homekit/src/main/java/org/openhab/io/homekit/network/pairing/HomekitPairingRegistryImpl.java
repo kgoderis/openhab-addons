@@ -364,23 +364,29 @@ public class HomekitPairingRegistryImpl
     @Override
     public void onReadyMarkerAdded(ReadyMarker readyMarker) {
         logger.debug("{}Ready marker added: {}", LOG_STATE, readyMarker);
-        if (readyMarker.getType().equals(HOMEKIT_MANAGED_PAIRING_PROVIDER)) {
-            managedPairingProviderReady = true;
-            logger.debug("{}Managed pairing provider is ready", LOG_STATE);
-        } else if (readyMarker.getType().equals(HOMEKIT_ACCESSORY_SERVER_REGISTRY)) {
+
+        String markerType = readyMarker.getType();
+
+        // Process accessory server registry ready marker
+        if (markerType.equals(HOMEKIT_ACCESSORY_SERVER_REGISTRY) && !accessoryServerRegistryReady) {
             accessoryServerRegistryReady = true;
             logger.debug("{}Accessory server registry is ready", LOG_STATE);
         }
 
-        if (readyMarker.getType() == HOMEKIT_MANAGED_PAIRING_PROVIDER) {
+        // Process managed pairing provider ready marker
+        if (markerType.equals(HOMEKIT_MANAGED_PAIRING_PROVIDER) && !managedPairingProviderReady) {
+            managedPairingProviderReady = true;
+            logger.debug("{}Managed pairing provider is ready", LOG_STATE);
+
+            // Add the managed provider if it's available
             if (getManagedProvider().isPresent()) {
                 @SuppressWarnings("null") // Optional.get() is safe after isPresent() check
                 Provider<HomekitPairing> managedProviderInstance = getManagedProvider().get();
                 super.addProvider(managedProviderInstance);
             }
-            managedPairingProviderReady = true;
         }
 
+        // Check if registry is ready to be marked as ready
         if (accessoryServerRegistryReady && managedPairingProviderReady && !readyMarkerRegistered) {
             for (HomekitPairing aPairing : getAll()) {
                 logger.debug("{}Pairing {} with public key {} is available", LOG_STATE, aPairing.getUID(),
