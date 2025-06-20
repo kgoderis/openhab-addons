@@ -118,12 +118,11 @@ public class HomekitStreamingStatusCharacteristic extends HomekitTLV8Characteris
     /**
      * Gets the default value for the streaming status.
      *
-     * @return the default value map
-     * @throws UnsupportedOperationException always, must be implemented for the specific device
+     * @return the default value map (empty for status characteristics)
      */
     @Override
     public Map<Integer, Object> getDefault() {
-        throw new UnsupportedOperationException("Default value not implemented");
+        return Map.of(); // Return empty map for status characteristics
     }
 
     /**

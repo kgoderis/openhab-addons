@@ -92,12 +92,11 @@ public class HomekitAccessCodeSupportedConfigurationCharacteristic extends Homek
     /**
      * Gets the default value for the access code supported configuration.
      *
-     * @return the default value map
-     * @throws UnsupportedOperationException always, must be implemented for the specific device
+     * @return the default value map (empty for configuration characteristics)
      */
     @Override
     public Map<Integer, Object> getDefault() {
-        throw new UnsupportedOperationException("Default value not implemented");
+        return Map.of(); // Return empty map for configuration characteristics
     }
 
     /**

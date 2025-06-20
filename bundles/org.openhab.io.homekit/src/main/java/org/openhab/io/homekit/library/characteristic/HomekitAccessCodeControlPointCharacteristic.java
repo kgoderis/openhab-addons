@@ -91,12 +91,11 @@ public class HomekitAccessCodeControlPointCharacteristic extends HomekitTLV8Char
     /**
      * Gets the default value for the access code control point.
      *
-     * @return the default value map
-     * @throws UnsupportedOperationException always, must be implemented for the specific device
+     * @return the default value map (empty for control point characteristics)
      */
     @Override
     public Map<Integer, Object> getDefault() {
-        throw new UnsupportedOperationException("Default value not implemented");
+        return Map.of(); // Return empty map for control point characteristics
     }
 
     /**
