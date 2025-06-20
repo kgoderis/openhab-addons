@@ -147,7 +147,6 @@ public class HomekitManagedAccessoryServerProvider extends
      * @param eventManager Manager for handling state changes and events
      * @param accessoryFactory Factory for creating accessory instances
      */
-    @Activate
     public HomekitManagedAccessoryServerProvider(@Reference StorageService storageService,
             @Reference ReadyService readyService, @Reference HomekitAccessoryRegistry accessoryRegistry,
             @Reference HomekitPairingRegistry pairingRegistry, @Reference MDNSService mdnsService,

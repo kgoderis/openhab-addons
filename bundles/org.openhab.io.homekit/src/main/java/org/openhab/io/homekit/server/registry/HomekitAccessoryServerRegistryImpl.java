@@ -167,7 +167,6 @@ public class HomekitAccessoryServerRegistryImpl
      * @param eventManager The manager for events
      * @param accessoryFactory The factory for creating accessories
      */
-    @Activate
     public HomekitAccessoryServerRegistryImpl(@Reference ReadyService readyService,
             @Reference NetworkAddressService networkAddressService,
             @Reference HomekitAccessoryRegistry accessoryRegistry, @Reference HomekitPairingRegistry pairingRegistry,
@@ -181,7 +180,6 @@ public class HomekitAccessoryServerRegistryImpl
         this.eventManager = eventManager;
         this.accessoryFactory = accessoryFactory;
 
-        readyService.registerTracker(this, new ReadyMarkerFilter().withType(HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER));
         logger.debug("{}HomeKit accessory server registry initialized successfully", LOG_INIT);
     }
 
@@ -215,11 +213,20 @@ public class HomekitAccessoryServerRegistryImpl
      * <li>Deactivates the base registry functionality</li>
      * <li>Cleans up event subscriptions</li>
      * <li>Removes system readiness tracking</li>
+     * <li>Unregisters the ready marker tracker</li>
      * </ul>
      */
     @Override
     @Deactivate
     protected void deactivate() {
+        logger.debug("{}Deactivating HomekitAccessory Server Registry", LOG_INIT);
+
+        // Unregister the tracker to prevent duplicate notifications
+        readyService.unregisterTracker(this);
+
+        // Clear processed ready markers to prevent memory leaks
+        processedReadyMarkers.clear();
+
         super.deactivate();
     }
 
