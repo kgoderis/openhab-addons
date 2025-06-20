@@ -362,27 +362,35 @@ public class HomekitPairingRegistryImpl
      * @param readyMarker The ready marker that was added
      */
     @Override
-    public void onReadyMarkerAdded(ReadyMarker readyMarker) {
+    public synchronized void onReadyMarkerAdded(ReadyMarker readyMarker) {
         logger.debug("{}Ready marker added: {}", LOG_STATE, readyMarker);
 
         String markerType = readyMarker.getType();
 
         // Process accessory server registry ready marker
-        if (markerType.equals(HOMEKIT_ACCESSORY_SERVER_REGISTRY) && !accessoryServerRegistryReady) {
-            accessoryServerRegistryReady = true;
-            logger.debug("{}Accessory server registry is ready", LOG_STATE);
+        if (markerType.equals(HOMEKIT_ACCESSORY_SERVER_REGISTRY)) {
+            if (!accessoryServerRegistryReady) {
+                accessoryServerRegistryReady = true;
+                logger.debug("{}Accessory server registry is ready", LOG_STATE);
+            } else {
+                logger.debug("{}Duplicate accessory server registry ready marker ignored", LOG_STATE);
+            }
         }
 
         // Process managed pairing provider ready marker
-        if (markerType.equals(HOMEKIT_MANAGED_PAIRING_PROVIDER) && !managedPairingProviderReady) {
-            managedPairingProviderReady = true;
-            logger.debug("{}Managed pairing provider is ready", LOG_STATE);
+        if (markerType.equals(HOMEKIT_MANAGED_PAIRING_PROVIDER)) {
+            if (!managedPairingProviderReady) {
+                managedPairingProviderReady = true;
+                logger.debug("{}Managed pairing provider is ready", LOG_STATE);
 
-            // Add the managed provider if it's available
-            if (getManagedProvider().isPresent()) {
-                @SuppressWarnings("null") // Optional.get() is safe after isPresent() check
-                Provider<HomekitPairing> managedProviderInstance = getManagedProvider().get();
-                super.addProvider(managedProviderInstance);
+                // Add the managed provider if it's available
+                if (getManagedProvider().isPresent()) {
+                    @SuppressWarnings("null")
+                    Provider<HomekitPairing> managedProviderInstance = getManagedProvider().get();
+                    super.addProvider(managedProviderInstance);
+                }
+            } else {
+                logger.debug("{}Duplicate managed pairing provider ready marker ignored", LOG_STATE);
             }
         }
 
