@@ -43,59 +43,59 @@ import org.openhab.io.homekit.library.characteristic.HomekitWaterLevelCharacteri
 @NonNullByDefault
 public class HomekitHumidifierDehumidifierService extends AbstractHomekitService {
 
-    /**
-     * Creates a new HomekitHumidifierDehumidifierService.
-     *
-     * @param accessory The accessory this service belongs to
-     * @param eventManager The event manager for handling HomeKit events
-     * @param characteristicFactory Factory for creating HomeKit characteristics
-     */
-    public HomekitHumidifierDehumidifierService(HomekitAccessory accessory, HomekitEventManager eventManager,
-            HomekitCharacteristicFactory characteristicFactory) {
-        super(accessory, eventManager, characteristicFactory);
-        withName("Humidifier Dehumidifier").withPrimary(false).withHidden(false);
-    }
+        /**
+         * Creates a new HomekitHumidifierDehumidifierService.
+         *
+         * @param accessory The accessory this service belongs to
+         * @param eventManager The event manager for handling HomeKit events
+         * @param characteristicFactory Factory for creating HomeKit characteristics
+         */
+        public HomekitHumidifierDehumidifierService(HomekitAccessory accessory, HomekitEventManager eventManager,
+                        HomekitCharacteristicFactory characteristicFactory) {
+                super(accessory, eventManager, characteristicFactory);
+                withName("Humidifier Dehumidifier").withPrimary(false).withHidden(false).withExtensible(false);
+        }
 
-    /**
-     * Creates a new HomekitHumidifierDehumidifierService from a JSON value.
-     *
-     * @param accessory The accessory this service belongs to
-     * @param eventManager The event manager for handling HomeKit events
-     * @param characteristicFactory Factory for creating HomeKit characteristics
-     * @param value JSON value containing service configuration
-     */
-    public HomekitHumidifierDehumidifierService(HomekitAccessory accessory, HomekitEventManager eventManager,
-            HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
-        super(accessory, eventManager, characteristicFactory, value);
-    }
+        /**
+         * Creates a new HomekitHumidifierDehumidifierService from a JSON value.
+         *
+         * @param accessory The accessory this service belongs to
+         * @param eventManager The event manager for handling HomeKit events
+         * @param characteristicFactory Factory for creating HomeKit characteristics
+         * @param value JSON value containing service configuration
+         */
+        public HomekitHumidifierDehumidifierService(HomekitAccessory accessory, HomekitEventManager eventManager,
+                        HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
+                super(accessory, eventManager, characteristicFactory, value);
+        }
 
-    @Override
-    public void addCharacteristics() throws HomekitServiceException {
-        addCharacteristic(
-                new HomekitActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                        .withMandatory(true));
-        addCharacteristic(new HomekitCurrentHumidifierDehumidifierStateCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitTargetHumidifierDehumidifierStateCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitCurrentRelativeHumidityCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(new HomekitRelativeHumidityHumidifierThresholdCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitRelativeHumidityDehumidifierThresholdCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(
-                new HomekitRotationSpeedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                        .withMandatory(false));
-        addCharacteristic(
-                new HomekitWaterLevelCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                        .withMandatory(false));
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(false));
-    }
-
-    @Override
-    public boolean isExtensible() {
-        return false;
-    }
+        @Override
+        public void addCharacteristics() throws HomekitServiceException {
+                addCharacteristic(
+                                new HomekitActiveCharacteristic(this, eventManager,
+                                                getAccessory().getNextAvailableInstanceId())
+                                                .withMandatory(true));
+                addCharacteristic(new HomekitCurrentHumidifierDehumidifierStateCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+                addCharacteristic(new HomekitTargetHumidifierDehumidifierStateCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+                addCharacteristic(new HomekitCurrentRelativeHumidityCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+                addCharacteristic(new HomekitRelativeHumidityHumidifierThresholdCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+                addCharacteristic(new HomekitRelativeHumidityDehumidifierThresholdCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+                addCharacteristic(
+                                new HomekitRotationSpeedCharacteristic(this, eventManager,
+                                                getAccessory().getNextAvailableInstanceId())
+                                                .withMandatory(false));
+                addCharacteristic(
+                                new HomekitWaterLevelCharacteristic(this, eventManager,
+                                                getAccessory().getNextAvailableInstanceId())
+                                                .withMandatory(false));
+                addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId())
+                                .withMandatory(false));
+                logger.debug("{}Added characteristics for Humidifier Dehumidifier service", LOG_CONFIG);
+        }
 }

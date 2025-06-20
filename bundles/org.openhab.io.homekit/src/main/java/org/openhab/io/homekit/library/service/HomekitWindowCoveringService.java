@@ -43,59 +43,58 @@ import org.openhab.io.homekit.library.characteristic.HomekitTargetVerticalTiltAn
 @NonNullByDefault
 public class HomekitWindowCoveringService extends AbstractHomekitService {
 
-    /**
-     * Creates a new HomekitWindowCoveringService.
-     *
-     * @param accessory The accessory this service belongs to
-     * @param eventManager The event manager for handling HomeKit events
-     * @param characteristicFactory Factory for creating HomeKit characteristics
-     */
-    public HomekitWindowCoveringService(HomekitAccessory accessory, HomekitEventManager eventManager,
-            HomekitCharacteristicFactory characteristicFactory) {
-        super(accessory, eventManager, characteristicFactory);
-        withName("Window Covering").withPrimary(false).withHidden(false);
-    }
+        /**
+         * Creates a new HomekitWindowCoveringService.
+         *
+         * @param accessory The accessory this service belongs to
+         * @param eventManager The event manager for handling HomeKit events
+         * @param characteristicFactory Factory for creating HomeKit characteristics
+         */
+        public HomekitWindowCoveringService(HomekitAccessory accessory, HomekitEventManager eventManager,
+                        HomekitCharacteristicFactory characteristicFactory) {
+                super(accessory, eventManager, characteristicFactory);
+                withName("Window Covering").withPrimary(false).withHidden(false).withExtensible(false);
+        }
 
-    /**
-     * Creates a new HomekitWindowCoveringService from a JSON value.
-     *
-     * @param accessory The accessory this service belongs to
-     * @param eventManager The event manager for handling HomeKit events
-     * @param characteristicFactory Factory for creating HomeKit characteristics
-     * @param value JSON value containing service configuration
-     */
-    public HomekitWindowCoveringService(HomekitAccessory accessory, HomekitEventManager eventManager,
-            HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
-        super(accessory, eventManager, characteristicFactory, value);
-    }
+        /**
+         * Creates a new HomekitWindowCoveringService from a JSON value.
+         *
+         * @param accessory The accessory this service belongs to
+         * @param eventManager The event manager for handling HomeKit events
+         * @param characteristicFactory Factory for creating HomeKit characteristics
+         * @param value JSON value containing service configuration
+         */
+        public HomekitWindowCoveringService(HomekitAccessory accessory, HomekitEventManager eventManager,
+                        HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
+                super(accessory, eventManager, characteristicFactory, value);
+        }
 
-    @Override
-    public void addCharacteristics() throws HomekitServiceException {
-        addCharacteristic(new HomekitCurrentPositionCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        addCharacteristic(
-                new HomekitTargetPositionCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                        .withMandatory(true));
-        addCharacteristic(
-                new HomekitPositionStateCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                        .withMandatory(true));
-        addCharacteristic(
-                new HomekitHoldPositionCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                        .withMandatory(false));
-        addCharacteristic(new HomekitCurrentHorizontalTiltAngleCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitTargetHorizontalTiltAngleCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitCurrentVerticalTiltAngleCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitTargetVerticalTiltAngleCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-        addCharacteristic(new HomekitObstructionDetectedCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-    }
-
-    @Override
-    public boolean isExtensible() {
-        return false;
-    }
+        @Override
+        public void addCharacteristics() throws HomekitServiceException {
+                addCharacteristic(new HomekitCurrentPositionCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+                addCharacteristic(
+                                new HomekitTargetPositionCharacteristic(this, eventManager,
+                                                getAccessory().getNextAvailableInstanceId())
+                                                .withMandatory(true));
+                addCharacteristic(
+                                new HomekitPositionStateCharacteristic(this, eventManager,
+                                                getAccessory().getNextAvailableInstanceId())
+                                                .withMandatory(true));
+                addCharacteristic(
+                                new HomekitHoldPositionCharacteristic(this, eventManager,
+                                                getAccessory().getNextAvailableInstanceId())
+                                                .withMandatory(false));
+                addCharacteristic(new HomekitCurrentHorizontalTiltAngleCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+                addCharacteristic(new HomekitTargetHorizontalTiltAngleCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+                addCharacteristic(new HomekitCurrentVerticalTiltAngleCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+                addCharacteristic(new HomekitTargetVerticalTiltAngleCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+                addCharacteristic(new HomekitObstructionDetectedCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+                logger.debug("{}Added characteristics for Window Covering service", LOG_CONFIG);
+        }
 }

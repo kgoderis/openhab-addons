@@ -70,104 +70,98 @@ import org.slf4j.LoggerFactory;
 @HomekitServiceType(type = "00000120-0000-1000-8000-0026BB765291", name = "Camera RTP Stream Management", tag = "cameraRTPStreamManagement")
 @NonNullByDefault
 public class HomekitCameraRTPStreamManagementService extends AbstractHomekitService {
-    // ========== Log Message Prefixes ==========
-    private static final String LOG_PREFIX = "Homekit CameraRTPStreamManagementService: ";
-    private static final String LOG_INIT = LOG_PREFIX + "Init - ";
-    private static final String LOG_STATE = LOG_PREFIX + "State - ";
-    private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
+        // ========== Log Message Prefixes ==========
+        private static final String LOG_PREFIX = "Homekit CameraRTPStreamManagementService: ";
+        private static final String LOG_INIT = LOG_PREFIX + "Init - ";
+        private static final String LOG_STATE = LOG_PREFIX + "State - ";
+        private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
+        private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
 
-    private static final Logger logger = LoggerFactory.getLogger(HomekitCameraRTPStreamManagementService.class);
+        private static final Logger logger = LoggerFactory.getLogger(HomekitCameraRTPStreamManagementService.class);
 
-    /**
-     * Creates a new Camera RTP Stream Management service.
-     *
-     * @param accessory The accessory this service belongs to
-     * @param eventManager The event manager for handling HomeKit events
-     * @param characteristicFactory Factory for creating HomeKit characteristics
-     * @since 1.0
-     */
-    public HomekitCameraRTPStreamManagementService(HomekitAccessory accessory, HomekitEventManager eventManager,
-            HomekitCharacteristicFactory characteristicFactory) {
-        super(accessory, eventManager, characteristicFactory);
-        withName("Camera RTP Stream Management").withPrimary(false).withHidden(false);
-        logger.debug("{}Created CameraRTPStreamManagementService for accessory {}", LOG_INIT, accessory.getLabel());
-    }
+        /**
+         * Creates a new Camera RTP Stream Management service.
+         *
+         * @param accessory The accessory this service belongs to
+         * @param eventManager The event manager for handling HomeKit events
+         * @param characteristicFactory Factory for creating HomeKit characteristics
+         * @since 1.0
+         */
+        public HomekitCameraRTPStreamManagementService(HomekitAccessory accessory, HomekitEventManager eventManager,
+                        HomekitCharacteristicFactory characteristicFactory) {
+                super(accessory, eventManager, characteristicFactory);
+                withName("Camera RTP Stream Management").withPrimary(false).withHidden(false).withExtensible(false);
+                logger.debug("{}Created CameraRTPStreamManagementService for accessory {}", LOG_INIT,
+                                accessory.getLabel());
+        }
 
-    /**
-     * Creates a new Camera RTP Stream Management service from a JSON configuration.
-     *
-     * @param accessory The accessory this service belongs to
-     * @param eventManager The event manager for handling HomeKit events
-     * @param characteristicFactory Factory for creating HomeKit characteristics
-     * @param value JSON value containing service configuration
-     * @since 1.0
-     */
-    public HomekitCameraRTPStreamManagementService(HomekitAccessory accessory, HomekitEventManager eventManager,
-            HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
-        super(accessory, eventManager, characteristicFactory, value);
-        logger.debug("{}Created CameraRTPStreamManagementService from JSON for accessory {}", LOG_INIT,
-                accessory.getLabel());
-    }
+        /**
+         * Creates a new Camera RTP Stream Management service from a JSON configuration.
+         *
+         * @param accessory The accessory this service belongs to
+         * @param eventManager The event manager for handling HomeKit events
+         * @param characteristicFactory Factory for creating HomeKit characteristics
+         * @param value JSON value containing service configuration
+         * @since 1.0
+         */
+        public HomekitCameraRTPStreamManagementService(HomekitAccessory accessory, HomekitEventManager eventManager,
+                        HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
+                super(accessory, eventManager, characteristicFactory, value);
+                logger.debug("{}Created CameraRTPStreamManagementService from JSON for accessory {}", LOG_INIT,
+                                accessory.getLabel());
+        }
 
-    /**
-     * Adds the required characteristics for this service.
-     * <p>
-     * Required characteristics:
-     * <ul>
-     * <li>StreamingStatus - Current streaming state</li>
-     * <li>SupportedVideoStreamConfiguration - Available video stream options</li>
-     * <li>SupportedAudioStreamConfiguration - Available audio stream options</li>
-     * <li>SupportedRTPConfiguration - Available RTP protocol options</li>
-     * <li>SelectedRTPStreamConfiguration - Current RTP stream settings</li>
-     * <li>SetupEndpoints - Stream endpoint configuration</li>
-     * </ul>
-     * </p>
-     * 
-     * @since 1.0
-     */
-    @Override
-    public void addCharacteristics() throws HomekitServiceException {
-        logger.debug("{}Adding required characteristics to CameraRTPStreamManagementService for accessory {}",
-                LOG_TRACE, getAccessory().getLabel());
+        /**
+         * Adds the required characteristics for this service.
+         * <p>
+         * Required characteristics:
+         * <ul>
+         * <li>StreamingStatus - Current streaming state</li>
+         * <li>SupportedVideoStreamConfiguration - Available video stream options</li>
+         * <li>SupportedAudioStreamConfiguration - Available audio stream options</li>
+         * <li>SupportedRTPConfiguration - Available RTP protocol options</li>
+         * <li>SelectedRTPStreamConfiguration - Current RTP stream settings</li>
+         * <li>SetupEndpoints - Stream endpoint configuration</li>
+         * </ul>
+         * </p>
+         * 
+         * @since 1.0
+         */
+        @Override
+        public void addCharacteristics() throws HomekitServiceException {
+                logger.debug("{}Adding required characteristics to CameraRTPStreamManagementService for accessory {}",
+                                LOG_TRACE, getAccessory().getLabel());
 
-        addCharacteristic(new HomekitStreamingStatusCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        logger.debug("{}Added StreamingStatusCharacteristic to CameraRTPStreamManagementService", LOG_STATE);
+                addCharacteristic(new HomekitStreamingStatusCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+                logger.debug("{}Added StreamingStatusCharacteristic to CameraRTPStreamManagementService", LOG_STATE);
 
-        addCharacteristic(new HomekitSupportedVideoStreamConfigurationCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        logger.debug("{}Added SupportedVideoStreamConfigurationCharacteristic to CameraRTPStreamManagementService",
-                LOG_STATE);
+                addCharacteristic(new HomekitSupportedVideoStreamConfigurationCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+                logger.debug("{}Added SupportedVideoStreamConfigurationCharacteristic to CameraRTPStreamManagementService",
+                                LOG_STATE);
 
-        addCharacteristic(new HomekitSupportedAudioStreamConfigurationCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        logger.debug("{}Added SupportedAudioStreamConfigurationCharacteristic to CameraRTPStreamManagementService",
-                LOG_STATE);
+                addCharacteristic(new HomekitSupportedAudioStreamConfigurationCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+                logger.debug("{}Added SupportedAudioStreamConfigurationCharacteristic to CameraRTPStreamManagementService",
+                                LOG_STATE);
 
-        addCharacteristic(new HomekitSupportedRTPConfigurationCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        logger.debug("{}Added SupportedRTPConfigurationCharacteristic to CameraRTPStreamManagementService", LOG_STATE);
+                addCharacteristic(new HomekitSupportedRTPConfigurationCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+                logger.debug("{}Added SupportedRTPConfigurationCharacteristic to CameraRTPStreamManagementService",
+                                LOG_STATE);
 
-        addCharacteristic(new HomekitSelectedRTPStreamConfigurationCharacteristic(this, eventManager,
-                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-        logger.debug("{}Added SelectedRTPStreamConfigurationCharacteristic to CameraRTPStreamManagementService",
-                LOG_STATE);
+                addCharacteristic(new HomekitSelectedRTPStreamConfigurationCharacteristic(this, eventManager,
+                                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+                logger.debug("{}Added SelectedRTPStreamConfigurationCharacteristic to CameraRTPStreamManagementService",
+                                LOG_STATE);
 
-        addCharacteristic(
-                new HomekitSetupEndpointsCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                        .withMandatory(true));
-        logger.debug("{}Added SetupEndpointsCharacteristic to CameraRTPStreamManagementService", LOG_STATE);
-    }
+                addCharacteristic(
+                                new HomekitSetupEndpointsCharacteristic(this, eventManager,
+                                                getAccessory().getNextAvailableInstanceId())
+                                                .withMandatory(true));
+                logger.debug("{}Added SetupEndpointsCharacteristic to CameraRTPStreamManagementService", LOG_STATE);
 
-    /**
-     * Indicates that this service is not extensible.
-     * Camera RTP stream management service has a fixed set of characteristics.
-     *
-     * @return false, as this service is not extensible
-     * @since 1.0
-     */
-    @Override
-    public boolean isExtensible() {
-        return false;
-    }
+                logger.debug("{}Added characteristics for Camera RTP Stream Management service", LOG_CONFIG);
+        }
 }
