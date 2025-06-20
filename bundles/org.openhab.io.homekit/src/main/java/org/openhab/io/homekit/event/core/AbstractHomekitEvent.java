@@ -106,31 +106,25 @@ public abstract class AbstractHomekitEvent implements HomekitEvent {
         this.type = type;
         this.publisherUID = publisherUID;
         this.subscriberUID = Optional.ofNullable(subscriberUID);
+        this.metadata = new HomekitEventMetadata(originalMetadata, publisherUID);
+        this.timestamp = System.currentTimeMillis();
 
-        // Check for loops and hop count BEFORE creating new metadata
-        if (originalMetadata.isInEventHistory(originalMetadata.getEventId())) {
+        // Check for loops and hop count
+        if (this.metadata.isInEventHistory(this.metadata.getEventId())) {
             logger.warn(
                     "{}Event loop detected - Event ID: {}, Type: {}, Publisher: {}, Hop Count: {}, Event History: {}",
-                    LOG_PREFIX, originalMetadata.getEventId(), type, publisherUID, originalMetadata.getHopCount(),
-                    originalMetadata.getEventHistoryAsString());
+                    LOG_PREFIX, this.metadata.getEventId(), type, publisherUID, this.metadata.getHopCount(),
+                    this.metadata.getEventHistoryAsString());
             this.isValid = false;
-            // Create minimal metadata for invalid events
-            this.metadata = new HomekitEventMetadata(originalMetadata, publisherUID);
-        } else if (originalMetadata.hasExceededMaxHops()) {
+        } else if (this.metadata.hasExceededMaxHops()) {
             logger.warn(
                     "{}Event exceeded maximum hop count - Event ID: {}, Type: {}, Publisher: {}, Hop Count: {}, Max Hops: {}, Event History: {}",
-                    LOG_PREFIX, originalMetadata.getEventId(), type, publisherUID, originalMetadata.getHopCount(),
-                    HomekitEventMetadata.getMaxHops(), originalMetadata.getEventHistoryAsString());
+                    LOG_PREFIX, this.metadata.getEventId(), type, publisherUID, this.metadata.getHopCount(),
+                    HomekitEventMetadata.getMaxHops(), this.metadata.getEventHistoryAsString());
             this.isValid = false;
-            // Create minimal metadata for invalid events
-            this.metadata = new HomekitEventMetadata(originalMetadata, publisherUID);
         } else {
             this.isValid = true;
-            // Create new metadata for valid events
-            this.metadata = new HomekitEventMetadata(originalMetadata, publisherUID);
         }
-
-        this.timestamp = System.currentTimeMillis();
     }
 
     /**

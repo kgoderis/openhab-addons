@@ -219,12 +219,12 @@ public class HomekitEventMetadata {
      * @param immediateOrigin optional identifier of the immediate event creator
      */
     public HomekitEventMetadata(HomekitEventMetadata original, @Nullable UID immediateOrigin) {
-        this.eventId = original.eventId;
+        this.eventId = new HomekitUID("event"); // Generate new eventId for forwarded event
         this.originalPublisherUid = original.originalPublisherUid;
         this.hopCount = original.hopCount + 1;
         this.timestamp = original.timestamp;
         this.eventHistory.addAll(original.eventHistory);
-        this.eventHistory.add(this.eventId); // Add current eventId to the chain when forwarding
+        this.eventHistory.add(original.eventId); // Add original eventId to history
         this.publisherHistory.addAll(original.publisherHistory); // Copy publisher history
         if (immediateOrigin != null) {
             this.publisherHistory.add(immediateOrigin); // Add new publisher if present
