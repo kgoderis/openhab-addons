@@ -729,7 +729,7 @@ public abstract class AbstractHomekitService implements HomekitService {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(instanceId, getType(), isHidden, isPrimary, characteristics);
+        return Objects.hash(instanceId, getType(), isHidden, isPrimary);
     }
 
     /**

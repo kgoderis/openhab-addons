@@ -1022,7 +1022,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
      */
     @Override
     public int hashCode() {
-        return Objects.hash(instanceId, getType(), service);
+        return Objects.hash(instanceId, getType());
     }
 
     /**
