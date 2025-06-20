@@ -147,6 +147,8 @@ public class HomekitPersistedAccessoryProvider
         if (Thread.currentThread().isInterrupted() || readyMarkerRegistered) {
             return;
         }
+        // Set the flag early to prevent race conditions and duplicate logs
+        readyMarkerRegistered = true;
 
         final long diff = System.nanoTime() - lastUpdate - INITIALIZATION_DELAY_NANOS;
         if (diff < 0) {
@@ -156,7 +158,6 @@ public class HomekitPersistedAccessoryProvider
             logger.info("{}Marking the Managed HomekitAccessory Provider as ready", LOG_INIT);
             ReadyMarker newMarker = new ReadyMarker(HOMEKIT_MANAGED_ACCESSORY_PROVIDER, this.toString());
             readyService.markReady(newMarker);
-            readyMarkerRegistered = true;
         }
     }
 
