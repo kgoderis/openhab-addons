@@ -202,6 +202,7 @@ public class HomekitEventMetadata {
         this.originalPublisherUid = publisherUid;
         this.hopCount = 0;
         this.timestamp = System.currentTimeMillis();
+        this.eventHistory.add(this.eventId);
         this.publisherHistory.add(publisherUid); // Add initial publisher
         this.correlationId = correlationId != null ? Optional.of(correlationId) : Optional.empty();
         this.correlationTimestamp = System.currentTimeMillis();
