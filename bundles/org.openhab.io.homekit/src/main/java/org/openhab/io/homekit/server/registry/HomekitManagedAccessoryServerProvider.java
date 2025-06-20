@@ -260,21 +260,40 @@ public class HomekitManagedAccessoryServerProvider extends
             HomekitPersistedAccessoryServer persistableElement) {
         try {
             logger.debug("{}Restoring server from persistence - key: {}", LOG_STATE, key);
+
+            // Handle legacy servers that don't have a serverId
+            String serverId = persistableElement.getServerId();
+            if (serverId == null || serverId.isEmpty()) {
+                // Generate a serverId based on the pairing identifier for backward compatibility
+                byte[] pairingId = persistableElement.getPairingIdentifier();
+                if (pairingId != null && pairingId.length > 0) {
+                    // Use first 8 bytes of pairing ID as serverId
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < Math.min(8, pairingId.length); i++) {
+                        sb.append(String.format("%02X", pairingId[i]));
+                    }
+                    serverId = "legacy-" + sb.toString();
+                    logger.debug("{}Generated serverId for legacy server: {}", LOG_STATE, serverId);
+                } else {
+                    // Fallback to using the key as serverId
+                    serverId = "legacy-" + key.replace("homekit:server:", "").replace(":", "");
+                    logger.debug("{}Using key as serverId for legacy server: {}", LOG_STATE, serverId);
+                }
+            }
+
             HomekitAccessoryServer server;
             if (persistableElement.getServerType() == HomekitPersistedAccessoryServer.ServerType.REMOTE) {
                 logger.debug("{}Creating remote server instance", LOG_STATE);
-                server = new HomekitRemoteAccessoryServer(persistableElement.getCategory(),
-                        persistableElement.getServerId(), persistableElement.getLocalAddress(),
-                        persistableElement.getPort(), persistableElement.getPairingIdentifier(),
-                        persistableElement.getPrivateKey(), accessoryRegistry, pairingRegistry, eventManager,
-                        accessoryFactory);
+                server = new HomekitRemoteAccessoryServer(persistableElement.getCategory(), serverId,
+                        persistableElement.getLocalAddress(), persistableElement.getPort(),
+                        persistableElement.getPairingIdentifier(), persistableElement.getPrivateKey(),
+                        accessoryRegistry, pairingRegistry, eventManager, accessoryFactory);
             } else {
                 logger.debug("{}Creating local server instance", LOG_STATE);
-                server = new HomekitLocalAccessoryServer(persistableElement.getCategory(),
-                        persistableElement.getServerId(), persistableElement.getLocalAddress(),
-                        persistableElement.getPort(), persistableElement.getPairingIdentifier(),
-                        persistableElement.getPrivateKey(), mdnsService, accessoryRegistry, pairingRegistry,
-                        eventManager);
+                server = new HomekitLocalAccessoryServer(persistableElement.getCategory(), serverId,
+                        persistableElement.getLocalAddress(), persistableElement.getPort(),
+                        persistableElement.getPairingIdentifier(), persistableElement.getPrivateKey(), mdnsService,
+                        accessoryRegistry, pairingRegistry, eventManager);
             }
 
             logger.info("{}Server restored successfully - UID: {}, Setup Code: {}", LOG_STATE, server.getUID(),
