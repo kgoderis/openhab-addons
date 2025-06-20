@@ -14,7 +14,6 @@
 package org.openhab.io.homekit.server;
 
 import java.net.InetAddress;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -138,6 +137,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
 
     // ========== Server Configuration ==========
     private final HomekitAccessoryCategory category;
+    private final String serverId;
     protected final InetAddress address;
     protected final int port;
     private final byte[] pairingIdentifier;
@@ -170,6 +170,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      * </ul>
      *
      * @param category The category of accessories this server will host
+     * @param serverId The unique identifier for this server
      * @param address The network address to bind to
      * @param port The port to listen on
      * @param pairingId The unique identifier for this server
@@ -179,17 +180,18 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      * @param eventManager The manager for handling events
      * @throws HomekitConfigurationException if any configuration parameter is invalid
      */
-    public HomekitAbstractAccessoryServer(HomekitAccessoryCategory category, InetAddress address, int port,
-            byte[] pairingId, byte[] privateKey, HomekitAccessoryRegistry accessoryRegistry,
+    public HomekitAbstractAccessoryServer(HomekitAccessoryCategory category, String serverId, InetAddress address,
+            int port, byte[] pairingId, byte[] privateKey, HomekitAccessoryRegistry accessoryRegistry,
             HomekitPairingRegistry pairingRegistry, HomekitEventManager eventManager)
             throws HomekitConfigurationException {
         super();
-        validateConstructorParameters(category, address, port, pairingId, privateKey, accessoryRegistry,
+        validateConstructorParameters(category, serverId, address, port, pairingId, privateKey, accessoryRegistry,
                 pairingRegistry);
 
-        logger.debug("{}Initializing Homekit server - Category: {}, Address: {}, Port: {}", LOG_INIT, category, address,
-                port);
+        logger.debug("{}Initializing Homekit server - Category: {}, ServerId: {}, Address: {}, Port: {}", LOG_INIT,
+                category, serverId, address, port);
         this.category = category;
+        this.serverId = serverId;
         this.address = address;
         this.port = port;
         this.accessoryRegistry = accessoryRegistry;
@@ -207,12 +209,14 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      * <p>
      * This method checks:
      * <ul>
+     * <li>Server ID is not null or empty</li>
      * <li>Port number is within valid range (1-65535)</li>
      * <li>Pairing ID is not empty</li>
      * <li>Private key is not empty</li>
      * </ul>
      *
      * @param category The accessory category
+     * @param serverId The server identifier
      * @param address The network address
      * @param port The port number
      * @param pairingId The pairing identifier
@@ -221,9 +225,13 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      * @param pairingRegistry The pairing registry
      * @throws HomekitConfigurationException if any parameter is invalid
      */
-    private void validateConstructorParameters(HomekitAccessoryCategory category, InetAddress address, int port,
-            byte[] pairingId, byte[] privateKey, HomekitAccessoryRegistry accessoryRegistry,
+    private void validateConstructorParameters(HomekitAccessoryCategory category, String serverId, InetAddress address,
+            int port, byte[] pairingId, byte[] privateKey, HomekitAccessoryRegistry accessoryRegistry,
             HomekitPairingRegistry pairingRegistry) throws HomekitConfigurationException {
+        if (serverId == null || serverId.trim().isEmpty()) {
+            throw new HomekitConfigurationException(
+                    "Homekit server ID cannot be null or empty - required for unique identification");
+        }
         if (port <= 0 || port > 65535) {
             throw new HomekitConfigurationException(
                     String.format("Homekit server port %d is invalid - must be between 1 and 65535", port));
@@ -628,7 +636,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
     @Override
     public HomekitAccessoryServerUID getUID() {
         logger.trace("{}Getting server UID", LOG_CONFIG);
-        return new HomekitAccessoryServerUIDImpl(new String(getPairingId(), StandardCharsets.UTF_8).replace(":", ""));
+        return new HomekitAccessoryServerUIDImpl(serverId);
     }
 
     /**

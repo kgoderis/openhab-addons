@@ -22,7 +22,10 @@ import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.exception.HomekitServiceException;
-import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitListPairingsCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitPairSetupCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitPairVerifyCharacteristic;
+import org.openhab.io.homekit.library.characteristic.HomekitPairingFeaturesCharacteristic;
 
 /**
  * Service that represents a pairing in HomeKit.
@@ -100,7 +103,16 @@ public class HomekitPairingService extends AbstractHomekitService {
      */
     @Override
     public void addCharacteristics() throws HomekitServiceException {
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(true));
+        addCharacteristic(
+                new HomekitListPairingsCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
+        addCharacteristic(
+                new HomekitPairSetupCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
+        addCharacteristic(
+                new HomekitPairVerifyCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
+        addCharacteristic(new HomekitPairingFeaturesCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
     }
 }

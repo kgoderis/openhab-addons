@@ -23,6 +23,7 @@ import org.openhab.io.homekit.core.service.AbstractHomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.exception.HomekitServiceException;
 import org.openhab.io.homekit.library.characteristic.HomekitAssetUpdateReadinessCharacteristic;
+import org.slf4j.Logger;
 
 /**
  * HomeKit Asset Update Service.
@@ -55,7 +56,7 @@ public class HomekitAssetUpdateService extends AbstractHomekitService {
     private static final String LOG_STATE = LOG_PREFIX + "State - ";
     private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
 
-    private final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(HomekitAssetUpdateService.class);
+    private final static Logger logger = org.slf4j.LoggerFactory.getLogger(HomekitAssetUpdateService.class);
 
     /**
      * Creates a new Asset Update service.

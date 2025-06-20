@@ -29,7 +29,7 @@ import org.openhab.core.common.registry.Identifiable;
  * The interface provides:
  * <ul>
  * <li>String representation of the UID</li>
- * <li>Pairing ID management</li>
+ * <li>identifier management</li>
  * <li>Unique identification</li>
  * </ul>
  * </p>
@@ -38,7 +38,7 @@ import org.openhab.core.common.registry.Identifiable;
  * <ul>
  * <li>Thread-safe UID generation</li>
  * <li>Unique ID validation</li>
- * <li>Pairing ID association</li>
+ * <li>identifier association</li>
  * <li>String format consistency</li>
  * </ul>
  * </p>
@@ -69,12 +69,12 @@ public interface HomekitAccessoryServerUID extends Identifiable<HomekitAccessory
     String toString();
 
     /**
-     * Gets the pairing ID.
-     * This method retrieves the unique identifier used for pairing the server
-     * with HomeKit clients.
+     * Gets the identifier.
+     * This method retrieves the unique identifier used for identifying the server
+     * with HomeKit clients on the network.
      *
-     * @return The pairing ID
+     * @return The identifier
      * @since 1.0.0
      */
-    String getPairingId();
+    String getId();
 }

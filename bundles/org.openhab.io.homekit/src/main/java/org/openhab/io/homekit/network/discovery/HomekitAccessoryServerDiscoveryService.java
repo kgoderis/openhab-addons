@@ -656,6 +656,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                         .fromValue(Integer.parseInt(pairingFeatureFlagStr));
 
                 if (existingServer != null) {
+                    logger.debug("{}Existing server found for {}", LOG_SERVER, serverUID);
                     // Update existing server configuration if needed
                     if (existingServer.getConfigurationIndex() != configIndex) {
                         logger.info("{}Updating configuration index for server {} from {} to {}", LOG_CONFIG,
@@ -670,8 +671,9 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                 } else {
                     // Create new server for discovered accessory
                     logger.info(
-                            "{}Discovered new HomeKit server - ID: {}, Category: {}, Model: {}, Version: {}, Config Index: {}, Pairing Status: {}, Feature Flag: {}",
-                            LOG_SERVER, id, category, model, version, configIndex, pairingStatus, pairingFeatureFlag);
+                            "{}Discovered new HomeKit server - ServerUID: {}, ID: {}, Category: {}, Model: {}, Version: {}, Config Index: {}, Pairing Status: {}, Feature Flag: {}",
+                            LOG_SERVER, serverUID, id, category, model, version, configIndex, pairingStatus,
+                            pairingFeatureFlag);
 
                     Optional<String> hostAddressOpt = getHostAddress(serviceInfo);
                     if (hostAddressOpt.isEmpty()) {
@@ -680,7 +682,10 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                     }
 
                     try {
-                        HomekitAccessoryServer server = new HomekitRemoteAccessoryServer(category,
+                        String deviceId = serviceInfo.getPropertyString(HomekitDiscoveryConstants.DEVICE_ID);
+                        String serverId = deviceId != null ? deviceId.replace(":", "")
+                                : "discovered-" + System.currentTimeMillis();
+                        HomekitAccessoryServer server = new HomekitRemoteAccessoryServer(category, serverId,
                                 InetAddress.getByName(hostAddressOpt.get()), port, accessoryRegistry, pairingRegistry,
                                 eventManager, accessoryFactory);
                         server.setConfigurationIndex(configIndex);
@@ -795,8 +800,8 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                     serviceTag = serviceType;
                 }
 
-                ThingUID thingUID = new ThingUID(thingTypeUID.get(), server.getUID().getPairingId() + "."
-                        + accessory.getAccessoryId() + "." + service.getInstanceId());
+                ThingUID thingUID = new ThingUID(thingTypeUID.get(),
+                        server.getUID().getId() + "." + accessory.getAccessoryId() + "." + service.getInstanceId());
 
                 DiscoveryResultBuilder builder = DiscoveryResultBuilder.create(thingUID).withProperties(properties)
                         .withProperty("accessoryId", accessory.getAccessoryId())
@@ -813,7 +818,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
 
         if (autoCreateAccessoryThing) {
             ThingUID thingUID = new ThingUID(HomekitBindingConstants.THING_TYPE_ACCESSORY,
-                    server.getUID().getPairingId() + "." + accessory.getAccessoryId());
+                    server.getUID().getId() + "." + accessory.getAccessoryId());
 
             DiscoveryResultBuilder builder = DiscoveryResultBuilder.create(thingUID)
                     .withProperty("accessoryId", accessory.getAccessoryId())

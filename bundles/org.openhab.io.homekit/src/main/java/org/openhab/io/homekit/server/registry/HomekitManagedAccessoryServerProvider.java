@@ -147,6 +147,7 @@ public class HomekitManagedAccessoryServerProvider extends
      * @param eventManager Manager for handling state changes and events
      * @param accessoryFactory Factory for creating accessory instances
      */
+    @Activate
     public HomekitManagedAccessoryServerProvider(@Reference StorageService storageService,
             @Reference ReadyService readyService, @Reference HomekitAccessoryRegistry accessoryRegistry,
             @Reference HomekitPairingRegistry pairingRegistry, @Reference MDNSService mdnsService,
@@ -263,15 +264,17 @@ public class HomekitManagedAccessoryServerProvider extends
             if (persistableElement.getServerType() == HomekitPersistedAccessoryServer.ServerType.REMOTE) {
                 logger.debug("{}Creating remote server instance", LOG_STATE);
                 server = new HomekitRemoteAccessoryServer(persistableElement.getCategory(),
-                        persistableElement.getLocalAddress(), persistableElement.getPort(),
-                        persistableElement.getPairingIdentifier(), persistableElement.getPrivateKey(),
-                        accessoryRegistry, pairingRegistry, eventManager, accessoryFactory);
+                        persistableElement.getServerId(), persistableElement.getLocalAddress(),
+                        persistableElement.getPort(), persistableElement.getPairingIdentifier(),
+                        persistableElement.getPrivateKey(), accessoryRegistry, pairingRegistry, eventManager,
+                        accessoryFactory);
             } else {
                 logger.debug("{}Creating local server instance", LOG_STATE);
                 server = new HomekitLocalAccessoryServer(persistableElement.getCategory(),
-                        persistableElement.getLocalAddress(), persistableElement.getPort(),
-                        persistableElement.getPairingIdentifier(), persistableElement.getPrivateKey(), mdnsService,
-                        accessoryRegistry, pairingRegistry, eventManager);
+                        persistableElement.getServerId(), persistableElement.getLocalAddress(),
+                        persistableElement.getPort(), persistableElement.getPairingIdentifier(),
+                        persistableElement.getPrivateKey(), mdnsService, accessoryRegistry, pairingRegistry,
+                        eventManager);
             }
 
             logger.info("{}Server restored successfully - UID: {}, Setup Code: {}", LOG_STATE, server.getUID(),
@@ -343,8 +346,8 @@ public class HomekitManagedAccessoryServerProvider extends
         }
 
         HomekitPersistedAccessoryServer persistedServer = new HomekitPersistedAccessoryServer(element.getAddress(),
-                element.getPort(), element.getPairingId(), element.getSecretKey(), element.getConfigurationIndex(),
-                accessories, HomekitAccessoryCategory.BRIDGES, serverType);
+                element.getUID().getId(), element.getPort(), element.getPairingId(), element.getSecretKey(),
+                element.getConfigurationIndex(), accessories, HomekitAccessoryCategory.BRIDGES, serverType);
 
         logger.debug("{}Server state persisted successfully - UID: {}", LOG_STATE, element.getUID());
         return persistedServer;

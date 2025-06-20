@@ -69,97 +69,91 @@ import org.slf4j.LoggerFactory;
 @HomekitServiceType(type = "0000008D-0000-1000-8000-0026BB765291", name = "Air Quality Sensor", tag = "airQualitySensor")
 @NonNullByDefault
 public class HomekitAirQualitySensorService extends AbstractHomekitService {
-        // ========== Log Message Prefixes ==========
-        private static final String LOG_PREFIX = "Homekit AirQualitySensorService: ";
-        private static final String LOG_INIT = LOG_PREFIX + "Init - ";
-        private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    // ========== Log Message Prefixes ==========
+    private static final String LOG_PREFIX = "Homekit AirQualitySensorService: ";
+    private static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
 
-        private static final Logger logger = LoggerFactory.getLogger(HomekitAirQualitySensorService.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitAirQualitySensorService.class);
 
-        /**
-         * Creates a new Air Quality Sensor service.
-         *
-         * @param accessory The accessory this service belongs to
-         * @param eventManager The event manager for handling HomeKit events
-         * @param characteristicFactory Factory for creating HomeKit characteristics
-         * @since 1.0
-         */
-        public HomekitAirQualitySensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
-                        HomekitCharacteristicFactory characteristicFactory) {
-                super(accessory, eventManager, characteristicFactory);
-                withName("Air Quality Sensor").withPrimary(false).withHidden(false).withExtensible(false);
-                logger.debug("{}Created new Air Quality Sensor service for accessory {}", LOG_INIT,
-                                accessory.getLabel());
-        }
+    /**
+     * Creates a new Air Quality Sensor service.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @since 1.0
+     */
+    public HomekitAirQualitySensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory) {
+        super(accessory, eventManager, characteristicFactory);
+        withName("Air Quality Sensor").withPrimary(false).withHidden(false).withExtensible(false);
+        logger.debug("{}Created new Air Quality Sensor service for accessory {}", LOG_INIT, accessory.getLabel());
+    }
 
-        /**
-         * Creates a new Air Quality Sensor service from a JSON configuration.
-         *
-         * @param accessory The accessory this service belongs to
-         * @param eventManager The event manager for handling HomeKit events
-         * @param characteristicFactory Factory for creating HomeKit characteristics
-         * @param value JSON value containing service configuration
-         * @since 1.0
-         */
-        public HomekitAirQualitySensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
-                        HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
-                super(accessory, eventManager, characteristicFactory, value);
-                logger.debug("{}Created new Air Quality Sensor service from JSON configuration for accessory {}",
-                                LOG_INIT,
-                                accessory.getLabel());
-        }
+    /**
+     * Creates a new Air Quality Sensor service from a JSON configuration.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @param value JSON value containing service configuration
+     * @since 1.0
+     */
+    public HomekitAirQualitySensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
+        super(accessory, eventManager, characteristicFactory, value);
+        logger.debug("{}Created new Air Quality Sensor service from JSON configuration for accessory {}", LOG_INIT,
+                accessory.getLabel());
+    }
 
-        /**
-         * Adds the required and optional characteristics for this service.
-         * 
-         * <p>
-         * Required characteristics:
-         * <ul>
-         * <li>AirQuality (UUID: 00000095-0000-1000-8000-0026BB765291)</li>
-         * </ul>
-         * </p>
-         *
-         * <p>
-         * Optional characteristics:
-         * <ul>
-         * <li>AirParticulateDensity (UUID: 00000064-0000-1000-8000-0026BB765291)</li>
-         * <li>AirParticulateSize (UUID: 00000065-0000-1000-8000-0026BB765291)</li>
-         * <li>OzoneDensity (UUID: 000000C3-0000-1000-8000-0026BB765291)</li>
-         * <li>NitrogenDioxideDensity (UUID: 000000C4-0000-1000-8000-0026BB765291)</li>
-         * <li>SulphurDioxideDensity (UUID: 000000C5-0000-1000-8000-0026BB765291)</li>
-         * <li>PM10Density (UUID: 000000C7-0000-1000-8000-0026BB765291)</li>
-         * <li>VOCDensity (UUID: 000000C8-0000-1000-8000-0026BB765291)</li>
-         * </ul>
-         * </p>
-         *
-         * @since 1.0
-         */
-        @Override
-        public void addCharacteristics() throws HomekitServiceException {
-                addCharacteristic(
-                                new HomekitAirQualityCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(true));
-                addCharacteristic(new HomekitAirParticulateDensityCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-                addCharacteristic(new HomekitAirParticulateSizeCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-                addCharacteristic(
-                                new HomekitOzoneDensityCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                addCharacteristic(new HomekitNitrogenDioxideDensityCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-                addCharacteristic(new HomekitSulphurDioxideDensityCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-                addCharacteristic(
-                                new HomekitPM10DensityCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                addCharacteristic(
-                                new HomekitVOCDensityCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                logger.debug("{}Added characteristics for Air Quality Sensor service", LOG_CONFIG);
-        }
+    /**
+     * Adds the required and optional characteristics for this service.
+     * 
+     * <p>
+     * Required characteristics:
+     * <ul>
+     * <li>AirQuality (UUID: 00000095-0000-1000-8000-0026BB765291)</li>
+     * </ul>
+     * </p>
+     *
+     * <p>
+     * Optional characteristics:
+     * <ul>
+     * <li>AirParticulateDensity (UUID: 00000064-0000-1000-8000-0026BB765291)</li>
+     * <li>AirParticulateSize (UUID: 00000065-0000-1000-8000-0026BB765291)</li>
+     * <li>OzoneDensity (UUID: 000000C3-0000-1000-8000-0026BB765291)</li>
+     * <li>NitrogenDioxideDensity (UUID: 000000C4-0000-1000-8000-0026BB765291)</li>
+     * <li>SulphurDioxideDensity (UUID: 000000C5-0000-1000-8000-0026BB765291)</li>
+     * <li>PM10Density (UUID: 000000C7-0000-1000-8000-0026BB765291)</li>
+     * <li>VOCDensity (UUID: 000000C8-0000-1000-8000-0026BB765291)</li>
+     * </ul>
+     * </p>
+     *
+     * @since 1.0
+     */
+    @Override
+    public void addCharacteristics() throws HomekitServiceException {
+        addCharacteristic(
+                new HomekitAirQualityCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
+        addCharacteristic(new HomekitAirParticulateDensityCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitAirParticulateSizeCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(
+                new HomekitOzoneDensityCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        addCharacteristic(new HomekitNitrogenDioxideDensityCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitSulphurDioxideDensityCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(
+                new HomekitPM10DensityCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        addCharacteristic(
+                new HomekitVOCDensityCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        logger.debug("{}Added characteristics for Air Quality Sensor service", LOG_CONFIG);
+    }
 }

@@ -149,6 +149,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
      * </ul>
      *
      * @param category The category of accessories this server will host
+     * @param serverId The unique identifier for this server
      * @param address The network address to bind to
      * @param port The port to listen on
      * @param pairingId The unique pairing identifier for this server
@@ -159,13 +160,14 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
      * @param eventManager The manager for handling events
      * @throws HomekitConfigurationException if the configuration is invalid
      */
-    public HomekitLocalAccessoryServer(HomekitAccessoryCategory category, InetAddress address, int port,
-            byte[] pairingId, byte[] secretKey, MDNSService mdnsService, HomekitAccessoryRegistry accessoryRegistry,
-            HomekitPairingRegistry pairingRegistry, HomekitEventManager eventManager)
-            throws HomekitConfigurationException {
-        super(category, address, port, pairingId, secretKey, accessoryRegistry, pairingRegistry, eventManager);
-        logger.debug("{}Initializing local server - Category: {}, Address: {}, Port: {}", LOG_INIT, category, address,
-                port);
+    public HomekitLocalAccessoryServer(HomekitAccessoryCategory category, String serverId, InetAddress address,
+            int port, byte[] pairingId, byte[] secretKey, MDNSService mdnsService,
+            HomekitAccessoryRegistry accessoryRegistry, HomekitPairingRegistry pairingRegistry,
+            HomekitEventManager eventManager) throws HomekitConfigurationException {
+        super(category, serverId, address, port, pairingId, secretKey, accessoryRegistry, pairingRegistry,
+                eventManager);
+        logger.debug("{}Initializing local server - Category: {}, ServerId: {}, Address: {}, Port: {}", LOG_INIT,
+                category, serverId, address, port);
         this.mdnsService = mdnsService;
         logger.debug("{}Local server initialization completed", LOG_INIT);
     }
@@ -190,6 +192,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
      * </ul>
      *
      * @param category The category of accessories this server will host
+     * @param serverId The unique identifier for this server
      * @param address The network address to bind to
      * @param port The port to listen on
      * @param mdnsService The mDNS service for advertising
@@ -199,11 +202,12 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
      * @throws HomekitConfigurationException if the configuration is invalid
      * @throws HomekitServerException if server creation fails
      */
-    public HomekitLocalAccessoryServer(HomekitAccessoryCategory category, InetAddress address, int port,
-            MDNSService mdnsService, HomekitAccessoryRegistry accessoryRegistry, HomekitPairingRegistry pairingRegistry,
-            HomekitEventManager eventManager) throws HomekitConfigurationException, HomekitServerException {
-        super(category, address, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry,
-                eventManager);
+    public HomekitLocalAccessoryServer(HomekitAccessoryCategory category, String serverId, InetAddress address,
+            int port, MDNSService mdnsService, HomekitAccessoryRegistry accessoryRegistry,
+            HomekitPairingRegistry pairingRegistry, HomekitEventManager eventManager)
+            throws HomekitConfigurationException, HomekitServerException {
+        super(category, serverId, address, port, generatePairingId(), generateSecretKey(), accessoryRegistry,
+                pairingRegistry, eventManager);
         this.mdnsService = mdnsService;
         logger.debug("{}Created new local server with auto-generated credentials", LOG_INIT);
     }

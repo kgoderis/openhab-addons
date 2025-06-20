@@ -451,7 +451,7 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
         if (aid == null) {
             throw new IllegalStateException("HomekitAccessory ID should be set at this point");
         }
-        HomekitAccessoryUID newUID = new HomekitAccessoryUIDImpl(server.getUID().getPairingId(), aid.longValue());
+        HomekitAccessoryUID newUID = new HomekitAccessoryUIDImpl(server.getUID().getId(), aid.longValue());
 
         // Notify event manager of UID change to migrate subscriptions
         eventManager.notifyUIDChange(tempUID, newUID);

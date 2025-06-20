@@ -44,61 +44,57 @@ import org.openhab.io.homekit.library.characteristic.HomekitTemperatureDisplayUn
 @NonNullByDefault
 public class HomekitHeaterCoolerService extends AbstractHomekitService {
 
-        /**
-         * Creates a new HomekitHeaterCoolerService.
-         *
-         * @param accessory The accessory this service belongs to
-         * @param eventManager The event manager for handling HomeKit events
-         * @param characteristicFactory Factory for creating HomeKit characteristics
-         */
-        public HomekitHeaterCoolerService(HomekitAccessory accessory, HomekitEventManager eventManager,
-                        HomekitCharacteristicFactory characteristicFactory) {
-                super(accessory, eventManager, characteristicFactory);
-                withName("Heater Cooler").withPrimary(false).withHidden(false).withExtensible(false);
-        }
+    /**
+     * Creates a new HomekitHeaterCoolerService.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     */
+    public HomekitHeaterCoolerService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory) {
+        super(accessory, eventManager, characteristicFactory);
+        withName("Heater Cooler").withPrimary(false).withHidden(false).withExtensible(false);
+    }
 
-        /**
-         * Creates a new HomekitHeaterCoolerService from a JSON value.
-         *
-         * @param accessory The accessory this service belongs to
-         * @param eventManager The event manager for handling HomeKit events
-         * @param characteristicFactory Factory for creating HomeKit characteristics
-         * @param value JSON value containing service configuration
-         */
-        public HomekitHeaterCoolerService(HomekitAccessory accessory, HomekitEventManager eventManager,
-                        HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
-                super(accessory, eventManager, characteristicFactory, value);
-        }
+    /**
+     * Creates a new HomekitHeaterCoolerService from a JSON value.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @param value JSON value containing service configuration
+     */
+    public HomekitHeaterCoolerService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
+        super(accessory, eventManager, characteristicFactory, value);
+    }
 
-        @Override
-        public void addCharacteristics() throws HomekitServiceException {
-                addCharacteristic(
-                                new HomekitActiveCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(true));
-                addCharacteristic(new HomekitCurrentHeaterCoolerStateCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-                addCharacteristic(new HomekitTargetHeaterCoolerStateCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-                addCharacteristic(new HomekitCurrentTemperatureCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-                addCharacteristic(new HomekitCoolingThresholdTemperatureCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-                addCharacteristic(new HomekitHeatingThresholdTemperatureCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-                addCharacteristic(new HomekitTemperatureDisplayUnitsCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-                addCharacteristic(
-                                new HomekitRotationSpeedCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                addCharacteristic(
-                                new HomekitSwingModeCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId())
-                                .withMandatory(false));
-                logger.debug("{}Added characteristics for Heater Cooler service", LOG_CONFIG);
-        }
+    @Override
+    public void addCharacteristics() throws HomekitServiceException {
+        addCharacteristic(
+                new HomekitActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
+        addCharacteristic(new HomekitCurrentHeaterCoolerStateCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(new HomekitTargetHeaterCoolerStateCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(new HomekitCurrentTemperatureCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(new HomekitCoolingThresholdTemperatureCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitHeatingThresholdTemperatureCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitTemperatureDisplayUnitsCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(
+                new HomekitRotationSpeedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        addCharacteristic(
+                new HomekitSwingModeCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(false));
+        logger.debug("{}Added characteristics for Heater Cooler service", LOG_CONFIG);
+    }
 }

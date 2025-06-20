@@ -25,12 +25,12 @@ import org.slf4j.LoggerFactory;
  * <p>
  * This class provides a structured way to identify HomeKit accessory servers
  * within the system.
- * The UID follows a specific format: {@code homekit:server:{pairingId}} where:
+ * The UID follows a specific format: {@code homekit:server:{Id}} where:
  * </p>
  * <ul>
  * <li>{@code homekit} is the namespace prefix</li>
  * <li>{@code server} indicates this is a server identifier</li>
- * <li>{@code pairingId} is the unique pairing identifier for the server</li>
+ * <li>{@code Id} is the unique identifier for the server</li>
  * </ul>
  *
  * <p>
@@ -67,7 +67,7 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
 
     private static final Logger logger = LoggerFactory.getLogger(HomekitAccessoryServerUIDImpl.class);
     private static final String SERVER_PREFIX = "server";
-    private String pairingId;
+    private String id;
 
     /**
      * Creates a new server UID with default values.
@@ -89,16 +89,16 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
      */
     HomekitAccessoryServerUIDImpl() {
         super(SERVER_PREFIX, "homekit:" + SERVER_PREFIX + ":");
-        this.pairingId = "";
+        this.id = "";
         logger.trace("{}Created default server UID instance", LOG_UID);
     }
 
     /**
-     * Creates a new server UID with the specified pairing ID.
+     * Creates a new server UID with the specified identifier.
      *
      * <p>
      * This constructor builds a complete server UID instance with the required
-     * pairing identifier. The UID is used to uniquely identify a HomeKit
+     * identifier. The UID is used to uniquely identify a HomeKit
      * accessory server within the system.
      * </p>
      *
@@ -113,17 +113,17 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
      * <li>Provides trace-level logging</li>
      * </ul>
      *
-     * @param pairingId The unique pairing identifier for the server
-     * @throws IllegalArgumentException if the pairing ID is null or empty
+     * @param id The uniqueidentifier for the server
+     * @throws IllegalArgumentException if the identifier is null or empty
      */
-    public HomekitAccessoryServerUIDImpl(String pairingId) {
-        super(SERVER_PREFIX, "homekit:" + SERVER_PREFIX + ":" + pairingId);
-        if (pairingId.isEmpty()) {
-            logger.error("{}Pairing ID cannot be empty", LOG_ERROR);
-            throw new IllegalArgumentException("Pairing ID cannot be empty");
+    public HomekitAccessoryServerUIDImpl(String id) {
+        super(SERVER_PREFIX, "homekit:" + SERVER_PREFIX + ":" + id);
+        if (id.isEmpty()) {
+            logger.error("{}identifier cannot be empty", LOG_ERROR);
+            throw new IllegalArgumentException("identifier cannot be empty");
         }
-        this.pairingId = pairingId;
-        logger.debug("{}Created server UID with pairing ID: {}", LOG_UID, pairingId);
+        this.id = id;
+        logger.debug("{}Created server UID with identifier: {}", LOG_UID, id);
     }
 
     /**
@@ -131,7 +131,7 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
      *
      * <p>
      * The string representation follows the format
-     * {@code homekit:server:{pairingId}}.
+     * {@code homekit:server:{Id}}.
      * This format ensures consistent identification across the system.
      * </p>
      *
@@ -145,20 +145,20 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
      * <li>Provides trace-level logging</li>
      * </ul>
      *
-     * @return The UID string in the format {@code homekit:server:{pairingId}}
+     * @return The UID string in the format {@code homekit:server:{Id}}
      */
     @Override
     public String toString() {
-        String result = String.format("homekit:server:%s", pairingId);
+        String result = String.format("homekit:server:%s", id);
         logger.debug("{}Getting UID string: {}", LOG_UID, result);
         return result;
     }
 
     /**
-     * Gets the pairing ID for this server.
+     * Gets the identifier for this server.
      *
      * <p>
-     * The pairing ID is a unique identifier used during the HomeKit pairing
+     * The identifier is a unique identifier used during the HomeKit pairing
      * process.
      * It helps maintain the connection between the server and its paired devices.
      * </p>
@@ -167,18 +167,18 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
      * Key implementation details:
      * </p>
      * <ul>
-     * <li>Returns the internal pairing ID field</li>
+     * <li>Returns the internal identifier field</li>
      * <li>Used for server connection management</li>
      * <li>Supports device pairing</li>
      * <li>Provides trace-level logging</li>
      * </ul>
      *
-     * @return The pairing identifier for this server
+     * @return Theidentifier for this server
      */
     @Override
-    public String getPairingId() {
-        logger.trace("{}Getting pairing ID: {}", LOG_UID, pairingId);
-        return pairingId;
+    public String getId() {
+        logger.trace("{}Getting Id: {}", LOG_UID, id);
+        return id;
     }
 
     /**
@@ -190,7 +190,7 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
      * <ol>
      * <li>The namespace prefix ("homekit")</li>
      * <li>The type identifier ("server")</li>
-     * <li>The pairing ID</li>
+     * <li>The identifier</li>
      * </ol>
      *
      * <p>

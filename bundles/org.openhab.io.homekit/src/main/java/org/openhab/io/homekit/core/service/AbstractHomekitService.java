@@ -235,8 +235,8 @@ public abstract class AbstractHomekitService implements HomekitService {
      */
     @Override
     public HomekitServiceUID getUID() {
-        return new HomekitServiceUIDImpl(getAccessory().getUID().getPairingId(), getAccessory().getAccessoryId(),
-                getInstanceId());
+        return new HomekitServiceUIDImpl(getAccessory().getUID().getAccessoryServerId(),
+                getAccessory().getAccessoryId(), getInstanceId());
     }
 
     /**

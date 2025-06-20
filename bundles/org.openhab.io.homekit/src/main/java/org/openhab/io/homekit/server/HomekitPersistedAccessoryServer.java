@@ -75,6 +75,7 @@ public class HomekitPersistedAccessoryServer {
     }
 
     private String localAddress;
+    private String serverId;
     private String port;
     private String pairingIdentifier;
     private String privateKey;
@@ -89,6 +90,7 @@ public class HomekitPersistedAccessoryServer {
     public HomekitPersistedAccessoryServer() {
         logger.debug("{}Creating new persisted server with default values", LOG_INIT);
         localAddress = "";
+        serverId = "";
         port = "";
         pairingIdentifier = "";
         privateKey = "";
@@ -107,6 +109,7 @@ public class HomekitPersistedAccessoryServer {
      * of binary data and accessory information.
      *
      * @param localAddress The network address to bind to
+     * @param serverId The unique identifier for this server
      * @param port The port to listen on
      * @param pairingId The unique identifier for this server
      * @param privateKey The private key for secure communication
@@ -115,12 +118,14 @@ public class HomekitPersistedAccessoryServer {
      * @param category The category of accessories this server hosts
      * @param serverType The type of server (local or remote)
      */
-    public HomekitPersistedAccessoryServer(InetAddress localAddress, int port, byte[] pairingId, byte[] privateKey,
-            int configurationIndex, Collection<org.openhab.io.homekit.api.accessory.HomekitAccessory> accessories,
+    public HomekitPersistedAccessoryServer(InetAddress localAddress, String serverId, int port, byte[] pairingId,
+            byte[] privateKey, int configurationIndex,
+            Collection<org.openhab.io.homekit.api.accessory.HomekitAccessory> accessories,
             HomekitAccessoryCategory category, ServerType serverType) {
-        logger.debug("{}Creating new persisted server - Address: {}, Port: {}, Category: {}", LOG_INIT, localAddress,
-                port, category);
+        logger.debug("{}Creating new persisted server - Address: {}, ServerId: {}, Port: {}, Category: {}", LOG_INIT,
+                localAddress, serverId, port, category);
         this.localAddress = localAddress.getHostAddress();
+        this.serverId = serverId;
         this.port = Integer.toString(port);
         this.pairingIdentifier = Base64.getEncoder().encodeToString(pairingId);
         this.privateKey = Base64.getEncoder().encodeToString(privateKey);
@@ -305,5 +310,24 @@ public class HomekitPersistedAccessoryServer {
     public void setServerType(ServerType serverType) {
         logger.debug("{}Setting server type to {}", LOG_CONFIG, serverType);
         this.serverType = serverType;
+    }
+
+    /**
+     * Gets the server identifier.
+     *
+     * @return The server's unique identifier
+     */
+    public String getServerId() {
+        return serverId;
+    }
+
+    /**
+     * Sets the server identifier.
+     *
+     * @param serverId The new server identifier
+     */
+    public void setServerId(String serverId) {
+        logger.debug("{}Setting server ID to {}", LOG_CONFIG, serverId);
+        this.serverId = serverId;
     }
 }

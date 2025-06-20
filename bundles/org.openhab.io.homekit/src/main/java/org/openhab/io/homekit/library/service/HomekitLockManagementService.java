@@ -44,62 +44,57 @@ import org.openhab.io.homekit.library.characteristic.HomekitVersionCharacteristi
 @NonNullByDefault
 public class HomekitLockManagementService extends AbstractHomekitService {
 
-        /**
-         * Creates a new HomekitLockManagementService.
-         *
-         * @param accessory The accessory this service belongs to
-         * @param eventManager The event manager for handling HomeKit events
-         * @param characteristicFactory Factory for creating HomeKit characteristics
-         */
-        public HomekitLockManagementService(HomekitAccessory accessory, HomekitEventManager eventManager,
-                        HomekitCharacteristicFactory characteristicFactory) {
-                super(accessory, eventManager, characteristicFactory);
-                withName("Lock Management").withPrimary(false).withHidden(false).withExtensible(false);
-        }
+    /**
+     * Creates a new HomekitLockManagementService.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     */
+    public HomekitLockManagementService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory) {
+        super(accessory, eventManager, characteristicFactory);
+        withName("Lock Management").withPrimary(false).withHidden(false).withExtensible(false);
+    }
 
-        /**
-         * Creates a new HomekitLockManagementService from a JSON value.
-         *
-         * @param accessory The accessory this service belongs to
-         * @param eventManager The event manager for handling HomeKit events
-         * @param characteristicFactory Factory for creating HomeKit characteristics
-         * @param value JSON value containing service configuration
-         */
-        public HomekitLockManagementService(HomekitAccessory accessory, HomekitEventManager eventManager,
-                        HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
-                super(accessory, eventManager, characteristicFactory, value);
-        }
+    /**
+     * Creates a new HomekitLockManagementService from a JSON value.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @param value JSON value containing service configuration
+     */
+    public HomekitLockManagementService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
+        super(accessory, eventManager, characteristicFactory, value);
+    }
 
-        @Override
-        public void addCharacteristics() throws HomekitServiceException {
-                addCharacteristic(new HomekitLockControlPointCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-                addCharacteristic(
-                                new HomekitVersionCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(true));
-                addCharacteristic(new HomekitLogsCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId())
-                                .withMandatory(true));
-                addCharacteristic(
-                                new HomekitAudioFeedbackCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                addCharacteristic(new HomekitLockManagementAutoSecurityTimeoutCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-                addCharacteristic(new HomekitAdministratorOnlyAccessCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-                addCharacteristic(new HomekitLockLastKnownActionCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-                addCharacteristic(new HomekitCurrentDoorStateCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-                addCharacteristic(
-                                new HomekitMotionDetectedCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId())
-                                .withMandatory(false));
-                logger.debug("{}Added characteristics for Lock Management service", LOG_CONFIG);
-        }
+    @Override
+    public void addCharacteristics() throws HomekitServiceException {
+        addCharacteristic(new HomekitLockControlPointCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        addCharacteristic(
+                new HomekitVersionCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
+        addCharacteristic(new HomekitLogsCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(true));
+        addCharacteristic(
+                new HomekitAudioFeedbackCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        addCharacteristic(new HomekitLockManagementAutoSecurityTimeoutCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitAdministratorOnlyAccessCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitLockLastKnownActionCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(new HomekitCurrentDoorStateCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        addCharacteristic(
+                new HomekitMotionDetectedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(false));
+        logger.debug("{}Added characteristics for Lock Management service", LOG_CONFIG);
+    }
 }

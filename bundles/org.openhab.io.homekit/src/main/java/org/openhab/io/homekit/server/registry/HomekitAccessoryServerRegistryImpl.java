@@ -167,6 +167,7 @@ public class HomekitAccessoryServerRegistryImpl
      * @param eventManager The manager for events
      * @param accessoryFactory The factory for creating accessories
      */
+    @Activate
     public HomekitAccessoryServerRegistryImpl(@Reference ReadyService readyService,
             @Reference NetworkAddressService networkAddressService,
             @Reference HomekitAccessoryRegistry accessoryRegistry, @Reference HomekitPairingRegistry pairingRegistry,
@@ -331,7 +332,8 @@ public class HomekitAccessoryServerRegistryImpl
 
         if (availableServer == null) {
             try {
-                availableServer = new HomekitRemoteAccessoryServer(HomekitAccessoryCategory.BRIDGES,
+                String serverId = "bridge-" + System.currentTimeMillis();
+                availableServer = new HomekitRemoteAccessoryServer(HomekitAccessoryCategory.BRIDGES, serverId,
                         InetAddress.getByName(networkAddressService.getPrimaryIpv4HostAddress()), highestPortNumber++,
                         accessoryRegistry, pairingRegistry, eventManager, accessoryFactory);
             } catch (UnknownHostException | HomekitServerException e) {

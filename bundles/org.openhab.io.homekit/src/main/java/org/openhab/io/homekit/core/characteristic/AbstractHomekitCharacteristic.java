@@ -322,7 +322,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
      */
     @Override
     public HomekitCharacteristicUIDImpl getUID() {
-        return new HomekitCharacteristicUIDImpl(getService().getAccessory().getUID().getPairingId(),
+        return new HomekitCharacteristicUIDImpl(getService().getAccessory().getUID().getAccessoryServerId(),
                 getService().getAccessory().getAccessoryId(), getService().getInstanceId(), getInstanceId());
     }
 

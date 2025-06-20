@@ -376,7 +376,7 @@ public class HomekitBridgedAccessory implements HomekitAccessory {
         }
         try {
             this.accessoryId = server.getNextAvailableAccessoryId();
-            this.uid = new HomekitAccessoryUIDImpl(server.getUID().getPairingId(), accessoryId);
+            this.uid = new HomekitAccessoryUIDImpl(server.getUID().getId(), accessoryId);
             // The constructor for HomekitAccessoryUIDImpl never returns null, so this check is redundant
             // but we'll keep it for extra safety
             logger.debug("{}Assigned bridged accessory to local server with AID: {}", LOG_PREFIX, accessoryId);

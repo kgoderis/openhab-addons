@@ -79,114 +79,108 @@ import org.slf4j.LoggerFactory;
 @HomekitServiceType(type = "00000097-0000-1000-8000-0026BB765291", name = "Carbon Dioxide Sensor", tag = "carbonDioxideSensor")
 @NonNullByDefault
 public class HomekitCarbonDioxideSensorService extends AbstractHomekitService {
-        // ========== Log Message Prefixes ==========
-        private static final String LOG_PREFIX = "Homekit CarbonDioxideSensorService: ";
-        private static final String LOG_INIT = LOG_PREFIX + "Init - ";
-        private static final String LOG_STATE = LOG_PREFIX + "State - ";
-        private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
-        private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
+    // ========== Log Message Prefixes ==========
+    private static final String LOG_PREFIX = "Homekit CarbonDioxideSensorService: ";
+    private static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    private static final String LOG_STATE = LOG_PREFIX + "State - ";
+    private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
+    private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
 
-        private static final Logger logger = LoggerFactory.getLogger(HomekitCarbonDioxideSensorService.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitCarbonDioxideSensorService.class);
 
-        /**
-         * Creates a new Carbon Dioxide Sensor service.
-         *
-         * @param accessory The accessory this service belongs to
-         * @param eventManager The event manager for handling HomeKit events
-         * @param characteristicFactory Factory for creating HomeKit characteristics
-         * @since 1.0
-         */
-        public HomekitCarbonDioxideSensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
-                        HomekitCharacteristicFactory characteristicFactory) {
-                super(accessory, eventManager, characteristicFactory);
-                withName("Carbon Dioxide Sensor").withPrimary(false).withHidden(false).withExtensible(false);
-                logger.debug("{}Created CarbonDioxideSensorService for accessory {}", LOG_INIT, accessory.getLabel());
-        }
+    /**
+     * Creates a new Carbon Dioxide Sensor service.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @since 1.0
+     */
+    public HomekitCarbonDioxideSensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory) {
+        super(accessory, eventManager, characteristicFactory);
+        withName("Carbon Dioxide Sensor").withPrimary(false).withHidden(false).withExtensible(false);
+        logger.debug("{}Created CarbonDioxideSensorService for accessory {}", LOG_INIT, accessory.getLabel());
+    }
 
-        /**
-         * Creates a new Carbon Dioxide Sensor service from a JSON configuration.
-         *
-         * @param accessory The accessory this service belongs to
-         * @param eventManager The event manager for handling HomeKit events
-         * @param characteristicFactory Factory for creating HomeKit characteristics
-         * @param value JSON value containing service configuration
-         * @since 1.0
-         */
-        public HomekitCarbonDioxideSensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
-                        HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
-                super(accessory, eventManager, characteristicFactory, value);
-                logger.debug("{}Created CarbonDioxideSensorService from JSON for accessory {}", LOG_INIT,
-                                accessory.getLabel());
-        }
+    /**
+     * Creates a new Carbon Dioxide Sensor service from a JSON configuration.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @param value JSON value containing service configuration
+     * @since 1.0
+     */
+    public HomekitCarbonDioxideSensorService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
+        super(accessory, eventManager, characteristicFactory, value);
+        logger.debug("{}Created CarbonDioxideSensorService from JSON for accessory {}", LOG_INIT, accessory.getLabel());
+    }
 
-        /**
-         * Adds the required and optional characteristics for this service.
-         * <p>
-         * Required characteristics:
-         * <ul>
-         * <li>CarbonDioxideDetected - Current CO2 detection state</li>
-         * </ul>
-         * </p>
-         * <p>
-         * Optional characteristics:
-         * <ul>
-         * <li>CarbonDioxideLevel - Current CO2 concentration</li>
-         * <li>CarbonDioxidePeakLevel - Highest recorded CO2 level</li>
-         * <li>Name - Sensor name</li>
-         * <li>StatusActive - Sensor activation state</li>
-         * <li>StatusFault - Fault state indicator</li>
-         * <li>StatusLowBattery - Low battery warning</li>
-         * <li>StatusTampered - Tamper detection state</li>
-         * </ul>
-         * </p>
-         * 
-         * @since 1.0
-         */
-        @Override
-        public void addCharacteristics() throws HomekitServiceException {
-                logger.debug("{}Adding required characteristics to CarbonDioxideSensorService for accessory {}",
-                                LOG_TRACE,
-                                getAccessory().getLabel());
+    /**
+     * Adds the required and optional characteristics for this service.
+     * <p>
+     * Required characteristics:
+     * <ul>
+     * <li>CarbonDioxideDetected - Current CO2 detection state</li>
+     * </ul>
+     * </p>
+     * <p>
+     * Optional characteristics:
+     * <ul>
+     * <li>CarbonDioxideLevel - Current CO2 concentration</li>
+     * <li>CarbonDioxidePeakLevel - Highest recorded CO2 level</li>
+     * <li>Name - Sensor name</li>
+     * <li>StatusActive - Sensor activation state</li>
+     * <li>StatusFault - Fault state indicator</li>
+     * <li>StatusLowBattery - Low battery warning</li>
+     * <li>StatusTampered - Tamper detection state</li>
+     * </ul>
+     * </p>
+     * 
+     * @since 1.0
+     */
+    @Override
+    public void addCharacteristics() throws HomekitServiceException {
+        logger.debug("{}Adding required characteristics to CarbonDioxideSensorService for accessory {}", LOG_TRACE,
+                getAccessory().getLabel());
 
-                addCharacteristic(new HomekitCarbonDioxideDetectedCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
-                logger.debug("{}Added CarbonDioxideDetectedCharacteristic to CarbonDioxideSensorService", LOG_STATE);
+        addCharacteristic(new HomekitCarbonDioxideDetectedCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(true));
+        logger.debug("{}Added CarbonDioxideDetectedCharacteristic to CarbonDioxideSensorService", LOG_STATE);
 
-                addCharacteristic(new HomekitCarbonDioxideLevelCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-                logger.debug("{}Added CarbonDioxideLevelCharacteristic to CarbonDioxideSensorService", LOG_STATE);
+        addCharacteristic(new HomekitCarbonDioxideLevelCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        logger.debug("{}Added CarbonDioxideLevelCharacteristic to CarbonDioxideSensorService", LOG_STATE);
 
-                addCharacteristic(new HomekitCarbonDioxidePeakLevelCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-                logger.debug("{}Added CarbonDioxidePeakLevelCharacteristic to CarbonDioxideSensorService", LOG_STATE);
+        addCharacteristic(new HomekitCarbonDioxidePeakLevelCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        logger.debug("{}Added CarbonDioxidePeakLevelCharacteristic to CarbonDioxideSensorService", LOG_STATE);
 
-                addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId())
-                                .withMandatory(false));
-                logger.debug("{}Added NameCharacteristic to CarbonDioxideSensorService", LOG_STATE);
+        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(false));
+        logger.debug("{}Added NameCharacteristic to CarbonDioxideSensorService", LOG_STATE);
 
-                addCharacteristic(
-                                new HomekitStatusActiveCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                logger.debug("{}Added StatusActiveCharacteristic to CarbonDioxideSensorService", LOG_STATE);
+        addCharacteristic(
+                new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        logger.debug("{}Added StatusActiveCharacteristic to CarbonDioxideSensorService", LOG_STATE);
 
-                addCharacteristic(
-                                new HomekitStatusFaultCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                logger.debug("{}Added StatusFaultCharacteristic to CarbonDioxideSensorService", LOG_STATE);
+        addCharacteristic(
+                new HomekitStatusFaultCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        logger.debug("{}Added StatusFaultCharacteristic to CarbonDioxideSensorService", LOG_STATE);
 
-                addCharacteristic(new HomekitStatusLowBatteryCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
-                logger.debug("{}Added StatusLowBatteryCharacteristic to CarbonDioxideSensorService", LOG_STATE);
+        addCharacteristic(new HomekitStatusLowBatteryCharacteristic(this, eventManager,
+                getAccessory().getNextAvailableInstanceId()).withMandatory(false));
+        logger.debug("{}Added StatusLowBatteryCharacteristic to CarbonDioxideSensorService", LOG_STATE);
 
-                addCharacteristic(
-                                new HomekitStatusTamperedCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                logger.debug("{}Added StatusTamperedCharacteristic to CarbonDioxideSensorService", LOG_STATE);
+        addCharacteristic(
+                new HomekitStatusTamperedCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        logger.debug("{}Added StatusTamperedCharacteristic to CarbonDioxideSensorService", LOG_STATE);
 
-                logger.debug("{}Added characteristics for Carbon Dioxide Sensor service", LOG_CONFIG);
-        }
+        logger.debug("{}Added characteristics for Carbon Dioxide Sensor service", LOG_CONFIG);
+    }
 }

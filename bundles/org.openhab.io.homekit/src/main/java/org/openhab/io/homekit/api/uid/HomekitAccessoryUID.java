@@ -88,12 +88,12 @@ public interface HomekitAccessoryUID {
     long getAccessoryId();
 
     /**
-     * Gets the pairing ID.
-     * This method retrieves the unique identifier used for pairing the accessory
-     * with HomeKit clients.
+     * Gets the server ID.
+     * This method retrieves the unique identifier used for identifying the server
+     * that manages the accessory.
      *
-     * @return The pairing ID
+     * @return The server ID
      * @since 1.0.0
      */
-    String getPairingId();
+    String getAccessoryServerId();
 }

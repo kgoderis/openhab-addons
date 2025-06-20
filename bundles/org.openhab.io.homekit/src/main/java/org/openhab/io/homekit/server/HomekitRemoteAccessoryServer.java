@@ -181,6 +181,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
      * configuration.
      *
      * @param category The category of accessories this server will host
+     * @param serverId The unique identifier for this server
      * @param address The network address of the remote server
      * @param port The port the remote server is listening on
      * @param pairingIdentifier The unique pairing identifier for this server
@@ -191,13 +192,14 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
      * @param accessoryFactory The factory for creating accessories
      * @throws HomekitConfigurationException if the configuration is invalid
      */
-    public HomekitRemoteAccessoryServer(HomekitAccessoryCategory category, InetAddress address, int port,
-            byte[] pairingIdentifier, byte[] secretKey, HomekitAccessoryRegistry accessoryRegistry,
+    public HomekitRemoteAccessoryServer(HomekitAccessoryCategory category, String serverId, InetAddress address,
+            int port, byte[] pairingIdentifier, byte[] secretKey, HomekitAccessoryRegistry accessoryRegistry,
             HomekitPairingRegistry pairingRegistry, HomekitEventManager eventManager,
             HomekitAccessoryFactory accessoryFactory) throws HomekitConfigurationException {
-        super(category, address, port, pairingIdentifier, secretKey, accessoryRegistry, pairingRegistry, eventManager);
-        logger.debug("{}Initializing remote server - Category: {}, Address: {}, Port: {}", LOG_INIT, category, address,
-                port);
+        super(category, serverId, address, port, pairingIdentifier, secretKey, accessoryRegistry, pairingRegistry,
+                eventManager);
+        logger.debug("{}Initializing remote server - Category: {}, ServerId: {}, Address: {}, Port: {}", LOG_INIT,
+                category, serverId, address, port);
         this.accessoryFactory = accessoryFactory;
         this.setupCode = "";
         this.scheduler = org.openhab.core.common.ThreadPoolManager
@@ -210,6 +212,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
      * and secret key.
      *
      * @param category The category of accessories this server will host
+     * @param serverId The unique identifier for this server
      * @param address The network address of the remote server
      * @param port The port the remote server is listening on
      * @param accessoryRegistry The registry for managing accessories
@@ -219,12 +222,12 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
      * @throws HomekitConfigurationException if the configuration is invalid
      * @throws HomekitServerException if server creation fails
      */
-    public HomekitRemoteAccessoryServer(HomekitAccessoryCategory category, InetAddress address, int port,
-            HomekitAccessoryRegistry accessoryRegistry, HomekitPairingRegistry pairingRegistry,
+    public HomekitRemoteAccessoryServer(HomekitAccessoryCategory category, String serverId, InetAddress address,
+            int port, HomekitAccessoryRegistry accessoryRegistry, HomekitPairingRegistry pairingRegistry,
             HomekitEventManager eventManager, HomekitAccessoryFactory accessoryFactory)
             throws HomekitConfigurationException, HomekitServerException {
-        this(category, address, port, generatePairingId(), generateSecretKey(), accessoryRegistry, pairingRegistry,
-                eventManager, accessoryFactory);
+        this(category, serverId, address, port, generatePairingId(), generateSecretKey(), accessoryRegistry,
+                pairingRegistry, eventManager, accessoryFactory);
         logger.debug("{}Created new remote server with auto-generated credentials", LOG_INIT);
     }
 

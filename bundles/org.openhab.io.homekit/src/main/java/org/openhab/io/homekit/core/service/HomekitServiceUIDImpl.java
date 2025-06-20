@@ -26,12 +26,12 @@ import org.openhab.io.homekit.util.HomekitUID;
  * This class provides a structured way to identify HomeKit services within the
  * system.
  * The UID follows a specific format:
- * {@code homekit:service:{pairingId}:{accessoryId}:{serviceId}} where:
+ * {@code homekit:service:{serverId}:{accessoryId}:{serviceId}} where:
  * </p>
  * <ul>
  * <li>{@code homekit} is the namespace prefix</li>
  * <li>{@code service} indicates this is a service identifier</li>
- * <li>{@code pairingId} is the unique pairing identifier for the server</li>
+ * <li>{@code serverId} is the unique identifier for the server</li>
  * <li>{@code accessoryId} is the unique identifier for the accessory</li>
  * <li>{@code serviceId} is the unique identifier for the service</li>
  * </ul>
@@ -65,7 +65,7 @@ import org.openhab.io.homekit.util.HomekitUID;
 public class HomekitServiceUIDImpl extends HomekitUID implements HomekitServiceUID {
     private static final String SERVICE_PREFIX = "service";
     private final long instanceId;
-    private final String pairingId;
+    private final String serverId;
     private final long accessoryId;
     private final long serviceId;
 
@@ -88,14 +88,14 @@ public class HomekitServiceUIDImpl extends HomekitUID implements HomekitServiceU
      * <li>Sets up the base UID structure</li>
      * </ul>
      *
-     * @param pairingId The unique pairing identifier for the server
+     * @param serverId The unique identifier for the server
      * @param accessoryId The unique identifier for the accessory
      * @param serviceId The unique identifier for the service
      * @throws IllegalArgumentException if any of the IDs are null or empty
      */
-    public HomekitServiceUIDImpl(String pairingId, long accessoryId, long serviceId) {
-        super(SERVICE_PREFIX, "homekit:" + SERVICE_PREFIX + ":" + pairingId + ":" + accessoryId + ":" + serviceId);
-        this.pairingId = pairingId;
+    public HomekitServiceUIDImpl(String serverId, long accessoryId, long serviceId) {
+        super(SERVICE_PREFIX, "homekit:" + SERVICE_PREFIX + ":" + serverId + ":" + accessoryId + ":" + serviceId);
+        this.serverId = serverId;
         this.accessoryId = accessoryId;
         this.serviceId = serviceId;
         this.instanceId = 0;
@@ -128,8 +128,8 @@ public class HomekitServiceUIDImpl extends HomekitUID implements HomekitServiceU
             throw new IllegalArgumentException("Invalid service UID format: " + key);
         }
         @SuppressWarnings("null") // List.get() is safe - segments size validated in constructor
-        String pairingIdSegment = segments.get(2);
-        this.pairingId = pairingIdSegment;
+        String serverIdSegment = segments.get(2);
+        this.serverId = serverIdSegment;
         @SuppressWarnings("null") // List.get() is safe - segments size validated in constructor
         String accessoryIdSegment = segments.get(3);
         this.accessoryId = Long.parseLong(accessoryIdSegment);
@@ -144,7 +144,7 @@ public class HomekitServiceUIDImpl extends HomekitUID implements HomekitServiceU
      *
      * <p>
      * The string representation follows the format
-     * {@code homekit:service:{pairingId}:{accessoryId}:{serviceId}}.
+     * {@code homekit:service:{serverId}:{accessoryId}:{serviceId}}.
      * This format ensures consistent identification across the system.
      * </p>
      *
@@ -158,11 +158,11 @@ public class HomekitServiceUIDImpl extends HomekitUID implements HomekitServiceU
      * </ul>
      *
      * @return The UID string in the format
-     *         {@code homekit:service:{pairingId}:{accessoryId}:{serviceId}}
+     *         {@code homekit:service:{serverId}:{accessoryId}:{serviceId}}
      */
     @Override
     public String toString() {
-        return String.format("homekit:service:%s:%s:%s", pairingId, accessoryId, serviceId);
+        return String.format("homekit:service:%s:%s:%s", serverId, accessoryId, serviceId);
     }
 
     /**
@@ -198,7 +198,7 @@ public class HomekitServiceUIDImpl extends HomekitUID implements HomekitServiceU
      * <ol>
      * <li>The namespace prefix ("homekit")</li>
      * <li>The type identifier ("service")</li>
-     * <li>The pairing ID</li>
+     * <li>The server ID</li>
      * <li>The accessory ID</li>
      * <li>The service ID</li>
      * </ol>

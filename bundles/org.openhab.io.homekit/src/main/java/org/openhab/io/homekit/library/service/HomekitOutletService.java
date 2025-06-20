@@ -73,95 +73,90 @@ import org.slf4j.LoggerFactory;
 @HomekitServiceType(type = "00000047-0000-1000-8000-0026BB765291", name = "Outlet", tag = "outlet")
 @NonNullByDefault
 public class HomekitOutletService extends AbstractHomekitService {
-        // ========== Log Message Prefixes ==========
-        private static final String LOG_PREFIX = "Homekit OutletService: ";
-        private static final String LOG_INIT = LOG_PREFIX + "Init - ";
-        private static final String LOG_STATE = LOG_PREFIX + "State - ";
-        private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
+    // ========== Log Message Prefixes ==========
+    private static final String LOG_PREFIX = "Homekit OutletService: ";
+    private static final String LOG_INIT = LOG_PREFIX + "Init - ";
+    private static final String LOG_STATE = LOG_PREFIX + "State - ";
+    private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
 
-        private static final Logger logger = LoggerFactory.getLogger(HomekitOutletService.class);
+    private static final Logger logger = LoggerFactory.getLogger(HomekitOutletService.class);
 
-        /**
-         * Creates a new Outlet service.
-         *
-         * @param accessory The accessory this service belongs to
-         * @param eventManager The event manager for handling HomeKit events
-         * @param characteristicFactory Factory for creating HomeKit characteristics
-         * @since 1.0
-         */
-        public HomekitOutletService(HomekitAccessory accessory, HomekitEventManager eventManager,
-                        HomekitCharacteristicFactory characteristicFactory) {
-                super(accessory, eventManager, characteristicFactory);
-                withName("Outlet").withPrimary(false).withHidden(false).withExtensible(false);
-                logger.debug("{}Created OutletService for accessory {}", LOG_INIT, accessory.getLabel());
-        }
+    /**
+     * Creates a new Outlet service.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @since 1.0
+     */
+    public HomekitOutletService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory) {
+        super(accessory, eventManager, characteristicFactory);
+        withName("Outlet").withPrimary(false).withHidden(false).withExtensible(false);
+        logger.debug("{}Created OutletService for accessory {}", LOG_INIT, accessory.getLabel());
+    }
 
-        /**
-         * Creates a new Outlet service from a JSON configuration.
-         *
-         * @param accessory The accessory this service belongs to
-         * @param eventManager The event manager for handling HomeKit events
-         * @param characteristicFactory Factory for creating HomeKit characteristics
-         * @param value JSON value containing service configuration
-         * @since 1.0
-         */
-        public HomekitOutletService(HomekitAccessory accessory, HomekitEventManager eventManager,
-                        HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
-                super(accessory, eventManager, characteristicFactory, value);
-                logger.debug("{}Created OutletService from JSON for accessory {}", LOG_INIT, accessory.getLabel());
-        }
+    /**
+     * Creates a new Outlet service from a JSON configuration.
+     *
+     * @param accessory The accessory this service belongs to
+     * @param eventManager The event manager for handling HomeKit events
+     * @param characteristicFactory Factory for creating HomeKit characteristics
+     * @param value JSON value containing service configuration
+     * @since 1.0
+     */
+    public HomekitOutletService(HomekitAccessory accessory, HomekitEventManager eventManager,
+            HomekitCharacteristicFactory characteristicFactory, JsonValue value) {
+        super(accessory, eventManager, characteristicFactory, value);
+        logger.debug("{}Created OutletService from JSON for accessory {}", LOG_INIT, accessory.getLabel());
+    }
 
-        /**
-         * Adds the required and optional characteristics for this service.
-         * <p>
-         * Required characteristics:
-         * <ul>
-         * <li>On - Current power state (0 = Off, 1 = On)</li>
-         * <li>InUse - Current usage state (0 = Not In Use, 1 = In Use)</li>
-         * </ul>
-         * </p>
-         * <p>
-         * Optional characteristics:
-         * <ul>
-         * <li>Name - Outlet name</li>
-         * <li>StatusActive - Outlet activation state</li>
-         * <li>StatusFault - Fault state indicator</li>
-         * </ul>
-         * </p>
-         * 
-         * @since 1.0
-         */
-        @Override
-        public void addCharacteristics() throws HomekitServiceException {
-                logger.debug("{}Adding required characteristics to OutletService for accessory {}", LOG_TRACE,
-                                getAccessory().getLabel());
+    /**
+     * Adds the required and optional characteristics for this service.
+     * <p>
+     * Required characteristics:
+     * <ul>
+     * <li>On - Current power state (0 = Off, 1 = On)</li>
+     * <li>InUse - Current usage state (0 = Not In Use, 1 = In Use)</li>
+     * </ul>
+     * </p>
+     * <p>
+     * Optional characteristics:
+     * <ul>
+     * <li>Name - Outlet name</li>
+     * <li>StatusActive - Outlet activation state</li>
+     * <li>StatusFault - Fault state indicator</li>
+     * </ul>
+     * </p>
+     * 
+     * @since 1.0
+     */
+    @Override
+    public void addCharacteristics() throws HomekitServiceException {
+        logger.debug("{}Adding required characteristics to OutletService for accessory {}", LOG_TRACE,
+                getAccessory().getLabel());
 
-                addCharacteristic(new HomekitOnCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId())
-                                .withMandatory(true));
-                logger.debug("{}Added OnCharacteristic to OutletService", LOG_STATE);
+        addCharacteristic(new HomekitOnCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(true));
+        logger.debug("{}Added OnCharacteristic to OutletService", LOG_STATE);
 
-                addCharacteristic(
-                                new HomekitInUseCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(true));
-                logger.debug("{}Added InUseCharacteristic to OutletService", LOG_STATE);
+        addCharacteristic(
+                new HomekitInUseCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(true));
+        logger.debug("{}Added InUseCharacteristic to OutletService", LOG_STATE);
 
-                addCharacteristic(new HomekitNameCharacteristic(this, eventManager,
-                                getAccessory().getNextAvailableInstanceId())
-                                .withMandatory(false));
-                logger.debug("{}Added NameCharacteristic to OutletService", LOG_STATE);
+        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                .withMandatory(false));
+        logger.debug("{}Added NameCharacteristic to OutletService", LOG_STATE);
 
-                addCharacteristic(
-                                new HomekitStatusActiveCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                logger.debug("{}Added StatusActiveCharacteristic to OutletService", LOG_STATE);
+        addCharacteristic(
+                new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        logger.debug("{}Added StatusActiveCharacteristic to OutletService", LOG_STATE);
 
-                addCharacteristic(
-                                new HomekitStatusFaultCharacteristic(this, eventManager,
-                                                getAccessory().getNextAvailableInstanceId())
-                                                .withMandatory(false));
-                logger.debug("{}Added StatusFaultCharacteristic to OutletService", LOG_STATE);
-        }
+        addCharacteristic(
+                new HomekitStatusFaultCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
+                        .withMandatory(false));
+        logger.debug("{}Added StatusFaultCharacteristic to OutletService", LOG_STATE);
+    }
 }

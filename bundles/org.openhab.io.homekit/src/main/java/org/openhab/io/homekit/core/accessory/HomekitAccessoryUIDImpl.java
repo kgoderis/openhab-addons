@@ -171,7 +171,7 @@ public class HomekitAccessoryUIDImpl extends HomekitUID implements HomekitAccess
      * @return The pairing identifier for this accessory
      */
     @Override
-    public String getPairingId() {
+    public String getAccessoryServerId() {
         return pairingId;
     }
 
