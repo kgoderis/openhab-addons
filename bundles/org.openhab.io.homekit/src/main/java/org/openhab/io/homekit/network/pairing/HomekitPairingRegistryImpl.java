@@ -15,6 +15,8 @@ package org.openhab.io.homekit.network.pairing;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -123,6 +125,7 @@ public class HomekitPairingRegistryImpl
     private volatile boolean readyMarkerRegistered = false;
     private volatile boolean managedPairingProviderReady = false;
     private volatile boolean accessoryServerRegistryReady = false;
+    private final Set<String> processedReadyMarkers = new HashSet<>();
 
     /**
      * Initializes the HomeKit pairing registry.
@@ -240,27 +243,38 @@ public class HomekitPairingRegistryImpl
     }
 
     /**
-     * Deactivates the registry.
+     * Deactivates the registry and unregisters it from the ready service.
      *
      * <p>
-     * This method is called by OSGi when the component is being deactivated.
-     * It performs cleanup operations and releases resources.
-     * </p>
-     *
-     * <p>
-     * <b>Implementation details:</b>
+     * This method performs cleanup operations when the component is deactivated:
      * </p>
      * <ul>
-     * <li>Cleans up resources</li>
-     * <li>Removes OSGi integration</li>
-     * <li>Ensures proper shutdown</li>
-     * <li>Maintains thread safety</li>
+     * <li>Unregisters the ready marker tracker</li>
+     * <li>Cleans up any remaining resources</li>
+     * <li>Ensures proper component lifecycle management</li>
+     * </ul>
+     *
+     * <p>
+     * <b>Key implementation details:</b>
+     * </p>
+     * <ul>
+     * <li>Removes tracker from ready service</li>
+     * <li>Clears processed ready markers to prevent memory leaks</li>
+     * <li>Logs deactivation for debugging</li>
+     * <li>Prevents resource leaks</li>
      * </ul>
      */
     @Override
     @Deactivate
     protected void deactivate() {
         logger.debug("{}Deactivating HomeKit pairing registry", LOG_INIT);
+
+        // Unregister the tracker to prevent duplicate notifications
+        readyService.unregisterTracker(this);
+
+        // Clear processed ready markers to prevent memory leaks
+        processedReadyMarkers.clear();
+
         super.deactivate();
         logger.debug("{}HomeKit pairing registry deactivated successfully", LOG_INIT);
     }
@@ -363,6 +377,15 @@ public class HomekitPairingRegistryImpl
      */
     @Override
     public synchronized void onReadyMarkerAdded(ReadyMarker readyMarker) {
+        String markerKey = readyMarker.getType() + ":" + readyMarker.getIdentifier();
+
+        if (processedReadyMarkers.contains(markerKey)) {
+            logger.debug("{}Duplicate ready marker ignored - Type: {}, Identifier: {}", LOG_STATE,
+                    readyMarker.getType(), readyMarker.getIdentifier());
+            return;
+        }
+
+        processedReadyMarkers.add(markerKey);
         logger.debug("{}Ready marker added: {}", LOG_STATE, readyMarker);
 
         String markerType = readyMarker.getType();
