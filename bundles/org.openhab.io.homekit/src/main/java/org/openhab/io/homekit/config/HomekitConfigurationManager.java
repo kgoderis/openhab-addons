@@ -37,6 +37,7 @@ import org.openhab.io.homekit.util.ItemUID;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
@@ -985,6 +986,68 @@ public class HomekitConfigurationManager implements WatchService.WatchEventListe
 
             throw new IllegalArgumentException("Invalid configuration type: " + section);
         }
+    }
+
+    /**
+     * Deactivates the HomeKit configuration manager.
+     *
+     * <p>
+     * This method performs cleanup operations when the component is deactivated:
+     * </p>
+     * <ul>
+     * <li>Unregisters from the watch service</li>
+     * <li>Cleans up configuration stores</li>
+     * <li>Ensures proper resource cleanup</li>
+     * </ul>
+     *
+     * <p>
+     * <b>Key implementation details:</b>
+     * </p>
+     * <ul>
+     * <li>Unregisters from watch service to prevent memory leaks</li>
+     * <li>Clears all configuration stores</li>
+     * <li>Logs deactivation for debugging</li>
+     * <li>Prevents resource leaks</li>
+     * </ul>
+     */
+    @Deactivate
+    protected void deactivate() {
+        logger.info("{}Deactivating HomeKit configuration manager", LOG_INIT);
+
+        try {
+            // Unregister from watch service
+            this.watchService.unregisterListener(this);
+            logger.debug("{}Unregistered from watch service", LOG_INIT);
+        } catch (Exception e) {
+            logger.warn("{}Failed to unregister from watch service: {}", LOG_WARN, e.getMessage());
+        }
+
+        // Clean up configuration stores
+        itemConfigs.clear();
+        thingConfigs.clear();
+        channelConfigs.clear();
+        accessoryConfigs.clear();
+        serviceConfigs.clear();
+        characteristicConfigs.clear();
+        profileConfigs.clear();
+        bridgeConfigs.clear();
+        networkConfigs.clear();
+        eventConfigs.clear();
+
+        // Clean up source file mappings
+        itemSourceFiles.clear();
+        thingSourceFiles.clear();
+        channelSourceFiles.clear();
+        accessorySourceFiles.clear();
+        serviceSourceFiles.clear();
+        characteristicSourceFiles.clear();
+        profileSourceFiles.clear();
+        bridgeSourceFiles.clear();
+        networkSourceFiles.clear();
+        eventSourceFiles.clear();
+
+        logger.debug("{}Cleaned up all configuration stores", LOG_INIT);
+        logger.info("{}HomeKit configuration manager deactivated successfully", LOG_INIT);
     }
 }
 // Test

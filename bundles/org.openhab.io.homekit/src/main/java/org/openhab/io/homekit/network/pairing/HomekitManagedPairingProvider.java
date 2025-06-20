@@ -24,6 +24,7 @@ import org.openhab.io.homekit.api.uid.HomekitPairingUID;
 import org.openhab.io.homekit.protocol.pairing.HomekitPairing;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -251,5 +252,35 @@ public class HomekitManagedPairingProvider extends
     protected HomekitPairing toPersistableElement(HomekitPairing element) {
         logger.debug("{}Converting pairing to storable element with UID: {}", LOG_PAIRING, element.getUID());
         return element;
+    }
+
+    /**
+     * Deactivates the managed pairing provider.
+     *
+     * <p>
+     * This method performs cleanup operations when the component is deactivated:
+     * </p>
+     * <ul>
+     * <li>Unregisters the ready marker to prevent duplicate registrations</li>
+     * <li>Cleans up any remaining resources</li>
+     * <li>Ensures proper component lifecycle management</li>
+     * </ul>
+     *
+     * <p>
+     * <b>Key implementation details:</b>
+     * </p>
+     * <ul>
+     * <li>Removes ready marker from ready service</li>
+     * <li>Logs deactivation for debugging</li>
+     * <li>Prevents resource leaks</li>
+     * </ul>
+     */
+    @Deactivate
+    protected void deactivate() {
+        logger.debug("{}Deactivating HomeKit managed pairing provider", LOG_INIT);
+
+        ReadyMarker marker = new ReadyMarker(HOMEKIT_MANAGED_PAIRING_PROVIDER, this.toString());
+        this.readyService.unmarkReady(marker);
+        logger.debug("{}HomeKit managed pairing provider deactivated and ready marker removed", LOG_INIT);
     }
 }

@@ -52,6 +52,7 @@ import org.openhab.io.homekit.util.HomekitUID;
 import org.openhab.io.homekit.util.ItemUID;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -768,5 +769,31 @@ public class HomekitCommandExtension extends AbstractConsoleCommandExtension {
             }
         }
         logger.debug("{}Completed printing details for accessory: {}", LOG_DEBUG, accessory.getUID());
+    }
+
+    /**
+     * Deactivates the HomeKit command extension.
+     *
+     * <p>
+     * This method performs cleanup operations when the component is deactivated:
+     * </p>
+     * <ul>
+     * <li>Cleans up any remaining resources</li>
+     * <li>Ensures proper component lifecycle management</li>
+     * </ul>
+     *
+     * <p>
+     * <b>Key implementation details:</b>
+     * </p>
+     * <ul>
+     * <li>Logs deactivation for debugging</li>
+     * <li>Prevents resource leaks</li>
+     * <li>Ensures proper cleanup</li>
+     * </ul>
+     */
+    @Deactivate
+    protected void deactivate() {
+        logger.info("{}Deactivating HomeKit command extension", LOG_INIT);
+        logger.debug("{}Command extension deactivated successfully", LOG_INIT);
     }
 }

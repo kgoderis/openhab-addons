@@ -101,6 +101,7 @@ import org.openhab.io.homekit.exception.HomekitFactoryException;
 import org.openhab.io.homekit.util.HomekitUID;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
@@ -1299,52 +1300,89 @@ public class HomekitThingBridge implements EventSubscriber, ThingRegistryChangeL
     }
 
     /**
-     * Deactivates the bridge.
+     * Deactivates the HomeKit thing bridge.
      *
-     * This method performs cleanup when the bridge is deactivated.
+     * <p>
+     * This method performs cleanup operations when the component is deactivated:
+     * </p>
+     * <ul>
+     * <li>Stops statistics collection</li>
+     * <li>Unsubscribes from all event subscriptions</li>
+     * <li>Cleans up channel profiles and mappings</li>
+     * <li>Removes all accessories from servers</li>
+     * <li>Ensures proper resource cleanup</li>
+     * </ul>
      *
-     * @since 1.0.0
+     * <p>
+     * <b>Key implementation details:</b>
+     * </p>
+     * <ul>
+     * <li>Stops statistics collector to prevent memory leaks</li>
+     * <li>Unsubscribes from all event subscriptions</li>
+     * <li>Cleans up all channel mappings and profiles</li>
+     * <li>Removes accessories from servers to prevent orphaned references</li>
+     * <li>Logs deactivation for debugging</li>
+     * </ul>
      */
-    public void deactivate() {
+    @Deactivate
+    protected void deactivate() {
+        logger.info("{}Deactivating HomeKit thing bridge", LOG_PREFIX);
+
+        // Stop statistics collection
         if (ENABLE_EXIT_EVENT_STATISTICS) {
             statisticsCollector.stop();
+            logger.debug("{}Statistics collection stopped", LOG_PREFIX);
         }
-        // Unsubscribe from all characteristic events
-        eventSubscriptions.forEach(subscription -> {
-            try {
-                eventManager.unsubscribe(subscription.getEventType(), subscription.getPublisherUID(),
-                        subscription.getSubscriber());
-            } catch (Exception e) {
-                logger.error("{}Failed to unsubscribe from event: {}", LOG_PREFIX, e.getMessage(), e);
-            }
-        });
+
+        // Unsubscribe from all event subscriptions
+        eventSubscriptions.forEach(eventManager::unsubscribe);
         eventSubscriptions.clear();
+        logger.debug("{}Unsubscribed from {} event subscriptions", LOG_PREFIX, eventSubscriptions.size());
 
-        // Remove accessories and clean up
-        thingAccessoryMap.values().forEach(accessory -> {
-            try {
-                accessoryServerRegistry.getAccessoryServer(accessory.getUID()).ifPresent(server -> {
-                    try {
-                        server.removeAccessory(accessory);
-                    } catch (HomekitAccessoryOperationException e) {
-                        logger.error("{}Failed to remove accessory {}: {}", LOG_PREFIX, accessory.getUID(),
-                                e.getMessage(), e);
-                    }
-                });
-            } catch (Exception e) {
-                logger.error("{}Failed to access server for accessory {}: {}", LOG_PREFIX, accessory.getUID(),
-                        e.getMessage(), e);
-            }
-        });
+        // Clean up channel profiles
+        channelProfiles.clear();
+        channelHomekitToOpenhabProfiles.clear();
+        logger.debug("{}Cleaned up channel profiles", LOG_PREFIX);
 
-        thingAccessoryMap.clear();
+        // Clean up mappings
         channelCharacteristicMap.clear();
         characteristicChannelMap.clear();
         itemChannelMap.clear();
+        logger.debug("{}Cleaned up channel mappings", LOG_PREFIX);
 
-        // Clean up both profile maps
-        channelProfiles.clear();
-        channelHomekitToOpenhabProfiles.clear();
+        // Remove all accessories from servers
+        thingAccessoryMap.forEach((thingUID, accessory) -> {
+            try {
+                // Find the server that contains this accessory and remove it
+                accessoryServerRegistry.getAll().stream().filter(server -> {
+                    try {
+                        return server.getAccessories().contains(accessory);
+                    } catch (HomekitAccessoryOperationException e) {
+                        logger.warn("{}Failed to get accessories from server {}: {}", LOG_PREFIX, server.getUID(),
+                                e.getMessage());
+                        return false;
+                    }
+                }).findFirst().ifPresent(server -> {
+                    try {
+                        server.removeAccessory(accessory);
+                        logger.debug("{}Removed accessory {} from server {}", LOG_PREFIX, accessory.getUID(),
+                                server.getUID());
+                    } catch (HomekitAccessoryOperationException e) {
+                        logger.warn("{}Failed to remove accessory {} from server {}: {}", LOG_PREFIX,
+                                accessory.getUID(), server.getUID(), e.getMessage());
+                    }
+                });
+            } catch (Exception e) {
+                logger.warn("{}Failed to process accessory {} during deactivation: {}", LOG_PREFIX, accessory.getUID(),
+                        e.getMessage());
+            }
+        });
+
+        // Clear accessory map
+        thingAccessoryMap.clear();
+        logger.debug("{}Cleaned up accessory mappings", LOG_PREFIX);
+
+        logger.info("{}HomeKit thing bridge deactivated successfully", LOG_PREFIX);
     }
 
     /**

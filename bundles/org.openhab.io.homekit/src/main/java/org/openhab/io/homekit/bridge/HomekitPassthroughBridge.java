@@ -13,8 +13,8 @@
 
 package org.openhab.io.homekit.bridge;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -38,6 +38,7 @@ import org.openhab.io.homekit.server.HomekitRemoteAccessoryServer;
 import org.openhab.io.homekit.util.HomekitUID;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -629,29 +630,56 @@ public class HomekitPassthroughBridge {
     }
 
     /**
-     * Cleans up all resources used by the bridge.
-     * 
-     * This method:
-     * - Unsubscribes from all event subscriptions
-     * - Unbridges all accessories
-     * - Clears the bridge context storage
-     * 
-     * @since 1.0.0
+     * Disposes of the bridge and cleans up all resources.
+     *
+     * This method performs cleanup operations when the component is deactivated:
+     * </p>
+     * <ul>
+     * <li>Unsubscribes from all event subscriptions</li>
+     * <li>Unbridges all accessories</li>
+     * <li>Cleans up bridge contexts</li>
+     * <li>Ensures proper resource cleanup</li>
+     * </ul>
+     *
+     * <p>
+     * <b>Key implementation details:</b>
+     * </p>
+     * <ul>
+     * <li>Unsubscribes from event subscriptions to prevent memory leaks</li>
+     * <li>Unbridges all accessories to clean up server references</li>
+     * <li>Clears bridge context storage</li>
+     * <li>Logs deactivation for debugging</li>
+     * </ul>
      */
-    public void dispose() {
-        logger.info("{}Disposing HomeKit Passthrough Bridge", LOG_INIT);
+    @Deactivate
+    protected void deactivate() {
+        logger.info("{}Deactivating HomeKit passthrough bridge", LOG_INIT);
 
         // Unsubscribe from all event subscriptions
-        logger.debug("{}Unsubscribing from {} event subscriptions", LOG_STATE, eventSubscriptions.size());
-        eventSubscriptions.forEach(eventManager::unsubscribe);
+        if (eventSubscriptions != null) {
+            eventSubscriptions.forEach(eventManager::unsubscribe);
+            logger.debug("{}Unsubscribed from {} event subscriptions", LOG_INIT, eventSubscriptions.size());
+        }
 
         // Unbridge all accessories
-        logger.debug("{}Unbridging {} accessories", LOG_STATE, bridgedAccessories.size());
-        new ArrayList<>(bridgedAccessories.keySet()).forEach(this::unbridgeAccessory);
+        Set<HomekitAccessory> accessoriesToUnbridge = new HashSet<>(bridgedAccessories.keySet());
+        accessoriesToUnbridge.forEach(this::unbridgeAccessory);
+        logger.debug("{}Unbridged {} accessories", LOG_INIT, accessoriesToUnbridge.size());
 
-        // Clear the bridge context storage
+        // Clear bridge contexts
         bridgedAccessories.clear();
+        logger.debug("{}Cleaned up bridge contexts", LOG_INIT);
 
-        logger.info("{}HomeKit Passthrough Bridge disposed successfully", LOG_INIT);
+        logger.info("{}HomeKit passthrough bridge deactivated successfully", LOG_INIT);
+    }
+
+    /**
+     * Disposes of the bridge and cleans up all resources.
+     *
+     * @deprecated Use {@link #deactivate()} instead
+     */
+    @Deprecated
+    public void dispose() {
+        deactivate();
     }
 }
