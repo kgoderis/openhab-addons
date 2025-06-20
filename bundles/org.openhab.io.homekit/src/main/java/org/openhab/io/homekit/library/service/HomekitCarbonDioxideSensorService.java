@@ -25,7 +25,6 @@ import org.openhab.io.homekit.exception.HomekitServiceException;
 import org.openhab.io.homekit.library.characteristic.HomekitCarbonDioxideDetectedCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitCarbonDioxideLevelCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitCarbonDioxidePeakLevelCharacteristic;
-import org.openhab.io.homekit.library.characteristic.HomekitNameCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitStatusActiveCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitStatusFaultCharacteristic;
 import org.openhab.io.homekit.library.characteristic.HomekitStatusLowBatteryCharacteristic;
@@ -157,10 +156,6 @@ public class HomekitCarbonDioxideSensorService extends AbstractHomekitService {
         addCharacteristic(new HomekitCarbonDioxidePeakLevelCharacteristic(this, eventManager,
                 getAccessory().getNextAvailableInstanceId()).withMandatory(false));
         logger.debug("{}Added CarbonDioxidePeakLevelCharacteristic to CarbonDioxideSensorService", LOG_STATE);
-
-        addCharacteristic(new HomekitNameCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
-                .withMandatory(false));
-        logger.debug("{}Added NameCharacteristic to CarbonDioxideSensorService", LOG_STATE);
 
         addCharacteristic(
                 new HomekitStatusActiveCharacteristic(this, eventManager, getAccessory().getNextAvailableInstanceId())
