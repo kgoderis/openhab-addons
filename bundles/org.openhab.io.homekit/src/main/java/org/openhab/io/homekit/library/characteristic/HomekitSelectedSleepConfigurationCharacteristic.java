@@ -62,7 +62,7 @@ public class HomekitSelectedSleepConfigurationCharacteristic extends HomekitTLV8
 
     @Override
     public Map<Integer, Object> getDefault() {
-        throw new UnsupportedOperationException("Default value must be implemented for the specific device.");
+        return Map.of(); // Return empty map for TLV8 characteristics
     }
 
     @Override

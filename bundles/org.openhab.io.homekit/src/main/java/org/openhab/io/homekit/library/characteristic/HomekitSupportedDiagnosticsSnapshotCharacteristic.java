@@ -60,7 +60,7 @@ public class HomekitSupportedDiagnosticsSnapshotCharacteristic extends HomekitTL
 
     @Override
     public Map<Integer, Object> getDefault() {
-        throw new UnsupportedOperationException("Default value must be implemented for the specific device.");
+        return Map.of(); // Return empty map for diagnostics characteristics
     }
 
     @Override
