@@ -120,7 +120,7 @@ public abstract class HomekitReadOnlyStringCharacteristic extends AbstractHomeki
         super(service, eventManager);
         withFormat("string").withPairedWrite(false).withPairedRead(true).withEvents(false);
         initializeValue();
-        logger.debug("{}Created new read-only string characteristic for service: {}", LOG_CHAR, service);
+        logger.trace("{}Created new read-only string characteristic for service: {}", LOG_CHAR, service);
     }
 
     /**
@@ -157,7 +157,7 @@ public abstract class HomekitReadOnlyStringCharacteristic extends AbstractHomeki
             JsonValue value) {
         super(service, eventManager, value);
         initializeValue();
-        logger.debug("{}Created new read-only string characteristic from JSON for service: {}", LOG_CHAR, service);
+        logger.trace("{}Created new read-only string characteristic from JSON for service: {}", LOG_CHAR, service);
     }
 
     /**
@@ -204,7 +204,7 @@ public abstract class HomekitReadOnlyStringCharacteristic extends AbstractHomeki
             // Make it read-only after setting
             withPairedWrite(false);
 
-            logger.debug("{}Value set successfully, characteristic is now read-only", LOG_CHAR);
+            logger.trace("{}Value set successfully, characteristic is now read-only", LOG_CHAR);
         } catch (Exception e) {
             // Restore read-only state if setting failed
             withPairedWrite(false);
@@ -262,7 +262,7 @@ public abstract class HomekitReadOnlyStringCharacteristic extends AbstractHomeki
             // Make it read-only after setting
             withPairedWrite(false);
 
-            logger.debug("{}Value with metadata set successfully, characteristic is now read-only", LOG_CHAR);
+            logger.trace("{}Value with metadata set successfully, characteristic is now read-only", LOG_CHAR);
         } catch (Exception e) {
             // Restore read-only state if setting failed
             withPairedWrite(false);
@@ -286,7 +286,7 @@ public abstract class HomekitReadOnlyStringCharacteristic extends AbstractHomeki
      * @since 1.0
      */
     public boolean isValueSet() {
-        logger.debug("{}Checking if value has been set: {}", LOG_CHAR, valueSet);
+        logger.trace("{}Checking if value has been set: {}", LOG_CHAR, valueSet);
         return valueSet;
     }
 
@@ -306,7 +306,7 @@ public abstract class HomekitReadOnlyStringCharacteristic extends AbstractHomeki
      */
     @Override
     public boolean isHidden() {
-        logger.debug("{}Checking if characteristic is hidden: false", LOG_CHAR);
+        logger.trace("{}Checking if characteristic is hidden: false", LOG_CHAR);
         return false;
     }
 
@@ -327,7 +327,7 @@ public abstract class HomekitReadOnlyStringCharacteristic extends AbstractHomeki
      */
     @Override
     public String getDefault() {
-        logger.debug("{}Getting default value: empty string", LOG_CHAR);
+        logger.trace("{}Getting default value: empty string", LOG_CHAR);
         return "";
     }
 
@@ -534,7 +534,7 @@ public abstract class HomekitReadOnlyStringCharacteristic extends AbstractHomeki
      * @return the item type string for strings
      */
     public static String getAcceptedItemType() {
-        logger.debug("{}Getting accepted item type: {}", LOG_CHAR, CoreItemFactory.STRING);
+        logger.trace("{}Getting accepted item type: {}", LOG_CHAR, CoreItemFactory.STRING);
         return CoreItemFactory.STRING;
     }
 }

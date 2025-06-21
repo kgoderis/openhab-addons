@@ -16,6 +16,7 @@ package org.openhab.io.homekit.event.core;
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.api.event.HomekitEvent;
 import org.openhab.io.homekit.api.event.HomekitEventType;
@@ -86,7 +87,7 @@ public abstract class AbstractHomekitEvent implements HomekitEvent {
 
     private final HomekitEventType type;
     private final UID publisherUID;
-    private Optional<UID> subscriberUID;
+    private UID subscriberUID;
     private final HomekitEventMetadata metadata;
     private final long timestamp;
     private final boolean isValid;
@@ -98,14 +99,14 @@ public abstract class AbstractHomekitEvent implements HomekitEvent {
      *
      * @param type the event type
      * @param publisherUID the UID of the publisher
-     * @param subscriberUID the UID of the subscriber
+     * @param subscriberUID the UID of the subscriber (if null, WILDCARD_UID will be used)
      * @param originalMetadata the metadata from the original event
      */
-    protected AbstractHomekitEvent(HomekitEventType type, UID publisherUID, UID subscriberUID,
+    protected AbstractHomekitEvent(HomekitEventType type, UID publisherUID, @Nullable UID subscriberUID,
             HomekitEventMetadata originalMetadata) {
         this.type = type;
         this.publisherUID = publisherUID;
-        this.subscriberUID = Optional.ofNullable(subscriberUID);
+        this.subscriberUID = subscriberUID != null ? subscriberUID : HomekitUID.WILDCARD_UID;
         this.metadata = new HomekitEventMetadata(originalMetadata, publisherUID);
         this.timestamp = System.currentTimeMillis();
 
@@ -191,27 +192,26 @@ public abstract class AbstractHomekitEvent implements HomekitEvent {
      * Gets the unique identifier of the subscriber for this event.
      * 
      * This method returns the UID of the component that should receive this event.
-     * The subscriber UID may be empty if the event is being broadcast or if the subscriber
-     * has not been determined yet.
+     * The subscriber UID will be WILDCARD_UID if the event is being broadcast.
      *
-     * @return Optional containing the UID of the event subscriber
+     * @return The UID of the event subscriber
      */
     @Override
     public Optional<UID> getSubscriberUID() {
-        return subscriberUID;
+        return Optional.of(subscriberUID);
     }
 
     /**
      * Sets the unique identifier of the subscriber for this event.
      * 
      * This method allows changing the target subscriber for this event.
-     * The subscriber UID can be set to null to indicate a broadcast event.
+     * If the UID is null, WILDCARD_UID will be used to indicate a broadcast event.
      *
      * @param uid The UID of the subscriber to set
      */
     @Override
-    public void setSubscriberUID(UID uid) {
-        this.subscriberUID = Optional.ofNullable(uid);
+    public void setSubscriberUID(@Nullable UID uid) {
+        this.subscriberUID = uid != null ? uid : HomekitUID.WILDCARD_UID;
     }
 
     /**

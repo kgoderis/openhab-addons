@@ -459,8 +459,8 @@ public class HomekitEventManager {
                 subscriber, eventClass);
         if (subscriptions.add(subscription)) {
             publishEvent(new HomekitSubscriptionAddedEvent(subscription));
-            logger.debug("{}Subscriber added for event type {} and source UID {}", LOG_SUBSCRIBER, eventType,
-                    publisherUID);
+            logger.debug("{}Subscriber {} added for event type {} and source UID {}", LOG_SUBSCRIBER, subscriberUID,
+                    eventType, publisherUID);
         }
         return subscription;
     }
@@ -470,8 +470,8 @@ public class HomekitEventManager {
         HomekitEventSubscription subscription = new HomekitEventSubscription(eventType, publisherUID, subscriber);
         if (subscriptions.add(subscription)) {
             publishEvent(new HomekitSubscriptionAddedEvent(subscription));
-            logger.debug("{}Subscriber added for event type {} and source UID {}", LOG_SUBSCRIBER, eventType,
-                    publisherUID);
+            logger.debug("{}Subscriber {} added for event type {} and source UID {}", LOG_SUBSCRIBER,
+                    subscription.subscriberUID, eventType, publisherUID);
         }
         return subscription;
     }
@@ -482,8 +482,8 @@ public class HomekitEventManager {
                 subscriber);
         if (subscriptions.add(subscription)) {
             publishEvent(new HomekitSubscriptionAddedEvent(subscription));
-            logger.debug("{}Subscriber added for event type {} and source UID {}", LOG_SUBSCRIBER, eventType,
-                    publisherUID);
+            logger.debug("{}Subscriber {} added for event type {} and source UID {}", LOG_SUBSCRIBER, subscriberUID,
+                    eventType, publisherUID);
         }
         return subscription;
     }
@@ -571,8 +571,8 @@ public class HomekitEventManager {
                 filter);
         if (subscriptions.add(subscription)) {
             publishEvent(new HomekitSubscriptionAddedEvent(subscription));
-            logger.debug("{}Subscriber added for event type {} and source UID {} with filter", LOG_SUBSCRIBER,
-                    eventType, publisherUID);
+            logger.debug("{}Subscriber {} added for event type {} and source UID {} with filter", LOG_SUBSCRIBER,
+                    subscription.subscriberUID, eventType, publisherUID);
         }
         return subscription;
     }
@@ -594,8 +594,8 @@ public class HomekitEventManager {
                 expectedEventClass, filter);
         if (subscriptions.add(subscription)) {
             publishEvent(new HomekitSubscriptionAddedEvent(subscription));
-            logger.debug("{}Subscriber added for event type {} and source UID {} with filter and expected class",
-                    LOG_SUBSCRIBER, eventType, publisherUID);
+            logger.debug("{}Subscriber {} added for event type {} and source UID {} with filter and expected class",
+                    LOG_SUBSCRIBER, subscription.subscriberUID, eventType, publisherUID);
         }
         return subscription;
     }
@@ -625,8 +625,8 @@ public class HomekitEventManager {
     public void unsubscribe(HomekitEventSubscription subscription) {
         if (subscriptions.remove(subscription)) {
             publishEvent(new HomekitSubscriptionRemovedEvent(subscription));
-            logger.debug("{}Subscriber removed for event type {} and source UID {}", LOG_SUBSCRIBER,
-                    subscription.eventType, subscription.publisherUID);
+            logger.debug("{}Subscriber {} removed for event type {} and source UID {}", LOG_SUBSCRIBER,
+                    subscription.subscriberUID, subscription.eventType, subscription.publisherUID);
         }
     }
 
@@ -635,8 +635,8 @@ public class HomekitEventManager {
         findExistingSubscription(eventType, publisherUID, subscriber).ifPresent(removedSubscription -> {
             if (subscriptions.remove(removedSubscription)) {
                 publishEvent(new HomekitSubscriptionRemovedEvent(removedSubscription));
-                logger.debug("{}Subscriber removed for event type {} and source UID {}", LOG_SUBSCRIBER, eventType,
-                        publisherUID);
+                logger.debug("{}Subscriber {} removed for event type {} and source UID {}", LOG_SUBSCRIBER,
+                        removedSubscription.subscriberUID, eventType, publisherUID);
             }
         });
     }
@@ -985,8 +985,8 @@ public class HomekitEventManager {
                 subscriber, expectedEventClass, filter);
         if (subscriptions.add(subscription)) {
             publishEvent(new HomekitSubscriptionAddedEvent(subscription));
-            logger.debug("{}Subscriber added for event type {} and source UID {} with filter", LOG_SUBSCRIBER,
-                    eventType, publisherUID);
+            logger.debug("{}Subscriber {} added for event type {} and source UID {} with filter {}", LOG_SUBSCRIBER,
+                    subscriberUID, eventType, publisherUID, filter);
         }
         return subscription;
     }

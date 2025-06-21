@@ -150,14 +150,14 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
      * as the foundation for all HomeKit accessories in the system.
      */
     private void addFactoryIndependentThingTypes() {
-        logger.debug("{}Adding factory-independent thing types", LOG_TYPE);
+        logger.trace("{}Adding factory-independent thing types", LOG_TYPE);
         ThingTypeUID thingTypeUID = new ThingTypeUID(HomekitBindingConstants.BINDING_ID, "accessory");
 
         ThingType thingType = ThingTypeBuilder.instance(thingTypeUID, "Homekit Accessory")
                 .withDescription("Homekit Accessory").withCategory("homekit").build();
 
         putThingType(thingType);
-        logger.info("{}Created base HomeKit accessory thing type: {}", LOG_TYPE, thingTypeUID);
+        logger.trace("{}Created base HomeKit accessory thing type: {}", LOG_TYPE, thingTypeUID);
     }
 
     /**
@@ -168,7 +168,7 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
      * and creates corresponding thing types for each service.
      */
     private void addFactoryDependentThingTypes() {
-        logger.debug("{}Adding factory-dependent thing types", LOG_TYPE);
+        logger.trace("{}Adding factory-dependent thing types", LOG_TYPE);
         for (String serviceType : homekitServiceFactory.getSupportedServiceTypes()) {
             createThingTypeForService(serviceType);
         }
@@ -220,7 +220,7 @@ public class HomekitThingTypeProvider extends AbstractStorageBasedTypeProvider {
      * @param serviceType The HomeKit service type to create a thing type for
      */
     private void createThingTypeForService(String serviceType) {
-        logger.debug("{}Creating service thing type for: {}", LOG_TYPE, serviceType);
+        logger.trace("{}Creating service thing type for: {}", LOG_TYPE, serviceType);
 
         Optional<ThingTypeUID> thingTypeUIDOpt = getThingTypeUID(serviceType);
         if (thingTypeUIDOpt.isEmpty()) {

@@ -626,7 +626,7 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
             return key;
         }).findFirst().orElseThrow(() -> new HomekitFactoryException("No tag found for service type: " + serviceType));
 
-        logger.debug("{}Found tag {} for service type {}", LOG_STATE, tag, serviceType);
+        logger.trace("{}Found tag {} for service type {}", LOG_STATE, tag, serviceType);
         return tag;
     }
 
@@ -662,7 +662,7 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
             logger.error("{}No service type found for tag: {}", LOG_ERROR, serviceTag);
             throw new HomekitFactoryException("No service type found for tag: " + serviceTag);
         }
-        logger.debug("{}Found service type {} for tag {}", LOG_STATE, type, serviceTag);
+        logger.trace("{}Found service type {} for tag {}", LOG_STATE, type, serviceTag);
         return type;
     }
 
@@ -715,7 +715,7 @@ public class HomekitServiceFactoryImpl implements HomekitServiceFactory {
         result.put("mandatory", Collections.unmodifiableSet(mandatorySet));
         result.put("optional", Collections.unmodifiableSet(optionalSet));
 
-        logger.debug("{}Found {} mandatory and {} optional characteristics for service type {}", LOG_STATE,
+        logger.trace("{}Found {} mandatory and {} optional characteristics for service type {}", LOG_STATE,
                 mandatorySet.size(), optionalSet.size(), serviceType);
         return result;
     }

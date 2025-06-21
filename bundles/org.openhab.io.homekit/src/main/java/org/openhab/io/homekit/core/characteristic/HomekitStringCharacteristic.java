@@ -171,7 +171,7 @@ public abstract class HomekitStringCharacteristic extends AbstractHomekitCharact
      */
     @Override
     public boolean isHidden() {
-        logger.debug("{}Checking if characteristic is hidden: false", LOG_CHAR);
+        logger.trace("{}Checking if characteristic is hidden: false", LOG_CHAR);
         return false;
     }
 
@@ -192,7 +192,7 @@ public abstract class HomekitStringCharacteristic extends AbstractHomekitCharact
      */
     @Override
     public String getDefault() {
-        logger.debug("{}Getting default value: empty string", LOG_CHAR);
+        logger.trace("{}Getting default value: empty string", LOG_CHAR);
         return "";
     }
 
@@ -399,7 +399,7 @@ public abstract class HomekitStringCharacteristic extends AbstractHomekitCharact
      * @return The string item type identifier
      */
     public static String getAcceptedItemType() {
-        logger.debug("{}Getting accepted item type: {}", LOG_CHAR, CoreItemFactory.STRING);
+        logger.trace("{}Getting accepted item type: {}", LOG_CHAR, CoreItemFactory.STRING);
         return CoreItemFactory.STRING;
     }
 }

@@ -68,7 +68,7 @@ public class HomekitUID extends UID {
     private static final String HOMEKIT_PREFIX = "homekit";
     private final String prefix;
 
-    public static final UID WILDCARD_UID = new HomekitUID("any");
+    public static final UID WILDCARD_UID = new HomekitUID("any", "homekit:any:any");
 
     /**
      * Creates a new HomeKit UID with the specified prefix.

@@ -117,11 +117,11 @@ public class HomekitChannelTypeProvider extends AbstractStorageBasedTypeProvider
      * accepted item types.
      */
     private void addFactoryDependentChannelTypes() {
-        logger.debug("{}Adding factory-dependent channel types", LOG_TYPE);
+        logger.trace("{}Adding factory-dependent channel types", LOG_TYPE);
         Set<String> characteristicTypes = characteristicFactory.getSupportedCharacteristicTypes();
 
         for (String characteristicType : characteristicTypes) {
-            logger.debug("{}Processing characteristic type: {}", LOG_TYPE, characteristicType);
+            logger.trace("{}Processing characteristic type: {}", LOG_TYPE, characteristicType);
             try {
                 Set<String> acceptedItemTypes = characteristicFactory.getAcceptedItemTypes(characteristicType);
 
@@ -133,7 +133,7 @@ public class HomekitChannelTypeProvider extends AbstractStorageBasedTypeProvider
                                 acceptedItemType);
                         ChannelType channelType = builder.build();
                         putChannelType(channelType);
-                        logger.debug("{}Created channel type {} for characteristic {} with item type {}", LOG_TYPE,
+                        logger.trace("{}Created channel type {} for characteristic {} with item type {}", LOG_TYPE,
                                 channelTypeUID, characteristicType, acceptedItemType);
                     } catch (Exception e) {
                         logger.error("{}Failed to create channel type for characteristic {} with item type {}: {}",

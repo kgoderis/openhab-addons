@@ -377,7 +377,7 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
     public boolean supportsCharacteristicType(String type) {
         logger.trace("{}Checking support for characteristic type: {}", LOG_TRACE, type);
         boolean supported = characteristicTypes.containsKey(type);
-        logger.debug("{}Characteristic type {} is {}", LOG_STATE, type, supported ? "supported" : "not supported");
+        logger.trace("{}Characteristic type {} is {}", LOG_STATE, type, supported ? "supported" : "not supported");
         return supported;
     }
 
@@ -513,7 +513,7 @@ public class HomekitCharacteristicFactoryImpl implements HomekitCharacteristicFa
         }).findFirst().orElseThrow(
                 () -> new HomekitFactoryException("No tag found for characteristic type: " + characteristicType));
 
-        logger.debug("{}Found tag {} for characteristic type {}", LOG_STATE, tag, characteristicType);
+        logger.trace("{}Found tag {} for characteristic type {}", LOG_STATE, tag, characteristicType);
         return tag;
     }
 

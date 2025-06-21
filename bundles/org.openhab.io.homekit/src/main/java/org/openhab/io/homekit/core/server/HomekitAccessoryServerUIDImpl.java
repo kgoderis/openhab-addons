@@ -123,7 +123,7 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
             throw new IllegalArgumentException("identifier cannot be empty");
         }
         this.id = id;
-        logger.debug("{}Created server UID with identifier: {}", LOG_UID, id);
+        logger.trace("{}Created server UID with identifier: {}", LOG_UID, id);
     }
 
     /**
@@ -150,7 +150,7 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
     @Override
     public String toString() {
         String result = String.format("homekit:server:%s", id);
-        logger.debug("{}Getting UID string: {}", LOG_UID, result);
+        logger.trace("{}Getting UID string: {}", LOG_UID, result);
         return result;
     }
 

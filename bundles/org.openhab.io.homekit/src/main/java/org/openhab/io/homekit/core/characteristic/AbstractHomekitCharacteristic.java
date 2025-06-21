@@ -36,7 +36,6 @@ import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristicType;
 import org.openhab.io.homekit.api.event.HomekitEventType;
 import org.openhab.io.homekit.api.service.HomekitService;
-import org.openhab.io.homekit.api.service.HomekitServiceType;
 import org.openhab.io.homekit.event.core.HomekitEventMetadata;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
 import org.openhab.io.homekit.event.model.characteristic.HomekitCharacteristicChangedEvent;
@@ -376,7 +375,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
     @Override
     final public String getTag() {
         @SuppressWarnings("null") // getAnnotation() can return null, handled by null check below
-        HomekitServiceType annotation = getClass().getAnnotation(HomekitServiceType.class);
+        HomekitCharacteristicType annotation = getClass().getAnnotation(HomekitCharacteristicType.class);
         return annotation != null ? annotation.tag() : getType();
     }
 
@@ -506,7 +505,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
             setValueInternal(value);
             notifyValueChanged(oldValue, this.value);
         } catch (Exception e) {
-            logger.error("{}Error while setting value: {}", LOG_ERROR, e.getMessage(), e);
+            logger.error("{}[{}] Error while setting value: {}", LOG_ERROR, getUID(), e.getMessage(), e);
             throw new IllegalStateException("Cannot set characteristic value", e);
         }
     }
@@ -524,7 +523,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
             }
             setValue(convertedValue);
         } catch (Exception e) {
-            logger.error("{}Error while setting JSON value: {}", LOG_ERROR, e.getMessage(), e);
+            logger.error("{}[{}] Error while setting JSON value: {}", LOG_ERROR, getUID(), e.getMessage(), e);
             throw new IllegalStateException("Cannot set characteristic value from JSON", e);
         }
     }
@@ -546,7 +545,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
             setValueInternal(convertedValue);
             notifyValueChanged(oldValue, this.value, metadata);
         } catch (Exception e) {
-            logger.error("{}Error while setting value with metadata: {}", LOG_ERROR, e.getMessage(), e);
+            logger.error("{}[{}] Error while setting value with metadata: {}", LOG_ERROR, getUID(), e.getMessage(), e);
             throw new IllegalStateException("Cannot set characteristic value with metadata", e);
         }
     }
@@ -984,7 +983,8 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
                     T newValue = (T) otherGeneric.getValue();
                     setValue(newValue);
                 } catch (Exception e) {
-                    logger.error("{}Error updating characteristic value: {}", LOG_ERROR, e.getMessage(), e);
+                    logger.error("{}[{}] Error updating characteristic value: {}", LOG_ERROR, getUID(), e.getMessage(),
+                            e);
                 }
             }
         }

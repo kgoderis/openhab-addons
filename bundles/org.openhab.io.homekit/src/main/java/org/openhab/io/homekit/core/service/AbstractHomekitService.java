@@ -132,7 +132,7 @@ public abstract class AbstractHomekitService implements HomekitService {
         this.characteristicFactory = characteristicFactory;
         this.characteristics = new LinkedList<>();
         this.name = "";
-        logger.debug("{}Created new service for accessory {}", LOG_INIT, accessory.getUID());
+        logger.debug("{}[{}] Created new service for accessory {}", LOG_INIT, getUID(), accessory.getUID());
 
         initialise();
     }
@@ -181,12 +181,12 @@ public abstract class AbstractHomekitService implements HomekitService {
                 try {
                     addCharacteristic(characteristic);
                 } catch (HomekitServiceException e) {
-                    logger.error("{}Error adding characteristic during JSON restoration: {}", LOG_ERROR,
+                    logger.error("{}[{}] Error adding characteristic during JSON restoration: {}", LOG_ERROR, getUID(),
                             e.getMessage());
                 }
             });
         }
-        logger.debug("{}Restored service from JSON for accessory {}", LOG_INIT, accessory.getUID());
+        logger.debug("{}[{}] Restored service from JSON for accessory {}", LOG_INIT, getUID(), accessory.getUID());
     }
 
     /**
@@ -205,14 +205,15 @@ public abstract class AbstractHomekitService implements HomekitService {
             addBaseCharacteristics();
             addCharacteristics();
         } catch (HomekitServiceException e) {
-            logger.error("{}Error adding characteristics during initialization: {}", LOG_ERROR, e.getMessage());
+            logger.error("{}[{}] Error adding characteristics during initialization: {}", LOG_ERROR, getUID(),
+                    e.getMessage());
         }
 
         getCharacteristic(HomekitNameCharacteristic.class).ifPresent(nameCharacteristic -> {
             try {
                 ((HomekitNameCharacteristic) nameCharacteristic).setValue(name);
             } catch (Exception e) {
-                logger.error("Error setting name characteristic value", e);
+                logger.error("{}[{}] Error setting name characteristic value", LOG_ERROR, getUID(), e);
             }
         });
 
@@ -384,8 +385,8 @@ public abstract class AbstractHomekitService implements HomekitService {
         }
 
         characteristics.add(characteristic);
-        logger.debug("{}Added HomekitCharacteristic '{}' (Type: {}) to HomekitService '{}' (Type: {})", LOG_CHAR,
-                characteristic.getDescription(), characteristic.getType(), this.getName(), this.getType());
+        logger.debug("{}[{}] Added HomekitCharacteristic '{}' (Type: {}) to HomekitService '{}' (Type: {})", LOG_CHAR,
+                getUID(), characteristic.getTag(), characteristic.getType(), this.getTag(), this.getType());
         notifyCharacteristicAdded(characteristic);
     }
 
@@ -399,7 +400,8 @@ public abstract class AbstractHomekitService implements HomekitService {
     public void addCharacteristics() throws HomekitServiceException {
         // Default implementation - subclasses should override to add specific
         // characteristics
-        logger.debug("{}Adding characteristics for service type: {}", LOG_INIT, getType());
+        logger.debug("{}[{}] Adding characteristics for service '{}' (Type: {})", LOG_INIT, getUID(), getTag(),
+                getType());
     }
 
     /**
@@ -420,8 +422,8 @@ public abstract class AbstractHomekitService implements HomekitService {
 
         boolean removed = characteristics.remove(characteristic);
         if (removed) {
-            logger.debug("{}Removed HomekitCharacteristic '{}' (Type: {}) from HomekitService '{}' (Type: {})",
-                    LOG_CHAR, characteristic.getDescription(), characteristic.getType(), this.getName(),
+            logger.debug("{}[{}] Removed HomekitCharacteristic '{}' (Type: {}) from HomekitService '{}' (Type: {})",
+                    LOG_CHAR, getUID(), characteristic.getTag(), characteristic.getType(), this.getTag(),
                     this.getType());
             notifyCharacteristicRemoved(characteristic);
         }
@@ -467,11 +469,12 @@ public abstract class AbstractHomekitService implements HomekitService {
                         this);
                 return Optional.of(characteristic);
             } catch (HomekitFactoryException e) {
-                logger.error("{}Error creating characteristic: {}", LOG_ERROR, e.getMessage());
+                logger.error("{}[{}] Error creating characteristic: {}", LOG_ERROR, getUID(), e.getMessage());
                 return Optional.empty();
             }
         }
-        logger.warn("{}No HomekitCharacteristicFactory found to create characteristic from JSON value", LOG_WARN);
+        logger.warn("{}[{}] No HomekitCharacteristicFactory found to create characteristic from JSON value", LOG_WARN,
+                getUID());
         return Optional.empty();
     }
 
@@ -566,7 +569,7 @@ public abstract class AbstractHomekitService implements HomekitService {
      * @param characteristic the characteristic that was added
      */
     protected void notifyCharacteristicAdded(HomekitCharacteristic<?> characteristic) {
-        logger.debug("Notifying listeners of HomekitCharacteristic '{}' (Type: {}) addition to HomekitService '{}'",
+        logger.trace("Notifying listeners of HomekitCharacteristic '{}' (Type: {}) addition to HomekitService '{}'",
                 characteristic.getDescription(), characteristic.getType(), this.getName());
         HomekitServiceEvent event = new HomekitServiceEvent(HomekitEventType.CHARACTERISTIC_ADDED, this,
                 characteristic);
@@ -579,7 +582,7 @@ public abstract class AbstractHomekitService implements HomekitService {
      * @param characteristic the characteristic that was removed
      */
     protected void notifyCharacteristicRemoved(HomekitCharacteristic<?> characteristic) {
-        logger.debug("Notifying listeners of HomekitCharacteristic '{}' (Type: {}) removal from HomekitService '{}'",
+        logger.trace("Notifying listeners of HomekitCharacteristic '{}' (Type: {}) removal from HomekitService '{}'",
                 characteristic.getDescription(), characteristic.getType(), this.getName());
         HomekitServiceEvent event = new HomekitServiceEvent(HomekitEventType.CHARACTERISTIC_REMOVED, this,
                 characteristic);
@@ -592,7 +595,7 @@ public abstract class AbstractHomekitService implements HomekitService {
      * @param characteristic the characteristic whose state changed
      */
     protected void notifyCharacteristicStateChanged(HomekitCharacteristic<?> characteristic) {
-        logger.debug("Notifying listeners of HomekitCharacteristic '{}' (Type: {}) state change in HomekitService '{}'",
+        logger.trace("Notifying listeners of HomekitCharacteristic '{}' (Type: {}) state change in HomekitService '{}'",
                 characteristic.getDescription(), characteristic.getType(), this.getName());
         HomekitServiceEvent event = new HomekitServiceEvent(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, this,
                 characteristic);
