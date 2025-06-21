@@ -102,13 +102,13 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractHomekitAccessory.class);
 
-    protected static final String LOG_PREFIX = "Homekit HomekitAccessory: ";
-    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
-    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
-    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
-    protected static final String LOG_ACCESSORY = LOG_PREFIX + "HomekitAccessory - ";
-    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
-    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+    protected static final String LOG_PREFIX = "Homekit HomekitAccessory";
+    protected static final String LOG_INIT = "Init";
+    protected static final String LOG_STATE = "State";
+    protected static final String LOG_CONFIG = "Config";
+    protected static final String LOG_ACCESSORY = "HomekitAccessory";
+    protected static final String LOG_ERROR = "Error";
+    protected static final String LOG_WARN = "Warning";
 
     private final long instanceId = 0;
     private @Nullable Long accessoryId = null;
@@ -148,7 +148,8 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
         this.eventManager = eventManager;
         this.serviceFactory = serviceFactory;
         this.characteristicFactory = characteristicFactory;
-        logger.debug("{}[{}] Created new accessory with instance ID: {}", LOG_INIT, getUID(), instanceId);
+        logger.debug("{}[{}]: {} - Created new accessory with instance ID: {}", LOG_PREFIX, getUID(), LOG_INIT,
+                instanceId);
 
         initializeServices();
     }
@@ -174,9 +175,10 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
         if (jsonObject.containsKey("aid")) {
             this.accessoryId = (long) jsonObject.getInt("aid");
             // UID will be set when assigned to a server
-            logger.debug("{}[{}] Restored accessory from JSON with AID: {}", LOG_INIT, getUID(), accessoryId);
+            logger.debug("{}[{}]: {} - Restored accessory from JSON with AID: {}", LOG_PREFIX, getUID(), LOG_INIT,
+                    accessoryId);
         } else {
-            logger.debug("{}[{}] Created new accessory from JSON (no AID)", LOG_INIT, getUID());
+            logger.debug("{}[{}]: {} - Created new accessory from JSON (no AID)", LOG_PREFIX, getUID(), LOG_INIT);
         }
 
         initializeServices(value);
@@ -304,8 +306,8 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
         if (service != null && isExtensible()) {
             if (getService(service.getType()).isEmpty()) {
                 services.add(service);
-                logger.debug("{}[{}] Added HomekitService '{}' (Type: {}) to HomekitAccessory '{}' (Type: {})",
-                        LOG_ACCESSORY, getUID(), service.getName(), service.getType(), this.getLabel(),
+                logger.debug("{}[{}]: {} - Added HomekitService '{}' (Type: {}) to HomekitAccessory '{}' (Type: {})",
+                        LOG_PREFIX, getUID(), LOG_ACCESSORY, service.getName(), service.getType(), this.getLabel(),
                         this.getClass().getSimpleName());
 
                 // Send event via HomekitEventManager using current UID (temporary or real)
@@ -316,9 +318,10 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
                 eventSubscriptions.add(eventManager.subscribe(HomekitEventType.SERVICE_STATE_CHANGED,
                         (UID) service.getUID(), (UID) getUID(), (HomekitEventHandler) event -> onEvent(event)));
             } else {
-                logger.debug("{}[{}] HomekitAccessory '{}' (Type: {}) already contains HomekitService '{}' (Type: {})",
-                        LOG_ACCESSORY, getUID(), this.getLabel(), this.getClass().getSimpleName(), service.getName(),
-                        service.getType());
+                logger.debug(
+                        "{}[{}]: {} - HomekitAccessory '{}' (Type: {}) already contains HomekitService '{}' (Type: {})",
+                        LOG_PREFIX, getUID(), LOG_ACCESSORY, this.getLabel(), this.getClass().getSimpleName(),
+                        service.getName(), service.getType());
             }
         }
     }
@@ -348,8 +351,8 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
     @Override
     public void removeService(HomekitService service) {
         if (services.remove(service)) {
-            logger.debug("{}[{}] Removed HomekitService '{}' (Type: {}) from HomekitAccessory '{}' (Type: {})",
-                    LOG_ACCESSORY, getUID(), service.getName(), service.getType(), this.getLabel(),
+            logger.debug("{}[{}]: {} - Removed HomekitService '{}' (Type: {}) from HomekitAccessory '{}' (Type: {})",
+                    LOG_PREFIX, getUID(), LOG_ACCESSORY, service.getName(), service.getType(), this.getLabel(),
                     this.getClass().getSimpleName());
             // Send event via HomekitEventManager
             eventManager.publishEvent(new HomekitAccessoryEvent(HomekitEventType.SERVICE_REMOVED, this, service, null));
@@ -377,10 +380,12 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
                 HomekitService service = serviceFactory.createService(serviceType, this);
                 return Optional.of(service);
             } catch (Exception e) {
-                logger.error("{}[{}] Error creating service: {}", LOG_ERROR, getUID(), e.getMessage(), e);
+                logger.error("{}[{}]: {} - Error creating service: {}", LOG_PREFIX, getUID(), LOG_ERROR, e.getMessage(),
+                        e);
             }
         }
-        logger.warn("{}[{}] No HomekitServiceFactory found to create service from JSON value", LOG_WARN, getUID());
+        logger.warn("{}[{}]: {} - No HomekitServiceFactory found to create service from JSON value", LOG_PREFIX,
+                getUID(), LOG_WARN);
         return Optional.empty();
     }
 
@@ -457,7 +462,8 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
         eventManager.notifyUIDChange(tempUID, newUID);
 
         this.accessoryUID = newUID;
-        logger.debug("{}[{}] Assigned accessory to server with AID: {}", LOG_STATE, getUID(), accessoryId);
+        logger.debug("{}[{}]: {} - Assigned accessory to server with AID: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                accessoryId);
     }
 
     /**
@@ -533,8 +539,8 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
             for (long id = 1; id < nextInstanceId; id++) {
                 if (!usedInstanceIds.contains(id)) {
                     usedInstanceIds.add(id);
-                    logger.debug("{}[{}] Recycled instance ID: {} for accessory: {}", LOG_STATE, getUID(), id,
-                            instanceId);
+                    logger.debug("{}[{}]: {} - Recycled instance ID: {} for accessory: {}", LOG_PREFIX, getUID(),
+                            LOG_STATE, id, instanceId);
                     return id;
                 }
             }
@@ -542,8 +548,8 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
             // If no recycled IDs available, use the next new ID
             long newId = nextInstanceId++;
             usedInstanceIds.add(newId);
-            logger.debug("{}[{}] Assigned new instance ID: {} for accessory: {}", LOG_STATE, getUID(), newId,
-                    instanceId);
+            logger.debug("{}[{}]: {} - Assigned new instance ID: {} for accessory: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                    newId, instanceId);
             return newId;
         }
     }
@@ -559,10 +565,11 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
     public void releaseInstanceId(long id) {
         synchronized (instanceIdLock) {
             if (usedInstanceIds.remove(id)) {
-                logger.debug("{}[{}] Released instance ID: {} from accessory: {}", LOG_STATE, getUID(), id, instanceId);
+                logger.debug("{}[{}]: {} - Released instance ID: {} from accessory: {}", LOG_PREFIX, getUID(),
+                        LOG_STATE, id, instanceId);
             } else {
-                logger.warn("{}[{}] Attempted to release unused instance ID: {} from accessory: {}", LOG_WARN, getUID(),
-                        id, instanceId);
+                logger.warn("{}[{}]: {} - Attempted to release unused instance ID: {} from accessory: {}", LOG_PREFIX,
+                        getUID(), LOG_WARN, id, instanceId);
             }
         }
     }
@@ -591,7 +598,8 @@ public abstract class AbstractHomekitAccessory implements HomekitAccessory {
     public void cleanup() {
         releaseInstanceId(instanceId);
         services.clear();
-        logger.debug("{}[{}] Cleaned up accessory with instance ID: {}", LOG_STATE, getUID(), instanceId);
+        logger.debug("{}[{}]: {} - Cleaned up accessory with instance ID: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                instanceId);
     }
 
     /**

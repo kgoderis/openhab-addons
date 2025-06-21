@@ -89,13 +89,13 @@ public abstract class AbstractHomekitService implements HomekitService {
     protected static final Logger logger = LoggerFactory.getLogger(AbstractHomekitService.class);
 
     // ========== Log Message Prefixes ==========
-    protected static final String LOG_PREFIX = "Homekit Service: ";
-    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
-    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
-    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
-    protected static final String LOG_CHAR = LOG_PREFIX + "Characteristic - ";
-    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
-    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+    protected static final String LOG_PREFIX = "Homekit Service";
+    protected static final String LOG_INIT = "Init";
+    protected static final String LOG_STATE = "State";
+    protected static final String LOG_CONFIG = "Config";
+    protected static final String LOG_CHAR = "Characteristic";
+    protected static final String LOG_ERROR = "Error";
+    protected static final String LOG_WARN = "Warning";
 
     private final HomekitAccessory accessory;
     private long instanceId;
@@ -132,7 +132,8 @@ public abstract class AbstractHomekitService implements HomekitService {
         this.characteristicFactory = characteristicFactory;
         this.characteristics = new LinkedList<>();
         this.name = "";
-        logger.debug("{}[{}] Created new service for accessory {}", LOG_INIT, getUID(), accessory.getUID());
+        logger.debug("{}[{}]: {} - Created new service for accessory {}", LOG_PREFIX, getUID(), LOG_INIT,
+                accessory.getUID());
 
         initialise();
     }
@@ -181,12 +182,13 @@ public abstract class AbstractHomekitService implements HomekitService {
                 try {
                     addCharacteristic(characteristic);
                 } catch (HomekitServiceException e) {
-                    logger.error("{}[{}] Error adding characteristic during JSON restoration: {}", LOG_ERROR, getUID(),
-                            e.getMessage());
+                    logger.error("{}[{}]: {} - Error adding characteristic during JSON restoration: {}", LOG_PREFIX,
+                            getUID(), LOG_ERROR, e.getMessage());
                 }
             });
         }
-        logger.debug("{}[{}] Restored service from JSON for accessory {}", LOG_INIT, getUID(), accessory.getUID());
+        logger.debug("{}[{}]: {} - Restored service from JSON for accessory {}", LOG_PREFIX, getUID(), LOG_INIT,
+                accessory.getUID());
     }
 
     /**
@@ -205,15 +207,16 @@ public abstract class AbstractHomekitService implements HomekitService {
             addBaseCharacteristics();
             addCharacteristics();
         } catch (HomekitServiceException e) {
-            logger.error("{}[{}] Error adding characteristics during initialization: {}", LOG_ERROR, getUID(),
-                    e.getMessage());
+            logger.error("{}[{}]: {} - Error adding characteristics during initialization: {}", LOG_PREFIX, getUID(),
+                    LOG_ERROR, e.getMessage());
         }
 
         getCharacteristic(HomekitNameCharacteristic.class).ifPresent(nameCharacteristic -> {
             try {
                 ((HomekitNameCharacteristic) nameCharacteristic).setValue(name);
             } catch (Exception e) {
-                logger.error("{}[{}] Error setting name characteristic value", LOG_ERROR, getUID(), e);
+                logger.error("{}[{}]: {} - Error setting name characteristic value", LOG_PREFIX, getUID(), LOG_ERROR,
+                        e);
             }
         });
 
@@ -385,8 +388,9 @@ public abstract class AbstractHomekitService implements HomekitService {
         }
 
         characteristics.add(characteristic);
-        logger.debug("{}[{}] Added HomekitCharacteristic '{}' (Type: {}) to HomekitService '{}' (Type: {})", LOG_CHAR,
-                getUID(), characteristic.getTag(), characteristic.getType(), this.getTag(), this.getType());
+        logger.debug("{}[{}]: {} - Added HomekitCharacteristic '{}' (Type: {}) to HomekitService '{}' (Type: {})",
+                LOG_PREFIX, getUID(), LOG_CHAR, characteristic.getTag(), characteristic.getType(), this.getTag(),
+                this.getType());
         notifyCharacteristicAdded(characteristic);
     }
 
@@ -400,8 +404,8 @@ public abstract class AbstractHomekitService implements HomekitService {
     public void addCharacteristics() throws HomekitServiceException {
         // Default implementation - subclasses should override to add specific
         // characteristics
-        logger.debug("{}[{}] Adding characteristics for service '{}' (Type: {})", LOG_INIT, getUID(), getTag(),
-                getType());
+        logger.debug("{}[{}]: {} - Adding characteristics for service '{}' (Type: {})", LOG_PREFIX, getUID(), LOG_INIT,
+                getTag(), getType());
     }
 
     /**
@@ -422,8 +426,9 @@ public abstract class AbstractHomekitService implements HomekitService {
 
         boolean removed = characteristics.remove(characteristic);
         if (removed) {
-            logger.debug("{}[{}] Removed HomekitCharacteristic '{}' (Type: {}) from HomekitService '{}' (Type: {})",
-                    LOG_CHAR, getUID(), characteristic.getTag(), characteristic.getType(), this.getTag(),
+            logger.debug(
+                    "{}[{}]: {} - Removed HomekitCharacteristic '{}' (Type: {}) from HomekitService '{}' (Type: {})",
+                    LOG_PREFIX, getUID(), LOG_CHAR, characteristic.getTag(), characteristic.getType(), this.getTag(),
                     this.getType());
             notifyCharacteristicRemoved(characteristic);
         }
@@ -469,12 +474,13 @@ public abstract class AbstractHomekitService implements HomekitService {
                         this);
                 return Optional.of(characteristic);
             } catch (HomekitFactoryException e) {
-                logger.error("{}[{}] Error creating characteristic: {}", LOG_ERROR, getUID(), e.getMessage());
+                logger.error("{}[{}]: {} - Error creating characteristic: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                        e.getMessage());
                 return Optional.empty();
             }
         }
-        logger.warn("{}[{}] No HomekitCharacteristicFactory found to create characteristic from JSON value", LOG_WARN,
-                getUID());
+        logger.warn("{}[{}]: {} - No HomekitCharacteristicFactory found to create characteristic from JSON value",
+                LOG_PREFIX, getUID(), LOG_WARN);
         return Optional.empty();
     }
 

@@ -123,13 +123,13 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractHomekitCharacteristic.class);
 
-    protected static final String LOG_PREFIX = "Homekit HomekitCharacteristic: ";
-    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
-    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
-    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
-    protected static final String LOG_CHARACTERISTIC = LOG_PREFIX + "HomekitCharacteristic - ";
-    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
-    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+    protected static final String LOG_PREFIX = "Homekit HomekitCharacteristic";
+    protected static final String LOG_INIT = "Init";
+    protected static final String LOG_STATE = "State";
+    protected static final String LOG_CONFIG = "Config";
+    protected static final String LOG_CHARACTERISTIC = "HomekitCharacteristic";
+    protected static final String LOG_ERROR = "Error";
+    protected static final String LOG_WARN = "Warning";
 
     // Instance fields - final
     private final HomekitService service;
@@ -505,7 +505,8 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
             setValueInternal(value);
             notifyValueChanged(oldValue, this.value);
         } catch (Exception e) {
-            logger.error("{}[{}] Error while setting value: {}", LOG_ERROR, getUID(), e.getMessage(), e);
+            logger.error("{}[{}]: {} - Error while setting value: {}", LOG_PREFIX, getUID(), LOG_ERROR, e.getMessage(),
+                    e);
             throw new IllegalStateException("Cannot set characteristic value", e);
         }
     }
@@ -523,7 +524,8 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
             }
             setValue(convertedValue);
         } catch (Exception e) {
-            logger.error("{}[{}] Error while setting JSON value: {}", LOG_ERROR, getUID(), e.getMessage(), e);
+            logger.error("{}[{}]: {} - Error while setting JSON value: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                    e.getMessage(), e);
             throw new IllegalStateException("Cannot set characteristic value from JSON", e);
         }
     }
@@ -545,7 +547,8 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
             setValueInternal(convertedValue);
             notifyValueChanged(oldValue, this.value, metadata);
         } catch (Exception e) {
-            logger.error("{}[{}] Error while setting value with metadata: {}", LOG_ERROR, getUID(), e.getMessage(), e);
+            logger.error("{}[{}]: {} - Error while setting value with metadata: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                    e.getMessage(), e);
             throw new IllegalStateException("Cannot set characteristic value with metadata", e);
         }
     }
@@ -983,8 +986,8 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
                     T newValue = (T) otherGeneric.getValue();
                     setValue(newValue);
                 } catch (Exception e) {
-                    logger.error("{}[{}] Error updating characteristic value: {}", LOG_ERROR, getUID(), e.getMessage(),
-                            e);
+                    logger.error("{}[{}]: {} - Error updating characteristic value: {}", LOG_PREFIX, getUID(),
+                            LOG_ERROR, e.getMessage(), e);
                 }
             }
         }
