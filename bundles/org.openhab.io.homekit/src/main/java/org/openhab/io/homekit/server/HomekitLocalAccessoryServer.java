@@ -102,15 +102,15 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     // ========== Log Message Prefixes ==========
     protected static final Logger logger = LoggerFactory.getLogger(HomekitLocalAccessoryServer.class);
     protected static final String LOG_PREFIX = "Homekit LocalAccessoryServer: ";
-    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
-    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
-    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
-    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
-    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
-    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
-    protected static final String LOG_PAIRING = LOG_PREFIX + "Pairing - ";
-    protected static final String LOG_EVENT = LOG_PREFIX + "Event - ";
-    protected static final String LOG_SERVER = LOG_PREFIX + "Server - ";
+    protected static final String LOG_INIT = "Init";
+    protected static final String LOG_STATE = "State";
+    protected static final String LOG_CONFIG = "Config";
+    protected static final String LOG_ACCESSORY = "Accessory";
+    protected static final String LOG_ERROR = "Error";
+    protected static final String LOG_WARN = "Warning";
+    protected static final String LOG_PAIRING = "Pairing";
+    protected static final String LOG_EVENT = "Event";
+    protected static final String LOG_SERVER = "Server";
 
     // ========== Server Components ==========
     private @Nullable Server server;
