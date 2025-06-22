@@ -74,13 +74,13 @@ import org.slf4j.LoggerFactory;
 public class HomekitPassthroughBridge {
     private static final Logger logger = LoggerFactory.getLogger(HomekitPassthroughBridge.class);
     // ========== Log Message Prefixes ==========
-    private static final String LOG_PREFIX = "Homekit Bridge: ";
-    private static final String LOG_INIT = LOG_PREFIX + "Init - ";
-    private static final String LOG_STATE = LOG_PREFIX + "State - ";
-    private static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
-    private static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
-    private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
-    private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
+    private static final String LOG_PREFIX = "Homekit Bridge";
+    private static final String LOG_INIT = "Init";
+    private static final String LOG_STATE = "State";
+    private static final String LOG_CONFIG = "Config";
+    private static final String LOG_ACCESSORY = "Accessory";
+    private static final String LOG_ERROR = "Error";
+    private static final String LOG_WARN = "Warning";
 
     private final HomekitUID bridgeUID = new HomekitUID("bridge");
 
@@ -125,7 +125,7 @@ public class HomekitPassthroughBridge {
             @Reference HomekitAccessoryServerRegistry serverRegistry,
             @Reference HomekitAccessoryFactory accessoryFactory, @Reference HomekitConfigurationManager configManager,
             Map<String, Object> properties) {
-        logger.info("{}Initializing HomeKit Passthrough Bridge", LOG_INIT);
+        logger.info("{}[{}]: {} - Initializing HomeKit Passthrough Bridge", LOG_PREFIX, bridgeUID, LOG_INIT);
         this.eventManager = eventManager;
         this.serverRegistry = serverRegistry;
         this.accessoryFactory = accessoryFactory;
@@ -136,18 +136,19 @@ public class HomekitPassthroughBridge {
         Object orphanConfig = properties.get(CONFIG_ORPHAN_ENABLED);
         if (orphanConfig != null) {
             this.orphanEnabled = Boolean.parseBoolean(orphanConfig.toString());
-            logger.info("{}Orphan functionality is {}", LOG_CONFIG, orphanEnabled ? "enabled" : "disabled");
+            logger.info("{}[{}]: {} - Orphan functionality is {}", LOG_PREFIX, bridgeUID, LOG_CONFIG,
+                    orphanEnabled ? "enabled" : "disabled");
         }
 
         // Subscribe to accessory events using lambdas
-        logger.debug("{}Setting up event subscriptions", LOG_INIT);
+        logger.debug("{}[{}]: {} - Setting up event subscriptions", LOG_PREFIX, bridgeUID, LOG_INIT);
         this.eventSubscriptions = List.of(
                 eventManager.subscribe(HomekitEventType.ACCESSORY_ADDED, HomekitUID.WILDCARD_UID, bridgeUID, event -> {
                     if (event instanceof HomekitAccessoryServerEvent serverEvent) {
                         serverEvent.getAccessory().ifPresent(accessory -> {
                             serverEvent.getServer().ifPresent(server -> {
-                                logger.debug("{}Received accessory added event for {} on server {}", LOG_STATE,
-                                        accessory.getUID(), server.getUID());
+                                logger.debug("{}[{}]: {} - Received accessory added event for {} on server {}",
+                                        LOG_PREFIX, bridgeUID, LOG_STATE, accessory.getUID(), server.getUID());
                                 handleAccessoryAdded(accessory, server);
                             });
                         });
@@ -156,13 +157,14 @@ public class HomekitPassthroughBridge {
                         event -> {
                             if (event instanceof HomekitAccessoryServerEvent serverEvent) {
                                 serverEvent.getAccessory().ifPresent(accessory -> {
-                                    logger.debug("{}Received accessory removed event for {}", LOG_STATE,
-                                            accessory.getUID());
+                                    logger.debug("{}[{}]: {} - Received accessory removed event for {}", LOG_PREFIX,
+                                            bridgeUID, LOG_STATE, accessory.getUID());
                                     handleAccessoryRemoved(accessory);
                                 });
                             }
                         }));
-        logger.info("{}HomeKit Passthrough Bridge initialized successfully", LOG_INIT);
+        logger.info("{}[{}]: {} - HomeKit Passthrough Bridge initialized successfully", LOG_PREFIX, bridgeUID,
+                LOG_INIT);
     }
 
     /**
@@ -195,34 +197,36 @@ public class HomekitPassthroughBridge {
     public void bridgeAccessory(HomekitAccessory remoteAccessory, HomekitAccessoryServer remoteServer,
             HomekitAccessoryServer localServer, HomekitAccessory localAccessory)
             throws HomekitAccessoryOperationException {
-        logger.info("{}Starting to bridge accessory {} from remote server {} to local server {}", LOG_ACCESSORY,
-                remoteAccessory.getUID(), remoteServer.getUID(), localServer.getUID());
+        logger.info("{}[{}]: {} - Starting to bridge accessory {} from remote server {} to local server {}", LOG_PREFIX,
+                bridgeUID, LOG_ACCESSORY, remoteAccessory.getUID(), remoteServer.getUID(), localServer.getUID());
 
         try {
             // Add the local accessory to the local server
             localServer.addAccessory(localAccessory);
-            logger.debug("{}Added local accessory {} to local server {}", LOG_ACCESSORY, localAccessory.getUID(),
-                    localServer.getUID());
+            logger.debug("{}[{}]: {} - Added local accessory {} to local server {}", LOG_PREFIX, bridgeUID,
+                    LOG_ACCESSORY, localAccessory.getUID(), localServer.getUID());
 
             // Set up event forwarding from remote to local
-            logger.debug("{}Setting up event forwarding from remote to local for accessory {}", LOG_STATE,
-                    remoteAccessory.getUID());
+            logger.debug("{}[{}]: {} - Setting up event forwarding from remote to local for accessory {}", LOG_PREFIX,
+                    bridgeUID, LOG_STATE, remoteAccessory.getUID());
             List<HomekitEventSubscription> remoteSubs = eventManager.subscribe(
                     Set.of(HomekitEventType.CHARACTERISTIC_VALUE_CHANGED, HomekitEventType.SERVICE_ADDED,
                             HomekitEventType.SERVICE_REMOVED, HomekitEventType.ACCESSORY_STATE_CHANGED),
                     (UID) remoteAccessory.getUID(), (UID) bridgeUID, event -> {
-                        logger.debug("{}Forwarding event from remote to local: {}", LOG_STATE, event);
+                        logger.debug("{}[{}]: {} - Forwarding event from remote to local: {}", LOG_PREFIX, bridgeUID,
+                                LOG_STATE, event);
                         // The local server will handle the event through its event manager
                         eventManager.publishEvent(event);
                     });
 
             // Set up command forwarding from local to remote
-            logger.debug("{}Setting up command forwarding from local to remote for accessory {}", LOG_STATE,
-                    localAccessory.getUID());
+            logger.debug("{}[{}]: {} - Setting up command forwarding from local to remote for accessory {}", LOG_PREFIX,
+                    bridgeUID, LOG_STATE, localAccessory.getUID());
             List<HomekitEventSubscription> localSubs = eventManager.subscribe(
                     Set.of(HomekitEventType.CHARACTERISTIC_VALUE_CHANGED), (UID) localAccessory.getUID(),
                     (UID) bridgeUID, event -> { // Use local accessory UID for local events
-                        logger.debug("{}Forwarding command from local to remote: {}", LOG_STATE, event);
+                        logger.debug("{}[{}]: {} - Forwarding command from local to remote: {}", LOG_PREFIX, bridgeUID,
+                                LOG_STATE, event);
                         // The remote server will handle the event through its event manager
                         eventManager.publishEvent(event);
                     });
@@ -230,18 +234,20 @@ public class HomekitPassthroughBridge {
             // Store the bridge context with both servers
             bridgedAccessories.put(remoteAccessory,
                     new BridgeContext(remoteSubs, localSubs, localServer, remoteServer, localAccessory));
-            logger.info("{}Successfully bridged accessory {} with {} remote and {} local subscriptions", LOG_ACCESSORY,
-                    remoteAccessory.getUID(), remoteSubs.size(), localSubs.size());
+            logger.info("{}[{}]: {} - Successfully bridged accessory {} with {} remote and {} local subscriptions",
+                    LOG_PREFIX, bridgeUID, LOG_ACCESSORY, remoteAccessory.getUID(), remoteSubs.size(),
+                    localSubs.size());
         } catch (Exception e) {
-            logger.error("{}Failed to bridge accessory {}: {}", LOG_ERROR, remoteAccessory.getUID(), e.getMessage(), e);
+            logger.error("{}[{}]: {} - Failed to bridge accessory {}: {}", LOG_PREFIX, bridgeUID, LOG_ERROR,
+                    remoteAccessory.getUID(), e.getMessage(), e);
             // Clean up if anything fails
             try {
                 localServer.removeAccessory(localAccessory);
-                logger.debug("{}Cleaned up local accessory {} after bridge failure", LOG_ACCESSORY,
-                        localAccessory.getUID());
+                logger.debug("{}[{}]: {} - Cleaned up local accessory {} after bridge failure", LOG_PREFIX, bridgeUID,
+                        LOG_ACCESSORY, localAccessory.getUID());
             } catch (Exception cleanupException) {
-                logger.error("{}Failed to clean up local accessory {}: {}", LOG_ERROR, localAccessory.getUID(),
-                        cleanupException.getMessage(), cleanupException);
+                logger.error("{}[{}]: {} - Failed to clean up local accessory {}: {}", LOG_PREFIX, bridgeUID, LOG_ERROR,
+                        localAccessory.getUID(), cleanupException.getMessage(), cleanupException);
             }
             throw e;
         }
@@ -264,26 +270,29 @@ public class HomekitPassthroughBridge {
      * @since 1.0.0
      */
     public void unbridgeAccessory(HomekitAccessory accessory) {
-        logger.info("{}Starting to unbridge accessory {}", LOG_ACCESSORY, accessory.getUID());
+        logger.info("{}[{}]: {} - Starting to unbridge accessory {}", LOG_PREFIX, bridgeUID, LOG_ACCESSORY,
+                accessory.getUID());
         @Nullable
         BridgeContext ctx = bridgedAccessories.remove(accessory);
         if (ctx != null) {
-            logger.debug("{}Found bridge context for accessory {} with {} remote and {} local subscriptions",
-                    LOG_ACCESSORY, accessory.getUID(), ctx.getRemoteSubscriptions().size(),
+            logger.debug("{}[{}]: {} - Found bridge context for accessory {} with {} remote and {} local subscriptions",
+                    LOG_PREFIX, bridgeUID, LOG_ACCESSORY, accessory.getUID(), ctx.getRemoteSubscriptions().size(),
                     ctx.getLocalSubscriptions().size());
             ctx.getRemoteSubscriptions().forEach(eventManager::unsubscribe);
             ctx.getLocalSubscriptions().forEach(eventManager::unsubscribe);
             try {
                 ctx.getLocalServer().removeAccessory(ctx.getLocalAccessory());
-                logger.info("{}Successfully unbridged accessory {} from remote server {} and local server {}",
-                        LOG_ACCESSORY, accessory.getUID(), ctx.getRemoteServer().getUID(),
+                logger.info(
+                        "{}[{}]: {} - Successfully unbridged accessory {} from remote server {} and local server {}",
+                        LOG_PREFIX, bridgeUID, LOG_ACCESSORY, accessory.getUID(), ctx.getRemoteServer().getUID(),
                         ctx.getLocalServer().getUID());
             } catch (Exception e) {
-                logger.error("{}Failed to remove local accessory {}: {}", LOG_ERROR, ctx.getLocalAccessory().getUID(),
-                        e.getMessage(), e);
+                logger.error("{}[{}]: {} - Failed to remove local accessory {}: {}", LOG_PREFIX, bridgeUID, LOG_ERROR,
+                        ctx.getLocalAccessory().getUID(), e.getMessage(), e);
             }
         } else {
-            logger.warn("{}No bridge context found for accessory {}", LOG_WARN, accessory.getUID());
+            logger.warn("{}[{}]: {} - No bridge context found for accessory {}", LOG_PREFIX, bridgeUID, LOG_WARN,
+                    accessory.getUID());
         }
     }
 
@@ -375,7 +384,8 @@ public class HomekitPassthroughBridge {
             BridgeContext existingContext = bridgedAccessories.get(accessory);
             if (existingContext != null && existingContext.localAccessory.isOrphaned()) {
                 if (restoreOrphanedAccessory(accessory, existingContext)) {
-                    logger.info("{}Successfully restored orphaned accessory {}", LOG_PREFIX, accessory.getUID());
+                    logger.info("{}[{}]: {} - Successfully restored orphaned accessory {}", LOG_PREFIX, bridgeUID,
+                            LOG_PREFIX, accessory.getUID());
                     return;
                 }
             }
@@ -386,44 +396,49 @@ public class HomekitPassthroughBridge {
             Optional<Map<String, Object>> configOpt = configManager.getConfiguration((UID) accessory.getUID(),
                     HomekitConfigurationManager.ConfigurationType.ACCESSORY);
             if (configOpt.isEmpty()) {
-                logger.debug("{}Accessory {} not configured for bridging (missing configuration)", LOG_PREFIX,
-                        accessory.getUID());
+                logger.debug("{}[{}]: {} - Accessory {} not configured for bridging (missing configuration)",
+                        LOG_PREFIX, bridgeUID, LOG_PREFIX, accessory.getUID());
                 return;
             }
             Map<String, Object> config = configOpt.get();
             if (!Boolean.TRUE.equals(config.get("bridge"))) {
-                logger.debug("{}Accessory {} not configured for bridging (missing or false 'bridge' parameter)",
-                        LOG_PREFIX, accessory.getUID());
+                logger.debug(
+                        "{}[{}]: {} - Accessory {} not configured for bridging (missing or false 'bridge' parameter)",
+                        LOG_PREFIX, bridgeUID, LOG_PREFIX, accessory.getUID());
                 return;
             }
 
             // Only bridge if accessory belongs to a remote accessory server (not a local
             // server)
             if (isLocalServer(remoteServer)) {
-                logger.debug("{}Accessory {} is not from a remote server, skipping bridging", LOG_PREFIX,
-                        accessory.getUID());
+                logger.debug("{}[{}]: {} - Accessory {} is not from a remote server, skipping bridging", LOG_PREFIX,
+                        bridgeUID, LOG_PREFIX, accessory.getUID());
                 return;
             }
 
             Optional<HomekitAccessoryServer> localServerOpt = getAvailableLocalServer();
             if (localServerOpt.isEmpty()) {
-                logger.error("{}No available local server found for bridging", LOG_PREFIX);
+                logger.error("{}[{}]: {} - No available local server found for bridging", LOG_PREFIX, bridgeUID,
+                        LOG_PREFIX);
                 return;
             }
             HomekitAccessoryServer localServer = localServerOpt.get();
 
             Optional<HomekitAccessory> localAccessoryOpt = createLocalAccessory(accessory, localServer);
             if (localAccessoryOpt.isEmpty()) {
-                logger.error("{}Failed to create local accessory for {}", LOG_PREFIX, accessory.getUID());
+                logger.error("{}[{}]: {} - Failed to create local accessory for {}", LOG_PREFIX, bridgeUID, LOG_PREFIX,
+                        accessory.getUID());
                 return;
             }
             HomekitAccessory localAccessory = localAccessoryOpt.get();
 
             bridgeAccessory(accessory, remoteServer, localServer, localAccessory);
-            logger.info("{}Successfully bridged accessory {} from remote server {} to local server {}", LOG_PREFIX,
-                    accessory.getUID(), remoteServer.getUID(), localServer.getUID());
+            logger.info("{}[{}]: {} - Successfully bridged accessory {} from remote server {} to local server {}",
+                    LOG_PREFIX, bridgeUID, LOG_ACCESSORY, accessory.getUID(), remoteServer.getUID(),
+                    localServer.getUID());
         } catch (Exception e) {
-            logger.error("{}Failed to bridge accessory {}: {}", LOG_PREFIX, accessory.getUID(), e.getMessage(), e);
+            logger.error("{}[{}]: {} - Failed to bridge accessory {}: {}", LOG_PREFIX, bridgeUID, LOG_ERROR,
+                    accessory.getUID(), e.getMessage(), e);
         }
     }
 
@@ -449,8 +464,8 @@ public class HomekitPassthroughBridge {
         if (context != null) {
             if (orphanEnabled) {
                 // Mark the accessory as orphaned but keep it in the registry
-                logger.info("{}Accessory {} was removed but keeping it to prevent controller deletion", LOG_PREFIX,
-                        accessory.getUID());
+                logger.info("{}[{}]: {} - Accessory {} was removed but keeping it to prevent controller deletion",
+                        LOG_PREFIX, bridgeUID, LOG_PREFIX, accessory.getUID());
                 accessory.setOrphaned(true);
 
                 // Update configuration to reflect orphaned state
@@ -460,18 +475,19 @@ public class HomekitPassthroughBridge {
                     configManager.updateConfiguration((UID) accessory.getUID(),
                             HomekitConfigurationManager.ConfigurationType.ACCESSORY, config);
                 } catch (Exception e) {
-                    logger.error("{}Failed to update configuration for orphaned accessory {}: {}", LOG_PREFIX,
-                            accessory.getUID(), e.getMessage(), e);
+                    logger.error("{}[{}]: {} - Failed to update configuration for orphaned accessory {}: {}",
+                            LOG_PREFIX, bridgeUID, LOG_ERROR, accessory.getUID(), e.getMessage(), e);
                 }
             } else {
                 // Completely remove the accessory and its characteristics
                 try {
                     context.localServer.removeAccessory(context.localAccessory);
                     bridgedAccessories.remove(accessory);
-                    logger.info("{}Successfully removed accessory {}", LOG_PREFIX, accessory.getUID());
+                    logger.info("{}[{}]: {} - Successfully removed accessory {}", LOG_PREFIX, bridgeUID, LOG_ACCESSORY,
+                            accessory.getUID());
                 } catch (Exception e) {
-                    logger.error("{}Failed to remove accessory {}: {}", LOG_PREFIX, accessory.getUID(), e.getMessage(),
-                            e);
+                    logger.error("{}[{}]: {} - Failed to remove accessory {}: {}", LOG_PREFIX, bridgeUID, LOG_ERROR,
+                            accessory.getUID(), e.getMessage(), e);
                 }
             }
         }
@@ -512,11 +528,12 @@ public class HomekitPassthroughBridge {
             configManager.updateConfiguration((UID) remoteAccessory.getUID(),
                     HomekitConfigurationManager.ConfigurationType.ACCESSORY, config);
 
-            logger.info("{}Successfully restored orphaned accessory {}", LOG_PREFIX, remoteAccessory.getUID());
+            logger.info("{}[{}]: {} - Successfully restored orphaned accessory {}", LOG_PREFIX, bridgeUID, LOG_PREFIX,
+                    remoteAccessory.getUID());
             return true;
         } catch (Exception e) {
-            logger.error("{}Failed to restore orphaned accessory {}: {}", LOG_PREFIX, remoteAccessory.getUID(),
-                    e.getMessage(), e);
+            logger.error("{}[{}]: {} - Failed to restore orphaned accessory {}: {}", LOG_PREFIX, bridgeUID, LOG_ERROR,
+                    remoteAccessory.getUID(), e.getMessage(), e);
             return false;
         }
     }
@@ -538,13 +555,14 @@ public class HomekitPassthroughBridge {
      * @return Optional containing an available local server, or empty if none found
      */
     private Optional<HomekitAccessoryServer> getAvailableLocalServer() {
-        logger.debug("{}Looking for available local server", LOG_STATE);
+        logger.debug("{}[{}]: {} - Looking for available local server", LOG_PREFIX, bridgeUID, LOG_STATE);
         Optional<HomekitAccessoryServer> server = serverRegistry.getAvailableBridgeAccessoryServer();
         if (server.isPresent()) {
             HomekitAccessoryServer localServer = server.get();
-            logger.debug("{}Found available local server {}", LOG_STATE, localServer.getUID());
+            logger.debug("{}[{}]: {} - Found available local server {}", LOG_PREFIX, bridgeUID, LOG_STATE,
+                    localServer.getUID());
         } else {
-            logger.warn("{}No available local server found", LOG_WARN);
+            logger.warn("{}[{}]: {} - No available local server found", LOG_PREFIX, bridgeUID, LOG_WARN);
         }
         return server;
     }
@@ -557,15 +575,17 @@ public class HomekitPassthroughBridge {
      */
     private Optional<HomekitAccessory> createLocalAccessory(HomekitAccessory remoteAccessory,
             HomekitAccessoryServer localServer) {
-        logger.debug("{}Creating local copy of accessory {} for server {}", LOG_ACCESSORY, remoteAccessory.getUID(),
-                localServer.getUID());
+        logger.debug("{}[{}]: {} - Creating local copy of accessory {} for server {}", LOG_PREFIX, bridgeUID,
+                LOG_ACCESSORY, remoteAccessory.getUID(), localServer.getUID());
         try {
             HomekitAccessory localAccessory = accessoryFactory.createAccessoryWithArgs("bridged", remoteAccessory,
                     localServer);
-            logger.info("{}Successfully created local copy of accessory {}", LOG_ACCESSORY, remoteAccessory.getUID());
+            logger.info("{}[{}]: {} - Successfully created local copy of accessory {}", LOG_PREFIX, bridgeUID,
+                    LOG_ACCESSORY, remoteAccessory.getUID());
             return Optional.of(localAccessory);
         } catch (Exception e) {
-            logger.error("{}Failed to create local accessory: {}", LOG_ERROR, e.getMessage(), e);
+            logger.error("{}[{}]: {} - Failed to create local accessory: {}", LOG_PREFIX, bridgeUID, LOG_ERROR,
+                    e.getMessage(), e);
             return Optional.empty();
         }
     }
@@ -653,24 +673,27 @@ public class HomekitPassthroughBridge {
      */
     @Deactivate
     protected void deactivate() {
-        logger.info("{}Deactivating HomeKit passthrough bridge", LOG_INIT);
+        logger.info("{}[{}]: {} - Deactivating HomeKit passthrough bridge", LOG_PREFIX, bridgeUID, LOG_INIT);
 
         // Unsubscribe from all event subscriptions
         if (eventSubscriptions != null) {
             eventSubscriptions.forEach(eventManager::unsubscribe);
-            logger.debug("{}Unsubscribed from {} event subscriptions", LOG_INIT, eventSubscriptions.size());
+            logger.debug("{}[{}]: {} - Unsubscribed from {} event subscriptions", LOG_PREFIX, bridgeUID, LOG_INIT,
+                    eventSubscriptions.size());
         }
 
         // Unbridge all accessories
         Set<HomekitAccessory> accessoriesToUnbridge = new HashSet<>(bridgedAccessories.keySet());
         accessoriesToUnbridge.forEach(this::unbridgeAccessory);
-        logger.debug("{}Unbridged {} accessories", LOG_INIT, accessoriesToUnbridge.size());
+        logger.debug("{}[{}]: {} - Unbridged {} accessories", LOG_PREFIX, bridgeUID, LOG_INIT,
+                accessoriesToUnbridge.size());
 
         // Clear bridge contexts
         bridgedAccessories.clear();
-        logger.debug("{}Cleaned up bridge contexts", LOG_INIT);
+        logger.debug("{}[{}]: {} - Cleaned up bridge contexts", LOG_PREFIX, bridgeUID, LOG_INIT);
 
-        logger.info("{}HomeKit passthrough bridge deactivated successfully", LOG_INIT);
+        logger.info("{}[{}]: {} - HomeKit passthrough bridge deactivated successfully", LOG_PREFIX, bridgeUID,
+                LOG_INIT);
     }
 
     /**

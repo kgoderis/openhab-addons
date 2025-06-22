@@ -161,12 +161,12 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
     private final ExitEventStatisticsCollector statisticsCollector;
     private boolean orphanEnabled = true; // Default to true for backward compatibility
 
-    private static final String LOG_PREFIX = "Homekit Bridge: ";
-    private static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
-    private static final String LOG_ERROR = LOG_PREFIX + "Error - ";
-    private static final String LOG_WARN = LOG_PREFIX + "Warning - ";
-    private static final String LOG_DEBUG = LOG_PREFIX + "Debug - ";
-    private static final String LOG_TRACE = LOG_PREFIX + "Trace - ";
+    private static final String LOG_PREFIX = "Homekit Bridge";
+    private static final String LOG_ACCESSORY = "Accessory";
+    private static final String LOG_ERROR = "Error";
+    private static final String LOG_WARN = "Warning";
+    private static final String LOG_DEBUG = "Debug";
+    private static final String LOG_TRACE = "Trace";
 
     /**
      * Activates the bridge component and initializes necessary resources.
@@ -294,9 +294,11 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
             for (HomekitAccessory accessory : accessoryMap.values()) {
                 try {
                     accessoryRegistry.remove(accessory.getUID());
-                    logger.debug("{}Removed accessory {}", LOG_ACCESSORY, accessory.getUID());
+                    logger.debug("{}[{}]: {} - Removed accessory {}", LOG_PREFIX, bridgeUID, LOG_ACCESSORY,
+                            accessory.getUID());
                 } catch (Exception e) {
-                    logger.warn("{}Failed to remove accessory {}: {}", LOG_WARN, accessory.getUID(), e.getMessage());
+                    logger.warn("{}[{}]: {} - Failed to remove accessory {}: {}", LOG_PREFIX, bridgeUID, LOG_WARN,
+                            accessory.getUID(), e.getMessage());
                 }
             }
             accessoryMap.clear();
@@ -377,8 +379,8 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
             if (serverOpt.isPresent()) {
                 @SuppressWarnings("null") // get() is safe after isPresent() check
                 HomekitAccessoryServer server = serverOpt.get();
-                logger.debug("{}Found available server {} for item {}", LOG_PREFIX, server.getUID(),
-                        taggedItem.getName());
+                logger.debug("{}[{}]: {} - Found available server {} for item {}", LOG_PREFIX, bridgeUID, LOG_ACCESSORY,
+                        server.getUID(), taggedItem.getName());
                 createAndRegisterAccessory(taggedItem, server);
             } else {
                 logger.warn("{}No available bridge accessory server found for item {}", LOG_WARN, taggedItem.getName());
@@ -420,14 +422,14 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                     HomekitAccessory validAccessory = accessory.get();
                     registerAccessory(taggedItem, validAccessory);
                 }
-                logger.debug("{}Successfully created Homekit accessory for item {}", LOG_ACCESSORY,
-                        taggedItem.getName());
+                logger.debug("{}[{}]: {} - Successfully created Homekit accessory for item {}", LOG_PREFIX, bridgeUID,
+                        LOG_ACCESSORY, taggedItem.getName());
             }
             logger.debug("{}Successfully processed item with factory", LOG_DEBUG);
             logger.trace("{}Exiting createAndRegisterAccessory successfully", LOG_TRACE);
         } catch (Exception e) {
-            logger.error("{}Error creating Homekit accessory for item {}: {}", LOG_ERROR, taggedItem.getName(),
-                    e.getMessage(), e);
+            logger.error("{}[{}]: {} - Error creating Homekit accessory for item {}: {}", LOG_PREFIX, bridgeUID,
+                    LOG_ERROR, taggedItem.getName(), e.getMessage(), e);
             logger.trace("{}Exiting createAndRegisterAccessory with error", LOG_TRACE);
         }
     }
@@ -447,11 +449,11 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                 accessoryRegistry.add(accessory);
                 accessoryMap.put(taggedItem.getName(), accessory);
             }
-            logger.debug("{}Registered Homekit accessory for item {} with UID {}", LOG_ACCESSORY, taggedItem.getName(),
-                    accessory.getUID());
+            logger.debug("{}[{}]: {} - Registered Homekit accessory for item {} with UID {}", LOG_PREFIX, bridgeUID,
+                    LOG_ACCESSORY, taggedItem.getName(), accessory.getUID());
         } catch (Exception e) {
-            logger.error("{}Error creating Homekit accessory for item {}: {}", LOG_ERROR, taggedItem.getName(),
-                    e.getMessage(), e);
+            logger.error("{}[{}]: {} - Error creating Homekit accessory for item {}: {}", LOG_PREFIX, bridgeUID,
+                    LOG_ERROR, taggedItem.getName(), e.getMessage(), e);
         }
     }
 
@@ -477,9 +479,11 @@ public class HomekitItemBridge implements ItemRegistryChangeListener, StateChang
                             }
                         });
                     });
-                    logger.debug("{}Successfully removed Homekit accessory for item {}", LOG_ACCESSORY, item.getName());
+                    logger.debug("{}[{}]: {} - Successfully removed Homekit accessory for item {}", LOG_PREFIX,
+                            bridgeUID, LOG_ACCESSORY, item.getName());
                 } catch (Exception e) {
-                    logger.error("{}Error removing accessory {}: {}", LOG_ERROR, accessory.getUID(), e.getMessage(), e);
+                    logger.error("{}[{}]: {} - Error removing accessory {}: {}", LOG_PREFIX, bridgeUID, LOG_ERROR,
+                            accessory.getUID(), e.getMessage(), e);
                 }
             });
         }

@@ -127,7 +127,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
     protected static final String LOG_INIT = "Init";
     protected static final String LOG_STATE = "State";
     protected static final String LOG_CONFIG = "Config";
-    protected static final String LOG_CHARACTERISTIC = "HomekitCharacteristic";
+    protected static final String LOG_CHARACTERISTIC = "Characteristic";
     protected static final String LOG_ERROR = "Error";
     protected static final String LOG_WARN = "Warning";
 

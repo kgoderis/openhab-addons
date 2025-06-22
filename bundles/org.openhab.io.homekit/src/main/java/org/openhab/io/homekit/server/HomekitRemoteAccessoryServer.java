@@ -147,16 +147,16 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     // ========== Constants ==========
     protected static final Logger logger = LoggerFactory.getLogger(HomekitRemoteAccessoryServer.class);
     private static final String HTTP_SCHEME = "http";
-    protected static final String LOG_PREFIX = "Homekit RemoteAccessoryServer: ";
-    protected static final String LOG_INIT = LOG_PREFIX + "Init - ";
-    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
-    protected static final String LOG_CONFIG = LOG_PREFIX + "Config - ";
-    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
-    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
-    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
-    protected static final String LOG_PAIRING = LOG_PREFIX + "Pairing - ";
-    protected static final String LOG_EVENT = LOG_PREFIX + "Event - ";
-    protected static final String LOG_SERVER = LOG_PREFIX + "Server - ";
+    protected static final String LOG_PREFIX = "Homekit RemoteAccessoryServer";
+    protected static final String LOG_INIT = "Init";
+    protected static final String LOG_STATE = "State";
+    protected static final String LOG_CONFIG = "Config";
+    protected static final String LOG_ACCESSORY = "Accessory";
+    protected static final String LOG_ERROR = "Error";
+    protected static final String LOG_WARN = "Warning";
+    protected static final String LOG_PAIRING = "Pairing";
+    protected static final String LOG_EVENT = "Event";
+    protected static final String LOG_SERVER = "Server";
 
     // ========== Core Dependencies ==========
     private final ScheduledExecutorService scheduler;
@@ -198,13 +198,13 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             HomekitAccessoryFactory accessoryFactory) throws HomekitConfigurationException {
         super(category, serverId, address, port, pairingIdentifier, secretKey, accessoryRegistry, pairingRegistry,
                 eventManager);
-        logger.debug("{}Initializing remote server - Category: {}, ServerId: {}, Address: {}, Port: {}", LOG_INIT,
-                category, serverId, address, port);
+        logger.debug("{}[{}]: {} - Initializing remote server - Category: {}, ServerId: {}, Address: {}, Port: {}",
+                LOG_PREFIX, getUID(), LOG_INIT, category, serverId, address, port);
         this.accessoryFactory = accessoryFactory;
         this.setupCode = "";
         this.scheduler = org.openhab.core.common.ThreadPoolManager
                 .getScheduledPool(HomekitBindingConstants.THREAD_POOL_NAME);
-        logger.debug("{}Remote server initialization completed", LOG_INIT);
+        logger.debug("{}[{}]: {} - Remote server initialization completed", LOG_PREFIX, getUID(), LOG_INIT);
     }
 
     /**
@@ -228,7 +228,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             throws HomekitConfigurationException, HomekitServerException {
         this(category, serverId, address, port, generatePairingId(), generateSecretKey(), accessoryRegistry,
                 pairingRegistry, eventManager, accessoryFactory);
-        logger.debug("{}Created new remote server with auto-generated credentials", LOG_INIT);
+        logger.debug("{}[{}]: {} - Created new remote server with auto-generated credentials", LOG_PREFIX, getUID(),
+                LOG_INIT);
     }
 
     // ========== Core Lifecycle Methods ==========
@@ -240,17 +241,18 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             httpClient = new HttpClient(new HomekitHttpClientTransport(), null);
 
             if (httpClient != null) {
-                logger.debug("{}Starting HTTP client initialization", LOG_INIT);
+                logger.debug("{}[{}]: {} - Starting HTTP client initialization", LOG_PREFIX, getUID(), LOG_INIT);
                 try {
                     httpClient.start();
                     ProtocolHandlers handlers = httpClient.getProtocolHandlers();
                     handlers.clear();
                     handlers.put(new HomekitProtocolHandler(this));
                     setState(HomekitAccessoryServerState.CONNECTED);
-                    logger.debug("{}HTTP client initialized successfully", LOG_INIT);
+                    logger.debug("{}[{}]: {} - HTTP client initialized successfully", LOG_PREFIX, getUID(), LOG_INIT);
                 } catch (Exception e) {
-                    logger.error("{}Failed to start HTTP client - Error: {}", LOG_ERROR, e.getMessage());
-                    logger.debug("{}Exception details", LOG_ERROR, e);
+                    logger.error("{}[{}]: {} - Failed to start HTTP client - Error: {}", LOG_PREFIX, getUID(),
+                            LOG_ERROR, e.getMessage());
+                    logger.debug("{}[{}]: {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
                     setState(HomekitAccessoryServerState.DISCONNECTED);
                     throw new HomekitServerException("Failed to start HTTP client", e);
                 }
@@ -265,12 +267,14 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             });
 
         } catch (HomekitServerException e) {
-            logger.error("{}Failed to start HTTP client - Error: {}", LOG_ERROR, e.getMessage());
-            logger.debug("{}Exception details", LOG_ERROR, e);
+            logger.error("{}[{}]: {} - Failed to start HTTP client - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                    e.getMessage());
+            logger.debug("{}[{}]: {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
             try {
                 setState(HomekitAccessoryServerState.DISCONNECTED);
             } catch (HomekitServerException ex) {
-                logger.error("{}Failed to set state to DISCONNECTED: {}", LOG_ERROR, ex.getMessage());
+                logger.error("{}[{}]: {} - Failed to set state to DISCONNECTED: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                        ex.getMessage());
             }
         }
 
@@ -288,28 +292,33 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         try {
             // Create a test request to check connection using the address member
             final String url = String.format("http://%s:%d", address.getHostAddress(), port);
-            logger.debug("{}Testing connection to {}", LOG_INIT, url);
+            logger.debug("{}[{}]: {} - Testing connection to {}", LOG_PREFIX, getUID(), LOG_INIT, url);
             final HttpClient currentClient = httpClient;
             if (currentClient != null) {
                 final Request request = currentClient.newRequest(url);
                 request.onRequestFailure((req, failure) -> {
-                    logger.warn("{}Connection failed - Server: {}", LOG_STATE, new String(getPairingId()));
-                    logger.debug("{}Failure details: {}", LOG_STATE, failure.getMessage());
+                    logger.warn("{}[{}]: {} - Connection failed - Server: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                            new String(getPairingId()));
+                    logger.debug("{}[{}]: {} - Failure details: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                            failure.getMessage());
                     try {
                         setState(HomekitAccessoryServerState.DISCONNECTED);
                     } catch (HomekitServerException e) {
-                        logger.error("{}Failed to set state to DISCONNECTED: {}", LOG_ERROR, e.getMessage());
+                        logger.error("{}[{}]: {} - Failed to set state to DISCONNECTED: {}", LOG_PREFIX, getUID(),
+                                LOG_ERROR, e.getMessage());
                     }
                 });
                 request.send();
             }
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            logger.error("{}Failed to start HTTP client - Error: {}", LOG_ERROR, e.getMessage());
-            logger.debug("{}Exception details", LOG_ERROR, e);
+            logger.error("{}[{}]: {} - Failed to start HTTP client - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                    e.getMessage());
+            logger.debug("{}[{}]: {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
             try {
                 setState(HomekitAccessoryServerState.DISCONNECTED);
             } catch (HomekitServerException ex) {
-                logger.error("{}Failed to set state to DISCONNECTED: {}", LOG_ERROR, ex.getMessage());
+                logger.error("{}[{}]: {} - Failed to set state to DISCONNECTED: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                        ex.getMessage());
             }
         }
 
@@ -320,14 +329,16 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     public void stop() throws HomekitServerException {
         stopConnectionMonitor();
 
-        logger.info("{}Stopping server - Server: {}", LOG_STATE, new String(getPairingId()));
+        logger.info("{}[{}]: {} - Stopping server - Server: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                new String(getPairingId()));
         try {
             if (isPaired()) {
                 pairRemove();
             }
         } catch (HomekitServerException e) {
-            logger.warn("{}Error removing pairing during stop - Error: {}", LOG_WARN, e.getMessage());
-            logger.debug("{}Exception details", LOG_WARN, e);
+            logger.warn("{}[{}]: {} - Error removing pairing during stop - Error: {}", LOG_PREFIX, getUID(), LOG_WARN,
+                    e.getMessage());
+            logger.debug("{}[{}]: {} - Exception details", LOG_PREFIX, getUID(), LOG_WARN, e);
             throw e;
         }
 
@@ -337,8 +348,9 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 currentClient.stop();
             }
         } catch (Exception e) {
-            logger.error("{}Error stopping HTTP client - Error: {}", LOG_ERROR, e.getMessage());
-            logger.debug("{}Exception details", LOG_ERROR, e);
+            logger.error("{}[{}]: {} - Error stopping HTTP client - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                    e.getMessage());
+            logger.debug("{}[{}]: {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
         }
 
         super.stop();
@@ -347,7 +359,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     @Override
     @SuppressWarnings("null")
     public void close() throws Exception {
-        logger.info("{}Closing server - Server: {}", LOG_STATE, new String(getPairingId()));
+        logger.info("{}[{}]: {} - Closing server - Server: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                new String(getPairingId()));
 
         try {
             // First stop the server to clean up active connections
@@ -356,7 +369,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             // Clean up HTTP client resources
             HttpClient currentClient = httpClient;
             if (currentClient != null) {
-                logger.debug("{}Destroying HTTP client - Server: {}", LOG_CONFIG, new String(getPairingId()));
+                logger.debug("{}[{}]: {} - Destroying HTTP client - Server: {}", LOG_PREFIX, getUID(), LOG_CONFIG,
+                        new String(getPairingId()));
                 currentClient.destroy();
                 httpClient = null;
             }
@@ -367,10 +381,12 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             // Call super.close() last to ensure proper cleanup of base class resources
             super.close();
 
-            logger.debug("{}Server closed successfully - Server: {}", LOG_STATE, new String(getPairingId()));
+            logger.debug("{}[{}]: {} - Server closed successfully - Server: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                    new String(getPairingId()));
         } catch (Exception e) {
-            logger.error("{}Error during server close - Error: {}", LOG_ERROR, e.getMessage());
-            logger.debug("{}Exception details", LOG_ERROR, e);
+            logger.error("{}[{}]: {} - Error during server close - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                    e.getMessage());
+            logger.debug("{}[{}]: {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
             throw e;
         }
     }
@@ -415,51 +431,56 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     protected void startConnectionMonitor() {
         if (connectionMonitorJob != null) {
             connectionMonitorJob.cancel(true);
-            logger.debug("{}Cancelled existing connection monitor", LOG_STATE);
+            logger.debug("{}[{}]: {} - Cancelled existing connection monitor", LOG_PREFIX, getUID(), LOG_STATE);
         }
 
         // Schedule periodic connection monitoring
         connectionMonitorJob = scheduler.scheduleWithFixedDelay(() -> {
             try {
-                logger.debug("{}Starting connection monitoring cycle", LOG_STATE);
+                logger.debug("{}[{}]: {} - Starting connection monitoring cycle", LOG_PREFIX, getUID(), LOG_STATE);
                 monitorConnection();
             } catch (Exception e) {
-                logger.warn("{}Connection monitoring failed - Error: {}", LOG_STATE, e.getMessage());
-                logger.debug("{}Exception details", LOG_STATE, e);
+                logger.warn("{}[{}]: {} - Connection monitoring failed - Error: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                        e.getMessage());
+                logger.debug("{}[{}]: {} - Exception details", LOG_PREFIX, getUID(), LOG_STATE, e);
                 try {
                     setState(HomekitAccessoryServerState.DISCONNECTED);
                 } catch (HomekitServerException ex) {
-                    logger.error("{}Failed to set disconnected state: {}", LOG_ERROR, ex.getMessage());
+                    logger.error("{}[{}]: {} - Failed to set disconnected state: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                            ex.getMessage());
                 }
             }
         }, 0, 60, java.util.concurrent.TimeUnit.SECONDS);
-        logger.debug("{}Connection monitor scheduled", LOG_STATE);
+        logger.debug("{}[{}]: {} - Connection monitor scheduled", LOG_PREFIX, getUID(), LOG_STATE);
     }
 
     protected void stopConnectionMonitor() {
         if (connectionMonitorJob != null) {
             connectionMonitorJob.cancel(true);
             connectionMonitorJob = null;
-            logger.debug("{}Connection monitor stopped", LOG_STATE);
+            logger.debug("{}[{}]: {} - Connection monitor stopped", LOG_PREFIX, getUID(), LOG_STATE);
         }
     }
 
     private void monitorConnection() throws HomekitServerException, IOException {
-        logger.debug("{}Monitoring connection state - Server: {}", LOG_STATE, new String(getPairingId()));
+        logger.debug("{}[{}]: {} - Monitoring connection state - Server: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                new String(getPairingId()));
 
         // Check if we were previously disconnected
         if (currentState == HomekitAccessoryServerState.DISCONNECTED) {
-            logger.info("{}Connection was lost, attempting to re-establish - Server: {}", LOG_STATE,
-                    new String(getPairingId()));
+            logger.info("{}[{}]: {} - Connection was lost, attempting to re-establish - Server: {}", LOG_PREFIX,
+                    getUID(), LOG_STATE, new String(getPairingId()));
 
             // If we're not paired at all, proceed with pairing
             if (!isPaired()) {
-                logger.info("{}Setting up new pairing - Server: {}", LOG_STATE, new String(getPairingId()));
+                logger.info("{}[{}]: {} - Setting up new pairing - Server: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                        new String(getPairingId()));
                 try {
                     pairSetup();
                 } catch (HomekitServerException e) {
-                    logger.warn("{}HomekitPairing setup failed - Error: {}", LOG_STATE, e.getMessage());
-                    logger.debug("{}Exception details", LOG_STATE, e);
+                    logger.warn("{}[{}]: {} - HomekitPairing setup failed - Error: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                            e.getMessage());
+                    logger.debug("{}[{}]: {} - Exception details", LOG_PREFIX, getUID(), LOG_STATE, e);
                     setState(HomekitAccessoryServerState.MISSING_SETUP_CODE);
                     return;
                 }
@@ -468,16 +489,17 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
         // If connected but not paired, attempt to pair
         if (currentState == HomekitAccessoryServerState.CONNECTED && !isPaired()) {
-            logger.info("{}Connected but not paired, attempting to pair - Server: {}", LOG_STATE,
-                    new String(getPairingId()));
+            logger.info("{}[{}]: {} - Connected but not paired, attempting to pair - Server: {}", LOG_PREFIX, getUID(),
+                    LOG_STATE, new String(getPairingId()));
             try {
                 pairSetup();
                 if (isPaired()) {
                     pairVerify();
                 }
             } catch (HomekitServerException e) {
-                logger.warn("{}HomekitPairing setup failed - Error: {}", LOG_STATE, e.getMessage());
-                logger.debug("{}Exception details", LOG_STATE, e);
+                logger.warn("{}[{}]: {} - HomekitPairing setup failed - Error: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                        e.getMessage());
+                logger.debug("{}[{}]: {} - Exception details", LOG_PREFIX, getUID(), LOG_STATE, e);
                 setState(HomekitAccessoryServerState.MISSING_SETUP_CODE);
                 return;
             }
@@ -485,12 +507,14 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
         // If paired, verify the connection
         if (isPaired()) {
-            logger.debug("{}Verifying connection - Server: {}", LOG_STATE, new String(getPairingId()));
+            logger.debug("{}[{}]: {} - Verifying connection - Server: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                    new String(getPairingId()));
             if (!isPairVerified()) {
-                logger.info("{}Connection not verified, attempting verification - Server: {}", LOG_STATE,
-                        new String(getPairingId()));
+                logger.info("{}[{}]: {} - Connection not verified, attempting verification - Server: {}", LOG_PREFIX,
+                        getUID(), LOG_STATE, new String(getPairingId()));
                 if (!pairVerify()) {
-                    logger.warn("{}Connection verification failed - Server: {}", LOG_STATE, new String(getPairingId()));
+                    logger.warn("{}[{}]: {} - Connection verification failed - Server: {}", LOG_PREFIX, getUID(),
+                            LOG_STATE, new String(getPairingId()));
                     setState(HomekitAccessoryServerState.DISCONNECTED);
                     return;
                 }
@@ -504,26 +528,29 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
             // Check if connection is still secure
             if (!isSecure()) {
-                logger.warn("{}Connection is no longer secure - Server: {}", LOG_STATE, new String(getPairingId()));
+                logger.warn("{}[{}]: {} - Connection is no longer secure - Server: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                        new String(getPairingId()));
                 setState(HomekitAccessoryServerState.DISCONNECTED);
                 return;
             }
 
             setState(HomekitAccessoryServerState.CONNECTED);
-            logger.debug("{}Connection verified and secure - Server: {}", LOG_STATE, new String(getPairingId()));
+            logger.debug("{}[{}]: {} - Connection verified and secure - Server: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                    new String(getPairingId()));
         }
     }
 
     // ========== HomekitPairing Methods ==========
     @Override
     public void pairSetup() throws HomekitServerException {
-        logger.info("{}Starting pair setup process - Server: {}", LOG_STATE, new String(getPairingId()));
-        logger.debug("{}Current state: {}", LOG_STATE, currentState);
+        logger.info("{}[{}]: {} - Starting pair setup process - Server: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                new String(getPairingId()));
+        logger.debug("{}[{}]: {} - Current state: {}", LOG_PREFIX, getUID(), LOG_STATE, currentState);
 
         // Validate setup code
         if (setupCode.isEmpty()) {
-            logger.warn("{}Unable to pair with {}:{} because no setup code is set - Server: {}", LOG_STATE,
-                    address.getHostAddress(), port, new String(getPairingId()));
+            logger.warn("{}[{}]: {} - Unable to pair with {}:{} because no setup code is set - Server: {}", LOG_PREFIX,
+                    getUID(), LOG_STATE, address.getHostAddress(), port, new String(getPairingId()));
             setState(HomekitAccessoryServerState.MISSING_SETUP_CODE);
             return;
         }
@@ -531,54 +558,62 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         // Initialize pairing state
         resetPairingState();
         setState(HomekitAccessoryServerState.PAIR_SETUP_INITIAL);
-        logger.debug("{}HomekitPairing state reset, starting authentication - Server: {}", LOG_STATE,
-                new String(getPairingId()));
+        logger.debug("{}[{}]: {} - HomekitPairing state reset, starting authentication - Server: {}", LOG_PREFIX,
+                getUID(), LOG_STATE, new String(getPairingId()));
 
         try {
             // Stage 0: Initial Setup
-            logger.debug("{}Starting Stage 0 - Initial Setup - Server: {}", LOG_STATE, new String(getPairingId()));
+            logger.debug("{}[{}]: {} - Starting Stage 0 - Initial Setup - Server: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                    new String(getPairingId()));
             StageResult stage0Result = executePairingStage(0, () -> doPairSetupStage0());
             if (stage0Result.isFailure()) {
                 handlePairingFailure(0, stage0Result);
                 return;
             }
-            logger.debug("{}Stage 0 completed successfully - Server: {}", LOG_STATE, new String(getPairingId()));
+            logger.debug("{}[{}]: {} - Stage 0 completed successfully - Server: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                    new String(getPairingId()));
 
             // Stage 1: SRP Protocol Exchange
-            logger.debug("{}Starting Stage 1 - SRP Protocol Exchange - Server: {}", LOG_STATE,
-                    new String(getPairingId()));
+            logger.debug("{}[{}]: {} - Starting Stage 1 - SRP Protocol Exchange - Server: {}", LOG_PREFIX, getUID(),
+                    LOG_STATE, new String(getPairingId()));
             setState(HomekitAccessoryServerState.PAIR_SETUP_SRP);
             StageResult stage1Result = executePairingStage(1, () -> doPairSetupStage1(stage0Result));
             if (stage1Result.isFailure()) {
                 handlePairingFailure(1, stage1Result);
                 return;
             }
-            logger.debug("{}Stage 1 completed successfully - Server: {}", LOG_STATE, new String(getPairingId()));
+            logger.debug("{}[{}]: {} - Stage 1 completed successfully - Server: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                    new String(getPairingId()));
 
             // Stage 2: Verify Proof
-            logger.debug("{}Starting Stage 2 - Verify Proof - Server: {}", LOG_STATE, new String(getPairingId()));
+            logger.debug("{}[{}]: {} - Starting Stage 2 - Verify Proof - Server: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                    new String(getPairingId()));
             setState(HomekitAccessoryServerState.PAIR_SETUP_VERIFY);
             StageResult stage2Result = executePairingStage(2, () -> doPairSetupStage2(stage1Result));
             if (stage2Result.isFailure()) {
                 handlePairingFailure(2, stage2Result);
                 return;
             }
-            logger.debug("{}Stage 2 completed successfully - Server: {}", LOG_STATE, new String(getPairingId()));
+            logger.debug("{}[{}]: {} - Stage 2 completed successfully - Server: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                    new String(getPairingId()));
 
             // Stage 3: Exchange Keys
-            logger.debug("{}Starting Stage 3 - Exchange Keys - Server: {}", LOG_STATE, new String(getPairingId()));
+            logger.debug("{}[{}]: {} - Starting Stage 3 - Exchange Keys - Server: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                    new String(getPairingId()));
             setState(HomekitAccessoryServerState.PAIR_SETUP_EXCHANGE);
             StageResult stage3Result = executePairingStage(3, () -> doPairSetupStage3(stage2Result));
             if (stage3Result.isFailure()) {
                 handlePairingFailure(3, stage3Result);
                 return;
             }
-            logger.debug("{}Stage 3 completed successfully - Server: {}", LOG_STATE, new String(getPairingId()));
+            logger.debug("{}[{}]: {} - Stage 3 completed successfully - Server: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                    new String(getPairingId()));
 
             // HomekitPairing completed successfully
             setState(HomekitAccessoryServerState.PAIR_UNVERIFIED);
-            logger.info("{}Pair setup completed successfully - Server: {}", LOG_STATE, new String(getPairingId()));
-            logger.debug("{}Final state: {}", LOG_STATE, currentState);
+            logger.info("{}[{}]: {} - Pair setup completed successfully - Server: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                    new String(getPairingId()));
+            logger.debug("{}[{}]: {} - Final state: {}", LOG_PREFIX, getUID(), LOG_STATE, currentState);
 
         } catch (HomekitServerException e) {
             logger.error("{}Pair setup failed with error: {} - Server: {}", LOG_ERROR, e.getMessage(),
