@@ -166,10 +166,10 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
             HomekitEventManager eventManager) throws HomekitConfigurationException {
         super(category, serverId, address, port, pairingId, secretKey, accessoryRegistry, pairingRegistry,
                 eventManager);
-        logger.debug("{}Initializing local server - Category: {}, ServerId: {}, Address: {}, Port: {}", LOG_INIT,
-                category, serverId, address, port);
+        logger.debug("{}[{}]: {} - Initializing local server - Category: {}, ServerId: {}, Address: {}, Port: {}",
+                LOG_PREFIX, getUID(), LOG_INIT, category, serverId, address, port);
         this.mdnsService = mdnsService;
-        logger.debug("{}Local server initialization completed", LOG_INIT);
+        logger.debug("{}[{}]: {} - Local server initialization completed", LOG_PREFIX, getUID(), LOG_INIT);
     }
 
     /**
@@ -209,7 +209,8 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
         super(category, serverId, address, port, generatePairingId(), generateSecretKey(), accessoryRegistry,
                 pairingRegistry, eventManager);
         this.mdnsService = mdnsService;
-        logger.debug("{}Created new local server with auto-generated credentials", LOG_INIT);
+        logger.debug("{}[{}]: {} - Created new local server with auto-generated credentials", LOG_PREFIX, getUID(),
+                LOG_INIT);
     }
 
     // ========== Lifecycle Methods ==========
@@ -233,55 +234,58 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
      */
     @Override
     protected void initializeResources() throws HomekitServerException {
-        logger.debug("{}Initializing server resources", LOG_INIT);
+        logger.debug("{}[{}]: {} - Initializing server resources", LOG_PREFIX, getUID(), LOG_INIT);
 
         super.initializeResources();
 
         try {
             // Jetty
             server = new Server();
-            logger.debug("{}Created Jetty server instance", LOG_INIT);
+            logger.debug("{}[{}]: {} - Created Jetty server instance", LOG_PREFIX, getUID(), LOG_INIT);
 
             HomekitSessionHandler homekitSessionHandler = new HomekitSessionHandler();
-            logger.debug("{}Created Homekit session handler", LOG_INIT);
+            logger.debug("{}[{}]: {} - Created Homekit session handler", LOG_PREFIX, getUID(), LOG_INIT);
 
             HttpConfiguration httpConfiguration = new HttpConfiguration();
             httpConfiguration.setIdleTimeout(0);
-            logger.debug("{}Configured HTTP settings - Idle timeout: {}", LOG_INIT, httpConfiguration.getIdleTimeout());
+            logger.debug("{}[{}]: {} - Configured HTTP settings - Idle timeout: {}", LOG_PREFIX, getUID(), LOG_INIT,
+                    httpConfiguration.getIdleTimeout());
 
             ServerConnector http = new ServerConnector(server, new HomekitHttpConnectionFactory(homekitSessionHandler));
             http.setPort(port);
             http.setIdleTimeout(0);
-            logger.debug("{}Configured server connector - Port: {}, Idle timeout: {}", LOG_INIT, http.getPort(),
-                    http.getIdleTimeout());
+            logger.debug("{}[{}]: {} - Configured server connector - Port: {}, Idle timeout: {}", LOG_PREFIX, getUID(),
+                    LOG_INIT, http.getPort(), http.getIdleTimeout());
 
             Objects.requireNonNull(server).addConnector(http);
             try {
                 characteristicServlet = new HomekitCharacteristicServlet(this, eventManager);
-                logger.debug("{}Created characteristic servlet", LOG_INIT);
+                logger.debug("{}[{}]: {} - Created characteristic servlet", LOG_PREFIX, getUID(), LOG_INIT);
             } catch (Exception e) {
-                logger.error("{}Failed to create characteristic servlet: {}", LOG_ERROR, e.getMessage(), e);
+                logger.error("{}[{}]: {} - Failed to create characteristic servlet: {}", LOG_PREFIX, getUID(),
+                        LOG_ERROR, e.getMessage(), e);
                 throw e;
             }
 
             ServletContextHandler servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
             servletContextHandler.setContextPath("/");
             servletContextHandler.setSessionHandler(homekitSessionHandler);
-            logger.debug("{}Configured servlet context handler - Context path: {}", LOG_INIT,
-                    servletContextHandler.getContextPath());
+            logger.debug("{}[{}]: {} - Configured servlet context handler - Context path: {}", LOG_PREFIX, getUID(),
+                    LOG_INIT, servletContextHandler.getContextPath());
 
             // Add servlets
             addServlets(servletContextHandler);
 
             HomekitRequestLogHandler requestLogHandler = new HomekitRequestLogHandler();
             requestLogHandler.setHandler(servletContextHandler);
-            logger.debug("{}Added request log handler", LOG_INIT);
+            logger.debug("{}[{}]: {} - Added request log handler", LOG_PREFIX, getUID(), LOG_INIT);
 
             Objects.requireNonNull(server).setHandler(requestLogHandler);
-            logger.debug("{}Server handler configuration completed", LOG_INIT);
+            logger.debug("{}[{}]: {} - Server handler configuration completed", LOG_PREFIX, getUID(), LOG_INIT);
 
         } catch (Exception e) {
-            logger.error("{}Failed to initialize server resources: {}", LOG_ERROR, e.getMessage(), e);
+            logger.error("{}[{}]: {} - Failed to initialize server resources: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                    e.getMessage(), e);
             throw e;
         }
     }
@@ -303,36 +307,38 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
      * @param servletContextHandler The servlet context handler to add servlets to
      */
     private void addServlets(ServletContextHandler servletContextHandler) {
-        logger.debug("{}Adding servlets to context handler", LOG_INIT);
+        logger.debug("{}[{}]: {} - Adding servlets to context handler", LOG_PREFIX, getUID(), LOG_INIT);
 
         ServletHolder pairSetupHolder = new ServletHolder(new HomekitPairSetupServlet(this));
         servletContextHandler.addServlet(pairSetupHolder, "/pair-setup");
-        logger.debug("{}Added pair setup servlet - Path: /pair-setup", LOG_INIT);
+        logger.debug("{}[{}]: {} - Added pair setup servlet - Path: /pair-setup", LOG_PREFIX, getUID(), LOG_INIT);
 
         ServletHolder pairVerificationHolder = new ServletHolder(new HomekitPairVerificationServlet(this));
         servletContextHandler.addServlet(pairVerificationHolder, "/pair-verify");
-        logger.debug("{}Added pair verification servlet - Path: /pair-verify", LOG_INIT);
+        logger.debug("{}[{}]: {} - Added pair verification servlet - Path: /pair-verify", LOG_PREFIX, getUID(),
+                LOG_INIT);
 
         ServletHolder accessoryHolder = new ServletHolder(new HomekitAccessoryServlet(this));
         servletContextHandler.addServlet(accessoryHolder, "/accessories");
-        logger.debug("{}Added accessory servlet - Path: /accessories", LOG_INIT);
+        logger.debug("{}[{}]: {} - Added accessory servlet - Path: /accessories", LOG_PREFIX, getUID(), LOG_INIT);
 
         ServletHolder characteristicsHolder = new ServletHolder(characteristicServlet);
         servletContextHandler.addServlet(characteristicsHolder, "/characteristics");
-        logger.debug("{}Added characteristics servlet - Path: /characteristics", LOG_INIT);
+        logger.debug("{}[{}]: {} - Added characteristics servlet - Path: /characteristics", LOG_PREFIX, getUID(),
+                LOG_INIT);
 
         ServletHolder pairingsHolder = new ServletHolder(new HomekitPairingServlet(this));
         servletContextHandler.addServlet(pairingsHolder, "/pairings");
-        logger.debug("{}Added pairings servlet - Path: /pairings", LOG_INIT);
+        logger.debug("{}[{}]: {} - Added pairings servlet - Path: /pairings", LOG_PREFIX, getUID(), LOG_INIT);
 
         ServletHolder catchAnyHolder = new ServletHolder(new HomekitCatchAnyServlet(this));
         servletContextHandler.addServlet(catchAnyHolder, "/");
-        logger.debug("{}Added catch-all servlet - Path: /", LOG_INIT);
+        logger.debug("{}[{}]: {} - Added catch-all servlet - Path: /", LOG_PREFIX, getUID(), LOG_INIT);
     }
 
     @Override
     protected void cleanupResources() throws HomekitServerException {
-        logger.debug("{}Cleaning up server resources", LOG_SERVER);
+        logger.debug("{}[{}]: {} - Cleaning up server resources", LOG_PREFIX, getUID(), LOG_SERVER);
 
         super.cleanupResources();
 
@@ -340,36 +346,36 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
         if (announcedServiceDescription != null) {
             mdnsService.unregisterService(announcedServiceDescription);
             announcedServiceDescription = null;
-            logger.debug("{}mDNS service unregistered", LOG_SERVER);
+            logger.debug("{}[{}]: {} - mDNS service unregistered", LOG_PREFIX, getUID(), LOG_SERVER);
         }
 
         // Clean up instance IDs
         synchronized (instanceIdLock) {
             usedInstanceIds.clear();
             nextInstanceId = 1;
-            logger.debug("{}Instance IDs cleared and reset", LOG_SERVER);
+            logger.debug("{}[{}]: {} - Instance IDs cleared and reset", LOG_PREFIX, getUID(), LOG_SERVER);
         }
     }
 
     @Override
     public void start() throws HomekitServerException {
-        logger.debug("{}Starting Homekit server", LOG_SERVER);
+        logger.debug("{}[{}]: {} - Starting Homekit server", LOG_PREFIX, getUID(), LOG_SERVER);
         try {
             super.start(); // This will call initializeResources() and set state to READY
-            logger.debug("{}Base server initialization completed", LOG_SERVER);
+            logger.debug("{}[{}]: {} - Base server initialization completed", LOG_PREFIX, getUID(), LOG_SERVER);
 
             // Initialize Jetty server if not already initialized
             Server currentServer = server;
             if (currentServer == null) {
-                logger.error("{}Jetty server is not initialized", LOG_ERROR);
+                logger.error("{}[{}]: {} - Jetty server is not initialized", LOG_PREFIX, getUID(), LOG_ERROR);
                 throw new HomekitServerException("Jetty server is not initialized");
             }
 
             if (!currentServer.isStarted()) {
                 currentServer.start();
-                logger.info("{}Jetty server started successfully", LOG_SERVER);
+                logger.info("{}[{}]: {} - Jetty server started successfully", LOG_PREFIX, getUID(), LOG_SERVER);
             } else {
-                logger.debug("{}Jetty server already running", LOG_SERVER);
+                logger.debug("{}[{}]: {} - Jetty server already running", LOG_PREFIX, getUID(), LOG_SERVER);
             }
 
             // Only advertise if announcedServiceDescription is null
@@ -377,42 +383,44 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
                 advertise();
             }
         } catch (Exception e) {
-            logger.error("{}Failed to start server: {}", LOG_ERROR, e.getMessage(), e);
+            logger.error("{}[{}]: {} - Failed to start server: {}", LOG_PREFIX, getUID(), LOG_ERROR, e.getMessage(), e);
             try {
                 setState(HomekitAccessoryServerState.STOPPED);
-                logger.debug("{}Server state set to STOPPED after start failure", LOG_STATE);
+                logger.debug("{}[{}]: {} - Server state set to STOPPED after start failure", LOG_PREFIX, getUID(),
+                        LOG_STATE);
             } catch (HomekitServerException ex) {
-                logger.error("{}Failed to set stopped state after start failure: {}", LOG_ERROR, ex.getMessage(), ex);
+                logger.error("{}[{}]: {} - Failed to set stopped state after start failure: {}", LOG_PREFIX, getUID(),
+                        LOG_ERROR, ex.getMessage(), ex);
             }
         }
     }
 
     @Override
     public void stop() throws HomekitServerException {
-        logger.debug("{}Stopping Homekit server", LOG_SERVER);
+        logger.debug("{}[{}]: {} - Stopping Homekit server", LOG_PREFIX, getUID(), LOG_SERVER);
         try {
             // Stop Jetty server
             Server currentServer = server;
             if (currentServer == null) {
-                logger.warn("{}Jetty server is not initialized", LOG_WARN);
+                logger.warn("{}[{}]: {} - Jetty server is not initialized", LOG_PREFIX, getUID(), LOG_WARN);
             } else if (currentServer.isStarted()) {
                 currentServer.stop();
-                logger.info("{}Jetty server stopped successfully", LOG_SERVER);
+                logger.info("{}[{}]: {} - Jetty server stopped successfully", LOG_PREFIX, getUID(), LOG_SERVER);
             } else {
-                logger.debug("{}Jetty server already stopped", LOG_SERVER);
+                logger.debug("{}[{}]: {} - Jetty server already stopped", LOG_PREFIX, getUID(), LOG_SERVER);
             }
 
             super.stop();
-            logger.debug("{}Base server stopped", LOG_SERVER);
+            logger.debug("{}[{}]: {} - Base server stopped", LOG_PREFIX, getUID(), LOG_SERVER);
 
         } catch (Exception e) {
-            logger.error("{}Failed to stop server: {}", LOG_ERROR, e.getMessage(), e);
+            logger.error("{}[{}]: {} - Failed to stop server: {}", LOG_PREFIX, getUID(), LOG_ERROR, e.getMessage(), e);
         }
     }
 
     @Override
     public void close() throws HomekitServerException {
-        logger.info("{}Closing local server - Server: {}", LOG_SERVER, getUID());
+        logger.info("{}[{}]: {} - Closing local server - Server: {}", LOG_PREFIX, getUID(), LOG_SERVER, getUID());
 
         try {
             // First stop the server to clean up active connections
@@ -421,7 +429,8 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
             // Clean up Jetty server resources
             Server currentServer = server;
             if (currentServer != null) {
-                logger.debug("{}Destroying Jetty server - Server: {}", LOG_SERVER, getUID());
+                logger.debug("{}[{}]: {} - Destroying Jetty server - Server: {}", LOG_PREFIX, getUID(), LOG_SERVER,
+                        getUID());
                 currentServer.destroy();
                 server = null;
             }
@@ -429,14 +438,16 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
             // Clean up mDNS service registration
             ServiceDescription currentServiceDescription = announcedServiceDescription;
             if (currentServiceDescription != null) {
-                logger.debug("{}Unregistering mDNS service - Server: {}", LOG_SERVER, getUID());
+                logger.debug("{}[{}]: {} - Unregistering mDNS service - Server: {}", LOG_PREFIX, getUID(), LOG_SERVER,
+                        getUID());
                 mdnsService.unregisterService(currentServiceDescription);
                 announcedServiceDescription = null;
             }
 
             // Clean up instance IDs
             synchronized (instanceIdLock) {
-                logger.debug("{}Clearing instance IDs - Server: {}", LOG_SERVER, getUID());
+                logger.debug("{}[{}]: {} - Clearing instance IDs - Server: {}", LOG_PREFIX, getUID(), LOG_SERVER,
+                        getUID());
                 usedInstanceIds.clear();
                 nextInstanceId = 1;
             }
@@ -444,10 +455,12 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
             // Call super.close() last to ensure proper cleanup of base class resources
             super.close();
 
-            logger.debug("{}Local server closed successfully - Server: {}", LOG_SERVER, getUID());
+            logger.debug("{}[{}]: {} - Local server closed successfully - Server: {}", LOG_PREFIX, getUID(), LOG_SERVER,
+                    getUID());
         } catch (Exception e) {
-            logger.error("{}Error during local server close - Error: {}", LOG_ERROR, e.getMessage());
-            logger.debug("{}Exception details", LOG_ERROR, e);
+            logger.error("{}[{}]: {} - Error during local server close - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                    e.getMessage());
+            logger.debug("{}[{}]: {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
             throw new HomekitServerException("Error during local server close", e);
         }
     }
@@ -460,7 +473,8 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
             for (long id = 1; id < nextInstanceId; id++) {
                 if (!usedInstanceIds.contains(id)) {
                     usedInstanceIds.add(id);
-                    logger.debug("{}Recycled instance ID: {} for server: {}", LOG_ACCESSORY, id, getUID());
+                    logger.debug("{}[{}]: {} - Recycled instance ID: {} for server: {}", LOG_PREFIX, getUID(),
+                            LOG_ACCESSORY, id, getUID());
                     return id;
                 }
             }
@@ -468,7 +482,8 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
             // If no recycled IDs available, use the next new ID
             long newId = nextInstanceId++;
             usedInstanceIds.add(newId);
-            logger.debug("{}Assigned new instance ID: {} for server: {}", LOG_ACCESSORY, newId, getUID());
+            logger.debug("{}[{}]: {} - Assigned new instance ID: {} for server: {}", LOG_PREFIX, getUID(),
+                    LOG_ACCESSORY, newId, getUID());
             return newId;
         }
     }
@@ -492,11 +507,11 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
      */
     @Override
     public void addPairing(byte[] destinationPairingId, byte[] destinationPublicKey) throws HomekitServerException {
-        logger.debug("{}Adding pairing - Destination ID: {}", LOG_PAIRING,
+        logger.debug("{}[{}]: {} - Adding pairing - Destination ID: {}", LOG_PREFIX, getUID(), LOG_PAIRING,
                 HomekitByte.toHexString(destinationPairingId));
         super.addPairing(destinationPairingId, destinationPublicKey);
         advertise();
-        logger.info("{}HomekitPairing added and server advertised", LOG_PAIRING);
+        logger.info("{}[{}]: {} - HomekitPairing added and server advertised", LOG_PREFIX, getUID(), LOG_PAIRING);
     }
 
     /**
@@ -517,11 +532,11 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
      */
     @Override
     public void removePairing(byte[] destinationPairingId) throws HomekitServerException {
-        logger.debug("{}Removing pairing - Destination ID: {}", LOG_PAIRING,
+        logger.debug("{}[{}]: {} - Removing pairing - Destination ID: {}", LOG_PREFIX, getUID(), LOG_PAIRING,
                 HomekitByte.toHexString(destinationPairingId));
         super.removePairing(destinationPairingId);
         advertise();
-        logger.info("{}HomekitPairing removed and server advertised", LOG_PAIRING);
+        logger.info("{}[{}]: {} - HomekitPairing removed and server advertised", LOG_PREFIX, getUID(), LOG_PAIRING);
     }
 
     /**
@@ -535,7 +550,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
      */
     @Override
     public boolean pairVerify() throws HomekitServerException {
-        logger.debug("{}Verifying pairing", LOG_PAIRING);
+        logger.debug("{}[{}]: {} - Verifying pairing", LOG_PREFIX, getUID(), LOG_PAIRING);
         return isPaired();
     }
 
@@ -550,7 +565,8 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
      */
     @Override
     public void pairRemove() throws HomekitServerException {
-        logger.debug("{}Remote pairing removal requested - No action needed for local server", LOG_PAIRING);
+        logger.debug("{}[{}]: {} - Remote pairing removal requested - No action needed for local server", LOG_PREFIX,
+                getUID(), LOG_PAIRING);
     }
 
     /**
@@ -564,53 +580,57 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
      */
     @Override
     public void pairSetup() throws HomekitServerException {
-        logger.debug("{}Remote pairing setup requested - No action needed for local server", LOG_PAIRING);
+        logger.debug("{}[{}]: {} - Remote pairing setup requested - No action needed for local server", LOG_PREFIX,
+                getUID(), LOG_PAIRING);
     }
 
     // ========== HomekitAccessory Management ==========
     @Override
     public void updateAccessories() throws HomekitAccessoryOperationException {
-        logger.debug("{}HomekitAccessory update requested - No action needed for local server", LOG_ACCESSORY);
+        logger.debug("{}[{}]: {} - HomekitAccessory update requested - No action needed for local server", LOG_PREFIX,
+                getUID(), LOG_ACCESSORY);
     }
 
     // ========== Setup Code Management ==========
     @Override
     public String getSetupCode() {
-        logger.debug("{}Getting setup code", LOG_CONFIG);
+        logger.debug("{}[{}]: {} - Getting setup code", LOG_PREFIX, getUID(), LOG_CONFIG);
         String currentCode = super.getSetupCode();
         if (currentCode.isEmpty()) {
             String newCode;
             if (logger.isDebugEnabled()) {
                 newCode = "123-12-123";
-                logger.debug("{}Using debug setup code: {}", LOG_CONFIG, newCode);
+                logger.debug("{}[{}]: {} - Using debug setup code: {}", LOG_PREFIX, getUID(), LOG_CONFIG, newCode);
             } else {
                 newCode = generateSetupCode();
-                logger.debug("{}Generated new setup code", LOG_CONFIG);
+                logger.debug("{}[{}]: {} - Generated new setup code", LOG_PREFIX, getUID(), LOG_CONFIG);
             }
             setSetupCode(newCode);
             try {
                 setState(HomekitAccessoryServerState.READY);
             } catch (HomekitServerException ex) {
-                logger.error("{}Failed to set state to READY: {}", LOG_ERROR, ex.getMessage(), ex);
+                logger.error("{}[{}]: {} - Failed to set state to READY: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                        ex.getMessage(), ex);
             }
-            logger.info("{}Setup code set and state updated to READY", LOG_CONFIG);
+            logger.info("{}[{}]: {} - Setup code set and state updated to READY", LOG_PREFIX, getUID(), LOG_CONFIG);
             return newCode;
         }
         return currentCode;
     }
 
     protected String generateSetupCode() {
-        logger.debug("{}Generating setup code", LOG_CONFIG);
+        logger.debug("{}[{}]: {} - Generating setup code", LOG_PREFIX, getUID(), LOG_CONFIG);
         String setupCode = String.format("%03d-%02d-%03d", HomekitEncryptionEngine.getSecureRandom().nextInt(1000),
                 HomekitEncryptionEngine.getSecureRandom().nextInt(100),
                 HomekitEncryptionEngine.getSecureRandom().nextInt(1000));
 
         if (isReservedSetupCode(setupCode)) {
-            logger.debug("{}Generated reserved setup code {} - regenerating", LOG_CONFIG, setupCode);
+            logger.debug("{}[{}]: {} - Generated reserved setup code {} - regenerating", LOG_PREFIX, getUID(),
+                    LOG_CONFIG, setupCode);
             return generateSetupCode();
         }
 
-        logger.debug("{}Setup code generated successfully: {}", LOG_CONFIG, setupCode);
+        logger.debug("{}[{}]: {} - Setup code generated successfully: {}", LOG_PREFIX, getUID(), LOG_CONFIG, setupCode);
         return setupCode;
     }
 
@@ -624,7 +644,8 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     // ========== Security Management ==========
     @Override
     public boolean isSecure() {
-        logger.debug("{}Security check requested - Remote controller handles security", LOG_CONFIG);
+        logger.debug("{}[{}]: {} - Security check requested - Remote controller handles security", LOG_PREFIX, getUID(),
+                LOG_CONFIG);
         return true;
     }
 
@@ -643,18 +664,20 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
      */
     @Override
     public synchronized void advertise() {
-        logger.debug("{}Starting server advertisement for {}", LOG_SERVER, getUID());
+        logger.debug("{}[{}]: {} - Starting server advertisement for {}", LOG_PREFIX, getUID(), LOG_SERVER, getUID());
 
         if (server != null && !server.isStarted()) {
             try {
                 start();
-                logger.debug("{}Server started for advertisement", LOG_SERVER);
+                logger.debug("{}[{}]: {} - Server started for advertisement", LOG_PREFIX, getUID(), LOG_SERVER);
             } catch (HomekitServerException e) {
-                logger.error("{}Failed to start server for advertisement: {}", LOG_ERROR, e.getMessage(), e);
+                logger.error("{}[{}]: {} - Failed to start server for advertisement: {}", LOG_PREFIX, getUID(),
+                        LOG_ERROR, e.getMessage(), e);
                 try {
                     setState(HomekitAccessoryServerState.STOPPED);
                 } catch (HomekitServerException ex) {
-                    logger.error("{}Failed to set stopped state: {}", LOG_ERROR, ex.getMessage(), ex);
+                    logger.error("{}[{}]: {} - Failed to set stopped state: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                            ex.getMessage(), ex);
                 }
                 return;
             }
@@ -662,7 +685,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
 
         // Announce the accessory via MDNS
         Hashtable<@Nullable String, @Nullable String> props = createAdvertisementProperties();
-        logger.debug("{}Created advertisement properties: {}", LOG_SERVER, props);
+        logger.debug("{}[{}]: {} - Created advertisement properties: {}", LOG_PREFIX, getUID(), LOG_SERVER, props);
 
         if (announcedServiceDescription != null) {
             updateExistingAdvertisement(props);
@@ -718,14 +741,16 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
             try {
                 setConfigurationIndex(1);
             } catch (HomekitConfigurationException ex) {
-                logger.error("{}Failed to set configuration index: {}", LOG_ERROR, ex.getMessage(), ex);
+                logger.error("{}[{}]: {} - Failed to set configuration index: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                        ex.getMessage(), ex);
             }
         }
         props.put("c#", Integer.toString(getConfigurationIndex()));
         try {
             setConfigurationIndex(getConfigurationIndex() + 1);
         } catch (HomekitConfigurationException ex) {
-            logger.error("{}Failed to increment configuration index: {}", LOG_ERROR, ex.getMessage(), ex);
+            logger.error("{}[{}]: {} - Failed to increment configuration index: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                    ex.getMessage(), ex);
         }
 
         // Current state number. Required.
@@ -764,7 +789,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
      * @param props The new advertisement properties
      */
     private void updateExistingAdvertisement(Hashtable<@Nullable String, @Nullable String> props) {
-        logger.debug("{}Updating existing advertisement", LOG_SERVER);
+        logger.debug("{}[{}]: {} - Updating existing advertisement", LOG_PREFIX, getUID(), LOG_SERVER);
         if (announcedServiceDescription != null) {
             // Null Pointer Access Warning Checked
             // We've already verified announcedServiceDescription is not null in the if-condition,
@@ -777,9 +802,10 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
         try {
             setState(HomekitAccessoryServerState.READY);
         } catch (HomekitServerException ex) {
-            logger.error("{}Failed to set state to READY: {}", LOG_ERROR, ex.getMessage(), ex);
+            logger.error("{}[{}]: {} - Failed to set state to READY: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                    ex.getMessage(), ex);
         }
-        logger.info("{}Advertisement updated successfully", LOG_SERVER);
+        logger.info("{}[{}]: {} - Advertisement updated successfully", LOG_PREFIX, getUID(), LOG_SERVER);
     }
 
     /**
@@ -796,29 +822,31 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
      * @param props The advertisement properties
      */
     private void createNewAdvertisement(Hashtable<@Nullable String, @Nullable String> props) {
-        logger.debug("{}Creating new advertisement", LOG_SERVER);
+        logger.debug("{}[{}]: {} - Creating new advertisement", LOG_PREFIX, getUID(), LOG_SERVER);
         announcedServiceDescription = new ServiceDescription(SERVICE_TYPE,
                 "openHAB " + getClass().getSimpleName() + " " + getPort(), getPort(), props);
         mdnsService.registerService(announcedServiceDescription);
         try {
             setState(HomekitAccessoryServerState.READY);
         } catch (HomekitServerException ex) {
-            logger.error("{}Failed to set state to READY: {}", LOG_ERROR, ex.getMessage(), ex);
+            logger.error("{}[{}]: {} - Failed to set state to READY: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                    ex.getMessage(), ex);
         }
-        logger.info("{}New advertisement created successfully", LOG_SERVER);
+        logger.info("{}[{}]: {} - New advertisement created successfully", LOG_PREFIX, getUID(), LOG_SERVER);
     }
 
     // ========== Event Handling ==========
 
     protected void handleCharacteristicEvent(HomekitCharacteristicEvent event) {
-        logger.debug("{}Received characteristic event - Type: {}, HomekitCharacteristic: {}", LOG_EVENT,
-                event.getType(), event.getCharacteristic().map(c -> c.getClass().getSimpleName()).orElse("Unknown"));
+        logger.debug("{}[{}]: {} - Received characteristic event - Type: {}, HomekitCharacteristic: {}", LOG_PREFIX,
+                getUID(), LOG_EVENT, event.getType(),
+                event.getCharacteristic().map(c -> c.getClass().getSimpleName()).orElse("Unknown"));
         if (event.getType() == HomekitEventType.CHARACTERISTIC_STATE_CHANGED && event.getCharacteristic().isPresent()
                 && characteristicServlet != null) {
             HomekitCharacteristicServlet servlet = characteristicServlet;
             if (servlet != null) {
                 servlet.publishCharacteristicUpdate(event.getCharacteristic().get());
-                logger.debug("{}Published characteristic update", LOG_EVENT);
+                logger.debug("{}[{}]: {} - Published characteristic update", LOG_PREFIX, getUID(), LOG_EVENT);
             }
         }
     }
@@ -841,8 +869,8 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
      */
     @Override
     public void addAccessory(HomekitAccessory accessory) throws HomekitAccessoryOperationException {
-        logger.debug("{}Adding accessory - ID: {}, Type: {}", LOG_ACCESSORY, accessory.getAccessoryId(),
-                accessory.getClass().getSimpleName());
+        logger.debug("{}[{}]: {} - Adding accessory - ID: {}, Type: {}", LOG_PREFIX, getUID(), LOG_ACCESSORY,
+                accessory.getAccessoryId(), accessory.getClass().getSimpleName());
         try {
             validateLifecycleOperation("add accessory");
             super.addAccessory(accessory);
@@ -853,13 +881,15 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
                     eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
                             (UID) characteristic.getUID(), (UID) getUID(),
                             event -> handleCharacteristicEvent((HomekitCharacteristicEvent) event)));
-                    logger.debug("{}Subscribed to events for characteristic: {}", LOG_ACCESSORY,
-                            characteristic.getClass().getSimpleName());
+                    logger.debug("{}[{}]: {} - Subscribed to events for characteristic: {}", LOG_PREFIX, getUID(),
+                            LOG_ACCESSORY, characteristic.getClass().getSimpleName());
                 }
             }
-            logger.info("{}HomekitAccessory added successfully - ID: {}", LOG_ACCESSORY, accessory.getAccessoryId());
+            logger.info("{}[{}]: {} - HomekitAccessory added successfully - ID: {}", LOG_PREFIX, getUID(),
+                    LOG_ACCESSORY, accessory.getAccessoryId());
         } catch (HomekitServerException e) {
-            logger.error("{}Failed to add accessory: {}", LOG_ERROR, e.getMessage(), e);
+            logger.error("{}[{}]: {} - Failed to add accessory: {}", LOG_PREFIX, getUID(), LOG_ERROR, e.getMessage(),
+                    e);
             throw new HomekitAccessoryOperationException("Failed to add accessory: " + e.getMessage(), e);
         }
     }
@@ -883,8 +913,8 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
      */
     @Override
     public void removeAccessory(HomekitAccessory accessory) throws HomekitAccessoryOperationException {
-        logger.debug("{}Removing accessory - ID: {}, Type: {}", LOG_ACCESSORY, accessory.getAccessoryId(),
-                accessory.getClass().getSimpleName());
+        logger.debug("{}[{}]: {} - Removing accessory - ID: {}, Type: {}", LOG_PREFIX, getUID(), LOG_ACCESSORY,
+                accessory.getAccessoryId(), accessory.getClass().getSimpleName());
         try {
             validateLifecycleOperation("remove accessory");
             super.removeAccessory(accessory);
@@ -903,16 +933,18 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
                         .anyMatch(uid -> uid.toString().equals(subscription.getPublisherUID().toString()))) {
                     eventManager.unsubscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED,
                             subscription.getPublisherUID(), subscription.getSubscriber());
-                    logger.debug("{}Unsubscribed from events for sourceUid: {}", LOG_ACCESSORY,
-                            subscription.getPublisherUID());
+                    logger.debug("{}[{}]: {} - Unsubscribed from events for sourceUid: {}", LOG_PREFIX, getUID(),
+                            LOG_ACCESSORY, subscription.getPublisherUID());
                     return true;
                 }
                 return false;
             });
 
-            logger.info("{}HomekitAccessory removed successfully - ID: {}", LOG_ACCESSORY, accessory.getAccessoryId());
+            logger.info("{}[{}]: {} - HomekitAccessory removed successfully - ID: {}", LOG_PREFIX, getUID(),
+                    LOG_ACCESSORY, accessory.getAccessoryId());
         } catch (HomekitServerException e) {
-            logger.error("{}Failed to remove accessory: {}", LOG_ERROR, e.getMessage(), e);
+            logger.error("{}[{}]: {} - Failed to remove accessory: {}", LOG_PREFIX, getUID(), LOG_ERROR, e.getMessage(),
+                    e);
             throw new HomekitAccessoryOperationException("Failed to remove accessory: " + e.getMessage(), e);
         }
     }
