@@ -80,8 +80,7 @@ import org.slf4j.LoggerFactory;
  * @version 1.0
  * @since 1.0
  */
-@Component(immediate = true, service = { HomekitPersistedAccessoryProvider.class,
-        HomekitPersistedAccessoryProvider.class })
+@Component(immediate = true, service = { HomekitPersistedAccessoryProvider.class, HomekitAccessoryProvider.class })
 @NonNullByDefault
 public class HomekitPersistedAccessoryProvider
         extends AbstractManagedProvider<HomekitAccessory, HomekitAccessoryUID, HomekitPersistedAccessory>
@@ -105,7 +104,7 @@ public class HomekitPersistedAccessoryProvider
     private volatile long lastUpdate = System.nanoTime();
     private volatile boolean readyMarkerRegistered = false;
 
-    private final Set<ReadyMarker> processedReadyMarkers = ConcurrentHashMap.newKeySet();
+    private final Set<String> processedReadyMarkers = ConcurrentHashMap.newKeySet();
 
     /**
      * Creates a new HomeKit persisted accessory provider.
@@ -248,13 +247,13 @@ public class HomekitPersistedAccessoryProvider
             return;
         }
 
-        if (processedReadyMarkers.contains(readyMarker)) {
+        if (processedReadyMarkers.contains(readyMarker.toString())) {
             logger.debug("{}Ready marker already processed: {}", LOG_INIT, readyMarker);
             return;
         }
         logger.debug("{}Ready marker added: {}", LOG_INIT, readyMarker);
         lastUpdate = System.nanoTime();
-        processedReadyMarkers.add(readyMarker);
+        processedReadyMarkers.add(readyMarker.toString());
         delayedInitialize();
     }
 
