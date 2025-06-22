@@ -528,6 +528,8 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
         if (serviceInfo == null) {
             logger.debug("{}Skipping service event - no service info available", LOG_EVENT);
             return;
+        } else {
+            logger.debug("{}Considering service event: {}", LOG_EVENT, serviceInfo.toString());
         }
 
         Optional<Map<String, Object>> propertiesOpt = processService(serviceInfo);
@@ -596,14 +598,31 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
      * @return Optional containing the map of service properties, or empty if processing failed
      */
     private Optional<Map<String, Object>> processService(@Nullable ServiceInfo serviceInfo) {
-        if (serviceInfo == null || !serviceInfo.hasData()) {
-            logger.debug("{}Skipping service - no data available", LOG_SERVER);
+        if (serviceInfo == null) {
+            logger.debug("{}Skipping service - null service info", LOG_SERVER);
             return Optional.empty();
         }
 
         try {
-            if (!serviceInfo.hasData() || !serviceInfo.getApplication().contains("hap") || serviceInfo.getPort() == 0) {
-                logger.debug("{}Skipping service {} - invalid service data", LOG_SERVER, serviceInfo.getName());
+            // Check for required TXT field properties instead of hasData()
+            String id = serviceInfo.getPropertyString("id");
+            String configIndexStr = serviceInfo.getPropertyString("c#");
+            String categoryStr = serviceInfo.getPropertyString("ci");
+            String pairingStatusStr = serviceInfo.getPropertyString("sf");
+            String stateNumberStr = serviceInfo.getPropertyString("s#");
+            String pairingFeatureFlagStr = serviceInfo.getPropertyString("ff");
+
+            // Validate that we have the essential TXT field properties
+            if (id == null || configIndexStr == null || categoryStr == null || pairingStatusStr == null
+                    || stateNumberStr == null || pairingFeatureFlagStr == null) {
+                logger.debug("{}Skipping service {} - missing required TXT field properties", LOG_SERVER,
+                        serviceInfo.getName());
+                return Optional.empty();
+            }
+
+            // Additional validation for service type and port
+            if (!serviceInfo.getApplication().contains("hap") || serviceInfo.getPort() == 0) {
+                logger.debug("{}Skipping service {} - invalid service type or port", LOG_SERVER, serviceInfo.getName());
                 return Optional.empty();
             }
 
@@ -623,35 +642,18 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                 }
             }
 
-            // Validate required service properties
-            String id = serviceInfo.getPropertyString("id");
-            if (id == null) {
-                throw new IllegalStateException("Service " + serviceInfo.getName() + " has no ID property");
-            }
-
             HomekitAccessoryServerUID serverUID = new HomekitAccessoryServerUIDImpl(id.replace(":", ""));
             HomekitAccessoryServer existingServer = accessoryServerRegistry.get(serverUID);
 
             // Extract and validate service configuration
             int port = serviceInfo.getPort();
-            // String deviceId = serviceInfo.getPropertyString("id");
             String model = serviceInfo.getPropertyString("md");
             String version = serviceInfo.getPropertyString("pv");
-            String configIndexStr = serviceInfo.getPropertyString("c#");
-            String categoryStr = serviceInfo.getPropertyString("ci");
-            String pairingStatusStr = serviceInfo.getPropertyString("sf");
-            String stateNumberStr = serviceInfo.getPropertyString("s#");
-            String pairingFeatureFlagStr = serviceInfo.getPropertyString("ff");
 
             logger.trace(
                     "{}Extracted service properties - Port: {}, Model: {}, Version: {}, ConfigIndex: {}, Category: {}, PairingStatus: {}, StateNumber: {}, FeatureFlag: {}",
                     LOG_SERVER, port, model, version, configIndexStr, categoryStr, pairingStatusStr, stateNumberStr,
                     pairingFeatureFlagStr);
-
-            if (configIndexStr == null || categoryStr == null || pairingStatusStr == null || stateNumberStr == null
-                    || pairingFeatureFlagStr == null) {
-                throw new IllegalStateException("Missing required service properties for " + serviceInfo.getName());
-            }
 
             try {
                 // Parse and validate numeric values
@@ -725,14 +727,11 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
     }
 
     private Optional<ThingUID> getThingUID(ServiceInfo serviceInfo) {
-        if (!serviceInfo.hasData() || !serviceInfo.getApplication().contains("hap")) {
-            return Optional.empty();
-        }
-
+        // Check for required TXT field properties instead of hasData()
         String deviceId = serviceInfo.getPropertyString(HomekitDiscoveryConstants.DEVICE_ID);
         String category = serviceInfo.getPropertyString(HomekitDiscoveryConstants.CATEGORY_ID);
 
-        if (deviceId == null || category == null) {
+        if (deviceId == null || category == null || !serviceInfo.getApplication().contains("hap")) {
             return Optional.empty();
         }
 
