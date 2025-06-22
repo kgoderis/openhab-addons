@@ -177,6 +177,11 @@ public class HomekitAccessoryRegistryImpl
      */
     @Override
     public void onReadyMarkerAdded(ReadyMarker readyMarker) {
+        // Only process markers of the specific type we're tracking
+        if (!HOMEKIT_MANAGED_ACCESSORY_PROVIDER.equals(readyMarker.getType())) {
+            return;
+        }
+
         logger.debug("{}Ready marker added - Type: {}, Identifier: {}", LOG_STATE, readyMarker.getType(),
                 readyMarker.getIdentifier());
 

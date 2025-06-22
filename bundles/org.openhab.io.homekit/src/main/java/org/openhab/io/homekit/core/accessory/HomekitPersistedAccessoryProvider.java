@@ -243,6 +243,11 @@ public class HomekitPersistedAccessoryProvider
      */
     @Override
     public void onReadyMarkerAdded(ReadyMarker readyMarker) {
+        // Only process markers of the specific type we're tracking
+        if (!HOMEKIT_ACCESSORY_SERVER_REGISTRY.equals(readyMarker.getType())) {
+            return;
+        }
+
         if (processedReadyMarkers.contains(readyMarker)) {
             logger.debug("{}Ready marker already processed: {}", LOG_INIT, readyMarker);
             return;

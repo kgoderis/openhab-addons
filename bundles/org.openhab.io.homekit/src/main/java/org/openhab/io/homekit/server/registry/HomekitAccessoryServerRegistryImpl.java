@@ -173,7 +173,7 @@ public class HomekitAccessoryServerRegistryImpl
             @Reference HomekitAccessoryRegistry accessoryRegistry, @Reference HomekitPairingRegistry pairingRegistry,
             @Reference HomekitEventManager eventManager, @Reference HomekitAccessoryFactory accessoryFactory) {
         super(HomekitAccessoryServerProvider.class);
-        logger.debug("{}[{}]: {} - Initializing HomeKit accessory server registry", LOG_PREFIX, subscriberUID,
+        logger.debug("{} [{}] : {} - Initializing HomeKit accessory server registry", LOG_PREFIX, subscriberUID,
                 LOG_INIT);
         this.readyService = readyService;
         this.networkAddressService = networkAddressService;
@@ -182,7 +182,7 @@ public class HomekitAccessoryServerRegistryImpl
         this.eventManager = eventManager;
         this.accessoryFactory = accessoryFactory;
 
-        logger.debug("{}[{}]: {} - HomeKit accessory server registry initialized successfully", LOG_PREFIX,
+        logger.debug("{} [{}] : {} - HomeKit accessory server registry initialized successfully", LOG_PREFIX,
                 subscriberUID, LOG_INIT);
     }
 
@@ -203,7 +203,7 @@ public class HomekitAccessoryServerRegistryImpl
     @Activate
     protected void activate(final BundleContext context) {
         super.activate(context);
-        logger.debug("{}[{}]: {} - Activating HomekitAccessory Server Registry", LOG_PREFIX, subscriberUID, LOG_INIT);
+        logger.debug("{} [{}] : {} - Activating HomekitAccessory Server Registry", LOG_PREFIX, subscriberUID, LOG_INIT);
         readyService.registerTracker(this, new ReadyMarkerFilter().withType(HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER));
     }
 
@@ -222,7 +222,8 @@ public class HomekitAccessoryServerRegistryImpl
     @Override
     @Deactivate
     protected void deactivate() {
-        logger.debug("{}[{}]: {} - Deactivating HomekitAccessory Server Registry", LOG_PREFIX, subscriberUID, LOG_INIT);
+        logger.debug("{} [{}] : {} - Deactivating HomekitAccessory Server Registry", LOG_PREFIX, subscriberUID,
+                LOG_INIT);
 
         // Unregister the tracker to prevent duplicate notifications
         readyService.unregisterTracker(this);
@@ -275,7 +276,7 @@ public class HomekitAccessoryServerRegistryImpl
      */
     @Override
     protected void addProvider(Provider<HomekitAccessoryServer> provider) {
-        logger.debug("{}[{}]: {} - Adding provider: {}", LOG_PREFIX, subscriberUID, LOG_CONFIG, provider.toString());
+        logger.debug("{} [{}] : {} - Adding provider: {}", LOG_PREFIX, subscriberUID, LOG_CONFIG, provider.toString());
 
         ReadyMarker newMarker = new ReadyMarker(HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER, provider.toString());
 
@@ -384,17 +385,22 @@ public class HomekitAccessoryServerRegistryImpl
      */
     @Override
     public synchronized void onReadyMarkerAdded(ReadyMarker readyMarker) {
+        // Only process markers of the specific type we're tracking
+        if (!HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER.equals(readyMarker.getType())) {
+            return;
+        }
+
         String markerKey = readyMarker.getType() + ":" + readyMarker.getIdentifier();
 
         if (processedReadyMarkers.contains(markerKey)) {
-            logger.debug("{}Duplicate ready marker ignored - Type: {}, Identifier: {}", LOG_STATE,
-                    readyMarker.getType(), readyMarker.getIdentifier());
+            logger.debug("{} [{}] : {} - Duplicate ready marker ignored - Type: {}, Identifier: {}", LOG_PREFIX,
+                    subscriberUID, LOG_STATE, readyMarker.getType(), readyMarker.getIdentifier());
             return;
         }
 
         processedReadyMarkers.add(markerKey);
-        logger.debug("{}Ready marker added - Type: {}, Identifier: {}", LOG_STATE, readyMarker.getType(),
-                readyMarker.getIdentifier());
+        logger.debug("{} [{}] : {} - Ready marker added - Type: {}, Identifier: {}", LOG_PREFIX, subscriberUID,
+                LOG_STATE, readyMarker.getType(), readyMarker.getIdentifier());
 
         if (getManagedProvider().isPresent()) {
             @SuppressWarnings("null") // get() is safe after isPresent() check
