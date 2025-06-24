@@ -13,8 +13,6 @@
 
 package org.openhab.io.homekit.api.event;
 
-import java.util.Optional;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.event.core.HomekitEventMetadata;
@@ -85,7 +83,7 @@ public interface HomekitEvent {
      * @return the subscriber UID, or empty if not set
      * @since 1.0.0
      */
-    Optional<UID> getSubscriberUID();
+    UID getSubscriberUID();
 
     /**
      * Sets the UID of the subscriber of this event.

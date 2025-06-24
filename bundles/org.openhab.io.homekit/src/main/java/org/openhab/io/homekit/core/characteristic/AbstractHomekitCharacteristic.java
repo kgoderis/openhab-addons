@@ -505,8 +505,8 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
             setValueInternal(value);
             notifyValueChanged(oldValue, this.value);
         } catch (Exception e) {
-            logger.error("{}[{}]: {} - Error while setting value: {}", LOG_PREFIX, getUID(), LOG_ERROR, e.getMessage(),
-                    e);
+            logger.error("{} [{}] : {} - Error while setting value: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                    e.getMessage(), e);
             throw new IllegalStateException("Cannot set characteristic value", e);
         }
     }
@@ -524,7 +524,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
             }
             setValue(convertedValue);
         } catch (Exception e) {
-            logger.error("{}[{}]: {} - Error while setting JSON value: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+            logger.error("{} [{}] : {} - Error while setting JSON value: {}", LOG_PREFIX, getUID(), LOG_ERROR,
                     e.getMessage(), e);
             throw new IllegalStateException("Cannot set characteristic value from JSON", e);
         }
@@ -547,7 +547,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
             setValueInternal(convertedValue);
             notifyValueChanged(oldValue, this.value, metadata);
         } catch (Exception e) {
-            logger.error("{}[{}]: {} - Error while setting value with metadata: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+            logger.error("{} [{}] : {} - Error while setting value with metadata: {}", LOG_PREFIX, getUID(), LOG_ERROR,
                     e.getMessage(), e);
             throw new IllegalStateException("Cannot set characteristic value with metadata", e);
         }
@@ -986,7 +986,7 @@ public abstract class AbstractHomekitCharacteristic<@NonNull T> implements Homek
                     T newValue = (T) otherGeneric.getValue();
                     setValue(newValue);
                 } catch (Exception e) {
-                    logger.error("{}[{}]: {} - Error updating characteristic value: {}", LOG_PREFIX, getUID(),
+                    logger.error("{} [{}] : {} - Error updating characteristic value: {}", LOG_PREFIX, getUID(),
                             LOG_ERROR, e.getMessage(), e);
                 }
             }

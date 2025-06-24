@@ -13,8 +13,6 @@
 
 package org.openhab.io.homekit.event.core;
 
-import java.util.Optional;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.thing.UID;
@@ -197,8 +195,8 @@ public abstract class AbstractHomekitEvent implements HomekitEvent {
      * @return The UID of the event subscriber
      */
     @Override
-    public Optional<UID> getSubscriberUID() {
-        return Optional.of(subscriberUID);
+    public UID getSubscriberUID() {
+        return subscriberUID;
     }
 
     /**

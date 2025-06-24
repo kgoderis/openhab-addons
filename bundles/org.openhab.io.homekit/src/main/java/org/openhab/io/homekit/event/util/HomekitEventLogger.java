@@ -14,8 +14,10 @@
 package org.openhab.io.homekit.event.util;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.core.common.registry.Identifiable;
 import org.openhab.io.homekit.api.event.HomekitEvent;
 import org.openhab.io.homekit.api.event.HomekitEventSubscriber;
+import org.openhab.io.homekit.util.HomekitUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +59,7 @@ import org.slf4j.LoggerFactory;
  * @author Karel Goderis - Initial contribution
  */
 @NonNullByDefault
-public class HomekitEventLogger implements HomekitEventSubscriber {
+public class HomekitEventLogger implements HomekitEventSubscriber, Identifiable<HomekitUID> {
     private static final Logger logger = LoggerFactory.getLogger(HomekitEventLogger.class);
     private static final String LOG_PREFIX = "Homekit EventLogger: ";
     private static final String LOG_EVENT = LOG_PREFIX + "Event - ";
@@ -67,6 +69,7 @@ public class HomekitEventLogger implements HomekitEventSubscriber {
      * The singleton instance of {@code HomekitEventLogger}.
      */
     private static final HomekitEventLogger INSTANCE = new HomekitEventLogger();
+    private final HomekitUID uid = new HomekitUID("eventlogger");
 
     /**
      * Private constructor to enforce singleton pattern.
@@ -104,8 +107,9 @@ public class HomekitEventLogger implements HomekitEventSubscriber {
      * @param event the event to log
      */
     private void logEvent(HomekitEvent event) {
-        logger.debug("{}Received event: Type={}, Publisher={}, Timestamp={}, Data={}", LOG_EVENT, event.getType(),
-                event.getPublisherUID(), event.getTimestamp(), event.toString());
+        logger.debug("{}Received event: Type={}, Publisher={}, Subscriber={}, Timestamp={}, Data={}", LOG_EVENT,
+                event.getType(), event.getPublisherUID(), event.getSubscriberUID(), event.getTimestamp(),
+                event.toString());
     }
 
     /**
@@ -119,5 +123,10 @@ public class HomekitEventLogger implements HomekitEventSubscriber {
     @Override
     public void onEventError(HomekitEvent event, Exception exception) {
         logger.warn("{}Error processing event: {}, Exception: {}", LOG_WARN, event, exception.getMessage(), exception);
+    }
+
+    @Override
+    public HomekitUID getUID() {
+        return uid;
     }
 }

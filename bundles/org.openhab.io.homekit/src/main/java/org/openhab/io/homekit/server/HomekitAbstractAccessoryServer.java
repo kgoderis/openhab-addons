@@ -99,7 +99,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
     protected static final String SERVICE_TYPE = "_hap._tcp.local.";
 
     // ========== Log Message Prefixes ==========
-    protected static final String LOG_PREFIX = "Homekit Server: ";
+    protected static final String LOG_PREFIX = "Homekit Server";
     protected static final String LOG_INIT = "Init";
     protected static final String LOG_STATE = "State";
     protected static final String LOG_CONFIG = "Config";
@@ -188,8 +188,6 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         validateConstructorParameters(category, serverId, address, port, pairingId, privateKey, accessoryRegistry,
                 pairingRegistry);
 
-        logger.debug("{}[{}]: {} - Initializing Homekit server - Category: {}, ServerId: {}, Address: {}, Port: {}",
-                LOG_PREFIX, getServerId(), LOG_INIT, category, getServerId(), address, port);
         this.category = category;
         this.serverId = serverId;
         this.address = address;
@@ -200,7 +198,9 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         this.pairingIdentifier = pairingId;
         this.setupCode = "";
         this.eventManager = eventManager;
-        logger.debug("{}[{}]: {} - Homekit server initialization completed", LOG_PREFIX, getServerId(), LOG_INIT);
+
+        logger.debug("{} [{}] : {} - Initializing Homekit server - Category: {}, ServerId: {}, Address: {}, Port: {}",
+                LOG_PREFIX, getUID(), LOG_INIT, category, serverId, address, port);
     }
 
     /**
@@ -294,7 +294,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
             try {
                 removeAccessory(accessory);
             } catch (HomekitAccessoryOperationException e) {
-                logger.error("{}[{}]: {} - Failed to remove accessory during shutdown: {}", LOG_PREFIX, getServerId(),
+                logger.error("{} [{}] : {} - Failed to remove accessory during shutdown: {}", LOG_PREFIX, getUID(),
                         LOG_ERROR, e.getMessage(), e);
             }
         }
@@ -320,24 +320,24 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
             validateLifecycleOperation("start server");
 
             if (currentState == HomekitAccessoryServerState.READY) {
-                logger.warn("{}[{}]: {} - Server is already running", LOG_PREFIX, getServerId(), LOG_SERVER);
+                logger.warn("{} [{}] : {} - Server is already running", LOG_PREFIX, getUID(), LOG_SERVER);
                 return;
             }
             if (currentState == HomekitAccessoryServerState.STOPPED) {
-                logger.warn("{}[{}]: {} - Server is in stopped state, attempting to restart", LOG_PREFIX, getServerId(),
+                logger.warn("{} [{}] : {} - Server is in stopped state, attempting to restart", LOG_PREFIX, getUID(),
                         LOG_SERVER);
             }
 
             try {
                 initializeResources();
                 setState(HomekitAccessoryServerState.READY);
-                logger.info("{}[{}]: {} - Server started successfully", LOG_PREFIX, getServerId(), LOG_SERVER);
+                logger.info("{} [{}] : {} - Server started successfully", LOG_PREFIX, getUID(), LOG_SERVER);
             } catch (Exception e) {
                 try {
                     cleanupResources();
                 } catch (Exception cleanupEx) {
-                    logger.error("{}[{}]: {} - Failed to cleanup resources after failed start: {}", LOG_PREFIX,
-                            getServerId(), LOG_ERROR, cleanupEx.getMessage(), cleanupEx);
+                    logger.error("{} [{}] : {} - Failed to cleanup resources after failed start: {}", LOG_PREFIX,
+                            getUID(), LOG_ERROR, cleanupEx.getMessage(), cleanupEx);
                 }
                 throw new HomekitServerException("Failed to start server", e);
             }
@@ -362,19 +362,19 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
     public void stop() throws HomekitServerException {
         synchronized (stateLock) {
             if (currentState == HomekitAccessoryServerState.STOPPED) {
-                logger.warn("{}[{}]: {} - Server is already stopped", LOG_PREFIX, getServerId(), LOG_SERVER);
+                logger.warn("{} [{}] : {} - Server is already stopped", LOG_PREFIX, getUID(), LOG_SERVER);
                 return;
             }
             try {
                 try {
                     setState(HomekitAccessoryServerState.STOPPED);
                 } catch (HomekitServerException e) {
-                    logger.error("{}[{}]: {} - Failed to set stopped state during shutdown: {}", LOG_PREFIX,
-                            getServerId(), LOG_ERROR, e.getMessage(), e);
+                    logger.error("{} [{}] : {} - Failed to set stopped state during shutdown: {}", LOG_PREFIX, getUID(),
+                            LOG_ERROR, e.getMessage(), e);
                     throw new HomekitServerException("Failed to set stopped state during shutdown", e);
                 }
             } catch (HomekitServerException e) {
-                logger.error("{}[{}]: {} - Failed to stop server gracefully: {}", LOG_PREFIX, getServerId(), LOG_ERROR,
+                logger.error("{} [{}] : {} - Failed to stop server gracefully: {}", LOG_PREFIX, getUID(), LOG_ERROR,
                         e.getMessage(), e);
                 forceStop();
             }
@@ -396,9 +396,9 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         try {
             cleanupResources();
             setState(HomekitAccessoryServerState.STOPPED);
-            logger.warn("{}[{}]: {} - Server force stopped", LOG_PREFIX, getServerId(), LOG_WARN);
+            logger.warn("{} [{}] : {} - Server force stopped", LOG_PREFIX, getUID(), LOG_WARN);
         } catch (Exception e) {
-            logger.error("{}[{}]: {} - Failed to force stop server: {}", LOG_PREFIX, getServerId(), LOG_ERROR,
+            logger.error("{} [{}] : {} - Failed to force stop server: {}", LOG_PREFIX, getUID(), LOG_ERROR,
                     e.getMessage(), e);
         }
     }
@@ -482,12 +482,12 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
             validateStateTransition(newState);
             HomekitAccessoryServerState oldState = currentState;
             currentState = newState;
-            logger.debug("{}[{}]: {} - Server state changed from {} to {}", LOG_PREFIX, getServerId(), LOG_STATE,
-                    oldState, newState);
+            logger.debug("{} [{}] : {} - Server state changed from {} to {}", LOG_PREFIX, getUID(), LOG_STATE, oldState,
+                    newState);
             eventManager.publishEvent(new HomekitAccessoryServerEvent(HomekitEventType.SERVER_STATE_CHANGED, this,
                     (HomekitAccessory) null, (HomekitService) null, (HomekitCharacteristic<?>) null));
         } catch (HomekitInvalidStateTransitionException e) {
-            logger.error("{}[{}]: {} - Invalid state transition: {}", LOG_PREFIX, getServerId(), LOG_ERROR,
+            logger.error("{} [{}] : {} - Invalid state transition: {}", LOG_PREFIX, getUID(), LOG_ERROR,
                     e.getMessage());
             throw new HomekitServerException("Invalid state transition", e);
         }
@@ -526,7 +526,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
     public void setConfigurationIndex(int newIndex) throws HomekitConfigurationException {
         validateConfigurationIndex(newIndex);
         configurationIndex = newIndex;
-        logger.debug("{}[{}]: {} - Configuration index updated to {}", LOG_PREFIX, getServerId(), LOG_CONFIG, newIndex);
+        logger.debug("{} [{}] : {} - Configuration index updated to {}", LOG_PREFIX, getUID(), LOG_CONFIG, newIndex);
         eventManager.publishEvent(
                 new HomekitAccessoryServerEvent(HomekitEventType.SERVER_STATE_CONFIGURATION_NUMBER_CHANGED, this,
                         (HomekitAccessory) null, (HomekitService) null, (HomekitCharacteristic<?>) null));
@@ -565,7 +565,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      */
     protected synchronized void incrementConfigurationIndex() {
         configurationIndex++;
-        logger.debug("{}[{}]: {} - Configuration index incremented to {}", LOG_PREFIX, getServerId(), LOG_CONFIG,
+        logger.debug("{} [{}] : {} - Configuration index incremented to {}", LOG_PREFIX, getUID(), LOG_CONFIG,
                 configurationIndex);
         eventManager.publishEvent(
                 new HomekitAccessoryServerEvent(HomekitEventType.SERVER_STATE_CONFIGURATION_NUMBER_CHANGED, this,
@@ -586,7 +586,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      */
     @Override
     public void factoryReset() {
-        logger.info("{}[{}]: {} - Performing factory reset", LOG_PREFIX, getServerId(), LOG_CONFIG);
+        logger.info("{} [{}] : {} - Performing factory reset", LOG_PREFIX, getUID(), LOG_CONFIG);
         try {
             Collection<HomekitPairing> pairings = pairingRegistry.get(getPairingId());
             for (HomekitPairing pairing : pairings) {
@@ -596,9 +596,9 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
             setupCode = "";
             eventManager.publishEvent(new HomekitAccessoryServerEvent(HomekitEventType.SERVER_STATE_UNPAIRED, this,
                     (HomekitAccessory) null, (HomekitService) null, (HomekitCharacteristic<?>) null));
-            logger.info("{}[{}]: {} - Factory reset completed successfully", LOG_PREFIX, getServerId(), LOG_CONFIG);
+            logger.info("{} [{}] : {} - Factory reset completed successfully", LOG_PREFIX, getUID(), LOG_CONFIG);
         } catch (Exception e) {
-            logger.error("{}[{}]: {} - Failed to perform factory reset: {}", LOG_PREFIX, getServerId(), LOG_ERROR,
+            logger.error("{} [{}] : {} - Failed to perform factory reset: {}", LOG_PREFIX, getUID(), LOG_ERROR,
                     e.getMessage(), e);
         }
     }
@@ -611,7 +611,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      */
     @Override
     public InetAddress getAddress() {
-        logger.trace("{}[{}]: {} - Getting server address: {}", LOG_PREFIX, getServerId(), LOG_CONFIG, address);
+        logger.trace("{} [{}] : {} - Getting server address: {}", LOG_PREFIX, getUID(), LOG_CONFIG, address);
         return address;
     }
 
@@ -622,7 +622,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      */
     @Override
     public int getPort() {
-        logger.trace("{}[{}]: {} - Getting server port: {}", LOG_PREFIX, getServerId(), LOG_CONFIG, port);
+        logger.trace("{} [{}] : {} - Getting server port: {}", LOG_PREFIX, getUID(), LOG_CONFIG, port);
         return port;
     }
 
@@ -633,7 +633,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      */
     @Override
     public byte[] getPairingId() {
-        logger.trace("{}[{}]: {} - Getting pairing ID", LOG_PREFIX, getServerId(), LOG_CONFIG);
+        logger.trace("{} [{}] : {} - Getting pairing ID", LOG_PREFIX, getUID(), LOG_CONFIG);
         return pairingIdentifier;
     }
 
@@ -644,7 +644,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      */
     @Override
     public HomekitAccessoryServerUID getUID() {
-        logger.trace("{}[{}]: {} - Getting server UID", LOG_PREFIX, getServerId(), LOG_CONFIG);
+        logger.trace("{} [{}] : {} - Getting server UID", LOG_PREFIX, getServerId(), LOG_CONFIG);
         return new HomekitAccessoryServerUIDImpl(getServerId());
     }
 
@@ -655,7 +655,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      */
     @Override
     public byte[] getSecretKey() {
-        logger.trace("{}[{}]: {} - Getting secret key", LOG_PREFIX, getServerId(), LOG_CONFIG);
+        logger.trace("{} [{}] : {} - Getting secret key", LOG_PREFIX, getUID(), LOG_CONFIG);
         return secretKey;
     }
 
@@ -667,7 +667,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      */
     @Override
     public Optional<byte[]> getPublicKey(byte[] destinationPairingId) {
-        logger.debug("{}[{}]: {} - Getting public key for destination pairing ID: {}", LOG_PREFIX, getServerId(),
+        logger.debug("{} [{}] : {} - Getting public key for destination pairing ID: {}", LOG_PREFIX, getUID(),
                 LOG_CONFIG, HomekitByte.toHexString(destinationPairingId));
         HomekitPairing hp = pairingRegistry.get(new HomekitPairingUIDImpl(getPairingId(), destinationPairingId));
         return hp != null ? Optional.of(hp.getPublicKey()) : Optional.empty();
@@ -681,7 +681,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      */
     @Override
     public String getSetupCode() {
-        logger.trace("{}[{}]: {} - Getting setup code", LOG_PREFIX, getServerId(), LOG_CONFIG);
+        logger.trace("{} [{}] : {} - Getting setup code", LOG_PREFIX, getUID(), LOG_CONFIG);
         return setupCode;
     }
 
@@ -727,12 +727,11 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         // Validate pairing ID uniqueness
         if (pairingRegistry.get(new HomekitPairingUIDImpl(getPairingId(), pairingId)) != null) {
             String error = String.format("HomekitPairing ID %s already exists", HomekitByte.toHexString(pairingId));
-            logger.error("{}[{}]: {} - HomekitPairing validation error: {}", LOG_PREFIX, getServerId(), LOG_ERROR,
-                    error);
+            logger.error("{} [{}] : {} - HomekitPairing validation error: {}", LOG_PREFIX, getUID(), LOG_ERROR, error);
             throw new HomekitServerException(error);
         }
 
-        logger.debug("{}[{}]: {} - Adding pairing - ID: {}", LOG_PREFIX, getServerId(), LOG_PAIRING,
+        logger.debug("{} [{}] : {} - Adding pairing - ID: {}", LOG_PREFIX, getUID(), LOG_PAIRING,
                 HomekitByte.toHexString(pairingId));
 
         try {
@@ -740,22 +739,21 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
             HomekitPairing oldPairing = pairingRegistry.remove(newPairing.getUID());
 
             if (oldPairing != null) {
-                logger.debug("{}[{}]: {} - Removed existing pairing - Destination: {}, Public Key: {}", LOG_PREFIX,
-                        getServerId(), LOG_PAIRING, HomekitByte.toHexString(oldPairing.getDestinationId()),
+                logger.debug("{} [{}] : {} - Removed existing pairing - Destination: {}, Public Key: {}", LOG_PREFIX,
+                        getUID(), LOG_PAIRING, HomekitByte.toHexString(oldPairing.getDestinationId()),
                         HomekitByte.toHexString(oldPairing.getPublicKey()));
                 setState(HomekitAccessoryServerState.DISCONNECTED);
             }
 
             pairingRegistry.add(newPairing);
-            logger.debug("{}[{}]: {} - HomekitPairing added successfully", LOG_PREFIX, getServerId(), LOG_PAIRING);
+            logger.debug("{} [{}] : {} - HomekitPairing added successfully", LOG_PREFIX, getUID(), LOG_PAIRING);
             setState(HomekitAccessoryServerState.PAIRED);
-            logger.info("{}[{}]: {} - HomekitPairing added successfully - ID: {}", LOG_PREFIX, getServerId(),
-                    LOG_PAIRING, HomekitByte.toHexString(pairingId));
+            logger.info("{} [{}] : {} - HomekitPairing added successfully - ID: {}", LOG_PREFIX, getUID(), LOG_PAIRING,
+                    HomekitByte.toHexString(pairingId));
         } catch (HomekitServerException e) {
             String error = String.format("Failed to add pairing %s: %s", HomekitByte.toHexString(pairingId),
                     e.getMessage());
-            logger.error("{}[{}]: {} - HomekitPairing addition error: {}", LOG_PREFIX, getServerId(), LOG_ERROR, error,
-                    e);
+            logger.error("{} [{}] : {} - HomekitPairing addition error: {}", LOG_PREFIX, getUID(), LOG_ERROR, error, e);
             throw new HomekitServerException(error, e);
         }
     }
@@ -788,7 +786,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      */
     @Override
     public Collection<HomekitPairing> getPairings() {
-        logger.debug("{}[{}]: {} - Getting all pairings", LOG_PREFIX, getServerId(), LOG_PAIRING);
+        logger.debug("{} [{}] : {} - Getting all pairings", LOG_PREFIX, getUID(), LOG_PAIRING);
         return pairingRegistry.get(getPairingId());
     }
 
@@ -810,26 +808,24 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
     public void removePairing(byte[] pairingId) throws HomekitServerException {
         if (pairingId.length == 0) {
             String error = "HomekitPairing ID cannot be empty";
-            logger.error("{}[{}]: {} - HomekitPairing validation error: {}", LOG_PREFIX, getServerId(), LOG_ERROR,
-                    error);
+            logger.error("{} [{}] : {} - HomekitPairing validation error: {}", LOG_PREFIX, getUID(), LOG_ERROR, error);
             throw new HomekitServerException(error);
         }
 
-        logger.debug("{}[{}]: {} - Removing pairing - ID: {}", LOG_PREFIX, getServerId(), LOG_PAIRING,
+        logger.debug("{} [{}] : {} - Removing pairing - ID: {}", LOG_PREFIX, getUID(), LOG_PAIRING,
                 HomekitByte.toHexString(pairingId));
 
         try {
             HomekitPairingUID uid = new HomekitPairingUIDImpl(getPairingId(), pairingId);
             if (pairingRegistry.remove(uid) != null) {
                 setState(HomekitAccessoryServerState.UNPAIRED);
-                logger.info("{}[{}]: {} - HomekitPairing removed successfully - ID: {}", LOG_PREFIX, getServerId(),
+                logger.info("{} [{}] : {} - HomekitPairing removed successfully - ID: {}", LOG_PREFIX, getUID(),
                         LOG_PAIRING, HomekitByte.toHexString(pairingId));
             }
         } catch (HomekitServerException e) {
             String error = String.format("Failed to remove pairing %s: %s", HomekitByte.toHexString(pairingId),
                     e.getMessage());
-            logger.error("{}[{}]: {} - HomekitPairing removal error: {}", LOG_PREFIX, getServerId(), LOG_ERROR, error,
-                    e);
+            logger.error("{} [{}] : {} - HomekitPairing removal error: {}", LOG_PREFIX, getUID(), LOG_ERROR, error, e);
             throw new HomekitServerException(error, e);
         }
     }
@@ -848,15 +844,15 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      * @throws HomekitServerException if the state transition fails
      */
     protected void handlePairingVerification(boolean verified) throws HomekitServerException {
-        logger.debug("{}[{}]: {} - Handling pairing verification - Verified: {}", LOG_PREFIX, getServerId(), LOG_STATE,
+        logger.debug("{} [{}] : {} - Handling pairing verification - Verified: {}", LOG_PREFIX, getUID(), LOG_STATE,
                 verified);
         synchronized (stateLock) {
             if (verified) {
                 setState(HomekitAccessoryServerState.PAIR_VERIFIED);
-                logger.info("{}[{}]: {} - HomekitPairing verified successfully", LOG_PREFIX, getServerId(), LOG_STATE);
+                logger.info("{} [{}] : {} - HomekitPairing verified successfully", LOG_PREFIX, getUID(), LOG_STATE);
             } else {
                 setState(HomekitAccessoryServerState.PAIRED);
-                logger.info("{}[{}]: {} - HomekitPairing verification failed", LOG_PREFIX, getServerId(), LOG_STATE);
+                logger.info("{} [{}] : {} - HomekitPairing verification failed", LOG_PREFIX, getUID(), LOG_STATE);
             }
         }
     }
@@ -878,7 +874,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
                 }
                 return paired;
             } catch (HomekitServerException e) {
-                logger.error("{}[{}]: {} - Failed to update pairing state: {}", LOG_PREFIX, getServerId(), LOG_ERROR,
+                logger.error("{} [{}] : {} - Failed to update pairing state: {}", LOG_PREFIX, getUID(), LOG_ERROR,
                         e.getMessage(), e);
                 // Return the current paired state without updating the server state
                 return paired;
@@ -940,7 +936,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         validateAccessoryExists(accessory);
 
         synchronized (accessoryLock) {
-            logger.debug("{}[{}]: {} - Adding accessory - UID: {}, Type: {}, Server: {}", LOG_PREFIX, getServerId(),
+            logger.debug("{} [{}] : {} - Adding accessory - UID: {}, Type: {}, Server: {}", LOG_PREFIX, getUID(),
                     LOG_ACCESSORY, accessory.getUID(), accessory.getClass().getSimpleName(), this.getUID());
 
             // Double-check uniqueness after acquiring lock
@@ -956,14 +952,14 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
                     advertise();
                     eventManager.publishEvent(new HomekitAccessoryServerEvent(HomekitEventType.ACCESSORY_ADDED, this,
                             accessory, (HomekitService) null, (HomekitCharacteristic<?>) null));
-                    logger.info("{}[{}]: {} - HomekitAccessory added successfully - UID: {}", LOG_PREFIX, getServerId(),
+                    logger.info("{} [{}] : {} - HomekitAccessory added successfully - UID: {}", LOG_PREFIX, getUID(),
                             LOG_ACCESSORY, accessory.getUID());
 
                 } catch (RuntimeException e) {
                     // Rollback on failure
                     accessories.remove(accessory);
-                    logger.error("{}[{}]: {} - Failed to add accessory due to runtime error - UID: {}, Error: {}",
-                            LOG_PREFIX, getServerId(), LOG_ERROR, accessory.getUID(), e.getMessage());
+                    logger.error("{} [{}] : {} - Failed to add accessory due to runtime error - UID: {}, Error: {}",
+                            LOG_PREFIX, getUID(), LOG_ERROR, accessory.getUID(), e.getMessage());
                     throw new HomekitAccessoryOperationException(
                             String.format("Failed to add accessory %s due to runtime error: %s", accessory.getUID(),
                                     e.getMessage()),
@@ -971,14 +967,14 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
                 } catch (Exception e) {
                     // Rollback on failure
                     accessories.remove(accessory);
-                    logger.error("{}[{}]: {} - Failed to add accessory - UID: {}, Error: {}", LOG_PREFIX, getServerId(),
+                    logger.error("{} [{}] : {} - Failed to add accessory - UID: {}, Error: {}", LOG_PREFIX, getUID(),
                             LOG_ERROR, accessory.getUID(), e.getMessage());
                     throw new HomekitAccessoryOperationException(
                             String.format("Failed to add accessory %s: %s", accessory.getUID(), e.getMessage()), e);
                 }
             } else {
-                logger.warn("{}[{}]: {} - HomekitAccessory already exists - UID: {}", LOG_PREFIX, getServerId(),
-                        LOG_WARN, accessory.getUID());
+                logger.warn("{} [{}] : {} - HomekitAccessory already exists - UID: {}", LOG_PREFIX, getUID(), LOG_WARN,
+                        accessory.getUID());
                 throw new HomekitAccessoryOperationException(
                         String.format("HomekitAccessory with UID %s already exists", accessory.getUID()));
             }
@@ -1011,7 +1007,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         validateAccessoryExists(accessory);
 
         synchronized (accessoryLock) {
-            logger.debug("{}[{}]: {} - Removing accessory - UID: {}, Type: {}, Server: {}", LOG_PREFIX, getServerId(),
+            logger.debug("{} [{}] : {} - Removing accessory - UID: {}, Type: {}, Server: {}", LOG_PREFIX, getUID(),
                     LOG_ACCESSORY, accessory.getUID(), accessory.getClass().getSimpleName(), this.getUID());
 
             if (accessories.remove(accessory)) {
@@ -1021,13 +1017,13 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
                     advertise();
                     eventManager.publishEvent(new HomekitAccessoryServerEvent(HomekitEventType.ACCESSORY_REMOVED, this,
                             accessory, (HomekitService) null, (HomekitCharacteristic<?>) null));
-                    logger.info("{}[{}]: {} - HomekitAccessory removed successfully - UID: {}", LOG_PREFIX,
-                            getServerId(), LOG_ACCESSORY, accessory.getUID());
+                    logger.info("{} [{}] : {} - HomekitAccessory removed successfully - UID: {}", LOG_PREFIX, getUID(),
+                            LOG_ACCESSORY, accessory.getUID());
                 } catch (RuntimeException e) {
                     // Rollback on failure
                     accessories.add(accessory);
-                    logger.error("{}[{}]: {} - Failed to remove accessory due to runtime error - UID: {}, Error: {}",
-                            LOG_PREFIX, getServerId(), LOG_ERROR, accessory.getUID(), e.getMessage());
+                    logger.error("{} [{}] : {} - Failed to remove accessory due to runtime error - UID: {}, Error: {}",
+                            LOG_PREFIX, getUID(), LOG_ERROR, accessory.getUID(), e.getMessage());
                     throw new HomekitAccessoryOperationException(
                             String.format("Failed to remove accessory %s due to runtime error: %s", accessory.getUID(),
                                     e.getMessage()),
@@ -1035,14 +1031,14 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
                 } catch (Exception e) {
                     // Rollback on failure
                     accessories.add(accessory);
-                    logger.error("{}[{}]: {} - Failed to remove accessory - UID: {}, Error: {}", LOG_PREFIX,
-                            getServerId(), LOG_ERROR, accessory.getUID(), e.getMessage());
+                    logger.error("{} [{}] : {} - Failed to remove accessory - UID: {}, Error: {}", LOG_PREFIX, getUID(),
+                            LOG_ERROR, accessory.getUID(), e.getMessage());
                     throw new HomekitAccessoryOperationException(
                             String.format("Failed to remove accessory %s: %s", accessory.getUID(), e.getMessage()), e);
                 }
 
             } else {
-                logger.warn("{}[{}]: {} - HomekitAccessory not found - UID: {}", LOG_PREFIX, getServerId(), LOG_WARN,
+                logger.warn("{} [{}] : {} - HomekitAccessory not found - UID: {}", LOG_PREFIX, getUID(), LOG_WARN,
                         accessory.getUID());
                 throw new HomekitAccessoryOperationException(
                         String.format("HomekitAccessory with UID %s not found", accessory.getUID()));
@@ -1170,7 +1166,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      * @return true if this server is a bridge, false otherwise
      */
     public boolean isBridge() {
-        logger.debug("{}[{}]: {} - Checking if server is a bridge: {}", LOG_PREFIX, getServerId(), LOG_CONFIG,
+        logger.debug("{} [{}] : {} - Checking if server is a bridge: {}", LOG_PREFIX, getUID(), LOG_CONFIG,
                 category == HomekitAccessoryCategory.BRIDGES);
         return category == HomekitAccessoryCategory.BRIDGES;
     }
@@ -1192,15 +1188,14 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      * @throws HomekitServerException if the state transition fails
      */
     protected void handleConnection(boolean connected) throws HomekitServerException {
-        logger.debug("{}[{}]: {} - Handling connection - Connected: {}", LOG_PREFIX, getServerId(), LOG_STATE,
-                connected);
+        logger.debug("{} [{}] : {} - Handling connection - Connected: {}", LOG_PREFIX, getUID(), LOG_STATE, connected);
         synchronized (stateLock) {
             if (connected) {
                 setState(HomekitAccessoryServerState.CONNECTED);
-                logger.info("{}[{}]: {} - Connection established", LOG_PREFIX, getServerId(), LOG_STATE);
+                logger.info("{} [{}] : {} - Connection established", LOG_PREFIX, getUID(), LOG_STATE);
             } else {
                 setState(HomekitAccessoryServerState.DISCONNECTED);
-                logger.info("{}[{}]: {} - Connection terminated", LOG_PREFIX, getServerId(), LOG_STATE);
+                logger.info("{} [{}] : {} - Connection terminated", LOG_PREFIX, getUID(), LOG_STATE);
             }
         }
     }
@@ -1235,7 +1230,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      */
     @Override
     public void close() throws Exception {
-        logger.info("{}[{}]: {} - Closing Homekit accessory server", LOG_PREFIX, getServerId(), LOG_INIT);
+        logger.info("{} [{}] : {} - Closing Homekit accessory server", LOG_PREFIX, getUID(), LOG_INIT);
         synchronized (stateLock) {
             if (!isShutdown) {
                 try {
@@ -1243,15 +1238,15 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
                     cleanupAccessories();
                     cleanupResources();
                     isShutdown = true;
-                    logger.info("{}[{}]: {} - Homekit accessory server closed successfully", LOG_PREFIX, getServerId(),
+                    logger.info("{} [{}] : {} - Homekit accessory server closed successfully", LOG_PREFIX, getUID(),
                             LOG_INIT);
                 } catch (Exception e) {
-                    logger.error("{}[{}]: {} - Error while closing Homekit accessory server: {}", LOG_PREFIX,
-                            getServerId(), LOG_ERROR, e.getMessage(), e);
+                    logger.error("{} [{}] : {} - Error while closing Homekit accessory server: {}", LOG_PREFIX,
+                            getUID(), LOG_ERROR, e.getMessage(), e);
                     throw e;
                 }
             } else {
-                logger.warn("{}[{}]: {} - Homekit accessory server is already closed", LOG_PREFIX, getServerId(),
+                logger.warn("{} [{}] : {} - Homekit accessory server is already closed", LOG_PREFIX, getUID(),
                         LOG_WARN);
             }
         }

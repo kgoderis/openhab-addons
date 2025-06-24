@@ -232,6 +232,7 @@ public class HomekitEventSubscription {
                 return uid;
             }
         }
-        return new HomekitUID("subscriber-" + Integer.toHexString(System.identityHashCode(subscriber)));
+        return new HomekitUID("subscriber",
+                "homekit:subscriber:" + Integer.toHexString(System.identityHashCode(subscriber)));
     }
 }

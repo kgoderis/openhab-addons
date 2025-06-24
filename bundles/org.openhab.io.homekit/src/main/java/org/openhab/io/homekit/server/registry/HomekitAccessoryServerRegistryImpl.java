@@ -118,13 +118,13 @@ public class HomekitAccessoryServerRegistryImpl
     private static final int LOWEST_PORT_NUMBER = 9000;
 
     // ========== Log Message Prefixes ==========
-    protected static final String LOG_PREFIX = "Homekit Registry";
-    protected static final String LOG_INIT = "Init";
-    protected static final String LOG_STATE = "State";
-    protected static final String LOG_CONFIG = "Config";
-    protected static final String LOG_ACCESSORY = "HomekitAccessory";
-    protected static final String LOG_ERROR = "Error";
-    protected static final String LOG_WARN = "Warning";
+    protected static final String LOG_PREFIX = "HomeKit Registry: ";
+    protected static final String LOG_INIT = LOG_PREFIX + "Initialization - ";
+    protected static final String LOG_STATE = LOG_PREFIX + "State - ";
+    protected static final String LOG_CONFIG = LOG_PREFIX + "Configuration - ";
+    protected static final String LOG_ACCESSORY = LOG_PREFIX + "Accessory - ";
+    protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
+    protected static final String LOG_WARN = LOG_PREFIX + "Warning - ";
 
     private final HomekitUID subscriberUID = new HomekitUID("registry");
 
@@ -173,8 +173,7 @@ public class HomekitAccessoryServerRegistryImpl
             @Reference HomekitAccessoryRegistry accessoryRegistry, @Reference HomekitPairingRegistry pairingRegistry,
             @Reference HomekitEventManager eventManager, @Reference HomekitAccessoryFactory accessoryFactory) {
         super(HomekitAccessoryServerProvider.class);
-        logger.debug("{} [{}] : {} - Initializing HomeKit accessory server registry", LOG_PREFIX, subscriberUID,
-                LOG_INIT);
+        logger.debug("{}Initializing HomeKit accessory server registry", LOG_INIT);
         this.readyService = readyService;
         this.networkAddressService = networkAddressService;
         this.accessoryRegistry = accessoryRegistry;
@@ -182,8 +181,7 @@ public class HomekitAccessoryServerRegistryImpl
         this.eventManager = eventManager;
         this.accessoryFactory = accessoryFactory;
 
-        logger.debug("{} [{}] : {} - HomeKit accessory server registry initialized successfully", LOG_PREFIX,
-                subscriberUID, LOG_INIT);
+        logger.debug("{}HomeKit accessory server registry initialized successfully", LOG_INIT);
     }
 
     /**
@@ -203,7 +201,7 @@ public class HomekitAccessoryServerRegistryImpl
     @Activate
     protected void activate(final BundleContext context) {
         super.activate(context);
-        logger.debug("{} [{}] : {} - Activating HomekitAccessory Server Registry", LOG_PREFIX, subscriberUID, LOG_INIT);
+        logger.debug("{}Activating HomekitAccessory Server Registry", LOG_INIT);
         readyService.registerTracker(this, new ReadyMarkerFilter().withType(HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER));
     }
 
@@ -222,8 +220,7 @@ public class HomekitAccessoryServerRegistryImpl
     @Override
     @Deactivate
     protected void deactivate() {
-        logger.debug("{} [{}] : {} - Deactivating HomekitAccessory Server Registry", LOG_PREFIX, subscriberUID,
-                LOG_INIT);
+        logger.debug("{}Deactivating HomekitAccessory Server Registry", LOG_INIT);
 
         // Unregister the tracker to prevent duplicate notifications
         readyService.unregisterTracker(this);
@@ -276,7 +273,7 @@ public class HomekitAccessoryServerRegistryImpl
      */
     @Override
     protected void addProvider(Provider<HomekitAccessoryServer> provider) {
-        logger.debug("{} [{}] : {} - Adding provider: {}", LOG_PREFIX, subscriberUID, LOG_CONFIG, provider.toString());
+        logger.debug("{}Adding provider: {}", LOG_CONFIG, provider.toString());
 
         ReadyMarker newMarker = new ReadyMarker(HOMEKIT_MANAGED_ACCESSORY_SERVER_PROVIDER, provider.toString());
 
@@ -393,14 +390,14 @@ public class HomekitAccessoryServerRegistryImpl
         String markerKey = readyMarker.getType() + ":" + readyMarker.getIdentifier();
 
         if (processedReadyMarkers.contains(markerKey)) {
-            logger.debug("{} [{}] : {} - Duplicate ready marker ignored - Type: {}, Identifier: {}", LOG_PREFIX,
-                    subscriberUID, LOG_STATE, readyMarker.getType(), readyMarker.getIdentifier());
+            logger.debug("{}Duplicate ready marker ignored - Type: {}, Identifier: {}", LOG_STATE,
+                    readyMarker.getType(), readyMarker.getIdentifier());
             return;
         }
 
         processedReadyMarkers.add(markerKey);
-        logger.debug("{} [{}] : {} - Ready marker added - Type: {}, Identifier: {}", LOG_PREFIX, subscriberUID,
-                LOG_STATE, readyMarker.getType(), readyMarker.getIdentifier());
+        logger.debug("{}Ready marker added - Type: {}, Identifier: {}", LOG_STATE, readyMarker.getType(),
+                readyMarker.getIdentifier());
 
         if (getManagedProvider().isPresent()) {
             @SuppressWarnings("null") // get() is safe after isPresent() check

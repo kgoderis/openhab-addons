@@ -298,6 +298,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
     protected void activate(@Nullable Map<String, Object> configProperties) {
         logger.debug("{}Activating Homekit discovery service", LOG_INIT);
         super.activate(configProperties);
+
         if (isBackgroundDiscoveryEnabled()) {
             logger.debug("{}Enabling background discovery for service type: {}", LOG_CONFIG, SERVICE_TYPE);
             mdnsClient.addServiceListener(SERVICE_TYPE, this);
@@ -355,7 +356,72 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
     }
 
     /**
-     * Performs the actual scan for Homekit services.
+     * Processes a service and handles accessory updates for paired servers.
+     * This method contains the common logic shared between scan() and considerService().
+     * 
+     * @param serviceInfo The service information to process
+     * @param context The context for logging (e.g., "scan" or "event")
+     */
+    private void processServiceAndUpdateAccessories(ServiceInfo serviceInfo, String context) {
+        logger.debug("{}Processing discovered service: {}", LOG_SERVER, serviceInfo.getName());
+        Optional<Map<String, Object>> propertiesOpt = processService(serviceInfo);
+        if (propertiesOpt.isEmpty()) {
+            logger.debug("{}Skipping service {} - invalid or missing properties", LOG_SERVER, serviceInfo.getName());
+            return;
+        }
+        @SuppressWarnings("null") // Optional.get() is safe after isEmpty() check above
+        Map<String, Object> properties = propertiesOpt.get();
+
+        String deviceId = (String) properties.get("id");
+        if (deviceId == null || deviceId.isEmpty()) {
+            logger.warn("{}Service {} has no valid device ID", LOG_WARN, serviceInfo.getName());
+            return;
+        }
+
+        HomekitAccessoryServerUID serverUID = new HomekitAccessoryServerUIDImpl(deviceId.replace(":", ""));
+        HomekitAccessoryServer server = accessoryServerRegistry.get(serverUID);
+
+        if (server == null) {
+            logger.debug("{}No server instance found for device ID: {}", LOG_SERVER, deviceId);
+            return;
+        }
+
+        if (server.isPaired()) {
+            logger.info("{}Server {} is paired, initiating accessory update", LOG_PAIRING, server.getUID());
+
+            try {
+                server.updateAccessories();
+                logger.debug("{}Successfully updated accessories for server {}", LOG_ACCESSORY, server.getUID());
+            } catch (HomekitAccessoryOperationException e) {
+                logger.warn("{}Failed to update accessories for server {}: {}", LOG_WARN, server.getUID(),
+                        e.getMessage());
+            }
+
+            try {
+                for (HomekitAccessory accessory : server.getAccessories()) {
+                    if (accessoryRegistry.get(accessory.getUID()) == null) {
+                        logger.debug("{}Registering new accessory {} in registry", LOG_ACCESSORY, accessory.getUID());
+                        accessoryRegistry.add(accessory);
+                        try {
+                            createThingFromAccessory(server, accessory);
+                        } catch (HomekitException e) {
+                            logger.warn("{}Failed to create thing for accessory {}: {}", LOG_WARN, accessory.getUID(),
+                                    e.getMessage());
+                        }
+                    } else {
+                        logger.trace("{}Accessory {} already registered", LOG_ACCESSORY, accessory.getUID());
+                    }
+                }
+            } catch (HomekitAccessoryOperationException e) {
+                logger.warn("{}Failed to process accessories for server {}: {}", LOG_WARN, server.getUID(),
+                        e.getMessage());
+            }
+        } else {
+            logger.warn("{}Server {} is not paired, skipping accessory processing", LOG_PAIRING, server.getUID());
+        }
+    }
+
+    /**
      * Processes discovered services and updates the registry accordingly.
      * 
      * @param isBackground Whether the scan is running in background mode
@@ -375,64 +441,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                 System.currentTimeMillis() - start);
 
         for (ServiceInfo serviceInfo : services) {
-            logger.debug("{}Processing discovered service: {}", LOG_SERVER, serviceInfo.getName());
-            Optional<Map<String, Object>> propertiesOpt = processService(serviceInfo);
-            if (propertiesOpt.isEmpty()) {
-                logger.debug("{}Skipping service {} - invalid or missing properties", LOG_SERVER,
-                        serviceInfo.getName());
-                continue;
-            }
-            @SuppressWarnings("null") // Optional.get() is safe after isEmpty() check above
-            Map<String, Object> properties = propertiesOpt.get();
-
-            String deviceId = (String) properties.get("id");
-            if (deviceId == null || deviceId.isEmpty()) {
-                logger.warn("{}Service {} has no valid device ID", LOG_WARN, serviceInfo.getName());
-                continue;
-            }
-
-            HomekitAccessoryServerUID serverUID = new HomekitAccessoryServerUIDImpl(deviceId);
-            HomekitAccessoryServer server = accessoryServerRegistry.get(serverUID);
-
-            if (server == null) {
-                logger.debug("{}No server instance found for device ID: {}", LOG_SERVER, deviceId);
-                continue;
-            }
-
-            if (server.isPaired()) {
-                logger.info("{}Server {} is paired, initiating accessory update", LOG_PAIRING, server.getUID());
-
-                try {
-                    server.updateAccessories();
-                    logger.debug("{}Successfully updated accessories for server {}", LOG_ACCESSORY, server.getUID());
-                } catch (HomekitAccessoryOperationException e) {
-                    logger.warn("{}Failed to update accessories for server {}: {}", LOG_WARN, server.getUID(),
-                            e.getMessage());
-                }
-
-                try {
-                    for (HomekitAccessory accessory : server.getAccessories()) {
-                        if (accessoryRegistry.get(accessory.getUID()) == null) {
-                            logger.debug("{}Registering new accessory {} in registry", LOG_ACCESSORY,
-                                    accessory.getUID());
-                            accessoryRegistry.add(accessory);
-                            try {
-                                createThingFromAccessory(server, accessory);
-                            } catch (HomekitException e) {
-                                logger.warn("{}Failed to create thing for accessory {}: {}", LOG_WARN,
-                                        accessory.getUID(), e.getMessage());
-                            }
-                        } else {
-                            logger.trace("{}Accessory {} already registered", LOG_ACCESSORY, accessory.getUID());
-                        }
-                    }
-                } catch (HomekitAccessoryOperationException e) {
-                    logger.warn("{}Failed to process accessories for server {}: {}", LOG_WARN, server.getUID(),
-                            e.getMessage());
-                }
-            } else {
-                logger.warn("{}Server {} is not paired, skipping accessory processing", LOG_PAIRING, server.getUID());
-            }
+            processServiceAndUpdateAccessories(serviceInfo, "scan");
         }
 
         if (!isBackground) {
@@ -474,6 +483,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
             logger.debug("{}Received null service event for serviceRemoved", LOG_EVENT);
             return;
         }
+
         ServiceInfo serviceInfo = serviceEvent.getInfo();
         if (serviceInfo != null) {
             logger.debug("{}Processing service removal: {}", LOG_EVENT, serviceInfo.getName());
@@ -528,65 +538,9 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
         if (serviceInfo == null) {
             logger.debug("{}Skipping service event - no service info available", LOG_EVENT);
             return;
-        } else {
-            logger.debug("{}Considering service event: {}", LOG_EVENT, serviceInfo.toString());
         }
 
-        Optional<Map<String, Object>> propertiesOpt = processService(serviceInfo);
-        if (propertiesOpt.isEmpty()) {
-            logger.debug("{}Skipping service {} - invalid properties", LOG_EVENT, serviceInfo.getName());
-            return;
-        }
-        @SuppressWarnings("null") // Optional.get() is safe after isEmpty() check above
-        Map<String, Object> properties = propertiesOpt.get();
-
-        String deviceId = (String) properties.get("id");
-        if (deviceId == null || deviceId.isEmpty()) {
-            logger.warn("{}Service {} has no valid device ID", LOG_WARN, serviceInfo.getName());
-            return;
-        }
-
-        HomekitAccessoryServerUID serverUID = new HomekitAccessoryServerUIDImpl(deviceId);
-        HomekitAccessoryServer server = accessoryServerRegistry.get(serverUID);
-
-        if (server == null) {
-            logger.debug("{}No server instance found for device ID: {}", LOG_SERVER, deviceId);
-            return;
-        }
-
-        if (server.isPaired()) {
-            logger.info("{}Server {} is paired, initiating accessory update", LOG_PAIRING, server.getUID());
-
-            try {
-                server.updateAccessories();
-                logger.debug("{}Successfully updated accessories for server {}", LOG_ACCESSORY, server.getUID());
-            } catch (HomekitAccessoryOperationException e) {
-                logger.warn("{}Failed to update accessories for server {}: {}", LOG_WARN, server.getUID(),
-                        e.getMessage());
-            }
-
-            try {
-                for (HomekitAccessory accessory : server.getAccessories()) {
-                    if (accessoryRegistry.get(accessory.getUID()) == null) {
-                        logger.debug("{}Registering new accessory {} in registry", LOG_ACCESSORY, accessory.getUID());
-                        accessoryRegistry.add(accessory);
-                        try {
-                            createThingFromAccessory(server, accessory);
-                        } catch (HomekitException e) {
-                            logger.warn("{}Failed to create thing for accessory {}: {}", LOG_WARN, accessory.getUID(),
-                                    e.getMessage());
-                        }
-                    } else {
-                        logger.trace("{}Accessory {} already registered", LOG_ACCESSORY, accessory.getUID());
-                    }
-                }
-            } catch (HomekitAccessoryOperationException e) {
-                logger.warn("{}Failed to process accessories for server {}: {}", LOG_WARN, server.getUID(),
-                        e.getMessage());
-            }
-        } else {
-            logger.warn("{}Server {} is not paired, skipping accessory processing", LOG_PAIRING, server.getUID());
-        }
+        processServiceAndUpdateAccessories(serviceInfo, "event");
     }
 
     /**
