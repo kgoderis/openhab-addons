@@ -13,11 +13,11 @@
 
 package org.openhab.io.homekit.core.service;
 
-import java.util.List;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.uid.HomekitServiceUID;
 import org.openhab.io.homekit.util.HomekitUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of a unique identifier for a HomeKit service.
@@ -64,10 +64,8 @@ import org.openhab.io.homekit.util.HomekitUID;
 @NonNullByDefault
 public class HomekitServiceUIDImpl extends HomekitUID implements HomekitServiceUID {
     private static final String SERVICE_PREFIX = "service";
-    private final long instanceId;
-    private final String serverId;
-    private final long accessoryId;
-    private final long serviceId;
+    private static final Logger logger = LoggerFactory.getLogger(HomekitServiceUIDImpl.class);
+    private static final String LOG_UID = "Homekit ServiceUID: UID - ";
 
     /**
      * Creates a new service UID with the specified components.
@@ -94,11 +92,8 @@ public class HomekitServiceUIDImpl extends HomekitUID implements HomekitServiceU
      * @throws IllegalArgumentException if any of the IDs are null or empty
      */
     public HomekitServiceUIDImpl(String serverId, long accessoryId, long serviceId) {
-        super(SERVICE_PREFIX, "homekit:" + SERVICE_PREFIX + ":" + serverId + ":" + accessoryId + ":" + serviceId);
-        this.serverId = serverId;
-        this.accessoryId = accessoryId;
-        this.serviceId = serviceId;
-        this.instanceId = 0;
+        super(SERVICE_PREFIX,
+                HOMEKIT_PREFIX + ":" + SERVICE_PREFIX + ":" + serverId + ":" + accessoryId + ":" + serviceId);
     }
 
     /**
@@ -118,25 +113,15 @@ public class HomekitServiceUIDImpl extends HomekitUID implements HomekitServiceU
      * <li>Initializes internal fields</li>
      * </ul>
      *
-     * @param key The string representation of the UID
-     * @throws IllegalArgumentException if the key format is invalid
+     * @param uid The string representation of the UID
+     * @throws IllegalArgumentException if the UID format is invalid
      */
-    public HomekitServiceUIDImpl(String key) {
-        super("service", key);
-        List<String> segments = getAllSegments();
-        if (segments.size() < getMinimalNumberOfSegments()) {
-            throw new IllegalArgumentException("Invalid service UID format: " + key);
+    public HomekitServiceUIDImpl(String uid) {
+        super(SERVICE_PREFIX, uid);
+        String[] segments = uid.split(":");
+        if (segments.length != 5 || !HOMEKIT_PREFIX.equals(segments[0]) || !SERVICE_PREFIX.equals(segments[1])) {
+            throw new IllegalArgumentException("Invalid HomeKit service UID format: " + uid);
         }
-        @SuppressWarnings("null") // List.get() is safe - segments size validated in constructor
-        String serverIdSegment = segments.get(2);
-        this.serverId = serverIdSegment;
-        @SuppressWarnings("null") // List.get() is safe - segments size validated in constructor
-        String accessoryIdSegment = segments.get(3);
-        this.accessoryId = Long.parseLong(accessoryIdSegment);
-        @SuppressWarnings("null") // List.get() is safe - segments size validated in constructor
-        String serviceIdSegment = segments.get(4);
-        this.serviceId = Long.parseLong(serviceIdSegment);
-        this.instanceId = 0;
     }
 
     /**
@@ -152,9 +137,10 @@ public class HomekitServiceUIDImpl extends HomekitUID implements HomekitServiceU
      * Key implementation details:
      * </p>
      * <ul>
-     * <li>Uses String.format for consistent formatting</li>
+     * <li>Uses super.toString() for consistent formatting</li>
      * <li>Maintains the standard UID structure</li>
      * <li>Preserves all identifier components</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return The UID string in the format
@@ -162,7 +148,9 @@ public class HomekitServiceUIDImpl extends HomekitUID implements HomekitServiceU
      */
     @Override
     public String toString() {
-        return String.format("homekit:service:%s:%s:%s", serverId, accessoryId, serviceId);
+        String result = super.toString();
+        logger.trace("{}Getting UID string: {}", LOG_UID, result);
+        return result;
     }
 
     /**
@@ -186,7 +174,7 @@ public class HomekitServiceUIDImpl extends HomekitUID implements HomekitServiceU
      */
     @Override
     public long getInstanceId() {
-        return instanceId;
+        return Long.parseLong(getSegment(4));
     }
 
     /**

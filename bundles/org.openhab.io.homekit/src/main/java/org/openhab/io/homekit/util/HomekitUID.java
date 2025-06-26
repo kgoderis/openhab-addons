@@ -13,9 +13,11 @@
 
 package org.openhab.io.homekit.util;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.thing.UID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +67,7 @@ public class HomekitUID extends UID {
     protected static final String LOG_ERROR = LOG_PREFIX + "Error - ";
 
     private static final Logger logger = LoggerFactory.getLogger(HomekitUID.class);
-    private static final String HOMEKIT_PREFIX = "homekit";
+    protected static final String HOMEKIT_PREFIX = "homekit";
     private final String prefix;
 
     public static final UID WILDCARD_UID = new HomekitUID("any", "homekit:any:any");
@@ -195,5 +197,21 @@ public class HomekitUID extends UID {
     protected int getMinimalNumberOfSegments() {
         logger.trace("{}Getting minimal number of segments: 3", LOG_INIT);
         return 3; // homekit:prefix:uuid
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof HomekitUID) {
+            return this.toString().equals(obj.toString());
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.toString());
     }
 }

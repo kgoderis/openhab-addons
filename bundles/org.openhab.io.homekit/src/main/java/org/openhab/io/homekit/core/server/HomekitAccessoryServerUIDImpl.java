@@ -67,7 +67,7 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
 
     private static final Logger logger = LoggerFactory.getLogger(HomekitAccessoryServerUIDImpl.class);
     private static final String SERVER_PREFIX = "server";
-    private String id;
+    private static final String HOMEKIT_PREFIX = "homekit";
 
     /**
      * Creates a new server UID with default values.
@@ -88,8 +88,7 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
      * </ul>
      */
     HomekitAccessoryServerUIDImpl() {
-        super(SERVER_PREFIX, "homekit:" + SERVER_PREFIX + ":");
-        this.id = "";
+        super(SERVER_PREFIX);
         logger.trace("{}Created default server UID instance", LOG_UID);
     }
 
@@ -113,16 +112,21 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
      * <li>Provides trace-level logging</li>
      * </ul>
      *
-     * @param id The uniqueidentifier for the server
-     * @throws IllegalArgumentException if the identifier is null or empty
+     * @param uid The fully qualified UID string in format "homekit:server:{id}"
+     * @throws IllegalArgumentException if the UID format is invalid or the identifier is empty
      */
-    public HomekitAccessoryServerUIDImpl(String id) {
-        super(SERVER_PREFIX, "homekit:" + SERVER_PREFIX + ":" + id);
+    public HomekitAccessoryServerUIDImpl(String uid) {
+        super(SERVER_PREFIX, uid);
+        String[] segments = uid.split(":");
+        if (segments.length != 3 || !HOMEKIT_PREFIX.equals(segments[0]) || !SERVER_PREFIX.equals(segments[1])) {
+            logger.error("{}Invalid UID format: {}", LOG_ERROR, uid);
+            throw new IllegalArgumentException("Invalid HomeKit server UID format: " + uid);
+        }
+        String id = segments[2];
         if (id.isEmpty()) {
             logger.error("{}identifier cannot be empty", LOG_ERROR);
             throw new IllegalArgumentException("identifier cannot be empty");
         }
-        this.id = id;
         logger.trace("{}Created server UID with identifier: {}", LOG_UID, id);
     }
 
@@ -142,14 +146,13 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
      * <li>Uses String.format for consistent formatting</li>
      * <li>Maintains the standard UID structure</li>
      * <li>Preserves all identifier components</li>
-     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return The UID string in the format {@code homekit:server:{Id}}
      */
     @Override
     public String toString() {
-        String result = String.format("homekit:server:%s", id);
+        String result = super.toString();
         logger.trace("{}Getting UID string: {}", LOG_UID, result);
         return result;
     }
@@ -177,6 +180,7 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
      */
     @Override
     public String getId() {
+        String id = getSegment(2);
         logger.trace("{}Getting Id: {}", LOG_UID, id);
         return id;
     }

@@ -75,11 +75,6 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
 
     private static final Logger logger = LoggerFactory.getLogger(HomekitCharacteristicUIDImpl.class);
     private static final String CHARACTERISTIC_PREFIX = "characteristic";
-    private final long instanceId;
-    private final String pairingId;
-    private final long accessoryId;
-    private final long serviceId;
-    private final long characteristicId;
 
     /**
      * Creates a new characteristic UID with the specified components.
@@ -109,17 +104,13 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      * @throws IllegalArgumentException if any of the IDs are null or empty
      */
     public HomekitCharacteristicUIDImpl(String pairingId, long accessoryId, long serviceId, long characteristicId) {
-        super(CHARACTERISTIC_PREFIX, "homekit:" + CHARACTERISTIC_PREFIX + ":" + pairingId + ":" + accessoryId + ":"
-                + serviceId + ":" + characteristicId);
+        super(CHARACTERISTIC_PREFIX,
+                HOMEKIT_PREFIX + ":" + CHARACTERISTIC_PREFIX + ":" + pairingId + ":" + accessoryId + ":"
+                        + serviceId + ":" + characteristicId);
         if (pairingId.isEmpty()) {
             logger.error("{}Pairing ID cannot be empty", LOG_ERROR);
             throw new IllegalArgumentException("Pairing ID cannot be empty");
         }
-        this.pairingId = pairingId;
-        this.accessoryId = accessoryId;
-        this.serviceId = serviceId;
-        this.characteristicId = characteristicId;
-        this.instanceId = 0;
         logger.trace(
                 "{}Created characteristic UID with pairing ID: {}, accessory ID: {}, service ID: {}, characteristic ID: {}",
                 LOG_UID, pairingId, accessoryId, serviceId, characteristicId);
@@ -144,26 +135,15 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      * <li>Provides trace-level logging</li>
      * </ul>
      *
-     * @param key The string representation of the UID
-     * @throws IllegalArgumentException if the key format is invalid
+     * @param uid The string representation of the UID
+     * @throws IllegalArgumentException if the UID format is invalid
      */
-    public HomekitCharacteristicUIDImpl(String key) {
-        super("characteristic", key);
-        List<String> segments = getAllSegments();
-        if (segments.size() < getMinimalNumberOfSegments()) {
-            logger.error("{}Invalid characteristic UID format: {}", LOG_ERROR, key);
-            throw new IllegalArgumentException("Invalid characteristic UID format: " + key);
+    public HomekitCharacteristicUIDImpl(String uid) {
+        super(CHARACTERISTIC_PREFIX, uid);
+        String[] segments = uid.split(":");
+        if (segments.length != 6 || !HOMEKIT_PREFIX.equals(segments[0]) || !CHARACTERISTIC_PREFIX.equals(segments[1])) {
+            throw new IllegalArgumentException("Invalid HomeKit characteristic UID format: " + uid);
         }
-        @SuppressWarnings("null") // segments.size() already validated above
-        String pairingIdValue = segments.get(2);
-        this.pairingId = pairingIdValue;
-        this.accessoryId = Long.parseLong(segments.get(3));
-        this.serviceId = Long.parseLong(segments.get(4));
-        this.characteristicId = Long.parseLong(segments.get(5));
-        this.instanceId = 0;
-        logger.trace(
-                "{}Parsed characteristic UID from key: {} with pairing ID: {}, accessory ID: {}, service ID: {}, characteristic ID: {}",
-                LOG_UID, key, pairingId, accessoryId, serviceId, characteristicId);
     }
 
     /**
@@ -179,7 +159,7 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      * Key implementation details:
      * </p>
      * <ul>
-     * <li>Uses String.format for consistent formatting</li>
+     * <li>Uses super.toString() for consistent formatting</li>
      * <li>Maintains the standard UID structure</li>
      * <li>Preserves all identifier components</li>
      * <li>Provides trace-level logging</li>
@@ -190,8 +170,7 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      */
     @Override
     public String toString() {
-        String result = String.format("homekit:characteristic:%s:%s:%s:%s", pairingId, accessoryId, serviceId,
-                characteristicId);
+        String result = super.toString();
         logger.trace("{}Getting UID string: {}", LOG_UID, result);
         return result;
     }
@@ -218,8 +197,7 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      */
     @Override
     public long getInstanceId() {
-        logger.trace("{}Getting instance ID: {}", LOG_UID, instanceId);
-        return instanceId;
+        return Long.parseLong(getSegment(5));
     }
 
     /**
@@ -244,14 +222,12 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      * <li>Enforces UID structure validation</li>
      * <li>Ensures complete identification</li>
      * <li>Supports UID parsing</li>
-     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return The minimum number of segments (6) for a valid characteristic UID
      */
     @Override
     protected int getMinimalNumberOfSegments() {
-        logger.trace("{}Getting minimal number of segments: 6", LOG_UID);
         return 6;
     }
 
@@ -270,14 +246,12 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      * <li>Returns this instance</li>
      * <li>Supports interface compliance</li>
      * <li>Enables UID access</li>
-     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return This UID instance
      */
     @Override
     public HomekitCharacteristicUID getUID() {
-        logger.trace("{}Getting UID instance", LOG_UID);
         return this;
     }
 
@@ -338,4 +312,5 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
         logger.trace("{}Getting all segments: {}", LOG_UID, segments);
         return segments;
     }
+
 }

@@ -145,9 +145,7 @@ public class HomekitPairingUIDImpl extends HomekitUID implements HomekitPairingU
      * @throws IllegalArgumentException if the configuration is invalid
      */
     public HomekitPairingUIDImpl() {
-        super(PAIRING_PREFIX, "homekit:" + PAIRING_PREFIX + ":empty:empty");
-        logger.debug("{}Initializing HomeKit pairing UID", LOG_INIT);
-        logger.debug("{}HomeKit pairing UID initialized successfully", LOG_INIT);
+        super(PAIRING_PREFIX, HOMEKIT_PREFIX + ":" + PAIRING_PREFIX + ":empty:empty");
     }
 
     /**
@@ -179,39 +177,37 @@ public class HomekitPairingUIDImpl extends HomekitUID implements HomekitPairingU
      */
     public HomekitPairingUIDImpl(byte[] sourceId, byte[] destinationId) {
         super(PAIRING_PREFIX,
-                "homekit:" + PAIRING_PREFIX + ":" + Base64.getEncoder().withoutPadding().encodeToString(sourceId) + ":"
+                HOMEKIT_PREFIX + ":" + PAIRING_PREFIX + ":"
+                        + Base64.getEncoder().withoutPadding().encodeToString(sourceId) + ":"
                         + Base64.getEncoder().withoutPadding().encodeToString(destinationId));
-        logger.debug("{}Creating new HomeKit pairing UID with source ID: {} and destination ID: {}", LOG_UID,
-                Base64.getEncoder().withoutPadding().encodeToString(sourceId),
-                Base64.getEncoder().withoutPadding().encodeToString(destinationId));
-        logger.debug("{}HomeKit pairing UID created successfully", LOG_UID);
     }
 
     /**
-     * Gets the minimum number of segments required for a valid UID.
+     * Creates a new HomeKit pairing UID from a string.
      *
      * <p>
-     * This method defines the structure of the UID, ensuring it contains all
-     * necessary components for a valid pairing identifier. It overrides the
-     * implementation in {@link HomekitUID#getMinimalNumberOfSegments()} to
-     * enforce the pairing-specific UID format.
+     * This constructor parses an existing UID string into a pairing identifier.
+     * It is used when reconstructing a UID from its string representation.
      * </p>
      *
      * <p>
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     * <li>Enforces UID structure</li>
-     * <li>Validates segment count</li>
-     * <li>Maintains format consistency</li>
+     * <li>Validates the input string format</li>
+     * <li>Extracts individual components</li>
+     * <li>Initializes internal fields</li>
      * </ul>
      *
-     * @return The minimum number of segments (4 for
-     *         homekit:pairing:sourcePairingId:destinationPairingId)
+     * @param uid The string representation of the UID
+     * @throws IllegalArgumentException if the UID format is invalid
      */
-    @Override
-    protected int getMinimalNumberOfSegments() {
-        return 4; // homekit:pairing:sourcePairingId:destinationPairingId
+    public HomekitPairingUIDImpl(String uid) {
+        super(PAIRING_PREFIX, uid);
+        String[] segments = uid.split(":");
+        if (segments.length != 4 || !HOMEKIT_PREFIX.equals(segments[0]) || !PAIRING_PREFIX.equals(segments[1])) {
+            throw new IllegalArgumentException("Invalid HomeKit pairing UID format: " + uid);
+        }
     }
 
     /**
@@ -227,18 +223,19 @@ public class HomekitPairingUIDImpl extends HomekitUID implements HomekitPairingU
      * <b>Implementation details:</b>
      * </p>
      * <ul>
-     * <li>Generates string representation</li>
+     * <li>Uses super.toString() for consistent formatting</li>
      * <li>Maintains format consistency</li>
      * <li>Ensures thread safety</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return The string representation of the UID
      */
     @Override
     public String toString() {
-        String uid = super.toString();
-        logger.debug("{}Retrieving UID string representation: {}", LOG_UID, uid);
-        return uid;
+        String result = super.toString();
+        logger.debug("{}Retrieving UID string representation: {}", LOG_UID, result);
+        return result;
     }
 
     /**

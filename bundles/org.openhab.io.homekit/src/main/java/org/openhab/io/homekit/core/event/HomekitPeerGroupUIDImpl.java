@@ -16,6 +16,8 @@ package org.openhab.io.homekit.core.event;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.uid.HomekitPeerGroupUID;
 import org.openhab.io.homekit.util.HomekitUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of a unique identifier for a HomeKit peer group.
@@ -60,34 +62,35 @@ import org.openhab.io.homekit.util.HomekitUID;
 @NonNullByDefault
 public class HomekitPeerGroupUIDImpl extends HomekitUID implements HomekitPeerGroupUID {
     private static final String PEER_GROUP_PREFIX = "peergroup";
-    private final String peerGroup;
+    private static final Logger logger = LoggerFactory.getLogger(HomekitPeerGroupUIDImpl.class);
+    private static final String LOG_UID = "Homekit PeerGroupUID: UID - ";
 
     /**
-     * Creates a new peer group UID with the specified peer group identifier.
+     * Creates a new peer group UID from a string.
      *
      * <p>
-     * This constructor builds a complete peer group UID instance with the required
-     * peer group identifier. The UID is used to uniquely identify a HomeKit
-     * peer group within the system.
+     * This constructor parses an existing UID string into a peer group identifier.
+     * It is used when reconstructing a UID from its string representation.
      * </p>
      *
      * <p>
      * Key implementation details:
      * </p>
      * <ul>
-     * <li>Validates all input parameters</li>
-     * <li>Constructs the UID string in the correct format</li>
-     * <li>Initializes all internal fields</li>
-     * <li>Sets up the base UID structure</li>
+     * <li>Validates the input string format</li>
+     * <li>Extracts individual components</li>
+     * <li>Initializes internal fields</li>
      * </ul>
      *
-     * @param peerGroup The unique identifier for the peer group
-     * @throws IllegalArgumentException if the peer group identifier is null or
-     *             empty
+     * @param uid The string representation of the UID
+     * @throws IllegalArgumentException if the UID format is invalid
      */
-    public HomekitPeerGroupUIDImpl(String peerGroup) {
-        super(PEER_GROUP_PREFIX, "homekit:" + PEER_GROUP_PREFIX + ":" + peerGroup);
-        this.peerGroup = peerGroup;
+    public HomekitPeerGroupUIDImpl(String uid) {
+        super(PEER_GROUP_PREFIX, uid);
+        String[] segments = uid.split(":");
+        if (segments.length != 3 || !HOMEKIT_PREFIX.equals(segments[0]) || !PEER_GROUP_PREFIX.equals(segments[1])) {
+            throw new IllegalArgumentException("Invalid HomeKit peer group UID format: " + uid);
+        }
     }
 
     /**
@@ -103,16 +106,19 @@ public class HomekitPeerGroupUIDImpl extends HomekitUID implements HomekitPeerGr
      * Key implementation details:
      * </p>
      * <ul>
-     * <li>Uses String.format for consistent formatting</li>
+     * <li>Uses super.toString() for consistent formatting</li>
      * <li>Maintains the standard UID structure</li>
      * <li>Preserves all identifier components</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return The UID string in the format {@code homekit:peergroup:{peerGroup}}
      */
     @Override
     public String toString() {
-        return String.format("homekit:peergroup:%s", peerGroup);
+        String result = super.toString();
+        logger.trace("{}Getting UID string: {}", LOG_UID, result);
+        return result;
     }
 
     /**
@@ -136,7 +142,7 @@ public class HomekitPeerGroupUIDImpl extends HomekitUID implements HomekitPeerGr
      */
     @Override
     public String getPeerGroup() {
-        return peerGroup;
+        return getSegment(2);
     }
 
     /**

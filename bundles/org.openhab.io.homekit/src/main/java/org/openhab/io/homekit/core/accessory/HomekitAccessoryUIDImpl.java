@@ -16,6 +16,8 @@ package org.openhab.io.homekit.core.accessory;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.io.homekit.api.uid.HomekitAccessoryUID;
 import org.openhab.io.homekit.util.HomekitUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of a unique identifier for a HomeKit accessory.
@@ -61,8 +63,8 @@ import org.openhab.io.homekit.util.HomekitUID;
 @NonNullByDefault
 public class HomekitAccessoryUIDImpl extends HomekitUID implements HomekitAccessoryUID {
     private static final String ACCESSORY_PREFIX = "accessory";
-    private final String pairingId;
-    private final long accessoryId;
+    private static final Logger logger = LoggerFactory.getLogger(HomekitAccessoryUIDImpl.class);
+    private static final String LOG_UID = "Homekit AccessoryUID: UID - ";
 
     /**
      * Creates a new accessory UID with the specified components.
@@ -88,9 +90,7 @@ public class HomekitAccessoryUIDImpl extends HomekitUID implements HomekitAccess
      * @throws IllegalArgumentException if the pairing ID is null or empty
      */
     public HomekitAccessoryUIDImpl(String pairingId, long accessoryId) {
-        super(ACCESSORY_PREFIX, "homekit:" + ACCESSORY_PREFIX + ":" + pairingId + ":" + accessoryId);
-        this.pairingId = pairingId;
-        this.accessoryId = accessoryId;
+        super(ACCESSORY_PREFIX, HOMEKIT_PREFIX + ":" + ACCESSORY_PREFIX + ":" + pairingId + ":" + accessoryId);
     }
 
     /**
@@ -110,18 +110,15 @@ public class HomekitAccessoryUIDImpl extends HomekitUID implements HomekitAccess
      * <li>Initializes internal fields</li>
      * </ul>
      *
-     * @param key The string representation of the UID
-     * @throws IllegalArgumentException if the key format is invalid
+     * @param uid The string representation of the UID
+     * @throws IllegalArgumentException if the UID format is invalid
      */
     public HomekitAccessoryUIDImpl(String uid) {
-        super(uid);
+        super(ACCESSORY_PREFIX, uid);
         String[] segments = uid.split(":");
-        if (segments.length != 4 || !"homekit".equals(segments[0]) || !"accessory".equals(segments[1])) {
+        if (segments.length != 4 || !HOMEKIT_PREFIX.equals(segments[0]) || !ACCESSORY_PREFIX.equals(segments[1])) {
             throw new IllegalArgumentException("Invalid HomeKit accessory UID format: " + uid);
         }
-        this.pairingId = segments[2];
-        this.accessoryId = Long.parseLong(segments[3]);
-        // this.uid = uid;
     }
 
     /**
@@ -137,9 +134,10 @@ public class HomekitAccessoryUIDImpl extends HomekitUID implements HomekitAccess
      * Key implementation details:
      * </p>
      * <ul>
-     * <li>Uses String.format for consistent formatting</li>
+     * <li>Uses super.toString() for consistent formatting</li>
      * <li>Maintains the standard UID structure</li>
      * <li>Preserves all identifier components</li>
+     * <li>Provides trace-level logging</li>
      * </ul>
      *
      * @return The UID string in the format
@@ -147,7 +145,9 @@ public class HomekitAccessoryUIDImpl extends HomekitUID implements HomekitAccess
      */
     @Override
     public String toString() {
-        return String.format("homekit:accessory:%s:%d", pairingId, accessoryId);
+        String result = super.toString();
+        logger.trace("{}Getting UID string: {}", LOG_UID, result);
+        return result;
     }
 
     /**
@@ -163,7 +163,7 @@ public class HomekitAccessoryUIDImpl extends HomekitUID implements HomekitAccess
      * Key implementation details:
      * </p>
      * <ul>
-     * <li>Returns the internal pairing ID field</li>
+     * <li>Returns the internal identifier field</li>
      * <li>Used for server connection management</li>
      * <li>Supports device pairing</li>
      * </ul>
@@ -172,7 +172,7 @@ public class HomekitAccessoryUIDImpl extends HomekitUID implements HomekitAccess
      */
     @Override
     public String getAccessoryServerId() {
-        return pairingId;
+        return getSegment(2);
     }
 
     /**
@@ -198,7 +198,7 @@ public class HomekitAccessoryUIDImpl extends HomekitUID implements HomekitAccess
      */
     @Override
     public long getAccessoryId() {
-        return accessoryId;
+        return Long.parseLong(getSegment(3));
     }
 
     /**
