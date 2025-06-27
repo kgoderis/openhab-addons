@@ -254,7 +254,11 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                     logger.error("{} [{}] : {} - Failed to start HTTP client - Error: {}", LOG_PREFIX, getUID(),
                             LOG_ERROR, e.getMessage());
                     logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
-                    setState(HomekitAccessoryServerState.DISCONNECTED);
+                    // Only set state to DISCONNECTED if we're not in UNKNOWN state
+                    // UNKNOWN can only transition to READY, not to DISCONNECTED
+                    if (currentState != HomekitAccessoryServerState.UNKNOWN) {
+                        setState(HomekitAccessoryServerState.DISCONNECTED);
+                    }
                     throw new HomekitServerException("Failed to start HTTP client", e);
                 }
             }
@@ -271,11 +275,15 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             logger.error("{} [{}] : {} - Failed to start HTTP client - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
                     e.getMessage());
             logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
-            try {
-                setState(HomekitAccessoryServerState.DISCONNECTED);
-            } catch (HomekitServerException ex) {
-                logger.error("{} [{}] : {} - Failed to set state to DISCONNECTED: {}", LOG_PREFIX, getUID(), LOG_ERROR,
-                        ex.getMessage());
+            // Only set state to DISCONNECTED if we're not in UNKNOWN state
+            // UNKNOWN can only transition to READY, not to DISCONNECTED
+            if (currentState != HomekitAccessoryServerState.UNKNOWN) {
+                try {
+                    setState(HomekitAccessoryServerState.DISCONNECTED);
+                } catch (HomekitServerException ex) {
+                    logger.error("{} [{}] : {} - Failed to set state to DISCONNECTED: {}", LOG_PREFIX, getUID(),
+                            LOG_ERROR, ex.getMessage());
+                }
             }
         }
 
@@ -316,7 +324,11 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                     logger.debug("{} [{}] : {} - Failure details: {}", LOG_PREFIX, getUID(), LOG_STATE,
                             failure.getMessage());
                     try {
-                        setState(HomekitAccessoryServerState.DISCONNECTED);
+                        // Only set state to DISCONNECTED if we're not in UNKNOWN state
+                        // UNKNOWN can only transition to READY, not to DISCONNECTED
+                        if (currentState != HomekitAccessoryServerState.UNKNOWN) {
+                            setState(HomekitAccessoryServerState.DISCONNECTED);
+                        }
                     } catch (HomekitServerException e) {
                         logger.error("{} [{}] : {} - Failed to set state to DISCONNECTED: {}", LOG_PREFIX, getUID(),
                                 LOG_ERROR, e.getMessage());
@@ -329,7 +341,11 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                     e.getMessage());
             logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
             try {
-                setState(HomekitAccessoryServerState.DISCONNECTED);
+                // Only set state to DISCONNECTED if we're not in UNKNOWN state
+                // UNKNOWN can only transition to READY, not to DISCONNECTED
+                if (currentState != HomekitAccessoryServerState.UNKNOWN) {
+                    setState(HomekitAccessoryServerState.DISCONNECTED);
+                }
             } catch (HomekitServerException ex) {
                 logger.error("{} [{}] : {} - Failed to set state to DISCONNECTED: {}", LOG_PREFIX, getUID(), LOG_ERROR,
                         ex.getMessage());
@@ -458,7 +474,11 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                         e.getMessage());
                 logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_STATE, e);
                 try {
-                    setState(HomekitAccessoryServerState.DISCONNECTED);
+                    // Only set state to DISCONNECTED if we're not in UNKNOWN state
+                    // UNKNOWN can only transition to READY, not to DISCONNECTED
+                    if (currentState != HomekitAccessoryServerState.UNKNOWN) {
+                        setState(HomekitAccessoryServerState.DISCONNECTED);
+                    }
                 } catch (HomekitServerException ex) {
                     logger.error("{} [{}] : {} - Failed to set disconnected state: {}", LOG_PREFIX, getUID(), LOG_ERROR,
                             ex.getMessage());
