@@ -247,7 +247,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                     ProtocolHandlers handlers = httpClient.getProtocolHandlers();
                     handlers.clear();
                     handlers.put(new HomekitProtocolHandler(this));
-                    setState(HomekitAccessoryServerState.CONNECTED);
+                    // Don't set state to CONNECTED here - let the base class set it to READY first
+                    // The CONNECTED state will be set later when the connection is actually established
                     logger.debug("{} [{}] : {} - HTTP client initialized successfully", LOG_PREFIX, getUID(), LOG_INIT);
                 } catch (Exception e) {
                     logger.error("{} [{}] : {} - Failed to start HTTP client - Error: {}", LOG_PREFIX, getUID(),
@@ -289,6 +290,19 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     @Override
     public void start() throws HomekitServerException {
         super.start();
+
+        // After the base class has set the state to READY, we can now set it to CONNECTED
+        // since the HTTP client has been initialized successfully
+        try {
+            setState(HomekitAccessoryServerState.CONNECTED);
+            logger.debug("{} [{}] : {} - Server state set to CONNECTED after successful initialization", LOG_PREFIX,
+                    getUID(), LOG_STATE);
+        } catch (HomekitServerException e) {
+            logger.error("{} [{}] : {} - Failed to set state to CONNECTED: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                    e.getMessage());
+            throw e;
+        }
+
         try {
             // Create a test request to check connection using the address member
             final String url = String.format("http://%s:%d", address.getHostAddress(), port);
