@@ -28,13 +28,13 @@ import org.slf4j.LoggerFactory;
  * This class provides a structured way to identify HomeKit characteristics
  * within the system.
  * The UID follows a specific format:
- * {@code homekit:characteristic:{pairingId}:{accessoryId}:{serviceId}:{characteristicId}}
+ * {@code homekit:characteristic:{serverId}:{accessoryId}:{serviceId}:{characteristicId}}
  * where:
  * </p>
  * <ul>
  * <li>{@code homekit} is the namespace prefix</li>
  * <li>{@code characteristic} indicates this is a characteristic identifier</li>
- * <li>{@code pairingId} is the unique pairing identifier for the server</li>
+ * <li>{@code serverId} is the unique server identifier for the server</li>
  * <li>{@code accessoryId} is the unique identifier for the accessory</li>
  * <li>{@code serviceId} is the unique identifier for the service</li>
  * <li>{@code characteristicId} is the unique identifier for the
@@ -97,23 +97,22 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      * <li>Provides trace-level logging</li>
      * </ul>
      *
-     * @param pairingId The unique pairing identifier for the server
+     * @param serverId The unique server identifier for the server
      * @param accessoryId The unique identifier for the accessory
      * @param serviceId The unique identifier for the service
      * @param characteristicId The unique identifier for the characteristic
      * @throws IllegalArgumentException if any of the IDs are null or empty
      */
-    public HomekitCharacteristicUIDImpl(String pairingId, long accessoryId, long serviceId, long characteristicId) {
-        super(CHARACTERISTIC_PREFIX,
-                HOMEKIT_PREFIX + ":" + CHARACTERISTIC_PREFIX + ":" + pairingId + ":" + accessoryId + ":"
-                        + serviceId + ":" + characteristicId);
-        if (pairingId.isEmpty()) {
+    public HomekitCharacteristicUIDImpl(String serverId, long accessoryId, long serviceId, long characteristicId) {
+        super(CHARACTERISTIC_PREFIX, HOMEKIT_PREFIX + ":" + CHARACTERISTIC_PREFIX + ":" + serverId + ":" + accessoryId
+                + ":" + serviceId + ":" + characteristicId);
+        if (serverId.isEmpty()) {
             logger.error("{}Pairing ID cannot be empty", LOG_ERROR);
             throw new IllegalArgumentException("Pairing ID cannot be empty");
         }
         logger.trace(
                 "{}Created characteristic UID with pairing ID: {}, accessory ID: {}, service ID: {}, characteristic ID: {}",
-                LOG_UID, pairingId, accessoryId, serviceId, characteristicId);
+                LOG_UID, serverId, accessoryId, serviceId, characteristicId);
     }
 
     /**
@@ -151,7 +150,7 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      *
      * <p>
      * The string representation follows the format
-     * {@code homekit:characteristic:{pairingId}:{accessoryId}:{serviceId}:{characteristicId}}.
+     * {@code homekit:characteristic:{serverId}:{accessoryId}:{serviceId}:{characteristicId}}.
      * This format ensures consistent identification across the system.
      * </p>
      *
@@ -166,7 +165,7 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      * </ul>
      *
      * @return The UID string in the format
-     *         {@code homekit:characteristic:{pairingId}:{accessoryId}:{serviceId}:{characteristicId}}
+     *         {@code homekit:characteristic:{serverId}:{accessoryId}:{serviceId}:{characteristicId}}
      */
     @Override
     public String toString() {
@@ -277,7 +276,7 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
      * </ul>
      *
      * @return The HomeKit ID in the format:
-     *         pairingId:accessoryId:serviceId:characteristicId
+     *         serverId:accessoryId:serviceId:characteristicId
      */
     public String getHomekitId() {
         String result = String.join(SEPARATOR,
@@ -312,5 +311,4 @@ public class HomekitCharacteristicUIDImpl extends HomekitUID implements HomekitC
         logger.trace("{}Getting all segments: {}", LOG_UID, segments);
         return segments;
     }
-
 }

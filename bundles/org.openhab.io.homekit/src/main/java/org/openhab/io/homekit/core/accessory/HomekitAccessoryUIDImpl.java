@@ -26,12 +26,12 @@ import org.slf4j.LoggerFactory;
  * This class provides a structured way to identify HomeKit accessories within
  * the system.
  * The UID follows a specific format:
- * {@code homekit:accessory:{pairingId}:{accessoryId}} where:
+ * {@code homekit:accessory:{serverId}:{accessoryId}} where:
  * </p>
  * <ul>
  * <li>{@code homekit} is the namespace prefix</li>
  * <li>{@code accessory} indicates this is an accessory identifier</li>
- * <li>{@code pairingId} is the unique pairing identifier for the server</li>
+ * <li>{@code serverId} is the unique server identifier for the server</li>
  * <li>{@code accessoryId} is the unique identifier for the accessory</li>
  * </ul>
  *
@@ -85,12 +85,12 @@ public class HomekitAccessoryUIDImpl extends HomekitUID implements HomekitAccess
      * <li>Sets up the base UID structure</li>
      * </ul>
      *
-     * @param pairingId The unique pairing identifier for the server
+     * @param serverId The unique server identifier for the server
      * @param accessoryId The unique identifier for the accessory
      * @throws IllegalArgumentException if the pairing ID is null or empty
      */
-    public HomekitAccessoryUIDImpl(String pairingId, long accessoryId) {
-        super(ACCESSORY_PREFIX, HOMEKIT_PREFIX + ":" + ACCESSORY_PREFIX + ":" + pairingId + ":" + accessoryId);
+    public HomekitAccessoryUIDImpl(String serverId, long accessoryId) {
+        super(ACCESSORY_PREFIX, HOMEKIT_PREFIX + ":" + ACCESSORY_PREFIX + ":" + serverId + ":" + accessoryId);
     }
 
     /**
@@ -126,7 +126,7 @@ public class HomekitAccessoryUIDImpl extends HomekitUID implements HomekitAccess
      *
      * <p>
      * The string representation follows the format
-     * {@code homekit:accessory:{pairingId}:{accessoryId}}.
+     * {@code homekit:accessory:{serverId}:{accessoryId}}.
      * This format ensures consistent identification across the system.
      * </p>
      *
@@ -141,7 +141,7 @@ public class HomekitAccessoryUIDImpl extends HomekitUID implements HomekitAccess
      * </ul>
      *
      * @return The UID string in the format
-     *         {@code homekit:accessory:{pairingId}:{accessoryId}}
+     *         {@code homekit:accessory:{serverId}:{accessoryId}}
      */
     @Override
     public String toString() {
@@ -168,7 +168,7 @@ public class HomekitAccessoryUIDImpl extends HomekitUID implements HomekitAccess
      * <li>Supports device pairing</li>
      * </ul>
      *
-     * @return The pairing identifier for this accessory
+     * @return The server identifier for this accessory
      */
     @Override
     public String getAccessoryServerId() {

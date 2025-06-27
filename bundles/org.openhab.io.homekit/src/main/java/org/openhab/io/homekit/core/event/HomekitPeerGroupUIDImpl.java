@@ -82,12 +82,15 @@ public class HomekitPeerGroupUIDImpl extends HomekitUID implements HomekitPeerGr
      * <li>Initializes internal fields</li>
      * </ul>
      *
-     * @param uid The string representation of the UID
+     * @param uid The UID string. If it contains ":", it should be a fully qualified UID in format
+     *            "homekit:peergroup:{peerGroup}".
+     *            If it doesn't contain ":", it should be just the peer group ID and the full UID will be constructed.
      * @throws IllegalArgumentException if the UID format is invalid
      */
     public HomekitPeerGroupUIDImpl(String uid) {
-        super(PEER_GROUP_PREFIX, uid);
-        String[] segments = uid.split(":");
+        super(PEER_GROUP_PREFIX, uid.contains(":") ? uid : HOMEKIT_PREFIX + ":" + PEER_GROUP_PREFIX + ":" + uid);
+        String[] segments = uid.contains(":") ? uid.split(":")
+                : (HOMEKIT_PREFIX + ":" + PEER_GROUP_PREFIX + ":" + uid).split(":");
         if (segments.length != 3 || !HOMEKIT_PREFIX.equals(segments[0]) || !PEER_GROUP_PREFIX.equals(segments[1])) {
             throw new IllegalArgumentException("Invalid HomeKit peer group UID format: " + uid);
         }

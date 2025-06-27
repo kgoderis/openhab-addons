@@ -112,12 +112,15 @@ public class HomekitAccessoryServerUIDImpl extends HomekitUID implements Homekit
      * <li>Provides trace-level logging</li>
      * </ul>
      *
-     * @param uid The fully qualified UID string in format "homekit:server:{id}"
+     * @param uid The UID string. If it contains ":", it should be a fully qualified UID in format
+     *            "homekit:server:{id}".
+     *            If it doesn't contain ":", it should be just the server ID and the full UID will be constructed.
      * @throws IllegalArgumentException if the UID format is invalid or the identifier is empty
      */
     public HomekitAccessoryServerUIDImpl(String uid) {
-        super(SERVER_PREFIX, uid);
-        String[] segments = uid.split(":");
+        super(SERVER_PREFIX, uid.contains(":") ? uid : HOMEKIT_PREFIX + ":" + SERVER_PREFIX + ":" + uid);
+        String[] segments = uid.contains(":") ? uid.split(":")
+                : (HOMEKIT_PREFIX + ":" + SERVER_PREFIX + ":" + uid).split(":");
         if (segments.length != 3 || !HOMEKIT_PREFIX.equals(segments[0]) || !SERVER_PREFIX.equals(segments[1])) {
             logger.error("{}Invalid UID format: {}", LOG_ERROR, uid);
             throw new IllegalArgumentException("Invalid HomeKit server UID format: " + uid);
