@@ -547,6 +547,21 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 new String(getPairingId()));
         logger.debug("{} [{}] : {} - Current state: {}", LOG_PREFIX, getUID(), LOG_STATE, currentState);
 
+        // Ensure server is in proper state before pairing
+        if (currentState == HomekitAccessoryServerState.UNKNOWN) {
+            logger.info("{} [{}] : {} - Server in UNKNOWN state, starting server first - Server: {}", LOG_PREFIX,
+                    getUID(), LOG_STATE, new String(getPairingId()));
+            try {
+                start();
+                logger.debug("{} [{}] : {} - Server started successfully, current state: {}", LOG_PREFIX, getUID(),
+                        LOG_STATE, currentState);
+            } catch (HomekitServerException e) {
+                logger.error("{} [{}] : {} - Failed to start server before pairing: {}", LOG_PREFIX, getUID(),
+                        LOG_ERROR, e.getMessage());
+                throw e;
+            }
+        }
+
         // Validate setup code
         if (setupCode.isEmpty()) {
             logger.warn("{} [{}] : {} - Unable to pair with {}:{} because no setup code is set - Server: {}",
@@ -632,6 +647,19 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     public boolean pairVerify() throws HomekitServerException {
         logger.info("{}Starting pair verify process - Server: {}", LOG_STATE, new String(getPairingId()));
         logger.debug("{}Current state: {}", LOG_STATE, currentState);
+
+        // Ensure server is in proper state before verification
+        if (currentState == HomekitAccessoryServerState.UNKNOWN) {
+            logger.info("{}Server in UNKNOWN state, starting server first - Server: {}", LOG_STATE,
+                    new String(getPairingId()));
+            try {
+                start();
+                logger.debug("{}Server started successfully, current state: {}", LOG_STATE, currentState);
+            } catch (HomekitServerException e) {
+                logger.error("{}Failed to start server before verification: {}", LOG_ERROR, e.getMessage());
+                throw e;
+            }
+        }
 
         // Reset verification state
         resetVerificationState();
