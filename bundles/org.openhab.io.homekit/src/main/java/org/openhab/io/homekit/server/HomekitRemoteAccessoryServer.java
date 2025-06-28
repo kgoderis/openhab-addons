@@ -581,6 +581,16 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 new String(getPairingId()));
         logger.debug("{} [{}] : {} - Current state: {}", LOG_PREFIX, getUID(), LOG_STATE, currentState);
 
+        // Check if already in pairing process
+        if (currentState == HomekitAccessoryServerState.PAIR_SETUP_INITIAL
+                || currentState == HomekitAccessoryServerState.PAIR_SETUP_SRP
+                || currentState == HomekitAccessoryServerState.PAIR_SETUP_VERIFY
+                || currentState == HomekitAccessoryServerState.PAIR_SETUP_EXCHANGE) {
+            logger.debug("{} [{}] : {} - Already in pairing process (state: {}), skipping - Server: {}", LOG_PREFIX,
+                    getUID(), LOG_STATE, currentState, new String(getPairingId()));
+            return;
+        }
+
         // Ensure server is in proper state before pairing
         if (currentState == HomekitAccessoryServerState.UNKNOWN) {
             logger.info("{} [{}] : {} - Server in UNKNOWN state, starting server first - Server: {}", LOG_PREFIX,
@@ -681,6 +691,14 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     public boolean pairVerify() throws HomekitServerException {
         logger.info("{}Starting pair verify process - Server: {}", LOG_STATE, new String(getPairingId()));
         logger.debug("{}Current state: {}", LOG_STATE, currentState);
+
+        // Check if already in verification process
+        if (currentState == HomekitAccessoryServerState.PAIR_SETUP_VERIFY
+                || currentState == HomekitAccessoryServerState.PAIR_SETUP_EXCHANGE) {
+            logger.debug("{}Already in verification process (state: {}), skipping - Server: {}", LOG_STATE,
+                    currentState, new String(getPairingId()));
+            return true; // Assume verification is in progress and will complete
+        }
 
         // Ensure server is in proper state before verification
         if (currentState == HomekitAccessoryServerState.UNKNOWN) {
