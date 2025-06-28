@@ -605,11 +605,10 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
     }
 
     /**
-     * Starts processing a response.
+     * Handles the start of an HTTP response.
      *
-     * This method handles the initial processing of an HTTP response,
-     * including version checking and header handling. It works with:
-     * - {@link org.eclipse.jetty.client.HttpExchange HttpExchange} for request/response management
+     * This method processes the initial response line and sets up the response
+     * handling. It works with:
      * - {@link org.eclipse.jetty.http.HttpMethod HttpMethod} for method validation
      * - {@link org.eclipse.jetty.http.HttpStatus HttpStatus} for status code handling
      *
@@ -629,6 +628,29 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
 
         String method = exchange.getRequest().getMethod();
         if (method == null) {
+            return false;
+        }
+
+        // Handle 4xx error responses differently to prevent content processing issues
+        if (status >= 400 && status < 500) {
+            logger.debug("{}Received 4xx error response - Status: {}, Reason: {}", LOG_STATE, status, reason);
+            exchange.getResponse().version(HomekitHttpVersion.convert(version)).status(status).reason(reason);
+
+            // For 4xx errors, we don't expect content, so handle them immediately
+            if (status != HttpStatus.CONTINUE_100) {
+                complete = true;
+            }
+
+            // Mark as HEAD response to skip content processing
+            parser.setHeadResponse(true);
+
+            boolean proceed = responseBegin(exchange);
+            if (!proceed) {
+                return true;
+            }
+
+            // Complete the response immediately for 4xx errors
+            responseSuccess(exchange);
             return false;
         }
 
@@ -740,9 +762,18 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
     @Override
     public void badMessage(@Nullable BadMessageException exception) {
         if (exception != null) {
-            logger.warn("{}Bad message received - Status: {}, Reason: {}", LOG_WARN, exception.getCode(),
-                    exception.getReason());
-            badMessage(exception.getCode(), exception.getReason());
+            int status = exception.getCode();
+            String reason = exception.getReason();
+
+            // Handle 4xx responses more gracefully
+            if (status >= 400 && status < 500) {
+                logger.debug("{}Received 4xx error response - Status: {}, Reason: {}", LOG_STATE, status, reason);
+                // For 4xx errors, we don't treat them as bad messages, just error responses
+                badMessage(status, reason);
+            } else {
+                logger.warn("{}Bad message received - Status: {}, Reason: {}", LOG_WARN, status, reason);
+                badMessage(status, reason);
+            }
         }
     }
 
@@ -773,8 +804,12 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
     public boolean content(@Nullable ByteBuffer buffer) {
         if (buffer != null) {
             logger.debug("{}Received content: {} bytes", LOG_STATE, buffer.remaining());
+            return super.content(buffer);
+        } else {
+            // Handle null buffer gracefully - this can happen with 4xx error responses
+            logger.debug("{}Received null content buffer (likely 4xx error response)", LOG_STATE);
+            return false;
         }
-        return super.content(buffer);
     }
 
     /**
