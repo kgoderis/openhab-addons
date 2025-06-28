@@ -459,11 +459,13 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      * @param next The next state
      * @return true if the transition is valid, false otherwise
      */
+    // CHECKSTYLE:OFF
     private boolean isValidStateTransition(HomekitAccessoryServerState current, HomekitAccessoryServerState next) {
         // Allow same-state transitions (no-op)
         if (current == next) {
             return true;
         }
+        // CHECKSTYLE:ON
 
         @SuppressWarnings("null") // Map.get() return type interpretation
         Set<HomekitAccessoryServerState> validNextStates = VALID_STATE_TRANSITIONS.get(current);
