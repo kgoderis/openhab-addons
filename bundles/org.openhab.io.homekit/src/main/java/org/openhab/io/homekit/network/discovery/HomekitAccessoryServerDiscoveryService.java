@@ -596,9 +596,6 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                 }
             }
 
-            HomekitAccessoryServerUID serverUID = new HomekitAccessoryServerUIDImpl(id.replace(":", ""));
-            HomekitAccessoryServer existingServer = accessoryServerRegistry.get(serverUID);
-
             // Extract and validate service configuration
             int port = serviceInfo.getPort();
             String model = serviceInfo.getPropertyString("md");
@@ -619,6 +616,13 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                 HomekitPairingFeatureFlag pairingFeatureFlag = HomekitPairingFeatureFlag
                         .fromValue(Integer.parseInt(pairingFeatureFlagStr));
 
+                // Use deviceId consistently for both check and creation
+                String deviceId = serviceInfo.getPropertyString(HomekitDiscoveryConstants.DEVICE_ID);
+                String serverId = deviceId != null ? deviceId.replace(":", "")
+                        : "discovered-" + System.currentTimeMillis();
+                HomekitAccessoryServerUID serverUID = new HomekitAccessoryServerUIDImpl(serverId);
+                HomekitAccessoryServer existingServer = accessoryServerRegistry.get(serverUID);
+
                 if (existingServer != null) {
                     logger.debug("{}Existing server found for {}", LOG_SERVER, serverUID);
                     // Update existing server configuration if needed
@@ -636,29 +640,16 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                     // Create new server for discovered accessory
                     logger.info(
                             "{}Discovered new HomeKit server - ServerUID: {}, ID: {}, Category: {}, Model: {}, Version: {}, Config Index: {}, Pairing Status: {}, Feature Flag: {}",
-                            LOG_SERVER, serverUID, id, category, model, version, configIndex, pairingStatus,
+                            LOG_SERVER, serverUID, serverId, category, model, version, configIndex, pairingStatus,
                             pairingFeatureFlag);
 
                     Optional<String> hostAddressOpt = getHostAddress(serviceInfo);
                     if (hostAddressOpt.isEmpty()) {
-                        logger.warn("{}No valid host address found for server {}", LOG_WARN, id);
+                        logger.warn("{}No valid host address found for server {}", LOG_WARN, serverId);
                         return Optional.empty();
                     }
 
                     try {
-                        String deviceId = serviceInfo.getPropertyString(HomekitDiscoveryConstants.DEVICE_ID);
-                        String serverId = deviceId != null ? deviceId.replace(":", "")
-                                : "discovered-" + System.currentTimeMillis();
-
-                        // Check if server already exists before creating a new one
-                        HomekitAccessoryServerUID checkServerUID = new HomekitAccessoryServerUIDImpl(serverId);
-                        HomekitAccessoryServer checkExistingServer = accessoryServerRegistry.get(checkServerUID);
-                        if (checkExistingServer != null) {
-                            logger.debug("{}Server already exists in registry - UID: {}, skipping creation", LOG_SERVER,
-                                    checkServerUID);
-                            return Optional.empty();
-                        }
-
                         HomekitAccessoryServer server = new HomekitRemoteAccessoryServer(category, serverId,
                                 InetAddress.getByName(hostAddressOpt.get()), port, accessoryRegistry, pairingRegistry,
                                 eventManager, accessoryFactory);
