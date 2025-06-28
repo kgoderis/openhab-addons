@@ -1136,10 +1136,10 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      */
     protected static byte[] generateSecretKey() throws HomekitServerException {
         try {
-            logger.debug("{}Generating new secret key", LOG_CONFIG);
+            logger.debug("{} : {} - Generating new secret key", LOG_PREFIX, LOG_CONFIG);
             return HomekitKeyGenerator.generateSecretKey();
         } catch (Exception e) {
-            logger.error("{}Failed to generate secret key: {}", LOG_ERROR, e.getMessage(), e);
+            logger.error("{} : {} - Failed to generate secret key: {}", LOG_PREFIX, LOG_ERROR, e.getMessage(), e);
             throw new HomekitServerException("Failed to generate secret key", e);
         }
     }
@@ -1152,10 +1152,10 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      */
     protected static byte[] generatePairingId() throws HomekitServerException {
         try {
-            logger.debug("{}Generating new pairing ID", LOG_CONFIG);
+            logger.debug("{} : {} - Generating new pairing ID", LOG_PREFIX, LOG_CONFIG);
             return HomekitKeyGenerator.generateHexidecimalId();
         } catch (Exception e) {
-            logger.error("{}Failed to generate pairing ID: {}", LOG_ERROR, e.getMessage(), e);
+            logger.error("{} : {} - Failed to generate pairing ID: {}", LOG_PREFIX, LOG_ERROR, e.getMessage(), e);
             throw new HomekitServerException("Failed to generate pairing ID", e);
         }
     }
