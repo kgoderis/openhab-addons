@@ -38,6 +38,9 @@ import org.openhab.core.config.discovery.DiscoveryResultBuilder;
 import org.openhab.core.config.discovery.DiscoveryService;
 import org.openhab.core.io.transport.mdns.MDNSClient;
 import org.openhab.core.net.NetworkAddressService;
+import org.openhab.core.service.ReadyMarker;
+import org.openhab.core.service.ReadyMarkerFilter;
+import org.openhab.core.service.ReadyService;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.ThingUID;
 import org.openhab.io.homekit.HomekitBindingConstants;
@@ -60,6 +63,7 @@ import org.openhab.io.homekit.protocol.pairing.HomekitPairingFeatureFlag;
 import org.openhab.io.homekit.protocol.pairing.HomekitPairingStatusFlag;
 import org.openhab.io.homekit.provider.HomekitThingTypeProvider;
 import org.openhab.io.homekit.server.HomekitRemoteAccessoryServer;
+import org.openhab.io.homekit.util.HomekitReadyMarkers;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.component.annotations.Activate;
@@ -126,7 +130,8 @@ import org.slf4j.LoggerFactory;
  */
 @Component(immediate = true, service = DiscoveryService.class, configurationPid = "discovery.homekit")
 @NonNullByDefault
-public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoveryService implements ServiceListener {
+public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoveryService
+        implements ServiceListener, ReadyService.ReadyTracker {
     /** Timeout for foreground scans in milliseconds */
     private static final Duration FOREGROUND_SCAN_TIMEOUT = Duration.ofMillis(200);
     /** Homekit service type for mDNS discovery */
@@ -164,8 +169,13 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
     private ConfigurationAdmin configAdmin;
     private HomekitEventManager eventManager;
     private HomekitAccessoryFactory accessoryFactory;
-    private HomekitServiceFactory homekitServiceFactory;
+    private final HomekitServiceFactory homekitServiceFactory;
     private final Map<String, ThingUID> cachedServices = new ConcurrentHashMap<>();
+
+    // Ready service tracking
+    private final ReadyService readyService;
+    private volatile boolean serverRegistryReady = false;
+    private volatile boolean readyMarkerRegistered = false;
 
     /**
      * Constructs a new HomeKit discovery service.
@@ -198,6 +208,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
      * @param eventManager Event manager for HomeKit events
      * @param accessoryFactory Factory for HomeKit accessories
      * @param homekitServiceFactory Factory for HomeKit services
+     * @param readyService Ready service for readiness tracking
      * @throws IllegalArgumentException if any required dependency is null
      */
     @Activate
@@ -208,7 +219,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
             @Reference HomekitAccessoryRegistry accessoryRegistry, @Reference HomekitPairingRegistry pairingRegistry,
             @Reference HomekitThingTypeProvider homekitThingTypeProvider, @Reference ConfigurationAdmin configAdmin,
             @Reference HomekitEventManager eventManager, @Reference HomekitAccessoryFactory accessoryFactory,
-            @Reference HomekitServiceFactory homekitServiceFactory) {
+            @Reference HomekitServiceFactory homekitServiceFactory, @Reference ReadyService readyService) {
         super(5);
         logger.debug("{}Initializing Homekit discovery service", LOG_INIT);
 
@@ -223,6 +234,7 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
         this.eventManager = eventManager;
         this.accessoryFactory = accessoryFactory;
         this.homekitServiceFactory = homekitServiceFactory;
+        this.readyService = readyService;
         // Load configuration
         loadConfiguration();
 
@@ -247,6 +259,9 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
     protected void deactivate() {
         logger.debug("{}Deactivating Homekit discovery service", LOG_INIT);
 
+        // Unregister ready tracker
+        readyService.unregisterTracker(this);
+
         // Stop background discovery
         stopBackgroundDiscovery();
 
@@ -260,16 +275,6 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
 
         // Remove all service listeners
         mdnsClient.removeServiceListener(SERVICE_TYPE, this);
-
-        // Clean up any remaining servers
-        // accessoryServerRegistry.getAll().forEach(server -> {
-        // try {
-        // server.stop();
-        // } catch (Exception e) {
-        // logger.warn("{}Failed to stop server {} during deactivation: {}", LOG_WARN,
-        // server.getUID(), e.getMessage());
-        // }
-        // });
 
         super.deactivate();
         logger.info("{}Homekit discovery service deactivated", LOG_INIT);
@@ -299,10 +304,10 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
         logger.debug("{}Activating Homekit discovery service", LOG_INIT);
         super.activate(configProperties);
 
-        if (isBackgroundDiscoveryEnabled()) {
-            logger.debug("{}Enabling background discovery for service type: {}", LOG_CONFIG, SERVICE_TYPE);
-            mdnsClient.addServiceListener(SERVICE_TYPE, this);
-        }
+        // Register as ready tracker to wait for ServerRegistry
+        readyService.registerTracker(this,
+                new ReadyMarkerFilter().withType(HomekitReadyMarkers.HOMEKIT_ACCESSORY_SERVER_REGISTRY));
+        logger.debug("{}Registered as ready tracker for ServerRegistry", LOG_INIT);
     }
 
     /**
@@ -311,6 +316,11 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
      */
     @Override
     protected void startBackgroundDiscovery() {
+        if (!serverRegistryReady) {
+            logger.debug("{}Background discovery requested but ServerRegistry not ready yet", LOG_CONFIG);
+            return;
+        }
+
         logger.debug("{}Starting background discovery for HomeKit services on network", LOG_CONFIG);
         mdnsClient.addServiceListener(SERVICE_TYPE, this);
         startScan(true);
@@ -331,6 +341,11 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
      */
     @Override
     protected void startScan() {
+        if (!serverRegistryReady) {
+            logger.debug("{}Foreground scan requested but ServerRegistry not ready yet", LOG_CONFIG);
+            return;
+        }
+
         logger.debug("{}Initiating foreground scan for HomeKit services", LOG_CONFIG);
         startScan(false);
     }
@@ -363,6 +378,11 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
      * @param context The context for logging (e.g., "scan" or "event")
      */
     private void processServiceAndUpdateAccessories(ServiceInfo serviceInfo, String context) {
+        if (!serverRegistryReady) {
+            logger.debug("{}Service processing requested but ServerRegistry not ready yet", LOG_SERVER);
+            return;
+        }
+
         logger.debug("{}Processing discovered service: {}", LOG_SERVER, serviceInfo.getName());
         Optional<Map<String, Object>> propertiesOpt = processService(serviceInfo);
         if (propertiesOpt.isEmpty()) {
@@ -654,21 +674,9 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                                 InetAddress.getByName(hostAddressOpt.get()), port, accessoryRegistry, pairingRegistry,
                                 eventManager, accessoryFactory);
                         server.setConfigurationIndex(configIndex);
-
-                        try {
-                            accessoryServerRegistry.add(server);
-                            logger.info("{}Created new remote HomeKit server - UID: {}, Setup Code: {}", LOG_SERVER,
-                                    server.getUID(), server.getSetupCode());
-                        } catch (IllegalArgumentException e) {
-                            // Server already exists (likely restored from persistence)
-                            if (e.getMessage().contains("already exists")) {
-                                logger.debug(
-                                        "{}Server {} already exists in registry (likely restored from persistence), skipping discovery creation",
-                                        LOG_SERVER, server.getUID());
-                            } else {
-                                throw e; // Re-throw if it's a different IllegalArgumentException
-                            }
-                        }
+                        accessoryServerRegistry.add(server);
+                        logger.info("{}Created new remote HomeKit server - UID: {}, Setup Code: {}", LOG_SERVER,
+                                server.getUID(), server.getSetupCode());
                     } catch (IOException e) {
                         logger.error("{}Failed to create accessory server: {}", LOG_ERROR, e.getMessage(), e);
                     } catch (HomekitServerException e) {
@@ -905,5 +913,49 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
         }
 
         return Optional.of(hostAddress);
+    }
+
+    /**
+     * Handles the addition of a ready marker.
+     *
+     * @param readyMarker The ready marker that was added
+     */
+    @Override
+    public synchronized void onReadyMarkerAdded(ReadyMarker readyMarker) {
+        if (!HomekitReadyMarkers.HOMEKIT_ACCESSORY_SERVER_REGISTRY.equals(readyMarker.getType())) {
+            return;
+        }
+
+        logger.debug("{}ServerRegistry ready marker added", LOG_INIT);
+        serverRegistryReady = true;
+
+        // Start discovery operations now that ServerRegistry is ready
+        if (isBackgroundDiscoveryEnabled()) {
+            logger.debug("{}Enabling background discovery for service type: {}", LOG_CONFIG, SERVICE_TYPE);
+            mdnsClient.addServiceListener(SERVICE_TYPE, this);
+        }
+
+        // Mark discovery service as ready
+        if (!readyMarkerRegistered) {
+            logger.info("{}Marking HomeKit Discovery Service as ready", LOG_INIT);
+            ReadyMarker newMarker = new ReadyMarker(HomekitReadyMarkers.HOMEKIT_DISCOVERY_SERVICE, this.toString());
+            readyService.markReady(newMarker);
+            readyMarkerRegistered = true;
+        }
+    }
+
+    /**
+     * Handles the removal of a ready marker.
+     *
+     * @param readyMarker The ready marker that was removed
+     */
+    @Override
+    public void onReadyMarkerRemoved(ReadyMarker readyMarker) {
+        if (!HomekitReadyMarkers.HOMEKIT_ACCESSORY_SERVER_REGISTRY.equals(readyMarker.getType())) {
+            return;
+        }
+
+        logger.warn("{}ServerRegistry ready marker removed - Discovery may not function properly", LOG_WARN);
+        serverRegistryReady = false;
     }
 }
