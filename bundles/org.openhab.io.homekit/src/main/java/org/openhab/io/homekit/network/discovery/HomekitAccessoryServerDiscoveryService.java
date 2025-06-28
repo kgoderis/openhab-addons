@@ -654,9 +654,21 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                                 InetAddress.getByName(hostAddressOpt.get()), port, accessoryRegistry, pairingRegistry,
                                 eventManager, accessoryFactory);
                         server.setConfigurationIndex(configIndex);
-                        accessoryServerRegistry.add(server);
-                        logger.info("{}Created new remote HomeKit server - UID: {}, Setup Code: {}", LOG_SERVER,
-                                server.getUID(), server.getSetupCode());
+
+                        try {
+                            accessoryServerRegistry.add(server);
+                            logger.info("{}Created new remote HomeKit server - UID: {}, Setup Code: {}", LOG_SERVER,
+                                    server.getUID(), server.getSetupCode());
+                        } catch (IllegalArgumentException e) {
+                            // Server already exists (likely restored from persistence)
+                            if (e.getMessage().contains("already exists")) {
+                                logger.debug(
+                                        "{}Server {} already exists in registry (likely restored from persistence), skipping discovery creation",
+                                        LOG_SERVER, server.getUID());
+                            } else {
+                                throw e; // Re-throw if it's a different IllegalArgumentException
+                            }
+                        }
                     } catch (IOException e) {
                         logger.error("{}Failed to create accessory server: {}", LOG_ERROR, e.getMessage(), e);
                     } catch (HomekitServerException e) {
