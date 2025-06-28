@@ -649,6 +649,16 @@ public class HomekitAccessoryServerDiscoveryService extends AbstractDiscoverySer
                         String deviceId = serviceInfo.getPropertyString(HomekitDiscoveryConstants.DEVICE_ID);
                         String serverId = deviceId != null ? deviceId.replace(":", "")
                                 : "discovered-" + System.currentTimeMillis();
+
+                        // Check if server already exists before creating a new one
+                        HomekitAccessoryServerUID checkServerUID = new HomekitAccessoryServerUIDImpl(serverId);
+                        HomekitAccessoryServer checkExistingServer = accessoryServerRegistry.get(checkServerUID);
+                        if (checkExistingServer != null) {
+                            logger.debug("{}Server already exists in registry - UID: {}, skipping creation", LOG_SERVER,
+                                    checkServerUID);
+                            return Optional.empty();
+                        }
+
                         HomekitAccessoryServer server = new HomekitRemoteAccessoryServer(category, serverId,
                                 InetAddress.getByName(hostAddressOpt.get()), port, accessoryRegistry, pairingRegistry,
                                 eventManager, accessoryFactory);
