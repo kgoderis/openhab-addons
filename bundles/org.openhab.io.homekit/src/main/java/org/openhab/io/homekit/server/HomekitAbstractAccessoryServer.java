@@ -124,7 +124,9 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
                     HomekitAccessoryServerState.CONNECTED,
                     Set.of(HomekitAccessoryServerState.DISCONNECTED, HomekitAccessoryServerState.PAIR_SETUP_INITIAL),
                     HomekitAccessoryServerState.DISCONNECTED,
-                    Set.of(HomekitAccessoryServerState.CONNECTED, HomekitAccessoryServerState.STOPPED),
+                    Set.of(HomekitAccessoryServerState.CONNECTED, HomekitAccessoryServerState.STOPPED,
+                            HomekitAccessoryServerState.PAIR_SETUP_INITIAL,
+                            HomekitAccessoryServerState.MISSING_SETUP_CODE),
                     HomekitAccessoryServerState.PAIR_SETUP_INITIAL,
                     Set.of(HomekitAccessoryServerState.PAIRED, HomekitAccessoryServerState.DISCONNECTED,
                             HomekitAccessoryServerState.UNPAIRED, HomekitAccessoryServerState.MISSING_SETUP_CODE),
@@ -454,10 +456,15 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      * Checks if a state transition is valid.
      *
      * @param current The current state
-     * @param next The desired next state
+     * @param next The next state
      * @return true if the transition is valid, false otherwise
      */
     private boolean isValidStateTransition(HomekitAccessoryServerState current, HomekitAccessoryServerState next) {
+        // Allow same-state transitions (no-op)
+        if (current == next) {
+            return true;
+        }
+
         @SuppressWarnings("null") // Map.get() return type interpretation
         Set<HomekitAccessoryServerState> validNextStates = VALID_STATE_TRANSITIONS.get(current);
         return validNextStates != null && validNextStates.contains(next);
