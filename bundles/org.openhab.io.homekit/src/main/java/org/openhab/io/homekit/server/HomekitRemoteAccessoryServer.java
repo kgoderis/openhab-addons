@@ -572,29 +572,29 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     // ========== HomekitPairing Methods ==========
     @Override
     public void pairSetup() throws HomekitServerException {
-        logger.info("{} [{}] : {} - Starting pair setup process", LOG_PREFIX, getUID(), LOG_STATE);
-        logger.debug("{} [{}] : {} - Current state: {}", LOG_PREFIX, getUID(), LOG_STATE, currentState);
+        logger.info("{} [{}] : {} : Starting pair setup process", LOG_PREFIX, getUID(), LOG_STATE);
+        logger.debug("{} [{}] : {} : Current state: {}", LOG_PREFIX, getUID(), LOG_STATE, currentState);
 
         // Check if already in pairing process
         if (currentState == HomekitAccessoryServerState.PAIR_SETUP_INITIAL
                 || currentState == HomekitAccessoryServerState.PAIR_SETUP_SRP
                 || currentState == HomekitAccessoryServerState.PAIR_SETUP_VERIFY
                 || currentState == HomekitAccessoryServerState.PAIR_SETUP_EXCHANGE) {
-            logger.debug("{} [{}] : {} - Already in pairing process (state: {}), skipping", LOG_PREFIX, getUID(),
+            logger.debug("{} [{}] : {} : Already in pairing process (state: {}), skipping", LOG_PREFIX, getUID(),
                     LOG_STATE, currentState);
             return;
         }
 
         // Ensure server is in proper state before pairing
         if (currentState == HomekitAccessoryServerState.UNKNOWN) {
-            logger.info("{} [{}] : {} - Server in UNKNOWN state, starting server first", LOG_PREFIX, getUID(),
+            logger.info("{} [{}] : {} : Server in UNKNOWN state, starting server first", LOG_PREFIX, getUID(),
                     LOG_STATE);
             try {
                 start();
-                logger.debug("{} [{}] : {} - Server started successfully, current state: {}", LOG_PREFIX, getUID(),
+                logger.debug("{} [{}] : {} : Server started successfully, current state: {}", LOG_PREFIX, getUID(),
                         LOG_STATE, currentState);
             } catch (HomekitServerException e) {
-                logger.error("{} [{}] : {} - Failed to start server before pairing: {}", LOG_PREFIX, getUID(),
+                logger.error("{} [{}] : {} : Failed to start server before pairing: {}", LOG_PREFIX, getUID(),
                         LOG_ERROR, e.getMessage());
                 throw e;
             }
@@ -602,7 +602,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
         // Validate setup code
         if (setupCode.isEmpty()) {
-            logger.warn("{} [{}] : {} - Unable to pair with {}:{} because no setup code is set", LOG_PREFIX, getUID(),
+            logger.warn("{} [{}] : {} : Unable to pair with {}:{} because no setup code is set", LOG_PREFIX, getUID(),
                     LOG_STATE, address.getHostAddress(), port);
             setState(HomekitAccessoryServerState.MISSING_SETUP_CODE);
             return;
@@ -611,64 +611,65 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         // Initialize pairing state
         resetPairingState();
         setState(HomekitAccessoryServerState.PAIR_SETUP_INITIAL);
-        logger.debug("{} [{}] : {} - HomekitPairing state reset, starting authentication", LOG_PREFIX, getUID(),
+        logger.debug("{} [{}] : {} : HomekitPairing state reset, starting authentication", LOG_PREFIX, getUID(),
                 LOG_STATE);
 
         try {
             // Stage 0: Initial Setup
-            logger.debug("{} [{}] : {} - Starting Stage 0 - Initial Setup", LOG_PREFIX, getUID(), LOG_STATE);
+            logger.debug("{} [{}] : {} : Stage {} : Starting - Initial Setup", LOG_PREFIX, getUID(), LOG_STATE, 0);
             StageResult stage0Result = executePairingSetupStage(0, () -> doPairSetupStage0());
             if (stage0Result.isFailure()) {
                 handlePairingFailure(0, stage0Result);
                 return;
             }
-            logger.debug("{} [{}] : {} - Stage 0 completed successfully", LOG_PREFIX, getUID(), LOG_STATE);
+            logger.debug("{} [{}] : {} : Stage {} : Completed successfully", LOG_PREFIX, getUID(), LOG_STATE, 0);
 
             // Stage 1: SRP Protocol Exchange
-            logger.debug("{} [{}] : {} - Starting Stage 1 - SRP Protocol Exchange", LOG_PREFIX, getUID(), LOG_STATE);
+            logger.debug("{} [{}] : {} : Stage {} : Starting - SRP Protocol Exchange", LOG_PREFIX, getUID(), LOG_STATE,
+                    1);
             setState(HomekitAccessoryServerState.PAIR_SETUP_SRP);
             StageResult stage1Result = executePairingSetupStage(1, () -> doPairSetupStage1(stage0Result));
             if (stage1Result.isFailure()) {
                 handlePairingFailure(1, stage1Result);
                 return;
             }
-            logger.debug("{} [{}] : {} - Stage 1 completed successfully", LOG_PREFIX, getUID(), LOG_STATE);
+            logger.debug("{} [{}] : {} : Stage {} : Completed successfully", LOG_PREFIX, getUID(), LOG_STATE, 1);
 
             // Stage 2: Verify Proof
-            logger.debug("{} [{}] : {} - Starting Stage 2 - Verify Proof", LOG_PREFIX, getUID(), LOG_STATE);
+            logger.debug("{} [{}] : {} : Stage {} : Starting - Verify Proof", LOG_PREFIX, getUID(), LOG_STATE, 2);
             setState(HomekitAccessoryServerState.PAIR_SETUP_VERIFY);
             StageResult stage2Result = executePairingSetupStage(2, () -> doPairSetupStage2(stage1Result));
             if (stage2Result.isFailure()) {
                 handlePairingFailure(2, stage2Result);
                 return;
             }
-            logger.debug("{} [{}] : {} - Stage 2 completed successfully", LOG_PREFIX, getUID(), LOG_STATE);
+            logger.debug("{} [{}] : {} : Stage {} : Completed successfully", LOG_PREFIX, getUID(), LOG_STATE, 2);
 
             // Stage 3: Exchange Keys
-            logger.debug("{} [{}] : {} - Starting Stage 3 - Exchange Keys", LOG_PREFIX, getUID(), LOG_STATE);
+            logger.debug("{} [{}] : {} : Stage {} : Starting - Exchange Keys", LOG_PREFIX, getUID(), LOG_STATE, 3);
             setState(HomekitAccessoryServerState.PAIR_SETUP_EXCHANGE);
             StageResult stage3Result = executePairingSetupStage(3, () -> doPairSetupStage3(stage2Result));
             if (stage3Result.isFailure()) {
                 handlePairingFailure(3, stage3Result);
                 return;
             }
-            logger.debug("{} [{}] : {} - Stage 3 completed successfully", LOG_PREFIX, getUID(), LOG_STATE);
+            logger.debug("{} [{}] : {} : Stage {} : Completed successfully", LOG_PREFIX, getUID(), LOG_STATE, 3);
 
             // HomekitPairing completed successfully
             setState(HomekitAccessoryServerState.PAIR_UNVERIFIED);
-            logger.info("{} [{}] : {} - Pair setup completed successfully", LOG_PREFIX, getUID(), LOG_STATE);
-            logger.debug("{} [{}] : {} - Final state: {}", LOG_PREFIX, getUID(), LOG_STATE, currentState);
+            logger.info("{} [{}] : {} : Pair setup completed successfully", LOG_PREFIX, getUID(), LOG_STATE);
+            logger.debug("{} [{}] : {} : Final state: {}", LOG_PREFIX, getUID(), LOG_STATE, currentState);
 
         } catch (HomekitServerException e) {
-            logger.error("{} [{}] : {} - Pair setup failed with error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+            logger.error("{} [{}] : {} : Pair setup failed with error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
                     e.getMessage());
-            logger.debug("{} [{}] : {} - Homekit exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
+            logger.debug("{} [{}] : {} : Homekit exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
             resetPairingState();
             setState(HomekitAccessoryServerState.UNPAIRED);
         } catch (Exception e) {
-            logger.error("{} [{}] : {} - Unexpected error during pair setup: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+            logger.error("{} [{}] : {} : Unexpected error during pair setup: {}", LOG_PREFIX, getUID(), LOG_ERROR,
                     e.getMessage());
-            logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
+            logger.debug("{} [{}] : {} : Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
             resetPairingState();
             setState(HomekitAccessoryServerState.UNPAIRED);
         }
@@ -676,27 +677,27 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
     @Override
     public boolean pairVerify() throws HomekitServerException {
-        logger.info("{} [{}] : {} - Starting pair verify process", LOG_PREFIX, getUID(), LOG_STATE);
-        logger.debug("{} [{}] : {} - Current state: {}", LOG_PREFIX, getUID(), LOG_STATE, currentState);
+        logger.info("{} [{}] : {} : Starting pair verify process", LOG_PREFIX, getUID(), LOG_STATE);
+        logger.debug("{} [{}] : {} : Current state: {}", LOG_PREFIX, getUID(), LOG_STATE, currentState);
 
         // Check if already in verification process
         if (currentState == HomekitAccessoryServerState.PAIR_SETUP_VERIFY
                 || currentState == HomekitAccessoryServerState.PAIR_SETUP_EXCHANGE) {
-            logger.debug("{} [{}] : {} - Already in verification process (state: {}), skipping", LOG_PREFIX, getUID(),
+            logger.debug("{} [{}] : {} : Already in verification process (state: {}), skipping", LOG_PREFIX, getUID(),
                     LOG_STATE, currentState);
             return true; // Assume verification is in progress and will complete
         }
 
         // Ensure server is in proper state before verification
         if (currentState == HomekitAccessoryServerState.UNKNOWN) {
-            logger.info("{} [{}] : {} - Server in UNKNOWN state, starting server first", LOG_PREFIX, getUID(),
+            logger.info("{} [{}] : {} : Server in UNKNOWN state, starting server first", LOG_PREFIX, getUID(),
                     LOG_STATE);
             try {
                 start();
-                logger.debug("{} [{}] : {} - Server started successfully, current state: {}", LOG_PREFIX, getUID(),
+                logger.debug("{} [{}] : {} : Server started successfully, current state: {}", LOG_PREFIX, getUID(),
                         LOG_STATE, currentState);
             } catch (HomekitServerException e) {
-                logger.error("{} [{}] : {} - Failed to start server before verification: {}", LOG_PREFIX, getUID(),
+                logger.error("{} [{}] : {} : Failed to start server before verification: {}", LOG_PREFIX, getUID(),
                         LOG_ERROR, e.getMessage());
                 throw e;
             }
@@ -705,21 +706,22 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         // Reset verification state
         resetVerificationState();
         setState(HomekitAccessoryServerState.PAIR_UNVERIFIED);
-        logger.debug("{} [{}] : {} - Verification state reset", LOG_PREFIX, getUID(), LOG_STATE);
+        logger.debug("{} [{}] : {} : Verification state reset", LOG_PREFIX, getUID(), LOG_STATE);
 
         try {
             // Stage 0: Initial Verification
-            logger.debug("{} [{}] : {} - Starting Stage 0 - Initial Verification", LOG_PREFIX, getUID(), LOG_STATE);
+            logger.debug("{} [{}] : {} : Stage {} : Starting - Initial Verification", LOG_PREFIX, getUID(), LOG_STATE,
+                    0);
             StageResult stage0Result = executePairingVerifyStage(0, () -> doPairVerifyStage0());
             if (stage0Result.isFailure()) {
                 handleVerificationFailure(0, stage0Result);
                 handlePairingVerification(false);
                 return false;
             }
-            logger.debug("{} [{}] : {} - Stage 0 completed successfully", LOG_PREFIX, getUID(), LOG_STATE);
+            logger.debug("{} [{}] : {} : Stage {} : Completed successfully", LOG_PREFIX, getUID(), LOG_STATE, 0);
 
             // Stage 1: Exchange Keys
-            logger.debug("{} [{}] : {} - Starting Stage 1 - Exchange Keys", LOG_PREFIX, getUID(), LOG_STATE);
+            logger.debug("{} [{}] : {} : Stage {} : Starting - Exchange Keys", LOG_PREFIX, getUID(), LOG_STATE, 1);
             setState(HomekitAccessoryServerState.PAIR_SETUP_VERIFY);
 
             // Handle stage 1 with authentication error handling
@@ -729,10 +731,10 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 handlePairingVerification(false);
                 return false;
             }
-            logger.debug("{} [{}] : {} - Stage 1 completed successfully", LOG_PREFIX, getUID(), LOG_STATE);
+            logger.debug("{} [{}] : {} : Stage {} : Completed successfully", LOG_PREFIX, getUID(), LOG_STATE, 1);
 
             // Stage 2: Final Verification
-            logger.debug("{} [{}] : {} - Starting Stage 2 - Final Verification", LOG_PREFIX, getUID(), LOG_STATE);
+            logger.debug("{} [{}] : {} : Stage {} : Starting - Final Verification", LOG_PREFIX, getUID(), LOG_STATE, 2);
             setState(HomekitAccessoryServerState.PAIR_SETUP_EXCHANGE);
             StageResult stage2Result = executePairingVerifyStage(2, () -> doPairVerifyStage2(stage1Result));
             if (stage2Result.isFailure()) {
@@ -740,24 +742,24 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 handlePairingVerification(false);
                 return false;
             }
-            logger.debug("{} [{}] : {} - Stage 2 completed successfully", LOG_PREFIX, getUID(), LOG_STATE);
+            logger.debug("{} [{}] : {} : Stage {} : Completed successfully", LOG_PREFIX, getUID(), LOG_STATE, 2);
 
             // Verification completed successfully
             handlePairingVerification(true);
-            logger.info("{} [{}] : {} - Pair verification completed successfully", LOG_PREFIX, getUID(), LOG_STATE);
-            logger.debug("{} [{}] : {} - Final state: {}", LOG_PREFIX, getUID(), LOG_STATE, currentState);
+            logger.info("{} [{}] : {} : Pair verification completed successfully", LOG_PREFIX, getUID(), LOG_STATE);
+            logger.debug("{} [{}] : {} : Final state: {}", LOG_PREFIX, getUID(), LOG_STATE, currentState);
             return true;
 
         } catch (HomekitServerException e) {
-            logger.error("{} [{}] : {} - Pair verification failed with error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+            logger.error("{} [{}] : {} : Pair verification failed with error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
                     e.getMessage());
-            logger.debug("{} [{}] : {} - Homekit exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
+            logger.debug("{} [{}] : {} : Homekit exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
             handlePairingVerification(false);
             return false;
         } catch (Exception e) {
-            logger.error("{} [{}] : {} - Unexpected error during pair verification: {}", LOG_PREFIX, getUID(),
+            logger.error("{} [{}] : {} : Unexpected error during pair verification: {}", LOG_PREFIX, getUID(),
                     LOG_ERROR, e.getMessage());
-            logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
+            logger.debug("{} [{}] : {} : Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
             handlePairingVerification(false);
             return false;
         }
@@ -849,13 +851,13 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
     private StageResult executePairingSetupStage(int stage, PairingStageExecutor executor)
             throws HomekitServerException, InterruptedException, ExecutionException, IOException {
-        logger.debug("{} [{}] : {} - Executing pair setup stage {} - preparing payload", LOG_PREFIX, getUID(),
+        logger.debug("{} [{}] : {} - Executing pair setup Stage {} :  preparing payload", LOG_PREFIX, getUID(),
                 LOG_STATE, stage);
 
         long startTime = System.currentTimeMillis();
         byte[] payload = executor.execute();
 
-        logger.debug("{} [{}] : {} - Stage {} - sending payload", LOG_PREFIX, getUID(), LOG_STATE, stage);
+        logger.debug("{} [{}] : {} : Stage {} :  sending payload", LOG_PREFIX, getUID(), LOG_STATE, stage);
         Future<StageResult> stageFuture = sendPairSetupStage(payload);
 
         try {
@@ -863,14 +865,14 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                     stageFuture.get(PAIRING_STAGE_TIMEOUT_SECONDS, TimeUnit.SECONDS), "StageResult is null");
 
             long duration = System.currentTimeMillis() - startTime;
-            logger.debug("{} [{}] : {} - Stage {} - received response in {}ms, success: {}", LOG_PREFIX, getUID(),
+            logger.debug("{} [{}] : {} : Stage {} :  received response in {}ms, success: {}", LOG_PREFIX, getUID(),
                     LOG_STATE, stage, duration, !result.isFailure());
 
             return result;
         } catch (TimeoutException e) {
             long duration = System.currentTimeMillis() - startTime;
-            logger.error("{} [{}] : {} - Stage {} - timed out after {}ms (limit: {}s)", LOG_PREFIX, getUID(), LOG_ERROR,
-                    stage, duration, PAIRING_STAGE_TIMEOUT_SECONDS);
+            logger.error("{} [{}] : {} : Stage {} :  timed out after {}ms (limit: {}s)", LOG_PREFIX, getUID(),
+                    LOG_ERROR, stage, duration, PAIRING_STAGE_TIMEOUT_SECONDS);
 
             // Cancel the future to prevent resource leaks
             stageFuture.cancel(true);
@@ -883,13 +885,13 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
     private StageResult executePairingVerifyStage(int stage, PairingStageExecutor executor)
             throws HomekitServerException, InterruptedException, ExecutionException, IOException {
-        logger.debug("{} [{}] : {} - Executing pair verify stage {} - preparing payload", LOG_PREFIX, getUID(),
+        logger.debug("{} [{}] : {} - Executing pair verify Stage {} :  preparing payload", LOG_PREFIX, getUID(),
                 LOG_STATE, stage);
 
         long startTime = System.currentTimeMillis();
         byte[] payload = executor.execute();
 
-        logger.debug("{} [{}] : {} - Stage {} - sending payload", LOG_PREFIX, getUID(), LOG_STATE, stage);
+        logger.debug("{} [{}] : {} : Stage {} :  sending payload", LOG_PREFIX, getUID(), LOG_STATE, stage);
         Future<StageResult> stageFuture = sendPairVerifyStage(payload);
 
         try {
@@ -897,14 +899,14 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                     stageFuture.get(PAIRING_STAGE_TIMEOUT_SECONDS, TimeUnit.SECONDS), "StageResult is null");
 
             long duration = System.currentTimeMillis() - startTime;
-            logger.debug("{} [{}] : {} - Stage {} - received response in {}ms, success: {}", LOG_PREFIX, getUID(),
+            logger.debug("{} [{}] : {} : Stage {} :  received response in {}ms, success: {}", LOG_PREFIX, getUID(),
                     LOG_STATE, stage, duration, !result.isFailure());
 
             return result;
         } catch (TimeoutException e) {
             long duration = System.currentTimeMillis() - startTime;
-            logger.error("{} [{}] : {} - Stage {} - timed out after {}ms (limit: {}s)", LOG_PREFIX, getUID(), LOG_ERROR,
-                    stage, duration, PAIRING_STAGE_TIMEOUT_SECONDS);
+            logger.error("{} [{}] : {} : Stage {} :  timed out after {}ms (limit: {}s)", LOG_PREFIX, getUID(),
+                    LOG_ERROR, stage, duration, PAIRING_STAGE_TIMEOUT_SECONDS);
 
             // Cancel the future to prevent resource leaks
             stageFuture.cancel(true);
@@ -931,14 +933,14 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             } else {
                 logger.warn("{} [{}] : {} - Pair setup failed at stage {} with error: {}", LOG_PREFIX, getUID(),
                         LOG_STATE, stage, result.error.get());
-                logger.debug("{} [{}] : {} - Stage {} error details: {}", LOG_PREFIX, getUID(), LOG_STATE, stage,
+                logger.debug("{} [{}] : {} : Stage {} : error details: {}", LOG_PREFIX, getUID(), LOG_STATE, stage,
                         result.error.get());
             }
         } else {
             logger.warn("{} [{}] : {} - Pair setup failed at stage {} with message: {}", LOG_PREFIX, getUID(), LOG_WARN,
                     stage, result.message.orElse(""));
-            logger.debug("{} [{}] : {} - Stage {} failure message details: {}", LOG_PREFIX, getUID(), LOG_STATE, stage,
-                    result.message.orElse(""));
+            logger.debug("{} [{}] : {} : Stage {} : failure message details: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                    stage, result.message.orElse(""));
         }
         setState(HomekitAccessoryServerState.UNPAIRED);
         logger.debug("{} [{}] : {} - State set to UNPAIRED after failure", LOG_PREFIX, getUID(), LOG_STATE);
@@ -958,7 +960,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     }
 
     protected byte[] doPairSetupStage1(StageResult stageResult) throws IOException, HomekitServerException {
-        logger.debug("{} [{}] : {} - Executing pair setup stage 1", LOG_PREFIX, getUID(), LOG_STATE);
+        logger.debug("{} [{}] : {} : Stage {} : Executing pair setup stage", LOG_PREFIX, getUID(), LOG_STATE, 1);
         DecodeResult decodeResult = stageResult.getDecodeResult()
                 .orElseThrow(() -> new HomekitServerException("Missing decode result for stage 1"));
 
@@ -968,13 +970,13 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         }
 
         BigInteger publicKey = decodeResult.getBigInt(HomekitMessage.PUBLIC_KEY);
-        logger.debug("{} [{}] : {} - Public key received", LOG_PREFIX, getUID(), LOG_STATE);
+        logger.debug("{} [{}] : {} : Stage {} : Public key received", LOG_PREFIX, getUID(), LOG_STATE, 1);
 
         BigInteger salt = decodeResult.getBigInt(HomekitMessage.SALT);
-        logger.debug("{} [{}] : {} - Salt received", LOG_PREFIX, getUID(), LOG_STATE);
+        logger.debug("{} [{}] : {} : Stage {} : Salt received", LOG_PREFIX, getUID(), LOG_STATE, 1);
 
         if (SRP6Session.isEmpty()) {
-            logger.debug("{} [{}] : {} - Creating new SRP6 session", LOG_PREFIX, getUID(), LOG_STATE);
+            logger.debug("{} [{}] : {} : Stage {} : Creating new SRP6 session", LOG_PREFIX, getUID(), LOG_STATE, 1);
             SRP6Session = Optional.of(new HomekitClientSRP6Session());
             SRP6Session.ifPresent(session -> {
                 session.setClientEvidenceRoutine(new HomekitEncryptionEngine.ClientEvidenceRoutineImpl());
@@ -982,32 +984,33 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 session.setXRoutine(new XRoutineWithUserIdentity());
             });
         } else {
-            logger.debug("{} [{}] : {} - Using existing SRP6 session - State: {}", LOG_PREFIX, getUID(), LOG_STATE,
-                    SRP6Session.map(session -> session.getState().toString()).orElse("UNKNOWN"));
+            logger.debug("{} [{}] : {} : Stage {} : Using existing SRP6 session - State: {}", LOG_PREFIX, getUID(),
+                    LOG_STATE, 1, SRP6Session.map(session -> session.getState().toString()).orElse("UNKNOWN"));
         }
 
         // Ensure we have a valid session and call step1
         if (SRP6Session.isPresent()) {
             HomekitClientSRP6Session session = SRP6Session.get();
-            logger.debug("{} [{}] : {} - Calling SRP6 step1 - Current state: {}", LOG_PREFIX, getUID(), LOG_STATE,
-                    session.getState());
+            logger.debug("{} [{}] : {} : Stage {} : Calling SRP6 step1 - Current state: {}", LOG_PREFIX, getUID(),
+                    LOG_STATE, 1, session.getState());
 
             // Check if session is in wrong state and reset if needed
             if (session.getState() != HomekitClientSRP6Session.State.INIT) {
-                logger.warn("{} [{}] : {} - SRP6 session in wrong state ({}), resetting session", LOG_PREFIX, getUID(),
-                        LOG_STATE, session.getState());
+                logger.warn("{} [{}] : {} : Stage {} : SRP6 session in wrong state ({}), resetting session", LOG_PREFIX,
+                        getUID(), LOG_STATE, 1, session.getState());
                 session = new HomekitClientSRP6Session();
                 session.setClientEvidenceRoutine(new HomekitEncryptionEngine.ClientEvidenceRoutineImpl());
                 session.setServerEvidenceRoutine(new HomekitEncryptionEngine.ServerEvidenceRoutineImpl());
                 session.setXRoutine(new XRoutineWithUserIdentity());
                 SRP6Session = Optional.of(session);
-                logger.debug("{} [{}] : {} - Created fresh SRP6 session", LOG_PREFIX, getUID(), LOG_STATE);
+                logger.debug("{} [{}] : {} : Stage {} : Created fresh SRP6 session", LOG_PREFIX, getUID(), LOG_STATE,
+                        1);
             }
 
             // Call step1 on the session
             session.step1("Pair-Setup", setupCode);
-            logger.debug("{} [{}] : {} - SRP6 step1 completed - New state: {}", LOG_PREFIX, getUID(), LOG_STATE,
-                    session.getState());
+            logger.debug("{} [{}] : {} : Stage {} : SRP6 step1 completed - New state: {}", LOG_PREFIX, getUID(),
+                    LOG_STATE, 1, session.getState());
         }
 
         SRP6ClientCredentials clientCredentials = null;
@@ -1020,17 +1023,17 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 throw new HomekitServerException("SRP6 session not found");
             }
         } catch (SRP6Exception e) {
-            logger.error("{} [{}] : {} - SRP6 step 2 failed - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+            logger.error("{} [{}] : {} : Stage {} : SRP6 step 2 failed - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR, 1,
                     e.getMessage());
-            logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
+            logger.debug("{} [{}] : {} : Stage {} : Exception details", LOG_PREFIX, getUID(), LOG_ERROR, 1, e);
             throw new HomekitServerException("SRP6 step 2 failed", e);
         }
 
         BigInteger clientPublicKey = clientCredentials.A;
-        logger.debug("{} [{}] : {} - Client public key generated", LOG_PREFIX, getUID(), LOG_STATE);
+        logger.debug("{} [{}] : {} : Stage {} : Client public key generated", LOG_PREFIX, getUID(), LOG_STATE, 1);
 
         BigInteger clientProof = clientCredentials.M1;
-        logger.debug("{} [{}] : {} - Client proof generated", LOG_PREFIX, getUID(), LOG_STATE);
+        logger.debug("{} [{}] : {} : Stage {} : Client proof generated", LOG_PREFIX, getUID(), LOG_STATE, 1);
 
         Encoder encoder = HomekitTypeLengthValueEncoderDecoder.getEncoder();
         encoder.add(HomekitMessage.STATE, (short) 0x03);
@@ -1060,7 +1063,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     }
 
     protected byte[] doPairSetupStage2(StageResult stageResult) throws IOException, HomekitServerException {
-        logger.debug("{} [{}] : {} - Executing pair setup stage 2", LOG_PREFIX, getUID(), LOG_STATE);
+        logger.debug("{} [{}] : {} : Stage {} : Executing pair setup stage", LOG_PREFIX, getUID(), LOG_STATE, 2);
         DecodeResult decodeResult = stageResult.getDecodeResult()
                 .orElseThrow(() -> new HomekitServerException("Missing decode result for stage 2"));
 
@@ -1080,9 +1083,9 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 throw new HomekitServerException("SRP6 session not found");
             }
         } catch (SRP6Exception e) {
-            logger.error("{} [{}] : {} - SRP6 step 3 failed - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+            logger.error("{} [{}] : {} : Stage {} : SRP6 step 3 failed - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR, 2,
                     e.getMessage());
-            logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
+            logger.debug("{} [{}] : {} : Stage {} : Exception details", LOG_PREFIX, getUID(), LOG_ERROR, 2, e);
             throw new HomekitServerException("SRP6 step 3 failed", e);
         }
 
@@ -1097,23 +1100,23 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             throw new HomekitServerException("SRP6 session not found");
         }
         byte[] sBytes = HomekitByte.toByteArray(S);
-        logger.debug("{} [{}] : {} - SRP session key generated", LOG_PREFIX, getUID(), LOG_STATE);
+        logger.debug("{} [{}] : {} : Stage {} : SRP session key generated", LOG_PREFIX, getUID(), LOG_STATE, 2);
         sharedSecret = digest.digest(sBytes);
-        logger.debug("{} [{}] : {} - Shared secret generated", LOG_PREFIX, getUID(), LOG_STATE);
+        logger.debug("{} [{}] : {} : Stage {} : Shared secret generated", LOG_PREFIX, getUID(), LOG_STATE, 2);
 
         HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA512Digest());
         hkdf.init(new HKDFParameters(sharedSecret, "Pair-Setup-Encrypt-Salt".getBytes(StandardCharsets.UTF_8),
                 "Pair-Setup-Encrypt-Info".getBytes(StandardCharsets.UTF_8)));
         sessionKey = new byte[32];
         hkdf.generateBytes(sessionKey, 0, 32);
-        logger.debug("{} [{}] : {} - Session key generated", LOG_PREFIX, getUID(), LOG_STATE);
+        logger.debug("{} [{}] : {} : Stage {} : Session key generated", LOG_PREFIX, getUID(), LOG_STATE, 2);
 
         hkdf = new HKDFBytesGenerator(new SHA512Digest());
         hkdf.init(new HKDFParameters(sharedSecret, "Pair-Setup-Controller-Sign-Salt".getBytes(StandardCharsets.UTF_8),
                 "Pair-Setup-Controller-Sign-Info".getBytes(StandardCharsets.UTF_8)));
         byte[] clientDeviceX = new byte[32];
         hkdf.generateBytes(clientDeviceX, 0, 32);
-        logger.debug("{} [{}] : {} - Client device X generated", LOG_PREFIX, getUID(), LOG_STATE);
+        logger.debug("{} [{}] : {} : Stage {} : Client device X generated", LOG_PREFIX, getUID(), LOG_STATE, 2);
 
         HomekitEdsaSigner signer = new HomekitEdsaSigner(secretKey);
         byte[] clientLongtermPublicKey = signer.getPublicKey();
@@ -1122,12 +1125,12 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         try {
             clientSignature = signer.sign(clientDeviceInfo);
         } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException e) {
-            logger.error("{} [{}] : {} - Failed to sign client device info - Error: {}", LOG_PREFIX, getUID(),
-                    LOG_ERROR, e.getMessage());
-            logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
+            logger.error("{} [{}] : {} : Stage {} : Failed to sign client device info - Error: {}", LOG_PREFIX,
+                    getUID(), LOG_ERROR, 2, e.getMessage());
+            logger.debug("{} [{}] : {} : Stage {} : Exception details", LOG_PREFIX, getUID(), LOG_ERROR, 2, e);
             throw new HomekitServerException("Failed to sign client device info", e);
         }
-        logger.debug("{} [{}] : {} - Client signature generated", LOG_PREFIX, getUID(), LOG_STATE);
+        logger.debug("{} [{}] : {} : Stage {} : Client signature generated", LOG_PREFIX, getUID(), LOG_STATE, 2);
 
         Encoder encoder = HomekitTypeLengthValueEncoderDecoder.getEncoder();
         encoder.add(HomekitMessage.IDENTIFIER, getPairingId());
@@ -1146,7 +1149,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     }
 
     protected byte[] doPairSetupStage3(StageResult stageResult) throws IOException, HomekitServerException {
-        logger.debug("{} [{}] : {} - Executing pair setup stage 3", LOG_PREFIX, getUID(), LOG_STATE);
+        logger.debug("{} [{}] : {} : Stage {} : Executing pair setup stage", LOG_PREFIX, getUID(), LOG_STATE, 3);
         DecodeResult decodeResult = stageResult.getDecodeResult()
                 .orElseThrow(() -> new HomekitServerException("Missing decode result for stage 3"));
 
@@ -1163,7 +1166,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         HomekitChachaDecoder chachaDecoder = new HomekitChachaDecoder(sessionKey,
                 "PS-Msg06".getBytes(StandardCharsets.UTF_8));
         byte[] plaintext = chachaDecoder.decodeCiphertext(authTagData, messageData);
-        logger.debug("{} [{}] : {} - Plaintext decoded", LOG_PREFIX, getUID(), LOG_STATE);
+        logger.debug("{} [{}] : {} : Stage {} : Plaintext decoded", LOG_PREFIX, getUID(), LOG_STATE, 3);
 
         DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(plaintext);
         byte[] destinationPairingIdentifier = d.getBytes(HomekitMessage.IDENTIFIER);
@@ -1177,9 +1180,11 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         assert accessorySignature != null : "Accessory signature should not be null";
 
         logger.trace("{}Validating pairing data - all required fields present", LOG_STATE);
-        logger.debug("{} [{}] : {} - Destination pairing identifier received", LOG_PREFIX, getUID(), LOG_STATE);
-        logger.debug("{} [{}] : {} - Destination public key received", LOG_PREFIX, getUID(), LOG_STATE);
-        logger.debug("{} [{}] : {} - HomekitAccessory signature received", LOG_PREFIX, getUID(), LOG_STATE);
+        logger.debug("{} [{}] : {} : Stage {} : Destination pairing identifier received", LOG_PREFIX, getUID(),
+                LOG_STATE, 3);
+        logger.debug("{} [{}] : {} : Stage {} : Destination public key received", LOG_PREFIX, getUID(), LOG_STATE, 3);
+        logger.debug("{} [{}] : {} : Stage {} : HomekitAccessory signature received", LOG_PREFIX, getUID(), LOG_STATE,
+                3);
 
         HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA512Digest());
         hkdf.init(new HKDFParameters(sharedSecret,
@@ -1190,17 +1195,19 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
         byte[] accessoryDeviceInfo = HomekitByte.joinBytes(accessoryDeviceX, destinationPairingIdentifier,
                 destinationPublicKey);
-        logger.debug("{} [{}] : {} - HomekitAccessory device info generated", LOG_PREFIX, getUID(), LOG_STATE);
+        logger.debug("{} [{}] : {} : Stage {} : HomekitAccessory device info generated", LOG_PREFIX, getUID(),
+                LOG_STATE, 3);
 
         try {
             if (!new HomekitEdsaVerifier(destinationPublicKey).verify(accessoryDeviceInfo, accessorySignature)) {
-                logger.error("{} [{}] : {} - Signature verification failed", LOG_PREFIX, getUID(), LOG_ERROR);
+                logger.error("{} [{}] : {} : Stage {} : Signature verification failed", LOG_PREFIX, getUID(), LOG_ERROR,
+                        3);
                 throw new HomekitException("Signature verification failed");
             }
         } catch (Exception e) {
-            logger.error("{} [{}] : {} - Signature verification failed - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
-                    e.getMessage());
-            logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
+            logger.error("{} [{}] : {} : Stage {} : Signature verification failed - Error: {}", LOG_PREFIX, getUID(),
+                    LOG_ERROR, 3, e.getMessage());
+            logger.debug("{} [{}] : {} : Stage {} : Exception details", LOG_PREFIX, getUID(), LOG_ERROR, 3, e);
             throw new HomekitServerException("Signature verification failed", e);
         }
 
@@ -1211,7 +1218,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     }
 
     protected byte[] doPairVerifyStage0() throws IOException, HomekitServerException {
-        logger.debug("{} [{}] : {} - Starting pair verify stage 0", LOG_PREFIX, getUID(), LOG_STATE);
+        logger.debug("{} [{}] : {} : Stage {} : Starting pair verify stage", LOG_PREFIX, getUID(), LOG_STATE, 0);
 
         clientPublicKey = new byte[32];
         clientPrivateKey = new byte[32];
@@ -1226,7 +1233,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     }
 
     protected byte[] doPairVerifyStage1(StageResult stageResult) throws IOException, HomekitServerException {
-        logger.debug("{} [{}] : {} - Executing pair verify stage 1", LOG_PREFIX, getUID(), LOG_STATE);
+        logger.debug("{} [{}] : {} : Stage {} : Executing pair verify stage", LOG_PREFIX, getUID(), LOG_STATE, 1);
         DecodeResult decodeResult = stageResult.getDecodeResult()
                 .orElseThrow(() -> new HomekitServerException("Missing decode result for verify stage 1"));
 
@@ -1236,7 +1243,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         }
 
         byte[] destinationPublicKey = decodeResult.getBytes(HomekitMessage.PUBLIC_KEY);
-        logger.debug("{} [{}] : {} - Destination public key received", LOG_PREFIX, getUID(), LOG_STATE);
+        logger.debug("{} [{}] : {} : Stage {} : Destination public key received", LOG_PREFIX, getUID(), LOG_STATE, 1);
 
         byte[] messageData = new byte[decodeResult.getLength(HomekitMessage.ENCRYPTED_DATA) - 16];
         decodeResult.getBytes(HomekitMessage.ENCRYPTED_DATA, messageData, 0);
@@ -1245,41 +1252,45 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
         sharedSecret = new byte[32];
         Curve25519.curve(sharedSecret, clientPrivateKey, destinationPublicKey);
-        logger.debug("{} [{}] : {} - Shared secret generated", LOG_PREFIX, getUID(), LOG_STATE);
+        logger.debug("{} [{}] : {} : Stage {} : Shared secret generated", LOG_PREFIX, getUID(), LOG_STATE, 1);
 
         HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA512Digest());
         hkdf.init(new HKDFParameters(sharedSecret, "Pair-Verify-Encrypt-Salt".getBytes(StandardCharsets.UTF_8),
                 "Pair-Verify-Encrypt-Info".getBytes(StandardCharsets.UTF_8)));
         byte[] sessionKey = new byte[32];
         hkdf.generateBytes(sessionKey, 0, 32);
-        logger.debug("{} [{}] : {} - Session key generated", LOG_PREFIX, getUID(), LOG_STATE);
+        logger.debug("{} [{}] : {} : Stage {} : Session key generated", LOG_PREFIX, getUID(), LOG_STATE, 1);
 
         byte[] plaintext = null;
         HomekitChachaDecoder chachaDecoder = new HomekitChachaDecoder(sessionKey,
                 "PV-Msg02".getBytes(StandardCharsets.UTF_8));
         try {
             plaintext = chachaDecoder.decodeCiphertext(authTagData, messageData);
-            logger.debug("{} [{}] : {} - Plaintext decoded", LOG_PREFIX, getUID(), LOG_STATE);
+            logger.debug("{} [{}] : {} : Stage {} : Plaintext decoded", LOG_PREFIX, getUID(), LOG_STATE, 1);
         } catch (Exception e) {
-            logger.error("{} [{}] : {} - Failed to decode ciphertext - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
-                    e.getMessage());
-            logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
+            logger.error("{} [{}] : {} : Stage {} : Failed to decode ciphertext - Error: {}", LOG_PREFIX, getUID(),
+                    LOG_ERROR, 1, e.getMessage());
+            logger.debug("{} [{}] : {} : Stage {} : Exception details", LOG_PREFIX, getUID(), LOG_ERROR, 1, e);
             throw new HomekitServerException("Ciphertext decoding failed", e);
         }
 
         DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(plaintext);
         byte[] destinationPairingIdentifier = d.getBytes(HomekitMessage.IDENTIFIER);
-        logger.debug("{} [{}] : {} - Destination pairing identifier received", LOG_PREFIX, getUID(), LOG_STATE);
+        logger.debug("{} [{}] : {} : Stage {} : Destination pairing identifier received", LOG_PREFIX, getUID(),
+                LOG_STATE, 1);
         byte[] accessorySignature = d.getBytes(HomekitMessage.SIGNATURE);
-        logger.debug("{} [{}] : {} - HomekitAccessory signature received", LOG_PREFIX, getUID(), LOG_STATE);
+        logger.debug("{} [{}] : {} : Stage {} : HomekitAccessory signature received", LOG_PREFIX, getUID(), LOG_STATE,
+                1);
 
         Optional<HomekitPairing> accessoryPairing = getPairing(destinationPairingIdentifier);
 
         if (accessoryPairing.isEmpty()) {
-            logger.error("{} [{}] : {} - HomekitAccessory is not paired", LOG_PREFIX, getUID(), LOG_ERROR);
+            logger.error("{} [{}] : {} : Stage {} : HomekitAccessory is not paired", LOG_PREFIX, getUID(), LOG_ERROR,
+                    1);
             throw new HomekitServerException("HomekitAccessory is not paired");
         } else {
-            logger.debug("{} [{}] : {} - HomekitAccessory pairing found", LOG_PREFIX, getUID(), LOG_STATE);
+            logger.debug("{} [{}] : {} : Stage {} : HomekitAccessory pairing found", LOG_PREFIX, getUID(), LOG_STATE,
+                    1);
         }
 
         byte[] accessoryDeviceInfo = HomekitByte.joinBytes(destinationPublicKey, destinationPairingIdentifier,
@@ -1293,13 +1304,14 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             boolean signatureVerification = new HomekitEdsaVerifier(publicKey).verify(accessoryDeviceInfo,
                     accessorySignature);
             if (!signatureVerification) {
-                logger.error("{} [{}] : {} - Signature verification failed", LOG_PREFIX, getUID(), LOG_ERROR);
+                logger.error("{} [{}] : {} : Stage {} : Signature verification failed", LOG_PREFIX, getUID(), LOG_ERROR,
+                        1);
                 throw new HomekitServerException("Signature verification failed");
             }
         } catch (Exception e) {
-            logger.error("{} [{}] : {} - Signature verification failed - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
-                    e.getMessage());
-            logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
+            logger.error("{} [{}] : {} : Stage {} : Signature verification failed - Error: {}", LOG_PREFIX, getUID(),
+                    LOG_ERROR, 1, e.getMessage());
+            logger.debug("{} [{}] : {} : Stage {} : Exception details", LOG_PREFIX, getUID(), LOG_ERROR, 1, e);
             throw new HomekitServerException("Signature verification failed", e);
         }
 
@@ -1307,12 +1319,12 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
         byte[] clientSignature = null;
         try {
-            logger.debug("{} [{}] : {} - Signing client device info", LOG_PREFIX, getUID(), LOG_STATE);
+            logger.debug("{} [{}] : {} : Stage {} : Signing client device info", LOG_PREFIX, getUID(), LOG_STATE, 1);
             clientSignature = new HomekitEdsaSigner(secretKey).sign(clientDeviceInfo);
         } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException e) {
-            logger.error("{} [{}] : {} - Failed to sign client device info - Error: {}", LOG_PREFIX, getUID(),
-                    LOG_ERROR, e.getMessage());
-            logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
+            logger.error("{} [{}] : {} : Stage {} : Failed to sign client device info - Error: {}", LOG_PREFIX,
+                    getUID(), LOG_ERROR, 1, e.getMessage());
+            logger.debug("{} [{}] : {} : Stage {} : Exception details", LOG_PREFIX, getUID(), LOG_ERROR, 1, e);
             throw new HomekitServerException("Failed to sign client device info", e);
         }
 
@@ -1332,7 +1344,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     }
 
     protected byte[] doPairVerifyStage2(StageResult stageResult) throws IOException, HomekitServerException {
-        logger.debug("{} [{}] : {} - Executing pair verify stage 2", LOG_PREFIX, getUID(), LOG_STATE);
+        logger.debug("{} [{}] : {} : Stage {} : Executing pair verify stage", LOG_PREFIX, getUID(), LOG_STATE, 2);
         DecodeResult decodeResult = stageResult.getDecodeResult()
                 .orElseThrow(() -> new HomekitServerException("Missing decode result for verify stage 2"));
 
@@ -1343,10 +1355,10 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             }
 
             byte[] writeKey = HomekitEncryptionEngine.createKey("Control-Write-Encryption-Key", sharedSecret);
-            logger.debug("{} [{}] : {} - Write key generated", LOG_PREFIX, getUID(), LOG_STATE);
+            logger.debug("{} [{}] : {} : Stage {} : Write key generated", LOG_PREFIX, getUID(), LOG_STATE, 2);
 
             byte[] readKey = HomekitEncryptionEngine.createKey("Control-Read-Encryption-Key", sharedSecret);
-            logger.debug("{} [{}] : {} - Read key generated", LOG_PREFIX, getUID(), LOG_STATE);
+            logger.debug("{} [{}] : {} : Stage {} : Read key generated", LOG_PREFIX, getUID(), LOG_STATE, 2);
 
             if (httpClient != null && stageResult.result.isPresent()) {
                 Result result = stageResult.result.get();
@@ -1357,8 +1369,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                     if (dest != null && dest instanceof HomekitHttpDestination) {
                         @SuppressWarnings("resource")
                         HomekitHttpDestination destination = (HomekitHttpDestination) dest;
-                        logger.debug("{} [{}] : {} - Setting encryption keys on destination", LOG_PREFIX, getUID(),
-                                LOG_STATE);
+                        logger.debug("{} [{}] : {} : Stage {} : Setting encryption keys on destination", LOG_PREFIX,
+                                getUID(), LOG_STATE, 2);
                         destination.setEncryptionKeys(readKey, writeKey);
                     }
                 }
@@ -2568,13 +2580,13 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         if (result.error.isPresent()) {
             logger.warn("{} [{}] : {} - Pair verification failed at stage {} with error: {}", LOG_PREFIX, getUID(),
                     LOG_WARN, stage, result.error.get());
-            logger.debug("{} [{}] : {} - Stage {} error details: {}", LOG_PREFIX, getUID(), LOG_STATE, stage,
+            logger.debug("{} [{}] : {} : Stage {} : error details: {}", LOG_PREFIX, getUID(), LOG_STATE, stage,
                     result.error.get());
         } else {
             logger.warn("{} [{}] : {} - Pair verification failed at stage {} with message: {}", LOG_PREFIX, getUID(),
                     LOG_WARN, stage, result.message.orElse(""));
-            logger.debug("{} [{}] : {} - Stage {} failure message details: {}", LOG_PREFIX, getUID(), LOG_STATE, stage,
-                    result.message.orElse(""));
+            logger.debug("{} [{}] : {} : Stage {} : failure message details: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                    stage, result.message.orElse(""));
         }
         setState(HomekitAccessoryServerState.PAIR_UNVERIFIED);
         logger.debug("{} [{}] : {} - State set to PAIR_UNVERIFIED after failure", LOG_PREFIX, getUID(), LOG_STATE);
