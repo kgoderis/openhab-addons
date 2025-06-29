@@ -543,25 +543,101 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
         }
 
         while (true) {
-            boolean handle = parser.parseNext(buffer);
-            boolean complete = this.complete;
-            this.complete = false;
-            if (logger.isDebugEnabled()) {
-                logger.debug("{}Parsed {}, remaining {} {}", LOG_STATE, handle, buffer.remaining(), parser);
-            }
-            if (handle) {
-                return true;
-            }
-            if (!buffer.hasRemaining()) {
-                return false;
-            }
-            if (complete) {
+            try {
+                boolean handle = parser.parseNext(buffer);
+                boolean complete = this.complete;
+                this.complete = false;
                 if (logger.isDebugEnabled()) {
-                    logger.debug("{}Discarding unexpected content after response: {}", LOG_WARN,
-                            BufferUtil.toDetailString(buffer));
+                    logger.debug("{}Parsed {}, remaining {} {}", LOG_STATE, handle, buffer.remaining(), parser);
                 }
-                BufferUtil.clear(buffer);
-                return false;
+                if (handle) {
+                    return true;
+                }
+                if (!buffer.hasRemaining()) {
+                    return false;
+                }
+                if (complete) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("{}Discarding unexpected content after response: {}", LOG_WARN,
+                                BufferUtil.toDetailString(buffer));
+                    }
+                    BufferUtil.clear(buffer);
+                    return false;
+                }
+            } catch (BadMessageException e) {
+                // Handle bad message exceptions more gracefully
+                int status = e.getCode();
+                String reason = e.getReason() != null ? e.getReason() : "Bad Message";
+
+                logger.warn("{}Parse error occurred - Status: {}, Reason: {}, Parser State: {}", LOG_WARN, status,
+                        reason, parser.getState());
+
+                // For 4xx client errors, treat as expected error responses
+                if (status >= 400 && status < 500) {
+                    logger.debug("{}Treating 4xx parse error as error response - Status: {}, Reason: {}", LOG_STATE,
+                            status, reason);
+
+                    // Try to create a synthetic error response
+                    try {
+                        HttpExchange exchange = getHttpExchange();
+                        if (exchange != null) {
+                            exchange.getResponse().status(status).reason(reason);
+                            complete = true;
+                            parser.setHeadResponse(true);
+                            responseBegin(exchange);
+                            responseSuccess(exchange);
+                            return false;
+                        }
+                    } catch (Exception recoveryException) {
+                        logger.debug("{}Failed to create synthetic error response: {}", LOG_ERROR,
+                                recoveryException.getMessage());
+                    }
+                }
+
+                // For other errors, try to reset and continue
+                if (status >= 500 || status < 400) {
+                    logger.debug("{}Attempting parser recovery for status: {}", LOG_STATE, status);
+                    try {
+                        if (parser.attemptRecovery()) {
+                            BufferUtil.clear(buffer);
+                            logger.debug("{}Parser recovery successful for status: {}", LOG_STATE, status);
+                            return false;
+                        } else {
+                            logger.debug("{}Parser recovery failed for status: {}", LOG_STATE, status);
+                        }
+                    } catch (Exception resetException) {
+                        logger.debug("{}Parser recovery threw exception: {}", LOG_ERROR, resetException.getMessage());
+                    }
+                }
+
+                // If all recovery attempts fail, let the exception propagate
+                logger.error("{}Parse error could not be recovered - Status: {}, Reason: {}", LOG_ERROR, status,
+                        reason);
+                throw e;
+            } catch (Exception e) {
+                // Handle unexpected exceptions during parsing
+                logger.warn("{}Unexpected exception during parsing: {} - attempting recovery", LOG_WARN,
+                        e.getMessage());
+
+                try {
+                    // Try to use the parser's recovery method first
+                    if (parser.attemptRecovery()) {
+                        BufferUtil.clear(buffer);
+                        logger.debug("{}Parser recovery successful after unexpected exception", LOG_STATE);
+                        return false;
+                    } else {
+                        // Fallback to basic reset
+                        parser.reset();
+                        BufferUtil.clear(buffer);
+                        logger.debug("{}Fallback parser reset successful after unexpected exception", LOG_STATE);
+                        return false;
+                    }
+                } catch (Exception resetException) {
+                    logger.error("{}Failed to recover from parsing exception: {}", LOG_ERROR,
+                            resetException.getMessage(), resetException);
+                    // Re-throw as IOException to trigger connection closure
+                    throw new RuntimeException("Failed to recover from parsing exception", e);
+                }
             }
         }
     }
@@ -763,17 +839,52 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
     public void badMessage(@Nullable BadMessageException exception) {
         if (exception != null) {
             int status = exception.getCode();
-            String reason = exception.getReason();
+            String reason = exception.getReason() != null ? exception.getReason() : "Bad Message";
+            Throwable cause = exception.getCause();
+
+            // Provide detailed logging with context
+            if (cause != null) {
+                logger.warn("{}Bad message received - Status: {}, Reason: {}, Cause: {}, Parser State: {}", LOG_WARN,
+                        status, reason, cause.getClass().getSimpleName(), parser.getState());
+                if (logger.isDebugEnabled()) {
+                    logger.debug("{}Bad message exception details", LOG_ERROR, exception);
+                }
+            } else {
+                logger.warn("{}Bad message received - Status: {}, Reason: {}, Parser State: {}", LOG_WARN, status,
+                        reason, parser.getState());
+            }
 
             // Handle 4xx responses more gracefully
             if (status >= 400 && status < 500) {
-                logger.debug("{}Received 4xx error response - Status: {}, Reason: {}", LOG_STATE, status, reason);
-                // For 4xx errors, we don't treat them as bad messages, just error responses
-                badMessage(status, reason);
-            } else {
-                logger.warn("{}Bad message received - Status: {}, Reason: {}", LOG_WARN, status, reason);
-                badMessage(status, reason);
+                logger.debug("{}Treating 4xx bad message as error response - Status: {}, Reason: {}", LOG_STATE, status,
+                        reason);
+
+                // Try to complete the exchange gracefully for 4xx errors
+                try {
+                    HttpExchange exchange = getHttpExchange();
+                    if (exchange != null && !complete) {
+                        exchange.getResponse().status(status).reason(reason);
+                        complete = true;
+
+                        // Attempt to complete the response gracefully
+                        if (responseBegin(exchange)) {
+                            responseSuccess(exchange);
+                            logger.debug("{}Successfully handled 4xx error as response - Status: {}", LOG_STATE,
+                                    status);
+                            return;
+                        }
+                    }
+                } catch (Exception recoveryException) {
+                    logger.debug("{}Failed to handle 4xx error gracefully: {}", LOG_ERROR,
+                            recoveryException.getMessage());
+                }
             }
+
+            // For non-4xx errors or failed recovery, use standard handling
+            badMessage(status, reason);
+        } else {
+            logger.warn("{}Received null BadMessageException", LOG_WARN);
+            badMessage(HttpStatus.BAD_REQUEST_400, "Unknown Bad Message");
         }
     }
 

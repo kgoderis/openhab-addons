@@ -1125,7 +1125,31 @@ public class HomekitHttpParser {
                     break;
 
                 default:
-                    throw new IllegalStateException(_state.toString());
+                    // Handle unexpected state more gracefully
+                    logger.warn("{}Unexpected parser state '{}' while parsing line - attempting recovery", LOG_WARN,
+                            _state);
+
+                    // Attempt to recover by resetting to appropriate state
+                    if (_responseHandler != null) {
+                        // For response parsing, try to reset to response version state
+                        logger.debug("{}Attempting to recover response parser from state '{}' to RESPONSE_VERSION",
+                                LOG_STATE, _state);
+                        setState(State.RESPONSE_VERSION);
+                    } else if (_requestHandler != null) {
+                        // For request parsing, try to reset to method state
+                        logger.debug("{}Attempting to recover request parser from state '{}' to METHOD", LOG_STATE,
+                                _state);
+                        setState(State.METHOD);
+                    } else {
+                        // Last resort - throw BadMessageException with better context
+                        String errorMsg = String
+                                .format("Parser in invalid state '%s' with no recovery options available", _state);
+                        logger.error("{}Parse error: {}", LOG_ERROR, errorMsg);
+                        throw new BadMessageException(HttpStatus.BAD_REQUEST_400, errorMsg);
+                    }
+
+                    // Skip the current token and continue parsing
+                    return false;
             }
         }
 
@@ -2266,6 +2290,55 @@ public class HomekitHttpParser {
                 logger.debug("{}Illegal character {} in state={} for buffer {}", LOG_ERROR, token, state,
                         BufferUtil.toDetailString(buffer));
             }
+        }
+    }
+
+    /**
+     * Attempts to recover from parsing errors by resetting to a safe state.
+     *
+     * This method is called when the parser encounters an error and needs to
+     * reset to a known good state to continue parsing.
+     *
+     * @return true if recovery was successful, false otherwise
+     */
+    public boolean attemptRecovery() {
+        try {
+            logger.debug("{}Attempting parser recovery from state: {}", LOG_STATE, _state);
+
+            // Clear any partial parsing state
+            _string.setLength(0);
+            _length = -1;
+            _headerString = null;
+            _valueString = null;
+            _header = null;
+            _field = null;
+            _methodString = null;
+            _version = null;
+            _uri.reset();
+
+            // Reset parsing flags
+            _cr = false;
+            _headerComplete = false;
+            _hasContentLength = false;
+            _hasTransferEncoding = false;
+            _contentLength = -1;
+            _contentPosition = 0;
+            _chunkLength = 0;
+            _chunkPosition = 0;
+            _responseStatus = 0;
+            _headerBytes = 0;
+            _host = false;
+
+            // Reset to START state
+            setState(State.START);
+            _fieldState = FieldState.FIELD;
+            _endOfContent = EndOfContent.UNKNOWN_CONTENT;
+
+            logger.debug("{}Parser recovery completed successfully", LOG_STATE);
+            return true;
+        } catch (Exception e) {
+            logger.error("{}Failed to recover parser state: {}", LOG_ERROR, e.getMessage(), e);
+            return false;
         }
     }
 }
