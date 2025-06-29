@@ -73,11 +73,13 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.ProtocolHandlers;
 import org.eclipse.jetty.client.api.Destination;
+import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.client.api.Result;
 import org.eclipse.jetty.client.util.BufferingResponseListener;
 import org.eclipse.jetty.client.util.BytesContentProvider;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
+import org.eclipse.jetty.http.HttpStatus;
 import org.openhab.core.thing.UID;
 import org.openhab.io.homekit.HomekitBindingConstants;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
@@ -291,6 +293,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         }
 
         startConnectionMonitor();
+
+        // testHttpConnection();
     }
 
     @Override
@@ -920,9 +924,10 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                         result.error.get());
             }
         } else {
-            logger.warn("{}Pair setup failed at stage {} with message: {}", LOG_STATE, stage,
+            logger.warn("{} [{}] : {} - Pair setup failed at stage {} with message: {}", LOG_PREFIX, getUID(), LOG_WARN,
+                    stage, result.message.orElse(""));
+            logger.debug("{} [{}] : {} - Stage {} failure message details: {}", LOG_PREFIX, getUID(), LOG_STATE, stage,
                     result.message.orElse(""));
-            logger.debug("{}Stage {} failure message details: {}", LOG_STATE, stage, result.message.orElse(""));
         }
         setState(HomekitAccessoryServerState.UNPAIRED);
         logger.debug("{} [{}] : {} - State set to UNPAIRED after failure", LOG_PREFIX, getUID(), LOG_STATE);
@@ -978,7 +983,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 throw new HomekitServerException("SRP6 session not found");
             }
         } catch (SRP6Exception e) {
-            logger.error("{}SRP6 step 2 failed - Error: {}", LOG_ERROR, e.getMessage());
+            logger.error("{} [{}] : {} - SRP6 step 2 failed - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                    e.getMessage());
             logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
             throw new HomekitServerException("SRP6 step 2 failed", e);
         }
@@ -1037,7 +1043,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 throw new HomekitServerException("SRP6 session not found");
             }
         } catch (SRP6Exception e) {
-            logger.error("{}SRP6 step 3 failed - Error: {}", LOG_ERROR, e.getMessage());
+            logger.error("{} [{}] : {} - SRP6 step 3 failed - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                    e.getMessage());
             logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
             throw new HomekitServerException("SRP6 step 3 failed", e);
         }
@@ -1078,7 +1085,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         try {
             clientSignature = signer.sign(clientDeviceInfo);
         } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException e) {
-            logger.error("{}Failed to sign client device info - Error: {}", LOG_ERROR, e.getMessage());
+            logger.error("{} [{}] : {} - Failed to sign client device info - Error: {}", LOG_PREFIX, getUID(),
+                    LOG_ERROR, e.getMessage());
             logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
             throw new HomekitServerException("Failed to sign client device info", e);
         }
@@ -1153,7 +1161,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 throw new HomekitException("Signature verification failed");
             }
         } catch (Exception e) {
-            logger.error("{}Signature verification failed - Error: {}", LOG_ERROR, e.getMessage());
+            logger.error("{} [{}] : {} - Signature verification failed - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                    e.getMessage());
             logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
             throw new HomekitServerException("Signature verification failed", e);
         }
@@ -1215,7 +1224,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             plaintext = chachaDecoder.decodeCiphertext(authTagData, messageData);
             logger.debug("{} [{}] : {} - Plaintext decoded", LOG_PREFIX, getUID(), LOG_STATE);
         } catch (Exception e) {
-            logger.error("{}Failed to decode ciphertext - Error: {}", LOG_ERROR, e.getMessage());
+            logger.error("{} [{}] : {} - Failed to decode ciphertext - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                    e.getMessage());
             logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
             throw new HomekitServerException("Ciphertext decoding failed", e);
         }
@@ -1250,7 +1260,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 throw new HomekitServerException("Signature verification failed");
             }
         } catch (Exception e) {
-            logger.error("{}Signature verification failed - Error: {}", LOG_ERROR, e.getMessage());
+            logger.error("{} [{}] : {} - Signature verification failed - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                    e.getMessage());
             logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
             throw new HomekitServerException("Signature verification failed", e);
         }
@@ -1262,7 +1273,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             logger.debug("{} [{}] : {} - Signing client device info", LOG_PREFIX, getUID(), LOG_STATE);
             clientSignature = new HomekitEdsaSigner(secretKey).sign(clientDeviceInfo);
         } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException e) {
-            logger.error("{}Failed to sign client device info - Error: {}", LOG_ERROR, e.getMessage());
+            logger.error("{} [{}] : {} - Failed to sign client device info - Error: {}", LOG_PREFIX, getUID(),
+                    LOG_ERROR, e.getMessage());
             logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
             throw new HomekitServerException("Failed to sign client device info", e);
         }
@@ -1340,7 +1352,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         try {
             uri = new URI("http", null, address.getHostAddress(), port, url, null, null);
         } catch (URISyntaxException e1) {
-            logger.error("{}Failed to create URI - Error: {}", LOG_ERROR, e1.getMessage());
+            logger.error("{} [{}] : {} - Failed to create URI - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                    e1.getMessage());
             logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e1);
         }
 
@@ -1350,16 +1363,76 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
         CompletableFuture<StageResult> completableFuture = new CompletableFuture<>();
 
+        // Debug: Check HTTP client state
+        logger.debug("{} [{}] : {} - sendStage called - httpClient null: {}, uri: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                httpClient == null, uri != null ? uri.toString() : "null");
+
         if (httpClient != null) {
+            logger.debug("{} [{}] : {} - Sending HTTP POST request to: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                    uri.toString());
             httpClient.newRequest(uri.toString()).method(HttpMethod.POST)
                     .content(new BytesContentProvider(request), "application/pairing+tlv8")
                     .header(HttpHeader.CONNECTION.asString(), HttpHeader.KEEP_ALIVE.asString())
-                    .send(new BufferingResponseListener(8 * 1024 * 1024) {
+                    .timeout(30, TimeUnit.SECONDS) // Add explicit timeout
+                    .onRequestBegin(req -> {
+                        logger.debug("{} [{}] : {} - HTTP request begin: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                                req.getURI());
+                    }).onRequestSuccess(req -> {
+                        logger.debug("{} [{}] : {} - HTTP request sent successfully", LOG_PREFIX, getUID(), LOG_STATE);
+                    }).onRequestFailure((req, failure) -> {
+                        logger.error("{} [{}] : {} - HTTP request failed to send - Error: {}", LOG_PREFIX, getUID(),
+                                LOG_ERROR, failure.getMessage());
+                        logger.debug("{} [{}] : {} - HTTP request failure details", LOG_PREFIX, getUID(), LOG_ERROR,
+                                failure);
+                    }).send(new BufferingResponseListener(8 * 1024 * 1024) {
+
+                        @Override
+                        public void onBegin(Response response) {
+                            int status = response.getStatus();
+                            logger.debug("{} [{}] : {} - HTTP response begun - Status: {}", LOG_PREFIX, getUID(),
+                                    LOG_STATE, status);
+
+                            // Handle 401 Unauthorized responses
+                            if (status == HttpStatus.UNAUTHORIZED_401) {
+                                logger.warn(
+                                        "{} [{}] : {} - Received HTTP 401 Unauthorized - pairing may be invalid or expired",
+                                        LOG_PREFIX, getUID(), LOG_PAIRING);
+                                try {
+                                    setState(HomekitAccessoryServerState.PAIR_UNVERIFIED);
+                                } catch (HomekitServerException e) {
+                                    logger.error("{} [{}] : {} - Failed to set state after 401: {}", LOG_PREFIX,
+                                            getUID(), LOG_ERROR, e.getMessage());
+                                }
+                            }
+
+                            super.onBegin(response);
+                        }
+
+                        @Override
+                        public void onContent(Response response, ByteBuffer content) {
+                            // log the number of bytes in the content
+                            logger.debug("{} [{}] : {} - Received {} bytes", LOG_PREFIX, getUID(), LOG_STATE,
+                                    content.remaining());
+                            super.onContent(response, content);
+                        }
+
+                        @Override
+                        public void onFailure(Response response, Throwable failure) {
+                            logger.error("{} [{}] : {} - HTTP request failed - Error: {}", LOG_PREFIX, getUID(),
+                                    LOG_ERROR, failure.getMessage());
+                            logger.debug("{} [{}] : {} - HTTP failure details", LOG_PREFIX, getUID(), LOG_ERROR,
+                                    failure);
+                            super.onFailure(response, failure);
+                        }
+
                         @Override
                         public void onComplete(@Nullable Result result) {
                             // Null Pointer Access Warning Checked
                             // We explicitly check result for null before accessing its methods
                             // This prevents NPE and satisfies static analysis
+
+                            logger.debug("{} [{}] : {} - onComplete called - result null: {}, failed: {}", LOG_PREFIX,
+                                    getUID(), LOG_STATE, result == null, result != null ? result.isFailed() : "N/A");
                             if (result != null && !result.isFailed()) {
                                 try {
                                     byte[] body = getContent();
@@ -1381,7 +1454,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                                     completableFuture.complete(stageResult);
                                 } catch (IOException e) {
                                     SRP6Session = Optional.empty();
-                                    logger.error("{}Failed to decode response - Error: {}", LOG_ERROR, e.getMessage());
+                                    logger.error("{} [{}] : {} - Failed to decode response - Error: {}", LOG_PREFIX,
+                                            getUID(), LOG_ERROR, e.getMessage());
                                     logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR,
                                             e);
                                     completableFuture
@@ -1416,7 +1490,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         try {
             uri = new URI("http", null, address.getHostAddress(), port, url, null, null);
         } catch (URISyntaxException e1) {
-            logger.error("{}Failed to create URI - Error: {}", LOG_ERROR, e1.getMessage());
+            logger.error("{} [{}] : {} - Failed to create URI - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                    e1.getMessage());
             logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e1);
         }
 
@@ -1427,13 +1502,67 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         CompletableFuture<ContentResult> completableFuture = new CompletableFuture<>();
 
         if (httpClient != null) {
-            httpClient.newRequest(uri.toString()).method(HttpMethod.GET)
-                    .send(new BufferingResponseListener(8 * 1024 * 1024) {
+            logger.debug("{} [{}] : {} - Sending HTTP GET request to: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                    uri.toString());
+            httpClient.newRequest(uri.toString()).method(HttpMethod.GET).timeout(30, TimeUnit.SECONDS)
+                    .onRequestBegin(req -> {
+                        logger.debug("{} [{}] : {} - HTTP GET request begin: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                                req.getURI());
+                    }).onRequestSuccess(req -> {
+                        logger.debug("{} [{}] : {} - HTTP GET request sent successfully", LOG_PREFIX, getUID(),
+                                LOG_STATE);
+                    }).onRequestFailure((req, failure) -> {
+                        logger.error("{} [{}] : {} - HTTP GET request failed to send - Error: {}", LOG_PREFIX, getUID(),
+                                LOG_ERROR, failure.getMessage());
+                    }).send(new BufferingResponseListener(8 * 1024 * 1024) {
+
+                        @Override
+                        public void onBegin(Response response) {
+                            int status = response.getStatus();
+                            logger.debug("{} [{}] : {} - HTTP GET response begun - Status: {}", LOG_PREFIX, getUID(),
+                                    LOG_STATE, status);
+
+                            // Handle 401 Unauthorized responses
+                            if (status == HttpStatus.UNAUTHORIZED_401) {
+                                logger.warn(
+                                        "{} [{}] : {} - GET request received HTTP 401 Unauthorized - pairing may be invalid or expired",
+                                        LOG_PREFIX, getUID(), LOG_PAIRING);
+                                try {
+                                    setState(HomekitAccessoryServerState.PAIR_UNVERIFIED);
+                                } catch (HomekitServerException e) {
+                                    logger.error("{} [{}] : {} - Failed to set state after 401: {}", LOG_PREFIX,
+                                            getUID(), LOG_ERROR, e.getMessage());
+                                }
+                            }
+
+                            super.onBegin(response);
+                        }
+
+                        @Override
+                        public void onContent(Response response, ByteBuffer content) {
+                            // log the number of bytes in the content
+                            logger.debug("{} [{}] : {} - Received {} bytes", LOG_PREFIX, getUID(), LOG_STATE,
+                                    content.remaining());
+                            super.onContent(response, content);
+                        }
+
+                        @Override
+                        public void onFailure(Response response, Throwable failure) {
+                            logger.error("{} [{}] : {} - HTTP GET request failed - Error: {}", LOG_PREFIX, getUID(),
+                                    LOG_ERROR, failure.getMessage());
+                            logger.debug("{} [{}] : {} - HTTP GET failure details", LOG_PREFIX, getUID(), LOG_ERROR,
+                                    failure);
+                            super.onFailure(response, failure);
+                        }
+
                         @Override
                         public void onComplete(@Nullable Result result) {
                             // Null Pointer Access Warning Checked
                             // We explicitly check result for null before accessing its methods
                             // This prevents NPE and satisfies static analysis
+                            logger.debug("{} [{}] : {} - GET onComplete called - result null: {}, failed: {}",
+                                    LOG_PREFIX, getUID(), LOG_STATE, result == null,
+                                    result != null ? result.isFailed() : "N/A");
                             if (result != null && !result.isFailed()) {
                                 byte[] body = getContent();
                                 ContentResult stageResult = new ContentResult(body, result);
@@ -1468,7 +1597,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         try {
             uri = new URI("http", null, address.getHostAddress(), port, url, null, null);
         } catch (URISyntaxException e1) {
-            logger.error("{}Failed to create URI - Error: {}", LOG_ERROR, e1.getMessage());
+            logger.error("{} [{}] : {} - Failed to create URI - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                    e1.getMessage());
             logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e1);
         }
 
@@ -1479,15 +1609,52 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         CompletableFuture<ContentResult> completableFuture = new CompletableFuture<>();
 
         if (httpClient != null) {
+            logger.debug("{} [{}] : {} - Sending HTTP PUT request to: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                    uri.toString());
             httpClient.newRequest(uri.toString()).method(HttpMethod.PUT)
                     .content(new BytesContentProvider(body), "application/pairing+json")
                     .header(HttpHeader.CONNECTION.asString(), HttpHeader.KEEP_ALIVE.asString())
                     .send(new BufferingResponseListener(8 * 1024 * 1024) {
+
+                        @Override
+                        public void onBegin(Response response) {
+                            int status = response.getStatus();
+                            logger.debug("{} [{}] : {} - HTTP PUT response begun - Status: {}", LOG_PREFIX, getUID(),
+                                    LOG_STATE, status);
+
+                            // Handle 401 Unauthorized responses
+                            if (status == HttpStatus.UNAUTHORIZED_401) {
+                                logger.warn(
+                                        "{} [{}] : {} - PUT request received HTTP 401 Unauthorized - pairing may be invalid or expired",
+                                        LOG_PREFIX, getUID(), LOG_PAIRING);
+                                try {
+                                    setState(HomekitAccessoryServerState.PAIR_UNVERIFIED);
+                                } catch (HomekitServerException e) {
+                                    logger.error("{} [{}] : {} - Failed to set state after 401: {}", LOG_PREFIX,
+                                            getUID(), LOG_ERROR, e.getMessage());
+                                }
+                            }
+
+                            super.onBegin(response);
+                        }
+
+                        @Override
+                        public void onFailure(Response response, Throwable failure) {
+                            logger.error("{} [{}] : {} - HTTP PUT request failed - Error: {}", LOG_PREFIX, getUID(),
+                                    LOG_ERROR, failure.getMessage());
+                            logger.debug("{} [{}] : {} - HTTP PUT failure details", LOG_PREFIX, getUID(), LOG_ERROR,
+                                    failure);
+                            super.onFailure(response, failure);
+                        }
+
                         @Override
                         public void onComplete(@Nullable Result result) {
                             // Null Pointer Access Warning Checked
                             // We explicitly check result for null before accessing its methods
                             // This prevents NPE and satisfies static analysis
+                            logger.debug("{} [{}] : {} - PUT onComplete called - result null: {}, failed: {}",
+                                    LOG_PREFIX, getUID(), LOG_STATE, result == null,
+                                    result != null ? result.isFailed() : "N/A");
                             if (result != null && !result.isFailed()) {
                                 byte[] responseBody = getContent();
                                 ContentResult stageResult = new ContentResult(responseBody, result);
@@ -1530,7 +1697,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             logger.debug("{} [{}] : {} - Processing event", LOG_PREFIX, getUID(), LOG_STATE);
             HomekitByte.logBuffer(logger, "handleEvent", HomekitByte.toHexString(pairingId), ByteBuffer.wrap(body));
         } catch (IOException e) {
-            logger.error("{}Failed to process event - Error: {}", LOG_ERROR, e.getMessage());
+            logger.error("{} [{}] : {} - Failed to process event - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                    e.getMessage());
             logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
         }
     }
@@ -1571,22 +1739,37 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 contentFuture = getContent("/accessories");
                 contentResult = Objects.requireNonNull(contentFuture.get(), "ContentResult is null");
             } catch (InterruptedException | ExecutionException e) {
-                logger.error("{}Error getting remote accessories - Error: {}", LOG_ERROR, e.getMessage());
+                logger.error("{} [{}] : {} - Error getting remote accessories - Error: {}", LOG_PREFIX, getUID(),
+                        LOG_ERROR, e.getMessage());
                 logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
             }
 
             logger.info("{} [{}] : {} - Received accessories data", LOG_PREFIX, getUID(), LOG_STATE);
 
-            if (contentResult != null && contentResult.result.isPresent()
-                    && contentResult.result.get().getResponse().getStatus() == 200) {
-                JsonArray accessories = Json
-                        .createReader(new ByteArrayInputStream(contentResult.body.orElse(new byte[0]))).readObject()
-                        .getJsonArray("accessories");
-                for (JsonValue value : accessories) {
+            if (contentResult != null && contentResult.result.isPresent()) {
+                int status = contentResult.result.get().getResponse().getStatus();
+                if (status == HttpStatus.UNAUTHORIZED_401) {
+                    logger.warn(
+                            "{} [{}] : {} - Received HTTP 401 Unauthorized when getting accessories - pairing invalid",
+                            LOG_PREFIX, getUID(), LOG_PAIRING);
                     try {
-                        result.add(accessoryFactory.createAccessoryFromTagWithValue("generic", value));
-                    } catch (HomekitFactoryException e) {
-                        logger.error("{}Failed to create accessory from remote data: {}", LOG_ERROR, e.getMessage());
+                        setState(HomekitAccessoryServerState.PAIR_UNVERIFIED);
+                    } catch (HomekitServerException e) {
+                        logger.error("{} [{}] : {} - Failed to set state after 401: {}", LOG_PREFIX, getUID(),
+                                LOG_ERROR, e.getMessage());
+                    }
+                    return result;
+                } else if (status == HttpStatus.OK_200) {
+                    JsonArray accessories = Json
+                            .createReader(new ByteArrayInputStream(contentResult.body.orElse(new byte[0]))).readObject()
+                            .getJsonArray("accessories");
+                    for (JsonValue value : accessories) {
+                        try {
+                            result.add(accessoryFactory.createAccessoryFromTagWithValue("generic", value));
+                        } catch (HomekitFactoryException e) {
+                            logger.error("{} [{}] : {} - Failed to create accessory from remote data: {}", LOG_PREFIX,
+                                    getUID(), LOG_ERROR, e.getMessage());
+                        }
                     }
                 }
             }
@@ -1616,26 +1799,42 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                     requestBuilder.build().toString().getBytes(StandardCharsets.UTF_8));
             ContentResult contentResult = Objects.requireNonNull(contentFuture.get(), "ContentResult is null");
 
-            if (contentResult.result.isPresent() && contentResult.result.get().getResponse().getStatus() == 204) {
-                logger.debug("{}Successfully subscribed to events for characteristic {}", LOG_STATE,
-                        characteristic.getUID());
-                characteristic.withEvents(true);
-                return true;
-            } else {
-                if (contentResult.result.isPresent() && contentResult.result.get().getResponse() != null) {
-                    var result = contentResult.result.get();
-                    @SuppressWarnings("null")
-                    var response = result.getResponse();
-                    int status = response.getStatus();
-                    logger.warn("{}Failed to subscribe to events for characteristic {} - Status: {}", LOG_STATE,
-                            characteristic.getUID(), status);
+            if (contentResult.result.isPresent()) {
+                var result = contentResult.result.get();
+                @SuppressWarnings("null")
+                var response = result.getResponse();
+                int status = response.getStatus();
+
+                if (status == HttpStatus.UNAUTHORIZED_401) {
+                    logger.warn(
+                            "{} [{}] : {} - Received HTTP 401 Unauthorized when subscribing to events - pairing invalid",
+                            LOG_PREFIX, getUID(), LOG_PAIRING);
+                    try {
+                        setState(HomekitAccessoryServerState.PAIR_UNVERIFIED);
+                    } catch (HomekitServerException e) {
+                        logger.error("{} [{}] : {} - Failed to set state after 401: {}", LOG_PREFIX, getUID(),
+                                LOG_ERROR, e.getMessage());
+                    }
+                    return false;
+                } else if (status == HttpStatus.NO_CONTENT_204) {
+                    logger.debug("{} [{}] : {} - Successfully subscribed to events for characteristic {}", LOG_PREFIX,
+                            getUID(), LOG_STATE, characteristic.getUID());
+                    characteristic.withEvents(true);
+                    return true;
+                } else {
+                    logger.warn("{} [{}] : {} - Failed to subscribe to events for characteristic {} - Status: {}",
+                            LOG_PREFIX, getUID(), LOG_WARN, characteristic.getUID(), status);
+                    return false;
                 }
+            } else {
+                logger.warn("{} [{}] : {} - No response received for event subscription", LOG_PREFIX, getUID(),
+                        LOG_WARN);
                 return false;
             }
 
         } catch (InterruptedException | ExecutionException | HomekitServerException e) {
-            logger.error("{}Error subscribing to events for characteristic {}: {}", LOG_ERROR, characteristic.getUID(),
-                    e.getMessage());
+            logger.error("{} [{}] : {} - Error subscribing to events for characteristic {}: {}", LOG_PREFIX, getUID(),
+                    LOG_ERROR, characteristic.getUID(), e.getMessage());
             return false;
         }
     }
@@ -1806,7 +2005,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 }
             }
         } catch (Exception e) {
-            logger.warn("{}Error updating accessories: {}", LOG_STATE, e.getMessage());
+            logger.warn("{} [{}] : {} - Error updating accessories: {}", LOG_PREFIX, getUID(), LOG_WARN,
+                    e.getMessage());
             logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_STATE, e);
             throw new HomekitAccessoryOperationException("Failed to update accessories", e);
         }
@@ -1833,8 +2033,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 eventSubscriptions.add(eventManager.subscribe(HomekitEventType.CHARACTERISTIC_STOP_EVENTS,
                         (UID) characteristic.getUID(), (UID) getUID(),
                         event -> onCharacteristicEvent((HomekitCharacteristicEvent) event)));
-                logger.debug("{}Subscribed to events for characteristic: {}", LOG_ACCESSORY,
-                        characteristic.getClass().getSimpleName());
+                logger.debug("{} [{}] : {} - Subscribed to events for characteristic: {}", LOG_PREFIX, getUID(),
+                        LOG_ACCESSORY, characteristic.getClass().getSimpleName());
             }
         }
     }
@@ -1855,14 +2055,15 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             if (characteristicUids.contains(subscription.getPublisherUID())) {
                 eventManager.unsubscribe(HomekitEventType.CHARACTERISTIC_STATE_CHANGED, subscription.getPublisherUID(),
                         subscription.getSubscriber());
-                logger.debug("{}Unsubscribed from events for sourceUid: {}", LOG_ACCESSORY,
-                        subscription.getPublisherUID());
+                logger.debug("{} [{}] : {} - Unsubscribed from events for sourceUid: {}", LOG_PREFIX, getUID(),
+                        LOG_ACCESSORY, subscription.getPublisherUID());
                 return true;
             }
             return false;
         });
 
-        logger.info("{}HomekitAccessory removed successfully - ID: {}", LOG_ACCESSORY, accessory.getAccessoryId());
+        logger.info("{} [{}] : {} - HomekitAccessory removed successfully - ID: {}", LOG_PREFIX, getUID(),
+                LOG_ACCESSORY, accessory.getAccessoryId());
     }
 
     // ========== Inner Classes ==========
@@ -2163,16 +2364,28 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             Future<ContentResult> contentFuture = getContent("/pairings");
             ContentResult contentResult = Objects.requireNonNull(contentFuture.get(), "ContentResult is null");
 
-            if (contentResult.result.isPresent() && contentResult.result.get().getResponse().getStatus() == 200) {
-                processPairingStatusResponse(contentResult);
+            if (contentResult.result.isPresent()) {
+                int status = contentResult.result.get().getResponse().getStatus();
+                if (status == HttpStatus.UNAUTHORIZED_401) {
+                    logger.warn(
+                            "{} [{}] : {} - Received HTTP 401 Unauthorized when checking pairing status - pairing invalid",
+                            LOG_PREFIX, getUID(), LOG_PAIRING);
+                    setState(HomekitAccessoryServerState.PAIR_UNVERIFIED);
+                } else if (status == HttpStatus.OK_200) {
+                    processPairingStatusResponse(contentResult);
+                } else {
+                    logger.warn("{} [{}] : {} - Failed to retrieve pairing status - HTTP Status: {}", LOG_PREFIX,
+                            getUID(), LOG_WARN, status);
+                    setState(HomekitAccessoryServerState.UNPAIRED);
+                }
             } else {
-                logger.warn("{}Failed to retrieve pairing status - HTTP Status: {}", LOG_STATE,
-                        contentResult.result.isPresent() ? contentResult.result.get().getResponse().getStatus()
-                                : "unknown");
+                logger.warn("{} [{}] : {} - Failed to retrieve pairing status - no response", LOG_PREFIX, getUID(),
+                        LOG_WARN);
                 setState(HomekitAccessoryServerState.UNPAIRED);
             }
         } catch (InterruptedException | ExecutionException e) {
-            logger.error("{}Error checking pairing status - Error: {}", LOG_ERROR, e.getMessage());
+            logger.error("{} [{}] : {} - Error checking pairing status - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                    e.getMessage());
             logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
             setState(HomekitAccessoryServerState.DISCONNECTED);
             throw new HomekitServerException("Failed to check pairing status", e);
@@ -2211,7 +2424,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 setState(HomekitAccessoryServerState.UNPAIRED);
             }
         } catch (Exception e) {
-            logger.error("{}Error parsing pairing status response - Error: {}", LOG_ERROR, e.getMessage());
+            logger.error("{} [{}] : {} - Error parsing pairing status response - Error: {}", LOG_PREFIX, getUID(),
+                    LOG_ERROR, e.getMessage());
             logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
             setState(HomekitAccessoryServerState.UNPAIRED);
         }
@@ -2221,12 +2435,15 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         logger.debug("{} [{}] : {} - Handling verification failure for stage {}", LOG_PREFIX, getUID(), LOG_STATE,
                 stage);
         if (result.error.isPresent()) {
-            logger.warn("{}Pair verification failed at stage {} with error: {}", LOG_STATE, stage, result.error.get());
-            logger.debug("{}Stage {} error details: {}", LOG_STATE, stage, result.error.get());
+            logger.warn("{} [{}] : {} - Pair verification failed at stage {} with error: {}", LOG_PREFIX, getUID(),
+                    LOG_WARN, stage, result.error.get());
+            logger.debug("{} [{}] : {} - Stage {} error details: {}", LOG_PREFIX, getUID(), LOG_STATE, stage,
+                    result.error.get());
         } else {
-            logger.warn("{}Pair verification failed at stage {} with message: {}", LOG_STATE, stage,
+            logger.warn("{} [{}] : {} - Pair verification failed at stage {} with message: {}", LOG_PREFIX, getUID(),
+                    LOG_WARN, stage, result.message.orElse(""));
+            logger.debug("{} [{}] : {} - Stage {} failure message details: {}", LOG_PREFIX, getUID(), LOG_STATE, stage,
                     result.message.orElse(""));
-            logger.debug("{}Stage {} failure message details: {}", LOG_STATE, stage, result.message.orElse(""));
         }
         setState(HomekitAccessoryServerState.PAIR_UNVERIFIED);
         logger.debug("{} [{}] : {} - State set to PAIR_UNVERIFIED after failure", LOG_PREFIX, getUID(), LOG_STATE);
@@ -2235,5 +2452,74 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     @Override
     public void advertise() {
         // no Op for HomekitRemoteAccessoryServer
+    }
+
+    // ========== Utility Methods ==========
+    // Note: These utility methods use comprehensive @SuppressWarnings("null") due to Eclipse's
+    // overly conservative null analysis in complex JSON parsing and reflection operations
+
+    /**
+     * Test method to debug HTTP connection issues.
+     * This method helps identify why onComplete() might not be called.
+     */
+    public void testHttpConnection() {
+        logger.info("{} [{}] : {} - Starting HTTP connection test", LOG_PREFIX, getUID(), LOG_STATE);
+        logger.info("{} [{}] : {} - Server state: {}, httpClient null: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                currentState, httpClient == null);
+        logger.info("{} [{}] : {} - Target address: {}:{}", LOG_PREFIX, getUID(), LOG_STATE, address.getHostAddress(),
+                port);
+
+        if (httpClient == null) {
+            logger.error("{} [{}] : {} - HTTP client is null - cannot test connection", LOG_PREFIX, getUID(),
+                    LOG_ERROR);
+            return;
+        }
+
+        try {
+            // Test simple GET request to root
+            URI testUri = new URI("http", null, address.getHostAddress(), port, "/", null, null);
+            logger.info("{} [{}] : {} - Testing connection to: {}", LOG_PREFIX, getUID(), LOG_STATE, testUri);
+
+            httpClient.newRequest(testUri.toString()).method(HttpMethod.GET).timeout(10, TimeUnit.SECONDS)
+                    .onRequestBegin(req -> {
+                        logger.info("{} [{}] : {} - TEST: Request begin - {}", LOG_PREFIX, getUID(), LOG_STATE,
+                                req.getURI());
+                    }).onRequestSuccess(req -> {
+                        logger.info("{} [{}] : {} - TEST: Request sent successfully", LOG_PREFIX, getUID(), LOG_STATE);
+                    }).onRequestFailure((req, failure) -> {
+                        logger.error("{} [{}] : {} - TEST: Request failed to send - {}", LOG_PREFIX, getUID(),
+                                LOG_ERROR, failure.getMessage());
+                    }).send(new BufferingResponseListener() {
+                        @Override
+                        public void onBegin(Response response) {
+                            logger.info("{} [{}] : {} - TEST: Response begin - Status: {}", LOG_PREFIX, getUID(),
+                                    LOG_STATE, response.getStatus());
+                            super.onBegin(response);
+                        }
+
+                        @Override
+                        public void onFailure(Response response, Throwable failure) {
+                            logger.error("{} [{}] : {} - TEST: Response failure - {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                                    failure.getMessage());
+                            super.onFailure(response, failure);
+                        }
+
+                        @Override
+                        public void onComplete(@Nullable Result result) {
+                            logger.info("{} [{}] : {} - TEST: onComplete called! - result null: {}, failed: {}",
+                                    LOG_PREFIX, getUID(), LOG_STATE, result == null,
+                                    result != null ? result.isFailed() : "N/A");
+                            if (result != null && result.isFailed()) {
+                                logger.error("{} [{}] : {} - TEST: Result failed - {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                                        result.getFailure() != null ? result.getFailure().getMessage() : "unknown");
+                            }
+                        }
+                    });
+
+        } catch (Exception e) {
+            logger.error("{} [{}] : {} - TEST: Exception during connection test - {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                    e.getMessage());
+            logger.debug("{} [{}] : {} - TEST: Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
+        }
     }
 }

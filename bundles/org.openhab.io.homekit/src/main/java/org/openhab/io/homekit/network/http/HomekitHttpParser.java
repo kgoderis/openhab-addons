@@ -215,7 +215,6 @@ public class HomekitHttpParser {
     private static final EnumSet<State> __idleStates = EnumSet.of(State.START, State.END, State.CLOSE, State.CLOSED);
     private static final EnumSet<State> __completeStates = EnumSet.of(State.END, State.CLOSE, State.CLOSED);
 
-    private final boolean debug = logger.isDebugEnabled(); // Cache debug to help branch prediction
     private final HttpHandler _handler;
     private final @Nullable RequestHandler _requestHandler;
     private final @Nullable ResponseHandler _responseHandler;
@@ -1700,63 +1699,101 @@ public class HomekitHttpParser {
      * @return true if the caller should process events, false otherwise
      */
     public boolean parseNext(ByteBuffer buffer) {
-        if (debug) {
-            logger.debug("{}Parsing next chunk of data", LOG_STATE);
+        logger.debug(
+                "{}parseNext() ENTRY - State: {}, FieldState: {}, Buffer remaining: {}, Buffer position: {}, EOF: {}",
+                LOG_STATE, _state, _fieldState, buffer != null ? buffer.remaining() : 0,
+                buffer != null ? buffer.position() : -1, _eof);
+        if (buffer != null && buffer.hasRemaining()) {
+            // Log first few bytes for debugging
+            int logLimit = Math.min(buffer.remaining(), 32);
+            StringBuilder bufferContent = new StringBuilder();
+            for (int i = 0; i < logLimit; i++) {
+                byte b = buffer.get(buffer.position() + i);
+                if (b >= 32 && b < 127) {
+                    bufferContent.append((char) b);
+                } else {
+                    bufferContent.append(String.format("\\x%02X", b & 0xFF));
+                }
+            }
+            logger.debug("{}parseNext() Buffer content (first {} bytes): '{}'", LOG_STATE, logLimit,
+                    bufferContent.toString());
         }
+
         try {
             // Start a request/response
             if (_state == State.START) {
+                logger.debug("{}parseNext() Processing START state - initializing parser", LOG_STATE);
                 _version = null;
                 _method = null;
                 _methodString = null;
                 _endOfContent = EndOfContent.UNKNOWN_CONTENT;
                 _header = null;
                 if (quickStart(buffer)) {
+                    logger.debug("{}parseNext() quickStart() returned true - exiting early", LOG_STATE);
                     return true;
                 }
+                logger.debug("{}parseNext() quickStart() completed - State after: {}", LOG_STATE, _state);
             }
 
             // Request/response line
             if (_state.ordinal() >= State.START.ordinal() && _state.ordinal() < State.HEADER.ordinal()) {
+                logger.debug("{}parseNext() Processing request/response line - State: {}", LOG_STATE, _state);
                 if (parseLine(buffer)) {
+                    logger.debug("{}parseNext() parseLine() returned true - exiting early", LOG_STATE);
                     return true;
                 }
+                logger.debug("{}parseNext() parseLine() completed - State after: {}", LOG_STATE, _state);
             }
 
             // parse headers
             if (_state == State.HEADER) {
+                logger.debug("{}parseNext() Processing HEADER state - parsing fields", LOG_STATE);
                 if (parseFields(buffer)) {
+                    logger.debug("{}parseNext() parseFields() returned true - exiting early", LOG_STATE);
                     return true;
                 }
+                logger.debug("{}parseNext() parseFields() completed - State after: {}", LOG_STATE, _state);
             }
 
             // parse content
             if (_state.ordinal() >= State.CONTENT.ordinal() && _state.ordinal() < State.TRAILER.ordinal()) {
+                logger.debug("{}parseNext() Processing content state - State: {}, ResponseStatus: {}, HeadResponse: {}",
+                        LOG_STATE, _state, _responseStatus, _headResponse);
                 // Handle HEAD response
                 if (_responseStatus > 0 && _headResponse) {
+                    logger.debug("{}parseNext() Handling HEAD response - current state: {}", LOG_STATE, _state);
                     if (_state != State.CONTENT_END) {
                         setState(State.CONTENT_END);
+                        logger.debug("{}parseNext() Set state to CONTENT_END for HEAD response", LOG_STATE);
                         return handleContentMessage();
                     } else {
                         setState(State.END);
+                        logger.debug("{}parseNext() Set state to END for HEAD response - calling messageComplete()",
+                                LOG_STATE);
                         return _handler.messageComplete();
                     }
                 } else {
                     if (parseContent(buffer)) {
+                        logger.debug("{}parseNext() parseContent() returned true - exiting early", LOG_STATE);
                         return true;
                     }
+                    logger.debug("{}parseNext() parseContent() completed - State after: {}", LOG_STATE, _state);
                 }
             }
 
             // parse headers
             if (_state == State.TRAILER) {
+                logger.debug("{}parseNext() Processing TRAILER state", LOG_STATE);
                 if (parseFields(buffer)) {
+                    logger.debug("{}parseNext() parseFields() for trailer returned true - exiting early", LOG_STATE);
                     return true;
                 }
+                logger.debug("{}parseNext() parseFields() for trailer completed - State after: {}", LOG_STATE, _state);
             }
 
             // handle end states
             if (_state == State.END) {
+                logger.debug("{}parseNext() Processing END state - consuming whitespace", LOG_STATE);
                 // Eat CR or LF white space, but not SP.
                 int whiteSpace = 0;
                 while (buffer.remaining() > 0) {
@@ -1767,37 +1804,47 @@ public class HomekitHttpParser {
                     buffer.get();
                     ++whiteSpace;
                 }
-                if (debug && whiteSpace > 0) {
-                    logger.debug("{}Discarded {} CR or LF characters", LOG_STATE, whiteSpace);
+                if (whiteSpace > 0) {
+                    logger.debug("{}parseNext() Discarded {} CR or LF characters", LOG_STATE, whiteSpace);
                 }
             } else if (isClose() || isClosed()) {
+                logger.debug("{}parseNext() Parser is in close/closed state - clearing buffer", LOG_STATE);
                 BufferUtil.clear(buffer);
             }
 
             // Handle EOF
             if (isAtEOF() && !buffer.hasRemaining()) {
+                logger.debug("{}parseNext() At EOF with no remaining buffer - State: {}, FieldState: {}", LOG_STATE,
+                        _state, _fieldState);
                 switch (_state) {
                     case CLOSED:
+                        logger.debug("{}parseNext() Already CLOSED - no action needed", LOG_STATE);
                         break;
 
                     case END:
                     case CLOSE:
+                        logger.debug("{}parseNext() END/CLOSE state - transitioning to CLOSED", LOG_STATE);
                         setState(State.CLOSED);
                         break;
 
                     case EOF_CONTENT:
                     case TRAILER:
+                        logger.debug("{}parseNext() EOF_CONTENT/TRAILER state - FieldState: {}", LOG_STATE,
+                                _fieldState);
                         if (_fieldState == FieldState.FIELD) {
                             // Be forgiving of missing last CRLF
+                            logger.debug("{}parseNext() Forgiving missing CRLF - setting CONTENT_END", LOG_STATE);
                             setState(State.CONTENT_END);
                             boolean handle = handleContentMessage();
                             if (handle && _state == State.CONTENT_END) {
+                                logger.debug("{}parseNext() handleContentMessage() returned true - exiting", LOG_STATE);
                                 return true;
                             }
                             setState(State.CLOSED);
                             return handle;
                         }
                         setState(State.CLOSED);
+                        logger.debug("{}parseNext() Calling handler.earlyEOF() for EOF_CONTENT/TRAILER", LOG_STATE);
                         _handler.earlyEOF();
                         break;
 
@@ -1807,27 +1854,37 @@ public class HomekitHttpParser {
                     case CHUNK_SIZE:
                     case CHUNK_PARAMS:
                     case CHUNK:
+                        logger.debug("{}parseNext() Unexpected EOF in state {} - calling earlyEOF()", LOG_STATE,
+                                _state);
                         setState(State.CLOSED);
                         _handler.earlyEOF();
                         break;
 
                     default:
-                        if (debug) {
-                            logger.debug("{}EOF in {} {}", LOG_STATE, this, _state);
-                        }
+                        logger.debug("{}parseNext() EOF in unexpected state {} - sending bad message", LOG_STATE,
+                                _state);
                         setState(State.CLOSED);
                         _handler.badMessage(new BadMessageException(HttpStatus.BAD_REQUEST_400));
                         break;
                 }
             }
+
+            logger.debug("{}parseNext() EXIT - Final State: {}, FieldState: {}, returning false", LOG_STATE, _state,
+                    _fieldState);
         } catch (BadMessageException x) {
+            logger.debug("{}parseNext() BadMessageException caught: {} - clearing buffer and calling badMessage()",
+                    LOG_ERROR, x.getMessage());
             BufferUtil.clear(buffer);
             badMessage(x);
         } catch (RuntimeException e) {
+            logger.debug("{}parseNext() RuntimeException caught: {} - clearing buffer and calling badMessage()",
+                    LOG_ERROR, e.getMessage());
             BufferUtil.clear(buffer);
             badMessage(new BadMessageException(HttpStatus.BAD_REQUEST_400,
                     _requestHandler != null ? "Bad Request" : "Bad Response", e));
         } catch (Error e) {
+            logger.debug("{}parseNext() Error caught: {} - clearing buffer and calling badMessage()", LOG_ERROR,
+                    e.getMessage());
             BufferUtil.clear(buffer);
             badMessage(new BadMessageException(HttpStatus.BAD_REQUEST_400,
                     _requestHandler != null ? "Bad Request" : "Bad Response", e));
@@ -1855,9 +1912,7 @@ public class HomekitHttpParser {
      * @param x The bad message exception to handle
      */
     protected void badMessage(BadMessageException x) {
-        if (debug) {
-            logger.debug("{}Parse exception: {} for {}", LOG_ERROR, this, _handler, x);
-        }
+        logger.debug("{}Parse exception: {} for {}", LOG_ERROR, this, _handler, x);
         setState(State.CLOSE);
         if (_headerComplete) {
             _handler.earlyEOF();
@@ -1867,43 +1922,77 @@ public class HomekitHttpParser {
     }
 
     protected boolean parseContent(@Nullable ByteBuffer buffer) {
+        logger.debug(
+                "{}parseContent() ENTRY - State: {}, Buffer: {}, ContentLength: {}, ContentPosition: {}, EndOfContent: {}",
+                LOG_STATE, _state, buffer != null ? "present(" + buffer.remaining() + " bytes)" : "null",
+                _contentLength, _contentPosition, _endOfContent);
+
         if (buffer == null) {
+            logger.debug("{}parseContent() Buffer is null - returning false", LOG_STATE);
             return false;
         }
+
         int remaining = buffer.remaining();
+        logger.debug("{}parseContent() Buffer remaining: {}, ChunkLength: {}, ChunkPosition: {}", LOG_STATE, remaining,
+                _chunkLength, _chunkPosition);
+
         if (remaining == 0) {
+            logger.debug("{}parseContent() No remaining bytes - checking state: {}", LOG_STATE, _state);
             switch (_state) {
                 case CONTENT:
                     long content = _contentLength - _contentPosition;
+                    logger.debug("{}parseContent() CONTENT state - remaining content: {}, EndOfContent: {}", LOG_STATE,
+                            content, _endOfContent);
                     if (_endOfContent == EndOfContent.NO_CONTENT || content == 0) {
+                        logger.debug("{}parseContent() No content or content complete - setting CONTENT_END",
+                                LOG_STATE);
                         setState(State.CONTENT_END);
                         return handleContentMessage();
                     }
                     break;
                 case CONTENT_END:
+                    logger.debug("{}parseContent() CONTENT_END state - EndOfContent: {}, setting final state",
+                            LOG_STATE, _endOfContent);
                     setState(_endOfContent == EndOfContent.EOF_CONTENT ? State.CLOSED : State.END);
+                    logger.debug("{}parseContent() Calling handler.messageComplete() for CONTENT_END", LOG_STATE);
                     return _handler.messageComplete();
                 default:
+                    logger.debug("{}parseContent() No bytes to parse in state {} - returning false", LOG_STATE, _state);
                     // No bytes to parse, return immediately.
                     return false;
             }
         }
 
         // Handle content.
+        logger.debug("{}parseContent() Starting content processing loop - State: {}, Remaining: {}", LOG_STATE, _state,
+                remaining);
+
         while (_state.ordinal() < State.TRAILER.ordinal() && remaining > 0) {
+            logger.debug("{}parseContent() Loop iteration - State: {}, Remaining: {}", LOG_STATE, _state, remaining);
+
             switch (_state) {
                 case EOF_CONTENT:
+                    logger.debug("{}parseContent() Processing EOF_CONTENT - consuming {} bytes", LOG_STATE, remaining);
                     _contentChunk = buffer.asReadOnlyBuffer();
                     _contentPosition += remaining;
                     buffer.position(buffer.position() + remaining);
+                    logger.debug("{}parseContent() EOF_CONTENT - ContentPosition now: {}, calling handler.content()",
+                            LOG_STATE, _contentPosition);
                     if (_handler.content(Objects.requireNonNull(_contentChunk))) {
+                        logger.debug("{}parseContent() handler.content() returned true for EOF_CONTENT - exiting",
+                                LOG_STATE);
                         return true;
                     }
                     break;
 
                 case CONTENT: {
                     long content = _contentLength - _contentPosition;
+                    logger.debug(
+                            "{}parseContent() CONTENT state - ContentLength: {}, ContentPosition: {}, Remaining content: {}",
+                            LOG_STATE, _contentLength, _contentPosition, content);
                     if (_endOfContent == EndOfContent.NO_CONTENT || content == 0) {
+                        logger.debug("{}parseContent() No content or content complete - setting CONTENT_END",
+                                LOG_STATE);
                         setState(State.CONTENT_END);
                         return handleContentMessage();
                     } else {
@@ -1911,20 +2000,30 @@ public class HomekitHttpParser {
 
                         // limit content by expected size
                         if (remaining > content) {
+                            logger.debug("{}parseContent() Limiting chunk from {} to {} bytes", LOG_STATE, remaining,
+                                    content);
                             // We can cast remaining to an int as we know that it is smaller than
                             // or equal to length which is already an int.
                             Objects.requireNonNull(_contentChunk)
                                     .limit(Objects.requireNonNull(_contentChunk).position() + (int) content);
                         }
 
-                        _contentPosition += Objects.requireNonNull(_contentChunk).remaining();
-                        buffer.position(buffer.position() + Objects.requireNonNull(_contentChunk).remaining());
+                        int chunkSize = Objects.requireNonNull(_contentChunk).remaining();
+                        _contentPosition += chunkSize;
+                        buffer.position(buffer.position() + chunkSize);
+
+                        logger.debug("{}parseContent() CONTENT - processing {} bytes, ContentPosition now: {}",
+                                LOG_STATE, chunkSize, _contentPosition);
 
                         if (_handler.content(Objects.requireNonNull(_contentChunk))) {
-                            return true;
+                            logger.debug("{}parseContent() handler.content() returned true for CONTENT - exiting",
+                                    LOG_STATE);
+                            // return true;
                         }
 
                         if (_contentPosition == _contentLength) {
+                            logger.debug("{}parseContent() All content consumed ({}/{}) - setting CONTENT_END",
+                                    LOG_STATE, _contentPosition, _contentLength);
                             setState(State.CONTENT_END);
                             return handleContentMessage();
                         }
@@ -1933,17 +2032,25 @@ public class HomekitHttpParser {
                 }
 
                 case CHUNKED_CONTENT: {
+                    logger.debug("{}parseContent() Processing CHUNKED_CONTENT - getting next token", LOG_STATE);
                     HttpTokens.Token t = next(buffer);
                     if (t == null) {
+                        logger.debug("{}parseContent() No token available for CHUNKED_CONTENT - breaking", LOG_STATE);
                         break;
                     }
+                    logger.debug("{}parseContent() CHUNKED_CONTENT token: {} ({})", LOG_STATE, t.getType(),
+                            t.getChar());
                     switch (t.getType()) {
                         case LF:
+                            logger.debug("{}parseContent() CHUNKED_CONTENT - found LF, continuing", LOG_STATE);
                             break;
 
                         case DIGIT:
                             _chunkLength = t.getHexDigit();
                             _chunkPosition = 0;
+                            logger.debug(
+                                    "{}parseContent() CHUNKED_CONTENT - found digit, ChunkLength: {}, setting CHUNK_SIZE",
+                                    LOG_STATE, _chunkLength);
                             setState(State.CHUNK_SIZE);
                             break;
 
@@ -1951,46 +2058,70 @@ public class HomekitHttpParser {
                             if (t.isHexDigit()) {
                                 _chunkLength = t.getHexDigit();
                                 _chunkPosition = 0;
+                                logger.debug(
+                                        "{}parseContent() CHUNKED_CONTENT - found hex alpha, ChunkLength: {}, setting CHUNK_SIZE",
+                                        LOG_STATE, _chunkLength);
                                 setState(State.CHUNK_SIZE);
                                 break;
                             }
+                            logger.debug("{}parseContent() CHUNKED_CONTENT - illegal alpha character: {}", LOG_STATE,
+                                    t.getChar());
                             throw new IllegalCharacterException(_state, t, buffer);
 
                         default:
+                            logger.debug("{}parseContent() CHUNKED_CONTENT - illegal character type: {}", LOG_STATE,
+                                    t.getType());
                             throw new IllegalCharacterException(_state, t, buffer);
                     }
                     break;
                 }
 
                 case CHUNK_SIZE: {
+                    logger.debug("{}parseContent() Processing CHUNK_SIZE - current ChunkLength: {}", LOG_STATE,
+                            _chunkLength);
                     HttpTokens.Token t = next(buffer);
                     if (t == null) {
+                        logger.debug("{}parseContent() No token available for CHUNK_SIZE - breaking", LOG_STATE);
                         break;
                     }
+                    logger.debug("{}parseContent() CHUNK_SIZE token: {} ({})", LOG_STATE, t.getType(), t.getChar());
 
                     switch (t.getType()) {
                         case LF:
                             if (_chunkLength == 0) {
+                                logger.debug("{}parseContent() CHUNK_SIZE - zero length chunk, setting TRAILER",
+                                        LOG_STATE);
                                 setState(State.TRAILER);
                                 if (_handler.contentComplete()) {
+                                    logger.debug("{}parseContent() handler.contentComplete() returned true - exiting",
+                                            LOG_STATE);
                                     return true;
                                 }
                             } else {
+                                logger.debug("{}parseContent() CHUNK_SIZE - chunk length {}, setting CHUNK", LOG_STATE,
+                                        _chunkLength);
                                 setState(State.CHUNK);
                             }
                             break;
 
                         case SPACE:
+                            logger.debug("{}parseContent() CHUNK_SIZE - found space, setting CHUNK_PARAMS", LOG_STATE);
                             setState(State.CHUNK_PARAMS);
                             break;
 
                         default:
                             if (t.isHexDigit()) {
                                 if (_chunkLength > MAX_CHUNK_LENGTH) {
+                                    logger.debug("{}parseContent() CHUNK_SIZE - chunk too large: {}", LOG_STATE,
+                                            _chunkLength);
                                     throw new BadMessageException(HttpStatus.PAYLOAD_TOO_LARGE_413);
                                 }
                                 _chunkLength = _chunkLength * 16 + t.getHexDigit();
+                                logger.debug("{}parseContent() CHUNK_SIZE - hex digit, ChunkLength now: {}", LOG_STATE,
+                                        _chunkLength);
                             } else {
+                                logger.debug("{}parseContent() CHUNK_SIZE - non-hex character, setting CHUNK_PARAMS",
+                                        LOG_STATE);
                                 setState(State.CHUNK_PARAMS);
                             }
                     }
@@ -1998,23 +2129,34 @@ public class HomekitHttpParser {
                 }
 
                 case CHUNK_PARAMS: {
+                    logger.debug("{}parseContent() Processing CHUNK_PARAMS", LOG_STATE);
                     HttpTokens.Token t = next(buffer);
                     if (t == null) {
+                        logger.debug("{}parseContent() No token available for CHUNK_PARAMS - breaking", LOG_STATE);
                         break;
                     }
+                    logger.debug("{}parseContent() CHUNK_PARAMS token: {} ({})", LOG_STATE, t.getType(), t.getChar());
 
                     switch (t.getType()) {
                         case LF:
                             if (_chunkLength == 0) {
+                                logger.debug("{}parseContent() CHUNK_PARAMS - zero length chunk, setting TRAILER",
+                                        LOG_STATE);
                                 setState(State.TRAILER);
                                 if (_handler.contentComplete()) {
+                                    logger.debug("{}parseContent() handler.contentComplete() returned true - exiting",
+                                            LOG_STATE);
                                     return true;
                                 }
                             } else {
+                                logger.debug("{}parseContent() CHUNK_PARAMS - chunk length {}, setting CHUNK",
+                                        LOG_STATE, _chunkLength);
                                 setState(State.CHUNK);
                             }
                             break;
                         default:
+                            logger.debug("{}parseContent() CHUNK_PARAMS - ignoring character: {}", LOG_STATE,
+                                    t.getChar());
                             break; // TODO review
                     }
                     break;
@@ -2022,12 +2164,18 @@ public class HomekitHttpParser {
 
                 case CHUNK: {
                     int chunk = _chunkLength - _chunkPosition;
+                    logger.debug(
+                            "{}parseContent() Processing CHUNK - ChunkLength: {}, ChunkPosition: {}, Remaining chunk: {}",
+                            LOG_STATE, _chunkLength, _chunkPosition, chunk);
                     if (chunk == 0) {
+                        logger.debug("{}parseContent() CHUNK complete - setting CHUNKED_CONTENT", LOG_STATE);
                         setState(State.CHUNKED_CONTENT);
                     } else {
                         _contentChunk = buffer.asReadOnlyBuffer();
 
                         if (remaining > chunk) {
+                            logger.debug("{}parseContent() CHUNK - limiting from {} to {} bytes", LOG_STATE, remaining,
+                                    chunk);
                             Objects.requireNonNull(_contentChunk)
                                     .limit(Objects.requireNonNull(_contentChunk).position() + chunk);
                         }
@@ -2036,7 +2184,14 @@ public class HomekitHttpParser {
                         _contentPosition += chunk;
                         _chunkPosition += chunk;
                         buffer.position(buffer.position() + chunk);
+
+                        logger.debug(
+                                "{}parseContent() CHUNK - processed {} bytes, ContentPosition: {}, ChunkPosition: {}",
+                                LOG_STATE, chunk, _contentPosition, _chunkPosition);
+
                         if (_handler.content(Objects.requireNonNull(_contentChunk))) {
+                            logger.debug("{}parseContent() handler.content() returned true for CHUNK - exiting",
+                                    LOG_STATE);
                             return true;
                         }
                     }
@@ -2044,16 +2199,23 @@ public class HomekitHttpParser {
                 }
 
                 case CONTENT_END: {
+                    logger.debug("{}parseContent() Processing CONTENT_END - EndOfContent: {}", LOG_STATE,
+                            _endOfContent);
                     setState(_endOfContent == EndOfContent.EOF_CONTENT ? State.CLOSED : State.END);
+                    logger.debug("{}parseContent() CONTENT_END - calling handler.messageComplete()", LOG_STATE);
                     return _handler.messageComplete();
                 }
 
                 default:
+                    logger.debug("{}parseContent() Unexpected state in content processing: {}", LOG_STATE, _state);
                     break;
             }
 
             remaining = buffer.remaining();
+            logger.debug("{}parseContent() Loop end - State: {}, Remaining: {}", LOG_STATE, _state, remaining);
         }
+
+        logger.debug("{}parseContent() EXIT - State: {}, returning false", LOG_STATE, _state);
         return false;
     }
 
@@ -2065,9 +2227,7 @@ public class HomekitHttpParser {
      * Signal that the associated data source is at EOF
      */
     public void atEOF() {
-        if (debug) {
-            logger.debug("{}atEOF {}", LOG_STATE, this);
-        }
+        logger.debug("{}atEOF {}", LOG_STATE, this);
         _eof = true;
     }
 
@@ -2075,9 +2235,7 @@ public class HomekitHttpParser {
      * Request that the associated data source be closed
      */
     public void close() {
-        if (debug) {
-            logger.debug("{}close {}", LOG_STATE, this);
-        }
+        logger.debug("{}close {}", LOG_STATE, this);
         setState(State.CLOSE);
     }
 
@@ -2088,9 +2246,7 @@ public class HomekitHttpParser {
      * processing a new message. It should be called between messages.
      */
     public void reset() {
-        if (debug) {
-            logger.debug("{}reset {}", LOG_STATE, this);
-        }
+        logger.debug("{}reset {}", LOG_STATE, this);
 
         // reset state
         if (_state == State.CLOSE || _state == State.CLOSED) {
@@ -2111,18 +2267,14 @@ public class HomekitHttpParser {
     }
 
     protected void setState(State state) {
-        if (debug) {
-            logger.debug("{}{}{} --> {}", LOG_STATE, _state,
-                    _field != null ? _field : _headerString != null ? _headerString : _string, state);
-        }
+        logger.debug("{}{}{} --> {}", LOG_STATE, _state,
+                _field != null ? _field : _headerString != null ? _headerString : _string, state);
         _state = state;
     }
 
     protected void setState(FieldState state) {
-        if (debug) {
-            logger.debug("{}{}{} --> {}", LOG_STATE, _state,
-                    _field != null ? _field : _headerString != null ? _headerString : _string, state);
-        }
+        logger.debug("{}{}{} --> {}", LOG_STATE, _state,
+                _field != null ? _field : _headerString != null ? _headerString : _string, state);
         _fieldState = state;
     }
 

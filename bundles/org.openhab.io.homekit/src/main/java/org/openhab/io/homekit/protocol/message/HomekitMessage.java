@@ -123,4 +123,9 @@ public enum HomekitMessage {
     public static @Nullable HomekitMessage get(short code) {
         return lookup.get(code);
     }
+
+    public String toString() {
+        // the enum should be converted to a string with the name of the enum
+        return name() + " {" + "key=" + key + '}';
+    }
 }

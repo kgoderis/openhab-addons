@@ -21,6 +21,7 @@ import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.client.api.Response.Listener;
 import org.eclipse.jetty.client.api.Result;
 import org.eclipse.jetty.client.util.BufferingResponseListener;
+import org.eclipse.jetty.http.HttpStatus;
 import org.openhab.io.homekit.server.HomekitRemoteAccessoryServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -201,7 +202,21 @@ public class HomekitProtocolHandler implements ProtocolHandler {
         @Override
         @SuppressWarnings("null") // Parent ProtocolHandler interface doesn't constrain these parameters
         public void onSuccess(@Nullable Response response) {
-            logger.debug("{}Processing successful response", LOG_STATE);
+            if (response != null) {
+                int status = response.getStatus();
+                logger.debug("{}Processing successful response - Status: {}", LOG_STATE, status);
+
+                // Handle 401 Unauthorized responses
+                if (status == HttpStatus.UNAUTHORIZED_401) {
+                    logger.warn("{}Received HTTP 401 Unauthorized in event response - pairing may be invalid",
+                            LOG_WARN);
+                    // Let the server handle the 401 through its normal response handling
+                    return;
+                }
+            } else {
+                logger.debug("{}Processing successful response", LOG_STATE);
+            }
+
             try {
                 server.handleEvent(getContent());
                 logger.debug("{}Successfully forwarded event to server", LOG_STATE);

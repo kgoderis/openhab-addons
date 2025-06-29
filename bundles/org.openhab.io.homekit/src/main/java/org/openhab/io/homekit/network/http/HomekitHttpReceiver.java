@@ -335,9 +335,8 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
 
                 // Connection may be closed or upgraded in a parser callback.
                 if (connection.isClosed() || upgraded) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("{} {}", connection, upgraded ? "upgraded" : "closed");
-                    }
+                    logger.debug("{}receive() - Connection {} {}", LOG_STATE, connection,
+                            upgraded ? "upgraded" : "closed");
                     releaseBuffer(decryptedInputBuffer);
                     decryptedInputBuffer = null;
                     return;
@@ -361,17 +360,11 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
                         // BufferUtil.flipToFill(decryptedInputBuffer);
                     }
 
-                    if (logger.isTraceEnabled()) {
-                        logger.trace("[{}] Receive : Start : decryptedInputBuffer={}",
-                                endPoint.getRemoteAddress().toString(),
-                                BufferUtil.toDetailString(decryptedInputBuffer));
-                    }
+                    logger.debug("{}receive() - [{}] Start : decryptedInputBuffer={}", LOG_STATE,
+                            endPoint.getRemoteAddress().toString(), BufferUtil.toDetailString(decryptedInputBuffer));
 
-                    if (logger.isTraceEnabled()) {
-                        logger.trace("[{}] Receive : Before fill : decryptedInputBuffer={}",
-                                endPoint.getRemoteAddress().toString(),
-                                BufferUtil.toDetailString(decryptedInputBuffer));
-                    }
+                    logger.debug("{}receive() - [{}] Before fill : decryptedInputBuffer={}", LOG_STATE,
+                            endPoint.getRemoteAddress().toString(), BufferUtil.toDetailString(decryptedInputBuffer));
 
                     read = endPoint.fill(decryptedInputBuffer);
                 } else {
@@ -392,29 +385,24 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
                         // BufferUtil.flipToFill(encryptedInputBuffer);
                     }
 
-                    if (logger.isTraceEnabled()) {
-                        logger.trace("[{}] Receive : Before fill : encryptedInputBuffer={}, decryptedInputBuffer={}",
-                                endPoint.getRemoteAddress().toString(), BufferUtil.toDetailString(encryptedInputBuffer),
-                                BufferUtil.toDetailString(decryptedInputBuffer));
-                    }
+                    logger.debug("{}receive() - [{}] Before fill : encryptedInputBuffer={}, decryptedInputBuffer={}",
+                            LOG_STATE, endPoint.getRemoteAddress().toString(),
+                            BufferUtil.toDetailString(encryptedInputBuffer),
+                            BufferUtil.toDetailString(decryptedInputBuffer));
 
                     int netFilled = endPoint.fill(encryptedInputBuffer);
-                    if (logger.isTraceEnabled()) {
-                        logger.trace("[{}] Receive : Read {} bytes into {} from the endpoint {}",
-                                endPoint.getRemoteAddress().toString(), netFilled,
-                                BufferUtil.toDetailString(encryptedInputBuffer), endPoint.toString());
-                    }
+                    logger.debug("{}receive() - [{}] Read {} bytes into {} from the endpoint {}", LOG_STATE,
+                            endPoint.getRemoteAddress().toString(), netFilled,
+                            BufferUtil.toDetailString(encryptedInputBuffer), endPoint.toString());
 
                     if (encryptedInputBuffer != null && encryptedInputBuffer.hasRemaining()
                             && decryptedInputBuffer != null) {
 
-                        if (logger.isTraceEnabled()) {
-                            logger.trace(
-                                    "[{}] Receive : Before decryption : encryptedInputBuffer={}, decryptedInputBuffer={}",
-                                    endPoint.getRemoteAddress().toString(),
-                                    BufferUtil.toDetailString(encryptedInputBuffer),
-                                    BufferUtil.toDetailString(decryptedInputBuffer));
-                        }
+                        logger.debug(
+                                "{}receive() - [{}] Before decryption : encryptedInputBuffer={}, decryptedInputBuffer={}",
+                                LOG_STATE, endPoint.getRemoteAddress().toString(),
+                                BufferUtil.toDetailString(encryptedInputBuffer),
+                                BufferUtil.toDetailString(decryptedInputBuffer));
 
                         if (decryptionKey != null) {
                             // Null Pointer Access Warning Checked
@@ -428,28 +416,24 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
                                     safeEncryptedBuffer, safeDecryptionKey, inboundSequenceCount);
                             BufferUtil.flipToFlush(safeDecryptedBuffer, position);
 
-                            if (logger.isTraceEnabled()) {
-                                logger.trace(
-                                        "[{}] Receive : After decryption : encryptedInputBuffer={}, decryptedInputBuffer={}, sBuffer={}}",
-                                        endPoint.getRemoteAddress().toString(),
-                                        BufferUtil.toDetailString(safeEncryptedBuffer),
-                                        BufferUtil.toDetailString(safeDecryptedBuffer),
-                                        BufferUtil.toDetailString(sBuffer.buffer));
-                            }
+                            logger.debug(
+                                    "{}receive() - [{}] After decryption : encryptedInputBuffer={}, decryptedInputBuffer={}, sBuffer={}}",
+                                    LOG_STATE, endPoint.getRemoteAddress().toString(),
+                                    BufferUtil.toDetailString(safeEncryptedBuffer),
+                                    BufferUtil.toDetailString(safeDecryptedBuffer),
+                                    BufferUtil.toDetailString(sBuffer.buffer));
 
                             // read = BufferUtil.append(decryptedInputBuffer, sBuffer.buffer);
                             // decryptedInputBuffer = sBuffer.buffer;
                             inboundSequenceCount = sBuffer.sequenceNumber;
 
-                            if (logger.isTraceEnabled()) {
-                                logger.trace(
-                                        "[{}] Receive : Before parsing : encryptedInputBuffer={}, decryptedInputBuffer={}",
-                                        endPoint.getRemoteAddress().toString(),
-                                        BufferUtil.toDetailString(safeEncryptedBuffer),
-                                        BufferUtil.toDetailString(safeDecryptedBuffer));
-                            }
+                            logger.debug(
+                                    "{}receive() - [{}] Before parsing : encryptedInputBuffer={}, decryptedInputBuffer={}",
+                                    LOG_STATE, endPoint.getRemoteAddress().toString(),
+                                    BufferUtil.toDetailString(safeEncryptedBuffer),
+                                    BufferUtil.toDetailString(safeDecryptedBuffer));
                         } else {
-                            logger.warn("{}Cannot decrypt: decryption key is null", LOG_WARN);
+                            logger.warn("{}receive() - Cannot decrypt: decryption key is null", LOG_WARN);
                         }
 
                     } else {
@@ -457,10 +441,8 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
                     }
                 }
 
-                if (logger.isDebugEnabled()) {
-                    logger.debug("{}Read {} bytes {} from {}", LOG_STATE, read,
-                            BufferUtil.toDetailString(decryptedInputBuffer), endPoint);
-                }
+                logger.debug("{}receive() - Read {} bytes {} from {}", LOG_STATE, read,
+                        BufferUtil.toDetailString(decryptedInputBuffer), endPoint);
 
                 if (read > 0) {
                     connection.addBytesIn(read);
@@ -492,9 +474,7 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
                 }
             }
         } catch (IOException e) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("{}Exception caught in receive", LOG_ERROR, e);
-            }
+            logger.debug("{}receive() - Exception caught in receive", LOG_ERROR, e);
             if (decryptedInputBuffer != null) {
                 BufferUtil.clear(decryptedInputBuffer);
                 releaseBuffer(decryptedInputBuffer);
@@ -502,9 +482,7 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
             }
             failAndClose(e);
         } catch (RuntimeException e) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("{}Exception caught in receive", LOG_ERROR, e);
-            }
+            logger.debug("{}receive() - Exception caught in receive", LOG_ERROR, e);
             if (decryptedInputBuffer != null) {
                 BufferUtil.clear(decryptedInputBuffer);
                 releaseBuffer(decryptedInputBuffer);
@@ -512,9 +490,7 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
             }
             failAndClose(e);
         } catch (Error e) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("{}Exception caught in receive", LOG_ERROR, e);
-            }
+            logger.debug("{}receive() - Exception caught in receive", LOG_ERROR, e);
             if (decryptedInputBuffer != null) {
                 BufferUtil.clear(decryptedInputBuffer);
                 releaseBuffer(decryptedInputBuffer);
@@ -539,103 +515,173 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
     private boolean parse() {
         ByteBuffer buffer = decryptedInputBuffer;
         if (buffer == null) {
+            logger.debug("{}parse() - Entry: decryptedInputBuffer is null, returning false", LOG_STATE);
             return false;
         }
 
+        logger.debug("{}parse() - Entry: buffer={}, position={}, remaining={}, limit={}, parser={}", LOG_STATE,
+                BufferUtil.toDetailString(buffer), buffer.position(), buffer.remaining(), buffer.limit(), parser);
+
+        int iterationCount = 0;
         while (true) {
+            iterationCount++;
+            logger.debug("{}parse() - Loop iteration #{}: buffer remaining={}, parser state={}", LOG_STATE,
+                    iterationCount, buffer.remaining(), parser.getState());
+
             try {
+                logger.debug("{}parse() - Before parseNext(): buffer position={}, remaining={}, parser state={}",
+                        LOG_STATE, buffer.position(), buffer.remaining(), parser.getState());
+
                 boolean handle = parser.parseNext(buffer);
+
+                logger.debug(
+                        "{}parse() - After parseNext(): handle={}, complete={}, buffer position={}, remaining={}, parser state={}",
+                        LOG_STATE, handle, complete, buffer.position(), buffer.remaining(), parser.getState());
+
                 boolean complete = this.complete;
                 this.complete = false;
-                if (logger.isDebugEnabled()) {
-                    logger.debug("{}Parsed {}, remaining {} {}", LOG_STATE, handle, buffer.remaining(), parser);
-                }
+
+                logger.debug("{}parse() - State check: handle={}, complete={}, buffer remaining={}, parser={}",
+                        LOG_STATE, handle, complete, buffer.remaining(), parser);
+
+                logger.debug("{}Parsed {}, remaining {} {}", LOG_STATE, handle, buffer.remaining(), parser);
+
                 if (handle) {
+                    logger.debug("{}parse() - Returning true (handle=true) after {} iterations", LOG_STATE,
+                            iterationCount);
                     return true;
                 }
+
                 if (!buffer.hasRemaining()) {
+                    logger.debug("{}parse() - No buffer remaining, returning false after {} iterations", LOG_STATE,
+                            iterationCount);
                     return false;
                 }
+
                 if (complete) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("{}Discarding unexpected content after response: {}", LOG_WARN,
-                                BufferUtil.toDetailString(buffer));
-                    }
+                    logger.debug(
+                            "{}parse() - Response complete, discarding {} bytes of unexpected content after {} iterations",
+                            LOG_STATE, buffer.remaining(), iterationCount);
+                    logger.debug("{}Discarding unexpected content after response: {}", LOG_WARN,
+                            BufferUtil.toDetailString(buffer));
                     BufferUtil.clear(buffer);
+                    logger.debug("{}parse() - Buffer cleared, returning false", LOG_STATE);
                     return false;
                 }
+
+                logger.debug("{}parse() - Continuing loop: handle={}, buffer remaining={}, complete={}", LOG_STATE,
+                        handle, buffer.remaining(), complete);
+
             } catch (BadMessageException e) {
                 // Handle bad message exceptions more gracefully
                 int status = e.getCode();
                 String reason = e.getReason() != null ? e.getReason() : "Bad Message";
 
+                logger.debug(
+                        "{}parse() - BadMessageException caught after {} iterations: status={}, reason={}, parser state={}, buffer remaining={}",
+                        LOG_STATE, iterationCount, status, reason, parser.getState(), buffer.remaining());
+
                 logger.warn("{}Parse error occurred - Status: {}, Reason: {}, Parser State: {}", LOG_WARN, status,
                         reason, parser.getState());
 
                 // For 4xx client errors, treat as expected error responses
-                if (status >= 400 && status < 500) {
-                    logger.debug("{}Treating 4xx parse error as error response - Status: {}, Reason: {}", LOG_STATE,
-                            status, reason);
+                if (status >= HttpStatus.BAD_REQUEST_400 && status < HttpStatus.INTERNAL_SERVER_ERROR_500) {
+                    logger.debug("{}parse() - Handling 4xx error: status={}, reason={}", LOG_STATE, status, reason);
+                    logger.debug("{}parse() - Treating 4xx parse error as error response - Status: {}, Reason: {}",
+                            LOG_STATE, status, reason);
 
                     // Try to create a synthetic error response
                     try {
                         HttpExchange exchange = getHttpExchange();
+                        logger.debug("{}parse() - Retrieved exchange for 4xx handling: {}", LOG_STATE,
+                                exchange != null ? "present" : "null");
                         if (exchange != null) {
                             exchange.getResponse().status(status).reason(reason);
                             complete = true;
                             parser.setHeadResponse(true);
+                            logger.debug(
+                                    "{}parse() - Configured synthetic 4xx response, calling responseBegin/responseSuccess",
+                                    LOG_STATE);
                             responseBegin(exchange);
                             responseSuccess(exchange);
+                            logger.debug("{}parse() - 4xx synthetic response completed successfully, returning false",
+                                    LOG_STATE);
                             return false;
                         }
                     } catch (Exception recoveryException) {
-                        logger.debug("{}Failed to create synthetic error response: {}", LOG_ERROR,
+                        logger.debug("{}parse() - 4xx recovery failed: {}", LOG_STATE, recoveryException.getMessage());
+                        logger.debug("{}parse() - Failed to create synthetic error response: {}", LOG_ERROR,
                                 recoveryException.getMessage());
                     }
                 }
 
                 // For other errors, try to reset and continue
-                if (status >= 500 || status < 400) {
-                    logger.debug("{}Attempting parser recovery for status: {}", LOG_STATE, status);
+                if (status >= HttpStatus.INTERNAL_SERVER_ERROR_500 || status < HttpStatus.BAD_REQUEST_400) {
+                    logger.debug("{}parse() - Attempting parser recovery for non-4xx status: {}", LOG_STATE, status);
+                    logger.debug("{}parse() - Attempting parser recovery for status: {}", LOG_STATE, status);
                     try {
                         if (parser.attemptRecovery()) {
                             BufferUtil.clear(buffer);
-                            logger.debug("{}Parser recovery successful for status: {}", LOG_STATE, status);
+                            logger.debug("{}parse() - Parser recovery successful, buffer cleared, returning false",
+                                    LOG_STATE);
+                            logger.debug("{}parse() - Parser recovery successful for status: {}", LOG_STATE, status);
                             return false;
                         } else {
-                            logger.debug("{}Parser recovery failed for status: {}", LOG_STATE, status);
+                            logger.debug("{}parse() - Parser recovery failed for status: {}", LOG_STATE, status);
+                            logger.debug("{}parse() - Parser recovery failed for status: {}", LOG_STATE, status);
                         }
                     } catch (Exception resetException) {
-                        logger.debug("{}Parser recovery threw exception: {}", LOG_ERROR, resetException.getMessage());
+                        logger.debug("{}parse() - Parser recovery threw exception: {}", LOG_STATE,
+                                resetException.getMessage());
+                        logger.debug("{}parse() - Parser recovery threw exception: {}", LOG_ERROR,
+                                resetException.getMessage());
                     }
                 }
 
                 // If all recovery attempts fail, let the exception propagate
-                logger.error("{}Parse error could not be recovered - Status: {}, Reason: {}", LOG_ERROR, status,
-                        reason);
+                logger.debug("{}parse() - All recovery attempts failed, re-throwing BadMessageException", LOG_STATE);
+                logger.error("{}parse() - Parse error could not be recovered - Status: {}, Reason: {}", LOG_ERROR,
+                        status, reason);
                 throw e;
             } catch (Exception e) {
                 // Handle unexpected exceptions during parsing
-                logger.warn("{}Unexpected exception during parsing: {} - attempting recovery", LOG_WARN,
+                logger.debug(
+                        "{}parse() - Unexpected exception caught after {} iterations: type={}, message={}, parser state={}, buffer remaining={}",
+                        LOG_STATE, iterationCount, e.getClass().getSimpleName(), e.getMessage(), parser.getState(),
+                        buffer.remaining());
+
+                logger.warn("{}parse() - Unexpected exception during parsing: {} - attempting recovery", LOG_WARN,
                         e.getMessage());
 
                 try {
+                    logger.debug("{}parse() - Attempting parser recovery after unexpected exception", LOG_STATE);
                     // Try to use the parser's recovery method first
                     if (parser.attemptRecovery()) {
                         BufferUtil.clear(buffer);
-                        logger.debug("{}Parser recovery successful after unexpected exception", LOG_STATE);
+                        logger.debug(
+                                "{}parse() - Parser recovery successful after unexpected exception, buffer cleared, returning false",
+                                LOG_STATE);
+                        logger.debug("{}parse() - Parser recovery successful after unexpected exception", LOG_STATE);
                         return false;
                     } else {
+                        logger.debug("{}parse() - Parser recovery failed, attempting fallback reset", LOG_STATE);
                         // Fallback to basic reset
                         parser.reset();
                         BufferUtil.clear(buffer);
-                        logger.debug("{}Fallback parser reset successful after unexpected exception", LOG_STATE);
+                        logger.debug("{}parse() - Fallback parser reset successful, buffer cleared, returning false",
+                                LOG_STATE);
+                        logger.debug("{}parse() - Fallback parser reset successful after unexpected exception",
+                                LOG_STATE);
                         return false;
                     }
                 } catch (Exception resetException) {
-                    logger.error("{}Failed to recover from parsing exception: {}", LOG_ERROR,
+                    logger.debug("{}parse() - Recovery failed with exception: {}", LOG_STATE,
+                            resetException.getMessage());
+                    logger.error("{}parse() - Failed to recover from parsing exception: {}", LOG_ERROR,
                             resetException.getMessage(), resetException);
                     // Re-throw as IOException to trigger connection closure
+                    logger.debug("{}parse() - Re-throwing as RuntimeException to trigger connection closure",
+                            LOG_STATE);
                     throw new RuntimeException("Failed to recover from parsing exception", e);
                 }
             }
@@ -708,8 +754,14 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
         }
 
         // Handle 4xx error responses differently to prevent content processing issues
-        if (status >= 400 && status < 500) {
+        if (status >= HttpStatus.BAD_REQUEST_400 && status < HttpStatus.INTERNAL_SERVER_ERROR_500) {
             logger.debug("{}Received 4xx error response - Status: {}, Reason: {}", LOG_STATE, status, reason);
+
+            // Special handling for 401 Unauthorized
+            if (status == HttpStatus.UNAUTHORIZED_401) {
+                logger.warn("{}Received HTTP 401 Unauthorized - authentication/pairing may be invalid", LOG_ERROR);
+            }
+
             exchange.getResponse().version(HomekitHttpVersion.convert(version)).status(status).reason(reason);
 
             // For 4xx errors, we don't expect content, so handle them immediately
@@ -855,7 +907,7 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
             }
 
             // Handle 4xx responses more gracefully
-            if (status >= 400 && status < 500) {
+            if (status >= HttpStatus.BAD_REQUEST_400 && status < HttpStatus.INTERNAL_SERVER_ERROR_500) {
                 logger.debug("{}Treating 4xx bad message as error response - Status: {}, Reason: {}", LOG_STATE, status,
                         reason);
 
