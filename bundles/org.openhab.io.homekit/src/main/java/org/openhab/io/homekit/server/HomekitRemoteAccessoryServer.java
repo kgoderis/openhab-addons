@@ -947,7 +947,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         try {
             return executePairingStage(1, () -> doPairVerifyStage1(stage0Result));
         } catch (HomekitServerException e) {
-            logger.error("'{}' : Authentication error in stage 1: {}", e.getMessage());
+            logger.error("{} [{}] : {} - Authentication error in stage 1: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                    e.getMessage());
             logger.debug("{} [{}] : {} - Sending authentication error to accessory", LOG_PREFIX, getUID(), LOG_STATE);
 
             // Send authentication error to accessory

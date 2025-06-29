@@ -30,6 +30,7 @@ import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.io.ByteBufferPool;
 import org.eclipse.jetty.io.EndPoint;
 import org.eclipse.jetty.util.BufferUtil;
+import org.eclipse.jetty.util.Callback;
 import org.openhab.io.homekit.protocol.crypto.HomekitEncryptionEngine;
 import org.openhab.io.homekit.protocol.crypto.HomekitEncryptionEngine.SequenceBuffer;
 import org.slf4j.Logger;
@@ -915,7 +916,25 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
     public boolean content(@Nullable ByteBuffer buffer) {
         if (buffer != null) {
             logger.debug("{}Received content: {} bytes", LOG_STATE, buffer.remaining());
-            return super.content(buffer);
+            try {
+                return super.content(buffer);
+            } catch (NullPointerException e) {
+                // Handle case where parent class networkBuffer is null
+                logger.warn(
+                        "{}NullPointerException in parent content handler - networkBuffer is null. "
+                                + "This can happen during HTTP parsing errors. Buffer size: {}",
+                        LOG_WARN, buffer.remaining());
+
+                // Try to handle the content directly without parent class
+                try {
+                    // Signal that we've handled the content - use a no-op callback
+                    return responseContent(getHttpExchange(), buffer, Callback.NOOP);
+                } catch (Exception fallbackException) {
+                    logger.error("{}Failed to handle content after NullPointerException: {}", LOG_ERROR,
+                            fallbackException.getMessage(), fallbackException);
+                    return false;
+                }
+            }
         } else {
             // Handle null buffer gracefully - this can happen with 4xx error responses
             logger.debug("{}Received null content buffer (likely 4xx error response)", LOG_STATE);
