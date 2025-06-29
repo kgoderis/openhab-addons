@@ -986,7 +986,9 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                     SRP6Session.map(session -> session.getState().toString()).orElse("UNKNOWN"));
         }
 
-        SRP6Session.ifPresent(session -> {
+        // Ensure we have a valid session and call step1
+        if (SRP6Session.isPresent()) {
+            HomekitClientSRP6Session session = SRP6Session.get();
             logger.debug("{} [{}] : {} - Calling SRP6 step1 - Current state: {}", LOG_PREFIX, getUID(), LOG_STATE,
                     session.getState());
 
@@ -994,21 +996,19 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             if (session.getState() != HomekitClientSRP6Session.State.INIT) {
                 logger.warn("{} [{}] : {} - SRP6 session in wrong state ({}), resetting session", LOG_PREFIX, getUID(),
                         LOG_STATE, session.getState());
-                SRP6Session = Optional.of(new HomekitClientSRP6Session());
-                SRP6Session.ifPresent(newSession -> {
-                    newSession.setClientEvidenceRoutine(new HomekitEncryptionEngine.ClientEvidenceRoutineImpl());
-                    newSession.setServerEvidenceRoutine(new HomekitEncryptionEngine.ServerEvidenceRoutineImpl());
-                    newSession.setXRoutine(new XRoutineWithUserIdentity());
-                    logger.debug("{} [{}] : {} - Created fresh SRP6 session", LOG_PREFIX, getUID(), LOG_STATE);
-                });
+                session = new HomekitClientSRP6Session();
+                session.setClientEvidenceRoutine(new HomekitEncryptionEngine.ClientEvidenceRoutineImpl());
+                session.setServerEvidenceRoutine(new HomekitEncryptionEngine.ServerEvidenceRoutineImpl());
+                session.setXRoutine(new XRoutineWithUserIdentity());
+                SRP6Session = Optional.of(session);
+                logger.debug("{} [{}] : {} - Created fresh SRP6 session", LOG_PREFIX, getUID(), LOG_STATE);
             }
-        });
 
-        SRP6Session.ifPresent(session -> {
+            // Call step1 on the session
             session.step1("Pair-Setup", setupCode);
             logger.debug("{} [{}] : {} - SRP6 step1 completed - New state: {}", LOG_PREFIX, getUID(), LOG_STATE,
                     session.getState());
-        });
+        }
 
         SRP6ClientCredentials clientCredentials = null;
         try {
