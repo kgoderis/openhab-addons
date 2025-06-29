@@ -663,11 +663,13 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             logger.error("{} [{}] : {} - Pair setup failed with error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
                     e.getMessage());
             logger.debug("{} [{}] : {} - Homekit exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
+            resetPairingState();
             setState(HomekitAccessoryServerState.UNPAIRED);
         } catch (Exception e) {
             logger.error("{} [{}] : {} - Unexpected error during pair setup: {}", LOG_PREFIX, getUID(), LOG_ERROR,
                     e.getMessage());
             logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
+            resetPairingState();
             setState(HomekitAccessoryServerState.UNPAIRED);
         }
     }
@@ -828,6 +830,11 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         sharedSecret = new byte[0];
         clientPublicKey = new byte[0];
         clientPrivateKey = new byte[0];
+
+        // Reset SRP6 session to allow fresh pairing attempts
+        SRP6Session = Optional.empty();
+        logger.debug("{} [{}] : {} - SRP6 session cleared for fresh pairing", LOG_PREFIX, getUID(), LOG_STATE);
+
         logger.debug("{} [{}] : {} - HomekitPairing state reset completed", LOG_PREFIX, getUID(), LOG_STATE);
     }
 
@@ -910,6 +917,10 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
     private void handlePairingFailure(int stage, StageResult result) throws HomekitServerException {
         logger.debug("{} [{}] : {} - Handling failure for stage {}", LOG_PREFIX, getUID(), LOG_STATE, stage);
+
+        // Reset pairing state to clear SRP6 session for retry attempts
+        resetPairingState();
+
         if (result.error.isPresent()) {
             if (result.error.get() == HomekitErrorCode.UNAVAILABLE) {
                 logger.warn(
@@ -963,15 +974,41 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         logger.debug("{} [{}] : {} - Salt received", LOG_PREFIX, getUID(), LOG_STATE);
 
         if (SRP6Session.isEmpty()) {
+            logger.debug("{} [{}] : {} - Creating new SRP6 session", LOG_PREFIX, getUID(), LOG_STATE);
             SRP6Session = Optional.of(new HomekitClientSRP6Session());
             SRP6Session.ifPresent(session -> {
                 session.setClientEvidenceRoutine(new HomekitEncryptionEngine.ClientEvidenceRoutineImpl());
                 session.setServerEvidenceRoutine(new HomekitEncryptionEngine.ServerEvidenceRoutineImpl());
                 session.setXRoutine(new XRoutineWithUserIdentity());
             });
+        } else {
+            logger.debug("{} [{}] : {} - Using existing SRP6 session - State: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                    SRP6Session.map(session -> session.getState().toString()).orElse("UNKNOWN"));
         }
 
-        SRP6Session.ifPresent(session -> session.step1("Pair-Setup", setupCode));
+        SRP6Session.ifPresent(session -> {
+            logger.debug("{} [{}] : {} - Calling SRP6 step1 - Current state: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                    session.getState());
+
+            // Check if session is in wrong state and reset if needed
+            if (session.getState() != HomekitClientSRP6Session.State.INIT) {
+                logger.warn("{} [{}] : {} - SRP6 session in wrong state ({}), resetting session", LOG_PREFIX, getUID(),
+                        LOG_STATE, session.getState());
+                SRP6Session = Optional.of(new HomekitClientSRP6Session());
+                SRP6Session.ifPresent(newSession -> {
+                    newSession.setClientEvidenceRoutine(new HomekitEncryptionEngine.ClientEvidenceRoutineImpl());
+                    newSession.setServerEvidenceRoutine(new HomekitEncryptionEngine.ServerEvidenceRoutineImpl());
+                    newSession.setXRoutine(new XRoutineWithUserIdentity());
+                    logger.debug("{} [{}] : {} - Created fresh SRP6 session", LOG_PREFIX, getUID(), LOG_STATE);
+                });
+            }
+        });
+
+        SRP6Session.ifPresent(session -> {
+            session.step1("Pair-Setup", setupCode);
+            logger.debug("{} [{}] : {} - SRP6 step1 completed - New state: {}", LOG_PREFIX, getUID(), LOG_STATE,
+                    session.getState());
+        });
 
         SRP6ClientCredentials clientCredentials = null;
         try {
@@ -1386,6 +1423,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                                 failure);
                     }).send(new BufferingResponseListener(8 * 1024 * 1024) {
 
+                        private volatile boolean skipContentProcessing = false;
+
                         @Override
                         public void onBegin(Response response) {
                             int status = response.getStatus();
@@ -1403,6 +1442,17 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                                     logger.error("{} [{}] : {} - Failed to set state after 401: {}", LOG_PREFIX,
                                             getUID(), LOG_ERROR, e.getMessage());
                                 }
+
+                                // Set flag to skip content processing and complete immediately
+                                skipContentProcessing = true;
+                                logger.debug("{} [{}] : {} - Setting skipContentProcessing=true for 401 response",
+                                        LOG_PREFIX, getUID(), LOG_STATE);
+
+                                // Complete the future immediately with 401 error
+                                StageResult unauthorizedResult = new StageResult(
+                                        "HTTP 401 Unauthorized - authentication failed");
+                                completableFuture.complete(unauthorizedResult);
+                                return; // Don't call super.onBegin() to avoid further processing
                             }
 
                             super.onBegin(response);
@@ -1410,6 +1460,13 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
                         @Override
                         public void onContent(Response response, ByteBuffer content) {
+                            if (skipContentProcessing) {
+                                logger.debug(
+                                        "{} [{}] : {} - Skipping content processing due to 401 response - {} bytes ignored",
+                                        LOG_PREFIX, getUID(), LOG_STATE, content.remaining());
+                                return; // Skip content processing for 401 responses
+                            }
+
                             // log the number of bytes in the content
                             logger.debug("{} [{}] : {} - Received {} bytes", LOG_PREFIX, getUID(), LOG_STATE,
                                     content.remaining());
@@ -1430,6 +1487,14 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                             // Null Pointer Access Warning Checked
                             // We explicitly check result for null before accessing its methods
                             // This prevents NPE and satisfies static analysis
+
+                            if (skipContentProcessing) {
+                                logger.debug(
+                                        "{} [{}] : {} - Skipping onComplete processing due to 401 response - future already completed",
+                                        LOG_PREFIX, getUID(), LOG_STATE);
+                                return; // Skip onComplete processing for 401 responses since we already completed the
+                                        // future
+                            }
 
                             logger.debug("{} [{}] : {} - onComplete called - result null: {}, failed: {}", LOG_PREFIX,
                                     getUID(), LOG_STATE, result == null, result != null ? result.isFailed() : "N/A");
@@ -1516,6 +1581,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                                 LOG_ERROR, failure.getMessage());
                     }).send(new BufferingResponseListener(8 * 1024 * 1024) {
 
+                        private volatile boolean skipContentProcessing = false;
+
                         @Override
                         public void onBegin(Response response) {
                             int status = response.getStatus();
@@ -1533,6 +1600,17 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                                     logger.error("{} [{}] : {} - Failed to set state after 401: {}", LOG_PREFIX,
                                             getUID(), LOG_ERROR, e.getMessage());
                                 }
+
+                                // Set flag to skip content processing and complete immediately
+                                skipContentProcessing = true;
+                                logger.debug("{} [{}] : {} - Setting skipContentProcessing=true for GET 401 response",
+                                        LOG_PREFIX, getUID(), LOG_STATE);
+
+                                // Complete the future immediately with 401 error
+                                ContentResult unauthorizedResult = new ContentResult(
+                                        "HTTP 401 Unauthorized - authentication failed");
+                                completableFuture.complete(unauthorizedResult);
+                                return; // Don't call super.onBegin() to avoid further processing
                             }
 
                             super.onBegin(response);
@@ -1540,6 +1618,13 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
                         @Override
                         public void onContent(Response response, ByteBuffer content) {
+                            if (skipContentProcessing) {
+                                logger.debug(
+                                        "{} [{}] : {} - Skipping GET content processing due to 401 response - {} bytes ignored",
+                                        LOG_PREFIX, getUID(), LOG_STATE, content.remaining());
+                                return; // Skip content processing for 401 responses
+                            }
+
                             // log the number of bytes in the content
                             logger.debug("{} [{}] : {} - Received {} bytes", LOG_PREFIX, getUID(), LOG_STATE,
                                     content.remaining());
@@ -1560,6 +1645,15 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                             // Null Pointer Access Warning Checked
                             // We explicitly check result for null before accessing its methods
                             // This prevents NPE and satisfies static analysis
+
+                            if (skipContentProcessing) {
+                                logger.debug(
+                                        "{} [{}] : {} - Skipping GET onComplete processing due to 401 response - future already completed",
+                                        LOG_PREFIX, getUID(), LOG_STATE);
+                                return; // Skip onComplete processing for 401 responses since we already completed the
+                                        // future
+                            }
+
                             logger.debug("{} [{}] : {} - GET onComplete called - result null: {}, failed: {}",
                                     LOG_PREFIX, getUID(), LOG_STATE, result == null,
                                     result != null ? result.isFailed() : "N/A");
@@ -1616,6 +1710,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                     .header(HttpHeader.CONNECTION.asString(), HttpHeader.KEEP_ALIVE.asString())
                     .send(new BufferingResponseListener(8 * 1024 * 1024) {
 
+                        private volatile boolean skipContentProcessing = false;
+
                         @Override
                         public void onBegin(Response response) {
                             int status = response.getStatus();
@@ -1633,9 +1729,35 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                                     logger.error("{} [{}] : {} - Failed to set state after 401: {}", LOG_PREFIX,
                                             getUID(), LOG_ERROR, e.getMessage());
                                 }
+
+                                // Set flag to skip content processing and complete immediately
+                                skipContentProcessing = true;
+                                logger.debug("{} [{}] : {} - Setting skipContentProcessing=true for PUT 401 response",
+                                        LOG_PREFIX, getUID(), LOG_STATE);
+
+                                // Complete the future immediately with 401 error
+                                ContentResult unauthorizedResult = new ContentResult(
+                                        "HTTP 401 Unauthorized - authentication failed");
+                                completableFuture.complete(unauthorizedResult);
+                                return; // Don't call super.onBegin() to avoid further processing
                             }
 
                             super.onBegin(response);
+                        }
+
+                        @Override
+                        public void onContent(Response response, ByteBuffer content) {
+                            if (skipContentProcessing) {
+                                logger.debug(
+                                        "{} [{}] : {} - Skipping PUT content processing due to 401 response - {} bytes ignored",
+                                        LOG_PREFIX, getUID(), LOG_STATE, content.remaining());
+                                return; // Skip content processing for 401 responses
+                            }
+
+                            // log the number of bytes in the content
+                            logger.debug("{} [{}] : {} - PUT received {} bytes", LOG_PREFIX, getUID(), LOG_STATE,
+                                    content.remaining());
+                            super.onContent(response, content);
                         }
 
                         @Override
@@ -1652,6 +1774,15 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                             // Null Pointer Access Warning Checked
                             // We explicitly check result for null before accessing its methods
                             // This prevents NPE and satisfies static analysis
+
+                            if (skipContentProcessing) {
+                                logger.debug(
+                                        "{} [{}] : {} - Skipping PUT onComplete processing due to 401 response - future already completed",
+                                        LOG_PREFIX, getUID(), LOG_STATE);
+                                return; // Skip onComplete processing for 401 responses since we already completed the
+                                        // future
+                            }
+
                             logger.debug("{} [{}] : {} - PUT onComplete called - result null: {}, failed: {}",
                                     LOG_PREFIX, getUID(), LOG_STATE, result == null,
                                     result != null ? result.isFailed() : "N/A");

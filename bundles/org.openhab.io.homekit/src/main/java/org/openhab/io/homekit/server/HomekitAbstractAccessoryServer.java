@@ -721,8 +721,9 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
      */
     @Override
     public void setSetupCode(String setupCode) {
-        if (setupCode.length() != 8 || !setupCode.matches("\\d{8}")) {
-            throw new IllegalArgumentException("Setup code must be 8 digits");
+        // Validate HomeKit setup code format: XXX-XX-XXX (e.g., "123-45-678")
+        if (setupCode == null || !setupCode.matches("\\d{3}-\\d{2}-\\d{3}")) {
+            throw new IllegalArgumentException("Setup code must follow HomeKit format XXX-XX-XXX (e.g., '123-45-678')");
         }
         this.setupCode = setupCode;
     }
