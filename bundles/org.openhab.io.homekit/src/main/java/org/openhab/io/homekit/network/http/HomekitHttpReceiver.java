@@ -30,7 +30,6 @@ import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.io.ByteBufferPool;
 import org.eclipse.jetty.io.EndPoint;
 import org.eclipse.jetty.util.BufferUtil;
-import org.eclipse.jetty.util.Callback;
 import org.openhab.io.homekit.protocol.crypto.HomekitEncryptionEngine;
 import org.openhab.io.homekit.protocol.crypto.HomekitEncryptionEngine.SequenceBuffer;
 import org.slf4j.Logger;
@@ -920,18 +919,25 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
                 return super.content(buffer);
             } catch (NullPointerException e) {
                 // Handle case where parent class networkBuffer is null
-                logger.error(
-                        "{}NullPointerException in parent content handler - networkBuffer is null. "
-                                + "This can happen during HTTP parsing errors. Buffer size: {}",
-                        LOG_WARN, buffer.remaining(), e);
+                // This can happen during connection initialization, reset, or concurrent access
+                logger.warn("{}NullPointerException in parent content handler - networkBuffer is null. "
+                        + "This can happen during HTTP parsing errors or connection state transitions. Buffer size: {}",
+                        LOG_WARN, buffer.remaining());
 
-                // Try to handle the content directly without parent class
-                try {
-                    // Signal that we've handled the content - use a no-op callback
-                    return responseContent(getHttpExchange(), buffer, Callback.NOOP);
-                } catch (Exception fallbackException) {
-                    logger.error("{}Failed to handle content after NullPointerException: {}", LOG_ERROR,
-                            fallbackException.getMessage(), fallbackException);
+                // When networkBuffer is null, we cannot safely process content through the parent class
+                // The safest approach is to signal content consumption failure and let the connection handle it
+                HttpExchange exchange = getHttpExchange();
+                if (exchange != null) {
+                    // Log the exchange state for debugging
+                    logger.debug("{}Exchange state during networkBuffer null: request={}, response={}", LOG_STATE,
+                            exchange.getRequest() != null ? exchange.getRequest().getURI() : "null",
+                            exchange.getResponse() != null ? exchange.getResponse().getStatus() : "null");
+
+                    // Signal that content processing failed - this will trigger proper error handling
+                    // in the HTTP connection and exchange lifecycle
+                    return false;
+                } else {
+                    logger.warn("{}No exchange available during networkBuffer null condition", LOG_WARN);
                     return false;
                 }
             }

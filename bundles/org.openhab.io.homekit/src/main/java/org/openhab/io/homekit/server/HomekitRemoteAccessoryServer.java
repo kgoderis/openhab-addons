@@ -159,7 +159,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     protected static final String LOG_SERVER = "Server";
 
     // Timeout for pairing stage operations (30 seconds)
-    private static final long PAIRING_STAGE_TIMEOUT_SECONDS = 30;
+    private static final long PAIRING_STAGE_TIMEOUT_SECONDS = 5;
 
     // ========== Core Dependencies ==========
     private final ScheduledExecutorService scheduler;
