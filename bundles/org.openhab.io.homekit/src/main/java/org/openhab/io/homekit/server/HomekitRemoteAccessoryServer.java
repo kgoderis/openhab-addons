@@ -51,6 +51,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import javax.json.Json;
@@ -72,7 +73,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.ProtocolHandlers;
 import org.eclipse.jetty.client.api.Destination;
-import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.api.Result;
 import org.eclipse.jetty.client.util.BufferingResponseListener;
 import org.eclipse.jetty.client.util.BytesContentProvider;
@@ -157,6 +157,9 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     protected static final String LOG_PAIRING = "Pairing";
     protected static final String LOG_EVENT = "Event";
     protected static final String LOG_SERVER = "Server";
+
+    // Timeout for pairing stage operations (30 seconds)
+    private static final long PAIRING_STAGE_TIMEOUT_SECONDS = 30;
 
     // ========== Core Dependencies ==========
     private final ScheduledExecutorService scheduler;
@@ -311,45 +314,45 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             throw e;
         }
 
-        try {
-            // Create a test request to check connection using the address member
-            final String url = String.format("http://%s:%d", address.getHostAddress(), port);
-            logger.debug("{} [{}] : {} - Testing connection to {}", LOG_PREFIX, getUID(), LOG_INIT, url);
-            final HttpClient currentClient = httpClient;
-            if (currentClient != null) {
-                final Request request = currentClient.newRequest(url);
-                request.onRequestFailure((req, failure) -> {
-                    logger.warn("{} [{}] : {} - Connection failed", LOG_PREFIX, getUID(), LOG_STATE);
-                    logger.debug("{} [{}] : {} - Failure details: {}", LOG_PREFIX, getUID(), LOG_STATE,
-                            failure.getMessage());
-                    try {
-                        // Only set state to DISCONNECTED if we're not in UNKNOWN state
-                        // UNKNOWN can only transition to READY, not to DISCONNECTED
-                        if (currentState != HomekitAccessoryServerState.UNKNOWN) {
-                            setState(HomekitAccessoryServerState.DISCONNECTED);
-                        }
-                    } catch (HomekitServerException e) {
-                        logger.error("{} [{}] : {} - Failed to set state to DISCONNECTED: {}", LOG_PREFIX, getUID(),
-                                LOG_ERROR, e.getMessage());
-                    }
-                });
-                request.send();
-            }
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            logger.error("{} [{}] : {} - Failed to start HTTP client - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
-                    e.getMessage());
-            logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
-            try {
-                // Only set state to DISCONNECTED if we're not in UNKNOWN state
-                // UNKNOWN can only transition to READY, not to DISCONNECTED
-                if (currentState != HomekitAccessoryServerState.UNKNOWN) {
-                    setState(HomekitAccessoryServerState.DISCONNECTED);
-                }
-            } catch (HomekitServerException ex) {
-                logger.error("{} [{}] : {} - Failed to set state to DISCONNECTED: {}", LOG_PREFIX, getUID(), LOG_ERROR,
-                        ex.getMessage());
-            }
-        }
+        // try {
+        // // Create a test request to check connection using the address member
+        // final String url = String.format("http://%s:%d", address.getHostAddress(), port);
+        // logger.debug("{} [{}] : {} - Testing connection to {}", LOG_PREFIX, getUID(), LOG_INIT, url);
+        // final HttpClient currentClient = httpClient;
+        // if (currentClient != null) {
+        // final Request request = currentClient.newRequest(url);
+        // request.onRequestFailure((req, failure) -> {
+        // logger.warn("{} [{}] : {} - Connection failed", LOG_PREFIX, getUID(), LOG_STATE);
+        // logger.debug("{} [{}] : {} - Failure details: {}", LOG_PREFIX, getUID(), LOG_STATE,
+        // failure.getMessage());
+        // try {
+        // // Only set state to DISCONNECTED if we're not in UNKNOWN state
+        // // UNKNOWN can only transition to READY, not to DISCONNECTED
+        // if (currentState != HomekitAccessoryServerState.UNKNOWN) {
+        // setState(HomekitAccessoryServerState.DISCONNECTED);
+        // }
+        // } catch (HomekitServerException e) {
+        // logger.error("{} [{}] : {} - Failed to set state to DISCONNECTED: {}", LOG_PREFIX, getUID(),
+        // LOG_ERROR, e.getMessage());
+        // }
+        // });
+        // request.send();
+        // }
+        // } catch (InterruptedException | ExecutionException | TimeoutException e) {
+        // logger.error("{} [{}] : {} - Failed to start HTTP client - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+        // e.getMessage());
+        // logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
+        // try {
+        // // Only set state to DISCONNECTED if we're not in UNKNOWN state
+        // // UNKNOWN can only transition to READY, not to DISCONNECTED
+        // if (currentState != HomekitAccessoryServerState.UNKNOWN) {
+        // setState(HomekitAccessoryServerState.DISCONNECTED);
+        // }
+        // } catch (HomekitServerException ex) {
+        // logger.error("{} [{}] : {} - Failed to set state to DISCONNECTED: {}", LOG_PREFIX, getUID(), LOG_ERROR,
+        // ex.getMessage());
+        // }
+        // }
 
         startConnectionMonitor();
     }
@@ -610,7 +613,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         try {
             // Stage 0: Initial Setup
             logger.debug("{} [{}] : {} - Starting Stage 0 - Initial Setup", LOG_PREFIX, getUID(), LOG_STATE);
-            StageResult stage0Result = executePairingStage(0, () -> doPairSetupStage0());
+            StageResult stage0Result = executePairingSetupStage(0, () -> doPairSetupStage0());
             if (stage0Result.isFailure()) {
                 handlePairingFailure(0, stage0Result);
                 return;
@@ -620,7 +623,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             // Stage 1: SRP Protocol Exchange
             logger.debug("{} [{}] : {} - Starting Stage 1 - SRP Protocol Exchange", LOG_PREFIX, getUID(), LOG_STATE);
             setState(HomekitAccessoryServerState.PAIR_SETUP_SRP);
-            StageResult stage1Result = executePairingStage(1, () -> doPairSetupStage1(stage0Result));
+            StageResult stage1Result = executePairingSetupStage(1, () -> doPairSetupStage1(stage0Result));
             if (stage1Result.isFailure()) {
                 handlePairingFailure(1, stage1Result);
                 return;
@@ -630,7 +633,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             // Stage 2: Verify Proof
             logger.debug("{} [{}] : {} - Starting Stage 2 - Verify Proof", LOG_PREFIX, getUID(), LOG_STATE);
             setState(HomekitAccessoryServerState.PAIR_SETUP_VERIFY);
-            StageResult stage2Result = executePairingStage(2, () -> doPairSetupStage2(stage1Result));
+            StageResult stage2Result = executePairingSetupStage(2, () -> doPairSetupStage2(stage1Result));
             if (stage2Result.isFailure()) {
                 handlePairingFailure(2, stage2Result);
                 return;
@@ -640,7 +643,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             // Stage 3: Exchange Keys
             logger.debug("{} [{}] : {} - Starting Stage 3 - Exchange Keys", LOG_PREFIX, getUID(), LOG_STATE);
             setState(HomekitAccessoryServerState.PAIR_SETUP_EXCHANGE);
-            StageResult stage3Result = executePairingStage(3, () -> doPairSetupStage3(stage2Result));
+            StageResult stage3Result = executePairingSetupStage(3, () -> doPairSetupStage3(stage2Result));
             if (stage3Result.isFailure()) {
                 handlePairingFailure(3, stage3Result);
                 return;
@@ -701,7 +704,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         try {
             // Stage 0: Initial Verification
             logger.debug("{} [{}] : {} - Starting Stage 0 - Initial Verification", LOG_PREFIX, getUID(), LOG_STATE);
-            StageResult stage0Result = executePairingStage(0, () -> doPairVerifyStage0());
+            StageResult stage0Result = executePairingVerifyStage(0, () -> doPairVerifyStage0());
             if (stage0Result.isFailure()) {
                 handleVerificationFailure(0, stage0Result);
                 handlePairingVerification(false);
@@ -725,7 +728,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             // Stage 2: Final Verification
             logger.debug("{} [{}] : {} - Starting Stage 2 - Final Verification", LOG_PREFIX, getUID(), LOG_STATE);
             setState(HomekitAccessoryServerState.PAIR_SETUP_EXCHANGE);
-            StageResult stage2Result = executePairingStage(2, () -> doPairVerifyStage2(stage1Result));
+            StageResult stage2Result = executePairingVerifyStage(2, () -> doPairVerifyStage2(stage1Result));
             if (stage2Result.isFailure()) {
                 handleVerificationFailure(2, stage2Result);
                 handlePairingVerification(false);
@@ -833,20 +836,72 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         logger.debug("{} [{}] : {} - Verification state reset completed", LOG_PREFIX, getUID(), LOG_STATE);
     }
 
-    private StageResult executePairingStage(int stage, PairingStageExecutor executor)
+    private StageResult executePairingSetupStage(int stage, PairingStageExecutor executor)
             throws HomekitServerException, InterruptedException, ExecutionException, IOException {
         logger.debug("{} [{}] : {} - Executing pair setup stage {} - preparing payload", LOG_PREFIX, getUID(),
                 LOG_STATE, stage);
+
+        long startTime = System.currentTimeMillis();
         byte[] payload = executor.execute();
 
         logger.debug("{} [{}] : {} - Stage {} - sending payload", LOG_PREFIX, getUID(), LOG_STATE, stage);
         Future<StageResult> stageFuture = sendPairSetupStage(payload);
 
-        StageResult result = Objects.requireNonNull(stageFuture.get(), "StageResult is null");
-        logger.debug("{} [{}] : {} - Stage {} - received response, success: {}", LOG_PREFIX, getUID(), LOG_STATE, stage,
-                !result.isFailure());
+        try {
+            StageResult result = Objects.requireNonNull(
+                    stageFuture.get(PAIRING_STAGE_TIMEOUT_SECONDS, TimeUnit.SECONDS), "StageResult is null");
 
-        return result;
+            long duration = System.currentTimeMillis() - startTime;
+            logger.debug("{} [{}] : {} - Stage {} - received response in {}ms, success: {}", LOG_PREFIX, getUID(),
+                    LOG_STATE, stage, duration, !result.isFailure());
+
+            return result;
+        } catch (TimeoutException e) {
+            long duration = System.currentTimeMillis() - startTime;
+            logger.error("{} [{}] : {} - Stage {} - timed out after {}ms (limit: {}s)", LOG_PREFIX, getUID(), LOG_ERROR,
+                    stage, duration, PAIRING_STAGE_TIMEOUT_SECONDS);
+
+            // Cancel the future to prevent resource leaks
+            stageFuture.cancel(true);
+
+            // Return a failure result with timeout message
+            return new StageResult(
+                    "Pairing setup stage " + stage + " timed out after " + PAIRING_STAGE_TIMEOUT_SECONDS + " seconds");
+        }
+    }
+
+    private StageResult executePairingVerifyStage(int stage, PairingStageExecutor executor)
+            throws HomekitServerException, InterruptedException, ExecutionException, IOException {
+        logger.debug("{} [{}] : {} - Executing pair verify stage {} - preparing payload", LOG_PREFIX, getUID(),
+                LOG_STATE, stage);
+
+        long startTime = System.currentTimeMillis();
+        byte[] payload = executor.execute();
+
+        logger.debug("{} [{}] : {} - Stage {} - sending payload", LOG_PREFIX, getUID(), LOG_STATE, stage);
+        Future<StageResult> stageFuture = sendPairVerifyStage(payload);
+
+        try {
+            StageResult result = Objects.requireNonNull(
+                    stageFuture.get(PAIRING_STAGE_TIMEOUT_SECONDS, TimeUnit.SECONDS), "StageResult is null");
+
+            long duration = System.currentTimeMillis() - startTime;
+            logger.debug("{} [{}] : {} - Stage {} - received response in {}ms, success: {}", LOG_PREFIX, getUID(),
+                    LOG_STATE, stage, duration, !result.isFailure());
+
+            return result;
+        } catch (TimeoutException e) {
+            long duration = System.currentTimeMillis() - startTime;
+            logger.error("{} [{}] : {} - Stage {} - timed out after {}ms (limit: {}s)", LOG_PREFIX, getUID(), LOG_ERROR,
+                    stage, duration, PAIRING_STAGE_TIMEOUT_SECONDS);
+
+            // Cancel the future to prevent resource leaks
+            stageFuture.cancel(true);
+
+            // Return a failure result with timeout message
+            return new StageResult(
+                    "Pairing verify stage " + stage + " timed out after " + PAIRING_STAGE_TIMEOUT_SECONDS + " seconds");
+        }
     }
 
     private void handlePairingFailure(int stage, StageResult result) throws HomekitServerException {
@@ -945,7 +1000,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     private StageResult handleStage1Verification(StageResult stage0Result)
             throws HomekitServerException, InterruptedException, ExecutionException, IOException {
         try {
-            return executePairingStage(1, () -> doPairVerifyStage1(stage0Result));
+            return executePairingSetupStage(1, () -> doPairVerifyStage1(stage0Result));
         } catch (HomekitServerException e) {
             logger.error("{} [{}] : {} - Authentication error in stage 1: {}", LOG_PREFIX, getUID(), LOG_ERROR,
                     e.getMessage());

@@ -920,10 +920,10 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
                 return super.content(buffer);
             } catch (NullPointerException e) {
                 // Handle case where parent class networkBuffer is null
-                logger.warn(
+                logger.error(
                         "{}NullPointerException in parent content handler - networkBuffer is null. "
                                 + "This can happen during HTTP parsing errors. Buffer size: {}",
-                        LOG_WARN, buffer.remaining());
+                        LOG_WARN, buffer.remaining(), e);
 
                 // Try to handle the content directly without parent class
                 try {
