@@ -252,15 +252,24 @@ public class HomekitTypeLengthValueEncoderDecoder {
          * @throws IOException if an I/O error occurs
          */
         public void add(HomekitMessage type, byte[] bytes) throws IOException {
-            InputStream bais = new ByteArrayInputStream(bytes);
-            while (bais.available() > 0) {
-                int toWrite = bais.available();
-                toWrite = toWrite > 255 ? 255 : toWrite;
+            // **FIXED**: Handle empty arrays correctly by ensuring Type + Length are always written
+            if (bytes.length == 0) {
+                // Empty value: write Type + Length(0) with no value bytes
                 baos.write(type.getKey());
-                baos.write(toWrite);
-                HomekitByte.copyStream(bais, baos, toWrite);
-                logger.debug("{}Encoded T {} L {} V {}", LOG_ENCODE, type.name(), toWrite,
-                        HomekitByte.toHexString(bytes));
+                baos.write(0);
+                logger.debug("{}Encoded T {} L {} V (empty)", LOG_ENCODE, type.name(), 0);
+            } else {
+                // Non-empty value: use original fragmentation logic
+                InputStream bais = new ByteArrayInputStream(bytes);
+                while (bais.available() > 0) {
+                    int toWrite = bais.available();
+                    toWrite = toWrite > 255 ? 255 : toWrite;
+                    baos.write(type.getKey());
+                    baos.write(toWrite);
+                    HomekitByte.copyStream(bais, baos, toWrite);
+                    logger.debug("{}Encoded T {} L {} V {}", LOG_ENCODE, type.name(), toWrite,
+                            HomekitByte.toHexString(bytes));
+                }
             }
         }
 
