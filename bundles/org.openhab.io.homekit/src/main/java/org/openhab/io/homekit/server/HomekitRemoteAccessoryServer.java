@@ -969,7 +969,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             throw new HomekitServerException("Wrong STATE");
         }
 
-        BigInteger publicKey = decodeResult.getBigInt(HomekitMessage.PUBLIC_KEY);
+        BigInteger serverPublicKey = decodeResult.getBigInt(HomekitMessage.PUBLIC_KEY);
         logger.debug("{} [{}] : {} : Stage {} : Public key received", LOG_PREFIX, getUID(), LOG_STATE, 1);
 
         BigInteger salt = decodeResult.getBigInt(HomekitMessage.SALT);
@@ -987,6 +987,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             logger.debug("{} [{}] : {} : Stage {} : Using existing SRP6 session - State: {}", LOG_PREFIX, getUID(),
                     LOG_STATE, 1, SRP6Session.map(session -> session.getState().toString()).orElse("UNKNOWN"));
         }
+
+        Encoder encoder = HomekitTypeLengthValueEncoderDecoder.getEncoder();
 
         // Ensure we have a valid session and call step1
         if (SRP6Session.isPresent()) {
@@ -1011,34 +1013,31 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             session.step1("Pair-Setup", setupCode);
             logger.debug("{} [{}] : {} : Stage {} : SRP6 step1 completed - New state: {}", LOG_PREFIX, getUID(),
                     LOG_STATE, 1, session.getState());
-        }
 
-        SRP6ClientCredentials clientCredentials = null;
-        try {
-            if (SRP6Session.isPresent()) {
-                @SuppressWarnings("null")
-                var session = SRP6Session.get();
-                clientCredentials = session.step2(HomekitEncryptionEngine.SRP6Params, salt, publicKey);
-            } else {
-                throw new HomekitServerException("SRP6 session not found");
+            SRP6ClientCredentials clientCredentials = null;
+            try {
+                clientCredentials = session.step2(HomekitEncryptionEngine.SRP6Params, salt, serverPublicKey);
+
+            } catch (SRP6Exception e) {
+                logger.error("{} [{}] : {} : Stage {} : SRP6 step 2 failed - Error: {}", LOG_PREFIX, getUID(),
+                        LOG_ERROR, 1,
+                        e.getMessage());
+                logger.debug("{} [{}] : {} : Stage {} : Exception details", LOG_PREFIX, getUID(), LOG_ERROR, 1, e);
+                throw new HomekitServerException("SRP6 step 2 failed", e);
             }
-        } catch (SRP6Exception e) {
-            logger.error("{} [{}] : {} : Stage {} : SRP6 step 2 failed - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR, 1,
-                    e.getMessage());
-            logger.debug("{} [{}] : {} : Stage {} : Exception details", LOG_PREFIX, getUID(), LOG_ERROR, 1, e);
-            throw new HomekitServerException("SRP6 step 2 failed", e);
+
+            BigInteger clientPublicKey = clientCredentials.A;
+            logger.debug("{} [{}] : {} : Stage {} : Client public key generated", LOG_PREFIX, getUID(), LOG_STATE, 1);
+
+            BigInteger clientProof = clientCredentials.M1;
+            logger.debug("{} [{}] : {} : Stage {} : Client proof generated", LOG_PREFIX, getUID(), LOG_STATE, 1);
+
+            encoder.add(HomekitMessage.STATE, (short) 0x03);
+            encoder.add(HomekitMessage.PUBLIC_KEY, clientPublicKey);
+            encoder.add(HomekitMessage.PROOF, clientProof);
+        } else {
+            throw new HomekitServerException("SRP6 session not found");
         }
-
-        BigInteger clientPublicKey = clientCredentials.A;
-        logger.debug("{} [{}] : {} : Stage {} : Client public key generated", LOG_PREFIX, getUID(), LOG_STATE, 1);
-
-        BigInteger clientProof = clientCredentials.M1;
-        logger.debug("{} [{}] : {} : Stage {} : Client proof generated", LOG_PREFIX, getUID(), LOG_STATE, 1);
-
-        Encoder encoder = HomekitTypeLengthValueEncoderDecoder.getEncoder();
-        encoder.add(HomekitMessage.STATE, (short) 0x03);
-        encoder.add(HomekitMessage.PUBLIC_KEY, clientPublicKey);
-        encoder.add(HomekitMessage.PROOF, clientProof);
 
         return encoder.toByteArray();
     }
@@ -1072,36 +1071,32 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             throw new HomekitServerException("Wrong STATE");
         }
 
-        BigInteger proof = decodeResult.getBigInt(HomekitMessage.PROOF);
-
-        try {
-            if (SRP6Session.isPresent()) {
-                @SuppressWarnings("null") // get() is safe after isPresent() check
-                var session = SRP6Session.get();
-                session.step3(proof);
-            } else {
-                throw new HomekitServerException("SRP6 session not found");
-            }
-        } catch (SRP6Exception e) {
-            logger.error("{} [{}] : {} : Stage {} : SRP6 step 3 failed - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR, 2,
-                    e.getMessage());
-            logger.debug("{} [{}] : {} : Stage {} : Exception details", LOG_PREFIX, getUID(), LOG_ERROR, 2, e);
-            throw new HomekitServerException("SRP6 step 3 failed", e);
-        }
+        BigInteger serverProof = decodeResult.getBigInt(HomekitMessage.PROOF);
+        logger.debug("{} [{}] : {} : Stage {} : Proof received", LOG_PREFIX, getUID(), LOG_STATE, 2);
 
         MessageDigest digest;
-        BigInteger S;
+        BigInteger SRPSessionKey;
+
+        // Step 3: Verify Proof
         if (SRP6Session.isPresent()) {
             @SuppressWarnings("null") // get() is safe after isPresent() check
             var session = SRP6Session.get();
-            digest = session.getCryptoParams().getMessageDigestInstance();
-            S = session.getSessionKey(false);
+            try {
+                session.step3(serverProof);
+                digest = session.getCryptoParams().getMessageDigestInstance();
+                SRPSessionKey = session.getSessionKey(false);
+                logger.debug("{} [{}] : {} : Stage {} : SRP session key generated", LOG_PREFIX, getUID(), LOG_STATE, 2);
+            } catch (SRP6Exception e) {
+                logger.error("{} [{}] : {} : Stage {} : SRP6 step 3 failed - Error: {}", LOG_PREFIX, getUID(),
+                        LOG_ERROR, 2, e.getMessage());
+                logger.debug("{} [{}] : {} : Stage {} : Exception details", LOG_PREFIX, getUID(), LOG_ERROR, 2, e);
+                throw new HomekitServerException("SRP6 step 3 failed", e);
+            }
         } else {
             throw new HomekitServerException("SRP6 session not found");
         }
-        byte[] sBytes = HomekitByte.toByteArray(S);
-        logger.debug("{} [{}] : {} : Stage {} : SRP session key generated", LOG_PREFIX, getUID(), LOG_STATE, 2);
-        sharedSecret = digest.digest(sBytes);
+
+        sharedSecret = digest.digest(HomekitByte.toByteArray(SRPSessionKey));
         logger.debug("{} [{}] : {} : Stage {} : Shared secret generated", LOG_PREFIX, getUID(), LOG_STATE, 2);
 
         HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA512Digest());
@@ -1139,11 +1134,11 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
 
         HomekitChachaEncoder chachaEncoder = new HomekitChachaEncoder(sessionKey,
                 "PS-Msg05".getBytes(StandardCharsets.UTF_8));
-        byte[] ciphertext = chachaEncoder.encodeCiphertext(encoder.toByteArray());
+        byte[] encrypedDataWithTag = chachaEncoder.encodeCiphertext(encoder.toByteArray());
 
         encoder = HomekitTypeLengthValueEncoderDecoder.getEncoder();
         encoder.add(HomekitMessage.STATE, (short) 0x05);
-        encoder.add(HomekitMessage.ENCRYPTED_DATA, ciphertext);
+        encoder.add(HomekitMessage.ENCRYPTED_DATA, encrypedDataWithTag);
 
         return encoder.toByteArray();
     }
@@ -1158,48 +1153,55 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             throw new HomekitServerException("Wrong STATE");
         }
 
-        byte[] messageData = new byte[decodeResult.getLength(HomekitMessage.ENCRYPTED_DATA) - 16];
-        decodeResult.getBytes(HomekitMessage.ENCRYPTED_DATA, messageData, 0);
-        byte[] authTagData = new byte[16];
-        decodeResult.getBytes(HomekitMessage.ENCRYPTED_DATA, authTagData, messageData.length);
+        byte[] encryptedData = new byte[decodeResult.getLength(HomekitMessage.ENCRYPTED_DATA) - 16];
+        decodeResult.getBytes(HomekitMessage.ENCRYPTED_DATA, encryptedData, 0);
+        logger.debug("{}Extracted {} bytes of encrypted data", LOG_STATE, encryptedData.length);
+        assert encryptedData != null : "Encrypted data should not be null";
+
+        byte[] tag = new byte[16];
+        decodeResult.getBytes(HomekitMessage.ENCRYPTED_DATA, tag, encryptedData.length);
+        logger.debug("{}Extracted 16-byte authentication tag", LOG_STATE);
+        assert tag != null : "Authentication tag should not be null";
 
         HomekitChachaDecoder chachaDecoder = new HomekitChachaDecoder(sessionKey,
                 "PS-Msg06".getBytes(StandardCharsets.UTF_8));
-        byte[] plaintext = chachaDecoder.decodeCiphertext(authTagData, messageData);
+        byte[] plaintext = chachaDecoder.decodeCiphertext(tag, encryptedData);
         logger.debug("{} [{}] : {} : Stage {} : Plaintext decoded", LOG_PREFIX, getUID(), LOG_STATE, 3);
 
         DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(plaintext);
-        byte[] destinationPairingIdentifier = d.getBytes(HomekitMessage.IDENTIFIER);
-        byte[] destinationPublicKey = d.getBytes(HomekitMessage.PUBLIC_KEY);
-        byte[] accessorySignature = d.getBytes(HomekitMessage.SIGNATURE);
+        byte[] serverPairingIdentifier = d.getBytes(HomekitMessage.IDENTIFIER);
+        byte[] serverLongTermPublicKey = d.getBytes(HomekitMessage.PUBLIC_KEY);
+        byte[] serverSignature = d.getBytes(HomekitMessage.SIGNATURE);
+
         // Defensive validation of TLV-decoded data for robust error handling
         // Static analysis indicates these cannot be null at this point, but we maintain validation logic
         // for defensive programming
-        assert destinationPairingIdentifier != null : "Destination pairing identifier should not be null";
-        assert destinationPublicKey != null : "Destination public key should not be null";
-        assert accessorySignature != null : "Accessory signature should not be null";
+        assert serverPairingIdentifier != null : "Server pairing identifier should not be null";
+        assert serverLongTermPublicKey != null : "Server long term public key should not be null";
+        assert serverSignature != null : "Server signature should not be null";
 
         logger.trace("{}Validating pairing data - all required fields present", LOG_STATE);
-        logger.debug("{} [{}] : {} : Stage {} : Destination pairing identifier received", LOG_PREFIX, getUID(),
+        logger.debug("{} [{}] : {} : Stage {} : Server pairing identifier received", LOG_PREFIX, getUID(),
                 LOG_STATE, 3);
-        logger.debug("{} [{}] : {} : Stage {} : Destination public key received", LOG_PREFIX, getUID(), LOG_STATE, 3);
-        logger.debug("{} [{}] : {} : Stage {} : HomekitAccessory signature received", LOG_PREFIX, getUID(), LOG_STATE,
+        logger.debug("{} [{}] : {} : Stage {} : Server long term public key received", LOG_PREFIX, getUID(), LOG_STATE,
+                3);
+        logger.debug("{} [{}] : {} : Stage {} : Server signature received", LOG_PREFIX, getUID(), LOG_STATE,
                 3);
 
         HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA512Digest());
         hkdf.init(new HKDFParameters(sharedSecret,
                 "Pair-Setup-HomekitAccessory-Sign-Salt".getBytes(StandardCharsets.UTF_8),
                 "Pair-Setup-HomekitAccessory-Sign-Info".getBytes(StandardCharsets.UTF_8)));
-        byte[] accessoryDeviceX = new byte[32];
-        hkdf.generateBytes(accessoryDeviceX, 0, 32);
+        byte[] serverDeviceX = new byte[32];
+        hkdf.generateBytes(serverDeviceX, 0, 32);
 
-        byte[] accessoryDeviceInfo = HomekitByte.joinBytes(accessoryDeviceX, destinationPairingIdentifier,
-                destinationPublicKey);
+        byte[] serverDeviceInfo = HomekitByte.joinBytes(serverDeviceX, serverPairingIdentifier,
+                serverLongTermPublicKey);
         logger.debug("{} [{}] : {} : Stage {} : HomekitAccessory device info generated", LOG_PREFIX, getUID(),
                 LOG_STATE, 3);
 
         try {
-            if (!new HomekitEdsaVerifier(destinationPublicKey).verify(accessoryDeviceInfo, accessorySignature)) {
+            if (!new HomekitEdsaVerifier(serverLongTermPublicKey).verify(serverDeviceInfo, serverSignature)) {
                 logger.error("{} [{}] : {} : Stage {} : Signature verification failed", LOG_PREFIX, getUID(), LOG_ERROR,
                         3);
                 throw new HomekitException("Signature verification failed");
@@ -1211,7 +1213,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             throw new HomekitServerException("Signature verification failed", e);
         }
 
-        addPairing(destinationPairingIdentifier, destinationPublicKey);
+        addPairing(serverPairingIdentifier, serverLongTermPublicKey);
         SRP6Session = Optional.empty();
 
         return new byte[0];

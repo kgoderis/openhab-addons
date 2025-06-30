@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-package org.openhab.io.homekit.server.servlet;
+package org.openhab.io.homekit.protocol.crypto;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;

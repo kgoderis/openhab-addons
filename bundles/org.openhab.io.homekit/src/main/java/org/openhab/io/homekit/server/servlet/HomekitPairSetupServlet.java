@@ -38,9 +38,10 @@ import org.openhab.io.homekit.protocol.crypto.HomekitChachaEncoder;
 import org.openhab.io.homekit.protocol.crypto.HomekitEdsaSigner;
 import org.openhab.io.homekit.protocol.crypto.HomekitEdsaVerifier;
 import org.openhab.io.homekit.protocol.crypto.HomekitEncryptionEngine;
+import org.openhab.io.homekit.protocol.crypto.HomekitServerSRP6Session;
+import org.openhab.io.homekit.protocol.crypto.HomekitServerSRP6Session.State;
 import org.openhab.io.homekit.protocol.error.HomekitErrorCode;
 import org.openhab.io.homekit.protocol.message.HomekitMessage;
-import org.openhab.io.homekit.server.servlet.HomekitServerSRP6Session.State;
 import org.openhab.io.homekit.util.HomekitByte;
 import org.openhab.io.homekit.util.HomekitTypeLengthValueEncoderDecoder;
 import org.openhab.io.homekit.util.HomekitTypeLengthValueEncoderDecoder.DecodeResult;
@@ -255,18 +256,18 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
             return;
         }
 
-        HttpSession session = request.getSession();
-        HomekitServerSRP6Session srp6Session = (HomekitServerSRP6Session) session.getAttribute("SRP6Session");
+        HttpSession httpSession = request.getSession();
+        HomekitServerSRP6Session SRP6Session = (HomekitServerSRP6Session) httpSession.getAttribute("SRP6Session");
 
-        if (srp6Session == null) {
-            srp6Session = new HomekitServerSRP6Session(HomekitEncryptionEngine.SRP6Params);
-            srp6Session.setClientEvidenceRoutine(new HomekitEncryptionEngine.ClientEvidenceRoutineImpl());
-            srp6Session.setServerEvidenceRoutine(new HomekitEncryptionEngine.ServerEvidenceRoutineImpl());
-            session.setAttribute("SRP6Session", srp6Session);
+        if (SRP6Session == null) {
+            SRP6Session = new HomekitServerSRP6Session(HomekitEncryptionEngine.SRP6Params);
+            SRP6Session.setClientEvidenceRoutine(new HomekitEncryptionEngine.ClientEvidenceRoutineImpl());
+            SRP6Session.setServerEvidenceRoutine(new HomekitEncryptionEngine.ServerEvidenceRoutineImpl());
+            httpSession.setAttribute("SRP6Session", SRP6Session);
             logger.debug("{}Created new SRP session", LOG_SECURITY);
         }
 
-        if (srp6Session.getState() != State.INIT) {
+        if (SRP6Session.getState() != State.INIT) {
             logger.error("{}Session is not in INIT state", LOG_ERROR);
             response.setStatus(HttpServletResponse.SC_CONFLICT);
             return;
@@ -275,18 +276,22 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         SRP6VerifierGenerator verifierGenerator = new SRP6VerifierGenerator(HomekitEncryptionEngine.SRP6Params);
         verifierGenerator.setXRoutine(new XRoutineWithUserIdentity());
 
-        BigInteger salt = generateSalt();
+        logger.trace("{}Generating random salt", LOG_SECURITY);
+        byte[] saltArray = new byte[16];
+        HomekitEncryptionEngine.getSecureRandom().nextBytes(saltArray);
+        BigInteger salt = new BigInteger(1, saltArray);
+
         @SuppressWarnings("null") // server null check performed at method start
         String setupCode = server.getSetupCode();
+
         BigInteger verifier = verifierGenerator.generateVerifier(salt, "Pair-Setup", setupCode);
         logger.trace("{}Generated verifier", LOG_SECURITY);
+        BigInteger serverPublicKey = SRP6Session.step1("Pair-Setup", salt, verifier);
 
         Encoder encoder = HomekitTypeLengthValueEncoderDecoder.getEncoder();
         encoder.add(HomekitMessage.STATE, (short) 0x02);
         encoder.add(HomekitMessage.SALT, salt);
-
-        BigInteger publicKey = srp6Session.step1("Pair-Setup", salt, verifier);
-        encoder.add(HomekitMessage.PUBLIC_KEY, publicKey);
+        encoder.add(HomekitMessage.PUBLIC_KEY, serverPublicKey);
 
         logger.debug("{}Completing Stage 1 setup", LOG_SECURITY);
         response.setContentType("application/pairing+tlv8");
@@ -336,28 +341,35 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         logger.debug("{}Starting Stage 2 setup", LOG_SECURITY);
         logger.trace("{}Received request body: {}", LOG_SECURITY, HomekitByte.toHexString(body));
 
-        HttpSession session = request.getSession();
-        HomekitServerSRP6Session srp6Session = (HomekitServerSRP6Session) session.getAttribute("SRP6Session");
+        HttpSession httpSession = request.getSession();
+        HomekitServerSRP6Session SRP6Session = (HomekitServerSRP6Session) httpSession.getAttribute("SRP6Session");
 
-        if (srp6Session == null) {
+        if (SRP6Session == null) {
             logger.error("{}No SRP session found", LOG_ERROR);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
         logger.trace("{}Retrieved SRP session", LOG_SECURITY);
-        if (srp6Session.getState() != State.STEP_1) {
+        if (SRP6Session.getState() != State.STEP_1) {
             logger.error("{}Session is not in STEP_1 state", LOG_ERROR);
             response.setStatus(HttpServletResponse.SC_CONFLICT);
             return;
         }
 
-        BigInteger proof = null;
-        Encoder encoder = HomekitTypeLengthValueEncoderDecoder.getEncoder();
         try {
-            proof = srp6Session.step2(getPublicKey(body), getProof(body));
+            DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(body);
+
+            logger.trace("{}Extracting client public key from TLV8 content", LOG_SECURITY);
+            BigInteger clientPublicKey = d.getBigInt(HomekitMessage.PUBLIC_KEY);
+
+            logger.trace("{}Extracting client proof from TLV8 content", LOG_SECURITY);
+            BigInteger clientProof = d.getBigInt(HomekitMessage.PROOF);
+            BigInteger serverProof = SRP6Session.step2(clientPublicKey, clientProof);
+
+            Encoder encoder = HomekitTypeLengthValueEncoderDecoder.getEncoder();
             encoder.add(HomekitMessage.STATE, (short) 0x04);
-            encoder.add(HomekitMessage.PROOF, proof);
+            encoder.add(HomekitMessage.PROOF, serverProof);
 
             logger.debug("{}Completing Stage 2 setup", LOG_SECURITY);
             response.setContentType("application/pairing+tlv8");
@@ -370,7 +382,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
 
         } catch (SRP6Exception e) {
             logger.error("{}SRP authentication failed: {}", LOG_ERROR, e.getMessage(), e);
-            session.removeAttribute("SRP6Session");
+            httpSession.removeAttribute("SRP6Session");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getOutputStream().flush();
         }
@@ -421,22 +433,21 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
             return;
         }
 
-        HttpSession session = request.getSession();
-        HomekitServerSRP6Session srp6Session = (HomekitServerSRP6Session) session.getAttribute("SRP6Session");
+        HttpSession httpSession = request.getSession();
+        HomekitServerSRP6Session SRP6Session = (HomekitServerSRP6Session) httpSession.getAttribute("SRP6Session");
 
-        if (srp6Session == null) {
+        if (SRP6Session == null) {
             logger.error("{}No SRP session found", LOG_ERROR);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
         logger.trace("{}Retrieved SRP session", LOG_SECURITY);
-        MessageDigest digest = srp6Session.getCryptoParams().getMessageDigestInstance();
-        BigInteger S = srp6Session.getSessionKey(false);
-        byte[] sBytes = bigIntegerToUnsignedByteArray(S);
+        MessageDigest digest = SRP6Session.getCryptoParams().getMessageDigestInstance();
+        BigInteger SRPSessionKey = SRP6Session.getSessionKey(false);
         logger.trace("{}Retrieved SRP session key", LOG_SECURITY);
 
-        byte[] sharedSecret = digest.digest(sBytes);
+        byte[] sharedSecret = digest.digest(bigIntegerToUnsignedByteArray(SRPSessionKey));
         logger.trace("{}Generated shared secret", LOG_SECURITY);
 
         HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA512Digest());
@@ -445,23 +456,24 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         hkdf.generateBytes(sessionKey, 0, 32);
         logger.trace("{}Generated session key", LOG_SECURITY);
 
+        DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(body);
+
+        byte[] encryptedData = new byte[d.getLength(HomekitMessage.ENCRYPTED_DATA) - 16];
+        d.getBytes(HomekitMessage.ENCRYPTED_DATA, encryptedData, 0);
+        logger.debug("{}Extracted {} bytes of encrypted data", LOG_SECURITY, encryptedData.length);
+        assert encryptedData != null : "Encrypted data should not be null";
+
+        byte[] tag = new byte[16];
+        d.getBytes(HomekitMessage.ENCRYPTED_DATA, tag, encryptedData.length);
+        logger.debug("{}Extracted 16-byte authentication tag", LOG_SECURITY);
+        assert tag != null : "Authentication tag should not be null";
+
         HomekitChachaDecoder chachaDecoder = new HomekitChachaDecoder(sessionKey,
                 "PS-Msg05".getBytes(StandardCharsets.UTF_8));
-        byte[] authTag = getAuthTagData(body);
-        byte[] messageData = getMessageData(body);
-
-        // Defensive validation of required data
-        // Static analysis indicates these cannot be null at this point, but we maintain validation logic
-        // in commented form for documentation and code clarity
-        assert authTag != null : "Auth tag should not be null";
-        assert messageData != null : "Message data should not be null";
-
-        logger.trace("{}Validating auth data - all required fields present", LOG_SECURITY);
-
-        byte[] plaintext = chachaDecoder.decodeCiphertext(authTag, messageData);
+        byte[] plaintext = chachaDecoder.decodeCiphertext(tag, encryptedData);
         logger.trace("{}Decrypted client data", LOG_SECURITY);
 
-        DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(plaintext);
+        d = HomekitTypeLengthValueEncoderDecoder.decode(plaintext);
         byte[] clientPairingIdentifier = d.getBytes(HomekitMessage.IDENTIFIER);
         byte[] clientLongtermPublicKey = d.getBytes(HomekitMessage.PUBLIC_KEY);
         byte[] clientSignature = d.getBytes(HomekitMessage.SIGNATURE);
@@ -474,7 +486,6 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         assert clientSignature != null : "Client signature should not be null";
 
         logger.trace("{}Validating client pairing data - all required fields present", LOG_SECURITY);
-
         logger.trace("{}Retrieved client pairing ID and keys", LOG_SECURITY);
 
         hkdf = new HKDFBytesGenerator(new SHA512Digest());
@@ -487,7 +498,6 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
                 clientLongtermPublicKey);
         logger.trace("{}Generated client device info", LOG_SECURITY);
 
-        Encoder encoder = HomekitTypeLengthValueEncoderDecoder.getEncoder();
         boolean isError = false;
 
         try {
@@ -500,6 +510,8 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
             isError = true;
         }
 
+        Encoder encoder = HomekitTypeLengthValueEncoderDecoder.getEncoder();
+
         if (isError) {
             logger.warn("{}Setup failed, sending error response", LOG_WARN);
             encoder = HomekitTypeLengthValueEncoderDecoder.getEncoder();
@@ -507,7 +519,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
             encoder.add(HomekitMessage.ERROR, HomekitErrorCode.AUTHENTICATION);
 
             logger.debug("{}Removing SRP session", LOG_SECURITY);
-            session.removeAttribute("SRP6Session");
+            httpSession.removeAttribute("SRP6Session");
 
             response.setContentType("application/pairing+tlv8");
             response.setContentLengthLong(encoder.toByteArray().length);
@@ -535,17 +547,17 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         hkdf.init(new HKDFParameters(sharedSecret,
                 "Pair-Setup-HomekitAccessory-Sign-Salt".getBytes(StandardCharsets.UTF_8),
                 "Pair-Setup-HomekitAccessory-Sign-Info".getBytes(StandardCharsets.UTF_8)));
-        byte[] accessoryDeviceX = new byte[32];
-        hkdf.generateBytes(accessoryDeviceX, 0, 32);
+        byte[] serverDeviceX = new byte[32];
+        hkdf.generateBytes(serverDeviceX, 0, 32);
         logger.trace("{}Generated accessory device X", LOG_SECURITY);
 
         HomekitEdsaSigner signer = new HomekitEdsaSigner(server.getSecretKey());
-        byte[] accessoryInfo = HomekitByte.joinBytes(accessoryDeviceX, server.getPairingId(), signer.getPublicKey());
+        byte[] serverInfo = HomekitByte.joinBytes(serverDeviceX, server.getPairingId(), signer.getPublicKey());
         logger.trace("{}Generated accessory info", LOG_SECURITY);
 
-        byte[] accessorySignature;
+        byte[] serverSignature;
         try {
-            accessorySignature = signer.sign(accessoryInfo);
+            serverSignature = signer.sign(serverInfo);
             logger.trace("{}Generated accessory signature", LOG_SECURITY);
         } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException e) {
             logger.error("{}Failed to create accessory signature: {}", LOG_ERROR, e.getMessage(), e);
@@ -558,26 +570,26 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         // This is enforced at the component initialization time, so we can safely use these values
         encoder.add(HomekitMessage.IDENTIFIER, server.getPairingId());
         encoder.add(HomekitMessage.PUBLIC_KEY, signer.getPublicKey());
-        encoder.add(HomekitMessage.SIGNATURE, accessorySignature);
+        encoder.add(HomekitMessage.SIGNATURE, serverSignature);
 
-        byte[] encodedPlaintext = encoder.toByteArray();
+        byte[] plainText = encoder.toByteArray();
         // Null Pointer Access Warning Checked
         // Static analysis indicates encoder.toByteArray() cannot return null, but we maintain validation
         // in commented form for documentation and code clarity
-        assert encodedPlaintext != null : "Encoded plaintext should not be null";
+        assert plainText != null : "Encoded plaintext should not be null";
 
         logger.trace("{}Successfully encoded plaintext data", LOG_SECURITY);
 
         HomekitChachaEncoder chachaEncoder = new HomekitChachaEncoder(sessionKey,
                 "PS-Msg06".getBytes(StandardCharsets.UTF_8));
-        byte[] ciphertext = chachaEncoder.encodeCiphertext(encodedPlaintext);
+        byte[] encryptedDataWithTag = chachaEncoder.encodeCiphertext(plainText);
 
         encoder = HomekitTypeLengthValueEncoderDecoder.getEncoder();
         encoder.add(HomekitMessage.STATE, (short) 6);
-        encoder.add(HomekitMessage.ENCRYPTED_DATA, ciphertext);
+        encoder.add(HomekitMessage.ENCRYPTED_DATA, encryptedDataWithTag);
 
         logger.debug("{}Removing SRP session", LOG_SECURITY);
-        session.removeAttribute("SRP6Session");
+        httpSession.removeAttribute("SRP6Session");
 
         response.setContentType("application/pairing+tlv8");
         response.setContentLengthLong(encoder.toByteArray().length);
@@ -586,82 +598,6 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         response.getOutputStream().write(encoder.toByteArray());
         response.getOutputStream().flush();
         logger.debug("{}Stage 3 setup complete", LOG_SECURITY);
-    }
-
-    /**
-     * Extracts the client's public key from the TLV8-encoded content.
-     *
-     * <p>
-     * This method decodes the TLV8-encoded content and retrieves the client's
-     * public key, which is used in the SRP-6a protocol for authentication.
-     *
-     * <p>
-     * Security considerations:
-     * <ul>
-     * <li>Validates TLV8 encoding format</li>
-     * <li>Ensures proper key length</li>
-     * <li>Handles malformed input gracefully</li>
-     * </ul>
-     *
-     * @param content The TLV8-encoded message content
-     * @return The client's public key as a BigInteger
-     * @throws IOException if the content cannot be decoded or the public key is invalid
-     */
-    protected BigInteger getPublicKey(byte[] content) throws IOException {
-        logger.trace("{}Extracting client public key from TLV8 content", LOG_SECURITY);
-        DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(content);
-        return d.getBigInt(HomekitMessage.PUBLIC_KEY);
-    }
-
-    /**
-     * Extracts the client's proof from the TLV8-encoded content.
-     *
-     * <p>
-     * This method decodes the TLV8-encoded content and retrieves the client's
-     * proof value, which is used to verify the client's knowledge of the shared
-     * secret in the SRP-6a protocol.
-     *
-     * <p>
-     * Security considerations:
-     * <ul>
-     * <li>Validates TLV8 encoding format</li>
-     * <li>Ensures proper proof length</li>
-     * <li>Handles malformed input gracefully</li>
-     * </ul>
-     *
-     * @param content The TLV8-encoded message content
-     * @return The client's proof as a BigInteger
-     * @throws IOException if the content cannot be decoded or the proof is invalid
-     */
-    protected BigInteger getProof(byte[] content) throws IOException {
-        logger.trace("{}Extracting client proof from TLV8 content", LOG_SECURITY);
-        DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(content);
-        return d.getBigInt(HomekitMessage.PROOF);
-    }
-
-    /**
-     * Generates a random salt value for the SRP-6a protocol.
-     *
-     * <p>
-     * This method creates a cryptographically secure random salt value that is
-     * used in the SRP-6a protocol to prevent dictionary attacks and ensure unique
-     * session keys.
-     *
-     * <p>
-     * Security considerations:
-     * <ul>
-     * <li>Uses cryptographically secure random number generation</li>
-     * <li>Ensures sufficient entropy in the salt value</li>
-     * <li>Protects against rainbow table attacks</li>
-     * </ul>
-     *
-     * @return A random salt value as a BigInteger
-     */
-    public BigInteger generateSalt() {
-        logger.trace("{}Generating random salt", LOG_SECURITY);
-        byte[] salt = new byte[16];
-        HomekitEncryptionEngine.getSecureRandom().nextBytes(salt);
-        return new BigInteger(1, salt);
     }
 
     /**
@@ -714,7 +650,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
          */
         @Override
         @SuppressWarnings("null") // Parent ClientEvidenceRoutine interface doesn't constrain these parameters with
-                                  // @NonNull
+                                            // @NonNull
         public BigInteger computeClientEvidence(@Nullable SRP6CryptoParams cryptoParams,
                 @Nullable SRP6ClientEvidenceContext ctx) {
             // Null Pointer Access Warning Checked
