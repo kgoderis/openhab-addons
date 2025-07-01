@@ -215,7 +215,7 @@ Import-Package: org.openhab.core,org.openhab.core.common,org.openhab.cor
  .component;version="[1.5,2)",org.osgi.util.tracker;version="[1.5,2)",or
  g.slf4j;version="[2.0,3)",org.yaml.snakeyaml;version="[2.3,3)"
 Private-Package: Ideas,OH-INF.binding,OH-INF.config,OH-INF.i18n,OH-INF.t
- hing,com.nimbusds.srp6,com.nimbusds.srp6.cli,config,djb,documentation,d
+ hing,config,djb,documentation,d
  ocumentation.Homekit,documentation.openHAB,javax.json,javax.json.spi,ja
  vax.json.stream,net.i2p.crypto.eddsa,net.i2p.crypto.eddsa.math,net.i2p.
  crypto.eddsa.math.bigint,net.i2p.crypto.eddsa.math.ed25519,net.i2p.cryp

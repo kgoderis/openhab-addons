@@ -25,7 +25,6 @@ import com.nimbusds.srp6.SRP6ClientCredentials;
 import com.nimbusds.srp6.SRP6CryptoParams;
 import com.nimbusds.srp6.SRP6Exception;
 import com.nimbusds.srp6.SRP6Routines;
-import com.nimbusds.srp6.SRP6VerifierGenerator;
 import com.nimbusds.srp6.XRoutineWithUserIdentity;
 
 public class HomekitSpecTest {

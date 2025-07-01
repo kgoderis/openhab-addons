@@ -18,8 +18,6 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -35,12 +33,6 @@ import org.openhab.io.homekit.util.HomekitByte;
 import org.openhab.io.homekit.util.HomekitByteBufferOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.nimbusds.srp6.ClientEvidenceRoutine;
-import com.nimbusds.srp6.SRP6ClientEvidenceContext;
-import com.nimbusds.srp6.SRP6CryptoParams;
-import com.nimbusds.srp6.SRP6ServerEvidenceContext;
-import com.nimbusds.srp6.ServerEvidenceRoutine;
 
 /**
  * Provides encryption and decryption functionality for HomeKit protocol messages.
@@ -84,9 +76,6 @@ public class HomekitEncryptionEngine {
 
     /** The generator for SRP-6a */
     public static final BigInteger G = BigInteger.valueOf(5);
-
-    /** The SRP-6a cryptographic parameters */
-    public static final SRP6CryptoParams SRP6Params = new SRP6CryptoParams(N_3072, G, "SHA-512");
 
     /** Thread-safe secure random number generator */
     private static volatile @Nullable SecureRandom secureRandom;
@@ -270,116 +259,6 @@ public class HomekitEncryptionEngine {
             throw new IllegalStateException("Decryption failed: I/O error", e);
         } catch (RuntimeException e) {
             throw new IllegalStateException("Decryption failed", e);
-        }
-    }
-
-    /**
-     * Implements the client evidence routine for SRP-6a authentication.
-     *
-     * This class calculates the client evidence message (M1) according to the SRP-6a
-     * protocol specification, which is used to prove the client's knowledge of the
-     * password to the server.
-     */
-    public static class ClientEvidenceRoutineImpl implements ClientEvidenceRoutine {
-        /**
-         * Calculates the client evidence message (M1) according to the SRP-6a protocol.
-         *
-         * The calculation follows the formula:
-         * M1 = H(H(N) xor H(g) || H(username) || s || A || B || H(S))
-         *
-         * @param cryptoParams The SRP-6a cryptographic parameters
-         * @param ctx The client evidence context containing the required values
-         * @return The calculated client evidence message
-         */
-        @Override
-        public BigInteger computeClientEvidence(@Nullable SRP6CryptoParams cryptoParams,
-                @Nullable SRP6ClientEvidenceContext ctx) {
-            if (cryptoParams == null || ctx == null) {
-                throw new IllegalArgumentException("CryptoParams and context cannot be null");
-            }
-
-            MessageDigest digest;
-            try {
-                digest = MessageDigest.getInstance(cryptoParams.H);
-            } catch (NoSuchAlgorithmException e) {
-                throw new IllegalStateException("Could not locate requested algorithm", e);
-            }
-            digest.update(HomekitByte.toByteArray(cryptoParams.N));
-            byte[] hN = digest.digest();
-
-            digest.update(HomekitByte.toByteArray(cryptoParams.g));
-            byte[] hg = digest.digest();
-
-            byte[] hNhg = xor(hN, hg);
-
-            digest.update(ctx.userID.getBytes(StandardCharsets.UTF_8));
-            byte[] hu = digest.digest();
-
-            digest.update(HomekitByte.toByteArray(ctx.S));
-            byte[] hS = digest.digest();
-
-            digest.update(hNhg);
-            digest.update(hu);
-            digest.update(HomekitByte.toByteArray(ctx.s));
-            digest.update(HomekitByte.toByteArray(ctx.A));
-            digest.update(HomekitByte.toByteArray(ctx.B));
-            digest.update(hS);
-            BigInteger ret = new BigInteger(1, digest.digest());
-            return ret;
-        }
-
-        /**
-         * Performs a bitwise XOR operation on two byte arrays.
-         *
-         * @param b1 The first byte array
-         * @param b2 The second byte array
-         * @return The result of the XOR operation
-         */
-        private byte[] xor(byte[] b1, byte[] b2) {
-            byte[] result = new byte[b1.length];
-            for (int i = 0; i < b1.length; i++) {
-                result[i] = (byte) (b1[i] ^ b2[i]);
-            }
-            return result;
-        }
-    }
-
-    /**
-     * Implements the server evidence routine for SRP-6a authentication.
-     *
-     * This class calculates the server evidence message (M2) according to the SRP-6a
-     * protocol specification, which is used to prove the server's knowledge of the
-     * session key to the client.
-     */
-    public static class ServerEvidenceRoutineImpl implements ServerEvidenceRoutine {
-        /**
-         * Calculates the server evidence message (M2) according to the SRP-6a protocol.
-         *
-         * @param cryptoParams The SRP-6a cryptographic parameters
-         * @param ctx The server evidence context containing the required values
-         * @return The calculated server evidence message
-         */
-        @Override
-        public BigInteger computeServerEvidence(@Nullable SRP6CryptoParams cryptoParams,
-                @Nullable SRP6ServerEvidenceContext ctx) {
-            if (cryptoParams == null || ctx == null) {
-                throw new IllegalArgumentException("CryptoParams and context cannot be null");
-            }
-
-            MessageDigest digest;
-            try {
-                digest = MessageDigest.getInstance(cryptoParams.H);
-            } catch (NoSuchAlgorithmException e) {
-                throw new IllegalStateException("Could not locate requested algorithm", e);
-            }
-
-            byte[] hS = digest.digest(HomekitByte.toByteArray(ctx.S));
-
-            digest.update(HomekitByte.toByteArray(ctx.A));
-            digest.update(HomekitByte.toByteArray(ctx.M1));
-            digest.update(hS);
-
-            return new BigInteger(1, digest.digest());
         }
     }
 

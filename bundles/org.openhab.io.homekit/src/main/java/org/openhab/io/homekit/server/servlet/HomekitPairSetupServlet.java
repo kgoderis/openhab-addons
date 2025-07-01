@@ -53,7 +53,6 @@ import com.nimbusds.srp6.ClientEvidenceRoutine;
 import com.nimbusds.srp6.SRP6ClientEvidenceContext;
 import com.nimbusds.srp6.SRP6CryptoParams;
 import com.nimbusds.srp6.SRP6Exception;
-import com.nimbusds.srp6.SRP6VerifierGenerator;
 import com.nimbusds.srp6.XRoutineWithUserIdentity;
 
 /**

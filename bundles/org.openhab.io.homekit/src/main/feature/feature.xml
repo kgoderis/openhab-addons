@@ -22,7 +22,8 @@
 		<bundle dependency="true">mvn:org.glassfish/javax.json/1.0.4</bundle>
 		<bundle dependency="true">mvn:javax.json/javax.json-api/1.0</bundle>
 		<bundle dependency="true">wrap:mvn:org.bouncycastle/bcprov-jdk15on/1.51</bundle>
-		<bundle dependency="true">mvn:org.openhab.osgiify/com.nimbusds.srp6a/1.5.2</bundle>
+		<!-- Removed NimbusDS SRP6 bundle - migrating to BouncyCastle SRP6 -->
+		<!-- <bundle dependency="true">mvn:org.openhab.osgiify/com.nimbusds.srp6a/1.5.2</bundle> -->
 		<bundle dependency="true">mvn:org.openhab.osgiify/net.vrallev.ecc.ecc-25519-java/1.0.1</bundle>
 		<bundle dependency="true">mvn:org.openhab.osgiify/org.zeromq.curve25519-java/0.1.0</bundle>
 		<bundle dependency="true">mvn:javax.annotation/javax.annotation-api/1.3.2</bundle>

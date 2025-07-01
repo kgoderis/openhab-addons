@@ -18,7 +18,6 @@ import org.openhab.io.homekit.test.helper.HomekitSRP6TestVectors;
 
 import com.nimbusds.srp6.SRP6ClientCredentials;
 import com.nimbusds.srp6.SRP6Exception;
-import com.nimbusds.srp6.SRP6VerifierGenerator;
 import com.nimbusds.srp6.XRoutineWithUserIdentity;
 
 /**
