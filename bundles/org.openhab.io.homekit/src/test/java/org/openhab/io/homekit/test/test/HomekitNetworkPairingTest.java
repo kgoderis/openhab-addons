@@ -43,7 +43,7 @@ import org.openhab.io.homekit.test.helper.HomekitCryptoVerificationHelper;
 import org.openhab.io.homekit.test.helper.HomekitCryptoVerificationHelper.ComparisonResult;
 import org.openhab.io.homekit.test.helper.HomekitCryptoVerificationHelper.ValidationResult;
 import org.openhab.io.homekit.test.helper.HomekitCryptoVerificationHelper.VerificationData;
-import org.openhab.io.homekit.test.test.HomekitSpecTest.HAPSrp6TestVectors;
+import org.openhab.io.homekit.test.helper.HomekitSRP6TestVectors;
 import org.openhab.io.homekit.util.HomekitTypeLengthValueEncoderDecoder;
 import org.openhab.io.homekit.util.HomekitTypeLengthValueEncoderDecoder.DecodeResult;
 import org.slf4j.Logger;
@@ -1051,7 +1051,7 @@ public class HomekitNetworkPairingTest {
                 HomekitAccessoryCategory.OTHER, "TEST-SERVER-001", localhost, serverPort, mdnsService,
                 accessoryRegistry, pairingRegistry, eventManager);
 
-        testServer.setSetupCode(HAPSrp6TestVectors.HOMEKIT_PASSWORD);
+        testServer.setSetupCode(HomekitSRP6TestVectors.HOMEKIT_SETUP_CODE);
 
         // Add pair-setup servlet with real server instance
         HomekitPairSetupServlet pairSetupServlet = new HomekitPairSetupServlet(testServer);
@@ -1083,7 +1083,7 @@ public class HomekitNetworkPairingTest {
         realClient = new HomekitRemoteAccessoryServer(HomekitAccessoryCategory.OTHER, CLIENT_UID, localhost, serverPort,
                 accessoryRegistry, pairingRegistry, eventManager, accessoryFactory);
 
-        realClient.setSetupCode(HAPSrp6TestVectors.HOMEKIT_PASSWORD);
+        realClient.setSetupCode(HomekitSRP6TestVectors.HOMEKIT_SETUP_CODE);
 
         logger.info("✓ Real HomeKit client created and configured");
     }
@@ -1158,7 +1158,7 @@ public class HomekitNetworkPairingTest {
                 "CONCURRENT-" + clientId, localhost, serverPort, accessoryRegistry, pairingRegistry, eventManager,
                 accessoryFactory);
 
-        client.setSetupCode(HAPSrp6TestVectors.HOMEKIT_PASSWORD);
+        client.setSetupCode(HomekitSRP6TestVectors.HOMEKIT_SETUP_CODE);
         return client;
     }
 

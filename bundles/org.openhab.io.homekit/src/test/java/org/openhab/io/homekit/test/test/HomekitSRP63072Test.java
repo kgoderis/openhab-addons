@@ -94,7 +94,8 @@ public class HomekitSRP63072Test {
         HomekitServerSRP6Session serverSession = new HomekitServerSRP6Session(config);
 
         // Execute step1 to get server public value
-        BigInteger calculatedB = serverSession.step1(I, s, v);
+        BigInteger bPrivate = SRP63072TestVectors.getBPrivate();
+        BigInteger calculatedB = serverSession.step1(I, s, v, bPrivate);
 
         // Compare with expected value
         assertEquals(expectedB, calculatedB, "Server public value should match 3072-bit test vector");
@@ -126,7 +127,8 @@ public class HomekitSRP63072Test {
         clientSession.step1(I, P);
 
         // Execute step2 to get client public value and credentials
-        SRP6ClientCredentials credentials = clientSession.step2(config, s, B);
+        BigInteger aPrivate = SRP63072TestVectors.getAPrivate();
+        SRP6ClientCredentials credentials = clientSession.step2(config, s, B, aPrivate);
         BigInteger calculatedA = credentials.A;
 
         // Compare with expected value
@@ -241,10 +243,12 @@ public class HomekitSRP63072Test {
         clientSession.step1(I, P);
 
         // Step 2: Server responds with salt and public value
-        BigInteger B = serverSession.step1(I, s, v);
+        BigInteger bPrivate = SRP63072TestVectors.getBPrivate();
+        BigInteger B = serverSession.step1(I, s, v, bPrivate);
 
         // Step 3: Client computes credentials
-        SRP6ClientCredentials clientCredentials = clientSession.step2(config, s, B);
+        BigInteger aPrivate = SRP63072TestVectors.getAPrivate();
+        SRP6ClientCredentials clientCredentials = clientSession.step2(config, s, B, aPrivate);
         BigInteger A = clientCredentials.A;
         BigInteger M1 = clientCredentials.M1;
 
@@ -295,9 +299,11 @@ public class HomekitSRP63072Test {
 
         // Execute SRP6 protocol steps
         clientSession.step1(SRP63072TestVectors.USERNAME, SRP63072TestVectors.PASSWORD);
+        BigInteger bPrivate = SRP63072TestVectors.getBPrivate();
         BigInteger B = serverSession.step1(SRP63072TestVectors.USERNAME, SRP63072TestVectors.getS(),
-                SRP63072TestVectors.getV());
-        SRP6ClientCredentials clientCredentials = clientSession.step2(config, SRP63072TestVectors.getS(), B);
+                SRP63072TestVectors.getV(), bPrivate);
+        BigInteger aPrivate = SRP63072TestVectors.getAPrivate();
+        SRP6ClientCredentials clientCredentials = clientSession.step2(config, SRP63072TestVectors.getS(), B, aPrivate);
         BigInteger M2 = serverSession.step2(clientCredentials.A, clientCredentials.M1);
 
         // Verify evidence messages match test vectors
@@ -337,10 +343,12 @@ public class HomekitSRP63072Test {
         clientSession.step1(I, P);
 
         // Step 2: Server responds with salt and public value
-        BigInteger B = serverSession.step1(I, s, v);
+        BigInteger bPrivate = SRP63072TestVectors.getBPrivate();
+        BigInteger B = serverSession.step1(I, s, v, bPrivate);
 
         // Step 3: Client computes credentials
-        SRP6ClientCredentials clientCredentials = clientSession.step2(config, s, B);
+        BigInteger aPrivate = SRP63072TestVectors.getAPrivate();
+        SRP6ClientCredentials clientCredentials = clientSession.step2(config, s, B, aPrivate);
         BigInteger A = clientCredentials.A;
         BigInteger M1 = clientCredentials.M1;
 

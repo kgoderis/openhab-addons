@@ -188,6 +188,69 @@ public class HomekitServerSRP6Session extends SRP6Session {
     }
 
     /**
+     * Increments this SRP-6a authentication session to {@link State#STEP_1} with a specified private value.
+     *
+     * <p>
+     * This overloaded method allows specifying a custom private value 'b' for deterministic testing
+     * or when using pre-computed private values from test vectors.
+     *
+     * <p>
+     * Argument origin:
+     *
+     * <ul>
+     * <li>From client: user identity 'I'.
+     * <li>From server database: matching salt 's' and password verifier 'v' values.
+     * <li>From test vectors or deterministic generation: private value 'b'.
+     * </ul>
+     *
+     * @param userID The identity 'I' of the authenticating user. Must not be {@code null} or empty.
+     * @param s The password salt 's'. Must not be {@code null}.
+     * @param v The password verifier 'v'. Must not be {@code null}.
+     * @param b The private value 'b' to use for this session. Must not be {@code null}.
+     * @return The server public value 'B'.
+     * @throws IllegalStateException If the method is invoked in a state other than {@link State#INIT}.
+     * @throws IllegalArgumentException If the private value 'b' is invalid for the SRP-6a parameters.
+     */
+    public BigInteger step1(final String userID, final BigInteger s, final BigInteger v, final BigInteger b) {
+
+        // Check arguments
+        if (userID.trim().isEmpty()) {
+            throw new IllegalArgumentException("The user identity 'I' must not be empty");
+        }
+
+        if (b == null) {
+            throw new IllegalArgumentException("The private value 'b' must not be null");
+        }
+
+        // Validate that b is in the proper range for SRP-6a
+        if (b.compareTo(BigInteger.ZERO) <= 0 || b.compareTo(config.N) >= 0) {
+            throw new IllegalArgumentException("The private value 'b' must be in the range (0, N)");
+        }
+
+        this.userID = userID;
+        this.s = s;
+        this.v = v;
+        this.b = b;
+
+        // Check current state
+        if (state != State.INIT) {
+            throw new IllegalStateException("State violation: Session must be in INIT state");
+        }
+
+        // Generate server public value using the specified private value
+        k = SRP6Routines.computeK(digest, config.N, config.g);
+        digest.reset();
+
+        B = SRP6Routines.computePublicServerValue(config.N, config.g, k, v, b);
+
+        state = State.STEP_1;
+
+        updateLastActivityTime();
+
+        return B;
+    }
+
+    /**
      * Increments this SRP-6a authentication session to {@link State#STEP_1} indicating a non-existing
      * user identity 'I' with mock (simulated) salt 's' and password verifier 'v' values.
      *

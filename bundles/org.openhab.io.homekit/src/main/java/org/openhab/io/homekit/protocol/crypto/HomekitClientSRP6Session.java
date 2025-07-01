@@ -307,6 +307,141 @@ public class HomekitClientSRP6Session extends SRP6Session implements Serializabl
     }
 
     /**
+     * Receives the server response with salt 's' and public value 'B',
+     * and computes the client public value 'A' and evidence message 'M1'.
+     * The session is incremented to {@link State#STEP_2}.
+     *
+     * <p>
+     * Argument origin:
+     *
+     * <ul>
+     * <li>From server: salt 's' and public value 'B'.
+     * <li>From client: private value 'a' (for deterministic testing).
+     * </ul>
+     *
+     * @param config The crypto parameters for the SRP-6a session. Must not be {@code null}.
+     * @param s The password salt 's'. Must not be {@code null}.
+     * @param B The server public value 'B'. Must not be {@code null}.
+     * @param a The private value 'a' to use for this session. Must not be {@code null}.
+     * @return The client credentials containing the public value 'A' and the client evidence message 'M1'.
+     *
+     * @throws IllegalStateException If the method is invoked in a state
+     *             other than {@link State#STEP_1}.
+     * @throws SRP6Exception If the session has timed out or the
+     *             public server value 'B' is invalid.
+     * @throws IllegalArgumentException If the private value 'a' is invalid for the SRP-6a parameters.
+     */
+    public SRP6ClientCredentials step2(final SRP6CryptoParams config, final BigInteger s, final BigInteger B,
+            final BigInteger a) throws SRP6Exception {
+
+        // Check arguments
+        if (a == null) {
+            throw new IllegalArgumentException("The private value 'a' must not be null");
+        }
+
+        // Validate that a is in the proper range for SRP-6a
+        if (a.compareTo(BigInteger.ZERO) <= 0 || a.compareTo(config.N) >= 0) {
+            throw new IllegalArgumentException("The private value 'a' must be in the range (0, N)");
+        }
+
+        this.config = config;
+
+        MessageDigest digest = config.getMessageDigestInstance();
+
+        if (digest == null) {
+            throw new IllegalArgumentException("Unsupported hash algorithm 'H': " + config.H);
+        }
+
+        this.s = s;
+
+        this.B = B;
+
+        // Check current state
+        if (state != State.STEP_1) {
+            throw new IllegalStateException("State violation: Session must be in STEP_1 state");
+        }
+
+        // Password should be set by step1
+        if (password == null) {
+            throw new IllegalStateException("Password must be set via step1() before calling step2()");
+        }
+
+        // Check timeout
+        if (hasTimedOut()) {
+            throw new SRP6Exception("Session timeout", SRP6Exception.CauseType.TIMEOUT);
+        }
+
+        // Check B validity
+        if (!SRP6Routines.isValidPublicValue(config.N, B)) {
+            throw new SRP6Exception("Bad server public value 'B'", SRP6Exception.CauseType.BAD_PUBLIC_VALUE);
+        }
+
+        // Compute the password key 'x'
+        if (xRoutine != null && password != null && userID != null) {
+            // Null Pointer Access Warning Checked
+            // We're explicitly checking that xRoutine, password, and userID are not null above
+            // The requireNonNull calls are for static analysis only, as we've already checked
+
+            // With custom routine
+            x = xRoutine.computeX(config.getMessageDigestInstance(), s.toByteArray(),
+                    Objects.requireNonNull(userID).getBytes(Charset.forName("UTF-8")),
+                    Objects.requireNonNull(password).getBytes(Charset.forName("UTF-8")));
+
+        } else {
+            // With default routine
+            // Null Pointer Access Warning Checked
+            // password is required for this code path but might be null according to static analysis
+            // We need to explicitly check it before use
+            if (password == null) {
+                throw new SRP6Exception("Password cannot be null", SRP6Exception.CauseType.BAD_CREDENTIALS);
+            }
+
+            x = SRP6Routines.computeX(digest, s.toByteArray(),
+                    Objects.requireNonNull(password).getBytes(Charset.forName("UTF-8")));
+            digest.reset();
+        }
+
+        // Use the provided private value 'a' instead of generating it
+        this.a = a;
+        digest.reset();
+
+        A = SRP6Routines.computePublicClientValue(config.N, config.g, a);
+
+        // Compute the session key
+        k = SRP6Routines.computeK(digest, config.N, config.g);
+        digest.reset();
+
+        if (hashedKeysRoutine != null) {
+            URoutineContext hashedKeysContext = new URoutineContext(A, B);
+            u = hashedKeysRoutine.computeU(config, hashedKeysContext);
+        } else {
+            u = SRP6Routines.computeU(digest, config.N, A, B);
+            digest.reset();
+        }
+
+        S = SRP6Routines.computeSessionKey(config.N, config.g, k, x, u, a, B);
+
+        // Compute the client evidence message
+        if (clientEvidenceRoutine != null) {
+
+            // With custom routine
+            SRP6ClientEvidenceContext ctx = new SRP6ClientEvidenceContext(userID, s, A, B, S);
+            M1 = clientEvidenceRoutine.computeClientEvidence(config, ctx);
+
+        } else {
+            // With default routine
+            M1 = SRP6Routines.computeClientEvidence(digest, A, B, S);
+            digest.reset();
+        }
+
+        state = State.STEP_2;
+
+        updateLastActivityTime();
+
+        return new SRP6ClientCredentials(A, M1);
+    }
+
+    /**
      * Receives the server evidence message 'M1'. The session is
      * incremented to {@link State#STEP_3}.
      *

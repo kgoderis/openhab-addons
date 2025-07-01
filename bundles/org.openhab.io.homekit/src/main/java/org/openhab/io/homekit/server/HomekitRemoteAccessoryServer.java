@@ -1005,22 +1005,29 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             logger.debug("{} [{}] : {} : Stage {} : Calling SRP6 step1 - Current state: {}", LOG_PREFIX, getUID(),
                     LOG_STATE, 1, session.getState());
 
-            // Check if session is in wrong state and reset if needed
+            // **FIXED**: Do not reset session if state is not INIT - maintain SRP6 session across stages
+            // The session state naturally progresses from INIT → STEP_1 → STEP_2 → etc.
+            // Resetting the session here breaks SRP6 coordination with the server
             if (session.getState() != HomekitClientSRP6Session.State.INIT) {
-                logger.warn("{} [{}] : {} : Stage {} : SRP6 session in wrong state ({}), resetting session", LOG_PREFIX,
-                        getUID(), LOG_STATE, 1, session.getState());
-                session = new HomekitClientSRP6Session();
-                session.setClientEvidenceRoutine(new HomekitEncryptionEngine.ClientEvidenceRoutineImpl());
-                session.setServerEvidenceRoutine(new HomekitEncryptionEngine.ServerEvidenceRoutineImpl());
-                SRP6Session = Optional.of(session);
-                logger.debug("{} [{}] : {} : Stage {} : Created fresh SRP6 session", LOG_PREFIX, getUID(), LOG_STATE,
-                        1);
+                logger.debug(
+                        "{} [{}] : {} : Stage {} : SRP6 session in expected state ({}), continuing with existing session",
+                        LOG_PREFIX, getUID(), LOG_STATE, 1, session.getState());
+                // Don't reset! This is the natural progression of SRP6 protocol
+            } else {
+                logger.debug("{} [{}] : {} : Stage {} : SRP6 session in INIT state, ready for step1", LOG_PREFIX,
+                        getUID(), LOG_STATE, 1);
             }
 
-            // Call step1 on the session
-            session.step1("Pair-Setup", setupCode);
-            logger.debug("{} [{}] : {} : Stage {} : SRP6 step1 completed - New state: {}", LOG_PREFIX, getUID(),
-                    LOG_STATE, 1, session.getState());
+            // **FIXED**: Only call step1 if session is in INIT state (first time setup)
+            if (session.getState() == HomekitClientSRP6Session.State.INIT) {
+                session.step1("Pair-Setup", setupCode);
+                logger.debug("{} [{}] : {} : Stage {} : SRP6 step1 called - New state: {}", LOG_PREFIX, getUID(),
+                        LOG_STATE, 1, session.getState());
+            } else {
+                logger.debug(
+                        "{} [{}] : {} : Stage {} : SRP6 session already initialized, skipping step1 - Current state: {}",
+                        LOG_PREFIX, getUID(), LOG_STATE, 1, session.getState());
+            }
 
             SRP6ClientCredentials clientCredentials = null;
             try {

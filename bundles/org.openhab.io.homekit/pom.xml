@@ -40,6 +40,11 @@
       <version>1.5.2</version>
       <scope>compile</scope>
     </dependency>
+    <!-- <dependency>
+      <groupId>com.nimbusds</groupId>
+      <artifactId>srp6a</artifactId>
+      <version>2.1.0</version>
+    </dependency> -->
     <dependency>
       <groupId>org.openhab.osgiify</groupId>
       <artifactId>net.vrallev.ecc.ecc-25519-java</artifactId>

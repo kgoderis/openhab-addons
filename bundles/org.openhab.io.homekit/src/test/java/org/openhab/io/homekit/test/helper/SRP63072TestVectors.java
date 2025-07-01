@@ -10,6 +10,9 @@ import java.math.BigInteger;
  * 
  * These test vectors provide a reliable way to validate SRP6 implementations
  * and can be used to verify that our HomeKit SRP6 implementation is working correctly.
+ * 
+ * https://raw.githubusercontent.com/secure-remote-password/test-vectors/refs/heads/master/srptools.json
+ * 
  */
 public class SRP63072TestVectors {
 

@@ -329,10 +329,10 @@ public class HomekitTypeLengthValueEncoderDecoder {
          * @return The byte value
          */
         public byte getByte(HomekitMessage type) {
-            logger.debug("{}Getting byte for message type: {}", LOG_DECODE, type.toString());
+            logger.trace("{}Getting byte for message type: {}", LOG_DECODE, type.toString());
             byte[] bytes = result.get(type.getKey());
             if (bytes == null) {
-                logger.warn("{}No data found for message type: {}", LOG_DECODE, type.toString());
+                logger.trace("{}No data found for message type: {}", LOG_DECODE, type.toString());
                 return (byte) 0;
             }
             return bytes[0];
@@ -371,10 +371,10 @@ public class HomekitTypeLengthValueEncoderDecoder {
          * @return The byte array value
          */
         public byte[] getBytes(HomekitMessage type) {
-            logger.debug("{}Getting bytes for message type: {}", LOG_DECODE, type.toString());
+            logger.trace("{}Getting bytes for message type: {}", LOG_DECODE, type.toString());
             byte[] bytes = result.get(type.getKey());
             if (bytes == null) {
-                logger.warn("{}No data found for message type: {}", LOG_DECODE, type.toString());
+                logger.trace("{}No data found for message type: {}", LOG_DECODE, type.toString());
                 return new byte[0];
             }
             return bytes;
