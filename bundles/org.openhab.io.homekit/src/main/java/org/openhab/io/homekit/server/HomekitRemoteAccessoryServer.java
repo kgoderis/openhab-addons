@@ -2684,13 +2684,4 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             logger.debug("{} [{}] : {} - TEST: Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
         }
     }
-
-    /**
-     * Allows test code to inject a deterministic SRP6 private value for the client.
-     */
-    public void setDeterministicPrivateValue(BigInteger privateA) {
-        if (SRPClient.isPresent()) {
-            SRPClient.get().setPrivateValue(privateA);
-        }
-    }
 }

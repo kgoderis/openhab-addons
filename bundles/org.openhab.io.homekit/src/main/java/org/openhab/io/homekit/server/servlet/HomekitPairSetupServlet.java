@@ -97,66 +97,14 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
 
     protected byte[] sessionKey = new byte[32];
 
-    /**
-     * Allows test code to inject a deterministic SRP6 private value for the server.
-     */
-    public void setDeterministicPrivateValue(BigInteger privateB) {
-        // The SRP6Server is stored in the HTTP session during the flow, so we need to set it on the instance if present
-        // For test purposes, we can store it in a field and use it in doStage1/doStage2
-        this.deterministicServerPrivateValue = privateB;
-    }
-
-    /**
-     * Allows test code to inject a deterministic salt for the server.
-     */
-    public void setDeterministicSalt(byte[] salt) {
-        this.deterministicSalt = salt;
-    }
-
-    /**
-     * Allows test code to inject a deterministic identity for the server.
-     */
-    public void setDeterministicIdentity(byte[] identity) {
-        this.deterministicIdentity = identity;
-    }
-
-    // Add fields to store these values
-    @org.eclipse.jdt.annotation.Nullable
-    private BigInteger deterministicServerPrivateValue = new BigInteger(1, new byte[16]);
-    @SuppressWarnings("null")
-    private byte[] deterministicSalt = new byte[16];
-    @SuppressWarnings("null")
-    private byte[] deterministicIdentity = new byte[16];
-
-    /**
-     * Creates a new pair setup servlet.
-     *
-     * <p>
-     * This constructor initializes a basic servlet instance. It is recommended to use
-     * the constructor with a server parameter for proper functionality.
-     */
     public HomekitPairSetupServlet() {
-        logger.debug("{} [{}] : {} : Creating new pair setup servlet without server", LOG_PREFIX, "UNKNOWN", LOG_INIT);
+        super();
+        logger.debug("{} : {} - Creating new pair setup servlet", LOG_PREFIX, LOG_INIT);
     }
 
-    /**
-     * Creates a new pair setup servlet with the specified server.
-     *
-     * <p>
-     * This constructor initializes the servlet with the necessary components for
-     * handling pair setup operations. It sets up:
-     * <ul>
-     * <li>The base servlet functionality through the parent class</li>
-     * <li>Access to the server's cryptographic material</li>
-     * <li>Integration with the server's pairing management</li>
-     * </ul>
-     *
-     * @param server The HomeKit accessory server instance
-     */
     public HomekitPairSetupServlet(HomekitAccessoryServer server) {
         super(server);
-        logger.debug("{} [{}] : {} : Creating new pair setup servlet with server", LOG_PREFIX,
-                server != null ? server.getUID() : "UNKNOWN", LOG_INIT);
+        logger.debug("{} : {} - Creating new pair setup servlet with server", LOG_PREFIX, LOG_INIT);
     }
 
     /**
@@ -301,18 +249,10 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
                     LOG_SECURITY);
         }
 
-        // Use deterministic salt if set, otherwise generate random
-        byte[] saltArray;
-        if (deterministicSalt != null) {
-            saltArray = deterministicSalt;
-            logger.debug("{} [{}] : {} : Stage {} : Using deterministic salt for test", LOG_PREFIX, server.getUID(),
-                    LOG_CRYPTO, 1);
-        } else {
-            logger.trace("{} [{}] : {} : Stage {} : Generating random salt", LOG_PREFIX, server.getUID(), LOG_CRYPTO,
-                    1);
-            saltArray = new byte[16];
-            HomekitEncryptionEngine.getSecureRandom().nextBytes(saltArray);
-        }
+        // Generate random salt for non-deterministic operation
+        logger.trace("{} [{}] : {} : Stage {} : Generating random salt", LOG_PREFIX, server.getUID(), LOG_CRYPTO, 1);
+        byte[] saltArray = new byte[16];
+        HomekitEncryptionEngine.getSecureRandom().nextBytes(saltArray);
         BigInteger salt = new BigInteger(1, saltArray);
         logger.debug("{} [{}] : {} : Stage {} : Salt = {}", LOG_PREFIX, server.getUID(), LOG_VERIFY, 1,
                 HomekitByte.toHexString(HomekitByte.toByteArray(salt)));
@@ -320,9 +260,8 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         @SuppressWarnings("null") // server null check performed at method start
         String setupCode = server.getSetupCode();
 
-        // Use deterministic identity if set, otherwise default
-        byte[] identityBytes = deterministicIdentity != null ? deterministicIdentity
-                : "Pair-Setup".getBytes(StandardCharsets.UTF_8);
+        // Use default identity for non-deterministic operation
+        byte[] identityBytes = "Pair-Setup".getBytes(StandardCharsets.UTF_8);
 
         // Generate verifier using the new API
         SRP6VerifierGenerator verifierGenerator = new SRP6VerifierGenerator();
@@ -339,13 +278,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         logger.trace("{} [{}] : {} : Stage {} : Stored salt in session for Stage 2", LOG_PREFIX, server.getUID(),
                 LOG_CRYPTO, 1);
 
-        // Use deterministic private value if set
-        if (deterministicServerPrivateValue != null) {
-            SRP6Server.setPrivateValue(deterministicServerPrivateValue);
-            logger.debug("{} [{}] : {} : Stage {} : Using deterministic private B for test", LOG_PREFIX,
-                    server.getUID(), LOG_CRYPTO, 1);
-        }
-
+        // Generate random server public key (no deterministic override)
         BigInteger serverPublicKey = SRP6Server.generateSRP6aServerCredentials();
         logger.debug("{} [{}] : {} : Stage {} : Server public key = {}", LOG_PREFIX, server.getUID(), LOG_VERIFY, 1,
                 HomekitByte.toHexString(HomekitByte.toByteArray(serverPublicKey)));
