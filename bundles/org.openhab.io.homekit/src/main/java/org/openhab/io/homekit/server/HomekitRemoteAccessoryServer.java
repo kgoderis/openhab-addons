@@ -29,7 +29,6 @@ import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.text.ParseException;
@@ -65,6 +64,7 @@ import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 
+import org.bouncycastle.crypto.CryptoException;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
@@ -107,10 +107,10 @@ import org.openhab.io.homekit.network.http.HomekitHttpDestination;
 import org.openhab.io.homekit.network.http.HomekitProtocolHandler;
 import org.openhab.io.homekit.protocol.crypto.HomekitChachaDecoder;
 import org.openhab.io.homekit.protocol.crypto.HomekitChachaEncoder;
-import org.openhab.io.homekit.protocol.crypto.HomekitClientSRP6Session;
 import org.openhab.io.homekit.protocol.crypto.HomekitEdsaSigner;
 import org.openhab.io.homekit.protocol.crypto.HomekitEdsaVerifier;
 import org.openhab.io.homekit.protocol.crypto.HomekitEncryptionEngine;
+import org.openhab.io.homekit.protocol.crypto.HomekitSRP6Client;
 import org.openhab.io.homekit.protocol.error.HomekitErrorCode;
 import org.openhab.io.homekit.protocol.message.HomekitMessage;
 import org.openhab.io.homekit.protocol.method.HomekitMethod;
@@ -121,9 +121,6 @@ import org.openhab.io.homekit.util.HomekitTypeLengthValueEncoderDecoder.DecodeRe
 import org.openhab.io.homekit.util.HomekitTypeLengthValueEncoderDecoder.Encoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.nimbusds.srp6.SRP6ClientCredentials;
-import com.nimbusds.srp6.SRP6Exception;
 
 import djb.Curve25519;
 
@@ -170,7 +167,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     private final HomekitAccessoryFactory accessoryFactory;
 
     // ========== Component References and Locks ==========
-    private Optional<HomekitClientSRP6Session> SRP6Session = Optional.empty();
+    private Optional<HomekitSRP6Client> SRPClient = Optional.empty();
     @Nullable
     private HttpClient httpClient;
 
@@ -270,12 +267,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 }
             }
 
-            SRP6Session = Optional.of(new HomekitClientSRP6Session());
-
-            SRP6Session.ifPresent(session -> {
-                session.setClientEvidenceRoutine(new HomekitEncryptionEngine.ClientEvidenceRoutineImpl());
-                session.setServerEvidenceRoutine(new HomekitEncryptionEngine.ServerEvidenceRoutineImpl());
-            });
+            SRPClient = Optional.of(new HomekitSRP6Client());
+            SRPClient.ifPresent(client -> client.init());
 
         } catch (HomekitServerException e) {
             logger.error("{} [{}] : {} - Failed to start HTTP client - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
@@ -840,7 +833,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         clientPrivateKey = new byte[0];
 
         // Reset SRP6 session to allow fresh pairing attempts
-        SRP6Session = Optional.empty();
+        SRPClient = Optional.empty();
         logger.debug("{} [{}] : {} - SRP6 session cleared for fresh pairing", LOG_PREFIX, getUID(), LOG_STATE);
 
         logger.debug("{} [{}] : {} - HomekitPairing state reset completed", LOG_PREFIX, getUID(), LOG_STATE);
@@ -985,74 +978,42 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         logger.debug("{} [{}] : {} : Stage {} : Salt = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 1,
                 HomekitByte.toHexString(HomekitByte.toByteArray(salt)));
 
-        if (SRP6Session.isEmpty()) {
+        if (SRPClient.isEmpty()) {
             logger.debug("{} [{}] : {} : Stage {} : Creating new SRP6 session", LOG_PREFIX, getUID(), LOG_STATE, 1);
-            SRP6Session = Optional.of(new HomekitClientSRP6Session());
-            SRP6Session.ifPresent(session -> {
-                session.setClientEvidenceRoutine(new HomekitEncryptionEngine.ClientEvidenceRoutineImpl());
-                session.setServerEvidenceRoutine(new HomekitEncryptionEngine.ServerEvidenceRoutineImpl());
-            });
+            SRPClient = Optional.of(new HomekitSRP6Client());
+            SRPClient.ifPresent(client -> client.init());
         } else {
             logger.debug("{} [{}] : {} : Stage {} : Using existing SRP6 session - State: {}", LOG_PREFIX, getUID(),
-                    LOG_STATE, 1, SRP6Session.map(session -> session.getState().toString()).orElse("UNKNOWN"));
+                    LOG_STATE, 1, "ACTIVE");
         }
 
         Encoder encoder = HomekitTypeLengthValueEncoderDecoder.getEncoder();
 
         // Ensure we have a valid session and call step1
-        if (SRP6Session.isPresent()) {
-            HomekitClientSRP6Session session = SRP6Session.get();
-            logger.debug("{} [{}] : {} : Stage {} : Calling SRP6 step1 - Current state: {}", LOG_PREFIX, getUID(),
-                    LOG_STATE, 1, session.getState());
-
-            // **FIXED**: Do not reset session if state is not INIT - maintain SRP6 session across stages
-            // The session state naturally progresses from INIT → STEP_1 → STEP_2 → etc.
-            // Resetting the session here breaks SRP6 coordination with the server
-            if (session.getState() != HomekitClientSRP6Session.State.INIT) {
-                logger.debug(
-                        "{} [{}] : {} : Stage {} : SRP6 session in expected state ({}), continuing with existing session",
-                        LOG_PREFIX, getUID(), LOG_STATE, 1, session.getState());
-                // Don't reset! This is the natural progression of SRP6 protocol
-            } else {
-                logger.debug("{} [{}] : {} : Stage {} : SRP6 session in INIT state, ready for step1", LOG_PREFIX,
-                        getUID(), LOG_STATE, 1);
-            }
-
-            // **FIXED**: Only call step1 if session is in INIT state (first time setup)
-            if (session.getState() == HomekitClientSRP6Session.State.INIT) {
-                session.step1("Pair-Setup", setupCode);
-                logger.debug("{} [{}] : {} : Stage {} : SRP6 step1 called - New state: {}", LOG_PREFIX, getUID(),
-                        LOG_STATE, 1, session.getState());
-            } else {
-                logger.debug(
-                        "{} [{}] : {} : Stage {} : SRP6 session already initialized, skipping step1 - Current state: {}",
-                        LOG_PREFIX, getUID(), LOG_STATE, 1, session.getState());
-            }
-
-            SRP6ClientCredentials clientCredentials = null;
-            try {
-                clientCredentials = session.step2(HomekitEncryptionEngine.SRP6Params, salt, serverPublicKey);
-
-            } catch (SRP6Exception e) {
-                logger.error("{} [{}] : {} : Stage {} : SRP6 step 2 failed - Error: {}", LOG_PREFIX, getUID(),
-                        LOG_ERROR, 1, e.getMessage());
-                logger.debug("{} [{}] : {} : Stage {} : Exception details", LOG_PREFIX, getUID(), LOG_ERROR, 1, e);
-                throw new HomekitServerException("SRP6 step 2 failed", e);
-            }
-
-            BigInteger clientPublicKey = clientCredentials.A;
+        if (SRPClient.isPresent()) {
+            HomekitSRP6Client client = SRPClient.get();
+            logger.debug("{} [{}] : {} : Stage {} : Calling SRP6 step1", LOG_PREFIX, getUID(), LOG_STATE, 1);
+            client.init();
+            BigInteger clientCredential = client.generateSRP6aClientCredentials(HomekitByte.toByteArray(salt),
+                    "Pair-Setup".getBytes(StandardCharsets.UTF_8), setupCode.getBytes(StandardCharsets.UTF_8));
             logger.debug("{} [{}] : {} : Stage {} : Client public key generated", LOG_PREFIX, getUID(), LOG_CRYPTO, 1);
             logger.debug("{} [{}] : {} : Stage {} : Client public key = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 1,
-                    HomekitByte.toHexString(HomekitByte.toByteArray(clientPublicKey)));
-
-            BigInteger clientProof = clientCredentials.M1;
-            logger.debug("{} [{}] : {} : Stage {} : Client proof generated", LOG_PREFIX, getUID(), LOG_CRYPTO, 1);
-            logger.debug("{} [{}] : {} : Stage {} : Client proof = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 1,
-                    HomekitByte.toHexString(HomekitByte.toByteArray(clientProof)));
-
-            encoder.add(HomekitMessage.STATE, (short) 0x03);
-            encoder.add(HomekitMessage.PUBLIC_KEY, clientPublicKey);
-            encoder.add(HomekitMessage.PROOF, clientProof);
+                    HomekitByte.toHexString(HomekitByte.toByteArray(clientCredential)));
+            try {
+                client.calculateSecret(serverPublicKey); // B
+                BigInteger clientProof = client.calculateClientEvidenceMessage();
+                logger.debug("{} [{}] : {} : Stage {} : Client proof generated", LOG_PREFIX, getUID(), LOG_CRYPTO, 1);
+                logger.debug("{} [{}] : {} : Stage {} : Client proof = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 1,
+                        HomekitByte.toHexString(HomekitByte.toByteArray(clientProof)));
+                encoder.add(HomekitMessage.STATE, (short) 0x03);
+                encoder.add(HomekitMessage.PUBLIC_KEY, clientCredential);
+                encoder.add(HomekitMessage.PROOF, clientProof);
+            } catch (org.bouncycastle.crypto.CryptoException e) {
+                logger.error("{} [{}] : {} : Stage {} : SRP6 client calculation failed - Error: {}", LOG_PREFIX,
+                        getUID(), LOG_ERROR, 1, e.getMessage());
+                logger.debug("{} [{}] : {} : Stage {} : Exception details", LOG_PREFIX, getUID(), LOG_ERROR, 1, e);
+                throw new HomekitServerException("SRP6 client calculation failed", e);
+            }
         } else {
             throw new HomekitServerException("SRP6 session not found");
         }
@@ -1094,35 +1055,46 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         logger.debug("{} [{}] : {} : Stage {} : Server proof = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 2,
                 HomekitByte.toHexString(HomekitByte.toByteArray(serverProof)));
 
-        MessageDigest digest;
-        BigInteger SRPSessionKey;
-
         // Step 3: Verify Proof
-        if (SRP6Session.isPresent()) {
-            @SuppressWarnings("null") // get() is safe after isPresent() check
-            var session = SRP6Session.get();
+        if (SRPClient.isPresent()) {
+            HomekitSRP6Client client = SRPClient.get();
             try {
-                session.step3(serverProof);
-                digest = session.getCryptoParams().getMessageDigestInstance();
-                SRPSessionKey = session.getSessionKey(false);
+                // serverProof is M2
+                // Use the built-in verification method
+                client.verifyServerEvidenceMessage(serverProof);
+                logger.debug("{} [{}] : {} : Stage {} : M2 verification successful", LOG_PREFIX, getUID(), LOG_VERIFY,
+                        2);
+
+                // Get session key
+                try {
+                    client.calculateSessionKey();
+                } catch (CryptoException e) {
+                    logger.error("{} [{}] : {} : Stage {} : Failed to calculate SRP session key: {}", LOG_PREFIX,
+                            getUID(), LOG_ERROR, 2, e.getMessage(), e);
+                    throw new HomekitServerException("Failed to calculate SRP session key", e);
+                }
+                BigInteger sessionKey = client.getSessionKey();
+                if (sessionKey == null) {
+                    logger.error("{} [{}] : {} : Stage {} : SRP session key is null after M2 verification", LOG_PREFIX,
+                            getUID(), LOG_ERROR, 2);
+                    throw new HomekitServerException("SRP session key is null after M2 verification");
+                }
                 logger.debug("{} [{}] : {} : Stage {} : SRP session key generated", LOG_PREFIX, getUID(), LOG_CRYPTO,
                         2);
                 logger.debug("{} [{}] : {} : Stage {} : SRP session key = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 2,
-                        HomekitByte.toHexString(HomekitByte.toByteArray(SRPSessionKey)));
-            } catch (SRP6Exception e) {
-                logger.error("{} [{}] : {} : Stage {} : SRP6 step 3 failed - Error: {}", LOG_PREFIX, getUID(),
+                        HomekitByte.toHexString(HomekitByte.toByteArray(sessionKey)));
+
+                sharedSecret = HomekitByte.toByteArray(sessionKey);
+                logger.debug("{} [{}] : {} : Stage {} : Shared secret generated", LOG_PREFIX, getUID(), LOG_CRYPTO, 2);
+
+            } catch (CryptoException e) {
+                logger.error("{} [{}] : {} : Stage {} : M2 verification failed - Error: {}", LOG_PREFIX, getUID(),
                         LOG_ERROR, 2, e.getMessage());
-                logger.debug("{} [{}] : {} : Stage {} : Exception details", LOG_PREFIX, getUID(), LOG_ERROR, 2, e);
-                throw new HomekitServerException("SRP6 step 3 failed", e);
+                throw new HomekitServerException("M2 verification failed", e);
             }
         } else {
             throw new HomekitServerException("SRP6 session not found");
         }
-
-        sharedSecret = digest.digest(HomekitByte.toByteArray(SRPSessionKey));
-        logger.debug("{} [{}] : {} : Stage {} : Shared secret generated", LOG_PREFIX, getUID(), LOG_CRYPTO, 2);
-        logger.debug("{} [{}] : {} : Stage {} : Shared secret = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 2,
-                HomekitByte.toHexString(sharedSecret));
 
         HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA512Digest());
         hkdf.init(new HKDFParameters(sharedSecret, "Pair-Setup-Encrypt-Salt".getBytes(StandardCharsets.UTF_8),
@@ -1259,7 +1231,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         }
 
         addPairing(serverPairingIdentifier, serverLongTermPublicKey);
-        SRP6Session = Optional.empty();
+        SRPClient = Optional.empty();
 
         return new byte[0];
     }
@@ -1563,7 +1535,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                                     DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(body);
 
                                     if (d.getBytes(HomekitMessage.ERROR).length > 0) {
-                                        SRP6Session = Optional.empty();
+                                        SRPClient = Optional.empty();
                                         StageResult stageResult = new StageResult(
                                                 HomekitErrorCode.fromCode(d.getByte(HomekitMessage.ERROR)));
                                         completableFuture.complete(stageResult);
@@ -1577,7 +1549,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                                     StageResult stageResult = new StageResult(d, result);
                                     completableFuture.complete(stageResult);
                                 } catch (IOException e) {
-                                    SRP6Session = Optional.empty();
+                                    SRPClient = Optional.empty();
                                     logger.error("{} [{}] : {} - Failed to decode response - Error: {}", LOG_PREFIX,
                                             getUID(), LOG_ERROR, e.getMessage());
                                     logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR,
@@ -2710,6 +2682,15 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             logger.error("{} [{}] : {} - TEST: Exception during connection test - {}", LOG_PREFIX, getUID(), LOG_ERROR,
                     e.getMessage());
             logger.debug("{} [{}] : {} - TEST: Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
+        }
+    }
+
+    /**
+     * Allows test code to inject a deterministic SRP6 private value for the client.
+     */
+    public void setDeterministicPrivateValue(BigInteger privateA) {
+        if (SRPClient.isPresent()) {
+            SRPClient.get().setPrivateValue(privateA);
         }
     }
 }

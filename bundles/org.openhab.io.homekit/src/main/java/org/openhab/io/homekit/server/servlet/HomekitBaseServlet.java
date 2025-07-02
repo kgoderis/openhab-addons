@@ -14,8 +14,6 @@
 package org.openhab.io.homekit.server.servlet;
 
 import java.io.IOException;
-import java.math.BigInteger;
-import java.util.Arrays;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServlet;
@@ -286,47 +284,5 @@ public abstract class HomekitBaseServlet extends HttpServlet {
             logger.error("{}Failed to extract authentication tag: {}", LOG_ERROR, e.getMessage(), e);
             throw new IOException("Failed to decode authentication tag", e);
         }
-    }
-
-    /**
-     * Converts a BigInteger to an unsigned byte array representation.
-     *
-     * <p>
-     * This method handles cryptographic number conversion by:
-     * <ul>
-     * <li>Converting the BigInteger to its byte array representation</li>
-     * <li>Removing any leading zero byte for proper unsigned interpretation</li>
-     * <li>Ensuring consistent byte array length for cryptographic operations</li>
-     * </ul>
-     *
-     * <p>
-     * Usage considerations:
-     * <ul>
-     * <li>Maintains proper unsigned number representation</li>
-     * <li>Ensures consistent byte array format for cryptographic operations</li>
-     * <li>Supports proper key and nonce generation</li>
-     * <li>Preserves cryptographic value integrity</li>
-     * </ul>
-     *
-     * <p>
-     * Implementation details:
-     * <ul>
-     * <li>Handles leading zero byte removal</li>
-     * <li>Uses efficient array copying</li>
-     * <li>Maintains proper byte order</li>
-     * </ul>
-     *
-     * @param i The BigInteger to convert
-     * @return The unsigned byte array representation
-     */
-    protected static byte[] bigIntegerToUnsignedByteArray(BigInteger i) {
-        logger.debug("{}Converting BigInteger to unsigned byte array", LOG_SECURITY);
-        byte[] array = i.toByteArray();
-        if (array[0] == 0) {
-            array = Arrays.copyOfRange(array, 1, array.length);
-            logger.debug("{}Removed leading zero byte", LOG_SECURITY);
-        }
-        logger.debug("{}Converted to {} bytes", LOG_SECURITY, array.length);
-        return array;
     }
 }

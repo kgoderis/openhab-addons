@@ -26,6 +26,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.bouncycastle.crypto.CryptoException;
+import org.bouncycastle.crypto.agreement.srp.SRP6VerifierGenerator;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
@@ -38,8 +40,7 @@ import org.openhab.io.homekit.protocol.crypto.HomekitChachaEncoder;
 import org.openhab.io.homekit.protocol.crypto.HomekitEdsaSigner;
 import org.openhab.io.homekit.protocol.crypto.HomekitEdsaVerifier;
 import org.openhab.io.homekit.protocol.crypto.HomekitEncryptionEngine;
-import org.openhab.io.homekit.protocol.crypto.HomekitServerSRP6Session;
-import org.openhab.io.homekit.protocol.crypto.HomekitServerSRP6Session.State;
+import org.openhab.io.homekit.protocol.crypto.HomekitSRP6Server;
 import org.openhab.io.homekit.protocol.error.HomekitErrorCode;
 import org.openhab.io.homekit.protocol.message.HomekitMessage;
 import org.openhab.io.homekit.util.HomekitByte;
@@ -48,12 +49,6 @@ import org.openhab.io.homekit.util.HomekitTypeLengthValueEncoderDecoder.DecodeRe
 import org.openhab.io.homekit.util.HomekitTypeLengthValueEncoderDecoder.Encoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.nimbusds.srp6.ClientEvidenceRoutine;
-import com.nimbusds.srp6.SRP6ClientEvidenceContext;
-import com.nimbusds.srp6.SRP6CryptoParams;
-import com.nimbusds.srp6.SRP6Exception;
-import com.nimbusds.srp6.XRoutineWithUserIdentity;
 
 /**
  * Servlet that implements the HomeKit Secure Remote Password (SRP) pairing protocol.
@@ -77,7 +72,7 @@ import com.nimbusds.srp6.XRoutineWithUserIdentity;
  * <ul>
  * <li>{@link HomekitBaseServlet} for base servlet functionality</li>
  * <li>{@link HomekitAccessoryServer} for server functionality</li>
- * <li>{@link HomekitServerSRP6Session} for SRP session management</li>
+ * <li>{@link HomekitServerSRP6Server} for SRP session management</li>
  * <li>{@link HomekitEncryptionEngine} for cryptographic operations</li>
  * <li>{@link HomekitTypeLengthValueEncoderDecoder} for TLV8 encoding/decoding</li>
  * </ul>
@@ -101,6 +96,37 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
     protected static final String LOG_CRYPTO = "Crypto";
 
     protected byte[] sessionKey = new byte[32];
+
+    /**
+     * Allows test code to inject a deterministic SRP6 private value for the server.
+     */
+    public void setDeterministicPrivateValue(BigInteger privateB) {
+        // The SRP6Server is stored in the HTTP session during the flow, so we need to set it on the instance if present
+        // For test purposes, we can store it in a field and use it in doStage1/doStage2
+        this.deterministicServerPrivateValue = privateB;
+    }
+
+    /**
+     * Allows test code to inject a deterministic salt for the server.
+     */
+    public void setDeterministicSalt(byte[] salt) {
+        this.deterministicSalt = salt;
+    }
+
+    /**
+     * Allows test code to inject a deterministic identity for the server.
+     */
+    public void setDeterministicIdentity(byte[] identity) {
+        this.deterministicIdentity = identity;
+    }
+
+    // Add fields to store these values
+    @org.eclipse.jdt.annotation.Nullable
+    private BigInteger deterministicServerPrivateValue = new BigInteger(1, new byte[16]);
+    @SuppressWarnings("null")
+    private byte[] deterministicSalt = new byte[16];
+    @SuppressWarnings("null")
+    private byte[] deterministicIdentity = new byte[16];
 
     /**
      * Creates a new pair setup servlet.
@@ -266,30 +292,27 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         }
 
         HttpSession httpSession = request.getSession();
-        HomekitServerSRP6Session SRP6Session = (HomekitServerSRP6Session) httpSession.getAttribute("SRP6Session");
+        HomekitSRP6Server SRP6Server = (HomekitSRP6Server) httpSession.getAttribute("SRP6Server");
 
-        if (SRP6Session == null) {
-            SRP6Session = new HomekitServerSRP6Session(HomekitEncryptionEngine.SRP6Params);
-            SRP6Session.setClientEvidenceRoutine(new HomekitEncryptionEngine.ClientEvidenceRoutineImpl());
-            SRP6Session.setServerEvidenceRoutine(new HomekitEncryptionEngine.ServerEvidenceRoutineImpl());
-            httpSession.setAttribute("SRP6Session", SRP6Session);
+        if (SRP6Server == null) {
+            SRP6Server = new HomekitSRP6Server();
+            httpSession.setAttribute("SRP6Server", SRP6Server);
             logger.debug("{} [{}] : {} : Stage {} : Created new SRP session", LOG_PREFIX, server.getUID(),
                     LOG_SECURITY);
         }
 
-        if (SRP6Session.getState() != State.INIT) {
-            logger.error("{} [{}] : {} : Stage {} : Session is not in INIT state", LOG_PREFIX, server.getUID(),
-                    LOG_ERROR);
-            response.setStatus(HttpServletResponse.SC_CONFLICT);
-            return;
+        // Use deterministic salt if set, otherwise generate random
+        byte[] saltArray;
+        if (deterministicSalt != null) {
+            saltArray = deterministicSalt;
+            logger.debug("{} [{}] : {} : Stage {} : Using deterministic salt for test", LOG_PREFIX, server.getUID(),
+                    LOG_CRYPTO, 1);
+        } else {
+            logger.trace("{} [{}] : {} : Stage {} : Generating random salt", LOG_PREFIX, server.getUID(), LOG_CRYPTO,
+                    1);
+            saltArray = new byte[16];
+            HomekitEncryptionEngine.getSecureRandom().nextBytes(saltArray);
         }
-
-        SRP6VerifierGenerator verifierGenerator = new SRP6VerifierGenerator(HomekitEncryptionEngine.SRP6Params);
-        verifierGenerator.setXRoutine(new XRoutineWithUserIdentity());
-
-        logger.trace("{} [{}] : {} : Stage {} : Generating random salt", LOG_PREFIX, server.getUID(), LOG_CRYPTO, 1);
-        byte[] saltArray = new byte[16];
-        HomekitEncryptionEngine.getSecureRandom().nextBytes(saltArray);
         BigInteger salt = new BigInteger(1, saltArray);
         logger.debug("{} [{}] : {} : Stage {} : Salt = {}", LOG_PREFIX, server.getUID(), LOG_VERIFY, 1,
                 HomekitByte.toHexString(HomekitByte.toByteArray(salt)));
@@ -297,11 +320,33 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         @SuppressWarnings("null") // server null check performed at method start
         String setupCode = server.getSetupCode();
 
-        BigInteger verifier = verifierGenerator.generateVerifier(salt, "Pair-Setup", setupCode);
+        // Use deterministic identity if set, otherwise default
+        byte[] identityBytes = deterministicIdentity != null ? deterministicIdentity
+                : "Pair-Setup".getBytes(StandardCharsets.UTF_8);
+
+        // Generate verifier using the new API
+        SRP6VerifierGenerator verifierGenerator = new SRP6VerifierGenerator();
+        verifierGenerator.init(HomekitEncryptionEngine.N_3072, HomekitEncryptionEngine.G, new SHA512Digest());
+        BigInteger verifier = verifierGenerator.generateVerifier(HomekitByte.toByteArray(salt), identityBytes,
+                setupCode.getBytes(StandardCharsets.UTF_8));
+        SRP6Server.init(verifier);
         logger.trace("{} [{}] : {} : Stage {} : Generated verifier", LOG_PREFIX, server.getUID(), LOG_CRYPTO, 1);
         logger.debug("{} [{}] : {} : Stage {} : Verifier = {}", LOG_PREFIX, server.getUID(), LOG_VERIFY, 1,
                 HomekitByte.toHexString(HomekitByte.toByteArray(verifier)));
-        BigInteger serverPublicKey = SRP6Session.step1("Pair-Setup", salt, verifier);
+
+        // Store salt in session for use in Stage 2 HAP parameter injection
+        httpSession.setAttribute("SRPSalt", salt);
+        logger.trace("{} [{}] : {} : Stage {} : Stored salt in session for Stage 2", LOG_PREFIX, server.getUID(),
+                LOG_CRYPTO, 1);
+
+        // Use deterministic private value if set
+        if (deterministicServerPrivateValue != null) {
+            SRP6Server.setPrivateValue(deterministicServerPrivateValue);
+            logger.debug("{} [{}] : {} : Stage {} : Using deterministic private B for test", LOG_PREFIX,
+                    server.getUID(), LOG_CRYPTO, 1);
+        }
+
+        BigInteger serverPublicKey = SRP6Server.generateSRP6aServerCredentials();
         logger.debug("{} [{}] : {} : Stage {} : Server public key = {}", LOG_PREFIX, server.getUID(), LOG_VERIFY, 1,
                 HomekitByte.toHexString(HomekitByte.toByteArray(serverPublicKey)));
 
@@ -363,9 +408,9 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
                 server != null ? server.getUID() : "UNKNOWN", LOG_SECURITY, HomekitByte.toHexString(body));
 
         HttpSession httpSession = request.getSession();
-        HomekitServerSRP6Session SRP6Session = (HomekitServerSRP6Session) httpSession.getAttribute("SRP6Session");
+        HomekitSRP6Server SRP6Server = (HomekitSRP6Server) httpSession.getAttribute("SRP6Server");
 
-        if (SRP6Session == null) {
+        if (SRP6Server == null) {
             logger.error("{} [{}] : {} : Stage {} : No SRP session found", LOG_PREFIX,
                     server != null ? server.getUID() : "UNKNOWN", LOG_ERROR);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -374,12 +419,6 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
 
         logger.trace("{} [{}] : {} : Stage {} : Retrieved SRP session", LOG_PREFIX,
                 server != null ? server.getUID() : "UNKNOWN", LOG_SECURITY);
-        if (SRP6Session.getState() != State.STEP_1) {
-            logger.error("{} [{}] : {} : Stage {} : Session is not in STEP_1 state", LOG_PREFIX,
-                    server != null ? server.getUID() : "UNKNOWN", LOG_ERROR);
-            response.setStatus(HttpServletResponse.SC_CONFLICT);
-            return;
-        }
 
         try {
             DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(body);
@@ -397,7 +436,39 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
             logger.debug("{} [{}] : {} : Stage {} : Client proof = {}", LOG_PREFIX,
                     server != null ? server.getUID() : "UNKNOWN", LOG_VERIFY, 2,
                     HomekitByte.toHexString(HomekitByte.toByteArray(clientProof)));
-            BigInteger serverProof = SRP6Session.step2(clientPublicKey, clientProof);
+
+            // **HAP PARAMETER INJECTION**: Set identity and salt on server for HAP-compliant M1 verification
+            BigInteger salt = (BigInteger) httpSession.getAttribute("SRPSalt");
+            if (salt == null) {
+                logger.error("{} [{}] : {} : Stage {} : Salt not found in session", LOG_PREFIX,
+                        server != null ? server.getUID() : "UNKNOWN", LOG_ERROR, 2);
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                return;
+            }
+
+            SRP6Server.setIdentity("Pair-Setup".getBytes(StandardCharsets.UTF_8));
+            SRP6Server.setSalt(HomekitByte.toByteArray(salt));
+            logger.trace("{} [{}] : {} : Stage {} : Injected HAP parameters (identity and salt) for M1 verification",
+                    LOG_PREFIX, server != null ? server.getUID() : "UNKNOWN", LOG_CRYPTO, 2);
+
+            // Calculate secret and verify client proof using HAP-compliant method
+            SRP6Server.calculateSecret(clientPublicKey);
+
+            // **HAP-COMPLIANT M1 VERIFICATION**: Use the HAP-specific verification method
+            boolean m1VerificationResult = SRP6Server.verifyClientEvidenceMessage(clientProof);
+            if (!m1VerificationResult) {
+                logger.error("{} [{}] : {} : Stage {} : M1 verification failed - HAP evidence mismatch", LOG_PREFIX,
+                        server != null ? server.getUID() : "UNKNOWN", LOG_ERROR, 2);
+                httpSession.removeAttribute("SRP6Server");
+                httpSession.removeAttribute("SRPSalt");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
+            logger.debug("{} [{}] : {} : Stage {} : HAP M1 verification successful", LOG_PREFIX,
+                    server != null ? server.getUID() : "UNKNOWN", LOG_VERIFY, 2);
+
+            // Generate server proof M2
+            BigInteger serverProof = SRP6Server.calculateServerEvidenceMessage();
             logger.debug("{} [{}] : {} : Stage {} : Server proof = {}", LOG_PREFIX,
                     server != null ? server.getUID() : "UNKNOWN", LOG_VERIFY, 2,
                     HomekitByte.toHexString(HomekitByte.toByteArray(serverProof)));
@@ -417,10 +488,11 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
             logger.debug("{} [{}] : {} : Stage {} : Pair setup stage completed successfully", LOG_PREFIX,
                     server != null ? server.getUID() : "UNKNOWN", LOG_SECURITY);
 
-        } catch (SRP6Exception e) {
+        } catch (CryptoException e) {
             logger.error("{} [{}] : {} : Stage {} : SRP authentication failed: {}", LOG_PREFIX,
                     server != null ? server.getUID() : "UNKNOWN", LOG_ERROR, e.getMessage(), e);
-            httpSession.removeAttribute("SRP6Session");
+            httpSession.removeAttribute("SRP6Server");
+            httpSession.removeAttribute("SRPSalt");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getOutputStream().flush();
         }
@@ -474,22 +546,44 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         }
 
         HttpSession httpSession = request.getSession();
-        HomekitServerSRP6Session SRP6Session = (HomekitServerSRP6Session) httpSession.getAttribute("SRP6Session");
+        HomekitSRP6Server SRP6Server = (HomekitSRP6Server) httpSession.getAttribute("SRP6Server");
 
-        if (SRP6Session == null) {
+        if (SRP6Server == null) {
             logger.error("{} [{}] : {} : Stage {} : No SRP session found", LOG_PREFIX, server.getUID(), LOG_ERROR);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
         logger.trace("{} [{}] : {} : Stage {} : Retrieved SRP session", LOG_PREFIX, server.getUID(), LOG_CRYPTO, 3);
-        MessageDigest digest = SRP6Session.getCryptoParams().getMessageDigestInstance();
-        BigInteger SRPSessionKey = SRP6Session.getSessionKey(false);
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance("SHA-512");
+        } catch (NoSuchAlgorithmException e) {
+            logger.error("{} [{}] : {} : Stage {} : SHA-512 not available", LOG_PREFIX, server.getUID(), LOG_ERROR, 3);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
+        }
+        try {
+            // Ensure the session key is calculated before retrieving it
+            SRP6Server.calculateSessionKey();
+        } catch (CryptoException e) {
+            logger.error("{} [{}] : {} : Stage {} : Failed to calculate SRP session key: {}", LOG_PREFIX,
+                    server.getUID(), LOG_ERROR, 3, e.getMessage(), e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
+        }
+        BigInteger sessionKey = SRP6Server.getSessionKey();
+        if (sessionKey == null) {
+            logger.error("{} [{}] : {} : Stage {} : SRP session key is null after SRP6Server.getSessionKey()",
+                    LOG_PREFIX, server.getUID(), LOG_ERROR, 3);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
+        }
         logger.trace("{} [{}] : {} : Stage {} : Retrieved SRP session key", LOG_PREFIX, server.getUID(), LOG_CRYPTO, 3);
         logger.debug("{} [{}] : {} : Stage {} : SRP session key = {}", LOG_PREFIX, server.getUID(), LOG_VERIFY, 3,
-                HomekitByte.toHexString(bigIntegerToUnsignedByteArray(SRPSessionKey)));
+                HomekitByte.toHexString(HomekitByte.toByteArray(sessionKey)));
 
-        byte[] sharedSecret = digest.digest(bigIntegerToUnsignedByteArray(SRPSessionKey));
+        byte[] sharedSecret = HomekitByte.toByteArray(sessionKey);
         logger.trace("{} [{}] : {} : Stage {} : Generated shared secret", LOG_PREFIX, server.getUID(), LOG_CRYPTO, 3);
         logger.debug("{} [{}] : {} : Stage {} : Shared secret = {}", LOG_PREFIX, server.getUID(), LOG_VERIFY, 3,
                 HomekitByte.toHexString(sharedSecret));
@@ -497,10 +591,11 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA512Digest());
         hkdf.init(new HKDFParameters(sharedSecret, "Pair-Setup-Encrypt-Salt".getBytes(StandardCharsets.UTF_8),
                 "Pair-Setup-Encrypt-Info".getBytes(StandardCharsets.UTF_8)));
-        hkdf.generateBytes(sessionKey, 0, 32);
+        byte[] derivedSessionKey = new byte[32];
+        hkdf.generateBytes(derivedSessionKey, 0, 32);
         logger.trace("{} [{}] : {} : Stage {} : Generated session key", LOG_PREFIX, server.getUID(), LOG_CRYPTO, 3);
         logger.debug("{} [{}] : {} : Stage {} : Session key = {}", LOG_PREFIX, server.getUID(), LOG_VERIFY, 3,
-                HomekitByte.toHexString(sessionKey));
+                HomekitByte.toHexString(derivedSessionKey));
 
         DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(body);
 
@@ -516,7 +611,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
                 LOG_SECURITY);
         assert tag != null : "Authentication tag should not be null";
 
-        HomekitChachaDecoder chachaDecoder = new HomekitChachaDecoder(sessionKey,
+        HomekitChachaDecoder chachaDecoder = new HomekitChachaDecoder(derivedSessionKey,
                 "PS-Msg05".getBytes(StandardCharsets.UTF_8));
         byte[] plaintext = chachaDecoder.decodeCiphertext(tag, encryptedData);
         logger.trace("{} [{}] : {} : Stage {} : Decrypted client data", LOG_PREFIX, server.getUID(), LOG_SECURITY);
@@ -583,7 +678,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
             encoder.add(HomekitMessage.ERROR, HomekitErrorCode.AUTHENTICATION);
 
             logger.debug("{} [{}] : {} : Stage {} : Removing SRP session", LOG_PREFIX, server.getUID(), LOG_SECURITY);
-            httpSession.removeAttribute("SRP6Session");
+            httpSession.removeAttribute("SRP6Server");
 
             response.setContentType("application/pairing+tlv8");
             response.setContentLengthLong(encoder.toByteArray().length);
@@ -659,7 +754,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         logger.trace("{} [{}] : {} : Stage {} : Successfully encoded plaintext data", LOG_PREFIX, server.getUID(),
                 LOG_SECURITY);
 
-        HomekitChachaEncoder chachaEncoder = new HomekitChachaEncoder(sessionKey,
+        HomekitChachaEncoder chachaEncoder = new HomekitChachaEncoder(derivedSessionKey,
                 "PS-Msg06".getBytes(StandardCharsets.UTF_8));
         byte[] encryptedDataWithTag = chachaEncoder.encodeCiphertext(plainText);
 
@@ -668,7 +763,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         encoder.add(HomekitMessage.ENCRYPTED_DATA, encryptedDataWithTag);
 
         logger.debug("{} [{}] : {} : Stage {} : Removing SRP session", LOG_PREFIX, server.getUID(), LOG_SECURITY);
-        httpSession.removeAttribute("SRP6Session");
+        httpSession.removeAttribute("SRP6Server");
 
         response.setContentType("application/pairing+tlv8");
         response.setContentLengthLong(encoder.toByteArray().length);
@@ -678,115 +773,5 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         response.getOutputStream().flush();
         logger.debug("{} [{}] : {} : Stage {} : Pair setup stage completed successfully", LOG_PREFIX, server.getUID(),
                 LOG_SECURITY);
-    }
-
-    /**
-     * Implementation of the SRP-6a client evidence routine.
-     *
-     * <p>
-     * This class implements the client evidence calculation according to the
-     * SRP-6a protocol specification. It computes the M1 value using the formula:
-     * 
-     * <pre>
-     * M1 = H(H(N) xor H(g) || H(username) || s || A || B || H(S))
-     * </pre>
-     *
-     * <p>
-     * The implementation ensures:
-     * <ul>
-     * <li>Proper cryptographic hash function usage</li>
-     * <li>Correct byte array operations</li>
-     * <li>Protocol-compliant evidence calculation</li>
-     * </ul>
-     */
-    class ClientEvidenceRoutineImpl implements ClientEvidenceRoutine {
-        public ClientEvidenceRoutineImpl() {
-        }
-
-        /**
-         * Calculates M1 according to the SRP-6a protocol specification.
-         *
-         * <p>
-         * This method computes the client evidence value (M1) using the formula:
-         * 
-         * <pre>
-         * M1 = H(H(N) xor H(g) || H(username) || s || A || B || H(S))
-         * </pre>
-         *
-         * <p>
-         * The calculation involves:
-         * <ul>
-         * <li>Computing hash of the modulus (N) and generator (g)</li>
-         * <li>XORing the hashes of N and g</li>
-         * <li>Computing hash of the username</li>
-         * <li>Computing hash of the session key (S)</li>
-         * <li>Concatenating all components and computing final hash</li>
-         * </ul>
-         *
-         * @param cryptoParams The SRP-6a cryptographic parameters
-         * @param ctx The client evidence context containing session values
-         * @return The computed M1 value as a BigInteger
-         * @throws IllegalStateException if the hash algorithm is not available
-         */
-        @Override
-        @SuppressWarnings("null") // Parent ClientEvidenceRoutine interface doesn't constrain these parameters with
-                                  // @NonNull
-        public BigInteger computeClientEvidence(@Nullable SRP6CryptoParams cryptoParams,
-                @Nullable SRP6ClientEvidenceContext ctx) {
-            // Null Pointer Access Warning Checked
-            // The interface declaration allows null parameters, but our implementation requires non-null values
-            // We explicitly check for null and throw an exception rather than risking an NPE
-            if (cryptoParams == null || ctx == null) {
-                throw new IllegalArgumentException("CryptoParams and context cannot be null");
-            }
-            MessageDigest digest;
-            try {
-                digest = MessageDigest.getInstance(cryptoParams.H);
-            } catch (NoSuchAlgorithmException e) {
-                throw new IllegalStateException("Could not locate requested algorithm", e);
-            }
-
-            digest.update(bigIntegerToUnsignedByteArray(cryptoParams.N));
-            byte[] hN = digest.digest();
-
-            digest.update(bigIntegerToUnsignedByteArray(cryptoParams.g));
-            byte[] hg = digest.digest();
-
-            byte[] hNhg = xor(hN, hg);
-
-            digest.update(ctx.userID.getBytes(StandardCharsets.UTF_8));
-            byte[] hu = digest.digest();
-
-            digest.update(bigIntegerToUnsignedByteArray(ctx.S));
-            byte[] hS = digest.digest();
-
-            digest.update(hNhg);
-            digest.update(hu);
-            digest.update(bigIntegerToUnsignedByteArray(ctx.s));
-            digest.update(bigIntegerToUnsignedByteArray(ctx.A));
-            digest.update(bigIntegerToUnsignedByteArray(ctx.B));
-            digest.update(hS);
-
-            return new BigInteger(1, digest.digest());
-        }
-
-        /**
-         * Performs XOR operation on two byte arrays.
-         *
-         * <p>
-         * This helper method performs a bitwise XOR operation on corresponding
-         * bytes of two input arrays. The arrays must be of equal length.
-         *
-         * @param b1 The first byte array
-         * @param b2 The second byte array
-         * @return The result of the XOR operation as a byte array
-         */
-        private byte[] xor(byte[] b1, byte[] b2) {
-            byte[] result = new byte[b1.length];
-            for (int i = 0; i < b1.length; i++) {
-                result[i] = (byte) (b1[i] ^ b2[i]);
-            }
-            return result;
-        }
     }
 }
