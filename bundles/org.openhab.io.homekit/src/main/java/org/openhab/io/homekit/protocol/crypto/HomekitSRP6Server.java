@@ -16,7 +16,6 @@ package org.openhab.io.homekit.protocol.crypto;
 import java.math.BigInteger;
 
 import org.bouncycastle.crypto.CryptoException;
-import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.agreement.srp.SRP6Server;
 import org.bouncycastle.crypto.agreement.srp.SRP6Util;
 import org.bouncycastle.crypto.digests.SHA512Digest;
@@ -177,6 +176,48 @@ public class HomekitSRP6Server extends SRP6Server {
     }
 
     /**
+     * Generates server's credentials.
+     * 
+     * @return Server's public value to send to client
+     * @throws IllegalStateException if internal parameters are not initialized
+     */
+    public BigInteger generateSRP6aServerCredentials() {
+        // Validate internal parameters
+        StringBuilder missingInternalParams = new StringBuilder();
+        if (this.digest == null) {
+            missingInternalParams.append("digest, ");
+        }
+        if (this.N == null) {
+            missingInternalParams.append("N (safe prime), ");
+        }
+        if (this.g == null) {
+            missingInternalParams.append("g (group parameter), ");
+        }
+        if (this.v == null) {
+            missingInternalParams.append("v (verifier), ");
+        }
+
+        if (missingInternalParams.length() > 0) {
+            // Remove trailing comma and space
+            missingInternalParams.setLength(missingInternalParams.length() - 2);
+            throw new IllegalStateException("Internal parameters not initialized: " + missingInternalParams.toString()
+                    + ". Call init() first.");
+        }
+
+        // If a private value was set, use it; otherwise use random generation
+        if (b != null) {
+            // BigInteger k = calculateKRFC(digest, N, g); // ✅ RFC-compliant k calculation
+            BigInteger k = SRP6Util.calculateK(digest, N, g);
+            // Compute the public value using the set private value
+            this.B = k.multiply(v).mod(N).add(g.modPow(b, N)).mod(N);
+            return B;
+        } else {
+            // Call the parent method to generate credentials with random private value
+            return super.generateServerCredentials();
+        }
+    }
+
+    /**
      * Computes the server evidence message M2 using the previously verified values.
      * To be called after successfully verifying the client evidence message M1.
      * 
@@ -211,194 +252,8 @@ public class HomekitSRP6Server extends SRP6Server {
         }
 
         // Compute the server evidence message 'M2'
-        this.M2 = calculateM2(digest, N, A, M1, S);
+        this.M2 = HomekitSRP6Util.calculateM2(digest, N, A, M1, S);
         return M2;
-    }
-
-    /**
-     * Generates server's credentials.
-     * 
-     * @return Server's public value to send to client
-     * @throws IllegalStateException if internal parameters are not initialized
-     */
-    public BigInteger generateSRP6aServerCredentials() {
-        // Validate internal parameters
-        StringBuilder missingInternalParams = new StringBuilder();
-        if (this.digest == null) {
-            missingInternalParams.append("digest, ");
-        }
-        if (this.N == null) {
-            missingInternalParams.append("N (safe prime), ");
-        }
-        if (this.g == null) {
-            missingInternalParams.append("g (group parameter), ");
-        }
-        if (this.v == null) {
-            missingInternalParams.append("v (verifier), ");
-        }
-
-        if (missingInternalParams.length() > 0) {
-            // Remove trailing comma and space
-            missingInternalParams.setLength(missingInternalParams.length() - 2);
-            throw new IllegalStateException("Internal parameters not initialized: " + missingInternalParams.toString()
-                    + ". Call init() first.");
-        }
-
-        // If a private value was set, use it; otherwise use random generation
-        if (b != null) {
-            BigInteger k = SRP6Util.calculateK(digest, N, g);
-            // Compute the public value using the set private value
-            this.B = k.multiply(v).mod(N).add(g.modPow(b, N)).mod(N);
-            return B;
-        } else {
-            // Call the parent method to generate credentials with random private value
-            return super.generateServerCredentials();
-        }
-    }
-
-    /**
-     * Computes the server evidence message 'M2' using HAP-specific formula.
-     *
-     * @param digest The message digest instance
-     * @param N The modulus
-     * @param A The client public key
-     * @param M1 The client evidence message
-     * @param S The session key
-     * @return The server evidence message 'M2'
-     * @throws IllegalArgumentException if any parameter is null
-     */
-    private BigInteger calculateM2(Digest digest, BigInteger N, BigInteger A, BigInteger M1, BigInteger S) {
-
-        // Validate all parameters
-        StringBuilder missingParams = new StringBuilder();
-        if (digest == null) {
-            missingParams.append("digest, ");
-        }
-        if (N == null) {
-            missingParams.append("N (modulus), ");
-        }
-        if (A == null) {
-            missingParams.append("A (client public key), ");
-        }
-        if (M1 == null) {
-            missingParams.append("M1 (client evidence message), ");
-        }
-        if (S == null) {
-            missingParams.append("S (session key), ");
-        }
-
-        if (missingParams.length() > 0) {
-            // Remove trailing comma and space
-            missingParams.setLength(missingParams.length() - 2);
-            throw new IllegalArgumentException(
-                    "Missing required parameters for M2 calculation: " + missingParams.toString());
-        }
-
-        // M2 = H(A | M1 | H(S))
-        digest.reset();
-        digest.update(S.toByteArray(), 0, S.toByteArray().length);
-        byte[] hS = new byte[digest.getDigestSize()];
-        digest.doFinal(hS, 0);
-
-        digest.reset();
-        digest.update(A.toByteArray(), 0, A.toByteArray().length);
-        digest.update(M1.toByteArray(), 0, M1.toByteArray().length);
-        digest.update(hS, 0, hS.length);
-
-        byte[] result = new byte[digest.getDigestSize()];
-        digest.doFinal(result, 0);
-        return new BigInteger(1, result);
-    }
-
-    /**
-     * Computes the client evidence message 'M1' using HAP-specific formula.
-     *
-     * @param digest The message digest instance
-     * @param N The modulus
-     * @param g The generator
-     * @param identity The user identity
-     * @param salt The salt
-     * @param A The client public key
-     * @param B The server public key
-     * @param S The session key
-     * @return The client evidence message 'M1'
-     * @throws IllegalArgumentException if any parameter is null or empty
-     */
-    protected BigInteger calculateM1(Digest digest, BigInteger N, BigInteger A, BigInteger B, BigInteger S,
-            BigInteger g, byte[] identity, byte[] salt) {
-
-        // Validate all parameters
-        StringBuilder missingParams = new StringBuilder();
-        if (digest == null) {
-            missingParams.append("digest, ");
-        }
-        if (N == null) {
-            missingParams.append("N (modulus), ");
-        }
-        if (A == null) {
-            missingParams.append("A (client public key), ");
-        }
-        if (B == null) {
-            missingParams.append("B (server public key), ");
-        }
-        if (S == null) {
-            missingParams.append("S (session key), ");
-        }
-        if (g == null) {
-            missingParams.append("g (generator), ");
-        }
-        if (identity == null || identity.length == 0) {
-            missingParams.append("identity, ");
-        }
-        if (salt == null || salt.length == 0) {
-            missingParams.append("salt, ");
-        }
-
-        if (missingParams.length() > 0) {
-            // Remove trailing comma and space
-            missingParams.setLength(missingParams.length() - 2);
-            throw new IllegalArgumentException(
-                    "Missing required parameters for M1 calculation: " + missingParams.toString());
-        }
-
-        // M1 = H(H(N) xor H(g) | H(I) | s | A | B | H(S))
-        digest.reset();
-        digest.update(N.toByteArray(), 0, N.toByteArray().length);
-        byte[] hN = new byte[digest.getDigestSize()];
-        digest.doFinal(hN, 0);
-
-        digest.reset();
-        digest.update(g.toByteArray(), 0, g.toByteArray().length);
-        byte[] hg = new byte[digest.getDigestSize()];
-        digest.doFinal(hg, 0);
-
-        // H(N) xor H(g)
-        byte[] hNxorHg = new byte[hN.length];
-        for (int i = 0; i < hN.length; i++) {
-            hNxorHg[i] = (byte) (hN[i] ^ hg[i]);
-        }
-
-        digest.reset();
-        digest.update(identity, 0, identity.length);
-        byte[] hu = new byte[digest.getDigestSize()];
-        digest.doFinal(hu, 0);
-
-        digest.reset();
-        digest.update(S.toByteArray(), 0, S.toByteArray().length);
-        byte[] hS = new byte[digest.getDigestSize()];
-        digest.doFinal(hS, 0);
-
-        digest.reset();
-        digest.update(hNxorHg, 0, hNxorHg.length);
-        digest.update(hu, 0, hu.length);
-        digest.update(salt, 0, salt.length);
-        digest.update(A.toByteArray(), 0, A.toByteArray().length);
-        digest.update(B.toByteArray(), 0, B.toByteArray().length);
-        digest.update(hS, 0, hS.length);
-
-        byte[] result = new byte[digest.getDigestSize()];
-        digest.doFinal(result, 0);
-        return new BigInteger(1, result);
     }
 
     /**
@@ -449,7 +304,7 @@ public class HomekitSRP6Server extends SRP6Server {
         }
 
         // Calculate expected M1 using HAP-specific formula
-        BigInteger expectedM1 = calculateM1(digest, N, A, B, S, g, identity, salt);
+        BigInteger expectedM1 = HomekitSRP6Util.calculateM1(digest, N, A, B, S, g, identity, salt);
 
         // Compare with provided client M1
         if (expectedM1.equals(clientM1)) {
@@ -457,5 +312,74 @@ public class HomekitSRP6Server extends SRP6Server {
             return true;
         }
         return false;
+    }
+
+    public BigInteger calculateClientEvidenceMessage() throws CryptoException {
+        if (S == null) {
+            throw new CryptoException("Session key S not calculated");
+        }
+        if (A == null) {
+            throw new CryptoException("Client public key A not set");
+        }
+        if (B == null) {
+            throw new CryptoException("Server public key B not set");
+        }
+        if (N == null) {
+            throw new CryptoException("Modulus N not set");
+        }
+        if (g == null) {
+            throw new CryptoException("Generator g not set");
+        }
+        if (digest == null) {
+            throw new CryptoException("Digest not set");
+        }
+        if (identity.length == 0) {
+            throw new CryptoException("Identity not set");
+        }
+        if (salt.length == 0) {
+            throw new CryptoException("Salt not set");
+        }
+
+        // Use our own calculateM1HAP implementation that handles large inputs
+        return HomekitSRP6Util.calculateM1(digest, N, A, B, S, g, identity, salt);
+    }
+
+    /**
+     * Calculate the premaster secret S using HAP-compliant logic and large-key calculateU.
+     *
+     * @param clientPublicKey The client's public key A
+     * @return The premaster secret S
+     */
+    public BigInteger calculateServerSecret(BigInteger clientPublicKey) {
+        if (clientPublicKey == null) {
+            throw new IllegalStateException("Client public key cannot be null");
+        }
+        if (this.B == null) {
+            throw new IllegalStateException("Server public key B not set");
+        }
+        if (this.N == null) {
+            throw new IllegalStateException("Modulus N not set");
+        }
+        if (this.b == null) {
+            throw new IllegalStateException("Server private key b not set");
+        }
+        if (this.digest == null) {
+            throw new IllegalStateException("Digest not set");
+        }
+        if (this.v == null) {
+            throw new IllegalStateException("Verifier v not set");
+        }
+
+        this.A = clientPublicKey;
+
+        // Calculate u using our own implementation that handles large keys
+        BigInteger u = HomekitSRP6Util.calculateU(digest, N, A, B);
+
+        // Calculate the premaster secret S using the standard SRP6 formula
+        // For server: S = (A * v^u)^b mod N
+        BigInteger base = A.multiply(v.modPow(u, N)).mod(N);
+        this.S = base.modPow(b, N);
+
+        return this.S;
     }
 }

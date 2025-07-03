@@ -11,18 +11,103 @@
         <appender-ref ref="STDOUT"/>
     </root>
 
-    <!-- Enable DEBUG for HomeKit classes -->
-    <logger name="org.openhab.io.homekit" level="DEBUG" additivity="false">
+    <!-- Reduce HomeKit classes to INFO level to reduce verbosity -->
+    <logger name="org.openhab.io.homekit" level="INFO" additivity="false">
         <appender-ref ref="STDOUT"/>
     </logger>
 
-    <!-- Enable TRACE for SRP6 specifically -->
-    <logger name="org.openhab.io.homekit.protocol.crypto" level="TRACE" additivity="false">
+    <!-- Enable DEBUG for HomeKit HTTP classes to show HTTP traffic -->
+    <logger name="org.openhab.io.homekit.network.http" level="DEBUG" additivity="false">
         <appender-ref ref="STDOUT"/>
     </logger>
 
-    <!-- Enable DEBUG for test classes -->
-    <logger name="org.openhab.io.homekit.test" level="DEBUG" additivity="false">
+    <!-- Enable DEBUG for HTTP sender to show outgoing requests -->
+    <logger name="org.openhab.io.homekit.network.http.HomekitHttpSender" level="DEBUG" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <!-- Enable TRACE for HTTP receiver to show incoming responses and payloads -->
+    <logger name="org.openhab.io.homekit.network.http.HomekitHttpReceiver" level="TRACE" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <!-- Enable DEBUG for HTTP parser to show HTTP parsing details -->
+    <logger name="org.openhab.io.homekit.network.http.HomekitHttpParser" level="DEBUG" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <!-- Enable DEBUG for HomeKit server classes to show Jetty client callbacks -->
+    <logger name="org.openhab.io.homekit.server" level="DEBUG" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <!-- Reduce HomeKit network classes to INFO level -->
+    <logger name="org.openhab.io.homekit.network" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <!-- Reduce HomeKit protocol classes to INFO level -->
+    <logger name="org.openhab.io.homekit.protocol" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <!-- Enable TRACE for test classes, especially RealAccessoryTest -->
+    <logger name="org.openhab.io.homekit.test" level="TRACE" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <!-- Specific TRACE logging for RealAccessoryTest -->
+    <logger name="org.openhab.io.homekit.test.test.RealAccessoryTest" level="TRACE" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <!-- Enable TRACE for BouncyCastle SRP6 classes -->
+    <logger name="org.bouncycastle.crypto.agreement.srp" level="TRACE" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <!-- Enable TRACE for BouncyCastle crypto classes -->
+    <logger name="org.bouncycastle.crypto" level="TRACE" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <!-- Reduce Jetty logging to WARN level only -->
+    <logger name="org.eclipse.jetty" level="WARN" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <!-- Also reduce Jetty client logging -->
+    <logger name="org.eclipse.jetty.client" level="WARN" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <!-- Reduce Jetty HTTP logging -->
+    <logger name="org.eclipse.jetty.http" level="WARN" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <!-- Reduce Jetty IO logging -->
+    <logger name="org.eclipse.jetty.io" level="WARN" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <!-- Reduce Jetty server logging -->
+    <logger name="org.eclipse.jetty.server" level="WARN" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <!-- Reduce Jetty util logging -->
+    <logger name="org.eclipse.jetty.util" level="WARN" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <!-- Enable TRACE for HomeKit HTTP request log handler to show payloads -->
+    <logger name="org.openhab.io.homekit.network.http.HomekitRequestLogHandler" level="TRACE" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <!-- Enable TRACE for HomeKit HTTP request filter to show payloads -->
+    <logger name="org.openhab.io.homekit.network.http.HomekitLogRequestFilter" level="TRACE" additivity="false">
         <appender-ref ref="STDOUT"/>
     </logger>
 

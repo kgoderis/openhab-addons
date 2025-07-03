@@ -971,12 +971,13 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         BigInteger serverPublicKey = decodeResult.getBigInt(HomekitMessage.PUBLIC_KEY);
         logger.debug("{} [{}] : {} : Stage {} : Server public key received", LOG_PREFIX, getUID(), LOG_CRYPTO, 1);
         logger.debug("{} [{}] : {} : Stage {} : Server public key = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 1,
-                HomekitByte.toHexString(HomekitByte.toByteArray(serverPublicKey)));
+                HomekitByte.toHexString(serverPublicKey.toByteArray())); // ✅ RFC-compliant: use
+                                                                         // BigInteger.toByteArray()
 
         BigInteger salt = decodeResult.getBigInt(HomekitMessage.SALT);
         logger.debug("{} [{}] : {} : Stage {} : Salt received", LOG_PREFIX, getUID(), LOG_CRYPTO, 1);
         logger.debug("{} [{}] : {} : Stage {} : Salt = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 1,
-                HomekitByte.toHexString(HomekitByte.toByteArray(salt)));
+                HomekitByte.toHexString(salt.toByteArray())); // ✅ RFC-compliant: use BigInteger.toByteArray()
 
         if (SRPClient.isEmpty()) {
             logger.debug("{} [{}] : {} : Stage {} : Creating new SRP6 session", LOG_PREFIX, getUID(), LOG_STATE, 1);
@@ -994,17 +995,23 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             HomekitSRP6Client client = SRPClient.get();
             logger.debug("{} [{}] : {} : Stage {} : Calling SRP6 step1", LOG_PREFIX, getUID(), LOG_STATE, 1);
             client.init();
-            BigInteger clientCredential = client.generateSRP6aClientCredentials(HomekitByte.toByteArray(salt),
-                    "Pair-Setup".getBytes(StandardCharsets.UTF_8), setupCode.getBytes(StandardCharsets.UTF_8));
+            String normalizedSetupCode = normalizeSetupCode(setupCode);
+            BigInteger clientCredential = client.generateSRP6aClientCredentials(salt.toByteArray(), // ✅ RFC-compliant:
+                    // use
+                    // BigInteger.toByteArray()
+                    "Pair-Setup".getBytes(StandardCharsets.UTF_8),
+                    normalizedSetupCode.getBytes(StandardCharsets.UTF_8));
             logger.debug("{} [{}] : {} : Stage {} : Client public key generated", LOG_PREFIX, getUID(), LOG_CRYPTO, 1);
             logger.debug("{} [{}] : {} : Stage {} : Client public key = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 1,
-                    HomekitByte.toHexString(HomekitByte.toByteArray(clientCredential)));
+                    HomekitByte.toHexString(clientCredential.toByteArray())); // ✅ RFC-compliant: use
+                                                                              // BigInteger.toByteArray()
             try {
-                client.calculateSecret(serverPublicKey); // B
+                client.calculateClientSecret(serverPublicKey); // B
                 BigInteger clientProof = client.calculateClientEvidenceMessage();
                 logger.debug("{} [{}] : {} : Stage {} : Client proof generated", LOG_PREFIX, getUID(), LOG_CRYPTO, 1);
                 logger.debug("{} [{}] : {} : Stage {} : Client proof = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 1,
-                        HomekitByte.toHexString(HomekitByte.toByteArray(clientProof)));
+                        HomekitByte.toHexString(clientProof.toByteArray())); // ✅ RFC-compliant: use
+                                                                             // BigInteger.toByteArray()
                 encoder.add(HomekitMessage.STATE, (short) 0x03);
                 encoder.add(HomekitMessage.PUBLIC_KEY, clientCredential);
                 encoder.add(HomekitMessage.PROOF, clientProof);
@@ -1053,7 +1060,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         BigInteger serverProof = decodeResult.getBigInt(HomekitMessage.PROOF);
         logger.debug("{} [{}] : {} : Stage {} : Server proof received", LOG_PREFIX, getUID(), LOG_CRYPTO, 2);
         logger.debug("{} [{}] : {} : Stage {} : Server proof = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 2,
-                HomekitByte.toHexString(HomekitByte.toByteArray(serverProof)));
+                HomekitByte.toHexString(serverProof.toByteArray())); // ✅ RFC-compliant: use BigInteger.toByteArray()
 
         // Step 3: Verify Proof
         if (SRPClient.isPresent()) {
@@ -1082,9 +1089,10 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 logger.debug("{} [{}] : {} : Stage {} : SRP session key generated", LOG_PREFIX, getUID(), LOG_CRYPTO,
                         2);
                 logger.debug("{} [{}] : {} : Stage {} : SRP session key = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 2,
-                        HomekitByte.toHexString(HomekitByte.toByteArray(sessionKey)));
+                        HomekitByte.toHexString(sessionKey.toByteArray())); // ✅ RFC-compliant: use
+                                                                            // BigInteger.toByteArray()
 
-                sharedSecret = HomekitByte.toByteArray(sessionKey);
+                sharedSecret = sessionKey.toByteArray(); // ✅ RFC-compliant: use BigInteger.toByteArray()
                 logger.debug("{} [{}] : {} : Stage {} : Shared secret generated", LOG_PREFIX, getUID(), LOG_CRYPTO, 2);
 
             } catch (CryptoException e) {
@@ -1461,64 +1469,29 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                             int status = response.getStatus();
                             logger.debug("{} [{}] : {} - HTTP response begun - Status: {}", LOG_PREFIX, getUID(),
                                     LOG_STATE, status);
-
-                            // Handle 401 Unauthorized responses
-                            if (status == HttpStatus.UNAUTHORIZED_401) {
-                                logger.warn(
-                                        "{} [{}] : {} - Received HTTP 401 Unauthorized - pairing may be invalid or expired",
-                                        LOG_PREFIX, getUID(), LOG_PAIRING);
-                                try {
-                                    setState(HomekitAccessoryServerState.PAIR_UNVERIFIED);
-                                } catch (HomekitServerException e) {
-                                    logger.error("{} [{}] : {} - Failed to set state after 401: {}", LOG_PREFIX,
-                                            getUID(), LOG_ERROR, e.getMessage());
-                                }
-
-                                // Set flag to skip content processing and complete immediately
-                                skipContentProcessing = true;
-                                logger.debug("{} [{}] : {} - Setting skipContentProcessing=true for 401 response",
-                                        LOG_PREFIX, getUID(), LOG_STATE);
-
-                                // Complete the future immediately with 401 error
-                                StageResult unauthorizedResult = new StageResult(
-                                        "HTTP 401 Unauthorized - authentication failed");
-                                completableFuture.complete(unauthorizedResult);
-                                return; // Don't call super.onBegin() to avoid further processing
-                            }
-
                             super.onBegin(response);
                         }
 
                         @Override
                         public void onContent(Response response, ByteBuffer content) {
-                            if (skipContentProcessing) {
-                                logger.debug(
-                                        "{} [{}] : {} - Skipping content processing due to 401 response - {} bytes ignored",
-                                        LOG_PREFIX, getUID(), LOG_STATE, content.remaining());
-                                return; // Skip content processing for 401 responses
-                            }
-
-                            // log the number of bytes in the content
-                            logger.debug("{} [{}] : {} - Received {} bytes", LOG_PREFIX, getUID(), LOG_STATE,
-                                    content.remaining());
+                            logger.debug("{} [{}] : {} - HTTP onContent called - {} bytes", LOG_PREFIX, getUID(),
+                                    LOG_STATE, content.remaining());
                             super.onContent(response, content);
                         }
 
                         @Override
                         public void onFailure(Response response, Throwable failure) {
-                            logger.error("{} [{}] : {} - HTTP request failed - Error: {}", LOG_PREFIX, getUID(),
-                                    LOG_ERROR, failure.getMessage());
-                            logger.debug("{} [{}] : {} - HTTP failure details", LOG_PREFIX, getUID(), LOG_ERROR,
-                                    failure);
+                            logger.error("{} [{}] : {} - HTTP onFailure called - {}", LOG_PREFIX, getUID(), LOG_ERROR,
+                                    failure.getMessage());
                             super.onFailure(response, failure);
                         }
 
                         @Override
                         public void onComplete(@Nullable Result result) {
-                            // Null Pointer Access Warning Checked
-                            // We explicitly check result for null before accessing its methods
-                            // This prevents NPE and satisfies static analysis
-
+                            logger.trace("{} [{}] : {} - HTTP onComplete called - result null: {}, failed: {}",
+                                    LOG_PREFIX, getUID(), LOG_STATE, result == null,
+                                    result != null ? result.isFailed() : "N/A");
+                            // Original onComplete logic:
                             if (skipContentProcessing) {
                                 logger.debug(
                                         "{} [{}] : {} - Skipping onComplete processing due to 401 response - future already completed",
@@ -1527,11 +1500,14 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                                         // future
                             }
 
-                            logger.debug("{} [{}] : {} - onComplete called - result null: {}, failed: {}", LOG_PREFIX,
-                                    getUID(), LOG_STATE, result == null, result != null ? result.isFailed() : "N/A");
                             if (result != null && !result.isFailed()) {
                                 try {
                                     byte[] body = getContent();
+                                    logger.debug("{} [{}] : {} - CLIENT RECEIVED RESPONSE BODY: {} bytes", LOG_PREFIX,
+                                            getUID(), LOG_STATE, body.length);
+                                    logger.trace("{} [{}] : {} - CLIENT RESPONSE BODY HEX: {}", LOG_PREFIX, getUID(),
+                                            LOG_STATE, HomekitByte.toHexString(body));
+
                                     DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(body);
 
                                     if (d.getBytes(HomekitMessage.ERROR).length > 0) {
@@ -1545,6 +1521,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                                     short state = d.getByte(HomekitMessage.STATE);
                                     logger.info("{} [{}] : {} - Received State {}", LOG_PREFIX, getUID(), LOG_STATE,
                                             state);
+                                    logger.debug("{} [{}] : {} - CLIENT PARSED STATE: {} from TLV8", LOG_PREFIX,
+                                            getUID(), LOG_STATE, state);
 
                                     StageResult stageResult = new StageResult(d, result);
                                     completableFuture.complete(stageResult);
@@ -2683,5 +2661,12 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                     e.getMessage());
             logger.debug("{} [{}] : {} - TEST: Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
         }
+    }
+
+    /**
+     * Normalizes the setup code by removing all dashes.
+     */
+    private static String normalizeSetupCode(String setupCode) {
+        return setupCode.replace("-", "");
     }
 }

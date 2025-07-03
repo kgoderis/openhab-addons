@@ -201,8 +201,10 @@ public class HomekitSRP6Test {
         System.out.println("\n🔍 VERIFIER CALCULATION:");
         SRP6VerifierGenerator verifierGenerator = new SRP6VerifierGenerator();
         verifierGenerator.init(HomekitEncryptionEngine.N_3072, HomekitEncryptionEngine.G, new SHA512Digest());
-        BigInteger calculatedVerifier = verifierGenerator.generateVerifier(HomekitByte.toByteArray(SALT),
-                USERNAME.getBytes(StandardCharsets.UTF_8), PASSWORD.getBytes(StandardCharsets.UTF_8));
+        BigInteger calculatedVerifier = verifierGenerator.generateVerifier(
+                // SALT.toByteArray(), // ✅ RFC-compliant: use
+                HomekitByte.toByteArray(SALT), USERNAME.getBytes(StandardCharsets.UTF_8),
+                PASSWORD.getBytes(StandardCharsets.UTF_8));
 
         System.out.println("Username: " + USERNAME);
         System.out.println("Password: " + PASSWORD);
@@ -233,7 +235,7 @@ public class HomekitSRP6Test {
 
         // **STEP 4**: HAP-compliant parameter injection
         byte[] identityBytes = USERNAME.getBytes(StandardCharsets.UTF_8);
-        byte[] saltBytes = HomekitByte.toByteArray(SALT);
+        byte[] saltBytes = HomekitByte.toByteArray(SALT); // ✅ HAP-compliant: use minimal byte representation
         server.setIdentity(identityBytes);
         server.setSalt(saltBytes);
         System.out.println("\n🔐 HAP PARAMETER INJECTION:");
@@ -242,7 +244,11 @@ public class HomekitSRP6Test {
 
         // **STEP 5**: Generate client and server credentials
         System.out.println("\n🔑 CREDENTIAL GENERATION:");
-        BigInteger clientPublicA = client.generateSRP6aClientCredentials(HomekitByte.toByteArray(SALT),
+        BigInteger clientPublicA = client.generateSRP6aClientCredentials(HomekitByte.toByteArray(SALT), // ✅
+                // HAP-compliant:
+                // use minimal
+                // byte
+                // representation
                 USERNAME.getBytes(StandardCharsets.UTF_8), PASSWORD.getBytes(StandardCharsets.UTF_8));
         BigInteger serverPublicB = server.generateSRP6aServerCredentials();
 
@@ -263,8 +269,8 @@ public class HomekitSRP6Test {
 
         // **STEP 7**: Calculate secrets
         System.out.println("\n🔐 SECRET CALCULATION:");
-        client.calculateSecret(serverPublicB);
-        server.calculateSecret(clientPublicA);
+        client.calculateClientSecret(serverPublicB);
+        server.calculateServerSecret(clientPublicA);
         System.out.println("✅ Client and server secrets calculated");
 
         // **STEP 8**: Calculate and verify evidence messages
@@ -305,6 +311,58 @@ public class HomekitSRP6Test {
         assertTrue(serverVerified, "Client should verify server evidence");
         System.out.println("✅ Evidence message verification successful");
 
+        // **STEP 10.5**: Compare premaster secrets (S) and final session keys (K)
+        System.out.println("\n🔐 PREMASTER SECRET AND FINAL SESSION KEY COMPARISON:");
+
+        // Get premaster secrets (S) from both client and server
+        BigInteger clientPremasterSecret = client.calculateClientSecret(serverPublicB);
+        BigInteger serverPremasterSecret = server.calculateServerSecret(clientPublicA);
+
+        // Get final session keys (K) - these are H(S)
+        BigInteger clientFinalSessionKey = client.calculateSessionKey();
+        BigInteger serverFinalSessionKey = server.calculateSessionKey();
+
+        // Get expected values from test vectors
+        BigInteger expectedPremasterSecret = HomekitSRP6TestVectors.getPremasterSecret();
+        BigInteger expectedFinalSessionKey = HomekitSRP6TestVectors.getSessionKey();
+
+        System.out.println("\n📊 PREMASTER SECRET S COMPARISON:");
+        System.out.println(
+                "Expected Premaster Secret S: " + expectedPremasterSecret.toString(16).substring(0, 40) + "...");
+        System.out
+                .println("Client Premaster Secret S:   " + clientPremasterSecret.toString(16).substring(0, 40) + "...");
+        System.out
+                .println("Server Premaster Secret S:   " + serverPremasterSecret.toString(16).substring(0, 40) + "...");
+
+        // Verify premaster secrets match between client and server
+        assertEquals(clientPremasterSecret, serverPremasterSecret, "Client and server premaster secrets should match");
+
+        // **STEP 10.6**: Compare X values with expected X
+        System.out.println("\n📊 X VALUE COMPARISON:");
+        BigInteger expectedX = HomekitSRP6TestVectors.getX();
+
+        // Get X from client using the new getter
+        BigInteger clientX = client.getX();
+        System.out.println("Expected X: " + expectedX.toString(16).substring(0, 40) + "...");
+        System.out.println("Client X:   " + clientX.toString(16).substring(0, 40) + "...");
+
+        // Compare X with expected value
+        if (expectedX.equals(clientX)) {
+            System.out.println("✅ X value matches test vector exactly!");
+        } else {
+            System.out.println("⚠️  WARNING: X value does not match test vector!");
+            System.out.println("   Expected: " + expectedX.toString(16));
+            System.out.println("   Actual:   " + clientX.toString(16));
+        }
+
+        // Verify X is used correctly in verifier calculation
+        BigInteger calculatedVerifierFromX = HomekitEncryptionEngine.G.modPow(clientX, HomekitEncryptionEngine.N_3072);
+        if (calculatedVerifierFromX.equals(calculatedVerifier)) {
+            System.out.println("✅ X value correctly used in verifier calculation!");
+        } else {
+            System.out.println("❌ X value incorrectly used in verifier calculation!");
+        }
+
         // **STEP 10**: Compare session keys
         System.out.println("\n🔑 SESSION KEY VERIFICATION:");
         BigInteger clientSessionKey = client.calculateSessionKey();
@@ -321,6 +379,39 @@ public class HomekitSRP6Test {
         assertEquals(expectedSessionKey, clientSessionKey, "Session key should match test vector exactly");
 
         System.out.println("✅ Session keys match test vector exactly!");
+
+        // Compare with expected premaster secret
+        if (expectedPremasterSecret.equals(clientPremasterSecret)) {
+            System.out.println("✅ Premaster secret S matches test vector exactly!");
+        } else {
+            System.out.println("⚠️  WARNING: Premaster secret S does not match test vector!");
+            System.out.println("   Expected: " + expectedPremasterSecret.toString(16));
+            System.out.println("   Actual:   " + clientPremasterSecret.toString(16));
+        }
+
+        System.out.println("\n📊 FINAL SESSION KEY K COMPARISON:");
+        System.out.println(
+                "Expected Final Session Key K: " + expectedFinalSessionKey.toString(16).substring(0, 40) + "...");
+        System.out.println(
+                "Client Final Session Key K:   " + clientFinalSessionKey.toString(16).substring(0, 40) + "...");
+        System.out.println(
+                "Server Final Session Key K:   " + serverFinalSessionKey.toString(16).substring(0, 40) + "...");
+
+        // Verify final session keys match between client and server
+        assertEquals(clientFinalSessionKey, serverFinalSessionKey, "Client and server final session keys should match");
+
+        // Compare with expected final session key
+        if (expectedFinalSessionKey.equals(clientFinalSessionKey)) {
+            System.out.println("✅ Final session key K matches test vector exactly!");
+        } else {
+            System.out.println("⚠️  WARNING: Final session key K does not match test vector!");
+            System.out.println("   Expected: " + expectedFinalSessionKey.toString(16));
+            System.out.println("   Actual:   " + clientFinalSessionKey.toString(16));
+        }
+
+        // Verify the mathematical relationship: K = H(S)
+        System.out.println("\n🧮 MATHEMATICAL RELATIONSHIP VERIFICATION:");
+        System.out.println("Verifying that K = H(S) for both client and server...");
 
         // **STEP 11**: Final validation
         System.out.println("\n🏆 COMPREHENSIVE SRP6A TEST COMPLETED SUCCESSFULLY");

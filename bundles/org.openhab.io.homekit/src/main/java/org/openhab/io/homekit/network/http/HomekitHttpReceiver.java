@@ -327,6 +327,13 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
      */
     @Override
     public void receive() {
+        // CRITICAL FIX: Only call parent's receive() when we don't have decryption keys
+        // This ensures that Jetty's parent class properly sets up the networkBuffer
+        // that is expected by super.content() calls, but only for unencrypted communication
+        if (!hasDecryptionKey()) {
+            super.receive();
+        }
+
         try {
             HomekitHttpConnectionOverHTTP connection = getHttpConnection();
             EndPoint endPoint = connection.getEndPoint();
@@ -458,7 +465,11 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
                     // Null Pointer Access Warning Checked
                     releaseBuffer(decryptedInputBuffer);
                     decryptedInputBuffer = null;
-                    fillInterested();
+                    // Only call fillInterested() if we're not in the unencrypted path
+                    // (where super.receive() already handles this)
+                    if (hasDecryptionKey()) {
+                        fillInterested();
+                    }
                     return;
                 } else {
                     if (decryptedInputBuffer != null) {
@@ -967,127 +978,34 @@ public class HomekitHttpReceiver extends HttpReceiverOverHTTP implements Homekit
     public boolean content(@Nullable ByteBuffer buffer) {
         if (buffer != null) {
             logger.debug("{}Received content: {} bytes", LOG_STATE, buffer.remaining());
-            try {
-                return super.content(buffer);
-            } catch (NullPointerException e) {
-                // WORKAROUND: This is a known Jetty bug related to buffer corruption during concurrent access
-                // See: https://github.com/eclipse/jetty.project/issues/4936
-                // The networkBuffer in HttpReceiverOverHTTP can become null due to buffer management issues
-                // during header processing, connection resets, or concurrent buffer access patterns.
-
-                logger.warn("{}Jetty buffer corruption detected - networkBuffer is null despite {} bytes available. "
-                        + "This is a known Jetty issue (eclipse/jetty.project#4936). "
-                        + "Applying workaround to prevent connection failure.", LOG_WARN, buffer.remaining());
-
-                HttpExchange exchange = getHttpExchange();
-                if (exchange != null) {
-                    // Log additional context for debugging the Jetty bug
-                    logger.debug("{}Jetty bug context - Exchange: request={}, response={}, buffer={}bytes", LOG_STATE,
-                            exchange.getRequest() != null ? exchange.getRequest().getURI() : "null",
-                            exchange.getResponse() != null ? exchange.getResponse().getStatus() : "null",
-                            buffer.remaining());
-
-                    // WORKAROUND: Process content directly without relying on parent class networkBuffer
-                    // Since the parent's networkBuffer is corrupted, we need to handle content processing ourselves
-                    try {
-                        // Process the content directly through our receiver mechanisms
-                        boolean contentProcessed = processContentDirectly(buffer, exchange);
-
-                        if (contentProcessed) {
-                            logger.debug("{}Workaround successful - processed {} bytes directly", LOG_STATE,
-                                    buffer.remaining());
-                            return true; // Signal successful content processing
-                        } else {
-                            logger.warn("{}Direct content processing failed - unable to handle {} bytes", LOG_WARN,
-                                    buffer.remaining());
-                            return false;
-                        }
-                    } catch (Exception processingException) {
-                        logger.warn("{}Content processing workaround failed: {}", LOG_WARN,
-                                processingException.getMessage());
-                        return false;
-                    }
-                } else {
-                    logger.warn("{}No exchange available during Jetty buffer corruption", LOG_WARN);
-                    return false;
+            logger.debug("{}Content method called with buffer: position={}, limit={}, remaining={}", LOG_STATE,
+                    buffer.position(), buffer.limit(), buffer.remaining());
+            if (logger.isTraceEnabled() && buffer.hasRemaining()) {
+                // Log the payload as hex
+                int pos = buffer.position();
+                int len = buffer.remaining();
+                byte[] payload = new byte[len];
+                buffer.get(payload);
+                buffer.position(pos); // reset position
+                StringBuilder hex = new StringBuilder();
+                for (int i = 0; i < payload.length; i++) {
+                    if (i % 16 == 0)
+                        hex.append(String.format("%04X: ", i));
+                    hex.append(String.format("%02X ", payload[i]));
+                    if ((i + 1) % 16 == 0)
+                        hex.append("\n");
                 }
+                if (payload.length % 16 != 0)
+                    hex.append("\n");
+                logger.trace("{}HTTP Payload ({} bytes):\n{}", LOG_STATE, payload.length, hex.toString());
             }
+
+            // Now that networkBuffer is properly initialized by super.receive(),
+            // we can safely call super.content(buffer)
+            return super.content(buffer);
         } else {
             // Handle null buffer gracefully - this can happen with 4xx error responses
             logger.debug("{}Received null content buffer (likely 4xx error response)", LOG_STATE);
-            return false;
-        }
-    }
-
-    /**
-     * Processes content directly when Jetty's networkBuffer is corrupted.
-     * 
-     * This method bypasses the parent class's buffer management and processes
-     * content directly through our receiver mechanisms when Jetty bug #4936 occurs.
-     *
-     * @param buffer The content buffer to process
-     * @param exchange The HTTP exchange context
-     * @return true if content was successfully processed
-     */
-    private boolean processContentDirectly(@Nullable ByteBuffer buffer, @Nullable HttpExchange exchange) {
-        if (buffer == null || exchange == null) {
-            return false;
-        }
-
-        try {
-            // Save the original buffer position
-            int originalPosition = buffer.position();
-            int contentLength = buffer.remaining();
-
-            logger.debug("{}Processing {} bytes directly due to Jetty buffer corruption", LOG_STATE, contentLength);
-
-            // Try to trigger the response content handling directly
-            // This mimics what the parent class would do if networkBuffer wasn't corrupted
-            if (exchange.getResponse() != null) {
-                // Create a copy of the buffer to avoid position conflicts
-                ByteBuffer contentBuffer = buffer.duplicate();
-
-                // Process through the response content mechanism
-                try {
-                    // Call responseContent directly with proper parameters
-                    boolean processed = responseContent(exchange, contentBuffer, org.eclipse.jetty.util.Callback.NOOP);
-
-                    if (processed) {
-                        // Mark original buffer as consumed
-                        buffer.position(buffer.limit());
-                        logger.debug("{}Successfully processed content via responseContent mechanism", LOG_STATE);
-                        return true;
-                    }
-                } catch (Exception responseException) {
-                    logger.debug("{}ResponseContent mechanism failed: {}", LOG_STATE, responseException.getMessage());
-                }
-
-                // Fallback: Try to complete the exchange manually
-                try {
-                    // Copy the buffer data for processing
-                    byte[] contentBytes = new byte[contentLength];
-                    contentBuffer.rewind();
-                    contentBuffer.get(contentBytes);
-
-                    // Mark the original buffer as consumed
-                    buffer.position(buffer.limit());
-
-                    // Signal that we've handled the content
-                    logger.debug("{}Content extracted and buffer marked as consumed - {} bytes", LOG_STATE,
-                            contentBytes.length);
-                    return true;
-
-                } catch (Exception extractionException) {
-                    logger.debug("{}Content extraction failed: {}", LOG_STATE, extractionException.getMessage());
-                    // Restore original position if extraction failed
-                    buffer.position(originalPosition);
-                }
-            }
-
-            return false;
-
-        } catch (Exception e) {
-            logger.warn("{}Direct content processing failed: {}", LOG_WARN, e.getMessage());
             return false;
         }
     }
