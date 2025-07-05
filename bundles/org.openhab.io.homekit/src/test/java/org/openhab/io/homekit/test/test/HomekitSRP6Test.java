@@ -266,8 +266,8 @@ public class HomekitSRP6Test {
 
                 // **STEP 7**: Calculate secrets
                 System.out.println("\n🔐 SECRET CALCULATION:");
-                client.calculateClientSecret(serverPublicB);
-                server.calculateServerSecret(clientPublicA);
+                BigInteger clientPremasterSecret = client.calculateClientSecret(serverPublicB);
+                BigInteger serverPremasterSecret = server.calculateServerSecret(clientPublicA);
                 System.out.println("✅ Client and server secrets calculated");
 
                 // **STEP 8**: Calculate and verify evidence messages
@@ -309,8 +309,6 @@ public class HomekitSRP6Test {
                 // **STEP 10.5**: Compare premaster secrets (S) and final session keys (K)
                 System.out.println("\n🔐 PREMASTER SECRET AND FINAL SESSION KEY COMPARISON:");
 
-                BigInteger clientPremasterSecret = client.calculateClientSecret(serverPublicB);
-                BigInteger serverPremasterSecret = server.calculateServerSecret(clientPublicA);
 
                 BigInteger clientFinalSessionKey = client.calculateSessionKey();
                 BigInteger serverFinalSessionKey = server.calculateSessionKey();
