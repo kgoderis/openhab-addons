@@ -88,6 +88,7 @@ public class HomekitSRP6Util {
             BigInteger B, BigInteger S, BigInteger g, byte[] identity, byte[] salt) {
 
         switch (method) {
+            case RFC:
             case BOUNCYCASTLE:
                 return calculateM1BouncyCastle(digest, N, A, B, S, g, identity, salt);
             case BOUNCYCASTLEPAD:
@@ -477,7 +478,6 @@ public class HomekitSRP6Util {
 
         // Calculate H(N) - use padToN() to match fast-srp-hap behavior
         digest.reset();
-        int padLength = (N.bitLength() + 7) / 8;
         byte[] nBytes = HomekitByte.Pad(N, N);
         logger.debug("[SRP6][M1-FastSRP] N bytes (padded): {}", HomekitByte.toHex(nBytes));
         updateDigestInChunks(digest, nBytes);
@@ -487,7 +487,7 @@ public class HomekitSRP6Util {
 
         // Calculate H(g) - use HomekitByte.toByteArray() to match fast-srp-hap behavior
         digest.reset();
-        byte[] gBytes = g.toByteArray();
+        byte[] gBytes = HomekitByte.toByteArray(g);
         logger.debug("[SRP6][M1-FastSRP] g bytes (raw): {}", HomekitByte.toHex(gBytes));
         updateDigestInChunks(digest, gBytes);
         byte[] hg = new byte[digest.getDigestSize()];
@@ -511,7 +511,7 @@ public class HomekitSRP6Util {
 
         // Calculate H(S) - use full byte representation (including leading zeros)
         digest.reset();
-        byte[] sBytes = S.toByteArray();
+        byte[] sBytes = HomekitByte.toByteArray(S);
         logger.debug("[SRP6][M1-FastSRP] S bytes (full): {}", HomekitByte.toHex(sBytes));
         updateDigestInChunks(digest, sBytes);
         byte[] hS = new byte[digest.getDigestSize()];
@@ -572,6 +572,7 @@ public class HomekitSRP6Util {
             BigInteger M1, BigInteger S) {
 
         switch (method) {
+            case RFC:
             case BOUNCYCASTLE:
                 return calculateM2BouncyCastle(digest, N, A, M1, S);
             case BOUNCYCASTLEPAD:
@@ -803,13 +804,13 @@ public class HomekitSRP6Util {
     /**
      * Calculate M2 using FastSRP-compliant implementation that matches the JavaScript fast-srp library.
      * 
-     * Formula: M2 = H(A || M1 || H(S))
+     * Formula: M2 = H(A || M1 || K)
      * 
      * Algorithm:
-     * 1. Calculate H(S) = hash(toByteArray(S))
-     * 2. Final M2 calculation: H(A || M1 || H(S))
+     * 1. Calculate K = hash(S) (session key)
+     * 2. Final M2 calculation: H(A || M1 || K)
      * 
-     * This method uses toByteArray() for S and cumulative hashing for A and M1.
+     * This method matches the fast-srp-hap JavaScript library's getM2() method exactly.
      * 
      * @param digest The digest to use
      * @param N The modulus
@@ -826,32 +827,31 @@ public class HomekitSRP6Util {
         logger.debug("[SRP6][M2-FastSRP]   M1: {}", M1.toString(16));
         logger.debug("[SRP6][M2-FastSRP]   S: {}", S.toString(16));
 
-        // M2 = H(A || M1 || H(S))
+        // M2 = H(A || M1 || K)
         // FastSRP uses raw byte representation without padding
 
-        // Calculate H(S) - use full byte representation (including leading zeros)
+        // Calculate K = H(S) (session key)
         digest.reset();
-        byte[] sBytes = S.toByteArray();
+        byte[] sBytes = HomekitByte.toByteArray(S);
         logger.debug("[SRP6][M2-FastSRP] S bytes (full): {}", HomekitByte.toHex(sBytes));
         updateDigestInChunks(digest, sBytes);
-        byte[] hS = new byte[digest.getDigestSize()];
-        digest.doFinal(hS, 0);
-        logger.debug("[SRP6][M2-FastSRP] H(S): {}", HomekitByte.toHex(hS));
+        byte[] kBytes = new byte[digest.getDigestSize()];
+        digest.doFinal(kBytes, 0);
+        logger.debug("[SRP6][M2-FastSRP] K = H(S): {}", HomekitByte.toHex(kBytes));
 
-        // Final M2 calculation: H(A || M1 || H(S))
+        // Final M2 calculation: H(A || M1 || K)
         digest.reset();
         logger.debug("[SRP6][M2-FastSRP] Final M2 calculation - concatenating:");
-        int padLength = (N.bitLength() + 7) / 8;
-        byte[] aBytes = A.toByteArray();
-        logger.debug("[SRP6][M2-FastSRP]   1. A bytes (padded): {}", HomekitByte.toHex(aBytes));
+        byte[] aBytes = HomekitByte.toByteArray(A);
+        logger.debug("[SRP6][M2-FastSRP]   1. A bytes (raw): {}", HomekitByte.toHex(aBytes));
         updateDigestInChunks(digest, aBytes);
 
-        byte[] m1Bytes = M1.toByteArray();
-        logger.debug("[SRP6][M2-FastSRP]   2. M1 bytes (full): {}", HomekitByte.toHex(m1Bytes));
+        byte[] m1Bytes = HomekitByte.toByteArray(M1);
+        logger.debug("[SRP6][M2-FastSRP]   2. M1 bytes (raw): {}", HomekitByte.toHex(m1Bytes));
         updateDigestInChunks(digest, m1Bytes);
 
-        logger.debug("[SRP6][M2-FastSRP]   3. H(S): {}", HomekitByte.toHex(hS));
-        updateDigestInChunks(digest, hS);
+        logger.debug("[SRP6][M2-FastSRP]   3. K bytes (raw): {}", HomekitByte.toHex(kBytes));
+        updateDigestInChunks(digest, kBytes);
 
         byte[] result = new byte[digest.getDigestSize()];
         digest.doFinal(result, 0);
@@ -1157,6 +1157,7 @@ public class HomekitSRP6Util {
     public static BigInteger calculateU(CalculationMethod method, Digest digest, BigInteger N, BigInteger A,
             BigInteger B) {
         switch (method) {
+            case RFC:
             case BOUNCYCASTLE:
             case BOUNCYCASTLEPAD:
                 return calculateUBouncyCastle(digest, N, A, B);
@@ -1384,7 +1385,6 @@ public class HomekitSRP6Util {
      * @return The session key K
      */
     private static BigInteger calculateSessionKeyBouncyCastle(Digest digest, BigInteger S, BigInteger N) {
-        int padLength = (N.bitLength() + 7) / 8;
         byte[] _S = HomekitByte.Pad(S, N);
         digest.update(_S, 0, _S.length);
 
@@ -1433,9 +1433,8 @@ public class HomekitSRP6Util {
      * @return The session key K
      */
     private static BigInteger calculateSessionKeyFastSRP(Digest digest, BigInteger S, BigInteger N) {
-        byte[] _S = HomekitByte.Pad(S, N);
-        digest.update(_S, 0, _S.length);
-
+        byte[] sBytes = HomekitByte.toByteArray(S); // Use raw bytes, no padding
+        digest.update(sBytes, 0, sBytes.length);
         byte[] output = new byte[digest.getDigestSize()];
         digest.doFinal(output, 0);
         return new BigInteger(1, output);
@@ -1469,20 +1468,30 @@ public class HomekitSRP6Util {
      * @param k The multiplier parameter
      * @return The premaster secret S
      */
-    public static BigInteger calculateS(CalculationMethod method, Digest digest, BigInteger N, BigInteger g,
+    public static BigInteger calculateClientS(CalculationMethod method, Digest digest, BigInteger N, BigInteger g,
             BigInteger A, BigInteger B, BigInteger a, BigInteger x, BigInteger u, BigInteger k) {
         switch (method) {
+            case RFC:
             case BOUNCYCASTLE:
-                return calculateSBouncyCastle(digest, N, g, A, B, a, x, u, k);
+                return calculateClientSBouncyCastle(digest, N, g, A, B, a, x, u, k);
             case BOUNCYCASTLEPAD:
-                return calculateSBouncyCastlePad(digest, N, g, A, B, a, x, u, k);
+                return calculateClientSBouncyCastlePad(digest, N, g, A, B, a, x, u, k);
             case NIMBUS:
-                return calculateSNimbus(digest, N, g, A, B, a, x, u, k);
+                return calculateClientSNimbus(digest, N, g, A, B, a, x, u, k);
             case FASTSRP:
-                return calculateSFastSRP(digest, N, g, A, B, a, x, u, k);
+                return calculateClientSFastSRP(digest, N, g, A, B, a, x, u, k);
             default:
                 throw new IllegalArgumentException("Unsupported calculation method: " + method);
         }
+    }
+
+    public static BigInteger calculateServerS(CalculationMethod method, Digest digest, BigInteger N, BigInteger A,
+            BigInteger b, BigInteger u, BigInteger v) {
+
+        // Calculate the premaster secret S using the standard SRP6 formula
+        // For server: S = (A * v^u)^b mod N
+        BigInteger base = A.multiply(v.modPow(u, N)).mod(N);
+        return base.modPow(b, N);
     }
 
     /**
@@ -1509,7 +1518,7 @@ public class HomekitSRP6Util {
      * @param k The multiplier parameter
      * @return The premaster secret S
      */
-    private static BigInteger calculateSBouncyCastle(Digest digest, BigInteger N, BigInteger g, BigInteger A,
+    private static BigInteger calculateClientSBouncyCastle(Digest digest, BigInteger N, BigInteger g, BigInteger A,
             BigInteger B, BigInteger a, BigInteger x, BigInteger u, BigInteger k) {
         logger.debug("[SRP6][S-BouncyCastle] Starting S calculation");
         BigInteger g_x = g.modPow(x, N);
@@ -1554,7 +1563,7 @@ public class HomekitSRP6Util {
      * @param k The multiplier parameter
      * @return The premaster secret S
      */
-    private static BigInteger calculateSBouncyCastlePad(Digest digest, BigInteger N, BigInteger g, BigInteger A,
+    private static BigInteger calculateClientSBouncyCastlePad(Digest digest, BigInteger N, BigInteger g, BigInteger A,
             BigInteger B, BigInteger a, BigInteger x, BigInteger u, BigInteger k) {
         logger.debug("[SRP6][S-BouncyCastlePad] Starting S calculation");
         BigInteger g_x = g.modPow(x, N);
@@ -1596,8 +1605,8 @@ public class HomekitSRP6Util {
      * @param k The multiplier parameter
      * @return The premaster secret S
      */
-    private static BigInteger calculateSNimbus(Digest digest, BigInteger N, BigInteger g, BigInteger A, BigInteger B,
-            BigInteger a, BigInteger x, BigInteger u, BigInteger k) {
+    private static BigInteger calculateClientSNimbus(Digest digest, BigInteger N, BigInteger g, BigInteger A,
+            BigInteger B, BigInteger a, BigInteger x, BigInteger u, BigInteger k) {
         logger.debug("[SRP6][S-Nimbus] Starting S calculation");
         BigInteger g_x = g.modPow(x, N);
         logger.debug("[SRP6][S-Nimbus] g^x: {}", g_x.toString(16));
@@ -1638,8 +1647,8 @@ public class HomekitSRP6Util {
      * @param k The multiplier parameter
      * @return The premaster secret S
      */
-    private static BigInteger calculateSFastSRP(Digest digest, BigInteger N, BigInteger g, BigInteger A, BigInteger B,
-            BigInteger a, BigInteger x, BigInteger u, BigInteger k) {
+    private static BigInteger calculateClientSFastSRP(Digest digest, BigInteger N, BigInteger g, BigInteger A,
+            BigInteger B, BigInteger a, BigInteger x, BigInteger u, BigInteger k) {
         logger.debug("[SRP6][S-FastSRP] Starting S calculation");
         BigInteger g_x = g.modPow(x, N);
         logger.debug("[SRP6][S-FastSRP] g^x: {}", g_x.toString(16));
@@ -1681,6 +1690,7 @@ public class HomekitSRP6Util {
     public static BigInteger calculateX(CalculationMethod method, Digest digest, BigInteger N, byte[] salt,
             byte[] identity, byte[] password) {
         switch (method) {
+            case RFC:
             case BOUNCYCASTLE:
             case BOUNCYCASTLEPAD:
                 return calculateXBouncyCastle(digest, N, salt, identity, password);

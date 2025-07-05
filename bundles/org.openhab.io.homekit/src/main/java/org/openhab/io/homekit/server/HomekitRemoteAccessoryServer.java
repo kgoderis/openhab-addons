@@ -1127,13 +1127,18 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             try {
                 // serverProof is M2
                 // Use the built-in verification method
-                client.verifyServerEvidenceMessage(serverProof);
+                boolean m2VerificationResult = client.verifyServerEvidenceMessage(serverProof);
+                if (!m2VerificationResult) {
+                    logger.error("{} [{}] : {} : Stage {} : M2 verification failed", LOG_PREFIX, getUID(), LOG_ERROR,
+                            2);
+                    throw new HomekitServerException("M2 verification failed");
+                }
                 logger.debug("{} [{}] : {} : Stage {} : M2 verification successful", LOG_PREFIX, getUID(), LOG_VERIFY,
                         2);
 
                 // Get session key
                 try {
-                    client.calculateSessionKey();
+                    client.calculateSessionKey(srp6CalculationMethod);
                 } catch (CryptoException e) {
                     logger.error("{} [{}] : {} : Stage {} : Failed to calculate SRP session key: {}", LOG_PREFIX,
                             getUID(), LOG_ERROR, 2, e.getMessage(), e);

@@ -22,6 +22,8 @@ import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.io.homekit.protocol.crypto.HomekitSRP6Util.CalculationMethod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * HAP-compatible SRP-6a server implementation extending BouncyCastle's SRP6Server.
@@ -46,6 +48,8 @@ import org.openhab.io.homekit.protocol.crypto.HomekitSRP6Util.CalculationMethod;
  */
 @NonNullByDefault
 public class HomekitSRP6Server extends SRP6Server {
+
+    private static final Logger logger = LoggerFactory.getLogger(HomekitSRP6Server.class);
 
     // HAP-specific fields for evidence calculation
     private byte[] identity = new byte[0];
@@ -389,7 +393,8 @@ public class HomekitSRP6Server extends SRP6Server {
             throw new IllegalStateException("Modulus N not set");
         }
         if (this.b == null) {
-            throw new IllegalStateException("Server private key b not set");
+            throw new IllegalStateException(
+                    "Server private key b not set (must be set explicitly for deterministic operation)");
         }
         if (this.digest == null) {
             throw new IllegalStateException("Digest not set");
@@ -402,11 +407,7 @@ public class HomekitSRP6Server extends SRP6Server {
 
         // Calculate u using our own implementation that handles large keys
         BigInteger u = HomekitSRP6Util.calculateU(calculationMethod, digest, N, A, B);
-
-        // Calculate the premaster secret S using the standard SRP6 formula
-        // For server: S = (A * v^u)^b mod N
-        BigInteger base = A.multiply(v.modPow(u, N)).mod(N);
-        this.S = base.modPow(b, N);
+        this.S = HomekitSRP6Util.calculateServerS(calculationMethod, digest, N, A, b, u, v);
 
         return this.S;
     }
@@ -429,6 +430,10 @@ public class HomekitSRP6Server extends SRP6Server {
             throw new CryptoException("Modulus N not set");
         }
 
-        return HomekitSRP6Util.calculateSessionKey(method, digest, S, N);
+        // Calculate the session key using the utility method
+        this.Key = HomekitSRP6Util.calculateSessionKey(method, digest, S, N);
+        logger.debug("[SRP6-Server] Calculated session key K: {}", Key.toString(16));
+
+        return this.Key;
     }
 }

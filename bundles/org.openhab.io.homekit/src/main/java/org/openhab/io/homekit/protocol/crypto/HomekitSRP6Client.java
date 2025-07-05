@@ -397,6 +397,7 @@ public class HomekitSRP6Client extends SRP6Client {
      * Calculate the premaster secret S using HAP-compliant logic and large-key calculateU.
      *
      * @param serverPublicKey The server's public key B
+     * @param x The client secret
      * @return The premaster secret S
      */
     public BigInteger calculateClientSecret(BigInteger serverPublicKey) {
@@ -410,7 +411,8 @@ public class HomekitSRP6Client extends SRP6Client {
             throw new IllegalStateException("Modulus N not set");
         }
         if (this.a == null) {
-            throw new IllegalStateException("Client private key a not set");
+            throw new IllegalStateException(
+                    "Client private key a not set (must be set explicitly for deterministic operation)");
         }
         if (this.digest == null) {
             throw new IllegalStateException("Digest not set");
@@ -440,7 +442,7 @@ public class HomekitSRP6Client extends SRP6Client {
         // Calculate the premaster secret S using the specified calculation method
         logger.debug("[SRP6-Client] Calculating S = (B - k * g^x)^(a + u * x) mod N");
         logger.debug("[SRP6-Client] Calculation method: {}", calculationMethod);
-        this.S = HomekitSRP6Util.calculateS(calculationMethod, digest, N, g, A, B, a, x, u, k);
+        this.S = HomekitSRP6Util.calculateClientS(calculationMethod, digest, N, g, A, B, a, x, u, k);
         logger.debug("[SRP6-Client] Calculated S: {}", S.toString(16));
 
         return this.S;
@@ -464,6 +466,10 @@ public class HomekitSRP6Client extends SRP6Client {
             throw new CryptoException("Modulus N not set");
         }
 
-        return HomekitSRP6Util.calculateSessionKey(method, digest, S, N);
+        // Calculate the session key using the utility method
+        this.Key = HomekitSRP6Util.calculateSessionKey(method, digest, S, N);
+        logger.debug("[SRP6-Client] Calculated session key K: {}", Key.toString(16));
+
+        return this.Key;
     }
 }
