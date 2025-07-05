@@ -94,9 +94,9 @@ public class HomekitDecryptedEndPoint implements EndPoint {
 
         if (logger.isTraceEnabled()) {
             logger.trace("[{}] DecryptedHomekitEndPoint : Setting Encryption Key {}", getRemoteAddress().toString(),
-                    HomekitByte.toHexString(this.decryptionKey));
+                    HomekitByte.toHex(this.decryptionKey));
             logger.trace("[{}] DecryptedHomekitEndPoint : Setting Decryption Key {}", getRemoteAddress().toString(),
-                    HomekitByte.toHexString(this.encryptionKey));
+                    HomekitByte.toHex(this.encryptionKey));
 
         }
     }

@@ -302,7 +302,7 @@ public class HomekitPairingRegistryImpl
      */
     @Override
     public Collection<HomekitPairing> get(byte[] pairingId) {
-        logger.debug("{}Retrieving pairings for ID: {}", LOG_STATE, HomekitByte.toHexString(pairingId));
+        logger.debug("{}Retrieving pairings for ID: {}", LOG_STATE, HomekitByte.toHex(pairingId));
         @SuppressWarnings("null") // stream().collect() always returns non-null List
         Collection<HomekitPairing> result = getAll().stream()
                 .filter(p -> Arrays.equals(p.getUID().getSourcePairingId(), pairingId)).collect(Collectors.toList());
@@ -421,7 +421,7 @@ public class HomekitPairingRegistryImpl
         if (accessoryServerRegistryReady && managedPairingProviderReady && !readyMarkerRegistered) {
             for (HomekitPairing aPairing : getAll()) {
                 logger.debug("{}Pairing {} with public key {} is available", LOG_STATE, aPairing.getUID(),
-                        HomekitByte.toHexString(aPairing.getPublicKey()));
+                        HomekitByte.toHex(aPairing.getPublicKey()));
             }
 
             logger.info("{}Marking HomekitPairingRegistry as ready", LOG_STATE);

@@ -21,6 +21,10 @@ import org.bouncycastle.crypto.agreement.srp.SRP6Util;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.io.homekit.protocol.crypto.HomekitSRP6Util.CalculationMethod;
+import org.openhab.io.homekit.util.HomekitByte;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * HAP-compatible SRP-6a client implementation extending BouncyCastle's SRP6Client.
@@ -35,6 +39,7 @@ import org.eclipse.jdt.annotation.Nullable;
  * - Uses SHA-512 as the hash function as required by HAP
  * - Supports the 3072-bit group from RFC5054
  * - Provides state management for the authentication process
+ * - Supports multiple calculation methods (BouncyCastle and Nimbus)
  *
  * The evidence calculation follows the HAP specification:
  * - M1 = H(H(N) xor H(g) | H(I) | s | A | B | H(S))
@@ -45,18 +50,43 @@ import org.eclipse.jdt.annotation.Nullable;
 @NonNullByDefault
 public class HomekitSRP6Client extends SRP6Client {
 
+    private static final Logger logger = LoggerFactory.getLogger(HomekitSRP6Client.class);
+
     private byte[] salt = new byte[0];
     private byte[] identity = new byte[0];
     private byte[] password = new byte[0];
+    private final HomekitSRP6Util.CalculationMethod calculationMethod;
+
+    /**
+     * Creates a new HomekitSRP6Client with the default BouncyCastle calculation method.
+     */
+    public HomekitSRP6Client() {
+        this(HomekitSRP6Util.CalculationMethod.BOUNCYCASTLE);
+    }
+
+    /**
+     * Creates a new HomekitSRP6Client with the specified calculation method.
+     * 
+     * @param calculationMethod The calculation method to use for M1 and M2 evidence messages
+     */
+    public HomekitSRP6Client(HomekitSRP6Util.CalculationMethod calculationMethod) {
+        this.calculationMethod = calculationMethod;
+    }
 
     /**
      * Initialises the client to begin new authentication attempt with the HAP SRP-6a parameters
      */
     public void init() {
+        logger.debug("[SRP6-Client] Initializing SRP6 client");
         this.N = HomekitEncryptionEngine.N_3072;
         this.g = HomekitEncryptionEngine.G;
         this.random = HomekitEncryptionEngine.getSecureRandom();
         this.digest = new SHA512Digest();
+        logger.debug("[SRP6-Client] Initialization complete:");
+        logger.debug("[SRP6-Client]   N: {}", N.toString(16));
+        logger.debug("[SRP6-Client]   g: {}", g.toString(16));
+        logger.debug("[SRP6-Client]   digest: SHA-512");
+        logger.debug("[SRP6-Client]   calculationMethod: {}", calculationMethod);
     }
 
     /**
@@ -152,6 +182,15 @@ public class HomekitSRP6Client extends SRP6Client {
     }
 
     /**
+     * Gets the calculation method being used for evidence message computation.
+     *
+     * @return The calculation method
+     */
+    public HomekitSRP6Util.CalculationMethod getCalculationMethod() {
+        return calculationMethod;
+    }
+
+    /**
      * Generates client's credentials given the client's salt, identity and password
      * 
      * @param salt The salt used in the client's verifier.
@@ -206,15 +245,37 @@ public class HomekitSRP6Client extends SRP6Client {
         this.identity = identity;
         this.password = password;
 
+        logger.debug("[SRP6-Client] Starting client credentials generation");
+        logger.debug("[SRP6-Client] Input parameters:");
+        logger.debug("[SRP6-Client]   salt: {}", HomekitByte.toHex(salt));
+        logger.debug("[SRP6-Client]   identity: {}", HomekitByte.toHex(identity));
+        logger.debug("[SRP6-Client]   password: {}", HomekitByte.toHex(password));
+        logger.debug("[SRP6-Client]   N: {}", N != null ? N.toString(16) : "null");
+        logger.debug("[SRP6-Client]   g: {}", g != null ? g.toString(16) : "null");
+
         // If a private value was set, use it; otherwise use random generation
         if (a != null) {
+            logger.debug("[SRP6-Client] Using pre-set private value a: {}", a.toString(16));
+
             // Compute the public value using the set private value
-            this.x = SRP6Util.calculateX(digest, N, salt, identity, password);
+            logger.debug("[SRP6-Client] Calculating x = H(salt || H(identity || ':' || password))");
+            this.x = HomekitSRP6Util.calculateX(calculationMethod, digest, N, salt, identity, password);
+            logger.debug("[SRP6-Client] Calculated x: {}", x.toString(16));
+
+            logger.debug("[SRP6-Client] Calculating A = g^a mod N");
             this.A = g.modPow(a, N);
+            logger.debug("[SRP6-Client] Calculated A: {}", A.toString(16));
+
             return A;
         } else {
+            logger.debug("[SRP6-Client] Using random private value generation");
             // Call the parent method to generate credentials with random private value
-            return super.generateClientCredentials(salt, identity, password);
+            logger.debug("[SRP6-Client] Using random private value generation");
+            this.A = super.generateClientCredentials(salt, identity, password);
+
+            logger.debug("[SRP6-Client] Parent method calculated A: {}", A != null ? A.toString(16) : "null");
+            logger.debug("[SRP6-Client] Parent method calculated x: {}", x != null ? x.toString(16) : "null");
+            return this.A;
         }
     }
 
@@ -252,8 +313,20 @@ public class HomekitSRP6Client extends SRP6Client {
             throw new CryptoException("Salt not set");
         }
 
-        // Use our own calculateM1 implementation that handles large inputs
-        BigInteger m1 = HomekitSRP6Util.calculateM1(digest, N, A, B, S, g, identity, salt);
+        logger.debug("[SRP6-Client] Starting M1 calculation");
+        logger.debug("[SRP6-Client] Input parameters for M1:");
+        logger.debug("[SRP6-Client]   N: {}", N.toString(16));
+        logger.debug("[SRP6-Client]   A: {}", A.toString(16));
+        logger.debug("[SRP6-Client]   B: {}", B.toString(16));
+        logger.debug("[SRP6-Client]   S: {}", S.toString(16));
+        logger.debug("[SRP6-Client]   g: {}", g.toString(16));
+        logger.debug("[SRP6-Client]   identity: {}", HomekitByte.toHex(identity));
+        logger.debug("[SRP6-Client]   salt: {}", HomekitByte.toHex(salt));
+        logger.debug("[SRP6-Client]   calculationMethod: {}", calculationMethod);
+
+        // Use the selected calculation method for M1
+        BigInteger m1 = HomekitSRP6Util.calculateM1(calculationMethod, digest, N, A, B, S, g, identity, salt);
+        logger.debug("[SRP6-Client] Calculated M1: {}", m1.toString(16));
 
         // Set the internal M1 field for consistency with server behavior
         this.M1 = m1;
@@ -299,8 +372,20 @@ public class HomekitSRP6Client extends SRP6Client {
             return false;
         }
 
-        // Compute the own server evidence message 'M2'
-        BigInteger computedM2 = HomekitSRP6Util.calculateM2(digest, N, A, M1, S);
+        logger.debug("[SRP6-Client] Starting M2 verification");
+        logger.debug("[SRP6-Client] Input parameters for M2:");
+        logger.debug("[SRP6-Client]   N: {}", N.toString(16));
+        logger.debug("[SRP6-Client]   A: {}", A.toString(16));
+        logger.debug("[SRP6-Client]   M1: {}", M1.toString(16));
+        logger.debug("[SRP6-Client]   S: {}", S.toString(16));
+        logger.debug("[SRP6-Client]   serverM2: {}", serverM2.toString(16));
+        logger.debug("[SRP6-Client]   calculationMethod: {}", calculationMethod);
+
+        // Compute the own server evidence message 'M2' using the selected calculation method
+        BigInteger computedM2 = HomekitSRP6Util.calculateM2(calculationMethod, digest, N, A, M1, S);
+        logger.debug("[SRP6-Client] Calculated M2: {}", computedM2.toString(16));
+        logger.debug("[SRP6-Client] M2 verification result: {}", computedM2.equals(serverM2) ? "SUCCESS" : "FAILED");
+
         if (computedM2.equals(serverM2)) {
             this.M2 = serverM2;
             return true;
@@ -331,19 +416,54 @@ public class HomekitSRP6Client extends SRP6Client {
             throw new IllegalStateException("Digest not set");
         }
 
+        logger.debug("[SRP6-Client] Starting client secret calculation");
+        logger.debug("[SRP6-Client] Input parameters:");
+        logger.debug("[SRP6-Client]   serverPublicKey (B): {}", serverPublicKey.toString(16));
+        logger.debug("[SRP6-Client]   clientPublicKey (A): {}", A.toString(16));
+        logger.debug("[SRP6-Client]   clientPrivateKey (a): {}", a.toString(16));
+        logger.debug("[SRP6-Client]   x: {}", x != null ? x.toString(16) : "null");
+        logger.debug("[SRP6-Client]   N: {}", N.toString(16));
+        logger.debug("[SRP6-Client]   g: {}", g.toString(16));
+
         this.B = serverPublicKey;
 
         // Calculate u using our own implementation that handles large keys
-        BigInteger u = HomekitSRP6Util.calculateU(digest, N, A, B);
+        logger.debug("[SRP6-Client] Calculating u = H(A || B)");
+        BigInteger u = HomekitSRP6Util.calculateU(calculationMethod, digest, N, A, B);
+        logger.debug("[SRP6-Client] Calculated u: {}", u.toString(16));
 
-        // Calculate the premaster secret S using the standard SRP6 formula
-        // For client: S = (B - k * g^x)^(a + u * x) mod N
-        // BigInteger k = calculateKRFC(digest, N, g); // ✅ RFC-compliant k calculation
+        // Calculate k using the standard SRP6 formula
+        logger.debug("[SRP6-Client] Calculating k = H(N || PAD(g))");
         BigInteger k = SRP6Util.calculateK(digest, N, g);
-        BigInteger base = B.subtract(k.multiply(g.modPow(x, N)).mod(N)).mod(N);
-        BigInteger exponent = a.add(u.multiply(x)).mod(N.subtract(BigInteger.ONE));
-        this.S = base.modPow(exponent, N);
+        logger.debug("[SRP6-Client] Calculated k: {}", k.toString(16));
+
+        // Calculate the premaster secret S using the specified calculation method
+        logger.debug("[SRP6-Client] Calculating S = (B - k * g^x)^(a + u * x) mod N");
+        logger.debug("[SRP6-Client] Calculation method: {}", calculationMethod);
+        this.S = HomekitSRP6Util.calculateS(calculationMethod, digest, N, g, A, B, a, x, u, k);
+        logger.debug("[SRP6-Client] Calculated S: {}", S.toString(16));
 
         return this.S;
+    }
+
+    /**
+     * Calculate the session key K using the specified calculation method.
+     * 
+     * @param method The calculation method to use
+     * @return The session key K
+     * @throws CryptoException if the premaster secret S is not calculated
+     */
+    public BigInteger calculateSessionKey(CalculationMethod method) throws CryptoException {
+        if (S == null) {
+            throw new CryptoException("Premaster secret S not calculated");
+        }
+        if (digest == null) {
+            throw new CryptoException("Digest not set");
+        }
+        if (N == null) {
+            throw new CryptoException("Modulus N not set");
+        }
+
+        return HomekitSRP6Util.calculateSessionKey(method, digest, S, N);
     }
 }

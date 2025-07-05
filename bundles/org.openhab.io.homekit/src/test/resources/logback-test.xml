@@ -51,6 +51,11 @@
         <appender-ref ref="STDOUT"/>
     </logger>
 
+    <!-- Enable DEBUG for SRP6 utility to show detailed calculation logs -->
+    <logger name="org.openhab.io.homekit.protocol.crypto" level="DEBUG" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
     <!-- Enable TRACE for test classes, especially RealAccessoryTest -->
     <logger name="org.openhab.io.homekit.test" level="TRACE" additivity="false">
         <appender-ref ref="STDOUT"/>

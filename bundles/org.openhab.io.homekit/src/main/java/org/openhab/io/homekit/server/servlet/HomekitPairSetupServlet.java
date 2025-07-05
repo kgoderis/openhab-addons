@@ -166,7 +166,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
             logger.debug("{} [{}] : SERVLET RECEIVED PAYLOAD - {} bytes from request", LOG_PREFIX,
                     server != null ? server.getUID() : "UNKNOWN", body.length);
             logger.trace("{} [{}] : SERVLET PAYLOAD HEX: {}", LOG_PREFIX, server != null ? server.getUID() : "UNKNOWN",
-                    HomekitByte.toHexString(body));
+                    HomekitByte.toHex(body));
 
             short state = getState(body);
             logger.debug("{} [{}] : SERVLET EXTRACTED STATE: {} from payload", LOG_PREFIX,
@@ -238,7 +238,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         logger.debug("{} [{}] : {} : Stage {} : Starting pair setup stage", LOG_PREFIX,
                 server != null ? server.getUID() : "UNKNOWN", LOG_SECURITY, 1);
         logger.trace("{} [{}] : {} : Stage {} : Received request body: {}", LOG_PREFIX,
-                server != null ? server.getUID() : "UNKNOWN", LOG_SECURITY, 1, HomekitByte.toHexString(body));
+                server != null ? server.getUID() : "UNKNOWN", LOG_SECURITY, 1, HomekitByte.toHex(body));
 
         if (server == null) {
             logger.error("{} [{}] : {} : Stage {} : Server instance is null", LOG_PREFIX, "UNKNOWN", LOG_ERROR);
@@ -260,9 +260,8 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         logger.trace("{} [{}] : {} : Stage {} : Generating random salt", LOG_PREFIX, server.getUID(), LOG_CRYPTO, 1);
         byte[] saltArray = new byte[16];
         HomekitEncryptionEngine.getSecureRandom().nextBytes(saltArray);
-        BigInteger salt = new BigInteger(1, saltArray);
         logger.debug("{} [{}] : {} : Stage {} : Salt = {}", LOG_PREFIX, server.getUID(), LOG_VERIFY, 1,
-                HomekitByte.toHexString(salt.toByteArray()));
+                HomekitByte.toHex(saltArray));
 
         @SuppressWarnings("null") // server null check performed at method start
         String setupCode = server.getSetupCode();
@@ -273,33 +272,33 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         // Generate verifier using the new API
         SRP6VerifierGenerator verifierGenerator = new SRP6VerifierGenerator();
         verifierGenerator.init(HomekitEncryptionEngine.N_3072, HomekitEncryptionEngine.G, new SHA512Digest());
-        BigInteger verifier = verifierGenerator.generateVerifier(salt.toByteArray(), identityBytes,
+        BigInteger verifier = verifierGenerator.generateVerifier(saltArray, identityBytes,
                 setupCode.getBytes(StandardCharsets.UTF_8));
         SRP6Server.init(verifier);
         logger.trace("{} [{}] : {} : Stage {} : Generated verifier", LOG_PREFIX, server.getUID(), LOG_CRYPTO, 1);
         logger.debug("{} [{}] : {} : Stage {} : Verifier = {}", LOG_PREFIX, server.getUID(), LOG_VERIFY, 1,
-                HomekitByte.toHexString(verifier.toByteArray()));
+                HomekitByte.toHex(verifier.toByteArray()));
 
         // Store salt in session for use in Stage 2 HAP parameter injection
-        httpSession.setAttribute("SRPSalt", salt);
+        httpSession.setAttribute("SRPSalt", saltArray);
         logger.trace("{} [{}] : {} : Stage {} : Stored salt in session for Stage 2", LOG_PREFIX, server.getUID(),
                 LOG_CRYPTO, 1);
 
         // Generate random server public key (no deterministic override)
         BigInteger serverPublicKey = SRP6Server.generateSRP6aServerCredentials();
         logger.debug("{} [{}] : {} : Stage {} : Server public key = {}", LOG_PREFIX, server.getUID(), LOG_VERIFY, 1,
-                HomekitByte.toHexString(serverPublicKey.toByteArray()));
+                HomekitByte.toHex(serverPublicKey.toByteArray()));
 
         Encoder encoder = HomekitTypeLengthValueEncoderDecoder.getEncoder();
         encoder.add(HomekitMessage.STATE, (short) 0x02);
-        encoder.add(HomekitMessage.SALT, salt.toByteArray());
+        encoder.add(HomekitMessage.SALT, saltArray);
         encoder.add(HomekitMessage.PUBLIC_KEY, serverPublicKey.toByteArray());
 
         byte[] responseData = encoder.toByteArray();
         logger.debug("{} [{}] : SERVLET SENDING STAGE 1 RESPONSE - {} bytes, status: {}", LOG_PREFIX, server.getUID(),
                 responseData.length, HttpServletResponse.SC_OK);
         logger.trace("{} [{}] : SERVLET STAGE 1 RESPONSE HEX: {}", LOG_PREFIX, server.getUID(),
-                HomekitByte.toHexString(responseData));
+                HomekitByte.toHex(responseData));
 
         logger.debug("{} [{}] : {} : Stage {} : Completing pair setup stage", LOG_PREFIX, server.getUID(),
                 LOG_SECURITY);
@@ -353,7 +352,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         logger.debug("{} [{}] : {} : Stage {} : Executing pair setup stage", LOG_PREFIX,
                 server != null ? server.getUID() : "UNKNOWN", LOG_SECURITY);
         logger.trace("{} [{}] : {} : Stage {} : Received request body: {}", LOG_PREFIX,
-                server != null ? server.getUID() : "UNKNOWN", LOG_SECURITY, HomekitByte.toHexString(body));
+                server != null ? server.getUID() : "UNKNOWN", LOG_SECURITY, HomekitByte.toHex(body));
 
         HttpSession httpSession = request.getSession();
         HomekitSRP6Server SRP6Server = (HomekitSRP6Server) httpSession.getAttribute("SRP6Server");
@@ -376,18 +375,18 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
             BigInteger clientPublicKey = d.getBigInt(HomekitMessage.PUBLIC_KEY);
             logger.debug("{} [{}] : {} : Stage {} : Client public key = {}", LOG_PREFIX,
                     server != null ? server.getUID() : "UNKNOWN", LOG_VERIFY, 2,
-                    HomekitByte.toHexString(clientPublicKey.toByteArray()));
+                    HomekitByte.toHex(clientPublicKey.toByteArray()));
 
             logger.trace("{} [{}] : {} : Stage {} : Extracting client proof from TLV8 content", LOG_PREFIX,
                     server != null ? server.getUID() : "UNKNOWN", LOG_CRYPTO, 2);
             BigInteger clientProof = d.getBigInt(HomekitMessage.PROOF);
             logger.debug("{} [{}] : {} : Stage {} : Client proof = {}", LOG_PREFIX,
                     server != null ? server.getUID() : "UNKNOWN", LOG_VERIFY, 2,
-                    HomekitByte.toHexString(clientProof.toByteArray()));
+                    HomekitByte.toHex(clientProof.toByteArray()));
 
             // **HAP PARAMETER INJECTION**: Set identity and salt on server for HAP-compliant M1 verification
-            BigInteger salt = (BigInteger) httpSession.getAttribute("SRPSalt");
-            if (salt == null) {
+            byte[] saltBytes = (byte[]) httpSession.getAttribute("SRPSalt");
+            if (saltBytes == null) {
                 logger.error("{} [{}] : {} : Stage {} : Salt not found in session", LOG_PREFIX,
                         server != null ? server.getUID() : "UNKNOWN", LOG_ERROR, 2);
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -395,7 +394,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
             }
 
             SRP6Server.setIdentity("Pair-Setup".getBytes(StandardCharsets.UTF_8));
-            SRP6Server.setSalt(salt.toByteArray());
+            SRP6Server.setSalt(saltBytes);
             logger.trace("{} [{}] : {} : Stage {} : Injected HAP parameters (identity and salt) for M1 verification",
                     LOG_PREFIX, server != null ? server.getUID() : "UNKNOWN", LOG_CRYPTO, 2);
 
@@ -419,7 +418,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
             BigInteger serverProof = SRP6Server.calculateServerEvidenceMessage();
             logger.debug("{} [{}] : {} : Stage {} : Server proof = {}", LOG_PREFIX,
                     server != null ? server.getUID() : "UNKNOWN", LOG_VERIFY, 2,
-                    HomekitByte.toHexString(serverProof.toByteArray()));
+                    HomekitByte.toHex(serverProof.toByteArray()));
 
             Encoder encoder = HomekitTypeLengthValueEncoderDecoder.getEncoder();
             encoder.add(HomekitMessage.STATE, (short) 0x04);
@@ -485,7 +484,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         logger.debug("{} [{}] : {} : Stage {} : Executing pair setup stage", LOG_PREFIX,
                 server != null ? server.getUID() : "UNKNOWN", LOG_SECURITY);
         logger.trace("{} [{}] : {} : Stage {} : Received request body: {}", LOG_PREFIX,
-                server != null ? server.getUID() : "UNKNOWN", LOG_SECURITY, HomekitByte.toHexString(body));
+                server != null ? server.getUID() : "UNKNOWN", LOG_SECURITY, HomekitByte.toHex(body));
 
         if (server == null) {
             logger.error("{} [{}] : {} : Stage {} : Server instance is null", LOG_PREFIX, "UNKNOWN", LOG_ERROR);
@@ -529,12 +528,12 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         }
         logger.trace("{} [{}] : {} : Stage {} : Retrieved SRP session key", LOG_PREFIX, server.getUID(), LOG_CRYPTO, 3);
         logger.debug("{} [{}] : {} : Stage {} : SRP session key = {}", LOG_PREFIX, server.getUID(), LOG_VERIFY, 3,
-                HomekitByte.toHexString(sessionKey.toByteArray()));
+                HomekitByte.toHex(sessionKey.toByteArray()));
 
         byte[] sharedSecret = sessionKey.toByteArray();
         logger.trace("{} [{}] : {} : Stage {} : Generated shared secret", LOG_PREFIX, server.getUID(), LOG_CRYPTO, 3);
         logger.debug("{} [{}] : {} : Stage {} : Shared secret = {}", LOG_PREFIX, server.getUID(), LOG_VERIFY, 3,
-                HomekitByte.toHexString(sharedSecret));
+                HomekitByte.toHex(sharedSecret));
 
         HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA512Digest());
         hkdf.init(new HKDFParameters(sharedSecret, "Pair-Setup-Encrypt-Salt".getBytes(StandardCharsets.UTF_8),
@@ -543,7 +542,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         hkdf.generateBytes(derivedSessionKey, 0, 32);
         logger.trace("{} [{}] : {} : Stage {} : Generated session key", LOG_PREFIX, server.getUID(), LOG_CRYPTO, 3);
         logger.debug("{} [{}] : {} : Stage {} : Session key = {}", LOG_PREFIX, server.getUID(), LOG_VERIFY, 3,
-                HomekitByte.toHexString(derivedSessionKey));
+                HomekitByte.toHex(derivedSessionKey));
 
         DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(body);
 
@@ -579,11 +578,11 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         logger.trace("{} [{}] : {} : Stage {} : Validating client pairing data - all required fields present",
                 LOG_PREFIX, server.getUID(), LOG_CRYPTO, 3);
         logger.debug("{} [{}] : {} : Stage {} : Client pairing identifier = {}", LOG_PREFIX, server.getUID(),
-                LOG_VERIFY, 3, HomekitByte.toHexString(clientPairingIdentifier));
+                LOG_VERIFY, 3, HomekitByte.toHex(clientPairingIdentifier));
         logger.debug("{} [{}] : {} : Stage {} : Client longterm public key = {}", LOG_PREFIX, server.getUID(),
-                LOG_VERIFY, 3, HomekitByte.toHexString(clientLongtermPublicKey));
+                LOG_VERIFY, 3, HomekitByte.toHex(clientLongtermPublicKey));
         logger.debug("{} [{}] : {} : Stage {} : Client signature = {}", LOG_PREFIX, server.getUID(), LOG_VERIFY, 3,
-                HomekitByte.toHexString(clientSignature));
+                HomekitByte.toHex(clientSignature));
         logger.trace("{} [{}] : {} : Stage {} : Retrieved client pairing ID and keys", LOG_PREFIX, server.getUID(),
                 LOG_CRYPTO, 3);
 
@@ -593,14 +592,14 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         byte[] clientDeviceX = new byte[32];
         hkdf.generateBytes(clientDeviceX, 0, 32);
         logger.debug("{} [{}] : {} : Stage {} : Client device X = {}", LOG_PREFIX, server.getUID(), LOG_VERIFY, 3,
-                HomekitByte.toHexString(clientDeviceX));
+                HomekitByte.toHex(clientDeviceX));
 
         byte[] clientDeviceInfo = HomekitByte.joinBytes(clientDeviceX, clientPairingIdentifier,
                 clientLongtermPublicKey);
         logger.trace("{} [{}] : {} : Stage {} : Generated client device info", LOG_PREFIX, server.getUID(), LOG_CRYPTO,
                 3);
         logger.debug("{} [{}] : {} : Stage {} : Client device info = {}", LOG_PREFIX, server.getUID(), LOG_VERIFY, 3,
-                HomekitByte.toHexString(clientDeviceInfo));
+                HomekitByte.toHex(clientDeviceInfo));
 
         boolean isError = false;
 
@@ -660,17 +659,17 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
         logger.trace("{} [{}] : {} : Stage {} : Generated accessory device X", LOG_PREFIX, server.getUID(), LOG_CRYPTO,
                 3);
         logger.debug("{} [{}] : {} : Stage {} : Server device X = {}", LOG_PREFIX, server.getUID(), LOG_VERIFY, 3,
-                HomekitByte.toHexString(serverDeviceX));
+                HomekitByte.toHex(serverDeviceX));
 
         HomekitEdsaSigner signer = new HomekitEdsaSigner(server.getSecretKey());
         byte[] serverInfo = HomekitByte.joinBytes(serverDeviceX, server.getPairingId(), signer.getPublicKey());
         logger.trace("{} [{}] : {} : Stage {} : Generated accessory info", LOG_PREFIX, server.getUID(), LOG_CRYPTO, 3);
         logger.debug("{} [{}] : {} : Stage {} : Server pairing identifier = {}", LOG_PREFIX, server.getUID(),
-                LOG_VERIFY, 3, HomekitByte.toHexString(server.getPairingId()));
+                LOG_VERIFY, 3, HomekitByte.toHex(server.getPairingId()));
         logger.debug("{} [{}] : {} : Stage {} : Server longterm public key = {}", LOG_PREFIX, server.getUID(),
-                LOG_VERIFY, 3, HomekitByte.toHexString(signer.getPublicKey()));
+                LOG_VERIFY, 3, HomekitByte.toHex(signer.getPublicKey()));
         logger.debug("{} [{}] : {} : Stage {} : Server device info = {}", LOG_PREFIX, server.getUID(), LOG_VERIFY, 3,
-                HomekitByte.toHexString(serverInfo));
+                HomekitByte.toHex(serverInfo));
 
         byte[] serverSignature;
         try {
@@ -678,7 +677,7 @@ public class HomekitPairSetupServlet extends HomekitBaseServlet {
             logger.trace("{} [{}] : {} : Stage {} : Generated accessory signature", LOG_PREFIX, server.getUID(),
                     LOG_CRYPTO, 3);
             logger.debug("{} [{}] : {} : Stage {} : Server signature = {}", LOG_PREFIX, server.getUID(), LOG_VERIFY, 3,
-                    HomekitByte.toHexString(serverSignature));
+                    HomekitByte.toHex(serverSignature));
         } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException e) {
             logger.error("{} [{}] : {} : Stage {} : Failed to create accessory signature: {}", LOG_PREFIX,
                     server.getUID(), LOG_ERROR, e.getMessage(), e);

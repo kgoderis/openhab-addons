@@ -244,7 +244,7 @@ public class HomekitPairingServlet extends HomekitBaseServlet {
     protected void doAddPairing(HttpServletRequest request, HttpServletResponse response, byte[] body)
             throws ServletException, IOException {
         logger.debug("{}Processing add pairing request", LOG_PAIRING);
-        logger.trace("{}Request body: {}", LOG_PAIRING, HomekitByte.toHexString(body));
+        logger.trace("{}Request body: {}", LOG_PAIRING, HomekitByte.toHex(body));
 
         try {
             DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(body);
@@ -254,7 +254,7 @@ public class HomekitPairingServlet extends HomekitBaseServlet {
             // byte[] additionalControllerPermissions = d.getBytes(HomekitMessage.PERSMISSIONS);
 
             logger.debug("{}Adding pairing for controller: {}", LOG_PAIRING,
-                    HomekitByte.toHexString(additionalControllerPairingIdentifier));
+                    HomekitByte.toHex(additionalControllerPairingIdentifier));
 
             try {
                 if (server != null) {
@@ -328,14 +328,14 @@ public class HomekitPairingServlet extends HomekitBaseServlet {
     protected void doRemovePairing(HttpServletRequest request, HttpServletResponse response, byte[] body)
             throws ServletException, IOException {
         logger.debug("{}Processing remove pairing request", LOG_PAIRING);
-        logger.trace("{}Request body: {}", LOG_PAIRING, HomekitByte.toHexString(body));
+        logger.trace("{}Request body: {}", LOG_PAIRING, HomekitByte.toHex(body));
 
         try {
             DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(body);
 
             byte[] removedControllerPairingIdentifier = d.getBytes(HomekitMessage.IDENTIFIER);
             logger.debug("{}Removing pairing for controller: {}", LOG_PAIRING,
-                    HomekitByte.toHexString(removedControllerPairingIdentifier));
+                    HomekitByte.toHex(removedControllerPairingIdentifier));
 
             try {
                 if (server != null) {
@@ -416,7 +416,7 @@ public class HomekitPairingServlet extends HomekitBaseServlet {
     protected void doListPairing(HttpServletRequest request, HttpServletResponse response, byte[] body)
             throws ServletException, IOException {
         logger.debug("{}Processing list pairings request", LOG_PAIRING);
-        logger.trace("{}Request body: {}", LOG_PAIRING, HomekitByte.toHexString(body));
+        logger.trace("{}Request body: {}", LOG_PAIRING, HomekitByte.toHex(body));
         logger.info("{}Pairing enumeration not yet implemented", LOG_WARN);
         response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
     }

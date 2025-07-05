@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Set root level to INFO -->
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+    <!-- Enable DEBUG for SRP6 utility to show detailed calculation logs -->
+    <logger name="org.openhab.io.homekit.protocol.crypto.HomekitSRP6Util" level="DEBUG" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <!-- Enable DEBUG for HomeKit pairing servlet to see pairing process -->
+    <logger name="org.openhab.io.homekit.server.servlet.HomekitPairSetupServlet" level="DEBUG" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <!-- Enable DEBUG for HomeKit pairing verification servlet -->
+    <logger name="org.openhab.io.homekit.server.servlet.HomekitPairVerificationServlet" level="DEBUG" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <!-- Enable DEBUG for HomeKit HTTP classes to show HTTP traffic -->
+    <logger name="org.openhab.io.homekit.network.http" level="DEBUG" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <!-- Reduce other HomeKit classes to WARN to focus on SRP6 -->
+    <logger name="org.openhab.io.homekit" level="WARN" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+</configuration> 

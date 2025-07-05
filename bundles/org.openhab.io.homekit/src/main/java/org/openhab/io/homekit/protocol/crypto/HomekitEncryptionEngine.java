@@ -119,7 +119,7 @@ public class HomekitEncryptionEngine {
             long sequenceNumber) {
         logger.trace("DecryptBuffer : cipherTextBuffer = {}", BufferUtil.toDetailString(cipherTextBuffer));
         logger.trace("DecryptBuffer : decryptedBuffer = {}", BufferUtil.toDetailString(decryptedBuffer));
-        logger.trace("DecryptBuffer : key = {}", HomekitByte.toHexString(writeKey));
+        logger.trace("DecryptBuffer : key = {}", HomekitByte.toHex(writeKey));
         logger.trace("DecryptBuffer : sequenceNumber = {}", sequenceNumber);
 
         int currentPosition = cipherTextBuffer.position();
@@ -180,7 +180,7 @@ public class HomekitEncryptionEngine {
             long sequenceNumber) throws IOException {
         logger.trace("EncryptBuffer : Input = {}", BufferUtil.toDetailString(plainTextBuffer));
         logger.trace("EncryptBuffer : Output = {}", BufferUtil.toDetailString(encryptedBuffer));
-        logger.trace("EncryptBuffer : Key = {}", HomekitByte.toHexString(readKey));
+        logger.trace("EncryptBuffer : Key = {}", HomekitByte.toHex(readKey));
         logger.trace("EncryptBuffer : sequenceNumber = {}", sequenceNumber);
 
         long currentSequenceNumber = sequenceNumber;
@@ -236,8 +236,8 @@ public class HomekitEncryptionEngine {
      * @throws RuntimeException if decryption fails
      */
     private static byte[] decrypt(byte[] msg, byte[] key, long sequenceNumber) {
-        logger.trace("Decrypt : key {}", HomekitByte.toHexString(key));
-        logger.trace("Decrypt : content {}", HomekitByte.toHexString(msg));
+        logger.trace("Decrypt : key {}", HomekitByte.toHex(key));
+        logger.trace("Decrypt : content {}", HomekitByte.toHex(msg));
         logger.trace("Decrypt : sequence {}", sequenceNumber);
 
         byte[] mac = new byte[16];

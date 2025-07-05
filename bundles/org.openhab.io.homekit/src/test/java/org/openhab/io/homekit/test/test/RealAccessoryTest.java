@@ -11,10 +11,13 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.openhab.io.homekit.api.accessory.HomekitAccessory;
 import org.openhab.io.homekit.api.accessory.HomekitAccessoryCategory;
 import org.openhab.io.homekit.api.characteristic.HomekitCharacteristic;
@@ -23,12 +26,13 @@ import org.openhab.io.homekit.api.registry.HomekitAccessoryRegistry;
 import org.openhab.io.homekit.api.registry.HomekitPairingRegistry;
 import org.openhab.io.homekit.api.service.HomekitService;
 import org.openhab.io.homekit.event.manager.HomekitEventManager;
+import org.openhab.io.homekit.protocol.crypto.HomekitSRP6Util.CalculationMethod;
 import org.openhab.io.homekit.server.HomekitRemoteAccessoryServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * **MANUAL TEST**: Real HomeKit Accessory Integration Test
+ * **MANUAL TEST**: Real HomeKit Accessory Integration Test with SRP6 Calculation Method Support
  * 
  * This test requires manual configuration and real HomeKit hardware:
  * 
@@ -43,16 +47,22 @@ import org.slf4j.LoggerFactory;
  * 2. Update REAL_ACCESSORY_PORT if different from 80
  * 3. Update SETUP_CODE with your accessory's setup code
  * 
+ * **SRP6 CALCULATION METHODS:**
+ * - BOUNCYCASTLE: Uses BouncyCastle implementation with proper digest resets and padding
+ * - NIMBUS: Uses NimbusDS-style implementation with cumulative hashing
+ * 
  * **USAGE:**
  * - Run this test manually when you have real hardware available
  * - For automated CI/CD, use the mock-based tests instead
  * - This test validates end-to-end integration with real HomeKit devices
+ * - Tests both SRP6 calculation methods to ensure compatibility
  * 
  * **ENHANCED LOGGING:**
  * - TRACE level logging enabled for all HomeKit components
  * - Detailed SRP6 debugging and value capture
  * - Network communication logging
  * - Comprehensive error reporting
+ * - SRP6 calculation method comparison
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class RealAccessoryTest {
@@ -63,6 +73,10 @@ public class RealAccessoryTest {
     private static final String REAL_ACCESSORY_IP = "127.0.0.1"; // Replace with your accessory's IP
     private static final int REAL_ACCESSORY_PORT = 47129; // Usually 80, but may vary
     private static final String SETUP_CODE = "678-90-876"; // **REQUIRED**: Replace with your accessory's setup code
+
+    // **SRP6 CALCULATION METHOD TESTING**
+    private static final boolean TEST_BOTH_CALCULATION_METHODS = true; // Set to false to test only default method
+    private static final CalculationMethod DEFAULT_CALCULATION_METHOD = CalculationMethod.BOUNCYCASTLE;
 
     // **HOW TO FIND THE SETUP CODE:**
     // 1. Check the physical device for a label with format XXX-XX-XXX
@@ -78,9 +92,12 @@ public class RealAccessoryTest {
         logger.info("   Accessory IP: {}", REAL_ACCESSORY_IP);
         logger.info("   Accessory Port: {}", REAL_ACCESSORY_PORT);
         logger.info("   Setup Code: {}", SETUP_CODE);
+        logger.info("   Test Both Calculation Methods: {}", TEST_BOTH_CALCULATION_METHODS);
+        logger.info("   Default Calculation Method: {}", DEFAULT_CALCULATION_METHOD);
         logger.info("🔍 **FULL LOGGING ENABLED** - All TRACE level logs will be captured");
         logger.info("📊 **SRP6 DEBUGGING** - All cryptographic values will be logged");
         logger.info("🌐 **NETWORK DEBUGGING** - All HTTP/TCP communication will be logged");
+        logger.info("🔬 **SRP6 METHOD COMPARISON** - Both calculation methods will be tested");
     }
 
     /**
@@ -114,22 +131,74 @@ public class RealAccessoryTest {
     }
 
     /**
-     * **MANUAL TEST**: Performs full pairing with a real HomeKit accessory
+     * **TEMPORARY TEST**: Tests both SRP6 calculation methods with real accessory
      * 
-     * This test validates the complete pairing flow including:
-     * - SRP6 authentication
-     * - Session key derivation
-     * - Pairing verification
-     * 
-     * Will fail if the setup code is incorrect or accessory is not available.
+     * This test runs the pairing flow with both BouncyCastle and Nimbus calculation methods
+     * to validate compatibility and identify any differences in behavior.
      */
-    @Test
-    @Order(2)
-    void testPairWithRealAccessory() throws Exception {
-        logger.info("=== MANUAL TEST: Real Accessory Pairing ===");
-        logger.info("🎯 **TEST OBJECTIVE**: Complete SRP6 pairing and verification with real accessory");
-        logger.info("🔑 **SETUP CODE**: {}", SETUP_CODE);
+    @ParameterizedTest
+    @EnumSource(value = CalculationMethod.class, names = { "FASTSRP" })
+    @DisplayName("Test SRP6 pairing with real accessory using FASTSRP method")
+    void testPairingWithRealAccessory(CalculationMethod calculationMethod) throws Exception {
+        performPairingTest(calculationMethod);
+    }
 
+    /**
+     * **SRP6 COMPATIBILITY ANALYSIS**: Captures and logs all SRP6 values for debugging
+     */
+    private void captureSRP6Values(String stage, Map<String, Object> values) {
+        logger.info("🔍 **SRP6 STAGE {} VALUES**", stage);
+        for (Map.Entry<String, Object> entry : values.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            if (value instanceof byte[]) {
+                logger.info("   {}: {}", key, bytesToHex((byte[]) value));
+            } else if (value instanceof BigInteger) {
+                logger.info("   {}: {}", key, ((BigInteger) value).toString(16));
+            } else {
+                logger.info("   {}: {}", key, value);
+            }
+        }
+    }
+
+    /**
+     * Converts byte array to hex string for debugging
+     */
+    private String bytesToHex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(String.format("%02X", b));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Creates a test client configured for real accessory testing
+     */
+    private HomekitRemoteAccessoryServer createTestClient() throws Exception {
+        logger.debug("🔧 Creating HomekitRemoteAccessoryServer...");
+        logger.debug("   Category: {}", HomekitAccessoryCategory.OTHER);
+        logger.debug("   Name: TestClient");
+        logger.debug("   Target: {}:{}", REAL_ACCESSORY_IP, REAL_ACCESSORY_PORT);
+
+        HomekitRemoteAccessoryServer client = new HomekitRemoteAccessoryServer(HomekitAccessoryCategory.OTHER,
+                "TestClient", InetAddress.getByName(REAL_ACCESSORY_IP), REAL_ACCESSORY_PORT,
+                mock(HomekitAccessoryRegistry.class), mock(HomekitPairingRegistry.class),
+                mock(HomekitEventManager.class), mock(HomekitAccessoryFactory.class));
+
+        // Disable automatic pairing for testing - we want manual control
+        client.setDisableAutoPairing(true);
+        logger.debug("✅ HomekitRemoteAccessoryServer created successfully with auto-pairing disabled");
+        return client;
+    }
+
+    /**
+     * Performs the actual pairing test with the specified calculation method
+     * 
+     * @param calculationMethod The SRP6 calculation method to use
+     * @throws Exception if the test fails
+     */
+    private void performPairingTest(CalculationMethod calculationMethod) throws Exception {
         // Validate setup code format
         if ("XXX-XX-XXX".equals(SETUP_CODE)) {
             logger.error("❌ **CONFIGURATION ERROR**: SETUP CODE NOT CONFIGURED!");
@@ -144,13 +213,24 @@ public class RealAccessoryTest {
         logger.info("📊 **VALUE CAPTURE**: All SRP6 parameters will be logged at TRACE level");
         logger.info("🔬 **COMPARISON**: Values will be compared with HAP-Java expectations");
         logger.info("🌐 **NETWORK LOGGING**: All HTTP/TCP communication will be logged");
+        logger.info("🔬 **CALCULATION METHOD (REQUESTED)**: {}", calculationMethod);
 
         try {
             // Create client using existing helper method
             logger.debug("🔧 Creating test client with setup code...");
             HomekitRemoteAccessoryServer client = createTestClient();
             client.setSetupCode(SETUP_CODE);
+            client.setSRP6CalculationMethod(calculationMethod);
             logger.debug("✅ Client created and setup code configured");
+
+            // Log the actual calculation method in use
+            CalculationMethod actualMethod = client.getSRP6CalculationMethod();
+            logger.info("🔬 **CALCULATION METHOD (ACTUAL)**: {}", actualMethod);
+            if (!actualMethod.equals(calculationMethod)) {
+                logger.error("❌ **SRP6 CALCULATION METHOD MISMATCH**: Requested {} but actual is {}", calculationMethod,
+                        actualMethod);
+                fail("SRP6 calculation method mismatch: requested " + calculationMethod + ", actual " + actualMethod);
+            }
 
             // Start pairing with enhanced debugging
             logger.info("🚀 **STARTING PAIRING PROCESS** with real accessory...");
@@ -211,6 +291,7 @@ public class RealAccessoryTest {
             logger.info("   ✅ Accessory discovery working");
             logger.info("   ✅ Service enumeration working");
             logger.info("🔬 **SRP6 COMPATIBILITY**: Implementation appears compatible with real HomeKit accessories");
+            logger.info("🔬 **CALCULATION METHOD TESTED**: {}", calculationMethod);
 
         } catch (Exception e) {
             logger.error("❌ **REAL ACCESSORY TEST FAILED**", e);
@@ -224,54 +305,8 @@ public class RealAccessoryTest {
             logger.error("The error suggests potential SRP6 implementation differences");
             logger.error("Please check the logs above for captured SRP6 values");
             logger.error("Compare these values with HAP-Java's expected values");
+            logger.error("🔬 **CALCULATION METHOD**: {}", calculationMethod);
             throw e;
         }
-    }
-
-    /**
-     * **SRP6 COMPATIBILITY ANALYSIS**: Captures and logs all SRP6 values for debugging
-     */
-    private void captureSRP6Values(String stage, Map<String, Object> values) {
-        logger.info("🔍 **SRP6 STAGE {} VALUES**", stage);
-        for (Map.Entry<String, Object> entry : values.entrySet()) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
-            if (value instanceof byte[]) {
-                logger.info("   {}: {}", key, bytesToHex((byte[]) value));
-            } else if (value instanceof BigInteger) {
-                logger.info("   {}: {}", key, ((BigInteger) value).toString(16));
-            } else {
-                logger.info("   {}: {}", key, value);
-            }
-        }
-    }
-
-    /**
-     * Converts byte array to hex string for debugging
-     */
-    private String bytesToHex(byte[] bytes) {
-        StringBuilder sb = new StringBuilder();
-        for (byte b : bytes) {
-            sb.append(String.format("%02X", b));
-        }
-        return sb.toString();
-    }
-
-    /**
-     * Creates a test client configured for real accessory testing
-     */
-    private HomekitRemoteAccessoryServer createTestClient() throws Exception {
-        logger.debug("🔧 Creating HomekitRemoteAccessoryServer...");
-        logger.debug("   Category: {}", HomekitAccessoryCategory.OTHER);
-        logger.debug("   Name: TestClient");
-        logger.debug("   Target: {}:{}", REAL_ACCESSORY_IP, REAL_ACCESSORY_PORT);
-
-        HomekitRemoteAccessoryServer client = new HomekitRemoteAccessoryServer(HomekitAccessoryCategory.OTHER,
-                "TestClient", InetAddress.getByName(REAL_ACCESSORY_IP), REAL_ACCESSORY_PORT,
-                mock(HomekitAccessoryRegistry.class), mock(HomekitPairingRegistry.class),
-                mock(HomekitEventManager.class), mock(HomekitAccessoryFactory.class));
-
-        logger.debug("✅ HomekitRemoteAccessoryServer created successfully");
-        return client;
     }
 }

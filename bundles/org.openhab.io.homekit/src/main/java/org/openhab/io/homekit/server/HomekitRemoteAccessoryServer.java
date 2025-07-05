@@ -111,6 +111,7 @@ import org.openhab.io.homekit.protocol.crypto.HomekitEdsaSigner;
 import org.openhab.io.homekit.protocol.crypto.HomekitEdsaVerifier;
 import org.openhab.io.homekit.protocol.crypto.HomekitEncryptionEngine;
 import org.openhab.io.homekit.protocol.crypto.HomekitSRP6Client;
+import org.openhab.io.homekit.protocol.crypto.HomekitSRP6Util;
 import org.openhab.io.homekit.protocol.error.HomekitErrorCode;
 import org.openhab.io.homekit.protocol.message.HomekitMessage;
 import org.openhab.io.homekit.protocol.method.HomekitMethod;
@@ -179,6 +180,10 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
     private @Nullable ScheduledFuture<?> connectionMonitorJob;
 
     private final Set<HomekitEventSubscription> eventSubscriptions = new HashSet<>();
+
+    // ========== Configuration Flags ==========
+    private volatile boolean disableAutoPairing = false;
+    private HomekitSRP6Util.CalculationMethod srp6CalculationMethod = HomekitSRP6Util.CalculationMethod.BOUNCYCASTLE;
 
     /**
      * Creates a new remote HomeKit accessory server with the specified
@@ -267,10 +272,10 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 }
             }
 
-            SRPClient = Optional.of(new HomekitSRP6Client());
+            SRPClient = Optional.of(new HomekitSRP6Client(srp6CalculationMethod));
             SRPClient.ifPresent(client -> client.init());
 
-        } catch (HomekitServerException e) {
+        } catch (Exception e) {
             logger.error("{} [{}] : {} - Failed to start HTTP client - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
                     e.getMessage());
             logger.debug("{} [{}] : {} - Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
@@ -284,6 +289,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                             LOG_ERROR, ex.getMessage());
                 }
             }
+            throw new HomekitServerException("Failed to start HTTP client", e);
         }
 
         startConnectionMonitor();
@@ -453,6 +459,49 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         return false;
     }
 
+    // ========== Configuration Methods ==========
+    /**
+     * Sets whether automatic pairing should be disabled.
+     * When disabled, the connection monitor will not automatically trigger pairing.
+     * This is useful for testing scenarios where manual pairing control is desired.
+     *
+     * @param disableAutoPairing true to disable automatic pairing, false to enable
+     */
+    public void setDisableAutoPairing(boolean disableAutoPairing) {
+        this.disableAutoPairing = disableAutoPairing;
+        logger.debug("{} [{}] : {} - Auto pairing {} for testing", LOG_PREFIX, getUID(), LOG_CONFIG,
+                disableAutoPairing ? "disabled" : "enabled");
+    }
+
+    /**
+     * Gets whether automatic pairing is currently disabled.
+     *
+     * @return true if automatic pairing is disabled, false if enabled
+     */
+    public boolean isDisableAutoPairing() {
+        return disableAutoPairing;
+    }
+
+    /**
+     * Sets the SRP6 calculation method to use for pairing.
+     * 
+     * @param calculationMethod The calculation method to use (BOUNCYCASTLE or NIMBUS)
+     */
+    public void setSRP6CalculationMethod(HomekitSRP6Util.CalculationMethod calculationMethod) {
+        this.srp6CalculationMethod = calculationMethod;
+        logger.debug("{} [{}] : {} - SRP6 calculation method set to: {}", LOG_PREFIX, getUID(), LOG_CONFIG,
+                calculationMethod);
+    }
+
+    /**
+     * Gets the current SRP6 calculation method.
+     * 
+     * @return The current calculation method
+     */
+    public HomekitSRP6Util.CalculationMethod getSRP6CalculationMethod() {
+        return srp6CalculationMethod;
+    }
+
     // ========== Connection Management Methods ==========
     protected void startConnectionMonitor() {
         if (connectionMonitorJob != null) {
@@ -500,8 +549,13 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             logger.info("{} [{}] : {} - Connection was lost, attempting to re-establish", LOG_PREFIX, getUID(),
                     LOG_STATE);
 
-            // If we're not paired at all, proceed with pairing
+            // If we're not paired at all, proceed with pairing (unless auto-pairing is disabled)
             if (!isPaired()) {
+                if (disableAutoPairing) {
+                    logger.debug("{} [{}] : {} - Auto pairing disabled, skipping automatic pair setup", LOG_PREFIX,
+                            getUID(), LOG_STATE);
+                    return;
+                }
                 logger.info("{} [{}] : {} - Setting up new pairing", LOG_PREFIX, getUID(), LOG_STATE);
                 try {
                     pairSetup();
@@ -515,8 +569,13 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             }
         }
 
-        // If connected but not paired, attempt to pair
+        // If connected but not paired, attempt to pair (unless auto-pairing is disabled)
         if (currentState == HomekitAccessoryServerState.CONNECTED && !isPaired()) {
+            if (disableAutoPairing) {
+                logger.debug("{} [{}] : {} - Auto pairing disabled, skipping automatic pair setup for connected state",
+                        LOG_PREFIX, getUID(), LOG_STATE);
+                return;
+            }
             logger.info("{} [{}] : {} - Connected but not paired, attempting to pair", LOG_PREFIX, getUID(), LOG_STATE);
             try {
                 pairSetup();
@@ -971,17 +1030,18 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         BigInteger serverPublicKey = decodeResult.getBigInt(HomekitMessage.PUBLIC_KEY);
         logger.debug("{} [{}] : {} : Stage {} : Server public key received", LOG_PREFIX, getUID(), LOG_CRYPTO, 1);
         logger.debug("{} [{}] : {} : Stage {} : Server public key = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 1,
-                HomekitByte.toHexString(serverPublicKey.toByteArray())); // ✅ RFC-compliant: use
-                                                                         // BigInteger.toByteArray()
+                HomekitByte.toHex(serverPublicKey.toByteArray())); // ✅ RFC-compliant: use
+                                                                   // BigInteger.toByteArray()
 
         BigInteger salt = decodeResult.getBigInt(HomekitMessage.SALT);
+        byte[] saltArray = decodeResult.getBytes(HomekitMessage.SALT); // Get the raw salt bytes (should be 16 bytes)
         logger.debug("{} [{}] : {} : Stage {} : Salt received", LOG_PREFIX, getUID(), LOG_CRYPTO, 1);
-        logger.debug("{} [{}] : {} : Stage {} : Salt = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 1,
-                HomekitByte.toHexString(salt.toByteArray())); // ✅ RFC-compliant: use BigInteger.toByteArray()
+        logger.debug("{} [{}] : {} : Stage {} : Salt = {} (raw bytes)", LOG_PREFIX, getUID(), LOG_VERIFY, 1,
+                HomekitByte.toHex(saltArray));
 
         if (SRPClient.isEmpty()) {
             logger.debug("{} [{}] : {} : Stage {} : Creating new SRP6 session", LOG_PREFIX, getUID(), LOG_STATE, 1);
-            SRPClient = Optional.of(new HomekitSRP6Client());
+            SRPClient = Optional.of(new HomekitSRP6Client(srp6CalculationMethod));
             SRPClient.ifPresent(client -> client.init());
         } else {
             logger.debug("{} [{}] : {} : Stage {} : Using existing SRP6 session - State: {}", LOG_PREFIX, getUID(),
@@ -994,24 +1054,23 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         if (SRPClient.isPresent()) {
             HomekitSRP6Client client = SRPClient.get();
             logger.debug("{} [{}] : {} : Stage {} : Calling SRP6 step1", LOG_PREFIX, getUID(), LOG_STATE, 1);
+            // client.setPrivateValue(
+            // new BigInteger("60975527035CF2AD1989806F0407210BC81EDC04E2762A56AFD529DDDA2D4393", 16));
             client.init();
-            String normalizedSetupCode = normalizeSetupCode(setupCode);
-            BigInteger clientCredential = client.generateSRP6aClientCredentials(salt.toByteArray(), // ✅ RFC-compliant:
-                    // use
+            BigInteger clientCredential = client.generateSRP6aClientCredentials(saltArray, // Use raw salt bytes, not
                     // BigInteger.toByteArray()
-                    "Pair-Setup".getBytes(StandardCharsets.UTF_8),
-                    normalizedSetupCode.getBytes(StandardCharsets.UTF_8));
+                    "Pair-Setup".getBytes(StandardCharsets.UTF_8), setupCode.getBytes(StandardCharsets.UTF_8));
             logger.debug("{} [{}] : {} : Stage {} : Client public key generated", LOG_PREFIX, getUID(), LOG_CRYPTO, 1);
             logger.debug("{} [{}] : {} : Stage {} : Client public key = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 1,
-                    HomekitByte.toHexString(clientCredential.toByteArray())); // ✅ RFC-compliant: use
-                                                                              // BigInteger.toByteArray()
+                    HomekitByte.toHex(clientCredential.toByteArray())); // ✅ RFC-compliant: use
+                                                                        // BigInteger.toByteArray()
             try {
                 client.calculateClientSecret(serverPublicKey); // B
                 BigInteger clientProof = client.calculateClientEvidenceMessage();
                 logger.debug("{} [{}] : {} : Stage {} : Client proof generated", LOG_PREFIX, getUID(), LOG_CRYPTO, 1);
                 logger.debug("{} [{}] : {} : Stage {} : Client proof = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 1,
-                        HomekitByte.toHexString(clientProof.toByteArray())); // ✅ RFC-compliant: use
-                                                                             // BigInteger.toByteArray()
+                        HomekitByte.toHex(clientProof.toByteArray())); // ✅ RFC-compliant: use
+                                                                       // BigInteger.toByteArray()
                 encoder.add(HomekitMessage.STATE, (short) 0x03);
                 encoder.add(HomekitMessage.PUBLIC_KEY, clientCredential);
                 encoder.add(HomekitMessage.PROOF, clientProof);
@@ -1060,7 +1119,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         BigInteger serverProof = decodeResult.getBigInt(HomekitMessage.PROOF);
         logger.debug("{} [{}] : {} : Stage {} : Server proof received", LOG_PREFIX, getUID(), LOG_CRYPTO, 2);
         logger.debug("{} [{}] : {} : Stage {} : Server proof = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 2,
-                HomekitByte.toHexString(serverProof.toByteArray())); // ✅ RFC-compliant: use BigInteger.toByteArray()
+                HomekitByte.toHex(serverProof.toByteArray())); // ✅ RFC-compliant: use BigInteger.toByteArray()
 
         // Step 3: Verify Proof
         if (SRPClient.isPresent()) {
@@ -1089,8 +1148,8 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                 logger.debug("{} [{}] : {} : Stage {} : SRP session key generated", LOG_PREFIX, getUID(), LOG_CRYPTO,
                         2);
                 logger.debug("{} [{}] : {} : Stage {} : SRP session key = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 2,
-                        HomekitByte.toHexString(sessionKey.toByteArray())); // ✅ RFC-compliant: use
-                                                                            // BigInteger.toByteArray()
+                        HomekitByte.toHex(sessionKey.toByteArray())); // ✅ RFC-compliant: use
+                                                                      // BigInteger.toByteArray()
 
                 sharedSecret = sessionKey.toByteArray(); // ✅ RFC-compliant: use BigInteger.toByteArray()
                 logger.debug("{} [{}] : {} : Stage {} : Shared secret generated", LOG_PREFIX, getUID(), LOG_CRYPTO, 2);
@@ -1111,7 +1170,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         hkdf.generateBytes(sessionKey, 0, 32);
         logger.debug("{} [{}] : {} : Stage {} : Session key generated", LOG_PREFIX, getUID(), LOG_CRYPTO, 2);
         logger.debug("{} [{}] : {} : Stage {} : Session key = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 2,
-                HomekitByte.toHexString(sessionKey));
+                HomekitByte.toHex(sessionKey));
 
         hkdf = new HKDFBytesGenerator(new SHA512Digest());
         hkdf.init(new HKDFParameters(sharedSecret, "Pair-Setup-Controller-Sign-Salt".getBytes(StandardCharsets.UTF_8),
@@ -1120,22 +1179,22 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         hkdf.generateBytes(clientDeviceX, 0, 32);
         logger.debug("{} [{}] : {} : Stage {} : Client device X generated", LOG_PREFIX, getUID(), LOG_CRYPTO, 2);
         logger.debug("{} [{}] : {} : Stage {} : Client device X = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 2,
-                HomekitByte.toHexString(clientDeviceX));
+                HomekitByte.toHex(clientDeviceX));
 
         HomekitEdsaSigner signer = new HomekitEdsaSigner(secretKey);
         byte[] clientLongtermPublicKey = signer.getPublicKey();
         logger.debug("{} [{}] : {} : Stage {} : Client pairing identifier = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 2,
-                HomekitByte.toHexString(getPairingId()));
+                HomekitByte.toHex(getPairingId()));
         logger.debug("{} [{}] : {} : Stage {} : Client longterm public key = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 2,
-                HomekitByte.toHexString(clientLongtermPublicKey));
+                HomekitByte.toHex(clientLongtermPublicKey));
         byte[] clientDeviceInfo = HomekitByte.joinBytes(clientDeviceX, getPairingId(), clientLongtermPublicKey);
         logger.debug("{} [{}] : {} : Stage {} : Client device info = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 2,
-                HomekitByte.toHexString(clientDeviceInfo));
+                HomekitByte.toHex(clientDeviceInfo));
         byte[] clientSignature = null;
         try {
             clientSignature = signer.sign(clientDeviceInfo);
             logger.debug("{} [{}] : {} : Stage {} : Client signature = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 2,
-                    HomekitByte.toHexString(clientSignature));
+                    HomekitByte.toHex(clientSignature));
         } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException e) {
             logger.error("{} [{}] : {} : Stage {} : Failed to sign client device info - Error: {}", LOG_PREFIX,
                     getUID(), LOG_ERROR, 2, e.getMessage());
@@ -1201,14 +1260,14 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         logger.debug("{} [{}] : {} : Stage {} : Server pairing identifier received", LOG_PREFIX, getUID(), LOG_CRYPTO,
                 3);
         logger.debug("{} [{}] : {} : Stage {} : Server pairing identifier = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 3,
-                HomekitByte.toHexString(serverPairingIdentifier));
+                HomekitByte.toHex(serverPairingIdentifier));
         logger.debug("{} [{}] : {} : Stage {} : Server long term public key received", LOG_PREFIX, getUID(), LOG_CRYPTO,
                 3);
         logger.debug("{} [{}] : {} : Stage {} : Server longterm public key = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 3,
-                HomekitByte.toHexString(serverLongTermPublicKey));
+                HomekitByte.toHex(serverLongTermPublicKey));
         logger.debug("{} [{}] : {} : Stage {} : Server signature received", LOG_PREFIX, getUID(), LOG_CRYPTO, 3);
         logger.debug("{} [{}] : {} : Stage {} : Server signature = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 3,
-                HomekitByte.toHexString(serverSignature));
+                HomekitByte.toHex(serverSignature));
 
         HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA512Digest());
         hkdf.init(new HKDFParameters(sharedSecret,
@@ -1217,13 +1276,13 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
         byte[] serverDeviceX = new byte[32];
         hkdf.generateBytes(serverDeviceX, 0, 32);
         logger.debug("{} [{}] : {} : Stage {} : Server device X = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 3,
-                HomekitByte.toHexString(serverDeviceX));
+                HomekitByte.toHex(serverDeviceX));
 
         byte[] serverDeviceInfo = HomekitByte.joinBytes(serverDeviceX, serverPairingIdentifier,
                 serverLongTermPublicKey);
         logger.debug("{} [{}] : {} : Stage {} : Server device info generated", LOG_PREFIX, getUID(), LOG_CRYPTO, 3);
         logger.debug("{} [{}] : {} : Stage {} : Server device info = {}", LOG_PREFIX, getUID(), LOG_VERIFY, 3,
-                HomekitByte.toHexString(serverDeviceInfo));
+                HomekitByte.toHex(serverDeviceInfo));
 
         try {
             if (!new HomekitEdsaVerifier(serverLongTermPublicKey).verify(serverDeviceInfo, serverSignature)) {
@@ -1506,7 +1565,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                                     logger.debug("{} [{}] : {} - CLIENT RECEIVED RESPONSE BODY: {} bytes", LOG_PREFIX,
                                             getUID(), LOG_STATE, body.length);
                                     logger.trace("{} [{}] : {} - CLIENT RESPONSE BODY HEX: {}", LOG_PREFIX, getUID(),
-                                            LOG_STATE, HomekitByte.toHexString(body));
+                                            LOG_STATE, HomekitByte.toHex(body));
 
                                     DecodeResult d = HomekitTypeLengthValueEncoderDecoder.decode(body);
 
@@ -1835,7 +1894,7 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
             // getPairingId() returns non-null per the method implementation
             byte[] pairingId = getPairingId();
             logger.debug("{} [{}] : {} - Processing event", LOG_PREFIX, getUID(), LOG_STATE);
-            HomekitByte.logBuffer(logger, "handleEvent", HomekitByte.toHexString(pairingId), ByteBuffer.wrap(body));
+            HomekitByte.logBuffer(logger, "handleEvent", HomekitByte.toHex(pairingId), ByteBuffer.wrap(body));
         } catch (IOException e) {
             logger.error("{} [{}] : {} - Failed to process event - Error: {}", LOG_PREFIX, getUID(), LOG_ERROR,
                     e.getMessage());
@@ -2661,12 +2720,5 @@ public class HomekitRemoteAccessoryServer extends HomekitAbstractAccessoryServer
                     e.getMessage());
             logger.debug("{} [{}] : {} - TEST: Exception details", LOG_PREFIX, getUID(), LOG_ERROR, e);
         }
-    }
-
-    /**
-     * Normalizes the setup code by removing all dashes.
-     */
-    private static String normalizeSetupCode(String setupCode) {
-        return setupCode.replace("-", "");
     }
 }

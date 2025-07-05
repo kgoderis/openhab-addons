@@ -697,7 +697,7 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
     @Override
     public Optional<byte[]> getPublicKey(byte[] destinationPairingId) {
         logger.debug("{} [{}] : {} - Getting public key for destination pairing ID: {}", LOG_PREFIX, getUID(),
-                LOG_CONFIG, HomekitByte.toHexString(destinationPairingId));
+                LOG_CONFIG, HomekitByte.toHex(destinationPairingId));
         HomekitPairing hp = pairingRegistry.get(new HomekitPairingUIDImpl(getPairingId(), destinationPairingId));
         return hp != null ? Optional.of(hp.getPublicKey()) : Optional.empty();
     }
@@ -756,13 +756,13 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
 
         // Validate pairing ID uniqueness
         if (pairingRegistry.get(new HomekitPairingUIDImpl(getPairingId(), pairingId)) != null) {
-            String error = String.format("HomekitPairing ID %s already exists", HomekitByte.toHexString(pairingId));
+            String error = String.format("HomekitPairing ID %s already exists", HomekitByte.toHex(pairingId));
             logger.error("{} [{}] : {} - HomekitPairing validation error: {}", LOG_PREFIX, getUID(), LOG_ERROR, error);
             throw new HomekitServerException(error);
         }
 
         logger.debug("{} [{}] : {} - Adding pairing - ID: {}", LOG_PREFIX, getUID(), LOG_PAIRING,
-                HomekitByte.toHexString(pairingId));
+                HomekitByte.toHex(pairingId));
 
         try {
             HomekitPairing newPairing = new HomekitPairingImpl(getPairingId(), pairingId, publicKey);
@@ -770,8 +770,8 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
 
             if (oldPairing != null) {
                 logger.debug("{} [{}] : {} - Removed existing pairing - Destination: {}, Public Key: {}", LOG_PREFIX,
-                        getUID(), LOG_PAIRING, HomekitByte.toHexString(oldPairing.getDestinationId()),
-                        HomekitByte.toHexString(oldPairing.getPublicKey()));
+                        getUID(), LOG_PAIRING, HomekitByte.toHex(oldPairing.getDestinationId()),
+                        HomekitByte.toHex(oldPairing.getPublicKey()));
                 setState(HomekitAccessoryServerState.DISCONNECTED);
             }
 
@@ -779,10 +779,9 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
             logger.debug("{} [{}] : {} - HomekitPairing added successfully", LOG_PREFIX, getUID(), LOG_PAIRING);
             setState(HomekitAccessoryServerState.PAIRED);
             logger.info("{} [{}] : {} - HomekitPairing added successfully - ID: {}", LOG_PREFIX, getUID(), LOG_PAIRING,
-                    HomekitByte.toHexString(pairingId));
+                    HomekitByte.toHex(pairingId));
         } catch (HomekitServerException e) {
-            String error = String.format("Failed to add pairing %s: %s", HomekitByte.toHexString(pairingId),
-                    e.getMessage());
+            String error = String.format("Failed to add pairing %s: %s", HomekitByte.toHex(pairingId), e.getMessage());
             logger.error("{} [{}] : {} - HomekitPairing addition error: {}", LOG_PREFIX, getUID(), LOG_ERROR, error, e);
             throw new HomekitServerException(error, e);
         }
@@ -843,17 +842,17 @@ public abstract class HomekitAbstractAccessoryServer implements HomekitAccessory
         }
 
         logger.debug("{} [{}] : {} - Removing pairing - ID: {}", LOG_PREFIX, getUID(), LOG_PAIRING,
-                HomekitByte.toHexString(pairingId));
+                HomekitByte.toHex(pairingId));
 
         try {
             HomekitPairingUID uid = new HomekitPairingUIDImpl(getPairingId(), pairingId);
             if (pairingRegistry.remove(uid) != null) {
                 setState(HomekitAccessoryServerState.UNPAIRED);
                 logger.info("{} [{}] : {} - HomekitPairing removed successfully - ID: {}", LOG_PREFIX, getUID(),
-                        LOG_PAIRING, HomekitByte.toHexString(pairingId));
+                        LOG_PAIRING, HomekitByte.toHex(pairingId));
             }
         } catch (HomekitServerException e) {
-            String error = String.format("Failed to remove pairing %s: %s", HomekitByte.toHexString(pairingId),
+            String error = String.format("Failed to remove pairing %s: %s", HomekitByte.toHex(pairingId),
                     e.getMessage());
             logger.error("{} [{}] : {} - HomekitPairing removal error: {}", LOG_PREFIX, getUID(), LOG_ERROR, error, e);
             throw new HomekitServerException(error, e);

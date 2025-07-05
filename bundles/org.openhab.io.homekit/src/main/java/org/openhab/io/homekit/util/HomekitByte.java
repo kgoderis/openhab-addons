@@ -122,6 +122,74 @@ public class HomekitByte {
     }
 
     /**
+     * Converts a byte array to a hexadecimal string representation.
+     *
+     * @param input The byte array to convert
+     * @return A string containing the hexadecimal representation of the input
+     * @throws IllegalArgumentException if the input is null
+     */
+    public static String toHex(byte[] input) {
+
+        StringBuilder sb = new StringBuilder();
+        for (byte b : input) {
+            sb.append(String.format("%02X ", b));
+        }
+
+        logger.trace("{}Converted {} bytes to hex string", LOG_OPERATION, input.length);
+        return sb.toString();
+    }
+
+    /**
+     * Pads a BigInteger to the byte length of the modulus N, as required by SRP6 protocol operations.
+     * <p>
+     * This method is used to ensure that all SRP6 values (such as N, g, A, B, S) are represented as byte arrays
+     * of consistent length, matching the byte length of the modulus N. This is critical for interoperability
+     * and compliance with RFC 2945/5054 and HomeKit's SRP6 implementation.
+     * <p>
+     * The byte length is calculated as (N.bitLength() + 7) / 8. If the input BigInteger is shorter, it is
+     * left-padded with zeros. If it is longer, the leading bytes are preserved (should not occur for valid SRP6
+     * values).
+     *
+     * @param n The BigInteger value to pad
+     * @param N The modulus, used to determine the target byte length
+     * @return A byte array of length equal to the byte length of N, containing the padded value of n
+     */
+    public static byte[] Pad(BigInteger n, BigInteger N) {
+        int length = (N.bitLength() + 7) / 8;
+        return HomekitByte.Pad(n, length);
+    }
+
+    public static byte[] Pad(BigInteger n, int length) {
+        byte[] bs = toByteArray(n);
+        if (bs.length < length) {
+            byte[] tmp = new byte[length];
+            System.arraycopy(bs, 0, tmp, length - bs.length, bs.length);
+            bs = tmp;
+        }
+        logger.trace("{}Padded BigInteger {} to length {}", LOG_OPERATION, n, length);
+        return bs;
+    }
+
+    /**
+     * XOR two byte arrays of the same length.
+     * 
+     * @param a First byte array
+     * @param b Second byte array
+     * @return XOR result
+     * @throws IllegalArgumentException if arrays have different lengths
+     */
+    public static byte[] xor(byte[] a, byte[] b) {
+        if (a.length != b.length) {
+            throw new IllegalArgumentException("Arrays must be the same length");
+        }
+        byte[] result = new byte[a.length];
+        for (int i = 0; i < a.length; i++) {
+            result[i] = (byte) (a[i] ^ b[i]);
+        }
+        return result;
+    }
+
+    /**
      * Copies a specified number of bytes from an input stream to an output stream.
      *
      * @param input The source input stream
@@ -149,24 +217,6 @@ public class HomekitByte {
         if (remaining > 0) {
             logger.warn("{}Incomplete copy: {} bytes remaining", LOG_ERROR, remaining);
         }
-    }
-
-    /**
-     * Converts a byte array to a hexadecimal string representation.
-     *
-     * @param input The byte array to convert
-     * @return A string containing the hexadecimal representation of the input
-     * @throws IllegalArgumentException if the input is null
-     */
-    public static String toHexString(byte[] input) {
-
-        StringBuilder sb = new StringBuilder();
-        for (byte b : input) {
-            sb.append(String.format("%02X ", b));
-        }
-
-        logger.trace("{}Converted {} bytes to hex string", LOG_OPERATION, input.length);
-        return sb.toString();
     }
 
     /**

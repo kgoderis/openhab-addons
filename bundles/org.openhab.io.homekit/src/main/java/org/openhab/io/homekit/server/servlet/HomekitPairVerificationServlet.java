@@ -240,7 +240,7 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
     protected void doStage1(HttpServletRequest request, HttpServletResponse response, byte[] body)
             throws ServletException, IOException {
         logger.debug("{}Starting Stage 1 verification", LOG_SECURITY);
-        logger.trace("{}Received request body: {}", LOG_SECURITY, HomekitByte.toHexString(body));
+        logger.trace("{}Received request body: {}", LOG_SECURITY, HomekitByte.toHex(body));
 
         if (server == null) {
             logger.error("{}Server instance is null", LOG_ERROR);
@@ -252,7 +252,7 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
 
         byte[] clientPublicKey = getClientPublicKey(body);
         session.setAttribute("clientPublicKey", clientPublicKey);
-        logger.trace("{}Client public key: {}", LOG_SECURITY, HomekitByte.toHexString(clientPublicKey));
+        logger.trace("{}Client public key: {}", LOG_SECURITY, HomekitByte.toHex(clientPublicKey));
 
         byte[] accessoryPublicKey = new byte[32];
         byte[] accessoryPrivateKey = new byte[32];
@@ -371,7 +371,7 @@ public class HomekitPairVerificationServlet extends HomekitBaseServlet {
     protected void doStage2(HttpServletRequest request, HttpServletResponse response, byte[] body)
             throws ServletException, IOException {
         logger.debug("{}Starting Stage 2 verification", LOG_SECURITY);
-        logger.trace("{}Received request body: {}", LOG_SECURITY, HomekitByte.toHexString(body));
+        logger.trace("{}Received request body: {}", LOG_SECURITY, HomekitByte.toHex(body));
 
         if (server == null) {
             logger.error("{}Server instance is null", LOG_ERROR);

@@ -21,6 +21,7 @@ import org.bouncycastle.crypto.agreement.srp.SRP6Util;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.io.homekit.protocol.crypto.HomekitSRP6Util.CalculationMethod;
 
 /**
  * HAP-compatible SRP-6a server implementation extending BouncyCastle's SRP6Server.
@@ -35,6 +36,7 @@ import org.eclipse.jdt.annotation.Nullable;
  * - Uses SHA-512 as the hash function as required by HAP
  * - Supports the 3072-bit group from RFC5054
  * - Provides state management for the authentication process
+ * - Supports multiple calculation methods (BouncyCastle and Nimbus)
  *
  * The evidence calculation follows the HAP specification:
  * - M1 = H(H(N) xor H(g) | H(I) | s | A | B | H(S))
@@ -48,6 +50,23 @@ public class HomekitSRP6Server extends SRP6Server {
     // HAP-specific fields for evidence calculation
     private byte[] identity = new byte[0];
     private byte[] salt = new byte[0];
+    private final HomekitSRP6Util.CalculationMethod calculationMethod;
+
+    /**
+     * Creates a new HomekitSRP6Server with the default BouncyCastle calculation method.
+     */
+    public HomekitSRP6Server() {
+        this(HomekitSRP6Util.CalculationMethod.BOUNCYCASTLE);
+    }
+
+    /**
+     * Creates a new HomekitSRP6Server with the specified calculation method.
+     * 
+     * @param calculationMethod The calculation method to use for M1 and M2 evidence messages
+     */
+    public HomekitSRP6Server(HomekitSRP6Util.CalculationMethod calculationMethod) {
+        this.calculationMethod = calculationMethod;
+    }
 
     /**
      * Initializes the server with the given verifier.
@@ -137,6 +156,15 @@ public class HomekitSRP6Server extends SRP6Server {
 
     public @Nullable BigInteger getGroupParameter() {
         return g;
+    }
+
+    /**
+     * Gets the calculation method being used for evidence message computation.
+     *
+     * @return The calculation method
+     */
+    public HomekitSRP6Util.CalculationMethod getCalculationMethod() {
+        return calculationMethod;
     }
 
     /**
@@ -251,8 +279,8 @@ public class HomekitSRP6Server extends SRP6Server {
                     "Impossible to compute M2: missing required parameters: " + missingParams.toString());
         }
 
-        // Compute the server evidence message 'M2'
-        this.M2 = HomekitSRP6Util.calculateM2(digest, N, A, M1, S);
+        // Compute the server evidence message 'M2' using the selected calculation method
+        this.M2 = HomekitSRP6Util.calculateM2(calculationMethod, digest, N, A, M1, S);
         return M2;
     }
 
@@ -303,8 +331,8 @@ public class HomekitSRP6Server extends SRP6Server {
             return false;
         }
 
-        // Calculate expected M1 using HAP-specific formula
-        BigInteger expectedM1 = HomekitSRP6Util.calculateM1(digest, N, A, B, S, g, identity, salt);
+        // Calculate expected M1 using the selected calculation method
+        BigInteger expectedM1 = HomekitSRP6Util.calculateM1(calculationMethod, digest, N, A, B, S, g, identity, salt);
 
         // Compare with provided client M1
         if (expectedM1.equals(clientM1)) {
@@ -340,8 +368,8 @@ public class HomekitSRP6Server extends SRP6Server {
             throw new CryptoException("Salt not set");
         }
 
-        // Use our own calculateM1HAP implementation that handles large inputs
-        return HomekitSRP6Util.calculateM1(digest, N, A, B, S, g, identity, salt);
+        // Use the selected calculation method for M1
+        return HomekitSRP6Util.calculateM1(calculationMethod, digest, N, A, B, S, g, identity, salt);
     }
 
     /**
@@ -373,7 +401,7 @@ public class HomekitSRP6Server extends SRP6Server {
         this.A = clientPublicKey;
 
         // Calculate u using our own implementation that handles large keys
-        BigInteger u = HomekitSRP6Util.calculateU(digest, N, A, B);
+        BigInteger u = HomekitSRP6Util.calculateU(calculationMethod, digest, N, A, B);
 
         // Calculate the premaster secret S using the standard SRP6 formula
         // For server: S = (A * v^u)^b mod N
@@ -381,5 +409,26 @@ public class HomekitSRP6Server extends SRP6Server {
         this.S = base.modPow(b, N);
 
         return this.S;
+    }
+
+    /**
+     * Calculate the session key K using the specified calculation method.
+     * 
+     * @param method The calculation method to use
+     * @return The session key K
+     * @throws CryptoException if the premaster secret S is not calculated
+     */
+    public BigInteger calculateSessionKey(CalculationMethod method) throws CryptoException {
+        if (S == null) {
+            throw new CryptoException("Premaster secret S not calculated");
+        }
+        if (digest == null) {
+            throw new CryptoException("Digest not set");
+        }
+        if (N == null) {
+            throw new CryptoException("Modulus N not set");
+        }
+
+        return HomekitSRP6Util.calculateSessionKey(method, digest, S, N);
     }
 }

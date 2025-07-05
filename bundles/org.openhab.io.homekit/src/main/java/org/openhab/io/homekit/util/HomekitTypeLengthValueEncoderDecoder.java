@@ -105,7 +105,7 @@ public class HomekitTypeLengthValueEncoderDecoder {
      * @throws IOException if an I/O error occurs during decoding
      */
     public static DecodeResult decode(byte[] content) throws IOException {
-        logger.debug("{}Decoding {}", LOG_DECODE, HomekitByte.toHexString(content));
+        logger.debug("{}Decoding {}", LOG_DECODE, HomekitByte.toHex(content));
         DecodeResult ret = new DecodeResult();
         ByteArrayInputStream bais = new ByteArrayInputStream(content);
         while (bais.available() > 0) {
@@ -117,10 +117,9 @@ public class HomekitTypeLengthValueEncoderDecoder {
             HomekitMessage message = HomekitMessage.get(type);
             if (message != null) {
                 String messageName = message.name();
-                logger.debug("{}Decoded T {} L {} V {}", LOG_DECODE, messageName, length,
-                        HomekitByte.toHexString(part));
+                logger.debug("{}Decoded T {} L {} V {}", LOG_DECODE, messageName, length, HomekitByte.toHex(part));
             } else {
-                logger.debug("{}Decoded T {} L {} V {}", LOG_DECODE, "unknown", length, HomekitByte.toHexString(part));
+                logger.debug("{}Decoded T {} L {} V {}", LOG_DECODE, "unknown", length, HomekitByte.toHex(part));
             }
         }
         return ret;
@@ -268,7 +267,7 @@ public class HomekitTypeLengthValueEncoderDecoder {
                     baos.write(toWrite);
                     HomekitByte.copyStream(bais, baos, toWrite);
                     logger.debug("{}Encoded T {} L {} V {}", LOG_ENCODE, type.name(), toWrite,
-                            HomekitByte.toHexString(bytes));
+                            HomekitByte.toHex(bytes));
                 }
             }
         }

@@ -513,7 +513,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     @Override
     public void addPairing(byte[] destinationPairingId, byte[] destinationPublicKey) throws HomekitServerException {
         logger.debug("{} [{}] : {} - Adding pairing - Destination ID: {}", LOG_PREFIX, getServerId(), LOG_PAIRING,
-                HomekitByte.toHexString(destinationPairingId));
+                HomekitByte.toHex(destinationPairingId));
         super.addPairing(destinationPairingId, destinationPublicKey);
         advertise();
         logger.info("{} [{}] : {} - HomekitPairing added and server advertised", LOG_PREFIX, getServerId(),
@@ -539,7 +539,7 @@ public class HomekitLocalAccessoryServer extends HomekitAbstractAccessoryServer 
     @Override
     public void removePairing(byte[] destinationPairingId) throws HomekitServerException {
         logger.debug("{} [{}] : {} - Removing pairing - Destination ID: {}", LOG_PREFIX, getServerId(), LOG_PAIRING,
-                HomekitByte.toHexString(destinationPairingId));
+                HomekitByte.toHex(destinationPairingId));
         super.removePairing(destinationPairingId);
         advertise();
         logger.info("{} [{}] : {} - HomekitPairing removed and server advertised", LOG_PREFIX, getServerId(),
