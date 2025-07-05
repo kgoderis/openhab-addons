@@ -125,7 +125,7 @@ public class HomekitByte {
      * Converts a byte array to a hexadecimal string representation.
      *
      * @param input The byte array to convert
-     * @return A string containing the hexadecimal representation of the input
+     * @return A string containing the hexadecimal representation of the input in uppercase
      * @throws IllegalArgumentException if the input is null
      */
     public static String toHex(byte[] input) {

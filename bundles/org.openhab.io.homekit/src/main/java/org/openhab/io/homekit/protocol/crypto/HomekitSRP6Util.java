@@ -52,7 +52,8 @@ public class HomekitSRP6Util {
         /**
          * Use single hashing with raw byte representation (matches fast-srp-hap).
          */
-        FASTSRP
+        FASTSRP,
+        RFC
     }
 
     /**
@@ -860,7 +861,237 @@ public class HomekitSRP6Util {
     }
 
     /**
-     * Calculate k parameter using RFC 2945/5054 compliant implementation with logging.
+     * Calculate k parameter using the specified calculation method.
+     * 
+     * Formula: k = H(N || PAD(g))
+     * 
+     * Where:
+     * - N = modulus
+     * - PAD(g) = generator g padded to the same byte length as N
+     * 
+     * The k parameter is used in the SRP6 protocol to prevent certain attacks.
+     * RFC 2945/5054 specifies that g should be padded to match N's byte length.
+     * 
+     * @param method The calculation method to use
+     * @param digest The digest to use
+     * @param N The modulus
+     * @param g The generator
+     * @return The k parameter
+     */
+    public static BigInteger calculateK(CalculationMethod method, Digest digest, BigInteger N, BigInteger g) {
+        switch (method) {
+            case BOUNCYCASTLE:
+                return calculateKBouncyCastle(digest, N, g);
+            case BOUNCYCASTLEPAD:
+                return calculateKBouncyCastlePad(digest, N, g);
+            case NIMBUS:
+                return calculateKNimbus(digest, N, g);
+            case FASTSRP:
+                return calculateKFastSRP(digest, N, g);
+            case RFC:
+                return calculateKRFC(digest, N, g);
+            default:
+                throw new IllegalArgumentException("Unsupported calculation method: " + method);
+        }
+    }
+
+    /**
+     * Calculate k parameter using BouncyCastle implementation.
+     * 
+     * Formula: k = H(N || PAD(g))
+     * 
+     * Algorithm:
+     * 1. Calculate H(N) = hash(N.toByteArray())
+     * 2. Pad g to the same byte length as N by right-padding with zeros
+     * 3. Calculate H(PAD(g)) = hash(padded_g_bytes)
+     * 4. Concatenate: N || PAD(g)
+     * 5. Calculate k = hash(concatenated_data)
+     * 
+     * @param digest The digest to use
+     * @param N The modulus
+     * @param g The generator
+     * @return The k parameter
+     */
+    public static BigInteger calculateKBouncyCastle(Digest digest, BigInteger N, BigInteger g) {
+        logger.debug("[SRP6][K-BouncyCastle] Starting k calculation");
+        logger.debug("[SRP6][K-BouncyCastle] Input parameters:");
+        logger.debug("[SRP6][K-BouncyCastle]   N: {}", N.toString(16));
+        logger.debug("[SRP6][K-BouncyCastle]   g: {}", g.toString(16));
+
+        digest.reset();
+
+        // RFC-compliant: Use N as-is (variable length)
+        byte[] nBytes = N.toByteArray();
+        logger.debug("[SRP6][K-BouncyCastle] N bytes: {}", HomekitByte.toHex(nBytes));
+        updateDigestInChunks(digest, nBytes);
+
+        // RFC-compliant: Pad g to the same byte length as N
+        byte[] gBytes = g.toByteArray();
+        byte[] paddedGBytes = new byte[nBytes.length];
+
+        // Right-pad g with zeros to match N's length
+        System.arraycopy(gBytes, 0, paddedGBytes, paddedGBytes.length - gBytes.length, gBytes.length);
+
+        logger.debug("[SRP6][K-BouncyCastle] g bytes (raw): {}", HomekitByte.toHex(gBytes));
+        logger.debug("[SRP6][K-BouncyCastle] g bytes (padded): {}", HomekitByte.toHex(paddedGBytes));
+        updateDigestInChunks(digest, paddedGBytes);
+
+        byte[] result = new byte[digest.getDigestSize()];
+        digest.doFinal(result, 0);
+        BigInteger k = new BigInteger(1, result);
+        logger.debug("[SRP6][K-BouncyCastle] Final k: {}", k.toString(16));
+        return k;
+    }
+
+    /**
+     * Calculate k parameter using BouncyCastle implementation with padding.
+     * 
+     * Formula: k = H(N || PAD(g))
+     * 
+     * Algorithm:
+     * 1. Calculate H(N) = hash(N.toByteArray())
+     * 2. Pad g to the same byte length as N by right-padding with zeros
+     * 3. Calculate H(PAD(g)) = hash(padded_g_bytes)
+     * 4. Concatenate: N || PAD(g)
+     * 5. Calculate k = hash(concatenated_data)
+     * 
+     * This method is identical to calculateKBouncyCastle but included for
+     * consistency with the method naming pattern.
+     * 
+     * @param digest The digest to use
+     * @param N The modulus
+     * @param g The generator
+     * @return The k parameter
+     */
+    public static BigInteger calculateKBouncyCastlePad(Digest digest, BigInteger N, BigInteger g) {
+        logger.debug("[SRP6][K-BouncyCastlePad] Starting k calculation");
+        logger.debug("[SRP6][K-BouncyCastlePad] Input parameters:");
+        logger.debug("[SRP6][K-BouncyCastlePad]   N: {}", N.toString(16));
+        logger.debug("[SRP6][K-BouncyCastlePad]   g: {}", g.toString(16));
+
+        digest.reset();
+
+        // RFC-compliant: Use N as-is (variable length)
+        byte[] nBytes = N.toByteArray();
+        logger.debug("[SRP6][K-BouncyCastlePad] N bytes: {}", HomekitByte.toHex(nBytes));
+        updateDigestInChunks(digest, nBytes);
+
+        // RFC-compliant: Pad g to the same byte length as N
+        byte[] gBytes = g.toByteArray();
+        byte[] paddedGBytes = new byte[nBytes.length];
+
+        // Right-pad g with zeros to match N's length
+        System.arraycopy(gBytes, 0, paddedGBytes, paddedGBytes.length - gBytes.length, gBytes.length);
+
+        logger.debug("[SRP6][K-BouncyCastlePad] g bytes (raw): {}", HomekitByte.toHex(gBytes));
+        logger.debug("[SRP6][K-BouncyCastlePad] g bytes (padded): {}", HomekitByte.toHex(paddedGBytes));
+        updateDigestInChunks(digest, paddedGBytes);
+
+        byte[] result = new byte[digest.getDigestSize()];
+        digest.doFinal(result, 0);
+        BigInteger k = new BigInteger(1, result);
+        logger.debug("[SRP6][K-BouncyCastlePad] Final k: {}", k.toString(16));
+        return k;
+    }
+
+    /**
+     * Calculate k parameter using Nimbus implementation.
+     * 
+     * Formula: k = H(N || PAD(g))
+     * 
+     * Algorithm:
+     * 1. Calculate H(N) = hash(N.toByteArray())
+     * 2. Pad g to the same byte length as N by right-padding with zeros
+     * 3. Calculate H(PAD(g)) = hash(padded_g_bytes)
+     * 4. Concatenate: N || PAD(g)
+     * 5. Calculate k = hash(concatenated_data)
+     * 
+     * @param digest The digest to use
+     * @param N The modulus
+     * @param g The generator
+     * @return The k parameter
+     */
+    public static BigInteger calculateKNimbus(Digest digest, BigInteger N, BigInteger g) {
+        logger.debug("[SRP6][K-Nimbus] Starting k calculation");
+        logger.debug("[SRP6][K-Nimbus] Input parameters:");
+        logger.debug("[SRP6][K-Nimbus]   N: {}", N.toString(16));
+        logger.debug("[SRP6][K-Nimbus]   g: {}", g.toString(16));
+
+        digest.reset();
+
+        // RFC-compliant: Use N as-is (variable length)
+        byte[] nBytes = N.toByteArray();
+        logger.debug("[SRP6][K-Nimbus] N bytes: {}", HomekitByte.toHex(nBytes));
+        updateDigestInChunks(digest, nBytes);
+
+        // RFC-compliant: Pad g to the same byte length as N
+        byte[] gBytes = g.toByteArray();
+        byte[] paddedGBytes = new byte[nBytes.length];
+
+        // Right-pad g with zeros to match N's length
+        System.arraycopy(gBytes, 0, paddedGBytes, paddedGBytes.length - gBytes.length, gBytes.length);
+
+        logger.debug("[SRP6][K-Nimbus] g bytes (raw): {}", HomekitByte.toHex(gBytes));
+        logger.debug("[SRP6][K-Nimbus] g bytes (padded): {}", HomekitByte.toHex(paddedGBytes));
+        updateDigestInChunks(digest, paddedGBytes);
+
+        byte[] result = new byte[digest.getDigestSize()];
+        digest.doFinal(result, 0);
+        BigInteger k = new BigInteger(1, result);
+        logger.debug("[SRP6][K-Nimbus] Final k: {}", k.toString(16));
+        return k;
+    }
+
+    /**
+     * Calculate k parameter using FastSRP implementation.
+     * 
+     * Formula: k = H(N || PAD(g))
+     * 
+     * Algorithm:
+     * 1. Calculate H(N) = hash(N.toByteArray())
+     * 2. Pad g to the same byte length as N by right-padding with zeros
+     * 3. Calculate H(PAD(g)) = hash(padded_g_bytes)
+     * 4. Concatenate: N || PAD(g)
+     * 5. Calculate k = hash(concatenated_data)
+     * 
+     * @param digest The digest to use
+     * @param N The modulus
+     * @param g The generator
+     * @return The k parameter
+     */
+    public static BigInteger calculateKFastSRP(Digest digest, BigInteger N, BigInteger g) {
+        logger.debug("[SRP6][K-FastSRP] Starting k calculation");
+        logger.debug("[SRP6][K-FastSRP] Input parameters:");
+        logger.debug("[SRP6][K-FastSRP]   N: {}", N.toString(16));
+        logger.debug("[SRP6][K-FastSRP]   g: {}", g.toString(16));
+
+        digest.reset();
+
+        // RFC-compliant: Use N as-is (variable length)
+        byte[] nBytes = N.toByteArray();
+        logger.debug("[SRP6][K-FastSRP] N bytes: {}", HomekitByte.toHex(nBytes));
+        updateDigestInChunks(digest, nBytes);
+
+        // RFC-compliant: Pad g to the same byte length as N
+        byte[] gBytes = g.toByteArray();
+        byte[] paddedGBytes = new byte[nBytes.length];
+
+        // Right-pad g with zeros to match N's length
+        System.arraycopy(gBytes, 0, paddedGBytes, paddedGBytes.length - gBytes.length, gBytes.length);
+
+        logger.debug("[SRP6][K-FastSRP] g bytes (raw): {}", HomekitByte.toHex(gBytes));
+        logger.debug("[SRP6][K-FastSRP] g bytes (padded): {}", HomekitByte.toHex(paddedGBytes));
+        updateDigestInChunks(digest, paddedGBytes);
+
+        byte[] result = new byte[digest.getDigestSize()];
+        digest.doFinal(result, 0);
+        BigInteger k = new BigInteger(1, result);
+        logger.debug("[SRP6][K-FastSRP] Final k: {}", k.toString(16));
+        return k;
+    }
+
+    /**
+     * Calculate k parameter using RFC 2945/5054 compliant implementation.
      * 
      * Formula: k = H(N || PAD(g))
      * 
@@ -883,17 +1114,11 @@ public class HomekitSRP6Util {
      * @param g The generator
      * @return The k parameter
      */
-    public static BigInteger calculateK(Digest digest, BigInteger N, BigInteger g) {
-        logger.debug("[SRP6][K] Starting k calculation");
-        logger.debug("[SRP6][K] Input parameters:");
-        logger.debug("[SRP6][K]   N: {}", N.toString(16));
-        logger.debug("[SRP6][K]   g: {}", g.toString(16));
-
+    public static BigInteger calculateKRFC(Digest digest, BigInteger N, BigInteger g) {
         digest.reset();
 
         // RFC-compliant: Use N as-is (variable length)
         byte[] nBytes = N.toByteArray();
-        logger.debug("[SRP6][K] N bytes: {}", HomekitByte.toHex(nBytes));
         updateDigestInChunks(digest, nBytes);
 
         // RFC-compliant: Pad g to the same byte length as N
@@ -903,8 +1128,6 @@ public class HomekitSRP6Util {
         // Right-pad g with zeros to match N's length
         System.arraycopy(gBytes, 0, paddedGBytes, paddedGBytes.length - gBytes.length, gBytes.length);
 
-        logger.debug("[SRP6][K] g bytes (raw): {}", HomekitByte.toHex(gBytes));
-        logger.debug("[SRP6][K] g bytes (padded): {}", HomekitByte.toHex(paddedGBytes));
         updateDigestInChunks(digest, paddedGBytes);
 
         byte[] result = new byte[digest.getDigestSize()];
@@ -1554,50 +1777,6 @@ public class HomekitSRP6Util {
         digest.doFinal(xBytes, 0);
 
         return new BigInteger(1, xBytes);
-    }
-
-    /**
-     * Calculate k parameter using RFC 2945/5054 compliant implementation.
-     * 
-     * Formula: k = H(N || PAD(g))
-     * 
-     * Where:
-     * - N = modulus
-     * - PAD(g) = generator g padded to the same byte length as N
-     * 
-     * RFC 2945/5054 specifies that g should be padded to match N's byte length.
-     * 
-     * Algorithm:
-     * 1. Calculate H(N) = hash(N.toByteArray())
-     * 2. Pad g to the same byte length as N by right-padding with zeros
-     * 3. Calculate H(PAD(g)) = hash(padded_g_bytes)
-     * 4. Concatenate: N || PAD(g)
-     * 5. Calculate k = hash(concatenated_data)
-     * 
-     * @param digest The digest to use
-     * @param N The modulus
-     * @param g The generator
-     * @return The k parameter
-     */
-    public static BigInteger calculateKRFC(Digest digest, BigInteger N, BigInteger g) {
-        digest.reset();
-
-        // RFC-compliant: Use N as-is (variable length)
-        byte[] nBytes = N.toByteArray();
-        updateDigestInChunks(digest, nBytes);
-
-        // RFC-compliant: Pad g to the same byte length as N
-        byte[] gBytes = g.toByteArray();
-        byte[] paddedGBytes = new byte[nBytes.length];
-
-        // Right-pad g with zeros to match N's length
-        System.arraycopy(gBytes, 0, paddedGBytes, paddedGBytes.length - gBytes.length, gBytes.length);
-
-        updateDigestInChunks(digest, paddedGBytes);
-
-        byte[] result = new byte[digest.getDigestSize()];
-        digest.doFinal(result, 0);
-        return new BigInteger(1, result);
     }
 
     /**
