@@ -6,7 +6,9 @@
 	<type>binding</type>
 	<name>ATS Advanced Binding</name>
 	<description>Connects openHAB to UTC/Carrier/FireClass ATS Advanced intrusion panels via the AtsAdvancedGateway
-		(.NET) HTTP service and ats.advanced.drv. Supports areas, zones, outputs, RAS/DGP, system status, triggers, event
-		log, and C&amp;C control sessions.</description>
+		(.NET)
+		HTTP service and ats.advanced.drv. Supports areas, zones, outputs, RAS/DGP, system status, triggers, event
+		log, and
+		C&amp;C control sessions.</description>
 
 </addon:addon>

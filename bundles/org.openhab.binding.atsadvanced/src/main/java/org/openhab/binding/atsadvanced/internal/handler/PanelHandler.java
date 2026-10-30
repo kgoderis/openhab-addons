@@ -14,7 +14,6 @@ package org.openhab.binding.atsadvanced.internal.handler;
 
 import static org.openhab.binding.atsadvanced.internal.ATSadvancedBindingConstants.MAX_NUMBER_AREAS;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -27,18 +26,15 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.atsadvanced.internal.ATSAdvancedException;
 import org.openhab.binding.atsadvanced.internal.ATSadvancedBindingConstants;
@@ -56,6 +52,7 @@ import org.openhab.binding.atsadvanced.internal.PanelClient.Message;
 import org.openhab.binding.atsadvanced.internal.PanelClient.MessageResponse;
 import org.openhab.binding.atsadvanced.internal.PanelClient.Property;
 import org.openhab.binding.atsadvanced.internal.StatObjectType;
+import org.openhab.binding.atsadvanced.internal.config.PanelConfiguration;
 import org.openhab.binding.atsadvanced.internal.discovery.ATSadvancedDiscoveryService;
 import org.openhab.binding.atsadvanced.internal.gateway.AtsGatewayClient;
 import org.openhab.core.library.types.OnOffType;
@@ -77,29 +74,26 @@ import org.slf4j.LoggerFactory;
  *
  * @author Karel Goderis - Initial contribution
  */
+@NonNullByDefault
 public class PanelHandler extends BaseBridgeHandler {
 
-    // List of Configuration constants
-    public static final String IP_ADDRESS = "ipAddress";
-    public static final String PORT_NUMBER = "portNumber";
-    public static final String GATEWAY_URL = "gatewayUrl";
-    public static final String PIN = "pin";
     /** Default encryption password accepted by the gateway (52 zeros). */
     private static final String PANEL_PASSWORD = "0".repeat(52);
 
     private final Logger logger = LoggerFactory.getLogger(PanelHandler.class);
 
-    private static int CONNECTION_THREAD_INTERVAL = 15;
-    private static int POLLING_THREAD_INTERVAL = 30;
-    private static int HEART_BEAT = 10000;
-    private static int RETRIES = 1;
-    private static int TIME_OUT = 2000;
+    private static final int CONNECTION_THREAD_INTERVAL = 15;
+    private static final int POLLING_THREAD_INTERVAL = 30;
+    private static final int HEART_BEAT = 10000;
+    private static final int RETRIES = 1;
+    private static final int TIME_OUT = 2000;
 
-    private ScheduledFuture<?> connectionJob;
-    private ScheduledFuture<?> pollingJob;
-    private AtsGatewayClient client;
+    private @NonNullByDefault({}) PanelConfiguration config;
+    private @Nullable ScheduledFuture<?> connectionJob;
+    private @Nullable ScheduledFuture<?> pollingJob;
+    private @Nullable AtsGatewayClient client;
     private String lastError = "";
-    private String gatewayURL;
+    private @Nullable String gatewayURL;
     private boolean gatewayReady = false;
     private boolean panelConnected = false;
     private boolean userLoggedIn = false;
@@ -134,7 +128,7 @@ public class PanelHandler extends BaseBridgeHandler {
     }
 
     @Override
-    public void handleCommand(@NonNull ChannelUID channelUID, @NonNull Command command) {
+    public void handleCommand(ChannelUID channelUID, Command command) {
         String id = channelUID.getId();
         if (command instanceof RefreshType) {
             if (ATSadvancedBindingConstants.LOG_HISTORY.equals(id)
@@ -177,15 +171,18 @@ public class PanelHandler extends BaseBridgeHandler {
     @Override
     public void initialize() {
         logger.debug("Initializing ATS Advanced Panel handler.");
+        config = getConfigAs(PanelConfiguration.class);
 
         updateStatus(ThingStatus.OFFLINE);
 
-        if (connectionJob == null || connectionJob.isCancelled()) {
+        ScheduledFuture<?> conn = connectionJob;
+        if (conn == null || conn.isCancelled()) {
             connectionJob = scheduler.scheduleWithFixedDelay(connectionRunnable, 0, CONNECTION_THREAD_INTERVAL,
                     TimeUnit.SECONDS);
         }
 
-        if (pollingJob == null || pollingJob.isCancelled()) {
+        ScheduledFuture<?> poll = pollingJob;
+        if (poll == null || poll.isCancelled()) {
             pollingJob = scheduler.scheduleWithFixedDelay(pollingRunnable, POLLING_THREAD_INTERVAL,
                     POLLING_THREAD_INTERVAL, TimeUnit.SECONDS);
         }
@@ -195,20 +192,23 @@ public class PanelHandler extends BaseBridgeHandler {
     public void dispose() {
         logger.debug("Disposing ATS Advanced Panel handler.");
 
-        if (connectionJob != null && !connectionJob.isCancelled()) {
-            connectionJob.cancel(true);
+        ScheduledFuture<?> conn = connectionJob;
+        if (conn != null && !conn.isCancelled()) {
+            conn.cancel(true);
             connectionJob = null;
         }
 
-        if (pollingJob != null && !pollingJob.isCancelled()) {
-            pollingJob.cancel(true);
+        ScheduledFuture<?> poll = pollingJob;
+        if (poll != null && !poll.isCancelled()) {
+            poll.cancel(true);
             pollingJob = null;
         }
 
         logout();
 
-        if (client != null) {
-            client.close();
+        AtsGatewayClient existingClient = client;
+        if (existingClient != null) {
+            existingClient.close();
             client = null;
             clientsSetUp = false;
         }
@@ -336,6 +336,14 @@ public class PanelHandler extends BaseBridgeHandler {
         return clientsSetUp;
     }
 
+    private AtsGatewayClient requireClient() {
+        AtsGatewayClient c = client;
+        if (c == null) {
+            throw new IllegalStateException("ATS gateway client is not set up");
+        }
+        return c;
+    }
+
     public boolean isGatewayStarted() {
         return gatewayReady;
     }
@@ -449,45 +457,51 @@ public class PanelHandler extends BaseBridgeHandler {
         }
     }
 
-
     private void ensureGatewayAvailable() {
         if (gatewayReady) {
             return;
         }
 
-        Object url = getConfig().get(GATEWAY_URL);
-        if (!(url instanceof String s) || s.isBlank()) {
+        String url = config.gatewayUrl.trim();
+        if (url.isEmpty()) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
                     "gatewayUrl is required (e.g. http://127.0.0.1:18137)");
             return;
         }
 
-        gatewayURL = s.trim();
-        logger.info("Using ATS Advanced gateway at '{}'", gatewayURL);
+        gatewayURL = url;
+        logger.info("Using ATS Advanced gateway at '{}'", url);
         try {
-            try (AtsGatewayClient probe = new AtsGatewayClient(gatewayURL)) {
+            try (AtsGatewayClient probe = new AtsGatewayClient(url)) {
                 if (!probe.isHealthy()) {
                     updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
-                            "Gateway health check failed at " + gatewayURL);
+                            "Gateway health check failed at " + url);
                     return;
                 }
             }
             gatewayReady = true;
         } catch (Exception e) {
-            logger.warn("Gateway not reachable at '{}': {}", gatewayURL, e.getMessage());
+            logger.warn("Gateway not reachable at '{}': {}", url, e.getMessage());
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, e.getMessage());
         }
     }
 
     private void setupClients() {
+        String url = gatewayURL;
+        if (url == null || url.isEmpty()) {
+            clientsSetUp = false;
+            return;
+        }
         try {
-            if (client != null) {
-                client.close();
+            AtsGatewayClient existing = client;
+            if (existing != null) {
+                existing.close();
             }
-            client = new AtsGatewayClient(gatewayURL);
-            client.startEventStream(this::handleMessageResponse);
+            AtsGatewayClient newClient = new AtsGatewayClient(url);
+            newClient.startEventStream(this::handleMessageResponse);
+            client = newClient;
             clientsSetUp = true;
-            logger.debug("Gateway HTTP/SSE client ready for '{}'", gatewayURL);
+            logger.debug("Gateway HTTP/SSE client ready for '{}'", url);
         } catch (Exception e) {
             logger.error("An exception occurred while setting up the Gateway Client: {}", e.getMessage(), e);
             clientsSetUp = false;
@@ -499,13 +513,13 @@ public class PanelHandler extends BaseBridgeHandler {
             logger.debug("Configure Panel");
             ConfigurePanel configurePanel = new ConfigurePanel();
             configurePanel.setHearbeat(HEART_BEAT);
-            configurePanel.setHostaddress((String) getConfig().get(IP_ADDRESS));
+            configurePanel.setHostaddress(config.ipAddress);
             configurePanel.setPassword(PANEL_PASSWORD);
-            configurePanel.setPort(((BigDecimal) getConfig().get(PORT_NUMBER)).intValue());
+            configurePanel.setPort(config.portNumber);
             configurePanel.setRetries(RETRIES);
             configurePanel.setTimeout(TIME_OUT);
 
-            ConfigurePanelResponse panelResponse = client.configure(configurePanel);
+            ConfigurePanelResponse panelResponse = requireClient().configure(configurePanel);
 
             if (panelResponse != null) {
                 if (panelResponse.getResult() != null) {
@@ -522,15 +536,14 @@ public class PanelHandler extends BaseBridgeHandler {
 
     private void login() {
         if (isClientsSetUp() && isConnected()) {
-            logger.debug("Login : Log into the ATS Advanced Panel with PIN: {}", getConfig().get(PIN));
+            logger.debug("Login : Log into the ATS Advanced Panel with PIN: {}", config.pin);
             Message message = new Message();
             ArrayList<Property> properties = new ArrayList<Property>();
 
             Property ProgramProperty1 = new Property();
             ProgramProperty1.setId("userPIN");
             ProgramProperty1.setIndex(0);
-            java.lang.Object ProgramProperty1Value = ((BigDecimal) getConfig().get(PIN)).toString();
-            ProgramProperty1.setValue(ProgramProperty1Value);
+            ProgramProperty1.setValue(String.valueOf(config.pin));
             properties.add(ProgramProperty1);
 
             Property ProgramProperty2 = new Property();
@@ -577,7 +590,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
             message.setProperties(properties);
             message.setName("device.getConnect");
-            MessageResponse response = client.message(message);
+            MessageResponse response = requireClient().message(message);
 
             logger.debug("Login : Gateway : Message Type : {}", response.getName());
 
@@ -603,7 +616,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
             message.setProperties(properties);
             message.setName("device.disconnect");
-            MessageResponse response = client.message(message);
+            MessageResponse response = requireClient().message(message);
 
             logger.debug("Logout : Gateway : Message Type : {}", response.getName());
 
@@ -614,8 +627,8 @@ public class PanelHandler extends BaseBridgeHandler {
 
             if (response.getName().equals("return.error")) {
                 String error = (String) response.getProperties().get(0).getValue();
-                if (StringUtils.contains(error, "FAULT_NO_ACCESS")
-                        || StringUtils.contains(error, "Object reference not set to an instance of an object")) {
+                if (error != null && (error.contains("FAULT_NO_ACCESS")
+                        || error.contains("Object reference not set to an instance of an object"))) {
                     userLoggedIn = false;
                     panelConnected = false;
                 }
@@ -635,7 +648,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
             message.setProperties(properties);
             message.setName("open.LOG");
-            MessageResponse response = client.message(message);
+            MessageResponse response = requireClient().message(message);
 
             logger.debug("Logs : Gateway : Message Type : {}", response.getName());
 
@@ -660,7 +673,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
             message.setProperties(properties);
             message.setName("start.MONITOR");
-            MessageResponse response = client.message(message);
+            MessageResponse response = requireClient().message(message);
 
             logger.debug("Monitor : Gateway : Message Type : {}", response.getName());
 
@@ -685,7 +698,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
             message.setProperties(properties);
             message.setName("is.Alive");
-            MessageResponse response = client.message(message);
+            MessageResponse response = requireClient().message(message);
 
             logger.debug("Is Alive : Gateway : Message Type : {}", response.getName());
 
@@ -725,7 +738,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
             message.setProperties(properties);
             message.setName("get.privileges");
-            MessageResponse response = client.message(message);
+            MessageResponse response = requireClient().message(message);
 
             logger.debug("Verify User Priveleges : Gateway : Message Type : {}", response.getName());
 
@@ -787,10 +800,12 @@ public class PanelHandler extends BaseBridgeHandler {
 
     private void updateChangedStatObjects() {
         for (StatObjectType type : StatObjectType.values()) {
-            if (type.getCos == null || type.returnCos == null) {
+            String getCos = type.getCos;
+            String returnCos = type.returnCos;
+            if (getCos == null || returnCos == null) {
                 continue;
             }
-            BitSet changed = getChangedCos(type.getCos, type.returnCos);
+            BitSet changed = getChangedCos(getCos, returnCos);
             if (changed == null) {
                 continue;
             }
@@ -812,7 +827,8 @@ public class PanelHandler extends BaseBridgeHandler {
         notifyObjectListeners(StatObjectType.SYS, 1);
     }
 
-    private <T> void notifyBitSet(BitSet changedSet, List<T> listeners, java.util.function.ObjIntConsumer<T> notify) {
+    private <T> void notifyBitSet(@Nullable BitSet changedSet, List<T> listeners,
+            java.util.function.ObjIntConsumer<T> notify) {
         if (changedSet == null) {
             return;
         }
@@ -825,14 +841,14 @@ public class PanelHandler extends BaseBridgeHandler {
         }
     }
 
-    private BitSet getChangedCos(String getName, String returnName) {
+    private @Nullable BitSet getChangedCos(String getName, String returnName) {
         if (!isClientsSetUp()) {
             return null;
         }
         Message message = new Message();
         message.setProperties(new ArrayList<>());
         message.setName(getName);
-        MessageResponse response = client.message(message);
+        MessageResponse response = requireClient().message(message);
         if ("return.error".equals(response.getName())) {
             handleError(String.valueOf(response.getProperties().get(0).getValue()));
             return null;
@@ -848,7 +864,7 @@ public class PanelHandler extends BaseBridgeHandler {
         return null;
     }
 
-    public ArrayList<ZoneStatusFlags> getZoneStatus(int index) {
+    public @Nullable ArrayList<ZoneStatusFlags> getZoneStatus(int index) {
         if (isClientsSetUp() && isConnected() && isLoggedIn()) {
             Message message = new Message();
             ArrayList<Property> properties = new ArrayList<Property>();
@@ -862,7 +878,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
             message.setProperties(properties);
             message.setName("getSTAT.ZONE");
-            MessageResponse response = client.message(message);
+            MessageResponse response = requireClient().message(message);
 
             ArrayList<ZoneStatusFlags> status = new ArrayList<ZoneStatusFlags>();
 
@@ -887,7 +903,7 @@ public class PanelHandler extends BaseBridgeHandler {
         return null;
     }
 
-    public ArrayList<AreaStatusFlags> getAreaStatus(int index) {
+    public @Nullable ArrayList<AreaStatusFlags> getAreaStatus(int index) {
         if (isClientsSetUp() && isConnected() && isLoggedIn()) {
             Message message = new Message();
             ArrayList<Property> properties = new ArrayList<Property>();
@@ -901,7 +917,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
             message.setProperties(properties);
             message.setName("getSTAT.AREA");
-            MessageResponse response = client.message(message);
+            MessageResponse response = requireClient().message(message);
 
             ArrayList<AreaStatusFlags> status = new ArrayList<AreaStatusFlags>();
 
@@ -924,7 +940,7 @@ public class PanelHandler extends BaseBridgeHandler {
         return null;
     }
 
-    public MessageResponse getZoneNamesChunk(int index) {
+    public @Nullable MessageResponse getZoneNamesChunk(int index) {
         try {
             if (isClientsSetUp() && isConnected() && isLoggedIn()) {
                 Message message = new Message();
@@ -939,7 +955,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
                 message.setProperties(properties);
                 message.setName("select.ZoneNames");
-                MessageResponse response = client.message(message);
+                MessageResponse response = requireClient().message(message);
 
                 if (response.getName().equals("return.ZoneNames")) {
                     return response;
@@ -953,7 +969,7 @@ public class PanelHandler extends BaseBridgeHandler {
         return null;
     }
 
-    public MessageResponse getAreaNamesChunk(int index) {
+    public @Nullable MessageResponse getAreaNamesChunk(int index) {
         if (isClientsSetUp() && isConnected() && isLoggedIn()) {
             Message message = new Message();
             ArrayList<Property> properties = new ArrayList<Property>();
@@ -967,7 +983,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
             message.setProperties(properties);
             message.setName("select.AreaNames");
-            MessageResponse response = client.message(message);
+            MessageResponse response = requireClient().message(message);
 
             if (response.getName().equals("return.AreaNames")) {
                 return response;
@@ -978,14 +994,14 @@ public class PanelHandler extends BaseBridgeHandler {
         return null;
     }
 
-    private BitSet getChangedAreas() {
+    private @Nullable BitSet getChangedAreas() {
         if (isClientsSetUp()) {
             Message message = new Message();
             ArrayList<Property> properties = new ArrayList<Property>();
 
             message.setProperties(properties);
             message.setName("getCOS.AREA");
-            MessageResponse response = client.message(message);
+            MessageResponse response = requireClient().message(message);
 
             BitSet bitSet = null;
 
@@ -1006,14 +1022,14 @@ public class PanelHandler extends BaseBridgeHandler {
         return null;
     }
 
-    private BitSet getChangedZones() {
+    private @Nullable BitSet getChangedZones() {
         if (isClientsSetUp()) {
             Message message = new Message();
             ArrayList<Property> properties = new ArrayList<Property>();
 
             message.setProperties(properties);
             message.setName("getCOS.ZONE");
-            MessageResponse response = client.message(message);
+            MessageResponse response = requireClient().message(message);
 
             BitSet bitSet = null;
 
@@ -1048,7 +1064,7 @@ public class PanelHandler extends BaseBridgeHandler {
         return programProperty;
     }
 
-    private MessageResponse getLiveEvent(boolean next) {
+    private @Nullable MessageResponse getLiveEvent(boolean next) {
         if (isClientsSetUp()) {
             logger.debug("Fetch Live Events");
             Message message = new Message();
@@ -1077,7 +1093,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
             message.setProperties(properties);
             message.setName("get.liveEvents");
-            MessageResponse response = client.message(message);
+            MessageResponse response = requireClient().message(message);
 
             logger.debug("Fetch Live Events : Gateway : Message Type : {}", response.getName());
 
@@ -1153,7 +1169,7 @@ public class PanelHandler extends BaseBridgeHandler {
             int sessionID = initiateSetControlSession(area);
 
             if (sessionID == 0) {
-                if (StringUtils.contains(lastError, "FAULT_CC_BUSY_AREAS")) {
+                if (lastError.contains("FAULT_CC_BUSY_AREAS")) {
                     // unlock before nested unsetArea which takes the same lock (non-reentrant would deadlock —
                     // ReentrantLock is reentrant so OK)
                     unsetArea(area);
@@ -1384,7 +1400,7 @@ public class PanelHandler extends BaseBridgeHandler {
     /**
      * Arm-readiness preview: lists inhibitable and non-inhibitable blockers ({@code createCC.A_STATE}).
      */
-    public String armPreview(int area) {
+    public @Nullable String armPreview(int area) {
         controlSessionLock.lock();
         try {
             int sessionID = initiateControlSession("createCC.A_STATE", false, area);
@@ -1433,7 +1449,7 @@ public class PanelHandler extends BaseBridgeHandler {
         properties.add(createBooleanProperty("next", next));
         message.setProperties(properties);
         message.setName(fnName);
-        MessageResponse response = client.message(message);
+        MessageResponse response = requireClient().message(message);
         if ("return.error".equals(response.getName())) {
             handleError(String.valueOf(response.getProperties().get(0).getValue()));
             return null;
@@ -1442,16 +1458,20 @@ public class PanelHandler extends BaseBridgeHandler {
     }
 
     private static String formatSysevent(MessageResponse response) {
+        @Nullable
         String eventText = null;
         int eventId = 0;
         int sourceId = 0;
         for (Property p : response.getProperties()) {
-            if (p.getId() == null) {
+            String id = p.getId();
+            if (id == null) {
                 continue;
             }
-            switch (p.getId()) {
-                case "event_text", "eventText" ->
-                    eventText = p.getValue() != null ? String.valueOf(p.getValue()) : null;
+            switch (id) {
+                case "event_text", "eventText" -> {
+                    Object value = p.getValue();
+                    eventText = value != null ? String.valueOf(value) : null;
+                }
                 case "event_ID", "eventID" -> eventId = toInt(p.getValue());
                 case "source_ID", "sourceID", "objectID" -> sourceId = toInt(p.getValue());
                 default -> {
@@ -1541,7 +1561,7 @@ public class PanelHandler extends BaseBridgeHandler {
         properties.add(intProp("logReadingDirection", logReadingDirection));
         message.setProperties(properties);
         message.setName("select.getLOG");
-        MessageResponse response = client.message(message);
+        MessageResponse response = requireClient().message(message);
         if ("return.error".equals(response.getName())) {
             handleError(String.valueOf(response.getProperties().get(0).getValue()));
             return null;
@@ -1582,7 +1602,7 @@ public class PanelHandler extends BaseBridgeHandler {
                 properties.add(intProp("resCode", resCode));
                 message.setProperties(properties);
                 message.setName("fnCC.ENG_RES_DORESET");
-                MessageResponse response = client.message(message);
+                MessageResponse response = requireClient().message(message);
                 if ("return.error".equals(response.getName())) {
                     handleError(String.valueOf(response.getProperties().get(0).getValue()));
                     return false;
@@ -1627,7 +1647,7 @@ public class PanelHandler extends BaseBridgeHandler {
                         properties.add(intProp("eventUniqueID", eventId));
                         message.setProperties(properties);
                         message.setName("fnCC.A_CONFAL_CONFALARM");
-                        client.message(message);
+                        requireClient().message(message);
                     }
                     state = getControlSessionState(sessionID);
                 }
@@ -1663,7 +1683,7 @@ public class PanelHandler extends BaseBridgeHandler {
                 properties.add(intProp("classID", 4));
                 message.setProperties(properties);
                 message.setName(fnName);
-                MessageResponse response = client.message(message);
+                MessageResponse response = requireClient().message(message);
                 if ("return.error".equals(response.getName())) {
                     handleError(String.valueOf(response.getProperties().get(0).getValue()));
                     return false;
@@ -1717,7 +1737,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
             message.setProperties(properties);
             message.setName("fnCC.A_SET_INHACTIVE");
-            MessageResponse response = client.message(message);
+            MessageResponse response = requireClient().message(message);
 
             logger.debug("Inhibit Active Zone : Gateway : Message Type : {}", response.getName());
 
@@ -1739,7 +1759,7 @@ public class PanelHandler extends BaseBridgeHandler {
         return false;
     }
 
-    private MessageResponse getActiveZones(int sessionID, boolean next) {
+    private @Nullable MessageResponse getActiveZones(int sessionID, boolean next) {
         if (isClientsSetUp()) {
             logger.debug("Get Active Zones : Faults for Session : {}", sessionID);
             Message message = new Message();
@@ -1756,7 +1776,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
             message.setProperties(properties);
             message.setName("fnCC.A_SET_GETACTIVE");
-            MessageResponse response = client.message(message);
+            MessageResponse response = requireClient().message(message);
 
             logger.debug("Get Active Zones : Gateway : Message Type : {}", response.getName());
 
@@ -1813,7 +1833,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
             message.setProperties(properties);
             message.setName("fnCC.A_SET_INHFAULT");
-            MessageResponse response = client.message(message);
+            MessageResponse response = requireClient().message(message);
 
             logger.debug("Inhibit Fault : Gateway : Message Type : {}", response.getName());
 
@@ -1835,7 +1855,7 @@ public class PanelHandler extends BaseBridgeHandler {
         return false;
     }
 
-    private MessageResponse getFaults(int sessionID, boolean next) {
+    private @Nullable MessageResponse getFaults(int sessionID, boolean next) {
         if (isClientsSetUp()) {
             logger.debug("Get Faults : Session : {}", sessionID);
             Message message = new Message();
@@ -1852,7 +1872,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
             message.setProperties(properties);
             message.setName("fnCC.A_SET_GETFAULT");
-            MessageResponse response = client.message(message);
+            MessageResponse response = requireClient().message(message);
 
             logger.debug("Get Faults : Gateway : Message Type : {}", response.getName());
 
@@ -1885,7 +1905,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
             message.setProperties(properties);
             message.setName("fnCC.A_SET_SETAREAS");
-            MessageResponse response = client.message(message);
+            MessageResponse response = requireClient().message(message);
 
             logger.debug("Arm Areas : Gateway : Message Type : {}", response.getName());
 
@@ -1918,7 +1938,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
             message.setProperties(properties);
             message.setName("fnCC.A_UNSET_SKIP");
-            MessageResponse response = client.message(message);
+            MessageResponse response = requireClient().message(message);
 
             logger.debug("Skip Alarms : Gateway : Message Type : {}", response.getName());
 
@@ -1951,7 +1971,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
             message.setProperties(properties);
             message.setName("fnCC.A_UNSET_SKIP");
-            MessageResponse response = client.message(message);
+            MessageResponse response = requireClient().message(message);
 
             logger.debug("Skip Faults : Gateway : Message Type : {}", response.getName());
 
@@ -1984,7 +2004,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
             message.setProperties(properties);
             message.setName("fnCC.A_UNSET_UNSETAREAS");
-            MessageResponse response = client.message(message);
+            MessageResponse response = requireClient().message(message);
 
             logger.debug("Unarm Areas : Gateway : Message Type : {}", response.getName());
 
@@ -2017,7 +2037,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
             message.setProperties(properties);
             message.setName("statusCC.SESSION");
-            MessageResponse response = client.message(message);
+            MessageResponse response = requireClient().message(message);
 
             logger.debug("Get Control Session State : Gateway : Message Type : {}", response.getName());
 
@@ -2054,7 +2074,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
             message.setProperties(properties);
             message.setName("destroyCC.SESSION");
-            MessageResponse response = client.message(message);
+            MessageResponse response = requireClient().message(message);
 
             logger.debug("Finish Control Session : Gateway : Message Type : {}", response.getName());
 
@@ -2098,7 +2118,7 @@ public class PanelHandler extends BaseBridgeHandler {
         }
         message.setProperties(properties);
         message.setName(createName);
-        MessageResponse response = client.message(message);
+        MessageResponse response = requireClient().message(message);
         logger.debug("Initiate {}: {}", createName, response.getName());
         if ("return.error".equals(response.getName())) {
             handleError(String.valueOf(response.getProperties().get(0).getValue()));
@@ -2141,7 +2161,7 @@ public class PanelHandler extends BaseBridgeHandler {
         }
         message.setProperties(properties);
         message.setName(fnName);
-        MessageResponse response = client.message(message);
+        MessageResponse response = requireClient().message(message);
         logger.debug("{} → {}", fnName, response.getName());
         return response;
     }
@@ -2154,52 +2174,52 @@ public class PanelHandler extends BaseBridgeHandler {
         return p;
     }
 
-    public ArrayList<OutputStatusFlags> getOutputStatus(int index) {
+    public @Nullable ArrayList<OutputStatusFlags> getOutputStatus(int index) {
         return getFlagStatus("getSTAT.OUT", "returnSTAT.OUT", index, OutputStatusFlags.class);
     }
 
-    public ArrayList<RasStatusFlags> getRasStatus(int index) {
+    public @Nullable ArrayList<RasStatusFlags> getRasStatus(int index) {
         return getFlagStatus("getSTAT.RAS", "returnSTAT.RAS", index, RasStatusFlags.class);
     }
 
-    public ArrayList<DgpStatusFlags> getDgpStatus(int index) {
+    public @Nullable ArrayList<DgpStatusFlags> getDgpStatus(int index) {
         return getFlagStatus("getSTAT.DGP", "returnSTAT.DGP", index, DgpStatusFlags.class);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public ArrayList getObjectStatus(StatObjectType type, int index) {
+    public @Nullable ArrayList getObjectStatus(StatObjectType type, int index) {
         return getFlagStatus(type.getStat, type.returnStat, index, (Class) type.flagType);
     }
 
-    public MessageResponse getUserNamesChunk(int index) {
+    public @Nullable MessageResponse getUserNamesChunk(int index) {
         return getNamesChunk("select.UserNames", "return.UserNames", index);
     }
 
-    public MessageResponse getUserGroupNamesChunk(int index) {
+    public @Nullable MessageResponse getUserGroupNamesChunk(int index) {
         return getNamesChunk("select.UserGroupNames", "return.UserGroupNames", index);
     }
 
-    public MessageResponse getCsNamesChunk(int index) {
+    public @Nullable MessageResponse getCsNamesChunk(int index) {
         return getNamesChunk("select.CSNames", "return.CSNames", index);
     }
 
-    public MessageResponse getDiallerNamesChunk(int index) {
+    public @Nullable MessageResponse getDiallerNamesChunk(int index) {
         return getNamesChunk("select.DLNames", "return.DLNames", index);
     }
 
-    public MessageResponse getPccNamesChunk(int index) {
+    public @Nullable MessageResponse getPccNamesChunk(int index) {
         return getNamesChunk("select.PCCNames", "return.PCCNames", index);
     }
 
-    public MessageResponse getTriggerNamesChunk(int index) {
+    public @Nullable MessageResponse getTriggerNamesChunk(int index) {
         return getNamesChunk("select.TriggerNames", "return.TriggerNames", index);
     }
 
-    public MessageResponse getFilterNamesChunk(int index) {
+    public @Nullable MessageResponse getFilterNamesChunk(int index) {
         return getNamesChunk("select.CEvFilterNames", "return.CEvFilterNames", index);
     }
 
-    private <E extends Enum<E>> ArrayList<E> getFlagStatus(String getName, String returnName, int index,
+    private <E extends Enum<E>> @Nullable ArrayList<E> getFlagStatus(String getName, String returnName, int index,
             Class<E> type) {
         if (!(isClientsSetUp() && isConnected() && isLoggedIn())) {
             return null;
@@ -2209,7 +2229,7 @@ public class PanelHandler extends BaseBridgeHandler {
         properties.add(intProp("objectID", index));
         message.setProperties(properties);
         message.setName(getName);
-        MessageResponse response = client.message(message);
+        MessageResponse response = requireClient().message(message);
         if ("return.error".equals(response.getName())) {
             handleError(String.valueOf(response.getProperties().get(0).getValue()));
             return null;
@@ -2233,19 +2253,19 @@ public class PanelHandler extends BaseBridgeHandler {
         return status;
     }
 
-    public MessageResponse getOutputNamesChunk(int index) {
+    public @Nullable MessageResponse getOutputNamesChunk(int index) {
         return getNamesChunk("select.OutputNames", "return.OutputNames", index);
     }
 
-    public MessageResponse getRasNamesChunk(int index) {
+    public @Nullable MessageResponse getRasNamesChunk(int index) {
         return getNamesChunk("select.RASNames", "return.RASNames", index);
     }
 
-    public MessageResponse getDgpNamesChunk(int index) {
+    public @Nullable MessageResponse getDgpNamesChunk(int index) {
         return getNamesChunk("select.DGPNames", "return.DGPNames", index);
     }
 
-    private MessageResponse getNamesChunk(String selectName, String returnName, int index) {
+    private @Nullable MessageResponse getNamesChunk(String selectName, String returnName, int index) {
         if (!(isClientsSetUp() && isConnected() && isLoggedIn())) {
             return null;
         }
@@ -2254,7 +2274,7 @@ public class PanelHandler extends BaseBridgeHandler {
         properties.add(intProp("index", index));
         message.setProperties(properties);
         message.setName(selectName);
-        MessageResponse response = client.message(message);
+        MessageResponse response = requireClient().message(message);
         if (returnName.equals(response.getName())) {
             return response;
         }
@@ -2344,8 +2364,10 @@ public class PanelHandler extends BaseBridgeHandler {
                         default: {
                             StatObjectType type = StatObjectType.forCosFlag(aProperty.getId());
                             if (type != null && type != StatObjectType.SYS && isTruthy(aProperty.getValue())) {
-                                if (type.getCos != null && type.returnCos != null) {
-                                    BitSet changed = getChangedCos(type.getCos, type.returnCos);
+                                String getCos = type.getCos;
+                                String returnCos = type.returnCos;
+                                if (getCos != null && returnCos != null) {
+                                    BitSet changed = getChangedCos(getCos, returnCos);
                                     if (changed != null) {
                                         for (int i = 0; i < changed.length(); i++) {
                                             if (changed.get(i)) {
@@ -2431,11 +2453,11 @@ public class PanelHandler extends BaseBridgeHandler {
         } catch (DateTimeParseException ignored) {
             // fall through
         }
-        DateTimeFormatter[] legacy = { DateTimeFormatter.ofPattern("M/d/yyyy H:mm:ss", Locale.US),
+        DateTimeFormatter[] patterns = { DateTimeFormatter.ofPattern("M/d/yyyy H:mm:ss", Locale.US),
                 DateTimeFormatter.ofPattern("M/d/yyyy HH:mm:ss", Locale.US),
                 DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss", Locale.UK),
                 DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ROOT) };
-        for (DateTimeFormatter fmt : legacy) {
+        for (DateTimeFormatter fmt : patterns) {
             try {
                 return Date.from(LocalDateTime.parse(ts, fmt).atZone(ZoneId.systemDefault()).toInstant());
             } catch (DateTimeParseException ignored) {
@@ -2447,17 +2469,22 @@ public class PanelHandler extends BaseBridgeHandler {
 
     private boolean handlingError = false;
 
-    private static boolean isTransportFailure(String error) {
-        return StringUtils.contains(error, "Connection refused")
-                || StringUtils.contains(error, "The socket has been shut down")
-                || StringUtils.contains(error, "Connection reset by peer")
-                || StringUtils.contains(error, "Object reference not set to an instance of an object");
+    private static boolean isTransportFailure(@Nullable String error) {
+        if (error == null) {
+            return false;
+        }
+        return error.contains("Connection refused") || error.contains("The socket has been shut down")
+                || error.contains("Connection reset by peer")
+                || error.contains("Object reference not set to an instance of an object");
     }
 
-    private boolean handleError(String error) {
+    private boolean handleError(@Nullable String error) {
         // handle errors returned from the panel / gateway
         try {
             if (!handlingError) {
+                if (error == null) {
+                    return false;
+                }
                 String prose = FaultMessages.getInstance().fromGatewayMessage(error);
                 logger.debug("ATS Advanced Panel or Gateway : Error : {} ({})", prose, error);
                 if (isTransportFailure(error)) {
@@ -2467,7 +2494,9 @@ public class PanelHandler extends BaseBridgeHandler {
                     onConnectionLost();
                     handlingError = false;
                 }
-                lastError = error;
+                if (error != null) {
+                    lastError = error;
+                }
                 return true;
             }
         } catch (Exception e) {
@@ -2483,5 +2512,4 @@ public class PanelHandler extends BaseBridgeHandler {
         Object value = properties.get(0).getValue();
         return value != null ? String.valueOf(value) : "";
     }
-
 }

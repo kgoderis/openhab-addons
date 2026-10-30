@@ -19,6 +19,7 @@ import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.atsadvanced.internal.config.AtsObjectConfiguration;
 import org.openhab.binding.atsadvanced.internal.handler.AreaHandler;
 import org.openhab.binding.atsadvanced.internal.handler.DgpHandler;
 import org.openhab.binding.atsadvanced.internal.handler.NamedReadOnlyHandler;
@@ -71,30 +72,27 @@ public class ATSadvancedHandlerFactory extends BaseThingHandlerFactory {
         }
         if (ATSadvancedBindingConstants.THING_TYPE_AREA.equals(thingTypeUID)) {
             return super.createThing(thingTypeUID, configuration,
-                    getChildUID(thingTypeUID, thingUID, configuration, bridgeUID, AreaHandler.NUMBER, "Area"),
-                    bridgeUID);
+                    getChildUID(thingTypeUID, thingUID, configuration, bridgeUID, "Area"), bridgeUID);
         }
         if (ATSadvancedBindingConstants.THING_TYPE_ZONE.equals(thingTypeUID)) {
             return super.createThing(thingTypeUID, configuration,
-                    getChildUID(thingTypeUID, thingUID, configuration, bridgeUID, ZoneHandler.NUMBER, "Zone"),
-                    bridgeUID);
+                    getChildUID(thingTypeUID, thingUID, configuration, bridgeUID, "Zone"), bridgeUID);
         }
         if (ATSadvancedBindingConstants.THING_TYPE_OUTPUT.equals(thingTypeUID)) {
             return super.createThing(thingTypeUID, configuration,
-                    getChildUID(thingTypeUID, thingUID, configuration, bridgeUID, OutputHandler.NUMBER, "Output"),
-                    bridgeUID);
+                    getChildUID(thingTypeUID, thingUID, configuration, bridgeUID, "Output"), bridgeUID);
         }
         if (ATSadvancedBindingConstants.THING_TYPE_RAS.equals(thingTypeUID)) {
             return super.createThing(thingTypeUID, configuration,
-                    getChildUID(thingTypeUID, thingUID, configuration, bridgeUID, RasHandler.NUMBER, "RAS"), bridgeUID);
+                    getChildUID(thingTypeUID, thingUID, configuration, bridgeUID, "RAS"), bridgeUID);
         }
         if (ATSadvancedBindingConstants.THING_TYPE_DGP.equals(thingTypeUID)) {
             return super.createThing(thingTypeUID, configuration,
-                    getChildUID(thingTypeUID, thingUID, configuration, bridgeUID, DgpHandler.NUMBER, "DGP"), bridgeUID);
+                    getChildUID(thingTypeUID, thingUID, configuration, bridgeUID, "DGP"), bridgeUID);
         }
         if (ATSadvancedBindingConstants.THING_TYPE_DIALLER.equals(thingTypeUID)) {
-            return super.createThing(thingTypeUID, configuration, getChildUID(thingTypeUID, thingUID, configuration,
-                    bridgeUID, NamedReadOnlyHandler.NUMBER, "Dialler"), bridgeUID);
+            return super.createThing(thingTypeUID, configuration,
+                    getChildUID(thingTypeUID, thingUID, configuration, bridgeUID, "Dialler"), bridgeUID);
         }
         StatObjectType statType = StatObjectType.forThingType(thingTypeUID);
         if (statType != null) {
@@ -108,8 +106,7 @@ public class ATSadvancedHandlerFactory extends BaseThingHandlerFactory {
                 case FILTER -> "Filter";
             };
             return super.createThing(thingTypeUID, configuration,
-                    getChildUID(thingTypeUID, thingUID, configuration, bridgeUID, StatObjectHandler.NUMBER, prefix),
-                    bridgeUID);
+                    getChildUID(thingTypeUID, thingUID, configuration, bridgeUID, prefix), bridgeUID);
         }
         throw new IllegalArgumentException(
                 "The thing type " + thingTypeUID + " is not supported by the ATS Advanced binding.");
@@ -143,24 +140,25 @@ public class ATSadvancedHandlerFactory extends BaseThingHandlerFactory {
     private @Nullable ThingUID getPanelUID(ThingTypeUID thingTypeUID, @Nullable ThingUID thingUID,
             Configuration configuration) {
         if (thingUID == null) {
-            @Nullable
-            String ipAddress = (String) configuration.get(PanelHandler.IP_ADDRESS);
-            if (ipAddress != null) {
-                return new ThingUID(thingTypeUID, ipAddress);
+            Object ipAddress = configuration.get("ipAddress");
+            if (ipAddress instanceof String s && !s.isBlank()) {
+                return new ThingUID(thingTypeUID, s);
             }
         }
         return thingUID;
     }
 
     private ThingUID getChildUID(ThingTypeUID thingTypeUID, @Nullable ThingUID thingUID, Configuration configuration,
-            @Nullable ThingUID bridgeUID, String numberKey, String prefix) {
+            @Nullable ThingUID bridgeUID, String prefix) {
         if (thingUID != null) {
             return thingUID;
         }
         if (bridgeUID == null) {
             throw new IllegalArgumentException("Child thing of type " + thingTypeUID + " requires a bridge.");
         }
-        BigDecimal id = (BigDecimal) configuration.get(numberKey);
+        Object raw = configuration.get(AtsObjectConfiguration.NUMBER);
+        BigDecimal id = raw instanceof BigDecimal bd ? bd
+                : raw instanceof Number n ? BigDecimal.valueOf(n.longValue()) : new BigDecimal(String.valueOf(raw));
         return new ThingUID(thingTypeUID, bridgeUID.getId(), prefix + id);
     }
 }

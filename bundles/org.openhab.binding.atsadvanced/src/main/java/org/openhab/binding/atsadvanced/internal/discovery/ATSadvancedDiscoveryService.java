@@ -25,14 +25,8 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.atsadvanced.internal.ATSadvancedBindingConstants;
 import org.openhab.binding.atsadvanced.internal.PanelClient.MessageResponse;
 import org.openhab.binding.atsadvanced.internal.PanelClient.Property;
-import org.openhab.binding.atsadvanced.internal.handler.AreaHandler;
-import org.openhab.binding.atsadvanced.internal.handler.DgpHandler;
-import org.openhab.binding.atsadvanced.internal.handler.NamedReadOnlyHandler;
-import org.openhab.binding.atsadvanced.internal.handler.OutputHandler;
+import org.openhab.binding.atsadvanced.internal.config.AtsObjectConfiguration;
 import org.openhab.binding.atsadvanced.internal.handler.PanelHandler;
-import org.openhab.binding.atsadvanced.internal.handler.RasHandler;
-import org.openhab.binding.atsadvanced.internal.handler.StatObjectHandler;
-import org.openhab.binding.atsadvanced.internal.handler.ZoneHandler;
 import org.openhab.core.config.discovery.AbstractThingHandlerDiscoveryService;
 import org.openhab.core.config.discovery.DiscoveryResultBuilder;
 import org.openhab.core.thing.ThingTypeUID;
@@ -103,35 +97,40 @@ public class ATSadvancedDiscoveryService extends AbstractThingHandlerDiscoverySe
                 return;
             }
 
-            discoverNamedChunks(ATSadvancedBindingConstants.THING_TYPE_ZONE, "Zone", ZoneHandler.NUMBER,
-                    ZoneHandler.NAME, ATSadvancedBindingConstants.MAX_NUMBER_ZONES, panel::getZoneNamesChunk);
-            discoverNamedChunks(ATSadvancedBindingConstants.THING_TYPE_AREA, "Area", AreaHandler.NUMBER,
-                    AreaHandler.NAME, ATSadvancedBindingConstants.MAX_NUMBER_AREAS, panel::getAreaNamesChunk);
-            discoverNamedChunks(ATSadvancedBindingConstants.THING_TYPE_OUTPUT, "Output", OutputHandler.NUMBER,
-                    OutputHandler.NAME, ATSadvancedBindingConstants.MAX_NUMBER_OUTPUTS, panel::getOutputNamesChunk);
-            discoverNamedChunks(ATSadvancedBindingConstants.THING_TYPE_RAS, "RAS", RasHandler.NUMBER, RasHandler.NAME,
-                    ATSadvancedBindingConstants.MAX_NUMBER_RAS, panel::getRasNamesChunk);
-            discoverNamedChunks(ATSadvancedBindingConstants.THING_TYPE_DGP, "DGP", DgpHandler.NUMBER, DgpHandler.NAME,
-                    ATSadvancedBindingConstants.MAX_NUMBER_DGP, panel::getDgpNamesChunk);
+            discoverNamedChunks(ATSadvancedBindingConstants.THING_TYPE_ZONE, "Zone", AtsObjectConfiguration.NUMBER,
+                    AtsObjectConfiguration.NAME, ATSadvancedBindingConstants.MAX_NUMBER_ZONES,
+                    panel::getZoneNamesChunk);
+            discoverNamedChunks(ATSadvancedBindingConstants.THING_TYPE_AREA, "Area", AtsObjectConfiguration.NUMBER,
+                    AtsObjectConfiguration.NAME, ATSadvancedBindingConstants.MAX_NUMBER_AREAS,
+                    panel::getAreaNamesChunk);
+            discoverNamedChunks(ATSadvancedBindingConstants.THING_TYPE_OUTPUT, "Output", AtsObjectConfiguration.NUMBER,
+                    AtsObjectConfiguration.NAME, ATSadvancedBindingConstants.MAX_NUMBER_OUTPUTS,
+                    panel::getOutputNamesChunk);
+            discoverNamedChunks(ATSadvancedBindingConstants.THING_TYPE_RAS, "RAS", AtsObjectConfiguration.NUMBER,
+                    AtsObjectConfiguration.NAME, ATSadvancedBindingConstants.MAX_NUMBER_RAS, panel::getRasNamesChunk);
+            discoverNamedChunks(ATSadvancedBindingConstants.THING_TYPE_DGP, "DGP", AtsObjectConfiguration.NUMBER,
+                    AtsObjectConfiguration.NAME, ATSadvancedBindingConstants.MAX_NUMBER_DGP, panel::getDgpNamesChunk);
 
             discoverSys();
-            discoverNamedChunks(ATSadvancedBindingConstants.THING_TYPE_PCC, "PCC", StatObjectHandler.NUMBER,
-                    StatObjectHandler.NAME, ATSadvancedBindingConstants.MAX_NUMBER_PCC, panel::getPccNamesChunk);
-            discoverNamedChunks(ATSadvancedBindingConstants.THING_TYPE_CS, "CS", StatObjectHandler.NUMBER,
-                    StatObjectHandler.NAME, ATSadvancedBindingConstants.MAX_NUMBER_CS, panel::getCsNamesChunk);
-            discoverNamedChunks(ATSadvancedBindingConstants.THING_TYPE_TRIGGER, "Trigger", StatObjectHandler.NUMBER,
-                    StatObjectHandler.NAME, ATSadvancedBindingConstants.MAX_NUMBER_TRIGGERS,
-                    panel::getTriggerNamesChunk);
-            discoverNamedChunks(ATSadvancedBindingConstants.THING_TYPE_USER, "User", StatObjectHandler.NUMBER,
-                    StatObjectHandler.NAME, ATSadvancedBindingConstants.MAX_NUMBER_USERS, panel::getUserNamesChunk);
-            discoverNamedChunks(ATSadvancedBindingConstants.THING_TYPE_USERGROUP, "UserGroup", StatObjectHandler.NUMBER,
-                    StatObjectHandler.NAME, ATSadvancedBindingConstants.MAX_NUMBER_USERGROUPS,
-                    panel::getUserGroupNamesChunk);
-            discoverNamedChunks(ATSadvancedBindingConstants.THING_TYPE_FILTER, "Filter", StatObjectHandler.NUMBER,
-                    StatObjectHandler.NAME, ATSadvancedBindingConstants.MAX_NUMBER_FILTERS, panel::getFilterNamesChunk);
-            discoverNamedChunks(ATSadvancedBindingConstants.THING_TYPE_DIALLER, "Dialler", NamedReadOnlyHandler.NUMBER,
-                    NamedReadOnlyHandler.NAME, ATSadvancedBindingConstants.MAX_NUMBER_DIALLERS,
-                    panel::getDiallerNamesChunk);
+            discoverNamedChunks(ATSadvancedBindingConstants.THING_TYPE_PCC, "PCC", AtsObjectConfiguration.NUMBER,
+                    AtsObjectConfiguration.NAME, ATSadvancedBindingConstants.MAX_NUMBER_PCC, panel::getPccNamesChunk);
+            discoverNamedChunks(ATSadvancedBindingConstants.THING_TYPE_CS, "CS", AtsObjectConfiguration.NUMBER,
+                    AtsObjectConfiguration.NAME, ATSadvancedBindingConstants.MAX_NUMBER_CS, panel::getCsNamesChunk);
+            discoverNamedChunks(ATSadvancedBindingConstants.THING_TYPE_TRIGGER, "Trigger",
+                    AtsObjectConfiguration.NUMBER, AtsObjectConfiguration.NAME,
+                    ATSadvancedBindingConstants.MAX_NUMBER_TRIGGERS, panel::getTriggerNamesChunk);
+            discoverNamedChunks(ATSadvancedBindingConstants.THING_TYPE_USER, "User", AtsObjectConfiguration.NUMBER,
+                    AtsObjectConfiguration.NAME, ATSadvancedBindingConstants.MAX_NUMBER_USERS,
+                    panel::getUserNamesChunk);
+            discoverNamedChunks(ATSadvancedBindingConstants.THING_TYPE_USERGROUP, "UserGroup",
+                    AtsObjectConfiguration.NUMBER, AtsObjectConfiguration.NAME,
+                    ATSadvancedBindingConstants.MAX_NUMBER_USERGROUPS, panel::getUserGroupNamesChunk);
+            discoverNamedChunks(ATSadvancedBindingConstants.THING_TYPE_FILTER, "Filter", AtsObjectConfiguration.NUMBER,
+                    AtsObjectConfiguration.NAME, ATSadvancedBindingConstants.MAX_NUMBER_FILTERS,
+                    panel::getFilterNamesChunk);
+            discoverNamedChunks(ATSadvancedBindingConstants.THING_TYPE_DIALLER, "Dialler",
+                    AtsObjectConfiguration.NUMBER, AtsObjectConfiguration.NAME,
+                    ATSadvancedBindingConstants.MAX_NUMBER_DIALLERS, panel::getDiallerNamesChunk);
         } catch (Exception e) {
             logger.error("An exception occurred while discovering an ATS Advanced Panel: '{}'", e.getMessage());
         }
@@ -141,10 +140,10 @@ public class ATSadvancedDiscoveryService extends AbstractThingHandlerDiscoverySe
         ThingUID bridgeUID = thingHandler.getThing().getUID();
         ThingUID uid = new ThingUID(ATSadvancedBindingConstants.THING_TYPE_SYS, bridgeUID, "Sys1");
         Map<String, Object> properties = new HashMap<>(2);
-        properties.put(StatObjectHandler.NUMBER, "1");
-        properties.put(StatObjectHandler.NAME, "System");
+        properties.put(AtsObjectConfiguration.NUMBER, "1");
+        properties.put(AtsObjectConfiguration.NAME, "System");
         thingDiscovered(DiscoveryResultBuilder.create(uid).withProperties(properties).withBridge(bridgeUID)
-                .withRepresentationProperty(StatObjectHandler.NUMBER).withLabel("ATS Advanced System").build());
+                .withRepresentationProperty(AtsObjectConfiguration.NUMBER).withLabel("ATS Advanced System").build());
     }
 
     @FunctionalInterface
